@@ -9,7 +9,7 @@ import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Input } from '@conar/ui/components/input'
-import { ScrollAreaShadow, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
+import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Separator, SeparatorMotion } from '@conar/ui/components/separator'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -131,7 +131,6 @@ function ConnectionCard({
   }, [sync])
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const scrollViewportRef = useRef<HTMLDivElement>(null)
 
   const handleCopy = () => {
     if (timeoutRef.current) {
@@ -296,74 +295,68 @@ function ConnectionCard({
               )}
             </div>
           )}
-          <ScrollAreaShadow viewportRef={scrollViewportRef} type="card">
-            <ScrollViewport ref={scrollViewportRef} className="max-h-60">
-              {pinned.length + unpinned.length > 0
-                ? (
-                    <AnimatePresence mode="popLayout">
-                      {pinned.map(resource => (
-                        <motion.div
-                          key={resource.id}
-                          layout
-                          transition={{ layout: { duration: 0.15, ease: 'easeInOut' } }}
-                        >
-                          <ResourceCard
-                            resource={resource}
-                            connection={connection}
-                            search={resourcesSearch}
-                            pinned
-                            onTogglePin={() => togglePinResource(connection.id, resource.id, resource.name)}
-                          />
-                        </motion.div>
-                      ))}
-                      {pinned.length > 0 && unpinned.length > 0 && (
-                        <SeparatorMotion
-                          className="my-2 h-px!"
-                          layout
-                          transition={{ layout: { duration: 0.15, ease: 'easeInOut' } }}
+          <ScrollArea className="max-h-60" scrollFade>
+            {pinned.length + unpinned.length > 0
+              ? (
+                  <AnimatePresence mode="popLayout">
+                    {pinned.map(resource => (
+                      <motion.div
+                        key={resource.id}
+                        layout
+                        transition={{ layout: { duration: 0.15, ease: 'easeInOut' } }}
+                      >
+                        <ResourceCard
+                          resource={resource}
+                          connection={connection}
+                          search={resourcesSearch}
+                          pinned
+                          onTogglePin={() => togglePinResource(connection.id, resource.id, resource.name)}
                         />
-                      )}
-                      {unpinned.map(resource => (
-                        <motion.div
-                          key={resource.id}
-                          layout
-                          transition={{ layout: { duration: 0.15, ease: 'easeInOut' } }}
-                        >
-                          <ResourceCard
-                            resource={resource}
-                            connection={connection}
-                            search={resourcesSearch}
-                            pinned={false}
-                            onTogglePin={() => togglePinResource(connection.id, resource.id, resource.name)}
-                          />
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  )
-                : (
-                    <div
-                      className="
-                        flex items-center p-2 text-sm text-muted-foreground
-                      "
-                    >
-                      {isSyncing
-                        ? (
-                            <div className="
-                              flex animate-pulse items-center gap-2
-                            "
-                            >
-                              <RiLoader4Line className="size-3 animate-spin" />
-                              Syncing resources...
-                            </div>
-                          )
-                        : resources && resources.length > 0
-                          ? 'No resources match your search'
-                          : 'No resources found'}
-                    </div>
-                  )}
-            </ScrollViewport>
-            <ScrollBar />
-          </ScrollAreaShadow>
+                      </motion.div>
+                    ))}
+                    {pinned.length > 0 && unpinned.length > 0 && (
+                      <SeparatorMotion
+                        className="my-2 h-px!"
+                        layout
+                        transition={{ layout: { duration: 0.15, ease: 'easeInOut' } }}
+                      />
+                    )}
+                    {unpinned.map(resource => (
+                      <motion.div
+                        key={resource.id}
+                        layout
+                        transition={{ layout: { duration: 0.15, ease: 'easeInOut' } }}
+                      >
+                        <ResourceCard
+                          resource={resource}
+                          connection={connection}
+                          search={resourcesSearch}
+                          pinned={false}
+                          onTogglePin={() => togglePinResource(connection.id, resource.id, resource.name)}
+                        />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                )
+              : (
+                  <div
+                    className="
+                      flex items-center p-2 text-sm text-muted-foreground
+                    "
+                  >
+                    {isSyncing
+                      ? (
+                          <div className="flex animate-pulse items-center gap-2">
+                            <RiLoader4Line className="size-3 animate-spin" />
+                            Syncing resources...
+                          </div>
+                        )
+                      : resources && resources.length > 0
+                        ? 'No resources match your search'
+                        : 'No resources found'}
+                  </div>
+                )}
+          </ScrollArea>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

@@ -4,7 +4,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@c
 import { Button } from '@conar/ui/components/button'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
-import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
+import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { SeparatorMotion } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
@@ -222,152 +222,149 @@ export function TablesTree({ className, search }: { className?: string, search?:
     : tablesTreeOpenedSchemas, [search, filteredTablesAndSchemas, tablesTreeOpenedSchemas])
 
   return (
-    <ScrollArea className={cn('h-full', className)}>
+    <ScrollArea className={cn('h-full p-2', className)} scrollFade>
       <DropTableDialog ref={dropTableDialogRef} />
       <RenameTableDialog ref={renameTableDialogRef} />
-      <ScrollViewport className="p-2">
-        <Accordion
-          value={searchAccordionValue}
-          onValueChange={(v) => {
-            if (!search) {
-              store.set(state => ({
-                ...state,
-                tablesTreeOpenedSchemas: v,
-              } satisfies typeof state))
-            }
-          }}
-          data-mask
-          type="multiple"
-          className="w-full space-y-2"
-        >
-          {isPending
+      <Accordion
+        value={searchAccordionValue}
+        onValueChange={(v) => {
+          if (!search) {
+            store.set(state => ({
+              ...state,
+              tablesTreeOpenedSchemas: v,
+            } satisfies typeof state))
+          }
+        }}
+        data-mask
+        type="multiple"
+        className="w-full space-y-2"
+      >
+        {isPending
+          ? (
+              <div className={`
+                flex h-full flex-1 flex-col items-center justify-center
+                text-center
+              `}
+              >
+                <Skeleton />
+              </div>
+            )
+          : filteredTablesAndSchemas.length === 0
             ? (
                 <div className={`
-                  flex h-full flex-1 flex-col items-center justify-center
+                  flex h-full flex-1 flex-col items-center justify-center py-8
                   text-center
                 `}
                 >
-                  <Skeleton />
+                  <RiTableLine className="mb-2 size-10 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">No tables found</p>
                 </div>
               )
-            : filteredTablesAndSchemas.length === 0
-              ? (
-                  <div className={`
-                    flex h-full flex-1 flex-col items-center justify-center py-8
-                    text-center
-                  `}
-                  >
-                    <RiTableLine className="mb-2 size-10 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">No tables found</p>
-                  </div>
-                )
-              : (
-                  <AnimatePresence>
-                    {filteredTablesAndSchemas.map(schema => (
-                      <motion.div
-                        key={schema.name}
-                        initial={search ? { opacity: 0, height: 0 } : false}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.2 }}
+            : (
+                <AnimatePresence>
+                  {filteredTablesAndSchemas.map(schema => (
+                    <motion.div
+                      key={schema.name}
+                      initial={search ? { opacity: 0, height: 0 } : false}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <AccordionItem
+                        value={schema.name}
+                        className="border-b-0"
                       >
-                        <AccordionItem
-                          value={schema.name}
-                          className="border-b-0"
-                        >
-                          {connection.type !== ConnectionType.ClickHouse && (
-                            <AccordionTrigger className={`
-                              mb-1 cursor-pointer truncate px-2 py-1.5
-                              hover:bg-accent/50 hover:no-underline
-                            `}
-                            >
-                              <span className="flex items-center gap-2">
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <RiStackLine
-                                        className={cn(
-                                          `
-                                            size-4 shrink-0
-                                            text-muted-foreground opacity-50
-                                          `,
-                                          schemaParam === schema.name && `
-                                            text-primary opacity-100
-                                          `,
-                                        )}
-                                      />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      Schema
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                                {schema.name}
-                              </span>
-                            </AccordionTrigger>
-                          )}
-                          <AccordionContent className="pb-0">
-                            <AnimatePresence mode="popLayout">
-                              {schema.pinnedTables.map(table => (
-                                <motion.div
-                                  key={`${schema.name}:${table}`}
-                                  layout
-                                  variants={treeVariants}
-                                  initial={search ? treeVariants.hidden : false}
-                                  animate="visible"
-                                  exit="hidden"
-                                  transition={treeTransition}
-                                >
-                                  <TableItem
-                                    schema={schema.name}
-                                    table={table}
-                                    pinned
-                                    search={search}
-                                    onRename={() => renameTableDialogRef.current?.rename(schema.name, table)}
-                                    onDrop={() => dropTableDialogRef.current?.drop(schema.name, table)}
-                                  />
-                                </motion.div>
-                              ))}
-                              {schema.pinnedTables.length > 0 && schema.unpinnedTables.length > 0 && (
-                                <SeparatorMotion
-                                  className="my-2 h-px!"
-                                  layout
-                                  variants={treeVariants}
-                                  initial={search ? treeVariants.hidden : false}
-                                  animate="visible"
-                                  exit="hidden"
-                                  transition={treeTransition}
+                        {connection.type !== ConnectionType.ClickHouse && (
+                          <AccordionTrigger className={`
+                            mb-1 cursor-pointer truncate px-2 py-1.5
+                            hover:bg-accent/50 hover:no-underline
+                          `}
+                          >
+                            <span className="flex items-center gap-2">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <RiStackLine
+                                      className={cn(
+                                        `
+                                          size-4 shrink-0 text-muted-foreground
+                                          opacity-50
+                                        `,
+                                        schemaParam === schema.name && `
+                                          text-primary opacity-100
+                                        `,
+                                      )}
+                                    />
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    Schema
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              {schema.name}
+                            </span>
+                          </AccordionTrigger>
+                        )}
+                        <AccordionContent className="pb-0">
+                          <AnimatePresence mode="popLayout">
+                            {schema.pinnedTables.map(table => (
+                              <motion.div
+                                key={`${schema.name}:${table}`}
+                                layout
+                                variants={treeVariants}
+                                initial={search ? treeVariants.hidden : false}
+                                animate="visible"
+                                exit="hidden"
+                                transition={treeTransition}
+                              >
+                                <TableItem
+                                  schema={schema.name}
+                                  table={table}
+                                  pinned
+                                  search={search}
+                                  onRename={() => renameTableDialogRef.current?.rename(schema.name, table)}
+                                  onDrop={() => dropTableDialogRef.current?.drop(schema.name, table)}
                                 />
-                              )}
-                              {schema.unpinnedTables.map(table => (
-                                <motion.div
-                                  key={`${schema.name}:${table}`}
-                                  layout
-                                  variants={treeVariants}
-                                  initial={search ? treeVariants.hidden : false}
-                                  animate="visible"
-                                  exit="hidden"
-                                  transition={treeTransition}
-                                >
-                                  <TableItem
-                                    schema={schema.name}
-                                    table={table}
-                                    search={search}
-                                    onRename={() => renameTableDialogRef.current?.rename(schema.name, table)}
-                                    onDrop={() => dropTableDialogRef.current?.drop(schema.name, table)}
-                                  />
-                                </motion.div>
-                              ))}
-                            </AnimatePresence>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                )}
-        </Accordion>
-      </ScrollViewport>
-      <ScrollBar orientation="vertical" />
+                              </motion.div>
+                            ))}
+                            {schema.pinnedTables.length > 0 && schema.unpinnedTables.length > 0 && (
+                              <SeparatorMotion
+                                className="my-2 h-px!"
+                                layout
+                                variants={treeVariants}
+                                initial={search ? treeVariants.hidden : false}
+                                animate="visible"
+                                exit="hidden"
+                                transition={treeTransition}
+                              />
+                            )}
+                            {schema.unpinnedTables.map(table => (
+                              <motion.div
+                                key={`${schema.name}:${table}`}
+                                layout
+                                variants={treeVariants}
+                                initial={search ? treeVariants.hidden : false}
+                                animate="visible"
+                                exit="hidden"
+                                transition={treeTransition}
+                              >
+                                <TableItem
+                                  schema={schema.name}
+                                  table={table}
+                                  search={search}
+                                  onRename={() => renameTableDialogRef.current?.rename(schema.name, table)}
+                                  onDrop={() => dropTableDialogRef.current?.drop(schema.name, table)}
+                                />
+                              </motion.div>
+                            ))}
+                          </AnimatePresence>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              )}
+      </Accordion>
     </ScrollArea>
   )
 }
