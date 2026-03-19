@@ -384,19 +384,17 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <ThemeToggle>
-          <Button size="icon" variant="ghost">
-            <RiSunLine className={`
-              size-4
-              dark:hidden
-            `}
-            />
-            <RiMoonLine className={`
-              hidden size-4
-              dark:block
-            `}
-            />
-          </Button>
+        <ThemeToggle render={<Button size="icon" variant="ghost" />}>
+          <RiSunLine className={`
+            size-4
+            dark:hidden
+          `}
+          />
+          <RiMoonLine className={`
+            hidden size-4
+            dark:block
+          `}
+          />
         </ThemeToggle>
         <div className="mt-2">
           <UserButton />

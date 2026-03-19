@@ -3,7 +3,7 @@ import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { CtrlLetter } from '@conar/ui/components/custom/shortcuts'
-import { Input } from '@conar/ui/components/input'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
 import { Kbd } from '@conar/ui/components/kbd'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
@@ -86,71 +86,71 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
         generateFilter({ prompt, context })
       }}
     >
-      <LoadingContent
-        className="
-          pointer-events-none absolute top-1/2 left-2 -translate-y-1/2
-          text-muted-foreground
-        "
-        loaderClassName="size-4"
-        loading={isPending}
-      >
-        <ContentSwitch
-          active={isPending}
-          activeContent={<RiCheckLine className="size-4 text-success" />}
-        >
-          <RiBardLine className="size-4" />
-        </ContentSwitch>
-      </LoadingContent>
-      <Input
-        ref={inputRef}
-        className={cn('pr-10 pl-8', freeAiUsage && 'pr-22')}
-        placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
-        disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
-        value={prompt}
-        autoFocus
-        onChange={e => store.set(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
-      />
-      {freeAiUsage && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div
-                className="
-                  absolute top-1/2 right-12 -translate-y-1/2 cursor-help text-xs
-                  text-muted-foreground
-                "
-                tabIndex={0}
-                aria-label={`You have ${freeAiUsage.remaining} out of ${freeAiUsage.max} free AI filter uses left this month.`}
-              >
-                <NumberFlow
-                  value={freeAiUsage.remaining}
-                  className="tabular-nums"
-                />
-                /
-                {freeAiUsage.max}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              You have
-              {' '}
-              {freeAiUsage.remaining}
-              /
-              {freeAiUsage.max}
-              {' '}
-              free AI filter uses left this month. Reset at
-              {' '}
-              {format(freeAiUsage.resetAt, 'MMM d, yyyy')}
-              .
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
-      <Kbd
-        asChild
-        className="absolute top-1/2 right-2 -translate-y-1/2"
-      >
-        <CtrlLetter userAgent={navigator.userAgent} letter="F" />
-      </Kbd>
+      <InputGroup>
+        <InputGroupInput
+          ref={inputRef}
+          className={cn('pr-10 pl-8', freeAiUsage && 'pr-22')}
+          placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
+          disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
+          value={prompt}
+          autoFocus
+          onChange={e => store.set(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
+        />
+        <InputGroupAddon>
+          <LoadingContent
+            className="pointer-events-none size-4 text-muted-foreground"
+            loaderClassName="size-4"
+            loading={isPending}
+          >
+            <ContentSwitch
+              active={isPending}
+              activeContent={<RiCheckLine className="text-success" />}
+            >
+              <RiBardLine />
+            </ContentSwitch>
+          </LoadingContent>
+        </InputGroupAddon>
+        <InputGroupAddon align="inline-end">
+          {freeAiUsage && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className="
+                      cursor-help text-xs whitespace-nowrap
+                      text-muted-foreground
+                    "
+                    tabIndex={0}
+                    aria-label={`You have ${freeAiUsage.remaining} out of ${freeAiUsage.max} free AI filter uses left this month.`}
+                  >
+                    <NumberFlow
+                      value={freeAiUsage.remaining}
+                      className="tabular-nums"
+                    />
+                    /
+                    {freeAiUsage.max}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  You have
+                  {' '}
+                  {freeAiUsage.remaining}
+                  /
+                  {freeAiUsage.max}
+                  {' '}
+                  free AI filter uses left this month. Reset at
+                  {' '}
+                  {format(freeAiUsage.resetAt, 'MMM d, yyyy')}
+                  .
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          <Kbd asChild>
+            <CtrlLetter userAgent={navigator.userAgent} letter="F" />
+          </Kbd>
+        </InputGroupAddon>
+      </InputGroup>
     </form>
   )
 }

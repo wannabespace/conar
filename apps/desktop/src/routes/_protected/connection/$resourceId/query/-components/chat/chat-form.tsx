@@ -226,21 +226,19 @@ export function ChatForm() {
               type="button"
               size="icon-xs"
               variant="outline"
-              asChild
+              render={<label htmlFor="chat-file-upload" />}
             >
-              <label htmlFor="chat-file-upload">
-                <RiAttachment2 className="size-3" />
-                <input
-                  id="chat-file-upload"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileAttach}
-                  tabIndex={-1}
-                  aria-label="Attach files"
-                />
-              </label>
+              <RiAttachment2 className="size-3" />
+              <input
+                id="chat-file-upload"
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleFileAttach}
+                tabIndex={-1}
+                aria-label="Attach files"
+              />
             </Button>
           </div>
           <div className="pointer-events-auto flex gap-2">

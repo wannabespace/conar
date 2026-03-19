@@ -154,16 +154,14 @@ function AccountLayout() {
               hidden gap-1
               sm:flex sm:gap-2
             `}
-            asChild
+            render={<Link to="/releases" />}
           >
-            <Link to="/releases">
-              <RiGitBranchLine className={`
-                size-3
-                sm:size-4
-              `}
-              />
-              Releases
-            </Link>
+            <RiGitBranchLine className={`
+              size-3
+              sm:size-4
+            `}
+            />
+            Releases
           </Button>
           <Button
             variant="ghost"
@@ -172,40 +170,38 @@ function AccountLayout() {
               hidden gap-1
               sm:flex sm:gap-2
             `}
-            asChild
+            render={(
+              <a
+                href={SOCIAL_LINKS.GITHUB}
+                target="_blank"
+                rel="noopener noreferrer"
+              />
+            )}
           >
-            <a
-              href={SOCIAL_LINKS.GITHUB}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <RiGithubFill className={`
-                size-3
-                sm:size-4
-              `}
-              />
-              <NumberFlow
-                value={data?.stargazers_count || 0}
-                className={cn(`
-                  text-xs tabular-nums duration-200
-                  sm:text-sm
-                `, !data && `animate-pulse text-muted-foreground`)}
-              />
-            </a>
+            <RiGithubFill className={`
+              size-3
+              sm:size-4
+            `}
+            />
+            <NumberFlow
+              value={data?.stargazers_count || 0}
+              className={cn(`
+                text-xs tabular-nums duration-200
+                sm:text-sm
+              `, !data && `animate-pulse text-muted-foreground`)}
+            />
           </Button>
-          <ThemeToggle side="bottom">
-            <Button size="icon-sm" variant="ghost">
-              <RiSunLine className={`
-                size-4
-                dark:hidden
-              `}
-              />
-              <RiMoonLine className={`
-                hidden size-4
-                dark:block
-              `}
-              />
-            </Button>
+          <ThemeToggle side="bottom" render={<Button size="icon-sm" variant="ghost" />}>
+            <RiSunLine className={`
+              size-4
+              dark:hidden
+            `}
+            />
+            <RiMoonLine className={`
+              hidden size-4
+              dark:block
+            `}
+            />
           </ThemeToggle>
           <Button
             variant="outline"
@@ -220,11 +216,9 @@ function AccountLayout() {
               gap-1 px-2 text-xs
               sm:gap-2 sm:px-3 sm:text-sm
             `}
-            asChild
+            render={<Link to="/download" />}
           >
-            <Link to="/download">
-              Download
-            </Link>
+            Download
           </Button>
         </div>
       </header>
@@ -238,23 +232,17 @@ function AccountLayout() {
             </div>
           </div>
           <nav className="space-y-1">
-            <SidebarButton active={match === '/account/'} asChild>
-              <Link to="/account">
-                <RiDashboard3Line className="size-4" />
-                Dashboard
-              </Link>
+            <SidebarButton active={match === '/account/'} render={<Link to="/account" />}>
+              <RiDashboard3Line className="size-4" />
+              Dashboard
             </SidebarButton>
-            <SidebarButton active={match === '/account/billing'} asChild>
-              <Link to="/account/billing">
-                <RiFileListLine className="size-4" />
-                Billing & Invoices
-              </Link>
+            <SidebarButton active={match === '/account/billing'} render={<Link to="/account/billing" />}>
+              <RiFileListLine className="size-4" />
+              Billing & Invoices
             </SidebarButton>
-            <SidebarButton active={match === '/account/settings/'} asChild>
-              <Link to="/account/settings">
-                <RiSettingsLine className="size-4" />
-                Settings
-              </Link>
+            <SidebarButton active={match === '/account/settings/'} render={<Link to="/account/settings" />}>
+              <RiSettingsLine className="size-4" />
+              Settings
             </SidebarButton>
             <SupportButton />
             <Separator className="my-2" />

@@ -103,27 +103,31 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
               : <RiPushpinLine className="size-3" />}
           </Button>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                className={cn(
-                  `
-                    opacity-0 transition-opacity
-                    group-hover:opacity-100
-                    focus-visible:opacity-100
-                  `,
-                  isActive && 'hover:bg-primary/10',
-                )}
-                onClick={e => e.stopPropagation()}
-              >
-                <RiMoreLine className="size-3" />
-              </Button>
+            <DropdownMenuTrigger
+              onClick={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+              }}
+              render={(
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className={cn(
+                    `
+                      opacity-0 transition-opacity
+                      group-hover:opacity-100
+                      focus-visible:opacity-100
+                    `,
+                    isActive && 'hover:bg-primary/10',
+                  )}
+                />
+              )}
+            >
+              <RiMoreLine className="size-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
               className="min-w-48"
-              onCloseAutoFocus={e => e.preventDefault()}
             >
               <DropdownMenuItem
                 onClick={(e) => {

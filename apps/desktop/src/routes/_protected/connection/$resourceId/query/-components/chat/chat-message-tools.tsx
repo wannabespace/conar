@@ -7,6 +7,7 @@ import {
   SingleAccordionTrigger,
   SingleAccordionTriggerArrow,
 } from '@conar/ui/components/custom/single-accordion'
+import { Spinner } from '@conar/ui/components/spinner'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import {
@@ -14,7 +15,6 @@ import {
   RiEarthLine,
   RiErrorWarningLine,
   RiHammerLine,
-  RiLoader4Line,
   RiSearchLine,
 } from '@remixicon/react'
 import { InfoTable } from '~/components/info-table'
@@ -50,10 +50,10 @@ function shouldSkipContent(part: ToolUIPart) {
 
 const ICONS: Record<ToolUIPart['state'], (props: { className?: string, part: ToolUIPart }) => React.ReactNode> = {
   'input-streaming': ({ className }) => (
-    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
+    <Spinner className={cn(`animate-spin text-primary`, className)} />
   ),
   'input-available': ({ className }) => (
-    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
+    <Spinner className={cn(`animate-spin text-primary`, className)} />
   ),
   'output-available': ({ className, part }) => {
     if (part.type === 'tool-webSearch') {
@@ -71,7 +71,7 @@ const ICONS: Record<ToolUIPart['state'], (props: { className?: string, part: Too
     <RiErrorWarningLine className={cn(`text-red-600`, className)} />
   ),
   'approval-requested': ({ className }) => (
-    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
+    <Spinner className={cn(`animate-spin text-primary`, className)} />
   ),
   'approval-responded': ({ className }) => (
     <RiHammerLine className={cn(`text-muted-foreground`, className)} />

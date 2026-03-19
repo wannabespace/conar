@@ -52,17 +52,13 @@ function AuthLayout() {
           >
             {isSignIn
               ? (
-                  <Button variant="link" asChild>
-                    <Link to="/">
-                      Home
-                    </Link>
+                  <Button variant="link" render={<Link to="/" />}>
+                    Home
                   </Button>
                 )
               : (
-                  <Button variant="link" asChild>
-                    <Link to="/sign-in">
-                      Sign in
-                    </Link>
+                  <Button variant="link" render={<Link to="/sign-in" />}>
+                    Sign in
                   </Button>
                 )}
           </div>

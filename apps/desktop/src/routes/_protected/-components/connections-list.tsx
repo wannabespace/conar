@@ -11,11 +11,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from '@conar/ui/components/input'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
+import { Spinner } from '@conar/ui/components/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAddLine, RiAlertLine, RiCheckLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiLoopLeftLine, RiMoreLine } from '@remixicon/react'
+import { RiAddLine, RiAlertLine, RiCheckLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoopLeftLine, RiMoreLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
@@ -97,6 +98,7 @@ function ConnectionCard({
 }) {
   const connectionString = new SafeURL(connection.connectionString)
   connectionString.pathname = ''
+  const connectionStringToShow = `${connectionString.hostname}${connectionString.port ? `:${connectionString.port}` : ''}`
   const [isCopied, setIsCopied] = useState(false)
   const [resourcesSearch, setResourcesSearch] = useState('')
 
@@ -158,7 +160,7 @@ function ConnectionCard({
             <CardFrameTitle className="flex min-w-0 items-center gap-2">
               <span className="min-w-0 truncate" title={connection.name}>{connection.name}</span>
               {' '}
-              {isSyncing && <RiLoader4Line className="size-3 animate-spin" />}
+              {isSyncing && <Spinner className="size-3" />}
               {syncError && (
                 <TooltipProvider>
                   <Tooltip>
@@ -183,8 +185,9 @@ function ConnectionCard({
             >
               <span className="group flex min-w-0 flex-1 gap-2">
                 <span className="min-w-0 flex-1 truncate">
-                  {connectionString.toMasked()}
+                  {connectionStringToShow}
                 </span>
+
               </span>
               <ContentSwitch
                 active={isCopied}
@@ -208,7 +211,7 @@ function ConnectionCard({
           >
             <RiMoreLine className="size-4" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" onCloseAutoFocus={e => e.preventDefault()}>
+          <DropdownMenuContent align="end">
             <DropdownMenuItem
               onClick={() => sync()}
             >
@@ -285,7 +288,7 @@ function ConnectionCard({
                     {isSyncing
                       ? (
                           <div className="flex animate-pulse items-center gap-2">
-                            <RiLoader4Line className="size-3 animate-spin" />
+                            <Spinner className="size-3" />
                             Syncing resources...
                           </div>
                         )
@@ -344,7 +347,7 @@ function ConnectionCard({
                       onClick={() => refetchVersion()}
                     >
                       {isVersionRefetching && (
-                        <RiLoader4Line className="size-3 animate-spin" />
+                        <Spinner className="size-3" />
                       )}
                       Version:
                       {' '}
@@ -376,10 +379,8 @@ export function Empty() {
       <p className="mt-1 mb-4 text-sm whitespace-pre-line text-muted-foreground">
         Create a new connection to get started.
       </p>
-      <Button asChild>
-        <Link to="/create">
-          Create a new connection
-        </Link>
+      <Button render={<Link to="/create" />}>
+        Create a new connection
       </Button>
     </div>
   )
