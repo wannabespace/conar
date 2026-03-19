@@ -5,7 +5,7 @@ export function useColumnsOrder() {
   const store = usePageStoreContext()
 
   const setOrder = (columnId: string, order: 'ASC' | 'DESC') => {
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       orderBy: {
         ...state.orderBy,
@@ -15,14 +15,14 @@ export function useColumnsOrder() {
   }
 
   const removeOrder = (columnId: string) => {
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       orderBy: omit(state.orderBy, [columnId]),
     } satisfies typeof state))
   }
 
   const toggleOrder = (columnId: string) => {
-    const currentOrder = store.state.orderBy?.[columnId]
+    const currentOrder = store.get().orderBy?.[columnId]
 
     if (currentOrder === 'ASC') {
       setOrder(columnId, 'DESC')

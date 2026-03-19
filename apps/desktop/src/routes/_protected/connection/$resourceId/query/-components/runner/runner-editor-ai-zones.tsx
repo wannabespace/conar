@@ -1,11 +1,11 @@
 import type { editor, Position } from 'monaco-editor'
 import type { Dispatch, RefObject, SetStateAction } from 'react'
 import { render } from '@conar/ui/lib/render'
-import { useStore } from '@tanstack/react-store'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
-import { getConnectionResourceEditorQueriesStore, getConnectionResourceStore } from '~/entities/connection/store'
-import { useSubscription } from '~/entities/user/hooks'
+import { useSubscription } from 'seitu/react'
+import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
+import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
 import { RunnerEditorAIZone } from './runner-editor-ai-zone'
@@ -47,10 +47,10 @@ function useTrackLineNumberChange(monacoRef: RefObject<editor.IStandaloneCodeEdi
 export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
-  const editorQueries = useStore(editorQueriesStore, state => state)
+  const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
+  const editorQueries = useSubscription(editorQueriesStore, { selector: state => state })
   const domElementRef = useRef<HTMLElement>(null)
-  const { subscription } = useSubscription()
+  const { subscription } = useUserSubscription()
 
   const [currentAIZoneLineNumber, setCurrentAIZoneLineNumber] = useState<number | null>(null)
 
@@ -107,7 +107,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
             connection={connection}
             connectionResource={connectionResource}
             getSql={() => store
-              .state
+              .get()
               .query
               .split('\n')
               .slice(currentAIZoneQuery.startLineNumber - 1, currentAIZoneQuery.endLineNumber)

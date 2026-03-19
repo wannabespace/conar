@@ -2,20 +2,22 @@ import type { DynamicToolUIPart, InferUITools, ToolUIPart as ToolUIPartAi, UIDat
 import type { tools } from '.'
 import { isToolUIPart as isToolUIPartAi } from 'ai'
 
+export type UITools = InferUITools<typeof tools>
+
 export type AppUIMessage = UIMessage<
   {
     updatedAt?: Date
     createdAt?: Date
   },
   UIDataTypes,
-  InferUITools<typeof tools>
+  UITools
 >
 
 export function convertToAppUIMessage(message: UIMessage): AppUIMessage {
   return message as AppUIMessage
 }
 
-export type ToolUIPart = ToolUIPartAi<InferUITools<typeof tools>> | DynamicToolUIPart
+export type ToolUIPart = ToolUIPartAi<UITools> | DynamicToolUIPart
 
 export function isToolUIPart(part: UIMessage['parts'][number]): part is ToolUIPart {
   return isToolUIPartAi(part)

@@ -1,10 +1,10 @@
 import { ACTIVE_SUBSCRIPTION_STATUSES } from '@conar/shared/constants'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
-import { orpc, orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 
 export function useSubscription() {
-  const { data: list, isPending } = useQuery(orpcQuery.account.subscription.list.queryOptions())
+  const { data: list, isPending } = useQuery(orpc.account.subscription.list.queryOptions())
 
   const subscription = list?.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number])) ?? null
 
@@ -20,7 +20,7 @@ export function useUpgradeSubscription() {
   const { mutate: upgrade, isPending: isUpgrading } = useMutation({
     mutationKey: ['subscription', 'upgrade'],
     mutationFn: async (isYearly: boolean = false) => {
-      const result = await orpc.account.subscription.upgrade({
+      const result = await orpc.account.subscription.upgrade.call({
         returnUrl: location.origin + returnHref,
         successUrl: location.origin + successHref,
         cancelUrl: location.origin + cancelHref,
@@ -41,7 +41,7 @@ export function useBillingPortal({ returnHref }: { returnHref: string }) {
   const { mutate: openBillingPortal, isPending: isOpening } = useMutation({
     mutationKey: ['subscription', 'billingPortal'],
     mutationFn: async () => {
-      const result = await orpc.account.subscription.billingPortal({
+      const result = await orpc.account.subscription.billingPortal.call({
         returnUrl: location.origin + returnHref,
       })
 

@@ -1,8 +1,8 @@
 import { defineConfig } from 'drizzle-kit'
-import { env, nodeEnv } from '~/env'
+import { env, nodeEnv } from './env'
 
 export default defineConfig({
-  schema: './drizzle/schema/*.ts',
+  schema: './drizzle/schema/index.ts',
   out: './drizzle/migrations',
   ...(nodeEnv === 'test' && { driver: 'pglite' }),
   dialect: 'postgresql',

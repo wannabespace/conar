@@ -106,7 +106,7 @@ function Header() {
     if (!el || direction === 'up' || direction === 'down')
       return
 
-    setNotVisibleColumns(getNotVisibleColumns(el, columns, store.state))
+    setNotVisibleColumns(getNotVisibleColumns(el, columns, store.get()))
   }, [direction, columns, store], 200)
 
   useEffect(() => {
@@ -139,7 +139,7 @@ function Header() {
       before={(
         <div className="sticky inset-y-0 left-0 z-20 flex w-0 items-center">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger render={(
               <Button
                 variant="outline"
                 size="icon-sm"
@@ -152,9 +152,10 @@ function Header() {
                     ? 'left-2 opacity-100'
                     : 'pointer-events-none left-0 opacity-0',
                 )}
-              >
-                <RiArrowLeftSLine className="relative z-10 size-4" />
-              </Button>
+              />
+            )}
+            >
+              <RiArrowLeftSLine className="relative z-10 size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
               side="bottom"
@@ -179,7 +180,7 @@ function Header() {
       after={(
         <div className="sticky inset-y-0 right-0 z-20 flex w-0 items-center">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger render={(
               <Button
                 variant="outline"
                 size="icon-sm"
@@ -192,9 +193,10 @@ function Header() {
                     ? 'right-2 opacity-100'
                     : `pointer-events-none right-0 opacity-0`,
                 )}
-              >
-                <RiArrowRightSLine className="relative z-10 size-4" />
-              </Button>
+              />
+            )}
+            >
+              <RiArrowRightSLine className="relative z-10 size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent side="bottom" align="end" className="min-w-48">
               <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>

@@ -1,9 +1,9 @@
 import type { ActiveFilter, Filter } from '@conar/shared/filters'
-import type { Store } from '@tanstack/react-store'
+import type { Store } from 'seitu'
 import { memoize } from '@conar/shared/utils/helpers'
-import { createStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { createContext, use } from 'react'
+import { createStore } from 'seitu'
 
 export interface SelectionState {
   anchorIndex: number | null

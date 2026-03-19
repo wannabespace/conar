@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { Store, useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
+import { createStore } from 'seitu'
+import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { version as packageVersion } from '../package.json'
 import { queryClient } from './main'
@@ -15,7 +16,7 @@ export async function checkForUpdates() {
 
 checkForUpdates()
 
-export const updatesStore = new Store<{
+export const updatesStore = createStore<{
   version: string
   status: UpdatesStatus
   message?: string
@@ -26,7 +27,7 @@ export const updatesStore = new Store<{
 })
 
 window.electron?.app.onUpdatesStatus(({ status, message }) => {
-  updatesStore.setState(state => ({ ...state, status, message } satisfies typeof state))
+  updatesStore.set(state => ({ ...state, status, message } satisfies typeof state))
 })
 
 export function useUpdatesObserver() {
@@ -39,11 +40,11 @@ export function useUpdatesObserver() {
       return window.electron.versions.app()
     },
   }, queryClient)
-  const status = useStore(updatesStore, state => state.status)
+  const status = useSubscription(updatesStore, { selector: state => state.status })
 
   useEffect(() => {
     if (version) {
-      updatesStore.setState(state => ({ ...state, version } satisfies typeof state))
+      updatesStore.set(state => ({ ...state, version } satisfies typeof state))
     }
   }, [version])
 

@@ -1,5 +1,4 @@
 import type { SchemaParams } from '..'
-import { camelCase } from 'change-case'
 import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
 import { getColumnType, toLiteralKey } from '../utils'
@@ -11,7 +10,7 @@ export function generateSchemaTypeScript({
   dialect,
 }: SchemaParams) {
   const cols = columns.map((c) => {
-    const key = camelCase(c.id)
+    const key = c.id
     const literalKey = toLiteralKey(key)
     let typeScriptType = getColumnType(c.type, 'ts', dialect)
 

@@ -1,6 +1,6 @@
 import { useMatches, useRouter } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
+import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { identifyUser } from '~/lib/events-utils'
 import { authClient, bearerToken } from './lib/auth'
@@ -9,7 +9,7 @@ import { appStore } from './store'
 export function AuthObserver() {
   const { data, error, isPending } = authClient.useSession()
   const router = useRouter()
-  const isOnline = useStore(appStore, state => state.isOnline)
+  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const match = useMatches({
     select: matches => matches.map(match => match.routeId).at(-1),
   })

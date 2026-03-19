@@ -1,4 +1,4 @@
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { useQueries } from '@tanstack/react-query'
 import { resourceConstraintsQuery, resourceTableColumnsQuery } from '~/entities/connection/queries'
 

@@ -1,6 +1,7 @@
 import type { AppUIMessage } from '~/ai/tools/helpers'
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
+import { openai } from '@ai-sdk/openai'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
@@ -9,13 +10,13 @@ import { type } from 'arktype'
 import { v7 } from 'uuid'
 import { tools } from '~/ai/tools'
 import { withPosthog } from '~/lib/posthog'
-import { orpc, requireSubscriptionMiddleware } from '~/orpc'
+import { orpc, subscriptionMiddleware } from '~/orpc'
 
 const model = createRetryable({
-  model: anthropic('claude-sonnet-4-5'),
+  model: anthropic('claude-opus-4-6'),
   retries: [
-    anthropic('claude-opus-4-5'),
-    google('gemini-2.5-pro'),
+    openai('gpt-5.3-codex'),
+    google('gemini-pro-latest'),
   ],
 })
 
@@ -30,7 +31,7 @@ function handleError(error: unknown) {
 }
 
 export const chat = orpc
-  .use(requireSubscriptionMiddleware)
+  .use(subscriptionMiddleware)
   .use(async ({ context, next }) => {
     context.setHeader('Transfer-Encoding', 'chunked')
     context.setHeader('Connection', 'keep-alive')

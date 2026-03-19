@@ -17,18 +17,18 @@ export function RunnerAlertDialog({
   const [queries, setQueries] = useState<string[]>([])
   const dangerousKeywords = queries.flatMap(query => query.match(new RegExp(dangerousKeywordsPattern, 'gi')) || [])
   const uniqueDangerousKeywords = [...new Set(dangerousKeywords.map(k => k.toUpperCase()))]
-  const callback = useRef<() => void>(null)
+  const callbackRef = useRef<() => void>(null)
 
   useImperativeHandle(ref, () => ({
     confirm: (queries, c) => {
       setQueries(queries)
       setOpen(true)
-      callback.current = c
+      callbackRef.current = c
     },
   }))
 
   const onConfirm = () => {
-    callback.current?.()
+    callbackRef.current?.()
     setOpen(false)
   }
 
@@ -40,7 +40,7 @@ export function RunnerAlertDialog({
       onOpenChange={(open) => {
         setOpen(open)
         if (!open) {
-          callback.current = null
+          callbackRef.current = null
         }
       }}
     >
@@ -51,7 +51,10 @@ export function RunnerAlertDialog({
             Potentially Dangerous SQL Query
           </AlertDialogTitle>
           <AlertDialogDescription>
-            <span className="block rounded-md bg-warning/10 p-3 mb-3 border border-warning/20">
+            <span className="
+              mb-3 block rounded-md border border-warning/20 bg-warning/10 p-3
+            "
+            >
               Your query contains potentially dangerous SQL keywords:
               <span className="font-semibold text-warning">
                 {' '}
@@ -65,7 +68,7 @@ export function RunnerAlertDialog({
         </AlertDialogHeader>
         <AlertDialogFooter className="gap-2">
           <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-          <AlertDialogClose render={<Button variant="warning" />} onClick={onConfirm}>
+          <AlertDialogClose render={<Button variant="destructive" />} onClick={onConfirm}>
             <span className="flex items-center gap-2">
               Run Anyway
               <ShiftCtrlEnter userAgent={navigator.userAgent} />

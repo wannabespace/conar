@@ -30,7 +30,7 @@ export function HeaderActionsFilters() {
         <FilterForm
           onAdd={(filter) => {
             setIsFiltersOpened(false)
-            store.setState(state => ({
+            store.set(state => ({
               ...state,
               filters: [...state.filters, filter],
             } satisfies typeof state))

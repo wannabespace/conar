@@ -1,4 +1,4 @@
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { memoize } from '@conar/shared/utils/helpers'
 import { queryOptions } from '@tanstack/react-query'
@@ -17,7 +17,7 @@ export const tablesAndSchemasType = type({
   table: 'string',
 })
 
-export const resourceTablesAndSchemasQuery = memoize(({ silent = false, connectionResource, showSystem }: { silent?: boolean, connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) => {
+export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResource, showSystem }: { silent: boolean, connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) => {
   const query = createQuery({
     type: tablesAndSchemasType.array(),
     silent,

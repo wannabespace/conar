@@ -7,9 +7,9 @@ import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { Table, TableBody, TableProvider, useShiftSelectionKeyDown } from '@conar/table'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Panel, useDefaultLayout } from 'react-resizable-panels'
+import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { TableCell } from '~/entities/connection/components'
 import { findEnum, resourceRowsQuery } from '~/entities/connection/queries'
@@ -68,9 +68,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { data: enums } = useQuery(resourceEnumsQuery({ connectionResource }))
   const columns = useTableColumns({ connectionResource, table, schema })
   const store = usePageStoreContext()
-  const hiddenColumns = useStore(store, state => state.hiddenColumns)
-  const columnSizes = useStore(store, state => state.columnSizes)
-  const detailRowIndex = useStore(store, state => state.detailRowIndex)
+  const detailRowIndex = useSubscription(store, { selector: state => state.detailRowIndex })
   const rowDetailPanelRef = useRef<PanelImperativeHandle>(null)
   const [rowDetailCollapsed, setRowDetailCollapsed] = useState(false)
   const { defaultLayout: rowDetailLayout, onLayoutChanged: onRowDetailLayoutChanged } = useDefaultLayout({
@@ -78,22 +76,24 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     storage: localStorage,
   })
 
-  const filters = useStore(store, state => state.filters)
-  const orderBy = useStore(store, state => state.orderBy)
+  const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
+  const columnSizes = useSubscription(store, { selector: state => state.columnSizes })
+  const filters = useSubscription(store, { selector: state => state.filters })
+  const orderBy = useSubscription(store, { selector: state => state.orderBy })
   const { data: rows = [], error, isPending: isRowsPending } = useInfiniteQuery(resourceRowsQuery({ connectionResource, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns?.filter(c => c.primaryKey).map(c => c.id) ?? [], [columns])
   const { toggleOrder } = useColumnsOrder()
   const renameColumnRef = useRef<ComponentRef<typeof RenameColumnDialog>>(null)
 
   useEffect(() => {
-    if (!rows || !store.state.selected)
+    if (!rows || !store.get().selected)
       return
 
-    const validSelected = store.state.selected.filter(selectedRow =>
+    const validSelected = store.get().selected.filter(selectedRow =>
       rows.some(row => primaryColumns.every(key => row[key] === selectedRow[key])),
     )
 
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       selected: validSelected,
     } satisfies typeof state))
@@ -105,8 +105,8 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       table,
       schema,
       query: {
-        filters: store.state.filters,
-        orderBy: store.state.orderBy,
+        filters: store.get().filters,
+        orderBy: store.get().orderBy,
       },
     })
 
@@ -132,8 +132,8 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       table,
       schema,
       query: {
-        filters: store.state.filters,
-        orderBy: store.state.orderBy,
+        filters: store.get().filters,
+        orderBy: store.get().orderBy,
       },
     })
 
@@ -236,7 +236,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
               onSort={() => toggleOrder(column.id)}
               onRename={onRename}
               onResize={(newWidth) => {
-                store.setState(state => ({
+                store.set(state => ({
                   ...state,
                   columnSizes: {
                     ...state.columnSizes,
@@ -296,9 +296,9 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         ),
       )
     },
-    getSelectionState: () => store.state.selectionState,
+    getSelectionState: () => store.get().selectionState,
     onSelectionChange: (selected, selectionState) => {
-      store.setState(state => ({
+      store.set(state => ({
         ...state,
         selected,
         selectionState,
@@ -307,7 +307,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   })
 
   const handleRowClick = useCallback((rowIndex: number) => {
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       detailRowIndex: rowIndex,
     } satisfies typeof state))
@@ -401,7 +401,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
                   const collapsed = rowDetailPanelRef.current?.isCollapsed() ?? false
                   setRowDetailCollapsed(collapsed)
                   if (collapsed)
-                    store.setState(state => ({ ...state, detailRowIndex: null } satisfies typeof state))
+                    store.set(state => ({ ...state, detailRowIndex: null } satisfies typeof state))
                 }}
                 className="flex flex-col overflow-hidden border-l border-border bg-background shrink-0"
                 data-slot="resizable-panel"
@@ -410,7 +410,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
                   row={rows[detailRowIndex]!}
                   columns={columns}
                   onClose={() =>
-                    store.setState(state => ({
+                    store.set(state => ({
                       ...state,
                       detailRowIndex: null,
                     } satisfies typeof state))}
