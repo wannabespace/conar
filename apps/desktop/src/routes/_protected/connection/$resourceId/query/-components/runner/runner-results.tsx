@@ -1,8 +1,9 @@
 import { Button } from '@conar/ui/components/button'
+import { Spinner } from '@conar/ui/components/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiChatAiLine, RiLoader4Line, RiStopLine, RiVipCrownLine } from '@remixicon/react'
+import { RiChatAiLine, RiStopLine, RiVipCrownLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Monaco } from '~/components/monaco'
@@ -28,7 +29,7 @@ export function RunnerResults() {
   if (queryStatus === 'fetching') {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2">
-        <RiLoader4Line className="size-6 animate-spin text-primary" />
+        <Spinner className="size-6 text-primary" />
         <p className="text-center text-foreground">Running...</p>
         <Button
           size="xs"
@@ -109,23 +110,23 @@ export function RunnerResults() {
                           <Button
                             size="sm"
                             variant="outline"
-                            asChild
+                            onClick={() => toggleChat(connection.id, true)}
+                            render={(
+                              <Link
+                                to="/connection/$resourceId/query"
+                                params={{ resourceId: connectionResource.id }}
+                                search={{
+                                  chatId,
+                                  error: [
+                                    `Fix the following SQL error by correcting the SQL query on the lines ${startLineNumber} - ${endLineNumber}:`,
+                                    error,
+                                  ].join('\n'),
+                                }}
+                              />
+                            )}
                           >
-                            <Link
-                              to="/connection/$resourceId/query"
-                              params={{ resourceId: connectionResource.id }}
-                              search={{
-                                chatId,
-                                error: [
-                                  `Fix the following SQL error by correcting the SQL query on the lines ${startLineNumber} - ${endLineNumber}:`,
-                                  error,
-                                ].join('\n'),
-                              }}
-                              onClick={() => toggleChat(connection.id, true)}
-                            >
-                              <RiChatAiLine />
-                              Fix in chat
-                            </Link>
+                            <RiChatAiLine />
+                            Fix in chat
                           </Button>
                         )
                       : (

@@ -13,13 +13,11 @@ export function FaviconWithFallback({ url, className }: { url: string, className
   }
 
   return (
-    <>
-      <img
-        src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`}
-        alt={hostname}
-        className={className}
-        onError={() => setIsError(true)}
-      />
-    </>
+    <img
+      src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`}
+      alt={hostname}
+      className={className}
+      onError={() => setIsError(true)}
+    />
   )
 }

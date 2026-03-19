@@ -35,6 +35,26 @@ describe('new SafeURL', () => {
     expect([...parsed.searchParams.entries()]).toEqual([])
   })
 
+  it('accepts a SafeURL instance', () => {
+    const original = new SafeURL('postgresql://user:pass@localhost:5432/mydb?sslmode=require')
+    const parsed = new SafeURL(original)
+
+    expect(parsed).toMatchObject({
+      protocol: 'postgresql:',
+      origin: 'postgresql://localhost:5432',
+      host: 'localhost:5432',
+      username: 'user',
+      password: 'pass',
+      hostname: 'localhost',
+      port: '5432',
+      pathname: '/mydb',
+      search: '?sslmode=require',
+      hash: '',
+      href: 'postgresql://user:pass@localhost:5432/mydb?sslmode=require',
+    })
+    expect([...parsed.searchParams.entries()]).toEqual([['sslmode', 'require']])
+  })
+
   it('parses a connection string with query parameters', () => {
     const conn = 'postgresql://user:pass@localhost:5432/mydb?sslmode=require&application_name=myapp'
     const parsed = new SafeURL(conn)

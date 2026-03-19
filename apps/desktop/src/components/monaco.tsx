@@ -2,10 +2,10 @@ import type { RefObject } from 'react'
 import { noop } from '@conar/shared/utils/helpers'
 import { formatXml } from '@conar/shared/utils/xml'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
-import { useTheme } from '@conar/ui/use-theme'
 import * as monaco from 'monaco-editor'
 import { vsPlusTheme } from 'monaco-sql-languages'
 import { useEffect, useEffectEvent, useRef } from 'react'
+import { useResolvedTheme } from '../../../../packages/ui/src/theme-store'
 
 // Sync with packages/ui/src/styles/monaco.css
 vsPlusTheme.darkThemeData.colors['editor.selectionBackground'] = '#5081f150'
@@ -17,7 +17,7 @@ monaco.editor.defineTheme('sql-dark', vsPlusTheme.darkThemeData)
 monaco.editor.defineTheme('sql-light', vsPlusTheme.lightThemeData)
 
 function useMonacoTheme() {
-  const { resolvedTheme } = useTheme()
+  const resolvedTheme = useResolvedTheme()
 
   useEffect(() => {
     monaco.editor.setTheme(resolvedTheme === 'dark' ? 'sql-dark' : 'sql-light')
@@ -41,8 +41,8 @@ export function Monaco({
   options?: monaco.editor.IStandaloneEditorConstructionOptions
 }) {
   const elementRef = useRef<HTMLDivElement>(null)
-  const monacoInstance = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
-  const preventTriggerChangeEvent = useRef(false)
+  const monacoInstanceRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
+  const preventTriggerChangeEventRef = useRef(false)
 
   useMonacoTheme()
 
@@ -81,40 +81,40 @@ export function Monaco({
     if (!elementRef.current)
       return
 
-    monacoInstance.current = monaco.editor.create(elementRef.current, getOptionsEvent())
+    monacoInstanceRef.current = monaco.editor.create(elementRef.current, getOptionsEvent())
 
     if (ref) {
-      ref.current = monacoInstance.current
+      ref.current = monacoInstanceRef.current
     }
 
-    monacoInstance.current?.getAction('editor.action.formatDocument')?.run()
+    monacoInstanceRef.current?.getAction('editor.action.formatDocument')?.run()
 
-    const subscription = monacoInstance.current.onDidChangeModelContent(() => {
-      if (!preventTriggerChangeEvent.current) {
-        const val = monacoInstance.current?.getValue()
+    const subscription = monacoInstanceRef.current.onDidChangeModelContent(() => {
+      if (!preventTriggerChangeEventRef.current) {
+        const val = monacoInstanceRef.current?.getValue()
         onChangeEvent(val ?? '')
       }
     })
 
     return () => {
       subscription.dispose()
-      monacoInstance.current?.dispose()
+      monacoInstanceRef.current?.dispose()
     }
   }, [elementRef, language, ref])
 
   useMountedEffect(() => {
-    if (!monacoInstance.current || !options)
+    if (!monacoInstanceRef.current || !options)
       return
 
-    monacoInstance.current.updateOptions(options)
+    monacoInstanceRef.current.updateOptions(options)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(options)])
 
   useMountedEffect(() => {
-    if (!monacoInstance.current)
+    if (!monacoInstanceRef.current)
       return
 
-    const editor = monacoInstance.current
+    const editor = monacoInstanceRef.current
     const model = editor.getModel()
 
     if (!model)
@@ -130,7 +130,7 @@ export function Monaco({
       editor.setValue(value)
     }
     else {
-      preventTriggerChangeEvent.current = true
+      preventTriggerChangeEventRef.current = true
       editor.executeEdits('', [
         {
           range: model.getFullModelRange(),
@@ -139,7 +139,7 @@ export function Monaco({
         },
       ])
       editor.pushUndoStop()
-      preventTriggerChangeEvent.current = false
+      preventTriggerChangeEventRef.current = false
     }
   }, [value, options?.readOnly, language])
 
@@ -163,7 +163,7 @@ export function MonacoDiff({
   options?: monaco.editor.IStandaloneDiffEditorConstructionOptions
 }) {
   const elementRef = useRef<HTMLDivElement>(null)
-  const diffEditorInstance = useRef<monaco.editor.IStandaloneDiffEditor | null>(null)
+  const diffEditorInstanceRef = useRef<monaco.editor.IStandaloneDiffEditor | null>(null)
 
   useMonacoTheme()
 
@@ -184,38 +184,38 @@ export function MonacoDiff({
     if (!elementRef.current)
       return
 
-    diffEditorInstance.current = monaco.editor.createDiffEditor(
+    diffEditorInstanceRef.current = monaco.editor.createDiffEditor(
       elementRef.current,
       getOptionsEvent(),
     )
 
     const { originalValue, modifiedValue } = getValuesEvent()
-    diffEditorInstance.current.setModel({
+    diffEditorInstanceRef.current.setModel({
       original: monaco.editor.createModel(originalValue, language),
       modified: monaco.editor.createModel(modifiedValue, language),
     })
 
     if (ref) {
-      ref.current = diffEditorInstance.current
+      ref.current = diffEditorInstanceRef.current
     }
 
     return () => {
-      diffEditorInstance.current?.dispose()
+      diffEditorInstanceRef.current?.dispose()
     }
   }, [elementRef, language, ref])
 
   useMountedEffect(() => {
-    if (!diffEditorInstance.current || !options)
+    if (!diffEditorInstanceRef.current || !options)
       return
 
-    diffEditorInstance.current.updateOptions(options)
+    diffEditorInstanceRef.current.updateOptions(options)
   }, [options])
 
   useMountedEffect(() => {
-    if (!diffEditorInstance.current)
+    if (!diffEditorInstanceRef.current)
       return
 
-    const editor = diffEditorInstance.current
+    const editor = diffEditorInstanceRef.current
     const originalModel = editor.getModel()?.original
     const modifiedModel = editor.getModel()?.modified
 

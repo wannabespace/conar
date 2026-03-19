@@ -104,16 +104,16 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
           <Button
             variant="outline"
             size="xs"
-            asChild
+            render={(
+              <Link
+                to="/connection/$resourceId/table"
+                params={{ resourceId: connectionResource.id }}
+                search={{ schema, table, filters, orderBy }}
+              />
+            )}
           >
-            <Link
-              to="/connection/$resourceId/table"
-              params={{ resourceId: connectionResource.id }}
-              search={{ schema, table, filters, orderBy }}
-            >
-              <RiCornerRightUpLine className="size-3" />
-              Open table
-            </Link>
+            <RiCornerRightUpLine className="size-3" />
+            Open table
           </Button>
         </div>
         <Table className={`

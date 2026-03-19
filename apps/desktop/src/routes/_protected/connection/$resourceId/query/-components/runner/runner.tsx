@@ -10,10 +10,10 @@ import NumberFlow from '@number-flow/react'
 import { RiBrush2Line, RiCheckLine, RiPlayFill, RiSettings3Line, RiStarLine } from '@remixicon/react'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
-import { getConnectionResourceEditorQueriesStore, getConnectionResourceStore } from '~/entities/connection/store'
+import { useSubscription } from 'seitu/react'
+import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
 import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
 import { queriesCollection } from '~/entities/query/sync'
 import { formatSql } from '~/lib/formatter'
@@ -27,54 +27,31 @@ import { RunnerResults } from './runner-results'
 import { RunnerSaveDialog } from './runner-save-dialog'
 import { RunnerSettings } from './runner-settings'
 
-function useTrackSelectedLinesChange() {
-  const { connectionResource } = Route.useRouteContext()
-  const store = getConnectionResourceStore(connectionResource.id)
-  const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
-  const currentLineNumbers = useStore(editorQueriesStore, state => state.map(q => q.startLineNumber))
-
-  useEffect(() => {
-    const selectedLines = store.state.selectedLines
-    const newSelectedLines = selectedLines.filter(line => currentLineNumbers.includes(line))
-
-    if (
-      newSelectedLines.length !== selectedLines.length
-      || newSelectedLines.some((line, i) => line !== selectedLines[i])
-    ) {
-      store.setState(state => ({
-        ...state,
-        selectedLines: newSelectedLines.toSorted((a, b) => a - b),
-      } satisfies typeof state))
-    }
-  }, [store, currentLineNumbers])
-}
-
 export function Runner() {
   const { connection, connectionResource } = Route.useRouteContext()
   const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
   const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
   const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(q => q
     .from({ queries: queriesCollection })
-    .where(({ queries }) => eq(queries.connectionId, connection.id))
+    .where(({ queries }) => eq(queries.connectionResourceId, connectionResource.id))
     .select(({ queries }) => ({ queriesCount: count(queries.id) }))
     .findOne(),
   )
   const [isFormatting, setIsFormatting] = useState(false)
   const store = getConnectionResourceStore(connectionResource.id)
-  const editorQueriesStore = getConnectionResourceEditorQueriesStore(connectionResource.id)
-  const editorQueries = useStore(editorQueriesStore, state => state)
-  const { selectedLines, query, resultsVisible } = useStore(store, state => ({
-    selectedLines: state.selectedLines,
-    query: state.query,
-    resultsVisible: state.layout.resultsVisible,
-  }))
-
-  useTrackSelectedLinesChange()
+  const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
+  const editorQueries = useSubscription(editorQueriesStore, { selector: state => state })
+  const { selectedLines, resultsVisible } = useSubscription(store, {
+    selector: state => ({
+      selectedLines: state.selectedLines,
+      resultsVisible: state.layout.resultsVisible,
+    }),
+  })
 
   function format() {
-    const formatted = formatSql(query, connection.type)
+    const formatted = formatSql(store.get().query, connection.type)
 
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       query: formatted,
     } satisfies typeof state))
@@ -95,7 +72,7 @@ export function Runner() {
   const { refetch: refetchRunner, fetchStatus } = useQuery(runnerQueryOptions(connectionResource))
 
   const runQueries = (queries: typeof queriesToRun) => {
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       queriesToRun: queries,
     } satisfies typeof state))

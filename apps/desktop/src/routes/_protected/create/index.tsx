@@ -15,7 +15,9 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
+import { connectionSystemNames } from '~/entities/connection/queries'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
+import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { generateRandomName } from '~/lib/utils'
@@ -73,23 +75,25 @@ function CreateConnectionPage() {
 
     toast.success('Connection created successfully 🎉')
 
-    const resource = url.pathname === '/' ? null : url.pathname.slice(1)
+    const resource = url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
+
+    const resourceId = v7()
 
     if (resource) {
-      const resourceId = v7()
-      connectionsResourcesCollection.insert({
-        id: resourceId,
-        connectionId: id,
-        name: resource,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      getConnectionStore(id).set({
+        lastOpenedResourceName: resource,
       })
-      prefetchConnectionResourceCore(connectionsResourcesCollection.get(resourceId)!)
-      router.navigate({ to: '/connection/$resourceId/table', params: { resourceId } })
     }
-    else {
-      router.navigate({ to: '/', search: { createdId: id } })
-    }
+
+    connectionsResourcesCollection.insert({
+      id: resourceId,
+      connectionId: id,
+      name: resource || connectionSystemNames[data.type],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
+    prefetchConnectionResourceCore(connectionsResourcesCollection.get(resourceId)!)
+    router.navigate({ to: '/connection/$resourceId/table', params: { resourceId } })
   }
 
   const defaultValues: typeof createConnectionType.infer = {

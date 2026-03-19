@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
 import type { QueryLog } from '../log'
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { sleep } from '@conar/shared/utils/helpers'
 import { Button } from '@conar/ui/components/button'
 import { ButtonGroup } from '@conar/ui/components/button-group'
@@ -11,9 +11,9 @@ import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiCheckboxCircleLine, RiCheckLine, RiCloseCircleLine, RiCloseLine, RiDeleteBinLine, RiFileListLine, RiTimeLine } from '@remixicon/react'
-import { useStore } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useMemo, useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Monaco } from '~/components/monaco'
 import { getConnectionResourceStore } from '~/entities/connection/store'
@@ -191,7 +191,7 @@ export function QueryLogger({ connectionResource, className }: {
   className?: string
 }) {
   const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({ initial: 'instant' })
-  const queries = useStore(queryLogsStore, state => Object.values(state[connectionResource.id] || {}).toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime()))
+  const queries = useSubscription(queryLogsStore, { selector: state => Object.values(state[connectionResource.id] || {}).toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime()) })
   const [statusGroup, setStatusGroup] = useState<QueryStatus>()
   const [isClearing, setIsClearing] = useState(false)
   const store = getConnectionResourceStore(connectionResource.id)
@@ -218,7 +218,7 @@ export function QueryLogger({ connectionResource, className }: {
 
   const clearQueries = () => {
     setIsClearing(true)
-    queryLogsStore.setState(state => ({
+    queryLogsStore.set(state => ({
       ...state,
       [connectionResource.id]: {},
     } satisfies typeof state))
@@ -306,7 +306,7 @@ export function QueryLogger({ connectionResource, className }: {
           <Button
             variant="outline"
             size="icon-sm"
-            onClick={() => store.setState(state => ({ ...state, loggerOpened: false } satisfies typeof state))}
+            onClick={() => store.set(state => ({ ...state, loggerOpened: false } satisfies typeof state))}
           >
             <RiCloseLine className="size-4" />
           </Button>

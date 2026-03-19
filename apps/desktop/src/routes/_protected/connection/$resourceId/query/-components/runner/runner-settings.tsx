@@ -3,8 +3,8 @@ import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Switch } from '@conar/ui/components/switch'
 import { ToggleGroup, ToggleGroupItem } from '@conar/ui/components/toggle-group'
-import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { getConnectionResourceStore, setChatPosition, toggleChat, toggleResults } from '~/entities/connection/store'
 import { Route } from '../..'
 
@@ -79,11 +79,13 @@ export function RunnerSettings({ children }: { children: ReactNode }) {
     chatVisible,
     resultsVisible,
     chatPosition,
-  } = useStore(store, s => ({
-    chatVisible: s.layout.chatVisible,
-    resultsVisible: s.layout.resultsVisible,
-    chatPosition: s.layout.chatPosition,
-  }))
+  } = useSubscription(store, {
+    selector: s => ({
+      chatVisible: s.layout.chatVisible,
+      resultsVisible: s.layout.resultsVisible,
+      chatPosition: s.layout.chatPosition,
+    }),
+  })
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
