@@ -1,8 +1,10 @@
+import type { BetterAuthOptions } from 'better-auth'
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { AUTH_COOKIE_PREFIX, PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
-import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
+import { createAuthMiddleware } from 'better-auth/api'
+import { anonymous, bearer, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { db } from '~/drizzle'
@@ -172,7 +174,6 @@ export const auth = betterAuth({
   account: {
     skipStateCookieCheck: true,
   },
-  // @ts-expect-error types are not updated in the new drizzle adapter
   database: drizzleAdapter(db, {
     provider: 'pg',
     usePlural: true,
@@ -216,4 +217,4 @@ export const auth = betterAuth({
       clientSecret: env.GITHUB_CLIENT_SECRET,
     },
   },
-})
+} satisfies BetterAuthOptions as BetterAuthOptions)

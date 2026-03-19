@@ -12,7 +12,7 @@ import { orpc } from '~/lib/orpc'
 export const Route = createFileRoute('/_layout/releases')({
   component: RouteComponent,
   loader: async () => {
-    const releases = await orpc.releases()
+    const releases = await orpc.releases.call()
     return { releases }
   },
 })

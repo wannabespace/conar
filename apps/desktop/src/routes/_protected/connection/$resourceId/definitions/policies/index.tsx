@@ -2,15 +2,15 @@ import type { policyType } from '~/entities/connection/queries'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardHeader, CardTitle, MotionCard } from '@conar/ui/components/card'
+import { CardContent, CardHeader, CardMotion, CardTitle } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { RiEyeLine, RiEyeOffLine, RiShieldCheckLine, RiTable2 } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { resourcePoliciesQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '~/routes/_protected/connection/$resourceId/definitions/-components/empty-state'
@@ -47,8 +47,8 @@ function DatabasePoliciesPage() {
   const { connectionResource } = Route.useLoaderData()
   const { data: policies, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourcePoliciesQuery({ connectionResource }))
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useStore(store, state => state.showSystem)
-  const { data } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
+  const showSystem = useSubscription(store, { selector: state => state.showSystem })
+  const { data } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
@@ -119,7 +119,7 @@ function DatabasePoliciesPage() {
         )}
 
         {filteredPolicies.map(item => (
-          <MotionCard
+          <CardMotion
             key={`${item.schema}-${item.table}-${item.name}`}
             layout
             {...MOTION_BLOCK_PROPS}
@@ -180,7 +180,7 @@ function DatabasePoliciesPage() {
                 )}
               </CardContent>
             )}
-          </MotionCard>
+          </CardMotion>
         ))}
       </DefinitionsGrid>
     </>

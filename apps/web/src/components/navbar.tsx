@@ -11,7 +11,7 @@ import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
 import { NAVBAR_HEIGHT_BASE } from '~/constants'
 import { authClient } from '~/lib/auth'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 import { NavbarTextLogo } from './navbar-text-logo'
 
 const AppLogoMotion = motion.create(AppLogo)
@@ -19,7 +19,7 @@ const AppLogoMotion = motion.create(AppLogo)
 export function Navbar({ className, ...props }: ComponentProps<'header'>) {
   const { scrollY } = useScroll()
   const scale = useTransform(scrollY, [0, NAVBAR_HEIGHT_BASE], [1.8, 1])
-  const { data } = useQuery(orpcQuery.repo.queryOptions())
+  const { data } = useQuery(orpc.repo.queryOptions())
   const { data: session } = authClient.useSession()
   const isSignedIn = !!session?.user
 
@@ -56,16 +56,14 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
             hidden gap-1
             sm:flex sm:gap-2
           `}
-          asChild
+          render={<Link to="/releases" />}
         >
-          <Link to="/releases">
-            <RiGitBranchLine className={`
-              size-3
-              sm:size-4
-            `}
-            />
-            Releases
-          </Link>
+          <RiGitBranchLine className={`
+            size-3
+            sm:size-4
+          `}
+          />
+          Releases
         </Button>
         <Button
           variant="ghost"
@@ -74,40 +72,39 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
             hidden gap-1
             sm:flex sm:gap-2
           `}
-          asChild
+          render={(
+            <a
+              href={SOCIAL_LINKS.GITHUB}
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          )}
         >
-          <a
-            href={SOCIAL_LINKS.GITHUB}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <RiGithubFill className={`
-              size-3
-              sm:size-4
-            `}
-            />
-            <NumberFlow
-              value={data?.stargazers_count || 0}
-              className={cn(`
-                text-xs tabular-nums duration-200
-                sm:text-sm
-              `, !data && `animate-pulse text-muted-foreground`)}
-            />
-          </a>
+
+          <RiGithubFill className={`
+            size-3
+            sm:size-4
+          `}
+          />
+          <NumberFlow
+            value={data?.stargazers_count || 0}
+            className={cn(`
+              text-xs tabular-nums duration-200
+              sm:text-sm
+            `, !data && `animate-pulse text-muted-foreground`)}
+          />
         </Button>
-        <ThemeToggle side="bottom">
-          <Button size="icon-sm" variant="ghost">
-            <RiSunLine className={`
-              size-4
-              dark:hidden
-            `}
-            />
-            <RiMoonLine className={`
-              hidden size-4
-              dark:block
-            `}
-            />
-          </Button>
+        <ThemeToggle side="bottom" render={<Button size="icon-sm" variant="ghost" />}>
+          <RiSunLine className={`
+            size-4
+            dark:hidden
+          `}
+          />
+          <RiMoonLine className={`
+            hidden size-4
+            dark:block
+          `}
+          />
         </ThemeToggle>
         <Button
           variant="outline"
@@ -116,19 +113,9 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
             hidden gap-1
             sm:flex sm:gap-2
           `}
-          asChild
+          render={isSignedIn ? <Link to="/account" /> : <Link to="/sign-in" />}
         >
-          {isSignedIn
-            ? (
-                <Link to="/account">
-                  Account
-                </Link>
-              )
-            : (
-                <Link to="/sign-in">
-                  Sign in
-                </Link>
-              )}
+          {isSignedIn ? 'Account' : 'Sign in'}
         </Button>
         <Button
           size="sm"
@@ -136,18 +123,16 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
             gap-1 px-2 text-xs
             sm:gap-2 sm:px-3 sm:text-sm
           `}
-          asChild
+          render={<Link to="/download" />}
         >
-          <Link to="/download">
-            <span className={`
-              hidden
-              sm:inline
-            `}
-            >
-              Get Started
-            </span>
-            <span className="sm:hidden">Download</span>
-          </Link>
+          <span className={`
+            hidden
+            sm:inline
+          `}
+          >
+            Get Started
+          </span>
+          <span className="sm:hidden">Download</span>
         </Button>
       </div>
     </header>

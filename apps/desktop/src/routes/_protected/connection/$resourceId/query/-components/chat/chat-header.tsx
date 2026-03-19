@@ -1,5 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { chats } from '~/drizzle'
+import type { chats } from '~/drizzle/schema'
 import type { ChatMutationMetadata } from '~/entities/chat/sync'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
@@ -95,7 +95,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
       return
     }
 
-    const title = await orpc.ai.generateTitle({
+    const title = await orpc.ai.generateTitle.call({
       chatId: chat.id,
       messages: messages.map(convertToAppUIMessage),
     })
@@ -122,7 +122,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
   const removeChat = (chat: typeof chats.$inferSelect) => {
     removeDialogRef.current?.remove(chat, () => {
       if (chat.id === chatId) {
-        store.setState(state => ({
+        store.set(state => ({
           ...state,
           lastOpenedChatId: null,
         } satisfies typeof state))
@@ -159,28 +159,29 @@ export function ChatHeader({ chatId }: { chatId: string }) {
             <Button
               variant="outline"
               size="icon-sm"
-              asChild
-              onClick={() => store.setState(state => ({
+              onClick={() => store.set(state => ({
                 ...state,
                 lastOpenedChatId: null,
               } satisfies typeof state))}
+              render={(
+                <Link
+                  to="/connection/$resourceId/query"
+                  params={{ resourceId }}
+                />
+              )}
             >
-              <Link
-                to="/connection/$resourceId/query"
-                params={{ resourceId }}
-              >
-                <RiAddLine className="size-4" />
-              </Link>
+              <RiAddLine className="size-4" />
             </Button>
           )}
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger render={(
               <Button
                 variant="outline"
                 size="icon-sm"
-              >
-                <RiHistoryLine className="size-4" />
-              </Button>
+              />
+            )}
+            >
+              <RiHistoryLine className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-60">
               <DropdownMenuLabel>Chats</DropdownMenuLabel>
@@ -195,50 +196,50 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                           {chats.map(chat => (
                             <DropdownMenuItem
                               key={chat.id}
-                              asChild
                               className="group"
+                              render={(
+                                <Link
+                                  to="/connection/$resourceId/query"
+                                  params={{ resourceId }}
+                                  search={{ chatId: chat.id }}
+                                  className={cn(`
+                                    flex items-center justify-between gap-2
+                                    text-foreground
+                                  `, chat.id === chatId && `bg-accent`)}
+                                />
+                              )}
                             >
-                              <Link
-                                to="/connection/$resourceId/query"
-                                params={{ resourceId }}
-                                search={{ chatId: chat.id }}
-                                className={cn(`
-                                  flex items-center justify-between gap-2
-                                  text-foreground
-                                `, chat.id === chatId && `bg-accent`)}
-                              >
-                                <span className="truncate">
-                                  {chat.title || (
-                                    <span className={`
-                                      h-4 w-30 animate-pulse rounded-md bg-muted
-                                    `}
-                                    />
-                                  )}
-                                </span>
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        size="icon-xs"
-                                        className={`
-                                          -mr-1 opacity-0 transition-none
-                                          group-hover:opacity-100
-                                          hover:text-destructive
-                                        `}
-                                        onClick={(e) => {
-                                          e.preventDefault()
-                                          e.stopPropagation()
-                                          removeChat(chat)
-                                        }}
-                                      >
-                                        <RiDeleteBin7Line className="size-3.5" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Delete Chat</TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </Link>
+                              <span className="truncate">
+                                {chat.title || (
+                                  <span className={`
+                                    h-4 w-30 animate-pulse rounded-md bg-muted
+                                  `}
+                                  />
+                                )}
+                              </span>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon-xs"
+                                      className={`
+                                        -mr-1 opacity-0 transition-none
+                                        group-hover:opacity-100
+                                        hover:text-destructive
+                                      `}
+                                      onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        removeChat(chat)
+                                      }}
+                                    >
+                                      <RiDeleteBin7Line className="size-3.5" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Delete Chat</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             </DropdownMenuItem>
                           ))}
                           {idx !== Object.keys(grouped).length - 1 && <DropdownMenuSeparator />}

@@ -1,4 +1,4 @@
-import { Store } from '@tanstack/react-store'
+import { createStore } from 'seitu'
 
 export interface QueryLog {
   id: string
@@ -10,7 +10,7 @@ export interface QueryLog {
   error: string | null
 }
 
-export const queryLogsStore = new Store<Record<string, Record<string, QueryLog>>>({})
+export const queryLogsStore = createStore<Record<string, Record<string, QueryLog>>>({})
 
 export async function logQuery({
   resourceId,
@@ -25,7 +25,7 @@ export async function logQuery({
 }) {
   const id = crypto.randomUUID()
 
-  queryLogsStore.setState(state => ({
+  queryLogsStore.set(state => ({
     ...state,
     [resourceId]: {
       ...(state[resourceId] || {}),
@@ -44,7 +44,7 @@ export async function logQuery({
   try {
     const { result, duration } = await promise
 
-    queryLogsStore.setState(state => ({
+    queryLogsStore.set(state => ({
       ...state,
       [resourceId]: {
         ...state[resourceId],
@@ -57,7 +57,7 @@ export async function logQuery({
     } satisfies typeof state))
   }
   catch (error) {
-    queryLogsStore.setState(state => ({
+    queryLogsStore.set(state => ({
       ...state,
       [resourceId]: {
         ...state[resourceId],

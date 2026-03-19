@@ -4,7 +4,7 @@ import { Indicator } from '@conar/ui/components/custom/indicator'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiCheckLine, RiDatabase2Line, RiLayoutColumnLine } from '@remixicon/react'
-import { useStore } from '@tanstack/react-store'
+import { useSubscription } from 'seitu/react'
 import { Route } from '../..'
 import { useTableColumns } from '../../-queries/use-columns-query'
 import { usePageStoreContext } from '../../-store'
@@ -12,7 +12,7 @@ import { usePageStoreContext } from '../../-store'
 export function HeaderActionsColumns({ table, schema }: { table: string, schema: string }) {
   const { connectionResource } = Route.useRouteContext()
   const store = usePageStoreContext()
-  const hiddenColumns = useStore(store, state => state.hiddenColumns)
+  const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
   const columns = useTableColumns({ connectionResource, table, schema })
 
   return (
@@ -44,7 +44,7 @@ export function HeaderActionsColumns({ table, schema }: { table: string, schema:
             <CommandGroup>
               <CommandItem
                 value="toggle-columns"
-                onSelect={() => store.setState(state => ({
+                onSelect={() => store.set(state => ({
                   ...state,
                   hiddenColumns: (hiddenColumns.length === 0 && columns?.map(col => col.id)) || [],
                 } satisfies typeof state))}
@@ -65,7 +65,7 @@ export function HeaderActionsColumns({ table, schema }: { table: string, schema:
                   key={column.id}
                   value={column.id}
                   keywords={[column.id, column.type]}
-                  onSelect={() => store.setState(state => ({
+                  onSelect={() => store.set(state => ({
                     ...state,
                     hiddenColumns: hiddenColumns.includes(column.id)
                       ? hiddenColumns.filter(id => id !== column.id)

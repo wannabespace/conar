@@ -6,9 +6,9 @@ import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAlertLine, RiCheckboxCircleLine, RiCloseLine, RiErrorWarningLine, RiInformationLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'motion/react'
-import { orpcQuery } from '~/lib/orpc'
+import { useSubscription } from 'seitu/react'
+import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 
 type BannerItem = NonNullable<ORPCOutputs['banner']>[number]
@@ -33,10 +33,10 @@ const typeConfig = {
 } satisfies Record<BannerItem['type'], { icon: ReactNode, className: string }>
 
 export function GlobalBanner() {
-  const isOnline = useStore(appStore, state => state.isOnline)
+  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const [dismissed, setDismissed] = useSessionStorage<string[]>('banner-dismissed', [])
 
-  const { data } = useQuery(orpcQuery.banner.queryOptions({
+  const { data } = useQuery(orpc.banner.queryOptions({
     staleTime: 1000 * 60 * 5,
     refetchInterval: 1000 * 60 * 5,
     throwOnError: false,

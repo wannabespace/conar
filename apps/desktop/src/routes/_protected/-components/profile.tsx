@@ -50,12 +50,10 @@ export function Profile({ className }: { className?: string }) {
           <Button
             variant="outline"
             size="sm"
-            asChild
+            render={<a href={`${import.meta.env.VITE_PUBLIC_WEB_URL}/account`} target="_blank" />}
           >
-            <a href={`${import.meta.env.VITE_PUBLIC_WEB_URL}/account`} target="_blank">
-              Account
-              <RiExternalLinkLine className="size-3.5 text-muted-foreground" />
-            </a>
+            Account
+            <RiExternalLinkLine className="size-3.5 text-muted-foreground" />
           </Button>
           <Tooltip>
             <TooltipTrigger asChild>

@@ -3,6 +3,8 @@ import { createHooks } from 'hookable'
 
 let isEntered = false
 
+export const preloaderTextElement = document.getElementById('preloader-text')
+
 export const animationHooks = createHooks<{
   finished: () => void
 }>()

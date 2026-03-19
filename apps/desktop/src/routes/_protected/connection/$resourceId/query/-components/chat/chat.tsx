@@ -27,7 +27,7 @@ export function Chat({ className }: { className?: string }) {
 
   useHotkey('Mod+N', () => {
     router.navigate({
-      to: '/connection/$resourceId/query',
+      to: '.',
       params: { resourceId: connectionResource.id },
       search: { chatId: undefined },
     })

@@ -1,4 +1,4 @@
-import type { connections } from '~/drizzle'
+import type { connections } from '~/drizzle/schema'
 import { Button } from '@conar/ui/components/button'
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogPanel, DialogTitle } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'

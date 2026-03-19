@@ -1,4 +1,4 @@
-import type { connections, connectionsResources } from '~/drizzle'
+import type { connections, connectionsResources } from '~/drizzle/schema'
 import type { ConnectionMutationMetadata } from '~/entities/connection/sync'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Button } from '@conar/ui/components/button'
@@ -43,6 +43,7 @@ export function PasswordForm({ connection, connectionResource }: { connection: t
       })
     },
     onSuccess: () => {
+      router.invalidate({ filter: r => r.routeId === '/_protected/connection/$resourceId' })
       toast.success('Password successfully saved!')
       setPassword('')
     },

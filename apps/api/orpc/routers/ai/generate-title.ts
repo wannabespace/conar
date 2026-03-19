@@ -26,7 +26,7 @@ export const generateTitle = orpc
     })
 
     const { text } = await generateText({
-      model: withPosthog(google('gemini-2.0-flash'), {
+      model: withPosthog(google('gemini-flash-latest'), {
         chatId: input.chatId,
         userId: context.user.id,
       }),

@@ -39,24 +39,20 @@ function OpenPageContent() {
                   <Button
                     variant="outline"
                     size="sm"
-                    asChild
                     className="w-full"
+                    render={<Link to="/account" />}
                   >
-                    <Link to="/account">
-                      Go to Account
-                    </Link>
+                    Go to Account
                   </Button>
                 )
               : (
                   <Button
                     variant="outline"
                     size="sm"
-                    asChild
                     className="w-full"
+                    render={<Link to="/sign-in" />}
                   >
-                    <Link to="/sign-in">
-                      Sign in
-                    </Link>
+                    Sign in
                   </Button>
                 )}
           </div>

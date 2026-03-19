@@ -5,7 +5,7 @@ import { asc, eq } from 'drizzle-orm'
 import { db } from '~/drizzle'
 import { chatsMessages } from '~/drizzle/schema'
 import { withPosthog } from '~/lib/posthog'
-import { orpc, requireSubscriptionMiddleware } from '~/orpc'
+import { orpc, subscriptionMiddleware } from '~/orpc'
 
 async function getMessages(chatId: string) {
   return db
@@ -16,7 +16,7 @@ async function getMessages(chatId: string) {
 }
 
 export const enhancePrompt = orpc
-  .use(requireSubscriptionMiddleware)
+  .use(subscriptionMiddleware)
   .input(type({
     prompt: 'string',
     chatId: 'string.uuid.v7',
