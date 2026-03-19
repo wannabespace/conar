@@ -4,7 +4,7 @@ import type { FileRoutesByTo } from '~/routeTree.gen'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { CardTitle } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
-import { RiFileList3Line, RiKey2Line, RiListUnordered } from '@remixicon/react'
+import { RiFileList3Line, RiKey2Line, RiListUnordered, RiShieldCheckLine } from '@remixicon/react'
 import { useSubscription } from 'seitu/react'
 import { SidebarLink } from '~/components/sidebar-link'
 import { getConnectionResourceStore } from '~/entities/connection/store'
@@ -26,6 +26,11 @@ function sidebarItems(connection: typeof connections.$inferSelect) {
       to: '/connection/$resourceId/definitions/constraints',
       Icon: RiKey2Line,
       label: 'Constraints',
+    },
+    {
+      to: '/connection/$resourceId/definitions/policies',
+      Icon: RiShieldCheckLine,
+      label: 'Policies',
     },
   ] satisfies { Icon: RemixiconComponentType, label: string, to: keyof FileRoutesByTo }[]
 }
