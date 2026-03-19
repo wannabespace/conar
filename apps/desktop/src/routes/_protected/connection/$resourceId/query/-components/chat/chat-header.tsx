@@ -7,6 +7,7 @@ import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -184,69 +185,71 @@ export function ChatHeader({ chatId }: { chatId: string }) {
               <RiHistoryLine className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-60">
-              <DropdownMenuLabel>Chats</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <ScrollArea className="max-h-[70vh]">
-                {allChats.length === 0
-                  ? <DropdownMenuItem disabled>No chats found</DropdownMenuItem>
-                  : (
-                      Object.entries(grouped).map(([group, chats], idx) => (
-                        <div key={group}>
-                          <DropdownMenuLabel className="text-xs opacity-70">{groupLabelMap[group as Group]}</DropdownMenuLabel>
-                          {chats.map(chat => (
-                            <DropdownMenuItem
-                              key={chat.id}
-                              className="group"
-                              render={(
-                                <Link
-                                  to="/connection/$resourceId/query"
-                                  params={{ resourceId }}
-                                  search={{ chatId: chat.id }}
-                                  className={cn(`
-                                    flex items-center justify-between gap-2
-                                    text-foreground
-                                  `, chat.id === chatId && `bg-accent`)}
-                                />
-                              )}
-                            >
-                              <span className="truncate">
-                                {chat.title || (
-                                  <span className={`
-                                    h-4 w-30 animate-pulse rounded-md bg-muted
-                                  `}
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Chats</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <ScrollArea className="max-h-[70vh]">
+                  {allChats.length === 0
+                    ? <DropdownMenuItem disabled>No chats found</DropdownMenuItem>
+                    : (
+                        Object.entries(grouped).map(([group, chats], idx) => (
+                          <div key={group}>
+                            <DropdownMenuLabel className="text-xs opacity-70">{groupLabelMap[group as Group]}</DropdownMenuLabel>
+                            {chats.map(chat => (
+                              <DropdownMenuItem
+                                key={chat.id}
+                                className="group"
+                                render={(
+                                  <Link
+                                    to="/connection/$resourceId/query"
+                                    params={{ resourceId }}
+                                    search={{ chatId: chat.id }}
+                                    className={cn(`
+                                      flex items-center justify-between gap-2
+                                      text-foreground
+                                    `, chat.id === chatId && `bg-accent`)}
                                   />
                                 )}
-                              </span>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon-xs"
-                                      className={`
-                                        -mr-1 opacity-0 transition-none
-                                        group-hover:opacity-100
-                                        hover:text-destructive
-                                      `}
-                                      onClick={(e) => {
-                                        e.preventDefault()
-                                        e.stopPropagation()
-                                        removeChat(chat)
-                                      }}
-                                    >
-                                      <RiDeleteBin7Line className="size-3.5" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Delete Chat</TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </DropdownMenuItem>
-                          ))}
-                          {idx !== Object.keys(grouped).length - 1 && <DropdownMenuSeparator />}
-                        </div>
-                      ))
-                    )}
-              </ScrollArea>
+                              >
+                                <span className="truncate">
+                                  {chat.title || (
+                                    <span className={`
+                                      h-4 w-30 animate-pulse rounded-md bg-muted
+                                    `}
+                                    />
+                                  )}
+                                </span>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon-xs"
+                                        className={`
+                                          -mr-1 opacity-0 transition-none
+                                          group-hover:opacity-100
+                                          hover:text-destructive
+                                        `}
+                                        onClick={(e) => {
+                                          e.preventDefault()
+                                          e.stopPropagation()
+                                          removeChat(chat)
+                                        }}
+                                      >
+                                        <RiDeleteBin7Line className="size-3.5" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Delete Chat</TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </DropdownMenuItem>
+                            ))}
+                            {idx !== Object.keys(grouped).length - 1 && <DropdownMenuSeparator />}
+                          </div>
+                        ))
+                      )}
+                </ScrollArea>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
