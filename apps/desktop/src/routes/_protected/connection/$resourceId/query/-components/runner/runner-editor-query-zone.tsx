@@ -1,13 +1,14 @@
 import type { connectionsResources } from '~/drizzle/schema'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { Button } from '@conar/ui/components/button'
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCheckLine, RiFileCopyLine, RiSaveLine } from '@remixicon/react'
+import { RiCheckLine, RiFileCopyLine, RiPieChart2Line, RiSaveLine } from '@remixicon/react'
 import { useIsFetching } from '@tanstack/react-query'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
 import { queryClient } from '~/main'
@@ -15,13 +16,17 @@ import { runnerQueryOptions } from '.'
 
 export function RunnerEditorQueryZone({
   connectionResource,
+  connectionType,
   onRun,
+  onExplain,
   onSave,
   onCopy,
   lineNumber,
 }: {
   connectionResource: typeof connectionsResources.$inferSelect
+  connectionType: ConnectionType
   onRun: (index: number) => void
+  onExplain: (index: number) => void
   onSave: () => void
   onCopy: () => void
   lineNumber: number
@@ -121,17 +126,30 @@ export function RunnerEditorQueryZone({
           {Array.from({ length: queriesLength }).map((_, idx) => {
             const key = `query-run-${connectionResource.id}-${lineNumber}-${idx}`
             return (
-              <Button
-                key={key}
-                size="xs"
-                className="focus:outline-none!"
-                disabled={isFetching}
-                onClick={() => onRun(idx)}
-              >
-                Run
-                {' '}
-                {queriesLength === 1 ? '' : idx + 1}
-              </Button>
+              <Fragment key={key}>
+                <Button
+                  size="xs"
+                  className="focus:outline-none!"
+                  disabled={isFetching}
+                  onClick={() => onRun(idx)}
+                >
+                  Run
+                  {' '}
+                  {queriesLength === 1 ? '' : idx + 1}
+                </Button>
+
+                {connectionType === ConnectionType.Postgres && (
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    className="focus:outline-none!"
+                    disabled={isFetching}
+                    onClick={() => onExplain(idx)}
+                  >
+                    <RiPieChart2Line className="size-3.5" />
+                  </Button>
+                )}
+              </Fragment>
             )
           })}
         </div>
