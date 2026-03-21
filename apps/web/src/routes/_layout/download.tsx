@@ -46,7 +46,7 @@ function HomebrewInstall() {
         Install via Homebrew
       </h2>
       <Card className={`
-        flex flex-row w-full items-center justify-between gap-4 p-3
+        flex w-full flex-row items-center justify-between gap-4 p-3
         sm:gap-8 sm:p-2
       `}
       >
@@ -129,7 +129,7 @@ function DownloadOption({ Icon, type, arch, link }: {
 }) {
   return (
     <Card className={`
-      flex flex-row w-full items-center justify-between gap-4 p-3
+      flex w-full flex-row items-center justify-between gap-4 p-3
       sm:gap-8 sm:p-2
     `}
     >
@@ -169,17 +169,17 @@ function DownloadOption({ Icon, type, arch, link }: {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            asChild
+            render={(
+              <a
+                href={link}
+                download
+              />
+            )}
             size="sm"
             disabled={!link}
             variant="secondary"
           >
-            <a
-              href={link}
-              download
-            >
-              Download
-            </a>
+            Download
           </Button>
         </TooltipTrigger>
       </Tooltip>

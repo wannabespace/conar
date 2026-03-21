@@ -6,8 +6,9 @@ import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
+import { Spinner } from '@conar/ui/components/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
+import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
@@ -26,10 +27,16 @@ export const Route = createFileRoute('/_protected/')({
 
 function DashboardPage() {
   const { mutate: sync, isPending: isSyncing } = useMutation({
-    mutationFn: connectionsCollection.utils.runSync,
-  })
-  const { mutate: syncConnectionsResources, isPending: isSyncingConnectionsResources } = useMutation({
-    mutationFn: connectionsResourcesCollection.utils.runSync,
+    mutationFn: async () => {
+      await Promise.all([
+        connectionsCollection.utils.runSync(),
+        connectionsResourcesCollection.utils.runSync(),
+      ])
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['connection'] })
+      queryClient.invalidateQueries({ queryKey: ['connection-resources'] })
+    },
   })
   const { version, status } = useSubscription(updatesStore, { selector: state => pick(state, ['version', 'status']) })
 
@@ -56,17 +63,12 @@ function DashboardPage() {
             <Button
               variant="outline"
               size="icon"
-              disabled={isSyncing || isSyncingConnectionsResources}
-              onClick={() => {
-                sync()
-                syncConnectionsResources()
-                queryClient.invalidateQueries({ queryKey: ['connection'] })
-                queryClient.invalidateQueries({ queryKey: ['connection-resources'] })
-              }}
+              disabled={isSyncing}
+              onClick={() => sync()}
             >
-              <LoadingContent loading={isSyncing || isSyncingConnectionsResources}>
+              <LoadingContent loading={isSyncing}>
                 <ContentSwitch
-                  active={isSyncing || isSyncingConnectionsResources}
+                  active={isSyncing}
                   activeContent={(
                     <RiCheckLine className="text-success" />
                   )}
@@ -75,11 +77,9 @@ function DashboardPage() {
                 </ContentSwitch>
               </LoadingContent>
             </Button>
-            <Button asChild>
-              <Link to="/create">
-                <RiAddLine className="size-4" />
-                Add new
-              </Link>
+            <Button render={<Link to="/create" />}>
+              <RiAddLine className="size-4" />
+              Add new
             </Button>
           </div>
         </div>
@@ -148,10 +148,7 @@ function DashboardPage() {
             </button>
             {' '}
             {status === 'checking' && (
-              <RiLoader4Line className={`
-                size-3 animate-spin text-muted-foreground/50
-              `}
-              />
+              <Spinner className="size-3 text-muted-foreground/50" />
             )}
             {status === 'downloading' && (
               <Tooltip>

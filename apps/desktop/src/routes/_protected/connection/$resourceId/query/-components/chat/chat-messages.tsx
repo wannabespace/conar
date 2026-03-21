@@ -147,22 +147,20 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
           <DropdownMenu>
             <TooltipProvider>
               <Tooltip>
-                <DropdownMenuTrigger asChild>
-                  <TooltipTrigger asChild>
-                    <Button
-                      size="icon-xs"
-                      variant="ghost"
-                      onClick={e => e.stopPropagation()}
+                <DropdownMenuTrigger render={<TooltipTrigger asChild />}>
+                  <Button
+                    size="icon-xs"
+                    variant="ghost"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <ContentSwitch
+                      active={isReplacing}
+                      activeContent={<RiCheckLine className="text-success" />}
+                      onSwitchEnd={() => setIsReplacing(false)}
                     >
-                      <ContentSwitch
-                        active={isReplacing}
-                        activeContent={<RiCheckLine className="text-success" />}
-                        onSwitchEnd={() => setIsReplacing(false)}
-                      >
-                        <RiLoopLeftLine className="size-3.5" />
-                      </ContentSwitch>
-                    </Button>
-                  </TooltipTrigger>
+                      <RiLoopLeftLine className="size-3.5" />
+                    </ContentSwitch>
+                  </Button>
                 </DropdownMenuTrigger>
                 <TooltipContent>
                   Replace a query in the runner
@@ -172,7 +170,6 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
             <DropdownMenuContent
               align="end"
               className="max-h-64 min-w-[220px] overflow-auto"
-              onCloseAutoFocus={e => e.preventDefault()}
               onClick={e => e.stopPropagation()}
             >
               <div className="p-2 text-xs font-medium text-muted-foreground">

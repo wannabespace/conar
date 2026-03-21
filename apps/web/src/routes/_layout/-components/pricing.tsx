@@ -210,17 +210,15 @@ export function Pricing({ className }: PricingSectionProps) {
                 className="relative w-full"
                 variant="outline"
                 size="lg"
-                asChild
+                render={<Link {...plan.link} />}
               >
-                <Link {...plan.link}>
-                  <span className={`
-                    relative z-10 flex items-center justify-center gap-2
-                  `}
-                  >
-                    {plan.price.monthly > 0 ? `Get ${plan.name}` : 'Download'}
-                    <RiArrowRightLine className="size-4" />
-                  </span>
-                </Link>
+                <span className={`
+                  relative z-10 flex items-center justify-center gap-2
+                `}
+                >
+                  {plan.price.monthly > 0 ? `Get ${plan.name}` : 'Download'}
+                  <RiArrowRightLine className="size-4" />
+                </span>
               </Button>
             </div>
           </Card>

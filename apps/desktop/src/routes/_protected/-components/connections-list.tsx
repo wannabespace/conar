@@ -9,13 +9,14 @@ import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Input } from '@conar/ui/components/input'
-import { ScrollAreaShadow, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
-import { Separator, SeparatorMotion } from '@conar/ui/components/separator'
+import { ScrollArea } from '@conar/ui/components/scroll-area'
+import { Separator } from '@conar/ui/components/separator'
+import { Spinner } from '@conar/ui/components/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAddLine, RiAlertLine, RiCheckLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoader4Line, RiLoopLeftLine, RiMoreLine, RiPushpinFill, RiPushpinLine } from '@remixicon/react'
+import { RiAddLine, RiAlertLine, RiCheckLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoopLeftLine, RiMoreLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
@@ -26,19 +27,16 @@ import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
 import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { connectionVersionQuery } from '~/entities/connection/queries/connection-version'
-import { getConnectionStore, togglePinResource } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection, syncConnectionResources } from '~/entities/connection/sync'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { RenameConnectionDialog } from './rename-connection-dialog'
 
-function ResourceCard({ resource, connection, search, pinned, onTogglePin }: {
+function ResourceCard({ resource, connection, search }: {
   resource: typeof connectionsResources.$inferSelect
   connection: typeof connections.$inferSelect
   search: string
-  pinned: boolean
-  onTogglePin: () => void
 }) {
   const params = useConnectionResourceLinkParams(resource.id)
   const { data: tablesAndSchemas } = useQuery({
@@ -85,23 +83,6 @@ function ResourceCard({ resource, connection, search, pinned, onTogglePin }: {
           </div>
         )}
       </div>
-      <Button
-        variant="ghost"
-        size="icon-xs"
-        className="
-          shrink-0 opacity-0 transition-opacity
-          group-hover:opacity-100
-        "
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          onTogglePin()
-        }}
-      >
-        {pinned
-          ? <RiPushpinFill className="size-3 text-primary" />
-          : <RiPushpinLine className="size-3" />}
-      </Button>
     </Link>
   )
 }
@@ -117,6 +98,7 @@ function ConnectionCard({
 }) {
   const connectionString = new SafeURL(connection.connectionString)
   connectionString.pathname = ''
+  const connectionStringToShow = `${connectionString.hostname}${connectionString.port ? `:${connectionString.port}` : ''}`
   const [isCopied, setIsCopied] = useState(false)
   const [resourcesSearch, setResourcesSearch] = useState('')
 
@@ -131,7 +113,6 @@ function ConnectionCard({
   }, [sync])
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const scrollViewportRef = useRef<HTMLDivElement>(null)
 
   const handleCopy = () => {
     if (timeoutRef.current) {
@@ -152,27 +133,9 @@ function ConnectionCard({
     .from({ connectionsResources: connectionsResourcesCollection })
     .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id)), [connection.id])
 
-  const connectionStore = getConnectionStore(connection.id)
-  const pinnedResources = useSubscription(connectionStore, { selector: state => state.pinnedResources })
-
-  const pinnedSet = new Set(pinnedResources.map(resource => resource.id))
-
   const filteredResources = resources.filter(resource =>
     !resourcesSearch
     || resource.name.toLowerCase().includes(resourcesSearch.toLowerCase()),
-  )
-
-  const { pinned, unpinned } = filteredResources.reduce(
-    (acc, resource) => {
-      if (pinnedSet.has(resource.id)) {
-        acc.pinned.push(resource)
-      }
-      else {
-        acc.unpinned.push(resource)
-      }
-      return acc
-    },
-    { pinned: [] as typeof filteredResources, unpinned: [] as typeof filteredResources },
   )
 
   return (
@@ -197,7 +160,7 @@ function ConnectionCard({
             <CardFrameTitle className="flex min-w-0 items-center gap-2">
               <span className="min-w-0 truncate" title={connection.name}>{connection.name}</span>
               {' '}
-              {isSyncing && <RiLoader4Line className="size-3 animate-spin" />}
+              {isSyncing && <Spinner className="size-3" />}
               {syncError && (
                 <TooltipProvider>
                   <Tooltip>
@@ -222,8 +185,9 @@ function ConnectionCard({
             >
               <span className="group flex min-w-0 flex-1 gap-2">
                 <span className="min-w-0 flex-1 truncate">
-                  {connectionString.toMasked()}
+                  {connectionStringToShow}
                 </span>
+
               </span>
               <ContentSwitch
                 active={isCopied}
@@ -247,21 +211,15 @@ function ConnectionCard({
           >
             <RiMoreLine className="size-4" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" onCloseAutoFocus={e => e.preventDefault()}>
+          <DropdownMenuContent align="end">
             <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                sync?.()
-              }}
+              onClick={() => sync()}
             >
               <RiLoopLeftLine className="size-4 opacity-50" />
               Refresh
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                onRename()
-              }}
+              onClick={() => onRename()}
             >
               <RiEditLine className="size-4 opacity-50" />
               Rename
@@ -271,10 +229,7 @@ function ConnectionCard({
                 text-destructive
                 focus:text-destructive
               `}
-              onClick={(e) => {
-                e.stopPropagation()
-                onRemove()
-              }}
+              onClick={() => onRemove()}
             >
               <RiDeleteBinLine className="size-4" />
               Remove
@@ -305,74 +260,44 @@ function ConnectionCard({
               )}
             </div>
           )}
-          <ScrollAreaShadow viewportRef={scrollViewportRef} type="card">
-            <ScrollViewport ref={scrollViewportRef} className="max-h-60">
-              {pinned.length + unpinned.length > 0
-                ? (
-                    <AnimatePresence mode="popLayout">
-                      {pinned.map(resource => (
-                        <motion.div
-                          key={resource.id}
-                          layout
-                          transition={{ layout: { duration: 0.15, ease: 'easeInOut' } }}
-                        >
-                          <ResourceCard
-                            resource={resource}
-                            connection={connection}
-                            search={resourcesSearch}
-                            pinned
-                            onTogglePin={() => togglePinResource(connection.id, resource.id, resource.name)}
-                          />
-                        </motion.div>
-                      ))}
-                      {pinned.length > 0 && unpinned.length > 0 && (
-                        <SeparatorMotion
-                          className="my-2 h-px!"
-                          layout
-                          transition={{ layout: { duration: 0.15, ease: 'easeInOut' } }}
+          <ScrollArea className="max-h-60" scrollFade>
+            {filteredResources.length > 0
+              ? (
+                  <AnimatePresence mode="popLayout">
+                    {filteredResources.map(resource => (
+                      <motion.div
+                        key={resource.id}
+                        layout
+                        transition={{ layout: { duration: 0.15, ease: 'easeInOut' } }}
+                      >
+                        <ResourceCard
+                          resource={resource}
+                          connection={connection}
+                          search={resourcesSearch}
                         />
-                      )}
-                      {unpinned.map(resource => (
-                        <motion.div
-                          key={resource.id}
-                          layout
-                          transition={{ layout: { duration: 0.15, ease: 'easeInOut' } }}
-                        >
-                          <ResourceCard
-                            resource={resource}
-                            connection={connection}
-                            search={resourcesSearch}
-                            pinned={false}
-                            onTogglePin={() => togglePinResource(connection.id, resource.id, resource.name)}
-                          />
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  )
-                : (
-                    <div
-                      className="
-                        flex items-center p-2 text-sm text-muted-foreground
-                      "
-                    >
-                      {isSyncing
-                        ? (
-                            <div className="
-                              flex animate-pulse items-center gap-2
-                            "
-                            >
-                              <RiLoader4Line className="size-3 animate-spin" />
-                              Syncing resources...
-                            </div>
-                          )
-                        : resources && resources.length > 0
-                          ? 'No resources match your search'
-                          : 'No resources found'}
-                    </div>
-                  )}
-            </ScrollViewport>
-            <ScrollBar />
-          </ScrollAreaShadow>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                )
+              : (
+                  <div
+                    className="
+                      flex items-center p-2 text-sm text-muted-foreground
+                    "
+                  >
+                    {isSyncing
+                      ? (
+                          <div className="flex animate-pulse items-center gap-2">
+                            <Spinner className="size-3" />
+                            Syncing resources...
+                          </div>
+                        )
+                      : resources && resources.length > 0
+                        ? 'No resources match your search'
+                        : 'No resources found'}
+                  </div>
+                )}
+          </ScrollArea>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -422,7 +347,7 @@ function ConnectionCard({
                       onClick={() => refetchVersion()}
                     >
                       {isVersionRefetching && (
-                        <RiLoader4Line className="size-3 animate-spin" />
+                        <Spinner className="size-3" />
                       )}
                       Version:
                       {' '}
@@ -454,10 +379,8 @@ export function Empty() {
       <p className="mt-1 mb-4 text-sm whitespace-pre-line text-muted-foreground">
         Create a new connection to get started.
       </p>
-      <Button asChild>
-        <Link to="/create">
-          Create a new connection
-        </Link>
+      <Button render={<Link to="/create" />}>
+        Create a new connection
       </Button>
     </div>
   )

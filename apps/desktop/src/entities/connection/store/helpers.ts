@@ -1,6 +1,6 @@
 import type { connectionResourceType } from '.'
 import { toast } from 'sonner'
-import { getConnectionResourceStore, getConnectionStore } from '.'
+import { getConnectionResourceStore } from '.'
 
 export function addTab(id: string, schema: string, table: string, preview?: boolean) {
   const store = getConnectionResourceStore(id)
@@ -114,32 +114,6 @@ export function cleanupPinnedTables(
     }
 
     return state
-  })
-}
-
-const MAX_PINNED_RESOURCES = 5
-
-export function togglePinResource(connectionId: string, resourceId: string, name: string) {
-  const store = getConnectionStore(connectionId)
-
-  store.set((state) => {
-    const isPinned = state.pinnedResources.some(resource => resource.id === resourceId)
-
-    if (isPinned) {
-      return {
-        ...state,
-        pinnedResources: state.pinnedResources.filter(resource => resource.id !== resourceId),
-      }
-    }
-
-    if (state.pinnedResources.length >= MAX_PINNED_RESOURCES) {
-      toast.info(`Only ${MAX_PINNED_RESOURCES} resources can be pinned. Last pinned resource removed.`)
-    }
-
-    return {
-      ...state,
-      pinnedResources: [{ id: resourceId, name }, ...state.pinnedResources].slice(0, MAX_PINNED_RESOURCES),
-    }
   })
 }
 

@@ -138,7 +138,7 @@ function LastOpenedConnection({ connectionResource }: { connectionResource: type
                 type="button"
                 className={cn(
                   `
-                    absolute top-0 right-0 z-10 flex size-4 translate-x-1/2
+                    absolute top-0 right-0 z-20 flex size-4 translate-x-1/2
                     -translate-y-1/2 items-center justify-center rounded-full
                     bg-background text-foreground opacity-0
                     group-hover:opacity-100
@@ -332,11 +332,8 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
           </Tooltip>
         </TooltipProvider>
       </div>
-      <ScrollArea className={`
-        relative flex flex-1 flex-col items-center gap-2 p-4
-      `}
-      >
-        <div className="w-full">
+      <ScrollArea className="relative flex flex-1 flex-col items-center gap-2">
+        <div className="w-full p-4">
           <div className="flex w-full flex-col">
             <MainLinks />
             {openedResources.length > 1 && (
@@ -387,19 +384,17 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <ThemeToggle>
-          <Button size="icon" variant="ghost">
-            <RiSunLine className={`
-              size-4
-              dark:hidden
-            `}
-            />
-            <RiMoonLine className={`
-              hidden size-4
-              dark:block
-            `}
-            />
-          </Button>
+        <ThemeToggle render={<Button size="icon" variant="ghost" />}>
+          <RiSunLine className={`
+            size-4
+            dark:hidden
+          `}
+          />
+          <RiMoonLine className={`
+            hidden size-4
+            dark:block
+          `}
+          />
         </ThemeToggle>
         <div className="mt-2">
           <UserButton />
