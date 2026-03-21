@@ -172,10 +172,8 @@ export function ExportData({
     <TooltipProvider>
       <Tooltip>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <TooltipTrigger asChild>
-              {trigger({ isExporting: isPending })}
-            </TooltipTrigger>
+          <DropdownMenuTrigger render={<TooltipTrigger asChild />}>
+            {trigger({ isExporting: isPending })}
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuSub>

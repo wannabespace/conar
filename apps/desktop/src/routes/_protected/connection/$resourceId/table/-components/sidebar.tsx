@@ -53,7 +53,7 @@ export function Sidebar() {
                 <TooltipTrigger asChild>
                   <RefreshButton
                     variant="outline"
-                    size="icon-sm"
+                    size="icon"
                     onClick={handleRefresh}
                     refreshing={isRefreshingTablesAndSchemas}
                   />

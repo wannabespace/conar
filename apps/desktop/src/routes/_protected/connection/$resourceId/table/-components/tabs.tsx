@@ -10,7 +10,7 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from '@conar/ui/components/context-menu'
-import { ScrollArea, ScrollBar, ScrollViewportMotion } from '@conar/ui/components/scroll-area'
+import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { cn } from '@conar/ui/lib/utils'
@@ -349,36 +349,30 @@ export function TablesTabs({
   }))
 
   return (
-    <ScrollArea>
-      <ScrollViewportMotion
-        layoutScroll
-        className={cn('flex gap-1 p-1', className)}
+    <ScrollArea className={cn('h-full', className)}>
+      <Reorder.Group
+        axis="x"
+        values={tabItems}
+        onReorder={(newItems) => {
+          updateTabs(connectionResource.id, newItems.map(item => item.tab))
+        }}
+        className="flex h-full gap-1 p-1"
       >
-        <Reorder.Group
-          axis="x"
-          values={tabItems}
-          onReorder={(newItems) => {
-            updateTabs(connectionResource.id, newItems.map(item => item.tab))
-          }}
-          className="flex gap-1"
-        >
-          {tabItems.map((item, index) => (
-            <SortableTab
-              key={item.id}
-              item={item}
-              connectionResource={connectionResource}
-              showSchema={!isOneSchema}
-              onClose={() => closeTab(item.tab.schema, item.tab.table)}
-              onCloseAll={closeAllTabs}
-              onCloseToTheRight={() => closeTabsToTheRight(item.tab.schema, item.tab.table)}
-              onCloseOthers={() => closeOtherTabs(item.tab.schema, item.tab.table)}
-              currentTabIndex={index}
-              totalTabs={tabItems.length}
-            />
-          ))}
-        </Reorder.Group>
-      </ScrollViewportMotion>
-      <ScrollBar orientation="horizontal" className="h-2" />
+        {tabItems.map((item, index) => (
+          <SortableTab
+            key={item.id}
+            item={item}
+            connectionResource={connectionResource}
+            showSchema={!isOneSchema}
+            onClose={() => closeTab(item.tab.schema, item.tab.table)}
+            onCloseAll={closeAllTabs}
+            onCloseToTheRight={() => closeTabsToTheRight(item.tab.schema, item.tab.table)}
+            onCloseOthers={() => closeOtherTabs(item.tab.schema, item.tab.table)}
+            currentTabIndex={index}
+            totalTabs={tabItems.length}
+          />
+        ))}
+      </Reorder.Group>
     </ScrollArea>
   )
 }

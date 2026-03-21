@@ -17,7 +17,7 @@ import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
 import { connectionSystemNames } from '~/entities/connection/queries'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
-import { togglePinResource } from '~/entities/connection/store'
+import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { generateRandomName } from '~/lib/utils'
@@ -80,7 +80,9 @@ function CreateConnectionPage() {
     const resourceId = v7()
 
     if (resource) {
-      togglePinResource(id, resourceId, resource)
+      getConnectionStore(id).set({
+        lastOpenedResourceName: resource,
+      })
     }
 
     connectionsResourcesCollection.insert({

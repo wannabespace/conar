@@ -70,16 +70,14 @@ export function SubscriptionModal() {
             Maybe Later
           </Button>
           <Button
-            asChild
             className={`
               w-full
               sm:w-auto
             `}
+            render={<a href={accountUrl} target="_blank" rel="noopener noreferrer" />}
           >
-            <a href={accountUrl} target="_blank" rel="noopener noreferrer">
-              Upgrade to Pro
-              <RiExternalLinkLine className="size-4" />
-            </a>
+            Upgrade to Pro
+            <RiExternalLinkLine className="size-4" />
           </Button>
         </DialogFooter>
       </DialogContent>
