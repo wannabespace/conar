@@ -27,6 +27,7 @@ export const storeState = type({
   columnSizes: 'Record<string, number>',
   lastClickedIndex: 'number | null',
   selectionState: 'object' as type.cast<SelectionState>,
+  detailRowIndex: 'number | null',
 })
 
 const defaultState: typeof storeState.infer = {
@@ -39,6 +40,7 @@ const defaultState: typeof storeState.infer = {
   columnSizes: {},
   lastClickedIndex: null,
   selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
+  detailRowIndex: null,
 }
 
 export const tablePageStore = memoize(({ id, schema, table }: { id: string, schema: string, table: string }) => {
@@ -67,7 +69,7 @@ export const tablePageStore = memoize(({ id, schema, table }: { id: string, sche
       orderBy: state.orderBy,
       prompt: state.prompt,
       columnSizes: state.columnSizes,
-    } satisfies Omit<typeof state, 'lastClickedIndex' | 'selectionState'>))
+    } satisfies Omit<typeof state, 'lastClickedIndex' | 'selectionState' | 'detailRowIndex'>))
   })
 
   return store
