@@ -39,7 +39,7 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
     queueMicrotask(() => {
       editor.changeViewZones((changeAccessor) => {
         linesWithQueries.forEach((lineNumber) => {
-          elements[lineNumber] = render(
+          elements[lineNumber] ||= render(
             <RunnerEditorQueryZone
               connectionResource={connectionResource}
               connectionType={connection.type}

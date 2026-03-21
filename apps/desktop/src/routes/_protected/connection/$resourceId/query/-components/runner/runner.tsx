@@ -102,7 +102,8 @@ export function Runner() {
   })
 
   const runExplainQueries = (queries: QueryToRun[]) => {
-    runQueriesWithAlert(queries.map(q => ({ ...q, query: wrapExplainQuery(q.query) })))
+    const explainQueries = queries.map(q => ({ ...q, query: wrapExplainQuery(q.query) }))
+    runQueries(explainQueries)
   }
 
   return (
