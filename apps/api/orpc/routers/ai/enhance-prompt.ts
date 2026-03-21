@@ -1,11 +1,11 @@
 import { openai } from '@ai-sdk/openai'
-import { encode } from '@toon-format/toon'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { asc, eq } from 'drizzle-orm'
-import { chatsMessages, db } from '~/drizzle'
+import { db } from '~/drizzle'
+import { chatsMessages } from '~/drizzle/schema'
 import { withPosthog } from '~/lib/posthog'
-import { orpc, requireSubscriptionMiddleware } from '~/orpc'
+import { orpc, subscriptionMiddleware } from '~/orpc'
 
 async function getMessages(chatId: string) {
   return db
@@ -16,7 +16,7 @@ async function getMessages(chatId: string) {
 }
 
 export const enhancePrompt = orpc
-  .use(requireSubscriptionMiddleware)
+  .use(subscriptionMiddleware)
   .input(type({
     prompt: 'string',
     chatId: 'string.uuid.v7',
@@ -46,10 +46,10 @@ export const enhancePrompt = orpc
             '- Maintain the user\'s original tone and intent',
             '',
             'Context from current chat conversation:',
-            encode(messages.map(m => ({
+            JSON.stringify(messages.map(m => ({
               role: m.role,
               parts: m.parts.filter(p => p.type === 'text'),
-            }))),
+            })), null, 2),
             '',
             'Please rewrite the following user prompt to be more effective:',
           ].join('\n'),

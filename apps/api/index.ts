@@ -11,7 +11,8 @@ import { RPCHandler } from '@orpc/server/fetch'
 import { generateText } from 'ai'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { db, users } from './drizzle'
+import { db } from './drizzle'
+import { users } from './drizzle/schema'
 import { env, nodeEnv } from './env'
 import { auth } from './lib/auth'
 import { createContext } from './orpc/context'
@@ -157,9 +158,9 @@ const app = new Hono<{
       }, 400)
     }
 
-    function createAnswer(type: 'error' | 'ok', service: string, message: string) {
+    function createAnswer(status: 'error' | 'ok', service: string, message: string) {
       return {
-        status: type,
+        status,
         service,
         message,
       }
@@ -180,7 +181,7 @@ const app = new Hono<{
         .then(() => createAnswer('ok', 'database', 'Database connection ok'))
         .catch(e => createAnswer('error', 'database', e instanceof Error ? e.message : 'Database connection failed')),
       generateText({
-        model: openai('gpt-4.1-nano'),
+        model: openai('gpt-5-nano'),
         prompt: 'Hello, how are you?',
       })
         .then((result) => {
@@ -192,7 +193,7 @@ const app = new Hono<{
         })
         .catch(e => createAnswer('error', 'openai', e instanceof Error ? e.message : 'OpenAI connection failed')),
       generateText({
-        model: google('gemini-2.0-flash'),
+        model: google('gemini-flash-latest'),
         prompt: 'Hello, how are you?',
       })
         .then((result) => {
@@ -204,7 +205,7 @@ const app = new Hono<{
         })
         .catch(e => createAnswer('error', 'google', e instanceof Error ? e.message : 'Google connection failed')),
       generateText({
-        model: anthropic('claude-3-5-haiku-latest'),
+        model: anthropic('claude-opus-4-6'),
         prompt: 'Hello, how are you?',
       })
         .then((result) => {
@@ -216,7 +217,7 @@ const app = new Hono<{
         })
         .catch(e => createAnswer('error', 'anthropic', e instanceof Error ? e.message : 'Anthropic connection failed')),
       generateText({
-        model: xai('grok-3-mini'),
+        model: xai('grok-4'),
         prompt: 'Hello, how are you?',
       })
         .then((result) => {

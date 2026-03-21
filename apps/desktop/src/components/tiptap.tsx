@@ -95,7 +95,7 @@ export function TipTap({
     }
 
     if (files && files.length > 0) {
-      for (const file of Array.from(files)) {
+      for (const file of [...files]) {
         const [mime] = file.type.split('/')
 
         if (mime === 'image') {

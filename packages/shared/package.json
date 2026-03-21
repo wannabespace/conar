@@ -12,7 +12,8 @@
     "./arktype-config": "./src/arktype-config.ts"
   },
   "scripts": {
-    "check-types": "tsc"
+    "check-types": "tsc",
+    "test:unit": "bun test"
   },
   "dependencies": {
     "@conar/configs": "workspace:*",

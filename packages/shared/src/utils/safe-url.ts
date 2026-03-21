@@ -5,7 +5,14 @@ export class SafeURL implements URL {
   username!: string
   password!: string
 
-  constructor(url: string) {
+  constructor(url: string | SafeURL) {
+    if (url instanceof SafeURL) {
+      this.#url = url.#url
+      this.username = url.username
+      this.password = url.password
+      return
+    }
+
     let _url = url
     const atIndex = url.lastIndexOf('@')
 

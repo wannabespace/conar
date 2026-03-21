@@ -1,7 +1,7 @@
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { enumValues } from '@conar/shared/utils/helpers'
-import { pgEnum, pgTable } from 'drizzle-orm/pg-core'
+import { pgEnum, pgTable, unique } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 
 export const connectionType = pgEnum('connection_type', enumValues(ConnectionType))
@@ -19,3 +19,11 @@ export const connections = pgTable('connections', ({ text, boolean }) => ({
   isPasswordPopulated: boolean('password_populated').notNull(),
   syncType: syncType().notNull(),
 }))
+
+export const connectionsResources = pgTable('connections_resources', ({ uuid, text }) => ({
+  ...baseTable,
+  connectionId: uuid().references(() => connections.id, { onDelete: 'cascade' }).notNull(),
+  name: text().notNull(),
+}), t => [
+  unique().on(t.connectionId, t.name),
+])

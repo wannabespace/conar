@@ -5,9 +5,9 @@ const clickhouse = createRequire(import.meta.url)('@clickhouse/client') as typeo
 
 export const getClient = memoize((connectionString: string) => clickhouse.createClient({
   url: connectionString.startsWith('clickhouse')
+    // eslint-disable-next-line e18e/prefer-static-regex
     ? connectionString.replace(/^clickhouse/, 'http')
     : connectionString,
-  max_open_connections: 1,
   clickhouse_settings: {
     date_time_output_format: 'iso',
   },

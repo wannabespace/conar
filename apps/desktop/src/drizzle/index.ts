@@ -1,21 +1,21 @@
 /* eslint-disable no-console */
+// import PGWorker from './worker?worker'
 import { PGlite } from '@electric-sql/pglite'
+// import { PGliteWorker } from '@electric-sql/pglite/worker'
 import { drizzle } from 'drizzle-orm/pglite'
+import { createStore } from 'seitu'
 import migrations from './migrations.json'
-import * as chats from './schema/chats'
-import * as connections from './schema/connections'
-import * as queries from './schema/queries'
+import { chatsRelations } from './schema/chats'
+import { connections } from './schema/connections'
+import { queriesRelations } from './schema/queries'
 
-export * from './schema/chats'
-export * from './schema/connections'
-export * from './schema/queries'
-
-export const pg = new PGlite('idb://conar')
+// const pg = new PGliteWorker(new PGWorker({ name: 'pglite-worker' }))
+const pg = new PGlite('idb://conar')
 
 if (import.meta.env.DEV) {
   // @ts-expect-error - window.db is not typed
   window.db = pg
-  // @ts-expect-error - window.db is not typed
+  // @ts-expect-error - window.dbQuery is not typed
   window.dbQuery = q => pg.query(q).then((r) => {
     console.table(r.rows)
     return r.rows
@@ -26,16 +26,15 @@ export const db = drizzle({
   client: pg,
   casing: 'snake_case',
   logger: import.meta.env.DEV,
-  schema: {
-    ...connections,
-    ...chats,
-    ...queries,
+  relations: {
+    ...chatsRelations,
+    ...queriesRelations,
   },
 })
 
 export async function clearDb() {
-  // We can remove just databases because other tables are related to databases
-  await db.delete(connections.connections)
+  // We can remove just connections because other tables are related to connections
+  await db.delete(connections)
 }
 
 async function ensureMigrationsTable() {
@@ -66,7 +65,11 @@ export async function waitForMigrations() {
   await promise
 }
 
+export const migrationsState = createStore<'idle' | 'running' | 'completed' | 'failed'>('idle')
+
 export async function runMigrations() {
+  migrationsState.set('running')
+
   try {
     console.log('🚀 Starting pglite migrations...')
 
@@ -77,6 +80,7 @@ export async function runMigrations() {
 
     if (pendingMigrations.length === 0) {
       console.info('✨ No pending migrations found.')
+      migrationsState.set('completed')
       return
     }
 
@@ -100,6 +104,11 @@ export async function runMigrations() {
     }
 
     console.info('🎉 All migrations completed successfully')
+    migrationsState.set('completed')
+  }
+  catch (error) {
+    migrationsState.set('failed')
+    throw error
   }
   finally {
     resolve()

@@ -1,12 +1,12 @@
 import type { CompletionService, ICompletionItem } from 'monaco-sql-languages'
-import type { connections } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { languages } from 'monaco-editor'
 import { EntityContextType } from 'monaco-sql-languages'
 import { queryClient } from '~/main'
-import { connectionTableColumnsQuery } from '../queries/columns'
-import { connectionEnumsQuery } from '../queries/enums'
-import { connectionTablesAndSchemasQuery } from '../queries/tables-and-schemas'
-import { connectionStore } from '../store'
+import { resourceTableColumnsQuery } from '../queries/columns'
+import { resourceEnumsQuery } from '../queries/enums'
+import { resourceTablesAndSchemasQuery } from '../queries/tables-and-schemas'
+import { getConnectionResourceStore } from '../store'
 
 const keywordPriority = [
   'SELECT',
@@ -36,10 +36,12 @@ const keywordPriority = [
   'DROP',
 ]
 
-export function connectionCompletionService(connection: typeof connections.$inferSelect): CompletionService {
-  const store = connectionStore(connection.id)
-  queryClient.prefetchQuery(connectionTablesAndSchemasQuery({ connection, showSystem: store.state.showSystem }))
-  queryClient.prefetchQuery(connectionEnumsQuery({ connection }))
+const dotMatchesRegex = /(\w+(?:\.\w+)*)\.\s*$/g
+
+export function connectionCompletionService(connectionResource: typeof connectionsResources.$inferSelect): CompletionService {
+  const store = getConnectionResourceStore(connectionResource.id)
+  queryClient.prefetchQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem: store.get().showSystem }))
+  queryClient.prefetchQuery(resourceEnumsQuery({ connectionResource }))
 
   return async (
     model,
@@ -66,8 +68,8 @@ export function connectionCompletionService(connection: typeof connections.$infe
     })
 
     const [tablesAndSchemas, enums] = await Promise.all([
-      queryClient.ensureQueryData(connectionTablesAndSchemasQuery({ connection, showSystem: store.state.showSystem })),
-      queryClient.ensureQueryData(connectionEnumsQuery({ connection })),
+      queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem: store.get().showSystem })),
+      queryClient.ensureQueryData(resourceEnumsQuery({ connectionResource })),
     ])
 
     const items: ICompletionItem[] = []
@@ -79,12 +81,12 @@ export function connectionCompletionService(connection: typeof connections.$infe
       endColumn: position.column,
     })
 
-    const dotMatches = [...textBeforeCursor.matchAll(/(\w+(?:\.\w+)*)\.\s*$/g)]
+    const dotMatches = [...textBeforeCursor.matchAll(dotMatchesRegex)]
     const isTableContext = syntax.some(item => item.syntaxContextType === EntityContextType.TABLE)
     const isColumnContext = syntax.some(item => item.syntaxContextType === EntityContextType.COLUMN)
 
     if (dotMatches.length > 0) {
-      const tableRef = dotMatches[dotMatches.length - 1]?.[1]
+      const tableRef = dotMatches.at(-1)?.[1]
 
       if (tableRef) {
         const parts = tableRef.split('.')
@@ -96,7 +98,7 @@ export function connectionCompletionService(connection: typeof connections.$infe
 
         if (table) {
           const columns = await queryClient.ensureQueryData(
-            connectionTableColumnsQuery({ connection, schema: schemaName, table: tableName }),
+            resourceTableColumnsQuery({ connectionResource, schema: schemaName, table: tableName }),
           )
           const columnItems = columns.map(col => ({
             label: col.id,
@@ -115,7 +117,7 @@ export function connectionCompletionService(connection: typeof connections.$infe
       const columnPromises = tablesAndSchemas.schemas.flatMap(schema =>
         schema.tables.map(async (tableName) => {
           const columns = await queryClient.ensureQueryData(
-            connectionTableColumnsQuery({ connection, schema: schema.name, table: tableName }),
+            resourceTableColumnsQuery({ connectionResource, schema: schema.name, table: tableName }),
           )
           return columns.map(col => ({
             label: col.id,

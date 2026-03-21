@@ -1,19 +1,25 @@
-import type { Auth, BetterAuthOptions } from 'better-auth'
+import type { BetterAuthOptions } from 'better-auth'
+import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { AUTH_COOKIE_PREFIX, PORTS } from '@conar/shared/constants'
 import { decrypt, encrypt } from '@conar/shared/utils/encryption'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
-import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { anonymous, bearer, createAuthMiddleware, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
+import { createAuthMiddleware } from 'better-auth/api'
+import { anonymous, bearer, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { and, count, eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
-import { chats, connections, db, queries, users } from '~/drizzle'
+import { db } from '~/drizzle'
+import { chats, connections, queries, users } from '~/drizzle/schema'
+import * as schema from '~/drizzle/schema'
 import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
 import { redisMemoize } from './redis'
 
 async function getUserSecret(id: string) {
-  const user = await db.query.users.findFirst({ columns: { secret: true }, where: (t, { eq }) => eq(t.id, id) })
+  const user = await db.query.users.findFirst({
+    columns: { secret: true },
+    where: { id: { eq: id } },
+  })
   return user?.secret ?? null
 }
 
@@ -75,7 +81,7 @@ export async function mergeAnonymousUserData(
   })
 }
 
-export const auth: Auth = betterAuth({
+export const auth = betterAuth({
   appName: 'Conar',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.API_URL,
@@ -238,9 +244,6 @@ export const auth: Auth = betterAuth({
       generateId: 'uuid',
     },
   },
-  experimental: {
-    joins: true,
-  },
   // TODO: Remove this in future, it needed only for desktop auth in old versions
   account: {
     skipStateCookieCheck: true,
@@ -248,6 +251,7 @@ export const auth: Auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',
     usePlural: true,
+    schema,
   }),
   emailAndPassword: {
     enabled: true,
@@ -287,4 +291,4 @@ export const auth: Auth = betterAuth({
       clientSecret: env.GITHUB_CLIENT_SECRET,
     },
   },
-} satisfies BetterAuthOptions)
+} satisfies BetterAuthOptions as BetterAuthOptions)

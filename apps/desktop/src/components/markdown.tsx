@@ -148,6 +148,7 @@ function P({ children, className }: { children?: ReactNode, className?: string }
 }
 
 function MarkdownBase({ content }: { content: string }) {
+  // eslint-disable-next-line e18e/prefer-static-regex
   const processedContent = content.replace(/\n/g, '  \n')
 
   return (

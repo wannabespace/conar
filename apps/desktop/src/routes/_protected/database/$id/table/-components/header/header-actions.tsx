@@ -6,7 +6,7 @@ import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
+import { useSubscription } from 'seitu/react'
 import { ExportData } from '~/components/export-data'
 import { connectionConstraintsQuery, connectionRowsQuery, connectionTableColumnsQuery, connectionTableTotalQuery } from '~/entities/connection/queries'
 import { rowsQuery } from '~/entities/connection/sql/rows'
@@ -22,7 +22,7 @@ import { HeaderActionsOrder } from './header-actions-order'
 export function HeaderActions({ table, schema }: { table: string, schema: string }) {
   const { connection } = Route.useLoaderData()
   const store = usePageStoreContext()
-  const [filters, orderBy, exact, selected] = useStore(store, state => [state.filters, state.orderBy, state.exact, state.selected])
+  const [filters, orderBy, exact, selected] = useSubscription(store, { selector: state => [state.filters, state.orderBy, state.exact, state.selected] })
   const { isFetching, dataUpdatedAt, refetch, data: rows = [], isPending } = useInfiniteQuery(
     connectionRowsQuery({ connection, table, schema, query: { filters, orderBy } }),
   )

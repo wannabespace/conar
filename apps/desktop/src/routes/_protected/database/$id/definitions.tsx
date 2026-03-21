@@ -1,4 +1,4 @@
-import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
+import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { Sidebar } from './definitions/-components/sidebar'
 
@@ -22,12 +22,9 @@ function DefinitionsLayout() {
     <div className="flex size-full gap-1">
       <Sidebar />
       <ScrollArea className="h-full flex-1 rounded-lg border bg-background">
-        <ScrollViewport>
-          <div className="mx-auto flex max-w-3xl flex-col px-4 py-6">
-            <Outlet />
-          </div>
-        </ScrollViewport>
-        <ScrollBar />
+        <div className="mx-auto flex max-w-3xl flex-col px-4 py-6">
+          <Outlet />
+        </div>
       </ScrollArea>
     </div>
   )

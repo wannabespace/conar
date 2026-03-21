@@ -3,10 +3,10 @@ import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { withPosthog } from '~/lib/posthog'
-import { orpc, requireSubscriptionMiddleware } from '~/orpc'
+import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const updateSQL = orpc
-  .use(requireSubscriptionMiddleware)
+  .use(subscriptionMiddleware)
   .input(type({
     sql: 'string',
     prompt: 'string',
@@ -15,7 +15,7 @@ export const updateSQL = orpc
   }))
   .handler(async ({ input, signal, context }) => {
     const { text } = await generateText({
-      model: withPosthog(anthropic('claude-sonnet-4-5'), {
+      model: withPosthog(anthropic('claude-opus-4-6'), {
         userId: context.user.id,
       }),
       messages: [
@@ -30,6 +30,7 @@ export const updateSQL = orpc
             'User\'s prompt can contain several SQL queries, you should update all of them.',
             'Always return a valid SQL query as output, without any explanations or markdown.',
             'This SQL will paste directly into a SQL editor.',
+            'Do not include ```sql or ``` at the beginning and end of the query.',
             '',
             'Database context:',
             input.context,

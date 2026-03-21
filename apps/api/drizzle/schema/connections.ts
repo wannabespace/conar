@@ -1,9 +1,9 @@
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { enumValues } from '@conar/shared/utils/helpers'
-import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-arktype'
-import { relations } from 'drizzle-orm'
-import { pgEnum, pgTable } from 'drizzle-orm/pg-core'
+import { defineRelations } from 'drizzle-orm'
+import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-orm/arktype'
+import { pgEnum, pgTable, unique } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 import { encryptedText } from '../utils'
 import { users } from './auth'
@@ -28,9 +28,33 @@ export const connectionsSelectSchema = createSelectSchema(connections)
 export const connectionsUpdateSchema = createUpdateSchema(connections)
 export const connectionsInsertSchema = createInsertSchema(connections)
 
-export const connectionsRelations = relations(connections, ({ one }) => ({
-  user: one(users, {
-    fields: [connections.userId],
-    references: [users.id],
-  }),
+export const connectionsResources = pgTable('connections_resources', ({ uuid, text }) => ({
+  ...baseTable,
+  connectionId: uuid().references(() => connections.id, { onDelete: 'cascade' }).notNull(),
+  name: text().notNull(),
+}), t => [
+  unique().on(t.connectionId, t.name),
+])
+
+export const connectionsResourcesSelectSchema = createSelectSchema(connectionsResources)
+export const connectionsResourcesUpdateSchema = createUpdateSchema(connectionsResources)
+export const connectionsResourcesInsertSchema = createInsertSchema(connectionsResources)
+
+export const connectionsRelations = defineRelations({ connections, connectionsResources, users }, r => ({
+  connections: {
+    user: r.one.users({
+      from: r.connections.userId,
+      to: r.users.id,
+    }),
+    resources: r.many.connectionsResources({
+      from: r.connections.id,
+      to: r.connectionsResources.connectionId,
+    }),
+  },
+  connectionsResources: {
+    connection: r.one.connections({
+      from: r.connectionsResources.connectionId,
+      to: r.connections.id,
+    }),
+  },
 }))

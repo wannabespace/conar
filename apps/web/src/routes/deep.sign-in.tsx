@@ -18,7 +18,7 @@ export const Route = createFileRoute('/deep/sign-in')({
     const { data } = await authClient.getSession()
 
     if (data) {
-      await orpc.account.challenge.publish({ codeChallenge, newUser })
+      await orpc.account.challenge.publish.call({ codeChallenge, newUser })
 
       throw redirect({ to: '/open' })
     }

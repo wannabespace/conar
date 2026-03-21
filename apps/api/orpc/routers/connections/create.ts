@@ -5,7 +5,8 @@ import { encrypt } from '@conar/shared/utils/encryption'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { ORPCError } from '@orpc/server'
 import { count, eq } from 'drizzle-orm'
-import { connections, connectionsInsertSchema, db } from '~/drizzle'
+import { db } from '~/drizzle'
+import { connections, connectionsInsertSchema } from '~/drizzle/schema'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const create = orpc

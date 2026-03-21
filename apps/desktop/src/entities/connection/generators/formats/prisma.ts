@@ -1,7 +1,8 @@
+/* eslint-disable e18e/prefer-static-regex */
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'
-import { findEnum } from '../../sql/enums'
+import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
 import { filterExplicitIndexes, getColumnType, groupIndexes } from '../utils'
 
@@ -210,7 +211,7 @@ export function generateSchemaPrisma({
 
   const body = cols.join('\n') + (indexBlocks.length ? `\n${indexBlocks.join('\n')}` : '')
 
-  const uniqueExtras = Array.from(new Set(extraBlocks))
+  const uniqueExtras = [...new Set(extraBlocks)]
 
   return templates.prismaSchemaTemplate(table, body) + (uniqueExtras.length ? `\n\n${uniqueExtras.join('\n\n')}` : '')
 }
