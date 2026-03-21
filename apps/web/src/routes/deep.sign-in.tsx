@@ -11,6 +11,9 @@ export const Route = createFileRoute('/deep/sign-in')({
   loaderDeps: ({ search }) => search,
   loader: async ({ deps }) => {
     const { codeChallenge, newUser } = deps
+    const redirectSearch = new URLSearchParams({ codeChallenge })
+    if (newUser)
+      redirectSearch.set('newUser', 'true')
 
     const { data } = await authClient.getSession()
 
@@ -22,7 +25,7 @@ export const Route = createFileRoute('/deep/sign-in')({
 
     throw redirect({
       to: '/sign-in',
-      search: { redirectPath: `/deep/sign-in?codeChallenge=${codeChallenge}` },
+      search: { redirectPath: `/deep/sign-in?${redirectSearch.toString()}` },
     })
   },
 })

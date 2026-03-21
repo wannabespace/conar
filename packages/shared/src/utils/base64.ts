@@ -25,13 +25,9 @@ export function fromBase64(base64: string) {
   return new TextDecoder().decode(bytes)
 }
 
-const b64UrlEncodeRegex = /\+/g
-const b64UrlEncodeSlashRegex = /\//g
-const b64UrlEncodeEqualRegex = /=+$/
-
 export function b64UrlEncode(buf: Uint8Array) {
   return toBase64(String.fromCharCode(...buf))
-    .replace(b64UrlEncodeRegex, '-')
-    .replace(b64UrlEncodeSlashRegex, '_')
-    .replace(b64UrlEncodeEqualRegex, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
 }

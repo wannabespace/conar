@@ -12,10 +12,8 @@ import { UAParser } from 'ua-parser-js'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-const electronAppNameRegex = /\s+([A-Za-z][\w.-]*)\/([\d.]+)\s+Chrome\//
-
 function getElectronAppName(ua: string) {
-  const m = ua.match(electronAppNameRegex)
+  const m = ua.match(/\s+([A-Za-z][\w.-]*)\/([\d.]+)\s+Chrome\//)
   return m ? `${m[1]} ${m[2]}` : null
 }
 

@@ -57,9 +57,9 @@ export function TableProvider({
     }
 
     scrollRef.current.style.setProperty('--table-scroll-left-offset', `${virtualColumns[0]?.start ?? 0}px`)
-    scrollRef.current.style.setProperty('--table-scroll-right-offset', `${tableWidth - (virtualColumns.at(-1)?.end ?? 0)}px`)
+    scrollRef.current.style.setProperty('--table-scroll-right-offset', `${tableWidth - (virtualColumns[virtualColumns.length - 1]?.end ?? 0)}px`)
     scrollRef.current.style.setProperty('--table-scroll-top-offset', `${virtualRows[0]?.start ?? 0}px`)
-    scrollRef.current.style.setProperty('--table-scroll-bottom-offset', `${tableHeight - (virtualRows.at(-1)?.end ?? 0)}px`)
+    scrollRef.current.style.setProperty('--table-scroll-bottom-offset', `${tableHeight - (virtualRows[virtualRows.length - 1]?.end ?? 0)}px`)
   }, [scrollRef, virtualColumns, virtualRows, tableWidth, tableHeight])
 
   const measureDebounced = useDebouncedCallback(measure, [], 250)

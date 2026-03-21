@@ -1,0 +1,120 @@
+import { title } from '@conar/shared/utils/title'
+import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
+import { createFileRoute } from '@tanstack/react-router'
+import { type } from 'arktype'
+import { useEffect } from 'react'
+import { useDefaultLayout } from 'react-resizable-panels'
+import { useSubscription } from 'seitu/react'
+import { v7 } from 'uuid'
+import { getConnectionResourceStore } from '~/entities/connection/store'
+import { Chat, createChat } from './-components/chat'
+import { Runner } from './-components/runner'
+
+export const Route = createFileRoute(
+  '/_protected/connection/$resourceId/query/',
+)({
+  component: DatabaseSqlPage,
+  validateSearch: type({
+    'chatId?': 'string.uuid.v7 | undefined',
+    'error?': 'string | undefined',
+  }),
+  loaderDeps: ({ search }) => search,
+  loader: async ({ context, deps }) => {
+    return {
+      connection: context.connection,
+      connectionResource: context.connectionResource,
+      chat: await createChat({
+        id: deps.chatId ?? v7(),
+        connectionResource: context.connectionResource,
+      }),
+    }
+  },
+  head: ({ loaderData }) => ({
+    meta: loaderData ? [{ title: title('SQL Runner', loaderData.connection.name, loaderData.connectionResource.name) }] : [],
+  }),
+})
+
+const MIN_CHAT_SIZE = '15%'
+
+function ChatPanel() {
+  return (
+    <ResizablePanel
+      defaultSize="30%"
+      minSize={MIN_CHAT_SIZE}
+      maxSize="50%"
+      className="rounded-lg border bg-background"
+    >
+      <Chat className="h-full" />
+    </ResizablePanel>
+  )
+}
+
+function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
+  return (
+    <ResizablePanel
+      defaultSize={chatVisible ? '70%' : '100%'}
+      minSize="30%"
+      className="rounded-lg border bg-background"
+    >
+      <Runner />
+    </ResizablePanel>
+  )
+}
+
+function DatabaseSqlPage() {
+  const { connectionResource } = Route.useRouteContext()
+  const { chatId } = Route.useSearch()
+  const store = getConnectionResourceStore(connectionResource.id)
+
+  const { chatVisible, chatPosition } = useSubscription(store, {
+    selector: s => ({
+      chatVisible: s.layout.chatVisible,
+      chatPosition: s.layout.chatPosition,
+    }),
+  })
+
+  useEffect(() => {
+    store.set(state => ({
+      ...state,
+      lastOpenedChatId: chatId ?? null,
+    } satisfies typeof state))
+  }, [chatId, store])
+
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: `sql-layout-${connectionResource.id}`,
+    storage: localStorage,
+  })
+
+  return (
+    <ResizablePanelGroup
+      defaultLayout={defaultLayout}
+      onLayoutChanged={onLayoutChanged}
+      orientation="horizontal"
+      className="flex h-full"
+    >
+      {chatVisible
+        ? (
+            <>
+              {chatPosition === 'left'
+                ? (
+                    <>
+                      <ChatPanel key="chat" />
+                      <ResizableSeparator className="w-1" />
+                      <RunnerPanel key="runner" />
+                    </>
+                  )
+                : (
+                    <>
+                      <RunnerPanel key="runner" />
+                      <ResizableSeparator className="w-1" />
+                      <ChatPanel key="chat" />
+                    </>
+                  )}
+            </>
+          )
+        : (
+            <RunnerPanel key="runner" chatVisible={false} />
+          )}
+    </ResizablePanelGroup>
+  )
+}

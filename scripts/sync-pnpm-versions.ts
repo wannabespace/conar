@@ -32,11 +32,10 @@ function updateTodesktopJson(version: string) {
   return true
 }
 
-const versionRegex = /(version:\s*)([\d.]+)/g
-
 function updateWorkflowYaml(filePath: string, version: string) {
   const content = fs.readFileSync(filePath, 'utf-8')
 
+  const versionRegex = /(version:\s*)([\d.]+)/g
   const newContent = content.replace(versionRegex, (match, prefix, oldVersion) => {
     if (oldVersion === version) {
       return match

@@ -26,12 +26,10 @@ function getDesktopVersion(): string {
   return v
 }
 
-const pkgverRe = /^(\s*pkgver = ).*$/m
-const sourceRe = /^(\s*source_x86_64 = )conar-[^:]+(::https:\/\/download\.conar\.app\/linux\/deb\/x64)$/m
-const sha256Re = /^(\s*sha256sums_x86_64 = ).*$/m
-
 function updatePkgbuild(version: string, sha256: string | null): boolean {
   const original = fs.readFileSync(PKGBUILD_PATH, 'utf-8')
+  const pkgverRe = /^pkgver=.*$/m
+  const sha256Re = /^sha256sums_x86_64=\(.*\)$/m
   let content = original.replace(pkgverRe, `pkgver=${version}`)
   if (sha256) {
     content = content.replace(sha256Re, `sha256sums_x86_64=('${sha256}')`)
@@ -45,6 +43,10 @@ function updatePkgbuild(version: string, sha256: string | null): boolean {
 
 function updateSrcinfo(version: string, sha256: string | null): boolean {
   let content = fs.readFileSync(SRCINFO_PATH, 'utf-8')
+
+  const pkgverRe = /^(\s*pkgver = ).*$/m
+  const sourceRe = /^(\s*source_x86_64 = )conar-[^:]+(::https:\/\/download\.conar\.app\/linux\/deb\/x64)$/m
+  const sha256Re = /^(\s*sha256sums_x86_64 = ).*$/m
 
   let changed = false
   const newPkgver = `$1${version}`

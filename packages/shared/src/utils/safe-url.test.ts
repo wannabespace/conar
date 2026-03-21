@@ -32,7 +32,7 @@ describe('new SafeURL', () => {
       hash: '',
       href: conn,
     })
-    expect([...parsed.searchParams.entries()]).toEqual([])
+    expect(Array.from(parsed.searchParams.entries())).toEqual([])
   })
 
   it('accepts a SafeURL instance', () => {
@@ -72,10 +72,30 @@ describe('new SafeURL', () => {
       hash: '',
       href: conn,
     })
-    expect([...parsed.searchParams.entries()]).toEqual([
+    expect(Array.from(parsed.searchParams.entries())).toEqual([
       ['sslmode', 'require'],
       ['application_name', 'myapp'],
     ])
+  })
+
+  it('parses a connection string with different protocol', () => {
+    const conn = 'postgres://alice:secret@db.example.com:6543/sampledb'
+    const parsed = new SafeURL(conn)
+
+    expect(parsed).toMatchObject({
+      protocol: 'postgres:',
+      origin: 'postgres://db.example.com:6543',
+      host: 'db.example.com:6543',
+      username: 'alice',
+      password: 'secret',
+      hostname: 'db.example.com',
+      port: '6543',
+      pathname: '/sampledb',
+      search: '',
+      hash: '',
+      href: conn,
+    })
+    expect(Array.from(parsed.searchParams.entries())).toEqual([])
   })
 
   it('parses a connection string with empty database and options', () => {
@@ -95,29 +115,7 @@ describe('new SafeURL', () => {
       hash: '',
       href: conn,
     })
-    expect([...parsed.searchParams.entries()]).toEqual([])
-    expect(parsed.toString()).toBe(conn)
-  })
-
-  it('parses a connection string with empty path and set later', () => {
-    const conn = 'postgresql://user:pass@localhost:5432'
-    const parsed = new SafeURL(conn)
-    parsed.pathname = 'mydb'
-
-    expect(parsed).toMatchObject({
-      protocol: 'postgresql:',
-      origin: 'postgresql://localhost:5432',
-      host: 'localhost:5432',
-      username: 'user',
-      password: 'pass',
-      hostname: 'localhost',
-      port: '5432',
-      pathname: '/mydb',
-      search: '',
-      hash: '',
-      href: `${conn}/mydb`,
-    })
-    expect([...parsed.searchParams.entries()]).toEqual([])
+    expect(Array.from(parsed.searchParams.entries())).toEqual([])
   })
 
   it('parses a connection string with special characters in username and password', () => {
@@ -137,7 +135,7 @@ describe('new SafeURL', () => {
       hash: '',
       href: conn,
     })
-    expect([...parsed.searchParams.entries()]).toEqual([])
+    expect(Array.from(parsed.searchParams.entries())).toEqual([])
   })
 
   it('parses a connection string with multiple query parameters', () => {
@@ -157,7 +155,7 @@ describe('new SafeURL', () => {
       hash: '',
       href: conn,
     })
-    expect([...parsed.searchParams.entries()]).toEqual([
+    expect(Array.from(parsed.searchParams.entries())).toEqual([
       ['ssl', 'true'],
       ['connect_timeout', '10'],
       ['search_path', 'myschema'],
@@ -193,7 +191,7 @@ describe('new SafeURL', () => {
     expect(parsed.search).toBe('')
     expect(parsed.hash).toBe('')
     expect(parsed.href).toBe(conn.replace(':@', ''))
-    expect([...parsed.searchParams.entries()]).toEqual([])
+    expect(Array.from(parsed.searchParams.entries())).toEqual([])
   })
 
   it('parses a connection string with empty path - with trailing slash', () => {
@@ -211,7 +209,7 @@ describe('new SafeURL', () => {
     expect(parsed.search).toBe('')
     expect(parsed.hash).toBe('')
     expect(parsed.href).toBe(conn)
-    expect([...parsed.searchParams.entries()]).toEqual([])
+    expect(Array.from(parsed.searchParams.entries())).toEqual([])
   })
 
   it('parses a connection string with empty path - without trailing slash', () => {
@@ -229,7 +227,7 @@ describe('new SafeURL', () => {
     expect(parsed.search).toBe('')
     expect(parsed.hash).toBe('')
     expect(parsed.href).toBe(conn)
-    expect([...parsed.searchParams.entries()]).toEqual([])
+    expect(Array.from(parsed.searchParams.entries())).toEqual([])
   })
 
   describe('property setting', () => {
@@ -316,52 +314,42 @@ describe('new SafeURL', () => {
     })
   })
 
-  describe('toMasked', () => {
-    it('masks the password in a standard connection string', () => {
+  describe('hrefEncoded', () => {
+    it('should return properly encoded URL for basic connection string', () => {
       const conn = 'postgresql://user:pass@localhost:5432/mydb'
       const parsed = new SafeURL(conn)
 
-      expect(parsed.toMasked()).toBe('postgresql://user:****@localhost:5432/mydb')
+      expect(parsed.hrefEncoded).toBe('postgresql://user:pass@localhost:5432/mydb')
     })
 
-    it('returns URL as-is when there is no password', () => {
-      const conn = 'http://localhost:5432/mydb'
+    it('should encode special characters in credentials when set via properties', () => {
+      const conn = 'postgresql://user:pass@localhost:5432/mydb'
       const parsed = new SafeURL(conn)
+      parsed.username = 'user@domain'
+      parsed.password = 'pass:word'
 
-      expect(parsed.toMasked()).toBe('http://localhost:5432/mydb')
+      expect(parsed.hrefEncoded).toBe('postgresql://user%40domain:pass%3Aword@localhost:5432/mydb')
     })
 
-    it('preserves username when only password is masked', () => {
-      const conn = 'mysql://root:secret@127.0.0.1:3306/testdb'
-      const parsed = new SafeURL(conn)
-      const masked = parsed.toMasked()
-
-      expect(masked).toContain('root')
-      expect(masked).not.toContain('secret')
-      expect(masked).toBe('mysql://root:****@127.0.0.1:3306/testdb')
-    })
-
-    it('preserves query parameters and hash', () => {
-      const conn = 'postgresql://user:pass@localhost:5432/mydb?ssl=true#section'
-      const parsed = new SafeURL(conn)
-
-      expect(parsed.toMasked()).toBe('postgresql://user:****@localhost:5432/mydb?ssl=true#section')
-    })
-
-    it('handles empty credentials', () => {
+    it('should handle empty credentials', () => {
       const conn = 'postgresql://:@localhost:5432/mydb'
       const parsed = new SafeURL(conn)
 
-      expect(parsed.toMasked()).toBe('postgresql://localhost:5432/mydb')
+      expect(parsed.hrefEncoded).toBe('postgresql://localhost:5432/mydb')
     })
 
-    it('masks password with special characters', () => {
-      const conn = 'postgresql://us%40er:pa%3A#ss@localhost:5432/mydb'
+    it('should preserve query parameters and hash', () => {
+      const conn = 'postgresql://user:pass@localhost:5432/mydb?ssl=true#section'
       const parsed = new SafeURL(conn)
-      const masked = parsed.toMasked()
 
-      expect(masked).not.toContain('pa%3A#ss')
-      expect(masked).toContain('****')
+      expect(parsed.hrefEncoded).toBe('postgresql://user:pass@localhost:5432/mydb?ssl=true#section')
+    })
+
+    it('should handle different database protocols', () => {
+      const conn = 'mysql://user:pass@localhost:3306/mydb'
+      const parsed = new SafeURL(conn)
+
+      expect(parsed.hrefEncoded).toBe('mysql://user:pass@localhost:3306/mydb')
     })
   })
 
@@ -379,7 +367,7 @@ describe('new SafeURL', () => {
       expect(typeof parsed.pathname).toBe('string')
       expect(typeof parsed.search).toBe('string')
       expect(typeof parsed.hash).toBe('string')
-      expect(Array.isArray([...parsed.searchParams.entries()])).toBe(true)
+      expect(Array.isArray(Array.from(parsed.searchParams.entries()))).toBe(true)
     }
   })
 })

@@ -1,6 +1,7 @@
 import { EventPublisher } from '@orpc/server'
 import { redis } from '~/lib/redis'
 import { exchange } from './exchange'
+import { linkAnonymous } from './link-anonymous'
 import { listen } from './listen'
 import { publish } from './publish'
 
@@ -23,4 +24,5 @@ export const challenge = {
   listen,
   publish,
   exchange,
+  linkAnonymous,
 }
