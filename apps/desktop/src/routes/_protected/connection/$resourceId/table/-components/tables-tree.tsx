@@ -4,18 +4,18 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@c
 import { Button } from '@conar/ui/components/button'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
-import { ScrollArea, ScrollBar, ScrollViewport } from '@conar/ui/components/scroll-area'
-import { MotionSeparator } from '@conar/ui/components/separator'
+import { ScrollAreaPrimitive, ScrollBar } from '@conar/ui/components/scroll-area'
+import { Separator, SeparatorMotion } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiStackLine, RiTableLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useSearch } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { AnimatePresence, motion } from 'motion/react'
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { SidebarLink } from '~/components/sidebar-link'
 import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { addTab, cleanupPinnedTables, getConnectionResourceStore, togglePinTable } from '~/entities/connection/store'
@@ -61,7 +61,7 @@ const TableItem = memo(({ schema, table, pinned = false, search, onRename, onDro
   search?: string
   onRename: () => void
   onDrop: () => void
-}) {
+}) => {
   const { connectionResource } = Route.useRouteContext()
 
   return (
@@ -103,32 +103,34 @@ const TableItem = memo(({ schema, table, pinned = false, search, onRename, onDro
           >
             {pinned
               ? <RiPushpinFill className="size-3 text-primary" />
-              : (
-                  <RiPushpinLine className="size-3" />
-                )}
+              : <RiPushpinLine className="size-3" />}
           </Button>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                className={cn(
-                  `
-                    opacity-0 transition-opacity
-                    group-hover:opacity-100
-                    focus-visible:opacity-100
-                  `,
-                  isActive && 'hover:bg-primary/10',
-                )}
-                onClick={e => e.stopPropagation()}
-              >
-                <RiMoreLine className="size-3" />
-              </Button>
+            <DropdownMenuTrigger
+              onClick={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+              }}
+              render={(
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className={cn(
+                    `
+                      opacity-0 transition-opacity
+                      group-hover:opacity-100
+                      focus-visible:opacity-100
+                    `,
+                    isActive && 'hover:bg-primary/10',
+                  )}
+                />
+              )}
+            >
+              <RiMoreLine className="size-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
               className="min-w-48"
-              onCloseAutoFocus={e => e.preventDefault()}
             >
               <DropdownMenuItem
                 onClick={(e) => {
@@ -269,7 +271,7 @@ function VirtualizedTableList({
             {item.type === 'separator'
               ? (
                   <div className="py-2">
-                    <MotionSeparator className="h-px w-full" />
+                    <Separator className="h-px w-full" />
                   </div>
                 )
               : (
@@ -292,11 +294,11 @@ function VirtualizedTableList({
 export function TablesTree({ className, search }: { className?: string, search?: string }) {
   const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useStore(store, state => state.showSystem)
-  const { data: tablesAndSchemas, isPending } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
+  const showSystem = useSubscription(store, { selector: state => state.showSystem })
+  const { data: tablesAndSchemas, isPending } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
   const { schema: schemaParam } = useSearch({ from: '/_protected/connection/$resourceId/table/' })
-  const tablesTreeOpenedSchemas = useStore(store, state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'])
-  const pinnedTables = useStore(store, state => state.pinnedTables)
+  const tablesTreeOpenedSchemas = useSubscription(store, { selector: state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'] })
+  const pinnedTables = useSubscription(store, { selector: state => state.pinnedTables })
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -378,34 +380,52 @@ export function TablesTree({ className, search }: { className?: string, search?:
     const next = tablesTreeOpenedSchemas.includes(activeSchemaId)
       ? tablesTreeOpenedSchemas.filter(id => id !== activeSchemaId)
       : [...tablesTreeOpenedSchemas, activeSchemaId]
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       tablesTreeOpenedSchemas: next,
     } satisfies typeof state))
   }
 
   return (
-    <ScrollArea className={cn('h-full', className)}>
-      <DropTableDialog ref={dropTableDialogRef} />
-      <RenameTableDialog ref={renameTableDialogRef} />
-      <AnimatePresence>
-        {activeSchemaId && (
-          <StickyHeader
-            activeSchemaId={activeSchemaId}
-            schemaParam={schemaParam}
-            isExpanded={isActiveSchemaExpanded}
-            onToggle={handleStickyToggle}
-            canToggle={!search}
-          />
+    <ScrollAreaPrimitive.Root className={cn('size-full min-h-0', className)}>
+      <ScrollAreaPrimitive.Viewport
+        ref={scrollRef}
+        className={cn(
+          `
+            h-full rounded-[inherit] transition-all outline-none
+            focus-visible:ring-2 focus-visible:ring-ring
+            focus-visible:ring-offset-1 focus-visible:ring-offset-background
+            data-has-overflow-x:overscroll-x-contain
+            data-has-overflow-y:overscroll-y-contain
+            mask-t-from-[calc(100%-min(var(--fade-size),var(--scroll-area-overflow-y-start)))]
+            mask-r-from-[calc(100%-min(var(--fade-size),var(--scroll-area-overflow-x-end)))]
+            mask-b-from-[calc(100%-min(var(--fade-size),var(--scroll-area-overflow-y-end)))]
+            mask-l-from-[calc(100%-min(var(--fade-size),var(--scroll-area-overflow-x-start)))]
+            [--fade-size:1.5rem]
+          `,
+          'p-2',
         )}
-      </AnimatePresence>
-      <ScrollViewport ref={scrollRef} className="p-2">
+        data-slot="scroll-area-viewport"
+      >
+        <DropTableDialog ref={dropTableDialogRef} />
+        <RenameTableDialog ref={renameTableDialogRef} />
+        <AnimatePresence>
+          {activeSchemaId && (
+            <StickyHeader
+              activeSchemaId={activeSchemaId}
+              schemaParam={schemaParam}
+              isExpanded={isActiveSchemaExpanded}
+              onToggle={handleStickyToggle}
+              canToggle={!search}
+            />
+          )}
+        </AnimatePresence>
         <Accordion
           ref={accordionRef}
           value={searchAccordionValue}
           onValueChange={(v) => {
             if (!search) {
-              store.setState(state => ({
+              store.set(state => ({
                 ...state,
                 tablesTreeOpenedSchemas: v,
               } satisfies typeof state))
@@ -521,7 +541,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                                       </motion.div>
                                     ))}
                                     {schema.pinnedTables.length > 0 && schema.unpinnedTables.length > 0 && (
-                                      <MotionSeparator
+                                      <SeparatorMotion
                                         className="my-2 h-px!"
                                         layout
                                         variants={treeVariants}
@@ -559,8 +579,10 @@ export function TablesTree({ className, search }: { className?: string, search?:
                   </AnimatePresence>
                 )}
         </Accordion>
-      </ScrollViewport>
+      </ScrollAreaPrimitive.Viewport>
       <ScrollBar orientation="vertical" />
-    </ScrollArea>
+      <ScrollBar orientation="horizontal" />
+      <ScrollAreaPrimitive.Corner data-slot="scroll-area-corner" />
+    </ScrollAreaPrimitive.Root>
   )
 }

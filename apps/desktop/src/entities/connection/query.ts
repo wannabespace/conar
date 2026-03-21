@@ -1,6 +1,6 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { Type } from 'arktype'
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { dialects } from './dialects'
 import { logQuery } from './log'

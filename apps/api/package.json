@@ -6,10 +6,10 @@
     "start": "cross-env NODE_ENV=production bun run ./index.ts",
     "check-types": "tsc",
     "test:start": "cross-env NODE_ENV=test bun --env-file=.env.test drizzle-kit migrate && cross-env NODE_ENV=test bun --env-file=.env.test run ./index.ts",
-    "drizzle:generate": "cross-env NODE_ENV=production drizzle-kit generate",
-    "drizzle:generate-custom": "cross-env NODE_ENV=production drizzle-kit generate --custom",
-    "drizzle:migrate": "cross-env NODE_ENV=production drizzle-kit migrate",
-    "better-auth:generate": "cross-env NODE_ENV=production pnpm dlx @better-auth/cli@latest generate --output ./drizzle/schema/auth.ts"
+    "drizzle:generate": "cross-env NODE_ENV=development drizzle-kit generate",
+    "drizzle:generate-custom": "cross-env NODE_ENV=development drizzle-kit generate --custom",
+    "drizzle:migrate": "cross-env NODE_ENV=development drizzle-kit migrate",
+    "better-auth:generate": "cross-env NODE_ENV=development pnpx https://pkg.pr.new/better-auth/better-auth/@better-auth/cli@6913 generate --output ./drizzle/schema/auth.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "catalog:",
@@ -17,6 +17,7 @@
     "@ai-sdk/openai": "catalog:",
     "@ai-sdk/provider": "catalog:",
     "@ai-sdk/xai": "catalog:",
+    "@better-auth/drizzle-adapter": "catalog:",
     "@conar/connection": "workspace:*",
     "@conar/shared": "workspace:*",
     "@exalabs/ai-sdk": "catalog:",

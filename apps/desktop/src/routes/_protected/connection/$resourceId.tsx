@@ -1,16 +1,16 @@
-import type { getConnectionResourceStoreType } from '~/entities/connection/store'
+import type { connectionResourceType } from '~/entities/connection/store'
 import type { FileRoutesById } from '~/routeTree.gen'
 import { title } from '@conar/shared/utils/title'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { cn } from '@conar/ui/lib/utils'
 import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
+import { useSubscription } from 'seitu/react'
 import { QueryLogger } from '~/entities/connection/components'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
-import { lastOpenedResources, prefetchConnectionResourceCore } from '~/entities/connection/utils'
+import { lastOpenedResourcesStorageValue, prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { ConnectionSidebar } from './-components/connection-sidebar'
 import { PasswordForm } from './-components/password-form'
 
@@ -34,17 +34,17 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
   loader: async ({ context }) => {
     prefetchConnectionResourceCore(context.connectionResource)
 
-    return { connection: context.connection }
+    return { connection: context.connection, connectionResource: context.connectionResource }
   },
   head: ({ loaderData }) => ({
     meta: loaderData
-      ? [{ title: title(loaderData.connection.name) }]
+      ? [{ title: title(loaderData.connection.name, loaderData.connectionResource.name) }]
       : [],
   }),
 })
 
 function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
-  return routesIds.find(route => route.includes('/_protected/connection/$resourceId')) as typeof getConnectionResourceStoreType.infer['lastOpenedPage']
+  return routesIds.findLast(route => route.includes('/_protected/connection/$resourceId')) as typeof connectionResourceType.infer['lastOpenedPage']
 }
 
 function DatabasePage() {
@@ -53,11 +53,11 @@ function DatabasePage() {
     select: matches => getDatabasePageId(matches.map(match => match.routeId)),
   })
   const store = getConnectionResourceStore(connectionResource.id)
-  const loggerOpened = useStore(store, state => state.loggerOpened)
+  const loggerOpened = useSubscription(store, { selector: state => state.loggerOpened })
 
   useEffect(() => {
     if (currentPageId) {
-      store.setState(state => ({
+      store.set(state => ({
         ...state,
         lastOpenedPage: currentPageId,
       } satisfies typeof state))
@@ -65,9 +65,9 @@ function DatabasePage() {
   }, [currentPageId, store])
 
   useEffect(() => {
-    const last = lastOpenedResources.get()
+    const last = lastOpenedResourcesStorageValue.get()
     if (!last.includes(connectionResource.id))
-      lastOpenedResources.set([connectionResource.id, ...last.filter(resourceId => resourceId !== connectionResource.id)].slice(0, 3))
+      lastOpenedResourcesStorageValue.set([connectionResource.id, ...last.filter(resourceId => resourceId !== connectionResource.id)].slice(0, 3))
   }, [connectionResource.id])
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({

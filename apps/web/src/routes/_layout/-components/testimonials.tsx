@@ -127,21 +127,25 @@ function JoinTestimonials() {
         >
           Want to be featured here?
         </h3>
-        <Button asChild variant="link">
-          <a
-            href={SOCIAL_LINKS.TWITTER}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Tag @conar_app on
-            <RiTwitterXLine
-              className={`
-                size-3
-                sm:size-4
-              `}
-              aria-hidden="true"
+        <Button
+          render={(
+            <a
+              href={SOCIAL_LINKS.TWITTER}
+              target="_blank"
+              rel="noopener noreferrer"
             />
-          </a>
+          )}
+          variant="link"
+        >
+
+          Tag @conar_app on
+          <RiTwitterXLine
+            className={`
+              size-3
+              sm:size-4
+            `}
+            aria-hidden="true"
+          />
         </Button>
       </div>
     </div>

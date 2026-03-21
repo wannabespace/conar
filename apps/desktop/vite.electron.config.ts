@@ -33,6 +33,9 @@ export default defineConfig({
       port: PORTS.DEV.DESKTOP,
     },
     root: '.',
+    worker: {
+      format: 'es',
+    },
     build: {
       // sourcemap: true,
       rollupOptions: {

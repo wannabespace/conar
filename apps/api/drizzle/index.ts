@@ -7,12 +7,6 @@ import { connectionsRelations } from './schema/connections'
 import { queriesRelations } from './schema/queries'
 import '@electric-sql/pglite'
 
-export * from './schema/auth'
-export * from './schema/chats'
-export * from './schema/connections'
-export * from './schema/queries'
-export * from './schema/subscriptions'
-
 const config = {
   relations: {
     ...authRelations,

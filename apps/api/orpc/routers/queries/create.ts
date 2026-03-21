@@ -1,5 +1,6 @@
 import { type } from 'arktype'
-import { db, queriesInsertSchema } from '~/drizzle'
+import { db } from '~/drizzle'
+import { queriesInsertSchema } from '~/drizzle/schema'
 import { queries } from '~/drizzle/schema/queries'
 import { authMiddleware, orpc } from '~/orpc'
 

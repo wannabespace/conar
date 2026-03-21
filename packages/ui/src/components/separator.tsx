@@ -2,7 +2,7 @@ import { Separator as SeparatorPrimitive } from '@base-ui/react/separator'
 import { cn } from '@conar/ui/lib/utils'
 import { motion } from 'motion/react'
 
-export const MotionSeparator = motion.create(Separator)
+export const SeparatorMotion = motion.create(Separator)
 
 function Separator({
   className,

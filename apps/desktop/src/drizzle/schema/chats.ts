@@ -2,11 +2,11 @@ import type { AppUIMessage } from '@conar/api/ai/tools/helpers'
 import { defineRelations } from 'drizzle-orm'
 import { jsonb, pgTable, text, uuid } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
-import { connections } from './connections'
+import { connectionsResources } from './connections'
 
 export const chats = pgTable('chats', {
   ...baseTable,
-  connectionId: uuid().references(() => connections.id, { onDelete: 'cascade' }).notNull(),
+  connectionResourceId: uuid().references(() => connectionsResources.id, { onDelete: 'cascade' }).notNull(),
   title: text(),
 })
 
@@ -19,12 +19,12 @@ export const chatsMessages = pgTable('chats_messages', {
 })
 
 export const chatsRelations = defineRelations(
-  { chats, chatsMessages, connections },
+  { chats, chatsMessages, connectionsResources },
   r => ({
     chats: {
-      connection: r.one.connections({
-        from: r.chats.connectionId,
-        to: r.connections.id,
+      connectionResource: r.one.connectionsResources({
+        from: r.chats.connectionResourceId,
+        to: r.connectionsResources.id,
       }),
       messages: r.many.chatsMessages(),
     },

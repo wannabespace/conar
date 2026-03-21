@@ -1,11 +1,11 @@
-import type { connections, connectionsResources } from '~/drizzle'
+import type { connections, connectionsResources } from '~/drizzle/schema'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { RiAddLine, RiDashboardLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
+import { useSubscription } from 'seitu/react'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
 import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
@@ -17,7 +17,7 @@ import { appStore, setIsActionCenterOpen } from '~/store'
 function ActionsResourceTables({ connection, connectionResource }: { connection: typeof connections.$inferSelect, connectionResource: typeof connectionsResources.$inferSelect }) {
   const store = getConnectionResourceStore(connectionResource.id)
   const { data: tablesAndSchemas } = useQuery({
-    ...resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem }),
+    ...resourceTablesAndSchemasQuery({ silent: true, connectionResource, showSystem: store.get().showSystem }),
     throwOnError: false,
   })
   const router = useRouter()
@@ -101,7 +101,7 @@ export function ActionsCenter() {
       connectionResource: connectionResources,
     }))
     .orderBy(({ connections }) => connections.createdAt, 'desc'))
-  const isOpen = useStore(appStore, state => state.isActionCenterOpen)
+  const isOpen = useSubscription(appStore, { selector: state => state.isActionCenterOpen })
   const router = useRouter()
 
   useHotkey('Mod+P', () => {
