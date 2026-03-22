@@ -127,26 +127,28 @@ export function Runner() {
               </div>
               <div className="flex gap-2">
                 <Popover>
-                  <PopoverTrigger asChild>
+                  <PopoverTrigger render={(
                     <Button
                       className="relative"
                       variant="secondary"
                       size="sm"
+                    />
+                  )}
+                  >
+                    <RiStarLine />
+                    Saved
+                    <span className={`
+                      flex h-5 items-center justify-center rounded-full
+                      bg-accent px-1.5 text-xs
+                    `}
                     >
-                      <RiStarLine />
-                      Saved
-                      <span className={`
-                        flex h-5 items-center justify-center rounded-full
-                        bg-accent px-1.5 text-xs
-                      `}
-                      >
-                        {queriesCount}
-                      </span>
-                    </Button>
+                      {queriesCount}
+                    </span>
                   </PopoverTrigger>
-                  <PopoverContent
-                    className="min-w-md p-0"
-                    onOpenAutoFocus={e => e.preventDefault()}
+                  <PopoverContent className="
+                    min-w-md
+                    **:data-[slot=popover-viewport]:p-0
+                  "
                   >
                     <RunnerQueries />
                   </PopoverContent>

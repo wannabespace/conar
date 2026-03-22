@@ -56,25 +56,25 @@ export function RunnerEditorQueryZone({
   }
 
   return (
-    <div className={cn(`
-      flex h-full items-center justify-between gap-2 border-y px-2 py-1 pr-6
-    `)}
-    >
-      <div className="flex flex-1 items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <label className="flex items-center gap-2 text-xs">
-            <Checkbox
-              className="focus:outline-none!"
-              checked={isChecked}
-              onCheckedChange={() => onCheckedChange()}
-            />
-            Query
-            {' '}
-            {queryNumber}
-          </label>
-        </div>
-        <div className="flex items-center gap-1">
-          <TooltipProvider>
+    <TooltipProvider>
+      <div className={cn(`
+        flex h-full items-center justify-between gap-2 border-y px-2 py-1 pr-6
+      `)}
+      >
+        <div className="flex flex-1 items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 text-xs">
+              <Checkbox
+                className="focus:outline-none!"
+                checked={isChecked}
+                onCheckedChange={() => onCheckedChange()}
+              />
+              Query
+              {' '}
+              {queryNumber}
+            </label>
+          </div>
+          <div className="flex items-center gap-1">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -90,8 +90,6 @@ export function RunnerEditorQueryZone({
                 Save
               </TooltipContent>
             </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -116,26 +114,26 @@ export function RunnerEditorQueryZone({
                 Copy
               </TooltipContent>
             </Tooltip>
-          </TooltipProvider>
-          <Separator orientation="vertical" className="mx-1 h-4!" />
-          {Array.from({ length: queriesLength }).map((_, idx) => {
-            const key = `query-run-${connectionResource.id}-${lineNumber}-${idx}`
-            return (
-              <Button
-                key={key}
-                size="xs"
-                className="focus:outline-none!"
-                disabled={isFetching}
-                onClick={() => onRun(idx)}
-              >
-                Run
-                {' '}
-                {queriesLength === 1 ? '' : idx + 1}
-              </Button>
-            )
-          })}
+            <Separator orientation="vertical" className="mx-1 h-4!" />
+            {Array.from({ length: queriesLength }).map((_, idx) => {
+              const key = `query-run-${connectionResource.id}-${lineNumber}-${idx}`
+              return (
+                <Button
+                  key={key}
+                  size="xs"
+                  className="focus:outline-none!"
+                  disabled={isFetching}
+                  onClick={() => onRun(idx)}
+                >
+                  Run
+                  {' '}
+                  {queriesLength === 1 ? '' : idx + 1}
+                </Button>
+              )
+            })}
+          </div>
         </div>
       </div>
-    </div>
+    </TooltipProvider>
   )
 }

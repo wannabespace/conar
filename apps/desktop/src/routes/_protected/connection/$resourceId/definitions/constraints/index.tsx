@@ -1,5 +1,4 @@
 import type { constraintsType } from '~/entities/connection/queries'
-import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
 import { CardContent, CardMotion, CardTitle } from '@conar/ui/components/card'
@@ -28,20 +27,12 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/definit
 
 type ConstraintType = typeof constraintsType.infer['type']
 
-const filterOptions: { label: string, value: ConstraintType }[] = [
+const filterOptions: { label: string, value: ConstraintType | 'all' }[] = [
+  { label: 'All Types', value: 'all' },
   { label: 'Primary Key', value: 'primaryKey' },
   { label: 'Foreign Key', value: 'foreignKey' },
   { label: 'Unique', value: 'unique' },
 ]
-
-function formatType(type: ConstraintType) {
-  switch (type) {
-    case 'primaryKey': return 'Primary Key'
-    case 'foreignKey': return 'Foreign Key'
-    default:
-      return uppercaseFirst(type)
-  }
-}
 
 function getIcon(type: ConstraintType) {
   switch (type) {
@@ -64,7 +55,7 @@ function DatabaseConstraintsPage() {
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
-  const [filterType, setFilterType] = useState<ConstraintType | 'all'>('all')
+  const [filterType, setFilterType] = useState<typeof filterOptions[number]['value']>('all')
 
   if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
     setSelectedSchema(schemas[0])
@@ -97,12 +88,20 @@ function DatabaseConstraintsPage() {
           onChange={e => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
-        <Select value={filterType} onValueChange={v => setFilterType(v as ConstraintType | 'all')}>
+        <Select
+          value={filterType}
+          onValueChange={(v) => {
+            if (v) {
+              setFilterType(v)
+            }
+          }}
+        >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter Type" />
+            <SelectValue placeholder="Filter Type">
+              {value => value ? filterOptions.find(option => option.value === value)?.label : 'Filter Type'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
             {filterOptions.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
@@ -111,7 +110,14 @@ function DatabaseConstraintsPage() {
           </SelectContent>
         </Select>
         {schemas.length > 1 && (
-          <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
+          <Select
+            value={selectedSchema}
+            onValueChange={(v) => {
+              if (v) {
+                setSelectedSchema(v)
+              }
+            }}
+          >
             <SelectTrigger className="max-w-56 min-w-[180px]">
               <div className="flex flex-1 items-center gap-2 overflow-hidden">
                 <span className="shrink-0 text-muted-foreground">schema</span>
@@ -147,7 +153,7 @@ function DatabaseConstraintsPage() {
                     {getIcon(item.type)}
                     <HighlightText text={item.name} match={search} />
                     <Badge variant="secondary">
-                      {formatType(item.type)}
+                      {filterOptions.find(option => option.value === item.type)?.label}
                     </Badge>
                   </CardTitle>
                   <div className={`

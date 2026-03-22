@@ -74,7 +74,14 @@ function DatabaseEnumsPage() {
           onClear={() => setSearch('')}
         />
         {schemas.length > 1 && (
-          <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
+          <Select
+            value={selectedSchema}
+            onValueChange={(v) => {
+              if (v) {
+                setSelectedSchema(v)
+              }
+            }}
+          >
             <SelectTrigger className="max-w-56 min-w-[180px]">
               <div className="flex flex-1 items-center gap-2 overflow-hidden">
                 <span className="shrink-0 text-muted-foreground">schema</span>

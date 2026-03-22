@@ -79,9 +79,9 @@ export function HeaderActionsDelete({ table, schema }: { table: string, schema: 
       <AnimatePresence>
         {selected.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: 'auto' }}
+            exit={{ opacity: 0, width: 0 }}
             transition={{ duration: 0.1 }}
           >
             <Button variant="destructive" onClick={() => setIsOpened(true)}>

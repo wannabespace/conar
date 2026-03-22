@@ -3,7 +3,7 @@ import type { columnType } from '~/entities/connection/queries/columns'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { CtrlLetter } from '@conar/ui/components/custom/shortcuts'
-import { Input } from '@conar/ui/components/input'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
 import { Kbd } from '@conar/ui/components/kbd'
 import { ReactFlowEdge } from '@conar/ui/components/react-flow/edge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
@@ -168,65 +168,63 @@ function Visualizer({
   })
 
   return (
-    <div className="
-      relative size-full overflow-hidden rounded-lg
-      dark:border
-    "
-    >
+    <div className="relative size-full overflow-hidden rounded-lg">
       <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-        <div className="relative w-48">
-          <Input
-            ref={searchRef}
-            placeholder="Search tables"
-            className="pr-8 pl-7"
-            value={searchQuery}
-            autoFocus
-            onChange={(e) => {
-              setSearchQuery(e.target.value)
-              setNodes(nodes => applySearchHighlight({
-                nodes,
-                searchQuery: e.target.value.trim(),
-                tables,
-                columns,
-              }))
-            }}
-          />
-          <RiSearchLine className="
-            pointer-events-none absolute top-1/2 left-2 size-3.5
-            -translate-y-1/2 text-muted-foreground
-          "
-          />
-
-          {!searchQuery && (
-            <div className="
-              pointer-events-none absolute top-1/2 right-2 flex -translate-y-1/2
-              items-center gap-1 text-xs text-muted-foreground
-            "
-            >
-              <Kbd asChild>
-                <CtrlLetter userAgent={navigator.userAgent} letter="F" />
-              </Kbd>
-            </div>
-          )}
-
-          {searchQuery && (
-            <button
-              type="button"
-              className="
-                absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
+        <div className="relative w-56">
+          <InputGroup>
+            <InputGroupInput
+              ref={searchRef}
+              placeholder="Search tables"
+              value={searchQuery}
+              autoFocus
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setNodes(nodes => applySearchHighlight({
+                  nodes,
+                  searchQuery: e.target.value.trim(),
+                  tables,
+                  columns,
+                }))
+              }}
+            />
+            <InputGroupAddon>
+              <RiSearchLine className="
+                pointer-events-none size-3.5 text-muted-foreground
               "
-              onClick={() => setSearchQuery('')}
-              aria-label="Clear table search"
-            >
-              <RiCloseLine className="size-4 text-muted-foreground" />
-            </button>
-          )}
+              />
+            </InputGroupAddon>
+            <InputGroupAddon align="inline-end">
+              {!searchQuery && (
+                <div className="
+                  pointer-events-none flex items-center gap-1 text-xs
+                  text-muted-foreground
+                "
+                >
+                  <Kbd asChild>
+                    <CtrlLetter userAgent={navigator.userAgent} letter="F" />
+                  </Kbd>
+                </div>
+              )}
+
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear table search"
+                >
+                  <RiCloseLine className="size-4 text-muted-foreground" />
+                </button>
+              )}
+            </InputGroupAddon>
+          </InputGroup>
         </div>
         <Select
           value={schema}
           onValueChange={(v) => {
-            setSchema(v)
-            setSearchQuery('')
+            if (v) {
+              setSchema(v)
+              setSearchQuery('')
+            }
           }}
         >
           <SelectTrigger className="max-w-56 min-w-[180px]">

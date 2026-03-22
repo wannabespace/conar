@@ -11,7 +11,7 @@ import {
   ContextMenuTrigger,
 } from '@conar/ui/components/context-menu'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
@@ -31,26 +31,24 @@ const os = getOS(navigator.userAgent)
 
 function CloseButton({ onClick }: { onClick: ComponentProps<'svg'>['onClick'] }) {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <RiCloseLine
-            className={`
-              size-3.5 opacity-0
-              group-hover:opacity-30
-              hover:opacity-100
-            `}
-            onClick={onClick}
-          />
-        </TooltipTrigger>
-        <TooltipContent side="bottom" sideOffset={12}>
-          Close tab (
-          {os.type === 'macos' ? '⌘' : 'Ctrl'}
-          {' '}
-          + W)
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <RiCloseLine
+          className={`
+            size-3.5 opacity-0
+            group-hover:opacity-30
+            hover:opacity-100
+          `}
+          onClick={onClick}
+        />
+      </TooltipTrigger>
+      <TooltipContent side="bottom" sideOffset={12}>
+        Close tab (
+        {os.type === 'macos' ? '⌘' : 'Ctrl'}
+        {' '}
+        + W)
+      </TooltipContent>
+    </Tooltip>
   )
 }
 

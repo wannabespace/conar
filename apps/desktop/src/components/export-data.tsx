@@ -14,7 +14,6 @@ import {
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
@@ -169,83 +168,81 @@ export function ExportData({
   })
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <DropdownMenu>
-          <DropdownMenuTrigger render={<TooltipTrigger asChild />}>
-            {trigger({ isExporting: isPending })}
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <RiDownloadLine />
-                Export
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <RiTableLine />
-                    Export as CSV
-                  </DropdownMenuSubTrigger>
-                  <ExportDataDropdownMenuSubContent
-                    type="download"
-                    format="csv"
-                    onExport={startExport}
-                    selected={selected}
-                  />
-                </DropdownMenuSub>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <RiBracesLine />
-                    Export as JSON
-                  </DropdownMenuSubTrigger>
-                  <ExportDataDropdownMenuSubContent
-                    type="download"
-                    format="json"
-                    onExport={startExport}
-                    selected={selected}
-                  />
-                </DropdownMenuSub>
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <RiFileCopyLine />
-                Copy
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <RiTableLine />
-                    Copy as CSV
-                  </DropdownMenuSubTrigger>
-                  <ExportDataDropdownMenuSubContent
-                    type="copy"
-                    format="csv"
-                    onExport={startExport}
-                    selected={selected}
-                  />
-                </DropdownMenuSub>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <RiBracesLine />
-                    Copy as JSON
-                  </DropdownMenuSubTrigger>
-                  <ExportDataDropdownMenuSubContent
-                    type="copy"
-                    format="json"
-                    onExport={startExport}
-                    selected={selected}
-                  />
-                </DropdownMenuSub>
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <TooltipContent>
-          Export data
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <DropdownMenu>
+        <DropdownMenuTrigger render={<TooltipTrigger asChild />}>
+          {trigger({ isExporting: isPending })}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <RiDownloadLine />
+              Export
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <RiTableLine />
+                  Export as CSV
+                </DropdownMenuSubTrigger>
+                <ExportDataDropdownMenuSubContent
+                  type="download"
+                  format="csv"
+                  onExport={startExport}
+                  selected={selected}
+                />
+              </DropdownMenuSub>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <RiBracesLine />
+                  Export as JSON
+                </DropdownMenuSubTrigger>
+                <ExportDataDropdownMenuSubContent
+                  type="download"
+                  format="json"
+                  onExport={startExport}
+                  selected={selected}
+                />
+              </DropdownMenuSub>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <RiFileCopyLine />
+              Copy
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <RiTableLine />
+                  Copy as CSV
+                </DropdownMenuSubTrigger>
+                <ExportDataDropdownMenuSubContent
+                  type="copy"
+                  format="csv"
+                  onExport={startExport}
+                  selected={selected}
+                />
+              </DropdownMenuSub>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <RiBracesLine />
+                  Copy as JSON
+                </DropdownMenuSubTrigger>
+                <ExportDataDropdownMenuSubContent
+                  type="copy"
+                  format="json"
+                  onExport={startExport}
+                  selected={selected}
+                />
+              </DropdownMenuSub>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <TooltipContent>
+        Export data
+      </TooltipContent>
+    </Tooltip>
   )
 }
