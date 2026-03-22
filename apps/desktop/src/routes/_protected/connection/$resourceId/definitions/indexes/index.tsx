@@ -59,7 +59,7 @@ function DatabaseIndexesPage() {
     if (indexItem.schema !== selectedSchema)
       return acc
 
-    const matchesFilter = filterOptions.find(option => option.value === filterType)?.value === indexItem.type
+    const matchesFilter = filterType === 'all' || filterOptions.find(option => option.value === filterType)?.value === indexItem.type
 
     if (!matchesFilter)
       return acc
