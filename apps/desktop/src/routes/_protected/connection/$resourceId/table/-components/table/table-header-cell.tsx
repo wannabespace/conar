@@ -3,7 +3,6 @@ import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
 import type { storeState } from '../../-store'
 import type { Column } from '~/entities/connection/components/table/utils'
 import { useTableContext } from '@conar/table'
-import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
@@ -153,16 +152,11 @@ function EnumBadge({ values, children }: { values: string[], children: ReactNode
         <div className="mb-1 text-xs text-muted-foreground">
           Available values:
         </div>
-        <div className="flex max-w-sm flex-wrap gap-1">
-          {values.map((val: string) => (
-            <Badge
-              key={val}
-              variant="secondary"
-              className="font-mono text-xs"
-            >
-              {val}
-            </Badge>
-          ))}
+        <div className="
+          flex max-w-sm flex-wrap gap-1 font-mono text-xs font-medium
+        "
+        >
+          {values.join(', ')}
         </div>
       </TooltipContent>
     </Tooltip>
