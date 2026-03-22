@@ -2,7 +2,7 @@ import { CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES } from '@conar/shared/constants'
 import { RefreshButton } from '@conar/ui/components/custom/refresh-button'
 import { Input } from '@conar/ui/components/input'
 import { Switch } from '@conar/ui/components/switch'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiCloseLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useSubscription } from 'seitu/react'
@@ -34,40 +34,36 @@ export function Sidebar() {
           <h2 className="text-lg font-bold">Tables</h2>
           <div className="flex items-center gap-4">
             {!CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES.includes(connection.type) && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Switch
-                      checked={showSystem}
-                      onCheckedChange={value => store.set(state => ({ ...state, showSystem: value } satisfies typeof state))}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    Show system tables
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-            <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <RefreshButton
-                    variant="outline"
-                    size="icon"
-                    onClick={handleRefresh}
-                    refreshing={isRefreshingTablesAndSchemas}
+                  <Switch
+                    checked={showSystem}
+                    onCheckedChange={value => store.set(state => ({ ...state, showSystem: value } satisfies typeof state))}
                   />
                 </TooltipTrigger>
-                <TooltipContent side="right">
-                  Refresh tables and schemas list
-                  <p className="text-xs text-muted-foreground">
-                    Last updated:
-                    {' '}
-                    {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
-                  </p>
+                <TooltipContent side="bottom">
+                  Show system tables
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
+            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <RefreshButton
+                  variant="outline"
+                  size="icon"
+                  onClick={handleRefresh}
+                  refreshing={isRefreshingTablesAndSchemas}
+                />
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Refresh tables and schemas list
+                <p className="text-xs text-muted-foreground">
+                  Last updated:
+                  {' '}
+                  {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
+                </p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
         {!!tablesAndSchemas && tablesAndSchemas.totalTables > 10 && (

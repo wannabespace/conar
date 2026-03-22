@@ -6,7 +6,7 @@ import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { SeparatorMotion } from '@conar/ui/components/separator'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiStackLine, RiTableLine } from '@remixicon/react'
@@ -285,26 +285,24 @@ export function TablesTree({ className, search }: { className?: string, search?:
                           `}
                           >
                             <span className="flex items-center gap-2">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <RiStackLine
-                                      className={cn(
-                                        `
-                                          size-4 shrink-0 text-muted-foreground
-                                          opacity-50
-                                        `,
-                                        schemaParam === schema.name && `
-                                          text-primary opacity-100
-                                        `,
-                                      )}
-                                    />
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    Schema
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <RiStackLine
+                                    className={cn(
+                                      `
+                                        size-4 shrink-0 text-muted-foreground
+                                        opacity-50
+                                      `,
+                                      schemaParam === schema.name && `
+                                        text-primary opacity-100
+                                      `,
+                                    )}
+                                  />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Schema
+                                </TooltipContent>
+                              </Tooltip>
                               {schema.name}
                             </span>
                           </AccordionTrigger>

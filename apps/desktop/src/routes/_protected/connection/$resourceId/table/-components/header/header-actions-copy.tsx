@@ -17,7 +17,6 @@ import {
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
@@ -176,18 +175,16 @@ export function HeaderActionsCopy({ table, schema }: { table: string, schema: st
 
   return (
     <Dialog>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DialogTrigger render={<Button variant="outline" size="icon" />}>
-              <RiCodeSSlashLine />
-            </DialogTrigger>
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            Copy schema / query
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DialogTrigger render={<Button variant="secondary" size="icon" />}>
+            <RiCodeSSlashLine />
+          </DialogTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="top">
+          Copy schema / query
+        </TooltipContent>
+      </Tooltip>
       <DialogContent className={cn(
         `
           flex h-[600px] w-[60vw] flex-row gap-0 overflow-hidden p-0

@@ -1,7 +1,7 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import { Button } from '@conar/ui/components/button'
+import { Group, GroupSeparator } from '@conar/ui/components/group'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
-import { Separator } from '@conar/ui/components/separator'
 import { useToggle } from '@conar/ui/hookas/use-toggle'
 import { RiAddLine, RiCloseLine, RiDatabase2Line, RiFilterOffLine } from '@remixicon/react'
 import { useState } from 'react'
@@ -27,23 +27,16 @@ function FilterItem({
   const [values, setValues] = useState(filter.values)
 
   return (
-    <div className={`
-      flex h-6 items-center overflow-hidden rounded-sm border bg-card
-    `}
-    >
+    <Group>
       <Popover open={isColumnOpen} onOpenChange={setIsColumnOpen}>
         <PopoverTrigger
           data-mask
-          className={`
-            flex h-full items-center gap-1 px-2 text-xs font-medium
-            transition-colors
-            hover:bg-accent/50
-          `}
+          render={<Button size="xs" variant="outline" />}
         >
-          <RiDatabase2Line className="size-3 text-primary/70" />
+          <RiDatabase2Line className="size-3" />
           {filter.column}
         </PopoverTrigger>
-        <PopoverContent className="p-0 shadow-md">
+        <PopoverContent className="**:data-[slot=popover-viewport]:p-0">
           <FiltersColumnSelector
             onSelect={(column) => {
               onEdit({ column, ref: filter.ref, values })
@@ -52,16 +45,14 @@ function FilterItem({
           />
         </PopoverContent>
       </Popover>
-      <Separator orientation="vertical" />
+      <GroupSeparator />
       <Popover open={isOperatorOpen} onOpenChange={setIsOperatorOpen}>
-        <PopoverTrigger className={`
-          h-full px-2 text-xs text-muted-foreground transition-colors
-          hover:bg-accent/50
-        `}
+        <PopoverTrigger
+          render={<Button size="xs" variant="outline" />}
         >
           {filter.ref.operator}
         </PopoverTrigger>
-        <PopoverContent className="p-0 shadow-md">
+        <PopoverContent className="**:data-[slot=popover-viewport]:p-0">
           <FiltersSelector
             onSelect={(operator) => {
               onEdit({ column: filter.column, ref: operator, values })
@@ -70,25 +61,25 @@ function FilterItem({
           />
         </PopoverContent>
       </Popover>
-      <Separator orientation="vertical" />
       {filter.ref.hasValue !== false && (
         <>
+          <GroupSeparator />
           <Popover open={isValueOpen} onOpenChange={setIsValueOpen}>
-            <PopoverTrigger className={`
-              h-full px-2 text-xs transition-colors
-              hover:bg-accent/50
-            `}
+            <PopoverTrigger
+              render={<Button size="xs" variant="outline" />}
             >
-              <div data-mask className="max-w-60 truncate font-mono">
-                {filter.values?.join(', ')}
-                {(filter.values?.length === 0 || filter.values?.every(value => value === '')) && (
-                  <span className="opacity-30">
-                    Empty
-                  </span>
-                )}
-              </div>
+              {filter.values?.join(', ')}
+              {(filter.values?.length === 0 || filter.values?.every(value => value === '')) && (
+                <span className="opacity-30">
+                  Empty
+                </span>
+              )}
             </PopoverTrigger>
-            <PopoverContent className="max-h-[calc(100vh-10rem)] p-0 shadow-md">
+            <PopoverContent className="
+              max-h-[calc(100vh-10rem)]
+              **:data-[slot=popover-viewport]:p-0
+            "
+            >
               <FilterValueSelector
                 column={filter.column}
                 operator={filter.ref.operator}
@@ -102,21 +93,18 @@ function FilterItem({
               />
             </PopoverContent>
           </Popover>
-          <Separator orientation="vertical" className="h-6" />
         </>
       )}
-      <button
-        type="button"
-        className={`
-          flex h-full w-6 items-center justify-center transition-colors
-          hover:bg-destructive/10 hover:text-destructive
-        `}
+      <GroupSeparator />
+      <Button
+        size="icon-xs"
+        variant="destructive-outline"
         onClick={onRemove}
         aria-label="Remove filter"
       >
         <RiCloseLine className="size-3.5" />
-      </button>
-    </div>
+      </Button>
+    </Group>
   )
 }
 
@@ -149,16 +137,17 @@ export function Filters() {
           />
         ))}
         <Popover open={isOpened} onOpenChange={toggleForm}>
-          <PopoverTrigger asChild>
+          <PopoverTrigger render={(
             <Button
               variant="outline"
               size="icon-xs"
               onClick={() => toggleForm()}
-            >
-              <RiAddLine className="size-4" />
-            </Button>
+            />
+          )}
+          >
+            <RiAddLine className="size-4" />
           </PopoverTrigger>
-          <PopoverContent className="p-0">
+          <PopoverContent className="**:data-[slot=popover-viewport]:p-0">
             <FilterForm
               onAdd={(filter) => {
                 toggleForm(false)
@@ -172,14 +161,14 @@ export function Filters() {
         </Popover>
       </div>
       <Button
-        variant="outline"
+        variant="destructive-outline"
         size="xs"
         onClick={() => store.set(state => ({
           ...state,
           filters: [],
         } satisfies typeof state))}
       >
-        <RiFilterOffLine className="size-3 text-destructive" />
+        <RiFilterOffLine className="size-3" />
         Clear
       </Button>
     </div>

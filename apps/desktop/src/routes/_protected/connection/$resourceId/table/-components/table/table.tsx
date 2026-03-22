@@ -115,13 +115,14 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   }, [connectionResource, table, schema, store])
 
   const saveValue = useCallback(async (rowIndex: number, columnId: string, newValue: unknown) => {
+    const { filters, orderBy } = store.get()
     const rowsQueryOpts = resourceRowsQuery({
       connectionResource,
       table,
       schema,
       query: {
-        filters: store.get().filters,
-        orderBy: store.get().orderBy,
+        filters,
+        orderBy,
       },
     })
 
@@ -193,7 +194,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         description: e instanceof Error ? e.message : String(e),
       })
     }
-  }, [connectionResource, table, schema, store, primaryColumns, setValue, columns, filters, orderBy])
+  }, [connectionResource, table, schema, store, primaryColumns, setValue, columns])
 
   const tableColumns = useMemo(() => {
     if (!columns)

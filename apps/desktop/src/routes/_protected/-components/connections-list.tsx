@@ -13,7 +13,7 @@ import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
 import { Spinner } from '@conar/ui/components/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAddLine, RiAlertLine, RiCheckLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoopLeftLine, RiMoreLine } from '@remixicon/react'
@@ -162,18 +162,16 @@ function ConnectionCard({
               {' '}
               {isSyncing && <Spinner className="size-3" />}
               {syncError && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <RiAlertLine className="size-3 text-warning" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Sync failed:
-                      {' '}
-                      <p className="text-xs text-warning">{syncError.message}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <RiAlertLine className="size-3 text-warning" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Sync failed:
+                    {' '}
+                    <p className="text-xs text-warning">{syncError.message}</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
             </CardFrameTitle>
             <CardFrameDescription
@@ -298,26 +296,24 @@ function ConnectionCard({
                   </div>
                 )}
           </ScrollArea>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span>
-                  <Button
-                    disabled
-                    variant="ghost"
-                    size="sm"
-                    className="mt-2"
-                  >
-                    <RiAddLine className="size-4" />
-                    Add Resource
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                Soon you will be able to add resources to your connection.
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Button
+                  disabled
+                  variant="ghost"
+                  size="sm"
+                  className="mt-2"
+                >
+                  <RiAddLine className="size-4" />
+                  Add Resource
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              Soon you will be able to add resources to your connection.
+            </TooltipContent>
+          </Tooltip>
         </CardPanel>
       </Card>
       <CardFrameFooter>

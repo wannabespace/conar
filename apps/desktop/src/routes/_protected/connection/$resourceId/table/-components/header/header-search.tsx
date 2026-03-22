@@ -1,21 +1,19 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
-import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
+import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { CtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
 import { Kbd } from '@conar/ui/components/kbd'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { cn } from '@conar/ui/lib/utils'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import NumberFlow from '@number-flow/react'
 import { isDefinedError } from '@orpc/client'
-import { RiBardLine, RiCheckLine } from '@remixicon/react'
+import { RiAlertLine, RiBardLine, RiCloseLine } from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { toast } from 'sonner'
 import { resourceEnumsQuery } from '~/entities/connection/queries'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
@@ -28,6 +26,8 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
   const { connectionResource } = Route.useRouteContext()
   const inputRef = useRef<HTMLInputElement>(null)
   const store = usePageStoreContext()
+  const [hintOpened, setHintOpened] = useState(false)
+  const [hintMessage, setHintMessage] = useState<{ message: string, type: 'error' } | null>(null)
   const prompt = useSubscription(store, { selector: state => state.prompt })
   const [freeAiUsage, setFreeAiUsage] = useState<{ remaining: number, max: number, resetAt: Date } | null>(null)
   const { mutate: generateFilter, isPending } = useMutation(orpc.ai.filters.mutationOptions({
@@ -44,7 +44,11 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
       } satisfies typeof state))
 
       if (data.filters.length === 0 && !hasOrderBy) {
-        toast.info('No filters or ordering were generated, please try again with a different prompt')
+        setHintMessage({
+          message: 'No filters or ordering were generated, please try again with a different prompt',
+          type: 'error',
+        })
+        setHintOpened(true)
       }
 
       setFreeAiUsage(data.freeAiUsage || null)
@@ -83,68 +87,91 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
       className="relative w-full max-w-full"
       onSubmit={(e) => {
         e.preventDefault()
+        if (prompt.trim() === '') {
+          setHintMessage({
+            message: 'Please enter a prompt to generate filters',
+            type: 'error',
+          })
+          setHintOpened(true)
+          return
+        }
+
         generateFilter({ prompt, context })
       }}
     >
       <InputGroup>
-        <InputGroupInput
-          ref={inputRef}
-          className={cn('pr-10 pl-8', freeAiUsage && 'pr-22')}
-          placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
-          disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
-          value={prompt}
-          autoFocus
-          onChange={e => store.set(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
-        />
+        <Tooltip open={hintOpened}>
+          <TooltipTrigger asChild>
+            <InputGroupInput
+              ref={inputRef}
+              placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
+              disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
+              value={prompt}
+              autoFocus
+              onChange={(e) => {
+                store.set(state => ({ ...state, prompt: e.target.value } satisfies typeof state))
+                setHintOpened(false)
+              }}
+            />
+          </TooltipTrigger>
+          <TooltipContent
+            side="top"
+            align="start"
+            className="
+              rounded-b-none border-b-0 bg-secondary py-0.5 pr-0.5 pl-2
+              shadow-none
+            "
+            sideOffset={0}
+          >
+            <p className="flex items-center gap-1 text-xs">
+              <RiAlertLine className="size-3 text-muted-foreground" />
+              {hintMessage?.message}
+              <Button variant="ghost" size="icon-xs" onClick={() => setHintOpened(false)}>
+                <RiCloseLine />
+              </Button>
+            </p>
+          </TooltipContent>
+        </Tooltip>
         <InputGroupAddon>
           <LoadingContent
             className="pointer-events-none size-4 text-muted-foreground"
-            loaderClassName="size-4"
             loading={isPending}
           >
-            <ContentSwitch
-              active={isPending}
-              activeContent={<RiCheckLine className="text-success" />}
-            >
-              <RiBardLine />
-            </ContentSwitch>
+            <RiBardLine />
           </LoadingContent>
         </InputGroupAddon>
         <InputGroupAddon align="inline-end">
           {freeAiUsage && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div
-                    className="
-                      cursor-help text-xs whitespace-nowrap
-                      text-muted-foreground
-                    "
-                    tabIndex={0}
-                    aria-label={`You have ${freeAiUsage.remaining} out of ${freeAiUsage.max} free AI filter uses left this month.`}
-                  >
-                    <NumberFlow
-                      value={freeAiUsage.remaining}
-                      className="tabular-nums"
-                    />
-                    /
-                    {freeAiUsage.max}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  You have
-                  {' '}
-                  {freeAiUsage.remaining}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
+                  className="
+                    cursor-help text-xs whitespace-nowrap text-muted-foreground
+                  "
+                  tabIndex={0}
+                  aria-label={`You have ${freeAiUsage.remaining} out of ${freeAiUsage.max} free AI filter uses left this month.`}
+                >
+                  <NumberFlow
+                    value={freeAiUsage.remaining}
+                    className="tabular-nums"
+                  />
                   /
                   {freeAiUsage.max}
-                  {' '}
-                  free AI filter uses left this month. Reset at
-                  {' '}
-                  {format(freeAiUsage.resetAt, 'MMM d, yyyy')}
-                  .
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                You have
+                {' '}
+                {freeAiUsage.remaining}
+                /
+                {freeAiUsage.max}
+                {' '}
+                free AI filter uses left this month. Reset at
+                {' '}
+                {format(freeAiUsage.resetAt, 'MMM d, yyyy')}
+                .
+              </TooltipContent>
+            </Tooltip>
           )}
           <Kbd asChild>
             <CtrlLetter userAgent={navigator.userAgent} letter="F" />
