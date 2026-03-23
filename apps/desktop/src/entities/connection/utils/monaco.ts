@@ -38,9 +38,17 @@ const keywordPriority = [
 
 const dotMatchesRegex = /(\w+(?:\.\w+)*)\.\s*$/g
 
-export function connectionCompletionService(connectionResource: typeof connectionsResources.$inferSelect): CompletionService {
+export function connectionCompletionService(
+  connectionResource: typeof connectionsResources.$inferSelect,
+): CompletionService {
   const store = getConnectionResourceStore(connectionResource.id)
-  queryClient.prefetchQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem: store.get().showSystem }))
+  queryClient.prefetchQuery(
+    resourceTablesAndSchemasQuery({
+      silent: false,
+      connectionResource,
+      showSystem: store.get().showSystem,
+    }),
+  )
   queryClient.prefetchQuery(resourceEnumsQuery({ connectionResource }))
 
   return async (
@@ -68,7 +76,13 @@ export function connectionCompletionService(connectionResource: typeof connectio
     })
 
     const [tablesAndSchemas, enums] = await Promise.all([
-      queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem: store.get().showSystem })),
+      queryClient.ensureQueryData(
+        resourceTablesAndSchemasQuery({
+          silent: false,
+          connectionResource,
+          showSystem: store.get().showSystem,
+        }),
+      ),
       queryClient.ensureQueryData(resourceEnumsQuery({ connectionResource })),
     ])
 
@@ -82,8 +96,12 @@ export function connectionCompletionService(connectionResource: typeof connectio
     })
 
     const dotMatches = [...textBeforeCursor.matchAll(dotMatchesRegex)]
-    const isTableContext = syntax.some(item => item.syntaxContextType === EntityContextType.TABLE)
-    const isColumnContext = syntax.some(item => item.syntaxContextType === EntityContextType.COLUMN)
+    const isTableContext = syntax.some(
+      item => item.syntaxContextType === EntityContextType.TABLE,
+    )
+    const isColumnContext = syntax.some(
+      item => item.syntaxContextType === EntityContextType.COLUMN,
+    )
 
     if (dotMatches.length > 0) {
       const tableRef = dotMatches.at(-1)?.[1]
@@ -93,20 +111,29 @@ export function connectionCompletionService(connectionResource: typeof connectio
         const schemaName = parts.length === 2 ? parts[0]! : 'public'
         const tableName = parts.length === 2 ? parts[1]! : parts[0]!
 
-        const schema = tablesAndSchemas?.schemas.find(s => s.name === schemaName)
-        const table = schema?.tables.find(t => t === tableName)
+        const schema = tablesAndSchemas?.schemas.find(
+          s => s.name === schemaName,
+        )
+        const table = schema?.tables.find(t => t.name === tableName)
 
         if (table) {
           const columns = await queryClient.ensureQueryData(
-            resourceTableColumnsQuery({ connectionResource, schema: schemaName, table: tableName }),
+            resourceTableColumnsQuery({
+              connectionResource,
+              schema: schemaName,
+              table: tableName,
+            }),
           )
-          const columnItems = columns.map(col => ({
-            label: col.id,
-            kind: languages.CompletionItemKind.Field,
-            detail: `${col.type}${col.isNullable ? ' (nullable)' : ' (not null)'}`,
-            sortText: `1${col.id}`,
-            insertText: col.id,
-          } satisfies ICompletionItem))
+          const columnItems = columns.map(
+            col =>
+              ({
+                label: col.id,
+                kind: languages.CompletionItemKind.Field,
+                detail: `${col.type}${col.isNullable ? ' (nullable)' : ' (not null)'}`,
+                sortText: `1${col.id}`,
+                insertText: col.id,
+              }) satisfies ICompletionItem,
+          )
           return [...columnItems, ...keywordItems]
         }
       }
@@ -115,42 +142,56 @@ export function connectionCompletionService(connectionResource: typeof connectio
 
     if (tablesAndSchemas && isColumnContext && !isTableContext) {
       const columnPromises = tablesAndSchemas.schemas.flatMap(schema =>
-        schema.tables.map(async (tableName) => {
+        schema.tables.map(async (tableEntry) => {
           const columns = await queryClient.ensureQueryData(
-            resourceTableColumnsQuery({ connectionResource, schema: schema.name, table: tableName }),
+            resourceTableColumnsQuery({
+              connectionResource,
+              schema: schema.name,
+              table: tableEntry.name,
+            }),
           )
-          return columns.map(col => ({
-            label: col.id,
-            kind: languages.CompletionItemKind.Field,
-            detail: `${col.type}${col.isNullable ? ' (nullable)' : ' (not null)'}`,
-            sortText: `1${col.id}`,
-            insertText: col.id,
-          } satisfies ICompletionItem))
+          return columns.map(
+            col =>
+              ({
+                label: col.id,
+                kind: languages.CompletionItemKind.Field,
+                detail: `${col.type}${col.isNullable ? ' (nullable)' : ' (not null)'}`,
+                sortText: `1${col.id}`,
+                insertText: col.id,
+              }) satisfies ICompletionItem,
+          )
         }),
       )
       const allColumns = (await Promise.all(columnPromises)).flat()
 
-      items.push(...allColumns.filter((item, i, arr) => arr.findIndex(x => x.label === item.label) === i))
+      items.push(
+        ...allColumns.filter(
+          (item, i, arr) => arr.findIndex(x => x.label === item.label) === i,
+        ),
+      )
     }
 
     if (tablesAndSchemas) {
       const tableItems = tablesAndSchemas.schemas.flatMap(schema =>
-        schema.tables.flatMap(tableName => [
-          {
-            label: tableName,
-            kind: languages.CompletionItemKind.Class,
-            detail: `table (${schema.name})`,
-            sortText: `2${tableName}`,
-            insertText: tableName,
-          } satisfies ICompletionItem,
-          {
-            label: `${schema.name}.${tableName}`,
-            kind: languages.CompletionItemKind.Class,
-            detail: `table (${schema.name})`,
-            sortText: `2${schema.name}.${tableName}`,
-            insertText: `${schema.name}.${tableName}`,
-          } satisfies ICompletionItem,
-        ]),
+        schema.tables.flatMap((tableEntry) => {
+          const kind = tableEntry.isView ? 'view' : 'table'
+          return [
+            {
+              label: tableEntry.name,
+              kind: languages.CompletionItemKind.Class,
+              detail: `${kind} (${schema.name})`,
+              sortText: `2${tableEntry.name}`,
+              insertText: tableEntry.name,
+            } satisfies ICompletionItem,
+            {
+              label: `${schema.name}.${tableEntry.name}`,
+              kind: languages.CompletionItemKind.Class,
+              detail: `${kind} (${schema.name})`,
+              sortText: `2${schema.name}.${tableEntry.name}`,
+              insertText: `${schema.name}.${tableEntry.name}`,
+            } satisfies ICompletionItem,
+          ]
+        }),
       )
 
       items.push(...tableItems)
@@ -158,13 +199,16 @@ export function connectionCompletionService(connectionResource: typeof connectio
 
     if (enums) {
       const enumItems = enums.flatMap(enumItem =>
-        enumItem.values.map(value => ({
-          label: value,
-          kind: languages.CompletionItemKind.EnumMember,
-          detail: `enum value (${enumItem.schema}.${enumItem.name})`,
-          sortText: `3${value}`,
-          insertText: value,
-        } satisfies ICompletionItem)),
+        enumItem.values.map(
+          value =>
+            ({
+              label: value,
+              kind: languages.CompletionItemKind.EnumMember,
+              detail: `enum value (${enumItem.schema}.${enumItem.name})`,
+              sortText: `3${value}`,
+              insertText: value,
+            }) satisfies ICompletionItem,
+        ),
       )
 
       items.push(...enumItems)
