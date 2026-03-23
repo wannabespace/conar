@@ -15,6 +15,7 @@ export const connectionSystemNames = {
 export const tablesAndSchemasType = type({
   schema: 'string',
   table: 'string',
+  table_type: 'string',
 })
 
 export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResource, showSystem }: { silent: boolean, connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) => {
@@ -27,11 +28,12 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
         .select([
           'table_schema as schema',
           'table_name as table',
+          'table_type',
         ])
         .where(({ eb, and, not }) => and([
           not(eb('table_schema', 'like', 'pg_toast%')),
           not(eb('table_schema', 'like', 'pg_temp%')),
-          eb('table_type', '=', 'BASE TABLE'),
+          eb('table_type', 'in', ['BASE TABLE', 'VIEW']),
         ]))
         .$if(!showSystem, qb => qb.where(({ eb, and }) => and([
           eb('table_schema', 'not in', ['pg_catalog', 'information_schema']),
@@ -42,8 +44,9 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
         .select([
           'TABLE_SCHEMA as schema',
           'TABLE_NAME as table',
+          'TABLE_TYPE as table_type',
         ])
-        .where('TABLE_TYPE', '=', 'BASE TABLE')
+        .where('TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
         .$if(!showSystem, qb => qb.where(eb => eb('TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])))
         .execute(),
       mssql: db => db
@@ -51,16 +54,18 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
         .select([
           'TABLE_SCHEMA as schema',
           'TABLE_NAME as table',
+          'TABLE_TYPE as table_type',
         ])
-        .where('TABLE_TYPE', '=', 'BASE TABLE')
+        .where('TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
         .execute(),
       clickhouse: db => db
         .selectFrom('information_schema.tables')
         .select([
           'table_schema as schema',
           'table_name as table',
+          'table_type',
         ])
-        .where('table_type', '=', 'BASE TABLE')
+        .where('table_type', 'in', ['BASE TABLE', 'VIEW'])
         .where('table_schema', '=', connectionResource.name || connectionSystemNames.clickhouse)
         .execute(),
     },
@@ -72,7 +77,7 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
       const results = await query.run(connectionResourceToQueryParams(connectionResource))
       const schemas = Object.entries(Object.groupBy(results, table => table.schema)).map(([schema, tables]) => ({
         name: schema,
-        tables: tables!.map(table => table.table),
+        tables: tables!.map(table => ({ name: table.table, isView: table.table_type === 'VIEW' })),
       }))
 
       return {

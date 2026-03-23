@@ -9,7 +9,7 @@ import { SeparatorMotion } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiDeleteBin7Line, RiEditLine, RiFileCopyLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiStackLine, RiTableLine } from '@remixicon/react'
+import { RiDeleteBin7Line, RiEditLine, RiEyeLine, RiFileCopyLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiStackLine, RiTableLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useSearch } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
@@ -51,15 +51,17 @@ function Skeleton() {
   )
 }
 
-function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: {
+function TableItem({ schema, table, isView = false, pinned = false, search, onRename, onDrop }: {
   schema: string
   table: string
+  isView?: boolean
   pinned?: boolean
   search?: string
   onRename: () => void
   onDrop: () => void
 }) {
   const { connectionResource } = Route.useRouteContext()
+  const Icon = isView ? RiEyeLine : RiTableLine
 
   return (
     <SidebarLink
@@ -72,7 +74,7 @@ function TableItem({ schema, table, pinned = false, search, onRename, onDrop }: 
     >
       {({ isActive }) => (
         <>
-          <RiTableLine
+          <Icon
             className={cn(
               'size-4 shrink-0 text-muted-foreground opacity-50',
               isActive && 'text-primary opacity-100',
@@ -180,7 +182,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
     if (!tablesAndSchemas)
       return
 
-    cleanupPinnedTables(connectionResource.id, tablesAndSchemas.schemas.flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table }))))
+    cleanupPinnedTables(connectionResource.id, tablesAndSchemas.schemas.flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table: table.name }))))
   }, [connectionResource, tablesAndSchemas])
 
   const filteredTablesAndSchemas = useMemo(() => {
@@ -192,19 +194,19 @@ export function TablesTree({ className, search }: { className?: string, search?:
         ...schema,
         tables: schema.tables.filter(table =>
           !search
-          || table.toLowerCase().includes(search.toLowerCase()),
-        ).toSorted((a, b) => a.localeCompare(b)),
+          || table.name.toLowerCase().includes(search.toLowerCase()),
+        ).toSorted((a, b) => a.name.localeCompare(b.name)),
       }))
       .filter(schema => schema.tables.length)
 
     const pinnedSet = new Set(pinnedTables.map(t => `${t.schema}:${t.table}`))
 
     return schemas.map((schema) => {
-      const pinned: string[] = []
-      const unpinned: string[] = []
+      const pinned: { name: string, isView: boolean }[] = []
+      const unpinned: { name: string, isView: boolean }[] = []
 
       schema.tables.forEach((table) => {
-        const isPinned = pinnedSet.has(`${schema.name}:${table}`)
+        const isPinned = pinnedSet.has(`${schema.name}:${table.name}`)
         if (isPinned) {
           pinned.push(table)
         }
@@ -311,7 +313,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                           <AnimatePresence mode="popLayout">
                             {schema.pinnedTables.map(table => (
                               <motion.div
-                                key={`${schema.name}:${table}`}
+                                key={`${schema.name}:${table.name}`}
                                 layout
                                 variants={treeVariants}
                                 initial={search ? treeVariants.hidden : false}
@@ -321,11 +323,12 @@ export function TablesTree({ className, search }: { className?: string, search?:
                               >
                                 <TableItem
                                   schema={schema.name}
-                                  table={table}
+                                  table={table.name}
+                                  isView={table.isView}
                                   pinned
                                   search={search}
-                                  onRename={() => renameTableDialogRef.current?.rename(schema.name, table)}
-                                  onDrop={() => dropTableDialogRef.current?.drop(schema.name, table)}
+                                  onRename={() => renameTableDialogRef.current?.rename(schema.name, table.name)}
+                                  onDrop={() => dropTableDialogRef.current?.drop(schema.name, table.name)}
                                 />
                               </motion.div>
                             ))}
@@ -342,7 +345,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                             )}
                             {schema.unpinnedTables.map(table => (
                               <motion.div
-                                key={`${schema.name}:${table}`}
+                                key={`${schema.name}:${table.name}`}
                                 layout
                                 variants={treeVariants}
                                 initial={search ? treeVariants.hidden : false}
@@ -352,10 +355,11 @@ export function TablesTree({ className, search }: { className?: string, search?:
                               >
                                 <TableItem
                                   schema={schema.name}
-                                  table={table}
+                                  table={table.name}
+                                  isView={table.isView}
                                   search={search}
-                                  onRename={() => renameTableDialogRef.current?.rename(schema.name, table)}
-                                  onDrop={() => dropTableDialogRef.current?.drop(schema.name, table)}
+                                  onRename={() => renameTableDialogRef.current?.rename(schema.name, table.name)}
+                                  onDrop={() => dropTableDialogRef.current?.drop(schema.name, table.name)}
                                 />
                               </motion.div>
                             ))}

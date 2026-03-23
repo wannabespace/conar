@@ -1,4 +1,4 @@
-import type { constraintsType, tablesAndSchemasType } from '~/entities/connection/queries'
+import type { constraintsType } from '~/entities/connection/queries'
 import type { columnType } from '~/entities/connection/queries/columns'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
@@ -42,7 +42,7 @@ function VisualizerPage() {
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data: tablesAndSchemas } = useQuery({
     ...resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }),
-    select: data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table }))),
+    select: data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table: table.name }))),
   })
   const columnsQueries = useQueries({
     queries: tablesAndSchemas?.flatMap(({ schema, table }) =>
@@ -101,7 +101,7 @@ function Visualizer({
   columns,
   constraints,
 }: {
-  tablesAndSchemas: typeof tablesAndSchemasType.infer[]
+  tablesAndSchemas: { schema: string, table: string }[]
   columns: typeof columnType.infer[]
   constraints: typeof constraintsType.infer[]
 }) {
