@@ -47,5 +47,13 @@ export const SUBSCRIPTION_PAST_DUE_MESSAGE = 'We couldn\'t process your recent p
 export const ACTIVE_SUBSCRIPTION_STATUSES = ['active', 'trialing', 'past_due'] as const
 
 export const FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT = 50 as const
+
+export const CONNECTION_SYSTEM_NAMES = {
+  [ConnectionType.Postgres]: 'postgres',
+  [ConnectionType.MySQL]: 'mysql',
+  [ConnectionType.MSSQL]: 'master',
+  [ConnectionType.ClickHouse]: 'default',
+} satisfies Record<ConnectionType, string>
+export const CONNECTION_TYPES_TO_HIDE_SYSTEM_NAMES: ConnectionType[] = [ConnectionType.MSSQL, ConnectionType.ClickHouse]
 export const CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES: ConnectionType[] = [ConnectionType.MSSQL, ConnectionType.ClickHouse]
 export const CONNECTION_TYPES_WITHOUT_SCHEMAS: ConnectionType[] = [ConnectionType.ClickHouse]

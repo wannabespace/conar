@@ -1,16 +1,8 @@
 import type { connectionsResources } from '~/drizzle/schema'
-import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { memoize } from '@conar/shared/utils/helpers'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { connectionResourceToQueryParams, createQuery } from '../query'
-
-export const connectionSystemNames = {
-  [ConnectionType.Postgres]: 'postgres',
-  [ConnectionType.MySQL]: 'mysql',
-  [ConnectionType.MSSQL]: 'master',
-  [ConnectionType.ClickHouse]: 'default',
-} satisfies Record<ConnectionType, string>
 
 export const tablesAndSchemasType = type({
   schema: 'string',
@@ -61,7 +53,7 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
           'table_name as table',
         ])
         .where('table_type', '=', 'BASE TABLE')
-        .where('table_schema', '=', connectionResource.name || connectionSystemNames.clickhouse)
+        .where('table_schema', '=', connectionResource.name)
         .execute(),
     },
   })
