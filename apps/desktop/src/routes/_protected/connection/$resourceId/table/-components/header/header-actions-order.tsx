@@ -152,7 +152,6 @@ export function HeaderActionsOrder({ table, schema }: { table: string, schema: s
                   </div>
                 )}
           </div>
-
           {availableColumns.length > 0 && (
             <>
               <Separator />

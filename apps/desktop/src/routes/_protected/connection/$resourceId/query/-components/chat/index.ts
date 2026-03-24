@@ -8,7 +8,7 @@ import { eventIteratorToStream } from '@orpc/client'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { v7 as uuid } from 'uuid'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
-import { resourceEnumsQuery, resourceTableColumnsQuery, resourceTablesAndSchemasQuery, rowsQuery } from '~/entities/connection/queries'
+import { resourceEnumsQueryOptions, resourceRowsQuery, resourceTableColumnsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsCollection } from '~/entities/connection/sync'
@@ -98,7 +98,7 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
             \`\`\`
             `,
             'Database schemas and tables:',
-            JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem: store.get().showSystem })), null, 2),
+            JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem: store.get().showSystem })), null, 2),
           ].join('\n'),
         }, { signal: options.abortSignal }))
       },
@@ -141,7 +141,7 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
     onToolCall: async ({ toolCall }) => {
       if (toolCall.toolName === 'columns') {
         const input = toolCall.input as AITools['columns']['input']
-        const output = await queryClient.ensureQueryData(resourceTableColumnsQuery({
+        const output = await queryClient.ensureQueryData(resourceTableColumnsQueryOptions({
           connectionResource,
           table: input.tableAndSchema.tableName,
           schema: input.tableAndSchema.schemaName,
@@ -154,7 +154,7 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
         })
       }
       else if (toolCall.toolName === 'enums') {
-        const output = await queryClient.ensureQueryData(resourceEnumsQuery({ connectionResource })).then(results => results.flatMap(r => r.values.map(v => ({
+        const output = await queryClient.ensureQueryData(resourceEnumsQueryOptions({ connectionResource })).then(results => results.flatMap(r => r.values.map(v => ({
           schema: r.schema,
           name: r.name,
           value: v,
@@ -168,7 +168,7 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
       }
       else if (toolCall.toolName === 'select') {
         const input = toolCall.input as AITools['select']['input']
-        const output = await rowsQuery({
+        const output = await resourceRowsQuery({
           schema: input.tableAndSchema.schemaName,
           table: input.tableAndSchema.tableName,
           limit: input.limit,

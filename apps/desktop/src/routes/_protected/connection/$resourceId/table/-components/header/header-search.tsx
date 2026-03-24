@@ -14,7 +14,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { resourceEnumsQuery } from '~/entities/connection/queries'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 import { Route } from '../..'
@@ -64,7 +64,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
     },
   }))
   const columns = useTableColumns({ connectionResource, table, schema })
-  const { data: enums } = useQuery(resourceEnumsQuery({ connectionResource }))
+  const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const context = `
     Filters working with AND operator.
     Table name: ${table}

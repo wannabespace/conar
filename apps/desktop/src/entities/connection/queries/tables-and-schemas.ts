@@ -10,7 +10,7 @@ export const tablesAndSchemasType = type({
 })
 
 export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResource, showSystem }: { silent: boolean, connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) => {
-  const query = createQuery({
+  return createQuery({
     type: tablesAndSchemasType.array(),
     silent,
     query: {
@@ -57,11 +57,13 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
         .execute(),
     },
   })
+})
 
+export function resourceTablesAndSchemasQueryOptions({ silent, connectionResource, showSystem }: { silent: boolean, connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'tables-and-schemas', showSystem],
     queryFn: async () => {
-      const results = await query.run(connectionResourceToQueryParams(connectionResource))
+      const results = await resourceTablesAndSchemasQuery({ silent, connectionResource, showSystem }).run(connectionResourceToQueryParams(connectionResource))
       const schemas = Object.entries(Object.groupBy(results, table => table.schema)).map(([schema, tables]) => ({
         name: schema,
         tables: tables!.map(table => table.table),
@@ -80,4 +82,4 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
       }
     },
   })
-})
+}

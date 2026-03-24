@@ -17,7 +17,7 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { animationHooks } from '~/enter'
 import { ReactFlowNode } from '~/entities/connection/components'
-import { resourceConstraintsQuery, resourceTableColumnsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { resourceConstraintsQueryOptions, resourceTableColumnsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { applySearchHighlight, getVisualizerLayout } from './-lib'
@@ -41,15 +41,15 @@ function VisualizerPage() {
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data: tablesAndSchemas } = useQuery({
-    ...resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }),
+    ...resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem }),
     select: data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table }))),
   })
   const columnsQueries = useQueries({
     queries: tablesAndSchemas?.flatMap(({ schema, table }) =>
-      resourceTableColumnsQuery({ connectionResource, schema, table }),
+      resourceTableColumnsQueryOptions({ connectionResource, schema, table }),
     ) ?? [],
   })
-  const { data: constraints } = useQuery(resourceConstraintsQuery({ connectionResource }))
+  const { data: constraints } = useQuery(resourceConstraintsQueryOptions({ connectionResource }))
 
   if (!tablesAndSchemas || !constraints || columnsQueries.some(q => q.isPending)) {
     return (

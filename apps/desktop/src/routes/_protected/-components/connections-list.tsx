@@ -1,11 +1,12 @@
 import type { ComponentRef } from 'react'
 import type { connections as connectionsTable } from '~/drizzle/schema'
 import { CONNECTION_SYSTEM_NAMES } from '@conar/shared/constants'
+import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { Card } from '@conar/ui/components/card'
-import { Combobox, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList, ComboboxPopup, ComboboxTrigger } from '@conar/ui/components/combobox'
+import { Combobox, ComboboxCollection, ComboboxEmpty, ComboboxGroup, ComboboxGroupLabel, ComboboxInput, ComboboxItem, ComboboxList, ComboboxPopup, ComboboxTrigger } from '@conar/ui/components/combobox'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { FrameMotion } from '@conar/ui/components/frame'
 import { Separator } from '@conar/ui/components/separator'
@@ -14,23 +15,72 @@ import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownSLine, RiDeleteBinLine, RiMoreLine, RiPushpinLine, RiSearchLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowDownSLine, RiDeleteBinLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiRefreshLine, RiSearchLine } from '@remixicon/react'
 import { and, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { AnimatePresence } from 'motion/react'
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { v7 } from 'uuid'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
-import { connectionResourcesQuery } from '~/entities/connection/queries'
-import { connectionVersionQuery } from '~/entities/connection/queries/connection-version'
+import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
+import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
 import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
+
+function useConnectionResources(connection: typeof connectionsTable.$inferSelect) {
+  const { data: resources } = useLiveQuery(q => q
+    .from({ connectionsResources: connectionsResourcesCollection })
+    .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
+    .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
+  const existingResources = resources.map(r => r.name)
+  const { data = existingResources, ...props } = useQuery(connectionResourcesQueryOptions(connection))
+  return { data, ...props }
+}
+
+function Icon({ connection }: { connection: typeof connectionsTable.$inferSelect }) {
+  const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery(connectionVersionQueryOptions(connection))
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <ConnectionIcon
+          type={connection.type}
+          className="pointer-events-auto size-6 shrink-0"
+        />
+      </TooltipTrigger>
+      <TooltipContent
+        side="left"
+        className="pointer-events-auto flex items-center gap-1"
+        sideOffset={10}
+      >
+        <span className="opacity-50">Version: </span>
+        {isVersionPending
+          ? <span className="animate-pulse">Loading version...</span>
+          : version
+            ? (
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    className="cursor-pointer"
+                    onClick={() => refetchVersion()}
+                  >
+                    {version}
+                  </button>
+                  {isVersionRefetching && (
+                    <Spinner className="size-3" />
+                  )}
+                </div>
+              )
+            : <span className="opacity-50">Version cannot be detected</span>}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
 
 function ConnectionCard({
   connection,
@@ -39,14 +89,20 @@ function ConnectionCard({
   connection: typeof connectionsTable.$inferSelect
   onRemove: VoidFunction
 }) {
-  const { data: fetchedResources = [] } = useQuery(connectionResourcesQuery(connection))
-  const connectionString = new SafeURL(connection.connectionString)
-  const connectionPathname = connectionString.pathname.slice(1)
+  const { data: resources, isFetching, error, refetch } = useConnectionResources(connection)
+
   const [isOpen, setIsOpen] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
+
+  const connectionString = new SafeURL(connection.connectionString)
+  const connectionStringToShow = `${connectionString.hostname}${connectionString.port ? `:${connectionString.port}` : ''}`
+
   const connectionStore = getConnectionStore(connection.id)
-  const selectedResourceName = useSubscription(connectionStore, {
-    selector: state => state.lastOpenedResourceName || connectionPathname || fetchedResources[0] || CONNECTION_SYSTEM_NAMES[connection.type],
+  const { selectedResourceName, pinnedResourcesNames } = useSubscription(connectionStore, {
+    selector: state => ({
+      selectedResourceName: state.lastOpenedResourceName || connectionString.pathname.slice(1) || resources[0] || CONNECTION_SYSTEM_NAMES[connection.type],
+      pinnedResourcesNames: state.pinnedResourcesNames,
+    }),
   })
   const { data: selectedResource } = useLiveQuery(q => q
     .from({ connectionsResources: connectionsResourcesCollection })
@@ -56,8 +112,6 @@ function ConnectionCard({
     ))
     .findOne(), [connection.id, selectedResourceName])
   const showSystemName = CONNECTION_SYSTEM_NAMES[connection.type] !== selectedResourceName
-
-  const connectionStringToShow = `${connectionString.hostname}${connectionString.port ? `:${connectionString.port}` : ''}`
 
   useEffect(() => {
     if (!selectedResource) {
@@ -70,16 +124,6 @@ function ConnectionCard({
       })
     }
   }, [selectedResourceName, selectedResource, connection])
-
-  // const { mutate: sync, isPending: isSyncing, error: syncError } = useMutation({
-  //   mutationFn: async () => {
-  //     await syncConnectionResources(connection)
-  //   },
-  // })
-
-  // useEffect(() => {
-  //   sync()
-  // }, [sync])
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -101,7 +145,16 @@ function ConnectionCard({
     }, 3000)
   }
 
-  const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery(connectionVersionQuery(connection))
+  const groupedResources = Object.entries(resources.reduce<{ pinned: typeof resources[number][], unpinned: typeof resources[number][] }>((acc, resource) => {
+    const isPinned = pinnedResourcesNames.includes(resource)
+    if (isPinned) {
+      acc.pinned.push(resource)
+    }
+    else {
+      acc.unpinned.push(resource)
+    }
+    return acc
+  }, { pinned: [], unpinned: [] })).map(([value, items]) => ({ value: uppercaseFirst(value), items }))
 
   return (
     <FrameMotion
@@ -135,47 +188,19 @@ function ConnectionCard({
         "
         >
           <div className="flex items-center gap-4">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <ConnectionIcon
-                  type={connection.type}
-                  className="pointer-events-auto size-6 shrink-0"
-                />
-              </TooltipTrigger>
-              <TooltipContent side="left" className="pointer-events-auto">
-                <span className="opacity-50">Version: </span>
-                {isVersionPending
-                  ? <span className="animate-pulse">Loading version...</span>
-                  : version
-                    ? (
-                        <>
-                          {isVersionRefetching && (
-                            <Spinner className="size-3" />
-                          )}
-                          <button
-                            type="button"
-                            className="cursor-pointer"
-                            onClick={() => refetchVersion()}
-                          >
-                            {version}
-                          </button>
-                        </>
-                      )
-                    : <span className="opacity-50">Version cannot be detected</span>}
-              </TooltipContent>
-            </Tooltip>
+            <Icon connection={connection} />
             <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-1 leading-none font-medium">
-                <span title={connection.name}>{connection.name}</span>
-                {' '}
+              <div className="flex items-center gap-2 leading-none font-medium">
+                <span title={connection.name}>
+                  {connection.name}
+                </span>
                 {connection.label && (
-                  <Badge variant="outline">
+                  <Badge variant="secondary" className="max-w-36 truncate">
                     {connection.label}
                   </Badge>
                 )}
-                {/* {' '}
-                {isSyncing && <Spinner className="size-3" />}
-                {syncError && (
+                {isFetching && <Spinner className="size-3" />}
+                {error && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <RiAlertLine className="
@@ -184,14 +209,14 @@ function ConnectionCard({
                       />
                     </TooltipTrigger>
                     <TooltipContent className="pointer-events-auto">
-                      Sync failed:
+                      Failed to get resources:
                       {' '}
-                      <p className="text-xs text-warning">{syncError.message}</p>
+                      <p className="text-xs text-warning">{error.message}</p>
                     </TooltipContent>
                   </Tooltip>
-                )} */}
+                )}
               </div>
-              <div className="pointer-events-auto flex h-5 items-center gap-1">
+              <div className="pointer-events-auto flex h-4 items-center gap-1">
                 <Tooltip open={isOpen || isCopied} onOpenChange={setIsOpen}>
                   <TooltipTrigger
                     className="
@@ -201,16 +226,16 @@ function ConnectionCard({
                     onClick={() => handleCopy()}
                   >
                     {connectionStringToShow}
-                    {(showSystemName || fetchedResources.length > 1) && <span>/</span>}
-                    {fetchedResources.length <= 1 && showSystemName && selectedResourceName}
+                    {(showSystemName || resources.length > 1) && <span>/</span>}
+                    {resources.length <= 1 && showSystemName && selectedResourceName}
                   </TooltipTrigger>
                   <TooltipContent className="flex items-center gap-1" side="bottom">
                     {isCopied ? 'Connection string copied!' : 'Copy connection string'}
                   </TooltipContent>
                 </Tooltip>
-                {fetchedResources.length > 1 && (
+                {resources.length > 1 && (
                   <Combobox
-                    items={fetchedResources}
+                    items={groupedResources}
                     value={selectedResourceName}
                     onValueChange={value => connectionStore.set(state => ({ ...state, lastOpenedResourceName: value } satisfies typeof state))}
                   >
@@ -222,49 +247,78 @@ function ConnectionCard({
                       <RiArrowDownSLine />
                     </ComboboxTrigger>
                     <ComboboxPopup className="max-w-80 min-w-48">
-                      {fetchedResources.length > 10 && (
-                        <div className="border-b p-2">
-                          <ComboboxInput
-                            className="
-                              rounded-md
-                              before:rounded-[calc(var(--radius-md)-1px)]
-                            "
-                            placeholder="Search resources"
-                            showTrigger={false}
-                            startAddon={<RiSearchLine />}
-                          />
-                        </div>
-                      )}
+                      <div className="border-b p-2">
+                        <ComboboxInput
+                          className="
+                            rounded-md
+                            before:rounded-[calc(var(--radius-md)-1px)]
+                          "
+                          placeholder="Search resources"
+                          showTrigger={false}
+                          startAddon={<RiSearchLine />}
+                        />
+                      </div>
                       <ComboboxEmpty>No results found.</ComboboxEmpty>
                       <ComboboxList>
-                        {(item: typeof fetchedResources[number]) => (
-                          <ComboboxItem
-                            key={item}
-                            className="group"
-                          >
-                            <span
-                              className="
-                                flex w-full min-w-0 items-center justify-between
-                                gap-2
-                              "
-                            >
-                              <span className="flex-1 truncate">
-                                {item}
-                              </span>
-                              {fetchedResources.length > 10 && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon-xs"
-                                  className="
-                                    -mr-3 shrink-0 opacity-0
-                                    group-hover:opacity-100
-                                  "
-                                >
-                                  <RiPushpinLine className="size-3.5" />
-                                </Button>
-                              )}
-                            </span>
-                          </ComboboxItem>
+                        {(group: typeof groupedResources[number]) => (
+                          <Fragment key={group.value}>
+                            <ComboboxGroup items={group.items}>
+                              <ComboboxGroupLabel>{group.value}</ComboboxGroupLabel>
+                              <ComboboxCollection>
+                                {(resource: typeof group.items[number]) => (
+                                  <ComboboxItem
+                                    key={resource}
+                                    value={resource}
+                                    className="group"
+                                  >
+                                    <span
+                                      className="
+                                        flex w-full min-w-0 items-center
+                                        justify-between gap-2
+                                      "
+                                    >
+                                      <span className="flex-1 truncate">
+                                        {resource}
+                                      </span>
+                                      {/* {resources.length > 10 && ( */}
+                                      <Button
+                                        variant="ghost"
+                                        size="icon-xs"
+                                        className="
+                                          -mr-3 shrink-0 opacity-0
+                                          group-hover:opacity-100
+                                        "
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          connectionStore.set(state => ({
+                                            ...state,
+                                            pinnedResourcesNames: state.pinnedResourcesNames.includes(resource)
+                                              ? state.pinnedResourcesNames.filter(name => name !== resource)
+                                              : [...state.pinnedResourcesNames, resource],
+                                          } satisfies typeof state))
+                                        }}
+                                      >
+                                        {pinnedResourcesNames.includes(resource)
+                                          ? (
+                                              <RiPushpinFill className="
+                                                size-3.5 text-primary
+                                              "
+                                              />
+                                            )
+                                          : (
+                                              <RiPushpinLine className="
+                                                size-3.5
+                                              "
+                                              />
+                                            )}
+                                      </Button>
+                                      {/* )} */}
+                                    </span>
+                                  </ComboboxItem>
+                                )}
+                              </ComboboxCollection>
+                            </ComboboxGroup>
+                          </Fragment>
                         )}
                       </ComboboxList>
                     </ComboboxPopup>
@@ -281,12 +335,12 @@ function ConnectionCard({
               <RiMoreLine className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {/* <DropdownMenuItem
-                onClick={() => sync()}
+              <DropdownMenuItem
+                onClick={() => refetch()}
               >
-                <RiLoopLeftLine className="size-4 opacity-50" />
+                <RiRefreshLine className="size-4" />
                 Refresh
-              </DropdownMenuItem> */}
+              </DropdownMenuItem>
               <DropdownMenuItem
                 variant="destructive"
                 onClick={() => onRemove()}
