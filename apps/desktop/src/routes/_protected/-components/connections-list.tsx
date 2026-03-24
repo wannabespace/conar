@@ -43,7 +43,7 @@ function useConnectionResources(connection: typeof connectionsTable.$inferSelect
   return { data, ...props }
 }
 
-function Icon({ connection }: { connection: typeof connectionsTable.$inferSelect }) {
+function ConnectionIconWithVersion({ connection }: { connection: typeof connectionsTable.$inferSelect }) {
   const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery(connectionVersionQueryOptions(connection))
   return (
     <Tooltip>
@@ -82,6 +82,111 @@ function Icon({ connection }: { connection: typeof connectionsTable.$inferSelect
   )
 }
 
+function ConnectionResourcesCombobox({
+  resources,
+  selectedResourceName,
+  onSelectedResourceNameChange,
+  pinnedResourcesNames,
+  onPinnedResourceNameChange,
+}: {
+  resources: string[]
+  selectedResourceName: string
+  onSelectedResourceNameChange: (resource: string | null) => void
+  pinnedResourcesNames: string[]
+  onPinnedResourceNameChange: (resource: string) => void
+}) {
+  const groupedResources = Object.entries(resources.reduce<{ pinned: typeof resources[number][], unpinned: typeof resources[number][] }>((acc, resource) => {
+    const isPinned = pinnedResourcesNames.includes(resource)
+    if (isPinned) {
+      acc.pinned.push(resource)
+    }
+    else {
+      acc.unpinned.push(resource)
+    }
+    return acc
+  }, { pinned: [], unpinned: [] })).map(([value, items]) => ({ value: uppercaseFirst(value), items }))
+
+  return (
+    <Combobox
+      items={groupedResources}
+      value={selectedResourceName}
+      onValueChange={onSelectedResourceNameChange}
+    >
+      <ComboboxTrigger
+        className="text-xs"
+        render={<Button variant="outline" size="xs" />}
+      >
+        {selectedResourceName}
+        <RiArrowDownSLine />
+      </ComboboxTrigger>
+      <ComboboxPopup className="max-w-80 min-w-48">
+        <div className="border-b p-2">
+          <ComboboxInput
+            className="
+              rounded-md
+              before:rounded-[calc(var(--radius-md)-1px)]
+            "
+            placeholder="Search resources"
+            showTrigger={false}
+            startAddon={<RiSearchLine />}
+          />
+        </div>
+        <ComboboxEmpty>No results found.</ComboboxEmpty>
+        <ComboboxList>
+          {(group: typeof groupedResources[number]) => (
+            <Fragment key={group.value}>
+              <ComboboxGroup items={group.items}>
+                <ComboboxGroupLabel>{group.value}</ComboboxGroupLabel>
+                <ComboboxCollection>
+                  {(resource: typeof group.items[number]) => (
+                    <ComboboxItem
+                      key={resource}
+                      value={resource}
+                      className="group"
+                    >
+                      <span
+                        className="
+                          flex w-full min-w-0 items-center justify-between gap-2
+                        "
+                      >
+                        <span className="flex-1 truncate">
+                          {resource}
+                        </span>
+                        {/* {resources.length > 10 && ( */}
+                        <Button
+                          variant="ghost"
+                          size="icon-xs"
+                          className="
+                            -mr-3 shrink-0 opacity-0
+                            group-hover:opacity-100
+                          "
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onPinnedResourceNameChange(resource)
+                          }}
+                        >
+                          {pinnedResourcesNames.includes(resource)
+                            ? (
+                                <RiPushpinFill className="size-3.5 text-primary" />
+                              )
+                            : (
+                                <RiPushpinLine className="size-3.5" />
+                              )}
+                        </Button>
+                        {/* )} */}
+                      </span>
+                    </ComboboxItem>
+                  )}
+                </ComboboxCollection>
+              </ComboboxGroup>
+            </Fragment>
+          )}
+        </ComboboxList>
+      </ComboboxPopup>
+    </Combobox>
+  )
+}
+
 function ConnectionCard({
   connection,
   onRemove,
@@ -104,6 +209,7 @@ function ConnectionCard({
       pinnedResourcesNames: state.pinnedResourcesNames,
     }),
   })
+
   const { data: selectedResource } = useLiveQuery(q => q
     .from({ connectionsResources: connectionsResourcesCollection })
     .where(({ connectionsResources }) => and(
@@ -111,7 +217,6 @@ function ConnectionCard({
       eq(connectionsResources.name, selectedResourceName),
     ))
     .findOne(), [connection.id, selectedResourceName])
-  const showSystemName = CONNECTION_SYSTEM_NAMES[connection.type] !== selectedResourceName
 
   useEffect(() => {
     if (!selectedResource) {
@@ -124,6 +229,8 @@ function ConnectionCard({
       })
     }
   }, [selectedResourceName, selectedResource, connection])
+
+  const showSystemName = CONNECTION_SYSTEM_NAMES[connection.type] !== selectedResourceName
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -144,17 +251,6 @@ function ConnectionCard({
       timeoutRef.current = null
     }, 3000)
   }
-
-  const groupedResources = Object.entries(resources.reduce<{ pinned: typeof resources[number][], unpinned: typeof resources[number][] }>((acc, resource) => {
-    const isPinned = pinnedResourcesNames.includes(resource)
-    if (isPinned) {
-      acc.pinned.push(resource)
-    }
-    else {
-      acc.unpinned.push(resource)
-    }
-    return acc
-  }, { pinned: [], unpinned: [] })).map(([value, items]) => ({ value: uppercaseFirst(value), items }))
 
   return (
     <FrameMotion
@@ -188,7 +284,7 @@ function ConnectionCard({
         "
         >
           <div className="flex items-center gap-4">
-            <Icon connection={connection} />
+            <ConnectionIconWithVersion connection={connection} />
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 leading-none font-medium">
                 <span title={connection.name}>
@@ -234,95 +330,18 @@ function ConnectionCard({
                   </TooltipContent>
                 </Tooltip>
                 {resources.length > 1 && (
-                  <Combobox
-                    items={groupedResources}
-                    value={selectedResourceName}
-                    onValueChange={value => connectionStore.set(state => ({ ...state, lastOpenedResourceName: value } satisfies typeof state))}
-                  >
-                    <ComboboxTrigger
-                      className="text-xs"
-                      render={<Button variant="outline" size="xs" />}
-                    >
-                      {selectedResourceName}
-                      <RiArrowDownSLine />
-                    </ComboboxTrigger>
-                    <ComboboxPopup className="max-w-80 min-w-48">
-                      <div className="border-b p-2">
-                        <ComboboxInput
-                          className="
-                            rounded-md
-                            before:rounded-[calc(var(--radius-md)-1px)]
-                          "
-                          placeholder="Search resources"
-                          showTrigger={false}
-                          startAddon={<RiSearchLine />}
-                        />
-                      </div>
-                      <ComboboxEmpty>No results found.</ComboboxEmpty>
-                      <ComboboxList>
-                        {(group: typeof groupedResources[number]) => (
-                          <Fragment key={group.value}>
-                            <ComboboxGroup items={group.items}>
-                              <ComboboxGroupLabel>{group.value}</ComboboxGroupLabel>
-                              <ComboboxCollection>
-                                {(resource: typeof group.items[number]) => (
-                                  <ComboboxItem
-                                    key={resource}
-                                    value={resource}
-                                    className="group"
-                                  >
-                                    <span
-                                      className="
-                                        flex w-full min-w-0 items-center
-                                        justify-between gap-2
-                                      "
-                                    >
-                                      <span className="flex-1 truncate">
-                                        {resource}
-                                      </span>
-                                      {/* {resources.length > 10 && ( */}
-                                      <Button
-                                        variant="ghost"
-                                        size="icon-xs"
-                                        className="
-                                          -mr-3 shrink-0 opacity-0
-                                          group-hover:opacity-100
-                                        "
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          connectionStore.set(state => ({
-                                            ...state,
-                                            pinnedResourcesNames: state.pinnedResourcesNames.includes(resource)
-                                              ? state.pinnedResourcesNames.filter(name => name !== resource)
-                                              : [...state.pinnedResourcesNames, resource],
-                                          } satisfies typeof state))
-                                        }}
-                                      >
-                                        {pinnedResourcesNames.includes(resource)
-                                          ? (
-                                              <RiPushpinFill className="
-                                                size-3.5 text-primary
-                                              "
-                                              />
-                                            )
-                                          : (
-                                              <RiPushpinLine className="
-                                                size-3.5
-                                              "
-                                              />
-                                            )}
-                                      </Button>
-                                      {/* )} */}
-                                    </span>
-                                  </ComboboxItem>
-                                )}
-                              </ComboboxCollection>
-                            </ComboboxGroup>
-                          </Fragment>
-                        )}
-                      </ComboboxList>
-                    </ComboboxPopup>
-                  </Combobox>
+                  <ConnectionResourcesCombobox
+                    resources={resources}
+                    pinnedResourcesNames={pinnedResourcesNames}
+                    selectedResourceName={selectedResourceName}
+                    onSelectedResourceNameChange={value => connectionStore.set(state => ({ ...state, lastOpenedResourceName: value } satisfies typeof state))}
+                    onPinnedResourceNameChange={value => connectionStore.set(state => ({
+                      ...state,
+                      pinnedResourcesNames: state.pinnedResourcesNames.includes(value)
+                        ? state.pinnedResourcesNames.filter(name => name !== value)
+                        : [...state.pinnedResourcesNames, value],
+                    } satisfies typeof state))}
+                  />
                 )}
               </div>
             </div>
