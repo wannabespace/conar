@@ -1,7 +1,7 @@
-import { toastManager } from '@conar/ui/components/toast'
 import { useMatches, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
+import { toast } from 'sonner'
 import { identifyUser } from '~/lib/events-utils'
 import { authClient, bearerToken } from './lib/auth'
 import { appStore } from './store'
@@ -52,9 +52,7 @@ export function AuthObserver() {
 
   useEffect(() => {
     if (!!bearerToken.get() && !!error && isOnline) {
-      toastManager.add({
-        type: 'error',
-        title: 'Something went wrong with our server. You can continue working, but some features may not work as expected.',
+      toast.error('Something went wrong with our server. You can continue working, but some features may not work as expected.', {
         id: 'server-error',
       })
     }

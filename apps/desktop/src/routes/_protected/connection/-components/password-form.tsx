@@ -5,11 +5,11 @@ import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Input } from '@conar/ui/components/input'
-import { toastManager } from '@conar/ui/components/toast'
 import { RiArrowLeftSLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 import { connectionsCollection } from '~/entities/connection/sync'
 
@@ -44,16 +44,11 @@ export function PasswordForm({ connection, connectionResource }: { connection: t
     },
     onSuccess: () => {
       router.invalidate({ filter: r => r.routeId === '/_protected/connection/$resourceId' })
-      toastManager.add({
-        title: 'Password successfully saved!',
-        type: 'success',
-      })
+      toast.success('Password successfully saved!')
       setPassword('')
     },
     onError: (error) => {
-      toastManager.add({
-        title: 'We couldn\'t connect to the database',
-        type: 'error',
+      toast.error('We couldn\'t connect to the database', {
         // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
         description: <span dangerouslySetInnerHTML={{ __html: error.message.replaceAll('\n', '<br />') }} />,
       })

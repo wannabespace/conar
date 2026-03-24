@@ -1,8 +1,8 @@
 import type { connections } from '~/drizzle/schema'
 import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
-import { toastManager } from '@conar/ui/components/toast'
 import { useImperativeHandle, useState } from 'react'
+import { toast } from 'sonner'
 import { connectionsCollection } from '~/entities/connection/sync'
 
 interface RemoveConnectionDialogProps {
@@ -28,10 +28,7 @@ export function RemoveConnectionDialog({ ref }: RemoveConnectionDialogProps) {
 
     e.preventDefault()
     connectionsCollection.delete(connection.id)
-    toastManager.add({
-      title: 'Connection removed successfully',
-      type: 'success',
-    })
+    toast.success('Connection removed successfully')
     setOpen(false)
   }
 

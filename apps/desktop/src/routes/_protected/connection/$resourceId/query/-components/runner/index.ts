@@ -1,7 +1,7 @@
 import type { connectionsResources } from '~/drizzle/schema'
 import type { connectionResourceType } from '~/entities/connection/store'
-import { toastManager } from '@conar/ui/components/toast'
 import { queryOptions } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { customQuery } from '~/entities/connection/queries/custom'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { getConnectionResourceStore } from '~/entities/connection/store'
@@ -69,22 +69,13 @@ export function runnerQueryOptions(connectionResource: typeof connectionsResourc
         const errors = results.filter(({ error }) => error !== null)
 
         if (errors.length === 0) {
-          toastManager.add({
-            title: queriesWithDangerousSqlKeywords.length > 1 ? 'All queries executed successfully!' : 'Query executed successfully!',
-            type: 'success',
-          })
+          toast.success(queriesWithDangerousSqlKeywords.length > 1 ? 'All queries executed successfully!' : 'Query executed successfully!')
         }
         else if (errors.length !== results.length) {
-          toastManager.add({
-            title: queriesWithDangerousSqlKeywords.length > 1 ? 'Some queries failed to execute!' : 'Query failed to execute!',
-            type: 'warning',
-          })
+          toast.warning(queriesWithDangerousSqlKeywords.length > 1 ? 'Some queries failed to execute!' : 'Query failed to execute!')
         }
         else {
-          toastManager.add({
-            title: queriesWithDangerousSqlKeywords.length > 1 ? 'All queries failed to execute!' : 'Query failed to execute!',
-            type: 'error',
-          })
+          toast.error(queriesWithDangerousSqlKeywords.length > 1 ? 'All queries failed to execute!' : 'Query failed to execute!')
         }
       }
 

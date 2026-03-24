@@ -14,11 +14,11 @@ import {
 } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
-import { toastManager } from '@conar/ui/components/toast'
 import { RiAlertLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
+import { toast } from 'sonner'
 import { dropTableQuery, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { getConnectionResourceStore, removeTab } from '~/entities/connection/store'
@@ -66,10 +66,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
       await dropTableQuery({ table, schema, cascade }).run(connectionResourceToQueryParams(connectionResource))
     },
     onSuccess: async () => {
-      toastManager.add({
-        title: `Table "${table}" successfully dropped`,
-        type: 'success',
-      })
+      toast.success(`Table "${table}" successfully dropped`)
       setOpen(false)
       setConfirmationText('')
       setCascade(false)
@@ -85,10 +82,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
       removeTab(connectionResource.id, schema, table)
     },
     onError: (error) => {
-      toastManager.add({
-        title: `Failed to drop table "${error.message}".`,
-        type: 'error',
-      })
+      toast.error(`Failed to drop table "${error.message}".`)
     },
   })
 

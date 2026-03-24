@@ -8,7 +8,6 @@ import { Button } from '@conar/ui/components/button'
 import { CtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
-import { toastManager } from '@conar/ui/components/toast'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
@@ -16,6 +15,7 @@ import { RiArrowLeftDownLine, RiArrowRightUpLine, RiCollapseDiagonal2Line, RiExp
 import { format, isValid } from 'date-fns'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
 import { useCellContext } from './cell-context'
@@ -335,12 +335,10 @@ export function TableCell({
 
     console.error(error)
 
-    toastManager.add({
-      title: `Failed to update cell "${column.id}"`,
-      type: 'error',
+    toast.error(`Failed to update cell "${column.id}"`, {
       id: `save-cell-error-${column.id}-${error.message}`,
       description: error.message,
-      timeout: 3000,
+      duration: 3000,
     })
   }
 

@@ -11,7 +11,7 @@ import { routeTree } from './routeTree.gen'
 import './monaco-worker'
 import './assets/styles.css'
 import '@conar/ui/globals.css'
-import { toastManager } from '@conar/ui/components/toast'
+import { toast } from 'sonner'
 
 if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
   import('react-scan').then(({ scan }) => {
@@ -24,10 +24,9 @@ window.electron?.app.onDeepLink(async (url) => {
 })
 
 window.electron?.app.onSendToast(({ message, type }) => {
-  toastManager.add({
-    title: message,
-    type,
+  toast[type](message, {
     id: `${type}-${message}`,
+    position: 'bottom-center',
   })
 })
 

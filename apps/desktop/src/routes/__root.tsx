@@ -1,5 +1,5 @@
 import { title } from '@conar/shared/utils/title'
-import { AnchoredToastProvider, ToastProvider } from '@conar/ui/components/toast'
+import { Toaster } from '@conar/ui/components/sonner'
 import { TooltipProvider } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { ThemeObserver } from '@conar/ui/theme-observer'
@@ -45,39 +45,36 @@ function RootDocument() {
     <>
       <HeadContent />
       <EventsProvider>
-        <ToastProvider position="bottom-center">
-          <AnchoredToastProvider>
-            <TooltipProvider>
-              <ThemeObserver />
-              <QueryClientProvider client={queryClient}>
-                <AuthObserver />
-                <div className={cn(
-                  'flex h-screen flex-col',
-                  // For simple page layouts, we want outlet to be the full height of the screen
-                  '*:last:h-full *:last:min-h-[inherit] *:last:flex-1',
-                )}
-                >
-                  <GlobalBanner />
-                  <Outlet />
-                </div>
-                {import.meta.env.DEV && (
-                  <TanStackDevtools
-                    plugins={[
-                      {
-                        name: 'TanStack Query',
-                        render: <ReactQueryDevtoolsPanel />,
-                      },
-                      {
-                        name: 'TanStack Router',
-                        render: <TanStackRouterDevtoolsPanel router={router} />,
-                      },
-                    ]}
-                  />
-                )}
-              </QueryClientProvider>
-            </TooltipProvider>
-          </AnchoredToastProvider>
-        </ToastProvider>
+        <TooltipProvider>
+          <ThemeObserver />
+          <QueryClientProvider client={queryClient}>
+            <AuthObserver />
+            <div className={cn(
+              'flex h-screen flex-col',
+              // For simple page layouts, we want outlet to be the full height of the screen
+              '*:last:h-full *:last:min-h-[inherit] *:last:flex-1',
+            )}
+            >
+              <GlobalBanner />
+              <Outlet />
+            </div>
+            {import.meta.env.DEV && (
+              <TanStackDevtools
+                plugins={[
+                  {
+                    name: 'TanStack Query',
+                    render: <ReactQueryDevtoolsPanel />,
+                  },
+                  {
+                    name: 'TanStack Router',
+                    render: <TanStackRouterDevtoolsPanel router={router} />,
+                  },
+                ]}
+              />
+            )}
+          </QueryClientProvider>
+          <Toaster />
+        </TooltipProvider>
       </EventsProvider>
     </>
   )

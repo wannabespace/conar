@@ -12,11 +12,11 @@ import {
 } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
-import { toastManager } from '@conar/ui/components/toast'
 import { RiInformationLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
+import { toast } from 'sonner'
 import { renameTableQuery, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { getConnectionResourceStore, renameTab } from '~/entities/connection/store'
@@ -52,10 +52,7 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
       await renameTableQuery({ schema, oldTable: table, newTable: newTableName }).run(connectionResourceToQueryParams(connectionResource))
     },
     onSuccess: async () => {
-      toastManager.add({
-        title: `Table "${table}" successfully renamed to "${newTableName}"`,
-        type: 'success',
-      })
+      toast.success(`Table "${table}" successfully renamed to "${newTableName}"`)
       setOpen(false)
 
       await queryClient.invalidateQueries(resourceTablesAndSchemasQueryOptions({ silent: true, connectionResource, showSystem: store.get().showSystem }))
@@ -69,10 +66,7 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
       })
     },
     onError: (error) => {
-      toastManager.add({
-        title: `Failed to rename table "${error.message}".`,
-        type: 'error',
-      })
+      toast.error(`Failed to rename table "${error.message}".`)
     },
   })
 

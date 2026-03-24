@@ -11,8 +11,8 @@ import {
 } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
-import { toastManager } from '@conar/ui/components/toast'
 import { useImperativeHandle, useState } from 'react'
+import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { queriesCollection } from '~/entities/query/sync'
 import { Route } from '../..'
@@ -46,10 +46,7 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
       name,
       query,
     })
-    toastManager.add({
-      title: `Query "${name}" successfully created`,
-      type: 'success',
-    })
+    toast.success(`Query "${name}" successfully created`)
     setOpen(false)
   }
 

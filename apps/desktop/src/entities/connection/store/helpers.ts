@@ -1,5 +1,5 @@
 import type { connectionResourceType } from '.'
-import { toastManager } from '@conar/ui/components/toast'
+import { toast } from 'sonner'
 import { getConnectionResourceStore } from '.'
 
 export function addTab(id: string, schema: string, table: string, preview?: boolean) {
@@ -85,10 +85,7 @@ export function togglePinTable(id: string, schema: string, table: string) {
     }
 
     if (state.pinnedTables.length >= MAX_PINNED_TABLES) {
-      toastManager.add({
-        title: `Only ${MAX_PINNED_TABLES} tables can be pinned. Last pinned table removed.`,
-        type: 'info',
-      })
+      toast.info(`Only ${MAX_PINNED_TABLES} tables can be pinned. Last pinned table removed.`)
     }
 
     return {

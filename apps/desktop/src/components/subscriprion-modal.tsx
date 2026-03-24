@@ -1,9 +1,9 @@
 import { Button } from '@conar/ui/components/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
-import { toastManager } from '@conar/ui/components/toast'
 import { RiExternalLinkLine, RiVipCrownLine } from '@remixicon/react'
 import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
+import { toast } from 'sonner'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 
@@ -14,10 +14,7 @@ export function SubscriptionModal() {
   useEffect(() => {
     if (isSubscriptionDialogOpen && subscription) {
       setIsSubscriptionDialogOpen(false)
-      toastManager.add({
-        title: 'Subscription successful! Conar Pro features are now unlocked.',
-        type: 'success',
-      })
+      toast.success('Subscription successful! Conar Pro features are now unlocked.')
     }
   }, [isSubscriptionDialogOpen, subscription])
 

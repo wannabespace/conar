@@ -1,5 +1,5 @@
-import { toastManager } from '@conar/ui/components/toast'
 import { useMutation } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
 import { connectionsCollection } from '~/entities/connection/sync'
 import { queriesCollection } from '~/entities/query/sync'
@@ -17,10 +17,7 @@ export function useSignOut() {
       refetch()
     },
     onSuccess: () => {
-      toastManager.add({
-        title: 'You have been signed out successfully.',
-        type: 'success',
-      })
+      toast.success('You have been signed out successfully.')
 
       // Timeout to wait transition to auth page
       setTimeout(() => {

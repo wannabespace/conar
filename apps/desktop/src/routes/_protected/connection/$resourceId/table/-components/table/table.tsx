@@ -4,10 +4,10 @@ import type { Column } from '~/entities/connection/components/table/utils'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { Table, TableBody, TableProvider, useShiftSelectionKeyDown } from '@conar/table'
-import { toastManager } from '@conar/ui/components/toast'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
+import { toast } from 'sonner'
 import { TableCell } from '~/entities/connection/components'
 import { findEnum, resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
@@ -190,9 +190,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         setValue(rowIndex, columnId, realValue ?? undefined)
     }
     catch (e) {
-      toastManager.add({
-        title: 'New value was saved, but the updated value was not refreshed',
-        type: 'error',
+      toast.error('New value was saved, but the updated value was not refreshed', {
         description: e instanceof Error ? e.message : String(e),
       })
     }
