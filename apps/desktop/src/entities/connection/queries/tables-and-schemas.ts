@@ -15,7 +15,7 @@ export const connectionSystemNames = {
 export const tablesAndSchemasType = type({
   schema: 'string',
   table: 'string',
-  table_type: 'string',
+  table_type: "'BASE TABLE' | 'VIEW'",
 })
 
 export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResource, showSystem }: { silent: boolean, connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) => {
