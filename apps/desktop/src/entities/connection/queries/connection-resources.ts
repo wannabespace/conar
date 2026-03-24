@@ -1,7 +1,10 @@
+import type { connections } from '~/drizzle/schema'
+import { memoize } from '@conar/shared/utils/helpers'
+import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { createQuery } from '../query'
 
-export const connectionResourcesQuery = createQuery({
+export const query = createQuery({
   type: type('string[]'),
   silent: true,
   query: {
@@ -37,4 +40,14 @@ export const connectionResourcesQuery = createQuery({
       .execute()
       .then(rows => rows.map(r => r.name)),
   },
+})
+
+export const connectionResourcesQuery = memoize((connection: typeof connections.$inferSelect) => {
+  return queryOptions({
+    queryKey: ['connection', connection.id, 'resources'],
+    queryFn: () => query.run({
+      connectionString: connection.connectionString,
+      type: connection.type,
+    }),
+  })
 })

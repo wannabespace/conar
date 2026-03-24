@@ -79,7 +79,7 @@ function CreateConnectionPage() {
 
     if (resource) {
       getConnectionStore(id).set({
-        selectedResourceName: resource,
+        lastOpenedResourceName: resource,
         pinnedResourcesNames: [resource],
       })
     }

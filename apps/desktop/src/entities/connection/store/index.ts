@@ -10,11 +10,11 @@ export * from './helpers'
 export const getConnectionStore = memoize((id: string) => createLocalStorageValue({
   key: `connection-store-${id}`,
   defaultValue: {
-    selectedResourceName: null,
+    lastOpenedResourceName: null,
     pinnedResourcesNames: [],
   },
   schema: type({
-    selectedResourceName: 'string | null',
+    lastOpenedResourceName: 'string | null',
     pinnedResourcesNames: 'string[]',
   }),
 }))

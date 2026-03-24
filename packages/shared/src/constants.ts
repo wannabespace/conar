@@ -54,6 +54,17 @@ export const CONNECTION_SYSTEM_NAMES = {
   [ConnectionType.MSSQL]: 'master',
   [ConnectionType.ClickHouse]: 'default',
 } satisfies Record<ConnectionType, string>
-export const CONNECTION_TYPES_TO_HIDE_SYSTEM_NAMES: ConnectionType[] = [ConnectionType.MSSQL, ConnectionType.ClickHouse]
 export const CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES: ConnectionType[] = [ConnectionType.MSSQL, ConnectionType.ClickHouse]
 export const CONNECTION_TYPES_WITHOUT_SCHEMAS: ConnectionType[] = [ConnectionType.ClickHouse]
+
+export const NETWORK_ERROR_PATTERNS = [
+  'econnreset',
+  'etimedout',
+  'epipe',
+  'econnrefused',
+  'enotfound',
+  'connection lost',
+  'socket hang up',
+  'socketerror',
+  'network',
+]
