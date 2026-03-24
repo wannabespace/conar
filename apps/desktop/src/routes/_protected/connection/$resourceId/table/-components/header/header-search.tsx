@@ -1,6 +1,5 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
-import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { CtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
@@ -8,13 +7,14 @@ import { Kbd } from '@conar/ui/components/kbd'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import NumberFlow from '@number-flow/react'
 import { isDefinedError } from '@orpc/client'
-import { RiAlertLine, RiBardLine, RiCloseLine } from '@remixicon/react'
+import { RiBardLine } from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { resourceEnumsQuery } from '~/entities/connection/queries'
+import { toast } from 'sonner'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 import { Route } from '../..'
@@ -26,8 +26,6 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
   const { connectionResource } = Route.useRouteContext()
   const inputRef = useRef<HTMLInputElement>(null)
   const store = usePageStoreContext()
-  const [hintOpened, setHintOpened] = useState(false)
-  const [hintMessage, setHintMessage] = useState<{ message: string, type: 'error' } | null>(null)
   const prompt = useSubscription(store, { selector: state => state.prompt })
   const [freeAiUsage, setFreeAiUsage] = useState<{ remaining: number, max: number, resetAt: Date } | null>(null)
   const { mutate: generateFilter, isPending } = useMutation(orpc.ai.filters.mutationOptions({
@@ -44,11 +42,9 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
       } satisfies typeof state))
 
       if (data.filters.length === 0 && !hasOrderBy) {
-        setHintMessage({
-          message: 'No filters or ordering were generated, please try again with a different prompt',
-          type: 'error',
+        toast.info('No filters or ordering were generated, please try again with a different prompt', {
+          id: 'no-filters-or-ordering',
         })
-        setHintOpened(true)
       }
 
       setFreeAiUsage(data.freeAiUsage || null)
@@ -64,7 +60,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
     },
   }))
   const columns = useTableColumns({ connectionResource, table, schema })
-  const { data: enums } = useQuery(resourceEnumsQuery({ connectionResource }))
+  const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const context = `
     Filters working with AND operator.
     Table name: ${table}
@@ -88,11 +84,9 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
       onSubmit={(e) => {
         e.preventDefault()
         if (prompt.trim() === '') {
-          setHintMessage({
-            message: 'Please enter a prompt to generate filters',
-            type: 'error',
+          toast.info('Please enter a prompt to generate filters', {
+            id: 'no-prompt',
           })
-          setHintOpened(true)
           return
         }
 
@@ -100,38 +94,14 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
       }}
     >
       <InputGroup>
-        <Tooltip open={hintOpened}>
-          <TooltipTrigger asChild>
-            <InputGroupInput
-              ref={inputRef}
-              placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
-              disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
-              value={prompt}
-              autoFocus
-              onChange={(e) => {
-                store.set(state => ({ ...state, prompt: e.target.value } satisfies typeof state))
-                setHintOpened(false)
-              }}
-            />
-          </TooltipTrigger>
-          <TooltipContent
-            side="top"
-            align="start"
-            className="
-              rounded-b-none border-b-0 bg-secondary py-0.5 pr-0.5 pl-2
-              shadow-none
-            "
-            sideOffset={0}
-          >
-            <p className="flex items-center gap-1 text-xs">
-              <RiAlertLine className="size-3 text-muted-foreground" />
-              {hintMessage?.message}
-              <Button variant="ghost" size="icon-xs" onClick={() => setHintOpened(false)}>
-                <RiCloseLine />
-              </Button>
-            </p>
-          </TooltipContent>
-        </Tooltip>
+        <InputGroupInput
+          ref={inputRef}
+          placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
+          disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
+          value={prompt}
+          autoFocus
+          onChange={e => store.set(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
+        />
         <InputGroupAddon>
           <LoadingContent
             className="pointer-events-none size-4 text-muted-foreground"

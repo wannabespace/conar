@@ -11,7 +11,7 @@ import { RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useSubscription } from 'seitu/react'
 import { ExportData } from '~/components/export-data'
-import { resourceConstraintsQuery, resourceRowsQuery, resourceTableColumnsQuery, resourceTableTotalQuery, rowsQuery } from '~/entities/connection/queries'
+import { resourceConstraintsQueryOptions, resourceRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableColumnsQueryOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { queryClient } from '~/main'
 import { Route } from '../..'
@@ -29,19 +29,19 @@ export function Header({ table, schema }: { table: string, schema: string }) {
   const columns = useTableColumns({ connectionResource, table, schema })
   const store = usePageStoreContext()
   const { filters, exact, orderBy, selected } = useSubscription(store, { selector: state => pick(state, ['filters', 'orderBy', 'exact', 'selected']) })
-  const { data: total, isLoading } = useQuery(resourceTableTotalQuery({ connectionResource, table, schema, query: { filters, exact } }))
+  const { data: total, isLoading } = useQuery(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters, exact } }))
 
   const columnsCount = columns?.length ?? 0
 
   const { isFetching, dataUpdatedAt, refetch, data: rows = [], isPending } = useInfiniteQuery(
-    resourceRowsQuery({ connectionResource, table, schema, query: { filters, orderBy } }),
+    resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }),
   )
 
   async function handleRefresh() {
     refetch()
-    queryClient.invalidateQueries(resourceTableColumnsQuery({ connectionResource, table, schema }))
-    queryClient.invalidateQueries(resourceTableTotalQuery({ connectionResource, table, schema, query: { filters, exact } }))
-    queryClient.invalidateQueries(resourceConstraintsQuery({ connectionResource }))
+    queryClient.invalidateQueries(resourceTableColumnsQueryOptions({ connectionResource, table, schema }))
+    queryClient.invalidateQueries(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters, exact } }))
+    queryClient.invalidateQueries(resourceConstraintsQueryOptions({ connectionResource }))
   }
 
   const getAllData = async ({ filters: exportFilters }: { filters?: ActiveFilter[] }) => {
@@ -50,7 +50,7 @@ export function Header({ table, schema }: { table: string, schema: string }) {
     let offset = 0
 
     while (true) {
-      const batch = await rowsQuery({
+      const batch = await resourceRowsQuery({
         schema,
         table,
         limit,
@@ -74,7 +74,7 @@ export function Header({ table, schema }: { table: string, schema: string }) {
     return data
   }
 
-  const getLimitedData = async ({ limit, filters: exportFilters }: { limit: number, filters?: ActiveFilter[] }) => rowsQuery({
+  const getLimitedData = async ({ limit, filters: exportFilters }: { limit: number, filters?: ActiveFilter[] }) => resourceRowsQuery({
     schema,
     table,
     limit,

@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { resourceIndexesQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { resourceIndexesQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
@@ -43,10 +43,10 @@ const filterOptions: { label: string, value: IndexType | 'all' }[] = [
 
 function DatabaseIndexesPage() {
   const { connectionResource } = Route.useRouteContext()
-  const { data: indexes, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceIndexesQuery({ connectionResource }))
+  const { data: indexes, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
+  const { data } = useQuery(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')

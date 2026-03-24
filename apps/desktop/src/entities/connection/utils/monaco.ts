@@ -3,9 +3,9 @@ import type { connectionsResources } from '~/drizzle/schema'
 import { languages } from 'monaco-editor'
 import { EntityContextType } from 'monaco-sql-languages'
 import { queryClient } from '~/main'
-import { resourceTableColumnsQuery } from '../queries/columns'
-import { resourceEnumsQuery } from '../queries/enums'
-import { resourceTablesAndSchemasQuery } from '../queries/tables-and-schemas'
+import { resourceTableColumnsQueryOptions } from '../queries/columns'
+import { resourceEnumsQueryOptions } from '../queries/enums'
+import { resourceTablesAndSchemasQueryOptions } from '../queries/tables-and-schemas'
 import { getConnectionResourceStore } from '../store'
 
 const keywordPriority = [
@@ -40,8 +40,8 @@ const dotMatchesRegex = /(\w+(?:\.\w+)*)\.\s*$/g
 
 export function connectionCompletionService(connectionResource: typeof connectionsResources.$inferSelect): CompletionService {
   const store = getConnectionResourceStore(connectionResource.id)
-  queryClient.prefetchQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem: store.get().showSystem }))
-  queryClient.prefetchQuery(resourceEnumsQuery({ connectionResource }))
+  queryClient.prefetchQuery(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem: store.get().showSystem }))
+  queryClient.prefetchQuery(resourceEnumsQueryOptions({ connectionResource }))
 
   return async (
     model,
@@ -68,8 +68,8 @@ export function connectionCompletionService(connectionResource: typeof connectio
     })
 
     const [tablesAndSchemas, enums] = await Promise.all([
-      queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem: store.get().showSystem })),
-      queryClient.ensureQueryData(resourceEnumsQuery({ connectionResource })),
+      queryClient.ensureQueryData(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem: store.get().showSystem })),
+      queryClient.ensureQueryData(resourceEnumsQueryOptions({ connectionResource })),
     ])
 
     const items: ICompletionItem[] = []
@@ -98,7 +98,7 @@ export function connectionCompletionService(connectionResource: typeof connectio
 
         if (table) {
           const columns = await queryClient.ensureQueryData(
-            resourceTableColumnsQuery({ connectionResource, schema: schemaName, table: tableName }),
+            resourceTableColumnsQueryOptions({ connectionResource, schema: schemaName, table: tableName }),
           )
           const columnItems = columns.map(col => ({
             label: col.id,
@@ -117,7 +117,7 @@ export function connectionCompletionService(connectionResource: typeof connectio
       const columnPromises = tablesAndSchemas.schemas.flatMap(schema =>
         schema.tables.map(async (tableEntry) => {
           const columns = await queryClient.ensureQueryData(
-            resourceTableColumnsQuery({ connectionResource, schema: schema.name, table: tableEntry.name }),
+            resourceTableColumnsQueryOptions({ connectionResource, schema: schema.name, table: tableEntry.name }),
           )
           return columns.map(col => ({
             label: col.id,

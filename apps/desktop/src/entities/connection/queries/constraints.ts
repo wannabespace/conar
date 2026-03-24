@@ -1,5 +1,4 @@
 import type { connectionsResources } from '~/drizzle/schema'
-import { memoize } from '@conar/shared/utils/helpers'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -37,7 +36,7 @@ export const constraintsType = type({
     foreignSchema: foreign_schema,
   }))
 
-const query = createQuery({
+export const resourceConstraintsQuery = createQuery({
   type: constraintsType.array(),
   query: {
     postgres: db => db
@@ -151,9 +150,9 @@ const query = createQuery({
   },
 })
 
-export const resourceConstraintsQuery = memoize(({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) => {
+export function resourceConstraintsQueryOptions({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) {
   return queryOptions({
-    queryFn: () => query.run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: () => resourceConstraintsQuery.run(connectionResourceToQueryParams(connectionResource)),
     queryKey: ['connection-resource', connectionResource.id, 'constraints'],
   })
-})
+}

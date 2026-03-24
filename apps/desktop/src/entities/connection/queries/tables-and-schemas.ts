@@ -1,16 +1,8 @@
 import type { connectionsResources } from '~/drizzle/schema'
-import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { memoize } from '@conar/shared/utils/helpers'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { connectionResourceToQueryParams, createQuery } from '../query'
-
-export const connectionSystemNames = {
-  [ConnectionType.Postgres]: 'postgres',
-  [ConnectionType.MySQL]: 'mysql',
-  [ConnectionType.MSSQL]: 'master',
-  [ConnectionType.ClickHouse]: 'default',
-} satisfies Record<ConnectionType, string>
 
 export const tablesAndSchemasType = type({
   schema: 'string',
@@ -19,7 +11,7 @@ export const tablesAndSchemasType = type({
 })
 
 export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResource, showSystem }: { silent: boolean, connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) => {
-  const query = createQuery({
+  return createQuery({
     type: tablesAndSchemasType.array(),
     silent,
     query: {
@@ -66,15 +58,17 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
           'table_type',
         ])
         .where('table_type', 'in', ['BASE TABLE', 'VIEW'])
-        .where('table_schema', '=', connectionResource.name || connectionSystemNames.clickhouse)
+        .where('table_schema', '=', connectionResource.name)
         .execute(),
     },
   })
+})
 
+export function resourceTablesAndSchemasQueryOptions({ silent, connectionResource, showSystem }: { silent: boolean, connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'tables-and-schemas', showSystem],
     queryFn: async () => {
-      const results = await query.run(connectionResourceToQueryParams(connectionResource))
+      const results = await resourceTablesAndSchemasQuery({ silent, connectionResource, showSystem }).run(connectionResourceToQueryParams(connectionResource))
       const schemas = Object.entries(Object.groupBy(results, table => table.schema)).map(([schema, tables]) => ({
         name: schema,
         tables: tables!.map(table => ({ name: table.table, isView: table.table_type === 'VIEW' })),
@@ -93,4 +87,4 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
       }
     },
   })
-})
+}

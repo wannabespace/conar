@@ -8,7 +8,7 @@ import { useParams, useRouter } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
-import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
@@ -17,7 +17,7 @@ import { appStore, setIsActionCenterOpen } from '~/store'
 function ActionsResourceTables({ connection, connectionResource }: { connection: typeof connections.$inferSelect, connectionResource: typeof connectionsResources.$inferSelect }) {
   const store = getConnectionResourceStore(connectionResource.id)
   const { data: tablesAndSchemas } = useQuery({
-    ...resourceTablesAndSchemasQuery({ silent: true, connectionResource, showSystem: store.get().showSystem }),
+    ...resourceTablesAndSchemasQueryOptions({ silent: true, connectionResource, showSystem: store.get().showSystem }),
     throwOnError: false,
   })
   const router = useRouter()

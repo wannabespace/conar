@@ -36,7 +36,7 @@ import { Monaco } from '~/components/monaco'
 import { SidebarButton } from '~/components/sidebar-link'
 import * as generators from '~/entities/connection/generators'
 import { GENERATOR_COMPATIBILITY } from '~/entities/connection/generators/compatibility'
-import { resourceEnumsQuery, resourceIndexesQuery } from '~/entities/connection/queries'
+import { resourceEnumsQueryOptions, resourceIndexesQueryOptions } from '~/entities/connection/queries'
 import { Route } from '../..'
 import { useTableColumns } from '../../-queries/use-columns-query'
 import { usePageStoreContext } from '../../-store'
@@ -150,8 +150,8 @@ export function HeaderActionsCopy({ table, schema }: { table: string, schema: st
   const store = usePageStoreContext()
   const filters = useSubscription(store, { selector: state => state.filters })
   const columns = useTableColumns({ connectionResource, table, schema })
-  const { data: enums } = useQuery(resourceEnumsQuery({ connectionResource }))
-  const { data: indexes } = useQuery(resourceIndexesQuery({ connectionResource }))
+  const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
+  const { data: indexes } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
   const [activeCategory, setActiveCategory] = useState<'schema' | 'query'>('schema')
   const [activeFormatType, setActiveFormatType] = useState<GeneratorFormat>('sql')
 

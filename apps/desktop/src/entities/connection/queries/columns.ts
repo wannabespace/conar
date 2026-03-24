@@ -63,8 +63,8 @@ function getPgColumnType(type: string, udtName: string) {
   return type
 }
 
-export const resourceTableColumnsQuery = memoize(({ connectionResource, table, schema }: { connectionResource: typeof connectionsResources.$inferSelect, table: string, schema: string }) => {
-  const query = createQuery({
+const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, schema: string }) => {
+  return createQuery({
     type: columnType.array(),
     query: {
       postgres: async (db) => {
@@ -212,9 +212,19 @@ export const resourceTableColumnsQuery = memoize(({ connectionResource, table, s
       },
     },
   })
+})
 
+export function resourceTableColumnsQueryOptions({
+  connectionResource,
+  table,
+  schema,
+}: {
+  connectionResource: typeof connectionsResources.$inferSelect
+  table: string
+  schema: string
+}) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'columns', schema, table],
-    queryFn: () => query.run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: () => resourceTableColumnsQuery({ table, schema }).run(connectionResourceToQueryParams(connectionResource)),
   })
-})
+}

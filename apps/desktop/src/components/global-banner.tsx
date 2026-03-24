@@ -2,12 +2,13 @@ import type { ReactNode } from 'react'
 import type { ORPCOutputs } from '~/lib/orpc'
 import { SUBSCRIPTION_PAST_DUE_MESSAGE } from '@conar/shared/constants'
 import { Button } from '@conar/ui/components/button'
-import { useSessionStorage } from '@conar/ui/hookas/use-session-storage'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAlertLine, RiCheckboxCircleLine, RiCloseLine, RiErrorWarningLine, RiInformationLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
+import { type } from 'arktype'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
+import { createSessionStorageValue } from 'seitu/web'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 
@@ -32,9 +33,15 @@ const typeConfig = {
   },
 } satisfies Record<BannerItem['type'], { icon: ReactNode, className: string }>
 
+const bannerDismissedValue = createSessionStorageValue({
+  key: 'banner-dismissed',
+  defaultValue: [],
+  schema: type('string[]'),
+})
+
 export function GlobalBanner() {
   const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
-  const [dismissed, setDismissed] = useSessionStorage<string[]>('banner-dismissed', [])
+  const dismissed = useSubscription(bannerDismissedValue)
 
   const { data } = useQuery(orpc.banner.queryOptions({
     staleTime: 1000 * 60 * 5,
@@ -83,7 +90,7 @@ export function GlobalBanner() {
                 variant="ghost"
                 size="icon-xs"
                 aria-label="Dismiss banner"
-                onClick={() => setDismissed(prev => [...prev, item.text])}
+                onClick={() => bannerDismissedValue.set(state => [...state, item.text])}
               >
                 <RiCloseLine className="size-3.5" />
               </Button>

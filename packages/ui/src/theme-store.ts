@@ -23,6 +23,10 @@ const resolvedThemeComputed = createComputed([themeStore, mediaQuery], ([theme, 
   return theme
 })
 
+export function useTheme() {
+  return useSubscription(themeStore)
+}
+
 export function useResolvedTheme() {
   return useSubscription(resolvedThemeComputed)
 }

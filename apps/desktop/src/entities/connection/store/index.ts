@@ -11,15 +11,17 @@ export const getConnectionStore = memoize((id: string) => createLocalStorageValu
   key: `connection-store-${id}`,
   defaultValue: {
     lastOpenedResourceName: null,
+    pinnedResourcesNames: [],
   },
   schema: type({
     lastOpenedResourceName: 'string | null',
+    pinnedResourcesNames: 'string[]',
   }),
 }))
 
 export const connectionResourceType = type({
   lastOpenedPage: 'string | null' as type.cast<Extract<keyof FileRoutesById, `/_protected/connection/$resourceId/${string}`> | null>,
-  lastOpenedChatId: 'string | null',
+  lastOpenedChatId: 'string.uuid | null',
   lastOpenedTable: type({
     schema: 'string',
     table: 'string',

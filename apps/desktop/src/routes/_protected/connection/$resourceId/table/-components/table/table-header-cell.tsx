@@ -10,7 +10,7 @@ import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEr
 import { useQuery } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { resourceEnumsQuery } from '~/entities/connection/queries'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
 import { Route } from '../..'
 import { usePageStoreContext } from '../../-store'
 
@@ -27,16 +27,10 @@ function SortButton({ order, onClick }: { order: 'ASC' | 'DESC' | null, onClick:
           className={cn(order !== null && 'text-primary')}
         >
           {order === 'ASC'
-            ? (
-                <RiArrowUpLine className="size-3 shrink-0" />
-              )
+            ? <RiArrowUpLine className="size-3 shrink-0" />
             : order === 'DESC'
-              ? (
-                  <RiArrowDownLine className="size-3 shrink-0" />
-                )
-              : (
-                  <RiArrowUpDownLine className="size-3 shrink-0 opacity-30" />
-                )}
+              ? <RiArrowDownLine className="size-3 shrink-0" />
+              : <RiArrowUpDownLine className="size-3 shrink-0 opacity-30" />}
         </Button>
       </TooltipTrigger>
       <TooltipContent>
@@ -49,11 +43,11 @@ function SortButton({ order, onClick }: { order: 'ASC' | 'DESC' | null, onClick:
 function PrimaryKeyBadge({ primaryKey }: { primaryKey: string }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
+      <TooltipTrigger>
         <RiKey2Line className="size-3 shrink-0 text-primary" />
       </TooltipTrigger>
-      <TooltipContent>
-        <div className="mb-1 flex items-center gap-1">
+      <TooltipContent className="max-w-none">
+        <div className="flex items-center gap-1">
           <RiKey2Line className="size-3 text-primary" />
           Primary key
         </div>
@@ -84,10 +78,10 @@ function NullableBadge() {
 function UniqueBadge({ unique }: { unique: string }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
+      <TooltipTrigger>
         <RiFingerprintLine className="size-3 shrink-0 text-muted-foreground/70" />
       </TooltipTrigger>
-      <TooltipContent>
+      <TooltipContent className="max-w-none">
         <div className="mb-1 flex items-center gap-1">
           <RiFingerprintLine className="size-3 text-muted-foreground/70" />
           Unique
@@ -103,7 +97,7 @@ function UniqueBadge({ unique }: { unique: string }) {
 function ReadOnlyBadge() {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
+      <TooltipTrigger>
         <RiBookOpenLine className="size-3 shrink-0 text-muted-foreground/70" />
       </TooltipTrigger>
       <TooltipContent>
@@ -123,7 +117,7 @@ function ForeignBadge({ name, table, column }: { name: string, table: string, co
       <TooltipTrigger asChild>
         <RiLinksLine className="size-3 shrink-0 text-muted-foreground/70" />
       </TooltipTrigger>
-      <TooltipContent>
+      <TooltipContent className="max-w-none">
         <div className="flex items-center gap-1">
           <RiLinksLine className="size-3 text-muted-foreground/70" />
           Foreign key
@@ -145,7 +139,7 @@ function ForeignBadge({ name, table, column }: { name: string, table: string, co
 function EnumBadge({ values, children }: { values: string[], children: ReactNode }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
+      <TooltipTrigger>
         {children}
       </TooltipTrigger>
       <TooltipContent>
@@ -188,7 +182,7 @@ export function TableHeaderCell({
   const ref = useRef<HTMLDivElement>(null)
   const order = useSubscription(store, { selector: state => state.orderBy?.[column.id] ?? null })
   const { data: enumsData } = useQuery({
-    ...resourceEnumsQuery({ connectionResource }),
+    ...resourceEnumsQueryOptions({ connectionResource }),
     select: data => data?.find(e => e.name === column.enum),
   })
   const scrollRef = useTableContext(state => state.scrollRef)

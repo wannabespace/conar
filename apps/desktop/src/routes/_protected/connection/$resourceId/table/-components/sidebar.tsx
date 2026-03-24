@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { RiCloseLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useSubscription } from 'seitu/react'
-import { resourceConstraintsQuery, resourceEnumsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { resourceConstraintsQueryOptions, resourceEnumsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { queryClient } from '~/main'
 import { Route } from '..'
@@ -17,13 +17,13 @@ export function Sidebar() {
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const search = useSubscription(store, { selector: state => state.tablesSearch })
-  const { data: tablesAndSchemas, refetch: refetchTablesAndSchemas, isFetching: isRefreshingTablesAndSchemas, dataUpdatedAt } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
+  const { data: tablesAndSchemas, refetch: refetchTablesAndSchemas, isFetching: isRefreshingTablesAndSchemas, dataUpdatedAt } = useQuery(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem }))
 
   async function handleRefresh() {
     await Promise.all([
       refetchTablesAndSchemas(),
-      queryClient.invalidateQueries(resourceConstraintsQuery({ connectionResource })),
-      queryClient.invalidateQueries(resourceEnumsQuery({ connectionResource })),
+      queryClient.invalidateQueries(resourceConstraintsQueryOptions({ connectionResource })),
+      queryClient.invalidateQueries(resourceEnumsQueryOptions({ connectionResource })),
     ])
   }
 

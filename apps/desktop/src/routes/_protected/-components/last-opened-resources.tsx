@@ -56,14 +56,15 @@ export function LastOpenedResources() {
       connectionResource: connectionsResources,
       connection: connections,
     }))
-    .where(({ connectionsResources }) => inArray(connectionsResources.id, lastOpenedResources))
-    .orderBy(({ connectionsResources }) => connectionsResources.createdAt, 'desc'), [lastOpenedResources])
+    .where(({ connectionsResources }) => inArray(connectionsResources.id, lastOpenedResources)), [lastOpenedResources])
+  const toShow = data
+    .toSorted((a, b) => lastOpenedResources.indexOf(a.connectionResource.id) - lastOpenedResources.indexOf(b.connectionResource.id))
 
   const close = (resource: typeof connectionsResources.$inferSelect) => {
     lastOpenedResourcesStorageValue.set(prev => prev.filter(id => id !== resource.id))
   }
 
-  if (data.length === 0) {
+  if (toShow.length === 0) {
     return null
   }
 
@@ -71,7 +72,7 @@ export function LastOpenedResources() {
     <div>
       <h3 className="mb-2 text-sm font-medium text-muted-foreground">Last Opened</h3>
       <div className="flex flex-col gap-1">
-        {data.map(({ connectionResource, connection }) => (
+        {toShow.map(({ connectionResource, connection }) => (
           <LastOpenedResource
             key={connectionResource.id}
             connectionResource={connectionResource}

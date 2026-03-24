@@ -16,7 +16,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 import { SidebarLink } from '~/components/sidebar-link'
-import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { addTab, cleanupPinnedTables, getConnectionResourceStore, togglePinTable } from '~/entities/connection/store'
 import { Route } from '..'
 import { DropTableDialog } from './drop-table-dialog'
@@ -171,7 +171,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
   const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data: tablesAndSchemas, isPending } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
+  const { data: tablesAndSchemas, isPending } = useQuery(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem }))
   const { schema: schemaParam } = useSearch({ from: '/_protected/connection/$resourceId/table/' })
   const tablesTreeOpenedSchemas = useSubscription(store, { selector: state => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'] })
   const pinnedTables = useSubscription(store, { selector: state => state.pinnedTables })
