@@ -1,10 +1,11 @@
+import { RiAlertLine, RiCheckLine, RiErrorWarningLine, RiInformationLine, RiLoader4Line } from '@remixicon/react'
 import { createPortal } from 'react-dom'
 import { Toaster as Sonner } from 'sonner'
 import { useIsMounted } from '../hookas/use-is-mounted'
-import { useResolvedTheme } from '../theme-store'
+import { useTheme } from '../theme-store'
 
-function Toaster() {
-  const resolvedTheme = useResolvedTheme()
+export function Toaster() {
+  const theme = useTheme()
   const isMounted = useIsMounted()
 
   if (!isMounted) {
@@ -13,25 +14,43 @@ function Toaster() {
 
   return createPortal(
     <Sonner
-      theme={resolvedTheme}
+      theme={theme}
       className="toaster group"
-      position="top-center"
+      position="bottom-center"
       closeButton
-      richColors
       toastOptions={{
+        classNames: {
+          toast: 'cn-toast',
+        },
         style: {
           '--z-index': '100',
           'zIndex': 'calc(var(--z-index) - var(--index))',
         },
       }}
+      icons={{
+        success: (
+          <RiCheckLine className="size-4 text-success" />
+        ),
+        info: (
+          <RiInformationLine className="size-4 text-info" />
+        ),
+        warning: (
+          <RiAlertLine className="size-4 text-warning" />
+        ),
+        error: (
+          <RiErrorWarningLine className="size-4 text-destructive" />
+        ),
+        loading: (
+          <RiLoader4Line className="size-4 animate-spin" />
+        ),
+      }}
       style={{
         '--normal-bg': 'var(--popover)',
         '--normal-text': 'var(--popover-foreground)',
         '--normal-border': 'var(--border)',
+        '--border-radius': 'var(--radius)',
       }}
     />,
     document.body,
   )
 }
-
-export { Toaster }
