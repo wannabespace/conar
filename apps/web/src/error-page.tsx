@@ -2,7 +2,7 @@ import type { ErrorComponentProps } from '@tanstack/react-router'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
-import { Toaster } from '@conar/ui/components/sonner'
+import { ToastProvider } from '@conar/ui/components/toast'
 import { ThemeObserver } from '@conar/ui/theme-observer'
 import { RiAlertLine, RiArrowGoBackLine, RiLoopLeftLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
@@ -12,9 +12,8 @@ export function ErrorPage({ error }: ErrorComponentProps) {
   const router = useRouter()
 
   return (
-    <>
+    <ToastProvider position="bottom-center">
       <ThemeObserver />
-      <Toaster />
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="relative z-20 w-full max-w-lg">
           <Card>
@@ -113,6 +112,6 @@ export function ErrorPage({ error }: ErrorComponentProps) {
           </Card>
         </div>
       </div>
-    </>
+    </ToastProvider>
   )
 }

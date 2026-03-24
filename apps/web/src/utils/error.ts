@@ -1,5 +1,5 @@
+import { toastManager } from '@conar/ui/components/toast'
 import { ORPCError } from '@orpc/client'
-import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
 
 function getErrorMessage(error: unknown) {
@@ -12,8 +12,17 @@ export async function handleError(error: unknown) {
   if (!error)
     return
 
-  if (error instanceof Error ? error.name !== 'AbortError' : true) {
-    toast.error(getErrorMessage(error))
+  const shouldIgnoreError = error instanceof Error
+    ? error.name === 'AbortError' || error.message.includes('net::')
+    : false
+
+  if (!shouldIgnoreError) {
+    const message = getErrorMessage(error)
+    toastManager.add({
+      title: message,
+      type: 'error',
+      id: `error-${message}`,
+    })
   }
 
   if (
@@ -28,6 +37,10 @@ export async function handleError(error: unknown) {
     || (error instanceof ORPCError && error.code === 'UNAUTHORIZED')
   ) {
     await authClient.signOut()
-    toast.info('Your session has expired. Please, sign in again.')
+    toastManager.add({
+      title: 'Your session has expired. Please, sign in again.',
+      type: 'info',
+      id: 'session-expired',
+    })
   }
 }

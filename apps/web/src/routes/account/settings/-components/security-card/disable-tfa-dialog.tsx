@@ -11,9 +11,9 @@ import {
 } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
+import { toastManager } from '@conar/ui/components/toast'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
-import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
@@ -31,7 +31,7 @@ export function DisableTfaDialog({ open, onOpenChange }: {
       }
     },
     onSuccess: async () => {
-      toast.success('2FA disabled')
+      toastManager.add({ title: '2FA disabled', type: 'success' })
       onOpenChange(false)
     },
     onError: handleError,

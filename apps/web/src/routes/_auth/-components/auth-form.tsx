@@ -3,6 +3,7 @@ import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { FieldGroup } from '@conar/ui/components/field'
 import { Separator } from '@conar/ui/components/separator'
+import { toastManager } from '@conar/ui/components/toast'
 import { useAppForm } from '@conar/ui/hooks/use-app-form'
 import { RiGithubFill, RiGoogleFill } from '@remixicon/react'
 import { useStore } from '@tanstack/react-form'
@@ -10,7 +11,6 @@ import { useMutation } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useState } from 'react'
-import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
@@ -139,14 +139,19 @@ export function AuthForm({ type, redirectPath }: { type: Type, redirectPath?: st
 
       if (error || !(data && data.token)) {
         if (data && !data.token) {
-          toast.error('For some reason, we were not able to sign you in. Please try again later.')
+          toastManager.add({
+            title: 'For some reason, we were not able to sign you in. Please try again later.',
+            type: 'error',
+          })
           return
         }
 
         if (type === 'sign-up' && (error!.code === 'USER_ALREADY_EXISTS' || error!.code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL')) {
-          toast.error('User already exists. Please sign in or use a different email address.', {
-            action: {
-              label: 'Sign in',
+          toastManager.add({
+            title: 'User already exists. Please sign in or use a different email address.',
+            type: 'error',
+            actionProps: {
+              children: 'Sign in',
               onClick: () => {
                 router.navigate({ to: '/sign-in', search: { redirectPath } })
               },

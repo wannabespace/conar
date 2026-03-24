@@ -12,10 +12,10 @@ import {
 } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
+import { toastManager } from '@conar/ui/components/toast'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import QRCode from 'react-qr-code'
-import { toast } from 'sonner'
 import { TotpCodeInput } from '~/components/totp-code-input'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
@@ -53,7 +53,7 @@ export function EnableTfaDialog({ open, onOpenChange }: {
       }
     },
     onSuccess: () => {
-      toast.success('2FA enabled')
+      toastManager.add({ title: '2FA enabled', type: 'success' })
       onOpenChange(false)
       setSetupOpen(false)
     },
