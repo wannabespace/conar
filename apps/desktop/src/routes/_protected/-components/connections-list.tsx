@@ -187,6 +187,17 @@ function ConnectionResourcesCombobox({
   )
 }
 
+async function createResource(connectionId: string, name: string) {
+  await connectionsResourcesCollection.utils.waitForSync()
+  connectionsResourcesCollection.insert({
+    id: v7(),
+    connectionId,
+    name,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  })
+}
+
 function ConnectionCard({
   connection,
   onRemove,
@@ -220,15 +231,9 @@ function ConnectionCard({
 
   useEffect(() => {
     if (!selectedResource) {
-      connectionsResourcesCollection.insert({
-        id: v7(),
-        connectionId: connection.id,
-        name: selectedResourceName,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
+      createResource(connection.id, selectedResourceName)
     }
-  }, [selectedResourceName, selectedResource, connection])
+  }, [selectedResourceName, selectedResource, connection.id])
 
   const showSystemName = CONNECTION_SYSTEM_NAMES[connection.type] !== selectedResourceName
 

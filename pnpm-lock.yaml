@@ -52,8 +52,8 @@ catalogs:
       specifier: ^2.13.0
       version: 2.13.0
     '@exalabs/ai-sdk':
-      specifier: ^1.0.5
-      version: 1.0.5
+      specifier: ^2.0.1
+      version: 2.0.1
     '@faker-js/faker':
       specifier: ^10.4.0
       version: 10.4.0
@@ -211,8 +211,8 @@ catalogs:
       specifier: ^3.20.5
       version: 3.20.5
     '@todesktop/cli':
-      specifier: ^1.23.0
-      version: 1.23.0
+      specifier: ^1.23.2
+      version: 1.23.2
     '@todesktop/runtime':
       specifier: ^2.1.4
       version: 2.1.4
@@ -553,7 +553,7 @@ importers:
         version: link:../../packages/shared
       '@exalabs/ai-sdk':
         specifier: 'catalog:'
-        version: 1.0.5(ai@6.0.138(zod@4.3.6))
+        version: 2.0.1(ai@6.0.138(zod@4.3.6))
       '@hackylabs/deep-redact':
         specifier: 'catalog:'
         version: 3.0.5
@@ -792,7 +792,7 @@ importers:
         version: 3.20.5
       '@todesktop/cli':
         specifier: 'catalog:'
-        version: 1.23.0(@types/react@19.2.14)(encoding@0.1.13)
+        version: 1.23.2(@types/react@19.2.14)(encoding@0.1.13)
       '@types/mssql':
         specifier: 'catalog:'
         version: 9.1.10(@azure/core-client@1.10.1)
@@ -2337,10 +2337,10 @@ packages:
     resolution: {integrity: sha512-iH1B076HoAshH1mLpHMgwdGeTs0CYwL0SPMkGuSebZrwBp16v415e9NZXg2jtrqPVQjf6IANe2Vtlr5KswtcZQ==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  '@exalabs/ai-sdk@1.0.5':
-    resolution: {integrity: sha512-+2Sv8+JmrjFrmpiOlE9bzbZeko8ceym7lR3mkopLtnhjZp+EjDOm3rxaouf7nxwG6E6f0y3F2VZfmt0wupq7eA==}
+  '@exalabs/ai-sdk@2.0.1':
+    resolution: {integrity: sha512-qrZGJbrrk3MwEFYhhzzJgQarWnica3dBkt86Ex8S8vak2rYNC2EI1hSwVEBmQQeNtLd8tx1J8xSKwQ/5mya6cA==}
     peerDependencies:
-      ai: ^5.0.83
+      ai: ^6.0.0
 
   '@faker-js/faker@10.4.0':
     resolution: {integrity: sha512-sDBWI3yLy8EcDzgobvJTWq1MJYzAkQdpjXuPukga9wXonhpMRvd1Izuo2Qgwey2OiEoRIBr35RMU9HJRoOHzpw==}
@@ -4993,8 +4993,8 @@ packages:
   '@tiptap/starter-kit@3.20.5':
     resolution: {integrity: sha512-L5E2TCGK0EiwmGIlwMsiwNTW1TLbfPF1Dsji4bSKRJnPbccZIMCB6qdId8v/Z+QGm85NVcBHeruQrDlKDddXBA==}
 
-  '@todesktop/cli@1.23.0':
-    resolution: {integrity: sha512-p7lfpeTN6OhDkOEXLHvj3+vegbLwhFaO8qtM1f1QJVBMDamavN+9ty5kh6JIMfPzTOs8Twctyx0l7zfJJhPnzA==}
+  '@todesktop/cli@1.23.2':
+    resolution: {integrity: sha512-w3uiE3oxkyN+r4oFu3I4S781xvfxl6igLt/2E1syRuD7/8T6chpodynCXU5Vnypw818G3kNUje5m7XrBhLW9gQ==}
     engines: {node: '>=16'}
     hasBin: true
 
@@ -12386,7 +12386,7 @@ snapshots:
       '@eslint/core': 1.1.1
       levn: 0.4.1
 
-  '@exalabs/ai-sdk@1.0.5(ai@6.0.138(zod@4.3.6))':
+  '@exalabs/ai-sdk@2.0.1(ai@6.0.138(zod@4.3.6))':
     dependencies:
       ai: 6.0.138(zod@4.3.6)
       zod: 3.25.76
@@ -15292,7 +15292,7 @@ snapshots:
       '@tiptap/extensions': 3.20.5(@tiptap/core@3.20.5(@tiptap/pm@3.20.5))(@tiptap/pm@3.20.5)
       '@tiptap/pm': 3.20.5
 
-  '@todesktop/cli@1.23.0(@types/react@19.2.14)(encoding@0.1.13)':
+  '@todesktop/cli@1.23.2(@types/react@19.2.14)(encoding@0.1.13)':
     dependencies:
       '@segment/analytics-node': 2.3.0(encoding@0.1.13)
       '@sentry/node': 10.43.0

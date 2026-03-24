@@ -21,7 +21,7 @@ export function successAuthToast(newUser: boolean) {
       ? 'Welcome to Conar! We\'re excited to help you manage your connections with ease. Get started by creating your first connection.'
       : 'Welcome back! Your connections are ready for you.',
     type: 'success',
-    timeout: 10000,
+    timeout: 5000,
   })
 }
 
