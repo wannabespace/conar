@@ -1,6 +1,6 @@
 import type { connections, connectionsResources } from '~/drizzle/schema'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
-import { RiAddLine, RiDashboardLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
+import { RiAddLine, RiDashboardLine, RiEyeLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
@@ -34,15 +34,15 @@ function ActionsResourceTables({ connection, connectionResource }: { connection:
     <CommandGroup heading={`${connection.name} - ${connectionResource.name} Tables`} value={connectionResource.name}>
       {tablesAndSchemas.schemas.map(schema => schema.tables.map(table => (
         <CommandItem
-          key={table}
-          keywords={[schema.name, table]}
-          value={`${schema.name}.${table}`}
-          onSelect={() => onTableSelect(schema.name, table)}
+          key={table.name}
+          keywords={[schema.name, table.name]}
+          value={`${schema.name}.${table.name}`}
+          onSelect={() => onTableSelect(schema.name, table.name)}
         >
-          <RiTableLine className="size-4 shrink-0 text-muted-foreground" />
+          {table.isView ? <RiEyeLine className="size-4 shrink-0 text-muted-foreground" /> : <RiTableLine className="size-4 shrink-0 text-muted-foreground" />}
           {schema.name}
           .
-          {table}
+          {table.name}
         </CommandItem>
       )))}
     </CommandGroup>

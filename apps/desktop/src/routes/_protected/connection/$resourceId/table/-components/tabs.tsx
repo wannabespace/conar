@@ -334,7 +334,7 @@ export function TablesTabs({
       return
 
     cleanupTabsEvent(tablesAndSchemas.schemas
-      .flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table }))))
+      .flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table: table.name }))))
   }, [tablesAndSchemas])
 
   const isOneSchema = tabs.length

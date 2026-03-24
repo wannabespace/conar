@@ -94,7 +94,7 @@ export function connectionCompletionService(connectionResource: typeof connectio
         const tableName = parts.length === 2 ? parts[1]! : parts[0]!
 
         const schema = tablesAndSchemas?.schemas.find(s => s.name === schemaName)
-        const table = schema?.tables.find(t => t === tableName)
+        const table = schema?.tables.find(t => t.name === tableName)
 
         if (table) {
           const columns = await queryClient.ensureQueryData(
@@ -115,9 +115,9 @@ export function connectionCompletionService(connectionResource: typeof connectio
 
     if (tablesAndSchemas && isColumnContext && !isTableContext) {
       const columnPromises = tablesAndSchemas.schemas.flatMap(schema =>
-        schema.tables.map(async (tableName) => {
+        schema.tables.map(async (tableEntry) => {
           const columns = await queryClient.ensureQueryData(
-            resourceTableColumnsQueryOptions({ connectionResource, schema: schema.name, table: tableName }),
+            resourceTableColumnsQueryOptions({ connectionResource, schema: schema.name, table: tableEntry.name }),
           )
           return columns.map(col => ({
             label: col.id,
@@ -135,20 +135,20 @@ export function connectionCompletionService(connectionResource: typeof connectio
 
     if (tablesAndSchemas) {
       const tableItems = tablesAndSchemas.schemas.flatMap(schema =>
-        schema.tables.flatMap(tableName => [
+        schema.tables.flatMap(tableEntry => [
           {
-            label: tableName,
+            label: tableEntry.name,
             kind: languages.CompletionItemKind.Class,
-            detail: `table (${schema.name})`,
-            sortText: `2${tableName}`,
-            insertText: tableName,
+            detail: `${tableEntry.isView ? 'view' : 'table'} (${schema.name})`,
+            sortText: `2${tableEntry.name}`,
+            insertText: tableEntry.name,
           } satisfies ICompletionItem,
           {
-            label: `${schema.name}.${tableName}`,
+            label: `${schema.name}.${tableEntry.name}`,
             kind: languages.CompletionItemKind.Class,
-            detail: `table (${schema.name})`,
-            sortText: `2${schema.name}.${tableName}`,
-            insertText: `${schema.name}.${tableName}`,
+            detail: `${tableEntry.isView ? 'view' : 'table'} (${schema.name})`,
+            sortText: `2${schema.name}.${tableEntry.name}`,
+            insertText: `${schema.name}.${tableEntry.name}`,
           } satisfies ICompletionItem,
         ]),
       )
