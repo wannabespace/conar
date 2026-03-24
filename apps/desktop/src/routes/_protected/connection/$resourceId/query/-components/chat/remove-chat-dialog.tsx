@@ -1,8 +1,8 @@
 import type { chats } from '~/drizzle/schema'
 import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
+import { toastManager } from '@conar/ui/components/toast'
 import { useImperativeHandle, useState } from 'react'
-import { toast } from 'sonner'
 import { chatsCollection } from '~/entities/chat/sync'
 
 interface RemoveChatDialogProps {
@@ -31,11 +31,12 @@ export function RemoveChatDialog({ ref }: RemoveChatDialogProps) {
     e.preventDefault()
     const chatTitle = chat.title?.trim()
     chatsCollection.delete(chat.id)
-    toast.success(
-      chatTitle
+    toastManager.add({
+      title: chatTitle
         ? `Chat "${chatTitle}" deleted`
         : 'Chat deleted',
-    )
+      type: 'success',
+    })
     onRemoveCallback?.()
     setOpen(false)
   }

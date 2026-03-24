@@ -6,6 +6,7 @@ import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Spinner } from '@conar/ui/components/spinner'
+import { toastManager } from '@conar/ui/components/toast'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
@@ -14,7 +15,6 @@ import { type } from 'arktype'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createSessionStorageValue } from 'seitu/web'
-import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { getFilesStore } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
@@ -123,7 +123,9 @@ export function ChatForm() {
     catch (error) {
       inputValue.set(cachedValue)
       filesStore.set(cachedFiles)
-      toast.error('Failed to send message', {
+      toastManager.add({
+        title: 'Failed to send message',
+        type: 'error',
         description: error instanceof Error
           ? error.message
           : 'An unexpected error occurred. Please try again.',
@@ -153,7 +155,9 @@ export function ChatForm() {
       }
 
       if (data === input) {
-        toast.info('Prompt cannot be enhanced', {
+        toastManager.add({
+          title: 'Prompt cannot be enhanced',
+          type: 'info',
           description: 'The prompt is already clear and specific',
         })
       }

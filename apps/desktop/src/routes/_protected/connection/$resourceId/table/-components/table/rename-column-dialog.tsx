@@ -12,10 +12,10 @@ import {
 } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
+import { toastManager } from '@conar/ui/components/toast'
 import { RiInformationLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useImperativeHandle, useState } from 'react'
-import { toast } from 'sonner'
 import { renameColumnQuery, resourceRowsQueryInfiniteOptions, resourceTableColumnsQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { queryClient } from '~/main'
@@ -55,7 +55,10 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
       }).run(connectionResourceToQueryParams(connectionResource))
     },
     onSuccess: async () => {
-      toast.success(`Column "${column}" successfully renamed to "${newColumnName}"`)
+      toastManager.add({
+        title: `Column "${column}" successfully renamed to "${newColumnName}"`,
+        type: 'success',
+      })
       setOpen(false)
 
       await queryClient.invalidateQueries(resourceTableColumnsQueryOptions({ connectionResource, table, schema }))
@@ -64,7 +67,10 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
       })
     },
     onError: (error) => {
-      toast.error(`Failed to rename column "${error.message}".`)
+      toastManager.add({
+        title: `Failed to rename column "${error.message}".`,
+        type: 'error',
+      })
     },
   })
 

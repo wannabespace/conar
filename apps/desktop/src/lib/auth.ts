@@ -1,8 +1,8 @@
+import { toastManager } from '@conar/ui/components/toast'
 import { type } from 'arktype'
 import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { createLocalStorageValue } from 'seitu/web'
-import { toast } from 'sonner'
 import { clearDb } from '~/drizzle'
 import { identifyUser } from './events-utils'
 import { apiUrl } from './utils'
@@ -16,14 +16,13 @@ export const bearerToken = createLocalStorageValue({
 })
 
 export function successAuthToast(newUser: boolean) {
-  toast.success(
-    newUser
+  toastManager.add({
+    title: newUser
       ? 'Welcome to Conar! We\'re excited to help you manage your connections with ease. Get started by creating your first connection.'
       : 'Welcome back! Your connections are ready for you.',
-    {
-      duration: 10000,
-    },
-  )
+    type: 'success',
+    timeout: 10000,
+  })
 }
 
 export const authClient = createAuthClient({

@@ -1,13 +1,13 @@
 import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { toastManager } from '@conar/ui/components/toast'
 import NumberFlow from '@number-flow/react'
 import { RiDeleteBin7Line } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { toast } from 'sonner'
 import { deleteRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { queryClient } from '~/main'
@@ -25,7 +25,10 @@ export function HeaderActionsDelete({ table, schema }: { table: string, schema: 
       await deleteRowsQuery({ table, schema, primaryKeys: selected }).run(connectionResourceToQueryParams(connectionResource))
     },
     onSuccess: () => {
-      toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)
+      toastManager.add({
+        title: `${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`,
+        type: 'success',
+      })
       queryClient.invalidateQueries(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters: store.get().filters, orderBy: store.get().orderBy } }))
       queryClient.invalidateQueries(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters: store.get().filters, exact: store.get().exact } }))
       store.set(state => ({
@@ -34,8 +37,10 @@ export function HeaderActionsDelete({ table, schema }: { table: string, schema: 
       } satisfies typeof state))
     },
     onError: (error) => {
-      toast.error('Failed to delete rows', {
+      toastManager.add({
+        title: 'Failed to delete rows',
         description: error.message,
+        type: 'error',
       })
     },
   })

@@ -10,6 +10,7 @@ import { Label } from '@conar/ui/components/label'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
+import { toastManager } from '@conar/ui/components/toast'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiCommandLine, RiFileListLine, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiShieldCheckLine, RiSunLine, RiTableLine } from '@remixicon/react'
@@ -18,7 +19,6 @@ import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { toast } from 'sonner'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
 import { getConnectionResourceStore } from '~/entities/connection/store'
@@ -53,13 +53,19 @@ function SupportButton() {
 
   const { mutate: sendSupport, isPending: loading } = useMutation(orpc.contact.mutationOptions({
     onSuccess: () => {
-      toast.success('Support message sent successfully! We will get back to you as soon as possible.')
+      toastManager.add({
+        title: 'Support message sent successfully! We will get back to you as soon as possible.',
+        type: 'success',
+      })
       setOpen(false)
       setMessage('')
     },
     onError: (err) => {
       console.error(err)
-      toast.error('Failed to send message. Please try again later.')
+      toastManager.add({
+        title: 'Failed to send message. Please try again later.',
+        type: 'error',
+      })
     },
   }))
 

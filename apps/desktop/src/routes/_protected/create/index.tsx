@@ -7,13 +7,13 @@ import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
+import { toastManager } from '@conar/ui/components/toast'
 import { RiArrowLeftSLine } from '@remixicon/react'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useRef, useState } from 'react'
-import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
@@ -73,7 +73,10 @@ function CreateConnectionPage() {
       updatedAt: new Date(),
     })
 
-    toast.success('Connection created successfully 🎉')
+    toastManager.add({
+      title: 'Connection created successfully 🎉',
+      type: 'success',
+    })
 
     const resource = url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
 
@@ -115,7 +118,10 @@ function CreateConnectionPage() {
       const { type, connectionString, name, saveInCloud, label, color } = e.value
 
       if (!type) {
-        toast.error('Select a database type')
+        toastManager.add({
+          title: 'Select a database type',
+          type: 'error',
+        })
         return
       }
 
@@ -130,10 +136,15 @@ function CreateConnectionPage() {
     }),
     onSuccess: () => {
       setStep('save')
-      toast.success('Connection successful. You can save the database.')
+      toastManager.add({
+        title: 'Connection successful. You can save the database.',
+        type: 'success',
+      })
     },
     onError: (error) => {
-      toast.error('We couldn\'t connect to the database', {
+      toastManager.add({
+        title: 'We couldn\'t connect to the database',
+        type: 'error',
         // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
         description: <span dangerouslySetInnerHTML={{ __html: error.message.replaceAll('\n', '<br />') }} />,
       })

@@ -1,8 +1,8 @@
 import type { queries } from '~/drizzle/schema'
 import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
+import { toastManager } from '@conar/ui/components/toast'
 import { useImperativeHandle, useState } from 'react'
-import { toast } from 'sonner'
 import { queriesCollection } from '~/entities/query/sync'
 
 interface RemoveQueryDialogProps {
@@ -27,7 +27,10 @@ export function RemoveQueryDialog({ ref }: RemoveQueryDialogProps) {
       return
 
     queriesCollection.delete(query.id)
-    toast.success('Query removed successfully')
+    toastManager.add({
+      title: 'Query removed successfully',
+      type: 'success',
+    })
     setOpen(false)
   }
 

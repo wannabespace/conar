@@ -1,8 +1,8 @@
+import { toastManager } from '@conar/ui/components/toast'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { createStore } from 'seitu'
 import { useSubscription } from 'seitu/react'
-import { toast } from 'sonner'
 import { version as packageVersion } from '../package.json'
 import { queryClient } from './main'
 
@@ -51,14 +51,15 @@ export function useUpdatesObserver() {
   useEffect(() => {
     if (status === 'ready') {
       function showToast() {
-        toast.success('New update downloaded!', {
+        toastManager.add({
+          title: 'New update downloaded!',
+          type: 'success',
           id: TOAST_UPDATE_READY_ID,
-          action: {
-            label: 'Restart',
+          actionProps: {
+            children: 'Restart',
             onClick: () => window.electron?.app.quitAndInstall(),
           },
-          position: 'bottom-right',
-          duration: 60000,
+          timeout: 60000,
         })
       }
 
