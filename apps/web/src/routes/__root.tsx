@@ -1,5 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { ToastProvider } from '@conar/ui/components/toast'
+import { Toaster } from '@conar/ui/components/sonner'
 import { TooltipProvider } from '@conar/ui/components/tooltip'
 import appCss from '@conar/ui/globals.css?url'
 import { ThemeObserver } from '@conar/ui/theme-observer'
@@ -71,14 +71,13 @@ function RootComponent() {
       `}
       >
         <QueryClientProvider client={queryClient}>
-          <ToastProvider position="bottom-center">
-            <TooltipProvider>
-              <ThemeObserver />
-              <Outlet />
-            </TooltipProvider>
-          </ToastProvider>
+          <TooltipProvider>
+            <ThemeObserver />
+            <Outlet />
+          </TooltipProvider>
           <ReactQueryDevtools buttonPosition="bottom-left" />
         </QueryClientProvider>
+        <Toaster />
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />
       </body>

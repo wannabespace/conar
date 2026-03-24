@@ -1,13 +1,11 @@
-import { toastManager } from '../components/toast'
+import { toast } from 'sonner'
 
 export function copy(text: string, successText?: string) {
   navigator.clipboard.writeText(text)
     .then(() => {
       if (successText) {
-        toastManager.add({
-          title: successText,
-          type: 'success',
-          timeout: 1500,
+        toast.success(successText, {
+          duration: 1500,
         })
       }
     })

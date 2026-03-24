@@ -8,13 +8,13 @@ import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogT
 import { Label } from '@conar/ui/components/label'
 import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
-import { toastManager } from '@conar/ui/components/toast'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
 import { RiDashboard3Line, RiFileListLine, RiGitBranchLine, RiGithubFill, RiLogoutCircleLine, RiMessageLine, RiMoonLine, RiSettingsLine, RiSunLine } from '@remixicon/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, Outlet, redirect, useMatches, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { Footer } from '~/components/footer'
 import { NavbarTextLogo } from '~/components/navbar-text-logo'
 import { authClient } from '~/lib/auth'
@@ -59,19 +59,13 @@ function SupportButton() {
 
   const { mutate: sendSupport, isPending: loading } = useMutation(orpc.contact.mutationOptions({
     onSuccess: () => {
-      toastManager.add({
-        title: 'Support message sent successfully! We will get back to you as soon as possible.',
-        type: 'success',
-      })
+      toast.success('Support message sent successfully! We will get back to you as soon as possible.')
       setOpen(false)
       setMessage('')
     },
     onError: (err) => {
       console.error(err)
-      toastManager.add({
-        title: 'Failed to send message. Please try again later.',
-        type: 'error',
-      })
+      toast.error('Failed to send message. Please try again later.')
     },
   }))
 

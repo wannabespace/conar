@@ -4,10 +4,10 @@ import { Button } from '@conar/ui/components/button'
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Skeleton } from '@conar/ui/components/skeleton'
-import { toastManager } from '@conar/ui/components/toast'
 import { RiDeviceLine, RiLogoutCircleLine } from '@remixicon/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { UAParser } from 'ua-parser-js'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
@@ -54,7 +54,7 @@ function SessionItem({ userAgent, ipAddress, token, currentToken, refetchSession
     onSuccess: () => {
       refetchSessions()
       setIsOpen(false)
-      toastManager.add({ title: 'Session revoked', type: 'success' })
+      toast.success('Session revoked')
     },
     onError: handleError,
   })
@@ -144,10 +144,7 @@ export function SessionsCard() {
     onSuccess: () => {
       refetchSessions()
       setIsOpen(false)
-      toastManager.add({
-        title: 'All other sessions have been revoked',
-        type: 'success',
-      })
+      toast.success('All other sessions have been revoked')
     },
     onError: handleError,
   })

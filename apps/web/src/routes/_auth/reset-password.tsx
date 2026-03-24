@@ -1,12 +1,12 @@
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { FieldGroup } from '@conar/ui/components/field'
-import { toastManager } from '@conar/ui/components/toast'
 import { useAppForm } from '@conar/ui/hooks/use-app-form'
 import { useStore } from '@tanstack/react-form'
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
 
 export const Route = createFileRoute('/_auth/reset-password')({
@@ -45,27 +45,21 @@ function ResetPasswordPage() {
       })
 
       if (error) {
-        toastManager.add({
-          title: 'Reset link expired or invalid',
+        toast.error('Reset link expired or invalid', {
           description: 'The reset password token is invalid or expired.',
-          type: 'error',
         })
         return
       }
 
       if (data?.status) {
-        toastManager.add({
-          title: 'Password reset successfully',
+        toast.success('Password reset successfully', {
           description: 'You can now sign in with your new password.',
-          type: 'success',
         })
         navigate({ to: '/sign-in' })
       }
       else {
-        toastManager.add({
-          title: 'Password reset failed',
+        toast.error('Password reset failed', {
           description: 'Please try again or request a new reset link.',
-          type: 'error',
         })
       }
     },

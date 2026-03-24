@@ -18,7 +18,6 @@
   },
   "devDependencies": {
     "@conar/configs": "workspace:*",
-    "@types/bun": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
     "mssql": "catalog:",

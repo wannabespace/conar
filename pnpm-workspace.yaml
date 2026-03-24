@@ -142,6 +142,7 @@ catalog:
   resend: ^6.9.4
   resumable-stream: ^2.2.12
   seitu: ^0.5.4
+  sonner: ^2.0.7
   sql-formatter: ^15.7.2
   streamdown: ^2.5.0
   stripe: ^20.4.1
