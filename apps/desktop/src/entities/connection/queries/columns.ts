@@ -205,9 +205,8 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
 
         return query.map(row => ({
           ...row,
-          label: row.type,
           enum: row.type.includes('Enum') ? row.id : undefined,
-          type: getClickhouseColumnType(row.type),
+          label: getClickhouseColumnType(row.type),
         }))
       },
     },
