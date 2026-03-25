@@ -46,7 +46,7 @@ export const banner = orpc
 
     if (context.appVersion?.minor && context.appVersion.minor === 28) {
       items.push({
-        text: 'Heads up! Conar is becoming Tamery. Our next big update will have the new name—thanks for being part of the journey!',
+        text: 'Heads up! Conar is becoming Tamery. Our next big update will have the new name - thanks for being part of the journey!',
         type: 'info',
       })
     }
