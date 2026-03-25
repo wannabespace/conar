@@ -10,7 +10,7 @@ import { connections } from './schema/connections'
 import { queriesRelations } from './schema/queries'
 
 // const pg = new PGliteWorker(new PGWorker({ name: 'pglite-worker' }))
-const pg = new PGlite('idb://conar')
+const pg = new PGlite('idb://tamery')
 
 if (import.meta.env.DEV) {
   // @ts-expect-error - window.db is not typed
