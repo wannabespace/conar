@@ -14,7 +14,7 @@ export const columnType = type({
   'label': 'string',
   'enum?': 'string',
   'isArray?': 'boolean',
-  'editable?': 'boolean',
+  'editable?': 'boolean | 1 | 0',
   'nullable': 'boolean | 1 | 0',
   'maxLength?': 'number | null',
   'precision?': 'number | null',
