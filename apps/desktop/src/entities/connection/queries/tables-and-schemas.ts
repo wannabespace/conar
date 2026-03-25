@@ -2,6 +2,7 @@ import type { connectionsResources } from '~/drizzle/schema'
 import { memoize } from '@conar/shared/utils/helpers'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { sql } from 'kysely'
 import { connectionResourceToQueryParams, createQuery } from '../query'
 
 export const tablesAndSchemasType = type({
@@ -58,7 +59,8 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
           'table_name as table',
           'table_type as type',
         ])
-        .where('table_type', 'in', ['BASE TABLE', 'VIEW'])
+        // Some clickhouse versions throws an error when not using toString
+        .where(sql<boolean>`toString(table_type) in ('BASE TABLE', 'VIEW', '1', '2')`)
         .$castTo<{ schema: string, table: string, type: 'BASE TABLE' | 'VIEW' }>()
         .where('table_schema', '=', connectionResource.name)
         .execute(),
