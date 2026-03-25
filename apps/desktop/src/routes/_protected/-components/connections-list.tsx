@@ -152,7 +152,6 @@ function ConnectionResourcesCombobox({
                         <span className="flex-1 truncate">
                           {resource === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_LABEL : resource}
                         </span>
-                        {/* {resources.length > 10 && ( */}
                         <Button
                           variant="ghost"
                           size="icon-xs"
@@ -173,7 +172,6 @@ function ConnectionResourcesCombobox({
                                 <RiPushpinLine className="size-3.5" />
                               )}
                         </Button>
-                        {/* )} */}
                       </span>
                     </ComboboxItem>
                   )}
