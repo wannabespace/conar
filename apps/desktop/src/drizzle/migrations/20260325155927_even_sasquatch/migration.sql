@@ -37,7 +37,7 @@ CREATE TABLE "connections_resources" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"connection_id" uuid NOT NULL,
-	"name" text NOT NULL,
+	"name" text,
 	CONSTRAINT "connections_resources_connection_id_name_unique" UNIQUE("connection_id","name")
 );
 --> statement-breakpoint

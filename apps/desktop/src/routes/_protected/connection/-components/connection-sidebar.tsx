@@ -1,5 +1,6 @@
 import type { LinkProps } from '@tanstack/react-router'
 import type { connectionsResources } from '~/drizzle/schema'
+import { CONNECTION_RESOURCE_ROOT_LABEL } from '@conar/shared/constants'
 import { getOS } from '@conar/shared/utils/os'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
@@ -121,9 +122,7 @@ function LastOpenedConnection({ connectionResource }: { connectionResource: type
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
   async function onCloseClick() {
-    const newResources = lastOpenedResourcesStorageValue.get().filter(resourceId => resourceId !== connectionResource.id)
-
-    lastOpenedResourcesStorageValue.set(newResources)
+    lastOpenedResourcesStorageValue.set(state => state.filter(resourceId => resourceId !== connectionResource.id))
   }
 
   return (
@@ -161,7 +160,7 @@ function LastOpenedConnection({ connectionResource }: { connectionResource: type
             {...params}
           >
             <span className="text-sm font-bold">
-              {connectionResource.name
+              {(connectionResource.name || CONNECTION_RESOURCE_ROOT_LABEL)
                 .replace(nameRegex, '')
                 .split(whitespaceRegex)
                 .map(word => word[0])

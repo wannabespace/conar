@@ -1,4 +1,3 @@
-import { CONNECTION_SYSTEM_NAMES } from '@conar/shared/constants'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
@@ -89,7 +88,7 @@ function CreateConnectionPage() {
     connectionsResourcesCollection.insert({
       id: resourceId,
       connectionId: id,
-      name: resource || CONNECTION_SYSTEM_NAMES[data.type],
+      name: resource,
       createdAt: new Date(),
       updatedAt: new Date(),
     })

@@ -1,6 +1,6 @@
 import type { ComponentRef } from 'react'
 import type { connections as connectionsTable } from '~/drizzle/schema'
-import { CONNECTION_SYSTEM_NAMES } from '@conar/shared/constants'
+import { CONNECTION_RESOURCE_ROOT_LABEL, CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
@@ -38,9 +38,9 @@ function useConnectionResources(connection: typeof connectionsTable.$inferSelect
     .from({ connectionsResources: connectionsResourcesCollection })
     .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
     .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
-  const existingResources = resources.map(r => r.name)
-  const { data = existingResources, ...props } = useQuery(connectionResourcesQueryOptions(connection))
-  return { data, ...props }
+  const { data, ...props } = useQuery(connectionResourcesQueryOptions(connection))
+
+  return { data: data || resources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL), ...props }
 }
 
 function ConnectionIconWithVersion({ connection }: { connection: typeof connectionsTable.$inferSelect }) {
@@ -89,11 +89,11 @@ function ConnectionResourcesCombobox({
   pinnedResourcesNames,
   onPinnedResourceNameChange,
 }: {
-  resources: string[]
-  selectedResourceName: string
+  resources: (string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL)[]
+  selectedResourceName: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null
   onSelectedResourceNameChange: (resource: string | null) => void
-  pinnedResourcesNames: string[]
-  onPinnedResourceNameChange: (resource: string) => void
+  pinnedResourcesNames: (string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL)[]
+  onPinnedResourceNameChange: (resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL) => void
 }) {
   const groupedResources = Object.entries(resources.reduce<{ pinned: typeof resources[number][], unpinned: typeof resources[number][] }>((acc, resource) => {
     const isPinned = pinnedResourcesNames.includes(resource)
@@ -109,14 +109,14 @@ function ConnectionResourcesCombobox({
   return (
     <Combobox
       items={groupedResources}
-      value={selectedResourceName}
+      value={selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_SYMBOL.description : selectedResourceName}
       onValueChange={onSelectedResourceNameChange}
     >
       <ComboboxTrigger
         className="text-xs"
         render={<Button variant="outline" size="xs" />}
       >
-        {selectedResourceName}
+        {selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_LABEL : selectedResourceName}
         <RiArrowDownSLine />
       </ComboboxTrigger>
       <ComboboxPopup className="max-w-80 min-w-48">
@@ -140,8 +140,8 @@ function ConnectionResourcesCombobox({
                 <ComboboxCollection>
                   {(resource: typeof group.items[number]) => (
                     <ComboboxItem
-                      key={resource}
-                      value={resource}
+                      key={resource === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_SYMBOL.description : resource}
+                      value={resource === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_SYMBOL.description : resource}
                       className="group"
                     >
                       <span
@@ -150,7 +150,7 @@ function ConnectionResourcesCombobox({
                         "
                       >
                         <span className="flex-1 truncate">
-                          {resource}
+                          {resource === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_LABEL : resource}
                         </span>
                         {/* {resources.length > 10 && ( */}
                         <Button
@@ -187,7 +187,7 @@ function ConnectionResourcesCombobox({
   )
 }
 
-async function createResource(connectionId: string, name: string) {
+async function createResource(connectionId: string, name: string | null) {
   await connectionsResourcesCollection.utils.waitForSync()
   connectionsResourcesCollection.insert({
     id: v7(),
@@ -205,7 +205,7 @@ function ConnectionCard({
   connection: typeof connectionsTable.$inferSelect
   onRemove: VoidFunction
 }) {
-  const { data: resources, isFetching, error, refetch } = useConnectionResources(connection)
+  const { data: resources, isPending, isFetching, error, refetch } = useConnectionResources(connection)
 
   const [isOpen, setIsOpen] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
@@ -216,7 +216,7 @@ function ConnectionCard({
   const connectionStore = getConnectionStore(connection.id)
   const { selectedResourceName, pinnedResourcesNames } = useSubscription(connectionStore, {
     selector: state => ({
-      selectedResourceName: state.lastOpenedResourceName || connectionString.pathname.slice(1) || resources[0] || CONNECTION_SYSTEM_NAMES[connection.type],
+      selectedResourceName: (state.lastOpenedResourceName || connectionString.pathname.slice(1) || resources[0] || null) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
       pinnedResourcesNames: state.pinnedResourcesNames,
     }),
   })
@@ -231,11 +231,9 @@ function ConnectionCard({
 
   useEffect(() => {
     if (!selectedResource) {
-      createResource(connection.id, selectedResourceName)
+      createResource(connection.id, selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? null : selectedResourceName)
     }
   }, [selectedResourceName, selectedResource, connection.id])
-
-  const showSystemName = CONNECTION_SYSTEM_NAMES[connection.type] !== selectedResourceName
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -246,7 +244,7 @@ function ConnectionCard({
 
     const connectionStringToCopy = new SafeURL(connectionString)
 
-    connectionStringToCopy.pathname = selectedResourceName
+    connectionStringToCopy.pathname = selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL || selectedResourceName === null ? '' : selectedResourceName
 
     copy(connectionStringToCopy.toString())
     setIsCopied(true)
@@ -256,6 +254,8 @@ function ConnectionCard({
       timeoutRef.current = null
     }, 3000)
   }
+
+  const isResourcesShown = resources.length > 1 && !isPending
 
   return (
     <FrameMotion
@@ -327,14 +327,20 @@ function ConnectionCard({
                     onClick={() => handleCopy()}
                   >
                     {connectionStringToShow}
-                    {(showSystemName || resources.length > 1) && <span>/</span>}
-                    {resources.length <= 1 && showSystemName && selectedResourceName}
+                    {isResourcesShown
+                      ? <span>/</span>
+                      : selectedResourceName !== CONNECTION_RESOURCE_ROOT_SYMBOL && (
+                        <span>
+                          /
+                          {selectedResourceName}
+                        </span>
+                      )}
                   </TooltipTrigger>
                   <TooltipContent className="flex items-center gap-1" side="bottom">
                     {isCopied ? 'Connection string copied!' : 'Copy connection string'}
                   </TooltipContent>
                 </Tooltip>
-                {resources.length > 1 && (
+                {isResourcesShown && (
                   <ConnectionResourcesCombobox
                     resources={resources}
                     pinnedResourcesNames={pinnedResourcesNames}

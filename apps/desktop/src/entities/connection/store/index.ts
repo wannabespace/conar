@@ -1,4 +1,5 @@
 import type { FileRoutesById } from '~/routeTree.gen'
+import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { memoize } from '@conar/shared/utils/helpers'
 import { type } from 'arktype'
 import { createComputed, createStore } from 'seitu'
@@ -10,7 +11,12 @@ export * from './helpers'
 const schema = type({
   lastOpenedResourceName: 'string | null',
   pinnedResourcesNames: 'string[]',
-})
+}).pipe(({ lastOpenedResourceName, pinnedResourcesNames }) => ({
+  lastOpenedResourceName: (lastOpenedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL.description
+    ? CONNECTION_RESOURCE_ROOT_SYMBOL
+    : lastOpenedResourceName) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
+  pinnedResourcesNames: pinnedResourcesNames.map(name => name === CONNECTION_RESOURCE_ROOT_SYMBOL.description ? CONNECTION_RESOURCE_ROOT_SYMBOL : name),
+}))
 
 export const getConnectionStore = memoize((id: string) => createLocalStorageValue({
   key: `connection-store-${id}`,

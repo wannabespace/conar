@@ -10,7 +10,7 @@ import { connectionsCollection } from './sync'
 export function connectionResourceToQueryParams(connectionResource: typeof connectionsResources.$inferSelect): QueryParams {
   const connection = connectionsCollection.get(connectionResource.connectionId)!
   const newConnectionString = new SafeURL(connection.connectionString)
-  newConnectionString.pathname = connectionResource.name
+  newConnectionString.pathname = connectionResource.name || ''
 
   return {
     connectionString: newConnectionString.toString(),
@@ -25,7 +25,7 @@ export interface QueryParams {
   connectionString: string
   type: ConnectionType
   connectionName?: string
-  resourceName?: string
+  resourceName?: string | null
   log?: (params: {
     promise: Promise<{
       result: unknown
