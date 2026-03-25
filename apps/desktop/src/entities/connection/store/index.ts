@@ -7,16 +7,27 @@ import { getEditorQueries } from '~/entities/connection/utils'
 
 export * from './helpers'
 
+const schema = type({
+  lastOpenedResourceName: 'string | null',
+  pinnedResourcesNames: 'string[]',
+})
+
 export const getConnectionStore = memoize((id: string) => createLocalStorageValue({
   key: `connection-store-${id}`,
   defaultValue: {
     lastOpenedResourceName: null,
     pinnedResourcesNames: [],
   },
-  schema: type({
-    lastOpenedResourceName: 'string | null',
-    pinnedResourcesNames: 'string[]',
-  }),
+  schema,
+  onValidationError({ value }) {
+    const lastOpenedResourceName = typeof value === 'object' && value !== null && 'lastOpenedResourceName' in value && typeof value.lastOpenedResourceName === 'string' ? value.lastOpenedResourceName : null
+    const pinnedResourcesNames = typeof value === 'object' && value !== null && 'pinnedResourcesNames' in value && Array.isArray(value.pinnedResourcesNames) ? value.pinnedResourcesNames : []
+
+    return {
+      lastOpenedResourceName,
+      pinnedResourcesNames,
+    }
+  },
 }))
 
 export const connectionResourceType = type({

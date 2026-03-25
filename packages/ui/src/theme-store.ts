@@ -6,7 +6,7 @@ import { createLocalStorageValue, createMediaQuery } from 'seitu/web'
 export type ResolvedTheme = 'dark' | 'light'
 export type Theme = ResolvedTheme | 'system'
 
-export const THEME_STORAGE_KEY = 'conar.theme'
+export const THEME_STORAGE_KEY = 'tamery.theme'
 
 export const themeStore = createLocalStorageValue({
   key: THEME_STORAGE_KEY,

@@ -51,7 +51,7 @@ function PrimaryKeyBadge({ primaryKey }: { primaryKey: string }) {
           <RiKey2Line className="size-3 text-primary" />
           Primary key
         </div>
-        <div className="text-xs text-muted-foreground">
+        <div className="text-xs opacity-70">
           {primaryKey}
         </div>
       </TooltipContent>
@@ -63,11 +63,11 @@ function NullableBadge() {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <RiEraserLine className="size-3 shrink-0 text-muted-foreground/70" />
+        <RiEraserLine className="size-3 shrink-0 opacity-70" />
       </TooltipTrigger>
       <TooltipContent>
         <div className="flex items-center gap-1">
-          <RiEraserLine className="size-3 text-muted-foreground/70" />
+          <RiEraserLine className="size-3 opacity-70" />
           Nullable
         </div>
       </TooltipContent>
@@ -79,14 +79,14 @@ function UniqueBadge({ unique }: { unique: string }) {
   return (
     <Tooltip>
       <TooltipTrigger>
-        <RiFingerprintLine className="size-3 shrink-0 text-muted-foreground/70" />
+        <RiFingerprintLine className="size-3 shrink-0 opacity-70" />
       </TooltipTrigger>
       <TooltipContent className="max-w-none">
         <div className="mb-1 flex items-center gap-1">
-          <RiFingerprintLine className="size-3 text-muted-foreground/70" />
+          <RiFingerprintLine className="size-3 opacity-70" />
           Unique
         </div>
-        <div className="text-xs text-muted-foreground">
+        <div className="text-xs opacity-70">
           {unique}
         </div>
       </TooltipContent>
@@ -98,11 +98,11 @@ function ReadOnlyBadge() {
   return (
     <Tooltip>
       <TooltipTrigger>
-        <RiBookOpenLine className="size-3 shrink-0 text-muted-foreground/70" />
+        <RiBookOpenLine className="size-3 shrink-0 opacity-70" />
       </TooltipTrigger>
       <TooltipContent>
         <div className="flex items-center gap-1">
-          <RiBookOpenLine className="size-3 text-muted-foreground/70" />
+          <RiBookOpenLine className="size-3 opacity-70" />
           Read only
         </div>
       </TooltipContent>
@@ -115,14 +115,14 @@ function ForeignBadge({ name, table, column }: { name: string, table: string, co
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <RiLinksLine className="size-3 shrink-0 text-muted-foreground/70" />
+        <RiLinksLine className="size-3 shrink-0 opacity-70" />
       </TooltipTrigger>
       <TooltipContent className="max-w-none">
         <div className="flex items-center gap-1">
-          <RiLinksLine className="size-3 text-muted-foreground/70" />
+          <RiLinksLine className="size-3 opacity-70" />
           Foreign key
         </div>
-        <div className="text-xs text-muted-foreground">
+        <div className="text-xs opacity-70">
           {name}
           {' '}
           (
@@ -143,7 +143,7 @@ function EnumBadge({ values, children }: { values: string[], children: ReactNode
         {children}
       </TooltipTrigger>
       <TooltipContent>
-        <div className="mb-1 text-xs text-muted-foreground">
+        <div className="mb-1 text-xs opacity-70">
           Available values:
         </div>
         <div className="
