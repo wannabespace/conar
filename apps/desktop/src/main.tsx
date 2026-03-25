@@ -89,7 +89,7 @@ runMigrations()
       return
     }
 
-    indexedDB.deleteDatabase('conar')
+    indexedDB.deleteDatabase('/pglite/conar')
 
     // clear local storage except for bearer token
     Object.keys(localStorage).forEach((key) => {
