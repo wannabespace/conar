@@ -74,12 +74,19 @@ function TableItem({ schema, table, isView = false, pinned = false, search, onRe
     >
       {({ isActive }) => (
         <>
-          <Icon
-            className={cn(
-              'size-4 shrink-0 text-muted-foreground opacity-50',
-              isActive && 'text-primary opacity-100',
-            )}
-          />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Icon
+                className={cn(
+                  'size-4 shrink-0 text-muted-foreground opacity-50',
+                  isActive && 'text-primary opacity-100',
+                )}
+              />
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              {isView ? 'View' : 'Table'}
+            </TooltipContent>
+          </Tooltip>
           <span className="truncate">
             <HighlightText text={table} match={search} />
           </span>
@@ -141,6 +148,7 @@ function TableItem({ schema, table, isView = false, pinned = false, search, onRe
                 Copy Name
               </DropdownMenuItem>
               <DropdownMenuItem
+                disabled={isView}
                 onClick={(e) => {
                   e.stopPropagation()
                   onRename()
@@ -150,6 +158,7 @@ function TableItem({ schema, table, isView = false, pinned = false, search, onRe
                 Rename
               </DropdownMenuItem>
               <DropdownMenuItem
+                disabled={isView}
                 variant="destructive"
                 onClick={(e) => {
                   e.stopPropagation()

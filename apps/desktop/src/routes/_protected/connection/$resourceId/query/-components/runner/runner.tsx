@@ -146,7 +146,7 @@ export function Runner() {
                     </span>
                   </PopoverTrigger>
                   <PopoverContent className="
-                    min-w-md
+                    min-w-md p-0
                     **:data-[slot=popover-viewport]:p-0
                   "
                   >

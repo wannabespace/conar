@@ -168,7 +168,7 @@ export function RunnerEditorAIZone({
                 '--lines-height': `${Math.max(aiSuggestion.split('\n').length, originalSql.split('\n').length) * 18 * 2}px`,
               }}
               className="
-                h-[min(30vh,var(--lines-height))] w-lg
+                h-[min(30vh,var(--lines-height))] w-lg p-0
                 **:data-[slot=popover-viewport]:p-0
               "
             >

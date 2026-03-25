@@ -37,7 +37,7 @@ export function HeaderActionsColumns({ table, schema }: { table: string, schema:
       </Tooltip>
       <PopoverContent
         className="
-          w-2xs
+          w-2xs p-0
           **:data-[slot=popover-viewport]:p-0
         "
         side="bottom"

@@ -52,7 +52,7 @@ export function HeaderActionsOrder({ table, schema }: { table: string, schema: s
       </Tooltip>
       <PopoverContent
         className="
-          w-90
+          w-90 p-0
           **:data-[slot=popover-viewport]:p-0
         "
         side="bottom"
@@ -170,7 +170,7 @@ export function HeaderActionsOrder({ table, schema }: { table: string, schema: s
                   </PopoverTrigger>
                   <PopoverContent
                     className="
-                      w-64
+                      w-64 p-0
                       **:data-[slot=popover-viewport]:p-0
                     "
                     align="start"

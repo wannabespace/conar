@@ -7,7 +7,7 @@ import { connectionResourceToQueryParams, createQuery } from '../query'
 export const tablesAndSchemasType = type({
   schema: 'string',
   table: 'string',
-  table_type: "'BASE TABLE' | 'VIEW'",
+  type: '\'BASE TABLE\' | \'VIEW\'',
 })
 
 export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResource, showSystem }: { silent: boolean, connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) => {
@@ -20,7 +20,7 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
         .select([
           'table_schema as schema',
           'table_name as table',
-          'table_type',
+          'table_type as type',
         ])
         .where(({ eb, and, not }) => and([
           not(eb('table_schema', 'like', 'pg_toast%')),
@@ -36,9 +36,10 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
         .select([
           'TABLE_SCHEMA as schema',
           'TABLE_NAME as table',
-          'TABLE_TYPE as table_type',
+          'TABLE_TYPE as type',
         ])
         .where('TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
+        .$castTo<{ schema: string, table: string, type: 'BASE TABLE' | 'VIEW' }>()
         .$if(!showSystem, qb => qb.where(eb => eb('TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])))
         .execute(),
       mssql: db => db
@@ -46,7 +47,7 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
         .select([
           'TABLE_SCHEMA as schema',
           'TABLE_NAME as table',
-          'TABLE_TYPE as table_type',
+          'TABLE_TYPE as type',
         ])
         .where('TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
         .execute(),
@@ -55,9 +56,10 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
         .select([
           'table_schema as schema',
           'table_name as table',
-          'table_type',
+          'table_type as type',
         ])
         .where('table_type', 'in', ['BASE TABLE', 'VIEW'])
+        .$castTo<{ schema: string, table: string, type: 'BASE TABLE' | 'VIEW' }>()
         .where('table_schema', '=', connectionResource.name)
         .execute(),
     },
@@ -71,7 +73,7 @@ export function resourceTablesAndSchemasQueryOptions({ silent, connectionResourc
       const results = await resourceTablesAndSchemasQuery({ silent, connectionResource, showSystem }).run(connectionResourceToQueryParams(connectionResource))
       const schemas = Object.entries(Object.groupBy(results, table => table.schema)).map(([schema, tables]) => ({
         name: schema,
-        tables: tables!.map(table => ({ name: table.table, isView: table.table_type === 'VIEW' })),
+        tables: tables!.map(table => ({ name: table.table, isView: table.type === 'VIEW' })),
       }))
 
       return {

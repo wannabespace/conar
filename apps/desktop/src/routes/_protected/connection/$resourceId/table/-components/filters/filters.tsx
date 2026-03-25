@@ -36,7 +36,11 @@ function FilterItem({
           <RiDatabase2Line className="size-3" />
           {filter.column}
         </PopoverTrigger>
-        <PopoverContent className="**:data-[slot=popover-viewport]:p-0">
+        <PopoverContent className="
+          p-0
+          **:data-[slot=popover-viewport]:p-0
+        "
+        >
           <FiltersColumnSelector
             onSelect={(column) => {
               onEdit({ column, ref: filter.ref, values })
@@ -52,7 +56,11 @@ function FilterItem({
         >
           {filter.ref.operator}
         </PopoverTrigger>
-        <PopoverContent className="**:data-[slot=popover-viewport]:p-0">
+        <PopoverContent className="
+          p-0
+          **:data-[slot=popover-viewport]:p-0
+        "
+        >
           <FiltersSelector
             onSelect={(operator) => {
               onEdit({ column: filter.column, ref: operator, values })
@@ -76,7 +84,7 @@ function FilterItem({
               )}
             </PopoverTrigger>
             <PopoverContent className="
-              max-h-[calc(100vh-10rem)]
+              max-h-[calc(100vh-10rem)] p-0
               **:data-[slot=popover-viewport]:p-0
             "
             >
@@ -147,7 +155,11 @@ export function Filters() {
           >
             <RiAddLine className="size-4" />
           </PopoverTrigger>
-          <PopoverContent className="**:data-[slot=popover-viewport]:p-0">
+          <PopoverContent className="
+            p-0
+            **:data-[slot=popover-viewport]:p-0
+          "
+          >
             <FilterForm
               onAdd={(filter) => {
                 toggleForm(false)

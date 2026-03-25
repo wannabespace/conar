@@ -407,7 +407,7 @@ export function TableCell({
                   </Tooltip>
                   <PopoverContent
                     className="
-                      h-[45vh] w-[80vw] overflow-hidden
+                      h-[45vh] w-[80vw] overflow-hidden p-0
                       **:data-[slot=popover-viewport]:p-0
                     "
                     onDoubleClick={e => e.stopPropagation()}
@@ -457,7 +457,7 @@ export function TableCell({
                   </Tooltip>
                   <PopoverContent
                     className="
-                      h-[45vh] w-[80vw] overflow-hidden
+                      h-[45vh] w-[80vw] overflow-hidden p-0
                       **:data-[slot=popover-viewport]:p-0
                     "
                     onDoubleClick={e => e.stopPropagation()}
