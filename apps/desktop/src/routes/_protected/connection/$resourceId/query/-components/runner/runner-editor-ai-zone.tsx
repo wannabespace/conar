@@ -1,7 +1,7 @@
 import type { connections, connectionsResources } from '~/drizzle/schema'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Enter } from '@conar/ui/components/custom/shortcuts'
+import { EnterIcon } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Textarea } from '@conar/ui/components/textarea'
 import { TooltipProvider } from '@conar/ui/components/tooltip'
@@ -158,7 +158,7 @@ export function RunnerEditorAIZone({
             >
               <LoadingContent loading={isPending}>
                 {aiSuggestion ? 'Apply' : 'Send'}
-                <Enter />
+                <EnterIcon />
               </LoadingContent>
             </Button>
           </PopoverTrigger>
