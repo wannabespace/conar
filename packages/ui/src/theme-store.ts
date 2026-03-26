@@ -16,7 +16,7 @@ export const themeStore = createLocalStorageValue({
 
 const mediaQuery = createMediaQuery({ query: '(prefers-color-scheme: dark)' })
 
-const resolvedThemeComputed = createComputed([themeStore, mediaQuery], ([theme, isDark]) => {
+export const resolvedThemeComputed = createComputed([themeStore, mediaQuery], ([theme, isDark]) => {
   if (theme === 'system') {
     return isDark ? 'dark' : 'light'
   }
