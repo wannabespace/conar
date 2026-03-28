@@ -2,7 +2,7 @@ import type { ComponentRef } from 'react'
 import { Button } from '@conar/ui/components/button'
 import { CardHeader, CardTitle } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
-import { CtrlEnter, CtrlLetter } from '@conar/ui/components/custom/shortcuts'
+import { KbdCtrlEnter, KbdCtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Kbd } from '@conar/ui/components/kbd'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
@@ -201,14 +201,14 @@ export function Runner() {
             >
               <span className="flex items-center gap-1">
                 <Kbd asChild>
-                  <CtrlLetter letter="K" userAgent={navigator.userAgent} />
+                  <KbdCtrlLetter letter="K" userAgent={navigator.userAgent} />
                 </Kbd>
                 {' '}
                 to call the AI
               </span>
               <span className="flex items-center gap-1">
                 <Kbd asChild>
-                  <CtrlEnter userAgent={navigator.userAgent} />
+                  <KbdCtrlEnter userAgent={navigator.userAgent} />
                 </Kbd>
                 {' '}
                 to run the focused query
