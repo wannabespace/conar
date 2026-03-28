@@ -220,20 +220,10 @@ function VirtualizedTableList({
   const rowVirtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,
-    getItemKey: (index) => {
-      const item = items[index]
-      if (!item)
-        return index
-      if (item.type === 'separator')
-        return `separator-${index}`
-      return `${item.type}-${item.schema}-${item.table}`
-    },
-    estimateSize: (index) => {
-      const item = items[index]
-      if (item?.type === 'separator')
-        return 17
-      return 28
-    },
+    getItemKey: index => items[index]!.type === 'separator'
+      ? `separator-${index}`
+      : `${items[index]!.type}-${items[index]!.schema}-${items[index]!.table}`,
+    estimateSize: index => items[index]!.type === 'separator' ? 17 : 28,
     overscan: 1,
     scrollMargin,
   })
