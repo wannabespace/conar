@@ -29,19 +29,16 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
           shadow-[0_1px_1px_rgba(0,0,0,0.02),0_2px_2px_rgba(0,0,0,0.02),0_4px_4px_rgba(0,0,0,0.02),0_8px_8px_rgba(0,0,0,0.02),0_16px_16px_rgba(0,0,0,0.02),0_32px_32px_rgba(0,0,0,0.02)]
           transition-opacity
         `,
-        data.searchActive && data.nodeSearchMatched && `
-          ring-2 ring-primary/60 ring-offset-2
-        `,
+        data.searchActive && data.nodeSearchMatched && `ring-1 ring-primary/60`,
         data.searchActive && !data.nodeSearchMatched && !data.columns.some(c => c.searchMatched) && `
           opacity-50
         `,
       )}
     >
       <div className="
-        flex items-center justify-between gap-2 border-b border-border/80
-        bg-linear-to-t from-background/70 px-4 py-3
+        relative flex items-center justify-between gap-2 border-b
+        border-border/80 bg-linear-to-t from-background/70 px-4 py-3
         dark:from-background/30
-        relative
       "
       >
 
@@ -51,9 +48,8 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
             position={Position.Left}
             id={ENUM_ANCHOR_ID}
             className="
-            size-2.5 rounded-full border-2 border-background
-            bg-foreground!
-          "
+              size-2.5 rounded-full border-2 border-background bg-foreground!
+            "
             isConnectable={false}
           />
         )}
@@ -61,30 +57,37 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
         <div data-mask className="flex min-w-0 items-center gap-2 text-sm">
           {data.isEnum
             ? (
-                <RiListUnordered className="size-5 shrink-0 text-muted-foreground/80 self-start mt-0.5" />
+                <RiListUnordered className="
+                  mt-0.5 size-5 shrink-0 self-start text-muted-foreground/80
+                "
+                />
               )
             : (
-                <RiTableLine className="size-5 shrink-0 text-muted-foreground/80" />
+                <RiTableLine className="
+                  size-5 shrink-0 text-muted-foreground/80
+                "
+                />
               )}
           {data.isEnum && (
-            <span className="absolute right-2 block truncate text-xs text-muted-foreground/80">enum</span>
+            <span className="
+              absolute right-2 block truncate text-xs text-muted-foreground/80
+            "
+            >
+              enum
+            </span>
           )}
 
-          <div className="flex flex-col min-w-0">
-            <span className={cn(
-              'block truncate font-medium leading-tight',
-              data.searchActive && data.nodeSearchMatched && 'text-primary',
-            )}
-            >
+          <div className="flex min-w-0 flex-col">
+            <span className="block truncate leading-tight font-medium">
               {data.table}
             </span>
             {data.isEnum && data.referencedTables && data.referencedTables.length > 0 && (
               <div className="mt-0.5 flex items-center gap-1">
                 <span className="
-                    block w-fit max-w-[120px] truncate rounded-[4px] border border-border/50
-                    bg-muted/50 px-1.5 py-0.5 text-[10px] text-muted-foreground
-                    leading-none
-                 "
+                  block w-fit max-w-[120px] truncate rounded-[4px] border
+                  border-border/50 bg-muted/50 px-1.5 py-0.5 text-[10px]
+                  leading-none text-muted-foreground
+                "
                 >
                   {data.referencedTables[0]}
                 </span>
@@ -93,19 +96,30 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
                     <Tooltip delayDuration={0}>
                       <TooltipTrigger asChild>
                         <span className="
-                              flex items-center justify-center
-                              cursor-help rounded-[4px] border border-border/50
-                              bg-muted/50 px-1 py-0.5 text-[10px] text-muted-foreground
-                              leading-none hover:bg-muted font-medium
-                           "
+                          flex cursor-help items-center justify-center
+                          rounded-[4px] border border-border/50 bg-muted/50 px-1
+                          py-0.5 text-[10px] leading-none font-medium
+                          text-muted-foreground
+                          hover:bg-muted
+                        "
                         >
                           +
                           {data.referencedTables.length - 1}
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent side="bottom" align="start" className="max-w-[200px] p-2">
+                      <TooltipContent
+                        side="bottom"
+                        align="start"
+                        className="max-w-[200px] p-2"
+                      >
                         <div className="flex flex-col gap-1">
-                          <span className="text-[10px] font-semibold text-muted-foreground mb-0.5">Referenced in:</span>
+                          <span className="
+                            mb-0.5 text-[10px] font-semibold
+                            text-muted-foreground
+                          "
+                          >
+                            Referenced in:
+                          </span>
                           {data.referencedTables.map(t => (
                             <span key={t} className="text-xs">{t}</span>
                           ))}
@@ -141,7 +155,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
             className={cn(
               'group relative px-4 transition-opacity',
               data.searchActive && column.searchMatched && `
-                rounded-sm text-primary ring-2 ring-primary/60 ring-offset-2
+                rounded-sm ring-1 ring-primary/60
               `,
               data.searchActive && data.columns.some(c => c.searchMatched) && !column.searchMatched && `
                 opacity-50
@@ -193,7 +207,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
                 )}
                 <span data-mask className="truncate font-medium">{column.id}</span>
               </div>
-              <span className="max-w-1/2 truncate text-muted-foreground/60">{column.type}</span>
+              <span className="max-w-1/2 truncate text-muted-foreground/60">{column.label ?? column.type}</span>
 
               {column.foreign && (
                 <Handle

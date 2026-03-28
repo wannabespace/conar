@@ -128,7 +128,7 @@ export function getNodes({
           const enumNodeDef = findEnum(schemaEnums)
 
           return {
-            id: c.id,
+            ...c,
             type: enumLabelDef ? enumLabelDef.name : c.type,
             isEditable: c.isEditable,
             isNullable: c.isNullable,
@@ -149,7 +149,6 @@ export function getNodes({
                   : undefined),
             primaryKey: columnConstraints.find(constraint => constraint.type === 'primaryKey')?.name,
             unique: columnConstraints.find(constraint => constraint.type === 'unique')?.name,
-            enum: c.enum,
           } satisfies Column
         }),
       },
@@ -168,7 +167,7 @@ export function getNodes({
     })
 
     return {
-      id: e.id,
+      ...e,
       type: 'tableNode',
       position: { x: 0, y: 0 },
       data: {
