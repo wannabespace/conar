@@ -33,7 +33,7 @@ export function downloadFile(content: string, fileName: string, mimeType: string
 
 const csvValueRegex = /"/g
 
-export function escapeCSVValue(value: unknown) {
+function escapeCSVValue(value: unknown) {
   if (value === null || value === undefined)
     return ''
 
