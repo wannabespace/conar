@@ -1,14 +1,17 @@
 import type * as React from 'react'
+import type { RefObject } from 'react'
 import { ScrollArea as ScrollAreaPrimitive } from '@base-ui/react/scroll-area'
 import { cn } from '@conar/ui/lib/utils'
 
 export function ScrollArea({
+  scrollRef,
   className,
   children,
   scrollFade = false,
   scrollbarGutter = false,
   ...props
 }: ScrollAreaPrimitive.Root.Props & {
+  scrollRef?: RefObject<HTMLDivElement | null>
   scrollFade?: boolean
   scrollbarGutter?: boolean
 }): React.ReactElement {
@@ -18,6 +21,7 @@ export function ScrollArea({
       {...props}
     >
       <ScrollAreaPrimitive.Viewport
+        ref={scrollRef}
         className={cn(
           `
             h-full rounded-[inherit] transition-all outline-none
