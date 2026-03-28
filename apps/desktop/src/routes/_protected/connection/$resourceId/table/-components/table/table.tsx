@@ -9,8 +9,8 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { TableCell } from '~/entities/connection/components'
-import { findEnum, resourceRowsQuery } from '~/entities/connection/queries'
-import { resourceEnumsQuery } from '~/entities/connection/queries/enums'
+import { findEnum, resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
 import { selectQuery } from '~/entities/connection/queries/select'
 import { setQuery } from '~/entities/connection/queries/set'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
@@ -61,14 +61,14 @@ export function TableError({ error }: { error: Error }) {
 
 function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { connection, connectionResource } = Route.useRouteContext()
-  const { data: enums } = useQuery(resourceEnumsQuery({ connectionResource }))
+  const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const columns = useTableColumns({ connectionResource, table, schema })
   const store = usePageStoreContext()
   const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
   const columnSizes = useSubscription(store, { selector: state => state.columnSizes })
   const filters = useSubscription(store, { selector: state => state.filters })
   const orderBy = useSubscription(store, { selector: state => state.orderBy })
-  const { data: rows = [], error, isPending: isRowsPending } = useInfiniteQuery(resourceRowsQuery({ connectionResource, table, schema, query: { filters, orderBy } }))
+  const { data: rows = [], error, isPending: isRowsPending } = useInfiniteQuery(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns?.filter(c => c.primaryKey).map(c => c.id) ?? [], [columns])
   const { toggleOrder } = useColumnsOrder()
   const renameColumnRef = useRef<ComponentRef<typeof RenameColumnDialog>>(null)
@@ -88,7 +88,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   }, [store, rows, primaryColumns])
 
   const setValue = useCallback((rowIndex: number, columnName: string, value: unknown) => {
-    const rowsQueryOpts = resourceRowsQuery({
+    const rowsQueryOpts = resourceRowsQueryInfiniteOptions({
       connectionResource,
       table,
       schema,
@@ -115,13 +115,14 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   }, [connectionResource, table, schema, store])
 
   const saveValue = useCallback(async (rowIndex: number, columnId: string, newValue: unknown) => {
-    const rowsQueryOpts = resourceRowsQuery({
+    const { filters, orderBy } = store.get()
+    const rowsQueryOpts = resourceRowsQueryInfiniteOptions({
       connectionResource,
       table,
       schema,
       query: {
-        filters: store.get().filters,
-        orderBy: store.get().orderBy,
+        filters,
+        orderBy,
       },
     })
 
@@ -193,7 +194,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         description: e instanceof Error ? e.message : String(e),
       })
     }
-  }, [connectionResource, table, schema, store, primaryColumns, setValue, columns, filters, orderBy])
+  }, [connectionResource, table, schema, store, primaryColumns, setValue, columns])
 
   const tableColumns = useMemo(() => {
     if (!columns)

@@ -1,1 +1,0 @@
-ALTER TABLE "databases" ALTER COLUMN "sync_type" DROP DEFAULT;

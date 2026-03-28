@@ -2,8 +2,7 @@ import type { ComponentRef } from 'react'
 import { Button } from '@conar/ui/components/button'
 import { CardHeader, CardTitle } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
-import { CtrlEnter, CtrlLetter } from '@conar/ui/components/custom/shortcuts'
-import { Kbd } from '@conar/ui/components/kbd'
+import { KbdCtrlEnter, KbdCtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import NumberFlow from '@number-flow/react'
@@ -127,26 +126,28 @@ export function Runner() {
               </div>
               <div className="flex gap-2">
                 <Popover>
-                  <PopoverTrigger asChild>
+                  <PopoverTrigger render={(
                     <Button
                       className="relative"
                       variant="secondary"
                       size="sm"
+                    />
+                  )}
+                  >
+                    <RiStarLine />
+                    Saved
+                    <span className={`
+                      flex h-5 items-center justify-center rounded-full
+                      bg-accent px-1.5 text-xs
+                    `}
                     >
-                      <RiStarLine />
-                      Saved
-                      <span className={`
-                        flex h-5 items-center justify-center rounded-full
-                        bg-accent px-1.5 text-xs
-                      `}
-                      >
-                        {queriesCount}
-                      </span>
-                    </Button>
+                      {queriesCount}
+                    </span>
                   </PopoverTrigger>
-                  <PopoverContent
-                    className="min-w-md p-0"
-                    onOpenAutoFocus={e => e.preventDefault()}
+                  <PopoverContent className="
+                    min-w-md p-0
+                    **:data-[slot=popover-viewport]:p-0
+                  "
                   >
                     <RunnerQueries />
                   </PopoverContent>
@@ -198,16 +199,12 @@ export function Runner() {
             `}
             >
               <span className="flex items-center gap-1">
-                <Kbd asChild>
-                  <CtrlLetter letter="K" userAgent={navigator.userAgent} />
-                </Kbd>
+                <KbdCtrlLetter letter="K" userAgent={navigator.userAgent} />
                 {' '}
                 to call the AI
               </span>
               <span className="flex items-center gap-1">
-                <Kbd asChild>
-                  <CtrlEnter userAgent={navigator.userAgent} />
-                </Kbd>
+                <KbdCtrlEnter userAgent={navigator.userAgent} />
                 {' '}
                 to run the focused query
               </span>

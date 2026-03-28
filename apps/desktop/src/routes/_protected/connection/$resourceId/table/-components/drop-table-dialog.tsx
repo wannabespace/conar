@@ -19,7 +19,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { dropTableQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { dropTableQuery, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { getConnectionResourceStore, removeTab } from '~/entities/connection/store'
 import { queryClient } from '~/main'
@@ -71,7 +71,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
       setConfirmationText('')
       setCascade(false)
 
-      queryClient.invalidateQueries(resourceTablesAndSchemasQuery({ silent: true, connectionResource, showSystem: store.get().showSystem }))
+      queryClient.invalidateQueries(resourceTablesAndSchemasQueryOptions({ silent: true, connectionResource, showSystem: store.get().showSystem }))
 
       if (isCurrentTable) {
         await router.navigate({

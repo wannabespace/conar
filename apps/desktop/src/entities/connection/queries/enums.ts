@@ -1,6 +1,5 @@
 import type { Column } from '../components/table/utils'
 import type { connectionsResources } from '~/drizzle/schema'
-import { memoize } from '@conar/shared/utils/helpers'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { connectionResourceToQueryParams, createQuery } from '../query'
@@ -59,7 +58,7 @@ function parseMysqlEnumOrSet(typeString: string): string[] {
     : valuesString.split(mysqlEnumOrSetValuePairRegex).map(v => v.trim().replace(/^'/, '').replace(/'$/, '').replace(/''/g, '\''))
 }
 
-const query = createQuery({
+export const resourceEnumsQuery = createQuery({
   type: enumType.array(),
   query: {
     postgres: async (db) => {
@@ -190,9 +189,9 @@ const query = createQuery({
   },
 })
 
-export const resourceEnumsQuery = memoize(({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) => {
+export function resourceEnumsQueryOptions({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'enums'],
-    queryFn: () => query.run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: () => resourceEnumsQuery.run(connectionResourceToQueryParams(connectionResource)),
   })
-})
+}
