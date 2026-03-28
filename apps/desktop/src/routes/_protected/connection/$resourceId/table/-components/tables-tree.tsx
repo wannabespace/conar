@@ -177,8 +177,6 @@ function TableItem({ schema, table, isView = false, pinned = false, search, onRe
   )
 }
 
-TableItem.displayName = 'TableItem'
-
 interface VirtualItemData {
   type: 'pinned' | 'unpinned' | 'separator'
   table?: string
@@ -381,7 +379,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
     : tablesTreeOpenedSchemas, [search, filteredTablesAndSchemas, tablesTreeOpenedSchemas])
 
   return (
-    <ScrollArea className={cn('size-full min-h-0', className)}>
+    <ScrollArea className={cn('h-full min-h-0', className)} scrollFade>
       <DropTableDialog ref={dropTableDialogRef} />
       <RenameTableDialog ref={renameTableDialogRef} />
       <Accordion
