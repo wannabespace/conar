@@ -14,7 +14,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useSearch } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 import { SidebarLink } from '~/components/sidebar-link'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
@@ -175,47 +175,17 @@ interface VirtualItemData {
 function VirtualizedTableList({
   items,
   parentRef,
-  containerRef,
   onRename,
   onDrop,
   search,
 }: {
   items: VirtualItemData[]
   parentRef: RefObject<HTMLDivElement | null>
-  containerRef?: RefObject<HTMLDivElement | null>
   onRename: (schema: string, table: string) => void
   onDrop: (schema: string, table: string) => void
   search?: string
 }) {
   const listRef = useRef<HTMLDivElement>(null)
-  const [scrollMargin, setScrollMargin] = useState(0)
-
-  useLayoutEffect(() => {
-    const scrollEl = parentRef.current
-    const listEl = listRef.current
-    if (!scrollEl || !listEl)
-      return
-
-    const measure = () => {
-      const scrollRect = scrollEl.getBoundingClientRect()
-      const listRect = listEl.getBoundingClientRect()
-      const newScrollMargin = listRect.top - scrollRect.top + scrollEl.scrollTop
-      setScrollMargin(prevScrollMargin => (prevScrollMargin === newScrollMargin ? prevScrollMargin : newScrollMargin))
-    }
-
-    measure()
-    const resizeObserver = new ResizeObserver(measure)
-    resizeObserver.observe(scrollEl)
-    resizeObserver.observe(listEl)
-
-    if (containerRef?.current) {
-      resizeObserver.observe(containerRef.current)
-    }
-
-    return () => {
-      resizeObserver.disconnect()
-    }
-  }, [parentRef, containerRef, items.length])
 
   const rowVirtualizer = useVirtualizer({
     count: items.length,
@@ -225,7 +195,6 @@ function VirtualizedTableList({
       : `${items[index]!.type}-${items[index]!.schema}-${items[index]!.table}`,
     estimateSize: index => items[index]!.type === 'separator' ? 17 : 28,
     overscan: 1,
-    scrollMargin,
   })
 
   const virtualItems = rowVirtualizer.getVirtualItems()
@@ -252,7 +221,7 @@ function VirtualizedTableList({
             ref={rowVirtualizer.measureElement}
             data-index={virtualRow.index}
             className="absolute top-0 left-0 w-full"
-            style={{ transform: `translateY(${virtualRow.start - scrollMargin}px)` }}
+            style={{ transform: `translateY(${virtualRow.start}px)` }}
           >
             {item.type === 'separator'
               ? (
@@ -288,7 +257,6 @@ export function TablesTree({ className, search }: { className?: string, search?:
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const accordionRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!tablesAndSchemas)
@@ -362,7 +330,6 @@ export function TablesTree({ className, search }: { className?: string, search?:
       <DropTableDialog ref={dropTableDialogRef} />
       <RenameTableDialog ref={renameTableDialogRef} />
       <Accordion
-        ref={accordionRef}
         value={searchAccordionValue}
         onValueChange={(v) => {
           if (!search) {
@@ -449,7 +416,6 @@ export function TablesTree({ className, search }: { className?: string, search?:
                           <VirtualizedTableList
                             items={schema.virtualItems}
                             parentRef={scrollRef}
-                            containerRef={accordionRef}
                             search={search}
                             onRename={(schema, table) => renameTableDialogRef.current?.rename(schema, table)}
                             onDrop={(schema, table) => dropTableDialogRef.current?.drop(schema, table)}
