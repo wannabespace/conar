@@ -9,7 +9,6 @@ export interface QueryToRun {
 
 interface RunnerContextType {
   run: (queries: QueryToRun[]) => void
-  runExplain: (queries: QueryToRun[]) => void
   save: (query: string) => void
 }
 

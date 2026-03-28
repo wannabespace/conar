@@ -21,8 +21,6 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
 
   const run = useRunnerContext(({ run }) => run)
   const runEvent = useEffectEvent(run)
-  const runExplain = useRunnerContext(({ runExplain }) => runExplain)
-  const runExplainEvent = useEffectEvent(runExplain)
   const save = useRunnerContext(({ save }) => save)
   const saveEvent = useEffectEvent(save)
 
@@ -56,23 +54,6 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
                   return
 
                 runEvent([{
-                  startLineNumber: editorQuery.startLineNumber,
-                  endLineNumber: editorQuery.endLineNumber,
-                  query,
-                }])
-              }}
-              onExplain={(index) => {
-                const editorQuery = getQueriesEvent(lineNumber)
-
-                if (!editorQuery)
-                  return
-
-                const query = editorQuery.queries.at(index)
-
-                if (!query)
-                  return
-
-                runExplainEvent([{
                   startLineNumber: editorQuery.startLineNumber,
                   endLineNumber: editorQuery.endLineNumber,
                   query,
