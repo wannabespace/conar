@@ -5,7 +5,7 @@ import type { Column } from '~/entities/connection/components/table/utils'
 import { sleep } from '@conar/shared/utils/helpers'
 import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
-import { CtrlEnter } from '@conar/ui/components/custom/shortcuts'
+import { KbdCtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -206,7 +206,7 @@ function CellPopoverContent({
                 onClick={() => save(value)}
               >
                 Save
-                <CtrlEnter userAgent={navigator.userAgent} />
+                <KbdCtrlEnter userAgent={navigator.userAgent} />
               </Button>
             </>
           )}
