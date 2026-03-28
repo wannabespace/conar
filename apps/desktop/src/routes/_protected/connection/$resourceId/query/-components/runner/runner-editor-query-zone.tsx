@@ -4,11 +4,12 @@ import { CONNECTION_TYPES_WITH_EXPLAIN } from '@conar/shared/constants'
 import { Button } from '@conar/ui/components/button'
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
+import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCheckLine, RiFileCopyLine, RiLoader4Line, RiPieChart2Line, RiSaveLine } from '@remixicon/react'
+import { RiCheckLine, RiFileCopyLine, RiQuestionLine, RiSaveLine } from '@remixicon/react'
 import { useIsFetching, useMutation } from '@tanstack/react-query'
 import { Fragment, useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -44,6 +45,9 @@ export function RunnerEditorQueryZone({
       const rows = await customQuery({ query: wrapExplainQuery(query) }).run(connectionResourceToQueryParams(connectionResource))
       const duration = performance.now() - startTime
       return { rows, duration, query }
+    },
+    onSettled: () => {
+      setExplainOpen(true)
     },
   }, queryClient)
 
@@ -85,7 +89,6 @@ export function RunnerEditorQueryZone({
     if (!query)
       return
 
-    setExplainOpen(true)
     explain(query)
   }
 
@@ -155,38 +158,41 @@ export function RunnerEditorQueryZone({
                 <Fragment key={key}>
                   {CONNECTION_TYPES_WITH_EXPLAIN.includes(connectionType) && (
                     <Popover open={explainOpen} onOpenChange={setExplainOpen}>
-                      <PopoverTrigger
-                        render={(
-                          <Button
-                            size="xs"
-                            variant="secondary"
-                            className="focus:outline-none!"
-                            disabled={isFetching || isExplaining}
-                            onClick={() => handleExplain(idx)}
-                          />
-                        )}
-                      >
-                        {isExplaining
-                          ? <RiLoader4Line className="size-3.5 animate-spin" />
-                          : <RiPieChart2Line className="size-3.5" />}
-                      </PopoverTrigger>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <PopoverTrigger
+                            render={(
+                              <Button
+                                size="xs"
+                                variant="secondary"
+                                className="focus:outline-none!"
+                                disabled={isFetching || isExplaining}
+                                onClick={() => handleExplain(idx)}
+                              />
+                            )}
+                          >
+                            <LoadingContent loading={isExplaining}>
+                              <ContentSwitch
+                                active={isExplaining}
+                                activeContent={(
+                                  <RiCheckLine className="text-success" />
+                                )}
+                              >
+                                <RiQuestionLine />
+                              </ContentSwitch>
+                            </LoadingContent>
+                          </PopoverTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Explain
+                        </TooltipContent>
+                      </Tooltip>
                       <PopoverContent
                         className="
-                          max-h-[400px] w-auto max-w-[600px] overflow-auto p-0
+                          max-h-[400px] w-auto max-w-[600px] overflow-auto
                         "
-                        side="bottom"
-                        align="end"
+                        side="top"
                       >
-                        {isExplaining && (
-                          <div className="
-                            flex items-center gap-2 p-3 text-xs
-                            text-muted-foreground
-                          "
-                          >
-                            <RiLoader4Line className="size-3.5 animate-spin" />
-                            Running EXPLAIN...
-                          </div>
-                        )}
                         {isExplainError && (
                           <div className="p-3 text-xs text-destructive">
                             {explainError instanceof Error ? explainError.message : String(explainError)}
