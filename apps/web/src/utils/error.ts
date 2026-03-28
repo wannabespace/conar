@@ -12,7 +12,11 @@ export async function handleError(error: unknown) {
   if (!error)
     return
 
-  if (error instanceof Error ? error.name !== 'AbortError' : true) {
+  const shouldIgnoreError = error instanceof Error
+    ? error.name === 'AbortError' || error.message.includes('net::')
+    : false
+
+  if (!shouldIgnoreError) {
     toast.error(getErrorMessage(error))
   }
 

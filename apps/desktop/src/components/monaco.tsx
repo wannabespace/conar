@@ -2,27 +2,23 @@ import type { RefObject } from 'react'
 import { noop } from '@conar/shared/utils/helpers'
 import { formatXml } from '@conar/shared/utils/xml'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
+import { resolvedThemeComputed } from '@conar/ui/theme-store'
 import * as monaco from 'monaco-editor'
 import { vsPlusTheme } from 'monaco-sql-languages'
 import { useEffect, useEffectEvent, useRef } from 'react'
-import { useResolvedTheme } from '../../../../packages/ui/src/theme-store'
 
 // Sync with packages/ui/src/styles/monaco.css
 vsPlusTheme.darkThemeData.colors['editor.selectionBackground'] = '#5081f150'
 vsPlusTheme.lightThemeData.colors['editor.selectionBackground'] = '#5081f150'
 
-vsPlusTheme.darkThemeData.colors['editor.background'] = '#1e1f21'
+vsPlusTheme.darkThemeData.colors['editor.background'] = '#1b1b1c'
 
 monaco.editor.defineTheme('sql-dark', vsPlusTheme.darkThemeData)
 monaco.editor.defineTheme('sql-light', vsPlusTheme.lightThemeData)
 
-function useMonacoTheme() {
-  const resolvedTheme = useResolvedTheme()
-
-  useEffect(() => {
-    monaco.editor.setTheme(resolvedTheme === 'dark' ? 'sql-dark' : 'sql-light')
-  }, [resolvedTheme])
-}
+resolvedThemeComputed.subscribe((resolvedTheme) => {
+  monaco.editor.setTheme(resolvedTheme === 'dark' ? 'sql-dark' : 'sql-light')
+}, { immediate: true })
 
 export function Monaco({
   ref,
@@ -43,8 +39,6 @@ export function Monaco({
   const elementRef = useRef<HTMLDivElement>(null)
   const monacoInstanceRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
   const preventTriggerChangeEventRef = useRef(false)
-
-  useMonacoTheme()
 
   const onChangeEvent = useEffectEvent(onChange)
   const getOptionsEvent = useEffectEvent(() => ({
@@ -164,8 +158,6 @@ export function MonacoDiff({
 }) {
   const elementRef = useRef<HTMLDivElement>(null)
   const diffEditorInstanceRef = useRef<monaco.editor.IStandaloneDiffEditor | null>(null)
-
-  useMonacoTheme()
 
   const getOptionsEvent = useEffectEvent(() => ({
     automaticLayout: true,

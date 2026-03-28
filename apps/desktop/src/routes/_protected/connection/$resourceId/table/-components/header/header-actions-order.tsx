@@ -5,7 +5,7 @@ import { Indicator } from '@conar/ui/components/custom/indicator'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Separator } from '@conar/ui/components/separator'
 import { ToggleGroup, ToggleGroupItem } from '@conar/ui/components/toggle-group'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiAddLine, RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiCloseLine } from '@remixicon/react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -33,26 +33,31 @@ export function HeaderActionsOrder({ table, schema }: { table: string, schema: s
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                aria-label="Sort order"
-              >
-                <RiArrowUpDownLine />
-                {hasOrders && <Indicator />}
-              </Button>
-            </PopoverTrigger>
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            Sort order
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      <PopoverContent className="w-90 p-0" side="bottom" align="end">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <PopoverTrigger render={(
+            <Button
+              variant="outline"
+              size="icon"
+            />
+          )}
+          >
+            <RiArrowUpDownLine />
+            {hasOrders && <Indicator />}
+          </PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="top">
+          Sort order
+        </TooltipContent>
+      </Tooltip>
+      <PopoverContent
+        className="
+          w-90 p-0
+          **:data-[slot=popover-viewport]:p-0
+        "
+        side="bottom"
+        align="end"
+      >
         <div className="flex flex-col">
           <div className="border-b px-4 py-3">
             <div className="flex items-center justify-between">
@@ -105,19 +110,17 @@ export function HeaderActionsOrder({ table, schema }: { table: string, schema: s
                           </p>
                           <div className="flex shrink-0 items-center gap-2">
                             <ToggleGroup
-                              type="single"
                               variant="outline"
-                              size="xs"
-                              value={order}
+                              size="sm"
+                              value={[order]}
                               onValueChange={(value) => {
-                                if (value)
-                                  setOrder(columnId, value as 'ASC' | 'DESC')
+                                if (value[0])
+                                  setOrder(columnId, value[0])
                               }}
                             >
                               <ToggleGroupItem
                                 value="ASC"
                                 aria-label="Sort ascending"
-                                className="gap-1 px-1.5 text-xs"
                               >
                                 <RiArrowUpLine className="size-3.5" />
                                 ASC
@@ -125,7 +128,6 @@ export function HeaderActionsOrder({ table, schema }: { table: string, schema: s
                               <ToggleGroupItem
                                 value="DESC"
                                 aria-label="Sort descending"
-                                className="gap-1 px-1.5 text-xs"
                               >
                                 <RiArrowDownLine className="size-3.5" />
                                 DESC
@@ -150,23 +152,30 @@ export function HeaderActionsOrder({ table, schema }: { table: string, schema: s
                   </div>
                 )}
           </div>
-
           {availableColumns.length > 0 && (
             <>
               <Separator />
               <div className="p-3">
                 <Popover open={showAddColumn} onOpenChange={setShowAddColumn}>
-                  <PopoverTrigger asChild>
+                  <PopoverTrigger render={(
                     <Button
                       variant="outline"
                       size="sm"
                       className="w-full justify-start gap-2"
-                    >
-                      <RiAddLine className="size-4" />
-                      Add column to sort
-                    </Button>
+                    />
+                  )}
+                  >
+                    <RiAddLine className="size-4" />
+                    Add column to sort
                   </PopoverTrigger>
-                  <PopoverContent className="w-64 p-0" align="start" side="left">
+                  <PopoverContent
+                    className="
+                      w-64 p-0
+                      **:data-[slot=popover-viewport]:p-0
+                    "
+                    align="start"
+                    side="left"
+                  >
                     <Command>
                       <CommandInput placeholder="Search columns..." />
                       <CommandList>

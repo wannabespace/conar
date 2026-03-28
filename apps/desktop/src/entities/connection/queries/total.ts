@@ -8,12 +8,10 @@ import { connectionResourceToQueryParams, createQuery } from '../query'
 import { buildWhere } from './rows'
 
 export const resourceTableTotalQuery = memoize(({
-  connectionResource,
   table,
   schema,
   query: { filters, exact },
 }: {
-  connectionResource: typeof connectionsResources.$inferSelect
   table: string
   schema: string
   query: {
@@ -21,7 +19,7 @@ export const resourceTableTotalQuery = memoize(({
     exact: boolean
   }
 }) => {
-  const query = createQuery({
+  return createQuery({
     type: type({
       count: 'number',
       isEstimated: 'boolean',
@@ -125,9 +123,21 @@ export const resourceTableTotalQuery = memoize(({
       },
     },
   })
+})
 
+export function resourceTableTotalQueryOptions({
+  connectionResource,
+  table,
+  schema,
+  query: { filters, exact },
+}: {
+  connectionResource: typeof connectionsResources.$inferSelect
+  table: string
+  schema: string
+  query: { filters: ActiveFilter[], exact: boolean }
+}) {
   return queryOptions({
-    queryFn: () => query.run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: () => resourceTableTotalQuery({ table, schema, query: { filters, exact } }).run(connectionResourceToQueryParams(connectionResource)),
     queryKey: [
       'connection-resource',
       connectionResource.id,
@@ -143,4 +153,4 @@ export const resourceTableTotalQuery = memoize(({
     ],
     throwOnError: false,
   })
-})
+}

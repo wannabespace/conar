@@ -298,7 +298,7 @@ export function ComboboxItem({
           <path d="M5.252 12.7 10.2 18.63 18.748 5.37" />
         </svg>
       </ComboboxPrimitive.ItemIndicator>
-      <div className="col-start-2">{children}</div>
+      <div className="col-start-2 min-w-0">{children}</div>
     </ComboboxPrimitive.Item>
   )
 }
