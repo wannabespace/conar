@@ -228,10 +228,10 @@ function ConnectionCard({
     .findOne(), [connection.id, selectedResourceName])
 
   useEffect(() => {
-    if (!selectedResource) {
+    if (!selectedResource && !error) {
       createResource(connection.id, selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? null : selectedResourceName)
     }
-  }, [selectedResourceName, selectedResource, connection.id])
+  }, [selectedResourceName, selectedResource, connection.id, error])
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
