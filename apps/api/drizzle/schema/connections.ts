@@ -31,7 +31,7 @@ export const connectionsInsertSchema = createInsertSchema(connections)
 export const connectionsResources = pgTable('connections_resources', ({ uuid, text }) => ({
   ...baseTable,
   connectionId: uuid().references(() => connections.id, { onDelete: 'cascade' }).notNull(),
-  name: text(),
+  name: text().notNull(),
 }), t => [
   unique().on(t.connectionId, t.name),
 ])

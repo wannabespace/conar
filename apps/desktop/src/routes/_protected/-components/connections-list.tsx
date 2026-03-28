@@ -1,241 +1,116 @@
 import type { ComponentRef } from 'react'
-import type { connections as connectionsTable } from '~/drizzle/schema'
-import { CONNECTION_RESOURCE_ROOT_LABEL, CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
-import { uppercaseFirst } from '@conar/shared/utils/helpers'
+import type { connections, connectionsResources, connections as connectionsTable } from '~/drizzle/schema'
+import { CONNECTION_TYPES_WITHOUT_SCHEMAS } from '@conar/shared/constants'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
-import { Card } from '@conar/ui/components/card'
-import { Combobox, ComboboxCollection, ComboboxEmpty, ComboboxGroup, ComboboxGroupLabel, ComboboxInput, ComboboxItem, ComboboxList, ComboboxPopup, ComboboxTrigger } from '@conar/ui/components/combobox'
+import { Card, CardFrameDescription, CardFrameFooter, CardFrameHeader, CardFrameMotion, CardFrameTitle, CardPanel } from '@conar/ui/components/card'
+import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
+import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
-import { FrameMotion } from '@conar/ui/components/frame'
+import { Input } from '@conar/ui/components/input'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Separator } from '@conar/ui/components/separator'
 import { Spinner } from '@conar/ui/components/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAlertLine, RiArrowDownSLine, RiDeleteBinLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiRefreshLine, RiSearchLine, RiSortAsc, RiSortDesc } from '@remixicon/react'
-import { and, eq, useLiveQuery } from '@tanstack/react-db'
-import { useQuery } from '@tanstack/react-query'
+import { RiAddLine, RiAlertLine, RiCheckLine, RiCloseLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiFileCopyLine, RiLoopLeftLine, RiMoreLine } from '@remixicon/react'
+import { eq, useLiveQuery } from '@tanstack/react-db'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { type } from 'arktype'
-import { AnimatePresence } from 'motion/react'
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { createLocalStorageValue } from 'seitu/web'
-import { v7 } from 'uuid'
 import { ConnectionIcon } from '~/entities/connection/components'
-import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
-import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
-import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
-import { getConnectionStore } from '~/entities/connection/store'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
+import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
+import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { connectionVersionQuery } from '~/entities/connection/queries/connection-version'
+import { connectionsCollection, connectionsResourcesCollection, syncConnectionResources } from '~/entities/connection/sync'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
+import { RenameConnectionDialog } from './rename-connection-dialog'
 
-function useConnectionResources(connection: typeof connectionsTable.$inferSelect) {
-  const { data: resources } = useLiveQuery(q => q
-    .from({ connectionsResources: connectionsResourcesCollection })
-    .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
-    .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
-  const { data, ...props } = useQuery(connectionResourcesQueryOptions(connection))
-
-  return { data: data || resources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL), ...props }
-}
-
-function ConnectionIconWithVersion({ connection }: { connection: typeof connectionsTable.$inferSelect }) {
-  const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery(connectionVersionQueryOptions(connection))
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <ConnectionIcon
-          type={connection.type}
-          className="pointer-events-auto size-6 shrink-0"
-        />
-      </TooltipTrigger>
-      <TooltipContent
-        side="left"
-        className="pointer-events-auto flex items-center gap-1"
-        sideOffset={10}
-      >
-        <span className="opacity-50">Version: </span>
-        {isVersionPending
-          ? <span className="animate-pulse">Loading version...</span>
-          : version
-            ? (
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    className="cursor-pointer"
-                    onClick={() => refetchVersion()}
-                  >
-                    {version}
-                  </button>
-                  {isVersionRefetching && (
-                    <Spinner className="size-3" />
-                  )}
-                </div>
-              )
-            : <span className="opacity-50">Version cannot be detected</span>}
-      </TooltipContent>
-    </Tooltip>
-  )
-}
-
-function ConnectionResourcesCombobox({
-  resources,
-  selectedResourceName,
-  onSelectedResourceNameChange,
-  pinnedResourcesNames,
-  onPinnedResourceNameChange,
-}: {
-  resources: (string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL)[]
-  selectedResourceName: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null
-  onSelectedResourceNameChange: (resource: string | null) => void
-  pinnedResourcesNames: (string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL)[]
-  onPinnedResourceNameChange: (resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL) => void
+function ResourceCard({ resource, connection, search }: {
+  resource: typeof connectionsResources.$inferSelect
+  connection: typeof connections.$inferSelect
+  search: string
 }) {
-  const groupedResources = Object.entries(resources.reduce<{ pinned: typeof resources[number][], unpinned: typeof resources[number][] }>((acc, resource) => {
-    const isPinned = pinnedResourcesNames.includes(resource)
-    if (isPinned) {
-      acc.pinned.push(resource)
-    }
-    else {
-      acc.unpinned.push(resource)
-    }
-    return acc
-  }, { pinned: [], unpinned: [] })).map(([value, items]) => ({ value: uppercaseFirst(value), items }))
+  const params = useConnectionResourceLinkParams(resource.id)
+  const { data: tablesAndSchemas } = useQuery({
+    ...resourceTablesAndSchemasQuery({ connectionResource: resource, showSystem: false, silent: true }),
+    throwOnError: false,
+  })
 
   return (
-    <Combobox
-      items={groupedResources}
-      value={selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_SYMBOL.description : selectedResourceName}
-      onValueChange={onSelectedResourceNameChange}
+    <Link
+      className="
+        group flex flex-1 items-center justify-between gap-2 rounded-md px-2
+        py-1.5 text-sm text-foreground
+        hover:bg-accent/30
+      "
+      {...params}
     >
-      <ComboboxTrigger
-        className="text-xs"
-        render={<Button variant="outline" size="xs" />}
-      >
-        {selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_LABEL : selectedResourceName}
-        <RiArrowDownSLine />
-      </ComboboxTrigger>
-      <ComboboxPopup className="max-w-80 min-w-48">
-        <div className="border-b p-2">
-          <ComboboxInput
-            className="
-              rounded-md
-              before:rounded-[calc(var(--radius-md)-1px)]
-            "
-            placeholder="Search resources"
-            showTrigger={false}
-            startAddon={<RiSearchLine />}
-          />
-        </div>
-        <ComboboxEmpty>No results found.</ComboboxEmpty>
-        <ComboboxList>
-          {(group: typeof groupedResources[number]) => (
-            <Fragment key={group.value}>
-              <ComboboxGroup items={group.items}>
-                <ComboboxGroupLabel>{group.value}</ComboboxGroupLabel>
-                <ComboboxCollection>
-                  {(resource: typeof group.items[number]) => (
-                    <ComboboxItem
-                      key={resource === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_SYMBOL.description : resource}
-                      value={resource === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_SYMBOL.description : resource}
-                      className="group"
-                    >
-                      <span
-                        className="
-                          flex w-full min-w-0 items-center justify-between gap-2
-                        "
-                      >
-                        <span className="flex-1 truncate">
-                          {resource === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_LABEL : resource}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          className="
-                            -mr-3 shrink-0 opacity-0
-                            group-hover:opacity-100
-                          "
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onPinnedResourceNameChange(resource)
-                          }}
-                        >
-                          {pinnedResourcesNames.includes(resource)
-                            ? (
-                                <RiPushpinFill className="size-3.5 text-primary" />
-                              )
-                            : (
-                                <RiPushpinLine className="size-3.5" />
-                              )}
-                        </Button>
-                      </span>
-                    </ComboboxItem>
-                  )}
-                </ComboboxCollection>
-              </ComboboxGroup>
-            </Fragment>
-          )}
-        </ComboboxList>
-      </ComboboxPopup>
-    </Combobox>
+      <div className="flex min-w-0 items-center gap-2">
+        <RiDatabase2Line className="size-4 shrink-0 text-muted-foreground" />
+        <span className="min-w-0 truncate" title={resource.name}>
+          {search ? <HighlightText text={resource.name} match={search} /> : resource.name}
+        </span>
+        {tablesAndSchemas && (
+          <div className="
+            mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground
+          "
+          >
+            <span className="whitespace-nowrap">
+              {tablesAndSchemas.totalTables}
+              {' '}
+              table
+              {tablesAndSchemas?.totalTables === 1 ? '' : 's'}
+            </span>
+            {!CONNECTION_TYPES_WITHOUT_SCHEMAS.includes(connection.type) && (
+              <>
+                <Separator orientation="vertical" className="h-3" />
+                <span className="whitespace-nowrap">
+                  {tablesAndSchemas?.totalSchemas}
+                  {' '}
+                  schema
+                  {tablesAndSchemas?.totalSchemas === 1 ? '' : 's'}
+                </span>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </Link>
   )
-}
-
-async function createResource(connectionId: string, name: string | null) {
-  await connectionsResourcesCollection.utils.waitForSync()
-  connectionsResourcesCollection.insert({
-    id: v7(),
-    connectionId,
-    name,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  })
 }
 
 function ConnectionCard({
   connection,
   onRemove,
+  onRename,
 }: {
   connection: typeof connectionsTable.$inferSelect
   onRemove: VoidFunction
+  onRename: VoidFunction
 }) {
-  const { data: resources, isPending, isFetching, error, refetch } = useConnectionResources(connection)
-
-  const [isOpen, setIsOpen] = useState(false)
-  const [isCopied, setIsCopied] = useState(false)
-
   const connectionString = new SafeURL(connection.connectionString)
+  connectionString.pathname = ''
   const connectionStringToShow = `${connectionString.hostname}${connectionString.port ? `:${connectionString.port}` : ''}`
+  const [isCopied, setIsCopied] = useState(false)
+  const [resourcesSearch, setResourcesSearch] = useState('')
 
-  const connectionStore = getConnectionStore(connection.id)
-  const { selectedResourceName, pinnedResourcesNames } = useSubscription(connectionStore, {
-    selector: state => ({
-      selectedResourceName: (state.lastOpenedResourceName || connectionString.pathname.slice(1) || resources[0] || null) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
-      pinnedResourcesNames: state.pinnedResourcesNames,
-    }),
+  const { mutate: sync, isPending: isSyncing, error: syncError } = useMutation({
+    mutationFn: async () => {
+      await syncConnectionResources(connection)
+    },
   })
 
-  const { data: selectedResource } = useLiveQuery(q => q
-    .from({ connectionsResources: connectionsResourcesCollection })
-    .where(({ connectionsResources }) => and(
-      eq(connectionsResources.connectionId, connection.id),
-      eq(connectionsResources.name, selectedResourceName),
-    ))
-    .findOne(), [connection.id, selectedResourceName])
-
   useEffect(() => {
-    if (!selectedResource && !error) {
-      createResource(connection.id, selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? null : selectedResourceName)
-    }
-  }, [selectedResourceName, selectedResource, connection.id, error])
+    sync()
+  }, [sync])
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -244,11 +119,7 @@ function ConnectionCard({
       clearTimeout(timeoutRef.current)
     }
 
-    const connectionStringToCopy = new SafeURL(connectionString)
-
-    connectionStringToCopy.pathname = selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL || selectedResourceName === null ? '' : selectedResourceName
-
-    copy(connectionStringToCopy.toString())
+    copy(connectionString.toString())
     setIsCopied(true)
 
     timeoutRef.current = setTimeout(() => {
@@ -257,10 +128,18 @@ function ConnectionCard({
     }, 3000)
   }
 
-  const isResourcesShown = resources.length > 1 && !isPending
+  const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery(connectionVersionQuery(connection))
+  const { data: resources } = useLiveQuery(q => q
+    .from({ connectionsResources: connectionsResourcesCollection })
+    .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id)), [connection.id])
+
+  const filteredResources = resources.filter(resource =>
+    !resourcesSearch
+    || resource.name.toLowerCase().includes(resourcesSearch.toLowerCase()),
+  )
 
   return (
-    <FrameMotion
+    <CardFrameMotion
       layout="position"
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -268,126 +147,222 @@ function ConnectionCard({
       transition={{ duration: 0.15 }}
       style={connection.color ? { '--color': connection.color } : {}}
     >
-      <Card
-        className={cn(
-          'relative',
-          connection.color && `border-(--color)`,
-          `has-[:where([data-resource-link]:hover)]:bg-accent`,
-        )}
+      <CardFrameHeader className="
+        flex flex-row items-center justify-between gap-4
+      "
       >
-        {selectedResource
-          ? (
-              <ConnectionResourceLink
-                resourceId={selectedResource.id}
-                className="absolute inset-0 rounded-lg"
-                preload={false}
-                data-resource-link
-              />
-            )
-          : null}
-        <div className="
-          pointer-events-none relative z-10 flex items-center justify-between
-          gap-4 px-6 py-4
-        "
-        >
-          <div className={cn(`flex items-center gap-4`, isFetching && `
-            animate-pulse
-          `)}
-          >
-            <ConnectionIconWithVersion connection={connection} />
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 leading-none font-medium">
-                <span title={connection.name}>
-                  {connection.name}
-                </span>
-                {connection.label && (
-                  <Badge variant="secondary" className="max-w-36 truncate">
-                    {connection.label}
-                  </Badge>
-                )}
-                {isFetching && <Spinner className="size-3" />}
-                {error && (
+        <div className="flex min-w-0 items-center gap-4">
+          <ConnectionIcon
+            type={connection.type}
+            className="size-6 shrink-0"
+          />
+          <div className="flex min-w-0 flex-col">
+            <CardFrameTitle className="flex min-w-0 items-center gap-2">
+              <span className="min-w-0 truncate" title={connection.name}>{connection.name}</span>
+              {' '}
+              {isSyncing && <Spinner className="size-3" />}
+              {syncError && (
+                <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <RiAlertLine className="
-                        pointer-events-auto size-3 text-warning
-                      "
-                      />
+                      <RiAlertLine className="size-3 text-warning" />
                     </TooltipTrigger>
-                    <TooltipContent className="pointer-events-auto">
-                      Failed to get resources:
+                    <TooltipContent>
+                      Sync failed:
                       {' '}
-                      <p className="text-xs text-warning">{error.message}</p>
+                      <p className="text-xs text-warning">{syncError.message}</p>
                     </TooltipContent>
                   </Tooltip>
-                )}
-              </div>
-              <div className="pointer-events-auto flex h-4 items-center gap-1">
-                <Tooltip open={isOpen || isCopied} onOpenChange={setIsOpen}>
-                  <TooltipTrigger
-                    className={`
-                      group flex cursor-pointer items-center gap-1 text-xs
-                      text-muted-foreground
-                    `}
-                    onClick={() => handleCopy()}
-                  >
-                    {connectionStringToShow}
-                    {isResourcesShown
-                      ? <span>/</span>
-                      : selectedResourceName !== CONNECTION_RESOURCE_ROOT_SYMBOL && (
-                        <span>
-                          /
-                          {selectedResourceName}
-                        </span>
-                      )}
-                  </TooltipTrigger>
-                  <TooltipContent className="flex items-center gap-1" side="bottom">
-                    {isCopied ? 'Connection string copied!' : 'Copy connection string'}
-                  </TooltipContent>
-                </Tooltip>
-                {isResourcesShown && (
-                  <ConnectionResourcesCombobox
-                    resources={resources}
-                    pinnedResourcesNames={pinnedResourcesNames}
-                    selectedResourceName={selectedResourceName}
-                    onSelectedResourceNameChange={value => connectionStore.set(state => ({ ...state, lastOpenedResourceName: value } satisfies typeof state))}
-                    onPinnedResourceNameChange={value => connectionStore.set(state => ({
-                      ...state,
-                      pinnedResourcesNames: state.pinnedResourcesNames.includes(value)
-                        ? state.pinnedResourcesNames.filter(name => name !== value)
-                        : [...state.pinnedResourcesNames, value],
-                    } satisfies typeof state))}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className="pointer-events-auto"
-              render={<Button variant="ghost" size="icon-sm" />}
+                </TooltipProvider>
+              )}
+            </CardFrameTitle>
+            <CardFrameDescription
+              className="
+                group flex cursor-pointer items-center justify-between gap-2
+              "
+              render={<button type="button" />}
+              onClick={() => handleCopy()}
             >
-              <RiMoreLine className="size-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => refetch()}
+              <span className="group flex min-w-0 flex-1 gap-2">
+                <span className="min-w-0 flex-1 truncate">
+                  {connectionStringToShow}
+                </span>
+
+              </span>
+              <ContentSwitch
+                active={isCopied}
+                activeContent={<RiCheckLine className="size-4 text-success" />}
+                onSwitchEnd={() => setIsCopied(false)}
               >
-                <RiRefreshLine className="size-4" />
-                Refresh
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => onRemove()}
-              >
-                <RiDeleteBinLine className="size-4" />
-                Remove
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <RiFileCopyLine className="
+                  size-3 opacity-0 transition-opacity
+                  group-hover:opacity-100
+                "
+                />
+              </ContentSwitch>
+            </CardFrameDescription>
+          </div>
         </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger className={`
+            rounded-md p-2
+            hover:bg-accent-foreground/5
+          `}
+          >
+            <RiMoreLine className="size-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() => sync()}
+            >
+              <RiLoopLeftLine className="size-4 opacity-50" />
+              Refresh
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => onRename()}
+            >
+              <RiEditLine className="size-4 opacity-50" />
+              Rename
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className={`
+                text-destructive
+                focus:text-destructive
+              `}
+              onClick={() => onRemove()}
+            >
+              <RiDeleteBinLine className="size-4" />
+              Remove
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </CardFrameHeader>
+      <Card>
+        <CardPanel className="-mx-2">
+          {resources.length > 5 && (
+            <div className="relative mb-2 px-2">
+              <Input
+                placeholder={`Search resources (${resources.length})`}
+                className="pr-8"
+                value={resourcesSearch}
+                onChange={e => setResourcesSearch(e.target.value)}
+              />
+              {resourcesSearch && (
+                <button
+                  type="button"
+                  className={`
+                    absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer p-1
+                  `}
+                  onClick={() => setResourcesSearch('')}
+                >
+                  <RiCloseLine className="size-4 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+          )}
+          <ScrollArea className="max-h-60" scrollFade>
+            {filteredResources.length > 0
+              ? (
+                  <AnimatePresence mode="popLayout">
+                    {filteredResources.map(resource => (
+                      <motion.div
+                        key={resource.id}
+                        layout
+                        transition={{ layout: { duration: 0.15, ease: 'easeInOut' } }}
+                      >
+                        <ResourceCard
+                          resource={resource}
+                          connection={connection}
+                          search={resourcesSearch}
+                        />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                )
+              : (
+                  <div
+                    className="
+                      flex items-center p-2 text-sm text-muted-foreground
+                    "
+                  >
+                    {isSyncing
+                      ? (
+                          <div className="flex animate-pulse items-center gap-2">
+                            <Spinner className="size-3" />
+                            Syncing resources...
+                          </div>
+                        )
+                      : resources && resources.length > 0
+                        ? 'No resources match your search'
+                        : 'No resources found'}
+                  </div>
+                )}
+          </ScrollArea>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Button
+                    disabled
+                    variant="ghost"
+                    size="sm"
+                    className="mt-2"
+                  >
+                    <RiAddLine className="size-4" />
+                    Add Resource
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                Soon you will be able to add resources to your connection.
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </CardPanel>
       </Card>
-    </FrameMotion>
+      <CardFrameFooter>
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center gap-4">
+            {connection.color && (
+              <div className="size-5 rounded-full bg-(--color)" />
+            )}
+            {connection.label && (
+              <Badge variant="outline">
+                {connection.label}
+              </Badge>
+            )}
+          </div>
+          <div className="text-muted-foreground">
+            {isVersionPending
+              ? (
+                  <span className="animate-pulse">Loading version...</span>
+                )
+              : version
+                ? (
+                    <button
+                      className={cn('flex items-center gap-1', isVersionRefetching
+                        ? `animate-pulse`
+                        : '')}
+                      type="button"
+                      onClick={() => refetchVersion()}
+                    >
+                      {isVersionRefetching && (
+                        <Spinner className="size-3" />
+                      )}
+                      Version:
+                      {' '}
+                      {version}
+                    </button>
+                  )
+                : (
+                    <span className="opacity-50">
+                      Version cannot be detected
+                    </span>
+                  )}
+          </div>
+        </div>
+      </CardFrameFooter>
+    </CardFrameMotion>
   )
 }
 
@@ -411,45 +386,21 @@ export function Empty() {
   )
 }
 
-const sortOptions = [
-  { value: 'date-desc', label: 'Date (newest first)' },
-  { value: 'date-asc', label: 'Date (oldest first)' },
-  { value: 'name-asc', label: 'Name (A–Z)' },
-  { value: 'name-desc', label: 'Name (Z–A)' },
-] as const
-
-const sortValue = createLocalStorageValue({
-  key: 'connections-list-sort',
-  schema: type('string' as type.cast<typeof sortOptions[number]['value']>),
-  defaultValue: 'date-desc',
-})
-
 export function ConnectionsList() {
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
-  const sort = useSubscription(sortValue)
   const { data } = useLiveQuery((q) => {
-    let query = q.from({ connections: connectionsCollection })
-
-    if (sort === 'date-desc') {
-      query = query.orderBy(({ connections }) => connections.createdAt, 'desc')
-    }
-    else if (sort === 'date-asc') {
-      query = query.orderBy(({ connections }) => connections.createdAt, 'asc')
-    }
-    else if (sort === 'name-asc') {
-      query = query.orderBy(({ connections }) => connections.name, 'asc')
-    }
-    else {
-      query = query.orderBy(({ connections }) => connections.name, 'desc')
-    }
+    let query = q
+      .from({ connections: connectionsCollection })
+      .orderBy(({ connections }) => connections.createdAt, 'desc')
 
     if (selectedLabel) {
       query = query.where(({ connections }) => eq(connections.label, selectedLabel))
     }
 
     return query
-  }, [selectedLabel, sort])
+  }, [selectedLabel])
 
+  const renameDialogRef = useRef<ComponentRef<typeof RenameConnectionDialog>>(null)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
 
@@ -459,58 +410,29 @@ export function ConnectionsList() {
   return (
     <div className="flex flex-col gap-6">
       <RemoveConnectionDialog ref={removeDialogRef} />
+      <RenameConnectionDialog ref={renameDialogRef} />
       {showLastOpened && (
         <>
           <LastOpenedResources />
           <Separator />
         </>
       )}
-      {data.length > 0 && (
-        <div
-          className={cn(
-            'flex min-w-0 flex-nowrap items-center gap-4',
-            availableLabels.length > 0 ? 'justify-between' : 'justify-end',
-          )}
+      {availableLabels.length > 0 && (
+        <Tabs
+          value={selectedLabel === null ? 'all' : selectedLabel}
+          onValueChange={value => setSelectedLabel(value === 'all' ? null : value)}
         >
-          {availableLabels.length > 0 && (
-            <ScrollArea className="min-w-0 flex-1" scrollFade>
-              <Tabs
-                value={selectedLabel === null ? 'all' : selectedLabel}
-                onValueChange={value => setSelectedLabel(value === 'all' ? null : value)}
-                className="w-max max-w-none"
-              >
-                <TabsList>
-                  <TabsTrigger value="all">
-                    All
-                  </TabsTrigger>
-                  {availableLabels.map(label => (
-                    <TabsTrigger key={label} value={label}>
-                      {label}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
-            </ScrollArea>
-          )}
-          <Select
-            value={sort}
-            onValueChange={value => sortValue.set(value!)}
-          >
-            <SelectTrigger className="w-[200px] shrink-0">
-              {sort.includes('asc') ? <RiSortAsc /> : <RiSortDesc />}
-              <SelectValue>
-                {sortOptions.find(option => option.value === sort)!.label}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {sortOptions.map(option => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+          <TabsList>
+            <TabsTrigger value="all">
+              All
+            </TabsTrigger>
+            {availableLabels.map(label => (
+              <TabsTrigger key={label} value={label}>
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       )}
       <div className="flex flex-col gap-2">
         <AnimatePresence initial={false} mode="popLayout">
@@ -521,6 +443,9 @@ export function ConnectionsList() {
                   connection={connection}
                   onRemove={() => {
                     removeDialogRef.current?.remove(connection)
+                  }}
+                  onRename={() => {
+                    renameDialogRef.current?.rename(connection)
                   }}
                 />
               ))

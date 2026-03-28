@@ -1,9 +1,10 @@
-import type { constraintsType } from '~/entities/connection/queries'
+import type { constraintsType, tablesAndSchemasType } from '~/entities/connection/queries'
 import type { columnType } from '~/entities/connection/queries/columns'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
-import { KbdCtrlLetter } from '@conar/ui/components/custom/shortcuts'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
+import { CtrlLetter } from '@conar/ui/components/custom/shortcuts'
+import { Input } from '@conar/ui/components/input'
+import { Kbd } from '@conar/ui/components/kbd'
 import { ReactFlowEdge } from '@conar/ui/components/react-flow/edge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
@@ -16,7 +17,7 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { animationHooks } from '~/enter'
 import { ReactFlowNode } from '~/entities/connection/components'
-import { resourceConstraintsQueryOptions, resourceTableColumnsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
+import { resourceConstraintsQuery, resourceTableColumnsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { applySearchHighlight, getVisualizerLayout } from './-lib'
@@ -40,15 +41,15 @@ function VisualizerPage() {
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data: tablesAndSchemas } = useQuery({
-    ...resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem }),
-    select: data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table: table.name }))),
+    ...resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }),
+    select: data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table }))),
   })
   const columnsQueries = useQueries({
     queries: tablesAndSchemas?.flatMap(({ schema, table }) =>
-      resourceTableColumnsQueryOptions({ connectionResource, schema, table }),
+      resourceTableColumnsQuery({ connectionResource, schema, table }),
     ) ?? [],
   })
-  const { data: constraints } = useQuery(resourceConstraintsQueryOptions({ connectionResource }))
+  const { data: constraints } = useQuery(resourceConstraintsQuery({ connectionResource }))
 
   if (!tablesAndSchemas || !constraints || columnsQueries.some(q => q.isPending)) {
     return (
@@ -100,7 +101,7 @@ function Visualizer({
   columns,
   constraints,
 }: {
-  tablesAndSchemas: { schema: string, table: string }[]
+  tablesAndSchemas: typeof tablesAndSchemasType.infer[]
   columns: typeof columnType.infer[]
   constraints: typeof constraintsType.infer[]
 }) {
@@ -167,61 +168,65 @@ function Visualizer({
   })
 
   return (
-    <div className="relative size-full overflow-hidden rounded-lg">
+    <div className="
+      relative size-full overflow-hidden rounded-lg
+      dark:border
+    "
+    >
       <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-        <div className="relative w-56">
-          <InputGroup>
-            <InputGroupInput
-              ref={searchRef}
-              placeholder="Search tables"
-              value={searchQuery}
-              autoFocus
-              onChange={(e) => {
-                setSearchQuery(e.target.value)
-                setNodes(nodes => applySearchHighlight({
-                  nodes,
-                  searchQuery: e.target.value.trim(),
-                  tables,
-                  columns,
-                }))
-              }}
-            />
-            <InputGroupAddon>
-              <RiSearchLine className="
-                pointer-events-none size-3.5 text-muted-foreground
-              "
-              />
-            </InputGroupAddon>
-            <InputGroupAddon align="inline-end">
-              {!searchQuery && (
-                <div className="
-                  pointer-events-none flex items-center gap-1 text-xs
-                  text-muted-foreground
-                "
-                >
-                  <KbdCtrlLetter userAgent={navigator.userAgent} letter="F" />
-                </div>
-              )}
+        <div className="relative w-48">
+          <Input
+            ref={searchRef}
+            placeholder="Search tables"
+            className="pr-8 pl-7"
+            value={searchQuery}
+            autoFocus
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              setNodes(nodes => applySearchHighlight({
+                nodes,
+                searchQuery: e.target.value.trim(),
+                tables,
+                columns,
+              }))
+            }}
+          />
+          <RiSearchLine className="
+            pointer-events-none absolute top-1/2 left-2 size-3.5
+            -translate-y-1/2 text-muted-foreground
+          "
+          />
 
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  aria-label="Clear table search"
-                >
-                  <RiCloseLine className="size-4 text-muted-foreground" />
-                </button>
-              )}
-            </InputGroupAddon>
-          </InputGroup>
+          {!searchQuery && (
+            <div className="
+              pointer-events-none absolute top-1/2 right-2 flex -translate-y-1/2
+              items-center gap-1 text-xs text-muted-foreground
+            "
+            >
+              <Kbd asChild>
+                <CtrlLetter userAgent={navigator.userAgent} letter="F" />
+              </Kbd>
+            </div>
+          )}
+
+          {searchQuery && (
+            <button
+              type="button"
+              className="
+                absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
+              "
+              onClick={() => setSearchQuery('')}
+              aria-label="Clear table search"
+            >
+              <RiCloseLine className="size-4 text-muted-foreground" />
+            </button>
+          )}
         </div>
         <Select
           value={schema}
           onValueChange={(v) => {
-            if (v) {
-              setSchema(v)
-              setSearchQuery('')
-            }
+            setSchema(v)
+            setSearchQuery('')
           }}
         >
           <SelectTrigger className="max-w-56 min-w-[180px]">

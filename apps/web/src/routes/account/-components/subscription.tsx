@@ -7,7 +7,7 @@ import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Skeleton } from '@conar/ui/components/skeleton'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiErrorWarningLine, RiHeart3Fill, RiInformationLine, RiLoader4Fill, RiTimeLine, RiWalletLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
@@ -66,7 +66,7 @@ export function Subscription() {
                   disabled={isOpening}
                   onClick={() => openBillingPortal()}
                 >
-                  <LoadingContent loading={isOpening}>
+                  <LoadingContent loading={isOpening} loaderClassName="size-3.5">
                     <RiWalletLine className="size-3.5" />
                     Manage Subscription
                   </LoadingContent>
@@ -80,22 +80,24 @@ export function Subscription() {
                     ? subscription.cancelAt ? `Cancels at ${format(subscription.cancelAt, 'MMM d, yyyy')}` : 'Cancels at period end'
                     : subscription.status === 'trialing' && subscription.trialEnd
                       ? (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span>
-                                Free trial ends
-                                {' '}
-                                {formatDistanceToNow(subscription.trialEnd, { addSuffix: true })}
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <span>
-                                Your trial will end on
-                                {' '}
-                                {format(subscription.trialEnd, 'MMM d, yyyy h:mm a')}
-                              </span>
-                            </TooltipContent>
-                          </Tooltip>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span>
+                                  Free trial ends
+                                  {' '}
+                                  {formatDistanceToNow(subscription.trialEnd, { addSuffix: true })}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <span>
+                                  Your trial will end on
+                                  {' '}
+                                  {format(subscription.trialEnd, 'MMM d, yyyy h:mm a')}
+                                </span>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )
                       : (subscription.periodEnd
                           ? `Next payment on ${format(subscription.periodEnd, 'MMM d, yyyy')}`
@@ -111,7 +113,7 @@ export function Subscription() {
                   disabled={isUpgrading}
                   onClick={() => upgrade(isYearly)}
                 >
-                  <LoadingContent loading={isUpgrading}>
+                  <LoadingContent loading={isUpgrading} loaderClassName="size-3.5">
                     Upgrade to Pro
                   </LoadingContent>
                 </Button>
@@ -149,37 +151,40 @@ export function Subscription() {
             </CardTitle>
             <CardDescription className="flex items-center gap-2">
               Manage your subscription
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span tabIndex={0} className="focus:outline-none">
-                    <RiInformationLine className="size-4" />
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs bg-background p-0">
-                  <div className={`
-                    space-y-4 bg-linear-to-b from-primary/5 to-card p-4 text-sm
-                  `}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className={`
-                        inline-flex size-6 items-center justify-center
-                        rounded-full bg-primary/20 text-primary
-                      `}
-                      >
-                        <RiHeart3Fill className="size-4" />
-                      </span>
-                      <span className="font-semibold text-primary">Conar is indie & user-supported</span>
+              <TooltipProvider delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span tabIndex={0} className="focus:outline-none">
+                      <RiInformationLine className="size-4" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs bg-background p-0">
+                    <div className={`
+                      space-y-4 bg-linear-to-b from-primary/5 to-card p-4
+                      text-sm
+                    `}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`
+                          inline-flex size-6 items-center justify-center
+                          rounded-full bg-primary/20 text-primary
+                        `}
+                        >
+                          <RiHeart3Fill className="size-4" />
+                        </span>
+                        <span className="font-semibold text-primary">Conar is indie & user-supported</span>
+                      </div>
+                      <p className="text-balance text-foreground">
+                        Our small team works every day to improve Conar without sponsors or VCs, and on our own terms.
+                      </p>
+                      <p className="text-balance text-muted-foreground">
+                        Your subscription directly supports our work and future development.
+                      </p>
+                      <p className="font-medium text-balance text-foreground">Thank you for helping us stay independent.</p>
                     </div>
-                    <p className="text-balance text-foreground">
-                      Our small team works every day to improve Conar without sponsors or VCs, and on our own terms.
-                    </p>
-                    <p className="text-balance text-muted-foreground">
-                      Your subscription directly supports our work and future development.
-                    </p>
-                    <p className="font-medium text-balance text-foreground">Thank you for helping us stay independent.</p>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </CardDescription>
           </div>
           {!subscription && !isPending && (

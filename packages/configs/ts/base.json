@@ -13,7 +13,6 @@
     "skipLibCheck": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noUncheckedIndexedAccess": true,
-    "types": ["@types/bun"]
+    "noUncheckedIndexedAccess": true
   }
 }

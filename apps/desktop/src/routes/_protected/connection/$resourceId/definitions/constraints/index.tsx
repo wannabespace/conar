@@ -1,4 +1,5 @@
 import type { constraintsType } from '~/entities/connection/queries'
+import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
 import { CardContent, CardMotion, CardTitle } from '@conar/ui/components/card'
@@ -10,7 +11,7 @@ import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { resourceConstraintsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
+import { resourceConstraintsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
@@ -27,12 +28,20 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/definit
 
 type ConstraintType = typeof constraintsType.infer['type']
 
-const filterOptions: { label: string, value: ConstraintType | 'all' }[] = [
-  { label: 'All Types', value: 'all' },
+const filterOptions: { label: string, value: ConstraintType }[] = [
   { label: 'Primary Key', value: 'primaryKey' },
   { label: 'Foreign Key', value: 'foreignKey' },
   { label: 'Unique', value: 'unique' },
 ]
+
+function formatType(type: ConstraintType) {
+  switch (type) {
+    case 'primaryKey': return 'Primary Key'
+    case 'foreignKey': return 'Foreign Key'
+    default:
+      return uppercaseFirst(type)
+  }
+}
 
 function getIcon(type: ConstraintType) {
   switch (type) {
@@ -48,14 +57,14 @@ function getIcon(type: ConstraintType) {
 
 function DatabaseConstraintsPage() {
   const { connectionResource } = Route.useRouteContext()
-  const { data: constraints, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceConstraintsQueryOptions({ connectionResource }))
+  const { data: constraints, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceConstraintsQuery({ connectionResource }))
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data } = useQuery(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem }))
+  const { data } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
-  const [filterType, setFilterType] = useState<typeof filterOptions[number]['value']>('all')
+  const [filterType, setFilterType] = useState<ConstraintType | 'all'>('all')
 
   if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
     setSelectedSchema(schemas[0])
@@ -88,20 +97,12 @@ function DatabaseConstraintsPage() {
           onChange={e => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
-        <Select
-          value={filterType}
-          onValueChange={(v) => {
-            if (v) {
-              setFilterType(v)
-            }
-          }}
-        >
+        <Select value={filterType} onValueChange={v => setFilterType(v as ConstraintType | 'all')}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter Type">
-              {value => value ? filterOptions.find(option => option.value === value)?.label : 'Filter Type'}
-            </SelectValue>
+            <SelectValue placeholder="Filter Type" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
             {filterOptions.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
@@ -110,14 +111,7 @@ function DatabaseConstraintsPage() {
           </SelectContent>
         </Select>
         {schemas.length > 1 && (
-          <Select
-            value={selectedSchema}
-            onValueChange={(v) => {
-              if (v) {
-                setSelectedSchema(v)
-              }
-            }}
-          >
+          <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
             <SelectTrigger className="max-w-56 min-w-[180px]">
               <div className="flex flex-1 items-center gap-2 overflow-hidden">
                 <span className="shrink-0 text-muted-foreground">schema</span>
@@ -153,7 +147,7 @@ function DatabaseConstraintsPage() {
                     {getIcon(item.type)}
                     <HighlightText text={item.name} match={search} />
                     <Badge variant="secondary">
-                      {filterOptions.find(option => option.value === item.type)?.label}
+                      {formatType(item.type)}
                     </Badge>
                   </CardTitle>
                   <div className={`

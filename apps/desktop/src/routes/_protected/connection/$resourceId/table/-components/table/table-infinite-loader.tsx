@@ -6,7 +6,7 @@ import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiLoaderLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
-import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
+import { resourceRowsQuery } from '~/entities/connection/queries'
 import { TableEmpty } from './table-empty'
 
 export function TableInfiniteLoader({
@@ -23,7 +23,7 @@ export function TableInfiniteLoader({
   orderBy: Record<string, 'ASC' | 'DESC'>
 }) {
   const { fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery(
-    resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }),
+    resourceRowsQuery({ connectionResource, table, schema, query: { filters, orderBy } }),
   )
   const loaderRef = useRef<HTMLDivElement>(null)
   const isVisible = useIsInViewport(loaderRef)

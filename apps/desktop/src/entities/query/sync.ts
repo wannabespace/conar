@@ -25,7 +25,7 @@ export const queriesCollection = createCollection(drizzleCollectionOptions({
         write({ type: 'delete', value: collection.get(item.value)! })
       }
       else {
-        const { type, value: { connectionResourceId, connectionId: _, ...value } } = item
+        const { type, value: { connectionResourceId, ...value } } = item
 
         if (connectionResourceId) {
           write({

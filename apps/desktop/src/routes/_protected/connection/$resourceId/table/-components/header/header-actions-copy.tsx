@@ -17,6 +17,7 @@ import {
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
@@ -36,7 +37,7 @@ import { Monaco } from '~/components/monaco'
 import { SidebarButton } from '~/components/sidebar-link'
 import * as generators from '~/entities/connection/generators'
 import { GENERATOR_COMPATIBILITY } from '~/entities/connection/generators/compatibility'
-import { resourceEnumsQueryOptions, resourceIndexesQueryOptions } from '~/entities/connection/queries'
+import { resourceEnumsQuery, resourceIndexesQuery } from '~/entities/connection/queries'
 import { Route } from '../..'
 import { useTableColumns } from '../../-queries/use-columns-query'
 import { usePageStoreContext } from '../../-store'
@@ -150,8 +151,8 @@ export function HeaderActionsCopy({ table, schema }: { table: string, schema: st
   const store = usePageStoreContext()
   const filters = useSubscription(store, { selector: state => state.filters })
   const columns = useTableColumns({ connectionResource, table, schema })
-  const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
-  const { data: indexes } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
+  const { data: enums } = useQuery(resourceEnumsQuery({ connectionResource }))
+  const { data: indexes } = useQuery(resourceIndexesQuery({ connectionResource }))
   const [activeCategory, setActiveCategory] = useState<'schema' | 'query'>('schema')
   const [activeFormatType, setActiveFormatType] = useState<GeneratorFormat>('sql')
 
@@ -175,16 +176,18 @@ export function HeaderActionsCopy({ table, schema }: { table: string, schema: st
 
   return (
     <Dialog>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <DialogTrigger render={<Button variant="secondary" size="icon" />}>
-            <RiCodeSSlashLine />
-          </DialogTrigger>
-        </TooltipTrigger>
-        <TooltipContent side="top">
-          Copy schema / query
-        </TooltipContent>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger render={<Button variant="outline" size="icon" />}>
+              <RiCodeSSlashLine />
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            Copy schema / query
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <DialogContent className={cn(
         `
           flex h-[600px] w-[60vw] flex-row gap-0 overflow-hidden p-0

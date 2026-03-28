@@ -11,6 +11,13 @@ import { mssqlColdDialect, mssqlDialect } from './mssql'
 import { mysqlColdDialect, mysqlDialect } from './mysql'
 import { postgresColdDialect, postgresDialect } from './postgres'
 
+const coldDialects = {
+  postgres: postgresColdDialect,
+  mysql: mysqlColdDialect,
+  clickhouse: clickhouseColdDialect,
+  mssql: mssqlColdDialect,
+} satisfies Record<ConnectionType, () => unknown>
+
 export interface DialectOptions {
   connectionString: string
   log?: (params: {
@@ -35,9 +42,6 @@ export const dialects = {
   mssql: memoize((options: DialectOptions) => new Kysely<MssqlDatabase>({ dialect: mssqlDialect(options) })),
 } satisfies Record<ConnectionType, (options: DialectOptions) => unknown>
 
-export const coldDialects = {
-  postgres: memoize(() => new Kysely({ dialect: postgresColdDialect() })),
-  mysql: memoize(() => new Kysely({ dialect: mysqlColdDialect() })),
-  clickhouse: memoize(() => new Kysely({ dialect: clickhouseColdDialect() })),
-  mssql: memoize(() => new Kysely({ dialect: mssqlColdDialect() })),
-} satisfies Record<ConnectionType, () => Kysely<Record<string, Record<string, unknown>>>>
+export function getColdDialect(dialect: ConnectionType) {
+  return new Kysely<Record<string, Record<string, unknown>>>({ dialect: coldDialects[dialect]() })
+}

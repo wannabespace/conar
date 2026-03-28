@@ -16,7 +16,7 @@ import { RiInformationLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { renameColumnQuery, resourceRowsQueryInfiniteOptions, resourceTableColumnsQueryOptions } from '~/entities/connection/queries'
+import { renameColumnQuery, resourceRowsQuery, resourceTableColumnsQuery } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { queryClient } from '~/main'
 import { Route } from '../..'
@@ -58,9 +58,9 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
       toast.success(`Column "${column}" successfully renamed to "${newColumnName}"`)
       setOpen(false)
 
-      await queryClient.invalidateQueries(resourceTableColumnsQueryOptions({ connectionResource, table, schema }))
+      await queryClient.invalidateQueries(resourceTableColumnsQuery({ connectionResource, table, schema }))
       await queryClient.invalidateQueries({
-        queryKey: resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters: [], orderBy: {} } }).queryKey.slice(0, -1),
+        queryKey: resourceRowsQuery({ connectionResource, table, schema, query: { filters: [], orderBy: {} } }).queryKey.slice(0, -1),
       })
     },
     onError: (error) => {

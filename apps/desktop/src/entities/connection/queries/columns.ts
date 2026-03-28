@@ -14,7 +14,7 @@ export const columnType = type({
   'label': 'string',
   'enum?': 'string',
   'isArray?': 'boolean',
-  'editable?': 'boolean | 1 | 0',
+  'editable?': 'boolean',
   'nullable': 'boolean | 1 | 0',
   'maxLength?': 'number | null',
   'precision?': 'number | null',
@@ -63,8 +63,8 @@ function getPgColumnType(type: string, udtName: string) {
   return type
 }
 
-const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, schema: string }) => {
-  return createQuery({
+export const resourceTableColumnsQuery = memoize(({ connectionResource, table, schema }: { connectionResource: typeof connectionsResources.$inferSelect, table: string, schema: string }) => {
+  const query = createQuery({
     type: columnType.array(),
     query: {
       postgres: async (db) => {
@@ -205,25 +205,16 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
 
         return query.map(row => ({
           ...row,
+          label: row.type,
           enum: row.type.includes('Enum') ? row.id : undefined,
-          label: getClickhouseColumnType(row.type),
+          type: getClickhouseColumnType(row.type),
         }))
       },
     },
   })
-})
 
-export function resourceTableColumnsQueryOptions({
-  connectionResource,
-  table,
-  schema,
-}: {
-  connectionResource: typeof connectionsResources.$inferSelect
-  table: string
-  schema: string
-}) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'columns', schema, table],
-    queryFn: () => resourceTableColumnsQuery({ table, schema }).run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: () => query.run(connectionResourceToQueryParams(connectionResource)),
   })
-}
+})

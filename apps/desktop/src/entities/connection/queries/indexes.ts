@@ -1,4 +1,5 @@
 import type { connectionsResources } from '~/drizzle/schema'
+import { memoize } from '@conar/shared/utils/helpers'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -21,7 +22,7 @@ export const indexesType = type({
   customExpression: custom_expression,
 }))
 
-export const resourceIndexesQuery = createQuery({
+const query = createQuery({
   type: indexesType.array(),
   query: {
     postgres: async (db) => {
@@ -123,9 +124,9 @@ export const resourceIndexesQuery = createQuery({
   },
 })
 
-export function resourceIndexesQueryOptions({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) {
+export const resourceIndexesQuery = memoize(({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) => {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'indexes'],
-    queryFn: () => resourceIndexesQuery.run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: () => query.run(connectionResourceToQueryParams(connectionResource)),
   })
-}
+})

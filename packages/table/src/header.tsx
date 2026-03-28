@@ -67,7 +67,7 @@ export function TableHeader({
       {...props}
     >
       {before}
-      <div className="flex h-full w-fit min-w-full items-center bg-secondary/50">
+      <div className="flex h-full w-fit min-w-full items-center bg-card">
         <div
           aria-hidden="true"
           className="

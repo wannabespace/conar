@@ -1,13 +1,24 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { decrypt, encrypt } from '@conar/shared/utils/encryption'
 import { tryParseJson } from '@conar/shared/utils/helpers'
-import { isNetworkError } from '@conar/shared/utils/network-error'
 import { app, ipcMain } from 'electron'
 import { autoUpdater, sendToast } from '..'
 import { getClient as getClickhouseClient } from '../connections/clickhouse'
 import { getPool as getMssqlPool } from '../connections/mssql'
 import { getPool as getMysqlPool } from '../connections/mysql'
 import { getPool as getPgPool } from '../connections/pg'
+
+function isConnectionError(error: unknown) {
+  if (error instanceof Error) {
+    if (
+      error.message.includes('ECONNRESET')
+      || error.message.toLowerCase().includes('connection lost')
+    ) {
+      return true
+    }
+  }
+  return false
+}
 
 const MAX_RECONNECTION_ATTEMPTS = 5
 const RECONNECTION_DELAY = 3000
@@ -41,7 +52,7 @@ async function retryIfConnectionError<T>(func: () => Promise<T>, {
     return result
   }
   catch (error) {
-    if (isNetworkError(error)) {
+    if (isConnectionError(error)) {
       if (attempt < MAX_RECONNECTION_ATTEMPTS) {
         await new Promise(resolve => setTimeout(resolve, RECONNECTION_DELAY))
         onRetry?.({ attempt: attempt + 1 })

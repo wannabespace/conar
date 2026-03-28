@@ -1,27 +1,21 @@
 import type * as React from 'react'
-import { mergeProps } from '@base-ui/react/merge-props'
-import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@conar/ui/lib/utils'
+import * as LabelPrimitive from '@radix-ui/react-label'
 
-export function Label({
+function Label({
   className,
-  render,
   ...props
-}: useRender.ComponentProps<'label'>): React.ReactElement {
-  const defaultProps = {
-    'className': cn(
-      `
-        inline-flex items-center gap-2 text-base/4.5 font-medium text-foreground
-        sm:text-sm/4
-      `,
-      className,
-    ),
-    'data-slot': 'label',
-  }
-
-  return useRender({
-    defaultTagName: 'label',
-    props: mergeProps<'label'>(defaultProps, props),
-    render,
-  })
+}: React.ComponentProps<typeof LabelPrimitive.Root>) {
+  return (
+    <LabelPrimitive.Root
+      data-slot="label"
+      className={cn(
+        'flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
+        className,
+      )}
+      {...props}
+    />
+  )
 }
+
+export { Label }

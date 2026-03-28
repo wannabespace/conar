@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
-import { deleteRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
+import { deleteRowsQuery, resourceRowsQuery, resourceTableTotalQuery } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { queryClient } from '~/main'
 import { Route } from '../..'
@@ -26,8 +26,8 @@ export function HeaderActionsDelete({ table, schema }: { table: string, schema: 
     },
     onSuccess: () => {
       toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)
-      queryClient.invalidateQueries(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters: store.get().filters, orderBy: store.get().orderBy } }))
-      queryClient.invalidateQueries(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters: store.get().filters, exact: store.get().exact } }))
+      queryClient.invalidateQueries(resourceRowsQuery({ connectionResource, table, schema, query: { filters: store.get().filters, orderBy: store.get().orderBy } }))
+      queryClient.invalidateQueries(resourceTableTotalQuery({ connectionResource, table, schema, query: { filters: store.get().filters, exact: store.get().exact } }))
       store.set(state => ({
         ...state,
         selected: [],
@@ -79,9 +79,9 @@ export function HeaderActionsDelete({ table, schema }: { table: string, schema: 
       <AnimatePresence>
         {selected.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: 'auto' }}
-            exit={{ opacity: 0, width: 0 }}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
             transition={{ duration: 0.1 }}
           >
             <Button variant="destructive" onClick={() => setIsOpened(true)}>

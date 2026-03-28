@@ -1,6 +1,5 @@
 import { title } from '@conar/shared/utils/title'
 import { Toaster } from '@conar/ui/components/sonner'
-import { TooltipProvider } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { ThemeObserver } from '@conar/ui/theme-observer'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -45,36 +44,34 @@ function RootDocument() {
     <>
       <HeadContent />
       <EventsProvider>
-        <TooltipProvider>
-          <ThemeObserver />
-          <QueryClientProvider client={queryClient}>
-            <AuthObserver />
-            <div className={cn(
-              'flex h-screen flex-col',
-              // For simple page layouts, we want outlet to be the full height of the screen
-              '*:last:h-full *:last:min-h-[inherit] *:last:flex-1',
-            )}
-            >
-              <GlobalBanner />
-              <Outlet />
-            </div>
-            {import.meta.env.DEV && (
-              <TanStackDevtools
-                plugins={[
-                  {
-                    name: 'TanStack Query',
-                    render: <ReactQueryDevtoolsPanel />,
-                  },
-                  {
-                    name: 'TanStack Router',
-                    render: <TanStackRouterDevtoolsPanel router={router} />,
-                  },
-                ]}
-              />
-            )}
-          </QueryClientProvider>
-          <Toaster />
-        </TooltipProvider>
+        <ThemeObserver />
+        <QueryClientProvider client={queryClient}>
+          <AuthObserver />
+          <div className={cn(
+            'flex h-screen flex-col',
+            // For simple page layouts, we want outlet to be the full height of the screen
+            '*:last:h-full *:last:min-h-[inherit] *:last:flex-1',
+          )}
+          >
+            <GlobalBanner />
+            <Outlet />
+          </div>
+          {import.meta.env.DEV && (
+            <TanStackDevtools
+              plugins={[
+                {
+                  name: 'TanStack Query',
+                  render: <ReactQueryDevtoolsPanel />,
+                },
+                {
+                  name: 'TanStack Router',
+                  render: <TanStackRouterDevtoolsPanel router={router} />,
+                },
+              ]}
+            />
+          )}
+        </QueryClientProvider>
+        <Toaster />
       </EventsProvider>
     </>
   )

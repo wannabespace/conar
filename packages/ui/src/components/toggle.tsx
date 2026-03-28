@@ -1,23 +1,23 @@
 import type { VariantProps } from 'class-variance-authority'
-import { Toggle as TogglePrimitive } from '@base-ui/react/toggle'
+import type * as React from 'react'
 import { cn } from '@conar/ui/lib/utils'
-import * as React from 'react'
+import * as TogglePrimitive from '@radix-ui/react-toggle'
 import { toggleVariants } from './toggle.variants'
 
-export function Toggle<T extends string>({
+function Toggle({
   className,
   variant,
   size,
   ...props
-}: TogglePrimitive.Props<T>
-  & VariantProps<typeof toggleVariants>): React.ReactElement {
+}: React.ComponentProps<typeof TogglePrimitive.Root>
+  & VariantProps<typeof toggleVariants>) {
   return (
-    <TogglePrimitive
-      className={cn(toggleVariants({ className, size, variant }))}
+    <TogglePrimitive.Root
       data-slot="toggle"
+      className={cn(toggleVariants({ variant, size, className }))}
       {...props}
     />
   )
 }
 
-export { TogglePrimitive }
+export { Toggle }

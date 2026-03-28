@@ -2,10 +2,12 @@ import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { createCollection } from '@tanstack/react-db'
 import { drizzleCollectionOptions } from 'tanstack-db-pglite'
+import { v7 } from 'uuid'
 import { db, waitForMigrations } from '~/drizzle'
 import { connections, connectionsResources } from '~/drizzle/schema'
 import { bearerToken } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
+import { connectionResourcesQuery } from './queries'
 
 function prepareConnectionStringToCloud(connectionString: string, syncType: SyncType) {
   const url = new SafeURL(connectionString.trim())
@@ -174,3 +176,31 @@ export const connectionsResourcesCollection = createCollection(drizzleCollection
     await orpc.connectionsResources.remove.call(mutations.map(m => ({ id: m.key })))
   },
 }))
+
+export async function syncConnectionResources(connection: typeof connections.$inferSelect) {
+  const fetchedResources = await connectionResourcesQuery.run({
+    connectionString: connection.connectionString,
+    type: connection.type,
+  })
+  await connectionsResourcesCollection.utils.waitForSync()
+  const existingResources = connectionsResourcesCollection.toArray.filter(r => r.connectionId === connection.id)
+  const existingResourceNames = existingResources.map(r => r.name)
+
+  for (const fetchedResource of fetchedResources) {
+    if (!existingResourceNames.includes(fetchedResource)) {
+      connectionsResourcesCollection.insert({
+        id: v7(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        connectionId: connection.id,
+        name: fetchedResource,
+      })
+    }
+  }
+
+  for (const existingResource of existingResources) {
+    if (!fetchedResources.includes(existingResource.name)) {
+      connectionsResourcesCollection.delete(existingResource.id)
+    }
+  }
+}

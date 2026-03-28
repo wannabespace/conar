@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react'
+import type { ReactNode } from 'react'
 import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Switch } from '@conar/ui/components/switch'
@@ -38,7 +38,7 @@ function PositionSelector<T extends string>({
   onChange,
 }: {
   label: string
-  value: T
+  value: string
   options: { value: T, label: string }[]
   onChange: (value: T) => void
 }) {
@@ -46,12 +46,13 @@ function PositionSelector<T extends string>({
     <div className="flex items-center justify-between">
       <Label className="text-sm font-medium text-foreground">{label}</Label>
       <ToggleGroup
+        type="single"
         variant="outline"
-        size="sm"
-        value={[value]}
+        size="xs"
+        value={value}
         onValueChange={(newValue) => {
-          if (newValue[0]) {
-            onChange(newValue[0])
+          if (newValue) {
+            onChange(newValue as T)
           }
         }}
       >
@@ -69,7 +70,7 @@ function PositionSelector<T extends string>({
   )
 }
 
-export function RunnerSettings({ children }: { children: ReactElement }) {
+export function RunnerSettings({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
   const { resourceId } = Route.useParams()
 
@@ -88,8 +89,13 @@ export function RunnerSettings({ children }: { children: ReactElement }) {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger render={children} />
-      <PopoverContent align="start" className="w-64">
+      <PopoverTrigger asChild>
+        {children}
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        onOpenAutoFocus={e => e.preventDefault()}
+      >
         <div className="space-y-1">
           <ToggleRow
             label="Chat Panel"

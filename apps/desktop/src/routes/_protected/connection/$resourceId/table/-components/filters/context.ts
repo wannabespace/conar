@@ -5,7 +5,6 @@ import { use } from 'react'
 export interface Column {
   id: string
   type: string
-  label: string
 }
 
 export const FilterInternalContext = createContext<{

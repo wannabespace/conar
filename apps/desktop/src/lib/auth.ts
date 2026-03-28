@@ -7,7 +7,7 @@ import { clearDb } from '~/drizzle'
 import { identifyUser } from './events-utils'
 import { apiUrl } from './utils'
 
-const BEARER_TOKEN_KEY = 'tamery.bearer_token'
+const BEARER_TOKEN_KEY = 'conar.bearer_token'
 
 export const bearerToken = createLocalStorageValue({
   key: BEARER_TOKEN_KEY,

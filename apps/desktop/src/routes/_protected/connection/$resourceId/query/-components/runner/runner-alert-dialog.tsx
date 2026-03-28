@@ -1,6 +1,6 @@
 import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
-import { KbdShiftCtrlEnter } from '@conar/ui/components/custom/shortcuts'
+import { ShiftCtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { RiAlertLine } from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useImperativeHandle, useRef, useState } from 'react'
@@ -71,7 +71,7 @@ export function RunnerAlertDialog({
           <AlertDialogClose render={<Button variant="destructive" />} onClick={onConfirm}>
             <span className="flex items-center gap-2">
               Run Anyway
-              <KbdShiftCtrlEnter userAgent={navigator.userAgent} />
+              <ShiftCtrlEnter userAgent={navigator.userAgent} />
             </span>
           </AlertDialogClose>
         </AlertDialogFooter>

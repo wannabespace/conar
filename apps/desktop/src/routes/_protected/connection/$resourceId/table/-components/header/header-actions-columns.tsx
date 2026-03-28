@@ -2,7 +2,7 @@ import { Button } from '@conar/ui/components/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@conar/ui/components/command'
 import { Indicator } from '@conar/ui/components/custom/indicator'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiCheckLine, RiDatabase2Line, RiLayoutColumnLine } from '@remixicon/react'
 import { useSubscription } from 'seitu/react'
 import { Route } from '../..'
@@ -17,32 +17,26 @@ export function HeaderActionsColumns({ table, schema }: { table: string, schema:
 
   return (
     <Popover>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <PopoverTrigger render={(
-            <Button
-              size="icon"
-              variant="outline"
-              className="overflow-visible"
-            />
-          )}
-          >
-            <RiLayoutColumnLine />
-            {hiddenColumns.length > 0 && <Indicator />}
-          </PopoverTrigger>
-        </TooltipTrigger>
-        <TooltipContent side="top">
-          Columns visibility
-        </TooltipContent>
-      </Tooltip>
-      <PopoverContent
-        className="
-          w-2xs p-0
-          **:data-[slot=popover-viewport]:p-0
-        "
-        side="bottom"
-        align="end"
-      >
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button
+                size="icon"
+                variant="outline"
+                className="overflow-visible"
+              >
+                <RiLayoutColumnLine />
+                {hiddenColumns.length > 0 && <Indicator />}
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            Columns visibility
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <PopoverContent className="w-2xs p-0" side="bottom" align="end">
         <Command>
           <CommandInput placeholder="Search columns..." />
           <CommandList className="h-fit max-h-[70vh]">

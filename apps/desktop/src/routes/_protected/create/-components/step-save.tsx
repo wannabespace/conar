@@ -1,12 +1,12 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { COLOR_OPTIONS, LABEL_OPTIONS } from '@conar/shared/constants'
 import { Button } from '@conar/ui/components/button'
+import { ButtonGroup } from '@conar/ui/components/button-group'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { Checkbox } from '@conar/ui/components/checkbox'
-import { Group } from '@conar/ui/components/group'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiLoopLeftLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
@@ -55,21 +55,23 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
                 value={name}
                 onChange={e => setName(e.target.value)}
               />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={onRandomName}
-                  >
-                    <RiLoopLeftLine />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent sideOffset={8}>
-                  Generate a random connection name
-                </TooltipContent>
-              </Tooltip>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={onRandomName}
+                    >
+                      <RiLoopLeftLine />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent sideOffset={8}>
+                    Generate a random connection name
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
 
@@ -86,7 +88,7 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
                 value={label ?? ''}
                 onChange={e => setLabel(e.target.value)}
               />
-              <Group>
+              <ButtonGroup>
                 {labels.map(option => (
                   <Button
                     key={option}
@@ -98,7 +100,7 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
                     {option}
                   </Button>
                 ))}
-              </Group>
+              </ButtonGroup>
             </div>
           </div>
 

@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
 import { getOS } from '@conar/shared/utils/os'
+import { cn } from '@conar/ui/lib/utils'
 import { RiArrowUpLine, RiCommandLine, RiCornerDownLeftLine } from '@remixicon/react'
-import { Kbd } from '../kbd'
 
 export function Ctrl({ userAgent }: { userAgent: string }) {
   const os = getOS(userAgent)
@@ -9,44 +9,47 @@ export function Ctrl({ userAgent }: { userAgent: string }) {
   return os.type === 'macos' ? <RiCommandLine className="size-3" /> : 'Ctrl'
 }
 
-export function EnterIcon() {
+export function Enter() {
   return <RiCornerDownLeftLine className="size-3" />
 }
 
-export function KbdCtrlEnter({ userAgent, ...props }: ComponentProps<typeof Kbd> & { userAgent: string }) {
+export function CtrlEnter({ userAgent, className, ...props }: ComponentProps<'kbd'> & { userAgent: string }) {
   return (
-    <Kbd {...props}>
+    <kbd
+      className={cn('flex items-center text-xs', className)}
+      {...props}
+    >
       <Ctrl userAgent={userAgent} />
-      <EnterIcon />
-    </Kbd>
+      <Enter />
+    </kbd>
   )
 }
 
-export function KbdCtrlLetter({ userAgent, letter, ...props }: ComponentProps<typeof Kbd> & { userAgent: string, letter: string }) {
+export function CtrlLetter({ userAgent, letter, className, ...props }: ComponentProps<'kbd'> & { userAgent: string, letter: string }) {
   return (
-    <Kbd {...props}>
+    <kbd className={cn('flex items-center text-xs', className)} {...props}>
       <Ctrl userAgent={userAgent} />
-      <span>{letter}</span>
-    </Kbd>
+      {letter}
+    </kbd>
   )
 }
 
-export function KbdShiftCtrlEnter({ userAgent, ...props }: ComponentProps<typeof Kbd> & { userAgent: string }) {
+export function ShiftCtrlEnter({ userAgent, className, ...props }: ComponentProps<'kbd'> & { userAgent: string }) {
   return (
-    <Kbd {...props}>
+    <kbd className={cn('flex items-center text-xs', className)} {...props}>
       <Ctrl userAgent={userAgent} />
       <RiArrowUpLine className="size-3" />
       <RiCornerDownLeftLine className="size-3" />
-    </Kbd>
+    </kbd>
   )
 }
 
-export function KbdShiftCtrlLetter({ userAgent, letter, ...props }: ComponentProps<typeof Kbd> & { userAgent: string, letter: string }) {
+export function ShiftCtrlLetter({ userAgent, letter, className, ...props }: ComponentProps<'kbd'> & { userAgent: string, letter: string }) {
   return (
-    <Kbd {...props}>
+    <kbd className={cn('flex items-center text-xs', className)} {...props}>
       <Ctrl userAgent={userAgent} />
       <RiArrowUpLine className="size-3" />
       {letter}
-    </Kbd>
+    </kbd>
   )
 }

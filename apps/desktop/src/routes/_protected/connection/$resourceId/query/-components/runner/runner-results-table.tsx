@@ -117,7 +117,7 @@ export function RunnerResultsTable({
             filename="runner_results"
             trigger={({ isExporting }) => (
               <Button
-                variant="secondary"
+                variant="outline"
                 size="icon-sm"
                 disabled={isExporting || filteredData.length === 0}
               >

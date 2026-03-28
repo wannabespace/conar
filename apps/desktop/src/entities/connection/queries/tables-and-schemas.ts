@@ -1,18 +1,24 @@
 import type { connectionsResources } from '~/drizzle/schema'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { memoize } from '@conar/shared/utils/helpers'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
-import { sql } from 'kysely'
 import { connectionResourceToQueryParams, createQuery } from '../query'
+
+export const connectionSystemNames = {
+  [ConnectionType.Postgres]: 'postgres',
+  [ConnectionType.MySQL]: 'mysql',
+  [ConnectionType.MSSQL]: 'master',
+  [ConnectionType.ClickHouse]: 'default',
+} satisfies Record<ConnectionType, string>
 
 export const tablesAndSchemasType = type({
   schema: 'string',
   table: 'string',
-  type: '\'BASE TABLE\' | \'VIEW\'',
 })
 
 export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResource, showSystem }: { silent: boolean, connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) => {
-  return createQuery({
+  const query = createQuery({
     type: tablesAndSchemasType.array(),
     silent,
     query: {
@@ -21,12 +27,11 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
         .select([
           'table_schema as schema',
           'table_name as table',
-          'table_type as type',
         ])
         .where(({ eb, and, not }) => and([
           not(eb('table_schema', 'like', 'pg_toast%')),
           not(eb('table_schema', 'like', 'pg_temp%')),
-          eb('table_type', 'in', ['BASE TABLE', 'VIEW']),
+          eb('table_type', '=', 'BASE TABLE'),
         ]))
         .$if(!showSystem, qb => qb.where(({ eb, and }) => and([
           eb('table_schema', 'not in', ['pg_catalog', 'information_schema']),
@@ -37,10 +42,8 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
         .select([
           'TABLE_SCHEMA as schema',
           'TABLE_NAME as table',
-          'TABLE_TYPE as type',
         ])
-        .where('TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
-        .$castTo<{ schema: string, table: string, type: 'BASE TABLE' | 'VIEW' }>()
+        .where('TABLE_TYPE', '=', 'BASE TABLE')
         .$if(!showSystem, qb => qb.where(eb => eb('TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])))
         .execute(),
       mssql: db => db
@@ -48,34 +51,28 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
         .select([
           'TABLE_SCHEMA as schema',
           'TABLE_NAME as table',
-          'TABLE_TYPE as type',
         ])
-        .where('TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
+        .where('TABLE_TYPE', '=', 'BASE TABLE')
         .execute(),
       clickhouse: db => db
         .selectFrom('information_schema.tables')
         .select([
           'table_schema as schema',
           'table_name as table',
-          'table_type as type',
         ])
-        // Some clickhouse versions throws an error when not using toString
-        .where(sql<boolean>`toString(table_type) in ('BASE TABLE', 'VIEW', '1', '2')`)
-        .$castTo<{ schema: string, table: string, type: 'BASE TABLE' | 'VIEW' }>()
-        .where('table_schema', '=', connectionResource.name)
+        .where('table_type', '=', 'BASE TABLE')
+        .where('table_schema', '=', connectionResource.name || connectionSystemNames.clickhouse)
         .execute(),
     },
   })
-})
 
-export function resourceTablesAndSchemasQueryOptions({ silent, connectionResource, showSystem }: { silent: boolean, connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'tables-and-schemas', showSystem],
     queryFn: async () => {
-      const results = await resourceTablesAndSchemasQuery({ silent, connectionResource, showSystem }).run(connectionResourceToQueryParams(connectionResource))
+      const results = await query.run(connectionResourceToQueryParams(connectionResource))
       const schemas = Object.entries(Object.groupBy(results, table => table.schema)).map(([schema, tables]) => ({
         name: schema,
-        tables: tables!.map(table => ({ name: table.table, isView: table.type === 'VIEW' })),
+        tables: tables!.map(table => table.table),
       }))
 
       return {
@@ -91,4 +88,4 @@ export function resourceTablesAndSchemasQueryOptions({ silent, connectionResourc
       }
     },
   })
-}
+})

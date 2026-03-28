@@ -18,12 +18,7 @@ function MainLayout() {
   const blurTranslateY = useTransform(() => `${Math.min((NAVBAR_HEIGHT_BASE - scrollY.get()) * -1, 0)}px`)
 
   return (
-    <motion.div
-      className="
-        relative isolate container mx-auto flex min-h-svh flex-col px-4
-      "
-      style={{ '--navbar-height': navbarHeightPx }}
-    >
+    <motion.div className="container mx-auto px-4" style={{ '--navbar-height': navbarHeightPx }}>
       <div className={cn(`
         sticky top-0 z-50 h-(--navbar-height) w-full bg-gray-100
         dark:bg-neutral-950

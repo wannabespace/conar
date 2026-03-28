@@ -6,7 +6,7 @@ import { createLocalStorageValue, createMediaQuery } from 'seitu/web'
 export type ResolvedTheme = 'dark' | 'light'
 export type Theme = ResolvedTheme | 'system'
 
-export const THEME_STORAGE_KEY = 'tamery.theme'
+export const THEME_STORAGE_KEY = 'conar.theme'
 
 export const themeStore = createLocalStorageValue({
   key: THEME_STORAGE_KEY,
@@ -16,16 +16,12 @@ export const themeStore = createLocalStorageValue({
 
 const mediaQuery = createMediaQuery({ query: '(prefers-color-scheme: dark)' })
 
-export const resolvedThemeComputed = createComputed([themeStore, mediaQuery], ([theme, isDark]) => {
+const resolvedThemeComputed = createComputed([themeStore, mediaQuery], ([theme, isDark]) => {
   if (theme === 'system') {
     return isDark ? 'dark' : 'light'
   }
   return theme
 })
-
-export function useTheme() {
-  return useSubscription(themeStore)
-}
 
 export function useResolvedTheme() {
   return useSubscription(resolvedThemeComputed)

@@ -1,7 +1,7 @@
 {
   "name": "conar",
   "type": "module",
-  "version": "0.28.1",
+  "version": "0.28.0",
   "productName": "Conar",
   "private": true,
   "description": "AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse.",
@@ -38,7 +38,6 @@
   },
   "devDependencies": {
     "@ai-sdk/react": "catalog:",
-    "@base-ui/react": "catalog:",
     "@conar/api": "workspace:*",
     "@conar/configs": "workspace:*",
     "@conar/connection": "workspace:*",

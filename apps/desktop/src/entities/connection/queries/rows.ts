@@ -47,7 +47,7 @@ export interface RowsQueryProps {
   }
 }
 
-export const resourceRowsQuery = memoize(({
+export function rowsQuery({
   limit = DEFAULT_PAGE_LIMIT,
   select,
   offset,
@@ -58,7 +58,7 @@ export const resourceRowsQuery = memoize(({
     filters,
     filtersConcatOperator,
   },
-}: RowsQueryProps & { offset: number }) => {
+}: RowsQueryProps & { offset: number }) {
   return createQuery({
     type: rowType.array(),
     query: {
@@ -149,9 +149,9 @@ export const resourceRowsQuery = memoize(({
       },
     },
   })
-})
+}
 
-export const resourceRowsQueryInfiniteOptions = memoize(({
+export const resourceRowsQuery = memoize(({
   connectionResource,
   schema,
   table,
@@ -180,7 +180,7 @@ export const resourceRowsQueryInfiniteOptions = memoize(({
       },
     ],
     queryFn: async ({ pageParam: offset }) => {
-      const result = await resourceRowsQuery({
+      const result = await rowsQuery({
         offset,
         table,
         schema,

@@ -10,9 +10,8 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from '@conar/ui/components/context-menu'
-import { KbdCtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
@@ -22,7 +21,7 @@ import { useRouter, useSearch } from '@tanstack/react-router'
 import { Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
+import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { addTab, getConnectionResourceStore, removeTab, updateTabs } from '~/entities/connection/store'
 import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
 import { Route } from '..'
@@ -32,34 +31,36 @@ const os = getOS(navigator.userAgent)
 
 function CloseButton({ onClick }: { onClick: ComponentProps<'svg'>['onClick'] }) {
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <RiCloseLine
-          className={`
-            size-3.5 opacity-0
-            group-hover:opacity-30
-            hover:opacity-100
-          `}
-          onClick={onClick}
-        />
-      </TooltipTrigger>
-      <TooltipContent side="bottom" sideOffset={12}>
-        Close tab (
-        {os.type === 'macos' ? '⌘' : 'Ctrl'}
-        {' '}
-        + W)
-      </TooltipContent>
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <RiCloseLine
+            className={`
+              size-3.5 opacity-0
+              group-hover:opacity-30
+              hover:opacity-100
+            `}
+            onClick={onClick}
+          />
+        </TooltipTrigger>
+        <TooltipContent side="bottom" sideOffset={12}>
+          Close tab (
+          {os.type === 'macos' ? '⌘' : 'Ctrl'}
+          {' '}
+          + W)
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
 
 function getQueryOpts(connectionResource: typeof connectionsResources.$inferSelect, schema: string, tableName: string) {
-  const state = tablePageStore({ id: connectionResource.id, schema, table: tableName }).get()
+  const store = tablePageStore({ id: connectionResource.id, schema, table: tableName })
 
   return {
-    filters: state.filters,
-    orderBy: state.orderBy,
-    exact: state.exact,
+    filters: store.get().filters,
+    orderBy: store.get().orderBy,
+    exact: store.get().exact,
   }
 }
 
@@ -130,7 +131,7 @@ function SortableTab({
                 hover:border-primary/50 hover:bg-primary/10
               `,
             )}
-            onDoubleClick={() => addTab(connectionResource.id, item.tab.schema, item.tab.table)}
+            onDoubleClick={() => addTab(connectionResource.id, item.tab.schema, item.tab.table, false)}
             onMouseOver={() => prefetchConnectionResourceTableCore({
               connectionResource,
               schema: item.tab.schema,
@@ -168,7 +169,8 @@ function SortableTab({
           <ContextMenuItem onClick={onClose}>
             Close
             <ContextMenuShortcut>
-              <KbdCtrlLetter userAgent={navigator.userAgent} letter="W" />
+              {os.type === 'macos' ? '⌘' : 'Ctrl'}
+              + W
             </ContextMenuShortcut>
           </ContextMenuItem>
           <ContextMenuSeparator />
@@ -196,7 +198,7 @@ export function TablesTabs({
   const { connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data: tablesAndSchemas } = useQuery(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem }))
+  const { data: tablesAndSchemas } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/_protected/connection/$resourceId/table/' })
   const router = useRouter()
   const tabs = useSubscription(store, { selector: state => state.tabs })
@@ -334,7 +336,7 @@ export function TablesTabs({
       return
 
     cleanupTabsEvent(tablesAndSchemas.schemas
-      .flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table: table.name }))))
+      .flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table }))))
   }, [tablesAndSchemas])
 
   const isOneSchema = tabs.length

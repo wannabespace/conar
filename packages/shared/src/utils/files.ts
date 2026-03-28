@@ -33,7 +33,7 @@ export function downloadFile(content: string, fileName: string, mimeType: string
 
 const csvValueRegex = /"/g
 
-function escapeCSVValue(value: unknown) {
+export function escapeCSVValue(value: unknown) {
   if (value === null || value === undefined)
     return ''
 
@@ -44,14 +44,4 @@ function escapeCSVValue(value: unknown) {
   }
 
   return stringValue
-}
-
-export function toCSV<T extends Record<string, unknown>>(headers: (keyof T)[], data: T[]) {
-  const csvRows = [
-    headers.join(','),
-    ...data.map(row =>
-      headers.map(header => escapeCSVValue(row[header])).join(','),
-    ),
-  ]
-  return csvRows.join('\n')
 }

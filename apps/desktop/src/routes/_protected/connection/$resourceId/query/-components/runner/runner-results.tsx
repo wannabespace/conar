@@ -147,13 +147,9 @@ export function RunnerResults() {
                         flex h-full flex-col items-center justify-center gap-2
                       `}
                       >
-                        No data returned
-                        {' '}
-                        <span className="text-muted-foreground">
-                          (
-                          {duration.toFixed()}
-                          ms)
-                        </span>
+                        No data returned (
+                        {duration.toFixed()}
+                        ms)
                       </div>
                     )
                   : (

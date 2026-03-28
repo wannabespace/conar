@@ -145,12 +145,12 @@ function Header() {
                 size="icon-sm"
                 className={cn(
                   `
-                    group absolute top-1/2 left-2 -translate-y-1/2
-                    transition-opacity duration-150
+                    group absolute top-1/2 -translate-y-1/2 shadow-none
+                    transition-[left,opacity] duration-150
                   `,
                   notVisibleColumns.left.length > 0
-                    ? 'opacity-100'
-                    : 'pointer-events-none opacity-0',
+                    ? 'left-2 opacity-100'
+                    : 'pointer-events-none left-0 opacity-0',
                 )}
               />
             )}
@@ -174,11 +174,6 @@ function Header() {
                     {column.id}
                   </DropdownMenuItem>
                 ))}
-                {notVisibleColumns.left.length === 0 && (
-                  <DropdownMenuItem className="text-xs" disabled>
-                    No more columns to scroll to
-                  </DropdownMenuItem>
-                )}
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -193,12 +188,12 @@ function Header() {
                 size="icon-sm"
                 className={cn(
                   `
-                    group absolute top-1/2 right-2 -translate-y-1/2 shadow-none
-                    transition-opacity duration-150
+                    group absolute top-1/2 -translate-y-1/2 shadow-none
+                    transition-[right,opacity] duration-150
                   `,
                   notVisibleColumns.right.length > 0
-                    ? 'opacity-100'
-                    : `pointer-events-none opacity-0`,
+                    ? 'right-2 opacity-100'
+                    : `pointer-events-none right-0 opacity-0`,
                 )}
               />
             )}
@@ -218,11 +213,6 @@ function Header() {
                     {column.id}
                   </DropdownMenuItem>
                 ))}
-                {notVisibleColumns.right.length === 0 && (
-                  <DropdownMenuItem className="text-xs" disabled>
-                    No more columns to scroll to
-                  </DropdownMenuItem>
-                )}
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>

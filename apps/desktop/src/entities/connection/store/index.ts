@@ -1,5 +1,4 @@
 import type { FileRoutesById } from '~/routeTree.gen'
-import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { memoize } from '@conar/shared/utils/helpers'
 import { type } from 'arktype'
 import { createComputed, createStore } from 'seitu'
@@ -8,37 +7,19 @@ import { getEditorQueries } from '~/entities/connection/utils'
 
 export * from './helpers'
 
-const schema = type({
-  lastOpenedResourceName: 'string | null',
-  pinnedResourcesNames: 'string[]',
-}).pipe(({ lastOpenedResourceName, pinnedResourcesNames }) => ({
-  lastOpenedResourceName: (lastOpenedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL.description
-    ? CONNECTION_RESOURCE_ROOT_SYMBOL
-    : lastOpenedResourceName) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
-  pinnedResourcesNames: pinnedResourcesNames.map(name => name === CONNECTION_RESOURCE_ROOT_SYMBOL.description ? CONNECTION_RESOURCE_ROOT_SYMBOL : name),
-}))
-
 export const getConnectionStore = memoize((id: string) => createLocalStorageValue({
   key: `connection-store-${id}`,
   defaultValue: {
     lastOpenedResourceName: null,
-    pinnedResourcesNames: [],
   },
-  schema,
-  onValidationError({ value }) {
-    const lastOpenedResourceName = typeof value === 'object' && value !== null && 'lastOpenedResourceName' in value && typeof value.lastOpenedResourceName === 'string' ? value.lastOpenedResourceName : null
-    const pinnedResourcesNames = typeof value === 'object' && value !== null && 'pinnedResourcesNames' in value && Array.isArray(value.pinnedResourcesNames) ? value.pinnedResourcesNames : []
-
-    return {
-      lastOpenedResourceName,
-      pinnedResourcesNames,
-    }
-  },
+  schema: type({
+    lastOpenedResourceName: 'string | null',
+  }),
 }))
 
 export const connectionResourceType = type({
   lastOpenedPage: 'string | null' as type.cast<Extract<keyof FileRoutesById, `/_protected/connection/$resourceId/${string}`> | null>,
-  lastOpenedChatId: 'string.uuid | null',
+  lastOpenedChatId: 'string | null',
   lastOpenedTable: type({
     schema: 'string',
     table: 'string',

@@ -3,10 +3,10 @@ import type { QueryLog } from '../log'
 import type { connectionsResources } from '~/drizzle/schema'
 import { sleep } from '@conar/shared/utils/helpers'
 import { Button } from '@conar/ui/components/button'
+import { ButtonGroup } from '@conar/ui/components/button-group'
 import { CardTitle } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
-import { Group, GroupSeparator } from '@conar/ui/components/group'
 import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { cn } from '@conar/ui/lib/utils'
@@ -122,14 +122,13 @@ function Log({ query, className, connectionResource }: { query: QueryLog, classN
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger render={(
+      <PopoverTrigger asChild>
         <LogTrigger
           query={query}
           className={cn(className, isOpen && 'bg-accent/30')}
           onMouseLeave={closePopover}
         />
-      )}
-      />
+      </PopoverTrigger>
       <PopoverContent
         className="flex w-[95vw] gap-4"
         onAnimationEnd={closePopover}
@@ -254,7 +253,7 @@ export function QueryLogger({ connectionResource, className }: {
           <CardTitle>
             Query Logger
           </CardTitle>
-          <Group>
+          <ButtonGroup>
             <Button
               size="xs"
               variant="outline"
@@ -266,7 +265,6 @@ export function QueryLogger({ connectionResource, className }: {
               <RiCheckboxCircleLine className="size-3" />
               {statusCounts.success}
             </Button>
-            <GroupSeparator />
             <Button
               size="xs"
               variant="outline"
@@ -278,7 +276,6 @@ export function QueryLogger({ connectionResource, className }: {
               <RiCloseCircleLine className="size-3" />
               {statusCounts.error}
             </Button>
-            <GroupSeparator />
             <Button
               size="xs"
               variant="outline"
@@ -290,7 +287,7 @@ export function QueryLogger({ connectionResource, className }: {
               <RiTimeLine className="size-3" />
               {statusCounts.pending}
             </Button>
-          </Group>
+          </ButtonGroup>
         </div>
         <div className="flex items-center gap-2">
           <Button

@@ -19,9 +19,9 @@ export const create = orpc
     schema.array(),
   ).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
-    await db
+    await Promise.all(input.map(({ connectionId, databaseId, ...item }) => db
       .insert(queries)
-      .values(input.map(({ connectionId, databaseId, ...item }) => ({
+      .values({
         ...item,
         connectionId: (connectionId ?? databaseId)!,
         userId: context.session.userId,

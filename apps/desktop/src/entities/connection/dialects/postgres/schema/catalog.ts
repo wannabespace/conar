@@ -5,7 +5,6 @@
 export interface PgCatalog {
   pg_namespace: PgNamespace
   pg_class: PgClass
-  pg_constraint: PgConstraint
   pg_index: PgIndex
   pg_attribute: PgAttribute
   pg_settings: PgSettings
@@ -79,23 +78,6 @@ interface PgClass {
   relminmxid: string
   relacl: string | null
   relpartbound: null
-}
-
-/**
- * @name pg_constraint
- * @type table
- */
-interface PgConstraint {
-  oid: number
-  conname: string
-  connamespace: number
-  contype: string
-  conrelid: number
-  confrelid: number
-  conkey: number[]
-  confkey: number[]
-  confdeltype: string
-  confupdtype: string
 }
 
 /**
