@@ -126,6 +126,7 @@ catalog:
   mysql2: ^3.20.0
   nanoid: ^5.1.7
   nitro: 3.0.260311-beta
+  node-modules-inspector: ^1.4.2
   npm-run-all2: ^8.0.4
   pg: ^8.20.0
   playwright: ^1.58.2
