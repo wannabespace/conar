@@ -1,6 +1,6 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
-import { downloadFile, escapeCSVValue } from '@conar/shared/utils/files'
+import { downloadFile, toCSV } from '@conar/shared/utils/files'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,13 +45,7 @@ function exportData({
       }
 
       const headers = Object.keys(data[0])
-      const csvRows = [
-        headers.join(','),
-        ...data.map(row =>
-          headers.map(header => escapeCSVValue(row[header])).join(','),
-        ),
-      ]
-      const content = csvRows.join('\n')
+      const content = toCSV(headers, data)
 
       if (type === 'download') {
         downloadFile(content, `${filename}.csv`, 'text/csv;charset=utf-8;')

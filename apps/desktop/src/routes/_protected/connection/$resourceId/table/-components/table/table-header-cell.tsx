@@ -82,7 +82,7 @@ function UniqueBadge({ unique }: { unique: string }) {
         <RiFingerprintLine className="size-3 shrink-0 opacity-70" />
       </TooltipTrigger>
       <TooltipContent className="max-w-none">
-        <div className="mb-1 flex items-center gap-1">
+        <div className="flex items-center gap-1">
           <RiFingerprintLine className="size-3 opacity-70" />
           Unique
         </div>
