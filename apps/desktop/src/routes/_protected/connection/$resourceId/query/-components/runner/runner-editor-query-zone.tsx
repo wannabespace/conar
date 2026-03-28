@@ -40,12 +40,10 @@ export function RunnerEditorQueryZone({
 
   const { mutate: explain, isPending: isExplaining, isError: isExplainError, isSuccess: isExplainSuccess, data: explainData, error: explainError } = useMutation({
     mutationFn: async (query: string) => {
-      const explainQuery = wrapExplainQuery(query)
       const startTime = performance.now()
-      const result = await customQuery({ query: explainQuery }).run(connectionResourceToQueryParams(connectionResource))
+      const rows = await customQuery({ query: wrapExplainQuery(query) }).run(connectionResourceToQueryParams(connectionResource))
       const duration = performance.now() - startTime
-      const rows = Array.isArray(result) ? result : (result as { rows?: unknown[] })?.rows ?? []
-      return { rows: rows as Record<string, unknown>[], duration, query }
+      return { rows, duration, query }
     },
   }, queryClient)
 

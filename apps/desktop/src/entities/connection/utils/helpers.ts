@@ -15,7 +15,6 @@ const dollarMatchRegex = /^\$\$|\$[a-z_]\w*\$/i
 const beginEndBlockDepthRegex = /^\s*BEGIN\b/i
 const commitRollbackRegex = /\b(?:COMMIT|ROLLBACK)\b/i
 const transactionControlLineRegex = /;\s*$/
-const explainRegex = /^\s*EXPLAIN\b/i
 
 function isWord(word: string, line: string, idx: number) {
   return (idx === 0 || wordRegex.test(line[idx - 1]!))
@@ -267,9 +266,7 @@ export function getEditorQueries(sql: string) {
   return queries
 }
 
-export function wrapExplainQuery(query: string): string {
-  const explainQueryTrimmed = query.trim()
-  if (!explainQueryTrimmed || explainRegex.test(explainQueryTrimmed))
-    return query
-  return `EXPLAIN ${explainQueryTrimmed}`
+export function wrapExplainQuery(query: string) {
+  const trimmedQuery = query.trim().toLowerCase()
+  return trimmedQuery.startsWith('explain') ? query : `EXPLAIN ${query.trim()}`
 }

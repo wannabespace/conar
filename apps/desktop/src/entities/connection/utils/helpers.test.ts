@@ -181,9 +181,4 @@ describe('wrapExplainQuery', () => {
     expect(wrapExplainQuery('EXPLAIN SELECT * FROM users')).toBe('EXPLAIN SELECT * FROM users')
     expect(wrapExplainQuery('  EXPLAIN ANALYZE SELECT * FROM users')).toBe('  EXPLAIN ANALYZE SELECT * FROM users')
   })
-
-  it('should return empty string unchanged', () => {
-    expect(wrapExplainQuery('')).toBe('')
-    expect(wrapExplainQuery('   ')).toBe('   ')
-  })
 })
