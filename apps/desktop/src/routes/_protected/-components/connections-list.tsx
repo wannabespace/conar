@@ -9,6 +9,8 @@ import { Card } from '@conar/ui/components/card'
 import { Combobox, ComboboxCollection, ComboboxEmpty, ComboboxGroup, ComboboxGroupLabel, ComboboxInput, ComboboxItem, ComboboxList, ComboboxPopup, ComboboxTrigger } from '@conar/ui/components/combobox'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { FrameMotion } from '@conar/ui/components/frame'
+import { ScrollArea } from '@conar/ui/components/scroll-area'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Separator } from '@conar/ui/components/separator'
 import { Spinner } from '@conar/ui/components/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
@@ -286,7 +288,10 @@ function ConnectionCard({
           gap-4 px-6 py-4
         "
         >
-          <div className="flex items-center gap-4">
+          <div className={cn(`flex items-center gap-4`, isFetching && `
+            animate-pulse
+          `)}
+          >
             <ConnectionIconWithVersion connection={connection} />
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 leading-none font-medium">
@@ -318,10 +323,10 @@ function ConnectionCard({
               <div className="pointer-events-auto flex h-4 items-center gap-1">
                 <Tooltip open={isOpen || isCopied} onOpenChange={setIsOpen}>
                   <TooltipTrigger
-                    className="
+                    className={`
                       group flex cursor-pointer items-center gap-1 text-xs
                       text-muted-foreground
-                    "
+                    `}
                     onClick={() => handleCopy()}
                   >
                     {connectionStringToShow}
@@ -404,19 +409,38 @@ export function Empty() {
   )
 }
 
+const sortOptions = [
+  { value: 'date-desc', label: 'Date (newest first)' },
+  { value: 'date-asc', label: 'Date (oldest first)' },
+  { value: 'name-asc', label: 'Name (A–Z)' },
+  { value: 'name-desc', label: 'Name (Z–A)' },
+] as const
+
 export function ConnectionsList() {
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
+  const [sort, setSort] = useState<typeof sortOptions[number]['value']>('date-desc')
   const { data } = useLiveQuery((q) => {
-    let query = q
-      .from({ connections: connectionsCollection })
-      .orderBy(({ connections }) => connections.createdAt, 'desc')
+    let query = q.from({ connections: connectionsCollection })
+
+    if (sort === 'date-desc') {
+      query = query.orderBy(({ connections }) => connections.createdAt, 'desc')
+    }
+    else if (sort === 'date-asc') {
+      query = query.orderBy(({ connections }) => connections.createdAt, 'asc')
+    }
+    else if (sort === 'name-asc') {
+      query = query.orderBy(({ connections }) => connections.name, 'asc')
+    }
+    else {
+      query = query.orderBy(({ connections }) => connections.name, 'desc')
+    }
 
     if (selectedLabel) {
       query = query.where(({ connections }) => eq(connections.label, selectedLabel))
     }
 
     return query
-  }, [selectedLabel])
+  }, [selectedLabel, sort])
 
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
@@ -433,22 +457,51 @@ export function ConnectionsList() {
           <Separator />
         </>
       )}
-      {availableLabels.length > 0 && (
-        <Tabs
-          value={selectedLabel === null ? 'all' : selectedLabel}
-          onValueChange={value => setSelectedLabel(value === 'all' ? null : value)}
+      {data.length > 0 && (
+        <div
+          className={cn(
+            'flex min-w-0 flex-nowrap items-center gap-4',
+            availableLabels.length > 0 ? 'justify-between' : 'justify-end',
+          )}
         >
-          <TabsList>
-            <TabsTrigger value="all">
-              All
-            </TabsTrigger>
-            {availableLabels.map(label => (
-              <TabsTrigger key={label} value={label}>
-                {label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+          {availableLabels.length > 0 && (
+            <ScrollArea className="min-w-0 flex-1" scrollFade>
+              <Tabs
+                value={selectedLabel === null ? 'all' : selectedLabel}
+                onValueChange={value => setSelectedLabel(value === 'all' ? null : value)}
+                className="w-max max-w-none"
+              >
+                <TabsList>
+                  <TabsTrigger value="all">
+                    All
+                  </TabsTrigger>
+                  {availableLabels.map(label => (
+                    <TabsTrigger key={label} value={label}>
+                      {label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            </ScrollArea>
+          )}
+          <Select
+            value={sort}
+            onValueChange={value => setSort(value!)}
+          >
+            <SelectTrigger className="w-[200px] shrink-0">
+              <SelectValue>
+                {sortOptions.find(option => option.value === sort)!.label}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {sortOptions.map(option => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       )}
       <div className="flex flex-col gap-2">
         <AnimatePresence initial={false} mode="popLayout">
