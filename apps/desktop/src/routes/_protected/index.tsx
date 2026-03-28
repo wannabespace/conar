@@ -1,25 +1,24 @@
 import { SOCIAL_LINKS } from '@conar/shared/constants'
+import { pick } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
+import { Spinner } from '@conar/ui/components/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoader4Line, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
+import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
+import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { type } from 'arktype'
 import { useSubscription } from 'seitu/react'
-import { useConnectionsSync } from '~/entities/connection/sync'
+import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { queryClient } from '~/main'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 import { ConnectionsList } from './-components/connections-list'
 import { Profile } from './-components/profile'
 
 export const Route = createFileRoute('/_protected/')({
-  validateSearch: type({
-    'createdId?': 'string.uuid.v7',
-  }),
   component: DashboardPage,
   head: () => ({
     meta: [{ title: title('Dashboard') }],
@@ -27,8 +26,19 @@ export const Route = createFileRoute('/_protected/')({
 })
 
 function DashboardPage() {
-  const { sync, isSyncing } = useConnectionsSync()
-  const [version, versionStatus] = useSubscription(updatesStore, { selector: state => [state.version, state.status] })
+  const { mutate: sync, isPending: isSyncing } = useMutation({
+    mutationFn: async () => {
+      await Promise.all([
+        connectionsCollection.utils.runSync(),
+        connectionsResourcesCollection.utils.runSync(),
+      ])
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['connection'] })
+      queryClient.invalidateQueries({ queryKey: ['connection-resources'] })
+    },
+  })
+  const { version, status } = useSubscription(updatesStore, { selector: state => pick(state, ['version', 'status']) })
 
   return (
     <ScrollArea className="overflow-auto">
@@ -54,10 +64,7 @@ function DashboardPage() {
               variant="outline"
               size="icon"
               disabled={isSyncing}
-              onClick={() => {
-                sync()
-                queryClient.invalidateQueries({ queryKey: ['connection'] })
-              }}
+              onClick={() => sync()}
             >
               <LoadingContent loading={isSyncing}>
                 <ContentSwitch
@@ -70,11 +77,9 @@ function DashboardPage() {
                 </ContentSwitch>
               </LoadingContent>
             </Button>
-            <Button asChild>
-              <Link to="/create">
-                <RiAddLine className="size-4" />
-                Add new
-              </Link>
+            <Button render={<Link to="/create" />}>
+              <RiAddLine className="size-4" />
+              Add new
             </Button>
           </div>
         </div>
@@ -142,13 +147,10 @@ function DashboardPage() {
               {version}
             </button>
             {' '}
-            {versionStatus === 'checking' && (
-              <RiLoader4Line className={`
-                size-3 animate-spin text-muted-foreground/50
-              `}
-              />
+            {status === 'checking' && (
+              <Spinner className="size-3 text-muted-foreground/50" />
             )}
-            {versionStatus === 'downloading' && (
+            {status === 'downloading' && (
               <Tooltip>
                 <TooltipTrigger>
                   <RiDownloadLine className={`

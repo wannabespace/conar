@@ -4,12 +4,14 @@ import { pgTable } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 import { encryptedText } from '../utils'
 import { users } from './auth'
-import { connections } from './connections'
+import { connections, connectionsResources } from './connections'
 
 export const queries = pgTable('queries', ({ uuid, text }) => ({
   ...baseTable,
   userId: uuid().references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  connectionId: uuid().references(() => connections.id, { onDelete: 'cascade' }).notNull(),
+  // TODO: remove it in the future versions, saving connectionId for backward compatibility
+  connectionId: uuid().references(() => connections.id, { onDelete: 'cascade' }),
+  connectionResourceId: uuid().references(() => connectionsResources.id, { onDelete: 'cascade' }),
   name: text().notNull(),
   query: encryptedText().notNull(),
 }))

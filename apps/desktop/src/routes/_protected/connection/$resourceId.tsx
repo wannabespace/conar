@@ -10,7 +10,7 @@ import { useSubscription } from 'seitu/react'
 import { QueryLogger } from '~/entities/connection/components'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
-import { lastOpenedResources, prefetchConnectionResourceCore } from '~/entities/connection/utils'
+import { lastOpenedResourcesStorageValue, prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { ConnectionSidebar } from './-components/connection-sidebar'
 import { PasswordForm } from './-components/password-form'
 
@@ -34,11 +34,11 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
   loader: async ({ context }) => {
     prefetchConnectionResourceCore(context.connectionResource)
 
-    return { connection: context.connection }
+    return { connection: context.connection, connectionResource: context.connectionResource }
   },
   head: ({ loaderData }) => ({
     meta: loaderData
-      ? [{ title: title(loaderData.connection.name) }]
+      ? [{ title: title(loaderData.connection.name, loaderData.connectionResource.name) }]
       : [],
   }),
 })
@@ -65,9 +65,9 @@ function DatabasePage() {
   }, [currentPageId, store])
 
   useEffect(() => {
-    const last = lastOpenedResources.get()
+    const last = lastOpenedResourcesStorageValue.get()
     if (!last.includes(connectionResource.id))
-      lastOpenedResources.set([connectionResource.id, ...last.filter(resourceId => resourceId !== connectionResource.id)].slice(0, 3))
+      lastOpenedResourcesStorageValue.set([connectionResource.id, ...last.filter(resourceId => resourceId !== connectionResource.id)].slice(0, 3))
   }, [connectionResource.id])
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({

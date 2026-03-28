@@ -1,4 +1,4 @@
-import type { connections, connectionsResources } from '~/drizzle'
+import type { connections, connectionsResources } from '~/drizzle/schema'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Enter } from '@conar/ui/components/custom/shortcuts'
@@ -12,7 +12,7 @@ import { MonacoDiff } from '~/components/monaco'
 import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 
@@ -53,7 +53,7 @@ export function RunnerEditorAIZone({
     }
   }, [ref])
 
-  const { mutate: updateSQL, isPending } = useMutation(orpcQuery.ai.updateSQL.mutationOptions({
+  const { mutate: updateSQL, isPending } = useMutation(orpc.ai.updateSQL.mutationOptions({
     onSuccess: (data) => {
       setAiSuggestion(data)
     },
@@ -79,7 +79,7 @@ export function RunnerEditorAIZone({
         type: connection.type,
         context: [
           'Database schemas and tables:',
-          JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.get().showSystem })), null, 2),
+          JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem: store.get().showSystem })), null, 2),
         ].join('\n'),
       })
     }

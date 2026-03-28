@@ -1,5 +1,5 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { queryClient } from '~/main'
 import { resourceTableColumnsQuery } from '../queries/columns'
 import { resourceConstraintsQuery } from '../queries/constraints'
@@ -19,7 +19,7 @@ export async function prefetchConnectionResourceCore(connectionResource: typeof 
 
   const store = getConnectionResourceStore(connectionResource.id)
   await Promise.all([
-    queryClient.prefetchQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.get().showSystem })),
+    queryClient.prefetchQuery(resourceTablesAndSchemasQuery({ silent: true, connectionResource, showSystem: store.get().showSystem })),
     queryClient.prefetchQuery(resourceEnumsQuery({ connectionResource })),
     queryClient.prefetchQuery(resourceConstraintsQuery({ connectionResource })),
   ])

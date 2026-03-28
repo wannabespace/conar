@@ -1,5 +1,5 @@
 import type { ChangeEvent, ComponentRef } from 'react'
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { useChat } from '@ai-sdk/react'
 import { getBase64FromFiles } from '@conar/shared/utils/base64'
 import { Button } from '@conar/ui/components/button'
@@ -17,7 +17,7 @@ import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { getFilesStore } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 import { Route } from '../..'
 import { chatHooks } from '../../-page'
@@ -145,7 +145,7 @@ export function ChatForm() {
     handleSendEffect(error)
   }, [error, router, chat.id])
 
-  const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation(orpcQuery.ai.enhancePrompt.mutationOptions({
+  const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation(orpc.ai.enhancePrompt.mutationOptions({
     onSuccess: (data) => {
       if (input.length < 10) {
         return
@@ -226,21 +226,19 @@ export function ChatForm() {
               type="button"
               size="icon-xs"
               variant="outline"
-              asChild
+              render={<label htmlFor="chat-file-upload" />}
             >
-              <label htmlFor="chat-file-upload">
-                <RiAttachment2 className="size-3" />
-                <input
-                  id="chat-file-upload"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileAttach}
-                  tabIndex={-1}
-                  aria-label="Attach files"
-                />
-              </label>
+              <RiAttachment2 className="size-3" />
+              <input
+                id="chat-file-upload"
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleFileAttach}
+                tabIndex={-1}
+                aria-label="Attach files"
+              />
             </Button>
           </div>
           <div className="pointer-events-auto flex gap-2">

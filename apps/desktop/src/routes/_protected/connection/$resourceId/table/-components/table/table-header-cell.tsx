@@ -284,7 +284,7 @@ export function TableHeaderCell({
               size="icon-xs"
               onClick={onRename}
               className={`
-                size-5 opacity-0 transition-opacity
+                size-5! opacity-0 transition-opacity
                 group-hover/header-cell:opacity-100
               `}
             >

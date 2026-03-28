@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import type { connectionResourceType } from '~/entities/connection/store'
 import { getOS } from '@conar/shared/utils/os'
 import {
@@ -10,7 +10,7 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from '@conar/ui/components/context-menu'
-import { MotionScrollViewport, ScrollArea, ScrollBar } from '@conar/ui/components/scroll-area'
+import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { cn } from '@conar/ui/lib/utils'
@@ -198,7 +198,7 @@ export function TablesTabs({
   const { connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data: tablesAndSchemas } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
+  const { data: tablesAndSchemas } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/_protected/connection/$resourceId/table/' })
   const router = useRouter()
   const tabs = useSubscription(store, { selector: state => state.tabs })
@@ -349,36 +349,30 @@ export function TablesTabs({
   }))
 
   return (
-    <ScrollArea>
-      <MotionScrollViewport
-        layoutScroll
-        className={cn('flex gap-1 p-1', className)}
+    <ScrollArea className={cn('h-full', className)}>
+      <Reorder.Group
+        axis="x"
+        values={tabItems}
+        onReorder={(newItems) => {
+          updateTabs(connectionResource.id, newItems.map(item => item.tab))
+        }}
+        className="flex h-full gap-1 p-1"
       >
-        <Reorder.Group
-          axis="x"
-          values={tabItems}
-          onReorder={(newItems) => {
-            updateTabs(connectionResource.id, newItems.map(item => item.tab))
-          }}
-          className="flex gap-1"
-        >
-          {tabItems.map((item, index) => (
-            <SortableTab
-              key={item.id}
-              item={item}
-              connectionResource={connectionResource}
-              showSchema={!isOneSchema}
-              onClose={() => closeTab(item.tab.schema, item.tab.table)}
-              onCloseAll={closeAllTabs}
-              onCloseToTheRight={() => closeTabsToTheRight(item.tab.schema, item.tab.table)}
-              onCloseOthers={() => closeOtherTabs(item.tab.schema, item.tab.table)}
-              currentTabIndex={index}
-              totalTabs={tabItems.length}
-            />
-          ))}
-        </Reorder.Group>
-      </MotionScrollViewport>
-      <ScrollBar orientation="horizontal" className="h-2" />
+        {tabItems.map((item, index) => (
+          <SortableTab
+            key={item.id}
+            item={item}
+            connectionResource={connectionResource}
+            showSchema={!isOneSchema}
+            onClose={() => closeTab(item.tab.schema, item.tab.table)}
+            onCloseAll={closeAllTabs}
+            onCloseToTheRight={() => closeTabsToTheRight(item.tab.schema, item.tab.table)}
+            onCloseOthers={() => closeOtherTabs(item.tab.schema, item.tab.table)}
+            currentTabIndex={index}
+            totalTabs={tabItems.length}
+          />
+        ))}
+      </Reorder.Group>
     </ScrollArea>
   )
 }

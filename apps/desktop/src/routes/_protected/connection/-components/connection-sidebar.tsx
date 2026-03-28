@@ -1,5 +1,5 @@
 import type { LinkProps } from '@tanstack/react-router'
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { getOS } from '@conar/shared/utils/os'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
@@ -23,9 +23,9 @@ import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsResourcesCollection } from '~/entities/connection/sync'
-import { lastOpenedResources, useLastOpenedResources } from '~/entities/connection/utils'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { UserButton } from '~/entities/user/components'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 import { Route } from '../$resourceId'
 
@@ -51,7 +51,7 @@ function SupportButton() {
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
 
-  const { mutate: sendSupport, isPending: loading } = useMutation(orpcQuery.contact.mutationOptions({
+  const { mutate: sendSupport, isPending: loading } = useMutation(orpc.contact.mutationOptions({
     onSuccess: () => {
       toast.success('Support message sent successfully! We will get back to you as soon as possible.')
       setOpen(false)
@@ -123,9 +123,9 @@ function LastOpenedConnection({ connectionResource }: { connectionResource: type
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
   async function onCloseClick() {
-    const newResources = lastOpenedResources.get().filter(resourceId => resourceId !== connectionResource.id)
+    const newResources = lastOpenedResourcesStorageValue.get().filter(resourceId => resourceId !== connectionResource.id)
 
-    lastOpenedResources.set(newResources)
+    lastOpenedResourcesStorageValue.set(newResources)
   }
 
   return (
@@ -138,7 +138,7 @@ function LastOpenedConnection({ connectionResource }: { connectionResource: type
                 type="button"
                 className={cn(
                   `
-                    absolute top-0 right-0 z-10 flex size-4 translate-x-1/2
+                    absolute top-0 right-0 z-20 flex size-4 translate-x-1/2
                     -translate-y-1/2 items-center justify-center rounded-full
                     bg-background text-foreground opacity-0
                     group-hover:opacity-100
@@ -308,7 +308,7 @@ function MainLinks() {
 
 export function ConnectionSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const { connectionResource } = Route.useRouteContext()
-  const [lastOpenedResources] = useLastOpenedResources()
+  const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
   const store = getConnectionResourceStore(connectionResource.id)
   const { data: openedResources } = useLiveQuery(q => q
     .from({ connectionsResources: connectionsResourcesCollection })
@@ -332,11 +332,8 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
           </Tooltip>
         </TooltipProvider>
       </div>
-      <ScrollArea className={`
-        relative flex flex-1 flex-col items-center gap-2 p-4
-      `}
-      >
-        <div className="w-full">
+      <ScrollArea className="relative flex flex-1 flex-col items-center gap-2">
+        <div className="w-full p-4">
           <div className="flex w-full flex-col">
             <MainLinks />
             {openedResources.length > 1 && (
@@ -387,19 +384,17 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <ThemeToggle>
-          <Button size="icon" variant="ghost">
-            <RiSunLine className={`
-              size-4
-              dark:hidden
-            `}
-            />
-            <RiMoonLine className={`
-              hidden size-4
-              dark:block
-            `}
-            />
-          </Button>
+        <ThemeToggle render={<Button size="icon" variant="ghost" />}>
+          <RiSunLine className={`
+            size-4
+            dark:hidden
+          `}
+          />
+          <RiMoonLine className={`
+            hidden size-4
+            dark:block
+          `}
+          />
         </ThemeToggle>
         <div className="mt-2">
           <UserButton />

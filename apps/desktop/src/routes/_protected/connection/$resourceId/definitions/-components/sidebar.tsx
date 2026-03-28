@@ -1,5 +1,5 @@
 import type { RemixiconComponentType } from '@remixicon/react'
-import type { connections } from '~/drizzle'
+import type { connections } from '~/drizzle/schema'
 import type { FileRoutesByTo } from '~/routeTree.gen'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { CardTitle } from '@conar/ui/components/card'

@@ -48,3 +48,4 @@ export const ACTIVE_SUBSCRIPTION_STATUSES = ['active', 'trialing', 'past_due'] a
 
 export const FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT = 50 as const
 export const CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES: ConnectionType[] = [ConnectionType.MSSQL, ConnectionType.ClickHouse]
+export const CONNECTION_TYPES_WITHOUT_SCHEMAS: ConnectionType[] = [ConnectionType.ClickHouse]

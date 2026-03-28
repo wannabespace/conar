@@ -51,6 +51,7 @@ export const Route = createFileRoute(
 
     return {
       connection: context.connection,
+      connectionResource: context.connectionResource,
       schema: deps.schema ?? null,
       table: deps.table ?? null,
       store,
@@ -62,6 +63,7 @@ export const Route = createFileRoute(
           title: title(
             loaderData.schema && loaderData.table ? `${loaderData.schema}.${loaderData.table}` : 'Tables',
             loaderData.connection.name,
+            loaderData.connectionResource.name,
           ),
         }]
       : [],

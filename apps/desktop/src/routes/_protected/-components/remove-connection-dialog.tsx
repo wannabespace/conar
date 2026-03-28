@@ -1,4 +1,4 @@
-import type { connections } from '~/drizzle'
+import type { connections } from '~/drizzle/schema'
 import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { useImperativeHandle, useState } from 'react'

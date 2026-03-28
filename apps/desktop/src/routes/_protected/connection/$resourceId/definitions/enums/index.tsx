@@ -1,7 +1,7 @@
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardTitle, MotionCard } from '@conar/ui/components/card'
+import { CardContent, CardMotion, CardTitle } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
@@ -21,9 +21,9 @@ import { MOTION_BLOCK_PROPS } from '../-constants'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/enums/')({
   component: DatabaseEnumsPage,
-  loader: ({ context }) => ({ connection: context.connection }),
+  loader: ({ context }) => ({ connection: context.connection, connectionResource: context.connectionResource }),
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('Enums', loaderData.connection.name) }] : [],
+    meta: loaderData ? [{ title: title('Enums', loaderData.connection.name, loaderData.connectionResource.name) }] : [],
   }),
 })
 
@@ -32,7 +32,7 @@ function DatabaseEnumsPage() {
   const { data: enums, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceEnumsQuery({ connectionResource }))
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
+  const { data } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
@@ -98,7 +98,7 @@ function DatabaseEnumsPage() {
         )}
 
         {filteredEnums.map(enumItem => (
-          <MotionCard
+          <CardMotion
             key={`${enumItem.schema}-${enumItem.name}-${enumItem.metadata?.table ?? ''}-${enumItem.metadata?.column ?? ''}`}
             layout
             {...MOTION_BLOCK_PROPS}
@@ -170,7 +170,7 @@ function DatabaseEnumsPage() {
                 </div>
               </div>
             </CardContent>
-          </MotionCard>
+          </CardMotion>
         ))}
       </DefinitionsGrid>
     </>

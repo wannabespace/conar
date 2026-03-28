@@ -1,10 +1,10 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { useEffect, useEffectEvent } from 'react'
+import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
-import { useChatsMessagesSync, useChatsSync } from '~/entities/chat/sync'
-import { useConnectionsSync } from '~/entities/connection/sync'
-import { useQueriesSync } from '~/entities/query/sync'
+import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
+import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
+import { queriesCollection } from '~/entities/query/sync'
 import { authClient } from '~/lib/auth'
 import { appStore } from '~/store'
 import { ActionsCenter } from './-components/actions-center'
@@ -17,18 +17,6 @@ function ProtectedLayout() {
   const { data } = authClient.useSession()
   const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
 
-  const { sync: syncConnections } = useConnectionsSync()
-  const { sync: syncQueries } = useQueriesSync()
-  const { sync: syncChats } = useChatsSync()
-  const { sync: syncChatsMessages } = useChatsMessagesSync()
-
-  const sync = useEffectEvent(() => {
-    syncConnections()
-    syncChats()
-    syncChatsMessages()
-    syncQueries()
-  })
-
   const hasUser = !!data?.user
 
   useEffect(() => {
@@ -36,7 +24,11 @@ function ProtectedLayout() {
       return
     }
 
-    sync()
+    connectionsCollection.utils.runSync()
+    connectionsResourcesCollection.utils.runSync()
+    chatsCollection.utils.runSync()
+    chatsMessagesCollection.utils.runSync()
+    queriesCollection.utils.runSync()
   }, [hasUser, isOnline])
 
   return (

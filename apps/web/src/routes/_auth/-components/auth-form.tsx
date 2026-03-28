@@ -242,11 +242,9 @@ export function AuthForm({ type, redirectPath }: { type: Type, redirectPath?: st
                           variant="link"
                           size="xs"
                           className="text-muted-foreground"
-                          asChild
+                          render={<Link to="/forgot-password" />}
                         >
-                          <Link to="/forgot-password">
-                            Forgot password?
-                          </Link>
+                          Forgot password?
                         </Button>
                       </div>
                       <field.Password

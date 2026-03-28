@@ -1,9 +1,8 @@
-import { localStorageValue, useLocalStorage } from '@conar/ui/hookas/use-local-storage'
+import { type } from 'arktype'
+import { createLocalStorageValue } from 'seitu/web'
 
-const LAST_OPENED_RESOURCES_KEY = 'last-opened-resources'
-
-export const lastOpenedResources = localStorageValue<string[]>(LAST_OPENED_RESOURCES_KEY, [])
-
-export function useLastOpenedResources() {
-  return useLocalStorage<string[]>(LAST_OPENED_RESOURCES_KEY, [])
-}
+export const lastOpenedResourcesStorageValue = createLocalStorageValue({
+  key: 'last-opened-resources',
+  schema: type('string[]'),
+  defaultValue: [],
+})

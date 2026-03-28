@@ -1,7 +1,7 @@
 import type { indexesType } from '~/entities/connection/queries'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardTitle, MotionCard } from '@conar/ui/components/card'
+import { CardContent, CardMotion, CardTitle } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
@@ -19,9 +19,9 @@ import { MOTION_BLOCK_PROPS } from '../-constants'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/indexes/')({
   component: DatabaseIndexesPage,
-  loader: ({ context }) => ({ connection: context.connection }),
+  loader: ({ context }) => ({ connection: context.connection, connectionResource: context.connectionResource }),
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('Indexes', loaderData.connection.name) }] : [],
+    meta: loaderData ? [{ title: title('Indexes', loaderData.connection.name, loaderData.connectionResource.name) }] : [],
   }),
 })
 
@@ -53,7 +53,7 @@ function DatabaseIndexesPage() {
   const { data: indexes, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceIndexesQuery({ connectionResource }))
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
+  const { data } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
@@ -161,7 +161,7 @@ function DatabaseIndexesPage() {
         )}
 
         {indexList.map(item => (
-          <MotionCard
+          <CardMotion
             key={`${item.schema}-${item.table}-${item.name}`}
             layout
             {...MOTION_BLOCK_PROPS}
@@ -208,7 +208,7 @@ function DatabaseIndexesPage() {
                 </div>
               </div>
             </CardContent>
-          </MotionCard>
+          </CardMotion>
         ))}
       </DefinitionsGrid>
     </>

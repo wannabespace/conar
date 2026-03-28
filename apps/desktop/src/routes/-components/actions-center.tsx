@@ -1,4 +1,4 @@
-import type { connections, connectionsResources } from '~/drizzle'
+import type { connections, connectionsResources } from '~/drizzle/schema'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { RiAddLine, RiDashboardLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
@@ -17,7 +17,7 @@ import { appStore, setIsActionCenterOpen } from '~/store'
 function ActionsResourceTables({ connection, connectionResource }: { connection: typeof connections.$inferSelect, connectionResource: typeof connectionsResources.$inferSelect }) {
   const store = getConnectionResourceStore(connectionResource.id)
   const { data: tablesAndSchemas } = useQuery({
-    ...resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.get().showSystem }),
+    ...resourceTablesAndSchemasQuery({ silent: true, connectionResource, showSystem: store.get().showSystem }),
     throwOnError: false,
   })
   const router = useRouter()

@@ -23,6 +23,7 @@ function IndeterminateCheckbox({
             focus-visible:border-ring focus-visible:ring-[3px]
             focus-visible:ring-ring/50
             disabled:cursor-not-allowed disabled:opacity-50
+            hit-area-2.5
           `,
           !props.checked && indeterminate && 'border-primary bg-primary',
           className,

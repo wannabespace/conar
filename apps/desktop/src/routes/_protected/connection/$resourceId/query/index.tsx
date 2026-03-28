@@ -5,6 +5,7 @@ import { type } from 'arktype'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
+import { v7 } from 'uuid'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
@@ -21,14 +22,15 @@ export const Route = createFileRoute(
   loader: async ({ context, deps }) => {
     return {
       connection: context.connection,
-      chat: createChat({
-        id: deps.chatId,
+      connectionResource: context.connectionResource,
+      chat: await createChat({
+        id: deps.chatId ?? v7(),
         connectionResource: context.connectionResource,
       }),
     }
   },
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('SQL Runner', loaderData.connection.name) }] : [],
+    meta: loaderData ? [{ title: title('SQL Runner', loaderData.connection.name, loaderData.connectionResource.name) }] : [],
   }),
 })
 

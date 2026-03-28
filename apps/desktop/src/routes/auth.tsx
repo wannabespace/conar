@@ -1,13 +1,13 @@
 import { generateCodeChallenge, generateVerifier } from '@conar/shared/utils/challenge'
 import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
-import { MotionButton } from '@conar/ui/components/button'
+import { ButtonMotion } from '@conar/ui/components/button'
 import { RiErrorWarningLine } from '@remixicon/react'
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { authClient, bearerToken, successAuthToast } from '~/lib/auth'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 
 const AppLogoSquareMotion = motion.create(AppLogoSquare)
 
@@ -28,11 +28,11 @@ function AuthPage() {
     window.open(`${import.meta.env.VITE_PUBLIC_WEB_URL}/deep/sign-in?codeChallenge=${codeChallenge}`, '_blank')
   }
 
-  const { data, error, isPending } = useQuery(orpcQuery.account.challenge.listen.experimental_liveOptions({
+  const { data, error, isPending } = useQuery(orpc.account.challenge.listen.experimental_liveOptions({
     input: codeChallenge ? { codeChallenge } : skipToken,
     throwOnError: false,
   }))
-  const { mutate: exchange } = useMutation(orpcQuery.account.challenge.exchange.mutationOptions({
+  const { mutate: exchange } = useMutation(orpc.account.challenge.exchange.mutationOptions({
     onSuccess: (data) => {
       bearerToken.set(data.token)
       refetch()
@@ -76,7 +76,7 @@ function AuthPage() {
         >
           Start managing your data
         </motion.p>
-        <MotionButton
+        <ButtonMotion
           className="mb-2 w-full"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -86,7 +86,7 @@ function AuthPage() {
           {!!codeChallenge && isPending
             ? <span className="animate-pulse">Waiting for sign in...</span>
             : 'Sign In'}
-        </MotionButton>
+        </ButtonMotion>
         <motion.p
           className="mb-4 text-center text-xs text-muted-foreground"
           initial={{ opacity: 0, y: 5 }}
@@ -117,7 +117,7 @@ function AuthPage() {
         animate={{ y: 0 }}
         transition={{ duration: 1, delay: 0.4, type: 'spring' }}
       >
-        <MotionButton
+        <ButtonMotion
           className="w-full"
           variant="outline"
           disabled
@@ -126,7 +126,7 @@ function AuthPage() {
           transition={{ duration: 0.5, delay: 0.32 }}
         >
           Anonymous Sign In (soon)
-        </MotionButton>
+        </ButtonMotion>
       </motion.div>
     </div>
   )
