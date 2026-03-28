@@ -1,1 +1,1 @@
-export * from './use-connection-link-params'
+export * from './use-connection-resource-link-params'

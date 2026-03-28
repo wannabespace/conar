@@ -1,5 +1,6 @@
 {
   "$schema": "./node_modules/turbo/schema.json",
+  "ui": "tui",
   "envMode": "loose",
   "tasks": {
     "start": {

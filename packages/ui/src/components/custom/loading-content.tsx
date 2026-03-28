@@ -1,17 +1,17 @@
 import { cn } from '@conar/ui/lib/utils'
-import { RiLoader4Fill } from '@remixicon/react'
+import { Spinner } from '../spinner'
 
 export function LoadingContent({
   children,
   className,
   loading,
-  loaderClassName,
+  spinner = <Spinner />,
   contentClassName,
 }: {
   children: React.ReactNode
   className?: string
   loading: boolean
-  loaderClassName?: string
+  spinner?: React.ReactNode
   contentClassName?: string
 }) {
   return (
@@ -24,9 +24,7 @@ export function LoadingContent({
         absolute top-1/2 left-1/2 -translate-x-1/2 duration-150
       `)}
       >
-        <RiLoader4Fill
-          className={cn('size-5 animate-spin', loaderClassName)}
-        />
+        {spinner}
       </span>
       <span className={cn(
         'flex items-center gap-2 duration-150',
