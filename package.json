@@ -25,8 +25,8 @@
     "update": "taze -r -I major",
     "docker:start": "docker compose -f docker-compose.dev.yml up -d",
     "docker:stop": "docker compose -f docker-compose.dev.yml down",
-    "deps:inspect": "pnpm dlx node-modules-inspector",
-    "deps:build": "pnpm dlx node-modules-inspector build"
+    "deps:inspect": "node-modules-inspector",
+    "deps:build": "node-modules-inspector build"
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",
@@ -40,6 +40,7 @@
     "eslint-plugin-react-hooks": "catalog:",
     "eslint-plugin-react-refresh": "catalog:",
     "husky": "catalog:",
+    "node-modules-inspector": "catalog:",
     "npm-run-all2": "catalog:",
     "playwright": "catalog:",
     "tailwindcss": "catalog:",
