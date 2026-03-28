@@ -6,7 +6,7 @@ import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Separator, SeparatorMotion } from '@conar/ui/components/separator'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiDeleteBin7Line, RiEditLine, RiEyeLine, RiFileCopyLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiStackLine, RiTableLine } from '@remixicon/react'
@@ -22,8 +22,6 @@ import { addTab, cleanupPinnedTables, getConnectionResourceStore, togglePinTable
 import { Route } from '..'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
-import { StickyHeader } from './sticky-header'
-import { useActiveSchema } from './use-active-schema'
 
 const treeVariants = {
   visible: { opacity: 1, height: 'auto' },
@@ -382,35 +380,10 @@ export function TablesTree({ className, search }: { className?: string, search?:
     ? filteredTablesAndSchemas.map(schema => schema.name)
     : tablesTreeOpenedSchemas, [search, filteredTablesAndSchemas, tablesTreeOpenedSchemas])
 
-  const { activeSchemaId, isActiveSchemaExpanded } = useActiveSchema(scrollRef, searchAccordionValue)
-
-  const handleStickyToggle = () => {
-    if (search || !activeSchemaId)
-      return
-    const next = tablesTreeOpenedSchemas.includes(activeSchemaId)
-      ? tablesTreeOpenedSchemas.filter(id => id !== activeSchemaId)
-      : [...tablesTreeOpenedSchemas, activeSchemaId]
-    store.set(state => ({
-      ...state,
-      tablesTreeOpenedSchemas: next,
-    } satisfies typeof state))
-  }
-
   return (
     <ScrollArea className={cn('size-full min-h-0', className)}>
       <DropTableDialog ref={dropTableDialogRef} />
       <RenameTableDialog ref={renameTableDialogRef} />
-      <AnimatePresence>
-        {activeSchemaId && (
-          <StickyHeader
-            activeSchemaId={activeSchemaId}
-            schemaParam={schemaParam}
-            isExpanded={isActiveSchemaExpanded}
-            onToggle={handleStickyToggle}
-            canToggle={!search}
-          />
-        )}
-      </AnimatePresence>
       <Accordion
         ref={accordionRef}
         value={searchAccordionValue}
@@ -473,26 +446,24 @@ export function TablesTree({ className, search }: { className?: string, search?:
                             `}
                           >
                             <span className="flex items-center gap-2">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <RiStackLine
-                                      className={cn(
-                                        `
-                                          size-4 shrink-0 text-muted-foreground
-                                          opacity-50
-                                        `,
-                                        schemaParam === schema.name && `
-                                          text-primary opacity-100
-                                        `,
-                                      )}
-                                    />
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    Schema
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <RiStackLine
+                                    className={cn(
+                                      `
+                                        size-4 shrink-0 text-muted-foreground
+                                        opacity-50
+                                      `,
+                                      schemaParam === schema.name && `
+                                        text-primary opacity-100
+                                      `,
+                                    )}
+                                  />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Schema
+                                </TooltipContent>
+                              </Tooltip>
                               {schema.name}
                             </span>
                           </AccordionTrigger>
