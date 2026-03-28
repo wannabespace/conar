@@ -1,11 +1,32 @@
+import type { ActiveFilter } from '@conar/shared/filters'
+import type { TabularColumnSpec } from '@conar/shared/utils/files'
 import type { TableCellProps } from '@conar/table'
 import type { editor } from 'monaco-editor'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { Column } from '~/entities/connection/components/table/utils'
+import {
+  formatValueForPlainCell,
+  recordsToCSV,
+  recordToMarkdownTable,
+  recordToPrettyJson,
+  rowValuesToPlainText,
+} from '@conar/shared/utils/files'
 import { sleep } from '@conar/shared/utils/helpers'
 import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
-import { CtrlEnter } from '@conar/ui/components/custom/shortcuts'
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuGroup,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuTrigger,
+} from '@conar/ui/components/context-menu'
+import { KbdCtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -19,6 +40,7 @@ import { toast } from 'sonner'
 import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
 import { useCellContext } from './cell-context'
+import { TableAddFilterSubmenu } from './table-add-filter-submenu'
 import { TableCellContent } from './table-cell-content'
 import { TableCellProvider } from './table-cell-provider'
 import { TableCellReferences } from './table-cell-references'
@@ -206,7 +228,7 @@ function CellPopoverContent({
                 onClick={() => save(value)}
               >
                 Save
-                <CtrlEnter userAgent={navigator.userAgent} />
+                <KbdCtrlEnter userAgent={navigator.userAgent} />
               </Button>
             </>
           )}
@@ -259,6 +281,7 @@ function getTimestamp(value: unknown, column: Column) {
 
 export function TableCell({
   value,
+  row,
   rowIndex,
   column,
   className,
@@ -267,11 +290,17 @@ export function TableCell({
   size,
   onSaveValue,
   values,
+  contextMenu,
 }: {
+  row: Record<string, unknown>
   onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   column: Column
   className?: string
   values?: string[]
+  contextMenu?: {
+    dataColumnSpecs: TabularColumnSpec[]
+    onAddFilter: (filter: ActiveFilter) => void
+  }
 } & TableCellProps) {
   const displayValue = getDisplayValue({
     value,
@@ -282,6 +311,7 @@ export function TableCell({
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isForeignOpen, setIsForeignOpen] = useState(false)
   const [isReferencesOpen, setIsReferencesOpen] = useState(false)
+  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false)
   const [isBig, setIsBig] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error' | 'pending'>('idle')
@@ -306,7 +336,7 @@ export function TableCell({
   )
 
   function disableInteractIfPossible() {
-    if (!isPopoverOpen && !isForeignOpen && !isReferencesOpen) {
+    if (!isPopoverOpen && !isForeignOpen && !isReferencesOpen && !isContextMenuOpen) {
       sleep(200).then(() => setCanInteract(false))
     }
   }
@@ -344,8 +374,12 @@ export function TableCell({
 
   const date = column ? getTimestamp(value, column) : null
 
-  return (
+  const dataColumnSpecs = contextMenu?.dataColumnSpecs ?? []
+  const rowCopyDisabled = dataColumnSpecs.length === 0
+
+  const interactiveCell = (
     <TableCellProvider
+      row={row}
       column={column}
       initialValue={value}
       displayValue={displayValue}
@@ -497,4 +531,84 @@ export function TableCell({
       </Popover>
     </TableCellProvider>
   )
+
+  if (contextMenu) {
+    return (
+      <ContextMenu open={isContextMenuOpen} onOpenChange={setIsContextMenuOpen}>
+        <ContextMenuTrigger className="flex h-full min-h-0 min-w-0 shrink-0" style={style}>
+          {interactiveCell}
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuGroup>
+            <ContextMenuLabel>
+              Copy
+            </ContextMenuLabel>
+            <ContextMenuItem
+              onClick={() => {
+                copy(formatValueForPlainCell(value), 'Cell value copied')
+              }}
+            >
+              Copy Cell Value
+            </ContextMenuItem>
+          </ContextMenuGroup>
+          <ContextMenuSub>
+            <ContextMenuSubTrigger disabled={rowCopyDisabled}>
+              Copy Row As
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent>
+              <ContextMenuItem
+                disabled={rowCopyDisabled}
+                onClick={() => {
+                  if (!row)
+                    return
+                  copy(rowValuesToPlainText(row, dataColumnSpecs.map(c => c.key)), 'Row copied as plain text')
+                }}
+              >
+                Plain text
+              </ContextMenuItem>
+              <ContextMenuItem
+                disabled={rowCopyDisabled}
+                onClick={() => {
+                  if (!row)
+                    return
+                  copy(recordToPrettyJson(row), 'Row copied as JSON')
+                }}
+              >
+                JSON
+              </ContextMenuItem>
+              <ContextMenuItem
+                disabled={rowCopyDisabled}
+                onClick={() => {
+                  if (!row)
+                    return
+                  copy(recordsToCSV(dataColumnSpecs, [row]), 'Row copied as CSV')
+                }}
+              >
+                CSV
+              </ContextMenuItem>
+              <ContextMenuItem
+                disabled={rowCopyDisabled}
+                onClick={() => {
+                  if (!row)
+                    return
+                  copy(recordToMarkdownTable(row, dataColumnSpecs), 'Row copied as Markdown table')
+                }}
+              >
+                Markdown table
+              </ContextMenuItem>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+          <ContextMenuSeparator />
+          <TableAddFilterSubmenu
+            columnId={column.id}
+            cellValue={value}
+            hasRow={!!row}
+            onAdd={contextMenu.onAddFilter}
+          />
+        </ContextMenuContent>
+      </ContextMenu>
+    )
+  }
+
+  return interactiveCell
 }

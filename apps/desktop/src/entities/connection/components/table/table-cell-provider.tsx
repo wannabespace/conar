@@ -1,11 +1,12 @@
 import type { Column } from './utils'
 import { useMutation } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { CellContext } from './cell-context'
 import { getEditableValue } from './utils'
 
 export function TableCellProvider({
   children,
+  row,
   column,
   initialValue,
   displayValue,
@@ -16,6 +17,7 @@ export function TableCellProvider({
   values,
 }: {
   children: React.ReactNode
+  row: Record<string, unknown>
   column: Column
   initialValue: unknown
   displayValue: string
@@ -48,23 +50,19 @@ export function TableCellProvider({
     onSuccess: onSaveSuccess,
   })
 
-  const context = useMemo(() => ({
-    value,
-    setValue,
-    column,
-    initialValue,
-    displayValue,
-    update,
-    values,
-  }), [
-    value,
-    setValue,
-    column,
-    initialValue,
-    displayValue,
-    update,
-    values,
-  ])
-
-  return <CellContext value={context}>{children}</CellContext>
+  return (
+    <CellContext value={{
+      value,
+      row,
+      setValue,
+      column,
+      initialValue,
+      displayValue,
+      update,
+      values,
+    }}
+    >
+      {children}
+    </CellContext>
+  )
 }
