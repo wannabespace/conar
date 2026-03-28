@@ -1,9 +1,8 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { CtrlLetter } from '@conar/ui/components/custom/shortcuts'
+import { KbdCtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
-import { Kbd } from '@conar/ui/components/kbd'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import NumberFlow from '@number-flow/react'
 import { isDefinedError } from '@orpc/client'
@@ -143,9 +142,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
               </TooltipContent>
             </Tooltip>
           )}
-          <Kbd asChild>
-            <CtrlLetter userAgent={navigator.userAgent} letter="F" />
-          </Kbd>
+          <KbdCtrlLetter userAgent={navigator.userAgent} letter="F" />
         </InputGroupAddon>
       </InputGroup>
     </form>

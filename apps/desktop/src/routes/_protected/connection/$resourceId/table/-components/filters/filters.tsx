@@ -33,7 +33,7 @@ function FilterItem({
           data-mask
           render={<Button size="xs" variant="outline" />}
         >
-          <RiDatabase2Line className="size-3" />
+          <RiDatabase2Line className="size-3 text-muted-foreground" />
           {filter.column}
         </PopoverTrigger>
         <PopoverContent className="

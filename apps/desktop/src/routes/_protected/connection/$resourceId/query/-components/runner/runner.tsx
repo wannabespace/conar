@@ -2,8 +2,7 @@ import type { ComponentRef } from 'react'
 import { Button } from '@conar/ui/components/button'
 import { CardHeader, CardTitle } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
-import { CtrlEnter, CtrlLetter } from '@conar/ui/components/custom/shortcuts'
-import { Kbd } from '@conar/ui/components/kbd'
+import { KbdCtrlEnter, KbdCtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import NumberFlow from '@number-flow/react'
@@ -200,16 +199,12 @@ export function Runner() {
             `}
             >
               <span className="flex items-center gap-1">
-                <Kbd asChild>
-                  <CtrlLetter letter="K" userAgent={navigator.userAgent} />
-                </Kbd>
+                <KbdCtrlLetter letter="K" userAgent={navigator.userAgent} />
                 {' '}
                 to call the AI
               </span>
               <span className="flex items-center gap-1">
-                <Kbd asChild>
-                  <CtrlEnter userAgent={navigator.userAgent} />
-                </Kbd>
+                <KbdCtrlEnter userAgent={navigator.userAgent} />
                 {' '}
                 to run the focused query
               </span>

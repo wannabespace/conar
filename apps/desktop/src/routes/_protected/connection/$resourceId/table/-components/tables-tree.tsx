@@ -310,7 +310,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                                     )}
                                   />
                                 </TooltipTrigger>
-                                <TooltipContent>
+                                <TooltipContent side="left">
                                   Schema
                                 </TooltipContent>
                               </Tooltip>
