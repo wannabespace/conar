@@ -17,13 +17,15 @@ import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAlertLine, RiArrowDownSLine, RiDeleteBinLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiRefreshLine, RiSearchLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowDownSLine, RiDeleteBinLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiRefreshLine, RiSearchLine, RiSortAsc, RiSortDesc } from '@remixicon/react'
 import { and, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
+import { type } from 'arktype'
 import { AnimatePresence } from 'motion/react'
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
+import { createLocalStorageValue } from 'seitu/web'
 import { v7 } from 'uuid'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
@@ -416,9 +418,15 @@ const sortOptions = [
   { value: 'name-desc', label: 'Name (Z–A)' },
 ] as const
 
+const sortValue = createLocalStorageValue({
+  key: 'connections-list-sort',
+  schema: type('string' as type.cast<typeof sortOptions[number]['value']>),
+  defaultValue: 'date-desc',
+})
+
 export function ConnectionsList() {
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
-  const [sort, setSort] = useState<typeof sortOptions[number]['value']>('date-desc')
+  const sort = useSubscription(sortValue)
   const { data } = useLiveQuery((q) => {
     let query = q.from({ connections: connectionsCollection })
 
@@ -486,9 +494,10 @@ export function ConnectionsList() {
           )}
           <Select
             value={sort}
-            onValueChange={value => setSort(value!)}
+            onValueChange={value => sortValue.set(value!)}
           >
             <SelectTrigger className="w-[200px] shrink-0">
+              {sort.includes('asc') ? <RiSortAsc /> : <RiSortDesc />}
               <SelectValue>
                 {sortOptions.find(option => option.value === sort)!.label}
               </SelectValue>
