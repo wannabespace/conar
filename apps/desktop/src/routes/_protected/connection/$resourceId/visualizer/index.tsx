@@ -2,9 +2,8 @@ import type { constraintsType } from '~/entities/connection/queries'
 import type { columnType } from '~/entities/connection/queries/columns'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
-import { CtrlLetter } from '@conar/ui/components/custom/shortcuts'
+import { KbdCtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
-import { Kbd } from '@conar/ui/components/kbd'
 import { ReactFlowEdge } from '@conar/ui/components/react-flow/edge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
@@ -200,9 +199,7 @@ function Visualizer({
                   text-muted-foreground
                 "
                 >
-                  <Kbd asChild>
-                    <CtrlLetter userAgent={navigator.userAgent} letter="F" />
-                  </Kbd>
+                  <KbdCtrlLetter userAgent={navigator.userAgent} letter="F" />
                 </div>
               )}
 

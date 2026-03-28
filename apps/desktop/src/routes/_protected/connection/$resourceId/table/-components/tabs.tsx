@@ -10,6 +10,7 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from '@conar/ui/components/context-menu'
+import { KbdCtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
@@ -53,12 +54,12 @@ function CloseButton({ onClick }: { onClick: ComponentProps<'svg'>['onClick'] })
 }
 
 function getQueryOpts(connectionResource: typeof connectionsResources.$inferSelect, schema: string, tableName: string) {
-  const store = tablePageStore({ id: connectionResource.id, schema, table: tableName })
+  const state = tablePageStore({ id: connectionResource.id, schema, table: tableName }).get()
 
   return {
-    filters: store.get().filters,
-    orderBy: store.get().orderBy,
-    exact: store.get().exact,
+    filters: state.filters,
+    orderBy: state.orderBy,
+    exact: state.exact,
   }
 }
 
@@ -129,7 +130,7 @@ function SortableTab({
                 hover:border-primary/50 hover:bg-primary/10
               `,
             )}
-            onDoubleClick={() => addTab(connectionResource.id, item.tab.schema, item.tab.table, false)}
+            onDoubleClick={() => addTab(connectionResource.id, item.tab.schema, item.tab.table)}
             onMouseOver={() => prefetchConnectionResourceTableCore({
               connectionResource,
               schema: item.tab.schema,
@@ -167,8 +168,7 @@ function SortableTab({
           <ContextMenuItem onClick={onClose}>
             Close
             <ContextMenuShortcut>
-              {os.type === 'macos' ? '⌘' : 'Ctrl'}
-              + W
+              <KbdCtrlLetter userAgent={navigator.userAgent} letter="W" />
             </ContextMenuShortcut>
           </ContextMenuItem>
           <ContextMenuSeparator />

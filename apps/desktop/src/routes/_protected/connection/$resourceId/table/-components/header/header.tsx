@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
 import { RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useSubscription } from 'seitu/react'
 import { ExportData } from '~/components/export-data'
@@ -43,6 +44,8 @@ export function Header({ table, schema }: { table: string, schema: string }) {
     queryClient.invalidateQueries(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters, exact } }))
     queryClient.invalidateQueries(resourceConstraintsQueryOptions({ connectionResource }))
   }
+
+  useHotkey('Mod+R', handleRefresh)
 
   const getAllData = async ({ filters: exportFilters }: { filters?: ActiveFilter[] }) => {
     const data: Record<string, unknown>[] = []
