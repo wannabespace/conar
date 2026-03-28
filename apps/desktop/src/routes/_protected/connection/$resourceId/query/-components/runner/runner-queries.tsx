@@ -4,7 +4,7 @@ import { CardTitle } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiDeleteBin7Line, RiFileCopyLine, RiPlayListAddLine, RiSaveLine } from '@remixicon/react'
@@ -42,35 +42,33 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                     key={query.id}
                     className="flex w-full items-center gap-2 px-4 py-1"
                   >
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            size="icon-sm"
-                            variant="ghost"
-                            onClick={() => {
-                              runnerHooks.callHook('appendToBottomAndFocus', `-- ${query.name}\n${query.query}`)
-                              setMovedId(query.id)
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="icon-sm"
+                          variant="ghost"
+                          onClick={() => {
+                            runnerHooks.callHook('appendToBottomAndFocus', `-- ${query.name}\n${query.query}`)
+                            setMovedId(query.id)
+                          }}
+                        >
+                          <ContentSwitch
+                            active={movedId === query.id}
+                            activeContent={(
+                              <RiCheckLine className="size-4 text-success" />
+                            )}
+                            onSwitchEnd={() => {
+                              setMovedId(null)
                             }}
                           >
-                            <ContentSwitch
-                              active={movedId === query.id}
-                              activeContent={(
-                                <RiCheckLine className="size-4 text-success" />
-                              )}
-                              onSwitchEnd={() => {
-                                setMovedId(null)
-                              }}
-                            >
-                              <RiPlayListAddLine className="size-4" />
-                            </ContentSwitch>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="left">
-                          Append to bottom of runner
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                            <RiPlayListAddLine className="size-4" />
+                          </ContentSwitch>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="left">
+                        Append to bottom of runner
+                      </TooltipContent>
+                    </Tooltip>
                     <div className="flex min-w-0 flex-1 flex-col">
                       <div className="truncate text-sm font-medium">{query.name}</div>
                       <div
@@ -83,51 +81,49 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                         {query.query}
                       </div>
                     </div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={() => {
-                              copy(query.query)
-                              setCopiedId(copiedId === query.id ? null : query.id)
-                            }}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => {
+                            copy(query.query)
+                            setCopiedId(copiedId === query.id ? null : query.id)
+                          }}
+                        >
+                          <ContentSwitch
+                            active={copiedId === query.id}
+                            activeContent={(
+                              <RiCheckLine className="size-4 text-success" />
+                            )}
+                            onSwitchEnd={() => setCopiedId(null)}
                           >
-                            <ContentSwitch
-                              active={copiedId === query.id}
-                              activeContent={(
-                                <RiCheckLine className="size-4 text-success" />
-                              )}
-                              onSwitchEnd={() => setCopiedId(null)}
-                            >
-                              <RiFileCopyLine className="size-4" />
-                            </ContentSwitch>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Copy Query</TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            className={`
-                              -mr-1 transition-none
-                              group-hover:opacity-100
-                              hover:text-destructive
-                            `}
-                            size="icon-sm"
-                            onClick={() => {
-                              removeQueryDialogRef.current?.remove(query)
-                            }}
-                            data-variant="destructive"
-                          >
-                            <RiDeleteBin7Line className="size-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Delete Query</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                            <RiFileCopyLine className="size-4" />
+                          </ContentSwitch>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Copy Query</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className={`
+                            -mr-1 transition-none
+                            group-hover:opacity-100
+                            hover:text-destructive
+                          `}
+                          size="icon-sm"
+                          onClick={() => {
+                            removeQueryDialogRef.current?.remove(query)
+                          }}
+                          data-variant="destructive"
+                        >
+                          <RiDeleteBin7Line className="size-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Delete Query</TooltipContent>
+                    </Tooltip>
                   </div>
                 ))}
               </div>

@@ -15,7 +15,6 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { connectionSystemNames } from '~/entities/connection/queries'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
@@ -77,18 +76,19 @@ function CreateConnectionPage() {
 
     const resource = url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
 
-    const resourceId = v7()
-
     if (resource) {
       getConnectionStore(id).set({
         lastOpenedResourceName: resource,
+        pinnedResourcesNames: [resource],
       })
     }
+
+    const resourceId = v7()
 
     connectionsResourcesCollection.insert({
       id: resourceId,
       connectionId: id,
-      name: resource || connectionSystemNames[data.type],
+      name: resource,
       createdAt: new Date(),
       updatedAt: new Date(),
     })

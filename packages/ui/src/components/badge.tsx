@@ -1,23 +1,30 @@
 import type { VariantProps } from 'class-variance-authority'
 import type * as React from 'react'
+import { mergeProps } from '@base-ui/react/merge-props'
+import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@conar/ui/lib/utils'
-import { Slot } from '@radix-ui/react-slot'
 import { badgeVariants } from './badge.variants'
+
+export interface BadgeProps extends useRender.ComponentProps<'span'> {
+  variant?: VariantProps<typeof badgeVariants>['variant']
+  size?: VariantProps<typeof badgeVariants>['size']
+}
 
 export function Badge({
   className,
   variant,
-  asChild = false,
+  size,
+  render,
   ...props
-}: React.ComponentProps<'span'>
-  & VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot : 'span'
+}: BadgeProps): React.ReactElement {
+  const defaultProps = {
+    'className': cn(badgeVariants({ className, size, variant })),
+    'data-slot': 'badge',
+  }
 
-  return (
-    <Comp
-      data-slot="badge"
-      className={cn(badgeVariants({ variant }), className)}
-      {...props}
-    />
-  )
+  return useRender({
+    defaultTagName: 'span',
+    props: mergeProps<'span'>(defaultProps, props),
+    render,
+  })
 }

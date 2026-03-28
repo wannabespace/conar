@@ -1,6 +1,6 @@
 import { noop } from '@conar/shared/utils/helpers'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
-import { cn } from '@conar/ui/lib/utils'
+import { AnimatePresence, motion } from 'motion/react'
 import { useEffectEvent, useState } from 'react'
 
 export function ContentSwitch({
@@ -36,23 +36,32 @@ export function ContentSwitch({
   }, [active])
 
   return (
-    <span className={cn('relative flex items-center gap-1', className)}>
-      <span
-        className={cn(
-          'transition-all',
-          isActive ? 'scale-0 opacity-0' : 'scale-100 opacity-100',
-        )}
-      >
-        {children}
-      </span>
-      <span
-        className={cn(
-          'absolute inset-0 flex items-center justify-center transition-all',
-          isActive ? 'scale-100 opacity-100' : 'scale-0 opacity-0',
-        )}
-      >
-        {activeContent}
-      </span>
-    </span>
+    <AnimatePresence mode="popLayout" initial={false}>
+      {isActive
+        ? (
+            <motion.span
+              key="active"
+              className={className}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ duration: 0.1 }}
+            >
+              {activeContent}
+            </motion.span>
+          )
+        : (
+            <motion.span
+              key="default"
+              className={className}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ duration: 0.1 }}
+            >
+              {children}
+            </motion.span>
+          )}
+    </AnimatePresence>
   )
 }

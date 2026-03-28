@@ -1,5 +1,6 @@
 import type { LinkProps } from '@tanstack/react-router'
 import type { connectionsResources } from '~/drizzle/schema'
+import { CONNECTION_RESOURCE_ROOT_LABEL } from '@conar/shared/constants'
 import { getOS } from '@conar/shared/utils/os'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
@@ -10,7 +11,7 @@ import { Label } from '@conar/ui/components/label'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiCommandLine, RiFileListLine, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiShieldCheckLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { inArray, useLiveQuery } from '@tanstack/react-db'
@@ -70,16 +71,14 @@ function SupportButton() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DialogTrigger render={<Button size="icon" variant="ghost" />}>
-              <RiMessageLine className="size-4" />
-            </DialogTrigger>
-          </TooltipTrigger>
-          <TooltipContent side="right">Support</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DialogTrigger render={<Button size="icon" variant="ghost" />}>
+            <RiMessageLine className="size-4" />
+          </DialogTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="right">Support</TooltipContent>
+      </Tooltip>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Contact Support</DialogTitle>
@@ -123,70 +122,66 @@ function LastOpenedConnection({ connectionResource }: { connectionResource: type
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
   async function onCloseClick() {
-    const newResources = lastOpenedResourcesStorageValue.get().filter(resourceId => resourceId !== connectionResource.id)
-
-    lastOpenedResourcesStorageValue.set(newResources)
+    lastOpenedResourcesStorageValue.set(state => state.filter(resourceId => resourceId !== connectionResource.id))
   }
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="group relative">
-            {!isActive && (
-              <button
-                type="button"
-                className={cn(
-                  `
-                    absolute top-0 right-0 z-20 flex size-4 translate-x-1/2
-                    -translate-y-1/2 items-center justify-center rounded-full
-                    bg-background text-foreground opacity-0
-                    group-hover:opacity-100
-                  `,
-                )}
-                onClick={onCloseClick}
-              >
-                <RiCloseLine className="size-3" />
-              </button>
-            )}
-            <Link
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="group relative">
+          {!isActive && (
+            <button
+              type="button"
               className={cn(
-                baseClasses(isActive),
-                connection.color && isActive
-                  ? `
-                    border-(--color)/20 bg-(--color)/10 text-(--color)
-                    hover:bg-(--color)/20
-                  `
-                  : '',
+                `
+                  absolute top-0 right-0 z-20 flex size-4 translate-x-1/2
+                  -translate-y-1/2 items-center justify-center rounded-full
+                  bg-background text-foreground opacity-0
+                  group-hover:opacity-100
+                `,
               )}
-              style={connection.color ? { '--color': connection.color } : {}}
-              preload={false}
-              {...params}
+              onClick={onCloseClick}
             >
-              <span className="text-sm font-bold">
-                {connectionResource.name
-                  .replace(nameRegex, '')
-                  .split(whitespaceRegex)
-                  .map(word => word[0])
-                  .join('')
-                  .slice(0, 2)
-                  .toUpperCase()}
-              </span>
-            </Link>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="right" sideOffset={10}>
-          <span className="flex items-center gap-2 font-medium">
-            <ConnectionIcon type={connection.type} className="-ml-1 size-4" />
-            {connection.name}
-            {' '}
-            /
-            {' '}
-            {connectionResource.name}
-          </span>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+              <RiCloseLine className="size-3" />
+            </button>
+          )}
+          <Link
+            className={cn(
+              baseClasses(isActive),
+              connection.color && isActive
+                ? `
+                  border-(--color)/20 bg-(--color)/10 text-(--color)
+                  hover:bg-(--color)/20
+                `
+                : '',
+            )}
+            style={connection.color ? { '--color': connection.color } : {}}
+            preload={false}
+            {...params}
+          >
+            <span className="text-sm font-bold">
+              {(connectionResource.name || CONNECTION_RESOURCE_ROOT_LABEL)
+                .replace(nameRegex, '')
+                .split(whitespaceRegex)
+                .map(word => word[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase()}
+            </span>
+          </Link>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="right" sideOffset={10}>
+        <span className="flex items-center gap-2 font-medium">
+          <ConnectionIcon type={connection.type} className="-ml-1 size-4" />
+          {connection.name}
+          {' '}
+          /
+          {' '}
+          {connectionResource.name}
+        </span>
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -240,68 +235,59 @@ function MainLinks() {
 
   return (
     <>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              to="/connection/$resourceId/query"
-              params={{ resourceId: connectionResource.id }}
-              search={{
-                ...(lastOpenedChatId ? { chatId: lastOpenedChatId } : {}),
-              }}
-              className={baseClasses(isActiveSql)}
-            >
-              <RiPlayLargeLine className="size-4" />
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="right">SQL Runner</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              className={baseClasses(isActiveTables)}
-              {...route}
-              onClick={() => {
-                onTablesClick()
-              }}
-            >
-              <RiTableLine className="size-4" />
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="right">Tables</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              to="/connection/$resourceId/definitions"
-              params={{ resourceId: connectionResource.id }}
-              className={baseClasses(isActiveDefinitions)}
-            >
-              <RiShieldCheckLine className="size-4" />
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="right">Definitions</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Link
-              to="/connection/$resourceId/visualizer"
-              params={{ resourceId: connectionResource.id }}
-              className={baseClasses(isActiveVisualizer)}
-            >
-              <RiNodeTree className="size-4" />
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="right">Visualizer</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link
+            to="/connection/$resourceId/query"
+            params={{ resourceId: connectionResource.id }}
+            search={{
+              ...(lastOpenedChatId ? { chatId: lastOpenedChatId } : {}),
+            }}
+            className={baseClasses(isActiveSql)}
+          >
+            <RiPlayLargeLine className="size-4" />
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right">SQL Runner</TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link
+            className={baseClasses(isActiveTables)}
+            {...route}
+            onClick={() => {
+              onTablesClick()
+            }}
+          >
+            <RiTableLine className="size-4" />
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right">Tables</TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link
+            to="/connection/$resourceId/definitions"
+            params={{ resourceId: connectionResource.id }}
+            className={baseClasses(isActiveDefinitions)}
+          >
+            <RiShieldCheckLine className="size-4" />
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right">Definitions</TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link
+            to="/connection/$resourceId/visualizer"
+            params={{ resourceId: connectionResource.id }}
+            className={baseClasses(isActiveVisualizer)}
+          >
+            <RiNodeTree className="size-4" />
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right">Visualizer</TooltipContent>
+      </Tooltip>
     </>
   )
 }
@@ -318,19 +304,17 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
   return (
     <div className={cn('flex flex-col items-center', className)} {...props}>
       <div className="flex flex-col p-4 pb-0">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                to="/"
-                className="p-2"
-              >
-                <AppLogo className="size-6 text-primary" />
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right">Dashboard</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link
+              to="/"
+              className="p-2"
+            >
+              <AppLogo className="size-6 text-primary" />
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side="right">Dashboard</TooltipContent>
+        </Tooltip>
       </div>
       <ScrollArea className="relative flex flex-1 flex-col items-center gap-2">
         <div className="w-full p-4">
@@ -351,39 +335,35 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
         </div>
       </ScrollArea>
       <div className="flex flex-col items-center p-4 pt-0">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => store.set(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
-              >
-                <RiFileListLine className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">Query Logger</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => store.set(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
+            >
+              <RiFileListLine className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="right">Query Logger</TooltipContent>
+        </Tooltip>
         <Separator className="my-4" />
         <SupportButton />
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => appStore.set(state => ({ ...state, isActionCenterOpen: true } satisfies typeof state))}
-              >
-                <RiCommandLine className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              {os?.type === 'macos' ? '⌘' : 'Ctrl'}
-              P
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => appStore.set(state => ({ ...state, isActionCenterOpen: true } satisfies typeof state))}
+            >
+              <RiCommandLine className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            {os?.type === 'macos' ? '⌘' : 'Ctrl'}
+            P
+          </TooltipContent>
+        </Tooltip>
         <ThemeToggle render={<Button size="icon" variant="ghost" />}>
           <RiSunLine className={`
             size-4

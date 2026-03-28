@@ -6,7 +6,7 @@
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://eu.i.posthog.com https://eu-assets.i.posthog.com 'wasm-unsafe-eval'; worker-src blob: file: http://localhost:*;" />
     <title>Conar</title>
     <script>
-      const theme = localStorage.getItem('conar.theme')
+      const theme = localStorage.getItem('tamery.theme')
       if (
         theme === 'dark'
         || (
@@ -34,7 +34,7 @@
       </svg>
       <div id="preloader-text" class="font-medium text-sm animate-pulse"></div>
     </div>
-    <div id="root" class="min-h-[inherit] relative z-10 duration-300 scale-[1.2] opacity-0"></div>
+    <div id="root" class="z-10 duration-300 scale-[1.2] opacity-0 isolate relative flex min-h-svh flex-col"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

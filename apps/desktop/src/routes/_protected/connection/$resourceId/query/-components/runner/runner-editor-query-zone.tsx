@@ -4,7 +4,7 @@ import { Button } from '@conar/ui/components/button'
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { Separator } from '@conar/ui/components/separator'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiFileCopyLine, RiPieChart2Line, RiSaveLine } from '@remixicon/react'
 import { useIsFetching } from '@tanstack/react-query'
@@ -79,49 +79,45 @@ export function RunnerEditorQueryZone({
           </label>
         </div>
         <div className="flex items-center gap-1">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  className="focus:outline-none!"
-                  onClick={() => onSave()}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className="focus:outline-none!"
+                onClick={() => onSave()}
+              >
+                <RiSaveLine className="size-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Save
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className="focus:outline-none!"
+                onClick={() => {
+                  onCopy()
+                  setIsCopying(true)
+                }}
+              >
+                <ContentSwitch
+                  active={isCopying}
+                  activeContent={<RiCheckLine className="text-success" />}
+                  onSwitchEnd={() => setIsCopying(false)}
                 >
-                  <RiSaveLine className="size-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                Save
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  className="focus:outline-none!"
-                  onClick={() => {
-                    onCopy()
-                    setIsCopying(true)
-                  }}
-                >
-                  <ContentSwitch
-                    active={isCopying}
-                    activeContent={<RiCheckLine className="text-success" />}
-                    onSwitchEnd={() => setIsCopying(false)}
-                  >
-                    <RiFileCopyLine className="size-3.5" />
-                  </ContentSwitch>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                Copy
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+                  <RiFileCopyLine className="size-3.5" />
+                </ContentSwitch>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Copy
+            </TooltipContent>
+          </Tooltip>
           <Separator orientation="vertical" className="mx-1 h-4!" />
           {Array.from({ length: queriesLength }).map((_, idx) => {
             const key = `query-run-${connectionResource.id}-${lineNumber}-${idx}`
@@ -137,7 +133,6 @@ export function RunnerEditorQueryZone({
                   {' '}
                   {queriesLength === 1 ? '' : idx + 1}
                 </Button>
-
                 {connectionType === ConnectionType.Postgres && (
                   <Button
                     size="xs"

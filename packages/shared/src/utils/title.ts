@@ -1,3 +1,4 @@
-export function title(...title: string[]) {
-  return title.length > 0 ? `${title.join(' - ')} | Conar` : 'Conar'
+export function title(...title: (string | null)[]) {
+  const filteredTitle = title.filter(Boolean)
+  return filteredTitle.length > 0 ? `${filteredTitle.join(' - ')} | Conar` : 'Conar'
 }
