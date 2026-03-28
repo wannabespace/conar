@@ -42,7 +42,7 @@ function ChatPanel() {
       defaultSize="30%"
       minSize={MIN_CHAT_SIZE}
       maxSize="50%"
-      className="rounded-lg border bg-background"
+      className="rounded-lg bg-background"
     >
       <Chat className="h-full" />
     </ResizablePanel>
@@ -54,7 +54,7 @@ function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
     <ResizablePanel
       defaultSize={chatVisible ? '70%' : '100%'}
       minSize="30%"
-      className="rounded-lg border bg-background"
+      className="rounded-lg bg-background"
     >
       <Runner />
     </ResizablePanel>

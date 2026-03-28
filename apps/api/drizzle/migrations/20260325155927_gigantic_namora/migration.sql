@@ -1,0 +1,1 @@
+ALTER TABLE "connections_resources" ALTER COLUMN "name" DROP NOT NULL;
