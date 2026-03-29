@@ -4,6 +4,7 @@ import { TooltipProvider } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { ThemeObserver } from '@conar/ui/theme-observer'
 import { TanStackDevtools } from '@tanstack/react-devtools'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import { createRootRoute, HeadContent, Outlet, useRouter } from '@tanstack/react-router'
@@ -11,8 +12,8 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { useEffect } from 'react'
 import { AuthObserver } from '~/auth-observer'
 import { GlobalBanner } from '~/components/global-banner'
-import { enterAppAnimation } from '~/enter'
 import { ErrorPage } from '~/error-page'
+import { enterAppAnimation, globalHooks } from '~/global-hooks'
 import { authClient } from '~/lib/auth'
 import { EventsProvider } from '~/lib/events'
 import { queryClient } from '~/main'
@@ -30,6 +31,8 @@ export const Route = createRootRoute({
 function RootDocument() {
   const { isPending } = authClient.useSession()
   const router = useRouter()
+
+  useHotkey('Mod+R', () => globalHooks.callHook('refreshPressed'))
 
   useUpdatesObserver()
   useDeepLinksObserver()

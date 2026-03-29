@@ -13,6 +13,7 @@ import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
+import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { queryClient } from '~/main'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 import { ConnectionsList } from './-components/connections-list'
@@ -38,6 +39,9 @@ function DashboardPage() {
       queryClient.invalidateQueries({ queryKey: ['connection-resources'] })
     },
   })
+
+  useRefreshHotkey(sync, isSyncing)
+
   const { version, status } = useSubscription(updatesStore, { selector: state => pick(state, ['version', 'status']) })
 
   return (

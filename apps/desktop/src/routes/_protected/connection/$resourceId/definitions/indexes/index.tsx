@@ -12,6 +12,7 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { resourceIndexesQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
+import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
@@ -95,6 +96,8 @@ function DatabaseIndexesPage() {
   }, {})
 
   const indexList = Object.values(groupedIndexes ?? {})
+
+  useRefreshHotkey(refetch, isFetching)
 
   return (
     <>

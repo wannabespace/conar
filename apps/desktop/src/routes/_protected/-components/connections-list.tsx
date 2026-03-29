@@ -18,7 +18,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAlertLine, RiArrowDownSLine, RiDeleteBinLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiRefreshLine, RiSearchLine, RiSortAsc, RiSortDesc } from '@remixicon/react'
-import { and, eq, useLiveQuery } from '@tanstack/react-db'
+import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { type } from 'arktype'
@@ -36,16 +36,6 @@ import { connectionsCollection, connectionsResourcesCollection } from '~/entitie
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
-
-function useConnectionResources(connection: typeof connectionsTable.$inferSelect) {
-  const { data: resources } = useLiveQuery(q => q
-    .from({ connectionsResources: connectionsResourcesCollection })
-    .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
-    .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
-  const { data, ...props } = useQuery(connectionResourcesQueryOptions(connection))
-
-  return { data: data || resources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL), ...props }
-}
 
 function ConnectionIconWithVersion({ connection }: { connection: typeof connectionsTable.$inferSelect }) {
   const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery(connectionVersionQueryOptions(connection))
@@ -189,17 +179,6 @@ function ConnectionResourcesCombobox({
   )
 }
 
-async function createResource(connectionId: string, name: string | null) {
-  await connectionsResourcesCollection.utils.waitForSync()
-  connectionsResourcesCollection.insert({
-    id: v7(),
-    connectionId,
-    name,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  })
-}
-
 function ConnectionCard({
   connection,
   onRemove,
@@ -207,7 +186,18 @@ function ConnectionCard({
   connection: typeof connectionsTable.$inferSelect
   onRemove: VoidFunction
 }) {
-  const { data: resources, isPending, isFetching, error, refetch } = useConnectionResources(connection)
+  const { data: storedResources } = useLiveQuery(q => q
+    .from({ connectionsResources: connectionsResourcesCollection })
+    .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
+    .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
+  const storedResourcesNames = storedResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
+  const {
+    data: resources = storedResourcesNames,
+    isPending,
+    isFetching,
+    error,
+    refetch,
+  } = useQuery(connectionResourcesQueryOptions(connection))
 
   const [isOpen, setIsOpen] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
@@ -222,20 +212,28 @@ function ConnectionCard({
       pinnedResourcesNames: state.pinnedResourcesNames,
     }),
   })
+  const resolvedSelectedResourceName = selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? null : selectedResourceName
+  const selectedResource = storedResources.find(r => r.name === resolvedSelectedResourceName)
 
-  const { data: selectedResource } = useLiveQuery(q => q
-    .from({ connectionsResources: connectionsResourcesCollection })
-    .where(({ connectionsResources }) => and(
-      eq(connectionsResources.connectionId, connection.id),
-      eq(connectionsResources.name, selectedResourceName),
-    ))
-    .findOne(), [connection.id, selectedResourceName])
+  const { isPending: isWaitForSyncPending } = useQuery({
+    queryKey: ['connections-resources-wait-for-sync', connection.id],
+    queryFn: async () => {
+      await connectionsResourcesCollection.utils.waitForSync()
+      return null
+    },
+  })
 
   useEffect(() => {
-    if (!selectedResource && !error) {
-      createResource(connection.id, selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? null : selectedResourceName)
+    if (!selectedResource && !isFetching && !error && !isWaitForSyncPending) {
+      connectionsResourcesCollection.insert({
+        id: v7(),
+        connectionId: connection.id,
+        name: resolvedSelectedResourceName,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
     }
-  }, [selectedResourceName, selectedResource, connection.id, error])
+  }, [resolvedSelectedResourceName, selectedResource, connection.id, isFetching, error, isWaitForSyncPending])
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
