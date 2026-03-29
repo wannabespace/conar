@@ -53,6 +53,7 @@
   "devDependencies": {
     "@conar/configs": "workspace:*",
     "@electric-sql/pglite": "catalog:",
+    "@opentelemetry/exporter-trace-otlp-http": "catalog:",
     "@playwright/test": "catalog:",
     "@types/ioredis-mock": "catalog:",
     "@types/pg": "catalog:",

@@ -10,7 +10,6 @@ export const buttonVariants = cva(
     focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
     focus-visible:ring-offset-background
     disabled:pointer-events-none disabled:opacity-64
-    data-loading:text-transparent data-loading:select-none
     sm:text-sm
     pointer-coarse:after:absolute pointer-coarse:after:size-full
     pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11

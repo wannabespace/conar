@@ -195,14 +195,14 @@ function DatabaseTablesPage() {
         defaultSize="20%"
         minSize={200}
         maxSize="50%"
-        className="h-full overflow-hidden rounded-lg border bg-background"
+        className="h-full overflow-hidden rounded-lg bg-background"
       >
         <Sidebar key={connectionResource.id} />
       </ResizablePanel>
       <ResizableSeparator className="w-1 bg-transparent" />
       <ResizablePanel
         defaultSize="80%"
-        className="flex-1 overflow-hidden rounded-lg border bg-background"
+        className="flex-1 overflow-hidden rounded-lg bg-background"
       >
         {schema && table && tableStore
           ? (

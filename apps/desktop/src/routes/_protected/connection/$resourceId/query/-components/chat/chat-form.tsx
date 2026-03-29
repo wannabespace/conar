@@ -5,6 +5,7 @@ import { getBase64FromFiles } from '@conar/shared/utils/base64'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { Spinner } from '@conar/ui/components/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
@@ -256,7 +257,7 @@ export function ChatForm() {
                 >
                   <LoadingContent
                     loading={isEnhancingPrompt}
-                    loaderClassName="size-3"
+                    spinner={<Spinner className="size-3" />}
                   >
                     <ContentSwitch
                       active={isEnhancingPrompt}

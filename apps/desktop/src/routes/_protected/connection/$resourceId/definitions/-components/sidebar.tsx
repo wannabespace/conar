@@ -35,7 +35,7 @@ export function Sidebar() {
   const search = useSubscription(getConnectionResourceStore(connectionResource.id), { selector: state => state.definitionsSearch })
 
   return (
-    <aside className="h-full w-64 flex-col rounded-lg border bg-background p-4">
+    <aside className="h-full w-64 flex-col rounded-lg bg-background p-4">
       <CardTitle className="mb-4">Definitions</CardTitle>
       <nav className="space-y-1">
         {sidebarItems(connection).map(({ to, Icon, label }) => (

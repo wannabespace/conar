@@ -10,7 +10,7 @@ import { connections } from './schema/connections'
 import { queriesRelations } from './schema/queries'
 
 // const pg = new PGliteWorker(new PGWorker({ name: 'pglite-worker' }))
-const pg = new PGlite('idb://conar')
+const pg = new PGlite('idb://tamery')
 
 if (import.meta.env.DEV) {
   // @ts-expect-error - window.db is not typed
@@ -38,12 +38,22 @@ export async function clearDb() {
 }
 
 async function ensureMigrationsTable() {
-  await db.execute('CREATE SCHEMA IF NOT EXISTS drizzle')
+  await db.execute('CREATE SCHEMA IF NOT EXISTS drizzle').catch((e) => {
+    if (e instanceof Error && e.cause) {
+      throw e.cause
+    }
+    throw e
+  })
   await db.execute(`CREATE TABLE IF NOT EXISTS drizzle.__drizzle_migrations (
     id SERIAL PRIMARY KEY,
     hash text NOT NULL,
     created_at bigint
-  )`)
+  )`).catch((e) => {
+    if (e instanceof Error && e.cause) {
+      throw e.cause
+    }
+    throw e
+  })
 }
 
 async function getMigratedHashes() {

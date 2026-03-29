@@ -10,7 +10,7 @@ import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { UserAvatar } from '@conar/ui/components/custom/user-avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useElementSize } from '@conar/ui/hookas/use-element-size'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
@@ -40,21 +40,19 @@ function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
 
 function ChatMessageFooterButton({ onClick, icon, tooltip, disabled }: { onClick: () => void, icon: ReactNode, tooltip: string, disabled?: boolean }) {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={onClick}
-            disabled={disabled}
-          >
-            {icon}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{tooltip}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={onClick}
+          disabled={disabled}
+        >
+          {icon}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{tooltip}</TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -90,83 +88,77 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
 
   return (
     <div className="flex gap-1">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="icon-xs"
-              variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation()
-                setIsCopying(true)
-                copy(content)
-              }}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            size="icon-xs"
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsCopying(true)
+              copy(content)
+            }}
+          >
+            <ContentSwitch
+              active={isCopying}
+              activeContent={<RiCheckLine className="text-success" />}
+              onSwitchEnd={() => setIsCopying(false)}
             >
-              <ContentSwitch
-                active={isCopying}
-                activeContent={<RiCheckLine className="text-success" />}
-                onSwitchEnd={() => setIsCopying(false)}
-              >
-                <RiFileCopyLine className="size-3.5" />
-              </ContentSwitch>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            Copy to clipboard
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+              <RiFileCopyLine className="size-3.5" />
+            </ContentSwitch>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          Copy to clipboard
+        </TooltipContent>
+      </Tooltip>
       {lang === 'sql' && (
         <>
-          <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon-xs"
+                variant="ghost"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  runnerHooks.callHook('appendToBottomAndFocus', content)
+                  setIsAppending(true)
+                }}
+              >
+                <ContentSwitch
+                  active={isAppending}
+                  activeContent={<RiCheckLine className="text-success" />}
+                  onSwitchEnd={() => setIsAppending(false)}
+                >
+                  <RiPlayListAddLine className="size-3.5" />
+                </ContentSwitch>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Append to bottom of runner
+            </TooltipContent>
+          </Tooltip>
+          <DropdownMenu>
             <Tooltip>
-              <TooltipTrigger asChild>
+              <DropdownMenuTrigger render={<TooltipTrigger asChild />}>
                 <Button
                   size="icon-xs"
                   variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    runnerHooks.callHook('appendToBottomAndFocus', content)
-                    setIsAppending(true)
-                  }}
+                  onClick={e => e.stopPropagation()}
                 >
                   <ContentSwitch
-                    active={isAppending}
+                    active={isReplacing}
                     activeContent={<RiCheckLine className="text-success" />}
-                    onSwitchEnd={() => setIsAppending(false)}
+                    onSwitchEnd={() => setIsReplacing(false)}
                   >
-                    <RiPlayListAddLine className="size-3.5" />
+                    <RiLoopLeftLine className="size-3.5" />
                   </ContentSwitch>
                 </Button>
-              </TooltipTrigger>
+              </DropdownMenuTrigger>
               <TooltipContent>
-                Append to bottom of runner
+                Replace a query in the runner
               </TooltipContent>
             </Tooltip>
-          </TooltipProvider>
-          <DropdownMenu>
-            <TooltipProvider>
-              <Tooltip>
-                <DropdownMenuTrigger render={<TooltipTrigger asChild />}>
-                  <Button
-                    size="icon-xs"
-                    variant="ghost"
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <ContentSwitch
-                      active={isReplacing}
-                      activeContent={<RiCheckLine className="text-success" />}
-                      onSwitchEnd={() => setIsReplacing(false)}
-                    >
-                      <RiLoopLeftLine className="size-3.5" />
-                    </ContentSwitch>
-                  </Button>
-                </DropdownMenuTrigger>
-                <TooltipContent>
-                  Replace a query in the runner
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
             <DropdownMenuContent
               align="end"
               className="max-h-64 min-w-[220px] overflow-auto"
