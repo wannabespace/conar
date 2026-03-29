@@ -131,7 +131,7 @@ function Log({ query, className, connectionResource }: { query: QueryLog, classN
       )}
       />
       <PopoverContent
-        className="flex w-[95vw] gap-4"
+        className="flex w-[95vw] flex-row gap-4"
         onAnimationEnd={closePopover}
       >
         <div className="min-w-0 flex-1 space-y-2">

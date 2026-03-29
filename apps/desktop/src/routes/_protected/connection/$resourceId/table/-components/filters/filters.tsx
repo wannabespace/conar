@@ -75,13 +75,13 @@ function FilterItem({
           <Popover open={isValueOpen} onOpenChange={setIsValueOpen}>
             <PopoverTrigger
               render={<Button size="xs" variant="outline" />}
+              className="max-w-72"
             >
-              {filter.values?.join(', ')}
-              {(filter.values?.length === 0 || filter.values?.every(value => value === '')) && (
-                <span className="opacity-30">
-                  Empty
-                </span>
-              )}
+              <span className="truncate">
+                {(filter.values?.length === 0 || filter.values?.every(value => value === ''))
+                  ? <span className="opacity-30">Empty</span>
+                  : filter.values?.join(', ')}
+              </span>
             </PopoverTrigger>
             <PopoverContent className="
               max-h-[calc(100vh-10rem)] p-0
