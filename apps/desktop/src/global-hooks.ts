@@ -3,10 +3,9 @@ import { createHooks } from 'hookable'
 
 let isEntered = false
 
-export const preloaderTextElement = document.getElementById('preloader-text')
-
-export const animationHooks = createHooks<{
-  finished: () => void
+export const globalHooks = createHooks<{
+  animationFinished: () => void
+  refreshPressed: () => void
 }>()
 
 export function enterAppAnimation() {
@@ -23,7 +22,7 @@ export function enterAppAnimation() {
     document.body.classList.remove('overflow-hidden')
     // 300 - transition duration
     sleep(300).then(() => {
-      animationHooks.callHook('finished')
+      globalHooks.callHook('animationFinished')
     })
   })
 
