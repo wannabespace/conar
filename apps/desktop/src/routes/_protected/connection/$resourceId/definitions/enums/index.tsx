@@ -14,6 +14,7 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { resourceEnumsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
+import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
@@ -54,6 +55,8 @@ function DatabaseEnumsPage() {
       ...enumItem,
       values: enumItem.values.filter(value => value.toLowerCase().includes(search.toLowerCase())),
     })) ?? []
+
+  useRefreshHotkey(refetch, isFetching)
 
   return (
     <>

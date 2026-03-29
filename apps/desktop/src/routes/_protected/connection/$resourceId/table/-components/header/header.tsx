@@ -8,12 +8,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
 import { RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
-import { useHotkey } from '@tanstack/react-hotkeys'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useSubscription } from 'seitu/react'
 import { ExportData } from '~/components/export-data'
-import { resourceConstraintsQueryOptions, resourceRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableColumnsQueryOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
+import { resourceConstraintsQueryOptions, resourceEnumsQueryOptions, resourceRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableColumnsQueryOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
+import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { queryClient } from '~/main'
 import { Route } from '../..'
 import { useTableColumns } from '../../-queries/use-columns-query'
@@ -43,9 +43,10 @@ export function Header({ table, schema }: { table: string, schema: string }) {
     queryClient.invalidateQueries(resourceTableColumnsQueryOptions({ connectionResource, table, schema }))
     queryClient.invalidateQueries(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters, exact } }))
     queryClient.invalidateQueries(resourceConstraintsQueryOptions({ connectionResource }))
+    queryClient.invalidateQueries(resourceEnumsQueryOptions({ connectionResource }))
   }
 
-  useHotkey('Mod+R', handleRefresh)
+  useRefreshHotkey(handleRefresh, isFetching)
 
   const getAllData = async ({ filters: exportFilters }: { filters?: ActiveFilter[] }) => {
     const data: Record<string, unknown>[] = []
