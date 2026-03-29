@@ -58,13 +58,14 @@ export function RunnerResultsTable({
       ),
       cell: props => (
         <TableCell
+          row={filteredData[props.rowIndex]!}
           column={{ id: column.id, type: 'text' }}
           {...props}
         />
       ),
       size: DEFAULT_COLUMN_WIDTH,
     } satisfies ColumnRenderer))
-  }, [columns])
+  }, [columns, filteredData])
 
   const getData = async ({ limit }: { limit?: number }) => {
     return limit ? filteredData.slice(0, limit) : filteredData

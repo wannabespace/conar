@@ -200,6 +200,11 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     if (!columns)
       return []
 
+    const dataColumnSpecs = columns
+      .filter(c => !hiddenColumns.includes(c.id))
+      .toSorted((a, b) => (a.primaryKey ? -1 : b.primaryKey ? 1 : 0))
+      .map(c => ({ key: c.id, header: c.label ?? c.id }))
+
     const sortedColumns: ColumnRenderer[] = columns
       .filter(column => !hiddenColumns.includes(column.id))
       .toSorted((a, b) => a.primaryKey ? -1 : b.primaryKey ? 1 : 0)
@@ -242,9 +247,17 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
           return (
             <TableCell
+              row={rows[props.rowIndex]!}
               column={column}
               onSaveValue={primaryColumns.length > 0 ? saveValue : undefined}
               values={values}
+              contextMenu={{
+                dataColumnSpecs,
+                onAddFilter: filter => store.set(state => ({
+                  ...state,
+                  filters: [...state.filters, filter],
+                } satisfies typeof state)),
+              }}
               {...props}
             />
           )
@@ -268,7 +281,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     })
 
     return sortedColumns
-  }, [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, toggleOrder, enums, store])
+  }, [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, toggleOrder, enums, store, rows])
 
   const handleShiftSelectionKeyDown = useShiftSelectionKeyDown({
     rowCount: rows.length,
