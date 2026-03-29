@@ -1,7 +1,5 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { TabularColumnSpec } from '@conar/shared/utils/files'
 import type { CSSProperties, ReactNode } from 'react'
-import type { Column } from './utils'
 import {
   formatValueForPlainCell,
   recordsToCSV,
@@ -28,7 +26,7 @@ import { TableAddFilterSubmenu } from './table-add-filter-submenu'
 export function TableCellContextMenu({
   rowIndex,
   value,
-  column,
+  columnId,
   contextMenu,
   open,
   onOpenChange,
@@ -37,9 +35,8 @@ export function TableCellContextMenu({
 }: {
   rowIndex: number
   value: unknown
-  column: Column
+  columnId: string
   contextMenu: {
-    dataColumnSpecs: TabularColumnSpec[]
     onAddFilter: (filter: ActiveFilter) => void
   }
   open: boolean
@@ -48,8 +45,10 @@ export function TableCellContextMenu({
   children: ReactNode
 }) {
   const row = useTableContext(({ rows }) => rows[rowIndex]!)
-  const dataColumnSpecs = contextMenu.dataColumnSpecs
-  const rowCopyDisabled = dataColumnSpecs.length === 0
+  const columnKeys = useTableContext(({ columns }) =>
+    columns.map(c => c.id).filter(id => !id.startsWith('!__')),
+  )
+  const rowCopyDisabled = columnKeys.length === 0
 
   return (
     <ContextMenu open={open} onOpenChange={onOpenChange}>
@@ -77,7 +76,7 @@ export function TableCellContextMenu({
             <ContextMenuItem
               disabled={rowCopyDisabled}
               onClick={() => {
-                copy(rowValuesToPlainText(row, dataColumnSpecs.map(c => c.key)), 'Row copied as plain text')
+                copy(rowValuesToPlainText(row, columnKeys), 'Row copied as plain text')
               }}
             >
               Plain text
@@ -93,7 +92,7 @@ export function TableCellContextMenu({
             <ContextMenuItem
               disabled={rowCopyDisabled}
               onClick={() => {
-                copy(recordsToCSV(dataColumnSpecs, [row]), 'Row copied as CSV')
+                copy(recordsToCSV(columnKeys.map(key => ({ key })), [row]), 'Row copied as CSV')
               }}
             >
               CSV
@@ -101,7 +100,7 @@ export function TableCellContextMenu({
             <ContextMenuItem
               disabled={rowCopyDisabled}
               onClick={() => {
-                copy(recordToMarkdownTable(row, dataColumnSpecs), 'Row copied as Markdown table')
+                copy(recordToMarkdownTable(row, columnKeys.map(key => ({ key }))), 'Row copied as Markdown table')
               }}
             >
               Markdown table
@@ -110,7 +109,7 @@ export function TableCellContextMenu({
         </ContextMenuSub>
         <ContextMenuSeparator />
         <TableAddFilterSubmenu
-          columnId={column.id}
+          columnId={columnId}
           cellValue={value}
           hasRow={!!row}
           onAdd={contextMenu.onAddFilter}

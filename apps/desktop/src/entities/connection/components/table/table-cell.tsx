@@ -1,5 +1,4 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { TabularColumnSpec } from '@conar/shared/utils/files'
 import type { TableCellProps } from '@conar/table'
 import type { editor } from 'monaco-editor'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
@@ -277,7 +276,6 @@ export function TableCell({
   className?: string
   values?: string[]
   contextMenu?: {
-    dataColumnSpecs: TabularColumnSpec[]
     onAddFilter: (filter: ActiveFilter) => void
   }
 } & TableCellProps) {
@@ -512,7 +510,7 @@ export function TableCell({
       <TableCellContextMenu
         rowIndex={rowIndex}
         value={value}
-        column={column}
+        columnId={column.id}
         contextMenu={contextMenu}
         open={isContextMenuOpen}
         onOpenChange={setIsContextMenuOpen}

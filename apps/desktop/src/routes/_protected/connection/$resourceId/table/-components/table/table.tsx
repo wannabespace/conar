@@ -201,14 +201,9 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     if (!columns)
       return []
 
-    const dataColumnSpecs = columns
+    const sortedColumns: ColumnRenderer[] = columns
       .filter(c => !hiddenColumns.includes(c.id))
       .toSorted((a, b) => (a.primaryKey ? -1 : b.primaryKey ? 1 : 0))
-      .map(c => ({ key: c.id, header: c.label ?? c.id }))
-
-    const sortedColumns: ColumnRenderer[] = columns
-      .filter(column => !hiddenColumns.includes(column.id))
-      .toSorted((a, b) => a.primaryKey ? -1 : b.primaryKey ? 1 : 0)
       .map(column => ({
         id: column.id,
         size: getColumnSize(column.type)
@@ -252,7 +247,6 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
               onSaveValue={primaryColumns.length > 0 ? saveValue : undefined}
               values={values}
               contextMenu={{
-                dataColumnSpecs,
                 onAddFilter: filter => store.set(state => ({
                   ...state,
                   filters: [...state.filters, filter],
