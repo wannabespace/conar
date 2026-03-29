@@ -11,7 +11,7 @@ import { RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useSubscription } from 'seitu/react'
 import { ExportData } from '~/components/export-data'
-import { resourceConstraintsQueryOptions, resourceRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableColumnsQueryOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
+import { resourceConstraintsQueryOptions, resourceEnumsQueryOptions, resourceRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableColumnsQueryOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { queryClient } from '~/main'
@@ -43,6 +43,7 @@ export function Header({ table, schema }: { table: string, schema: string }) {
     queryClient.invalidateQueries(resourceTableColumnsQueryOptions({ connectionResource, table, schema }))
     queryClient.invalidateQueries(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters, exact } }))
     queryClient.invalidateQueries(resourceConstraintsQueryOptions({ connectionResource }))
+    queryClient.invalidateQueries(resourceEnumsQueryOptions({ connectionResource }))
   }
 
   useRefreshHotkey(handleRefresh, isFetching)

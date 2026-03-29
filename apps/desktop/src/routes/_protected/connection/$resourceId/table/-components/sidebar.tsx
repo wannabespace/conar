@@ -6,9 +6,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { RiCloseLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useSubscription } from 'seitu/react'
-import { resourceConstraintsQueryOptions, resourceEnumsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { queryClient } from '~/main'
+import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { Route } from '..'
 import { TablesTree } from './tables-tree'
 
@@ -19,13 +19,7 @@ export function Sidebar() {
   const search = useSubscription(store, { selector: state => state.tablesSearch })
   const { data: tablesAndSchemas, refetch: refetchTablesAndSchemas, isFetching: isRefreshingTablesAndSchemas, dataUpdatedAt } = useQuery(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem }))
 
-  async function handleRefresh() {
-    await Promise.all([
-      refetchTablesAndSchemas(),
-      queryClient.invalidateQueries(resourceConstraintsQueryOptions({ connectionResource })),
-      queryClient.invalidateQueries(resourceEnumsQueryOptions({ connectionResource })),
-    ])
-  }
+  useRefreshHotkey(refetchTablesAndSchemas, isRefreshingTablesAndSchemas)
 
   return (
     <div className="flex h-full flex-col">
@@ -51,7 +45,7 @@ export function Sidebar() {
                 <RefreshButton
                   variant="outline"
                   size="icon"
-                  onClick={handleRefresh}
+                  onClick={() => refetchTablesAndSchemas()}
                   refreshing={isRefreshingTablesAndSchemas}
                 />
               </TooltipTrigger>
