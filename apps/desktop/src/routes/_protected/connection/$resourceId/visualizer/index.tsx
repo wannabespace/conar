@@ -14,11 +14,11 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, useEdgesState, useNodesState } from '@xyflow/react'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { animationHooks } from '~/enter'
 import { ReactFlowNode } from '~/entities/connection/components'
 import { resourceConstraintsQueryOptions, resourceTableColumnsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
+import { globalHooks } from '~/global-hooks'
 import { applySearchHighlight, getVisualizerLayout } from './-lib'
 
 export const Route = createFileRoute(
@@ -152,7 +152,7 @@ function Visualizer({
   useEffect(() => {
     // It's needed for fixing lines between nodes
     // Because lines started calculation before the app loaded
-    return animationHooks.hook('finished', () => {
+    return globalHooks.hook('animationFinished', () => {
       recalculateLayoutEvent()
     })
   }, [])
