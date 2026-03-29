@@ -6,7 +6,6 @@ import { getEditableValue } from './utils'
 
 export function TableCellProvider({
   children,
-  row,
   column,
   initialValue,
   displayValue,
@@ -17,7 +16,6 @@ export function TableCellProvider({
   values,
 }: {
   children: React.ReactNode
-  row: Record<string, unknown>
   column: Column
   initialValue: unknown
   displayValue: string
@@ -53,7 +51,6 @@ export function TableCellProvider({
   return (
     <CellContext value={{
       value,
-      row,
       setValue,
       column,
       initialValue,

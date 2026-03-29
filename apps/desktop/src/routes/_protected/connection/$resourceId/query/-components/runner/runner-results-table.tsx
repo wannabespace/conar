@@ -58,7 +58,6 @@ export function RunnerResultsTable({
       ),
       cell: props => (
         <TableCell
-          row={filteredData[props.rowIndex]!}
           column={{ id: column.id, type: 'text' }}
           {...props}
         />

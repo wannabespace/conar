@@ -247,7 +247,6 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
           return (
             <TableCell
-              row={rows[props.rowIndex]!}
               column={column}
               onSaveValue={primaryColumns.length > 0 ? saveValue : undefined}
               values={values}
@@ -281,7 +280,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     })
 
     return sortedColumns
-  }, [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, toggleOrder, enums, store, rows])
+  }, [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, toggleOrder, enums, store])
 
   const handleShiftSelectionKeyDown = useShiftSelectionKeyDown({
     rowCount: rows.length,

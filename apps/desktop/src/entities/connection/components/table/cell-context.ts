@@ -5,7 +5,6 @@ import { createContext, use } from 'react'
 
 export const CellContext = createContext<{
   value: string
-  row: Record<string, unknown>
   setValue: Dispatch<SetStateAction<string>>
   column: Column
   initialValue: unknown
