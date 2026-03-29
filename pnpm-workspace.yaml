@@ -142,7 +142,7 @@ catalog:
   remark-gfm: ^4.0.1
   resend: ^6.9.4
   resumable-stream: ^2.2.12
-  seitu: ^0.7.0
+  seitu: ^0.8.0
   sonner: ^2.0.7
   sql-formatter: ^15.7.2
   streamdown: ^2.5.0

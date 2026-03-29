@@ -418,8 +418,8 @@ catalogs:
       specifier: ^2.2.12
       version: 2.2.12
     seitu:
-      specifier: ^0.7.0
-      version: 0.7.0
+      specifier: ^0.8.0
+      version: 0.8.0
     sonner:
       specifier: ^2.0.7
       version: 2.0.7
@@ -906,7 +906,7 @@ importers:
         version: 4.0.1
       seitu:
         specifier: 'catalog:'
-        version: 0.7.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 0.8.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1263,7 +1263,7 @@ importers:
         version: 4.7.5(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       seitu:
         specifier: 'catalog:'
-        version: 0.7.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 0.8.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -10242,16 +10242,19 @@ packages:
     resolution: {integrity: sha512-3A6sD0WYP7+QrjbfNA2FN3FsOaGGFoekCVgTyypy53gPxhbkCIjtO6YWgdrfM+n/8sI8JeXZOIxsHjMTNxQ4nQ==}
     engines: {node: ^14.0.0 || >=16.0.0}
 
-  seitu@0.7.0:
-    resolution: {integrity: sha512-Osx0uDAZG1s7nl1+j+/nBv8s+A1tGJBGTaJiqPCQsSiS1qy701BPed41zYYGRMGx4N7q4uyZvaShPbn+aA12Ig==}
+  seitu@0.8.0:
+    resolution: {integrity: sha512-kOUQY70VR1s/H4iU0rkIrydTe5siBu1xdZqexmsBvQu8haT7X0cFwfyXNr28rXUFoLXoMbQhlSdB7i6NDB7J7w==}
     engines: {node: '>=22'}
     peerDependencies:
       react: '>=19'
       react-dom: '>=19'
+      vue: '>=3.5'
     peerDependenciesMeta:
       react:
         optional: true
       react-dom:
+        optional: true
+      vue:
         optional: true
 
   selderee@0.11.0:
@@ -15505,10 +15508,10 @@ snapshots:
       firebase: 12.10.0
       git-rev-sync: 3.0.2
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
-      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
-      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
-      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
-      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
+      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
+      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
+      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
+      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
       is-ci: 4.1.0
       is-installed-globally: 0.4.0
       js-yaml: 4.1.1
@@ -18932,7 +18935,7 @@ snapshots:
 
   ini@4.1.1: {}
 
-  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       gradient-string: 1.2.0
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
@@ -18940,14 +18943,14 @@ snapshots:
       react: 17.0.2
       strip-ansi: 6.0.1
 
-  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
       prop-types: 15.8.1
       react: 17.0.2
       terminal-link: 2.1.1
 
-  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       arr-rotate: 1.0.0
       figures: 3.2.0
@@ -18955,7 +18958,7 @@ snapshots:
       lodash.isequal: 4.5.0
       react: 17.0.2
 
-  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       chalk: 4.1.2
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
@@ -21464,7 +21467,7 @@ snapshots:
       refa: 0.12.1
       regexp-ast-analysis: 0.7.1
 
-  seitu@0.7.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  seitu@0.8.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       fast-equals: 6.0.0
     optionalDependencies:

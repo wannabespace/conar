@@ -58,7 +58,6 @@ export const connectionResourceType = type({
     preview: 'boolean',
   }).array(),
   tablesSearch: 'string',
-  definitionsSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
   pinnedTables: type({
     schema: 'string',
@@ -97,7 +96,6 @@ const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   loggerOpened: false,
   tabs: [],
   tablesSearch: '',
-  definitionsSearch: '',
   tablesTreeOpenedSchemas: null,
   pinnedTables: [],
   layout: {
