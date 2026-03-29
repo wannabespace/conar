@@ -186,12 +186,13 @@ function ConnectionCard({
   connection: typeof connectionsTable.$inferSelect
   onRemove: VoidFunction
 }) {
-  const { data } = useLiveQuery(q => q
+  const { data: storedResources } = useLiveQuery(q => q
     .from({ connectionsResources: connectionsResourcesCollection })
     .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
     .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
+  const storedResourcesNames = storedResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
   const {
-    data: resources = data.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL),
+    data: resources = storedResourcesNames,
     isPending,
     isFetching,
     error,
@@ -212,7 +213,7 @@ function ConnectionCard({
     }),
   })
   const resolvedSelectedResourceName = selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? null : selectedResourceName
-  const selectedResource = data.find(r => r.name === resolvedSelectedResourceName)
+  const selectedResource = storedResources.find(r => r.name === resolvedSelectedResourceName)
 
   const { isPending: isWaitForSyncPending } = useQuery({
     queryKey: ['connections-resources-wait-for-sync', connection.id],
