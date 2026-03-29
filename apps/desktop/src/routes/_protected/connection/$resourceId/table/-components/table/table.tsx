@@ -88,13 +88,14 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   }, [store, rows, primaryColumns])
 
   const setValue = useCallback((rowIndex: number, columnName: string, value: unknown) => {
+    const { filters, orderBy } = store.get()
     const rowsQueryOpts = resourceRowsQueryInfiniteOptions({
       connectionResource,
       table,
       schema,
       query: {
-        filters: store.get().filters,
-        orderBy: store.get().orderBy,
+        filters,
+        orderBy,
       },
     })
 

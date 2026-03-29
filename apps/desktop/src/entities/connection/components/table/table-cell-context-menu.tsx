@@ -47,7 +47,7 @@ export function TableCellContextMenu({
   style?: CSSProperties
   children: ReactNode
 }) {
-  const row = useTableContext(({ rows }) => rows[rowIndex])
+  const row = useTableContext(({ rows }) => rows[rowIndex]!)
   const dataColumnSpecs = contextMenu.dataColumnSpecs
   const rowCopyDisabled = dataColumnSpecs.length === 0
 
@@ -77,9 +77,6 @@ export function TableCellContextMenu({
             <ContextMenuItem
               disabled={rowCopyDisabled}
               onClick={() => {
-                if (!row)
-                  return
-
                 copy(rowValuesToPlainText(row, dataColumnSpecs.map(c => c.key)), 'Row copied as plain text')
               }}
             >
@@ -88,8 +85,6 @@ export function TableCellContextMenu({
             <ContextMenuItem
               disabled={rowCopyDisabled}
               onClick={() => {
-                if (!row)
-                  return
                 copy(recordToPrettyJson(row), 'Row copied as JSON')
               }}
             >
@@ -98,8 +93,6 @@ export function TableCellContextMenu({
             <ContextMenuItem
               disabled={rowCopyDisabled}
               onClick={() => {
-                if (!row)
-                  return
                 copy(recordsToCSV(dataColumnSpecs, [row]), 'Row copied as CSV')
               }}
             >
@@ -108,8 +101,6 @@ export function TableCellContextMenu({
             <ContextMenuItem
               disabled={rowCopyDisabled}
               onClick={() => {
-                if (!row)
-                  return
                 copy(recordToMarkdownTable(row, dataColumnSpecs), 'Row copied as Markdown table')
               }}
             >
