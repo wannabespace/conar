@@ -91,8 +91,6 @@ function DatabaseIndexesPage() {
 
   const indexList = Object.values(groupedIndexes ?? {})
 
-  useRefreshHotkey(refetch, isFetching)
-
   return (
     <>
       <DefinitionsHeader

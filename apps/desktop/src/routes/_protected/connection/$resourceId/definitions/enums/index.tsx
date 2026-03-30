@@ -48,8 +48,6 @@ function DatabaseEnumsPage() {
       values: enumItem.values.filter(value => value.toLowerCase().includes(search.toLowerCase())),
     })) ?? []
 
-  useRefreshHotkey(refetch, isFetching)
-
   return (
     <>
       <DefinitionsHeader

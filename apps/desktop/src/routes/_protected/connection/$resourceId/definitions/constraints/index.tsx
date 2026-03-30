@@ -66,8 +66,6 @@ function DatabaseConstraintsPage() {
     ),
   ) ?? []
 
-  useRefreshHotkey(refetch, isFetching)
-
   return (
     <>
       <DefinitionsHeader

@@ -194,18 +194,18 @@ export function RunnerEditorQueryZone({
                         side="top"
                       >
                         {isExplainError && (
-                          <div className="p-3 text-xs text-destructive">
+                          <div className="text-xs text-destructive">
                             {explainError instanceof Error ? explainError.message : String(explainError)}
                           </div>
                         )}
                         {isExplainSuccess && (
                           <div className="flex flex-col">
-                            <div className="
-                              flex items-center gap-2 border-b px-3 py-2
-                            "
-                            >
+                            <div className="flex items-center gap-2">
                               <span className="text-xs font-medium">EXPLAIN</span>
-                              <Separator orientation="vertical" className="h-3!" />
+                              <Separator
+                                orientation="vertical"
+                                className="h-3!"
+                              />
                               <span className="text-xs text-muted-foreground">
                                 {explainData.rows.length}
                                 {' '}
@@ -217,8 +217,9 @@ export function RunnerEditorQueryZone({
                                 ms
                               </span>
                             </div>
+                            <Separator className="my-2" />
                             <div className="
-                              overflow-auto p-3 font-mono text-xs whitespace-pre
+                              overflow-auto font-mono text-xs whitespace-pre
                             "
                             >
                               {explainData.rows.map(row => Object.values(row).join('\t')).join('\n')}
