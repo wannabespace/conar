@@ -16,7 +16,7 @@ import { toast } from 'sonner'
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
 import { useAiLocked } from '~/entities/user/hooks'
 import { orpc } from '~/lib/orpc'
-import { appStore, setIsSignInDialogOpen, setIsSubscriptionDialogOpen } from '~/store'
+import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 import { Route } from '../..'
 import { useTableColumns } from '../../-queries/use-columns-query'
 import { usePageStoreContext } from '../../-store'
@@ -85,7 +85,8 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
       onSubmit={(e) => {
         e.preventDefault()
         if (isAiLocked) {
-          isAnonymous ? setIsSignInDialogOpen(true) : setIsSubscriptionDialogOpen(true)
+          if (!isAnonymous)
+            setIsSubscriptionDialogOpen(true)
           return
         }
         if (prompt.trim() === '') {

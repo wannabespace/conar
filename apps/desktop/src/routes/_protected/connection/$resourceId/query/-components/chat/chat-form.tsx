@@ -19,7 +19,7 @@ import { TipTap } from '~/components/tiptap'
 import { getFilesStore } from '~/entities/connection/store'
 import { useAiLocked } from '~/entities/user/hooks'
 import { orpc } from '~/lib/orpc'
-import { appStore, setIsSignInDialogOpen, setIsSubscriptionDialogOpen } from '~/store'
+import { appStore } from '~/store'
 import { Route } from '../..'
 import { chatHooks } from '../../-page'
 import { ChatImages } from './chat-images'
@@ -178,126 +178,120 @@ export function ChatForm() {
   return (
     <div className="flex flex-col gap-1">
       <Images connectionResource={connectionResource} />
-      <div className={`
-        relative flex flex-col gap-2 overflow-hidden rounded-md border
-        dark:bg-input/30
-      `}
-      >
-        {isAiLocked && (
-          <span
-            className="z-10 bg-muted px-2 py-1 text-sm text-muted-foreground"
-          >
-            Please
-            {' '}
-            <Button
-              variant="outline"
-              className="px-1 py-0.5"
-              size="xs"
-              onClick={() => isAnonymous ? setIsSignInDialogOpen(true) : setIsSubscriptionDialogOpen(true)}
-            >
-              {isAnonymous ? 'sign in' : 'upgrade'}
-            </Button>
-            {' '}
-            {isAnonymous ? 'to access AI features.' : 'your subscription to generate SQL queries.'}
-          </span>
-        )}
-        <TipTap
-          ref={ref}
-          data-mask
-          value={input}
-          setValue={(value) => {
-            inputValue.set(value)
-          }}
-          placeholder={isOnline ? 'Generate SQL queries using natural language' : 'Check your internet connection to generate SQL queries'}
-          className={`
-            max-h-[250px] min-h-[50px] overflow-y-auto p-2 text-sm outline-none
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className={`
+            relative flex flex-col gap-2 overflow-hidden rounded-md border
+            dark:bg-input/30
           `}
-          disabled={isAiLocked || !isOnline}
-          onEnter={handleSend}
-          onImageAdd={(file) => {
-            filesStore.set([...files, file])
-          }}
-        />
-        <div className={`
-          pointer-events-none flex items-end justify-between px-2 pb-2
-        `}
-        >
-          <div className="pointer-events-auto">
-            <Button
-              type="button"
-              size="icon-xs"
-              variant="outline"
-              render={<label htmlFor="chat-file-upload" />}
+          >
+            <TipTap
+              ref={ref}
+              data-mask
+              value={input}
+              setValue={(value) => {
+                inputValue.set(value)
+              }}
+              placeholder={isOnline ? 'Generate SQL queries using natural language' : 'Check your internet connection to generate SQL queries'}
+              className={`
+                max-h-[250px] min-h-[50px] overflow-y-auto p-2 text-sm
+                outline-none
+              `}
+              disabled={isAiLocked || !isOnline}
+              onEnter={handleSend}
+              onImageAdd={(file) => {
+                filesStore.set([...files, file])
+              }}
+            />
+            <div className={`
+              pointer-events-none flex items-end justify-between px-2 pb-2
+            `}
             >
-              <RiAttachment2 className="size-3" />
-              <input
-                id="chat-file-upload"
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handleFileAttach}
-                tabIndex={-1}
-                aria-label="Attach files"
-              />
-            </Button>
-          </div>
-          <div className="pointer-events-auto flex gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
+              <div className="pointer-events-auto">
                 <Button
+                  type="button"
                   size="icon-xs"
                   variant="outline"
-                  className={input.length < 10 ? 'cursor-default opacity-50' : ''}
-                  disabled={status === 'submitted' || status === 'streaming' || isEnhancingPrompt || isAiLocked}
-                  onClick={() => enhancePrompt({
-                    prompt: input,
-                    chatId: chat.id,
-                  })}
+                  disabled={isAiLocked}
+                  render={<label htmlFor="chat-file-upload" />}
                 >
-                  <LoadingContent
-                    loading={isEnhancingPrompt}
-                    spinner={<Spinner className="size-3" />}
-                  >
-                    <ContentSwitch
-                      active={isEnhancingPrompt}
-                      activeContent={(
-                        <RiCheckLine className="size-3 text-success" />
-                      )}
-                    >
-                      <RiMagicLine className="size-3" />
-                    </ContentSwitch>
-                  </LoadingContent>
+                  <RiAttachment2 className="size-3" />
+                  <input
+                    id="chat-file-upload"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleFileAttach}
+                    disabled={isAiLocked}
+                    tabIndex={-1}
+                    aria-label="Attach files"
+                  />
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                {input.length < 10 ? 'Prompt is too short to enhance' : 'Enhance prompt'}
-              </TooltipContent>
-            </Tooltip>
-            {(status === 'streaming' || status === 'submitted')
-              ? (
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    onClick={stop}
-                  >
-                    <RiStopCircleLine className="size-3" />
-                    Stop
-                  </Button>
-                )
-              : (
-                  <Button
-                    size="xs"
-                    disabled={!input.trim()}
-                    onClick={() => handleSend(input)}
-                  >
-                    Send
-                    <RiCornerDownLeftLine className="size-3" />
-                  </Button>
-                )}
+              </div>
+              <div className="pointer-events-auto flex gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon-xs"
+                      variant="outline"
+                      className={input.length < 10 ? 'cursor-default opacity-50' : ''}
+                      disabled={status === 'submitted' || status === 'streaming' || isEnhancingPrompt || isAiLocked}
+                      onClick={() => enhancePrompt({
+                        prompt: input,
+                        chatId: chat.id,
+                      })}
+                    >
+                      <LoadingContent
+                        loading={isEnhancingPrompt}
+                        spinner={<Spinner className="size-3" />}
+                      >
+                        <ContentSwitch
+                          active={isEnhancingPrompt}
+                          activeContent={(
+                            <RiCheckLine className="size-3 text-success" />
+                          )}
+                        >
+                          <RiMagicLine className="size-3" />
+                        </ContentSwitch>
+                      </LoadingContent>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    {input.length < 10 ? 'Prompt is too short to enhance' : 'Enhance prompt'}
+                  </TooltipContent>
+                </Tooltip>
+                {(status === 'streaming' || status === 'submitted')
+                  ? (
+                      <Button
+                        size="xs"
+                        variant="outline"
+                        onClick={stop}
+                      >
+                        <RiStopCircleLine className="size-3" />
+                        Stop
+                      </Button>
+                    )
+                  : (
+                      <Button
+                        size="xs"
+                        disabled={!input.trim() || isAiLocked}
+                        onClick={() => handleSend(input)}
+                      >
+                        Send
+                        <RiCornerDownLeftLine className="size-3" />
+                      </Button>
+                    )}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </TooltipTrigger>
+        {isAiLocked && (
+          <TooltipContent>
+            {isAnonymous ? 'Sign in to use AI features' : 'Upgrade to Pro to use AI features'}
+          </TooltipContent>
+        )}
+      </Tooltip>
     </div>
   )
 }

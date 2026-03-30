@@ -4,7 +4,7 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { EnterIcon } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Textarea } from '@conar/ui/components/textarea'
-import { TooltipProvider } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
@@ -15,7 +15,7 @@ import { getConnectionResourceStore } from '~/entities/connection/store'
 import { useAiLocked } from '~/entities/user/hooks'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
-import { appStore, setIsSignInDialogOpen, setIsSubscriptionDialogOpen } from '~/store'
+import { appStore } from '~/store'
 
 export function RunnerEditorAIZone({
   connection,
@@ -88,106 +88,95 @@ export function RunnerEditorAIZone({
 
   return (
     <TooltipProvider>
-      <div className="flex h-full flex-col py-1 pr-6">
-        <Popover open={!!aiSuggestion}>
-          <PopoverTrigger render={(
-            <div className="
-              relative flex h-full w-lg flex-col rounded-md border
-            "
-            />
-          )}
-          >
-            {isAiLocked && (
-              <div
-                className="
-                  w-full bg-muted px-2 py-1 text-sm text-muted-foreground
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex h-full flex-col py-1 pr-6">
+            <Popover open={!!aiSuggestion}>
+              <PopoverTrigger render={(
+                <div className="
+                  relative flex h-full w-lg flex-col rounded-md border
                 "
-              >
-                Please
-                {' '}
-                <Button
-                  variant="outline"
-                  className="px-1 py-0.5"
-                  size="xs"
-                  onClick={() => isAnonymous ? setIsSignInDialogOpen(true) : setIsSubscriptionDialogOpen(true)}
-                >
-                  {isAnonymous ? 'sign in' : 'upgrade'}
-                </Button>
-                {' '}
-                {isAnonymous ? 'to access AI features.' : 'your subscription to generate SQL queries.'}
-              </div>
-            )}
-            <Textarea
-              ref={ref}
-              value={prompt}
-              disabled={isPending || isAiLocked || !isOnline}
-              onChange={(e) => {
-                setPrompt(e.target.value)
-                setAiSuggestion(null)
-              }}
-              className={cn(
-                `
-                  field-sizing-content flex-1 resize-none border-none px-2
-                  py-1.5 pb-8
-                `,
-                // Disable monaco default styles
-                `
-                  focus:border-border!
-                  focus-visible:border-border! focus-visible:ring-0!
-                  focus-visible:outline-none!
-                `,
+                />
               )}
-              placeholder={isOnline ? 'Update selected SQL with AI' : 'Check your internet connection to update selected SQL'}
-              onKeyDown={(e) => {
-                e.stopPropagation()
+              >
+                <Textarea
+                  ref={ref}
+                  value={prompt}
+                  disabled={isPending || isAiLocked || !isOnline}
+                  onChange={(e) => {
+                    setPrompt(e.target.value)
+                    setAiSuggestion(null)
+                  }}
+                  className={cn(
+                    `
+                      field-sizing-content flex-1 resize-none border-none px-2
+                      py-1.5 pb-8
+                    `,
+                    // Disable monaco default styles
+                    `
+                      focus:border-border!
+                      focus-visible:border-border! focus-visible:ring-0!
+                      focus-visible:outline-none!
+                    `,
+                  )}
+                  placeholder={isOnline ? 'Update selected SQL with AI' : 'Check your internet connection to update selected SQL'}
+                  onKeyDown={(e) => {
+                    e.stopPropagation()
 
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSubmit()
-                }
-                else if (e.key === 'Escape') {
-                  fullClose()
-                }
-              }}
-            />
-            <Button
-              size="xs"
-              className="absolute right-2 bottom-2"
-              disabled={isPending || !prompt.trim() || !isOnline}
-              onClick={handleSubmit}
-            >
-              <LoadingContent loading={isPending}>
-                {aiSuggestion ? 'Apply' : 'Send'}
-                <EnterIcon />
-              </LoadingContent>
-            </Button>
-          </PopoverTrigger>
-          {!!aiSuggestion && (
-            <PopoverContent
-              style={{
-                '--lines-height': `${Math.max(aiSuggestion.split('\n').length, originalSql.split('\n').length) * 18 * 2}px`,
-              }}
-              className="
-                h-[min(30vh,var(--lines-height))] w-lg p-0
-                **:data-[slot=popover-viewport]:p-0
-              "
-            >
-              <MonacoDiff
-                originalValue={originalSql}
-                modifiedValue={aiSuggestion}
-                language="sql"
-                className="h-full"
-                options={{
-                  scrollBeyondLastLine: false,
-                  renderIndicators: false,
-                  lineNumbers: 'off',
-                  folding: false,
-                }}
-              />
-            </PopoverContent>
-          )}
-        </Popover>
-      </div>
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSubmit()
+                    }
+                    else if (e.key === 'Escape') {
+                      fullClose()
+                    }
+                  }}
+                />
+                <Button
+                  size="xs"
+                  className="absolute right-2 bottom-2"
+                  disabled={isPending || !prompt.trim() || !isOnline}
+                  onClick={handleSubmit}
+                >
+                  <LoadingContent loading={isPending}>
+                    {aiSuggestion ? 'Apply' : 'Send'}
+                    <EnterIcon />
+                  </LoadingContent>
+                </Button>
+              </PopoverTrigger>
+              {!!aiSuggestion && (
+                <PopoverContent
+                  style={{
+                    '--lines-height': `${Math.max(aiSuggestion.split('\n').length, originalSql.split('\n').length) * 18 * 2}px`,
+                  }}
+                  className="
+                    h-[min(30vh,var(--lines-height))] w-lg p-0
+                    **:data-[slot=popover-viewport]:p-0
+                  "
+                >
+                  <MonacoDiff
+                    originalValue={originalSql}
+                    modifiedValue={aiSuggestion}
+                    language="sql"
+                    className="h-full"
+                    options={{
+                      scrollBeyondLastLine: false,
+                      renderIndicators: false,
+                      lineNumbers: 'off',
+                      folding: false,
+                    }}
+                  />
+                </PopoverContent>
+              )}
+            </Popover>
+          </div>
+        </TooltipTrigger>
+        {isAiLocked && (
+          <TooltipContent>
+            {isAnonymous ? 'Sign in to use AI features' : 'Upgrade to Pro to use AI features'}
+          </TooltipContent>
+        )}
+      </Tooltip>
     </TooltipProvider>
   )
 }

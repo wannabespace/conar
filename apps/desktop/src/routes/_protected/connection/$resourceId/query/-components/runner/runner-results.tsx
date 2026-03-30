@@ -11,7 +11,7 @@ import { toggleChat } from '~/entities/connection/store'
 import { useAiLocked } from '~/entities/user/hooks/use-ai-locked'
 import { formatSql } from '~/lib/formatter'
 import { queryClient } from '~/main'
-import { setIsSignInDialogOpen, setIsSubscriptionDialogOpen } from '~/store'
+import { setIsSubscriptionDialogOpen } from '~/store'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
 import { RunnerResultsTable } from './runner-results-table'
@@ -130,14 +130,24 @@ export function RunnerResults() {
                           </Button>
                         )
                       : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => isAnonymous ? setIsSignInDialogOpen(true) : setIsSubscriptionDialogOpen(true)}
-                          >
-                            Fix in chat
-                            <RiVipCrownLine className="size-4" />
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={isAnonymous}
+                                onClick={() => !isAnonymous ? setIsSubscriptionDialogOpen(true) : undefined}
+                              >
+                                Fix in chat
+                                <RiVipCrownLine className="size-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            {isAnonymous && (
+                              <TooltipContent>
+                                Sign in to use AI features
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
                         )}
                   </div>
                 )
