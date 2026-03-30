@@ -25,6 +25,7 @@ import {
   chatsMessagesCollection,
 } from '~/entities/chat/sync'
 import { getConnectionResourceStore } from '~/entities/connection/store'
+import { useAiLocked } from '~/entities/user/hooks'
 import { convertToAppUIMessage } from '~/lib/ai'
 import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
@@ -89,7 +90,8 @@ export function ChatHeader({ chatId }: { chatId: string }) {
   const { data: messages } = useLiveQuery(q => q
     .from({ chatsMessages: chatsMessagesCollection })
     .where(({ chatsMessages }) => eq(chatsMessages.chatId, chatId)))
-  const shouldGenerateTitle = !!chat && chat.title === null && messages.length > 0
+  const { isAiLocked } = useAiLocked()
+  const shouldGenerateTitle = !!chat && chat.title === null && messages.length > 0 && !isAiLocked
 
   const generateTitleEvent = useEffectEvent(async () => {
     if (!chat) {

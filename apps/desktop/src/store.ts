@@ -3,6 +3,7 @@ import { createStore } from 'seitu'
 export const appStore = createStore({
   isActionCenterOpen: false,
   isSubscriptionDialogOpen: false,
+  isSignInDialogOpen: false,
   isOnline: window.navigator.onLine,
 })
 
@@ -19,4 +20,8 @@ export function setIsActionCenterOpen(isOpen: boolean) {
 
 export function setIsSubscriptionDialogOpen(isOpen: boolean) {
   appStore.set(state => ({ ...state, isSubscriptionDialogOpen: isOpen } satisfies typeof state))
+}
+
+export function setIsSignInDialogOpen(isOpen: boolean) {
+  appStore.set(state => ({ ...state, isSignInDialogOpen: isOpen } satisfies typeof state))
 }

@@ -12,10 +12,10 @@ import { useSubscription } from 'seitu/react'
 import { MonacoDiff } from '~/components/monaco'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
+import { useAiLocked } from '~/entities/user/hooks'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
-import { appStore, setIsSubscriptionDialogOpen } from '~/store'
+import { appStore, setIsSignInDialogOpen, setIsSubscriptionDialogOpen } from '~/store'
 
 export function RunnerEditorAIZone({
   connection,
@@ -32,7 +32,7 @@ export function RunnerEditorAIZone({
 }) {
   const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const store = getConnectionResourceStore(connectionResource.id)
-  const { subscription } = useUserSubscription()
+  const { isAiLocked, isAnonymous } = useAiLocked()
   const [prompt, setPrompt] = useState('')
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null)
   const ref = useRef<HTMLTextAreaElement>(null)
@@ -97,7 +97,7 @@ export function RunnerEditorAIZone({
             />
           )}
           >
-            {!subscription && (
+            {isAiLocked && (
               <div
                 className="
                   w-full bg-muted px-2 py-1 text-sm text-muted-foreground
@@ -109,18 +109,18 @@ export function RunnerEditorAIZone({
                   variant="outline"
                   className="px-1 py-0.5"
                   size="xs"
-                  onClick={() => setIsSubscriptionDialogOpen(true)}
+                  onClick={() => isAnonymous ? setIsSignInDialogOpen(true) : setIsSubscriptionDialogOpen(true)}
                 >
-                  upgrade
+                  {isAnonymous ? 'sign in' : 'upgrade'}
                 </Button>
                 {' '}
-                your subscription to generate SQL queries.
+                {isAnonymous ? 'to access AI features.' : 'your subscription to generate SQL queries.'}
               </div>
             )}
             <Textarea
               ref={ref}
               value={prompt}
-              disabled={isPending || !subscription || !isOnline}
+              disabled={isPending || isAiLocked || !isOnline}
               onChange={(e) => {
                 setPrompt(e.target.value)
                 setAiSuggestion(null)

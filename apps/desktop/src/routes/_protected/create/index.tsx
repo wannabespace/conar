@@ -7,6 +7,7 @@ import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { RiArrowLeftSLine } from '@remixicon/react'
+import { useLiveQuery } from '@tanstack/react-db'
 import { useForm, useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
@@ -19,6 +20,7 @@ import { testConnectionQuery } from '~/entities/connection/queries/test-connecti
 import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
+import { useAnonymousUser } from '~/entities/user/hooks'
 import { generateRandomName } from '~/lib/utils'
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
@@ -46,6 +48,9 @@ function CreateConnectionPage() {
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
+  const isAnonymous = useAnonymousUser()
+  const { data: existingConnections } = useLiveQuery(q => q.from({ connections: connectionsCollection }))
+  const isConnectionLimitReached = isAnonymous && existingConnections.length >= 1
 
   function createConnection(data: {
     connectionString: string
@@ -111,12 +116,14 @@ function CreateConnectionPage() {
       onChange: createConnectionType,
     },
     onSubmit(e) {
-      const { type, connectionString, name, saveInCloud, label, color } = e.value
+      const { type, connectionString, name, label, color } = e.value
 
       if (!type) {
         toast.error('Select a database type')
         return
       }
+
+      const saveInCloud = isAnonymous ? false : e.value.saveInCloud
 
       createConnection({ type, connectionString, name, saveInCloud, label, color })
     },
@@ -146,6 +153,23 @@ function CreateConnectionPage() {
   const label = useStore(form.store, state => state.values.label)
   const color = useStore(form.store, state => state.values.color)
   const isValid = useStore(form.store, state => state.isValid)
+
+  if (isConnectionLimitReached) {
+    return (
+      <div className="
+        flex h-full flex-col items-center justify-center gap-4 px-6 text-center
+      "
+      >
+        <p className="text-lg font-semibold">Connection limit reached</p>
+        <p className="max-w-sm text-sm text-muted-foreground">
+          Anonymous users can only have one connection. Sign in to add unlimited connections.
+        </p>
+        <Button onClick={() => router.history.back()} variant="outline">
+          Go Back
+        </Button>
+      </div>
+    )
+  }
 
   return (
     <ScrollArea className="py-[10vh]">

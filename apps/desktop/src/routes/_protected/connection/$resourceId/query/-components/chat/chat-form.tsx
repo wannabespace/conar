@@ -17,9 +17,9 @@ import { createSessionStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { getFilesStore } from '~/entities/connection/store'
-import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
+import { useAiLocked } from '~/entities/user/hooks'
 import { orpc } from '~/lib/orpc'
-import { appStore, setIsSubscriptionDialogOpen } from '~/store'
+import { appStore, setIsSignInDialogOpen, setIsSubscriptionDialogOpen } from '~/store'
 import { Route } from '../..'
 import { chatHooks } from '../../-page'
 import { ChatImages } from './chat-images'
@@ -64,7 +64,7 @@ export function ChatForm() {
     defaultValue: '',
   })
   const input = useSubscription(inputValue)
-  const { subscription } = useUserSubscription()
+  const { isAiLocked, isAnonymous } = useAiLocked()
 
   useEffect(() => {
     if (ref.current) {
@@ -183,7 +183,7 @@ export function ChatForm() {
         dark:bg-input/30
       `}
       >
-        {!subscription && (
+        {isAiLocked && (
           <span
             className="z-10 bg-muted px-2 py-1 text-sm text-muted-foreground"
           >
@@ -193,12 +193,12 @@ export function ChatForm() {
               variant="outline"
               className="px-1 py-0.5"
               size="xs"
-              onClick={() => setIsSubscriptionDialogOpen(true)}
+              onClick={() => isAnonymous ? setIsSignInDialogOpen(true) : setIsSubscriptionDialogOpen(true)}
             >
-              upgrade
+              {isAnonymous ? 'sign in' : 'upgrade'}
             </Button>
             {' '}
-            your subscription to generate SQL queries.
+            {isAnonymous ? 'to access AI features.' : 'your subscription to generate SQL queries.'}
           </span>
         )}
         <TipTap
@@ -212,7 +212,7 @@ export function ChatForm() {
           className={`
             max-h-[250px] min-h-[50px] overflow-y-auto p-2 text-sm outline-none
           `}
-          disabled={!subscription || !isOnline}
+          disabled={isAiLocked || !isOnline}
           onEnter={handleSend}
           onImageAdd={(file) => {
             filesStore.set([...files, file])
@@ -249,7 +249,7 @@ export function ChatForm() {
                   size="icon-xs"
                   variant="outline"
                   className={input.length < 10 ? 'cursor-default opacity-50' : ''}
-                  disabled={status === 'submitted' || status === 'streaming' || isEnhancingPrompt || !subscription}
+                  disabled={status === 'submitted' || status === 'streaming' || isEnhancingPrompt || isAiLocked}
                   onClick={() => enhancePrompt({
                     prompt: input,
                     chatId: chat.id,

@@ -20,6 +20,32 @@ function AuthPage() {
   const [verifier, setVerifier] = useState<string | null>(null)
   const [codeChallenge, setCodeChallenge] = useState<string | null>(null)
 
+  const { mutate: signInAnonymously, isPending: isAnonymousSignInPending } = useMutation({
+    mutationFn: async () => {
+      const existing = await authClient.getSession()
+      if (existing.data)
+        return
+
+      const res = await authClient.signIn.anonymous()
+
+      if (res.error) {
+        throw new Error(res.error.message)
+      }
+
+      return res.data
+    },
+    onSuccess: (data) => {
+      if (!data)
+        return
+
+      if (data.token)
+        bearerToken.set(data.token)
+
+      refetch()
+      successAuthToast(true)
+    },
+  })
+
   const signInWithChallenge = async () => {
     const verifier = generateVerifier()
     const codeChallenge = await generateCodeChallenge(verifier)
@@ -120,12 +146,13 @@ function AuthPage() {
         <ButtonMotion
           className="w-full"
           variant="outline"
-          disabled
+          disabled={isAnonymousSignInPending}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.32 }}
+          onClick={() => signInAnonymously()}
         >
-          Anonymous Sign In (soon)
+          {isAnonymousSignInPending ? <span className="animate-pulse">Signing in...</span> : 'Continue Anonymously'}
         </ButtonMotion>
       </motion.div>
     </div>

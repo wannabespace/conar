@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
+import { SignInModal } from '~/components/sign-in-modal'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
@@ -34,6 +35,7 @@ function ProtectedLayout() {
   return (
     <>
       <SubscriptionModal />
+      <SignInModal />
       <ActionsCenter />
       <Outlet />
     </>

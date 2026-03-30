@@ -8,17 +8,17 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { Monaco } from '~/components/monaco'
 import { toggleChat } from '~/entities/connection/store'
-import { useSubscription } from '~/entities/user/hooks/use-subscription'
+import { useAiLocked } from '~/entities/user/hooks/use-ai-locked'
 import { formatSql } from '~/lib/formatter'
 import { queryClient } from '~/main'
-import { setIsSubscriptionDialogOpen } from '~/store'
+import { setIsSignInDialogOpen, setIsSubscriptionDialogOpen } from '~/store'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
 import { RunnerResultsTable } from './runner-results-table'
 
 export function RunnerResults() {
   const { chatId } = Route.useSearch()
-  const { subscription } = useSubscription()
+  const { isAiLocked, isAnonymous } = useAiLocked()
   const { connection, connectionResource } = Route.useRouteContext()
   const { data: results, fetchStatus: queryStatus } = useQuery(runnerQueryOptions(connectionResource))
 
@@ -105,7 +105,7 @@ export function RunnerResults() {
                     >
                       {error}
                     </div>
-                    {subscription
+                    {!isAiLocked
                       ? (
                           <Button
                             size="sm"
@@ -133,7 +133,7 @@ export function RunnerResults() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setIsSubscriptionDialogOpen(true)}
+                            onClick={() => isAnonymous ? setIsSignInDialogOpen(true) : setIsSubscriptionDialogOpen(true)}
                           >
                             Fix in chat
                             <RiVipCrownLine className="size-4" />
