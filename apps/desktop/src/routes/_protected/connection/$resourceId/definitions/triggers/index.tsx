@@ -56,7 +56,7 @@ function DatabaseTriggersPage() {
     && (!search
       || item.name.toLowerCase().includes(search.toLowerCase())
       || item.table.toLowerCase().includes(search.toLowerCase())
-      || (item.function_name && item.function_name.toLowerCase().includes(search.toLowerCase()))
+      || item.functionName?.toLowerCase().includes(search.toLowerCase())
     ),
   ) ?? []
 
@@ -153,11 +153,11 @@ function DatabaseTriggersPage() {
                       <RiTable2 className="size-3" />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
-                    {item.function_name && (
+                    {item.functionName && (
                       <>
                         <span>calls</span>
                         <Badge variant="outline">
-                          <HighlightText text={item.function_name} match={search} />
+                          <HighlightText text={item.functionName} match={search} />
                         </Badge>
                       </>
                     )}

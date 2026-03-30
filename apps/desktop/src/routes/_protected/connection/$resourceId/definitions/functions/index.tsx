@@ -47,7 +47,7 @@ function DatabaseFunctionsPage() {
     && (filterType === 'all' || filterType === item.type)
     && (!search
       || item.name.toLowerCase().includes(search.toLowerCase())
-      || item.language.toLowerCase().includes(search.toLowerCase())
+      || item.language?.toLowerCase().includes(search.toLowerCase())
       || (item.return_type && item.return_type.toLowerCase().includes(search.toLowerCase()))
     ),
   ) ?? []
@@ -120,9 +120,11 @@ function DatabaseFunctionsPage() {
                     flex items-center gap-1.5 text-sm text-muted-foreground
                   "
                   >
-                    <Badge variant="outline">
-                      <HighlightText text={item.language} match={search} />
-                    </Badge>
+                    {item.language && (
+                      <Badge variant="outline">
+                        <HighlightText text={item.language} match={search} />
+                      </Badge>
+                    )}
                     {item.return_type && (
                       <>
                         <span>returns</span>
@@ -131,11 +133,11 @@ function DatabaseFunctionsPage() {
                         </Badge>
                       </>
                     )}
-                    {item.argument_count > 0 && (
+                    {!!item.argumentCount && (
                       <span>
-                        {item.argument_count}
+                        {item.argumentCount}
                         {' '}
-                        {item.argument_count === 1 ? 'arg' : 'args'}
+                        {item.argumentCount === 1 ? 'arg' : 'args'}
                       </span>
                     )}
                   </div>

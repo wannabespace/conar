@@ -5,15 +5,17 @@ import { sql } from 'kysely'
 import { connectionResourceToQueryParams, createQuery } from '../query'
 
 export const functionsType = type({
-  schema: 'string',
-  name: 'string',
-  type: 'string',
-  language: 'string',
-  return_type: 'string | null',
-  argument_count: 'number',
-}).pipe(({ type: fnType, ...item }) => ({
+  'schema': 'string',
+  'name': 'string',
+  'type': 'string',
+  'language?': 'string',
+  'return_type': 'string | null',
+  'argument_count?': 'number',
+}).pipe(({ type: fnType, argument_count, language, ...item }) => ({
   ...item,
   type: fnType as 'function' | 'procedure',
+  argumentCount: argument_count || null,
+  language: language || null,
 }))
 
 export const resourceFunctionsQuery = createQuery({
@@ -24,19 +26,24 @@ export const resourceFunctionsQuery = createQuery({
       .innerJoin('pg_catalog.pg_namespace as n', 'p.pronamespace', 'n.oid')
       .innerJoin('pg_catalog.pg_language as l', 'p.prolang', 'l.oid')
       .leftJoin('pg_catalog.pg_type as t', 'p.prorettype', 't.oid')
-      .select([
+      .select(({ eb }) => [
         'n.nspname as schema',
         'p.proname as name',
-        sql<string>`CASE p.prokind
-          WHEN 'f' THEN 'function'
-          WHEN 'p' THEN 'procedure'
-          WHEN 'a' THEN 'function'
-          WHEN 'w' THEN 'function'
-          ELSE 'function'
-        END`.as('type'),
+        eb.case('p.prokind')
+          .when('f')
+          .then('function')
+          .when('p')
+          .then('procedure')
+          .when('a')
+          .then('function')
+          .when('w')
+          .then('function')
+          .else('function')
+          .end()
+          .as('type'),
         'l.lanname as language',
         't.typname as return_type',
-        sql<number>`p.pronargs`.as('argument_count'),
+        'p.pronargs as argument_count',
       ])
       .where('n.nspname', 'not like', 'pg_%')
       .where('n.nspname', '!=', 'information_schema')
@@ -44,46 +51,74 @@ export const resourceFunctionsQuery = createQuery({
       .execute(),
     mysql: db => db
       .selectFrom('information_schema.ROUTINES as r')
-      .select([
+      .select(({ eb }) => [
         'r.ROUTINE_SCHEMA as schema',
         'r.ROUTINE_NAME as name',
         sql<string>`LOWER(r.ROUTINE_TYPE)`.as('type'),
-        sql<string>`'SQL'`.as('language'),
-        sql<string | null>`CASE WHEN r.ROUTINE_TYPE = 'FUNCTION' THEN r.DATA_TYPE ELSE NULL END`.as('return_type'),
-        sql<number>`0`.as('argument_count'),
+        eb.case()
+          .when('r.ROUTINE_TYPE', '=', 'FUNCTION')
+          .then(eb.ref('r.DATA_TYPE'))
+          .else(null)
+          .end()
+          .as('return_type'),
       ])
       .where('r.ROUTINE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
       .execute(),
     mssql: db => db
       .selectFrom('sys.objects as o')
       .innerJoin('sys.schemas as s', 'o.schema_id', 's.schema_id')
-      .select([
+      .select(({ eb, or }) => [
         's.name as schema',
         'o.name as name',
-        sql<string>`CASE
-          WHEN o.type IN ('FN', 'IF', 'TF', 'FS', 'FT') THEN 'function'
-          WHEN o.type IN ('P', 'PC') THEN 'procedure'
-          ELSE 'function'
-        END`.as('type'),
-        sql<string>`CASE
-          WHEN o.type IN ('FS', 'FT', 'PC') THEN 'CLR'
-          ELSE 'SQL'
-        END`.as('language'),
-        sql<string | null>`CASE
-          WHEN o.type = 'FN' THEN 'scalar'
-          WHEN o.type IN ('IF', 'TF') THEN 'table'
-          WHEN o.type = 'FS' THEN 'CLR scalar'
-          WHEN o.type = 'FT' THEN 'CLR table'
-          ELSE NULL
-        END`.as('return_type'),
-        sql<number>`0`.as('argument_count'),
+        eb.case()
+          .when(or([
+            eb('o.type', '=', 'FN'),
+            eb('o.type', '=', 'IF'),
+            eb('o.type', '=', 'TF'),
+            eb('o.type', '=', 'FS'),
+            eb('o.type', '=', 'FT'),
+          ]))
+          .then('function')
+          .when(or([
+            eb('o.type', '=', 'P'),
+            eb('o.type', '=', 'PC'),
+          ]))
+          .then('procedure')
+          .else('function')
+          .end()
+          .as('type'),
+        eb.case()
+          .when(or([
+            eb('o.type', '=', 'FS'),
+            eb('o.type', '=', 'FT'),
+            eb('o.type', '=', 'PC'),
+          ]))
+          .then('CLR')
+          .else('SQL')
+          .end()
+          .as('language'),
+        eb.case()
+          .when('o.type', '=', 'FN')
+          .then('scalar')
+          .when(or([
+            eb('o.type', '=', 'IF'),
+            eb('o.type', '=', 'TF'),
+          ]))
+          .then('table')
+          .when('o.type', '=', 'FS')
+          .then('CLR scalar')
+          .when('o.type', '=', 'FT')
+          .then('CLR table')
+          .else(null)
+          .end()
+          .as('return_type'),
       ])
       .where('o.type', 'in', ['FN', 'IF', 'TF', 'FS', 'FT', 'P', 'PC'])
       .where('o.is_ms_shipped', '=', false)
       .where('s.name', 'not in', ['sys', 'INFORMATION_SCHEMA'])
       .execute(),
-    clickhouse: async () => {
-      return []
+    clickhouse: () => {
+      throw new Error('Clickhouse is not supported')
     },
   },
 })
