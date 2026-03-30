@@ -382,7 +382,12 @@ export function TableCell({
         isNull={value === null}
         onRenameColumn={onRenameColumn}
         open={isContextMenuOpen}
-        onOpenChange={setIsContextMenuOpen}
+        onOpenChange={(open) => {
+          setIsContextMenuOpen(open)
+          if (!open) {
+            disableInteractIfPossible()
+          }
+        }}
         style={style}
       >
         <Popover
