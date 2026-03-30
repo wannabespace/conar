@@ -61,7 +61,7 @@ export function RunnerEditorAIZone({
   }), queryClient)
 
   async function handleSubmit() {
-    if (!prompt.trim()) {
+    if (!prompt.trim() || isAiLocked) {
       return
     }
 
@@ -135,7 +135,7 @@ export function RunnerEditorAIZone({
                 <Button
                   size="xs"
                   className="absolute right-2 bottom-2"
-                  disabled={isPending || !prompt.trim() || !isOnline}
+                  disabled={isPending || !prompt.trim() || !isOnline || isAiLocked}
                   onClick={handleSubmit}
                 >
                   <LoadingContent loading={isPending}>
