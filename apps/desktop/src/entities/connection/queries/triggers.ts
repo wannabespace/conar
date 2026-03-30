@@ -15,7 +15,7 @@ export const triggersType = type({
 }).pipe(({ function_name, enabled, ...item }) => ({
   ...item,
   functionName: function_name || null,
-  enabled: enabled || null,
+  enabled: enabled ?? null,
 }))
 
 export const resourceTriggersQuery = createQuery({
