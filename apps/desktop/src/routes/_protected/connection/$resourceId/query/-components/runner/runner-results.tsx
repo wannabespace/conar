@@ -131,16 +131,18 @@ export function RunnerResults() {
                         )
                       : (
                           <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={isAnonymous}
-                                onClick={() => !isAnonymous ? setIsSubscriptionDialogOpen(true) : undefined}
-                              >
-                                Fix in chat
-                                <RiVipCrownLine className="size-4" />
-                              </Button>
+                            <TooltipTrigger>
+                              <span className="inline-flex">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={isAnonymous}
+                                  onClick={() => !isAnonymous ? setIsSubscriptionDialogOpen(true) : undefined}
+                                >
+                                  Fix in chat
+                                  <RiVipCrownLine className="size-4" />
+                                </Button>
+                              </span>
                             </TooltipTrigger>
                             {isAnonymous && (
                               <TooltipContent>
