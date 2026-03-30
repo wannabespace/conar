@@ -1,11 +1,14 @@
 import type { ColumnRenderer } from '@conar/table'
 import type { ComponentRef } from 'react'
+import type { PanelImperativeHandle } from 'react-resizable-panels'
 import type { Column } from '~/entities/connection/components/table/utils'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { Table, TableBody, TableProvider, useShiftSelectionKeyDown } from '@conar/table'
+import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Panel, useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { TableCell } from '~/entities/connection/components'
@@ -65,6 +68,12 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const columns = useTableColumns({ connectionResource, table, schema })
   const store = usePageStoreContext()
+  const rowDetailPanelRef = useRef<PanelImperativeHandle>(null)
+  const [rowDetailCollapsed, setRowDetailCollapsed] = useState(false)
+  const { defaultLayout: rowDetailLayout, onLayoutChanged: onRowDetailLayoutChanged } = useDefaultLayout({
+    id: `database-table-row-detail-${connection.id}-${schema}-${table}`,
+    storage: localStorage,
+  })
   const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
   const columnSizes = useSubscription(store, { selector: state => state.columnSizes })
   const detailRowIndex = useSubscription(store, { selector: state => state.detailRowIndex })
@@ -313,6 +322,61 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     } satisfies typeof state))
   }, [store])
 
+  useEffect(() => {
+    if (detailRowIndex === null)
+      setRowDetailCollapsed(false)
+  }, [detailRowIndex])
+
+  const tableContent = (
+    <div
+      role="grid"
+      className="relative min-w-0 flex-1 size-full bg-background outline-none"
+      tabIndex={0}
+      onKeyDown={handleShiftSelectionKeyDown}
+    >
+      <Table>
+        <TableHeader />
+
+        {isRowsPending && (
+          <TableBodySkeleton selectable={primaryColumns.length > 0} />
+        )}
+
+        {!isRowsPending && error && (
+          <TableError error={error} />
+        )}
+
+        {!isRowsPending && !error && rows?.length === 0 && (
+          <TableEmpty
+            className="bottom-0 h-[calc(100%-5rem)]"
+            title="Table is empty"
+            description="There are no records to show"
+          />
+        )}
+
+        {!isRowsPending && !error && rows?.length !== 0 && tableColumns.length === 0 && (
+          <TableEmpty
+            className="h-[calc(100%-5rem)]"
+            title="No columns to show"
+            description="Please show at least one column"
+          />
+        )}
+
+        {!isRowsPending && !error && rows?.length !== 0 && tableColumns.length !== 0 && (
+          <>
+            <TableBody data-mask className="bg-background" />
+            <TableInfiniteLoader
+              table={table}
+              schema={schema}
+              connectionResource={connectionResource}
+              filters={filters}
+              orderBy={orderBy}
+            />
+          </>
+        )}
+      </Table>
+    </div>
+  )
+
   return (
     <TableProvider
       rows={rows}
@@ -320,50 +384,58 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       customColumnSizes={columnSizes}
       onRowClick={handleRowClick}
     >
-      <div className="flex size-full">
-        <div
-          role="grid"
-          className="relative min-w-0 flex-1 bg-background outline-none"
-          tabIndex={0}
-          onKeyDown={handleShiftSelectionKeyDown}
-        >
-          <Table>
-            <TableHeader />
-            {isRowsPending
-              ? <TableBodySkeleton selectable={primaryColumns.length > 0} />
-              : error
-                ? <TableError error={error} />
-                : rows?.length === 0
-                  ? <TableEmpty className="bottom-0 h-[calc(100%-5rem)]" title="Table is empty" description="There are no records to show" />
-                  : tableColumns.length === 0
-                    ? <TableEmpty className="h-[calc(100%-5rem)]" title="No columns to show" description="Please show at least one column" />
-                    : (
-                        <>
-                          <TableBody data-mask className="bg-background" />
-                          <TableInfiniteLoader
-                            connectionResource={connectionResource}
-                            table={table}
-                            schema={schema}
-                            filters={filters}
-                            orderBy={orderBy}
-                          />
-                        </>
-                      )}
-          </Table>
-        </div>
-
-        {detailRowIndex !== null && rows[detailRowIndex] && columns && (
-          <RowDetailSidebar
-            row={rows[detailRowIndex]}
-            columns={columns}
-            onClose={() =>
-              store.set(state => ({
-                ...state,
-                detailRowIndex: null,
-              } satisfies typeof state))}
-          />
-        )}
-      </div>
+      {detailRowIndex !== null && rows[detailRowIndex] && columns
+        ? (
+            <ResizablePanelGroup
+              orientation="horizontal"
+              className="flex size-full"
+              defaultLayout={rowDetailLayout}
+              onLayoutChanged={onRowDetailLayoutChanged}
+            >
+              <ResizablePanel
+                defaultSize="75%"
+                minSize="30%"
+                className="min-w-0 overflow-hidden"
+              >
+                {tableContent}
+              </ResizablePanel>
+              <ResizableSeparator className="w-1 bg-transparent" />
+              <Panel
+                panelRef={rowDetailPanelRef}
+                defaultSize="25%"
+                minSize="5%"
+                maxSize="50%"
+                collapsible
+                collapsedSize={0}
+                onResize={() => {
+                  const collapsed = rowDetailPanelRef.current?.isCollapsed() ?? false
+                  setRowDetailCollapsed(collapsed)
+                  if (collapsed)
+                    store.set(state => ({ ...state, detailRowIndex: null } satisfies typeof state))
+                }}
+                className="flex shrink-0 flex-col overflow-hidden border-l border-border bg-background"
+                data-slot="resizable-panel"
+              >
+                <RowDetailSidebar
+                  row={rows[detailRowIndex]!}
+                  columns={columns}
+                  onClose={() =>
+                    store.set(state => ({
+                      ...state,
+                      detailRowIndex: null,
+                    } satisfies typeof state))}
+                  onExpand={() => rowDetailPanelRef.current?.expand()}
+                  onCollapse={() => rowDetailPanelRef.current?.collapse()}
+                  isCollapsed={rowDetailCollapsed}
+                />
+              </Panel>
+            </ResizablePanelGroup>
+          )
+        : (
+            <div className="flex size-full">
+              {tableContent}
+            </div>
+          )}
       <RenameColumnDialog ref={renameColumnRef} />
     </TableProvider>
   )
