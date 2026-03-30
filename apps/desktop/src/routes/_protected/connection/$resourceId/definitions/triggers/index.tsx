@@ -27,17 +27,17 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/definit
 
 const eventFilterOptions = [
   { label: 'All Events', value: 'all' },
-  { label: 'INSERT', value: 'INSERT' },
-  { label: 'UPDATE', value: 'UPDATE' },
-  { label: 'DELETE', value: 'DELETE' },
-  { label: 'TRUNCATE', value: 'TRUNCATE' },
+  { label: 'Insert', value: 'INSERT' },
+  { label: 'Update', value: 'UPDATE' },
+  { label: 'Delete', value: 'DELETE' },
+  { label: 'Truncate', value: 'TRUNCATE' },
 ]
 
 const timingFilterOptions = [
   { label: 'All Timings', value: 'all' },
-  { label: 'BEFORE', value: 'BEFORE' },
-  { label: 'AFTER', value: 'AFTER' },
-  { label: 'INSTEAD OF', value: 'INSTEAD OF' },
+  { label: 'Before', value: 'BEFORE' },
+  { label: 'After', value: 'AFTER' },
+  { label: 'Instead Of', value: 'INSTEAD OF' },
 ]
 
 function DatabaseTriggersPage() {
