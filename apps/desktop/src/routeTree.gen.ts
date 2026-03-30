@@ -18,6 +18,7 @@ import { Route as ProtectedConnectionResourceIdDefinitionsRouteImport } from './
 import { Route as ProtectedConnectionResourceIdVisualizerIndexRouteImport } from './routes/_protected/connection/$resourceId/visualizer/index'
 import { Route as ProtectedConnectionResourceIdTableIndexRouteImport } from './routes/_protected/connection/$resourceId/table/index'
 import { Route as ProtectedConnectionResourceIdQueryIndexRouteImport } from './routes/_protected/connection/$resourceId/query/index'
+import { Route as ProtectedConnectionResourceIdDefinitionsTriggersIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/triggers/index'
 import { Route as ProtectedConnectionResourceIdDefinitionsIndexesIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/indexes/index'
 import { Route as ProtectedConnectionResourceIdDefinitionsEnumsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/enums/index'
 import { Route as ProtectedConnectionResourceIdDefinitionsConstraintsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/constraints/index'
@@ -71,6 +72,12 @@ const ProtectedConnectionResourceIdQueryIndexRoute =
     path: '/query/',
     getParentRoute: () => ProtectedConnectionResourceIdRoute,
   } as any)
+const ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute =
+  ProtectedConnectionResourceIdDefinitionsTriggersIndexRouteImport.update({
+    id: '/triggers/',
+    path: '/triggers/',
+    getParentRoute: () => ProtectedConnectionResourceIdDefinitionsRoute,
+  } as any)
 const ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute =
   ProtectedConnectionResourceIdDefinitionsIndexesIndexRouteImport.update({
     id: '/indexes/',
@@ -102,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/connection/$resourceId/definitions/constraints/': typeof ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute
   '/connection/$resourceId/definitions/enums/': typeof ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute
   '/connection/$resourceId/definitions/indexes/': typeof ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute
+  '/connection/$resourceId/definitions/triggers/': typeof ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
@@ -115,6 +123,7 @@ export interface FileRoutesByTo {
   '/connection/$resourceId/definitions/constraints': typeof ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute
   '/connection/$resourceId/definitions/enums': typeof ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute
   '/connection/$resourceId/definitions/indexes': typeof ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute
+  '/connection/$resourceId/definitions/triggers': typeof ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -130,6 +139,7 @@ export interface FileRoutesById {
   '/_protected/connection/$resourceId/definitions/constraints/': typeof ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute
   '/_protected/connection/$resourceId/definitions/enums/': typeof ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute
   '/_protected/connection/$resourceId/definitions/indexes/': typeof ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute
+  '/_protected/connection/$resourceId/definitions/triggers/': typeof ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
     | '/connection/$resourceId/definitions/constraints/'
     | '/connection/$resourceId/definitions/enums/'
     | '/connection/$resourceId/definitions/indexes/'
+    | '/connection/$resourceId/definitions/triggers/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
@@ -158,6 +169,7 @@ export interface FileRouteTypes {
     | '/connection/$resourceId/definitions/constraints'
     | '/connection/$resourceId/definitions/enums'
     | '/connection/$resourceId/definitions/indexes'
+    | '/connection/$resourceId/definitions/triggers'
   id:
     | '__root__'
     | '/_protected'
@@ -172,6 +184,7 @@ export interface FileRouteTypes {
     | '/_protected/connection/$resourceId/definitions/constraints/'
     | '/_protected/connection/$resourceId/definitions/enums/'
     | '/_protected/connection/$resourceId/definitions/indexes/'
+    | '/_protected/connection/$resourceId/definitions/triggers/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -244,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedConnectionResourceIdQueryIndexRouteImport
       parentRoute: typeof ProtectedConnectionResourceIdRoute
     }
+    '/_protected/connection/$resourceId/definitions/triggers/': {
+      id: '/_protected/connection/$resourceId/definitions/triggers/'
+      path: '/triggers'
+      fullPath: '/connection/$resourceId/definitions/triggers/'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsTriggersIndexRouteImport
+      parentRoute: typeof ProtectedConnectionResourceIdDefinitionsRoute
+    }
     '/_protected/connection/$resourceId/definitions/indexes/': {
       id: '/_protected/connection/$resourceId/definitions/indexes/'
       path: '/indexes'
@@ -272,6 +292,7 @@ interface ProtectedConnectionResourceIdDefinitionsRouteChildren {
   ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute: typeof ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute
   ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute: typeof ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute
   ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute: typeof ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute
+  ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute: typeof ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute
 }
 
 const ProtectedConnectionResourceIdDefinitionsRouteChildren: ProtectedConnectionResourceIdDefinitionsRouteChildren =
@@ -282,6 +303,8 @@ const ProtectedConnectionResourceIdDefinitionsRouteChildren: ProtectedConnection
       ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute,
     ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute:
       ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute,
+    ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute:
+      ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute,
   }
 
 const ProtectedConnectionResourceIdDefinitionsRouteWithChildren =

@@ -9,6 +9,9 @@ export interface Sys {
   index_columns: IndexColumns
   columns: Columns
   databases: Databases
+  triggers: Triggers
+  trigger_events: TriggerEvents
+  objects: Objects
 }
 
 /**
@@ -141,4 +144,51 @@ interface Columns {
   object_id: number
   column_id: number
   name: string
+}
+
+/**
+ * @name triggers
+ * @type table
+ */
+interface Triggers {
+  name: string
+  object_id: number
+  parent_class: number
+  parent_class_desc: string
+  parent_id: number
+  type: string
+  type_desc: string
+  create_date: Date
+  modify_date: Date
+  is_ms_shipped: boolean
+  is_disabled: boolean
+  is_not_for_replication: boolean
+  is_instead_of_trigger: boolean
+}
+
+/**
+ * @name trigger_events
+ * @type table
+ */
+interface TriggerEvents {
+  object_id: number
+  type: number
+  type_desc: string
+  is_first: boolean
+  is_last: boolean
+  event_group_type: number | null
+  event_group_type_desc: string | null
+}
+
+/**
+ * @name objects
+ * @type table
+ */
+interface Objects {
+  name: string
+  object_id: number
+  schema_id: number
+  parent_object_id: number
+  type: string
+  type_desc: string
 }

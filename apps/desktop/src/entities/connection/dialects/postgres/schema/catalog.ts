@@ -11,6 +11,8 @@ export interface PgCatalog {
   pg_settings: PgSettings
   pg_database: PgDatabase
   pg_am: PgAm
+  pg_trigger: PgTrigger
+  pg_proc: PgProc
 }
 
 /**
@@ -129,4 +131,28 @@ interface PgAm {
   amname: string
   amhandler: string
   amtype: string
+}
+
+/**
+ * @name pg_trigger
+ * @type table
+ */
+interface PgTrigger {
+  oid: number
+  tgrelid: number
+  tgname: string
+  tgfoid: number
+  tgtype: number
+  tgenabled: string
+  tgisinternal: boolean
+}
+
+/**
+ * @name pg_proc
+ * @type table
+ */
+interface PgProc {
+  oid: number
+  proname: string
+  pronamespace: number
 }

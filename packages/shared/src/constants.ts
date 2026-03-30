@@ -52,6 +52,7 @@ export const CONNECTION_RESOURCE_ROOT_SYMBOL = Symbol('CONNECTION_RESOURCE_ROOT'
 export const CONNECTION_RESOURCE_ROOT_LABEL = 'root' as const
 export const CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES: ConnectionType[] = [ConnectionType.MSSQL, ConnectionType.ClickHouse]
 export const CONNECTION_TYPES_WITHOUT_SCHEMAS: ConnectionType[] = [ConnectionType.ClickHouse]
+export const CONNECTION_TYPES_WITH_TRIGGERS: ConnectionType[] = [ConnectionType.Postgres, ConnectionType.MySQL, ConnectionType.MSSQL]
 
 export const NETWORK_ERROR_PATTERNS = [
   'econnreset',
