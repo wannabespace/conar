@@ -1,9 +1,10 @@
 import type { RemixiconComponentType } from '@remixicon/react'
 import type { connections } from '~/drizzle/schema'
 import type { FileRoutesByTo } from '~/routeTree.gen'
+import { CONNECTION_TYPES_WITH_FUNCTIONS, CONNECTION_TYPES_WITH_TRIGGERS } from '@conar/shared/constants'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { CardTitle } from '@conar/ui/components/card'
-import { RiFileList3Line, RiKey2Line, RiListUnordered } from '@remixicon/react'
+import { RiCodeSSlashLine, RiFileList3Line, RiFlashlightLine, RiKey2Line, RiListUnordered } from '@remixicon/react'
 import { SidebarLink } from '~/components/sidebar-link'
 import { Route } from '../../definitions'
 
@@ -24,6 +25,20 @@ function sidebarItems(connection: typeof connections.$inferSelect) {
       Icon: RiKey2Line,
       label: 'Constraints',
     },
+    ...(CONNECTION_TYPES_WITH_FUNCTIONS.includes(connection.type)
+      ? [{
+          to: '/connection/$resourceId/definitions/functions' as const,
+          Icon: RiCodeSSlashLine,
+          label: 'Functions',
+        }]
+      : []),
+    ...(CONNECTION_TYPES_WITH_TRIGGERS.includes(connection.type)
+      ? [{
+          to: '/connection/$resourceId/definitions/triggers' as const,
+          Icon: RiFlashlightLine,
+          label: 'Triggers',
+        }]
+      : []),
   ] satisfies { Icon: RemixiconComponentType, label: string, to: keyof FileRoutesByTo }[]
 }
 

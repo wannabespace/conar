@@ -68,10 +68,13 @@ export function RunnerAlertDialog({
         </AlertDialogHeader>
         <AlertDialogFooter className="gap-2">
           <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-          <AlertDialogClose render={<Button variant="destructive" />} onClick={onConfirm}>
+          <AlertDialogClose render={<Button variant="warning" />} onClick={onConfirm}>
             <span className="flex items-center gap-2">
               Run Anyway
-              <KbdShiftCtrlEnter userAgent={navigator.userAgent} />
+              <KbdShiftCtrlEnter
+                userAgent={navigator.userAgent}
+                className="text-white"
+              />
             </span>
           </AlertDialogClose>
         </AlertDialogFooter>

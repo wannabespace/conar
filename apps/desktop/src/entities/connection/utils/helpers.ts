@@ -265,3 +265,8 @@ export function getEditorQueries(sql: string) {
 
   return queries
 }
+
+export function wrapExplainQuery(query: string) {
+  const trimmedQuery = query.trim().toLowerCase()
+  return trimmedQuery.startsWith('explain') ? query : `EXPLAIN ${query.trim()}`
+}

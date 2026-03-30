@@ -208,7 +208,10 @@ function CellPopoverContent({
                 onClick={() => save(value)}
               >
                 Save
-                <KbdCtrlEnter userAgent={navigator.userAgent} />
+                <KbdCtrlEnter
+                  userAgent={navigator.userAgent}
+                  className="text-white"
+                />
               </Button>
             </>
           )}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { getEditorQueries, hasDangerousSqlKeywords } from './helpers'
+import { getEditorQueries, hasDangerousSqlKeywords, wrapExplainQuery } from './helpers'
 
 describe('hasDangerousSqlKeywords', () => {
   it('should return true for SQL queries containing DELETE keyword', () => {
@@ -168,5 +168,17 @@ WHERE id = 1; SELECT * FROM posts;`)).toEqual([
     expect(result[0]!.queries[0]).toContain('COMMIT')
     expect(result[0]!.queries[0]).toContain('DO $$')
     expect(result[0]!.queries[0]).toContain('END $$')
+  })
+})
+
+describe('wrapExplainQuery', () => {
+  it('should prepend EXPLAIN to a query that does not start with it', () => {
+    expect(wrapExplainQuery('SELECT * FROM users')).toBe('EXPLAIN SELECT * FROM users')
+    expect(wrapExplainQuery('  SELECT * FROM users  ')).toBe('EXPLAIN SELECT * FROM users')
+  })
+
+  it('should not double-wrap when query already starts with EXPLAIN', () => {
+    expect(wrapExplainQuery('EXPLAIN SELECT * FROM users')).toBe('EXPLAIN SELECT * FROM users')
+    expect(wrapExplainQuery('  EXPLAIN ANALYZE SELECT * FROM users')).toBe('  EXPLAIN ANALYZE SELECT * FROM users')
   })
 })

@@ -69,6 +69,7 @@ export function Runner() {
   }, [selectedLines, editorQueries])
 
   const { refetch: refetchRunner, fetchStatus } = useQuery(runnerQueryOptions(connectionResource))
+  const isRunnerExecutionDisabled = fetchStatus === 'fetching' || queriesToRun.length === 0
 
   const runQueries = (queries: typeof queriesToRun) => {
     store.set(state => ({
@@ -170,7 +171,7 @@ export function Runner() {
                   Format
                 </Button>
                 <Button
-                  disabled={fetchStatus === 'fetching'}
+                  disabled={isRunnerExecutionDisabled}
                   size="sm"
                   onClick={() => runQueriesWithAlert(queriesToRun)}
                 >

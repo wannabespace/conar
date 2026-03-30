@@ -1,29 +1,31 @@
-import type { ComponentProps } from 'react'
-import { Input } from '@conar/ui/components/input'
+import type { InputProps } from '@conar/ui/components/input'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine } from '@remixicon/react'
+import { Button } from '../button'
 
-export function SearchInput({ className, value, onClear, ...props }: ComponentProps<typeof Input> & {
+export function SearchInput({ className, value, onClear, ...props }: InputProps & {
   onClear: () => void
 }) {
+  const hasValue = typeof value === 'string' ? value.length > 0 : Boolean(value)
+
   return (
-    <div className="relative">
-      <Input
-        className={cn('pr-8', className)}
+    <InputGroup className={cn(className)}>
+      <InputGroupInput
         value={value}
         {...props}
       />
-      {value && (
-        <button
-          type="button"
-          className="
-            absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
-          "
-          onClick={onClear}
-        >
-          <RiCloseLine className="size-4 text-muted-foreground" />
-        </button>
+      {hasValue && (
+        <InputGroupAddon align="inline-end">
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={onClear}
+          >
+            <RiCloseLine />
+          </Button>
+        </InputGroupAddon>
       )}
-    </div>
+    </InputGroup>
   )
 }
