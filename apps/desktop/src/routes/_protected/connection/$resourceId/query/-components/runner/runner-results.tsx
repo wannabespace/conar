@@ -51,7 +51,8 @@ export function RunnerResults() {
           <TabsList className="w-max max-w-none rounded-none bg-muted/50">
             {results.map(({ query, error }, index) => (
               <TabsTrigger
-                key={`query-${query}`}
+                // eslint-disable-next-line react/no-array-index-key
+                key={`query-${index}`}
                 value={`table-${index}`}
                 className="h-8"
               >

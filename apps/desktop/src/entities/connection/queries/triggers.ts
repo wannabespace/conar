@@ -71,7 +71,7 @@ export const resourceTriggersQuery = createQuery({
         's.name as schema',
         'o.name as table',
         't.name as name',
-        sql<string>`ISNULL(te.type_desc, 'UNKNOWN')`.as('event'),
+        sql<string>`COALESCE(STRING_AGG(te.type_desc, ' OR '), 'UNKNOWN')`.as('event'),
         eb.case()
           .when('t.is_instead_of_trigger', '=', true)
           .then('INSTEAD OF')
@@ -88,6 +88,7 @@ export const resourceTriggersQuery = createQuery({
       .where('t.is_ms_shipped', '=', false)
       .where('t.parent_class', '=', 1)
       .where('s.name', '!=', 'sys')
+      .groupBy(['s.name', 'o.name', 't.name', 't.is_instead_of_trigger', 't.is_disabled'])
       .execute(),
     clickhouse: () => {
       throw new Error('Clickhouse is not supported')
