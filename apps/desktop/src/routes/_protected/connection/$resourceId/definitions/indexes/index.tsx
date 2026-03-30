@@ -9,14 +9,14 @@ import { RiFileList3Line, RiKey2Line, RiLayoutColumnLine, RiTable2 } from '@remi
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useSubscription } from 'seitu/react'
-import { resourceIndexesQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
-import { getConnectionResourceStore } from '~/entities/connection/store'
+import { resourceIndexesQueryOptions } from '~/entities/connection/queries'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
+import { SchemaSelect } from '../-components/schema-select'
 import { MOTION_BLOCK_PROPS } from '../-constants'
+import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/indexes/')({
   component: DatabaseIndexesPage,
@@ -45,16 +45,10 @@ const filterOptions: { label: string, value: IndexType | 'all' }[] = [
 function DatabaseIndexesPage() {
   const { connectionResource } = Route.useRouteContext()
   const { data: indexes, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
-  const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data } = useQuery(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem }))
-  const schemas = data?.schemas.map(({ name }) => name) ?? []
-  const [selectedSchema, setSelectedSchema] = useState(schemas[0])
-  const [search, setSearch] = useState('')
+  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({ connectionResource })
   const [filterType, setFilterType] = useState<typeof filterOptions[number]['value']>('all')
 
-  if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
-    setSelectedSchema(schemas[0])
+  useRefreshHotkey(refetch, isFetching)
 
   const groupedIndexes = indexes?.reduce<Record<string, GroupedIndex>>((acc, indexItem) => {
     if (indexItem.schema !== selectedSchema)
@@ -137,28 +131,7 @@ function DatabaseIndexesPage() {
             ))}
           </SelectContent>
         </Select>
-        {schemas.length > 1 && (
-          <Select
-            value={selectedSchema}
-            onValueChange={(v) => {
-              if (v) {
-                setSelectedSchema(v)
-              }
-            }}
-          >
-            <SelectTrigger className="max-w-56 min-w-[180px]">
-              <div className="flex flex-1 items-center gap-2 overflow-hidden">
-                <span className="shrink-0 text-muted-foreground">schema</span>
-                <span className="truncate"><SelectValue /></span>
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {schemas.map(schema => (
-                <SelectItem key={schema} value={schema}>{schema}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+        <SchemaSelect schemas={schemas} selectedSchema={selectedSchema} setSelectedSchema={setSelectedSchema} />
       </div>
       <DefinitionsGrid loading={isPending}>
         {indexList.length === 0 && (

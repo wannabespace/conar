@@ -114,6 +114,14 @@ export const buttonVariants = cva(
             dark:not-disabled:not-active:not-data-pressed:before:shadow-[0_-1px_--theme(--color-white/6%)]
             [:disabled,:active,[data-pressed]]:shadow-none
           `,
+        'warning':
+          `
+            border-warning bg-warning text-white shadow-xs shadow-warning/24
+            not-disabled:inset-shadow-[0_1px_--theme(--color-white/16%)]
+            hover:bg-warning/90
+            data-pressed:bg-warning/90
+            *:data-[slot=button-loading-indicator]:text-white
+          `,
         'ghost':
           `
             border-transparent text-foreground

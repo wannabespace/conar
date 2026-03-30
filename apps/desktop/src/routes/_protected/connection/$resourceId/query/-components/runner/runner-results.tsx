@@ -1,4 +1,5 @@
 import { Button } from '@conar/ui/components/button'
+import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Spinner } from '@conar/ui/components/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -46,42 +47,45 @@ export function RunnerResults() {
   if (results && results.length > 0) {
     return (
       <Tabs defaultValue="table-0" className="size-full gap-0">
-        <TabsList className="w-full rounded-none bg-muted/50">
-          {results.map(({ query, error }, index) => (
-            <TabsTrigger
-              key={`query-${query}`}
-              value={`table-${index}`}
-              className="h-8"
-            >
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className={cn(`
-                    flex w-full items-center justify-center gap-1
-                  `, error && `text-destructive`)}
-                  >
-                    Result
-                    {' '}
-                    {results.length > 1 ? index + 1 : ''}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent sideOffset={8} className="w-lg p-0 pl-2">
-                  <Monaco
-                    value={formatSql(query, connection.type)}
-                    language="sql"
-                    options={{
-                      scrollBeyondLastLine: false,
-                      readOnly: true,
-                      lineDecorationsWidth: 0,
-                      lineNumbers: 'off',
-                      folding: false,
-                    }}
-                    className="h-48 max-h-[50vh]"
-                  />
-                </TooltipContent>
-              </Tooltip>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <ScrollArea className="h-8 w-full min-w-0 shrink-0" scrollFade>
+          <TabsList className="w-max max-w-none rounded-none bg-muted/50">
+            {results.map(({ query, error }, index) => (
+              <TabsTrigger
+                // eslint-disable-next-line react/no-array-index-key
+                key={`query-${index}`}
+                value={`table-${index}`}
+                className="h-8"
+              >
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className={cn(`
+                      flex w-full items-center justify-center gap-1
+                    `, error && `text-destructive`)}
+                    >
+                      Result
+                      {' '}
+                      {results.length > 1 ? index + 1 : ''}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent sideOffset={8} className="w-lg p-0 pl-2">
+                    <Monaco
+                      value={formatSql(query, connection.type)}
+                      language="sql"
+                      options={{
+                        scrollBeyondLastLine: false,
+                        readOnly: true,
+                        lineDecorationsWidth: 0,
+                        lineNumbers: 'off',
+                        folding: false,
+                      }}
+                      className="h-48 max-h-[50vh]"
+                    />
+                  </TooltipContent>
+                </Tooltip>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </ScrollArea>
         {results.map(({ data, error, startLineNumber, endLineNumber, duration }, index) => (
           <TabsContent
             key={`result-${data?.length ?? 'error'}-${startLineNumber}`}
