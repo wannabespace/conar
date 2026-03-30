@@ -31,15 +31,27 @@ export function downloadFile(content: string, fileName: string, mimeType: string
   }
 }
 
-export function escapeCSVValue(value: unknown) {
+const csvValueRegex = /"/g
+
+function escapeCSVValue(value: unknown) {
   if (value === null || value === undefined)
     return ''
 
   const stringValue = String(value)
 
   if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
-    return `"${stringValue.replace(/"/g, '""')}"`
+    return `"${stringValue.replace(csvValueRegex, '""')}"`
   }
 
   return stringValue
+}
+
+export function toCSV<T extends Record<string, unknown>>(headers: (keyof T)[], data: T[]) {
+  const csvRows = [
+    headers.join(','),
+    ...data.map(row =>
+      headers.map(header => escapeCSVValue(row[header])).join(','),
+    ),
+  ]
+  return csvRows.join('\n')
 }

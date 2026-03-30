@@ -20,7 +20,7 @@ export function PasswordForm({ connection, connectionResource }: { connection: t
 
   const url = new SafeURL(connection.connectionString)
   url.password = password
-  url.pathname = connectionResource.name
+  url.pathname = connectionResource.name || ''
   const newConnectionString = url.toString()
 
   const { mutate: savePassword, status } = useMutation({

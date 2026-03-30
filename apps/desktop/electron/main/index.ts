@@ -3,6 +3,7 @@ import type { UpdatesStatus } from '~/use-updates-observer'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { isNetworkError } from '@conar/shared/utils/network-error'
 import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
 import { setupProtocolHandler } from './lib/deep-link'
@@ -16,6 +17,22 @@ todesktop.init()
 export const { autoUpdater } = todesktop
 
 initElectronEvents()
+
+process.on('uncaughtException', (error) => {
+  if (isNetworkError(error)) {
+    console.error('[Suppressed Connection Error]', error.message)
+    return
+  }
+  throw error
+})
+
+process.on('unhandledRejection', (reason) => {
+  if (isNetworkError(reason)) {
+    console.error('[Suppressed Connection Rejection]', reason instanceof Error ? reason.message : reason)
+    return
+  }
+  throw reason
+})
 
 export const store = new Store<{
   bounds?: Rectangle

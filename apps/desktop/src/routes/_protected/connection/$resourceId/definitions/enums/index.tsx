@@ -12,8 +12,9 @@ import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { resourceEnumsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { resourceEnumsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
+import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
@@ -29,10 +30,10 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/definit
 
 function DatabaseEnumsPage() {
   const { connection, connectionResource } = Route.useRouteContext()
-  const { data: enums, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceEnumsQuery({ connectionResource }))
+  const { data: enums, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
+  const { data } = useQuery(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
@@ -55,6 +56,8 @@ function DatabaseEnumsPage() {
       values: enumItem.values.filter(value => value.toLowerCase().includes(search.toLowerCase())),
     })) ?? []
 
+  useRefreshHotkey(refetch, isFetching)
+
   return (
     <>
       <DefinitionsHeader
@@ -74,7 +77,14 @@ function DatabaseEnumsPage() {
           onClear={() => setSearch('')}
         />
         {schemas.length > 1 && (
-          <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
+          <Select
+            value={selectedSchema}
+            onValueChange={(v) => {
+              if (v) {
+                setSelectedSchema(v)
+              }
+            }}
+          >
             <SelectTrigger className="max-w-56 min-w-[180px]">
               <div className="flex flex-1 items-center gap-2 overflow-hidden">
                 <span className="shrink-0 text-muted-foreground">schema</span>

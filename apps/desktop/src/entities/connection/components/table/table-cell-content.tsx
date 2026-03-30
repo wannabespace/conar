@@ -8,8 +8,7 @@ export function TableCellContent({
   value,
   position,
   ...props
-}: Pick<TableCellProps, 'value' | 'position' | 'style'>
-  & Pick<ComponentProps<'div'>, 'className' | 'children' | 'onMouseOver' | 'onMouseLeave'>) {
+}: Pick<TableCellProps, 'value' | 'position' | 'style'> & ComponentProps<'div'>) {
   return (
     <div
       className={cn(

@@ -21,5 +21,8 @@
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
     "nanoid": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bun": "catalog:"
   }
 }

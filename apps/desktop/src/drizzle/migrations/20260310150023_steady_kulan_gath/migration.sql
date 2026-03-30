@@ -1,1 +1,0 @@
-ALTER TABLE "connections_resources" RENAME CONSTRAINT "connections_resources_connectionId_name_unique" TO "connections_resources_connection_id_name_unique";

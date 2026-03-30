@@ -23,7 +23,7 @@ export const connections = pgTable('connections', ({ text, boolean }) => ({
 export const connectionsResources = pgTable('connections_resources', ({ uuid, text }) => ({
   ...baseTable,
   connectionId: uuid().references(() => connections.id, { onDelete: 'cascade' }).notNull(),
-  name: text().notNull(),
+  name: text(),
 }), t => [
   unique().on(t.connectionId, t.name),
 ])

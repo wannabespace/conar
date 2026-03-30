@@ -85,7 +85,7 @@ export async function getSubscription(userId: string) {
 
 export const subscriptionMiddleware = logMiddleware.concat(orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers)
-  const minorVersion = context.minorVersion ?? 0
+  const minorVersion = context.appVersion?.minor ?? 0
   const subscription = await getSubscription(session.user.id)
 
   if (session) {
