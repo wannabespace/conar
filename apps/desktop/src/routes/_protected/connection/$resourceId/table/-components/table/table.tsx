@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { TableCell } from '~/entities/connection/components'
+import { getColumnSize, INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/utils'
 import { findEnum, resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
 import { selectQuery } from '~/entities/connection/queries/select'
@@ -16,7 +17,6 @@ import { setQuery } from '~/entities/connection/queries/set'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { queryClient } from '~/main'
 import { Route } from '../..'
-import { getColumnSize, INTERNAL_COLUMN_IDS } from '../../-lib'
 import { useTableColumns } from '../../-queries/use-columns-query'
 import { usePageStoreContext } from '../../-store'
 import { useColumnsOrder } from '../use-columns-order'
@@ -70,7 +70,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const orderBy = useSubscription(store, { selector: state => state.orderBy })
   const { data: rows = [], error, isPending: isRowsPending } = useInfiniteQuery(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns?.filter(c => c.primaryKey).map(c => c.id) ?? [], [columns])
-  const { toggleOrder } = useColumnsOrder()
+  const { toggleOrder, setOrder, removeOrder } = useColumnsOrder()
   const renameColumnRef = useRef<ComponentRef<typeof RenameColumnDialog>>(null)
 
   useEffect(() => {
@@ -246,12 +246,15 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
               column={column}
               onSaveValue={primaryColumns.length > 0 ? saveValue : undefined}
               values={values}
-              contextMenu={{
-                onAddFilter: filter => store.set(state => ({
-                  ...state,
-                  filters: [...state.filters, filter],
-                } satisfies typeof state)),
-              }}
+              onAddFilter={filter => store.set(state => ({
+                ...state,
+                filters: [...state.filters, filter],
+              } satisfies typeof state))}
+              onSort={(columnId, order) => order ? setOrder(columnId, order) : removeOrder(columnId)}
+              sortOrder={orderBy[column.id] ?? null}
+              onRenameColumn={!column.primaryKey && connection.type !== ConnectionType.ClickHouse
+                ? () => renameColumnRef.current?.rename(schema, table, column.id)
+                : undefined}
               {...props}
             />
           )
@@ -275,7 +278,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     })
 
     return sortedColumns
-  }, [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, toggleOrder, enums, store])
+  }, [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, toggleOrder, setOrder, removeOrder, enums, store, orderBy])
 
   const handleShiftSelectionKeyDown = useShiftSelectionKeyDown({
     rowCount: rows.length,

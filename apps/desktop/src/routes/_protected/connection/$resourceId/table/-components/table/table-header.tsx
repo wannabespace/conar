@@ -9,7 +9,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiArrowLeftSLine, RiArrowRightSLine, RiDatabase2Line } from '@remixicon/react'
 import { animate } from 'motion'
 import { useEffect, useState } from 'react'
-import { INTERNAL_COLUMN_IDS } from '../../-lib'
+import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/utils'
 import { usePageStoreContext } from '../../-store'
 
 interface HeaderColumn {
