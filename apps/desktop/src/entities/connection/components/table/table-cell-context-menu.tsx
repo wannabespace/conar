@@ -1,4 +1,3 @@
-import type { ActiveFilter } from '@conar/shared/filters'
 import type { CSSProperties, ReactNode } from 'react'
 import {
   formatValueForPlainCell,
@@ -24,40 +23,24 @@ import {
 } from '@conar/ui/components/context-menu'
 import { copy } from '@conar/ui/lib/copy'
 import { useMemo } from 'react'
+import { useCellContext } from './cell-context'
 import { TableAddFilterSubmenu } from './table-add-filter-submenu'
 import { INTERNAL_COLUMN_IDS } from './utils'
 
 const internalColumnIds = Object.values(INTERNAL_COLUMN_IDS)
 
 export function TableCellContextMenu({
-  rowIndex,
-  value,
-  columnId,
-  onAddFilter,
-  onSort,
-  sortOrder,
-  onSetNull,
-  isNull,
-  onRenameColumn,
   open,
   onOpenChange,
   style,
   children,
 }: {
-  rowIndex: number
-  value: unknown
-  columnId: string
-  onAddFilter?: (filter: ActiveFilter) => void
-  onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
-  sortOrder?: 'ASC' | 'DESC' | null
-  onSetNull?: () => void
-  isNull?: boolean
-  onRenameColumn?: () => void
   open: boolean
   onOpenChange: (open: boolean) => void
   style?: CSSProperties
   children: ReactNode
 }) {
+  const { value, column, rowIndex, onAddFilter, onSort, sortOrder, onSetNull, onRenameColumn } = useCellContext()
   const row = useTableContext(({ rows }) => rows[rowIndex]!)
   const columns = useTableContext(({ columns }) => columns)
   const columnKeys = useMemo(() =>
@@ -80,7 +63,7 @@ export function TableCellContextMenu({
             Copy value
           </ContextMenuItem>
           {onSetNull && (
-            <ContextMenuItem onClick={onSetNull} disabled={isNull}>
+            <ContextMenuItem onClick={onSetNull} disabled={value === null}>
               Set null
             </ContextMenuItem>
           )}
@@ -97,8 +80,6 @@ export function TableCellContextMenu({
               )}
               {onAddFilter && (
                 <TableAddFilterSubmenu
-                  columnId={columnId}
-                  cellValue={value}
                   hasRow={!!row}
                   onAdd={onAddFilter}
                 />
@@ -112,7 +93,7 @@ export function TableCellContextMenu({
                     <ContextMenuRadioGroup
                       value={sortOrder ?? 'default'}
                       onValueChange={(value) => {
-                        onSort(columnId, value === 'default' ? null : value as 'ASC' | 'DESC')
+                        onSort(column.id, value === 'default' ? null : value as 'ASC' | 'DESC')
                       }}
                     >
                       <ContextMenuRadioItem value="default">

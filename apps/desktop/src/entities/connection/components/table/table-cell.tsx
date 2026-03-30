@@ -40,7 +40,7 @@ function CellPopoverContent({
   onClose: () => void
   hasUpdateFn: boolean
 }) {
-  const { value, initialValue, column, displayValue, setValue, update, values } = useCellContext()
+  const { newValue, value, column, displayValue, setNewValue, update, values } = useCellContext()
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
 
   const save = (value: string) => {
@@ -66,7 +66,7 @@ function CellPopoverContent({
 
   const canEdit = !!column?.isEditable && hasUpdateFn
   const hasArrayValues = !!values && !column.isArray
-  const canSave = value !== displayValue && !(hasArrayValues && !value)
+  const canSave = newValue !== displayValue && !(hasArrayValues && !newValue)
 
   const setNull = () => {
     update({ value: null, rowIndex })
@@ -96,8 +96,8 @@ function CellPopoverContent({
         ? (
             <CellSwitch
               className="w-full justify-center py-6"
-              checked={JSON.parse(value)}
-              onChange={checked => setValue(checked.toString())}
+              checked={JSON.parse(newValue)}
+              onChange={checked => setNewValue(checked.toString())}
               onSave={save}
             />
           )
@@ -106,11 +106,11 @@ function CellPopoverContent({
           ? (
               <div className="p-2">
                 <Select
-                  value={value === 'null' ? undefined : value}
+                  value={newValue === 'null' ? undefined : newValue}
                   disabled={!canEdit}
                   onValueChange={(value) => {
                     if (value) {
-                      setValue(value)
+                      setNewValue(value)
                     }
                   }}
                 >
@@ -131,7 +131,7 @@ function CellPopoverContent({
               <Monaco
                 ref={monacoRef}
                 data-mask
-                value={value}
+                value={newValue}
                 language={column?.type?.includes('json')
                   ? 'json'
                   : column?.type?.includes('xml')
@@ -140,7 +140,7 @@ function CellPopoverContent({
                 className={cn('h-40 w-full transition-[height] duration-300', isBig && `
                   h-[min(45vh,40rem)]
                 `)}
-                onChange={setValue}
+                onChange={setNewValue}
                 options={monacoOptions}
               />
             )}
@@ -164,7 +164,7 @@ function CellPopoverContent({
           )}
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="icon-xs" variant="outline" onClick={() => copy(value, 'Value copied to clipboard')}>
+              <Button size="icon-xs" variant="outline" onClick={() => copy(newValue, 'Value copied to clipboard')}>
                 <RiFileCopyLine className="size-3" />
               </Button>
             </TooltipTrigger>
@@ -177,7 +177,7 @@ function CellPopoverContent({
               {!!column?.isNullable && (
                 <AlertDialog>
                   <AlertDialogTrigger
-                    disabled={initialValue === null}
+                    disabled={value === null}
                     render={<Button size="xs" variant="secondary" />}
                   >
                     Set
@@ -205,7 +205,7 @@ function CellPopoverContent({
               <Button
                 size="xs"
                 disabled={!canSave}
-                onClick={() => save(value)}
+                onClick={() => save(newValue)}
               >
                 Save
                 <KbdCtrlEnter
@@ -361,26 +361,23 @@ export function TableCell({
   return (
     <TableCellProvider
       column={column}
-      initialValue={value}
+      rowIndex={rowIndex}
+      value={value}
+      values={values}
       displayValue={displayValue}
       onSaveValue={onSaveValue}
+      onAddFilter={onAddFilter}
+      onSort={onSort}
+      sortOrder={sortOrder}
+      onSetNull={onSaveValue && column.isNullable
+        ? () => onSaveValue(rowIndex, column.id, null)
+        : undefined}
+      onRenameColumn={onRenameColumn}
       onSavePending={() => setStatus('pending')}
       onSaveSuccess={() => setStatus('success')}
       onSaveError={onSaveError}
-      values={values}
     >
       <TableCellContextMenu
-        rowIndex={rowIndex}
-        value={value}
-        columnId={column.id}
-        onAddFilter={onAddFilter}
-        onSort={onSort}
-        sortOrder={sortOrder}
-        onSetNull={onSaveValue && column.isNullable
-          ? () => onSaveValue(rowIndex, column.id, null)
-          : undefined}
-        isNull={value === null}
-        onRenameColumn={onRenameColumn}
         open={isContextMenuOpen}
         onOpenChange={(open) => {
           setIsContextMenuOpen(open)

@@ -10,22 +10,21 @@ import {
 } from '@conar/ui/components/context-menu'
 import { Fragment } from 'react'
 import { toast } from 'sonner'
+import { useCellContext } from './cell-context'
 
 function isDisabled(filter: Filter, hasRow: boolean, cellValue: unknown): boolean {
   return filter.hasValue !== false && (!hasRow || cellValue === null || cellValue === undefined)
 }
 
 export function TableAddFilterSubmenu({
-  columnId,
-  cellValue,
   hasRow,
   onAdd,
 }: {
-  columnId: string
-  cellValue: unknown
   hasRow: boolean
   onAdd: (filter: ActiveFilter) => void
 }) {
+  const { value, column } = useCellContext()
+
   return (
     <ContextMenuSub>
       <ContextMenuSubTrigger>
@@ -41,12 +40,12 @@ export function TableAddFilterSubmenu({
             {filters.map(filter => (
               <ContextMenuItem
                 key={filter.operator}
-                disabled={isDisabled(filter, hasRow, cellValue)}
+                disabled={isDisabled(filter, hasRow, value)}
                 onClick={() => {
                   onAdd({
-                    column: columnId,
+                    column: column.id,
                     ref: filter,
-                    values: cellToFilterValues(filter, cellValue),
+                    values: cellToFilterValues(filter, value),
                   })
                   toast.success('Filter added')
                 }}

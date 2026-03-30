@@ -1,3 +1,4 @@
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { Column } from './utils'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
@@ -5,19 +6,31 @@ import { CellContext } from './cell-context'
 import { getEditableValue } from './utils'
 
 export function TableCellProvider({
+  rowIndex,
   children,
+  onAddFilter,
+  onSort,
+  sortOrder,
+  onSetNull,
+  onRenameColumn,
   column,
-  initialValue,
+  value,
+  values,
   displayValue,
   onSaveValue,
   onSavePending,
   onSaveSuccess,
   onSaveError,
-  values,
 }: {
+  rowIndex: number
   children: React.ReactNode
+  onAddFilter?: (filter: ActiveFilter) => void
+  onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
+  sortOrder?: 'ASC' | 'DESC' | null
+  onSetNull?: () => void
+  onRenameColumn?: () => void
   column: Column
-  initialValue: unknown
+  value: unknown
   displayValue: string
   onSaveValue?: (rowIndex: number, columnsId: string, value: unknown) => Promise<void>
   onSavePending: () => void
@@ -25,8 +38,8 @@ export function TableCellProvider({
   onSaveError?: (error: Error) => void
   values?: string[]
 }) {
-  const [value, setValue] = useState<string>(() => getEditableValue({
-    value: initialValue,
+  const [newValue, setNewValue] = useState<string>(() => getEditableValue({
+    value,
     oneLine: false,
     column,
   }))
@@ -50,13 +63,19 @@ export function TableCellProvider({
 
   return (
     <CellContext value={{
-      value,
-      setValue,
+      rowIndex,
+      newValue,
+      setNewValue,
       column,
-      initialValue,
+      value,
       displayValue,
       update,
       values,
+      onAddFilter,
+      onSort,
+      sortOrder,
+      onSetNull,
+      onRenameColumn,
     }}
     >
       {children}
