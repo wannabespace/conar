@@ -17,7 +17,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { renameTableQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { renameTableQuery, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { getConnectionResourceStore, renameTab } from '~/entities/connection/store'
 import { queryClient } from '~/main'
@@ -55,7 +55,7 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
       toast.success(`Table "${table}" successfully renamed to "${newTableName}"`)
       setOpen(false)
 
-      await queryClient.invalidateQueries(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem }))
+      await queryClient.invalidateQueries(resourceTablesAndSchemasQueryOptions({ silent: true, connectionResource, showSystem: store.get().showSystem }))
       renameTab(connectionResource.id, schema, table, newTableName)
 
       router.navigate({

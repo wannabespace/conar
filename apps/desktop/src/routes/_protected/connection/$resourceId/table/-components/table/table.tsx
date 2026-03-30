@@ -5,12 +5,12 @@ import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { Table, TableBody, TableProvider, useShiftSelectionKeyDown } from '@conar/table'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { TableCell } from '~/entities/connection/components'
-import { findEnum, resourceRowsQuery } from '~/entities/connection/queries'
-import { resourceEnumsQuery } from '~/entities/connection/queries/enums'
+import { findEnum, resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
 import { selectQuery } from '~/entities/connection/queries/select'
 import { setQuery } from '~/entities/connection/queries/set'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
@@ -62,28 +62,28 @@ export function TableError({ error }: { error: Error }) {
 
 function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { connection, connectionResource } = Route.useRouteContext()
-  const { data: enums } = useQuery(resourceEnumsQuery({ connectionResource }))
+  const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const columns = useTableColumns({ connectionResource, table, schema })
   const store = usePageStoreContext()
-  const hiddenColumns = useStore(store, state => state.hiddenColumns)
-  const columnSizes = useStore(store, state => state.columnSizes)
-  const detailRowIndex = useStore(store, state => state.detailRowIndex)
-  const filters = useStore(store, state => state.filters)
-  const orderBy = useStore(store, state => state.orderBy)
-  const { data: rows = [], error, isPending: isRowsPending } = useInfiniteQuery(resourceRowsQuery({ connectionResource, table, schema, query: { filters, orderBy } }))
+  const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
+  const columnSizes = useSubscription(store, { selector: state => state.columnSizes })
+  const detailRowIndex = useSubscription(store, { selector: state => state.detailRowIndex })
+  const filters = useSubscription(store, { selector: state => state.filters })
+  const orderBy = useSubscription(store, { selector: state => state.orderBy })
+  const { data: rows = [], error, isPending: isRowsPending } = useInfiniteQuery(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns?.filter(c => c.primaryKey).map(c => c.id) ?? [], [columns])
   const { toggleOrder } = useColumnsOrder()
   const renameColumnRef = useRef<ComponentRef<typeof RenameColumnDialog>>(null)
 
   useEffect(() => {
-    if (!rows || !store.state.selected)
+    if (!rows || !store.get().selected)
       return
 
-    const validSelected = store.state.selected.filter(selectedRow =>
+    const validSelected = store.get().selected.filter(selectedRow =>
       rows.some(row => primaryColumns.every(key => row[key] === selectedRow[key])),
     )
 
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       selected: validSelected,
     } satisfies typeof state))
@@ -91,7 +91,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
   useEffect(() => {
     if (detailRowIndex !== null) {
-      store.setState(state => ({
+      store.set(state => ({
         ...state,
         detailRowIndex: null,
       } satisfies typeof state))
@@ -99,13 +99,13 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   }, [filters, orderBy, store])
 
   const setValue = useCallback((rowIndex: number, columnName: string, value: unknown) => {
-    const rowsQueryOpts = resourceRowsQuery({
+    const rowsQueryOpts = resourceRowsQueryInfiniteOptions({
       connectionResource,
       table,
       schema,
       query: {
-        filters: store.state.filters,
-        orderBy: store.state.orderBy,
+        filters: store.get().filters,
+        orderBy: store.get().orderBy,
       },
     })
 
@@ -126,13 +126,14 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   }, [connectionResource, table, schema, store])
 
   const saveValue = useCallback(async (rowIndex: number, columnId: string, newValue: unknown) => {
-    const rowsQueryOpts = resourceRowsQuery({
+    const { filters, orderBy } = store.get()
+    const rowsQueryOpts = resourceRowsQueryInfiniteOptions({
       connectionResource,
       table,
       schema,
       query: {
-        filters: store.state.filters,
-        orderBy: store.state.orderBy,
+        filters,
+        orderBy,
       },
     })
 
@@ -204,7 +205,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         description: e instanceof Error ? e.message : String(e),
       })
     }
-  }, [connectionResource, table, schema, store, primaryColumns, setValue, columns, filters, orderBy])
+  }, [connectionResource, table, schema, store, primaryColumns, setValue, columns])
 
   const tableColumns = useMemo(() => {
     if (!columns)
@@ -235,7 +236,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
               onSort={() => toggleOrder(column.id)}
               onRename={onRename}
               onResize={(newWidth) => {
-                store.setState(state => ({
+                store.set(state => ({
                   ...state,
                   columnSizes: {
                     ...state.columnSizes,
@@ -295,9 +296,9 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         ),
       )
     },
-    getSelectionState: () => store.state.selectionState,
+    getSelectionState: () => store.get().selectionState,
     onSelectionChange: (selected, selectionState) => {
-      store.setState(state => ({
+      store.set(state => ({
         ...state,
         selected,
         selectionState,
@@ -306,7 +307,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   })
 
   const handleRowClick = useCallback((rowIndex: number) => {
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       detailRowIndex: state.detailRowIndex === rowIndex ? null : rowIndex,
     } satisfies typeof state))
@@ -356,7 +357,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
             row={rows[detailRowIndex]}
             columns={columns}
             onClose={() =>
-              store.setState(state => ({
+              store.set(state => ({
                 ...state,
                 detailRowIndex: null,
               } satisfies typeof state))}

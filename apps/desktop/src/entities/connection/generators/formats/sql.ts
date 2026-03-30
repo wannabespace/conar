@@ -5,7 +5,7 @@ import type { enumType } from '~/entities/connection/queries/enums'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { findEnum } from '~/entities/connection/queries/enums'
 import { formatSql } from '~/lib/formatter'
-import { getColdDialect } from '../../dialects'
+import { coldDialects } from '../../dialects'
 import { buildWhere } from '../../queries/rows'
 import * as templates from '../templates'
 import { filterExplicitIndexes, formatValue, getColumnType, groupIndexes, quoteIdentifier } from '../utils'
@@ -20,7 +20,7 @@ export function generateQuerySQL({
   filters,
   dialect = ConnectionType.Postgres,
 }: QueryParams) {
-  const db = getColdDialect(dialect)
+  const db = coldDialects[dialect]()
   const base = db.withTables<{ [table]: Record<string, unknown> }>().selectFrom(table).selectAll()
   const query = filters.length > 0 ? base.where(eb => buildWhere(eb, filters)) : base
   const compiled = query.compile()

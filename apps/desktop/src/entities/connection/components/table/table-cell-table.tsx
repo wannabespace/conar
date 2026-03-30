@@ -9,7 +9,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi, Link } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { getDisplayValue } from '~/entities/connection/components/table/utils'
-import { resourceRowsQuery } from '~/entities/connection/queries'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { TableError } from '~/routes/_protected/connection/$resourceId/table/-components/table/table'
 import { TableEmpty } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-empty'
 import { TableHeaderCell } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-header-cell'
@@ -29,7 +29,7 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
     values: [value],
   } satisfies ActiveFilter]
   const orderBy = {}
-  const { data: rows, isPending: isRowsPending, error } = useInfiniteQuery(resourceRowsQuery({
+  const { data: rows, isPending: isRowsPending, error } = useInfiniteQuery(resourceRowsQueryInfiniteOptions({
     connectionResource,
     table,
     schema,
@@ -104,16 +104,16 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
           <Button
             variant="outline"
             size="xs"
-            asChild
+            render={(
+              <Link
+                to="/connection/$resourceId/table"
+                params={{ resourceId: connectionResource.id }}
+                search={{ schema, table, filters, orderBy }}
+              />
+            )}
           >
-            <Link
-              to="/connection/$resourceId/table"
-              params={{ resourceId: connectionResource.id }}
-              search={{ schema, table, filters, orderBy }}
-            >
-              <RiCornerRightUpLine className="size-3" />
-              Open table
-            </Link>
+            <RiCornerRightUpLine className="size-3" />
+            Open table
           </Button>
         </div>
         <Table className={`

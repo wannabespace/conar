@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
-import type { connectionsResources } from '~/drizzle'
-import type { getConnectionResourceStoreType } from '~/entities/connection/store'
+import type { connectionsResources } from '~/drizzle/schema'
+import type { connectionResourceType } from '~/entities/connection/store'
 import { getOS } from '@conar/shared/utils/os'
 import {
   ContextMenu,
@@ -10,18 +10,19 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from '@conar/ui/components/context-menu'
-import { MotionScrollViewport, ScrollArea, ScrollBar } from '@conar/ui/components/scroll-area'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { KbdCtrlLetter } from '@conar/ui/components/custom/shortcuts'
+import { ScrollArea } from '@conar/ui/components/scroll-area'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter, useSearch } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
-import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { useSubscription } from 'seitu/react'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { addTab, getConnectionResourceStore, removeTab, updateTabs } from '~/entities/connection/store'
 import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
 import { Route } from '..'
@@ -31,36 +32,34 @@ const os = getOS(navigator.userAgent)
 
 function CloseButton({ onClick }: { onClick: ComponentProps<'svg'>['onClick'] }) {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <RiCloseLine
-            className={`
-              size-3.5 opacity-0
-              group-hover:opacity-30
-              hover:opacity-100
-            `}
-            onClick={onClick}
-          />
-        </TooltipTrigger>
-        <TooltipContent side="bottom" sideOffset={12}>
-          Close tab (
-          {os.type === 'macos' ? '⌘' : 'Ctrl'}
-          {' '}
-          + W)
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <RiCloseLine
+          className={`
+            size-3.5 opacity-0
+            group-hover:opacity-30
+            hover:opacity-100
+          `}
+          onClick={onClick}
+        />
+      </TooltipTrigger>
+      <TooltipContent side="bottom" sideOffset={12}>
+        Close tab (
+        {os.type === 'macos' ? '⌘' : 'Ctrl'}
+        {' '}
+        + W)
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
 function getQueryOpts(connectionResource: typeof connectionsResources.$inferSelect, schema: string, tableName: string) {
-  const store = tablePageStore({ id: connectionResource.id, schema, table: tableName })
+  const state = tablePageStore({ id: connectionResource.id, schema, table: tableName }).get()
 
   return {
-    filters: store.state.filters,
-    orderBy: store.state.orderBy,
-    exact: store.state.exact,
+    filters: state.filters,
+    orderBy: state.orderBy,
+    exact: state.exact,
   }
 }
 
@@ -75,7 +74,7 @@ function SortableTab({
   currentTabIndex,
   totalTabs,
 }: {
-  item: { id: string, tab: typeof getConnectionResourceStoreType.infer['tabs'][number] }
+  item: { id: string, tab: typeof connectionResourceType.infer['tabs'][number] }
   showSchema: boolean
   connectionResource: typeof connectionsResources.$inferSelect
   onClose: VoidFunction
@@ -131,7 +130,7 @@ function SortableTab({
                 hover:border-primary/50 hover:bg-primary/10
               `,
             )}
-            onDoubleClick={() => addTab(connectionResource.id, item.tab.schema, item.tab.table, false)}
+            onDoubleClick={() => addTab(connectionResource.id, item.tab.schema, item.tab.table)}
             onMouseOver={() => prefetchConnectionResourceTableCore({
               connectionResource,
               schema: item.tab.schema,
@@ -169,8 +168,7 @@ function SortableTab({
           <ContextMenuItem onClick={onClose}>
             Close
             <ContextMenuShortcut>
-              {os.type === 'macos' ? '⌘' : 'Ctrl'}
-              + W
+              <KbdCtrlLetter userAgent={navigator.userAgent} letter="W" />
             </ContextMenuShortcut>
           </ContextMenuItem>
           <ContextMenuSeparator />
@@ -197,11 +195,11 @@ export function TablesTabs({
 }) {
   const { connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useStore(store, state => state.showSystem)
-  const { data: tablesAndSchemas } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
+  const showSystem = useSubscription(store, { selector: state => state.showSystem })
+  const { data: tablesAndSchemas } = useQuery(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem }))
   const { schema: schemaParam, table: tableParam } = useSearch({ from: '/_protected/connection/$resourceId/table/' })
   const router = useRouter()
-  const tabs = useStore(store, state => state.tabs)
+  const tabs = useSubscription(store, { selector: state => state.tabs })
 
   const addNewTab = useEffectEvent((schema: string, table: string) => {
     const tab = tabs.find(tab => tab.table === table && tab.schema === schema)
@@ -336,7 +334,7 @@ export function TablesTabs({
       return
 
     cleanupTabsEvent(tablesAndSchemas.schemas
-      .flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table }))))
+      .flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table: table.name }))))
   }, [tablesAndSchemas])
 
   const isOneSchema = tabs.length
@@ -349,36 +347,30 @@ export function TablesTabs({
   }))
 
   return (
-    <ScrollArea>
-      <MotionScrollViewport
-        layoutScroll
-        className={cn('flex gap-1 p-1', className)}
+    <ScrollArea className={cn('h-full', className)}>
+      <Reorder.Group
+        axis="x"
+        values={tabItems}
+        onReorder={(newItems) => {
+          updateTabs(connectionResource.id, newItems.map(item => item.tab))
+        }}
+        className="flex h-full gap-1 p-1"
       >
-        <Reorder.Group
-          axis="x"
-          values={tabItems}
-          onReorder={(newItems) => {
-            updateTabs(connectionResource.id, newItems.map(item => item.tab))
-          }}
-          className="flex gap-1"
-        >
-          {tabItems.map((item, index) => (
-            <SortableTab
-              key={item.id}
-              item={item}
-              connectionResource={connectionResource}
-              showSchema={!isOneSchema}
-              onClose={() => closeTab(item.tab.schema, item.tab.table)}
-              onCloseAll={closeAllTabs}
-              onCloseToTheRight={() => closeTabsToTheRight(item.tab.schema, item.tab.table)}
-              onCloseOthers={() => closeOtherTabs(item.tab.schema, item.tab.table)}
-              currentTabIndex={index}
-              totalTabs={tabItems.length}
-            />
-          ))}
-        </Reorder.Group>
-      </MotionScrollViewport>
-      <ScrollBar orientation="horizontal" className="h-2" />
+        {tabItems.map((item, index) => (
+          <SortableTab
+            key={item.id}
+            item={item}
+            connectionResource={connectionResource}
+            showSchema={!isOneSchema}
+            onClose={() => closeTab(item.tab.schema, item.tab.table)}
+            onCloseAll={closeAllTabs}
+            onCloseToTheRight={() => closeTabsToTheRight(item.tab.schema, item.tab.table)}
+            onCloseOthers={() => closeOtherTabs(item.tab.schema, item.tab.table)}
+            currentTabIndex={index}
+            totalTabs={tabItems.length}
+          />
+        ))}
+      </Reorder.Group>
     </ScrollArea>
   )
 }

@@ -1,4 +1,4 @@
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { memoize } from '@conar/shared/utils/helpers'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
@@ -14,7 +14,7 @@ export const columnType = type({
   'label': 'string',
   'enum?': 'string',
   'isArray?': 'boolean',
-  'editable?': 'boolean',
+  'editable?': 'boolean | 1 | 0',
   'nullable': 'boolean | 1 | 0',
   'maxLength?': 'number | null',
   'precision?': 'number | null',
@@ -63,8 +63,8 @@ function getPgColumnType(type: string, udtName: string) {
   return type
 }
 
-export const resourceTableColumnsQuery = memoize(({ connectionResource, table, schema }: { connectionResource: typeof connectionsResources.$inferSelect, table: string, schema: string }) => {
-  const query = createQuery({
+const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, schema: string }) => {
+  return createQuery({
     type: columnType.array(),
     query: {
       postgres: async (db) => {
@@ -205,16 +205,25 @@ export const resourceTableColumnsQuery = memoize(({ connectionResource, table, s
 
         return query.map(row => ({
           ...row,
-          label: row.type,
           enum: row.type.includes('Enum') ? row.id : undefined,
-          type: getClickhouseColumnType(row.type),
+          label: getClickhouseColumnType(row.type),
         }))
       },
     },
   })
+})
 
+export function resourceTableColumnsQueryOptions({
+  connectionResource,
+  table,
+  schema,
+}: {
+  connectionResource: typeof connectionsResources.$inferSelect
+  table: string
+  schema: string
+}) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'columns', schema, table],
-    queryFn: () => query.run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: () => resourceTableColumnsQuery({ table, schema }).run(connectionResourceToQueryParams(connectionResource)),
   })
-})
+}

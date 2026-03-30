@@ -1,11 +1,11 @@
 import type { RemixiconComponentType } from '@remixicon/react'
-import type { connections } from '~/drizzle'
+import type { connections } from '~/drizzle/schema'
 import type { FileRoutesByTo } from '~/routeTree.gen'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { CardTitle } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { RiFileList3Line, RiKey2Line, RiListUnordered } from '@remixicon/react'
-import { useStore } from '@tanstack/react-store'
+import { useSubscription } from 'seitu/react'
 import { SidebarLink } from '~/components/sidebar-link'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { Route } from '../../definitions'
@@ -32,10 +32,10 @@ function sidebarItems(connection: typeof connections.$inferSelect) {
 
 export function Sidebar() {
   const { connection, connectionResource } = Route.useRouteContext()
-  const search = useStore(getConnectionResourceStore(connectionResource.id), state => state.definitionsSearch)
+  const search = useSubscription(getConnectionResourceStore(connectionResource.id), { selector: state => state.definitionsSearch })
 
   return (
-    <aside className="h-full w-64 flex-col rounded-lg border bg-background p-4">
+    <aside className="h-full w-64 flex-col rounded-lg bg-background p-4">
       <CardTitle className="mb-4">Definitions</CardTitle>
       <nav className="space-y-1">
         {sidebarItems(connection).map(({ to, Icon, label }) => (

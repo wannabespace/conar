@@ -1,13 +1,9 @@
-import type { connections } from '~/drizzle'
-import { eq, useLiveQuery } from '@tanstack/react-db'
-import { useMutation } from '@tanstack/react-query'
+import type { connections } from '~/drizzle/schema'
+import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
-import { useEffect } from 'react'
-import { v7 } from 'uuid'
 import { createQuery } from '../query'
-import { connectionsResourcesCollection } from '../sync'
 
-const query = createQuery({
+export const connectionResourcesQuery = createQuery({
   type: type('string[]'),
   silent: true,
   query: {
@@ -45,39 +41,13 @@ const query = createQuery({
   },
 })
 
-export function useConnectionResources(connection: typeof connections.$inferSelect) {
-  const { data } = useLiveQuery(q => q
-    .from({ connectionsResources: connectionsResourcesCollection })
-    .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id)))
-
-  const { mutate: syncResources, isPending } = useMutation({
-    mutationFn: async () => {
-      const names = await query.run({
-        connectionString: connection.connectionString,
-        type: connection.type,
-      })
-
-      data
-        .filter(resource => !names.includes(resource.name))
-        .map(resource => connectionsResourcesCollection.delete(resource.id))
-      names
-        .filter(name => !data.some(resource => resource.name === name))
-        .map(name => connectionsResourcesCollection.insert({
-          id: v7(),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          connectionId: connection.id,
-          name,
-        }))
-    },
+export function connectionResourcesQueryOptions(connection: typeof connections.$inferSelect) {
+  return queryOptions({
+    queryKey: ['connection', connection.id, 'resources'],
+    queryFn: () => connectionResourcesQuery.run({
+      connectionString: connection.connectionString,
+      type: connection.type,
+    }),
+    throwOnError: false,
   })
-
-  useEffect(() => {
-    syncResources()
-  }, [syncResources])
-
-  return {
-    data,
-    isPending,
-  }
 }

@@ -1,12 +1,12 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { useTableContext } from '@conar/table'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiLoaderLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
-import { resourceRowsQuery } from '~/entities/connection/queries'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { TableEmpty } from './table-empty'
 
 export function TableInfiniteLoader({
@@ -23,7 +23,7 @@ export function TableInfiniteLoader({
   orderBy: Record<string, 'ASC' | 'DESC'>
 }) {
   const { fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery(
-    resourceRowsQuery({ connectionResource, table, schema, query: { filters, orderBy } }),
+    resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }),
   )
   const loaderRef = useRef<HTMLDivElement>(null)
   const isVisible = useIsInViewport(loaderRef)

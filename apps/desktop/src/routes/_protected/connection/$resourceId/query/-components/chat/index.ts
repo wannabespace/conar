@@ -1,6 +1,6 @@
 import type { AITools } from '@conar/api/ai/tools'
 import type { AppUIMessage } from '@conar/api/ai/tools/helpers'
-import type { chatsMessages, connectionsResources } from '~/drizzle'
+import type { chatsMessages, connectionsResources } from '~/drizzle/schema'
 import { Chat } from '@ai-sdk/react'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { memoize } from '@conar/shared/utils/helpers'
@@ -8,7 +8,7 @@ import { eventIteratorToStream } from '@orpc/client'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { v7 as uuid } from 'uuid'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
-import { resourceEnumsQuery, resourceTableColumnsQuery, resourceTablesAndSchemasQuery, rowsQuery } from '~/entities/connection/queries'
+import { resourceEnumsQueryOptions, resourceRowsQuery, resourceTableColumnsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsCollection } from '~/entities/connection/sync'
@@ -18,7 +18,7 @@ import { queryClient } from '~/main'
 
 export * from './chat'
 
-async function ensureChat(chatId: string, connectionResourceId: string) {
+async function ensureChat({ chatId, connectionResourceId }: { chatId: string, connectionResourceId: string }) {
   const existingChat = chatsCollection.get(chatId)
 
   if (existingChat) {
@@ -27,7 +27,7 @@ async function ensureChat(chatId: string, connectionResourceId: string) {
 
   await chatsCollection.insert({
     id: chatId,
-    connectionId: connectionResourceId,
+    connectionResourceId,
     title: null,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -36,7 +36,7 @@ async function ensureChat(chatId: string, connectionResourceId: string) {
   return chatsCollection.get(chatId)!
 }
 
-export const createChat = memoize(async ({ id = uuid(), connectionResource }: { id?: string, connectionResource: typeof connectionsResources.$inferSelect }) => {
+export const createChat = memoize(async ({ id, connectionResource }: { id: string, connectionResource: typeof connectionsResources.$inferSelect }) => {
   const connection = connectionsCollection.get(connectionResource.connectionId)!
 
   const chat = new Chat<AppUIMessage>({
@@ -51,7 +51,7 @@ export const createChat = memoize(async ({ id = uuid(), connectionResource }: { 
           throw new Error('Last message not found')
         }
 
-        const chat = await ensureChat(options.chatId, connectionResource.id)
+        const chat = await ensureChat({ chatId: options.chatId, connectionResourceId: connectionResource.id })
 
         const existingMessage = chatsMessagesCollection.get(lastMessage.id)
 
@@ -85,7 +85,7 @@ export const createChat = memoize(async ({ id = uuid(), connectionResource }: { 
 
         const store = getConnectionResourceStore(connectionResource.id)
 
-        return eventIteratorToStream(await orpc.ai.chat({
+        return eventIteratorToStream(await orpc.ai.chat.call({
           id: options.chatId,
           createdAt: chat.createdAt,
           updatedAt: chat.updatedAt,
@@ -94,11 +94,11 @@ export const createChat = memoize(async ({ id = uuid(), connectionResource }: { 
           context: [
             `Current query in the SQL runner:
             \`\`\`sql
-            ${store.state.query.trim() || '-- empty'}
+            ${store.get().query.trim() || '-- empty'}
             \`\`\`
             `,
             'Database schemas and tables:',
-            JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem })), null, 2),
+            JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem: store.get().showSystem })), null, 2),
           ].join('\n'),
         }, { signal: options.abortSignal }))
       },
@@ -141,7 +141,7 @@ export const createChat = memoize(async ({ id = uuid(), connectionResource }: { 
     onToolCall: async ({ toolCall }) => {
       if (toolCall.toolName === 'columns') {
         const input = toolCall.input as AITools['columns']['input']
-        const output = await queryClient.ensureQueryData(resourceTableColumnsQuery({
+        const output = await queryClient.ensureQueryData(resourceTableColumnsQueryOptions({
           connectionResource,
           table: input.tableAndSchema.tableName,
           schema: input.tableAndSchema.schemaName,
@@ -154,7 +154,7 @@ export const createChat = memoize(async ({ id = uuid(), connectionResource }: { 
         })
       }
       else if (toolCall.toolName === 'enums') {
-        const output = await queryClient.ensureQueryData(resourceEnumsQuery({ connectionResource })).then(results => results.flatMap(r => r.values.map(v => ({
+        const output = await queryClient.ensureQueryData(resourceEnumsQueryOptions({ connectionResource })).then(results => results.flatMap(r => r.values.map(v => ({
           schema: r.schema,
           name: r.name,
           value: v,
@@ -168,7 +168,7 @@ export const createChat = memoize(async ({ id = uuid(), connectionResource }: { 
       }
       else if (toolCall.toolName === 'select') {
         const input = toolCall.input as AITools['select']['input']
-        const output = await rowsQuery({
+        const output = await resourceRowsQuery({
           schema: input.tableAndSchema.schemaName,
           table: input.tableAndSchema.tableName,
           limit: input.limit,

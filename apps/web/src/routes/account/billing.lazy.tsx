@@ -16,7 +16,7 @@ import { useQuery } from '@tanstack/react-query'
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { useBillingPortal } from '~/hooks/use-subscription'
-import { orpcQuery } from '~/lib/orpc'
+import { orpc } from '~/lib/orpc'
 
 export const Route = createLazyFileRoute('/account/billing')({
   component: RouteComponent,
@@ -30,7 +30,7 @@ function formatCurrency(amount: number) {
 }
 
 function RouteComponent() {
-  const { data: invoices = [], isPending } = useQuery(orpcQuery.account.invoices.queryOptions())
+  const { data: invoices = [], isPending } = useQuery(orpc.account.invoices.queryOptions())
   const router = useRouter()
   const returnHref = router.buildLocation({ to: '/account/billing' }).href
   const { openBillingPortal, isOpening } = useBillingPortal({ returnHref })

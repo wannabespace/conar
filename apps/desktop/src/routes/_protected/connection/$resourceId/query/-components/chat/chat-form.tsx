@@ -1,30 +1,32 @@
 import type { ChangeEvent, ComponentRef } from 'react'
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { useChat } from '@ai-sdk/react'
 import { getBase64FromFiles } from '@conar/shared/utils/base64'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { Spinner } from '@conar/ui/components/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useLocation, useRouter } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
+import { type } from 'arktype'
 import { useEffect, useEffectEvent, useRef } from 'react'
+import { useSubscription } from 'seitu/react'
+import { createSessionStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
-import { getConnectionResourceStore } from '~/entities/connection/store'
-import { useSubscription } from '~/entities/user/hooks'
-import { orpcQuery } from '~/lib/orpc'
+import { getFilesStore } from '~/entities/connection/store'
+import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
+import { orpc } from '~/lib/orpc'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 import { Route } from '../..'
 import { chatHooks } from '../../-page'
 import { ChatImages } from './chat-images'
 
 function Images({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) {
-  const store = getConnectionResourceStore(connectionResource.id)
-  const files = useStore(store, state => state.files)
+  const store = getFilesStore(connectionResource.id)
+  const files = useSubscription(store)
 
   if (files.length === 0) {
     return null
@@ -39,17 +41,14 @@ function Images({ connectionResource }: { connectionResource: typeof connections
     <ChatImages
       images={images}
       onRemove={(index) => {
-        store.setState(state => ({
-          ...state,
-          files: store.state.files.filter((_, i) => i !== index),
-        } satisfies typeof state))
+        store.set(state => state.filter((_, i) => i !== index))
       }}
     />
   )
 }
 
 export function ChatForm() {
-  const isOnline = useStore(appStore, state => state.isOnline)
+  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const { chat } = Route.useLoaderData()
   const { error } = Route.useSearch()
   const router = useRouter()
@@ -57,9 +56,15 @@ export function ChatForm() {
   const { status, stop } = useChat({ chat })
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
   const { connectionResource } = Route.useRouteContext()
-  const store = getConnectionResourceStore(connectionResource.id)
-  const input = useStore(store, state => state.chatInput)
-  const { subscription } = useSubscription()
+  const filesStore = getFilesStore(connectionResource.id)
+  const files = useSubscription(filesStore)
+  const inputValue = createSessionStorageValue({
+    key: `${connectionResource.id}.chat-input`,
+    schema: type('string'),
+    defaultValue: '',
+  })
+  const input = useSubscription(inputValue)
+  const { subscription } = useUserSubscription()
 
   useEffect(() => {
     if (ref.current) {
@@ -81,16 +86,13 @@ export function ChatForm() {
     }
 
     const cachedValue = value.trim()
-    const cachedFiles = [...store.state.files]
+    const cachedFiles = [...files]
 
     try {
       const filesBase64 = await getBase64FromFiles(cachedFiles)
 
-      store.setState(state => ({
-        ...state,
-        chatInput: '',
-        files: [],
-      } satisfies typeof state))
+      inputValue.set('')
+      filesStore.set([])
 
       chatHooks.callHook('scrollToBottom')
 
@@ -119,11 +121,8 @@ export function ChatForm() {
       })
     }
     catch (error) {
-      store.setState(state => ({
-        ...state,
-        chatInput: cachedValue,
-        files: cachedFiles,
-      } satisfies typeof state))
+      inputValue.set(cachedValue)
+      filesStore.set(cachedFiles)
       toast.error('Failed to send message', {
         description: error instanceof Error
           ? error.message
@@ -147,14 +146,7 @@ export function ChatForm() {
     handleSendEffect(error)
   }, [error, router, chat.id])
 
-  useMountedEffect(() => {
-    store.setState(state => ({
-      ...state,
-      chatInput: input,
-    } satisfies typeof state))
-  }, [input, store])
-
-  const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation(orpcQuery.ai.enhancePrompt.mutationOptions({
+  const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation(orpc.ai.enhancePrompt.mutationOptions({
     onSuccess: (data) => {
       if (input.length < 10) {
         return
@@ -166,10 +158,7 @@ export function ChatForm() {
         })
       }
       else {
-        store.setState(state => ({
-          ...state,
-          chatInput: data,
-        } satisfies typeof state))
+        inputValue.set(data)
       }
     },
   }))
@@ -182,10 +171,7 @@ export function ChatForm() {
 
     const fileArr = [...fileList]
 
-    store.setState(state => ({
-      ...state,
-      files: [...store.state.files, ...fileArr],
-    } satisfies typeof state))
+    filesStore.set([...files, ...fileArr])
     e.target.value = ''
   }
 
@@ -220,10 +206,7 @@ export function ChatForm() {
           data-mask
           value={input}
           setValue={(value) => {
-            store.setState(state => ({
-              ...state,
-              chatInput: value,
-            } satisfies typeof state))
+            inputValue.set(value)
           }}
           placeholder={isOnline ? 'Generate SQL queries using natural language' : 'Check your internet connection to generate SQL queries'}
           className={`
@@ -232,10 +215,7 @@ export function ChatForm() {
           disabled={!subscription || !isOnline}
           onEnter={handleSend}
           onImageAdd={(file) => {
-            store.setState(state => ({
-              ...state,
-              files: [...store.state.files, file],
-            } satisfies typeof state))
+            filesStore.set([...files, file])
           }}
         />
         <div className={`
@@ -247,21 +227,19 @@ export function ChatForm() {
               type="button"
               size="icon-xs"
               variant="outline"
-              asChild
+              render={<label htmlFor="chat-file-upload" />}
             >
-              <label htmlFor="chat-file-upload">
-                <RiAttachment2 className="size-3" />
-                <input
-                  id="chat-file-upload"
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileAttach}
-                  tabIndex={-1}
-                  aria-label="Attach files"
-                />
-              </label>
+              <RiAttachment2 className="size-3" />
+              <input
+                id="chat-file-upload"
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleFileAttach}
+                tabIndex={-1}
+                aria-label="Attach files"
+              />
             </Button>
           </div>
           <div className="pointer-events-auto flex gap-2">
@@ -279,7 +257,7 @@ export function ChatForm() {
                 >
                   <LoadingContent
                     loading={isEnhancingPrompt}
-                    loaderClassName="size-3"
+                    spinner={<Spinner className="size-3" />}
                   >
                     <ContentSwitch
                       active={isEnhancingPrompt}

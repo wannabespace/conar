@@ -1,18 +1,18 @@
 import type { constraintsType } from '~/entities/connection/queries'
-import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardTitle, MotionCard } from '@conar/ui/components/card'
+import { CardContent, CardMotion, CardTitle } from '@conar/ui/components/card'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { RiDatabase2Line, RiKey2Line, RiLayoutColumnLine, RiLinksLine, RiTable2 } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { useState } from 'react'
-import { resourceConstraintsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { useSubscription } from 'seitu/react'
+import { resourceConstraintsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
+import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
@@ -20,28 +20,20 @@ import { MOTION_BLOCK_PROPS } from '../-constants'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/constraints/')({
   component: DatabaseConstraintsPage,
-  loader: ({ context }) => ({ connection: context.connection }),
+  loader: ({ context }) => ({ connection: context.connection, connectionResource: context.connectionResource }),
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('Constraints', loaderData.connection.name) }] : [],
+    meta: loaderData ? [{ title: title('Constraints', loaderData.connection.name, loaderData.connectionResource.name) }] : [],
   }),
 })
 
 type ConstraintType = typeof constraintsType.infer['type']
 
-const filterOptions: { label: string, value: ConstraintType }[] = [
+const filterOptions: { label: string, value: ConstraintType | 'all' }[] = [
+  { label: 'All Types', value: 'all' },
   { label: 'Primary Key', value: 'primaryKey' },
   { label: 'Foreign Key', value: 'foreignKey' },
   { label: 'Unique', value: 'unique' },
 ]
-
-function formatType(type: ConstraintType) {
-  switch (type) {
-    case 'primaryKey': return 'Primary Key'
-    case 'foreignKey': return 'Foreign Key'
-    default:
-      return uppercaseFirst(type)
-  }
-}
 
 function getIcon(type: ConstraintType) {
   switch (type) {
@@ -57,14 +49,14 @@ function getIcon(type: ConstraintType) {
 
 function DatabaseConstraintsPage() {
   const { connectionResource } = Route.useRouteContext()
-  const { data: constraints, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceConstraintsQuery({ connectionResource }))
+  const { data: constraints, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceConstraintsQueryOptions({ connectionResource }))
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useStore(store, state => state.showSystem)
-  const { data } = useQuery(resourceTablesAndSchemasQuery({ connectionResource, showSystem }))
+  const showSystem = useSubscription(store, { selector: state => state.showSystem })
+  const { data } = useQuery(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
-  const [filterType, setFilterType] = useState<ConstraintType | 'all'>('all')
+  const [filterType, setFilterType] = useState<typeof filterOptions[number]['value']>('all')
 
   if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
     setSelectedSchema(schemas[0])
@@ -79,6 +71,8 @@ function DatabaseConstraintsPage() {
       || (item.type && item.type.toLowerCase().includes(search.toLowerCase()))
     ),
   ) ?? []
+
+  useRefreshHotkey(refetch, isFetching)
 
   return (
     <>
@@ -97,12 +91,20 @@ function DatabaseConstraintsPage() {
           onChange={e => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
-        <Select value={filterType} onValueChange={v => setFilterType(v as ConstraintType | 'all')}>
+        <Select
+          value={filterType}
+          onValueChange={(v) => {
+            if (v) {
+              setFilterType(v)
+            }
+          }}
+        >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter Type" />
+            <SelectValue placeholder="Filter Type">
+              {value => value ? filterOptions.find(option => option.value === value)?.label : 'Filter Type'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
             {filterOptions.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
@@ -111,10 +113,17 @@ function DatabaseConstraintsPage() {
           </SelectContent>
         </Select>
         {schemas.length > 1 && (
-          <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
-            <SelectTrigger className="min-w-[180px] max-w-56">
+          <Select
+            value={selectedSchema}
+            onValueChange={(v) => {
+              if (v) {
+                setSelectedSchema(v)
+              }
+            }}
+          >
+            <SelectTrigger className="max-w-56 min-w-[180px]">
               <div className="flex flex-1 items-center gap-2 overflow-hidden">
-                <span className="text-muted-foreground shrink-0">schema</span>
+                <span className="shrink-0 text-muted-foreground">schema</span>
                 <span className="truncate"><SelectValue /></span>
               </div>
             </SelectTrigger>
@@ -135,7 +144,7 @@ function DatabaseConstraintsPage() {
         )}
 
         {filteredConstraints.map(item => (
-          <MotionCard
+          <CardMotion
             key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
             layout
             {...MOTION_BLOCK_PROPS}
@@ -147,7 +156,7 @@ function DatabaseConstraintsPage() {
                     {getIcon(item.type)}
                     <HighlightText text={item.name} match={search} />
                     <Badge variant="secondary">
-                      {formatType(item.type)}
+                      {filterOptions.find(option => option.value === item.type)?.label}
                     </Badge>
                   </CardTitle>
                   <div className={`
@@ -185,7 +194,7 @@ function DatabaseConstraintsPage() {
                 </div>
               </CardContent>
             )}
-          </MotionCard>
+          </CardMotion>
         ))}
       </DefinitionsGrid>
     </>

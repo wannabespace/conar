@@ -1,32 +1,44 @@
 import type { FileRoutesById } from '~/routeTree.gen'
+import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { memoize } from '@conar/shared/utils/helpers'
-import { createStore } from '@tanstack/react-store'
 import { type } from 'arktype'
+import { createComputed, createStore } from 'seitu'
+import { createLocalStorageValue } from 'seitu/web'
 import { getEditorQueries } from '~/entities/connection/utils'
 
 export * from './helpers'
 
-const tabType = type({
-  table: 'string',
-  schema: 'string',
-  preview: 'boolean',
-})
+const schema = type({
+  lastOpenedResourceName: 'string | null',
+  pinnedResourcesNames: 'string[]',
+}).pipe(({ lastOpenedResourceName, pinnedResourcesNames }) => ({
+  lastOpenedResourceName: (lastOpenedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL.description
+    ? CONNECTION_RESOURCE_ROOT_SYMBOL
+    : lastOpenedResourceName) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
+  pinnedResourcesNames: pinnedResourcesNames.map(name => name === CONNECTION_RESOURCE_ROOT_SYMBOL.description ? CONNECTION_RESOURCE_ROOT_SYMBOL : name),
+}))
 
-const queryToRunType = type({
-  startLineNumber: 'number',
-  endLineNumber: 'number',
-  query: 'string',
-})
+export const getConnectionStore = memoize((id: string) => createLocalStorageValue({
+  key: `connection-store-${id}`,
+  defaultValue: {
+    lastOpenedResourceName: null,
+    pinnedResourcesNames: [],
+  },
+  schema,
+  onValidationError({ value }) {
+    const lastOpenedResourceName = typeof value === 'object' && value !== null && 'lastOpenedResourceName' in value && typeof value.lastOpenedResourceName === 'string' ? value.lastOpenedResourceName : null
+    const pinnedResourcesNames = typeof value === 'object' && value !== null && 'pinnedResourcesNames' in value && Array.isArray(value.pinnedResourcesNames) ? value.pinnedResourcesNames : []
 
-const layoutSettingsType = type({
-  chatVisible: 'boolean',
-  resultsVisible: 'boolean',
-  chatPosition: '"left" | "right"',
-})
+    return {
+      lastOpenedResourceName,
+      pinnedResourcesNames,
+    }
+  },
+}))
 
-export const getConnectionResourceStoreType = type({
-  lastOpenedPage: 'string | null' as type.cast<(Extract<keyof FileRoutesById, `/_protected/connection/$resourceId/${string}`> | null)>,
-  lastOpenedChatId: 'string | null',
+export const connectionResourceType = type({
+  lastOpenedPage: 'string | null' as type.cast<Extract<keyof FileRoutesById, `/_protected/connection/$resourceId/${string}`> | null>,
+  lastOpenedChatId: 'string.uuid | null',
   lastOpenedTable: type({
     schema: 'string',
     table: 'string',
@@ -34,11 +46,17 @@ export const getConnectionResourceStoreType = type({
   query: 'string',
   selectedLines: 'number[]',
   showSystem: 'boolean',
-  queriesToRun: queryToRunType.array(),
-  files: 'File[]',
+  queriesToRun: type({
+    startLineNumber: 'number',
+    endLineNumber: 'number',
+    query: 'string',
+  }).array(),
   loggerOpened: 'boolean',
-  chatInput: 'string',
-  tabs: tabType.array(),
+  tabs: type({
+    table: 'string',
+    schema: 'string',
+    preview: 'boolean',
+  }).array(),
   tablesSearch: 'string',
   definitionsSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
@@ -46,10 +64,14 @@ export const getConnectionResourceStoreType = type({
     schema: 'string',
     table: 'string',
   }).array(),
-  layout: layoutSettingsType,
+  layout: {
+    chatVisible: 'boolean',
+    resultsVisible: 'boolean',
+    chatPosition: '"left" | "right"',
+  },
 })
 
-const defaultState: typeof getConnectionResourceStoreType.infer = {
+const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   lastOpenedPage: null,
   lastOpenedChatId: null,
   lastOpenedTable: null,
@@ -72,9 +94,7 @@ const defaultState: typeof getConnectionResourceStoreType.infer = {
   showSystem: false,
   queriesToRun: [],
   selectedLines: [],
-  files: [],
   loggerOpened: false,
-  chatInput: '',
   tabs: [],
   tablesSearch: '',
   definitionsSearch: '',
@@ -87,44 +107,33 @@ const defaultState: typeof getConnectionResourceStoreType.infer = {
   },
 }
 
-export const getConnectionResourceStore = memoize((id: string) => {
-  const persistedState = JSON.parse(localStorage.getItem(`connection-resource-store-${id}`) || '{}') as typeof defaultState
+export const getConnectionResourceStore = memoize((id: string) => createLocalStorageValue({
+  key: `connection-resource-store-${id}`,
+  defaultValue: connectionResourceDefaultState,
+  schema: connectionResourceType,
+}))
 
-  persistedState.query ||= defaultState.query
+export const getEditorQueriesComputed = memoize((id: string) => {
+  const store = getConnectionResourceStore(id)
+  const computed = createComputed(store, state => getEditorQueries(state.query))
 
-  const state = getConnectionResourceStoreType({ ...defaultState, ...persistedState })
+  computed.subscribe((editorQueries) => {
+    const state = store.get()
+    const currentLineNumbers = editorQueries.map(query => query.startLineNumber)
+    const newSelectedLines = state.selectedLines.filter(line => currentLineNumbers.includes(line))
 
-  if (import.meta.env.DEV && state instanceof type.errors) {
-    console.error('Invalid connection store state', state.summary)
-  }
-
-  const store = createStore<typeof getConnectionResourceStoreType.infer>(
-    state instanceof type.errors ? defaultState : state,
-  )
-
-  store.subscribe((state) => {
-    localStorage.setItem(`connection-resource-store-${id}`, JSON.stringify({
-      lastOpenedPage: state.lastOpenedPage,
-      lastOpenedChatId: state.lastOpenedChatId,
-      lastOpenedTable: state.lastOpenedTable,
-      query: state.query,
-      showSystem: state.showSystem,
-      selectedLines: state.selectedLines,
-      loggerOpened: state.loggerOpened,
-      chatInput: state.chatInput,
-      tabs: state.tabs,
-      tablesSearch: state.tablesSearch,
-      definitionsSearch: state.definitionsSearch,
-      tablesTreeOpenedSchemas: state.tablesTreeOpenedSchemas,
-      pinnedTables: state.pinnedTables,
-      layout: state.layout,
-    } satisfies Omit<typeof state, 'queriesToRun' | 'files'>))
+    if (
+      newSelectedLines.length !== state.selectedLines.length
+      || newSelectedLines.some((line, i) => line !== state.selectedLines[i])
+    ) {
+      store.set(state => ({
+        ...state,
+        selectedLines: newSelectedLines.toSorted((a, b) => a - b),
+      } satisfies typeof state))
+    }
   })
 
-  return store
+  return computed
 })
 
-export const getConnectionResourceEditorQueriesStore = memoize((id: string) => {
-  const connectionResourceStore = getConnectionResourceStore(id)
-  return createStore(() => getEditorQueries(connectionResourceStore.state.query))
-})
+export const getFilesStore = memoize((_id: string) => createStore<File[]>([]))

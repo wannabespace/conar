@@ -51,15 +51,15 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
         <Button
           size="icon-xs"
           variant="outline"
-          asChild
+          render={(
+            <Link
+              to="/connection/$resourceId/table"
+              params={{ resourceId: data.resourceId }}
+              search={{ schema: data.schema, table: data.table }}
+            />
+          )}
         >
-          <Link
-            to="/connection/$resourceId/table"
-            params={{ resourceId: data.resourceId }}
-            search={{ schema: data.schema, table: data.table }}
-          >
-            <RiExternalLinkLine className="size-3" />
-          </Link>
+          <RiExternalLinkLine className="size-3" />
         </Button>
       </div>
       <div className="py-2 text-xs">

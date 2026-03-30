@@ -16,12 +16,12 @@ export function FiltersColumnSelector({ ref, onSelect }: { ref?: RefObject<HTMLI
             <CommandItem
               key={column.id}
               value={column.id}
-              keywords={[column.id, column.type]}
+              keywords={[column.id, column.type, column.label]}
               onSelect={onSelect}
             >
               <RiDatabase2Line className="size-4 opacity-50" />
               <span>{column.id}</span>
-              <span className="ml-auto text-right text-xs text-muted-foreground">{column.type}</span>
+              <span className="ml-auto text-right text-xs text-muted-foreground">{column.label}</span>
             </CommandItem>
           ))}
         </CommandGroup>

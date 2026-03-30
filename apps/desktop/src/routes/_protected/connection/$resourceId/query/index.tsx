@@ -1,10 +1,11 @@
 import { title } from '@conar/shared/utils/title'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
 import { type } from 'arktype'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
+import { useSubscription } from 'seitu/react'
+import { v7 } from 'uuid'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
@@ -21,14 +22,15 @@ export const Route = createFileRoute(
   loader: async ({ context, deps }) => {
     return {
       connection: context.connection,
+      connectionResource: context.connectionResource,
       chat: await createChat({
-        id: deps.chatId,
+        id: deps.chatId ?? v7(),
         connectionResource: context.connectionResource,
       }),
     }
   },
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('SQL Runner', loaderData.connection.name) }] : [],
+    meta: loaderData ? [{ title: title('SQL Runner', loaderData.connection.name, loaderData.connectionResource.name) }] : [],
   }),
 })
 
@@ -40,7 +42,7 @@ function ChatPanel() {
       defaultSize="30%"
       minSize={MIN_CHAT_SIZE}
       maxSize="50%"
-      className="rounded-lg border bg-background"
+      className="rounded-lg bg-background"
     >
       <Chat className="h-full" />
     </ResizablePanel>
@@ -52,7 +54,7 @@ function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
     <ResizablePanel
       defaultSize={chatVisible ? '70%' : '100%'}
       minSize="30%"
-      className="rounded-lg border bg-background"
+      className="rounded-lg bg-background"
     >
       <Runner />
     </ResizablePanel>
@@ -60,24 +62,26 @@ function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
 }
 
 function DatabaseSqlPage() {
-  const { connection } = Route.useLoaderData()
+  const { connectionResource } = Route.useRouteContext()
   const { chatId } = Route.useSearch()
-  const store = getConnectionResourceStore(connection.id)
+  const store = getConnectionResourceStore(connectionResource.id)
 
-  const { chatVisible, chatPosition } = useStore(store, s => ({
-    chatVisible: s.layout.chatVisible,
-    chatPosition: s.layout.chatPosition,
-  }))
+  const { chatVisible, chatPosition } = useSubscription(store, {
+    selector: s => ({
+      chatVisible: s.layout.chatVisible,
+      chatPosition: s.layout.chatPosition,
+    }),
+  })
 
   useEffect(() => {
-    store.setState(state => ({
+    store.set(state => ({
       ...state,
       lastOpenedChatId: chatId ?? null,
     } satisfies typeof state))
   }, [chatId, store])
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: `sql-layout-${connection.id}`,
+    id: `sql-layout-${connectionResource.id}`,
     storage: localStorage,
   })
 

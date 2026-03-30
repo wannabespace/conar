@@ -1,31 +1,37 @@
 import type { VariantProps } from 'class-variance-authority'
 import type * as React from 'react'
+import { mergeProps } from '@base-ui/react/merge-props'
+import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@conar/ui/lib/utils'
-import { Slot } from '@radix-ui/react-slot'
 import { motion } from 'motion/react'
 import { buttonVariants } from './button.variants'
 
-export const MotionButton = motion.create(Button)
+export interface ButtonProps extends useRender.ComponentProps<'button'> {
+  variant?: VariantProps<typeof buttonVariants>['variant']
+  size?: VariantProps<typeof buttonVariants>['size']
+}
+
+export const ButtonMotion = motion.create(Button)
 
 export function Button({
   className,
   variant,
   size,
-  type = 'button',
-  asChild = false,
+  render,
   ...props
-}: React.ComponentProps<'button'>
-  & VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
-  const Comp = asChild ? Slot : 'button'
+}: ButtonProps): React.ReactElement {
+  const typeValue: React.ButtonHTMLAttributes<HTMLButtonElement>['type']
+    = render ? undefined : 'button'
 
-  return (
-    <Comp
-      data-slot="button"
-      type={type}
-      className={cn(buttonVariants({ variant, size }), className)}
-      {...props}
-    />
-  )
+  const defaultProps = {
+    'className': cn(buttonVariants({ className, size, variant })),
+    'data-slot': 'button',
+    'type': typeValue,
+  }
+
+  return useRender({
+    defaultTagName: 'button',
+    props: mergeProps<'button'>(defaultProps, props),
+    render,
+  })
 }

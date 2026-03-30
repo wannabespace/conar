@@ -1,24 +1,24 @@
 import type { ToolUIPart } from '@conar/api/ai/tools/helpers'
 import type { editor } from 'monaco-editor'
+import { FaviconWithFallback } from '@conar/ui/components/custom/favicon-with-fallback'
 import {
   SingleAccordion,
   SingleAccordionContent,
   SingleAccordionTrigger,
   SingleAccordionTriggerArrow,
 } from '@conar/ui/components/custom/single-accordion'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Spinner } from '@conar/ui/components/spinner'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import {
   RiBook2Line,
   RiEarthLine,
   RiErrorWarningLine,
   RiHammerLine,
-  RiLoader4Line,
   RiSearchLine,
 } from '@remixicon/react'
 import { InfoTable } from '~/components/info-table'
 import { Monaco } from '~/components/monaco'
-import { FaviconWithFallback } from './favicon-with-fallback'
 
 const monacoOptions = {
   readOnly: true,
@@ -50,10 +50,10 @@ function shouldSkipContent(part: ToolUIPart) {
 
 const ICONS: Record<ToolUIPart['state'], (props: { className?: string, part: ToolUIPart }) => React.ReactNode> = {
   'input-streaming': ({ className }) => (
-    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
+    <Spinner className={cn(`animate-spin text-primary`, className)} />
   ),
   'input-available': ({ className }) => (
-    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
+    <Spinner className={cn(`animate-spin text-primary`, className)} />
   ),
   'output-available': ({ className, part }) => {
     if (part.type === 'tool-webSearch') {
@@ -71,7 +71,7 @@ const ICONS: Record<ToolUIPart['state'], (props: { className?: string, part: Too
     <RiErrorWarningLine className={cn(`text-red-600`, className)} />
   ),
   'approval-requested': ({ className }) => (
-    <RiLoader4Line className={cn(`animate-spin text-primary`, className)} />
+    <Spinner className={cn(`animate-spin text-primary`, className)} />
   ),
   'approval-responded': ({ className }) => (
     <RiHammerLine className={cn(`text-muted-foreground`, className)} />
@@ -186,41 +186,39 @@ const CONTENT: { [K in Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[num
           {!!part.output && typeof part.output === 'object' && 'results' in part.output && Array.isArray(part.output.results) && (
             <div className="flex flex-wrap gap-2">
               {part.output.results.slice(0, 5).map((result: { title: string, url: string, description?: string }) => (
-                <TooltipProvider key={`${part.toolCallId}-${result.url}`}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <a
-                        href={result.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`
-                          group flex max-w-full min-w-[200px] flex-1 basis-1/3
-                          items-center gap-1 rounded-md border bg-accent/20
-                          px-1.5 py-0.5 text-xs transition-colors
-                          hover:bg-accent/40
-                        `}
+                <Tooltip key={`${part.toolCallId}-${result.url}`}>
+                  <TooltipTrigger asChild>
+                    <a
+                      href={result.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`
+                        group flex max-w-full min-w-[200px] flex-1 basis-1/3
+                        items-center gap-1 rounded-md border bg-accent/20 px-1.5
+                        py-0.5 text-xs transition-colors
+                        hover:bg-accent/40
+                      `}
+                    >
+                      <FaviconWithFallback
+                        url={result.url}
+                        className="size-3 shrink-0"
+                      />
+                      <span className={`
+                        truncate font-medium
+                        group-hover:text-primary
+                      `}
                       >
-                        <FaviconWithFallback
-                          url={result.url}
-                          className="size-3 shrink-0"
-                        />
-                        <span className={`
-                          truncate font-medium
-                          group-hover:text-primary
-                        `}
-                        >
-                          {result.title}
-                        </span>
-                      </a>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <div className="max-w-xs">
-                        <div className="font-medium">{result.title}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">{result.url}</div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                        {result.title}
+                      </span>
+                    </a>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="max-w-xs">
+                      <div className="font-medium">{result.title}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{result.url}</div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
               ))}
             </div>
           )}

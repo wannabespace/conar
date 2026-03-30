@@ -3,10 +3,24 @@ import type { AppVariables } from '..'
 import { UAParser } from 'ua-parser-js'
 
 export function createContext(c: HonoContext<{ Variables: AppVariables }>) {
-  const desktopVersion = c.req.header('x-desktop-version') || null
-  const userAgent = c.req.raw.headers.get('User-Agent') || null
-  const minorVersion = Number(desktopVersion?.split('.')[1]) || null
-  const majorVersion = Number(desktopVersion?.split('.')[0]) || null
+  const desktopVersion = c.req.header('x-desktop-version')?.split('.') || null
+  const ua = c.req.raw.headers.get('User-Agent')
+  const userAgent = ua ? new UAParser(ua) : null
+  const osName = userAgent?.getOS().name
+  const os = osName === 'Linux'
+    ? 'linux' as const
+    : osName === 'macOS'
+      ? 'macos' as const
+      : osName === 'Windows'
+        ? 'windows' as const
+        : null
+  const appVersion = desktopVersion
+    ? {
+        major: Number(desktopVersion[0]),
+        minor: Number(desktopVersion[1]),
+        patch: Number(desktopVersion[2]),
+      }
+    : null
 
   return {
     request: c.req.raw,
@@ -18,9 +32,9 @@ export function createContext(c: HonoContext<{ Variables: AppVariables }>) {
       c.set('logEvent', { ...c.get('logEvent'), ...data })
     },
     desktopVersion,
-    minorVersion,
-    majorVersion,
-    ua: userAgent ? new UAParser(userAgent) : null,
+    appVersion,
+    userAgent,
+    os,
   }
 }
 

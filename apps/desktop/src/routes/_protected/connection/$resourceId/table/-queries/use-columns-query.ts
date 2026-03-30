@@ -1,12 +1,12 @@
-import type { connectionsResources } from '~/drizzle'
+import type { connectionsResources } from '~/drizzle/schema'
 import { useQueries } from '@tanstack/react-query'
-import { resourceConstraintsQuery, resourceTableColumnsQuery } from '~/entities/connection/queries'
+import { resourceConstraintsQueryOptions, resourceTableColumnsQueryOptions } from '~/entities/connection/queries'
 
 export function useTableColumns({ connectionResource, table, schema }: { connectionResource: typeof connectionsResources.$inferSelect, table: string, schema: string }) {
   const [columns, constraints] = useQueries({
     queries: [
-      resourceTableColumnsQuery({ connectionResource, table, schema }),
-      resourceConstraintsQuery({ connectionResource }),
+      resourceTableColumnsQueryOptions({ connectionResource, table, schema }),
+      resourceConstraintsQueryOptions({ connectionResource }),
     ],
     combine: ([columns, constraints]) => [columns.data ?? [], constraints.data ?? []],
   })

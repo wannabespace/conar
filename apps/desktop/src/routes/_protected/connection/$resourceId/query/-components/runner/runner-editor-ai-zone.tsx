@@ -1,18 +1,19 @@
-import type { connections, connectionsResources } from '~/drizzle'
+import type { connections, connectionsResources } from '~/drizzle/schema'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Enter } from '@conar/ui/components/custom/shortcuts'
-import { Popover, PopoverAnchor, PopoverContent } from '@conar/ui/components/popover'
+import { EnterIcon } from '@conar/ui/components/custom/shortcuts'
+import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Textarea } from '@conar/ui/components/textarea'
+import { TooltipProvider } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
 import { useEffect, useRef, useState } from 'react'
+import { useSubscription } from 'seitu/react'
 import { MonacoDiff } from '~/components/monaco'
-import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { useSubscription } from '~/entities/user/hooks'
-import { orpcQuery } from '~/lib/orpc'
+import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
+import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 
@@ -29,9 +30,9 @@ export function RunnerEditorAIZone({
   onUpdate: (sql: string) => void
   onClose: () => void
 }) {
-  const isOnline = useStore(appStore, state => state.isOnline)
+  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const store = getConnectionResourceStore(connectionResource.id)
-  const { subscription } = useSubscription()
+  const { subscription } = useUserSubscription()
   const [prompt, setPrompt] = useState('')
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null)
   const ref = useRef<HTMLTextAreaElement>(null)
@@ -53,7 +54,7 @@ export function RunnerEditorAIZone({
     }
   }, [ref])
 
-  const { mutate: updateSQL, isPending } = useMutation(orpcQuery.ai.updateSQL.mutationOptions({
+  const { mutate: updateSQL, isPending } = useMutation(orpc.ai.updateSQL.mutationOptions({
     onSuccess: (data) => {
       setAiSuggestion(data)
     },
@@ -79,17 +80,23 @@ export function RunnerEditorAIZone({
         type: connection.type,
         context: [
           'Database schemas and tables:',
-          JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQuery({ connectionResource, showSystem: store.state.showSystem })), null, 2),
+          JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem: store.get().showSystem })), null, 2),
         ].join('\n'),
       })
     }
   }
 
   return (
-    <div className="flex h-full flex-col py-1 pr-6">
-      <Popover open={!!aiSuggestion}>
-        <PopoverAnchor asChild>
-          <div className="relative flex h-full w-lg flex-col rounded-md border">
+    <TooltipProvider>
+      <div className="flex h-full flex-col py-1 pr-6">
+        <Popover open={!!aiSuggestion}>
+          <PopoverTrigger render={(
+            <div className="
+              relative flex h-full w-lg flex-col rounded-md border
+            "
+            />
+          )}
+          >
             {!subscription && (
               <div
                 className="
@@ -149,39 +156,38 @@ export function RunnerEditorAIZone({
               disabled={isPending || !prompt.trim() || !isOnline}
               onClick={handleSubmit}
             >
-              <LoadingContent loading={isPending} loaderClassName="size-4">
+              <LoadingContent loading={isPending}>
                 {aiSuggestion ? 'Apply' : 'Send'}
-                <Enter />
+                <EnterIcon />
               </LoadingContent>
             </Button>
-          </div>
-        </PopoverAnchor>
-        {!!aiSuggestion && (
-          <PopoverContent
-            style={{
-              '--lines-height': `${Math.max(aiSuggestion.split('\n').length, originalSql.split('\n').length) * 18 * 2}px`,
-            }}
-            className="h-[min(30vh,var(--lines-height))] w-lg p-0"
-            onOpenAutoFocus={(e) => {
-              e.preventDefault()
-              ref.current?.focus()
-            }}
-          >
-            <MonacoDiff
-              originalValue={originalSql}
-              modifiedValue={aiSuggestion}
-              language="sql"
-              className="h-full"
-              options={{
-                scrollBeyondLastLine: false,
-                renderIndicators: false,
-                lineNumbers: 'off',
-                folding: false,
+          </PopoverTrigger>
+          {!!aiSuggestion && (
+            <PopoverContent
+              style={{
+                '--lines-height': `${Math.max(aiSuggestion.split('\n').length, originalSql.split('\n').length) * 18 * 2}px`,
               }}
-            />
-          </PopoverContent>
-        )}
-      </Popover>
-    </div>
+              className="
+                h-[min(30vh,var(--lines-height))] w-lg p-0
+                **:data-[slot=popover-viewport]:p-0
+              "
+            >
+              <MonacoDiff
+                originalValue={originalSql}
+                modifiedValue={aiSuggestion}
+                language="sql"
+                className="h-full"
+                options={{
+                  scrollBeyondLastLine: false,
+                  renderIndicators: false,
+                  lineNumbers: 'off',
+                  folding: false,
+                }}
+              />
+            </PopoverContent>
+          )}
+        </Popover>
+      </div>
+    </TooltipProvider>
   )
 }

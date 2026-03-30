@@ -35,38 +35,43 @@ export function DownloadButton({ className }: { className?: string }) {
 
   if (assets.length === 1) {
     return (
-      <Button size="lg" className={cn('flex items-center justify-center gap-2', className)} asChild>
-        <a href={assets[0]!.link} download>
-          {Icon && <Icon className="size-4" />}
-          Download for
-          {' '}
-          {os.label}
-        </a>
+      <Button size="lg" className={cn('flex items-center justify-center gap-2', className)} render={<a href={assets[0]!.link} download />}>
+        {Icon && <Icon className="size-4" />}
+        Download for
+        {' '}
+        {os.label}
       </Button>
     )
   }
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button size="lg" className={cn('flex items-center justify-center gap-2', className)}>
-          {Icon && <Icon className="size-4" />}
-          Download for
-          {' '}
-          {os.label}
-        </Button>
+      <DropdownMenuTrigger render={(
+        <Button
+          size="lg"
+          className={cn(`flex items-center justify-center gap-2`, className)}
+        />
+      )}
+      >
+        {Icon && <Icon className="size-4" />}
+        Download for
+        {' '}
+        {os.label}
       </DropdownMenuTrigger>
       {assets.length > 1 && (
         <DropdownMenuContent>
           {assets.map(asset => (
-            <DropdownMenuItem key={asset.link} asChild>
-              <a
-                href={asset.link}
-                download
-                className="flex gap-2 text-foreground"
-              >
-                {asset.arch}
-              </a>
+            <DropdownMenuItem
+              key={asset.link}
+              render={(
+                <a
+                  href={asset.link}
+                  download
+                  className="flex gap-2 text-foreground"
+                />
+              )}
+            >
+              {asset.arch}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
