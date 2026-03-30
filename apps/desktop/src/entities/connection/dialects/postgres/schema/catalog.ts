@@ -13,6 +13,8 @@ export interface PgCatalog {
   pg_am: PgAm
   pg_trigger: PgTrigger
   pg_proc: PgProc
+  pg_language: PgLanguage
+  pg_type: PgType
 }
 
 /**
@@ -155,4 +157,29 @@ interface PgProc {
   oid: number
   proname: string
   pronamespace: number
+  prokind: string
+  prorettype: number
+  prolang: number
+  provolatile: string
+  pronargs: number
+  proargtypes: string
+}
+
+/**
+ * @name pg_language
+ * @type table
+ */
+interface PgLanguage {
+  oid: number
+  lanname: string
+}
+
+/**
+ * @name pg_type
+ * @type table
+ */
+interface PgType {
+  oid: number
+  typname: string
+  typnamespace: number
 }

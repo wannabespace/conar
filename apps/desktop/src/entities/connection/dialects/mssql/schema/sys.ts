@@ -12,6 +12,7 @@ export interface Sys {
   triggers: Triggers
   trigger_events: TriggerEvents
   objects: Objects
+  sql_modules: SqlModules
 }
 
 /**
@@ -191,4 +192,17 @@ interface Objects {
   parent_object_id: number
   type: string
   type_desc: string
+  is_ms_shipped: boolean
+}
+
+/**
+ * @name sql_modules
+ * @type table
+ */
+interface SqlModules {
+  object_id: number
+  definition: string | null
+  uses_ansi_nulls: boolean | null
+  uses_quoted_identifier: boolean | null
+  is_schema_bound: boolean
 }

@@ -12,6 +12,7 @@ export interface InformationSchema {
   REFERENTIAL_CONSTRAINTS: ReferentialConstraints
   SCHEMATA: Schemata
   TRIGGERS: Triggers
+  ROUTINES: Routines
 }
 
 /**
@@ -190,4 +191,23 @@ interface Triggers {
   CHARACTER_SET_CLIENT: string
   COLLATION_CONNECTION: string
   DATABASE_COLLATION: string
+}
+
+/**
+ * @name ROUTINES
+ * @type table
+ */
+interface Routines {
+  ROUTINE_CATALOG: string
+  ROUTINE_SCHEMA: string
+  ROUTINE_NAME: string
+  ROUTINE_TYPE: string
+  DATA_TYPE: string
+  ROUTINE_DEFINITION: string | null
+  IS_DETERMINISTIC: string
+  SQL_DATA_ACCESS: string
+  SECURITY_TYPE: string
+  DEFINER: string
+  CREATED: string
+  LAST_ALTERED: string
 }
