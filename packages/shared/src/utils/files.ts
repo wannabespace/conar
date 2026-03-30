@@ -56,17 +56,11 @@ export function toCSV<T extends Record<string, unknown>>(headers: (keyof T)[], d
   return csvRows.join('\n')
 }
 
-/** JSON.stringify replacer so clipboard/export survives `bigint` fields. */
-export function jsonReplacerForClipboard(_key: string, value: unknown) {
-  return typeof value === 'bigint' ? value.toString() : value
-}
-
-/** Single-cell plain representation: objects as compact JSON, scalars as strings. */
 export function formatValueForPlainCell(value: unknown): string {
   if (value === null || value === undefined)
     return ''
   if (typeof value === 'object')
-    return JSON.stringify(value, jsonReplacerForClipboard)
+    return JSON.stringify(value)
   return String(value)
 }
 
@@ -79,7 +73,7 @@ export function rowValuesToPlainText(
 }
 
 export function recordToPrettyJson(row: Record<string, unknown>): string {
-  return JSON.stringify(row, jsonReplacerForClipboard, 2)
+  return JSON.stringify(row, null, 2)
 }
 
 export interface TabularColumnSpec { key: string, header?: string }
