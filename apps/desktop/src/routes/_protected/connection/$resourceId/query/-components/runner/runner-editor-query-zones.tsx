@@ -10,7 +10,7 @@ import { useRunnerContext } from './runner-context'
 import { RunnerEditorQueryZone } from './runner-editor-query-zone'
 
 export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
-  const { connectionResource } = Route.useRouteContext()
+  const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
   const linesWithQueries = useSubscription(editorQueriesStore, { selector: state => state.map(({ startLineNumber }) => startLineNumber) })
@@ -40,6 +40,7 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
           elements[lineNumber] ||= render(
             <RunnerEditorQueryZone
               connectionResource={connectionResource}
+              connectionType={connection.type}
               lineNumber={lineNumber}
               onRun={(index) => {
                 const editorQuery = getQueriesEvent(lineNumber)

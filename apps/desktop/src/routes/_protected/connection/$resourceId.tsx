@@ -110,7 +110,7 @@ function DatabasePage() {
                 defaultSize="30%"
                 minSize="10%"
                 maxSize="50%"
-                className="overflow-auto rounded-lg border bg-background"
+                className="overflow-auto rounded-lg bg-background"
               >
                 <QueryLogger connectionResource={connectionResource} />
               </ResizablePanel>
