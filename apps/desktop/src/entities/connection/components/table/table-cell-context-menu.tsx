@@ -33,14 +33,16 @@ export function TableCellContextMenu({
   open,
   onOpenChange,
   style,
+  onRequestSetNull,
   children,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   style?: CSSProperties
+  onRequestSetNull?: () => void
   children: ReactNode
 }) {
-  const { value, column, rowIndex, onAddFilter, onSort, sortOrder, onSetNull, onRenameColumn } = useCellContext()
+  const { value, column, rowIndex, onAddFilter, onSort, sortOrder, onRenameColumn } = useCellContext()
   const row = useTableContext(({ rows }) => rows[rowIndex]!)
   const columns = useTableContext(({ columns }) => columns)
   const columnKeys = useMemo(() =>
@@ -62,8 +64,8 @@ export function TableCellContextMenu({
           >
             Copy value
           </ContextMenuItem>
-          {onSetNull && (
-            <ContextMenuItem onClick={onSetNull} disabled={value === null}>
+          {onRequestSetNull && (
+            <ContextMenuItem onClick={onRequestSetNull} disabled={value === null}>
               Set null
             </ContextMenuItem>
           )}

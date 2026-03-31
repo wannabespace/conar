@@ -16,7 +16,6 @@ export const CellContext = createContext<{
   onAddFilter?: (filter: ActiveFilter) => void
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
   sortOrder?: 'ASC' | 'DESC' | null
-  onSetNull?: () => void
   onRenameColumn?: () => void
 }>(null!)
 

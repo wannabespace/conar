@@ -4,15 +4,15 @@ import type { editor } from 'monaco-editor'
 import type { ComponentProps, Dispatch, SetStateAction } from 'react'
 import type { Column } from '~/entities/connection/components/table/utils'
 import { sleep } from '@conar/shared/utils/helpers'
-import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@conar/ui/components/alert-dialog'
+import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
+import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import { KbdCtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowLeftDownLine, RiArrowRightUpLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
+import { RiArrowLeftDownLine, RiArrowRightUpLine, RiCheckLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
 import { format, isValid } from 'date-fns'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
@@ -33,12 +33,14 @@ function CellPopoverContent({
   setIsBig,
   onClose,
   hasUpdateFn,
+  onRequestSetNull,
 }: {
   rowIndex: number
   isBig: boolean
   setIsBig: Dispatch<SetStateAction<boolean>>
   onClose: () => void
   hasUpdateFn: boolean
+  onRequestSetNull: () => void
 }) {
   const { newValue, value, column, displayValue, setNewValue, update, values } = useCellContext()
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
@@ -67,11 +69,6 @@ function CellPopoverContent({
   const canEdit = !!column?.isEditable && hasUpdateFn
   const hasArrayValues = !!values && !column.isArray
   const canSave = newValue !== displayValue && !(hasArrayValues && !newValue)
-
-  const setNull = () => {
-    update({ value: null, rowIndex })
-    onClose()
-  }
 
   const shouldHideToggleSize = column.type === 'boolean'
     || column.type?.includes('time')
@@ -164,9 +161,13 @@ function CellPopoverContent({
           )}
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="icon-xs" variant="outline" onClick={() => copy(newValue, 'Value copied to clipboard')}>
-                <RiFileCopyLine className="size-3" />
-              </Button>
+              <CopyButton
+                size="icon-xs"
+                variant="outline"
+                text={newValue}
+                copyIcon={<RiFileCopyLine className="size-3" />}
+                successIcon={<RiCheckLine className="size-3 text-success" />}
+              />
             </TooltipTrigger>
             <TooltipContent side="bottom">Copy value</TooltipContent>
           </Tooltip>
@@ -175,32 +176,16 @@ function CellPopoverContent({
           {canEdit && (
             <>
               {!!column?.isNullable && (
-                <AlertDialog>
-                  <AlertDialogTrigger
-                    disabled={value === null}
-                    render={<Button size="xs" variant="secondary" />}
-                  >
-                    Set
-                    {' '}
-                    <span className="font-mono">null</span>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Set value to null?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will set the cell value to
-                        {' '}
-                        <code className="font-mono">null</code>
-                        .
-                        This action can be undone by editing the cell again.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-                      <AlertDialogClose render={<Button variant="destructive" />} onClick={() => setNull()}>Set to null</AlertDialogClose>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button
+                  size="xs"
+                  variant="secondary"
+                  disabled={value === null}
+                  onClick={onRequestSetNull}
+                >
+                  Set
+                  {' '}
+                  <span className="font-mono">null</span>
+                </Button>
               )}
               <Button
                 size="xs"
@@ -218,6 +203,42 @@ function CellPopoverContent({
         </div>
       </div>
     </>
+  )
+}
+
+function SetNullAlertDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  const { value, rowIndex, update } = useCellContext()
+
+  const setNull = () => {
+    update({ value: null, rowIndex })
+    onOpenChange(false)
+  }
+
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Set value to null?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will set the cell value to
+            {' '}
+            <code className="font-mono">null</code>
+            .
+            This action can be undone by editing the cell again.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
+          <AlertDialogClose render={<Button variant="warning" />} onClick={setNull} disabled={value === null}>Set to null</AlertDialogClose>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 
@@ -297,6 +318,7 @@ export function TableCell({
   const [isReferencesOpen, setIsReferencesOpen] = useState(false)
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false)
   const [isBig, setIsBig] = useState(false)
+  const [isSetNullDialogOpen, setIsSetNullDialogOpen] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error' | 'pending'>('idle')
 
@@ -320,7 +342,7 @@ export function TableCell({
   )
 
   function disableInteractIfPossible() {
-    if (!isPopoverOpen && !isForeignOpen && !isReferencesOpen && !isContextMenuOpen) {
+    if (!isPopoverOpen && !isForeignOpen && !isReferencesOpen && !isContextMenuOpen && !isSetNullDialogOpen) {
       sleep(200).then(() => setCanInteract(false))
     }
   }
@@ -369,14 +391,20 @@ export function TableCell({
       onAddFilter={onAddFilter}
       onSort={onSort}
       sortOrder={sortOrder}
-      onSetNull={onSaveValue && column.isNullable
-        ? () => onSaveValue(rowIndex, column.id, null)
-        : undefined}
       onRenameColumn={onRenameColumn}
       onSavePending={() => setStatus('pending')}
       onSaveSuccess={() => setStatus('success')}
       onSaveError={onSaveError}
     >
+      <SetNullAlertDialog
+        open={isSetNullDialogOpen}
+        onOpenChange={(open) => {
+          setIsSetNullDialogOpen(open)
+          if (!open) {
+            disableInteractIfPossible()
+          }
+        }}
+      />
       <TableCellContextMenu
         open={isContextMenuOpen}
         onOpenChange={(open) => {
@@ -386,6 +414,9 @@ export function TableCell({
           }
         }}
         style={style}
+        onRequestSetNull={onSaveValue && column.isNullable
+          ? () => setIsSetNullDialogOpen(true)
+          : undefined}
       >
         <Popover
           open={isPopoverOpen}
@@ -524,6 +555,7 @@ export function TableCell({
               setIsBig={setIsBig}
               onClose={() => setIsPopoverOpen(false)}
               hasUpdateFn={!!onSaveValue}
+              onRequestSetNull={() => setIsSetNullDialogOpen(true)}
             />
           </PopoverContent>
         </Popover>

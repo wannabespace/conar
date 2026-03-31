@@ -11,7 +11,6 @@ export function TableCellProvider({
   onAddFilter,
   onSort,
   sortOrder,
-  onSetNull,
   onRenameColumn,
   column,
   value,
@@ -27,7 +26,6 @@ export function TableCellProvider({
   onAddFilter?: (filter: ActiveFilter) => void
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
   sortOrder?: 'ASC' | 'DESC' | null
-  onSetNull?: () => void
   onRenameColumn?: () => void
   column: Column
   value: unknown
@@ -74,7 +72,6 @@ export function TableCellProvider({
       onAddFilter,
       onSort,
       sortOrder,
-      onSetNull,
       onRenameColumn,
     }}
     >

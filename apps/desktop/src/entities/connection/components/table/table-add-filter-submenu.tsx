@@ -28,7 +28,7 @@ export function TableAddFilterSubmenu({
   return (
     <ContextMenuSub>
       <ContextMenuSubTrigger>
-        Filter
+        Add filter
       </ContextMenuSubTrigger>
       <ContextMenuSubContent>
         {SQL_FILTERS_GROUPED.map(({ group, filters }, index) => (
