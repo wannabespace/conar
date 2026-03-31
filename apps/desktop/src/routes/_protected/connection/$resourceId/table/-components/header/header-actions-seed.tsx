@@ -71,6 +71,7 @@ export function HeaderActionsSeed({
 
   const handleOpenChange = (open: boolean) => {
     setOpen(open)
+
     if (!open) {
       return
     }
@@ -79,10 +80,20 @@ export function HeaderActionsSeed({
       const newGenerators: typeof state.generators = {}
 
       for (const column of columns) {
-        newGenerators[column.id] = state.generators[column.id] ?? {
-          generatorId: autoDetectGenerator(column),
-          isNullable: false,
-        }
+        const saved = state.generators[column.id]
+        const isValid = saved
+          && saved.generatorId in GENERATORS
+          && (saved.generatorId !== SKIP_GENERATOR || column.defaultValue)
+          && (saved.generatorId !== REFERENCE_GENERATOR || column.foreign)
+          && (saved.generatorId !== ENUM_GENERATOR || column.enum)
+          && (saved.generatorId !== 'null' || column.isNullable)
+
+        newGenerators[column.id] = isValid
+          ? saved
+          : {
+              generatorId: autoDetectGenerator(column),
+              isNullable: false,
+            }
       }
 
       return {
@@ -111,7 +122,7 @@ export function HeaderActionsSeed({
 
       const referenceData = Object.fromEntries(
         await Promise.all(columns
-          .filter(c => generators[c.id]?.generatorId === REFERENCE_GENERATOR && c.foreign)
+          .filter(c => c.foreign)
           .map(async (column) => {
             const fk = column.foreign!
             const rows = await distinctQuery({
@@ -126,7 +137,7 @@ export function HeaderActionsSeed({
       const enumData = enums
         ? Object.fromEntries(
             columns
-              .filter(c => generators[c.id]?.generatorId === ENUM_GENERATOR && c.enum)
+              .filter(c => c.enum)
               .map(column => [column.id, findEnum(enums, column, table)?.values ?? []] as const)
               .filter(([, values]) => values.length > 0),
           )
@@ -260,7 +271,23 @@ export function HeaderActionsSeed({
                         )
                       : (
                           <Combobox
-                            items={GENERATOR_GROUPS}
+                            items={GENERATOR_GROUPS
+                              .map(group => ({
+                                ...group,
+                                items: group.items.filter((id) => {
+                                  if (id === REFERENCE_GENERATOR && !column.foreign)
+                                    return false
+                                  if (id === ENUM_GENERATOR && !column.enum)
+                                    return false
+                                  if (id === SKIP_GENERATOR && !column.defaultValue)
+                                    return false
+                                  if (id === 'null' && !column.isNullable)
+                                    return false
+                                  return true
+                                }),
+                              }))
+                              .filter(group => group.items.length > 0)}
+                            itemToStringLabel={id => GENERATORS[id as GeneratorId]?.label ?? String(id)}
                             autoHighlight
                             value={generators[column.id]?.generatorId ?? SKIP_GENERATOR}
                             onValueChange={(value) => {
