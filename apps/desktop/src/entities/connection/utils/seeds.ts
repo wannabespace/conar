@@ -2,12 +2,8 @@ import type { Column } from '../components/table/utils'
 import { faker } from '@faker-js/faker'
 
 export const SKIP_GENERATOR = 'skip-generator'
-
-export interface Generator {
-  label: string
-  category: string
-  generate: () => unknown
-}
+export const REFERENCE_GENERATOR = 'reference-generator'
+export const ENUM_GENERATOR = 'enum-generator'
 
 function generateRandomJsonValue(depth = 0): unknown {
   const scalarGenerators = [
@@ -52,6 +48,8 @@ function generateRandomJsonObject(depth = 0): Record<string, unknown> {
 
 export const GENERATORS = {
   [SKIP_GENERATOR]: { label: 'Generate default', category: 'Special', generate: () => undefined },
+  [REFERENCE_GENERATOR]: { label: 'Random reference value', category: 'Special', generate: () => undefined },
+  [ENUM_GENERATOR]: { label: 'Random enum value', category: 'Special', generate: () => undefined },
   'null': { label: 'NULL', category: 'Special', generate: () => null },
 
   'lorem.word': { label: 'Word', category: 'Text', generate: () => faker.lorem.word() },
@@ -98,9 +96,18 @@ export const GENERATORS = {
   'color.human': { label: 'Color Name', category: 'Other', generate: () => faker.color.human() },
   'color.rgb': { label: 'Color RGB', category: 'Other', generate: () => faker.color.rgb() },
   'json.object': { label: 'JSON Object', category: 'Other', generate: () => generateRandomJsonObject() },
-} satisfies Record<string, Generator>
+} satisfies Record<string, {
+  label: string
+  category: string
+  generate: () => unknown
+}>
 
 export type GeneratorId = keyof typeof GENERATORS
+
+export interface Generator {
+  generatorId: GeneratorId
+  isNullable: boolean
+}
 
 export interface GeneratorGroup {
   value: string
@@ -122,6 +129,12 @@ export const GENERATOR_GROUPS: GeneratorGroup[] = Object.entries(GENERATORS).red
 export function autoDetectGenerator(column: Column): GeneratorId {
   const name = column.id.toLowerCase().replaceAll('_', '')
   const type = column.type.toLowerCase()
+
+  if (column.foreign)
+    return REFERENCE_GENERATOR
+
+  if (column.enum)
+    return ENUM_GENERATOR
 
   if (
     column.primaryKey
@@ -202,18 +215,39 @@ export function autoDetectGenerator(column: Column): GeneratorId {
   return 'lorem.words'
 }
 
-function generateValue(generatorId: GeneratorId, column: Column): unknown {
-  const generator = GENERATORS[generatorId]
-  if (!generator || generatorId === SKIP_GENERATOR)
+function generateValue(
+  generator: Generator,
+  column: Column,
+  referenceValues?: unknown[],
+  enumValues?: string[],
+): unknown {
+  const generatorId = generator.generatorId
+  const generatorImpl = GENERATORS[generatorId]
+  if (!generatorImpl || generatorId === SKIP_GENERATOR)
     return undefined
   if (generatorId === 'null')
     return null
 
-  const value = generator.generate()
+  if (generator.isNullable && column.isNullable && faker.datatype.boolean())
+    return null
+
+  if (generatorId === REFERENCE_GENERATOR) {
+    if (!referenceValues || referenceValues.length === 0)
+      return null
+    return faker.helpers.arrayElement(referenceValues)
+  }
+
+  if (generatorId === ENUM_GENERATOR) {
+    if (!enumValues || enumValues.length === 0)
+      return null
+    return faker.helpers.arrayElement(enumValues)
+  }
+
+  const value = generatorImpl.generate()
 
   if (column.isArray) {
     const count = faker.number.int({ min: 1, max: 5 })
-    return Array.from({ length: count }).fill(generator.generate())
+    return faker.helpers.multiple(() => generatorImpl.generate(), { count })
   }
 
   return value
@@ -221,16 +255,25 @@ function generateValue(generatorId: GeneratorId, column: Column): unknown {
 
 export function generateRows(
   columns: Column[],
-  generators: Record<string, GeneratorId>,
+  generators: Record<string, Generator>,
   count: number,
+  referenceData?: Record<string, unknown[]>,
+  enumData?: Record<string, string[]>,
 ) {
   return Array.from({ length: count }, () => {
     const row: Record<string, unknown> = {}
     for (const column of columns) {
-      const generatorId = generators[column.id]
-      if (!generatorId || generatorId === SKIP_GENERATOR)
+      const generator = generators[column.id]
+      if (!generator || generator.generatorId === SKIP_GENERATOR)
         continue
-      const value = generateValue(generatorId, column)
+
+      const value = generateValue(
+        generator,
+        column,
+        referenceData?.[column.id],
+        enumData?.[column.id],
+      )
+
       if (value !== undefined) {
         row[column.id] = value
       }

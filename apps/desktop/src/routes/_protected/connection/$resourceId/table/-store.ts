@@ -28,7 +28,12 @@ export const storeState = type({
   columnSizes: 'Record<string, number>',
   lastClickedIndex: 'number | null',
   selectionState: 'object' as type.cast<SelectionState>,
-  generators: 'Record<string, string>' as type.cast<Record<string, GeneratorId>>,
+  generators: {
+    '[string]': {
+      generatorId: 'string' as type.cast<GeneratorId>,
+      isNullable: 'boolean',
+    },
+  },
 })
 
 const defaultState: typeof storeState.infer = {
