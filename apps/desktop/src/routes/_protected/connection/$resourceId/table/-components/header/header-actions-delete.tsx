@@ -12,12 +12,12 @@ import { deleteRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableTotalQu
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { queryClient } from '~/main'
 import { Route } from '../..'
-import { usePageStoreContext } from '../../-store'
+import { useTablePageStore } from '../../-store'
 
 export function HeaderActionsDelete({ table, schema }: { table: string, schema: string }) {
   const { connectionResource } = Route.useRouteContext()
   const [isOpened, setIsOpened] = useState(false)
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const selected = useSubscription(store, { selector: state => state.selected })
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({

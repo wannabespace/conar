@@ -6,7 +6,7 @@ import { useToggle } from '@conar/ui/hookas/use-toggle'
 import { RiAddLine, RiCloseLine, RiDatabase2Line, RiFilterOffLine } from '@remixicon/react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { usePageStoreContext } from '../../-store'
+import { useTablePageStore } from '../../-store'
 import { FiltersColumnSelector } from './filters-column-selector'
 import { FilterForm } from './filters-form'
 import { FiltersSelector } from './filters-selector'
@@ -117,7 +117,7 @@ function FilterItem({
 }
 
 export function Filters() {
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const filters = useSubscription(store, { selector: state => state.filters })
   const [isOpened, toggleForm] = useToggle()
 

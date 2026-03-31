@@ -1,9 +1,10 @@
 import type { ActiveFilter, Filter } from '@conar/shared/filters'
 import type { Store } from 'seitu'
+import type { GeneratorId } from '~/entities/connection/utils/seeds'
 import { memoize } from '@conar/shared/utils/helpers'
 import { type } from 'arktype'
 import { createContext, use } from 'react'
-import { createStore } from 'seitu'
+import { createLocalStorageValue } from 'seitu/web'
 
 export interface SelectionState {
   anchorIndex: number | null
@@ -27,6 +28,7 @@ export const storeState = type({
   columnSizes: 'Record<string, number>',
   lastClickedIndex: 'number | null',
   selectionState: 'object' as type.cast<SelectionState>,
+  generators: 'Record<string, string>' as type.cast<Record<string, GeneratorId>>,
 })
 
 const defaultState: typeof storeState.infer = {
@@ -39,42 +41,25 @@ const defaultState: typeof storeState.infer = {
   columnSizes: {},
   lastClickedIndex: null,
   selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
+  generators: {},
 }
 
-export const tablePageStore = memoize(({ id, schema, table }: { id: string, schema: string, table: string }) => {
-  const key = `${id}.${schema}-${table}.store`
-  const persistedState = JSON.parse(
-    sessionStorage.getItem(key)
-    || '{}',
-  ) as typeof defaultState
+export const tablePageStore = memoize(({ id, schema, table }: { id: string, schema: string, table: string }) => createLocalStorageValue({
+  key: `${id}.${schema}-${table}.store`,
+  defaultValue: defaultState,
+  schema: storeState,
+  onValidationError({ value }) {
+    return {
+      ...defaultState,
+      ...(typeof value === 'object' && value !== null
+        ? Object.fromEntries(Object.entries(value).filter(([key]) => key in defaultState))
+        : {}),
+    }
+  },
+}))
 
-  const state = storeState({ ...defaultState, ...persistedState })
+export const TablePageStoreContext = createContext<Store<typeof storeState.infer>>(null!)
 
-  if (import.meta.env.DEV && state instanceof type.errors) {
-    console.error('Invalid page store state', state.summary)
-  }
-
-  const store = createStore<typeof storeState.infer>(
-    state instanceof type.errors ? defaultState : state,
-  )
-
-  store.subscribe((state) => {
-    sessionStorage.setItem(key, JSON.stringify({
-      selected: state.selected,
-      filters: state.filters,
-      exact: state.exact,
-      hiddenColumns: state.hiddenColumns,
-      orderBy: state.orderBy,
-      prompt: state.prompt,
-      columnSizes: state.columnSizes,
-    } satisfies Omit<typeof state, 'lastClickedIndex' | 'selectionState'>))
-  })
-
-  return store
-})
-
-export const PageStoreContext = createContext<Store<typeof storeState.infer>>(null!)
-
-export function usePageStoreContext() {
-  return use(PageStoreContext)
+export function useTablePageStore() {
+  return use(TablePageStoreContext)
 }

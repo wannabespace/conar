@@ -4,7 +4,7 @@ import { useShiftSelectionClick, useTableContext } from '@conar/table'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useSubscription } from 'seitu/react'
-import { usePageStoreContext } from '../../-store'
+import { useTablePageStore } from '../../-store'
 
 function IndeterminateCheckbox({
   indeterminate,
@@ -55,7 +55,7 @@ export function SelectionHeaderCell({ columnIndex, className, style, keys }: Tab
   className?: string
 }) {
   const rows = useTableContext(state => state.rows)
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const [checked, indeterminate] = useSubscription(store, {
     selector: state => [
       !!rows && rows.length > 0 && state.selected.length === rows.length,
@@ -97,7 +97,7 @@ export function SelectionCell({ rowIndex, columnIndex, className, style, keys }:
   keys: string[]
   className?: string
 }) {
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const rows = useTableContext(state => state.rows)
   const isSelected = useSubscription(store, { selector: state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])) })
   const [currentSelected, lastClickedIndex] = useSubscription(store, { selector: state => [

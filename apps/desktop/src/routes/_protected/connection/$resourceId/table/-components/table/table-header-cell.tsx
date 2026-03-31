@@ -12,7 +12,7 @@ import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
 import { Route } from '../..'
-import { usePageStoreContext } from '../../-store'
+import { useTablePageStore } from '../../-store'
 
 const CANNOT_SORT_TYPES = ['json']
 
@@ -177,7 +177,7 @@ export function TableHeaderCell({
   className?: string
 } & TableHeaderCellProps) {
   const { connectionResource } = Route.useRouteContext()
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const [isResizing, setIsResizing] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const order = useSubscription(store, { selector: state => state.orderBy?.[column.id] ?? null })

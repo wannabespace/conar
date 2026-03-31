@@ -18,7 +18,7 @@ import { queryClient } from '~/main'
 import { Route } from '../..'
 import { getColumnSize, INTERNAL_COLUMN_IDS } from '../../-lib'
 import { useTableColumns } from '../../-queries/use-columns-query'
-import { usePageStoreContext } from '../../-store'
+import { useTablePageStore } from '../../-store'
 import { useColumnsOrder } from '../use-columns-order'
 import { RenameColumnDialog } from './rename-column-dialog'
 import { TableEmpty } from './table-empty'
@@ -63,7 +63,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { connection, connectionResource } = Route.useRouteContext()
   const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const columns = useTableColumns({ connectionResource, table, schema })
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
   const columnSizes = useSubscription(store, { selector: state => state.columnSizes })
   const filters = useSubscription(store, { selector: state => state.filters })
