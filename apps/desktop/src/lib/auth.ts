@@ -1,7 +1,7 @@
 import { type } from 'arktype'
 import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
-import { createLocalStorageValue } from 'seitu/web'
+import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 import { clearDb } from '~/drizzle'
 import { identifyUser } from './events-utils'
@@ -9,7 +9,8 @@ import { apiUrl } from './utils'
 
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
 
-export const bearerToken = createLocalStorageValue({
+export const bearerToken = createWebStorageValue({
+  type: 'localStorage',
   key: BEARER_TOKEN_KEY,
   schema: type('string | null'),
   defaultValue: null,

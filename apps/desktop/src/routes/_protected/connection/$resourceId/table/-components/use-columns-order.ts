@@ -1,8 +1,8 @@
 import { omit } from '@conar/shared/utils/helpers'
-import { usePageStoreContext } from '../-store'
+import { useTablePageStore } from '../-store'
 
 export function useColumnsOrder() {
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
 
   const setOrder = (columnId: string, order: 'ASC' | 'DESC') => {
     store.set(state => ({

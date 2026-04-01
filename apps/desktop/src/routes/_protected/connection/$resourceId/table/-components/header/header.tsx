@@ -17,18 +17,19 @@ import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { queryClient } from '~/main'
 import { Route } from '../..'
 import { useTableColumns } from '../../-queries/use-columns-query'
-import { usePageStoreContext } from '../../-store'
+import { useTablePageStore } from '../../-store'
 import { HeaderActionsColumns } from './header-actions-columns'
 import { HeaderActionsCopy } from './header-actions-copy'
 import { HeaderActionsDelete } from './header-actions-delete'
 import { HeaderActionsFilters } from './header-actions-filters'
 import { HeaderActionsOrder } from './header-actions-order'
+import { HeaderActionsSeed } from './header-actions-seed'
 import { HeaderSearch } from './header-search'
 
 export function Header({ table, schema }: { table: string, schema: string }) {
   const { connectionResource } = Route.useRouteContext()
   const columns = useTableColumns({ connectionResource, table, schema })
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const { filters, exact, orderBy, selected } = useSubscription(store, { selector: state => pick(state, ['filters', 'orderBy', 'exact', 'selected']) })
   const { data: total, isLoading } = useQuery(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters, exact } }))
 
@@ -187,6 +188,11 @@ export function Header({ table, schema }: { table: string, schema: string }) {
       <HeaderActionsCopy
         table={table}
         schema={schema}
+      />
+      <HeaderActionsSeed
+        table={table}
+        schema={schema}
+        columns={columns}
       />
       <ExportData
         selected={selected}
