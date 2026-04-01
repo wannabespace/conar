@@ -373,14 +373,12 @@ function generateValue(
     return faker.helpers.arrayElement(enumValues)
   }
 
-  const value = generatorImpl.generate()
-
   if (column.isArray) {
     const count = faker.number.int({ min: 1, max: 5 })
     return faker.helpers.multiple(() => generatorImpl.generate(), { count })
   }
 
-  return value
+  return generatorImpl.generate()
 }
 
 export function generateRows(
