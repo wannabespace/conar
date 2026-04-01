@@ -33,13 +33,13 @@ export function TableCellContextMenu({
   open,
   onOpenChange,
   style,
-  onRequestSetNull,
+  onSetNull,
   children,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   style?: CSSProperties
-  onRequestSetNull?: () => void
+  onSetNull?: () => void
   children: ReactNode
 }) {
   const { value, column, rowIndex, onAddFilter, onSort, sortOrder, onRenameColumn } = useCellContext()
@@ -64,8 +64,8 @@ export function TableCellContextMenu({
           >
             Copy value
           </ContextMenuItem>
-          {onRequestSetNull && (
-            <ContextMenuItem onClick={onRequestSetNull} disabled={value === null}>
+          {onSetNull && (
+            <ContextMenuItem onClick={onSetNull} disabled={value === null}>
               Set null
             </ContextMenuItem>
           )}

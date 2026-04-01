@@ -33,14 +33,14 @@ function CellPopoverContent({
   setIsBig,
   onClose,
   hasUpdateFn,
-  onRequestSetNull,
+  onSetNull,
 }: {
   rowIndex: number
   isBig: boolean
   setIsBig: Dispatch<SetStateAction<boolean>>
   onClose: () => void
   hasUpdateFn: boolean
-  onRequestSetNull: () => void
+  onSetNull: () => void
 }) {
   const { newValue, value, column, displayValue, setNewValue, update, availableValues } = useCellContext()
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
@@ -180,7 +180,7 @@ function CellPopoverContent({
                   size="xs"
                   variant="secondary"
                   disabled={value === null}
-                  onClick={onRequestSetNull}
+                  onClick={onSetNull}
                 >
                   Set
                   {' '}
@@ -414,7 +414,7 @@ export function TableCell({
           }
         }}
         style={style}
-        onRequestSetNull={onSaveValue && column.isNullable
+        onSetNull={onSaveValue && column.isNullable
           ? () => setIsSetNullDialogOpen(true)
           : undefined}
       >
@@ -555,7 +555,7 @@ export function TableCell({
               setIsBig={setIsBig}
               onClose={() => setIsPopoverOpen(false)}
               hasUpdateFn={!!onSaveValue}
-              onRequestSetNull={() => setIsSetNullDialogOpen(true)}
+              onSetNull={() => setIsSetNullDialogOpen(true)}
             />
           </PopoverContent>
         </Popover>
