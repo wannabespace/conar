@@ -317,10 +317,6 @@ export function HeaderActionsSeed({
                             <ComboboxPopup className="min-w-48">
                               <div className="border-b p-2">
                                 <ComboboxInput
-                                  className="
-                                    rounded-md
-                                    before:rounded-[calc(var(--radius-md)-1px)]
-                                  "
                                   placeholder="Search generators..."
                                   showTrigger={false}
                                   startAddon={<RiSearchLine />}
