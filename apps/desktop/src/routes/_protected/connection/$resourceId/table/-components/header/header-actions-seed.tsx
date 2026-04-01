@@ -1,5 +1,6 @@
 import type { useTableColumns } from '../../-queries/use-columns-query'
 import type { GeneratorGroup, GeneratorId } from '~/entities/connection/utils/seeds'
+import { pick } from '@conar/shared/utils/helpers'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import {
@@ -42,7 +43,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
-import { distinctQuery, insertQuery } from '~/entities/connection/queries'
+import { distinctQuery, insertQuery, resourceRowsQueryInfiniteOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
 import { findEnum, resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { autoDetectGenerator, ENUM_GENERATOR, generateRows, GENERATOR_GROUPS, GENERATORS, REFERENCE_GENERATOR, SKIP_GENERATOR } from '~/entities/connection/utils/seeds'
@@ -67,6 +68,7 @@ export function HeaderActionsSeed({
   const [rowCount, setRowCount] = useState(10)
   const store = useTablePageStore()
   const generators = useSubscription(store, { selector: state => state.generators })
+  const { filters, orderBy, exact } = useSubscription(store, { selector: state => pick(state, ['filters', 'orderBy', 'exact']) })
   const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
 
   const handleOpenChange = (open: boolean) => {
@@ -148,17 +150,12 @@ export function HeaderActionsSeed({
       if (rows.length === 0)
         throw new Error('No rows to insert')
 
-      const nonEmptyRows = rows.filter(row => Object.keys(row).length > 0)
-
-      if (nonEmptyRows.length === 0)
-        throw new Error('All columns are skipped')
-
-      await insertQuery({ schema, table, rows: nonEmptyRows })
-        .run(queryParams)
+      await insertQuery({ schema, table, rows }).run(queryParams)
     },
     onSuccess: () => {
       toast.success(`Seeded ${rowCount} rows into ${schema}.${table}`)
-      queryClient.invalidateQueries({ queryKey: ['connection-resource', connectionResource.id, 'schema', schema, 'table', table] })
+      queryClient.invalidateQueries(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }))
+      queryClient.invalidateQueries(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters, exact } }))
       setOpen(false)
     },
     onError: (error) => {

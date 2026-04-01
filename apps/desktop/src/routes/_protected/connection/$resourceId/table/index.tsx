@@ -16,7 +16,7 @@ import { Sidebar } from './-components/sidebar'
 import { Table } from './-components/table/table'
 import { TablesTabs } from './-components/tabs'
 import { useTableColumns } from './-queries/use-columns-query'
-import { tablePageStore, TablePageStoreContext } from './-store'
+import { tablePageStore, TablePageStoreContext, useTablePageStore } from './-store'
 
 export const Route = createFileRoute(
   '/_protected/connection/$resourceId/table/',
@@ -70,7 +70,7 @@ export const Route = createFileRoute(
 function TableContent({ table, schema }: { table: string, schema: string }) {
   const { connectionResource } = Route.useRouteContext()
   const deps = Route.useLoaderDeps()
-  const store = tablePageStore({ id: connectionResource.id, schema, table })
+  const store = useTablePageStore()
 
   const resetSelectionStateEvent = useEffectEvent(() => {
     store.set(state => ({
