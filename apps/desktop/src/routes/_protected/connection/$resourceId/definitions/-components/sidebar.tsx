@@ -4,11 +4,8 @@ import type { FileRoutesByTo } from '~/routeTree.gen'
 import { CONNECTION_TYPES_WITH_FUNCTIONS, CONNECTION_TYPES_WITH_TRIGGERS } from '@conar/shared/constants'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { CardTitle } from '@conar/ui/components/card'
-import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { RiCodeSSlashLine, RiFileList3Line, RiFlashlightLine, RiKey2Line, RiListUnordered } from '@remixicon/react'
-import { useSubscription } from 'seitu/react'
 import { SidebarLink } from '~/components/sidebar-link'
-import { getConnectionResourceStore } from '~/entities/connection/store'
 import { Route } from '../../definitions'
 
 function sidebarItems(connection: typeof connections.$inferSelect) {
@@ -47,7 +44,6 @@ function sidebarItems(connection: typeof connections.$inferSelect) {
 
 export function Sidebar() {
   const { connection, connectionResource } = Route.useRouteContext()
-  const search = useSubscription(getConnectionResourceStore(connectionResource.id), { selector: state => state.definitionsSearch })
 
   return (
     <aside className="h-full w-64 flex-col rounded-lg bg-background p-4">
@@ -60,7 +56,7 @@ export function Sidebar() {
             params={{ resourceId: connectionResource.id }}
           >
             <Icon className="size-4" />
-            <HighlightText text={label} match={search} />
+            {label}
           </SidebarLink>
         ))}
       </nav>

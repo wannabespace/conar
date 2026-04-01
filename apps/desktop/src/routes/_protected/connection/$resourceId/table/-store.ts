@@ -63,8 +63,8 @@ export function useTablePageStore() {
 
 export const tablePageSelectionStore = memoize((_: { id: string, schema: string, table: string }) => createSchemaStore({
   schema: type({
-    lastClickedIndex: type('number | null'),
-    selectionState: type('object' as type.cast<SelectionState>),
+    lastClickedIndex: 'number | null',
+    selectionState: 'object' as type.cast<SelectionState>,
   }),
   defaultValue: {
     lastClickedIndex: null,

@@ -1,6 +1,6 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
-import { downloadFile, toCSV } from '@conar/shared/utils/files'
+import { downloadFile, recordsToMarkdownTable, toCSV } from '@conar/shared/utils/files'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +17,7 @@ import {
   TooltipTrigger,
 } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
-import { RiBracesLine, RiDownloadLine, RiFileCopyLine, RiTableLine } from '@remixicon/react'
+import { RiBracesLine, RiDownloadLine, RiFileCopyLine, RiMarkdownLine, RiTableLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { formatDate } from 'date-fns'
 import { handleError } from '~/lib/error'
@@ -25,7 +25,7 @@ import { handleError } from '~/lib/error'
 const EXPORT_LIMITS = [50, 100, 500, 1000, 5000] as const
 
 type ContentGeneratorType = 'download' | 'copy'
-type ContentFormatType = 'csv' | 'json'
+type ContentFormatType = 'csv' | 'json' | 'markdown'
 
 function exportData({
   type,
@@ -44,8 +44,8 @@ function exportData({
         return
       }
 
-      const headers = Object.keys(data[0])
-      const content = toCSV(headers, data)
+      const columns = Object.keys(data[0]).map(key => ({ key }))
+      const content = toCSV(columns, data)
 
       if (type === 'download') {
         downloadFile(content, `${filename}.csv`, 'text/csv;charset=utf-8;')
@@ -64,6 +64,22 @@ function exportData({
 
       if (type === 'copy') {
         copy(content, `Copied ${data.length} rows to clipboard as JSON`)
+      }
+    },
+    markdown: () => {
+      if (data[0] === undefined) {
+        return
+      }
+
+      const columns = Object.keys(data[0]).map(key => ({ key }))
+      const content = recordsToMarkdownTable(columns, data)
+
+      if (type === 'download') {
+        downloadFile(content, `${filename}.md`, 'text/markdown;charset=utf-8;')
+      }
+
+      if (type === 'copy') {
+        copy(content, `Copied ${data.length} rows to clipboard as Markdown`)
       }
     },
   } satisfies Record<ContentFormatType, () => void>
@@ -198,6 +214,18 @@ export function ExportData({
                   selected={selected}
                 />
               </DropdownMenuSub>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <RiMarkdownLine />
+                  Export as Markdown
+                </DropdownMenuSubTrigger>
+                <ExportDataDropdownMenuSubContent
+                  type="download"
+                  format="markdown"
+                  onExport={startExport}
+                  selected={selected}
+                />
+              </DropdownMenuSub>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuSub>
@@ -226,6 +254,18 @@ export function ExportData({
                 <ExportDataDropdownMenuSubContent
                   type="copy"
                   format="json"
+                  onExport={startExport}
+                  selected={selected}
+                />
+              </DropdownMenuSub>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <RiMarkdownLine />
+                  Copy as Markdown
+                </DropdownMenuSubTrigger>
+                <ExportDataDropdownMenuSubContent
+                  type="copy"
+                  format="markdown"
                   onExport={startExport}
                   selected={selected}
                 />

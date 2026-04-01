@@ -39,7 +39,7 @@ export function Runner() {
   const [isFormatting, setIsFormatting] = useState(false)
   const store = getConnectionResourceStore(connectionResource.id)
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
-  const editorQueries = useSubscription(editorQueriesStore, { selector: state => state })
+  const editorQueries = useSubscription(editorQueriesStore)
   const { selectedLines, resultsVisible } = useSubscription(store, {
     selector: state => ({
       selectedLines: state.selectedLines,

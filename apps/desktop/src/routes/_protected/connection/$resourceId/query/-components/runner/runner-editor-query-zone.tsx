@@ -4,6 +4,7 @@ import { CONNECTION_TYPES_WITH_EXPLAIN } from '@conar/shared/constants'
 import { Button } from '@conar/ui/components/button'
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
+import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Separator } from '@conar/ui/components/separator'
@@ -25,17 +26,16 @@ export function RunnerEditorQueryZone({
   connectionType,
   onRun,
   onSave,
-  onCopy,
+  getQuery,
   lineNumber,
 }: {
   connectionResource: typeof connectionsResources.$inferSelect
   connectionType: ConnectionType
   onRun: (index: number) => void
   onSave: () => void
-  onCopy: () => void
+  getQuery: () => string
   lineNumber: number
 }) {
-  const [isCopying, setIsCopying] = useState(false)
   const [explainOpen, setExplainOpen] = useState(false)
   const isFetching = useIsFetching(runnerQueryOptions(connectionResource), queryClient) > 0
 
@@ -129,23 +129,14 @@ export function RunnerEditorQueryZone({
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
+                <CopyButton
                   variant="ghost"
                   size="icon-xs"
                   className="focus:outline-none!"
-                  onClick={() => {
-                    onCopy()
-                    setIsCopying(true)
-                  }}
-                >
-                  <ContentSwitch
-                    active={isCopying}
-                    activeContent={<RiCheckLine className="text-success" />}
-                    onSwitchEnd={() => setIsCopying(false)}
-                  >
-                    <RiFileCopyLine className="size-3.5" />
-                  </ContentSwitch>
-                </Button>
+                  text={getQuery}
+                  successIcon={<RiCheckLine className="text-success" />}
+                  copyIcon={<RiFileCopyLine className="size-3.5" />}
+                />
               </TooltipTrigger>
               <TooltipContent>
                 Copy
