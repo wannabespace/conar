@@ -193,7 +193,7 @@ export function HeaderActionsSeed({
       <Tooltip>
         <TooltipTrigger asChild>
           <DrawerTrigger
-            render={<Button variant="secondary" size="icon" disabled={!columns} />}
+            render={<Button variant="secondary" size="icon" />}
           >
             <RiSeedlingLine />
           </DrawerTrigger>
