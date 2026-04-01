@@ -363,13 +363,17 @@ function generateValue(
 
   if (generatorId === REFERENCE_GENERATOR) {
     if (!referenceValues || referenceValues.length === 0)
-      return null
+      throw new Error(
+        `Cannot generate seed data: no reference values available for column "${column.id}".`,
+      )
     return faker.helpers.arrayElement(referenceValues)
   }
 
   if (generatorId === ENUM_GENERATOR) {
     if (!enumValues || enumValues.length === 0)
-      return null
+      throw new Error(
+        `Cannot generate seed data: no enum values available for column "${column.id}".`,
+      )
     return faker.helpers.arrayElement(enumValues)
   }
 
