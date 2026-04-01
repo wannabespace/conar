@@ -1,10 +1,8 @@
 import type { CSSProperties, ReactNode } from 'react'
 import {
   formatValueForPlainCell,
-  recordsToCSV,
   recordToMarkdownTable,
-  recordToPrettyJson,
-  rowValuesToPlainText,
+  toCSV,
 } from '@conar/shared/utils/files'
 import { useTableContext } from '@conar/table'
 import {
@@ -122,15 +120,7 @@ export function TableCellContextMenu({
               <ContextMenuItem
                 disabled={rowCopyDisabled}
                 onClick={() => {
-                  copy(rowValuesToPlainText(row, columnKeys), 'Row copied as plain text')
-                }}
-              >
-                Plain text
-              </ContextMenuItem>
-              <ContextMenuItem
-                disabled={rowCopyDisabled}
-                onClick={() => {
-                  copy(recordToPrettyJson(row), 'Row copied as JSON')
+                  copy(JSON.stringify(row, null, 2), 'Row copied as JSON')
                 }}
               >
                 JSON
@@ -138,7 +128,7 @@ export function TableCellContextMenu({
               <ContextMenuItem
                 disabled={rowCopyDisabled}
                 onClick={() => {
-                  copy(recordsToCSV(columnKeys.map(key => ({ key })), [row]), 'Row copied as CSV')
+                  copy(toCSV(columnKeys.map(key => ({ key })), [row]), 'Row copied as CSV')
                 }}
               >
                 CSV

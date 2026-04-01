@@ -1,16 +1,3 @@
-export function formatBytes(bytes: number, decimals = 2): string {
-  if (bytes === 0)
-    return '0 Bytes'
-
-  const k = 1024
-  const dm = decimals < 0 ? 0 : decimals
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
-
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-  return `${Number.parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`
-}
-
 export function downloadFile(content: string, fileName: string, mimeType: string) {
   const blob = new Blob([content], { type: mimeType })
   const url = URL.createObjectURL(blob)
@@ -24,36 +11,21 @@ export function downloadFile(content: string, fileName: string, mimeType: string
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    link.remove()
   }
   finally {
     URL.revokeObjectURL(url)
   }
 }
 
-const csvValueRegex = /"/g
-
-function escapeCSVValue(value: unknown) {
+function escapeCSVValue(value: unknown): string {
   if (value === null || value === undefined)
     return ''
 
-  const stringValue = String(value)
+  const str = String(value)
 
-  if (stringValue.includes(',') || stringValue.includes('\n') || stringValue.includes('"')) {
-    return `"${stringValue.replace(csvValueRegex, '""')}"`
-  }
-
-  return stringValue
-}
-
-export function toCSV<T extends Record<string, unknown>>(headers: (keyof T)[], data: T[]) {
-  const csvRows = [
-    headers.join(','),
-    ...data.map(row =>
-      headers.map(header => escapeCSVValue(row[header])).join(','),
-    ),
-  ]
-  return csvRows.join('\n')
+  return str.includes(',') || str.includes('\n') || str.includes('"')
+    ? `"${str.replaceAll('"', '""')}"`
+    : str
 }
 
 export function formatValueForPlainCell(value: unknown): string {
@@ -64,26 +36,13 @@ export function formatValueForPlainCell(value: unknown): string {
   return String(value)
 }
 
-export function rowValuesToPlainText(
-  row: Record<string, unknown>,
-  columnKeys: string[],
-  separator: '\t' | '\n' = '\t',
-): string {
-  return columnKeys.map(key => formatValueForPlainCell(row[key])).join(separator)
-}
-
-export function recordToPrettyJson(row: Record<string, unknown>): string {
-  return JSON.stringify(row, null, 2)
-}
-
-export interface TabularColumnSpec { key: string, header?: string }
-
-/** One CSV header row (labels) plus data rows; values are read by `key`. */
-export function recordsToCSV(columns: TabularColumnSpec[], data: Record<string, unknown>[]): string {
-  const keys = columns.map(c => c.key)
+export function toCSV(columns: {
+  key: string
+  header?: string
+}[], data: Record<string, unknown>[]): string {
   const headerRow = columns.map(c => escapeCSVValue(c.header ?? c.key)).join(',')
   const dataRows = data.map(row =>
-    keys.map(key => escapeCSVValue(row[key])).join(','),
+    columns.map(c => escapeCSVValue(row[c.key])).join(','),
   )
   return [headerRow, ...dataRows].join('\n')
 }
@@ -98,18 +57,38 @@ function escapeMarkdownTableCell(raw: string): string {
     .trim()
 }
 
-/** GitHub-style markdown pipe table for a single row. */
 export function recordToMarkdownTable(
   row: Record<string, unknown>,
-  columns: TabularColumnSpec[],
+  columns: {
+    key: string
+    header?: string
+  }[],
 ): string {
-  const keys = columns.map(c => c.key)
   const headers = columns.map(c => escapeMarkdownTableCell(String(c.header ?? c.key)))
-  const values = keys.map(key => escapeMarkdownTableCell(formatValueForPlainCell(row[key])))
-  const rule = keys.map(() => '---').join(' | ')
+  const values = columns.map(c => escapeMarkdownTableCell(formatValueForPlainCell(row[c.key])))
+  const rule = columns.map(() => '---').join(' | ')
   return [
     `| ${headers.join(' | ')} |`,
     `| ${rule} |`,
     `| ${values.join(' | ')} |`,
+  ].join('\n')
+}
+
+export function recordsToMarkdownTable(
+  columns: {
+    key: string
+    header?: string
+  }[],
+  data: Record<string, unknown>[],
+): string {
+  const headers = columns.map(c => escapeMarkdownTableCell(String(c.header ?? c.key)))
+  const rule = columns.map(() => '---').join(' | ')
+  const rows = data.map(row =>
+    `| ${columns.map(c => escapeMarkdownTableCell(formatValueForPlainCell(row[c.key]))).join(' | ')} |`,
+  )
+  return [
+    `| ${headers.join(' | ')} |`,
+    `| ${rule} |`,
+    ...rows,
   ].join('\n')
 }
