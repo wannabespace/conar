@@ -128,17 +128,18 @@ export function Filters() {
   return (
     <div className="flex justify-between gap-2">
       <div className="flex flex-wrap gap-2">
-        {filters.map(filter => (
+        {filters.map((filter, index) => (
           <FilterItem
-            key={`${filter.column}-${filter.ref.operator}-${filter.values.join(',')}`}
+            // eslint-disable-next-line react/no-array-index-key
+            key={`${filter.column}-${filter.ref.operator}-${filter.values.join(',')}-${index}`}
             filter={filter}
             onRemove={() => store.set(state => ({
               ...state,
-              filters: state.filters.filter(f => f !== filter),
+              filters: state.filters.filter((_, i) => i !== index),
             } satisfies typeof state))}
             onEdit={({ column, ref, values }) => store.set(state => ({
               ...state,
-              filters: state.filters.map(f => f === filter
+              filters: state.filters.map((f, i) => i === index
                 ? { column, ref, values }
                 : f),
             } satisfies typeof state))}

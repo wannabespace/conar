@@ -42,7 +42,7 @@ function CellPopoverContent({
   hasUpdateFn: boolean
   onRequestSetNull: () => void
 }) {
-  const { newValue, value, column, displayValue, setNewValue, update, values } = useCellContext()
+  const { newValue, value, column, displayValue, setNewValue, update, availableValues } = useCellContext()
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
 
   const save = (value: string) => {
@@ -67,13 +67,13 @@ function CellPopoverContent({
   }, [monacoRef])
 
   const canEdit = !!column?.isEditable && hasUpdateFn
-  const hasArrayValues = !!values && !column.isArray
+  const hasArrayValues = !!availableValues && !column.isArray
   const canSave = newValue !== displayValue && !(hasArrayValues && !newValue)
 
   const shouldHideToggleSize = column.type === 'boolean'
     || column.type?.includes('time')
     || column.type?.includes('numeric')
-    || (!!values && values.length > 0)
+    || (!!availableValues && availableValues.length > 0)
 
   const monacoOptions = {
     lineNumbers: isBig ? 'on' : 'off',
@@ -99,7 +99,7 @@ function CellPopoverContent({
             />
           )
         // TODO: refactor this to support array values like in PG enum array columns or MySQL SET columns
-        : values && !column.isArray
+        : availableValues && !column.isArray
           ? (
               <div className="p-2">
                 <Select
@@ -115,7 +115,7 @@ function CellPopoverContent({
                     <SelectValue placeholder="Select value" />
                   </SelectTrigger>
                   <SelectContent>
-                    {values.map(val => (
+                    {availableValues.map(val => (
                       <SelectItem key={val} value={val}>
                         {val}
                       </SelectItem>
@@ -292,7 +292,7 @@ export function TableCell({
   position,
   size,
   onSaveValue,
-  values,
+  availableValues,
   onAddFilter,
   onSort,
   sortOrder,
@@ -301,7 +301,7 @@ export function TableCell({
   onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   column: Column
   className?: string
-  values?: string[]
+  availableValues?: string[]
   onAddFilter?: (filter: ActiveFilter) => void
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
   sortOrder?: 'ASC' | 'DESC' | null
@@ -385,7 +385,7 @@ export function TableCell({
       column={column}
       rowIndex={rowIndex}
       value={value}
-      values={values}
+      availableValues={availableValues}
       displayValue={displayValue}
       onSaveValue={onSaveValue}
       onAddFilter={onAddFilter}

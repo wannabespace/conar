@@ -14,7 +14,7 @@ export function TableCellProvider({
   onRenameColumn,
   column,
   value,
-  values,
+  availableValues,
   displayValue,
   onSaveValue,
   onSavePending,
@@ -34,7 +34,7 @@ export function TableCellProvider({
   onSavePending: () => void
   onSaveSuccess: () => void
   onSaveError?: (error: Error) => void
-  values?: string[]
+  availableValues?: string[]
 }) {
   const [newValue, setNewValue] = useState<string>(() => getEditableValue({
     value,
@@ -68,7 +68,7 @@ export function TableCellProvider({
       value,
       displayValue,
       update,
-      values,
+      availableValues,
       onAddFilter,
       onSort,
       sortOrder,

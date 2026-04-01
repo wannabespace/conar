@@ -12,7 +12,7 @@ export const CellContext = createContext<{
   value: unknown
   displayValue: string
   update: UseMutateFunction<void, Error, { value: string | null, rowIndex: number }>
-  values?: string[]
+  availableValues?: string[]
   onAddFilter?: (filter: ActiveFilter) => void
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
   sortOrder?: 'ASC' | 'DESC' | null

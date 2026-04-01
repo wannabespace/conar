@@ -81,10 +81,7 @@ export function TableCellContextMenu({
                 </ContextMenuItem>
               )}
               {onAddFilter && (
-                <TableAddFilterSubmenu
-                  hasRow={!!row}
-                  onAdd={onAddFilter}
-                />
+                <TableAddFilterSubmenu onAdd={onAddFilter} />
               )}
               {onSort && (
                 <ContextMenuSub>

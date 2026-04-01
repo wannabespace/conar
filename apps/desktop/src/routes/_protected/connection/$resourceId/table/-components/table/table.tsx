@@ -240,13 +240,13 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           )
         },
         cell: (props) => {
-          const values = enums ? findEnum(enums, column, table)?.values : undefined
+          const availableValues = enums ? findEnum(enums, column, table)?.values : undefined
 
           return (
             <TableCell
               column={column}
               onSaveValue={primaryColumns.length > 0 ? saveValue : undefined}
-              values={values}
+              availableValues={availableValues}
               onAddFilter={filter => store.set(state => ({
                 ...state,
                 filters: [...state.filters, filter],

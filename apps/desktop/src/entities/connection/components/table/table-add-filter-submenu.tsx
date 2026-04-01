@@ -12,15 +12,13 @@ import { Fragment } from 'react'
 import { toast } from 'sonner'
 import { useCellContext } from './cell-context'
 
-function isDisabled(filter: Filter, hasRow: boolean, cellValue: unknown): boolean {
-  return filter.hasValue !== false && (!hasRow || cellValue === null || cellValue === undefined)
+function isDisabled(filter: Filter, cellValue: unknown): boolean {
+  return filter.hasValue !== false && (cellValue === null || cellValue === undefined)
 }
 
 export function TableAddFilterSubmenu({
-  hasRow,
   onAdd,
 }: {
-  hasRow: boolean
   onAdd: (filter: ActiveFilter) => void
 }) {
   const { value, column } = useCellContext()
@@ -40,7 +38,7 @@ export function TableAddFilterSubmenu({
             {filters.map(filter => (
               <ContextMenuItem
                 key={filter.operator}
-                disabled={isDisabled(filter, hasRow, value)}
+                disabled={isDisabled(filter, value)}
                 onClick={() => {
                   onAdd({
                     column: column.id,
