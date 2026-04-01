@@ -1,4 +1,5 @@
-import { CardContent, CardMotion } from '@conar/ui/components/card'
+import { CardContent } from '@conar/ui/components/card'
+import { CardMotion } from '@conar/ui/components/card.motion'
 import { RiInformationLine } from '@remixicon/react'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 

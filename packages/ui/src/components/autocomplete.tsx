@@ -5,9 +5,6 @@ import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { cn } from '@conar/ui/lib/utils'
 import { ChevronsUpDownIcon, XIcon } from 'lucide-react'
 
-export const Autocomplete: typeof AutocompletePrimitive.Root
-  = AutocompletePrimitive.Root
-
 export function AutocompleteInput({
   className,
   showTrigger = false,
@@ -392,8 +389,3 @@ export function AutocompleteTrigger({
     </AutocompletePrimitive.Trigger>
   )
 }
-
-export const useAutocompleteFilter: typeof AutocompletePrimitive.useFilter
-  = AutocompletePrimitive.useFilter
-
-export { AutocompletePrimitive }

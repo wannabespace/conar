@@ -1,4 +1,4 @@
-import { DEFAULT_COLUMN_WIDTH } from '~/entities/connection/components/table/utils'
+import { DEFAULT_COLUMN_WIDTH } from '@conar/table/constants'
 
 const SELECT_COLUMN_ID = '!__(selection_column)__!'
 const ACTIONS_COLUMN_ID = '!__(actions_column)__!'

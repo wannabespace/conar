@@ -1,5 +1,3 @@
-export { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '@conar/table'
-
 export interface Column {
   id: string
   type: string

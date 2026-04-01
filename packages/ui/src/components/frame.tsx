@@ -1,8 +1,5 @@
 import type * as React from 'react'
 import { cn } from '@conar/ui/lib/utils'
-import { motion } from 'motion/react'
-
-export const FrameMotion = motion.create(Frame)
 
 export function Frame({
   className,

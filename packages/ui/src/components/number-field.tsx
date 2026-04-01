@@ -4,7 +4,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { MinusIcon, PlusIcon } from 'lucide-react'
 import * as React from 'react'
 
-export const NumberFieldContext: React.Context<{
+const NumberFieldContext: React.Context<{
   fieldId: string
 } | null> = React.createContext<{
   fieldId: string
@@ -204,5 +204,3 @@ export function CursorGrowIcon(
     </svg>
   )
 }
-
-export { NumberFieldPrimitive }

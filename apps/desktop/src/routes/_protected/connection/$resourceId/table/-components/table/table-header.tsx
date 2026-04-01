@@ -1,6 +1,7 @@
 import type { ColumnRenderer } from '@conar/table'
 import type { storeState } from '../../-store'
-import { TableHeader, useTableContext } from '@conar/table'
+import { TableHeader } from '@conar/table'
+import { useTableContext } from '@conar/table/hooks'
 import { Button } from '@conar/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { useIsScrolled } from '@conar/ui/hookas/use-is-scrolled'
