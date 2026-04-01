@@ -5,7 +5,7 @@ import { memoize } from '@conar/shared/utils/helpers'
 import { type } from 'arktype'
 import { createContext, use } from 'react'
 import { createSchemaStore } from 'seitu'
-import { repairWebStorageValueObjectWithDefault } from 'seitu/utils'
+import { repairValueObjectWithDefault } from 'seitu/utils'
 import { createWebStorageValue } from 'seitu/web'
 
 export interface SelectionState {
@@ -52,7 +52,7 @@ export const tablePageStore = memoize(({ id, schema, table }: { id: string, sche
   key: `${id}.${schema}-${table}.store`,
   defaultValue: defaultState,
   schema: storeState,
-  onValidationError: repairWebStorageValueObjectWithDefault,
+  onValidationError: repairValueObjectWithDefault,
 }))
 
 export const TablePageStoreContext = createContext<Store<typeof storeState.infer>>(null!)
@@ -62,11 +62,11 @@ export function useTablePageStore() {
 }
 
 export const tablePageSelectionStore = memoize((_: { id: string, schema: string, table: string }) => createSchemaStore({
-  schemas: {
-    lastClickedIndex: type('number | null'),
-    selectionState: type('object' as type.cast<SelectionState>),
-  },
-  defaultValues: {
+  schema: type({
+    lastClickedIndex: 'number | null',
+    selectionState: 'object' as type.cast<SelectionState>,
+  }),
+  defaultValue: {
     lastClickedIndex: null,
     selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
   },

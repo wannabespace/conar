@@ -8,16 +8,15 @@ import { RiCornerRightUpLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi, Link } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { getDisplayValue } from '~/entities/connection/components/table/utils'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { TableError } from '~/routes/_protected/connection/$resourceId/table/-components/table/table'
 import { TableEmpty } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-empty'
 import { TableHeaderCell } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-header-cell'
 import { TableInfiniteLoader } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-infinite-loader'
 import { TableBodySkeleton } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-skeleton'
-import { getColumnSize } from '~/routes/_protected/connection/$resourceId/table/-lib'
 import { useTableColumns } from '~/routes/_protected/connection/$resourceId/table/-queries/use-columns-query'
 import { TableCellContent } from './table-cell-content'
+import { getColumnSize, getDisplayValue } from './utils'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 

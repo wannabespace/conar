@@ -1,6 +1,5 @@
 import type { editor } from 'monaco-editor'
 import type { RefObject } from 'react'
-import { copy } from '@conar/ui/lib/copy'
 import { render } from '@conar/ui/lib/render'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -59,15 +58,15 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
                   query,
                 }])
               }}
-              onCopy={() => {
+              getQuery={() => {
                 const query = getQueriesEvent(lineNumber)
 
                 if (!query)
-                  return
+                  throw new Error('Query not found')
 
                 const { startLineNumber, endLineNumber } = query
 
-                copy(store.get().query.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
+                return store.get().query.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n')
               }}
               onSave={() => {
                 const query = getQueriesEvent(lineNumber)
@@ -109,5 +108,5 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
         })
       })
     }
-  }, [monacoRef, linesWithQueries, connectionResource, store])
+  }, [monacoRef, linesWithQueries, connectionResource, store, connection.type])
 }

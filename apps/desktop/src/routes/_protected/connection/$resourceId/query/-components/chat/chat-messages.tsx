@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
+import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { UserAvatar } from '@conar/ui/components/custom/user-avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
@@ -61,7 +62,6 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
   const editorQueries = useSubscription(editorQueriesStore)
 
-  const [isCopying, setIsCopying] = useState(false)
   const [isAppending, setIsAppending] = useState(false)
   const [isReplacing, setIsReplacing] = useState(false)
 
@@ -90,23 +90,16 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
     <div className="flex gap-1">
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
+          <CopyButton
             size="icon-xs"
             variant="ghost"
+            text={content}
+            successIcon={<RiCheckLine className="text-success" />}
+            copyIcon={<RiFileCopyLine className="size-3.5" />}
             onClick={(e) => {
               e.stopPropagation()
-              setIsCopying(true)
-              copy(content)
             }}
-          >
-            <ContentSwitch
-              active={isCopying}
-              activeContent={<RiCheckLine className="text-success" />}
-              onSwitchEnd={() => setIsCopying(false)}
-            >
-              <RiFileCopyLine className="size-3.5" />
-            </ContentSwitch>
-          </Button>
+          />
         </TooltipTrigger>
         <TooltipContent>
           Copy to clipboard

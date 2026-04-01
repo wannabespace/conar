@@ -6,11 +6,11 @@ packages:
   - apps/*
 catalog:
   '@ai-sdk/anthropic': ^3.0.64
-  '@ai-sdk/google': ^3.0.53
-  '@ai-sdk/openai': ^3.0.48
+  '@ai-sdk/google': ^3.0.54
+  '@ai-sdk/openai': ^3.0.49
   '@ai-sdk/provider': ^3.0.8
-  '@ai-sdk/react': ^3.0.140
-  '@ai-sdk/xai': ^3.0.74
+  '@ai-sdk/react': ^3.0.143
+  '@ai-sdk/xai': ^3.0.75
   '@antfu/eslint-config': ^7.7.3
   '@base-ui/react': ^1.3.0
   '@better-auth/drizzle-adapter': https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913
@@ -18,7 +18,7 @@ catalog:
   '@commitlint/cli': ^20.5.0
   '@commitlint/config-conventional': ^20.5.0
   '@dagrejs/dagre': 1.1.8
-  '@electric-sql/pglite': ^0.4.1
+  '@electric-sql/pglite': ^0.4.2
   '@eslint-react/eslint-plugin': ^2.13.0
   '@exalabs/ai-sdk': ^2.0.1
   '@faker-js/faker': ^10.4.0
@@ -28,13 +28,13 @@ catalog:
   '@monaco-editor/loader': ^1.7.0
   '@number-flow/react': ^0.6.0
   '@octokit/rest': ^22.0.1
-  '@opentelemetry/exporter-trace-otlp-http': ^0.213.0
-  '@orpc/client': ^1.13.10
-  '@orpc/contract': ^1.13.10
-  '@orpc/server': ^1.13.10
-  '@orpc/tanstack-query': ^1.13.10
+  '@opentelemetry/exporter-trace-otlp-http': ^0.214.0
+  '@orpc/client': ^1.13.13
+  '@orpc/contract': ^1.13.13
+  '@orpc/server': ^1.13.13
+  '@orpc/tanstack-query': ^1.13.13
   '@playwright/test': ^1.58.2
-  '@posthog/ai': ^7.12.2
+  '@posthog/ai': ^7.12.6
   '@radix-ui/react-accordion': ^1.2.12
   '@radix-ui/react-alert-dialog': ^1.1.15
   '@radix-ui/react-avatar': ^1.1.11
@@ -58,33 +58,33 @@ catalog:
   '@standard-schema/spec': ^1.1.0
   '@tailwindcss/typography': ^0.5.19
   '@tailwindcss/vite': ^4.2.2
-  '@tanstack/db': ^0.5.33
-  '@tanstack/react-db': ^0.1.77
+  '@tanstack/db': ^0.6.1
+  '@tanstack/react-db': ^0.1.79
   '@tanstack/react-devtools': ^0.10.0
-  '@tanstack/react-form': ^1.28.5
-  '@tanstack/react-hotkeys': ^0.6.0
-  '@tanstack/react-query': ^5.95.2
-  '@tanstack/react-query-devtools': ^5.95.2
-  '@tanstack/react-router': ^1.168.3
+  '@tanstack/react-form': ^1.28.6
+  '@tanstack/react-hotkeys': ^0.9.0
+  '@tanstack/react-query': ^5.96.0
+  '@tanstack/react-query-devtools': ^5.96.0
+  '@tanstack/react-router': ^1.168.10
   '@tanstack/react-router-devtools': ^1.166.11
-  '@tanstack/react-start': ^1.167.5
+  '@tanstack/react-start': ^1.167.16
   '@tanstack/react-virtual': ^3.13.23
-  '@tanstack/router-plugin': ^1.167.4
-  '@tiptap/extension-placeholder': ^3.20.5
-  '@tiptap/react': ^3.20.5
-  '@tiptap/starter-kit': ^3.20.5
+  '@tanstack/router-plugin': ^1.167.12
+  '@tiptap/extension-placeholder': ^3.21.0
+  '@tiptap/react': ^3.21.0
+  '@tiptap/starter-kit': ^3.21.0
   '@todesktop/cli': ^1.23.2
   '@todesktop/runtime': ^2.1.4
   '@types/bun': ^1.3.11
   '@types/ioredis-mock': ^8.2.7
-  '@types/mssql': ^9.1.10
+  '@types/mssql': ^9.1.11
   '@types/pg': ^8.20.0
   '@types/react': ^19.2.14
   '@types/react-dom': ^19.2.3
   '@upstash/context7-tools-ai-sdk': ^0.2.2
   '@vitejs/plugin-react': ^5.1.4
-  '@xyflow/react': ^12.10.1
-  ai: ^6.0.138
+  '@xyflow/react': ^12.10.2
+  ai: ^6.0.141
   ai-retry: ^1.3.0
   arktype: ^2.2.0
   babel-plugin-react-compiler: ^1.0.0
@@ -96,8 +96,8 @@ catalog:
   cmdk: ^1.1.1
   cross-env: ^10.1.0
   date-fns: ^4.1.0
-  drizzle-kit: 1.0.0-beta.19
-  drizzle-orm: 1.0.0-beta.19
+  drizzle-kit: 1.0.0-beta.20
+  drizzle-orm: 1.0.0-beta.20
   electron: 39.2.6
   electron-builder: ^26.8.1
   electron-store: ^11.0.2
@@ -115,8 +115,8 @@ catalog:
   ioredis-mock: ^8.13.1
   js-base64: ^3.7.8
   js-confetti: ^0.13.1
-  kysely: ^0.28.14
-  lucide-react: ^1.6.0
+  kysely: ^0.28.15
+  lucide-react: ^1.7.0
   marked: ^17.0.5
   monaco-editor: ^0.54.0
   monaco-sql-languages: ^0.15.1
@@ -130,29 +130,29 @@ catalog:
   npm-run-all2: ^8.0.4
   pg: ^8.20.0
   playwright: ^1.58.2
-  posthog-js: ^1.363.4
-  posthog-node: ^5.28.5
+  posthog-js: ^1.364.3
+  posthog-node: ^5.28.9
   react: ^19.2.4
   react-dom: ^19.2.4
   react-markdown: ^10.1.0
   react-qr-code: ^2.0.18
-  react-resizable-panels: ^4.7.5
+  react-resizable-panels: ^4.8.0
   react-scan: ^0.5.3
   redis: ^5.11.0
   remark-gfm: ^4.0.1
-  resend: ^6.9.4
+  resend: ^6.10.0
   resumable-stream: ^2.2.12
-  seitu: ^0.10.4
+  seitu: ^0.10.8
   sonner: ^2.0.7
-  sql-formatter: ^15.7.2
+  sql-formatter: ^15.7.3
   streamdown: ^2.5.0
-  stripe: ^20.4.1
+  stripe: ^21.0.1
   tailwind-merge: ^3.5.0
   tailwind-scrollbar: ^4.0.2
   tailwindcss: ^4.2.2
   tanstack-db-pglite: ^1.2.4
   taze: ^19.10.0
-  turbo: ^2.8.20
+  turbo: ^2.9.1
   tw-animate-css: ^1.4.0
   typescript: ^6.0.2
   ua-parser-js: ^2.0.9
