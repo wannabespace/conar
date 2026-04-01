@@ -418,8 +418,8 @@ catalogs:
       specifier: ^2.2.12
       version: 2.2.12
     seitu:
-      specifier: ^0.7.0
-      version: 0.7.0
+      specifier: ^0.10.1
+      version: 0.10.1
     sonner:
       specifier: ^2.0.7
       version: 2.0.7
@@ -906,7 +906,7 @@ importers:
         version: 4.0.1
       seitu:
         specifier: 'catalog:'
-        version: 0.7.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 0.10.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1263,7 +1263,7 @@ importers:
         version: 4.7.5(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       seitu:
         specifier: 'catalog:'
-        version: 0.7.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 0.10.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -10242,16 +10242,19 @@ packages:
     resolution: {integrity: sha512-3A6sD0WYP7+QrjbfNA2FN3FsOaGGFoekCVgTyypy53gPxhbkCIjtO6YWgdrfM+n/8sI8JeXZOIxsHjMTNxQ4nQ==}
     engines: {node: ^14.0.0 || >=16.0.0}
 
-  seitu@0.7.0:
-    resolution: {integrity: sha512-Osx0uDAZG1s7nl1+j+/nBv8s+A1tGJBGTaJiqPCQsSiS1qy701BPed41zYYGRMGx4N7q4uyZvaShPbn+aA12Ig==}
+  seitu@0.10.1:
+    resolution: {integrity: sha512-rkfktLxdo2V9t6InIZf/YEikXrto7J/mjFrFF8yjDrQrBJRwW+LNDpEKnkIw0Oppce5cfZyfsy7O2kk0ANcrDA==}
     engines: {node: '>=22'}
     peerDependencies:
       react: '>=19'
       react-dom: '>=19'
+      vue: '>=3.5'
     peerDependenciesMeta:
       react:
         optional: true
       react-dom:
+        optional: true
+      vue:
         optional: true
 
   selderee@0.11.0:
@@ -21464,7 +21467,7 @@ snapshots:
       refa: 0.12.1
       regexp-ast-analysis: 0.7.1
 
-  seitu@0.7.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  seitu@0.10.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       fast-equals: 6.0.0
     optionalDependencies:

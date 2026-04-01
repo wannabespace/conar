@@ -39,7 +39,7 @@ import { Switch } from '@conar/ui/components/switch'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import NumberFlow from '@number-flow/react'
 import { RiSearchLine, RiSeedlingLine } from '@remixicon/react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
@@ -53,6 +53,25 @@ import { useTablePageStore } from '../../-store'
 import { DefaultValueTooltipIcon, NullableTooltipIcon, PrimaryKeyTooltipIcon, ReadOnlyTooltipIcon, UniqueTooltipIcon } from '../table/table-header-cell'
 
 type Column = NonNullable<ReturnType<typeof useTableColumns>>[number]
+
+function getAvailableGeneratorGroups(column: Column) {
+  return GENERATOR_GROUPS
+    .map(group => ({
+      ...group,
+      items: group.items.filter((id) => {
+        if (id === REFERENCE_GENERATOR)
+          return !!column.foreign
+        if (id === ENUM_GENERATOR)
+          return !!column.enum
+        if (id === SKIP_GENERATOR)
+          return !!column.defaultValue
+        if (id === 'null')
+          return !!column.isNullable
+        return true
+      }),
+    }))
+    .filter(group => group.items.length > 0)
+}
 
 export function HeaderActionsSeed({
   table,
@@ -69,7 +88,6 @@ export function HeaderActionsSeed({
   const store = useTablePageStore()
   const generators = useSubscription(store, { selector: state => state.generators })
   const { filters, orderBy, exact } = useSubscription(store, { selector: state => pick(state, ['filters', 'orderBy', 'exact']) })
-  const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
 
   const handleOpenChange = (open: boolean) => {
     setOpen(open)
@@ -136,6 +154,8 @@ export function HeaderActionsSeed({
           })),
       )
 
+      const enums = await queryClient.ensureQueryData(resourceEnumsQueryOptions({ connectionResource }))
+
       const enumData = enums
         ? Object.fromEntries(
             columns
@@ -147,10 +167,11 @@ export function HeaderActionsSeed({
 
       const rows = generateRows(columns, generators, rowCount, referenceData, enumData)
 
-      if (rows.length === 0)
-        throw new Error('No rows to insert')
-
-      await insertQuery({ schema, table, rows }).run(queryParams)
+      const BATCH_SIZE = 500
+      for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+        const batch = rows.slice(i, i + BATCH_SIZE)
+        await insertQuery({ schema, table, rows: batch }).run(queryParams)
+      }
     },
     onSuccess: () => {
       toast.success(`Seeded ${rowCount} rows into ${schema}.${table}`)
@@ -268,22 +289,7 @@ export function HeaderActionsSeed({
                         )
                       : (
                           <Combobox
-                            items={GENERATOR_GROUPS
-                              .map(group => ({
-                                ...group,
-                                items: group.items.filter((id) => {
-                                  if (id === REFERENCE_GENERATOR && !column.foreign)
-                                    return false
-                                  if (id === ENUM_GENERATOR && !column.enum)
-                                    return false
-                                  if (id === SKIP_GENERATOR && !column.defaultValue)
-                                    return false
-                                  if (id === 'null' && !column.isNullable)
-                                    return false
-                                  return true
-                                }),
-                              }))
-                              .filter(group => group.items.length > 0)}
+                            items={getAvailableGeneratorGroups(column)}
                             itemToStringLabel={id => GENERATORS[id as GeneratorId]?.label ?? String(id)}
                             autoHighlight
                             value={generators[column.id]?.generatorId ?? SKIP_GENERATOR}

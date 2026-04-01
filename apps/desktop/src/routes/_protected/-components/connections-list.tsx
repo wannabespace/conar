@@ -25,7 +25,7 @@ import { type } from 'arktype'
 import { AnimatePresence } from 'motion/react'
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { createLocalStorageValue } from 'seitu/web'
+import { createWebStorageValue } from 'seitu/web'
 import { v7 } from 'uuid'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
@@ -416,7 +416,8 @@ const sortOptions = [
   { value: 'name-desc', label: 'Name (Z–A)' },
 ] as const
 
-const sortValue = createLocalStorageValue({
+const sortValue = createWebStorageValue({
+  type: 'localStorage',
   key: 'connections-list-sort',
   schema: type('string' as type.cast<typeof sortOptions[number]['value']>),
   defaultValue: 'date-desc',

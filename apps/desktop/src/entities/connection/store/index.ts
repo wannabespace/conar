@@ -3,7 +3,7 @@ import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { memoize } from '@conar/shared/utils/helpers'
 import { type } from 'arktype'
 import { createComputed, createStore } from 'seitu'
-import { createLocalStorageValue } from 'seitu/web'
+import { createWebStorageValue } from 'seitu/web'
 import { getEditorQueries } from '~/entities/connection/utils'
 
 export * from './helpers'
@@ -18,7 +18,8 @@ const schema = type({
   pinnedResourcesNames: pinnedResourcesNames.map(name => name === CONNECTION_RESOURCE_ROOT_SYMBOL.description ? CONNECTION_RESOURCE_ROOT_SYMBOL : name),
 }))
 
-export const getConnectionStore = memoize((id: string) => createLocalStorageValue({
+export const getConnectionStore = memoize((id: string) => createWebStorageValue({
+  type: 'localStorage',
   key: `connection-store-${id}`,
   defaultValue: {
     lastOpenedResourceName: null,
@@ -107,7 +108,8 @@ const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   },
 }
 
-export const getConnectionResourceStore = memoize((id: string) => createLocalStorageValue({
+export const getConnectionResourceStore = memoize((id: string) => createWebStorageValue({
+  type: 'localStorage',
   key: `connection-resource-store-${id}`,
   defaultValue: connectionResourceDefaultState,
   schema: connectionResourceType,

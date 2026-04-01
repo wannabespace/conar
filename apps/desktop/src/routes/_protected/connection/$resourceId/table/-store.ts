@@ -4,7 +4,8 @@ import type { GeneratorId } from '~/entities/connection/utils/seeds'
 import { memoize } from '@conar/shared/utils/helpers'
 import { type } from 'arktype'
 import { createContext, use } from 'react'
-import { createLocalStorageValue } from 'seitu/web'
+import { repairWebStorageValueObjectWithDefault } from 'seitu/utils'
+import { createWebStorageValue } from 'seitu/web'
 
 export interface SelectionState {
   anchorIndex: number | null
@@ -49,18 +50,12 @@ const defaultState: typeof storeState.infer = {
   generators: {},
 }
 
-export const tablePageStore = memoize(({ id, schema, table }: { id: string, schema: string, table: string }) => createLocalStorageValue({
+export const tablePageStore = memoize(({ id, schema, table }: { id: string, schema: string, table: string }) => createWebStorageValue({
+  type: 'localStorage',
   key: `${id}.${schema}-${table}.store`,
   defaultValue: defaultState,
   schema: storeState,
-  onValidationError({ value }) {
-    return {
-      ...defaultState,
-      ...(typeof value === 'object' && value !== null
-        ? Object.fromEntries(Object.entries(value).filter(([key]) => key in defaultState))
-        : {}),
-    }
-  },
+  onValidationError: repairWebStorageValueObjectWithDefault,
 }))
 
 export const TablePageStoreContext = createContext<Store<typeof storeState.infer>>(null!)
