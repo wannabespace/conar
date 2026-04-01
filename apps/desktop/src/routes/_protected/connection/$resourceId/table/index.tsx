@@ -16,7 +16,7 @@ import { Sidebar } from './-components/sidebar'
 import { Table } from './-components/table/table'
 import { TablesTabs } from './-components/tabs'
 import { useTableColumns } from './-queries/use-columns-query'
-import { tablePageStore, TablePageStoreContext, useTablePageStore } from './-store'
+import { tablePageSelectionStore, TablePageSelectionStoreContext, tablePageStore, TablePageStoreContext, useTablePageStore } from './-store'
 
 export const Route = createFileRoute(
   '/_protected/connection/$resourceId/table/',
@@ -71,18 +71,6 @@ function TableContent({ table, schema }: { table: string, schema: string }) {
   const { connectionResource } = Route.useRouteContext()
   const deps = Route.useLoaderDeps()
   const store = useTablePageStore()
-
-  const resetSelectionStateEvent = useEffectEvent(() => {
-    store.set(state => ({
-      ...state,
-      lastClickedIndex: null,
-      selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
-    } satisfies typeof state))
-  })
-
-  useEffect(() => {
-    resetSelectionStateEvent()
-  }, [table, schema, store])
 
   useEffect(() => {
     if (deps.filters || deps.orderBy) {
@@ -203,10 +191,12 @@ function DatabaseTablesPage() {
         {schema && table
           ? (
               <TablePageStoreContext.Provider value={tablePageStore({ id: connectionResource.id, schema, table })}>
-                <TableContent
-                  table={table}
-                  schema={schema}
-                />
+                <TablePageSelectionStoreContext.Provider value={tablePageSelectionStore({ id: connectionResource.id, schema, table })}>
+                  <TableContent
+                    table={table}
+                    schema={schema}
+                  />
+                </TablePageSelectionStoreContext.Provider>
               </TablePageStoreContext.Provider>
             )
           : (

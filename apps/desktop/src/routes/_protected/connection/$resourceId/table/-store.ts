@@ -4,6 +4,7 @@ import type { GeneratorId } from '~/entities/connection/utils/seeds'
 import { memoize } from '@conar/shared/utils/helpers'
 import { type } from 'arktype'
 import { createContext, use } from 'react'
+import { createSchemaStore } from 'seitu'
 import { repairWebStorageValueObjectWithDefault } from 'seitu/utils'
 import { createWebStorageValue } from 'seitu/web'
 
@@ -27,8 +28,6 @@ export const storeState = type({
   },
   prompt: 'string',
   columnSizes: 'Record<string, number>',
-  lastClickedIndex: 'number | null',
-  selectionState: 'object' as type.cast<SelectionState>,
   generators: {
     '[string]': {
       generatorId: 'string' as type.cast<GeneratorId>,
@@ -45,8 +44,6 @@ const defaultState: typeof storeState.infer = {
   hiddenColumns: [],
   orderBy: {},
   columnSizes: {},
-  lastClickedIndex: null,
-  selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
   generators: {},
 }
 
@@ -62,4 +59,21 @@ export const TablePageStoreContext = createContext<Store<typeof storeState.infer
 
 export function useTablePageStore() {
   return use(TablePageStoreContext)
+}
+
+export const tablePageSelectionStore = memoize((_: { id: string, schema: string, table: string }) => createSchemaStore({
+  schemas: {
+    lastClickedIndex: type('number | null'),
+    selectionState: type('object' as type.cast<SelectionState>),
+  },
+  defaultValues: {
+    lastClickedIndex: null,
+    selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
+  },
+}))
+
+export const TablePageSelectionStoreContext = createContext<ReturnType<typeof tablePageSelectionStore>>(null!)
+
+export function useTablePageSelectionStore() {
+  return use(TablePageSelectionStoreContext)
 }

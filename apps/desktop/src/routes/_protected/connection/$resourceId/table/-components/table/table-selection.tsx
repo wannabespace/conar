@@ -4,7 +4,7 @@ import { useShiftSelectionClick, useTableContext } from '@conar/table'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useSubscription } from 'seitu/react'
-import { useTablePageStore } from '../../-store'
+import { useTablePageSelectionStore, useTablePageStore } from '../../-store'
 
 function IndeterminateCheckbox({
   indeterminate,
@@ -17,13 +17,12 @@ function IndeterminateCheckbox({
         type="checkbox"
         className={cn(
           `
-            peer size-4 appearance-none rounded-[4px] border border-border
-            transition-colors duration-100 outline-none
+            peer hit-area-2.5 size-4 appearance-none rounded-[4px] border
+            border-border transition-colors duration-100 outline-none
             checked:border-primary checked:bg-primary
             focus-visible:border-ring focus-visible:ring-[3px]
             focus-visible:ring-ring/50
             disabled:cursor-not-allowed disabled:opacity-50
-            hit-area-2.5
           `,
           !props.checked && indeterminate && 'border-primary bg-primary',
           className,
@@ -99,11 +98,14 @@ export function SelectionCell({ rowIndex, columnIndex, className, style, keys }:
 }) {
   const store = useTablePageStore()
   const rows = useTableContext(state => state.rows)
-  const isSelected = useSubscription(store, { selector: state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])) })
-  const [currentSelected, lastClickedIndex] = useSubscription(store, { selector: state => [
-    state.selected,
-    state.lastClickedIndex,
-  ] })
+  const selectionStore = useTablePageSelectionStore()
+  const { isSelected, currentSelected } = useSubscription(store, {
+    selector: state => ({
+      isSelected: state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])),
+      currentSelected: state.selected,
+    }),
+  })
+  const { lastClickedIndex } = useSubscription(selectionStore)
 
   const rowKey = keys.reduce<Record<string, string>>(
     (acc, key) => ({ ...acc, [key]: rows[rowIndex]![key] as string }),
@@ -125,9 +127,9 @@ export function SelectionCell({ rowIndex, columnIndex, className, style, keys }:
       )
     },
     onSelectionChange: (selected, selectionState, newLastClickedIndex) => {
-      store.set(state => ({
+      store.set(state => ({ ...state, selected } satisfies typeof state))
+      selectionStore.set(state => ({
         ...state,
-        selected,
         selectionState,
         lastClickedIndex: newLastClickedIndex,
       } satisfies typeof state))
