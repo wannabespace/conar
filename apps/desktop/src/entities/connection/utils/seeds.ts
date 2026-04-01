@@ -280,8 +280,6 @@ export function autoDetectGenerator(column: Column): GeneratorId {
     return 'internet.domainName'
   if (name.includes('useragent'))
     return 'internet.userAgent'
-  if (name.includes('mac') && name.includes('address'))
-    return 'internet.mac'
   if (name.includes('currency') && name.includes('code'))
     return 'finance.currencyCode'
   if (name.includes('currency'))
