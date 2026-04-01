@@ -13,7 +13,7 @@ import { useLocation, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
-import { createSessionStorageValue } from 'seitu/web'
+import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { getFilesStore } from '~/entities/connection/store'
@@ -58,7 +58,8 @@ export function ChatForm() {
   const { connectionResource } = Route.useRouteContext()
   const filesStore = getFilesStore(connectionResource.id)
   const files = useSubscription(filesStore)
-  const inputValue = createSessionStorageValue({
+  const inputValue = createWebStorageValue({
+    type: 'sessionStorage',
     key: `${connectionResource.id}.chat-input`,
     schema: type('string'),
     defaultValue: '',

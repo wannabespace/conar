@@ -6,13 +6,13 @@ import { useTableContext } from '@conar/table'
 import { Button } from '@conar/ui/components/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiPencilLine } from '@remixicon/react'
+import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiCharacterRecognitionLine, RiEraserLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiPencilLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
 import { Route } from '../..'
-import { usePageStoreContext } from '../../-store'
+import { useTablePageStore } from '../../-store'
 
 const CANNOT_SORT_TYPES = ['json']
 
@@ -40,7 +40,7 @@ function SortButton({ order, onClick }: { order: 'ASC' | 'DESC' | null, onClick:
   )
 }
 
-function PrimaryKeyBadge({ primaryKey }: { primaryKey: string }) {
+export function PrimaryKeyTooltipIcon({ primaryKey }: { primaryKey: string }) {
   return (
     <Tooltip>
       <TooltipTrigger>
@@ -59,7 +59,7 @@ function PrimaryKeyBadge({ primaryKey }: { primaryKey: string }) {
   )
 }
 
-function NullableBadge() {
+export function NullableTooltipIcon() {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -75,7 +75,7 @@ function NullableBadge() {
   )
 }
 
-function UniqueBadge({ unique }: { unique: string }) {
+export function UniqueTooltipIcon({ unique }: { unique: string }) {
   return (
     <Tooltip>
       <TooltipTrigger>
@@ -94,7 +94,7 @@ function UniqueBadge({ unique }: { unique: string }) {
   )
 }
 
-function ReadOnlyBadge() {
+export function ReadOnlyTooltipIcon() {
   return (
     <Tooltip>
       <TooltipTrigger>
@@ -111,7 +111,26 @@ function ReadOnlyBadge() {
   )
 }
 
-function ForeignBadge({ name, table, column }: { name: string, table: string, column: string }) {
+export function DefaultValueTooltipIcon({ defaultValue }: { defaultValue: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <RiCharacterRecognitionLine className="size-3 shrink-0 opacity-70" />
+      </TooltipTrigger>
+      <TooltipContent className="max-w-none">
+        <div className="flex items-center gap-1">
+          <RiCharacterRecognitionLine className="size-3 opacity-70" />
+          Default
+        </div>
+        <div className="max-w-sm font-mono text-xs opacity-70 break-all">
+          {defaultValue}
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+function ForeignTooltipIcon({ name, table, column }: { name: string, table: string, column: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -136,7 +155,7 @@ function ForeignBadge({ name, table, column }: { name: string, table: string, co
   )
 }
 
-function EnumBadge({ values, children }: { values: string[], children: ReactNode }) {
+function EnumTooltipIcon({ values, children }: { values: string[], children: ReactNode }) {
   return (
     <Tooltip>
       <TooltipTrigger>
@@ -177,7 +196,7 @@ export function TableHeaderCell({
   className?: string
 } & TableHeaderCellProps) {
   const { connectionResource } = Route.useRouteContext()
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const [isResizing, setIsResizing] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const order = useSubscription(store, { selector: state => state.orderBy?.[column.id] ?? null })
@@ -265,20 +284,21 @@ export function TableHeaderCell({
         </div>
         {column?.label && (
           <div data-footer={!!column.label} className="flex items-center gap-1">
-            {column.primaryKey && <PrimaryKeyBadge primaryKey={column.primaryKey} />}
-            {column.isNullable && <NullableBadge />}
-            {column.unique && <UniqueBadge unique={column.unique} />}
-            {column.isEditable === false && <ReadOnlyBadge />}
+            {column.primaryKey && <PrimaryKeyTooltipIcon primaryKey={column.primaryKey} />}
+            {column.isNullable && <NullableTooltipIcon />}
+            {column.unique && <UniqueTooltipIcon unique={column.unique} />}
+            {column.isEditable === false && <ReadOnlyTooltipIcon />}
             {column.foreign && (
-              <ForeignBadge
+              <ForeignTooltipIcon
                 name={column.foreign.name}
                 table={column.foreign.table}
                 column={column.foreign.column}
               />
             )}
+            {column.defaultValue && <DefaultValueTooltipIcon defaultValue={column.defaultValue} />}
             {enumsData
               ? (
-                  <EnumBadge values={enumsData.values}>
+                  <EnumTooltipIcon values={enumsData.values}>
                     <span className={`
                       truncate font-mono text-muted-foreground underline
                       decoration-dotted
@@ -286,7 +306,7 @@ export function TableHeaderCell({
                     >
                       {column.label}
                     </span>
-                  </EnumBadge>
+                  </EnumTooltipIcon>
                 )
               : (
                   <span className="truncate font-mono text-muted-foreground">

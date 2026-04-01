@@ -1,14 +1,15 @@
 import { type } from 'arktype'
 import { createComputed } from 'seitu'
 import { useSubscription } from 'seitu/react'
-import { createLocalStorageValue, createMediaQuery } from 'seitu/web'
+import { createMediaQuery, createWebStorageValue } from 'seitu/web'
 
 export type ResolvedTheme = 'dark' | 'light'
 export type Theme = ResolvedTheme | 'system'
 
 export const THEME_STORAGE_KEY = 'tamery.theme'
 
-export const themeStore = createLocalStorageValue({
+export const themeStore = createWebStorageValue({
+  type: 'localStorage',
   key: THEME_STORAGE_KEY,
   schema: type('"dark" | "light" | "system"'),
   defaultValue: 'system',

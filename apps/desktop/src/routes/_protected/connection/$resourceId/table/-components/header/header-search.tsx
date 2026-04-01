@@ -18,13 +18,13 @@ import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 import { Route } from '../..'
 import { useTableColumns } from '../../-queries/use-columns-query'
-import { usePageStoreContext } from '../../-store'
+import { useTablePageStore } from '../../-store'
 
 export function HeaderSearch({ table, schema }: { table: string, schema: string }) {
   const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const { connectionResource } = Route.useRouteContext()
   const inputRef = useRef<HTMLInputElement>(null)
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const prompt = useSubscription(store, { selector: state => state.prompt })
   const [freeAiUsage, setFreeAiUsage] = useState<{ remaining: number, max: number, resetAt: Date } | null>(null)
   const { mutate: generateFilter, isPending } = useMutation(orpc.ai.filters.mutationOptions({

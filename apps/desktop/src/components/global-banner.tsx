@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
-import { createLocalStorageValue } from 'seitu/web'
+import { createWebStorageValue } from 'seitu/web'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 
@@ -33,7 +33,8 @@ const typeConfig = {
   },
 } satisfies Record<BannerItem['type'], { icon: ReactNode, className: string }>
 
-const bannerDismissedValue = createLocalStorageValue({
+const bannerDismissedValue = createWebStorageValue({
+  type: 'localStorage',
   key: 'banner-dismissed',
   defaultValue: [],
   schema: type('string[]'),

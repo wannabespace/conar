@@ -10,7 +10,7 @@ import { RiArrowLeftSLine, RiArrowRightSLine, RiDatabase2Line } from '@remixicon
 import { animate } from 'motion'
 import { useEffect, useState } from 'react'
 import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/utils'
-import { usePageStoreContext } from '../../-store'
+import { useTablePageStore } from '../../-store'
 
 interface HeaderColumn {
   id: string
@@ -72,7 +72,7 @@ function getNotVisibleColumns(element: HTMLElement, allColumns: ColumnRenderer[]
 }
 
 function Header() {
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const scrollRef = useTableContext(state => state.scrollRef)
   const direction = useTableContext(state => state.scrollDirection)
   const columns = useTableContext(state => state.columns)

@@ -1,6 +1,4 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { Store } from 'seitu'
-import type { storeState } from './-store'
 import { SQL_FILTERS_GROUPED } from '@conar/shared/filters'
 import { title } from '@conar/shared/utils/title'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
@@ -18,7 +16,7 @@ import { Sidebar } from './-components/sidebar'
 import { Table } from './-components/table/table'
 import { TablesTabs } from './-components/tabs'
 import { useTableColumns } from './-queries/use-columns-query'
-import { PageStoreContext, tablePageStore } from './-store'
+import { tablePageSelectionStore, TablePageSelectionStoreContext, tablePageStore, TablePageStoreContext, useTablePageStore } from './-store'
 
 export const Route = createFileRoute(
   '/_protected/connection/$resourceId/table/',
@@ -32,19 +30,19 @@ export const Route = createFileRoute(
   component: DatabaseTablesPage,
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps }) => {
-    const store = deps.table && deps.schema ? tablePageStore({ id: context.connectionResource.id, schema: deps.schema, table: deps.table }) : null
-
     prefetchConnectionResourceCore(context.connectionResource)
 
-    if (store) {
+    if (deps.table && deps.schema) {
+      const state = tablePageStore({ id: context.connectionResource.id, schema: deps.schema, table: deps.table }).get()
+
       prefetchConnectionResourceTableCore({
         connectionResource: context.connectionResource,
-        schema: deps.schema!,
-        table: deps.table!,
+        schema: deps.schema,
+        table: deps.table,
         query: {
-          filters: store.get().filters,
-          orderBy: store.get().orderBy,
-          exact: store.get().exact,
+          filters: state.filters,
+          orderBy: state.orderBy,
+          exact: state.exact,
         },
       })
     }
@@ -54,7 +52,6 @@ export const Route = createFileRoute(
       connectionResource: context.connectionResource,
       schema: deps.schema ?? null,
       table: deps.table ?? null,
-      store,
     }
   },
   head: ({ loaderData }) => ({
@@ -70,21 +67,10 @@ export const Route = createFileRoute(
   }),
 })
 
-function TableContent({ table, schema, store }: { table: string, schema: string, store: Store<typeof storeState.infer> }) {
+function TableContent({ table, schema }: { table: string, schema: string }) {
   const { connectionResource } = Route.useRouteContext()
   const deps = Route.useLoaderDeps()
-
-  const resetSelectionStateEvent = useEffectEvent(() => {
-    store.set(state => ({
-      ...state,
-      lastClickedIndex: null,
-      selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
-    } satisfies typeof state))
-  })
-
-  useEffect(() => {
-    resetSelectionStateEvent()
-  }, [table, schema, store])
+  const store = useTablePageStore()
 
   useEffect(() => {
     if (deps.filters || deps.orderBy) {
@@ -123,7 +109,7 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
   }, [columns, store])
 
   return (
-    <PageStoreContext value={store}>
+    <>
       <TablesTabs className="h-9" />
       <div
         key={table}
@@ -146,12 +132,11 @@ function TableContent({ table, schema, store }: { table: string, schema: string,
           </div>
         </FiltersProvider>
       </div>
-    </PageStoreContext>
+    </>
   )
 }
 
 function DatabaseTablesPage() {
-  const { store: tableStore } = Route.useLoaderData()
   const { connectionResource } = Route.useRouteContext()
   const { schema, table } = Route.useSearch()
   const store = getConnectionResourceStore(connectionResource.id)
@@ -203,13 +188,16 @@ function DatabaseTablesPage() {
         defaultSize="80%"
         className="flex-1 overflow-hidden rounded-lg bg-background"
       >
-        {schema && table && tableStore
+        {schema && table
           ? (
-              <TableContent
-                table={table}
-                schema={schema}
-                store={tableStore}
-              />
+              <TablePageStoreContext.Provider value={tablePageStore({ id: connectionResource.id, schema, table })}>
+                <TablePageSelectionStoreContext.Provider value={tablePageSelectionStore({ id: connectionResource.id, schema, table })}>
+                  <TableContent
+                    table={table}
+                    schema={schema}
+                  />
+                </TablePageSelectionStoreContext.Provider>
+              </TablePageStoreContext.Provider>
             )
           : (
               <div className="flex h-full items-center justify-center p-4">

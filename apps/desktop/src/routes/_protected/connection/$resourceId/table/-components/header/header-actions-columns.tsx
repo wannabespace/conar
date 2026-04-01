@@ -7,11 +7,11 @@ import { RiCheckLine, RiDatabase2Line, RiLayoutColumnLine } from '@remixicon/rea
 import { useSubscription } from 'seitu/react'
 import { Route } from '../..'
 import { useTableColumns } from '../../-queries/use-columns-query'
-import { usePageStoreContext } from '../../-store'
+import { useTablePageStore } from '../../-store'
 
 export function HeaderActionsColumns({ table, schema }: { table: string, schema: string }) {
   const { connectionResource } = Route.useRouteContext()
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
   const columns = useTableColumns({ connectionResource, table, schema })
 

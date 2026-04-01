@@ -18,7 +18,7 @@ import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { queryClient } from '~/main'
 import { Route } from '../..'
 import { useTableColumns } from '../../-queries/use-columns-query'
-import { usePageStoreContext } from '../../-store'
+import { useTablePageSelectionStore, useTablePageStore } from '../../-store'
 import { useColumnsOrder } from '../use-columns-order'
 import { RenameColumnDialog } from './rename-column-dialog'
 import { TableEmpty } from './table-empty'
@@ -63,7 +63,8 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { connection, connectionResource } = Route.useRouteContext()
   const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const columns = useTableColumns({ connectionResource, table, schema })
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
+  const selectionStore = useTablePageSelectionStore()
   const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
   const columnSizes = useSubscription(store, { selector: state => state.columnSizes })
   const filters = useSubscription(store, { selector: state => state.filters })
@@ -295,13 +296,10 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         ),
       )
     },
-    getSelectionState: () => store.get().selectionState,
+    getSelectionState: () => selectionStore.get().selectionState,
     onSelectionChange: (selected, selectionState) => {
-      store.set(state => ({
-        ...state,
-        selected,
-        selectionState,
-      } satisfies typeof state))
+      store.set(state => ({ ...state, selected } satisfies typeof state))
+      selectionStore.set(state => ({ ...state, selectionState } satisfies typeof state))
     },
   })
 
