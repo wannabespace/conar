@@ -266,7 +266,7 @@ export function autoDetectGenerator(column: Column): GeneratorId {
     return 'commerce.productName'
   if (name.includes('color') || name.includes('colour'))
     return 'color.human'
-  if (name.includes('ip_address') || name === 'ip')
+  if (name.includes('ipaddress') || name === 'ip')
     return 'internet.ip'
   if (name.includes('slug'))
     return 'lorem.slug'
