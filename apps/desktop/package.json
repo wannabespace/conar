@@ -31,7 +31,7 @@
     "@clickhouse/client": "catalog:",
     "@tanstack/react-hotkeys": "catalog:",
     "@todesktop/runtime": "catalog:",
-    "duckdb": "catalog:",
+    "@duckdb/node-api": "catalog:",
     "electron-store": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",

@@ -4,7 +4,7 @@ import { tryParseJson } from '@conar/shared/utils/helpers'
 import { isNetworkError } from '@conar/shared/utils/network-error'
 import { app, ipcMain } from 'electron'
 import { autoUpdater, sendToast } from '..'
-import { getDatabase as getDuckDBDatabase } from '../connections/duckdb'
+import { getConnection as getDuckDBConnection } from '../connections/duckdb'
 import { getClient as getClickhouseClient } from '../connections/clickhouse'
 import { getPool as getMssqlPool } from '../connections/mssql'
 import { getPool as getMysqlPool } from '../connections/mysql'
@@ -164,17 +164,11 @@ const queryMap = {
     let start = 0
 
     const result = await handleAggregatedError(retryIfConnectionError(async () => {
-      const conn = await getDuckDBDatabase(connectionString)
+      const conn = await getDuckDBConnection(connectionString)
       start = performance.now()
+      const reader = await conn.runAndReadAll(query, values as import('@duckdb/node-api').DuckDBValue[])
 
-      return new Promise<unknown[]>((resolve, reject) => {
-        conn.all(query, ...values, (err: Error | null, rows: unknown[]) => {
-          if (err)
-            reject(err)
-          else
-            resolve(rows)
-        })
-      })
+      return reader.getRowObjectsJson() as unknown[]
     }, retryOptions({ silent, connectionString, query })))
 
     return { result: result as unknown, duration: performance.now() - start }

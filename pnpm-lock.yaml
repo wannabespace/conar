@@ -279,9 +279,9 @@ catalogs:
     date-fns:
       specifier: ^4.1.0
       version: 4.1.0
-    duckdb:
-      specifier: ^1.1.3
-      version: 1.4.4
+    '@duckdb/node-api':
+      specifier: ^1.5.1-r.1
+      version: 1.5.1-r.1
     drizzle-kit:
       specifier: 1.0.0-beta.20
       version: 1.0.0-beta.20
@@ -687,9 +687,9 @@ importers:
       '@todesktop/runtime':
         specifier: 'catalog:'
         version: 2.1.4
-      duckdb:
+      '@duckdb/node-api':
         specifier: 'catalog:'
-        version: 1.4.4(encoding@0.1.13)
+        version: 1.5.1-r.1
       electron-store:
         specifier: 'catalog:'
         version: 11.0.2
@@ -1885,6 +1885,42 @@ packages:
     resolution: {integrity: sha512-BK50ZnYa3IG7ztXhtgYf0Q7zijV32Iw1cYS8C+ThdQlwx12V5VZ9KRJ42y82Hyb4PkTxZQklVQA9JHyUlex33A==}
     peerDependencies:
       '@electric-sql/pglite': 0.3.15
+
+  '@duckdb/node-api@1.5.1-r.1':
+    resolution: {integrity: sha512-8U8p44ZL4rJtUrgVaSLm2hOMk3XTwEgs5eJoxYiR6iQXKVEr8vi6z3Vrxhb61g9sgsEZIAmckD7e3zZ1lmPHYA==}
+
+  '@duckdb/node-bindings-darwin-arm64@1.5.1-r.1':
+    resolution: {integrity: sha512-vm0Q/P8/OB/ZDITNTUe80emlg0b7/EcqTPBRu4GmULbt/fFDtkEAjDHDblKZL1yazf7X6JFEabHBGuWL5jmjEw==}
+    os: [darwin]
+    cpu: [arm64]
+
+  '@duckdb/node-bindings-darwin-x64@1.5.1-r.1':
+    resolution: {integrity: sha512-GOKWYbOP1v5jppGjlCaQzvyzVnY8/dGd7UJcnT213uiSMq/mtQk2yvzZCPhq7UdxmqR0TSd+TKttpozd8ANyOQ==}
+    os: [darwin]
+    cpu: [x64]
+
+  '@duckdb/node-bindings-linux-arm64@1.5.1-r.1':
+    resolution: {integrity: sha512-b0tHCtC+GZnD6gJA+ldUwy8FhnugR1Uq0/LjLiusOQOoK5pRXyfiQjgIe/SiKSeE5iEr+FWUXEprSD81HOaaQg==}
+    os: [linux]
+    cpu: [arm64]
+
+  '@duckdb/node-bindings-linux-x64@1.5.1-r.1':
+    resolution: {integrity: sha512-AczM4qyMuMXHIa7w1YacIu6FFPpwzUsQSkPUFKsAJzyuRcxAlGEwt+2GnVZSACGQFpKbL9nAkuu3Icq6ttxwag==}
+    os: [linux]
+    cpu: [x64]
+
+  '@duckdb/node-bindings-win32-arm64@1.5.1-r.1':
+    resolution: {integrity: sha512-SrgAiFttkfFXCCAMrmMBWtnBMtEjVaC38XtG6zEdbvmp2RTEPo/dFcvRP75vS/Hm5Iq8Tgiuoq4tIdovwEw5yg==}
+    os: [win32]
+    cpu: [arm64]
+
+  '@duckdb/node-bindings-win32-x64@1.5.1-r.1':
+    resolution: {integrity: sha512-JkL9xvXx9i8ceU1fGJsb9gqgRn30RFi0HyfpuESK2AZInKx5mJn8fvYcj4AQg/Ip9SZ1S4a2Jh5DOFY81koubw==}
+    os: [win32]
+    cpu: [x64]
+
+  '@duckdb/node-bindings@1.5.1-r.1':
+    resolution: {integrity: sha512-3vmIlY/ACTLutlMup4F+D2Gzo+kiUoMaIL4TvM4x34cMqnKfsZ+4lMjqfSKYmdcgNGXYXwPwIYaJlvMRhU3Tbg==}
 
   '@electric-sql/pglite@0.3.15':
     resolution: {integrity: sha512-Cj++n1Mekf9ETfdc16TlDi+cDDQF0W7EcbyRHYOAeZdsAe8M/FJg18itDTSwyHfar2WIezawM9o0EKaRGVKygQ==}
@@ -7045,9 +7081,6 @@ packages:
   du@1.0.0:
     resolution: {integrity: sha512-w00+6XpIq924IvDLyOOx5HFO4KwH6YV6buqFx6og/ErTaJ34kVOyI+Q2f+X8pvZkDoEgT6xspA4iYSN99mqPDA==}
     hasBin: true
-
-  duckdb@1.4.4:
-    resolution: {integrity: sha512-hEJJ5hyVF0VLj3dmOLpsWrQR0b3d4Ykqtygm6iUXjHJDDnSqg/USKxcb5qvNrOhFYPgktayU6dXCtgPqcmmpog==}
 
 
   dunder-proto@1.0.1:
@@ -12377,6 +12410,37 @@ snapshots:
       '@electric-sql/pglite': 0.3.15
 
   '@electric-sql/pglite@0.3.15': {}
+
+  '@duckdb/node-api@1.5.1-r.1':
+    dependencies:
+      '@duckdb/node-bindings': 1.5.1-r.1
+
+  '@duckdb/node-bindings-darwin-arm64@1.5.1-r.1':
+    optional: true
+
+  '@duckdb/node-bindings-darwin-x64@1.5.1-r.1':
+    optional: true
+
+  '@duckdb/node-bindings-linux-arm64@1.5.1-r.1':
+    optional: true
+
+  '@duckdb/node-bindings-linux-x64@1.5.1-r.1':
+    optional: true
+
+  '@duckdb/node-bindings-win32-arm64@1.5.1-r.1':
+    optional: true
+
+  '@duckdb/node-bindings-win32-x64@1.5.1-r.1':
+    optional: true
+
+  '@duckdb/node-bindings@1.5.1-r.1':
+    optionalDependencies:
+      '@duckdb/node-bindings-darwin-arm64': 1.5.1-r.1
+      '@duckdb/node-bindings-darwin-x64': 1.5.1-r.1
+      '@duckdb/node-bindings-linux-arm64': 1.5.1-r.1
+      '@duckdb/node-bindings-linux-x64': 1.5.1-r.1
+      '@duckdb/node-bindings-win32-arm64': 1.5.1-r.1
+      '@duckdb/node-bindings-win32-x64': 1.5.1-r.1
 
   '@electric-sql/pglite@0.4.2': {}
 
@@ -17822,16 +17886,6 @@ snapshots:
   du@1.0.0:
     dependencies:
       map-async: 0.1.1
-
-  duckdb@1.4.4(encoding@0.1.13):
-    dependencies:
-      '@mapbox/node-pre-gyp': 2.0.3(encoding@0.1.13)
-      node-addon-api: 7.1.1
-      node-gyp: 9.4.1
-    transitivePeerDependencies:
-      - bluebird
-      - encoding
-      - supports-color
 
 
   dunder-proto@1.0.1:
