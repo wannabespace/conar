@@ -1,4 +1,4 @@
-import type { constraintsType } from '~/entities/connection/queries'
+import type { constraintsType, enumType } from '~/entities/connection/queries'
 import type { columnType } from '~/entities/connection/queries/columns'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
@@ -15,7 +15,7 @@ import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, u
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { ReactFlowNode } from '~/entities/connection/components'
-import { resourceConstraintsQueryOptions, resourceTableColumnsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
+import { resourceConstraintsQueryOptions, resourceEnumsQueryOptions, resourceTableColumnsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { globalHooks } from '~/global-hooks'
@@ -50,8 +50,9 @@ function VisualizerPage() {
     ) ?? [],
   })
   const { data: constraints } = useQuery(resourceConstraintsQueryOptions({ connectionResource }))
+  const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
 
-  if (!tablesAndSchemas || !constraints || columnsQueries.some(q => q.isPending)) {
+  if (!tablesAndSchemas || !constraints || !enums || columnsQueries.some(q => q.isPending)) {
     return (
       <div className="
         flex size-full items-center justify-center rounded-lg border
@@ -84,6 +85,7 @@ function VisualizerPage() {
         tablesAndSchemas={tablesAndSchemas}
         columns={columns}
         constraints={constraints}
+        enums={enums}
       />
     </ReactFlowProvider>
   )
@@ -101,10 +103,12 @@ function Visualizer({
   tablesAndSchemas,
   columns,
   constraints,
+  enums,
 }: {
   tablesAndSchemas: { schema: string, table: string }[]
   columns: typeof columnType.infer[]
   constraints: typeof constraintsType.infer[]
+  enums: typeof enumType.infer[]
 }) {
   const { connectionResource } = Route.useRouteContext()
   const schemas = [...new Set(tablesAndSchemas.map(({ schema }) => schema))]
@@ -125,8 +129,9 @@ function Visualizer({
       tables,
       columns,
       constraints: schemaConstraints,
+      enums,
     })
-  }, [connectionResource.id, schema, tables, columns, schemaConstraints])
+  }, [connectionResource.id, schema, tables, columns, schemaConstraints, enums])
 
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges)
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes)
@@ -138,13 +143,12 @@ function Visualizer({
       tables,
       columns,
       constraints: schemaConstraints,
+      enums,
     })
 
     setNodes(applySearchHighlight({
       nodes,
       searchQuery: trimmedSearchQuery,
-      tables,
-      columns,
     }))
     setEdges(edges)
   }
@@ -183,8 +187,6 @@ function Visualizer({
                 setNodes(nodes => applySearchHighlight({
                   nodes,
                   searchQuery: e.target.value.trim(),
-                  tables,
-                  columns,
                 }))
               }}
             />
@@ -208,7 +210,13 @@ function Visualizer({
               {searchQuery && (
                 <button
                   type="button"
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => {
+                    setSearchQuery('')
+                    setNodes(nodes => applySearchHighlight({
+                      nodes,
+                      searchQuery: '',
+                    }))
+                  }}
                   aria-label="Clear table search"
                 >
                   <RiCloseLine className="size-4 text-muted-foreground" />
