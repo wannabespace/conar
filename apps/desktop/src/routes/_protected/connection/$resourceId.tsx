@@ -47,6 +47,7 @@ function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
   return routesIds.findLast(route => route.includes('/_protected/connection/$resourceId')) as typeof connectionResourceType.infer['lastOpenedPage']
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabasePage() {
   const { connection, connectionResource } = Route.useRouteContext()
   const currentPageId = useMatches({

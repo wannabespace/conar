@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { selectTriggerIconClassName, selectTriggerVariants } from './select.variants'
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const Select: typeof SelectPrimitive.Root = SelectPrimitive.Root
 
 export interface SelectButtonProps extends useRender.ComponentProps<'button'> {

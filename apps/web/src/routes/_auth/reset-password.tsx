@@ -24,6 +24,7 @@ const passwordSchema = type({
   confirmPassword: 'string >= 8',
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function ResetPasswordPage() {
   const navigate = useNavigate()
   const { token } = Route.useSearch()

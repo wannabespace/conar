@@ -17,6 +17,7 @@ export const Route = createFileRoute('/_layout/releases')({
   },
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function RouteComponent() {
   const { releases } = Route.useLoaderData()
   const [expandedReleases, setExpandedReleases] = useState<string[]>([String(releases[0]!.id)])

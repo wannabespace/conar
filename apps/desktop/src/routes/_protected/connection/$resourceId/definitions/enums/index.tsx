@@ -27,6 +27,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/definit
   }),
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabaseEnumsPage() {
   const { connection, connectionResource } = Route.useRouteContext()
   const { data: enums, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceEnumsQueryOptions({ connectionResource }))

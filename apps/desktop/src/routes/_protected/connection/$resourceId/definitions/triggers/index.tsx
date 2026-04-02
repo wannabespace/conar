@@ -41,6 +41,7 @@ const timingFilterOptions = [
   { label: 'Instead Of', value: 'INSTEAD OF' },
 ]
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabaseTriggersPage() {
   const { connectionResource } = Route.useRouteContext()
   const { data: triggers, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceTriggersQueryOptions({ connectionResource }))

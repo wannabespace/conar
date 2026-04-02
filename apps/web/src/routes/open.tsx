@@ -14,6 +14,7 @@ export const Route = createFileRoute('/open')({
   }),
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function OpenPageContent() {
   const { data } = authClient.useSession()
 
@@ -70,6 +71,7 @@ function handleCopyUrl(token: string, codeChallenge: string, newUser?: boolean) 
   copy(getUrl(token, codeChallenge, newUser), 'URL copied to clipboard')
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function OpenPage() {
   const { 'code-challenge': codeChallenge, 'new-user': newUser } = Route.useSearch()
   const { data, isPending } = authClient.useSession()

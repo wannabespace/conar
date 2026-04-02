@@ -48,6 +48,7 @@ function getIcon(type: ConstraintType) {
   }
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabaseConstraintsPage() {
   const { connectionResource } = Route.useRouteContext()
   const { data: constraints, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceConstraintsQueryOptions({ connectionResource }))

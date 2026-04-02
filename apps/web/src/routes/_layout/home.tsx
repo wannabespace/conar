@@ -5,6 +5,7 @@ import { Hero } from './-components/hero'
 import { Pricing } from './-components/pricing'
 import { Testimonials } from './-components/testimonials'
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const Route = createFileRoute('/_layout/home')({
   component: HomePage,
 })

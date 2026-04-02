@@ -35,6 +35,7 @@ const typeFilterOptions: { label: string, value: FunctionType | 'all' }[] = [
   { label: 'Procedure', value: 'procedure' },
 ]
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabaseFunctionsPage() {
   const { connectionResource } = Route.useRouteContext()
   const { data: functions, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceFunctionsQueryOptions({ connectionResource }))

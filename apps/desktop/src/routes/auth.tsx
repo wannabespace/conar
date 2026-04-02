@@ -1,5 +1,5 @@
 import { generateCodeChallenge, generateVerifier } from '@conar/shared/utils/challenge'
-import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
+import { AppLogoSquareMotion } from '@conar/ui/components/brand/app-logo-square.motion'
 import { ButtonMotion } from '@conar/ui/components/button.motion'
 import { RiErrorWarningLine } from '@remixicon/react'
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
@@ -9,12 +9,11 @@ import { useEffect, useState } from 'react'
 import { authClient, bearerToken, successAuthToast } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
-const AppLogoSquareMotion = motion.create(AppLogoSquare)
-
 export const Route = createFileRoute('/auth')({
   component: AuthPage,
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function AuthPage() {
   const { refetch } = authClient.useSession()
   const [verifier, setVerifier] = useState<string | null>(null)

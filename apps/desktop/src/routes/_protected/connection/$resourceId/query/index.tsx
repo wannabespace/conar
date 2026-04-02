@@ -36,6 +36,7 @@ export const Route = createFileRoute(
 
 const MIN_CHAT_SIZE = '15%'
 
+// eslint-disable-next-line react-refresh/only-export-components
 function ChatPanel() {
   return (
     <ResizablePanel
@@ -49,6 +50,7 @@ function ChatPanel() {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
   return (
     <ResizablePanel
@@ -61,6 +63,7 @@ function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabaseSqlPage() {
   const { connectionResource } = Route.useRouteContext()
   const { chatId } = Route.useSearch()

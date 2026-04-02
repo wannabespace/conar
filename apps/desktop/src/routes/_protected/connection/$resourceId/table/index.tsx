@@ -67,6 +67,7 @@ export const Route = createFileRoute(
   }),
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function TableContent({ table, schema }: { table: string, schema: string }) {
   const { connectionResource } = Route.useRouteContext()
   const deps = Route.useLoaderDeps()
@@ -136,6 +137,7 @@ function TableContent({ table, schema }: { table: string, schema: string }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabaseTablesPage() {
   const { connectionResource } = Route.useRouteContext()
   const { schema, table } = Route.useSearch()

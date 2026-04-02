@@ -43,6 +43,7 @@ const filterOptions: { label: string, value: IndexType | 'all' }[] = [
   { label: 'Regular Index', value: 'regular' },
 ]
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabaseIndexesPage() {
   const { connectionResource } = Route.useRouteContext()
   const { data: indexes, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
