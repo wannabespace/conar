@@ -1,9 +1,6 @@
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@conar/ui/lib/utils'
-import { motion } from 'motion/react'
-
-export const CardMotion = motion.create(Card)
 
 function Card({
   className,
@@ -32,8 +29,6 @@ function Card({
     render,
   })
 }
-
-export const CardFrameMotion = motion.create(CardFrame)
 
 function CardFrame({
   className,

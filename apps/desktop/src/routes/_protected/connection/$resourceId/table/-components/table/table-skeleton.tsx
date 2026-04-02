@@ -1,8 +1,8 @@
 /* eslint-disable react/no-array-index-key */
-import { useTableContext } from '@conar/table'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '@conar/table/constants'
+import { useTableContext } from '@conar/table/hooks'
 import { cn } from '@conar/ui/lib/utils'
 import { useMemo } from 'react'
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '~/entities/connection/components/table/utils'
 
 const ROWS_COUNT = 20
 

@@ -1,24 +1,20 @@
 import { SOCIAL_LINKS } from '@conar/shared/constants'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { ThemeToggle } from '@conar/ui/components/custom/theme-toggle'
 import { UserAvatar } from '@conar/ui/components/custom/user-avatar'
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@conar/ui/components/dialog'
-import { Label } from '@conar/ui/components/label'
 import { Separator } from '@conar/ui/components/separator'
-import { Textarea } from '@conar/ui/components/textarea'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import { RiDashboard3Line, RiFileListLine, RiGitBranchLine, RiGithubFill, RiLogoutCircleLine, RiMessageLine, RiMoonLine, RiSettingsLine, RiSunLine } from '@remixicon/react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { RiDashboard3Line, RiFileListLine, RiGitBranchLine, RiGithubFill, RiLogoutCircleLine, RiMoonLine, RiSettingsLine, RiSunLine } from '@remixicon/react'
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, Outlet, redirect, useMatches, useRouter } from '@tanstack/react-router'
-import { useState } from 'react'
-import { toast } from 'sonner'
 import { Footer } from '~/components/footer'
 import { NavbarTextLogo } from '~/components/navbar-text-logo'
 import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
+import { SidebarButton } from './-components/sidebar-button'
+import { SupportButton } from './-components/support-button'
 
 export const Route = createFileRoute('/account')({
   component: AccountLayout,
@@ -33,89 +29,7 @@ export const Route = createFileRoute('/account')({
   },
 })
 
-function SidebarButton({
-  active = false,
-  className,
-  ...props
-}: {
-  active?: boolean
-} & React.ComponentProps<typeof Button>) {
-  return (
-    <Button
-      variant="ghost"
-      className={cn(
-        `w-full justify-start`,
-        active && `bg-accent/50`,
-        className,
-      )}
-      {...props}
-    />
-  )
-}
-
-function SupportButton() {
-  const [open, setOpen] = useState(false)
-  const [message, setMessage] = useState('')
-
-  const { mutate: sendSupport, isPending: loading } = useMutation(orpc.contact.mutationOptions({
-    onSuccess: () => {
-      toast.success('Support message sent successfully! We will get back to you as soon as possible.')
-      setOpen(false)
-      setMessage('')
-    },
-    onError: (err) => {
-      console.error(err)
-      toast.error('Failed to send message. Please try again later.')
-    },
-  }))
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    sendSupport({ message })
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<SidebarButton />}>
-        <RiMessageLine className="size-4" />
-        Support
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Contact Support</DialogTitle>
-        </DialogHeader>
-        <div className="mb-2 text-muted-foreground">
-          Have a question, suggestion, or need assistance?
-          We're here to listen!
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="support-message">Message</Label>
-            <Textarea
-              id="support-message"
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-              required
-              placeholder="Type any message you'd like to send us"
-              className="min-h-48"
-            />
-          </div>
-          <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>
-              Cancel
-            </DialogClose>
-            <Button type="submit" disabled={loading || !message}>
-              <LoadingContent loading={loading}>
-                Send
-              </LoadingContent>
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
+// eslint-disable-next-line react-refresh/only-export-components
 function AccountLayout() {
   const router = useRouter()
   const match = useMatches({

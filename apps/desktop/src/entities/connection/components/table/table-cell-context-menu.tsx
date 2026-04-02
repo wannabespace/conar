@@ -4,7 +4,7 @@ import {
   recordToMarkdownTable,
   toCSV,
 } from '@conar/shared/utils/files'
-import { useTableContext } from '@conar/table'
+import { useTableContext } from '@conar/table/hooks'
 import {
   ContextMenu,
   ContextMenuContent,

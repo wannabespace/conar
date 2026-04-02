@@ -1,6 +1,6 @@
 import type { TableCellProps, TableHeaderCellProps } from '@conar/table'
 import type { ComponentProps } from 'react'
-import { useShiftSelectionClick, useTableContext } from '@conar/table'
+import { useShiftSelectionClick, useTableContext } from '@conar/table/hooks'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useSubscription } from 'seitu/react'

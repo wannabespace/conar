@@ -57,6 +57,7 @@ export const Route = createRootRouteWithContext<{
   errorComponent: props => <ErrorPage {...props} />,
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function RootComponent() {
   const { queryClient } = Route.useRouteContext()
 

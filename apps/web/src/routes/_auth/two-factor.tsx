@@ -16,6 +16,7 @@ export const Route = createFileRoute('/_auth/two-factor')({
   },
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function TwoFactorPage() {
   const router = useRouter()
   const [code, setCode] = useState('')

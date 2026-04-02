@@ -28,6 +28,7 @@ export const Route = createRootRoute({
   }),
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function RootDocument() {
   const { isPending } = authClient.useSession()
   const router = useRouter()

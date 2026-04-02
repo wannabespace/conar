@@ -50,5 +50,3 @@ export function AvatarFallback({
     />
   )
 }
-
-export { AvatarPrimitive }

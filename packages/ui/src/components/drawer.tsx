@@ -18,7 +18,7 @@ const DrawerContext: React.Context<{ position: DrawerPosition }>
     position: 'bottom',
   })
 
-export const DrawerContent: typeof DrawerPrimitive.Content
+const DrawerContent: typeof DrawerPrimitive.Content
   = DrawerPrimitive.Content
 
 const directionMap: Record<
@@ -30,9 +30,6 @@ const directionMap: Record<
   right: 'right',
   top: 'up',
 }
-
-export const DrawerCreateHandle: typeof DrawerPrimitive.createHandle
-  = DrawerPrimitive.createHandle
 
 export function Drawer({
   swipeDirection,
@@ -51,7 +48,7 @@ export function Drawer({
   )
 }
 
-export const DrawerPortal: typeof DrawerPrimitive.Portal
+const DrawerPortal: typeof DrawerPrimitive.Portal
   = DrawerPrimitive.Portal
 
 export function DrawerTrigger(
@@ -813,5 +810,3 @@ export function DrawerMenuRadioItem({
     </RadioPrimitive.Root>
   )
 }
-
-export { DrawerPrimitive }

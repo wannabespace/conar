@@ -34,6 +34,7 @@ export const Route = createFileRoute(
   }),
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function VisualizerPage() {
   const { connection } = Route.useLoaderData()
   const { connectionResource } = Route.useRouteContext()
@@ -95,6 +96,7 @@ const edgeTypes = {
   custom: ReactFlowEdge,
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function Visualizer({
   tablesAndSchemas,
   columns,

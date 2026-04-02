@@ -6,6 +6,7 @@ export const Route = createLazyFileRoute('/account/settings/')({
   component: SettingsPage,
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function SettingsPage() {
   return (
     <>

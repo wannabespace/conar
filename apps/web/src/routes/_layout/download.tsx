@@ -27,6 +27,7 @@ export const Route = createFileRoute('/_layout/download')({
   }),
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function HomebrewInstall() {
   if (os?.type !== 'macos') {
     return null
@@ -78,6 +79,7 @@ function HomebrewInstall() {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function AllPlatforms() {
   return (
     <>
@@ -121,6 +123,7 @@ function AllPlatforms() {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DownloadOption({ Icon, type, arch, link }: {
   Icon: RemixiconComponentType
   type: OS
@@ -187,6 +190,7 @@ function DownloadOption({ Icon, type, arch, link }: {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function RouteComponent() {
   return (
     <div className={`

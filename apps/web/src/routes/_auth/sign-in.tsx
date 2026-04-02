@@ -17,6 +17,7 @@ export const Route = createFileRoute('/_auth/sign-in')({
   },
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function SignInPage() {
   const { redirectPath } = Route.useSearch()
   return <AuthForm type="sign-in" redirectPath={redirectPath} />

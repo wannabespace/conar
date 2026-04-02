@@ -19,5 +19,3 @@ export function Toggle<T extends string>({
     />
   )
 }
-
-export { TogglePrimitive }
