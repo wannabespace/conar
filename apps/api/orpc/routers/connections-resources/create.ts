@@ -22,5 +22,8 @@ export const create = orpc
       throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
     }
 
-    await db.insert(connectionsResources).values(input)
+    await db.insert(connectionsResources).values(input).onConflictDoUpdate({
+      target: [connectionsResources.connectionId, connectionsResources.name],
+      set: input,
+    })
   })
