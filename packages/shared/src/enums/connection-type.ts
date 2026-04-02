@@ -3,6 +3,7 @@ export enum ConnectionType {
   MySQL = 'mysql',
   MSSQL = 'mssql',
   ClickHouse = 'clickhouse',
+  DuckDB = 'duckdb',
 }
 
 export const connectionLabels: Record<ConnectionType, string> = {
@@ -10,4 +11,5 @@ export const connectionLabels: Record<ConnectionType, string> = {
   [ConnectionType.MySQL]: 'MySQL',
   [ConnectionType.MSSQL]: 'Microsoft SQL Server',
   [ConnectionType.ClickHouse]: 'ClickHouse (beta)',
+  [ConnectionType.DuckDB]: 'DuckDB',
 }
