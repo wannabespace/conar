@@ -4,6 +4,7 @@ import { webSearch } from '@exalabs/ai-sdk'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
 import { tool } from 'ai'
 import { type } from 'arktype'
+import * as z from 'zod/mini'
 import { env } from '~/env'
 
 export const tools = {
@@ -44,15 +45,15 @@ export const tools = {
       'For tableName use only table without schema prefix.',
     ].join('\n'),
     inputSchema: type({
-      whereConcatOperator: type('"AND" | "OR"').describe('The operator to use to concatenate the where clauses'),
-      whereFilters: type({
-        column: 'string',
-        operator: type.enumerated(...SQL_FILTERS_LIST.map(filter => filter.operator)),
-        values: 'string[]',
-      })
-        .array()
-        .describe('The columns to use in the where clause'),
-      select: type('string[] | null').describe('The columns to select. If not provided, all columns will be selected'),
+      whereConcatOperator: z.enum(['AND', 'OR']),
+      whereFilters: z.array(
+        z.object({
+          column: z.string(),
+          operator: z.enum(SQL_FILTERS_LIST.map(filter => filter.operator) as [string, ...string[]]),
+          values: z.array(z.string()),
+        }),
+      ),
+      select: z.array(z.string()),
       limit: 'number',
       offset: 'number',
       orderBy: 'Record<string, "ASC" | "DESC"> | null',
