@@ -52,6 +52,7 @@ export const queryClient = new QueryClient({
 export const subscriptionQueryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      retry: 0,
       refetchOnWindowFocus: 'always',
       placeholderData: keepPreviousData,
     },
