@@ -43,8 +43,6 @@ export async function sendEmail<
     }
   }
   catch (error) {
-    console.error(error instanceof Error ? error.message : 'Unknown error', error)
-
-    throw new Error('Unknown error occurred while sending email', { cause: error })
+    console.error('Resend email service error:', error instanceof Error ? error.message : 'Unknown error', error)
   }
 }
