@@ -15,7 +15,7 @@ import { Header } from './-components/header/header'
 import { Sidebar } from './-components/sidebar'
 import { Table } from './-components/table/table'
 import { TablesTabs } from './-components/tabs'
-import { useTableColumns } from './-queries/use-columns-query'
+import { useTableColumns } from './-queries/use-table-columns'
 import { tablePageSelectionStore, TablePageSelectionStoreContext, tablePageStore, TablePageStoreContext, useTablePageStore } from './-store'
 
 export const Route = createFileRoute(

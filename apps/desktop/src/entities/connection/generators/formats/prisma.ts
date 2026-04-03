@@ -98,12 +98,12 @@ export function generateSchemaPrisma({
   enums = [],
   indexes = [],
 }: SchemaParams) {
-  const { fields, extraBlocks } = columns.reduce<{
+  const { fields, extraBlocks } = columns.filter(c => c.type).reduce<{
     fields: { name: string, type: string, attributes: string[], isRelation: boolean }[]
     extraBlocks: string[]
     usedNames: Set<string>
   }>((acc, c) => {
-    let prismaType = getColumnType(c.type, 'prisma', dialect)
+    let prismaType = getColumnType(c.type!, 'prisma', dialect)
 
     const foundEnum = findEnum(enums, c, table)
     if (foundEnum?.values.length) {

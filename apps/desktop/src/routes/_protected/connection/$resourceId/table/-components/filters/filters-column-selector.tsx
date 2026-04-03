@@ -16,7 +16,7 @@ export function FiltersColumnSelector({ ref, onSelect }: { ref?: RefObject<HTMLI
             <CommandItem
               key={column.id}
               value={column.id}
-              keywords={[column.id, column.type, column.label]}
+              keywords={[column.id, column.type ?? '', column.label ?? '']}
               onSelect={onSelect}
             >
               <RiDatabase2Line className="size-4 opacity-50" />

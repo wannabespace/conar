@@ -1,20 +1,25 @@
 import type { TableCellProps } from '@conar/table'
 import type { ComponentProps } from 'react'
+import type { Column } from './utils'
 import { cn } from '@conar/ui/lib/utils'
 
 export function TableCellContent({
   className,
-  children,
+  column,
   value,
   position,
   ...props
-}: Pick<TableCellProps, 'value' | 'position' | 'style'> & ComponentProps<'div'>) {
+}: {
+  column: Column
+  value: unknown
+  position: TableCellProps['position']
+} & ComponentProps<'div'>) {
   return (
     <div
       className={cn(
         `
-          flex h-full cursor-default items-center gap-1 truncate rounded-md p-2
-          font-mono text-xs ring-2 ring-transparent select-none ring-inset
+          flex h-full cursor-default items-center justify-between gap-1 truncate
+          rounded-md p-2 font-mono text-xs ring-2 ring-transparent select-none
         `,
         (value === null || value === '') && 'text-muted-foreground/50',
         position === 'first' && 'pl-4',
@@ -22,8 +27,6 @@ export function TableCellContent({
         className,
       )}
       {...props}
-    >
-      {children}
-    </div>
+    />
   )
 }

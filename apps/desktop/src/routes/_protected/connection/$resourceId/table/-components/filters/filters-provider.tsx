@@ -1,5 +1,5 @@
 import type { Filter, FilterGroup } from '@conar/shared/filters'
-import type { Column } from './context'
+import type { Column } from '~/entities/connection/components/table/cell'
 import { FilterInternalContext } from './context'
 
 export function FiltersProvider({

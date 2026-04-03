@@ -3,36 +3,39 @@ import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { webSearch } from '@exalabs/ai-sdk'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
 import { tool } from 'ai'
-import { type } from 'arktype'
 import * as z from 'zod/mini'
 import { env } from '~/env'
 
 export const tools = {
   columns: tool({
     description: 'Use this tool if you need to get the list of columns in a table.',
-    inputSchema: type({
-      tableAndSchema: type({
-        tableName: 'string',
-        schemaName: 'string',
+    inputSchema: z.object({
+      tableAndSchema: z.object({
+        tableName: z.string(),
+        schemaName: z.string(),
       }),
     }),
-    outputSchema: type({
-      isEditable: 'boolean',
-      isNullable: 'boolean',
-      table: 'string',
-      id: 'string',
-      type: 'string',
-      default: 'string | null',
-    }).array(),
+    outputSchema: z.array(
+      z.object({
+        isEditable: z.boolean(),
+        isNullable: z.boolean(),
+        table: z.string(),
+        id: z.string(),
+        type: z.string(),
+        default: z.union([z.string(), z.null()]),
+      }),
+    ),
   }),
   enums: tool({
     description: 'Use this tool if you need to get the list of enums in a database',
-    inputSchema: type({}),
-    outputSchema: type({
-      schema: 'string',
-      name: 'string',
-      value: 'string',
-    }).array(),
+    inputSchema: z.object({}),
+    outputSchema: z.array(
+      z.object({
+        schema: z.string(),
+        name: z.string(),
+        value: z.string(),
+      }),
+    ),
   }),
   select: tool({
     description: [
@@ -44,7 +47,7 @@ export const tools = {
       'tableName and schemaName will be concatenated to "schemaName.tableName".',
       'For tableName use only table without schema prefix.',
     ].join('\n'),
-    inputSchema: type({
+    inputSchema: z.object({
       whereConcatOperator: z.enum(['AND', 'OR']),
       whereFilters: z.array(
         z.object({
@@ -54,15 +57,18 @@ export const tools = {
         }),
       ),
       select: z.array(z.string()),
-      limit: 'number',
-      offset: 'number',
-      orderBy: 'Record<string, "ASC" | "DESC"> | null',
-      tableAndSchema: type({
-        tableName: 'string',
-        schemaName: 'string',
-      }).describe('The name of the table and schema to query'),
-    }).describe('Input schema for database select query with filters, ordering, and pagination'),
-    outputSchema: type('unknown'),
+      limit: z.number(),
+      offset: z.number(),
+      orderBy: z.union([
+        z.record(z.string(), z.enum(['ASC', 'DESC'])),
+        z.null(),
+      ]),
+      tableAndSchema: z.object({
+        tableName: z.string(),
+        schemaName: z.string(),
+      }),
+    }),
+    outputSchema: z.unknown(),
   }),
   ...(env.EXA_API_KEY && { webSearch: webSearch({ apiKey: env.EXA_API_KEY }) }),
   ...(env.CONTEXT7_API_KEY && {

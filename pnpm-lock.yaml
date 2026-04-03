@@ -7,11 +7,11 @@ settings:
 catalogs:
   default:
     '@ai-sdk/anthropic':
-      specifier: ^3.0.64
-      version: 3.0.64
+      specifier: ^3.0.65
+      version: 3.0.65
     '@ai-sdk/google':
-      specifier: ^3.0.54
-      version: 3.0.54
+      specifier: ^3.0.55
+      version: 3.0.55
     '@ai-sdk/openai':
       specifier: ^3.0.49
       version: 3.0.49
@@ -19,8 +19,8 @@ catalogs:
       specifier: ^3.0.8
       version: 3.0.8
     '@ai-sdk/react':
-      specifier: ^3.0.143
-      version: 3.0.143
+      specifier: ^3.0.145
+      version: 3.0.145
     '@ai-sdk/xai':
       specifier: ^3.0.75
       version: 3.0.75
@@ -238,11 +238,11 @@ catalogs:
       specifier: ^12.10.2
       version: 12.10.2
     ai:
-      specifier: ^6.0.141
-      version: 6.0.141
+      specifier: ^6.0.143
+      version: 6.0.143
     ai-retry:
-      specifier: ^1.3.0
-      version: 1.3.0
+      specifier: ^1.4.0
+      version: 1.4.0
     arktype:
       specifier: ^2.2.0
       version: 2.2.0
@@ -412,8 +412,8 @@ catalogs:
       specifier: ^2.2.12
       version: 2.2.12
     seitu:
-      specifier: ^0.10.8
-      version: 0.10.8
+      specifier: ^0.10.11
+      version: 0.10.11
     sonner:
       specifier: ^2.0.7
       version: 2.0.7
@@ -526,10 +526,10 @@ importers:
     dependencies:
       '@ai-sdk/anthropic':
         specifier: 'catalog:'
-        version: 3.0.64(zod@4.3.6)
+        version: 3.0.65(zod@4.3.6)
       '@ai-sdk/google':
         specifier: 'catalog:'
-        version: 3.0.54(zod@4.3.6)
+        version: 3.0.55(zod@4.3.6)
       '@ai-sdk/openai':
         specifier: 'catalog:'
         version: 3.0.49(zod@4.3.6)
@@ -550,7 +550,7 @@ importers:
         version: link:../../packages/shared
       '@exalabs/ai-sdk':
         specifier: 'catalog:'
-        version: 2.0.1(ai@6.0.141(zod@4.3.6))
+        version: 2.0.1(ai@6.0.143(zod@4.3.6))
       '@hackylabs/deep-redact':
         specifier: 'catalog:'
         version: 3.0.5
@@ -571,13 +571,13 @@ importers:
         version: 1.0.10(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@upstash/context7-tools-ai-sdk':
         specifier: 'catalog:'
-        version: 0.2.2(@upstash/context7-sdk@0.3.0)(ai@6.0.141(zod@4.3.6))(zod@4.3.6)
+        version: 0.2.2(@upstash/context7-sdk@0.3.0)(ai@6.0.143(zod@4.3.6))(zod@4.3.6)
       ai:
         specifier: 'catalog:'
-        version: 6.0.141(zod@4.3.6)
+        version: 6.0.143(zod@4.3.6)
       ai-retry:
         specifier: 'catalog:'
-        version: 1.3.0(ai@6.0.141(zod@4.3.6))
+        version: 1.4.0(@ai-sdk/provider-utils@4.0.21(zod@4.3.6))(@ai-sdk/provider@3.0.8)(ai@6.0.143(zod@4.3.6))(zod@4.3.6)
       arktype:
         specifier: 'catalog:'
         version: 2.2.0
@@ -687,7 +687,7 @@ importers:
     devDependencies:
       '@ai-sdk/react':
         specifier: 'catalog:'
-        version: 3.0.143(react@19.2.4)(zod@4.3.6)
+        version: 3.0.145(react@19.2.4)(zod@4.3.6)
       '@base-ui/react':
         specifier: 'catalog:'
         version: 1.3.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -813,7 +813,7 @@ importers:
         version: 12.10.2(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       ai:
         specifier: 'catalog:'
-        version: 6.0.141(zod@4.3.6)
+        version: 6.0.143(zod@4.3.6)
       arktype:
         specifier: 'catalog:'
         version: 2.2.0
@@ -894,7 +894,7 @@ importers:
         version: 4.0.1
       seitu:
         specifier: 'catalog:'
-        version: 0.10.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 0.10.11(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1251,7 +1251,7 @@ importers:
         version: 4.8.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       seitu:
         specifier: 'catalog:'
-        version: 0.10.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 0.10.11(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1276,20 +1276,20 @@ packages:
   7zip-bin@5.2.0:
     resolution: {integrity: sha512-ukTPVhqG4jNzMro2qA9HSCSSVJN3aN7tlb+hfqYCt3ER0yWroeA2VR38MNrOHLQ/cVj+DaIMad0kFCtWWowh/A==}
 
-  '@ai-sdk/anthropic@3.0.64':
-    resolution: {integrity: sha512-rwLi/Rsuj2pYniQXIrvClHvXDzgM4UQHHnvHTWEF14efnlKclG/1ghpNC+adsRujAbCTr6gRsSbDE2vEqriV7g==}
+  '@ai-sdk/anthropic@3.0.65':
+    resolution: {integrity: sha512-wUSTNKk5NWjETqNtUT3kBHl+ic0ZSTgGB/Go8A5URRt4Zb1nMLH1135uZT3xnjrCZra0teMq9BhmfZ4Jfw6SdQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/gateway@3.0.83':
-    resolution: {integrity: sha512-LvlWujbSdEkTBXBLFtF7GS6riXdHhH0O+DpDrCaNQvXeHmSF2jKsOg7JWXiCgygAHM5cWFAO3JYmZp83DjiuBQ==}
+  '@ai-sdk/gateway@3.0.85':
+    resolution: {integrity: sha512-oPvs3bYnxndBY/O0gFSFuc5aA/QKCJbk/CaJaRnKgA/ZPH17jeVvEtiUBE6/N8hWhK7XgX53NFI7F3CGmDfm1g==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/google@3.0.54':
-    resolution: {integrity: sha512-EgYYdA2LpHZefLDU/FIpmeTlL5Hi4WKQZY3nACMh0wVhrS1fAvlfrdwnD1G4ISCOKWMWrMcRZX9ubs3NM/KHfA==}
+  '@ai-sdk/google@3.0.55':
+    resolution: {integrity: sha512-lIID7kDdeqzSR/eg+LrEFJGoe/mIwuW4eBdjS84Bi0cIY4cmGwSsvwYILSdiad0197Ha+DUbCxOUuSOnORUx7g==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -1312,22 +1312,12 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/provider-utils@4.0.9':
-    resolution: {integrity: sha512-bB4r6nfhBOpmoS9mePxjRoCy+LnzP3AfhyMGCkGL4Mn9clVNlqEeKj26zEKEtB6yoSVcT1IQ0Zh9fytwMCDnow==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/provider@3.0.5':
-    resolution: {integrity: sha512-2Xmoq6DBJqmSl80U6V9z5jJSJP7ehaJJQMy2iFUqTay06wdCqTnPVBBQbtEL8RCChenL+q5DC5H5WzU3vV3v8w==}
-    engines: {node: '>=18'}
-
   '@ai-sdk/provider@3.0.8':
     resolution: {integrity: sha512-oGMAgGoQdBXbZqNG0Ze56CHjDZ1IDYOwGYxYjO5KLSlz5HiNQ9udIXsPZ61VWaHGZ5XW/jyjmr6t2xz2jGVwbQ==}
     engines: {node: '>=18'}
 
-  '@ai-sdk/react@3.0.143':
-    resolution: {integrity: sha512-yYXrrscpF3MiCycGizgw1rukbhXBnoYpisC9vt12UU4i0tkyBMBCtBrsqLTJFrItax6ZR9TjTcGdNTqKqJhyow==}
+  '@ai-sdk/react@3.0.145':
+    resolution: {integrity: sha512-7EoGTTregQt+wDKC4cmWNnsm5DvfJfWA9+9wigFMGASxujverJICVHDpvCsWK7KBHn7WeohFrk7LziOuuhwCEQ==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18 || ~19.0.1 || ~19.1.2 || ^19.2.1
@@ -5383,13 +5373,16 @@ packages:
     resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
     engines: {node: '>=8'}
 
-  ai-retry@1.3.0:
-    resolution: {integrity: sha512-NY7OkpIPC8MEdseHnLhuHGLwr/LAp/Rd2OgXcl6CKhfv8YoFIjMP+uKXDei1ixnSawsMzwEh2hmetSJPHSEEsg==}
+  ai-retry@1.4.0:
+    resolution: {integrity: sha512-RkGpo1l12zwpIXBHVBVdi01hV45zQ9oFWSINoAUSd2Xi+vuDfo3GmsxhsvXd0Vjm/9PKrjgU06TLQcAg08EfTg==}
     peerDependencies:
+      '@ai-sdk/provider': ^3.0.0
+      '@ai-sdk/provider-utils': ^4.0.0
       ai: 6.x
+      zod: ^4.0.0
 
-  ai@6.0.141:
-    resolution: {integrity: sha512-+GomGQWaId3xN0wcugUW/H7xMMaFkID2PiS7K/Wugj45G3efv0BXhQ3psRZoQVoRbOpdNoUqcK/KTB+FR4h6qg==}
+  ai@6.0.143:
+    resolution: {integrity: sha512-wVDb7StQ1EPQ9GDAOmi1AsuAXQRSii+zZT2sFK+MCisH4vV7XNEAdzXL+sKsUAFhhq+EtVFWWlB4mCk4hcoIMw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -10022,8 +10015,8 @@ packages:
     resolution: {integrity: sha512-3A6sD0WYP7+QrjbfNA2FN3FsOaGGFoekCVgTyypy53gPxhbkCIjtO6YWgdrfM+n/8sI8JeXZOIxsHjMTNxQ4nQ==}
     engines: {node: ^14.0.0 || >=16.0.0}
 
-  seitu@0.10.8:
-    resolution: {integrity: sha512-nwLIo2FUpaCL5vX583iJMNIhmUjuYnaT+gl1dvixh59hJk8KZRTo3gBJ2iEl0T4K6qtCmox8ht5VjKWkhzltjg==}
+  seitu@0.10.11:
+    resolution: {integrity: sha512-dOCiS/U98vsXRau9HHJ7gkB7mA+ZP27qbvE2dOL8/p9gvPHBaxYTifi7sgHLO734olJs0wI3cNxeuAyzVVEEmQ==}
     engines: {node: '>=22'}
     peerDependencies:
       react: '>=19'
@@ -11197,20 +11190,20 @@ snapshots:
 
   7zip-bin@5.2.0: {}
 
-  '@ai-sdk/anthropic@3.0.64(zod@4.3.6)':
+  '@ai-sdk/anthropic@3.0.65(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.21(zod@4.3.6)
       zod: 4.3.6
 
-  '@ai-sdk/gateway@3.0.83(zod@4.3.6)':
+  '@ai-sdk/gateway@3.0.85(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.21(zod@4.3.6)
       '@vercel/oidc': 3.1.0
       zod: 4.3.6
 
-  '@ai-sdk/google@3.0.54(zod@4.3.6)':
+  '@ai-sdk/google@3.0.55(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.21(zod@4.3.6)
@@ -11235,25 +11228,14 @@ snapshots:
       eventsource-parser: 3.0.6
       zod: 4.3.6
 
-  '@ai-sdk/provider-utils@4.0.9(zod@4.3.6)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.5
-      '@standard-schema/spec': 1.1.0
-      eventsource-parser: 3.0.6
-      zod: 4.3.6
-
-  '@ai-sdk/provider@3.0.5':
-    dependencies:
-      json-schema: 0.4.0
-
   '@ai-sdk/provider@3.0.8':
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@3.0.143(react@19.2.4)(zod@4.3.6)':
+  '@ai-sdk/react@3.0.145(react@19.2.4)(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider-utils': 4.0.21(zod@4.3.6)
-      ai: 6.0.141(zod@4.3.6)
+      ai: 6.0.143(zod@4.3.6)
       react: 19.2.4
       swr: 2.4.1(react@19.2.4)
       throttleit: 2.1.0
@@ -12234,9 +12216,9 @@ snapshots:
       '@eslint/core': 1.1.1
       levn: 0.4.1
 
-  '@exalabs/ai-sdk@2.0.1(ai@6.0.141(zod@4.3.6))':
+  '@exalabs/ai-sdk@2.0.1(ai@6.0.143(zod@4.3.6))':
     dependencies:
-      ai: 6.0.141(zod@4.3.6)
+      ai: 6.0.143(zod@4.3.6)
       zod: 3.25.76
 
   '@faker-js/faker@10.4.0': {}
@@ -15160,10 +15142,10 @@ snapshots:
       firebase: 12.10.0
       git-rev-sync: 3.0.2
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
-      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
-      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
-      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
-      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
+      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
+      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
+      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
+      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
       is-ci: 4.1.0
       is-installed-globally: 0.4.0
       js-yaml: 4.1.1
@@ -15657,10 +15639,10 @@ snapshots:
 
   '@upstash/context7-sdk@0.3.0': {}
 
-  '@upstash/context7-tools-ai-sdk@0.2.2(@upstash/context7-sdk@0.3.0)(ai@6.0.141(zod@4.3.6))(zod@4.3.6)':
+  '@upstash/context7-tools-ai-sdk@0.2.2(@upstash/context7-sdk@0.3.0)(ai@6.0.143(zod@4.3.6))(zod@4.3.6)':
     dependencies:
       '@upstash/context7-sdk': 0.3.0
-      ai: 6.0.141(zod@4.3.6)
+      ai: 6.0.143(zod@4.3.6)
       zod: 4.3.6
 
   '@valibot/to-json-schema@1.5.0(valibot@1.2.0(typescript@6.0.2))':
@@ -15771,16 +15753,16 @@ snapshots:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  ai-retry@1.3.0(ai@6.0.141(zod@4.3.6)):
+  ai-retry@1.4.0(@ai-sdk/provider-utils@4.0.21(zod@4.3.6))(@ai-sdk/provider@3.0.8)(ai@6.0.143(zod@4.3.6))(zod@4.3.6):
     dependencies:
-      '@ai-sdk/provider': 3.0.5
-      '@ai-sdk/provider-utils': 4.0.9(zod@4.3.6)
-      ai: 6.0.141(zod@4.3.6)
+      '@ai-sdk/provider': 3.0.8
+      '@ai-sdk/provider-utils': 4.0.21(zod@4.3.6)
+      ai: 6.0.143(zod@4.3.6)
       zod: 4.3.6
 
-  ai@6.0.141(zod@4.3.6):
+  ai@6.0.143(zod@4.3.6):
     dependencies:
-      '@ai-sdk/gateway': 3.0.83(zod@4.3.6)
+      '@ai-sdk/gateway': 3.0.85(zod@4.3.6)
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.21(zod@4.3.6)
       '@opentelemetry/api': 1.9.0
@@ -18520,7 +18502,7 @@ snapshots:
 
   ini@2.0.0: {}
 
-  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       gradient-string: 1.2.0
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
@@ -18528,14 +18510,14 @@ snapshots:
       react: 17.0.2
       strip-ansi: 6.0.1
 
-  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
       prop-types: 15.8.1
       react: 17.0.2
       terminal-link: 2.1.1
 
-  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       arr-rotate: 1.0.0
       figures: 3.2.0
@@ -18543,7 +18525,7 @@ snapshots:
       lodash.isequal: 4.5.0
       react: 17.0.2
 
-  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       chalk: 4.1.2
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
@@ -21015,7 +20997,7 @@ snapshots:
       refa: 0.12.1
       regexp-ast-analysis: 0.7.1
 
-  seitu@0.10.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  seitu@0.10.11(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       fast-equals: 6.0.0
     optionalDependencies:

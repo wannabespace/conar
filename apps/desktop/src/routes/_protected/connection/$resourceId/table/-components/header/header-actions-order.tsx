@@ -10,7 +10,7 @@ import { RiAddLine, RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiCloseLi
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { Route } from '../..'
-import { useTableColumns } from '../../-queries/use-columns-query'
+import { useTableColumns } from '../../-queries/use-table-columns'
 import { useTablePageStore } from '../../-store'
 import { useColumnsOrder } from '../use-columns-order'
 

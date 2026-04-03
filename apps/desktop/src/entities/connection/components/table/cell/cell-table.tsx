@@ -2,6 +2,7 @@ import type { ActiveFilter } from '@conar/shared/filters'
 import type { ColumnRenderer } from '@conar/table'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { Table, TableBody, TableHeader, TableProvider } from '@conar/table'
+import { DEFAULT_COLUMN_WIDTH } from '@conar/table/constants'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { RiCornerRightUpLine } from '@remixicon/react'
@@ -14,8 +15,8 @@ import { TableEmpty } from '~/routes/_protected/connection/$resourceId/table/-co
 import { TableHeaderCell } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-header-cell'
 import { TableInfiniteLoader } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-infinite-loader'
 import { TableBodySkeleton } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-skeleton'
-import { useTableColumns } from '~/routes/_protected/connection/$resourceId/table/-queries/use-columns-query'
-import { TableCellContent } from './table-cell-content'
+import { useTableColumns } from '~/routes/_protected/connection/$resourceId/table/-queries/use-table-columns'
+import { TableCellContent } from './cell-content'
 import { getColumnSize, getDisplayValue } from './utils'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -46,19 +47,16 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
       .toSorted((a, b) => a.primaryKey ? -1 : b.primaryKey ? 1 : 0)
       .map(column => ({
         id: column.id,
-        size: getColumnSize(column.type),
+        size: column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH,
         cell: props => (
           <TableCellContent
+            column={column}
             value={props.value}
             position={props.position}
             style={props.style}
           >
             <span className="truncate">
-              {getDisplayValue({
-                value: props.value,
-                size: props.size,
-                column,
-              })}
+              {getDisplayValue({ value: props.value, size: props.size })}
             </span>
           </TableCellContent>
         ),

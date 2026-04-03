@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { RiCheckLine, RiDatabase2Line, RiLayoutColumnLine } from '@remixicon/react'
 import { useSubscription } from 'seitu/react'
 import { Route } from '../..'
-import { useTableColumns } from '../../-queries/use-columns-query'
+import { useTableColumns } from '../../-queries/use-table-columns'
 import { useTablePageStore } from '../../-store'
 
 export function HeaderActionsColumns({ table, schema }: { table: string, schema: string }) {
@@ -70,7 +70,7 @@ export function HeaderActionsColumns({ table, schema }: { table: string, schema:
                 <CommandItem
                   key={column.id}
                   value={column.id}
-                  keywords={[column.id, column.type]}
+                  keywords={[column.id, column.type ?? '', column.label ?? '']}
                   onSelect={() => store.set(state => ({
                     ...state,
                     hiddenColumns: hiddenColumns.includes(column.id)

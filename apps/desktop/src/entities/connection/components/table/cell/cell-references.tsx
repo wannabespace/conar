@@ -1,7 +1,7 @@
 import type { Column } from './utils'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
-import { TableCellTable } from './table-cell-table'
+import { TableCellTable } from './cell-table'
 
 export function TableCellReferences({
   references,

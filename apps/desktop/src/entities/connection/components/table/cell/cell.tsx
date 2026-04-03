@@ -1,210 +1,25 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { TableCellProps } from '@conar/table'
-import type { editor } from 'monaco-editor'
-import type { ComponentProps, Dispatch, SetStateAction } from 'react'
-import type { Column } from '~/entities/connection/components/table/utils'
+import type { ComponentProps } from 'react'
+import type { Column } from './utils'
 import { sleep } from '@conar/shared/utils/helpers'
 import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
-import { CopyButton } from '@conar/ui/components/custom/copy-button'
-import { KbdCtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowLeftDownLine, RiArrowRightUpLine, RiCheckLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
+import { RiArrowLeftDownLine, RiArrowRightUpLine } from '@remixicon/react'
 import { format, isValid } from 'date-fns'
-import { KeyCode, KeyMod } from 'monaco-editor'
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { CellSwitch } from '~/components/cell-switch'
-import { Monaco } from '~/components/monaco'
+import { TableCellContent } from './cell-content'
 import { useCellContext } from './cell-context'
-import { TableCellContent } from './table-cell-content'
-import { TableCellContextMenu } from './table-cell-context-menu'
-import { TableCellProvider } from './table-cell-provider'
-import { TableCellReferences } from './table-cell-references'
-import { TableCellTable } from './table-cell-table'
+import { TableCellContextMenu } from './cell-menu'
+import { CellPopoverContent } from './cell-popover'
+import { TableCellProvider } from './cell-provider'
+import { TableCellReferences } from './cell-references'
+import { TableCellTable } from './cell-table'
 import { getDisplayValue } from './utils'
-
-function CellPopoverContent({
-  rowIndex,
-  isBig,
-  setIsBig,
-  onClose,
-  hasUpdateFn,
-  onSetNull,
-}: {
-  rowIndex: number
-  isBig: boolean
-  setIsBig: Dispatch<SetStateAction<boolean>>
-  onClose: () => void
-  hasUpdateFn: boolean
-  onSetNull: () => void
-}) {
-  const { newValue, value, column, displayValue, setNewValue, update, availableValues } = useCellContext()
-  const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
-
-  const save = (value: string) => {
-    update({ value, rowIndex })
-    onClose()
-  }
-
-  const saveEvent = useEffectEvent(save)
-
-  useEffect(() => {
-    if (!monacoRef.current)
-      return
-
-    monacoRef.current.addAction({
-      id: 'conar.execute-on-enter',
-      label: 'Execute on Enter',
-      keybindings: [KeyMod.CtrlCmd | KeyCode.Enter],
-      run: (e) => {
-        saveEvent(e.getValue() ?? '')
-      },
-    })
-  }, [monacoRef])
-
-  const canEdit = !!column?.isEditable && hasUpdateFn
-  const hasArrayValues = !!availableValues && !column.isArray
-  const canSave = newValue !== displayValue && !(hasArrayValues && !newValue)
-
-  const shouldHideToggleSize = column.type === 'boolean'
-    || column.type?.includes('time')
-    || column.type?.includes('numeric')
-    || (!!availableValues && availableValues.length > 0)
-
-  const monacoOptions = {
-    lineNumbers: isBig ? 'on' : 'off',
-    readOnly: !canEdit,
-    wordWrap: isBig ? 'off' : 'on',
-    scrollBeyondLastLine: false,
-    folding: isBig,
-    scrollbar: {
-      horizontalScrollbarSize: 5,
-      verticalScrollbarSize: 5,
-    },
-  } satisfies editor.IStandaloneEditorConstructionOptions
-
-  return (
-    <>
-      {column?.type === 'boolean'
-        ? (
-            <CellSwitch
-              className="w-full justify-center py-6"
-              checked={JSON.parse(newValue)}
-              onChange={checked => setNewValue(checked.toString())}
-              onSave={save}
-            />
-          )
-        // TODO: refactor this to support array values like in PG enum array columns or MySQL SET columns
-        : availableValues && !column.isArray
-          ? (
-              <div className="p-2">
-                <Select
-                  value={newValue === 'null' ? undefined : newValue}
-                  disabled={!canEdit}
-                  onValueChange={(value) => {
-                    if (value) {
-                      setNewValue(value)
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select value" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableValues.map(val => (
-                      <SelectItem key={val} value={val}>
-                        {val}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )
-          : (
-              <Monaco
-                ref={monacoRef}
-                data-mask
-                value={newValue}
-                language={column?.type?.includes('json')
-                  ? 'json'
-                  : column?.type?.includes('xml')
-                    ? 'xml'
-                    : undefined}
-                className={cn('h-40 w-full transition-[height] duration-300', isBig && `
-                  h-[min(45vh,40rem)]
-                `)}
-                onChange={setNewValue}
-                options={monacoOptions}
-              />
-            )}
-      <div className="flex items-center justify-between gap-2 border-t p-2">
-        <div className="flex items-center gap-2">
-          {!shouldHideToggleSize && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon-xs"
-                  onClick={() => setIsBig(prev => !prev)}
-                >
-                  {isBig
-                    ? <RiCollapseDiagonal2Line className="size-3" />
-                    : <RiExpandDiagonal2Line className="size-3" />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Toggle size</TooltipContent>
-            </Tooltip>
-          )}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <CopyButton
-                size="icon-xs"
-                variant="outline"
-                text={newValue}
-                copyIcon={<RiFileCopyLine className="size-3" />}
-                successIcon={<RiCheckLine className="size-3 text-success" />}
-              />
-            </TooltipTrigger>
-            <TooltipContent side="bottom">Copy value</TooltipContent>
-          </Tooltip>
-        </div>
-        <div className="flex gap-2">
-          {canEdit && (
-            <>
-              {!!column?.isNullable && (
-                <Button
-                  size="xs"
-                  variant="secondary"
-                  disabled={value === null}
-                  onClick={onSetNull}
-                >
-                  Set
-                  {' '}
-                  <span className="font-mono">null</span>
-                </Button>
-              )}
-              <Button
-                size="xs"
-                disabled={!canSave}
-                onClick={() => save(newValue)}
-              >
-                Save
-                <KbdCtrlEnter
-                  userAgent={navigator.userAgent}
-                  className="text-white"
-                />
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-    </>
-  )
-}
 
 function SetNullAlertDialog({
   open,
@@ -213,10 +28,10 @@ function SetNullAlertDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const { value, rowIndex, update } = useCellContext()
+  const { value, onUpdate } = useCellContext()
 
   const setNull = () => {
-    update({ value: null, rowIndex })
+    onUpdate(null)
     onOpenChange(false)
   }
 
@@ -270,24 +85,10 @@ function ReferenceButton({ children, className, ...props }: ComponentProps<typeo
   )
 }
 
-function getTimestamp(value: unknown, column: Column) {
-  const date = (
-    column?.type?.includes('timestamp')
-    || column?.type?.includes('datetime')
-  )
-  && value
-  && (typeof value === 'string' || typeof value === 'number')
-    ? new Date(value)
-    : null
-
-  return date && isValid(date) ? date : null
-}
-
 export function TableCell({
   value,
   rowIndex,
   column,
-  className,
   style,
   position,
   size,
@@ -300,19 +101,13 @@ export function TableCell({
 }: {
   onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   column: Column
-  className?: string
   availableValues?: string[]
   onAddFilter?: (filter: ActiveFilter) => void
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
   sortOrder?: 'ASC' | 'DESC' | null
   onRenameColumn?: () => void
 } & TableCellProps) {
-  const displayValue = getDisplayValue({
-    value,
-    size,
-    column,
-  })
-
+  const displayValue = getDisplayValue({ value, size })
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isForeignOpen, setIsForeignOpen] = useState(false)
   const [isReferencesOpen, setIsReferencesOpen] = useState(false)
@@ -320,25 +115,16 @@ export function TableCell({
   const [isBig, setIsBig] = useState(false)
   const [isSetNullDialogOpen, setIsSetNullDialogOpen] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
-  const [status, setStatus] = useState<'idle' | 'success' | 'error' | 'pending'>('idle')
-
-  useEffect(() => {
-    if (status === 'success' || status === 'error') {
-      const timeout = setTimeout(setStatus, status === 'error' ? 3000 : 1000, 'idle')
-
-      return () => clearTimeout(timeout)
-    }
-  }, [status])
+  const [status, setStatus] = useState<'error' | 'idle' | 'pending' | 'success'>('idle')
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const cellClassName = cn(
-    'flex justify-between ring-1',
     isPopoverOpen && 'bg-primary/10 ring-primary/30',
     (isForeignOpen || isReferencesOpen) && 'bg-accent/30 ring-accent/60',
     status === 'error' && 'bg-destructive/20 ring-destructive/50',
     status === 'success' && 'bg-success/10 ring-success/50',
     status === 'pending' && 'animate-pulse bg-primary/10',
     (column.foreign || (column.references?.length ?? 0) > 0) && 'pr-1!',
-    className,
   )
 
   function disableInteractIfPossible() {
@@ -350,9 +136,10 @@ export function TableCell({
   if (!canInteract) {
     return (
       <TableCellContent
+        column={column}
+        className={cellClassName}
         onMouseOver={() => setCanInteract(true)}
         onMouseLeave={disableInteractIfPossible}
-        className={cellClassName}
         style={style}
         value={value}
         position={position}
@@ -364,21 +151,39 @@ export function TableCell({
     )
   }
 
-  function onSaveError(error: Error) {
-    setCanInteract(true)
-    setIsPopoverOpen(true)
-    setStatus('error')
+  const update = async (value: string | null) => {
+    if (!onSaveValue)
+      return
 
-    console.error(error)
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
 
-    toast.error(`Failed to update cell "${column.id}"`, {
-      id: `save-cell-error-${column.id}-${error.message}`,
-      description: error.message,
-      duration: 3000,
-    })
+    setStatus('pending')
+
+    try {
+      await onSaveValue(
+        rowIndex,
+        column.id,
+        value,
+      )
+      setStatus('success')
+      timeoutRef.current = setTimeout(setStatus, 3000, 'idle')
+    }
+    catch (e) {
+      const error = e instanceof Error ? e : new Error(String(e))
+      console.error(error)
+
+      toast.error(`Failed to update cell "${column.id}"`, {
+        id: `save-cell-error-${column.id}-${error.message}`,
+        description: error.message,
+        duration: 3000,
+      })
+      setStatus('error')
+    }
   }
 
-  const date = column ? getTimestamp(value, column) : null
+  const date = isValid(new Date(value as Date)) ? new Date(value as Date) : null
 
   return (
     <TableCellProvider
@@ -386,15 +191,11 @@ export function TableCell({
       rowIndex={rowIndex}
       value={value}
       availableValues={availableValues}
-      displayValue={displayValue}
-      onSaveValue={onSaveValue}
+      onUpdate={update}
       onAddFilter={onAddFilter}
       onSort={onSort}
       sortOrder={sortOrder}
       onRenameColumn={onRenameColumn}
-      onSavePending={() => setStatus('pending')}
-      onSaveSuccess={() => setStatus('success')}
-      onSaveError={onSaveError}
     >
       <SetNullAlertDialog
         open={isSetNullDialogOpen}
@@ -435,10 +236,11 @@ export function TableCell({
                 onMouseLeave={disableInteractIfPossible}
                 render={(
                   <TableCellContent
-                    className={cellClassName}
                     style={style}
                     value={value}
                     position={position}
+                    className={cellClassName}
+                    column={column}
                   />
                 )}
               >
@@ -550,7 +352,6 @@ export function TableCell({
             onAnimationEnd={disableInteractIfPossible}
           >
             <CellPopoverContent
-              rowIndex={rowIndex}
               isBig={isBig}
               setIsBig={setIsBig}
               onClose={() => setIsPopoverOpen(false)}
