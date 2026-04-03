@@ -3,3 +3,6 @@ Allow: /
 
 Disallow: /reset-password
 Disallow: /open
+Disallow: /account
+
+Sitemap: https://conar.app/sitemap.xml
