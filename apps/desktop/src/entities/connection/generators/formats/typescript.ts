@@ -9,10 +9,10 @@ export function generateSchemaTypeScript({
   enums = [],
   dialect,
 }: SchemaParams) {
-  const cols = columns.map((c) => {
+  const cols = columns.filter(c => c.type).map((c) => {
     const key = c.id
     const literalKey = toLiteralKey(key)
-    let typeScriptType = getColumnType(c.type, 'ts', dialect)
+    let typeScriptType = getColumnType(c.type!, 'ts', dialect)
 
     const foundEnum = findEnum(enums, c, table)
     if (foundEnum?.values.length) {

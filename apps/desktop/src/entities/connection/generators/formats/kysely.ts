@@ -28,8 +28,8 @@ export function generateSchemaKysely({
   dialect,
   enums = [],
 }: SchemaParams) {
-  const body = columns.map((c) => {
-    let tsType = getColumnType(c.type, 'ts', dialect)
+  const body = columns.filter(c => c.type).map((c) => {
+    let tsType = getColumnType(c.type!, 'ts', dialect)
     const foundEnum = findEnum(enums, c, table)
     if (foundEnum?.values.length) {
       tsType = foundEnum.values.map(v => `'${v}'`).join(' | ')

@@ -28,13 +28,17 @@ export const columnType = type({
 
 const clickhouseEnumRegex = /^Enum\d+/
 
-function getClickhouseColumnType(type: string) {
-  if (type.startsWith('Enum')) {
-    return type.match(clickhouseEnumRegex)?.[0] || 'Enum'
+function getClickhouseColumnType(type: string): string {
+  if (type.startsWith('Array(') && type.endsWith(')')) {
+    return `${getClickhouseColumnType(type.slice(6, -1))}[]`
   }
 
   if (type.startsWith('Nullable(') && type.endsWith(')')) {
-    return type.slice(9, -1)
+    return getClickhouseColumnType(type.slice(9, -1))
+  }
+
+  if (type.startsWith('Enum')) {
+    return type.match(clickhouseEnumRegex)?.[0] || 'Enum'
   }
 
   return type
@@ -103,8 +107,11 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
           ...row,
           type: data_type === 'ARRAY' ? `${udt_name.slice(1)}[]` : data_type,
           label: data_type === 'ARRAY' ? `${getPgColumnType(data_type, udt_name)}[]` : getPgColumnType(data_type, udt_name),
-          // TODO: handle enum name if data_type is ARRAY
-          enum: data_type === 'USER-DEFINED' ? udt_name : undefined,
+          enum: data_type === 'USER-DEFINED'
+            ? udt_name
+            : data_type === 'ARRAY'
+              ? udt_name.slice(1)
+              : undefined,
           isArray: data_type === 'ARRAY',
           maxLength: row.max_length,
         } satisfies typeof columnType.inferIn))
@@ -206,6 +213,7 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
         return query.map(row => ({
           ...row,
           enum: row.type.includes('Enum') ? row.id : undefined,
+          isArray: row.type.startsWith('Array('),
           label: getClickhouseColumnType(row.type),
         }))
       },

@@ -1,16 +1,17 @@
 import type { ColumnRenderer } from '@conar/table'
 import type { ComponentRef } from 'react'
-import type { Column } from '~/entities/connection/components/table/utils'
+import type { Column } from '~/entities/connection/components/table/cell'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { Table, TableBody, TableProvider } from '@conar/table'
+import { DEFAULT_COLUMN_WIDTH } from '@conar/table/constants'
 import { useShiftSelectionKeyDown } from '@conar/table/hooks'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { TableCell } from '~/entities/connection/components'
-import { getColumnSize, INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/utils'
+import { getColumnSize, INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell'
 import { findEnum, resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
 import { selectQuery } from '~/entities/connection/queries/select'
@@ -18,7 +19,7 @@ import { setQuery } from '~/entities/connection/queries/set'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { queryClient } from '~/main'
 import { Route } from '../..'
-import { useTableColumns } from '../../-queries/use-columns-query'
+import { useTableColumns } from '../../-queries/use-table-columns'
 import { useTablePageSelectionStore, useTablePageStore } from '../../-store'
 import { useColumnsOrder } from '../use-columns-order'
 import { RenameColumnDialog } from './rename-column-dialog'
@@ -29,10 +30,7 @@ import { TableInfiniteLoader } from './table-infinite-loader'
 import { SelectionCell, SelectionHeaderCell } from './table-selection'
 import { TableBodySkeleton } from './table-skeleton'
 
-function prepareValue(value: unknown, column?: Column): unknown {
-  if (!column)
-    return value
-
+function prepareValue(value: unknown, column: Column): unknown {
   return typeof value === 'string' && column.isArray
     ? JSON.parse(value)
     : value
@@ -140,7 +138,8 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     const rows = data.pages.flatMap(page => page.rows)
     const initialValue = rows[rowIndex]![columnId]
 
-    const preparedValue = prepareValue(newValue, columns?.find(c => c.id === columnId))
+    const foundColumn = columns.find(c => c.id === columnId)
+    const preparedValue = foundColumn ? prepareValue(newValue, foundColumn) : newValue
 
     setValue(rowIndex, columnId, preparedValue)
 
@@ -208,7 +207,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       .toSorted((a, b) => (a.primaryKey ? -1 : b.primaryKey ? 1 : 0))
       .map(column => ({
         id: column.id,
-        size: getColumnSize(column.type)
+        size: (column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH)
           // 25 it's a ~size of the button, 6 it's a ~size of the number
           + (column.references?.length ? 25 + 6 : 0)
           + (column.foreign ? 25 : 0),

@@ -1,4 +1,4 @@
-import type { Column } from '../components/table/utils'
+import type { Column } from '../components/table/cell'
 import type { connectionsResources } from '~/drizzle/schema'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
@@ -27,7 +27,17 @@ const clickhouseEnumValueRegex = /,(?=(?:[^']*'[^']*')*[^']*$)/
 const clickhouseEnumValuePairRegex = /'([^']+)' *= *\d+/
 
 function parseClickhouseEnum(type: string): string[] {
-  const match = type.match(clickhouseEnumRegex)
+  let inner = type
+
+  if (inner.startsWith('Array(') && inner.endsWith(')')) {
+    inner = inner.slice(6, -1)
+  }
+
+  if (inner.startsWith('Nullable(') && inner.endsWith(')')) {
+    inner = inner.slice(9, -1)
+  }
+
+  const match = inner.match(clickhouseEnumRegex)
 
   if (!match || !match[1])
     return []
@@ -165,7 +175,7 @@ export const resourceEnumsQuery = createQuery({
         ])
         .where(({ and, eb }) => and([
           eb('table_schema', 'not in', ['INFORMATION_SCHEMA', 'information_schema', 'system']),
-          eb('data_type', 'ilike', 'Enum%'),
+          eb('data_type', 'ilike', '%Enum%'),
         ]))
         .execute()
 

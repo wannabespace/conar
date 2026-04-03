@@ -1,6 +1,5 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Column } from './utils'
-import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { CellContext } from './cell-context'
 import { getEditableValue } from './utils'
@@ -15,11 +14,7 @@ export function TableCellProvider({
   column,
   value,
   availableValues,
-  displayValue,
-  onSaveValue,
-  onSavePending,
-  onSaveSuccess,
-  onSaveError,
+  onUpdate,
 }: {
   rowIndex: number
   children: React.ReactNode
@@ -29,36 +24,13 @@ export function TableCellProvider({
   onRenameColumn?: () => void
   column: Column
   value: unknown
-  displayValue: string
-  onSaveValue?: (rowIndex: number, columnsId: string, value: unknown) => Promise<void>
-  onSavePending: () => void
-  onSaveSuccess: () => void
-  onSaveError?: (error: Error) => void
   availableValues?: string[]
+  onUpdate: (value: string | null) => void
 }) {
-  const [newValue, setNewValue] = useState<string>(() => getEditableValue({
+  const [newValue, setNewValue] = useState(() => getEditableValue({
     value,
-    oneLine: false,
     column,
   }))
-
-  const { mutate: update } = useMutation({
-    mutationFn: async ({ rowIndex, value }: { value: string | null, rowIndex: number }) => {
-      if (!onSaveValue)
-        return
-
-      onSavePending()
-
-      await onSaveValue(
-        rowIndex,
-        column.id,
-        value,
-      )
-    },
-    onError: onSaveError,
-    onSuccess: onSaveSuccess,
-  })
-
   return (
     <CellContext value={{
       rowIndex,
@@ -66,8 +38,7 @@ export function TableCellProvider({
       setNewValue,
       column,
       value,
-      displayValue,
-      update,
+      onUpdate,
       availableValues,
       onAddFilter,
       onSort,

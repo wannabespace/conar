@@ -1,6 +1,6 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { decrypt, encrypt } from '@conar/shared/utils/encryption'
-import { tryParseJson } from '@conar/shared/utils/helpers'
+import { sleep, tryParseJson } from '@conar/shared/utils/helpers'
 import { isNetworkError } from '@conar/shared/utils/network-error'
 import { app, ipcMain } from 'electron'
 import { autoUpdater, sendToast } from '..'
@@ -43,7 +43,7 @@ async function retryIfConnectionError<T>(func: () => Promise<T>, {
   catch (error) {
     if (isNetworkError(error)) {
       if (attempt < MAX_RECONNECTION_ATTEMPTS) {
-        await new Promise(resolve => setTimeout(resolve, RECONNECTION_DELAY))
+        await sleep(RECONNECTION_DELAY)
         onRetry?.({ attempt: attempt + 1 })
         return retryIfConnectionError(func, {
           attempt: attempt + 1,

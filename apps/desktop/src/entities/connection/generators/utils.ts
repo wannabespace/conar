@@ -1,6 +1,6 @@
 /* eslint-disable e18e/prefer-static-regex */
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import type { Column } from '../components/table/utils'
+import type { Column } from '../components/table/cell'
 
 export type GeneratorFormat = 'ts' | 'zod' | 'prisma' | 'sql' | 'drizzle' | 'kysely'
 

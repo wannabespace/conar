@@ -3,6 +3,7 @@ import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { memoize } from '@conar/shared/utils/helpers'
 import { type } from 'arktype'
 import { createComputed, createStore } from 'seitu'
+import { repairValueObjectWithDefault } from 'seitu/utils'
 import { createWebStorageValue } from 'seitu/web'
 import { getEditorQueries } from '~/entities/connection/utils'
 
@@ -26,15 +27,7 @@ export const getConnectionStore = memoize((id: string) => createWebStorageValue(
     pinnedResourcesNames: [],
   },
   schema,
-  onValidationError({ value }) {
-    const lastOpenedResourceName = typeof value === 'object' && value !== null && 'lastOpenedResourceName' in value && typeof value.lastOpenedResourceName === 'string' ? value.lastOpenedResourceName : null
-    const pinnedResourcesNames = typeof value === 'object' && value !== null && 'pinnedResourcesNames' in value && Array.isArray(value.pinnedResourcesNames) ? value.pinnedResourcesNames : []
-
-    return {
-      lastOpenedResourceName,
-      pinnedResourcesNames,
-    }
-  },
+  onValidationError: repairValueObjectWithDefault,
 }))
 
 export const connectionResourceType = type({
@@ -111,6 +104,7 @@ export const getConnectionResourceStore = memoize((id: string) => createWebStora
   key: `connection-resource-store-${id}`,
   defaultValue: connectionResourceDefaultState,
   schema: connectionResourceType,
+  onValidationError: repairValueObjectWithDefault,
 }))
 
 export const getEditorQueriesComputed = memoize((id: string) => {

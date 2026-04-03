@@ -1,8 +1,10 @@
 import type { connectionsResources } from '~/drizzle/schema'
+import type { Column } from '~/entities/connection/components/table/cell'
 import { useQueries } from '@tanstack/react-query'
+import { getColumnUiType } from '~/entities/connection/components/table/cell'
 import { resourceConstraintsQueryOptions, resourceTableColumnsQueryOptions } from '~/entities/connection/queries'
 
-export function useTableColumns({ connectionResource, table, schema }: { connectionResource: typeof connectionsResources.$inferSelect, table: string, schema: string }) {
+export function useTableColumns({ connectionResource, table, schema }: { connectionResource: typeof connectionsResources.$inferSelect, table: string, schema: string }): Column[] {
   const [columns, constraints] = useQueries({
     queries: [
       resourceTableColumnsQueryOptions({ connectionResource, table, schema }),
@@ -20,6 +22,7 @@ export function useTableColumns({ connectionResource, table, schema }: { connect
 
       return {
         ...column,
+        uiType: getColumnUiType(column),
         primaryKey: primaryConstraint?.name,
         defaultValue: column.default,
         unique: uniqueConstraint?.name,

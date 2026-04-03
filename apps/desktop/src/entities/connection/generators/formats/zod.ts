@@ -28,7 +28,7 @@ function buildZodType(
     zodType = zodType.replace('z.string()', `z.string().max(${column.maxLength})`)
   }
   // eslint-disable-next-line e18e/prefer-static-regex
-  if (zodType.includes('z.number()') && /int/i.test(column.type)) {
+  if (zodType.includes('z.number()') && /int/i.test(column.type!)) {
     zodType = zodType.replace('z.number()', 'z.int()')
   }
   return zodType

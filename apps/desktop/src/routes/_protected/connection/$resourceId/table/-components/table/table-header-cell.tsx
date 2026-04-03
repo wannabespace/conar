@@ -1,7 +1,7 @@
 import type { TableHeaderCellProps } from '@conar/table'
 import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
 import type { storeState } from '../../-store'
-import type { Column } from '~/entities/connection/components/table/utils'
+import type { Column } from '~/entities/connection/components/table/cell'
 import { useTableContext } from '@conar/table/hooks'
 import { Button } from '@conar/ui/components/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'

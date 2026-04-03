@@ -1,4 +1,4 @@
-import type { Column } from '../components/table/utils'
+import type { Column } from '../components/table/cell'
 import { faker } from '@faker-js/faker'
 
 export const SKIP_GENERATOR = 'skip-generator'
@@ -206,7 +206,7 @@ export const GENERATOR_GROUPS: GeneratorGroup[] = Object.entries(GENERATORS).red
 
 export function autoDetectGenerator(column: Column): GeneratorId {
   const name = column.id.toLowerCase().replaceAll('_', '')
-  const type = column.type.toLowerCase()
+  const type = column.type?.toLowerCase() ?? ''
 
   if (column.foreign)
     return REFERENCE_GENERATOR

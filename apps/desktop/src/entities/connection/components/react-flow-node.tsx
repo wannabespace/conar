@@ -1,5 +1,5 @@
 import type { Edge, Node, NodeProps } from '@xyflow/react'
-import type { Column } from './table/utils'
+import type { Column } from './table/cell'
 import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
 import { RiBookOpenLine, RiEraserLine, RiExternalLinkLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiTableLine } from '@remixicon/react'
@@ -112,7 +112,11 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
                 )}
                 <span data-mask className="truncate font-medium">{column.id}</span>
               </div>
-              <span className="max-w-1/2 truncate text-muted-foreground/60">{column.type}</span>
+              {(column.label || column.type) && (
+                <span className="max-w-1/2 truncate text-muted-foreground/60">
+                  {column.label || column.type}
+                </span>
+              )}
               {column.foreign && (
                 <Handle
                   type="source"

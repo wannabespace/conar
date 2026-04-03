@@ -1,5 +1,5 @@
 import { generateCodeChallenge, generateVerifier } from '@conar/shared/utils/challenge'
-import { AppLogoSquareMotion } from '@conar/ui/components/brand/app-logo-square.motion'
+import { AppLogoSquareMotion } from '@conar/ui/components/brand/app-logo-square'
 import { ButtonMotion } from '@conar/ui/components/button.motion'
 import { RiErrorWarningLine } from '@remixicon/react'
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'

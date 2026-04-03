@@ -61,8 +61,8 @@ export function generateSchemaDrizzle({
 
   const varName = camelCase(table)
 
-  const cols = columns.map((c) => {
-    let typeFunc = getColumnType(c.type, 'drizzle', dialect)
+  const cols = columns.filter(c => c.type).map((c) => {
+    let typeFunc = getColumnType(c.type!, 'drizzle', dialect)
 
     dialectImports.add(typeFunc)
 

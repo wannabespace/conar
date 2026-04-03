@@ -1,4 +1,4 @@
-import type { useTableColumns } from '../../-queries/use-columns-query'
+import type { useTableColumns } from '../../-queries/use-table-columns'
 import type { GeneratorGroup, GeneratorId } from '~/entities/connection/utils/seeds'
 import { pick } from '@conar/shared/utils/helpers'
 import { Badge } from '@conar/ui/components/badge'

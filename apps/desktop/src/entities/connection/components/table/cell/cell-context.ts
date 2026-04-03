@@ -1,5 +1,4 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { UseMutateFunction } from '@tanstack/react-query'
 import type { Dispatch, SetStateAction } from 'react'
 import type { Column } from './utils'
 import { createContext, use } from 'react'
@@ -10,8 +9,7 @@ export const CellContext = createContext<{
   setNewValue: Dispatch<SetStateAction<string>>
   column: Column
   value: unknown
-  displayValue: string
-  update: UseMutateFunction<void, Error, { value: string | null, rowIndex: number }>
+  onUpdate: (value: string | null) => void
   availableValues?: string[]
   onAddFilter?: (filter: ActiveFilter) => void
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void

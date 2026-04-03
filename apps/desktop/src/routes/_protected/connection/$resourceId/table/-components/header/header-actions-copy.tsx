@@ -38,7 +38,7 @@ import * as generators from '~/entities/connection/generators'
 import { GENERATOR_COMPATIBILITY } from '~/entities/connection/generators/compatibility'
 import { resourceEnumsQueryOptions, resourceIndexesQueryOptions } from '~/entities/connection/queries'
 import { Route } from '../..'
-import { useTableColumns } from '../../-queries/use-columns-query'
+import { useTableColumns } from '../../-queries/use-table-columns'
 import { useTablePageStore } from '../../-store'
 
 type Format = {
