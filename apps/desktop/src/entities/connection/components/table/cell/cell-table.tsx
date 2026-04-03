@@ -50,10 +50,6 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
         size: column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH,
         cell: props => (
           <TableCellContent
-            isPopoverOpen={false}
-            isForeignOpen={false}
-            isReferencesOpen={false}
-            status="idle"
             column={column}
             value={props.value}
             position={props.position}

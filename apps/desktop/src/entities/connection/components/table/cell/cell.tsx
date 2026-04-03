@@ -9,9 +9,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/po
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowLeftDownLine, RiArrowRightUpLine } from '@remixicon/react'
-import { useMutation } from '@tanstack/react-query'
 import { format, isValid } from 'date-fns'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { TableCellContent } from './cell-content'
 import { useCellContext } from './cell-context'
@@ -86,19 +85,6 @@ function ReferenceButton({ children, className, ...props }: ComponentProps<typeo
   )
 }
 
-function getTimestamp(value: unknown, column: Column) {
-  const date = (
-    column?.type?.includes('timestamp')
-    || column?.type?.includes('datetime')
-  )
-  && value
-  && (typeof value === 'string' || typeof value === 'number')
-    ? new Date(value)
-    : null
-
-  return date && isValid(date) ? date : null
-}
-
 export function TableCell({
   value,
   rowIndex,
@@ -129,28 +115,17 @@ export function TableCell({
   const [isBig, setIsBig] = useState(false)
   const [isSetNullDialogOpen, setIsSetNullDialogOpen] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
+  const [status, setStatus] = useState<'error' | 'idle' | 'pending' | 'success'>('idle')
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const { mutate: update, status } = useMutation({
-    mutationFn: async (value: string | null) => {
-      if (!onSaveValue)
-        return
-
-      await onSaveValue(
-        rowIndex,
-        column.id,
-        value,
-      )
-    },
-    onError: (error) => {
-      console.error(error)
-
-      toast.error(`Failed to update cell "${column.id}"`, {
-        id: `save-cell-error-${column.id}-${error.message}`,
-        description: error.message,
-        duration: 3000,
-      })
-    },
-  })
+  const cellClassName = cn(
+    isPopoverOpen && 'bg-primary/10 ring-primary/30',
+    (isForeignOpen || isReferencesOpen) && 'bg-accent/30 ring-accent/60',
+    status === 'error' && 'bg-destructive/20 ring-destructive/50',
+    status === 'success' && 'bg-success/10 ring-success/50',
+    status === 'pending' && 'animate-pulse bg-primary/10',
+    (column.foreign || (column.references?.length ?? 0) > 0) && 'pr-1!',
+  )
 
   function disableInteractIfPossible() {
     if (!isPopoverOpen && !isForeignOpen && !isReferencesOpen && !isContextMenuOpen && !isSetNullDialogOpen) {
@@ -161,11 +136,8 @@ export function TableCell({
   if (!canInteract) {
     return (
       <TableCellContent
-        isPopoverOpen={isPopoverOpen}
-        isForeignOpen={isForeignOpen}
-        isReferencesOpen={isReferencesOpen}
-        status={status}
         column={column}
+        className={cellClassName}
         onMouseOver={() => setCanInteract(true)}
         onMouseLeave={disableInteractIfPossible}
         style={style}
@@ -179,7 +151,39 @@ export function TableCell({
     )
   }
 
-  const date = column ? getTimestamp(value, column) : null
+  const update = async (value: string | null) => {
+    if (!onSaveValue)
+      return
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+
+    setStatus('pending')
+
+    try {
+      await onSaveValue(
+        rowIndex,
+        column.id,
+        value,
+      )
+      setStatus('success')
+      timeoutRef.current = setTimeout(setStatus, 3000, 'idle')
+    }
+    catch (e) {
+      const error = e instanceof Error ? e : new Error(String(e))
+      console.error(error)
+
+      toast.error(`Failed to update cell "${column.id}"`, {
+        id: `save-cell-error-${column.id}-${error.message}`,
+        description: error.message,
+        duration: 3000,
+      })
+      setStatus('error')
+    }
+  }
+
+  const date = isValid(new Date(value as Date)) ? new Date(value as Date) : null
 
   return (
     <TableCellProvider
@@ -235,10 +239,7 @@ export function TableCell({
                     style={style}
                     value={value}
                     position={position}
-                    isPopoverOpen={isPopoverOpen}
-                    isForeignOpen={isForeignOpen}
-                    isReferencesOpen={isReferencesOpen}
-                    status={status}
+                    className={cellClassName}
                     column={column}
                   />
                 )}
