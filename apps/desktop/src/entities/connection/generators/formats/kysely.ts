@@ -1,7 +1,7 @@
 import type { QueryParams, SchemaParams } from '..'
 import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
-import { formatValue, getColumnType } from '../utils'
+import { formatEnumAsUnionType, formatValue, getColumnType, toLiteralKey } from '../utils'
 
 export function generateQueryKysely({
   table,
@@ -17,7 +17,7 @@ export function generateQueryKysely({
       return `'${col}', '${method}', ${JSON.stringify(f.values)}`
     }
     return `'${col}', '${f.ref.operator}', ${formatValue(f.values[0])}`
-  }).filter(Boolean).join(')\n  .where(')
+  }).join(')\n  .where(')
 
   return templates.kyselyQueryTemplate(table, conditions)
 }
@@ -32,17 +32,14 @@ export function generateSchemaKysely({
     let tsType = getColumnType(c.type, 'ts', dialect)
     const foundEnum = findEnum(enums, c, table)
     if (foundEnum?.values.length) {
-      tsType = foundEnum.values.map(v => `'${v}'`).join(' | ')
-      if (c.type === 'set')
-        tsType = `(${tsType})[]`
+      tsType = formatEnumAsUnionType(foundEnum.values, c.type)
     }
 
     const isGenerated = c.primaryKey
     let typeDef = isGenerated ? `Generated<${tsType}>` : tsType
     if (c.isNullable)
       typeDef += ' | null'
-    // eslint-disable-next-line e18e/prefer-static-regex
-    const safeKey = /^[a-z_$][\w$]*$/i.test(c.id) ? c.id : `'${c.id}'`
+    const safeKey = toLiteralKey(c.id)
     return `  ${safeKey}: ${typeDef};`
   }).join('\n')
 

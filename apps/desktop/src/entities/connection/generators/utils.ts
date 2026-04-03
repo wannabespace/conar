@@ -20,8 +20,17 @@ export interface GroupedIndex extends Pick<Index, 'type' | 'name' | 'isUnique' |
   customExpressions: string[]
 }
 
+export function isValidIdentifier(name: string): boolean {
+  return /^[a-z_$][\w$]*$/i.test(name)
+}
+
 export function toLiteralKey(name: string) {
-  return /^[a-z_$][\w$]*$/i.test(name) ? name : `'${name}'`
+  return isValidIdentifier(name) ? name : `'${name}'`
+}
+
+export function formatEnumAsUnionType(values: string[], columnType?: string): string {
+  const union = values.map(v => `'${v}'`).join(' | ')
+  return columnType === 'set' ? `(${union})[]` : union
 }
 
 function tsMapper(t: string) {
