@@ -1,7 +1,7 @@
 import type { SchemaParams } from '..'
 import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
-import { getColumnType, toLiteralKey } from '../utils'
+import { formatEnumAsUnionType, getColumnType, toLiteralKey } from '../utils'
 
 export function generateSchemaTypeScript({
   table,
@@ -10,21 +10,18 @@ export function generateSchemaTypeScript({
   dialect,
 }: SchemaParams) {
   const cols = columns.filter(c => c.type).map((c) => {
-    const key = c.id
-    const literalKey = toLiteralKey(key)
+    const literalKey = toLiteralKey(c.id)
     let typeScriptType = getColumnType(c.type!, 'ts', dialect)
 
     const foundEnum = findEnum(enums, c, table)
     if (foundEnum?.values.length) {
-      typeScriptType = foundEnum.values.map(v => `'${v}'`).join(' | ')
-      if (c.type === 'set')
-        typeScriptType = `(${typeScriptType})[]`
+      typeScriptType = formatEnumAsUnionType(foundEnum.values, c.type)
     }
     if (c.isNullable)
       typeScriptType += ' | null'
 
     return `  ${literalKey}${c.isNullable ? '?' : ''}: ${typeScriptType};`
-  }).filter(Boolean).join('\n')
+  }).join('\n')
 
   return templates.typeScriptSchemaTemplate(table, cols)
 }

@@ -6,9 +6,9 @@ import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
 import { filterExplicitIndexes, getColumnType, groupIndexes } from '../utils'
 
-export type PrismaFilterValue = string | number | boolean | Date | null | { [key: string]: PrismaFilterValue } | PrismaFilterValue[]
+type PrismaFilterValue = string | number | boolean | Date | null | { [key: string]: PrismaFilterValue } | PrismaFilterValue[]
 
-export function isPrismaFilterValue(v: unknown): v is PrismaFilterValue {
+function isPrismaFilterValue(v: unknown): v is PrismaFilterValue {
   return v !== undefined && typeof v !== 'symbol' && typeof v !== 'function'
 }
 
@@ -78,17 +78,17 @@ export function generateQueryPrisma({ table, filters }: QueryParams) {
   return templates.prismaQueryTemplate(tableName, jsonWhere)
 }
 
+const FK_ACTION_MAP: Record<string, string> = {
+  'CASCADE': 'Cascade',
+  'SET NULL': 'SetNull',
+  'SET DEFAULT': 'SetDefault',
+  'RESTRICT': 'Restrict',
+  'NO ACTION': 'NoAction',
+}
+
 function foreignActionToPrisma(action: string, kind: 'onDelete' | 'onUpdate'): string {
-  const key = kind === 'onDelete' ? 'onDelete' : 'onUpdate'
-  const map: Record<string, string> = {
-    'CASCADE': 'Cascade',
-    'SET NULL': 'SetNull',
-    'SET DEFAULT': 'SetDefault',
-    'RESTRICT': 'Restrict',
-    'NO ACTION': 'NoAction',
-  }
-  const value = map[action?.toUpperCase() ?? '']
-  return value ? `, ${key}: ${value}` : ''
+  const value = FK_ACTION_MAP[action?.toUpperCase() ?? '']
+  return value ? `, ${kind}: ${value}` : ''
 }
 
 export function generateSchemaPrisma({
@@ -201,10 +201,7 @@ export function generateSchemaPrisma({
   const explicitIndexes = filterExplicitIndexes(groupedIndexes, columns)
 
   const indexBlocks = explicitIndexes.filter(idx => idx.columns.length > 0).map((idx) => {
-    const fieldNames = idx.columns.map((col) => {
-      const colDef = columns.find(c => c.id === col)
-      return colDef ? camelCase(colDef.id) : col
-    })
+    const fieldNames = idx.columns.map(col => camelCase(col))
     const type = idx.isUnique ? '@@unique' : '@@index'
     return `  ${type}([${fieldNames.join(', ')}], map: "${idx.name}")`
   })

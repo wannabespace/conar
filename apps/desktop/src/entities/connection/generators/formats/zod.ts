@@ -43,7 +43,7 @@ export function generateSchemaZod({
   const lines = columns
     .map((column) => {
       const key = toLiteralKey(column.id)
-      const zodType = buildZodType(column, table, dialect, enums ?? [])
+      const zodType = buildZodType(column, table, dialect, enums)
 
       if (!zodType)
         return null
