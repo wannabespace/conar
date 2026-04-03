@@ -22,7 +22,10 @@ export const Route = createFileRoute('/_layout/download')({
   component: RouteComponent,
   head: () => ({
     meta: seo({
-      title: 'Download Conar',
+      title: 'Download Conar - Available for macOS, Windows and Linux',
+      description: 'Download Conar for macOS (Apple Silicon & Intel), Windows, and Linux. Available as DMG, EXE, DEB, RPM, and AppImage.',
+      image: '/og-image.png',
+      url: 'https://conar.app/download',
     }),
   }),
 })
