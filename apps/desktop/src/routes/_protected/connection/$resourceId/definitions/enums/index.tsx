@@ -1,7 +1,8 @@
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardMotion, CardTitle } from '@conar/ui/components/card'
+import { CardContent, CardTitle } from '@conar/ui/components/card'
+import { CardMotion } from '@conar/ui/components/card.motion'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { cn } from '@conar/ui/lib/utils'
@@ -26,6 +27,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/definit
   }),
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabaseEnumsPage() {
   const { connection, connectionResource } = Route.useRouteContext()
   const { data: enums, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceEnumsQueryOptions({ connectionResource }))

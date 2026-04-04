@@ -25,9 +25,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
           shadow-[0_1px_1px_rgba(0,0,0,0.02),0_2px_2px_rgba(0,0,0,0.02),0_4px_4px_rgba(0,0,0,0.02),0_8px_8px_rgba(0,0,0,0.02),0_16px_16px_rgba(0,0,0,0.02),0_32px_32px_rgba(0,0,0,0.02)]
           transition-opacity
         `,
-        data.searchActive && data.tableSearchMatched && `
-          ring-2 ring-primary/60 ring-offset-2
-        `,
+        data.searchActive && data.tableSearchMatched && `ring-1 ring-primary/60`,
         data.searchActive && !data.tableSearchMatched && !data.columns.some(c => c.searchMatched) && `
           opacity-50
         `,
@@ -69,7 +67,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
             className={cn(
               'group relative px-4 transition-opacity',
               data.searchActive && column.searchMatched && `
-                rounded-sm text-primary ring-2 ring-primary/60 ring-offset-2
+                rounded-sm text-primary ring-1 ring-primary/60
               `,
               data.searchActive && data.columns.some(c => c.searchMatched) && !column.searchMatched && `
                 opacity-50

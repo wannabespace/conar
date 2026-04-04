@@ -6,6 +6,7 @@ export const Route = createLazyFileRoute('/_layout/privacy-policy')({
   component: PrivacyPolicy,
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function PrivacyPolicy() {
   return (
     <div className="container mx-auto max-w-3xl px-4 py-20">
@@ -15,7 +16,7 @@ function PrivacyPolicy() {
       `}
       >
         <h1 className="
-          text-2xl leading-none font-bold mb-6
+          mb-6 text-2xl leading-none font-bold
           lg:text-4xl
         "
         >

@@ -1,6 +1,4 @@
-import { DEFAULT_COLUMN_WIDTH } from '@conar/table'
-
-export { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '@conar/table'
+import { DEFAULT_COLUMN_WIDTH } from '@conar/table/constants'
 
 export interface Column {
   id: string

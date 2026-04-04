@@ -42,6 +42,7 @@ const createConnectionType = type({
   color: 'string | null',
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function CreateConnectionPage() {
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()

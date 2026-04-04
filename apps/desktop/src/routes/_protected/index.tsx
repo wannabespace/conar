@@ -26,6 +26,7 @@ export const Route = createFileRoute('/_protected/')({
   }),
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DashboardPage() {
   const { mutate: sync, isPending: isSyncing } = useMutation({
     mutationFn: async () => {

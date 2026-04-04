@@ -32,14 +32,14 @@ export const banner = orpc
 
     if (env.MIN_DESKTOP_VERSION && context.appVersion?.minor && context.appVersion.minor < env.MIN_DESKTOP_VERSION) {
       items.push({
-        text: `You are using an outdated version of the desktop app. Please update to the latest version.`,
+        text: `You are using an outdated version of the desktop app. Please download the latest version from conar.app/download`,
         type: 'warning',
       })
     }
 
     if (context.appVersion?.minor && context.appVersion.minor === 25 && context.os === 'linux') {
       items.push({
-        text: 'Linux updates broken in 0.25.0 due to provider change. Please download new version manually on conar.app/download',
+        text: 'Linux updates broken in 0.25.0 due to provider change. Please download the latest version from conar.app/download',
         type: 'warning',
       })
     }

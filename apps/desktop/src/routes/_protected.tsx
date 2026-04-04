@@ -13,6 +13,7 @@ export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function ProtectedLayout() {
   const { data } = authClient.useSession()
   const isOnline = useSubscription(appStore, { selector: state => state.isOnline })

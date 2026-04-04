@@ -1,7 +1,8 @@
 import type { indexesType } from '~/entities/connection/queries'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardMotion, CardTitle } from '@conar/ui/components/card'
+import { CardContent, CardTitle } from '@conar/ui/components/card'
+import { CardMotion } from '@conar/ui/components/card.motion'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
@@ -42,6 +43,7 @@ const filterOptions: { label: string, value: IndexType | 'all' }[] = [
   { label: 'Regular Index', value: 'regular' },
 ]
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabaseIndexesPage() {
   const { connectionResource } = Route.useRouteContext()
   const { data: indexes, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceIndexesQueryOptions({ connectionResource }))

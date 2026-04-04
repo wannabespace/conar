@@ -3,15 +3,12 @@ import type * as React from 'react'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@conar/ui/lib/utils'
-import { motion } from 'motion/react'
 import { buttonVariants } from './button.variants'
 
 export interface ButtonProps extends useRender.ComponentProps<'button'> {
   variant?: VariantProps<typeof buttonVariants>['variant']
   size?: VariantProps<typeof buttonVariants>['size']
 }
-
-export const ButtonMotion = motion.create(Button)
 
 export function Button({
   className,

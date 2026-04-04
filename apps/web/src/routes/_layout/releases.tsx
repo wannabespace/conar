@@ -8,15 +8,24 @@ import { format } from 'date-fns'
 import { useState } from 'react'
 import { Streamdown } from 'streamdown'
 import { orpc } from '~/lib/orpc'
+import { seo } from '~/utils/seo'
 
 export const Route = createFileRoute('/_layout/releases')({
   component: RouteComponent,
+  head: () => ({
+    meta: seo({
+      title: 'Releases - Conar',
+      description: 'View the latest Conar releases, changelogs, and version history. Stay up to date with new features and improvements.',
+      url: 'https://conar.app/releases',
+    }),
+  }),
   loader: async () => {
     const releases = await orpc.releases.call()
     return { releases }
   },
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function RouteComponent() {
   const { releases } = Route.useLoaderData()
   const [expandedReleases, setExpandedReleases] = useState<string[]>([String(releases[0]!.id)])

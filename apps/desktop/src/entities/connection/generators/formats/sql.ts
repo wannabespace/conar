@@ -186,7 +186,7 @@ function appendIndexStatements(
       dialect === ConnectionType.Postgres && idx.type ? `USING ${idx.type}` : '',
       `(${[
         ...idx.columns.map(c => quoteIdentifier(c, dialect)),
-        ...idx.customExpressions.map(c => c),
+        ...idx.customExpressions,
       ].join(', ')})`,
     ].filter(Boolean).join(' ')
   })

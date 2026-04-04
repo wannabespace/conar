@@ -4,6 +4,8 @@
   "private": true,
   "exports": {
     ".": "./src/index.ts",
+    "./hooks": "./src/hooks.ts",
+    "./utils": "./src/utils.ts",
     "./constants": "./src/constants.ts"
   },
   "scripts": {

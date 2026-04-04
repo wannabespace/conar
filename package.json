@@ -30,8 +30,6 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",
-    "@commitlint/cli": "catalog:",
-    "@commitlint/config-conventional": "catalog:",
     "@eslint-react/eslint-plugin": "catalog:",
     "@types/bun": "catalog:",
     "cross-env": "catalog:",

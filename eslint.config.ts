@@ -19,7 +19,6 @@ export default antfu(
       'react-hooks/exhaustive-deps': ['warn', {
         additionalHooks: '(useMountedEffect|useAsyncEffect)',
       }],
-      'react-refresh/only-export-components': 'off',
       'pnpm/yaml-enforce-settings': 'off',
     },
     ignores: [

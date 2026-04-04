@@ -9,7 +9,7 @@ import {
 import { cn } from '@conar/ui/lib/utils'
 import * as React from 'react'
 
-export const ToggleGroupContext: React.Context<
+const ToggleGroupContext: React.Context<
   VariantProps<typeof toggleVariants>
 > = React.createContext<VariantProps<typeof toggleVariants>>({
   size: 'default',
@@ -126,4 +126,4 @@ export function ToggleGroupSeparator({
   )
 }
 
-export { Toggle as ToggleGroupItem, ToggleGroupPrimitive }
+export { Toggle as ToggleGroupItem }

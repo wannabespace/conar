@@ -11,6 +11,7 @@ export const Route = createFileRoute('/_layout')({
   component: MainLayout,
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function MainLayout() {
   const { scrollY } = useScroll()
   const navbarHeight = useTransform(scrollY, [0, NAVBAR_HEIGHT_BASE], [NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED])

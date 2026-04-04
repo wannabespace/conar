@@ -7,7 +7,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { ChevronsUpDownIcon, XIcon } from 'lucide-react'
 import * as React from 'react'
 
-export const ComboboxContext: React.Context<{
+const ComboboxContext: React.Context<{
   chipsRef: React.RefObject<Element | null> | null
   multiple: boolean
 }> = React.createContext<{
@@ -564,8 +564,3 @@ export function ComboboxChipRemove(
     </ComboboxPrimitive.ChipRemove>
   )
 }
-
-export const useComboboxFilter: typeof ComboboxPrimitive.useFilter
-  = ComboboxPrimitive.useFilter
-
-export { ComboboxPrimitive }

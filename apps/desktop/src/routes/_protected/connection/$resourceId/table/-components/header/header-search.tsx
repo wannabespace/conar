@@ -33,11 +33,14 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
       store.set(state => ({
         ...state,
         orderBy: data.orderBy,
-        filters: data.filters.map(filter => ({
-          column: filter.column,
-          ref: SQL_FILTERS_LIST.find(f => f.operator === filter.operator)!,
-          values: filter.values,
-        } satisfies ActiveFilter)),
+        filters: data.filters
+          .map(filter => ({
+            column: filter.column,
+            ref: SQL_FILTERS_LIST.find(f => f.operator === filter.operator),
+            values: filter.values,
+          } satisfies Omit<ActiveFilter, 'ref'> & { ref?: ActiveFilter['ref'] }))
+          // For future updates if we'll have new filters
+          .filter(f => !!f.ref) as ActiveFilter[],
       } satisfies typeof state))
 
       if (data.filters.length === 0 && !hasOrderBy) {

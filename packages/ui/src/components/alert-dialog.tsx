@@ -1,8 +1,6 @@
 import { AlertDialog as AlertDialogPrimitive } from '@base-ui/react/alert-dialog'
 import { cn } from '@conar/ui/lib/utils'
 
-const AlertDialogCreateHandle = AlertDialogPrimitive.createHandle
-
 const AlertDialog = AlertDialogPrimitive.Root
 
 const AlertDialogPortal = AlertDialogPrimitive.Portal
@@ -193,13 +191,11 @@ export {
   AlertDialogBackdrop,
   AlertDialogClose,
   AlertDialogPopup as AlertDialogContent,
-  AlertDialogCreateHandle,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogBackdrop as AlertDialogOverlay,
   AlertDialogPopup,
-  AlertDialogPortal,
   AlertDialogTitle,
   AlertDialogTrigger,
   AlertDialogViewport,
