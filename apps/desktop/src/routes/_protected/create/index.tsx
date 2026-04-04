@@ -58,8 +58,18 @@ function CreateConnectionPage() {
   }) {
     const id = v7()
     const url = new SafeURL(data.connectionString.trim())
+    let resource = url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
 
-    connectionsCollection.insert({
+    // DuckDB stores the file path in ?path=..., so the URL pathname is not a schema name.
+    // Default to DuckDB's built-in schema so the initial route has a valid resource.
+    if (data.type === ConnectionType.DuckDB && resource == null) {
+      resource = 'main'
+    }
+
+    // DuckDB paths are machine-local; skip cloud RPC so a failed remote insert cannot roll back PGlite.
+    const duckLocalOnly = { metadata: { cloudSync: false } as Record<string, unknown> }
+
+    const tx = connectionsCollection.insert({
       id,
       name: data.name,
       type: data.type,
@@ -71,11 +81,7 @@ function CreateConnectionPage() {
       syncType: data.saveInCloud ? SyncType.Cloud : SyncType.CloudWithoutPassword,
       createdAt: new Date(),
       updatedAt: new Date(),
-    })
-
-    toast.success('Connection created successfully 🎉')
-
-    const resource = url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
+    }, data.type === ConnectionType.DuckDB ? duckLocalOnly : undefined)
 
     if (resource) {
       getConnectionStore(id).set({
@@ -86,15 +92,30 @@ function CreateConnectionPage() {
 
     const resourceId = v7()
 
-    connectionsResourcesCollection.insert({
+    const resourceMeta = data.type === ConnectionType.DuckDB
+      ? { metadata: { cloudSync: false } as Record<string, unknown> }
+      : undefined
+
+    const resourceTx = connectionsResourcesCollection.insert({
       id: resourceId,
       connectionId: id,
       name: resource,
       createdAt: new Date(),
       updatedAt: new Date(),
-    })
-    prefetchConnectionResourceCore(connectionsResourcesCollection.get(resourceId)!)
-    router.navigate({ to: '/connection/$resourceId/table', params: { resourceId } })
+    }, resourceMeta)
+
+    Promise.all([tx.isPersisted.promise, resourceTx.isPersisted.promise])
+      .then(() => {
+        toast.success('Connection created successfully 🎉')
+        prefetchConnectionResourceCore(connectionsResourcesCollection.get(resourceId)!)
+        router.navigate({ to: '/connection/$resourceId/table', params: { resourceId } })
+      })
+      .catch((e) => {
+        console.error('Local save failed', e)
+        toast.error('Failed to save connection locally', {
+          description: e instanceof Error ? e.message : String(e),
+        })
+      })
   }
 
   const defaultValues: typeof createConnectionType.infer = {

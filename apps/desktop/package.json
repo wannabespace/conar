@@ -29,9 +29,9 @@
   },
   "dependencies": {
     "@clickhouse/client": "catalog:",
+    "@duckdb/node-api": "catalog:",
     "@tanstack/react-hotkeys": "catalog:",
     "@todesktop/runtime": "catalog:",
-    "@duckdb/node-api": "catalog:",
     "electron-store": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",

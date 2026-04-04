@@ -64,6 +64,21 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
         .$castTo<{ schema: string, table: string, type: 'BASE TABLE' | 'VIEW' }>()
         .where('table_schema', '=', connectionResource.name)
         .execute(),
+      duckdb: db => db
+        .selectFrom('information_schema.tables')
+        .select([
+          'table_schema as schema',
+          'table_name as table',
+          'table_type as type',
+        ])
+        .where('table_type', 'in', ['BASE TABLE', 'VIEW'])
+        .$castTo<{ schema: string, table: string, type: 'BASE TABLE' | 'VIEW' }>()
+        .where('table_schema', '=', connectionResource.name)
+        .where('table_catalog', 'not in', ['system', 'temp'])
+        .$if(!showSystem, qb => qb.where(({ eb, and }) => and([
+          eb('table_schema', 'not in', ['pg_catalog', 'information_schema']),
+        ])))
+        .execute(),
     },
   })
 })

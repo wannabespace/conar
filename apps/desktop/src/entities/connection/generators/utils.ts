@@ -79,18 +79,21 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type
     mysql: tsMapper,
     mssql: tsMapper,
     clickhouse: tsMapper,
+    duckdb: tsMapper,
   },
   zod: {
     postgres: zodMapper,
     mysql: zodMapper,
     mssql: zodMapper,
     clickhouse: zodMapper,
+    duckdb: zodMapper,
   },
   prisma: {
     postgres: prismaScalarMapper,
     mysql: prismaScalarMapper,
     mssql: t => (/^date$/i.test(t) ? 'DateTime @db.Date' : prismaScalarMapper(t)),
     clickhouse: () => '',
+    duckdb: prismaScalarMapper,
   },
   drizzle: {
     postgres: (t) => {
@@ -185,6 +188,29 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type
         return 'json'
       return 'text'
     },
+    duckdb: (t) => {
+      if (/serial/i.test(t))
+        return 'serial'
+      if (/int/i.test(t))
+        return 'integer'
+      if (/text/i.test(t))
+        return 'text'
+      if (/varchar|character varying/i.test(t))
+        return 'varchar'
+      if (/bool/i.test(t))
+        return 'boolean'
+      if (/timestamp/i.test(t))
+        return 'timestamp'
+      if (/date/i.test(t))
+        return 'date'
+      if (/decimal|numeric/i.test(t))
+        return 'decimal'
+      if (/double|float|real/i.test(t))
+        return 'doublePrecision'
+      if (/json/i.test(t))
+        return 'json'
+      return 'text'
+    },
   },
   sql: {
     postgres: (t) => {
@@ -199,12 +225,14 @@ export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type
     mysql: t => t,
     mssql: t => t,
     clickhouse: t => t,
+    duckdb: t => t,
   },
   kysely: {
     postgres: t => t,
     mysql: t => t,
     mssql: t => t,
     clickhouse: t => t,
+    duckdb: t => t,
   },
 }
 
@@ -231,6 +259,7 @@ const QUOTE_IDENTIFIER_MAP: Record<ConnectionType, (name: string) => string> = {
   clickhouse: (name: string) => `\`${name}\``,
   mssql: (name: string) => `[${name}]`,
   postgres: (name: string) => `"${name}"`,
+  duckdb: (name: string) => `"${name}"`,
 }
 
 export function quoteIdentifier(name: string, dialect: ConnectionType) {

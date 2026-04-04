@@ -31,6 +31,12 @@ export function insertQuery({ schema, table, rows }: {
         .insertInto(table)
         .values(rows)
         .execute(),
+      duckdb: db => db
+        .withSchema(schema)
+        .withTables<{ [table: string]: Record<string, unknown> }>()
+        .insertInto(table)
+        .values(rows)
+        .execute(),
     },
   })
 }

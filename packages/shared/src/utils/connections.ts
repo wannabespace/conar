@@ -5,5 +5,5 @@ export const placeholderMap: Record<ConnectionType, string> = {
   [ConnectionType.MySQL]: 'mysql://user:password@host:port/database?options',
   [ConnectionType.MSSQL]: 'sqlserver://user:password@host:port/database?options',
   [ConnectionType.ClickHouse]: 'https://user:password@host:port',
-  [ConnectionType.DuckDB]: '/path/to/database.db',
+  [ConnectionType.DuckDB]: 'duckdb:///?path=/path/to/database.db',
 }
