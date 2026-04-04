@@ -1,4 +1,5 @@
 import { type } from 'arktype'
+import { anonymousClient } from 'better-auth/client/plugins'
 import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { createWebStorageValue } from 'seitu/web'
@@ -32,6 +33,7 @@ export const authClient = createAuthClient({
   basePath: '/auth',
   plugins: [
     bearer(),
+    anonymousClient(),
   ],
   fetchOptions: {
     auth: {

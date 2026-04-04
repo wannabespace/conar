@@ -5,7 +5,7 @@ import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
-import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
+import { useAiLocked } from '~/entities/user/hooks'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
 import { RunnerEditorAIZone } from './runner-editor-ai-zone'
@@ -50,7 +50,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
   const editorQueries = useSubscription(editorQueriesStore, { selector: state => state })
   const domElementRef = useRef<HTMLElement>(null)
-  const { subscription } = useUserSubscription()
+  const { isAiLocked } = useAiLocked()
 
   const [currentAIZoneLineNumber, setCurrentAIZoneLineNumber] = useState<number | null>(null)
 
@@ -133,7 +133,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
 
         zoneId = changeAccessor.addZone({
           afterLineNumber: currentAIZoneQuery.startLineNumber - 1,
-          heightInPx: subscription ? 100 : 120,
+          heightInPx: isAiLocked ? 120 : 100,
           domNode,
         })
 
@@ -147,7 +147,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
       })
       highlightCollection.clear()
     }
-  }, [monacoRef, connection, connectionResource, currentAIZoneQuery, store, subscription])
+  }, [monacoRef, connection, connectionResource, currentAIZoneQuery, store, isAiLocked])
 
   const getInlineQueryEvent = useEffectEvent((position: Position) => {
     return editorQueries.find(query =>
