@@ -5,6 +5,7 @@ import { isNetworkError } from '@conar/shared/utils/network-error'
 import { app, ipcMain } from 'electron'
 import { autoUpdater, sendToast } from '..'
 import { getClient as getClickhouseClient } from '../connections/clickhouse'
+import { getConnection as getDuckDBConnection } from '../connections/duckdb'
 import { getPool as getMssqlPool } from '../connections/mssql'
 import { getPool as getMysqlPool } from '../connections/mysql'
 import { getPool as getPgPool } from '../connections/pg'
@@ -158,6 +159,19 @@ const queryMap = {
     }, retryOptions({ silent, connectionString, query })))
 
     return { result: result.recordset as unknown, duration: performance.now() - start! }
+  },
+  duckdb: async ({ connectionString, query, values, silent }: { query: string, values: unknown[], connectionString: string, silent?: boolean }) => {
+    let start = 0
+
+    const result = await handleAggregatedError(retryIfConnectionError(async () => {
+      const conn = await getDuckDBConnection(connectionString)
+      start = performance.now()
+      const reader = await conn.runAndReadAll(query, values as import('@duckdb/node-api').DuckDBValue[])
+
+      return reader.getRowObjectsJson() as unknown[]
+    }, retryOptions({ silent, connectionString, query })))
+
+    return { result: result as unknown, duration: performance.now() - start }
   },
 // eslint-disable-next-line ts/no-explicit-any
 } satisfies Record<ConnectionType, (...args: any[]) => Promise<{

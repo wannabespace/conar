@@ -181,6 +181,9 @@ export const resourceEnumsQuery = createQuery({
         } satisfies typeof enumType.infer))
         .filter(res => res.values.length > 0)
     },
+    duckdb: async () => {
+      return []
+    },
   },
 })
 

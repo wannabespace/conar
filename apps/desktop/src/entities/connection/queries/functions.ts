@@ -120,6 +120,9 @@ export const resourceFunctionsQuery = createQuery({
     clickhouse: () => {
       throw new Error('Clickhouse is not supported')
     },
+    duckdb: () => {
+      throw new Error('DuckDB is not supported')
+    },
   },
 })
 

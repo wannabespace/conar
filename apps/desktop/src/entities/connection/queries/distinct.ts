@@ -44,6 +44,14 @@ export function distinctQuery({ schema, table, column, limit = 1000 }: {
         .distinct()
         .limit(limit)
         .execute(),
+      duckdb: db => db
+        .withSchema(schema)
+        .withTables<{ [table: string]: Record<string, unknown> }>()
+        .selectFrom(table)
+        .select(column)
+        .distinct()
+        .limit(limit)
+        .execute(),
     },
   })
 }

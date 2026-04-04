@@ -120,6 +120,28 @@ export const resourceIndexesQuery = createQuery({
         is_primary: true,
       }))
     },
+    duckdb: async (db) => {
+      const query = await sql<{
+        schema: string
+        table: string
+        name: string
+        column: string | null
+        is_unique: boolean
+        is_primary: boolean
+      }>`
+        SELECT
+          i.schema_name AS schema,
+          i.table_name AS "table",
+          i.index_name AS name,
+          NULL AS "column",
+          i.is_unique AS is_unique,
+          i.is_primary AS is_primary
+        FROM duckdb_indexes() i
+        WHERE i.schema_name NOT IN ('pg_catalog', 'information_schema')
+      `.execute(db)
+
+      return query.rows
+    },
   },
 })
 

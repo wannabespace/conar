@@ -89,7 +89,7 @@ function getTypeDef(
     || (dialect === ConnectionType.ClickHouse && lowerType.startsWith('enum'))
 
   if (isList && foundEnum?.values.length) {
-    if (dialect === ConnectionType.Postgres) {
+    if (dialect === ConnectionType.Postgres || dialect === ConnectionType.DuckDB) {
       usedEnums.set(foundEnum.name, foundEnum)
     }
     return formatEnumType(foundEnum, dialect)
@@ -210,7 +210,7 @@ export function generateSchemaSQL({
       let typeDef = getTypeDef(c, table, enums, dialect, usedEnums)
       let defaultValue = c.defaultValue
 
-      if (dialect === ConnectionType.Postgres && defaultValue?.toLowerCase().startsWith('nextval')) {
+      if ((dialect === ConnectionType.Postgres || dialect === ConnectionType.DuckDB) && defaultValue?.toLowerCase().startsWith('nextval')) {
         if (typeDef === 'INTEGER') {
           typeDef = 'SERIAL'
           defaultValue = null

@@ -12,6 +12,7 @@ export function customQuery({ query, values }: { query: string, values?: unknown
       mysql: db => db.executeQuery(CompiledQuery.raw(query, values)),
       mssql: db => db.executeQuery(CompiledQuery.raw(query, values)),
       clickhouse: db => db.executeQuery(CompiledQuery.raw(query, values)),
+      duckdb: db => db.executeQuery(CompiledQuery.raw(query, values)),
     },
   })
 }

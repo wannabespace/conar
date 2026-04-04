@@ -16,6 +16,7 @@ catalog:
   '@better-auth/drizzle-adapter': https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913
   '@clickhouse/client': ^1.18.2
   '@dagrejs/dagre': 1.1.8
+  '@duckdb/node-api': ^1.5.1-r.1
   '@electric-sql/pglite': ^0.4.2
   '@eslint-react/eslint-plugin': ^2.13.0
   '@exalabs/ai-sdk': ^2.0.1
