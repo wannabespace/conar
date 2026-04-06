@@ -60,9 +60,6 @@ function CreateConnectionPage() {
     const url = new SafeURL(data.connectionString.trim())
     const resource = data.type === ConnectionType.DuckDB ? 'main' : (url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1))
 
-    // DuckDB paths are machine-local; skip cloud RPC so a failed remote insert cannot roll back PGlite.
-    const duckLocalOnly = { metadata: { cloudSync: false } as Record<string, unknown> }
-
     const tx = connectionsCollection.insert({
       id,
       name: data.name,
@@ -75,7 +72,7 @@ function CreateConnectionPage() {
       syncType: data.saveInCloud ? SyncType.Cloud : SyncType.CloudWithoutPassword,
       createdAt: new Date(),
       updatedAt: new Date(),
-    }, data.type === ConnectionType.DuckDB ? duckLocalOnly : undefined)
+    })
 
     if (resource) {
       getConnectionStore(id).set({
@@ -86,17 +83,13 @@ function CreateConnectionPage() {
 
     const resourceId = v7()
 
-    const resourceMeta = data.type === ConnectionType.DuckDB
-      ? { metadata: { cloudSync: false } as Record<string, unknown> }
-      : undefined
-
     const resourceTx = connectionsResourcesCollection.insert({
       id: resourceId,
       connectionId: id,
       name: resource,
       createdAt: new Date(),
       updatedAt: new Date(),
-    }, resourceMeta)
+    })
 
     Promise.all([tx.isPersisted.promise, resourceTx.isPersisted.promise])
       .then(() => {
