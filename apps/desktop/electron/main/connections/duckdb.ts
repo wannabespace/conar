@@ -21,7 +21,11 @@ function resolveDuckDbPath(connectionString: string) {
   }
 }
 
-export const getConnection = memoize(async (connectionString: string) => {
-  const instance = await DuckDBInstance.create(resolveDuckDbPath(connectionString))
-  return instance.connect()
+const getDuckDbInstance = memoize(async (databasePath: string) => {
+  return DuckDBInstance.create(databasePath)
 })
+
+export async function getConnection(connectionString: string) {
+  const instance = await getDuckDbInstance(resolveDuckDbPath(connectionString))
+  return instance.connect()
+}
