@@ -71,7 +71,7 @@ function retryOptions({ silent, connectionString, query }: { silent?: boolean, c
         console.log('Connection string on retry', connectionString, query)
       }
       if (!silent) {
-        sendToast({ message: `Could not connect to the database. Reconnection attempt ${attempt + 1}/${MAX_RECONNECTION_ATTEMPTS}.`, type: 'info' })
+        sendToast({ message: `Could not connect to the database. Reconnection attempt ${attempt}/${MAX_RECONNECTION_ATTEMPTS}.`, type: 'info' })
       }
     },
     onError: () => {
