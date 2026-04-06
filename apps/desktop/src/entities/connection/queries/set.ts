@@ -43,5 +43,12 @@ export const setQuery = memoize(({
       .set(values)
       .where(eb => buildWhere(eb, filters))
       .execute(),
+    duckdb: db => db
+      .withSchema(schema)
+      .withTables<{ [table]: Record<string, unknown> }>()
+      .updateTable(table)
+      .set(values)
+      .where(eb => buildWhere(eb, filters))
+      .execute(),
   },
 }))

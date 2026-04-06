@@ -209,6 +209,37 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
           label: getClickhouseColumnType(row.type),
         }))
       },
+      duckdb: async (db) => {
+        const query = await db
+          .selectFrom('information_schema.columns')
+          .select(eb => [
+            'table_schema as schema',
+            'table_name as table',
+            'column_name as id',
+            'column_default as default',
+            'data_type as type',
+            'character_maximum_length as max_length',
+            'numeric_precision as precision',
+            'numeric_scale as scale',
+            eb.case('is_nullable')
+              .when('YES')
+              .then(true)
+              .else(false)
+              .end()
+              .as('nullable'),
+          ])
+          .where(({ and, eb }) => and([
+            eb('table_schema', '=', schema),
+            eb('table_name', '=', table),
+          ]))
+          .execute()
+
+        return query.map(row => ({
+          ...row,
+          label: row.type,
+          maxLength: row.max_length,
+        } satisfies typeof columnType.inferIn))
+      },
     },
   })
 })

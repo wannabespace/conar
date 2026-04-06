@@ -58,8 +58,9 @@ function CreateConnectionPage() {
   }) {
     const id = v7()
     const url = new SafeURL(data.connectionString.trim())
+    const resource = data.type === ConnectionType.DuckDB ? 'main' : (url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1))
 
-    connectionsCollection.insert({
+    const tx = connectionsCollection.insert({
       id,
       name: data.name,
       type: data.type,
@@ -73,10 +74,6 @@ function CreateConnectionPage() {
       updatedAt: new Date(),
     })
 
-    toast.success('Connection created successfully 🎉')
-
-    const resource = url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
-
     if (resource) {
       getConnectionStore(id).set({
         lastOpenedResourceName: resource,
@@ -86,15 +83,26 @@ function CreateConnectionPage() {
 
     const resourceId = v7()
 
-    connectionsResourcesCollection.insert({
+    const resourceTx = connectionsResourcesCollection.insert({
       id: resourceId,
       connectionId: id,
       name: resource,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
-    prefetchConnectionResourceCore(connectionsResourcesCollection.get(resourceId)!)
-    router.navigate({ to: '/connection/$resourceId/table', params: { resourceId } })
+
+    Promise.all([tx.isPersisted.promise, resourceTx.isPersisted.promise])
+      .then(() => {
+        toast.success('Connection created successfully 🎉')
+        prefetchConnectionResourceCore(connectionsResourcesCollection.get(resourceId)!)
+        router.navigate({ to: '/connection/$resourceId/table', params: { resourceId } })
+      })
+      .catch((e) => {
+        console.error('Local save failed', e)
+        toast.error('Failed to save connection locally', {
+          description: e instanceof Error ? e.message : String(e),
+        })
+      })
   }
 
   const defaultValues: typeof createConnectionType.infer = {

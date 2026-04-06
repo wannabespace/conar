@@ -38,6 +38,16 @@ export const connectionResourcesQuery = createQuery({
       .orderBy('name')
       .execute()
       .then(rows => rows.map(r => r.name)),
+
+    duckdb: db => db
+      .selectFrom('information_schema.schemata')
+      .select('schema_name')
+      .distinct()
+      .where('schema_name', 'not in', ['information_schema', 'pg_catalog'])
+      .where('catalog_name', 'not in', ['system', 'temp'])
+      .orderBy('schema_name')
+      .execute()
+      .then(rows => rows.map(r => r.schema_name)),
   },
 })
 

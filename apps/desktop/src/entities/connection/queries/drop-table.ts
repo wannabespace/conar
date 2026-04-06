@@ -48,5 +48,18 @@ export const dropTableQuery = memoize(({ table, schema, cascade }: { table: stri
       .schema
       .dropTable(table)
       .execute(),
+    duckdb: (db) => {
+      let query = db
+        .withSchema(schema)
+        .withTables<{ [table]: Record<string, unknown> }>()
+        .schema
+        .dropTable(table)
+
+      if (cascade) {
+        query = query.cascade()
+      }
+
+      return query.execute()
+    },
   },
 }))

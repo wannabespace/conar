@@ -62,6 +62,9 @@ export const connectionVersionQuery = createQuery({
         return (await sql<{ version: string }>`SELECT version() as version`.execute(db)).rows[0]!
       }
     },
+    duckdb: async (db) => {
+      return (await sql<{ version: string }>`SELECT version() as version`.execute(db)).rows[0]!
+    },
   },
 })
 

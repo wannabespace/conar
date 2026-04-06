@@ -4,7 +4,7 @@
   "version": "0.28.2",
   "productName": "Conar",
   "private": true,
-  "description": "AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse.",
+  "description": "AI-powered tool for working with Postgres, MySQL, MSSQL, Clickhouse and DuckDB.",
   "author": {
     "name": "Wannabe Space, LLC",
     "email": "wannabespace.llc@gmail.com"
@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@clickhouse/client": "catalog:",
+    "@duckdb/node-api": "catalog:",
     "@tanstack/react-hotkeys": "catalog:",
     "@todesktop/runtime": "catalog:",
     "electron-store": "catalog:",

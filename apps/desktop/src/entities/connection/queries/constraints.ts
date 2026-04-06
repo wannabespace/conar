@@ -147,6 +147,35 @@ export const resourceConstraintsQuery = createQuery({
         onUpdate: null,
       }))
     },
+    duckdb: db => db
+      .selectFrom('information_schema.table_constraints as tc')
+      .leftJoin('information_schema.key_column_usage as kcu', join => join
+        .onRef('tc.constraint_name', '=', 'kcu.constraint_name')
+        .onRef('tc.constraint_schema', '=', 'kcu.constraint_schema')
+        .onRef('tc.table_schema', '=', 'kcu.table_schema')
+        .onRef('tc.table_name', '=', 'kcu.table_name'))
+      .leftJoin('information_schema.referential_constraints as rc', join => join
+        .onRef('tc.constraint_name', '=', 'rc.constraint_name')
+        .onRef('tc.constraint_schema', '=', 'rc.constraint_schema'))
+      .leftJoin('information_schema.key_column_usage as referenced_kcu', join => join
+        .onRef('rc.unique_constraint_name', '=', 'referenced_kcu.constraint_name')
+        .onRef('rc.unique_constraint_schema', '=', 'referenced_kcu.constraint_schema')
+        .onRef('kcu.ordinal_position', '=', 'referenced_kcu.ordinal_position'))
+      .select([
+        'tc.table_schema as schema',
+        'tc.table_name as table',
+        'tc.constraint_name as name',
+        'tc.constraint_type as type',
+        'kcu.column_name as column',
+        'referenced_kcu.table_schema as foreign_schema',
+        'referenced_kcu.table_name as foreign_table',
+        'referenced_kcu.column_name as foreign_column',
+        'rc.delete_rule as onDelete',
+        'rc.update_rule as onUpdate',
+      ])
+      .where('tc.constraint_type', 'in', neededConstraintTypes)
+      .where('tc.table_schema', 'not in', ['pg_catalog', 'information_schema'])
+      .execute(),
   },
 })
 

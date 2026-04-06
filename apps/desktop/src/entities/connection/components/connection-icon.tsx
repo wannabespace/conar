@@ -2,6 +2,7 @@ import type { ComponentProps, ReactNode } from 'react'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { createElement } from 'react'
 import { ClickHouseIcon } from '~/icons/clickhouse'
+import { DuckDBIcon } from '~/icons/duckdb'
 import { MSSQLIcon } from '~/icons/mssql'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
@@ -11,6 +12,7 @@ const iconMap: Record<ConnectionType, (props: ComponentProps<'svg'>) => ReactNod
   [ConnectionType.MySQL]: MySQLIcon,
   [ConnectionType.ClickHouse]: ClickHouseIcon,
   [ConnectionType.MSSQL]: MSSQLIcon,
+  [ConnectionType.DuckDB]: DuckDBIcon,
 }
 
 export function ConnectionIcon({ type, ...props }: { type: ConnectionType } & ComponentProps<'svg'>) {
