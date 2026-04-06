@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { CellSwitch } from '~/components/cell-switch'
@@ -66,6 +67,8 @@ export function CellPopoverContent({
     if (!monacoRef.current)
       return
 
+    monacoRef.current.focus()
+
     const disposable = monacoRef.current.addAction({
       id: 'conar.execute-on-enter',
       label: 'Execute on Enter',
@@ -77,6 +80,8 @@ export function CellPopoverContent({
 
     return () => disposable.dispose()
   }, [monacoRef, isRaw])
+
+  useHotkey('Mod+Enter', () => save(newValue, isRaw), { enabled: canSave })
 
   return (
     <>
