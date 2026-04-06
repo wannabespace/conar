@@ -36,8 +36,11 @@ export function TableInfiniteLoader({
 
   const scrollRef = useTableContext(state => state.scrollRef)
   useMountedEffect(() => {
-    scrollRef.current?.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }, [scrollRef, filters, orderBy])
+  useMountedEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+  }, [scrollRef, table, schema])
 
   return (
     <div className="pointer-events-none sticky left-0 h-80">
@@ -48,7 +51,13 @@ export function TableInfiniteLoader({
       <div className="flex h-[inherit] items-center justify-center">
         {hasNextPage
           ? <RiLoaderLine className="size-10 animate-spin opacity-50" />
-          : <TableEmpty className="bottom-0 h-full" title="No more data" description="This table has no more rows" />}
+          : (
+              <TableEmpty
+                className="bottom-0 h-full"
+                title="No more data"
+                description="This table has no more rows"
+              />
+            )}
       </div>
     </div>
   )

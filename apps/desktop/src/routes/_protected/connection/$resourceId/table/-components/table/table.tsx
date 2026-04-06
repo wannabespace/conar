@@ -2,7 +2,6 @@ import type { ColumnRenderer } from '@conar/table'
 import type { ComponentRef } from 'react'
 import { CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME } from '@conar/shared/constants'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
-import { pick } from '@conar/shared/utils/helpers'
 import { Table, TableBody, TableProvider } from '@conar/table'
 import { DEFAULT_COLUMN_WIDTH } from '@conar/table/constants'
 import { useShiftSelectionKeyDown } from '@conar/table/hooks'
@@ -57,7 +56,10 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const columns = useTableColumns()
   const store = useTablePageStore()
   const selectionStore = useTablePageSelectionStore()
-  const { hiddenColumns, columnSizes, filters, orderBy } = useSubscription(store, { selector: state => pick(state, ['hiddenColumns', 'orderBy', 'columnSizes', 'filters']) })
+  const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
+  const columnSizes = useSubscription(store, { selector: state => state.columnSizes })
+  const filters = useSubscription(store, { selector: state => state.filters })
+  const orderBy = useSubscription(store, { selector: state => state.orderBy })
   const { data: rows = [], error, isPending: isRowsPending } = useInfiniteQuery(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns.filter(c => c.primaryKey).map(c => c.id), [columns])
   const { toggleOrder, setOrder, removeOrder } = useMemo(() => columnsOrder(store), [store])
