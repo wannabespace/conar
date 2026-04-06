@@ -1,4 +1,4 @@
-import type { ValueTransformer } from './types'
+import type { ValueTransformer } from './'
 import { prepareValueForEditor } from './base'
 
 export function createRawTransformer(): ValueTransformer {

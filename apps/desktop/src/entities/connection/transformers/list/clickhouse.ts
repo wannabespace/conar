@@ -1,4 +1,4 @@
-import type { ValueTransformer } from '../types'
+import type { ValueTransformer } from '../'
 import { createBaseListTransformer, parseToArray } from './shared'
 
 export function createClickHouseListTransformer(): ValueTransformer {

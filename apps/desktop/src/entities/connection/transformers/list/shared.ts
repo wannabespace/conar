@@ -1,4 +1,4 @@
-import type { ValueTransformer } from '../types'
+import type { ValueTransformer } from '../'
 import { tryParseJson } from '@conar/shared/utils/helpers'
 import { prepareValueForEditor } from '../base'
 

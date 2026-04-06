@@ -1,5 +1,5 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import type { ValueTransformer } from '../types'
+import type { ValueTransformer } from '../'
 import { createClickHouseListTransformer } from './clickhouse'
 import { createMysqlListTransformer } from './mysql'
 import { createPostgresListTransformer } from './postgres'
