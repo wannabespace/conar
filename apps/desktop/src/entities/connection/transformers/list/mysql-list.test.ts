@@ -51,24 +51,4 @@ describe('createMysqlListTransformer', () => {
       expect(t.toDb('[1,2,3]')).toBe('1,2,3')
     })
   })
-
-  describe('toRaw', () => {
-    it('should return string as-is', () => {
-      expect(t.toRaw('a,b,c')).toBe('a,b,c')
-    })
-
-    it('should JSON.stringify arrays', () => {
-      expect(t.toRaw(['a', 'b'])).toBe('[\n  "a",\n  "b"\n]')
-    })
-  })
-
-  describe('parseEditableToList', () => {
-    it('should parse valid JSON array', () => {
-      expect(t.parseEditableToList('["a","b"]')).toEqual(['a', 'b'])
-    })
-
-    it('should fall back for non-JSON', () => {
-      expect(t.parseEditableToList('x')).toEqual(['x'])
-    })
-  })
 })

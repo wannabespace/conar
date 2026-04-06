@@ -14,6 +14,7 @@ import { format, isValid } from 'date-fns'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { createTransformer } from '~/entities/connection/transformers'
+import { truncateForDisplay, valueToDisplayString } from '~/entities/connection/transformers/base'
 import { TableCellContent } from './cell-content'
 import { useCellContext } from './cell-context'
 import { TableCellContextMenu } from './cell-menu'
@@ -111,7 +112,7 @@ export function TableCell({
   connectionType: ConnectionType
 } & TableCellProps) {
   const transformer = createTransformer(column, connectionType)
-  const displayValue = transformer.toDisplay(value, size)
+  const displayValue = truncateForDisplay(valueToDisplayString(value), size)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isForeignOpen, setIsForeignOpen] = useState(false)
   const [isReferencesOpen, setIsReferencesOpen] = useState(false)

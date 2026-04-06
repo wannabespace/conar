@@ -33,21 +33,9 @@ export function truncateForDisplay(display: string, maxWidth: number): string {
   return display.replaceAll('\n', ' ').slice(0, maxChars)
 }
 
-/** Prepare a raw JS value before stringifying (e.g. Date -> ISO string). */
-export function prepareValue(value: unknown): unknown {
+export function prepareValueForEditor(value: unknown): string {
   if (value instanceof Date)
     return value.toISOString()
-
-  return value
-}
-
-/** Pretty-print an object/array value for editor display. */
-export function stringifyForEditor(value: unknown): string {
-  return JSON.stringify(value, null, 2)
-}
-
-/** Convert any value to a raw string for the raw-editing mode. */
-export function valueToRawString(value: unknown): string {
   if (typeof value === 'string')
     return value
   return JSON.stringify(value, null, 2)

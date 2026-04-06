@@ -13,6 +13,8 @@ import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
+import { prepareValueForEditor } from '~/entities/connection/transformers/base'
+import { parseToJsonArray } from '~/entities/connection/transformers/list/shared'
 import { useCellContext } from './cell-context'
 
 export function CellPopoverContent({
@@ -32,7 +34,7 @@ export function CellPopoverContent({
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
 
   const [isRaw, setIsRaw] = useState(false)
-  const [rawValue, setRawValue] = useState(() => transformer.toRaw(value))
+  const [rawValue, setRawValue] = useState(() => prepareValueForEditor(value))
 
   const save = (val: string, raw?: boolean) => {
     onUpdate(raw ? val : transformer.toDb(val))
@@ -45,11 +47,11 @@ export function CellPopoverContent({
   const isList = !!availableValues && !!column.isArray
   const activeValue = isRaw ? rawValue : newValue
   const canSave = isRaw
-    ? rawValue !== transformer.toRaw(value)
+    ? rawValue !== prepareValueForEditor(value)
     : newValue !== transformer.toEditable(value)
 
   const comboboxItems = availableValues?.map(v => ({ value: v, label: v })) ?? []
-  const selectedArrayValues = isList ? transformer.parseEditableToList(newValue) : []
+  const selectedArrayValues = isList ? parseToJsonArray(newValue) : []
 
   const monacoOptions = {
     lineNumbers: isBig ? 'on' : 'off',
