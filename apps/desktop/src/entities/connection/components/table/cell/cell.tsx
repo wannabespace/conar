@@ -112,7 +112,10 @@ export function TableCell({
   connectionType: ConnectionType
 } & TableCellProps) {
   const transformer = createTransformer(column, connectionType)
-  const displayValue = truncateForDisplay(valueToDisplayString(value), size)
+  const displayValue = truncateForDisplay(
+    column.uiType === 'boolean' && value === null ? 'empty' : valueToDisplayString(value),
+    size,
+  )
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isForeignOpen, setIsForeignOpen] = useState(false)
   const [isReferencesOpen, setIsReferencesOpen] = useState(false)
@@ -185,6 +188,7 @@ export function TableCell({
         duration: 3000,
       })
       setStatus('error')
+      timeoutRef.current = setTimeout(setStatus, 3000, 'idle')
     }
   }
 

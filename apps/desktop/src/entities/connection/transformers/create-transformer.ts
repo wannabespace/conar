@@ -1,6 +1,7 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { ValueTransformer } from '.'
 import type { Column } from '../components/table/cell/utils'
+import { createBooleanTransformer } from './boolean'
 import { createListTransformer } from './list'
 import { createRawTransformer } from './raw'
 
@@ -9,17 +10,8 @@ export function createTransformer(column: Column, connectionType: ConnectionType
     case 'list':
       return createListTransformer(connectionType)
 
-    case 'boolean': {
-      const base = createRawTransformer()
-      return {
-        ...base,
-        toEditable(value: unknown): string {
-          if (value === null)
-            return 'false'
-          return base.toEditable(value)
-        },
-      }
-    }
+    case 'boolean':
+      return createBooleanTransformer()
 
     case 'select':
     case 'date':

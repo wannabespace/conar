@@ -34,6 +34,8 @@ export function truncateForDisplay(display: string, maxWidth: number): string {
 }
 
 export function prepareValueForEditor(value: unknown): string {
+  if (value === null || value === undefined)
+    return ''
   if (value instanceof Date)
     return value.toISOString()
   if (typeof value === 'string')

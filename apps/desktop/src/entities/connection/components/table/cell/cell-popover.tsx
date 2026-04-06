@@ -109,7 +109,7 @@ export function CellPopoverContent({
           ? (
               <CellSwitch
                 className="w-full justify-center py-6"
-                checked={JSON.parse(newValue)}
+                checked={newValue === 'true'}
                 onChange={checked => setNewValue(checked.toString())}
                 onSave={save}
               />

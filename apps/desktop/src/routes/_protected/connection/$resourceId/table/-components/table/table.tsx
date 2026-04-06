@@ -173,7 +173,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
       const realValue = result[columnId]
 
       if (newValue !== realValue)
-        setValue(rowIndex, columnId, realValue ?? undefined)
+        setValue(rowIndex, columnId, realValue)
     }
     catch (e) {
       toast.error('New value was saved, but the updated value was not refreshed', {
