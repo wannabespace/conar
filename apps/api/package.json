@@ -44,7 +44,6 @@
     "react": "catalog:",
     "redis": "catalog:",
     "resend": "catalog:",
-    "resumable-stream": "catalog:",
     "stripe": "catalog:",
     "ua-parser-js": "catalog:",
     "uuid": "catalog:",

@@ -1,8 +1,8 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Column } from './utils'
+import type { ValueTransformer } from '~/entities/connection/transformers'
 import { useState } from 'react'
 import { CellContext } from './cell-context'
-import { getEditableValue } from './utils'
 
 export function TableCellProvider({
   rowIndex,
@@ -15,6 +15,7 @@ export function TableCellProvider({
   value,
   availableValues,
   onUpdate,
+  transformer,
 }: {
   rowIndex: number
   children: React.ReactNode
@@ -25,12 +26,10 @@ export function TableCellProvider({
   column: Column
   value: unknown
   availableValues?: string[]
-  onUpdate: (value: string | null) => void
+  onUpdate: (value: string | null, raw?: boolean) => void
+  transformer: ValueTransformer
 }) {
-  const [newValue, setNewValue] = useState(() => getEditableValue({
-    value,
-    column,
-  }))
+  const [newValue, setNewValue] = useState(() => transformer.toEditable(value))
   return (
     <CellContext value={{
       rowIndex,
@@ -39,6 +38,7 @@ export function TableCellProvider({
       column,
       value,
       onUpdate,
+      transformer,
       availableValues,
       onAddFilter,
       onSort,

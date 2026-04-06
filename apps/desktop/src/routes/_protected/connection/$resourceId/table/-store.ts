@@ -1,7 +1,7 @@
 import type { ActiveFilter, Filter } from '@conar/shared/filters'
-import type { Store } from 'seitu'
+import type { WebStorageValue } from 'seitu/web'
 import type { GeneratorId } from '~/entities/connection/utils/seeds'
-import { memoize } from '@conar/shared/utils/helpers'
+import { memoize, omit } from '@conar/shared/utils/helpers'
 import { type } from 'arktype'
 import { createContext, use } from 'react'
 import { createSchemaStore } from 'seitu'
@@ -15,11 +15,11 @@ export interface SelectionState {
 }
 
 export const storeState = type({
-  selected: 'Record<string, string>[]',
+  selected: 'Record<string, unknown>[]',
   filters: type({
     column: 'string',
     ref: 'object' as type.cast<Filter>,
-    values: 'string[]',
+    values: 'unknown[]',
   }).array() as type.cast<ActiveFilter[]>,
   exact: 'boolean',
   hiddenColumns: 'string[]',
@@ -47,7 +47,9 @@ const defaultState: typeof storeState.infer = {
   generators: {},
 }
 
-export const tablePageStore = memoize(({ id, schema, table }: { id: string, schema: string, table: string }) => createWebStorageValue({
+export type TablePageStore = WebStorageValue<typeof storeState.infer>
+
+export const tablePageStore = memoize(({ id, schema, table }: { id: string, schema: string, table: string }): TablePageStore => createWebStorageValue({
   type: 'localStorage',
   key: `${id}.${schema}-${table}.store`,
   defaultValue: defaultState,
@@ -55,7 +57,46 @@ export const tablePageStore = memoize(({ id, schema, table }: { id: string, sche
   onValidationError: repairValueObjectWithDefault,
 }))
 
-export const TablePageStoreContext = createContext<Store<typeof storeState.infer>>(null!)
+export const TablePageStoreContext = createContext<TablePageStore>(null!)
+
+export function columnsOrder(store: TablePageStore) {
+  const setOrder = (columnId: string, order: 'ASC' | 'DESC') => {
+    store.set(state => ({
+      ...state,
+      orderBy: {
+        ...state.orderBy,
+        [columnId]: order,
+      },
+    } satisfies typeof state))
+  }
+
+  const removeOrder = (columnId: string) => {
+    store.set(state => ({
+      ...state,
+      orderBy: omit(state.orderBy, [columnId]),
+    } satisfies typeof state))
+  }
+
+  const toggleOrder = (columnId: string) => {
+    const currentOrder = store.get().orderBy?.[columnId]
+
+    if (currentOrder === 'ASC') {
+      setOrder(columnId, 'DESC')
+    }
+    else if (currentOrder === 'DESC') {
+      removeOrder(columnId)
+    }
+    else {
+      setOrder(columnId, 'ASC')
+    }
+  }
+
+  return {
+    setOrder,
+    removeOrder,
+    toggleOrder,
+  }
+}
 
 export function useTablePageStore() {
   return use(TablePageStoreContext)

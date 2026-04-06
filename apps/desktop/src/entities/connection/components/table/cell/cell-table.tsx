@@ -8,16 +8,16 @@ import { Button } from '@conar/ui/components/button'
 import { RiCornerRightUpLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi, Link } from '@tanstack/react-router'
-import { useMemo } from 'react'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
+import { displayValue } from '~/entities/connection/transformers'
+import { useTableColumnsQuery } from '~/routes/_protected/connection/$resourceId/table/-columns'
 import { TableError } from '~/routes/_protected/connection/$resourceId/table/-components/table/table'
 import { TableEmpty } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-empty'
 import { TableHeaderCell } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-header-cell'
 import { TableInfiniteLoader } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-infinite-loader'
 import { TableBodySkeleton } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-skeleton'
-import { useTableColumns } from '~/routes/_protected/connection/$resourceId/table/-queries/use-table-columns'
 import { TableCellContent } from './cell-content'
-import { getColumnSize, getDisplayValue } from './utils'
+import { getColumnSize } from './utils'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -29,7 +29,7 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
     values: [value],
   } satisfies ActiveFilter]
   const orderBy = {}
-  const { data: rows, isPending: isRowsPending, error } = useInfiniteQuery(resourceRowsQueryInfiniteOptions({
+  const { data: rows = [], isPending: isRowsPending, error } = useInfiniteQuery(resourceRowsQueryInfiniteOptions({
     connectionResource,
     table,
     schema,
@@ -38,43 +38,36 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
       orderBy,
     },
   }))
-  const columns = useTableColumns({ connectionResource, table, schema })
-  const tableColumns = useMemo(() => {
-    if (!columns)
-      return []
-
-    const sortedColumns: ColumnRenderer[] = columns
-      .toSorted((a, b) => a.primaryKey ? -1 : b.primaryKey ? 1 : 0)
-      .map(column => ({
-        id: column.id,
-        size: column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH,
-        cell: props => (
-          <TableCellContent
-            column={column}
-            value={props.value}
-            position={props.position}
-            style={props.style}
-          >
-            <span className="truncate">
-              {getDisplayValue({ value: props.value, size: props.size })}
-            </span>
-          </TableCellContent>
-        ),
-        header: props => (
-          <TableHeaderCell
-            column={column}
-            {...props}
-          />
-        ),
-      }) satisfies ColumnRenderer)
-
-    return sortedColumns
-  }, [columns])
+  const { data = [] } = useTableColumnsQuery({ connectionResource, table, schema })
+  const columns = data.map(column => ({
+    id: column.id,
+    size: column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH,
+    cell: (props) => {
+      return (
+        <TableCellContent
+          column={column}
+          value={props.value}
+          position={props.position}
+          style={props.style}
+        >
+          <span className="truncate">
+            {displayValue(props.value, props.size)}
+          </span>
+        </TableCellContent>
+      )
+    },
+    header: props => (
+      <TableHeaderCell
+        column={column}
+        {...props}
+      />
+    ),
+  }) satisfies ColumnRenderer)
 
   return (
     <TableProvider
-      rows={rows ?? []}
-      columns={tableColumns}
+      rows={rows}
+      columns={columns}
     >
       <div className="relative size-full">
         <div className={`
@@ -122,9 +115,9 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
             ? <TableBodySkeleton />
             : error
               ? <TableError error={error} />
-              : rows?.length === 0
+              : rows.length === 0
                 ? <TableEmpty className="bottom-0 h-[calc(100%-5rem)]" title="Table is empty" description="There are no records to show" />
-                : tableColumns.length === 0
+                : columns.length === 0
                   ? <TableEmpty className="h-[calc(100%-5rem)]" title="No columns to show" description="Please show at least one column" />
                   : (
                       <>

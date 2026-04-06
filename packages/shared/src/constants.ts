@@ -55,6 +55,7 @@ export const CONNECTION_TYPES_WITHOUT_SCHEMAS: ConnectionType[] = [ConnectionTyp
 export const CONNECTION_TYPES_WITH_EXPLAIN: ConnectionType[] = [ConnectionType.Postgres, ConnectionType.MySQL]
 export const CONNECTION_TYPES_WITH_TRIGGERS: ConnectionType[] = [ConnectionType.Postgres, ConnectionType.MySQL, ConnectionType.MSSQL]
 export const CONNECTION_TYPES_WITH_FUNCTIONS: ConnectionType[] = [ConnectionType.Postgres, ConnectionType.MySQL, ConnectionType.MSSQL]
+export const CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME: ConnectionType[] = [ConnectionType.ClickHouse]
 
 export const NETWORK_ERROR_PATTERNS = [
   'econnreset',

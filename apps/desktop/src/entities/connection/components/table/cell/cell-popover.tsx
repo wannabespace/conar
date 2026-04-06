@@ -13,7 +13,6 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
 import { useCellContext } from './cell-context'
-import { getEditableValue, parseArrayValue } from './utils'
 
 export function CellPopoverContent({
   isBig,
@@ -28,26 +27,28 @@ export function CellPopoverContent({
   hasUpdateFn: boolean
   onSetNull: () => void
 }) {
-  const { newValue, value, column, setNewValue, onUpdate, availableValues } = useCellContext()
+  const { newValue, value, column, setNewValue, onUpdate, availableValues, transformer } = useCellContext()
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
 
   const [isRaw, setIsRaw] = useState(false)
-  const [rawValue, setRawValue] = useState(typeof value === 'string' ? value : JSON.stringify(value, null, 2))
+  const [rawValue, setRawValue] = useState(() => transformer.toRaw(value))
 
-  const save = (value: string) => {
-    onUpdate(value)
+  const save = (val: string, raw?: boolean) => {
+    onUpdate(raw ? val : transformer.toDb(val))
     onClose()
   }
 
-  const saveEvent = useEffectEvent(save)
+  const saveEvent = useEffectEvent((val: string) => save(val, isRaw))
 
   const canEdit = !!column?.isEditable && hasUpdateFn
   const isList = !!availableValues && !!column.isArray
   const activeValue = isRaw ? rawValue : newValue
-  const canSave = isRaw ? rawValue !== value : newValue !== getEditableValue({ value, column })
+  const canSave = isRaw
+    ? rawValue !== transformer.toRaw(value)
+    : newValue !== transformer.toEditable(value)
 
   const comboboxItems = availableValues?.map(v => ({ value: v, label: v })) ?? []
-  const selectedArrayValues = isList ? parseArrayValue(newValue) : []
+  const selectedArrayValues = isList ? transformer.parseEditableToList(newValue) : []
 
   const monacoOptions = {
     lineNumbers: isBig ? 'on' : 'off',
@@ -79,101 +80,101 @@ export function CellPopoverContent({
 
   return (
     <>
-      {column.uiType === 'boolean'
+      {column.uiType === 'raw' || isRaw
         ? (
-            <CellSwitch
-              className="w-full justify-center py-6"
-              checked={JSON.parse(newValue)}
-              onChange={checked => setNewValue(checked.toString())}
-              onSave={save}
+            <Monaco
+              ref={monacoRef}
+              data-mask
+              value={isRaw ? rawValue : newValue}
+              language={column?.type?.includes('json')
+                ? 'json'
+                : column?.type?.includes('xml')
+                  ? 'xml'
+                  : undefined}
+              className={cn('h-40 w-full transition-[height] duration-300', isBig && `
+                h-[min(45vh,40rem)]
+              `)}
+              onChange={isRaw ? setRawValue : setNewValue}
+              options={monacoOptions}
             />
           )
-        : column.uiType === 'list'
+        : column.uiType === 'boolean'
           ? (
-              <div className="p-2">
-                <Combobox
-                  value={comboboxItems.filter(item => selectedArrayValues.includes(item.value))}
-                  items={comboboxItems}
-                  multiple
-                  autoHighlight
-                  disabled={!canEdit}
-                  onValueChange={(items) => {
-                    const values = items.map(item => item.value)
-                    setNewValue(JSON.stringify(values))
-                  }}
-                >
-                  <ComboboxChips>
-                    <ComboboxValue>
-                      {(value: { value: string, label: string }[]) => (
-                        <>
-                          {value?.map(item => (
-                            <ComboboxChip aria-label={item.label} key={item.value}>
-                              {item.label}
-                            </ComboboxChip>
-                          ))}
-                          <ComboboxChipsInput
-                            aria-label="Select values"
-                            placeholder={value.length > 0 ? undefined : 'Select values...'}
-                          />
-                        </>
-                      )}
-                    </ComboboxValue>
-                  </ComboboxChips>
-                  <ComboboxPopup side="top">
-                    <ComboboxEmpty>No values found.</ComboboxEmpty>
-                    <ComboboxList>
-                      {item => (
-                        <ComboboxItem key={item.value} value={item}>
-                          {item.label}
-                        </ComboboxItem>
-                      )}
-                    </ComboboxList>
-                  </ComboboxPopup>
-                </Combobox>
-              </div>
+              <CellSwitch
+                className="w-full justify-center py-6"
+                checked={JSON.parse(newValue)}
+                onChange={checked => setNewValue(checked.toString())}
+                onSave={save}
+              />
             )
-          : column.uiType === 'select'
+          : column.uiType === 'list'
             ? (
                 <div className="p-2">
-                  <Select
-                    value={newValue === 'null' ? undefined : newValue}
+                  <Combobox
+                    value={comboboxItems.filter(item => selectedArrayValues.includes(item.value))}
+                    items={comboboxItems}
+                    multiple
+                    autoHighlight
                     disabled={!canEdit}
-                    onValueChange={(value) => {
-                      if (value) {
-                        setNewValue(value)
-                      }
+                    onValueChange={(items) => {
+                      const values = items.map(item => item.value)
+                      setNewValue(JSON.stringify(values))
                     }}
                   >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select value" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableValues?.map(val => (
-                        <SelectItem key={val} value={val}>
-                          {val}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <ComboboxChips>
+                      <ComboboxValue>
+                        {(value: { value: string, label: string }[]) => (
+                          <>
+                            {value?.map(item => (
+                              <ComboboxChip aria-label={item.label} key={item.value}>
+                                {item.label}
+                              </ComboboxChip>
+                            ))}
+                            <ComboboxChipsInput
+                              aria-label="Select values"
+                              placeholder={value.length > 0 ? undefined : 'Select values...'}
+                            />
+                          </>
+                        )}
+                      </ComboboxValue>
+                    </ComboboxChips>
+                    <ComboboxPopup side="top">
+                      <ComboboxEmpty>No values found.</ComboboxEmpty>
+                      <ComboboxList>
+                        {item => (
+                          <ComboboxItem key={item.value} value={item}>
+                            {item.label}
+                          </ComboboxItem>
+                        )}
+                      </ComboboxList>
+                    </ComboboxPopup>
+                  </Combobox>
                 </div>
               )
-            : (
-                <Monaco
-                  ref={monacoRef}
-                  data-mask
-                  value={isRaw ? rawValue : newValue}
-                  language={column?.type?.includes('json')
-                    ? 'json'
-                    : column?.type?.includes('xml')
-                      ? 'xml'
-                      : undefined}
-                  className={cn('h-40 w-full transition-[height] duration-300', isBig && `
-                    h-[min(45vh,40rem)]
-                  `)}
-                  onChange={isRaw ? setRawValue : setNewValue}
-                  options={monacoOptions}
-                />
-              )}
+            : column.uiType === 'select' && (
+              <div className="p-2">
+                <Select
+                  value={newValue === 'null' ? undefined : newValue}
+                  disabled={!canEdit}
+                  onValueChange={(value) => {
+                    if (value) {
+                      setNewValue(value)
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select value" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableValues?.map(val => (
+                      <SelectItem key={val} value={val}>
+                        {val}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
       <div className="flex items-center justify-between gap-2 border-t p-2">
         <div className="flex items-center gap-1">
           {isRaw && (
@@ -237,7 +238,7 @@ export function CellPopoverContent({
               <Button
                 size="xs"
                 disabled={!canSave}
-                onClick={() => save(activeValue)}
+                onClick={() => save(activeValue, isRaw)}
               >
                 Save
                 <KbdCtrlEnter

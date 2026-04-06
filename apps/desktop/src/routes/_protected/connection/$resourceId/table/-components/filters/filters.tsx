@@ -4,8 +4,9 @@ import { Group, GroupSeparator } from '@conar/ui/components/group'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { useToggle } from '@conar/ui/hookas/use-toggle'
 import { RiAddLine, RiCloseLine, RiDatabase2Line, RiFilterOffLine } from '@remixicon/react'
-import { useState } from 'react'
+import { useEffect, useEffectEvent, useState } from 'react'
 import { useSubscription } from 'seitu/react'
+import { useTableColumns } from '../../-columns'
 import { useTablePageStore } from '../../-store'
 import { FiltersColumnSelector } from './filters-column-selector'
 import { FilterForm } from './filters-form'
@@ -120,12 +121,38 @@ export function Filters() {
   const store = useTablePageStore()
   const filters = useSubscription(store, { selector: state => state.filters })
   const [isOpened, toggleForm] = useToggle()
+  const columns = useTableColumns()
+
+  const removeUnusedOrdersEvent = useEffectEvent(() => {
+    if (!columns || columns.length === 0)
+      return
+
+    const columnIds = columns.map(col => col.id)
+    const invalidOrderByKeys = Object.keys(store.get().orderBy).filter(key => !columnIds.includes(key))
+
+    if (invalidOrderByKeys.length === 0)
+      return
+
+    const newOrderBy = Object.fromEntries(
+      Object.entries(store.get().orderBy).filter(([key]) => !invalidOrderByKeys.includes(key)),
+    )
+
+    store.set(state => ({
+      ...state,
+      orderBy: newOrderBy,
+    } satisfies typeof state))
+  })
+
+  useEffect(() => {
+    removeUnusedOrdersEvent()
+  }, [columns, store])
 
   if (filters.length === 0) {
     return null
   }
 
   return (
+
     <div className="flex justify-between gap-2">
       <div className="flex flex-wrap gap-2">
         {filters.map((filter, index) => (

@@ -16,7 +16,7 @@ import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { queryClient } from '~/main'
 import { Route } from '../..'
-import { useTableColumns } from '../../-queries/use-table-columns'
+import { useTableColumns } from '../../-columns'
 import { useTablePageStore } from '../../-store'
 import { HeaderActionsColumns } from './header-actions-columns'
 import { HeaderActionsCopy } from './header-actions-copy'
@@ -28,12 +28,10 @@ import { HeaderSearch } from './header-search'
 
 export function Header({ table, schema }: { table: string, schema: string }) {
   const { connectionResource } = Route.useRouteContext()
-  const columns = useTableColumns({ connectionResource, table, schema })
+  const columns = useTableColumns()
   const store = useTablePageStore()
   const { filters, exact, orderBy, selected } = useSubscription(store, { selector: state => pick(state, ['filters', 'orderBy', 'exact', 'selected']) })
   const { data: total, isLoading } = useQuery(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters, exact } }))
-
-  const columnsCount = columns?.length ?? 0
 
   const { isFetching, dataUpdatedAt, refetch, data: rows = [], isPending } = useInfiniteQuery(
     resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }),
@@ -107,10 +105,10 @@ export function Header({ table, schema }: { table: string, schema: string }) {
         </h2>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>
-            <span className="tabular-nums">{columnsCount}</span>
+            <span className="tabular-nums">{columns.length}</span>
             {' '}
             column
-            {columnsCount === 1 ? '' : 's'}
+            {columns.length === 1 ? '' : 's'}
           </span>
           <Separator orientation="vertical" className="h-3!" />
           {total?.count === undefined
@@ -175,24 +173,14 @@ export function Header({ table, schema }: { table: string, schema: string }) {
         schema={schema}
       />
       <Separator orientation="vertical" className="mx-2 h-6!" />
-      <HeaderActionsColumns
-        table={table}
-        schema={schema}
-      />
+      <HeaderActionsColumns />
       <HeaderActionsFilters />
-      <HeaderActionsOrder
-        table={table}
-        schema={schema}
-      />
+      <HeaderActionsOrder />
       <Separator orientation="vertical" className="mx-2 h-6!" />
-      <HeaderActionsCopy
-        table={table}
-        schema={schema}
-      />
+      <HeaderActionsCopy table={table} />
       <HeaderActionsSeed
         table={table}
         schema={schema}
-        columns={columns}
       />
       <ExportData
         selected={selected}

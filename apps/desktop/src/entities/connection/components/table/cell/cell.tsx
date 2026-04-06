@@ -1,3 +1,4 @@
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { TableCellProps } from '@conar/table'
 import type { ComponentProps } from 'react'
@@ -12,6 +13,7 @@ import { RiArrowLeftDownLine, RiArrowRightUpLine } from '@remixicon/react'
 import { format, isValid } from 'date-fns'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { createTransformer } from '~/entities/connection/transformers'
 import { TableCellContent } from './cell-content'
 import { useCellContext } from './cell-context'
 import { TableCellContextMenu } from './cell-menu'
@@ -19,7 +21,6 @@ import { CellPopoverContent } from './cell-popover'
 import { TableCellProvider } from './cell-provider'
 import { TableCellReferences } from './cell-references'
 import { TableCellTable } from './cell-table'
-import { getDisplayValue } from './utils'
 
 function SetNullAlertDialog({
   open,
@@ -98,6 +99,7 @@ export function TableCell({
   onSort,
   sortOrder,
   onRenameColumn,
+  connectionType,
 }: {
   onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
   column: Column
@@ -106,8 +108,10 @@ export function TableCell({
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
   sortOrder?: 'ASC' | 'DESC' | null
   onRenameColumn?: () => void
+  connectionType: ConnectionType
 } & TableCellProps) {
-  const displayValue = getDisplayValue({ value, size })
+  const transformer = createTransformer(column, connectionType)
+  const displayValue = transformer.toDisplay(value, size)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isForeignOpen, setIsForeignOpen] = useState(false)
   const [isReferencesOpen, setIsReferencesOpen] = useState(false)
@@ -183,7 +187,11 @@ export function TableCell({
     }
   }
 
-  const date = isValid(new Date(value as Date)) ? new Date(value as Date) : null
+  const date = (column.uiType === 'date' || column.uiType === 'datetime')
+    && (typeof value === 'string' || typeof value === 'number')
+    && isValid(new Date(value))
+    ? new Date(value)
+    : null
 
   return (
     <TableCellProvider
@@ -196,6 +204,7 @@ export function TableCell({
       onSort={onSort}
       sortOrder={sortOrder}
       onRenameColumn={onRenameColumn}
+      transformer={transformer}
     >
       <SetNullAlertDialog
         open={isSetNullDialogOpen}

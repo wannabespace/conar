@@ -51,7 +51,7 @@ export const authClient = createAuthClient({
 
 export async function fullSignOut() {
   await authClient.signOut()
-  bearerToken.remove()
+  bearerToken.clear()
   clearDb()
   identifyUser(null)
 }

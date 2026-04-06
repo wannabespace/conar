@@ -1,5 +1,4 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import { SQL_FILTERS_GROUPED } from '@conar/shared/filters'
 import { title } from '@conar/shared/utils/title'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
@@ -9,14 +8,13 @@ import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 import { addTab, getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore, prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
+import { ColumnsContext, useTableColumnsQuery } from './-columns'
 import { Filters } from './-components/filters/filters'
-import { FiltersProvider } from './-components/filters/filters-provider'
 import { Header } from './-components/header/header'
 import { Sidebar } from './-components/sidebar'
 import { Table } from './-components/table/table'
 import { TablesTabs } from './-components/tabs'
-import { useTableColumns } from './-queries/use-table-columns'
-import { tablePageSelectionStore, TablePageSelectionStoreContext, tablePageStore, TablePageStoreContext, useTablePageStore } from './-store'
+import { tablePageSelectionStore, TablePageSelectionStoreContext, tablePageStore, TablePageStoreContext } from './-store'
 
 export const Route = createFileRoute(
   '/_protected/connection/$resourceId/table/',
@@ -70,70 +68,26 @@ export const Route = createFileRoute(
 // eslint-disable-next-line react-refresh/only-export-components
 function TableContent({ table, schema }: { table: string, schema: string }) {
   const { connectionResource } = Route.useRouteContext()
-  const deps = Route.useLoaderDeps()
-  const store = useTablePageStore()
-
-  useEffect(() => {
-    if (deps.filters || deps.orderBy) {
-      store.set(state => ({
-        ...state,
-        ...(deps.filters ? { filters: deps.filters } : {}),
-        ...(deps.orderBy ? { orderBy: deps.orderBy } : {}),
-      } satisfies typeof state))
-    }
-  }, [store, deps])
-
-  const columns = useTableColumns({ connectionResource, table, schema })
-
-  const removeUnusedOrdersEvent = useEffectEvent(() => {
-    if (!columns || columns.length === 0)
-      return
-
-    const columnIds = columns.map(col => col.id)
-    const invalidOrderByKeys = Object.keys(store.get().orderBy).filter(key => !columnIds.includes(key))
-
-    if (invalidOrderByKeys.length === 0)
-      return
-
-    const newOrderBy = Object.fromEntries(
-      Object.entries(store.get().orderBy).filter(([key]) => !invalidOrderByKeys.includes(key)),
-    )
-
-    store.set(state => ({
-      ...state,
-      orderBy: newOrderBy,
-    } satisfies typeof state))
-  })
-
-  useEffect(() => {
-    removeUnusedOrdersEvent()
-  }, [columns, store])
+  const { data = [] } = useTableColumnsQuery({ connectionResource, table, schema })
 
   return (
-    <>
+    <ColumnsContext value={data}>
       <TablesTabs className="h-9" />
       <div
-        key={table}
-        role="none"
         className="h-[calc(100%-(--spacing(9)))]"
         onClick={() => addTab(connectionResource.id, schema, table)}
       >
-        <FiltersProvider
-          columns={columns ?? []}
-          filtersGrouped={SQL_FILTERS_GROUPED}
-        >
-          <div className="flex h-full flex-col justify-between">
-            <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
-              <Header table={table} schema={schema} />
-              <Filters />
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <Table table={table} schema={schema} />
-            </div>
+        <div className="flex h-full flex-col justify-between">
+          <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
+            <Header table={table} schema={schema} />
+            <Filters />
           </div>
-        </FiltersProvider>
+          <div className="flex-1 overflow-hidden">
+            <Table table={table} schema={schema} />
+          </div>
+        </div>
       </div>
-    </>
+    </ColumnsContext>
   )
 }
 
@@ -192,14 +146,14 @@ function DatabaseTablesPage() {
       >
         {schema && table
           ? (
-              <TablePageStoreContext.Provider value={tablePageStore({ id: connectionResource.id, schema, table })}>
-                <TablePageSelectionStoreContext.Provider value={tablePageSelectionStore({ id: connectionResource.id, schema, table })}>
+              <TablePageStoreContext value={tablePageStore({ id: connectionResource.id, schema, table })}>
+                <TablePageSelectionStoreContext value={tablePageSelectionStore({ id: connectionResource.id, schema, table })}>
                   <TableContent
                     table={table}
                     schema={schema}
                   />
-                </TablePageSelectionStoreContext.Provider>
-              </TablePageStoreContext.Provider>
+                </TablePageSelectionStoreContext>
+              </TablePageStoreContext>
             )
           : (
               <div className="flex h-full items-center justify-center p-4">

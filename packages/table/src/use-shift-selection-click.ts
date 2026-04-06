@@ -4,13 +4,13 @@ import { useRef } from 'react'
 
 export interface UseShiftSelectionClickOptions {
   // Example: { id: string, type: string }
-  rowKey: Record<string, string>
+  rowKey: Record<string, unknown>
   rowIndex: number
-  currentSelected: Record<string, string>[]
+  currentSelected: Record<string, unknown>[]
   lastClickedIndex: number | null
   getRangeKeys: (startIndex: number, endIndex: number) => Record<string, string>[]
   onSelectionChange: (
-    selected: Record<string, string>[],
+    selected: Record<string, unknown>[],
     selectionState: SelectionState,
     lastClickedIndex: number,
   ) => void

@@ -1,4 +1,5 @@
 import type { ReactElement } from 'react'
+import { pick } from '@conar/shared/utils/helpers'
 import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Switch } from '@conar/ui/components/switch'
@@ -78,13 +79,7 @@ export function RunnerSettings({ children }: { children: ReactElement }) {
     chatVisible,
     resultsVisible,
     chatPosition,
-  } = useSubscription(store, {
-    selector: s => ({
-      chatVisible: s.layout.chatVisible,
-      resultsVisible: s.layout.resultsVisible,
-      chatPosition: s.layout.chatPosition,
-    }),
-  })
+  } = useSubscription(store, { selector: s => pick(s.layout, ['chatVisible', 'resultsVisible', 'chatPosition']) })
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

@@ -1,6 +1,7 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Dispatch, SetStateAction } from 'react'
 import type { Column } from './utils'
+import type { ValueTransformer } from '~/entities/connection/transformers'
 import { createContext, use } from 'react'
 
 export const CellContext = createContext<{
@@ -10,6 +11,7 @@ export const CellContext = createContext<{
   column: Column
   value: unknown
   onUpdate: (value: string | null) => void
+  transformer: ValueTransformer
   availableValues?: string[]
   onAddFilter?: (filter: ActiveFilter) => void
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void

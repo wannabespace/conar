@@ -1,4 +1,4 @@
-import type { useTableColumns } from '../../-queries/use-table-columns'
+import type { Column } from '~/entities/connection/components'
 import type { GeneratorGroup, GeneratorId } from '~/entities/connection/utils/seeds'
 import { pick } from '@conar/shared/utils/helpers'
 import { Badge } from '@conar/ui/components/badge'
@@ -49,10 +49,9 @@ import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { autoDetectGenerator, ENUM_GENERATOR, generateRows, GENERATOR_GROUPS, GENERATORS, REFERENCE_GENERATOR, SKIP_GENERATOR } from '~/entities/connection/utils/seeds'
 import { queryClient } from '~/main'
 import { Route } from '../..'
+import { useTableColumns } from '../../-columns'
 import { useTablePageStore } from '../../-store'
 import { DefaultValueTooltipIcon, NullableTooltipIcon, PrimaryKeyTooltipIcon, ReadOnlyTooltipIcon, UniqueTooltipIcon } from '../table/table-header-cell'
-
-type Column = NonNullable<ReturnType<typeof useTableColumns>>[number]
 
 function getAvailableGeneratorGroups(column: Column) {
   return GENERATOR_GROUPS
@@ -76,12 +75,11 @@ function getAvailableGeneratorGroups(column: Column) {
 export function HeaderActionsSeed({
   table,
   schema,
-  columns,
 }: {
   table: string
   schema: string
-  columns: Column[]
 }) {
+  const columns = useTableColumns()
   const { connectionResource } = Route.useRouteContext()
   const [open, setOpen] = useState(false)
   const [rowCount, setRowCount] = useState(10)

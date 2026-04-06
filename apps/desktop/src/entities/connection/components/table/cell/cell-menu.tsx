@@ -1,4 +1,4 @@
-import type { ActiveFilter, Filter } from '@conar/shared/filters'
+import type { Filter } from '@conar/shared/filters'
 import type { CSSProperties, ReactNode } from 'react'
 import { cellToFilterValues, FILTER_GROUPS, SQL_FILTERS_GROUPED } from '@conar/shared/filters'
 import {
@@ -29,51 +29,8 @@ import { INTERNAL_COLUMN_IDS } from './utils'
 
 const internalColumnIds = Object.values(INTERNAL_COLUMN_IDS)
 
-function isDisabled(filter: Filter, cellValue: unknown): boolean {
+function isDisabledFilter(filter: Filter, cellValue: unknown): boolean {
   return filter.hasValue !== false && (cellValue === null || cellValue === undefined)
-}
-
-export function CellMenuAddFilterSubmenu({
-  onAdd,
-}: {
-  onAdd: (filter: ActiveFilter) => void
-}) {
-  const { value, column } = useCellContext()
-
-  return (
-    <ContextMenuSub>
-      <ContextMenuSubTrigger>
-        Add filter
-      </ContextMenuSubTrigger>
-      <ContextMenuSubContent>
-        {SQL_FILTERS_GROUPED.map(({ group, filters }, index) => (
-          <Fragment key={group}>
-            {index > 0 && <ContextMenuSeparator />}
-            <ContextMenuLabel>
-              {FILTER_GROUPS[group]}
-            </ContextMenuLabel>
-            {filters.map(filter => (
-              <ContextMenuItem
-                key={filter.operator}
-                disabled={isDisabled(filter, value)}
-                onClick={() => {
-                  onAdd({
-                    column: column.id,
-                    ref: filter,
-                    values: cellToFilterValues(filter, value),
-                  })
-                  toast.success('Filter added')
-                }}
-              >
-                {filter.label}
-                <span className="ml-auto pl-2 text-xs text-muted-foreground">{filter.operator}</span>
-              </ContextMenuItem>
-            ))}
-          </Fragment>
-        ))}
-      </ContextMenuSubContent>
-    </ContextMenuSub>
-  )
 }
 
 export function TableCellContextMenu({
@@ -128,7 +85,43 @@ export function TableCellContextMenu({
                 </ContextMenuItem>
               )}
               {onAddFilter && (
-                <CellMenuAddFilterSubmenu onAdd={onAddFilter} />
+                <ContextMenuSub>
+                  <ContextMenuSubTrigger>
+                    Add filter
+                  </ContextMenuSubTrigger>
+                  <ContextMenuSubContent>
+                    {SQL_FILTERS_GROUPED.map(({ group, filters }, index) => (
+                      <Fragment key={group}>
+                        {index > 0 && <ContextMenuSeparator />}
+                        <ContextMenuLabel>
+                          {FILTER_GROUPS[group]}
+                        </ContextMenuLabel>
+                        {filters.map(filter => (
+                          <ContextMenuItem
+                            key={filter.operator}
+                            disabled={isDisabledFilter(filter, value)}
+                            onClick={() => {
+                              onAddFilter({
+                                column: column.id,
+                                ref: filter,
+                                values: cellToFilterValues(filter, value),
+                              })
+                              toast.success('Filter added')
+                            }}
+                          >
+                            {filter.label}
+                            <span className="
+                              ml-auto pl-2 text-xs text-muted-foreground
+                            "
+                            >
+                              {filter.operator}
+                            </span>
+                          </ContextMenuItem>
+                        ))}
+                      </Fragment>
+                    ))}
+                  </ContextMenuSubContent>
+                </ContextMenuSub>
               )}
               {onSort && (
                 <ContextMenuSub>

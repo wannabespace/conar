@@ -5,15 +5,13 @@ import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/po
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiCheckLine, RiDatabase2Line, RiLayoutColumnLine } from '@remixicon/react'
 import { useSubscription } from 'seitu/react'
-import { Route } from '../..'
-import { useTableColumns } from '../../-queries/use-table-columns'
+import { useTableColumns } from '../../-columns'
 import { useTablePageStore } from '../../-store'
 
-export function HeaderActionsColumns({ table, schema }: { table: string, schema: string }) {
-  const { connectionResource } = Route.useRouteContext()
+export function HeaderActionsColumns() {
   const store = useTablePageStore()
   const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
-  const columns = useTableColumns({ connectionResource, table, schema })
+  const columns = useTableColumns()
 
   return (
     <Popover>

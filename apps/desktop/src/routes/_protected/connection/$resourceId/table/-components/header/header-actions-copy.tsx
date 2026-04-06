@@ -38,7 +38,7 @@ import * as generators from '~/entities/connection/generators'
 import { GENERATOR_COMPATIBILITY } from '~/entities/connection/generators/compatibility'
 import { resourceEnumsQueryOptions, resourceIndexesQueryOptions } from '~/entities/connection/queries'
 import { Route } from '../..'
-import { useTableColumns } from '../../-queries/use-table-columns'
+import { useTableColumns } from '../../-columns'
 import { useTablePageStore } from '../../-store'
 
 type Format = {
@@ -145,11 +145,11 @@ function CopyDialogEditor({ activeFormat, activeCategory, codeContent }: {
   )
 }
 
-export function HeaderActionsCopy({ table, schema }: { table: string, schema: string }) {
+export function HeaderActionsCopy({ table }: { table: string }) {
   const { connection, connectionResource } = Route.useRouteContext()
   const store = useTablePageStore()
   const filters = useSubscription(store, { selector: state => state.filters })
-  const columns = useTableColumns({ connectionResource, table, schema })
+  const columns = useTableColumns()
   const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const { data: indexes } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
   const [activeCategory, setActiveCategory] = useState<'schema' | 'query'>('schema')
