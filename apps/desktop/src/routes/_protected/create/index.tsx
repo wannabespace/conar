@@ -58,13 +58,7 @@ function CreateConnectionPage() {
   }) {
     const id = v7()
     const url = new SafeURL(data.connectionString.trim())
-    let resource = url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
-
-    // DuckDB stores the file path in ?path=..., so the URL pathname is not a schema name.
-    // Default to DuckDB's built-in schema so the initial route has a valid resource.
-    if (data.type === ConnectionType.DuckDB && resource == null) {
-      resource = 'main'
-    }
+    const resource = data.type === ConnectionType.DuckDB ? 'main' : (url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1))
 
     // DuckDB paths are machine-local; skip cloud RPC so a failed remote insert cannot roll back PGlite.
     const duckLocalOnly = { metadata: { cloudSync: false } as Record<string, unknown> }

@@ -152,6 +152,7 @@ export const resourceConstraintsQuery = createQuery({
       .leftJoin('information_schema.key_column_usage as kcu', join => join
         .onRef('tc.constraint_name', '=', 'kcu.constraint_name')
         .onRef('tc.constraint_schema', '=', 'kcu.constraint_schema')
+        .onRef('tc.table_schema', '=', 'kcu.table_schema')
         .onRef('tc.table_name', '=', 'kcu.table_name'))
       .leftJoin('information_schema.referential_constraints as rc', join => join
         .onRef('tc.constraint_name', '=', 'rc.constraint_name')
