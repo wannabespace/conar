@@ -3,12 +3,18 @@ import { memoize } from '@conar/shared/utils/helpers'
 
 const clickhouse = createRequire(import.meta.url)('@clickhouse/client') as typeof import('@clickhouse/client')
 
-export const getClient = memoize((connectionString: string) => clickhouse.createClient({
-  url: connectionString.startsWith('clickhouse')
-    // eslint-disable-next-line e18e/prefer-static-regex
-    ? connectionString.replace(/^clickhouse/, 'http')
-    : connectionString,
-  clickhouse_settings: {
-    date_time_output_format: 'iso',
-  },
-}))
+export const getClient = memoize((connectionString: string) => {
+  let url = connectionString
+  if (connectionString.startsWith('clickhouses')) {
+    url = connectionString.replace('clickhouses', 'https')
+  }
+  else if (connectionString.startsWith('clickhouse')) {
+    url = connectionString.replace('clickhouse', 'http')
+  }
+  return clickhouse.createClient({
+    url,
+    clickhouse_settings: {
+      date_time_output_format: 'iso',
+    },
+  })
+})

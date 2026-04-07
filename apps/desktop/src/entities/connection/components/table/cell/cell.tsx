@@ -155,7 +155,7 @@ export function TableCell({
     )
   }
 
-  const date = (column.uiType === 'date' || column.uiType === 'datetime')
+  const date = (column.uiType === 'date' || column.uiType === 'datetime' || column.type?.includes('timestamp'))
     && (typeof value === 'string' || typeof value === 'number')
     && isValid(new Date(value))
     ? new Date(value)

@@ -27,13 +27,22 @@ const clickhouseEnumValuePairRegex = /'([^']+)' *= *\d+/
 
 function parseClickhouseEnum(type: string): string[] {
   let inner = type
+  let changed = true
 
-  if (inner.startsWith('Array(') && inner.endsWith(')')) {
-    inner = inner.slice(6, -1)
-  }
-
-  if (inner.startsWith('Nullable(') && inner.endsWith(')')) {
-    inner = inner.slice(9, -1)
+  while (changed) {
+    changed = false
+    if (inner.startsWith('Array(') && inner.endsWith(')')) {
+      inner = inner.slice(6, -1)
+      changed = true
+    }
+    if (inner.startsWith('Nullable(') && inner.endsWith(')')) {
+      inner = inner.slice(9, -1)
+      changed = true
+    }
+    if (inner.startsWith('LowCardinality(') && inner.endsWith(')')) {
+      inner = inner.slice(15, -1)
+      changed = true
+    }
   }
 
   const match = inner.match(clickhouseEnumRegex)

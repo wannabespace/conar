@@ -173,7 +173,7 @@ function Log({ query, className, connectionResource }: { query: QueryLog, classN
               <Label className="text-destructive">Error</Label>
               <pre className={`
                 overflow-x-auto rounded-sm bg-red-50 p-2 font-mono text-xs
-                text-red-700
+                whitespace-break-spaces text-red-700
                 dark:bg-red-950 dark:text-red-300
               `}
               >

@@ -37,11 +37,11 @@ export function TableCellProvider({
   connectionType: ConnectionType
   children: React.ReactNode
 }) {
-  const transformer = createTransformer (column, connectionType)
+  const transformer = createTransformer(column, connectionType)
   const [newValue, setNewValue] = useState(() => transformer.toEditable(value))
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const update = async (rawValue: string | null) => {
+  const update = async (rawValue: string | string[] | null) => {
     if (!onSaveValue)
       return
 

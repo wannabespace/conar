@@ -14,7 +14,7 @@ export const CellContext = createContext<{
   value: unknown
   status: SaveStatus
   setStatus: Dispatch<SetStateAction<SaveStatus>>
-  onSaveValue?: (value: string | null) => Promise<unknown>
+  onSaveValue?: (value: string | string[] | null) => void
   transformer: ValueTransformer
   availableValues?: string[]
   onAddFilter?: (filter: ActiveFilter) => void

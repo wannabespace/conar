@@ -36,11 +36,11 @@ export function CellPopoverContent({
   const [isRaw, setIsRaw] = useState(false)
   const [rawValue, setRawValue] = useState(() => getValueForEditor(value))
 
-  const save = async (val: string, raw?: boolean) => {
+  const save = async (val: string, isRaw?: boolean) => {
     if (!onSaveValue)
       return
 
-    onSaveValue(raw ? val : transformer.toDb(val))
+    onSaveValue(isRaw ? val : transformer.toDb(val))
     onClose()
   }
 
@@ -49,7 +49,7 @@ export function CellPopoverContent({
   const canEdit = !!column?.isEditable && hasUpdateFn
   const isList = !!availableValues && !!column.isArray
   const activeValue = isRaw ? rawValue : newValue
-  const canSave = activeValue !== transformer.toEditable(value)
+  const isValueChanged = isRaw ? rawValue !== value : newValue !== transformer.toEditable(value)
 
   const comboboxItems = availableValues?.map(v => ({ value: v, label: v })) ?? []
   const selectedArrayValues = isList ? tryParseToJsonArray(newValue) : []
@@ -84,7 +84,7 @@ export function CellPopoverContent({
     return () => disposable.dispose()
   }, [monacoRef, isRaw])
 
-  useHotkey('Mod+Enter', () => save(newValue, isRaw), { enabled: canSave })
+  useHotkey('Mod+Enter', () => save(activeValue, isRaw), { enabled: isValueChanged })
 
   return (
     <>
@@ -112,7 +112,7 @@ export function CellPopoverContent({
                 className="w-full justify-center py-6"
                 checked={newValue === 'true'}
                 onChange={checked => setNewValue(checked.toString())}
-                onSave={save}
+                onSave={val => save(val, isRaw)}
               />
             )
           : column.uiType === 'list'
@@ -245,8 +245,8 @@ export function CellPopoverContent({
               )}
               <Button
                 size="xs"
-                disabled={!canSave}
-                onClick={() => save(activeValue, isRaw)}
+                disabled={!isValueChanged}
+                onClick={() => save(activeValue)}
               >
                 Save
                 <KbdCtrlEnter

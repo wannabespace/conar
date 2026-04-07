@@ -37,6 +37,10 @@ function getClickhouseColumnType(type: string): string {
     return getClickhouseColumnType(type.slice(9, -1))
   }
 
+  if (type.startsWith('LowCardinality(') && type.endsWith(')')) {
+    return getClickhouseColumnType(type.slice(15, -1))
+  }
+
   if (type.startsWith('Enum')) {
     return type.match(clickhouseEnumRegex)?.[0] || 'Enum'
   }
@@ -213,7 +217,7 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
         return query.map(row => ({
           ...row,
           enum: row.type.includes('Enum') ? row.id : undefined,
-          isArray: row.type.startsWith('Array('),
+          isArray: row.type.includes('Array('),
           label: getClickhouseColumnType(row.type),
         }))
       },

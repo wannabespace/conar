@@ -27,20 +27,20 @@ describe('createClickHouseListTransformer', () => {
   })
 
   describe('toDb', () => {
-    it('should convert JSON array to JSON string', () => {
-      expect(t.toDb('["a","b","c"]')).toBe('["a","b","c"]')
+    it('should return JS string array from JSON array input', () => {
+      expect(t.toDb('["a","b","c"]')).toEqual(['a', 'b', 'c'])
     })
 
-    it('should return empty JSON array for empty input', () => {
-      expect(t.toDb('[]')).toBe('[]')
+    it('should return empty array for empty input', () => {
+      expect(t.toDb('[]')).toEqual([])
     })
 
     it('should stringify numeric elements', () => {
-      expect(t.toDb('[1,2,3]')).toBe('["1","2","3"]')
+      expect(t.toDb('[1,2,3]')).toEqual(['1', '2', '3'])
     })
 
     it('should fall back to wrapping invalid JSON as single-element array', () => {
-      expect(t.toDb('plain')).toBe('["plain"]')
+      expect(t.toDb('plain')).toEqual(['plain'])
     })
   })
 })
