@@ -4,6 +4,7 @@ import { tryParseToJsonArray } from '@conar/shared/utils/helpers'
 import { Button } from '@conar/ui/components/button'
 import { Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput, ComboboxEmpty, ComboboxItem, ComboboxList, ComboboxPopup, ComboboxValue } from '@conar/ui/components/combobox'
 import { CopyButton } from '@conar/ui/components/custom/copy-button'
+import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { KbdCtrlEnter } from '@conar/ui/components/custom/shortcuts'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -12,6 +13,7 @@ import { RiCheckLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopy
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useStickToBottom } from 'use-stick-to-bottom'
 import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
 import { getValueForEditor } from '~/entities/connection/transformers/base'
@@ -32,6 +34,7 @@ export function CellPopoverContent({
 }) {
   const { newValue, value, column, setNewValue, onSaveValue, availableValues, transformer } = useCellContext()
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
+  const { scrollRef, contentRef } = useStickToBottom({ initial: 'instant' })
 
   const [isRaw, setIsRaw] = useState(false)
   const [rawValue, setRawValue] = useState(() => getValueForEditor(value))
@@ -130,21 +133,24 @@ export function CellPopoverContent({
                     }}
                   >
                     <ComboboxChips>
-                      <ComboboxValue>
-                        {(value: { value: string, label: string }[]) => (
-                          <>
-                            {value?.map(item => (
+                      <ScrollArea
+                        ref={scrollRef}
+                        className="max-h-32 overflow-y-auto"
+                      >
+                        <div ref={contentRef} className="flex flex-wrap gap-1.5">
+                          <ComboboxValue>
+                            {(value: typeof comboboxItems) => value?.map(item => (
                               <ComboboxChip aria-label={item.label} key={item.value}>
                                 {item.label}
                               </ComboboxChip>
                             ))}
-                            <ComboboxChipsInput
-                              aria-label="Select values"
-                              placeholder={value.length > 0 ? undefined : 'Select values...'}
-                            />
-                          </>
-                        )}
-                      </ComboboxValue>
+                          </ComboboxValue>
+                        </div>
+                      </ScrollArea>
+                      <ComboboxChipsInput
+                        aria-label="Select values"
+                        placeholder={selectedArrayValues.length > 0 ? undefined : 'Select values...'}
+                      />
                     </ComboboxChips>
                     <ComboboxPopup side="top">
                       <ComboboxEmpty>No values found.</ComboboxEmpty>
