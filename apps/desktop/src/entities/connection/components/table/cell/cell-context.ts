@@ -4,13 +4,17 @@ import type { Column } from './utils'
 import type { ValueTransformer } from '~/entities/connection/transformers'
 import { createContext, use } from 'react'
 
+export type SaveStatus = 'idle' | 'pending' | 'success' | 'error'
+
 export const CellContext = createContext<{
   rowIndex: number
   newValue: string
   setNewValue: Dispatch<SetStateAction<string>>
   column: Column
   value: unknown
-  onUpdate: (value: string | null) => void
+  status: SaveStatus
+  setStatus: Dispatch<SetStateAction<SaveStatus>>
+  onSaveValue?: (value: string | null) => Promise<unknown>
   transformer: ValueTransformer
   availableValues?: string[]
   onAddFilter?: (filter: ActiveFilter) => void

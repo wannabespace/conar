@@ -1,5 +1,6 @@
 import type { editor } from 'monaco-editor'
 import type { Dispatch, SetStateAction } from 'react'
+import { tryParseToJsonArray } from '@conar/shared/utils/helpers'
 import { Button } from '@conar/ui/components/button'
 import { Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput, ComboboxEmpty, ComboboxItem, ComboboxList, ComboboxPopup, ComboboxValue } from '@conar/ui/components/combobox'
 import { CopyButton } from '@conar/ui/components/custom/copy-button'
@@ -13,8 +14,7 @@ import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
-import { prepareValueForEditor } from '~/entities/connection/transformers/base'
-import { parseToJsonArray } from '~/entities/connection/transformers/list/shared'
+import { getValueForEditor } from '~/entities/connection/transformers/base'
 import { useCellContext } from './cell-context'
 
 export function CellPopoverContent({
@@ -30,14 +30,17 @@ export function CellPopoverContent({
   hasUpdateFn: boolean
   onSetNull: () => void
 }) {
-  const { newValue, value, column, setNewValue, onUpdate, availableValues, transformer } = useCellContext()
+  const { newValue, value, column, setNewValue, onSaveValue, availableValues, transformer } = useCellContext()
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
 
   const [isRaw, setIsRaw] = useState(false)
-  const [rawValue, setRawValue] = useState(() => prepareValueForEditor(value))
+  const [rawValue, setRawValue] = useState(() => getValueForEditor(value))
 
-  const save = (val: string, raw?: boolean) => {
-    onUpdate(raw ? val : transformer.toDb(val))
+  const save = async (val: string, raw?: boolean) => {
+    if (!onSaveValue)
+      return
+
+    onSaveValue(raw ? val : transformer.toDb(val))
     onClose()
   }
 
@@ -46,12 +49,10 @@ export function CellPopoverContent({
   const canEdit = !!column?.isEditable && hasUpdateFn
   const isList = !!availableValues && !!column.isArray
   const activeValue = isRaw ? rawValue : newValue
-  const canSave = isRaw
-    ? rawValue !== prepareValueForEditor(value)
-    : newValue !== transformer.toEditable(value)
+  const canSave = activeValue !== transformer.toEditable(value)
 
   const comboboxItems = availableValues?.map(v => ({ value: v, label: v })) ?? []
-  const selectedArrayValues = isList ? parseToJsonArray(newValue) : []
+  const selectedArrayValues = isList ? tryParseToJsonArray(newValue) : []
 
   const monacoOptions = {
     lineNumbers: isBig ? 'on' : 'off',
@@ -161,7 +162,7 @@ export function CellPopoverContent({
             : column.uiType === 'select' && (
               <div className="p-2">
                 <Select
-                  value={newValue === 'null' ? undefined : newValue}
+                  value={!newValue || newValue === 'null' ? null : newValue}
                   disabled={!canEdit}
                   onValueChange={(value) => {
                     if (value) {

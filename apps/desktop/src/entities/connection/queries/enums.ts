@@ -16,10 +16,9 @@ export const enumType = type({
 })
 
 export function findEnum(enums: typeof enumType.infer[], column: Column, table: string) {
-  return enums.find(e => (e.metadata?.table === table && e.metadata?.column === column.id)
-    || (column.enum && e.name === column.enum)
-    || (column.type && e.name === column.type),
-  )
+  return enums.find(e => e.metadata?.table === table && e.metadata?.column === column.id)
+    ?? enums.find(e => (column.enum && e.name === column.enum)
+      || (column.type && e.name === column.type))
 }
 
 const clickhouseEnumRegex = /^Enum\d+\((.*)\)$/

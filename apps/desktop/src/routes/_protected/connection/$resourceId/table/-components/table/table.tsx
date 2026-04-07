@@ -174,6 +174,8 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
       if (newValue !== realValue)
         setValue(rowIndex, columnId, realValue)
+
+      return realValue
     }
     catch (e) {
       toast.error('New value was saved, but the updated value was not refreshed', {

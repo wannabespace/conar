@@ -1,5 +1,7 @@
 import type { ValueTransformer } from '../'
-import { createBaseListTransformer, parseToArray } from './shared'
+import { tryParseToJsonArray } from '@conar/shared/utils/helpers'
+import { getValueForEditor } from '../base'
+import { parseToArray } from './shared'
 
 function parseMysqlSet(value: string): string[] | undefined {
   if (value.includes(','))
@@ -7,8 +9,12 @@ function parseMysqlSet(value: string): string[] | undefined {
 }
 
 export function createMysqlListTransformer(): ValueTransformer {
-  return createBaseListTransformer({
-    parseFromDb: value => parseToArray(value, parseMysqlSet),
-    toDbFormat: items => items.join(','),
-  })
+  return {
+    toEditable(value: unknown): string {
+      return getValueForEditor(parseToArray(value, parseMysqlSet))
+    },
+    toDb(editedValue: string): string {
+      return tryParseToJsonArray(editedValue).join(',')
+    },
+  }
 }

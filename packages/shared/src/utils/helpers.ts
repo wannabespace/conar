@@ -79,6 +79,13 @@ export function tryParseJson<T>(json: string): T | null {
   }
 }
 
+export function tryParseToJsonArray(editedValue: string): string[] {
+  const parsed = tryParseJson<unknown[]>(editedValue)
+  if (Array.isArray(parsed))
+    return parsed.map(String)
+  return [editedValue]
+}
+
 export function memoize<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F): F {
   const cache = new Map<string, ReturnType<F>>()
 

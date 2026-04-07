@@ -7,7 +7,6 @@ export function createBooleanTransformer(): ValueTransformer {
         return ''
       if (typeof value === 'boolean')
         return value.toString()
-      // MySQL tinyint(1): 0 | 1
       if (value === 0 || value === 1)
         return (!!value).toString()
       return String(value)

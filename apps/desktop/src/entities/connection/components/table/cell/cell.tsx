@@ -11,10 +11,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowLeftDownLine, RiArrowRightUpLine } from '@remixicon/react'
 import { format, isValid } from 'date-fns'
-import { useRef, useState } from 'react'
-import { toast } from 'sonner'
-import { createTransformer } from '~/entities/connection/transformers'
-import { truncateForDisplay, valueToDisplayString } from '~/entities/connection/transformers/base'
+import { useState } from 'react'
+import { getDisplayValue } from '~/entities/connection/transformers/base'
 import { TableCellContent } from './cell-content'
 import { useCellContext } from './cell-context'
 import { TableCellContextMenu } from './cell-menu'
@@ -30,10 +28,13 @@ function SetNullAlertDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const { value, onUpdate } = useCellContext()
+  const { value, onSaveValue } = useCellContext()
 
-  const setNull = () => {
-    onUpdate(null)
+  const setNull = async () => {
+    if (!onSaveValue)
+      return
+
+    await onSaveValue(null)
     onOpenChange(false)
   }
 
@@ -102,7 +103,7 @@ export function TableCell({
   onRenameColumn,
   connectionType,
 }: {
-  onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<void>
+  onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<unknown>
   column: Column
   availableValues?: string[]
   onAddFilter?: (filter: ActiveFilter) => void
@@ -111,11 +112,7 @@ export function TableCell({
   onRenameColumn?: () => void
   connectionType: ConnectionType
 } & TableCellProps) {
-  const transformer = createTransformer(column, connectionType)
-  const displayValue = truncateForDisplay(
-    column.uiType === 'boolean' && value === null ? 'empty' : valueToDisplayString(value),
-    size,
-  )
+  const displayValue = getDisplayValue(value, size)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isForeignOpen, setIsForeignOpen] = useState(false)
   const [isReferencesOpen, setIsReferencesOpen] = useState(false)
@@ -124,7 +121,6 @@ export function TableCell({
   const [isSetNullDialogOpen, setIsSetNullDialogOpen] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
   const [status, setStatus] = useState<'error' | 'idle' | 'pending' | 'success'>('idle')
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const cellClassName = cn(
     isPopoverOpen && 'bg-primary/10 ring-primary/30',
@@ -159,39 +155,6 @@ export function TableCell({
     )
   }
 
-  const update = async (value: string | null) => {
-    if (!onSaveValue)
-      return
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
-
-    setStatus('pending')
-
-    try {
-      await onSaveValue(
-        rowIndex,
-        column.id,
-        value,
-      )
-      setStatus('success')
-      timeoutRef.current = setTimeout(setStatus, 3000, 'idle')
-    }
-    catch (e) {
-      const error = e instanceof Error ? e : new Error(String(e))
-      console.error(error)
-
-      toast.error(`Failed to update cell "${column.id}"`, {
-        id: `save-cell-error-${column.id}-${error.message}`,
-        description: error.message,
-        duration: 3000,
-      })
-      setStatus('error')
-      timeoutRef.current = setTimeout(setStatus, 3000, 'idle')
-    }
-  }
-
   const date = (column.uiType === 'date' || column.uiType === 'datetime')
     && (typeof value === 'string' || typeof value === 'number')
     && isValid(new Date(value))
@@ -203,13 +166,15 @@ export function TableCell({
       column={column}
       rowIndex={rowIndex}
       value={value}
+      status={status}
+      setStatus={setStatus}
       availableValues={availableValues}
-      onUpdate={update}
+      onSaveValue={onSaveValue}
       onAddFilter={onAddFilter}
       onSort={onSort}
       sortOrder={sortOrder}
       onRenameColumn={onRenameColumn}
-      transformer={transformer}
+      connectionType={connectionType}
     >
       <SetNullAlertDialog
         open={isSetNullDialogOpen}

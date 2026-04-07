@@ -1,5 +1,7 @@
 import type { ValueTransformer } from '../'
-import { createBaseListTransformer, parseToArray } from './shared'
+import { tryParseToJsonArray } from '@conar/shared/utils/helpers'
+import { getValueForEditor } from '../base'
+import { parseToArray } from './shared'
 
 const PG_ARRAY_LITERAL_RE = /^\{.*\}$/
 const PG_NEEDS_QUOTING_RE = /[{},"\\\s]/
@@ -30,8 +32,12 @@ function toPgArrayLiteral(items: string[]): string {
 }
 
 export function createPostgresListTransformer(): ValueTransformer {
-  return createBaseListTransformer({
-    parseFromDb: value => parseToArray(value, parsePgArrayLiteral),
-    toDbFormat: toPgArrayLiteral,
-  })
+  return {
+    toEditable(value: unknown): string {
+      return getValueForEditor(parseToArray(value, parsePgArrayLiteral))
+    },
+    toDb(editedValue: string): string {
+      return toPgArrayLiteral(tryParseToJsonArray(editedValue))
+    },
+  }
 }
