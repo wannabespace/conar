@@ -62,8 +62,6 @@ function getAvailableGeneratorGroups(column: Column) {
           return !!column.foreign
         if (id === ENUM_GENERATOR)
           return !!column.enum
-        if (id === SKIP_GENERATOR)
-          return !!column.defaultValue
         if (id === 'null')
           return !!column.isNullable
         return true
@@ -101,7 +99,6 @@ export function HeaderActionsSeed({
         const saved = state.generators[column.id]
         const isValid = saved
           && saved.generatorId in GENERATORS
-          && (saved.generatorId !== SKIP_GENERATOR || column.defaultValue)
           && (saved.generatorId !== REFERENCE_GENERATOR || column.foreign)
           && (saved.generatorId !== ENUM_GENERATOR || column.enum)
           && (saved.generatorId !== 'null' || column.isNullable)
