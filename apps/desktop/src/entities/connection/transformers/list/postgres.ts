@@ -4,15 +4,26 @@ import { getValueForEditor } from '../base'
 import { parseToArray } from './shared'
 
 const PG_ARRAY_LITERAL_RE = /^\{.*\}$/
+// quoted element (handles \" and \\) OR bare element up to next comma
+const PG_ARRAY_ELEMENT_RE = /"(?:[^"\\]|\\.)*"|[^,]+/g
+// \" → " , \\ → \
+const PG_UNESCAPE_RE = /\\(.)/g
 const PG_NEEDS_QUOTING_RE = /[{},"\\\s]/
 const BACKSLASH_RE = /\\/g
 const DOUBLE_QUOTE_RE = /"/g
 
 function parsePgArrayLiteral(value: string): string[] | undefined {
-  if (PG_ARRAY_LITERAL_RE.test(value)) {
-    const inner = value.slice(1, -1)
-    return inner === '' ? [] : inner.split(',').map(v => v.trim())
-  }
+  if (!PG_ARRAY_LITERAL_RE.test(value))
+    return undefined
+
+  const inner = value.slice(1, -1)
+  if (inner === '')
+    return []
+
+  return Array.from(inner.matchAll(PG_ARRAY_ELEMENT_RE), ([m]) =>
+    m[0] === '"'
+      ? m.slice(1, -1).replace(PG_UNESCAPE_RE, '$1')
+      : m.trim())
 }
 
 function toPgArrayLiteral(items: string[]): string {

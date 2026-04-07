@@ -91,7 +91,7 @@ export function CellPopoverContent({
 
   return (
     <>
-      {column.uiType === 'raw' || isRaw
+      {column.uiType === 'raw' || isRaw || (column.uiType === 'list' && !availableValues)
         ? (
             <Monaco
               ref={monacoRef}
