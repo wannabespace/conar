@@ -214,15 +214,7 @@ export function autoDetectGenerator(column: Column): GeneratorId {
   if (column.enum)
     return ENUM_GENERATOR
 
-  if (
-    column.primaryKey
-    && column.defaultValue
-    && (column.defaultValue.includes('nextval')
-      || column.defaultValue.includes('auto_increment')
-      || column.defaultValue.includes('identity')
-      || column.defaultValue.includes('gen_random_uuid')
-      || column.defaultValue.includes('uuid_generate'))
-  ) {
+  if (column.primaryKey) {
     return SKIP_GENERATOR
   }
 
