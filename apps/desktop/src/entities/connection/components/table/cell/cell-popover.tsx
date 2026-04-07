@@ -137,7 +137,14 @@ export function CellPopoverContent({
                         ref={scrollRef}
                         className="max-h-32 overflow-y-auto"
                       >
-                        <div ref={contentRef} className="flex flex-wrap gap-1.5">
+                        <div
+                          ref={contentRef}
+                          className="
+                            flex flex-wrap gap-1.5
+                            *:data-[slot=combobox-chip]:min-h-7
+                            sm:*:data-[slot=combobox-chip]:min-h-6
+                          "
+                        >
                           <ComboboxValue>
                             {(value: typeof comboboxItems) => value?.map(item => (
                               <ComboboxChip aria-label={item.label} key={item.value}>
