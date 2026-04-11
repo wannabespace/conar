@@ -68,7 +68,6 @@ function execute(options: DialectExecutionOptions) {
   const promise = window.electron.query.clickhouse({
     connectionString: options.connectionString,
     query: preparedQuery,
-    silent: options.silent,
   })
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })

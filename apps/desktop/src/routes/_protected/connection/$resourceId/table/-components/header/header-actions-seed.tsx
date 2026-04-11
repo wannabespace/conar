@@ -44,7 +44,7 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { distinctQuery, insertQuery, resourceRowsQueryInfiniteOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
-import { findEnum, resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { autoDetectGenerator, ENUM_GENERATOR, generateRows, GENERATOR_GROUPS, GENERATORS, REFERENCE_GENERATOR, SKIP_GENERATOR } from '~/entities/connection/utils/seeds'
 import { queryClient } from '~/main'
@@ -61,7 +61,7 @@ function getAvailableGeneratorGroups(column: Column) {
         if (id === REFERENCE_GENERATOR)
           return !!column.foreign
         if (id === ENUM_GENERATOR)
-          return !!column.enum
+          return !!column.enumName
         if (id === 'null')
           return !!column.isNullable
         return true
@@ -100,7 +100,7 @@ export function HeaderActionsSeed({
         const isValid = saved
           && saved.generatorId in GENERATORS
           && (saved.generatorId !== REFERENCE_GENERATOR || column.foreign)
-          && (saved.generatorId !== ENUM_GENERATOR || column.enum)
+          && (saved.generatorId !== ENUM_GENERATOR || column.enumName)
           && (saved.generatorId !== 'null' || column.isNullable)
 
         newGenerators[column.id] = isValid
@@ -154,8 +154,8 @@ export function HeaderActionsSeed({
       const enumData = enums
         ? Object.fromEntries(
             columns
-              .filter(c => c.enum)
-              .map(column => [column.id, findEnum(enums, column, table)?.values ?? []] as const)
+              .filter(c => c.enumName)
+              .map(column => [column.id, column.availableValues ?? []] as const)
               .filter(([, values]) => values.length > 0),
           )
         : {}
@@ -269,7 +269,7 @@ export function HeaderActionsSeed({
                         <TooltipContent>Allow random NULL values</TooltipContent>
                       </Tooltip>
                     )}
-                    {column.foreign || column.enum
+                    {column.foreign || column.enumName
                       ? (
                           <Button
                             variant="outline"

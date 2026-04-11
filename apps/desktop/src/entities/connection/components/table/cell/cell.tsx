@@ -96,7 +96,6 @@ export function TableCell({
   position,
   size,
   onSaveValue,
-  availableValues,
   onAddFilter,
   onSort,
   sortOrder,
@@ -105,7 +104,6 @@ export function TableCell({
 }: {
   onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<unknown>
   column: Column
-  availableValues?: string[]
   onAddFilter?: (filter: ActiveFilter) => void
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
   sortOrder?: 'ASC' | 'DESC' | null
@@ -168,7 +166,6 @@ export function TableCell({
       value={value}
       status={status}
       setStatus={setStatus}
-      availableValues={availableValues}
       onSaveValue={onSaveValue}
       onAddFilter={onAddFilter}
       onSort={onSort}

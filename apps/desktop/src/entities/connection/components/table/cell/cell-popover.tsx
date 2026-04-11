@@ -1,6 +1,5 @@
 import type { editor } from 'monaco-editor'
 import type { Dispatch, SetStateAction } from 'react'
-import { tryParseToJsonArray } from '@conar/shared/utils/helpers'
 import { Button } from '@conar/ui/components/button'
 import { Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput, ComboboxEmpty, ComboboxItem, ComboboxList, ComboboxPopup, ComboboxValue } from '@conar/ui/components/combobox'
 import { CopyButton } from '@conar/ui/components/custom/copy-button'
@@ -13,10 +12,10 @@ import { RiCheckLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopy
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
-import { getValueForEditor } from '~/entities/connection/transformers/base'
 import { useCellContext } from './cell-context'
 
 export function CellPopoverContent({
@@ -32,30 +31,141 @@ export function CellPopoverContent({
   hasUpdateFn: boolean
   onSetNull: () => void
 }) {
-  const { newValue, value, column, setNewValue, onSaveValue, availableValues, transformer } = useCellContext()
+  const {
+    newValue,
+    setNewValue,
+    rawValue,
+    setRawValue,
+    value,
+    column,
+    onSaveValue,
+    transformer,
+  } = useCellContext()
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const { scrollRef, contentRef } = useStickToBottom({ initial: 'instant' })
 
-  const [isRaw, setIsRaw] = useState(false)
-  const [rawValue, setRawValue] = useState(() => getValueForEditor(value))
+  const canEdit = !!column?.isEditable && hasUpdateFn
 
-  const save = async (val: string, isRaw?: boolean) => {
+  const uiRender = ((() => {
+    if (column.uiType === 'boolean') {
+      return (
+        <CellSwitch
+          className="w-full justify-center py-6"
+          checked={newValue === true}
+          onChange={checked => setNewValue(checked)}
+        />
+      )
+    }
+
+    if (column.uiType === 'list' && column.isArray && !!column.availableValues) {
+      const selectedValues = Array.isArray(newValue) ? newValue : []
+      const comboboxItems = column.availableValues.map(v => ({ value: v, label: v }))
+      return (
+        <div className="p-2">
+          <Combobox
+            value={comboboxItems.filter(item => selectedValues.includes(item.value))}
+            items={comboboxItems}
+            multiple
+            autoHighlight
+            disabled={!canEdit}
+            onValueChange={(items) => {
+              const values = items.map(item => item.value)
+              setNewValue(values)
+            }}
+          >
+            <ComboboxChips>
+              <ScrollArea
+                ref={scrollRef}
+                className="max-h-32 overflow-y-auto"
+              >
+                <div
+                  ref={contentRef}
+                  className="
+                    flex flex-wrap gap-1.5
+                    *:data-[slot=combobox-chip]:min-h-7
+                    sm:*:data-[slot=combobox-chip]:min-h-6
+                  "
+                >
+                  <ComboboxValue>
+                    {(value: typeof comboboxItems) => value?.map(item => (
+                      <ComboboxChip aria-label={item.label} key={item.value}>
+                        {item.label}
+                      </ComboboxChip>
+                    ))}
+                  </ComboboxValue>
+                </div>
+              </ScrollArea>
+              <ComboboxChipsInput
+                aria-label="Select values"
+                placeholder={selectedValues.length > 0 ? undefined : 'Select values...'}
+              />
+            </ComboboxChips>
+            <ComboboxPopup side="top">
+              <ComboboxEmpty>No values found.</ComboboxEmpty>
+              <ComboboxList>
+                {item => (
+                  <ComboboxItem key={item.value} value={item}>
+                    {item.label}
+                  </ComboboxItem>
+                )}
+              </ComboboxList>
+            </ComboboxPopup>
+          </Combobox>
+        </div>
+      )
+    }
+
+    if (column.uiType === 'select') {
+      return (
+        <div className="p-2">
+          <Select
+            value={!newValue || newValue === 'null' ? null : newValue}
+            disabled={!canEdit}
+            onValueChange={(value) => {
+              if (value) {
+                setNewValue(value)
+              }
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select value" />
+            </SelectTrigger>
+            <SelectContent>
+              {column.availableValues?.map(val => (
+                <SelectItem key={val} value={val}>
+                  {val}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )
+    }
+
+    return null
+  })())
+
+  const [isRaw, setIsRaw] = useState(!uiRender)
+
+  const save = async () => {
     if (!onSaveValue)
       return
 
-    onSaveValue(isRaw ? val : transformer.toDb(val))
+    let value: unknown
+    try {
+      value = isRaw
+        ? transformer.toConnection.fromRaw(rawValue)
+        : transformer.toConnection.fromUI(newValue)
+    }
+    catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Invalid value')
+      return
+    }
+
+    onSaveValue(value)
     onClose()
   }
-
-  const saveEvent = useEffectEvent((val: string) => save(val, isRaw))
-
-  const canEdit = !!column?.isEditable && hasUpdateFn
-  const isList = !!availableValues && !!column.isArray
-  const activeValue = isRaw ? rawValue : newValue
-  const isValueChanged = isRaw ? rawValue !== value : newValue !== transformer.toEditable(value)
-
-  const comboboxItems = availableValues?.map(v => ({ value: v, label: v })) ?? []
-  const selectedArrayValues = isList ? tryParseToJsonArray(newValue) : []
+  const saveEvent = useEffectEvent(save)
 
   const monacoOptions = {
     lineNumbers: isBig ? 'on' : 'off',
@@ -79,24 +189,25 @@ export function CellPopoverContent({
       id: 'conar.execute-on-enter',
       label: 'Execute on Enter',
       keybindings: [KeyMod.CtrlCmd | KeyCode.Enter],
-      run: (e) => {
-        saveEvent(e.getValue() ?? '')
+      run: () => {
+        saveEvent()
       },
     })
 
     return () => disposable.dispose()
   }, [monacoRef, isRaw])
 
-  useHotkey('Mod+Enter', () => save(activeValue, isRaw), { enabled: isValueChanged })
+  useHotkey('Mod+Enter', () => save(), { enabled: canEdit })
 
   return (
     <>
-      {column.uiType === 'raw' || isRaw || (column.uiType === 'list' && !availableValues)
-        ? (
+      {!isRaw && uiRender
+        ? uiRender
+        : (
             <Monaco
               ref={monacoRef}
               data-mask
-              value={isRaw ? rawValue : newValue}
+              value={isRaw ? rawValue : String(newValue ?? '')}
               language={column?.type?.includes('json')
                 ? 'json'
                 : column?.type?.includes('xml')
@@ -108,97 +219,10 @@ export function CellPopoverContent({
               onChange={isRaw ? setRawValue : setNewValue}
               options={monacoOptions}
             />
-          )
-        : column.uiType === 'boolean'
-          ? (
-              <CellSwitch
-                className="w-full justify-center py-6"
-                checked={newValue === 'true'}
-                onChange={checked => setNewValue(checked.toString())}
-                onSave={val => save(val, isRaw)}
-              />
-            )
-          : column.uiType === 'list'
-            ? (
-                <div className="p-2">
-                  <Combobox
-                    value={comboboxItems.filter(item => selectedArrayValues.includes(item.value))}
-                    items={comboboxItems}
-                    multiple
-                    autoHighlight
-                    disabled={!canEdit}
-                    onValueChange={(items) => {
-                      const values = items.map(item => item.value)
-                      setNewValue(JSON.stringify(values))
-                    }}
-                  >
-                    <ComboboxChips>
-                      <ScrollArea
-                        ref={scrollRef}
-                        className="max-h-32 overflow-y-auto"
-                      >
-                        <div
-                          ref={contentRef}
-                          className="
-                            flex flex-wrap gap-1.5
-                            *:data-[slot=combobox-chip]:min-h-7
-                            sm:*:data-[slot=combobox-chip]:min-h-6
-                          "
-                        >
-                          <ComboboxValue>
-                            {(value: typeof comboboxItems) => value?.map(item => (
-                              <ComboboxChip aria-label={item.label} key={item.value}>
-                                {item.label}
-                              </ComboboxChip>
-                            ))}
-                          </ComboboxValue>
-                        </div>
-                      </ScrollArea>
-                      <ComboboxChipsInput
-                        aria-label="Select values"
-                        placeholder={selectedArrayValues.length > 0 ? undefined : 'Select values...'}
-                      />
-                    </ComboboxChips>
-                    <ComboboxPopup side="top">
-                      <ComboboxEmpty>No values found.</ComboboxEmpty>
-                      <ComboboxList>
-                        {item => (
-                          <ComboboxItem key={item.value} value={item}>
-                            {item.label}
-                          </ComboboxItem>
-                        )}
-                      </ComboboxList>
-                    </ComboboxPopup>
-                  </Combobox>
-                </div>
-              )
-            : column.uiType === 'select' && (
-              <div className="p-2">
-                <Select
-                  value={!newValue || newValue === 'null' ? null : newValue}
-                  disabled={!canEdit}
-                  onValueChange={(value) => {
-                    if (value) {
-                      setNewValue(value)
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select value" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableValues?.map(val => (
-                      <SelectItem key={val} value={val}>
-                        {val}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+          )}
       <div className="flex items-center justify-between gap-2 border-t p-2">
         <div className="flex items-center gap-1">
-          {isRaw && (
+          {!!uiRender && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -219,14 +243,18 @@ export function CellPopoverContent({
               <CopyButton
                 size="icon-xs"
                 variant="outline"
-                text={activeValue}
+                text={isRaw
+                  ? rawValue
+                  : typeof newValue === 'string'
+                    ? newValue
+                    : JSON.stringify(newValue)}
                 copyIcon={<RiFileCopyLine className="size-3" />}
                 successIcon={<RiCheckLine className="size-3 text-success" />}
               />
             </TooltipTrigger>
             <TooltipContent side="bottom">Copy value</TooltipContent>
           </Tooltip>
-          {column.uiType !== 'raw' && (
+          {!!uiRender && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -258,8 +286,7 @@ export function CellPopoverContent({
               )}
               <Button
                 size="xs"
-                disabled={!isValueChanged}
-                onClick={() => save(activeValue)}
+                onClick={() => save()}
               >
                 Save
                 <KbdCtrlEnter

@@ -8,15 +8,16 @@ export type SaveStatus = 'idle' | 'pending' | 'success' | 'error'
 
 export const CellContext = createContext<{
   rowIndex: number
-  newValue: string
-  setNewValue: Dispatch<SetStateAction<string>>
+  newValue: unknown
+  setNewValue: Dispatch<SetStateAction<unknown>>
+  rawValue: string
+  setRawValue: Dispatch<SetStateAction<string>>
   column: Column
   value: unknown
   status: SaveStatus
   setStatus: Dispatch<SetStateAction<SaveStatus>>
-  onSaveValue?: (value: string | string[] | null) => void
+  onSaveValue?: (rawValue: unknown) => void
   transformer: ValueTransformer
-  availableValues?: string[]
   onAddFilter?: (filter: ActiveFilter) => void
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
   sortOrder?: 'ASC' | 'DESC' | null

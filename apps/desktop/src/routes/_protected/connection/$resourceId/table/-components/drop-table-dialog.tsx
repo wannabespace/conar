@@ -71,7 +71,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
       setConfirmationText('')
       setCascade(false)
 
-      queryClient.invalidateQueries(resourceTablesAndSchemasQueryOptions({ silent: true, connectionResource, showSystem: store.get().showSystem }))
+      queryClient.invalidateQueries(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem: store.get().showSystem }))
 
       if (isCurrentTable) {
         await router.navigate({

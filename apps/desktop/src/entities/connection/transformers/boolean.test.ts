@@ -4,47 +4,47 @@ import { createBooleanTransformer } from './boolean'
 describe('createBooleanTransformer', () => {
   const t = createBooleanTransformer()
 
-  describe('toEditable', () => {
-    it('should return empty string for null', () => {
-      expect(t.toEditable(null)).toBe('')
+  describe('fromConnection → toUI', () => {
+    it('returns false for null and undefined', () => {
+      expect(t.fromConnection(null).toUI()).toBe(false)
+      expect(t.fromConnection(undefined).toUI()).toBe(false)
     })
 
-    it('should return empty string for undefined', () => {
-      expect(t.toEditable(undefined)).toBe('')
+    it('returns boolean primitives as-is', () => {
+      expect(t.fromConnection(true).toUI()).toBe(true)
+      expect(t.fromConnection(false).toUI()).toBe(false)
     })
 
-    it('should return "true" for boolean true', () => {
-      expect(t.toEditable(true)).toBe('true')
+    it('maps 1 / 0 like MySQL tinyint', () => {
+      expect(t.fromConnection(1).toUI()).toBe(true)
+      expect(t.fromConnection(0).toUI()).toBe(false)
     })
 
-    it('should return "false" for boolean false', () => {
-      expect(t.toEditable(false)).toBe('false')
-    })
-
-    it('should return "true" for number 1 (MySQL tinyint)', () => {
-      expect(t.toEditable(1)).toBe('true')
-    })
-
-    it('should return "false" for number 0 (MySQL tinyint)', () => {
-      expect(t.toEditable(0)).toBe('false')
-    })
-
-    it('should return string representation for other values', () => {
-      expect(t.toEditable('yes')).toBe('yes')
+    it('coerces other values with Boolean()', () => {
+      expect(t.fromConnection('yes').toUI()).toBe(true)
+      expect(t.fromConnection('').toUI()).toBe(false)
     })
   })
 
-  describe('toDb', () => {
-    it('should pass through "true"', () => {
-      expect(t.toDb('true')).toBe('true')
+  describe('fromConnection → toRaw', () => {
+    it('uses getValueForEditor for the raw view', () => {
+      expect(t.fromConnection(true).toRaw()).toBe('true')
+      expect(t.fromConnection(false).toRaw()).toBe('false')
+      expect(t.fromConnection(null).toRaw()).toBe('')
     })
+  })
 
-    it('should pass through "false"', () => {
-      expect(t.toDb('false')).toBe('false')
+  describe('toConnection.fromUI', () => {
+    it('passes through the boolean sent from the UI', () => {
+      expect(t.toConnection.fromUI(true)).toBe(true)
+      expect(t.toConnection.fromUI(false)).toBe(false)
     })
+  })
 
-    it('should pass through empty string', () => {
-      expect(t.toDb('')).toBe('')
+  describe('toConnection.fromRaw', () => {
+    it('passes through raw editor text', () => {
+      expect(t.toConnection.fromRaw('true')).toBe('true')
+      expect(t.toConnection.fromRaw('false')).toBe('false')
     })
   })
 })

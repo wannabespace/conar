@@ -1,8 +1,8 @@
 import { tryParseJson } from '@conar/shared/utils/helpers'
 
-export function parseToArray(
-  value: unknown,
-  engineParser?: (str: string) => string[] | undefined,
+export function parseToArray<T>(
+  value: T,
+  engineParser?: (str: T) => string[] | undefined,
 ): string[] {
   if (value === null || value === undefined || value === '')
     return []
@@ -17,6 +17,8 @@ export function parseToArray(
     const parsed = tryParseJson<unknown[]>(value)
     if (Array.isArray(parsed))
       return parsed.map(String)
+
+    throw new Error('Invalid JSON array format')
   }
 
   if (engineParser) {

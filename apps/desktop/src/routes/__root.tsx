@@ -34,6 +34,7 @@ function RootDocument() {
   const router = useRouter()
 
   useHotkey('Mod+R', () => globalHooks.callHook('refreshPressed'))
+  useHotkey('Mod+Shift+R', () => location.reload())
 
   useUpdatesObserver()
   useDeepLinksObserver()

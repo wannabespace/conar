@@ -18,7 +18,6 @@ export function TableCellProvider({
   status,
   column,
   value,
-  availableValues,
   setStatus,
   onSaveValue,
   connectionType,
@@ -28,7 +27,6 @@ export function TableCellProvider({
   value: unknown
   status: SaveStatus
   setStatus: Dispatch<SetStateAction<SaveStatus>>
-  availableValues?: string[]
   onAddFilter?: (filter: ActiveFilter) => void
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
   sortOrder?: 'ASC' | 'DESC' | null
@@ -37,11 +35,12 @@ export function TableCellProvider({
   connectionType: ConnectionType
   children: React.ReactNode
 }) {
-  const transformer = createTransformer(column, connectionType)
-  const [newValue, setNewValue] = useState(() => transformer.toEditable(value))
+  const transformer = createTransformer(connectionType, column)
+  const [newValue, setNewValue] = useState(() => transformer.fromConnection(value).toUI())
+  const [rawValue, setRawValue] = useState(() => transformer.fromConnection(value).toRaw())
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const update = async (rawValue: string | string[] | null) => {
+  const update = async (rawValue: unknown) => {
     if (!onSaveValue)
       return
 
@@ -57,8 +56,11 @@ export function TableCellProvider({
         column.id,
         rawValue,
       )
-      const newValue = result === undefined ? rawValue : result
-      setNewValue(transformer.toEditable(newValue))
+      const newRawValue = result === undefined ? rawValue : result
+      setNewValue(transformer.fromConnection(newRawValue).toUI())
+      setRawValue(typeof newRawValue === 'string'
+        ? newRawValue
+        : JSON.stringify(newRawValue))
       setStatus('success')
       timeoutRef.current = setTimeout(setStatus, 3000, 'idle')
     }
@@ -86,8 +88,9 @@ export function TableCellProvider({
       status,
       setStatus,
       onSaveValue: update,
+      rawValue,
+      setRawValue,
       transformer,
-      availableValues,
       onAddFilter,
       onSort,
       sortOrder,

@@ -1,4 +1,16 @@
+import { SafeURL } from '@conar/shared/utils/safe-url'
+
 export const DEFAULT_PAGE_LIMIT = 100
+
+export function wrapExplainQuery(query: string) {
+  const trimmedQuery = query.trim().toLowerCase()
+  return trimmedQuery.startsWith('explain') ? query : `EXPLAIN ${query.trim()}`
+}
+
+export function getConnectionStringToShow(connectionString: string, withPathname = false) {
+  const parsed = new SafeURL(connectionString)
+  return `${parsed.hostname}${parsed.port ? `:${parsed.port}` : ''}${withPathname && parsed.pathname !== '/' ? parsed.pathname : ''}`
+}
 
 export const DANGEROUS_SQL_KEYWORDS = ['DELETE', 'UPDATE', 'DROP', 'RENAME', 'TRUNCATE', 'ALTER'] as const
 
@@ -264,9 +276,4 @@ export function getEditorQueries(sql: string) {
   }
 
   return queries
-}
-
-export function wrapExplainQuery(query: string) {
-  const trimmedQuery = query.trim().toLowerCase()
-  return trimmedQuery.startsWith('explain') ? query : `EXPLAIN ${query.trim()}`
 }

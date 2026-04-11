@@ -1,14 +1,15 @@
-import type { ValueTransformer } from './'
+import type { ValueTransformer } from './create-transformer'
 import { getValueForEditor } from './base'
 
-export function createRawTransformer(): ValueTransformer {
+export function createRawTransformer(): ValueTransformer<unknown> {
   return {
-    toEditable(value: unknown): string {
-      return getValueForEditor(value)
-    },
-
-    toDb(editedValue: string): string {
-      return editedValue
+    fromConnection: value => ({
+      toUI: () => getValueForEditor(value),
+      toRaw: () => getValueForEditor(value),
+    }),
+    toConnection: {
+      fromUI: value => value,
+      fromRaw: raw => raw,
     },
   }
 }

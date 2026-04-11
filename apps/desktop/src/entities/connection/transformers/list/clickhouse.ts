@@ -1,23 +1,15 @@
-import type { ValueTransformer } from '../'
-import { tryParseToJsonArray } from '@conar/shared/utils/helpers'
-import { getValueForEditor } from '../base'
+import type { ValueTransformer } from '../create-transformer'
 import { parseToArray } from './shared'
 
-/**
- * ClickHouse list transformer.
- *
- * `toDb` returns a **JS string array** (not a JSON string) so that
- * the ClickHouse dialect's `prepareQuery` handles it via its
- * `Array.isArray` branch, producing `['val1', 'val2']` with the
- * single-quoted literals ClickHouse expects.
- */
-export function createClickHouseListTransformer(): ValueTransformer {
+export function createClickHouseListTransformer(): ValueTransformer<string[]> {
   return {
-    toEditable(value: unknown): string {
-      return getValueForEditor(parseToArray(value))
-    },
-    toDb(editedValue: string): string[] {
-      return tryParseToJsonArray(editedValue)
+    fromConnection: value => ({
+      toUI: () => parseToArray(value),
+      toRaw: () => typeof value === 'string' ? value : JSON.stringify(value),
+    }),
+    toConnection: {
+      fromUI: value => value,
+      fromRaw: raw => parseToArray(raw),
     },
   }
 }

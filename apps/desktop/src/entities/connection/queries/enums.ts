@@ -1,4 +1,3 @@
-import type { Column } from '../components/table/cell'
 import type { connectionsResources } from '~/drizzle/schema'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
@@ -15,9 +14,21 @@ export const enumType = type({
   }).optional(),
 })
 
-export function findEnum(enums: typeof enumType.infer[], column: Column, table: string) {
+export function findEnum({
+  enums,
+  column,
+  table,
+}: {
+  enums: typeof enumType.infer[]
+  column: {
+    id: string
+    enumName?: string
+    type?: string
+  }
+  table: string
+}) {
   return enums.find(e => e.metadata?.table === table && e.metadata?.column === column.id)
-    ?? enums.find(e => (column.enum && e.name === column.enum)
+    ?? enums.find(e => (column.enumName && e.name === column.enumName)
       || (column.type && e.name === column.type))
 }
 

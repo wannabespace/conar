@@ -6,7 +6,8 @@ export interface Column {
   uiType: 'select' | 'list' | 'boolean' | 'date' | 'datetime' | 'raw'
   type?: string
   label?: string
-  enum?: string
+  enumName?: string
+  availableValues?: string[]
   isArray?: boolean
   isEditable?: boolean
   isNullable?: boolean
@@ -65,7 +66,7 @@ export function getColumnUiType(column: typeof columnType.infer): Column['uiType
   if (column.isArray)
     return 'list'
 
-  if (column.enum)
+  if (column.enumName)
     return 'select'
 
   if (column.type === 'boolean')

@@ -57,7 +57,7 @@ export const CONNECTION_TYPES_WITH_TRIGGERS: ConnectionType[] = [ConnectionType.
 export const CONNECTION_TYPES_WITH_FUNCTIONS: ConnectionType[] = [ConnectionType.Postgres, ConnectionType.MySQL, ConnectionType.MSSQL]
 export const CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME: ConnectionType[] = [ConnectionType.ClickHouse]
 
-export const NETWORK_ERROR_PATTERNS = [
+export const RECONNECT_ERROR_PATTERNS = [
   'econnreset',
   'etimedout',
   'epipe',
@@ -67,4 +67,5 @@ export const NETWORK_ERROR_PATTERNS = [
   'socket hang up',
   'socketerror',
   'network',
+  'application failed to respond',
 ]

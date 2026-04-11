@@ -1,6 +1,4 @@
-import type { ValueTransformer } from '../'
-import { tryParseToJsonArray } from '@conar/shared/utils/helpers'
-import { getValueForEditor } from '../base'
+import type { ValueTransformer } from '../create-transformer'
 import { parseToArray } from './shared'
 
 function parseMysqlSet(value: string): string[] | undefined {
@@ -8,13 +6,25 @@ function parseMysqlSet(value: string): string[] | undefined {
     return value.split(',').map(v => v.trim())
 }
 
-export function createMysqlListTransformer(): ValueTransformer {
+export function createMysqlListTransformer(): ValueTransformer<string[]> {
   return {
-    toEditable(value: unknown): string {
-      return getValueForEditor(parseToArray(value, parseMysqlSet))
-    },
-    toDb(editedValue: string): string {
-      return tryParseToJsonArray(editedValue).join(',')
+    fromConnection: value => ({
+      toUI: () =>
+        Array.isArray(value)
+          ? value.map(String)
+          : typeof value === 'string'
+            ? parseToArray(value, parseMysqlSet)
+            : [],
+      toRaw: () =>
+        Array.isArray(value)
+          ? value.map(String).join(',')
+          : typeof value === 'string'
+            ? parseToArray(value, parseMysqlSet).join(',')
+            : '[]',
+    }),
+    toConnection: {
+      fromUI: value => value.join(','),
+      fromRaw: raw => raw,
     },
   }
 }

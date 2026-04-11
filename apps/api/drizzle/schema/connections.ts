@@ -1,6 +1,5 @@
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
-import { enumValues } from '@conar/shared/utils/helpers'
 import { defineRelations } from 'drizzle-orm'
 import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-orm/arktype'
 import { pgEnum, pgTable, unique } from 'drizzle-orm/pg-core'
@@ -8,9 +7,9 @@ import { baseTable } from '../base-table'
 import { encryptedText } from '../utils'
 import { users } from './auth'
 
-export const connectionType = pgEnum('connection_type', enumValues(ConnectionType))
+export const connectionType = pgEnum('connection_type', ConnectionType)
 
-export const syncType = pgEnum('sync_type', enumValues(SyncType))
+export const syncType = pgEnum('sync_type', SyncType)
 
 export const connections = pgTable('connections', ({ uuid, text, boolean }) => ({
   ...baseTable,

@@ -5,14 +5,13 @@ import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { Table, TableBody, TableProvider } from '@conar/table'
 import { DEFAULT_COLUMN_WIDTH } from '@conar/table/constants'
 import { useShiftSelectionKeyDown } from '@conar/table/hooks'
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { TableCell } from '~/entities/connection/components'
 import { getColumnSize, INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell'
-import { findEnum, resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
-import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { selectQuery } from '~/entities/connection/queries/select'
 import { setQuery } from '~/entities/connection/queries/set'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
@@ -52,7 +51,6 @@ export function TableError({ error }: { error: Error }) {
 
 function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { connection, connectionResource } = Route.useRouteContext()
-  const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const columns = useTableColumns()
   const store = useTablePageStore()
   const selectionStore = useTablePageSelectionStore()
@@ -215,7 +213,6 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         <TableCell
           column={column}
           onSaveValue={primaryColumns.length > 0 ? saveValue : undefined}
-          availableValues={enums ? findEnum(enums, column, table)?.values : undefined}
           connectionType={connection.type}
           onAddFilter={filter => store.set(state => ({
             ...state,
@@ -230,7 +227,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         />
       ),
     }) satisfies ColumnRenderer,
-    ), [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, toggleOrder, setOrder, removeOrder, enums, store, orderBy])
+    ), [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, toggleOrder, setOrder, removeOrder, store, orderBy])
 
   const handleShiftSelectionKeyDown = useShiftSelectionKeyDown({
     rowCount: rows.length,

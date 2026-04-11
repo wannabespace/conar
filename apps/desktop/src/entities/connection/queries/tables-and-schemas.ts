@@ -11,10 +11,9 @@ export const tablesAndSchemasType = type({
   type: '\'BASE TABLE\' | \'VIEW\'',
 })
 
-export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResource, showSystem }: { silent: boolean, connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) => {
+export const resourceTablesAndSchemasQuery = memoize(({ connectionResource, showSystem }: { connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) => {
   return createQuery({
     type: tablesAndSchemasType.array(),
-    silent,
     query: {
       postgres: db => db
         .selectFrom('information_schema.tables')
@@ -68,11 +67,11 @@ export const resourceTablesAndSchemasQuery = memoize(({ silent, connectionResour
   })
 })
 
-export function resourceTablesAndSchemasQueryOptions({ silent, connectionResource, showSystem }: { silent: boolean, connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) {
+export function resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }: { connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'tables-and-schemas', showSystem],
     queryFn: async () => {
-      const results = await resourceTablesAndSchemasQuery({ silent, connectionResource, showSystem }).run(connectionResourceToQueryParams(connectionResource))
+      const results = await resourceTablesAndSchemasQuery({ connectionResource, showSystem }).run(connectionResourceToQueryParams(connectionResource))
       const schemas = Object.entries(Object.groupBy(results, table => table.schema)).map(([schema, tables]) => ({
         name: schema,
         tables: tables!.map(table => ({ name: table.table, isView: table.type === 'VIEW' })),

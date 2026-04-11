@@ -4,51 +4,75 @@ import { createMysqlListTransformer } from './mysql'
 describe('createMysqlListTransformer', () => {
   const t = createMysqlListTransformer()
 
-  describe('toEditable', () => {
-    it('should parse comma-separated SET value', () => {
-      expect(t.toEditable('a,b,c')).toBe('[\n  "a",\n  "b",\n  "c"\n]')
+  describe('fromConnection → toUI', () => {
+    it('parses comma-separated SET values into string[]', () => {
+      expect(t.fromConnection('a,b,c').toUI()).toEqual(['a', 'b', 'c'])
     })
 
-    it('should handle JS array input', () => {
-      expect(t.toEditable(['x', 'y'])).toBe('[\n  "x",\n  "y"\n]')
+    it('normalizes array values from the driver to string[]', () => {
+      expect(t.fromConnection(['x', 'y']).toUI()).toEqual(['x', 'y'])
     })
 
-    it('should return empty array JSON for null', () => {
-      expect(t.toEditable(null)).toBe('[]')
+    it('returns [] for null, undefined, and empty string', () => {
+      expect(t.fromConnection(null).toUI()).toEqual([])
+      expect(t.fromConnection(undefined).toUI()).toEqual([])
+      expect(t.fromConnection('').toUI()).toEqual([])
     })
 
-    it('should return empty array JSON for empty string', () => {
-      expect(t.toEditable('')).toBe('[]')
+    it('parses JSON array string input', () => {
+      expect(t.fromConnection('["a","b"]').toUI()).toEqual(['a', 'b'])
     })
 
-    it('should parse JSON array string', () => {
-      expect(t.toEditable('["a","b"]')).toBe('[\n  "a",\n  "b"\n]')
+    it('wraps a single value without commas as one element', () => {
+      expect(t.fromConnection('solo').toUI()).toEqual(['solo'])
     })
 
-    it('should wrap single value in array', () => {
-      expect(t.toEditable('solo')).toBe('[\n  "solo"\n]')
-    })
-
-    it('should trim whitespace around comma-separated items', () => {
-      expect(t.toEditable('a , b , c')).toBe('[\n  "a",\n  "b",\n  "c"\n]')
+    it('trims whitespace around comma-separated items', () => {
+      expect(t.fromConnection('a , b , c').toUI()).toEqual(['a', 'b', 'c'])
     })
   })
 
-  describe('toDb', () => {
-    it('should convert JSON array to comma-separated string', () => {
-      expect(t.toDb('["a","b","c"]')).toBe('a,b,c')
+  describe('fromConnection → toRaw', () => {
+    it('joins parsed values with commas', () => {
+      expect(t.fromConnection('a,b,c').toRaw()).toBe('a,b,c')
+      expect(t.fromConnection('["a","b"]').toRaw()).toBe('a,b')
     })
 
-    it('should return empty string for empty JSON array', () => {
-      expect(t.toDb('[]')).toBe('')
+    it('returns empty string for an empty list', () => {
+      expect(t.fromConnection('').toRaw()).toBe('')
     })
 
-    it('should fall back to raw value for invalid JSON', () => {
-      expect(t.toDb('plain')).toBe('plain')
+    it('joins array connection values with commas', () => {
+      expect(t.fromConnection(['a', 'b']).toRaw()).toBe('a,b')
+      expect(t.fromConnection([]).toRaw()).toBe('')
+    })
+  })
+
+  describe('toConnection.fromRaw', () => {
+    it('passes through the raw editor string', () => {
+      expect(t.toConnection.fromRaw('a,b,c')).toBe('a,b,c')
+      expect(t.toConnection.fromRaw('plain')).toBe('plain')
+    })
+  })
+
+  describe('toConnection.fromUI', () => {
+    it('joins UI string[] to comma-separated SET text', () => {
+      expect(t.toConnection.fromUI(['a', 'b', 'c'])).toBe('a,b,c')
     })
 
-    it('should stringify numeric elements', () => {
-      expect(t.toDb('[1,2,3]')).toBe('1,2,3')
+    it('returns empty string for an empty array', () => {
+      expect(t.toConnection.fromUI([])).toBe('')
+    })
+  })
+
+  describe('fromConnection ⟷ toConnection.fromUI', () => {
+    it('round-trips representative string connection values', () => {
+      const samples = ['a,b,c', '["x","y"]', 'solo', ''] as const
+
+      for (const raw of samples) {
+        const ui = t.fromConnection(raw).toUI()
+        expect(t.toConnection.fromUI(ui)).toBe(t.fromConnection(raw).toRaw())
+      }
     })
   })
 })

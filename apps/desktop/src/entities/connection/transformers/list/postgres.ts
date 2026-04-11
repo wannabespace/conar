@@ -1,6 +1,5 @@
-import type { ValueTransformer } from '../'
-import { tryParseToJsonArray } from '@conar/shared/utils/helpers'
-import { getValueForEditor } from '../base'
+import type { Column } from '../../components'
+import type { ValueTransformer } from '../create-transformer'
 import { parseToArray } from './shared'
 
 const PG_ARRAY_LITERAL_RE = /^\{.*\}$/
@@ -12,7 +11,7 @@ const PG_NEEDS_QUOTING_RE = /[{},"\\\s]/
 const BACKSLASH_RE = /\\/g
 const DOUBLE_QUOTE_RE = /"/g
 
-function parsePgArrayLiteral(value: string): string[] | undefined {
+export function parsePgArrayLiteral(value: string): string[] | undefined {
   if (!PG_ARRAY_LITERAL_RE.test(value))
     return undefined
 
@@ -26,7 +25,7 @@ function parsePgArrayLiteral(value: string): string[] | undefined {
       : m.trim())
 }
 
-function toPgArrayLiteral(items: string[]): string {
+export function toPgArrayLiteral(items: string[]): string {
   const escaped = items.map((item) => {
     if (item === '')
       return '""'
@@ -42,13 +41,53 @@ function toPgArrayLiteral(items: string[]): string {
   return `{${escaped.join(',')}}`
 }
 
-export function createPostgresListTransformer(): ValueTransformer {
+// Possible values: null, string[], string {enum1,enum2}
+export function createPostgresListTransformer(column: Column): ValueTransformer<string[]> {
+  const isEnum = !!column.enumName && !!column.availableValues
   return {
-    toEditable(value: unknown): string {
-      return getValueForEditor(parseToArray(value, parsePgArrayLiteral))
-    },
-    toDb(editedValue: string): string {
-      return toPgArrayLiteral(tryParseToJsonArray(editedValue))
+    fromConnection: value => ({
+      toUI: () => {
+        if (isEnum && typeof value === 'string')
+          return parseToArray(value, parsePgArrayLiteral)
+
+        return []
+      },
+      toRaw: () => isEnum && typeof value === 'string'
+        ? value
+        : value === null
+          ? ''
+          : JSON.stringify(value),
+    }),
+    toConnection: {
+      fromUI: (value) => {
+        if (isEnum)
+          return toPgArrayLiteral(value)
+
+        // Only enums can have a UI
+        throw new Error('Invalid value')
+      },
+      fromRaw: (value) => {
+        if (isEnum)
+          return value
+
+        if (Array.isArray(value))
+          return value.map(String)
+
+        if (value === 'null') {
+          throw new Error('Press set null button to clear the value')
+        }
+
+        if (typeof value === 'string') {
+          try {
+            return JSON.parse(value)
+          }
+          catch {
+            throw new Error('Invalid JSON array format')
+          }
+        }
+
+        throw new Error('Invalid value')
+      },
     },
   }
 }

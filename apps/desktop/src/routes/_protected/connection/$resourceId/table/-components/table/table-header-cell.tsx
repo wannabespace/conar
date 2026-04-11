@@ -122,7 +122,7 @@ export function DefaultValueTooltipIcon({ defaultValue }: { defaultValue: string
           <RiCharacterRecognitionLine className="size-3 opacity-70" />
           Default
         </div>
-        <div className="max-w-sm font-mono text-xs opacity-70 break-all">
+        <div className="max-w-sm font-mono text-xs break-all opacity-70">
           {defaultValue}
         </div>
       </TooltipContent>
@@ -202,7 +202,7 @@ export function TableHeaderCell({
   const order = useSubscription(store, { selector: state => state.orderBy?.[column.id] ?? null })
   const { data: enumsData } = useQuery({
     ...resourceEnumsQueryOptions({ connectionResource }),
-    select: data => data?.find(e => e.name === column.enum),
+    select: data => data?.find(e => e.name === column.enumName),
   })
   const scrollRef = useTableContext(state => state.scrollRef)
 

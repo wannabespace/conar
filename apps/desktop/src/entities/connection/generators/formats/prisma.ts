@@ -2,7 +2,6 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'
-import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
 import { filterExplicitIndexes, getColumnType, groupIndexes } from '../utils'
 
@@ -95,7 +94,6 @@ export function generateSchemaPrisma({
   table,
   columns,
   dialect,
-  enums = [],
   indexes = [],
 }: SchemaParams) {
   const { fields, extraBlocks } = columns.filter(c => c.type).reduce<{
@@ -105,18 +103,17 @@ export function generateSchemaPrisma({
   }>((acc, c) => {
     let prismaType = getColumnType(c.type!, 'prisma', dialect)
 
-    const foundEnum = findEnum(enums, c, table)
-    if (foundEnum?.values.length) {
-      const enumName = pascalCase(foundEnum.name || `${table}_${c.id}`)
+    if (c.enumName && c.availableValues?.length) {
+      const enumName = pascalCase(c.enumName)
       prismaType = enumName
 
-      const enumValues = foundEnum.values.map((v) => {
+      const availableValues = c.availableValues.map((v) => {
         if (/^[a-z]\w*$/i.test(v))
           return `  ${v}`
         return `  ${v.replace(/\W/g, '_')} @map("${v}")`
       }).join('\n')
 
-      acc.extraBlocks.push(`enum ${enumName} {\n${enumValues}\n}`)
+      acc.extraBlocks.push(`enum ${enumName} {\n${availableValues}\n}`)
     }
 
     const fieldName = camelCase(c.id)
