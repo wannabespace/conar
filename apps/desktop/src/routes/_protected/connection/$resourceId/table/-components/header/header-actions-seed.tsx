@@ -44,7 +44,6 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { distinctQuery, insertQuery, resourceRowsQueryInfiniteOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
-import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { autoDetectGenerator, ENUM_GENERATOR, generateRows, GENERATOR_GROUPS, GENERATORS, REFERENCE_GENERATOR, SKIP_GENERATOR } from '~/entities/connection/utils/seeds'
 import { queryClient } from '~/main'
@@ -149,18 +148,7 @@ export function HeaderActionsSeed({
           })),
       )
 
-      const enums = await queryClient.ensureQueryData(resourceEnumsQueryOptions({ connectionResource }))
-
-      const enumData = enums
-        ? Object.fromEntries(
-            columns
-              .filter(c => c.enumName)
-              .map(column => [column.id, column.availableValues ?? []] as const)
-              .filter(([, values]) => values.length > 0),
-          )
-        : {}
-
-      const rows = generateRows(columns, generators, rowCount, referenceData, enumData)
+      const rows = generateRows(columns, generators, rowCount, referenceData)
 
       const BATCH_SIZE = 500
       for (let i = 0; i < rows.length; i += BATCH_SIZE) {
@@ -179,16 +167,20 @@ export function HeaderActionsSeed({
     },
   })
 
-  const activeCount = columns
-    ? columns.filter(c => generators[c.id]?.generatorId && generators[c.id]?.generatorId !== SKIP_GENERATOR).length
-    : 0
+  const activeCount = columns.filter(c => generators[c.id]?.generatorId && generators[c.id]?.generatorId !== SKIP_GENERATOR).length
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange} position="right">
       <Tooltip>
         <TooltipTrigger asChild>
           <DrawerTrigger
-            render={<Button variant="secondary" size="icon" />}
+            render={(
+              <Button
+                variant="secondary"
+                size="icon"
+                disabled={isPending}
+              />
+            )}
           >
             <RiSeedlingLine />
           </DrawerTrigger>
@@ -279,7 +271,7 @@ export function HeaderActionsSeed({
                           >
                             {column.foreign
                               ? `${column.foreign.schema}.${column.foreign.table}`
-                              : 'Random enum value'}
+                              : `Random enum value${column.isArray ? 's' : ''}`}
                           </Button>
                         )
                       : (
