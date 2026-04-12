@@ -1,5 +1,7 @@
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { Column } from '../components/table/cell'
 import { faker } from '@faker-js/faker'
+import { toPgArrayLiteral } from '../transformers/list/postgres'
 
 export const SKIP_GENERATOR = 'skip-generator'
 export const REFERENCE_GENERATOR = 'reference-generator'
@@ -91,7 +93,7 @@ export const GENERATORS = {
   'number.int': { label: 'Integer', category: 'Number', generate: () => faker.number.int({ max: 10000 }) },
   'number.float': { label: 'Float', category: 'Number', generate: () => faker.number.float({ max: 10000, fractionDigits: 2 }) },
   'number.bigInt': { label: 'Big Integer', category: 'Number', generate: () => String(faker.number.bigInt({ max: 9007199254740991n })) },
-  'number.binary': { label: 'Binary', category: 'Number', generate: () => faker.number.binary({ max: 255 }) },
+  'number.binary': { label: 'Binary', category: 'Number', generate: () => faker.number.binary({ max: 255 }).replace('0b', '') },
   'number.octal': { label: 'Octal', category: 'Number', generate: () => faker.number.octal({ max: 255 }) },
   'number.percentage': { label: 'Percentage', category: 'Number', generate: () => faker.number.float({ min: 0, max: 100, fractionDigits: 2 }) },
 
@@ -102,6 +104,7 @@ export const GENERATORS = {
   'date.birthdate': { label: 'Birthdate', category: 'Date', generate: () => faker.date.birthdate().toISOString() },
   'date.month': { label: 'Month Name', category: 'Date', generate: () => faker.date.month() },
   'date.weekday': { label: 'Weekday', category: 'Date', generate: () => faker.date.weekday() },
+  'date.time': { label: 'Time', category: 'Date', generate: () => faker.date.recent().toISOString().slice(11, 19) },
   'date.timeZone': { label: 'Time Zone', category: 'Date', generate: () => faker.location.timeZone() },
 
   'datatype.boolean': { label: 'Boolean', category: 'Boolean', generate: () => faker.datatype.boolean() },
@@ -174,13 +177,128 @@ export const GENERATORS = {
   'color.hex': { label: 'Color Hex', category: 'Other', generate: () => faker.color.rgb({ format: 'hex' }) },
   'json.object': { label: 'JSON Object', category: 'Other', generate: () => generateRandomJsonObject() },
   'json.array': { label: 'JSON Array', category: 'Other', generate: () => faker.helpers.multiple(() => generateRandomJsonValue(), { count: faker.number.int({ min: 1, max: 5 }) }) },
-} satisfies Record<string, {
+} satisfies GeneratorMap
+
+const PG_GENERATORS = {
+  'pg.point': { label: 'Point (x,y)', category: 'Postgres', generate: () => `(${faker.location.longitude()},${faker.location.latitude()})` },
+  'pg.line': { label: 'Line {A,B,C}', category: 'Postgres', generate: () => `{${faker.number.float({ min: -100, max: 100, fractionDigits: 4 })},${faker.number.float({ min: -100, max: 100, fractionDigits: 4 })},${faker.number.float({ min: -100, max: 100, fractionDigits: 4 })}}` },
+  'pg.lseg': { label: 'Line Segment', category: 'Postgres', generate: () => `[(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})]` },
+  'pg.box': { label: 'Box', category: 'Postgres', generate: () => `(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})` },
+  'pg.path': {
+    label: 'Path',
+    category: 'Postgres',
+    generate: () => {
+      const pts = faker.helpers.multiple(() => `(${faker.location.longitude()},${faker.location.latitude()})`, { count: faker.number.int({ min: 2, max: 5 }) })
+      return `[${pts.join(',')}]`
+    },
+  },
+  'pg.polygon': {
+    label: 'Polygon',
+    category: 'Postgres',
+    generate: () => {
+      const pts = faker.helpers.multiple(() => `(${faker.location.longitude()},${faker.location.latitude()})`, { count: faker.number.int({ min: 3, max: 6 }) })
+      return `(${pts.join(',')})`
+    },
+  },
+  'pg.circle': { label: 'Circle', category: 'Postgres', generate: () => `<(${faker.location.longitude()},${faker.location.latitude()}),${faker.number.float({ min: 0.1, max: 100, fractionDigits: 2 })}>` },
+  'pg.interval': { label: 'Interval', category: 'Postgres', generate: () => `${faker.number.int({ min: 0, max: 99 })} ${faker.helpers.arrayElement(['seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'years'])}` },
+  'pg.intrange': {
+    label: 'Int Range',
+    category: 'Postgres',
+    generate: () => {
+      const a = faker.number.int({ min: -10000, max: 10000 })
+      const b = faker.number.int({ min: a + 1, max: a + 10000 })
+      return `[${a},${b})`
+    },
+  },
+  'pg.numrange': {
+    label: 'Numeric Range',
+    category: 'Postgres',
+    generate: () => {
+      const a = faker.number.float({ min: -10000, max: 10000, fractionDigits: 2 })
+      const b = faker.number.float({ min: a + 0.01, max: a + 10000, fractionDigits: 2 })
+      return `[${a},${b})`
+    },
+  },
+  'pg.daterange': {
+    label: 'Date Range',
+    category: 'Postgres',
+    generate: () => {
+      const a = faker.date.past()
+      const b = faker.date.future({ refDate: a })
+      return `[${a.toISOString().slice(0, 10)},${b.toISOString().slice(0, 10)})`
+    },
+  },
+  'pg.tsrange': {
+    label: 'Timestamp Range',
+    category: 'Postgres',
+    generate: () => {
+      const a = faker.date.past()
+      const b = faker.date.future({ refDate: a })
+      return `[${a.toISOString()},${b.toISOString()})`
+    },
+  },
+  'pg.intmultirange': {
+    label: 'Int Multirange',
+    category: 'Postgres',
+    generate: () => {
+      const ranges = faker.helpers.multiple(() => {
+        const a = faker.number.int({ min: -10000, max: 10000 })
+        return `[${a},${faker.number.int({ min: a + 1, max: a + 10000 })})`
+      }, { count: faker.number.int({ min: 1, max: 3 }) })
+      return `{${ranges.join(',')}}`
+    },
+  },
+  'pg.nummultirange': {
+    label: 'Numeric Multirange',
+    category: 'Postgres',
+    generate: () => {
+      const ranges = faker.helpers.multiple(() => {
+        const a = faker.number.float({ min: -10000, max: 10000, fractionDigits: 2 })
+        return `[${a},${faker.number.float({ min: a + 0.01, max: a + 10000, fractionDigits: 2 })})`
+      }, { count: faker.number.int({ min: 1, max: 3 }) })
+      return `{${ranges.join(',')}}`
+    },
+  },
+  'pg.datemultirange': {
+    label: 'Date Multirange',
+    category: 'Postgres',
+    generate: () => {
+      const ranges = faker.helpers.multiple(() => {
+        const a = faker.date.past()
+        const b = faker.date.future({ refDate: a })
+        return `[${a.toISOString().slice(0, 10)},${b.toISOString().slice(0, 10)})`
+      }, { count: faker.number.int({ min: 1, max: 3 }) })
+      return `{${ranges.join(',')}}`
+    },
+  },
+  'pg.tsmultirange': {
+    label: 'Timestamp Multirange',
+    category: 'Postgres',
+    generate: () => {
+      const ranges = faker.helpers.multiple(() => {
+        const a = faker.date.past()
+        const b = faker.date.future({ refDate: a })
+        return `[${a.toISOString()},${b.toISOString()})`
+      }, { count: faker.number.int({ min: 1, max: 3 }) })
+      return `{${ranges.join(',')}}`
+    },
+  },
+} satisfies GeneratorMap
+
+const DIALECT_GENERATORS: Partial<Record<ConnectionType, GeneratorMap>> = {
+  postgres: PG_GENERATORS,
+}
+
+export type GeneratorId = keyof typeof GENERATORS | keyof typeof PG_GENERATORS
+
+export interface GeneratorDef {
   label: string
   category: string
   generate: () => unknown
-}>
+}
 
-export type GeneratorId = keyof typeof GENERATORS
+type GeneratorMap = Record<string, GeneratorDef>
 
 export interface Generator {
   generatorId: GeneratorId
@@ -192,21 +310,29 @@ export interface GeneratorGroup {
   items: GeneratorId[]
 }
 
-export const GENERATOR_GROUPS: GeneratorGroup[] = Object.entries(GENERATORS).reduce<GeneratorGroup[]>(
-  (groups, [id, gen]) => {
-    const group = groups.find(g => g.value === gen.category)
-    if (group) {
-      group.items.push(id as GeneratorId)
-      return groups
-    }
-    return [...groups, { value: gen.category, items: [id as GeneratorId] }]
-  },
-  [],
-)
+export function getGenerators(dialect?: ConnectionType): Record<string, GeneratorDef> {
+  const extra = dialect ? DIALECT_GENERATORS[dialect] : undefined
+  return extra ? { ...GENERATORS, ...extra } : GENERATORS
+}
+
+export function getGeneratorGroups(dialect?: ConnectionType): GeneratorGroup[] {
+  return Object.entries(getGenerators(dialect)).reduce<GeneratorGroup[]>(
+    (groups, [id, gen]) => {
+      const group = groups.find(g => g.value === gen.category)
+      if (group) {
+        group.items.push(id as GeneratorId)
+        return groups
+      }
+      return [...groups, { value: gen.category, items: [id as GeneratorId] }]
+    },
+    [],
+  )
+}
 
 export function autoDetectGenerator(column: Column): GeneratorId {
   const name = column.id.toLowerCase().replaceAll('_', '')
-  const type = column.type?.toLowerCase() ?? ''
+  const label = (column.label?.toLowerCase() ?? '').replace('[]', '')
+  const type = (column.type?.toLowerCase() ?? '').replace('[]', '')
 
   if (column.foreign)
     return REFERENCE_GENERATOR
@@ -217,6 +343,23 @@ export function autoDetectGenerator(column: Column): GeneratorId {
   if (column.primaryKey) {
     return SKIP_GENERATOR
   }
+
+  if (label === 'int4range' || label === 'int8range')
+    return 'pg.intrange'
+  if (label === 'numrange')
+    return 'pg.numrange'
+  if (label === 'daterange')
+    return 'pg.daterange'
+  if (label === 'tsrange' || label === 'tstzrange')
+    return 'pg.tsrange'
+  if (label === 'int4multirange' || label === 'int8multirange')
+    return 'pg.intmultirange'
+  if (label === 'nummultirange')
+    return 'pg.nummultirange'
+  if (label === 'datemultirange')
+    return 'pg.datemultirange'
+  if (label === 'tsmultirange' || label === 'tstzmultirange')
+    return 'pg.tsmultirange'
 
   if (name.includes('email'))
     return 'internet.email'
@@ -313,24 +456,52 @@ export function autoDetectGenerator(column: Column): GeneratorId {
 
   if (type === 'uuid')
     return 'string.uuidV4'
-  if (type === 'bool' || type === 'boolean' || type === 'bit')
+  if (type === 'bit varying' || type === 'varbit' || type === 'bit')
+    return 'number.binary'
+  if (type === 'bool' || type === 'boolean')
     return 'datatype.boolean'
-  if (type.includes('int') || type === 'serial' || type === 'bigserial' || type === 'smallserial')
-    return 'number.int'
-  if (type.includes('float') || type.includes('double') || type.includes('decimal') || type.includes('numeric') || type === 'real' || type === 'money')
-    return 'number.float'
-  if (type.includes('timestamp') || type === 'datetime' || type === 'datetime2' || type === 'datetimeoffset')
-    return 'date.recent'
-  if (type === 'date')
-    return 'date.recent'
-  if (type.includes('json'))
-    return 'json.object'
+  if (type === 'bytea')
+    return 'string.hexadecimal'
+  if (type === 'xml' || type === 'tsvector')
+    return 'lorem.sentence'
+  if (type === 'tsquery')
+    return 'lorem.word'
   if (type === 'inet' || type === 'cidr')
     return 'internet.ip'
   if (type === 'inet6')
     return 'internet.ipv6'
   if (type === 'macaddr' || type === 'macaddr8')
     return 'internet.mac'
+  if (type === 'point')
+    return 'pg.point'
+  if (type === 'line')
+    return 'pg.line'
+  if (type === 'lseg')
+    return 'pg.lseg'
+  if (type === 'box')
+    return 'pg.box'
+  if (type === 'path')
+    return 'pg.path'
+  if (type === 'polygon')
+    return 'pg.polygon'
+  if (type === 'circle')
+    return 'pg.circle'
+  if (type === 'interval')
+    return 'pg.interval'
+  if (type === 'date')
+    return 'date.recent'
+  if (type === 'oid')
+    return 'number.int'
+  if (type.includes('int') || type === 'serial' || type === 'bigserial' || type === 'smallserial')
+    return 'number.int'
+  if (type.includes('float') || type.includes('double') || type.includes('decimal') || type.includes('numeric') || type === 'real' || type === 'money')
+    return 'number.float'
+  if (type.includes('timestamp') || type === 'datetime' || type === 'datetime2' || type === 'datetimeoffset')
+    return 'date.recent'
+  if (type.includes('time') || type === 'timetz')
+    return 'date.time'
+  if (type.includes('json'))
+    return 'json.object'
   if (type.includes('char') || type.includes('text') || type === 'string' || type.includes('varchar') || type.includes('nchar'))
     return 'lorem.sentence'
 
@@ -340,10 +511,13 @@ export function autoDetectGenerator(column: Column): GeneratorId {
 function generateValue(
   generator: Generator,
   column: Column,
+  generators: Record<string, GeneratorDef>,
+  dialect?: ConnectionType,
   referenceValues?: unknown[],
 ): unknown {
+  const type = (column.type?.toLowerCase() ?? '').replace('[]', '')
   const generatorId = generator.generatorId
-  const generatorImpl = GENERATORS[generatorId]
+  const generatorImpl = generators[generatorId]
   if (!generatorImpl || generatorId === SKIP_GENERATOR)
     return undefined
   if (generatorId === 'null')
@@ -380,7 +554,14 @@ function generateValue(
 
   if (column.isArray) {
     const count = faker.number.int({ min: 1, max: 5 })
-    return faker.helpers.multiple(() => generatorImpl.generate(), { count })
+    const items = faker.helpers.multiple(() => generatorImpl.generate(), { count })
+    if (dialect === 'postgres') {
+      const strings = items.map(v => typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v))
+      if (type === 'box')
+        return toPgArrayLiteral(strings, ';')
+      return toPgArrayLiteral(strings)
+    }
+    return items
   }
 
   return generatorImpl.generate()
@@ -388,20 +569,24 @@ function generateValue(
 
 export function generateRows(
   columns: Column[],
-  generators: Record<string, Generator>,
+  columnGenerators: Record<string, Generator>,
   count: number,
+  dialect?: ConnectionType,
   referenceData?: Record<string, unknown[]>,
 ) {
+  const generators = getGenerators(dialect)
   return Array.from({ length: count }, () => {
     const row: Record<string, unknown> = {}
     for (const column of columns) {
-      const generator = generators[column.id]
+      const generator = columnGenerators[column.id]
       if (!generator || generator.generatorId === SKIP_GENERATOR)
         continue
 
       const value = generateValue(
         generator,
         column,
+        generators,
+        dialect,
         referenceData?.[column.id],
       )
 

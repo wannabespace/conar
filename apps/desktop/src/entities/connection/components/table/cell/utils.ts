@@ -47,6 +47,7 @@ const columnsSizeMap: Record<string, number> = {
   number: 170,
   function: 180,
   variant: 200,
+  multirange: 200,
   int: 150,
   uint: 150,
   tinyint: 150,

@@ -1,3 +1,4 @@
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { Column } from '~/entities/connection/components'
 import type { GeneratorGroup, GeneratorId } from '~/entities/connection/utils/seeds'
 import { pick } from '@conar/shared/utils/helpers'
@@ -45,15 +46,15 @@ import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { distinctQuery, insertQuery, resourceRowsQueryInfiniteOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
-import { autoDetectGenerator, ENUM_GENERATOR, generateRows, GENERATOR_GROUPS, GENERATORS, REFERENCE_GENERATOR, SKIP_GENERATOR } from '~/entities/connection/utils/seeds'
+import { autoDetectGenerator, ENUM_GENERATOR, generateRows, getGeneratorGroups, getGenerators, REFERENCE_GENERATOR, SKIP_GENERATOR } from '~/entities/connection/utils/seeds'
 import { queryClient } from '~/main'
 import { Route } from '../..'
 import { useTableColumns } from '../../-columns'
 import { useTablePageStore } from '../../-store'
 import { DefaultValueTooltipIcon, NullableTooltipIcon, PrimaryKeyTooltipIcon, ReadOnlyTooltipIcon, UniqueTooltipIcon } from '../table/table-header-cell'
 
-function getAvailableGeneratorGroups(column: Column) {
-  return GENERATOR_GROUPS
+function getAvailableGeneratorGroups(column: Column, dialect?: ConnectionType) {
+  return getGeneratorGroups(dialect)
     .map(group => ({
       ...group,
       items: group.items.filter((id) => {
@@ -77,7 +78,8 @@ export function HeaderActionsSeed({
   schema: string
 }) {
   const columns = useTableColumns()
-  const { connectionResource } = Route.useRouteContext()
+  const { connection, connectionResource } = Route.useRouteContext()
+  const allGenerators = getGenerators(connection.type)
   const [open, setOpen] = useState(false)
   const [rowCount, setRowCount] = useState(10)
   const store = useTablePageStore()
@@ -97,7 +99,7 @@ export function HeaderActionsSeed({
       for (const column of columns) {
         const saved = state.generators[column.id]
         const isValid = saved
-          && saved.generatorId in GENERATORS
+          && saved.generatorId in allGenerators
           && (saved.generatorId !== REFERENCE_GENERATOR || column.foreign)
           && (saved.generatorId !== ENUM_GENERATOR || column.enumName)
           && (saved.generatorId !== 'null' || column.isNullable)
@@ -148,7 +150,7 @@ export function HeaderActionsSeed({
           })),
       )
 
-      const rows = generateRows(columns, generators, rowCount, referenceData)
+      const rows = generateRows(columns, generators, rowCount, connection.type, referenceData)
 
       const BATCH_SIZE = 500
       for (let i = 0; i < rows.length; i += BATCH_SIZE) {
@@ -205,21 +207,6 @@ export function HeaderActionsSeed({
         </DrawerHeader>
         <DrawerPanel>
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Label>Number of rows</Label>
-              <NumberField
-                min={1}
-                max={10000}
-                value={rowCount}
-                onValueChange={value => setRowCount(Math.max(1, Math.min(10000, value ?? 1)))}
-              >
-                <NumberFieldGroup>
-                  <NumberFieldDecrement />
-                  <NumberFieldInput />
-                  <NumberFieldIncrement />
-                </NumberFieldGroup>
-              </NumberField>
-            </div>
             <div className="flex flex-col gap-1.5">
               <Label className="mb-1">Columns</Label>
               {columns?.map(column => (
@@ -276,12 +263,12 @@ export function HeaderActionsSeed({
                         )
                       : (
                           <Combobox
-                            items={getAvailableGeneratorGroups(column)}
-                            itemToStringLabel={id => GENERATORS[id as GeneratorId]?.label ?? String(id)}
+                            items={getAvailableGeneratorGroups(column, connection.type)}
+                            itemToStringLabel={id => allGenerators[id as GeneratorId]?.label ?? String(id)}
                             autoHighlight
                             value={generators[column.id]?.generatorId ?? SKIP_GENERATOR}
                             onValueChange={(value) => {
-                              if (value && value in GENERATORS) {
+                              if (value && value in allGenerators) {
                                 store.set(state => ({
                                   ...state,
                                   generators: {
@@ -299,7 +286,7 @@ export function HeaderActionsSeed({
                               className="w-56 justify-start"
                               render={<Button variant="outline" size="sm" />}
                             >
-                              {GENERATORS[generators[column.id]?.generatorId ?? SKIP_GENERATOR]?.label ?? 'Select a generator'}
+                              {allGenerators[generators[column.id]?.generatorId ?? SKIP_GENERATOR]?.label ?? 'Select a generator'}
                             </ComboboxTrigger>
                             <ComboboxPopup className="min-w-48">
                               <div className="border-b p-2">
@@ -317,7 +304,7 @@ export function HeaderActionsSeed({
                                     <ComboboxCollection>
                                       {(id: GeneratorId) => (
                                         <ComboboxItem key={id} value={id}>
-                                          {GENERATORS[id]?.label}
+                                          {allGenerators[id]?.label}
                                         </ComboboxItem>
                                       )}
                                     </ComboboxCollection>
@@ -334,6 +321,19 @@ export function HeaderActionsSeed({
           </div>
         </DrawerPanel>
         <DrawerFooter>
+          <NumberField
+            min={1}
+            max={10000}
+            value={rowCount}
+            onValueChange={value => setRowCount(Math.max(1, Math.min(10000, value ?? 1)))}
+            className="mr-auto w-32"
+          >
+            <NumberFieldGroup>
+              <NumberFieldDecrement />
+              <NumberFieldInput />
+              <NumberFieldIncrement />
+            </NumberFieldGroup>
+          </NumberField>
           <DrawerClose render={<Button variant="outline" />}>
             Cancel
           </DrawerClose>

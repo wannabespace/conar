@@ -25,7 +25,7 @@ export function parsePgArrayLiteral(value: string): string[] | undefined {
       : m.trim())
 }
 
-export function toPgArrayLiteral(items: string[]): string {
+export function toPgArrayLiteral(items: string[], separator = ','): string {
   const escaped = items.map((item) => {
     if (item === '')
       return '""'
@@ -38,7 +38,7 @@ export function toPgArrayLiteral(items: string[]): string {
     return item
   })
 
-  return `{${escaped.join(',')}}`
+  return `{${escaped.join(separator)}}`
 }
 
 // Possible values: null, string[], string {enum1,enum2}
