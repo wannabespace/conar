@@ -6,6 +6,7 @@ import { getSubscription, optionalAuthMiddleware, orpc } from '~/orpc'
 const bannerType = type({
   text: 'string',
   type: type.enumerated('info', 'warning', 'error', 'success'),
+  dismissible: 'boolean',
 }).array()
 
 export const banner = orpc
@@ -20,6 +21,7 @@ export const banner = orpc
       items.push({
         text: SUBSCRIPTION_PAST_DUE_MESSAGE,
         type: 'error',
+        dismissible: false,
       })
     }
 
@@ -27,6 +29,7 @@ export const banner = orpc
       items.push({
         text: env.BANNER_TEXT,
         type: 'info',
+        dismissible: false,
       })
     }
 
@@ -34,6 +37,7 @@ export const banner = orpc
       items.push({
         text: `You are using an outdated version of the desktop app. Please download the latest version from conar.app/download`,
         type: 'warning',
+        dismissible: true,
       })
     }
 
@@ -41,6 +45,7 @@ export const banner = orpc
       items.push({
         text: 'Linux updates broken in 0.25.0 due to provider change. Please download the latest version from conar.app/download',
         type: 'warning',
+        dismissible: true,
       })
     }
 
@@ -48,6 +53,7 @@ export const banner = orpc
       items.push({
         text: 'Heads up! Conar is becoming Tamery. Our next big update will have the new name - thanks for being part of the journey!',
         type: 'info',
+        dismissible: true,
       })
     }
 

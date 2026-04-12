@@ -2,26 +2,23 @@
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '@conar/table/constants'
 import { useTableContext } from '@conar/table/hooks'
 import { cn } from '@conar/ui/lib/utils'
-import { useMemo } from 'react'
+import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components'
 
 const ROWS_COUNT = 20
 
-export function TableBodySkeleton({ className, selectable, columnsCount = 5 }: { className?: string, selectable?: boolean, columnsCount?: number }) {
+export function TableBodySkeleton({ className, selectable, columnsCount = 6 }: { className?: string, selectable?: boolean, columnsCount?: number }) {
   const columns = useTableContext(state => state.columns)
+  const columnsWithoutInternal = columns.filter(column => !Object.values(INTERNAL_COLUMN_IDS).includes(column.id))
 
-  const cols = useMemo(() => {
-    if (columns.length === 0) {
-      return Array.from({ length: columnsCount }).map((_, index) => ({
-        id: `column-${index}`,
+  const cols = columnsWithoutInternal.length === 0
+    ? Array.from({ length: columnsCount }).map((_, index) => ({
+        id: `column-${index + 1}`,
         size: DEFAULT_COLUMN_WIDTH,
       }))
-    }
-
-    return columns.map(column => ({
-      id: column.id,
-      size: column.size ?? DEFAULT_COLUMN_WIDTH,
-    }))
-  }, [columns, columnsCount])
+    : columns.map(column => ({
+        id: column.id,
+        size: column.size ?? DEFAULT_COLUMN_WIDTH,
+      }))
 
   return (
     <div className={cn('relative w-full', className)}>
@@ -42,27 +39,23 @@ export function TableBodySkeleton({ className, selectable, columnsCount = 5 }: {
               <div className="size-4 animate-pulse rounded-sm bg-muted" />
             </div>
           )}
-          {cols.map((column, index) => {
-            const width = column.size
-
-            return (
-              <div
-                key={index}
-                className={`
-                  flex h-full shrink-0 items-center px-2 py-1
-                  first:pl-4
-                `}
-                style={{
-                  width: `${width}px`,
-                }}
-              >
-                <div className={`
-                  h-4 w-3/4 shrink-0 animate-pulse rounded-sm bg-muted
-                `}
-                />
-              </div>
-            )
-          })}
+          {cols.map((column, index) => (
+            <div
+              key={index}
+              className={`
+                flex h-full shrink-0 items-center px-2 py-1
+                first:pl-4
+              `}
+              style={{
+                width: `${column.size}px`,
+              }}
+            >
+              <div className={`
+                h-4 w-full shrink-0 animate-pulse rounded-sm bg-muted
+              `}
+              />
+            </div>
+          ))}
         </div>
       ))}
     </div>

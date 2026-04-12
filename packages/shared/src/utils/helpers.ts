@@ -1,9 +1,5 @@
 export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-export function enumValues<T extends { [key: string]: string }>(enumType: T) {
-  return Object.values(enumType) as [T[keyof T], ...T[keyof T][]]
-}
-
 export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F, waitFor: number) {
   let timeout: ReturnType<typeof setTimeout>
 
@@ -79,11 +75,19 @@ export function tryParseJson<T>(json: string): T | null {
   }
 }
 
+export function tryParseToJsonArray(editedValue: string): string[] {
+  const parsed = tryParseJson<unknown[]>(editedValue)
+  if (Array.isArray(parsed))
+    return parsed.map(String)
+  return [editedValue]
+}
+
 export function memoize<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F): F {
-  const cache = new Map<string, ReturnType<F>>()
+  const cache = new Map<unknown, ReturnType<F>>()
 
   return ((...args: Parameters<F>) => {
-    const key = JSON.stringify(args)
+    const key = (args as unknown[])[0]
+
     if (cache.has(key)) {
       return cache.get(key)!
     }

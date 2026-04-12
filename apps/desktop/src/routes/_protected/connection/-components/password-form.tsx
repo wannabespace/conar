@@ -28,6 +28,7 @@ export function PasswordForm({ connection, connectionResource }: { connection: t
       await testConnectionQuery.run({
         type: connection.type,
         connectionString: newConnectionString,
+        resourceId: connectionResource.id,
       })
       connectionsCollection.update(connection.id, {
         metadata: {

@@ -1,3 +1,4 @@
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { RemixiconComponentType } from '@remixicon/react'
 import type { GeneratorFormat } from '~/entities/connection/generators/utils'
 import { Button } from '@conar/ui/components/button'
@@ -38,7 +39,7 @@ import * as generators from '~/entities/connection/generators'
 import { GENERATOR_COMPATIBILITY } from '~/entities/connection/generators/compatibility'
 import { resourceEnumsQueryOptions, resourceIndexesQueryOptions } from '~/entities/connection/queries'
 import { Route } from '../..'
-import { useTableColumns } from '../../-queries/use-columns-query'
+import { useTableColumns } from '../../-columns'
 import { useTablePageStore } from '../../-store'
 
 type Format = {
@@ -71,9 +72,15 @@ const FORMATS = {
   ],
 } satisfies { schema: Format[], query: Format[] }
 
-function DialogSidebar({ activeCategory, activeFormat, onFormatChange, onCategoryChange }: {
+function isFormatCompatible(format: Format, connectionType: ConnectionType) {
+  const compat = GENERATOR_COMPATIBILITY[format.type]
+  return !compat || compat.includes(connectionType)
+}
+
+function DialogSidebar({ activeCategory, activeFormat, formats, onFormatChange, onCategoryChange }: {
   activeCategory: keyof typeof FORMATS
   activeFormat: Format
+  formats: Format[]
   onFormatChange: (id: Format['type']) => void
   onCategoryChange: (category: keyof typeof FORMATS) => void
 }) {
@@ -92,7 +99,7 @@ function DialogSidebar({ activeCategory, activeFormat, onFormatChange, onCategor
           <TabsTrigger value="query" className="flex-1">Query</TabsTrigger>
         </TabsList>
       </Tabs>
-      {FORMATS[activeCategory].map(fmt => (
+      {formats.map(fmt => (
         <SidebarButton
           key={fmt.type}
           onClick={() => onFormatChange(fmt.type)}
@@ -145,23 +152,24 @@ function CopyDialogEditor({ activeFormat, activeCategory, codeContent }: {
   )
 }
 
-export function HeaderActionsCopy({ table, schema }: { table: string, schema: string }) {
+export function HeaderActionsCopy({ table }: { table: string }) {
   const { connection, connectionResource } = Route.useRouteContext()
   const store = useTablePageStore()
   const filters = useSubscription(store, { selector: state => state.filters })
-  const columns = useTableColumns({ connectionResource, table, schema })
+  const columns = useTableColumns()
   const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const { data: indexes } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
   const [activeCategory, setActiveCategory] = useState<'schema' | 'query'>('schema')
   const [activeFormatType, setActiveFormatType] = useState<GeneratorFormat>('sql')
 
-  const activeFormat = FORMATS[activeCategory].find(f => f.type === activeFormatType) ?? FORMATS[activeCategory][0]!
+  const compatibleFormats = useMemo(
+    () => FORMATS[activeCategory].filter(f => isFormatCompatible(f, connection.type)),
+    [activeCategory, connection.type],
+  )
+
+  const activeFormat = compatibleFormats.find(f => f.type === activeFormatType) ?? compatibleFormats[0]!
 
   const codeContent = useMemo(() => {
-    if (GENERATOR_COMPATIBILITY[activeFormatType] && !GENERATOR_COMPATIBILITY[activeFormatType].includes(connection.type)) {
-      return `Not supported for ${connection.type}`
-    }
-
     if (activeFormat.kind === 'schema') {
       return activeFormat.generator({ table, columns, enums: enums ?? [], dialect: connection.type, indexes: indexes ?? [] })
     }
@@ -171,7 +179,7 @@ export function HeaderActionsCopy({ table, schema }: { table: string, schema: st
     }
 
     return ''
-  }, [activeFormat, table, columns, filters, enums, indexes, activeFormatType, connection.type])
+  }, [activeFormat, table, columns, filters, enums, indexes, connection.type])
 
   return (
     <Dialog>
@@ -195,6 +203,7 @@ export function HeaderActionsCopy({ table, schema }: { table: string, schema: st
         <DialogSidebar
           activeCategory={activeCategory}
           activeFormat={activeFormat}
+          formats={compatibleFormats}
           onFormatChange={setActiveFormatType}
           onCategoryChange={setActiveCategory}
         />

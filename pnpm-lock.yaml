@@ -7,11 +7,11 @@ settings:
 catalogs:
   default:
     '@ai-sdk/anthropic':
-      specifier: ^3.0.64
-      version: 3.0.64
+      specifier: ^3.0.65
+      version: 3.0.65
     '@ai-sdk/google':
-      specifier: ^3.0.54
-      version: 3.0.54
+      specifier: ^3.0.55
+      version: 3.0.55
     '@ai-sdk/openai':
       specifier: ^3.0.49
       version: 3.0.49
@@ -19,8 +19,8 @@ catalogs:
       specifier: ^3.0.8
       version: 3.0.8
     '@ai-sdk/react':
-      specifier: ^3.0.143
-      version: 3.0.143
+      specifier: ^3.0.145
+      version: 3.0.145
     '@ai-sdk/xai':
       specifier: ^3.0.75
       version: 3.0.75
@@ -238,11 +238,11 @@ catalogs:
       specifier: ^12.10.2
       version: 12.10.2
     ai:
-      specifier: ^6.0.141
-      version: 6.0.141
+      specifier: ^6.0.143
+      version: 6.0.143
     ai-retry:
-      specifier: ^1.3.0
-      version: 1.3.0
+      specifier: ^1.4.0
+      version: 1.4.0
     arktype:
       specifier: ^2.2.0
       version: 2.2.0
@@ -255,6 +255,9 @@ catalogs:
     better-auth-harmony:
       specifier: ^1.3.1
       version: 1.3.1
+    better-result:
+      specifier: ^2.8.2
+      version: 2.8.2
     change-case:
       specifier: ^5.4.4
       version: 5.4.4
@@ -408,12 +411,9 @@ catalogs:
     resend:
       specifier: ^6.10.0
       version: 6.10.0
-    resumable-stream:
-      specifier: ^2.2.12
-      version: 2.2.12
     seitu:
-      specifier: ^0.10.8
-      version: 0.10.8
+      specifier: ^0.12.1
+      version: 0.12.1
     sonner:
       specifier: ^2.0.7
       version: 2.0.7
@@ -526,10 +526,10 @@ importers:
     dependencies:
       '@ai-sdk/anthropic':
         specifier: 'catalog:'
-        version: 3.0.64(zod@4.3.6)
+        version: 3.0.65(zod@4.3.6)
       '@ai-sdk/google':
         specifier: 'catalog:'
-        version: 3.0.54(zod@4.3.6)
+        version: 3.0.55(zod@4.3.6)
       '@ai-sdk/openai':
         specifier: 'catalog:'
         version: 3.0.49(zod@4.3.6)
@@ -541,7 +541,7 @@ importers:
         version: 3.0.75(zod@4.3.6)
       '@better-auth/drizzle-adapter':
         specifier: 'catalog:'
-        version: https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913(@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.3.6))(jose@6.2.1)(kysely@0.28.15)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(drizzle-orm@1.0.0-beta.20(@electric-sql/pglite@0.4.2)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.11)(mssql@12.2.1(@azure/core-client@1.10.1))(mysql2@3.20.0(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@6.0.2))(zod@4.3.6))(prettier@3.8.1)
+        version: https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913(@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.2.1(zod@4.3.6))(jose@6.2.1)(kysely@0.28.15)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(drizzle-orm@1.0.0-beta.20(@electric-sql/pglite@0.4.2)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.11)(mssql@12.2.1(@azure/core-client@1.10.1))(mysql2@3.20.0(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@6.0.2))(zod@4.3.6))(prettier@3.8.1)
       '@conar/connection':
         specifier: workspace:*
         version: link:../../packages/connection
@@ -550,7 +550,7 @@ importers:
         version: link:../../packages/shared
       '@exalabs/ai-sdk':
         specifier: 'catalog:'
-        version: 2.0.1(ai@6.0.141(zod@4.3.6))
+        version: 2.0.1(ai@6.0.143(zod@4.3.6))
       '@hackylabs/deep-redact':
         specifier: 'catalog:'
         version: 3.0.5
@@ -571,13 +571,13 @@ importers:
         version: 1.0.10(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@upstash/context7-tools-ai-sdk':
         specifier: 'catalog:'
-        version: 0.2.2(@upstash/context7-sdk@0.3.0)(ai@6.0.141(zod@4.3.6))(zod@4.3.6)
+        version: 0.2.2(@upstash/context7-sdk@0.3.0)(ai@6.0.143(zod@4.3.6))(zod@4.3.6)
       ai:
         specifier: 'catalog:'
-        version: 6.0.141(zod@4.3.6)
+        version: 6.0.143(zod@4.3.6)
       ai-retry:
         specifier: 'catalog:'
-        version: 1.3.0(ai@6.0.141(zod@4.3.6))
+        version: 1.4.0(@ai-sdk/provider-utils@4.0.21(zod@4.3.6))(@ai-sdk/provider@3.0.8)(ai@6.0.143(zod@4.3.6))(zod@4.3.6)
       arktype:
         specifier: 'catalog:'
         version: 2.2.0
@@ -620,9 +620,6 @@ importers:
       resend:
         specifier: 'catalog:'
         version: 6.10.0(@react-email/render@2.0.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
-      resumable-stream:
-        specifier: 'catalog:'
-        version: 2.2.12
       stripe:
         specifier: 'catalog:'
         version: 21.0.1(@types/node@25.5.0)
@@ -687,7 +684,7 @@ importers:
     devDependencies:
       '@ai-sdk/react':
         specifier: 'catalog:'
-        version: 3.0.143(react@19.2.4)(zod@4.3.6)
+        version: 3.0.145(react@19.2.4)(zod@4.3.6)
       '@base-ui/react':
         specifier: 'catalog:'
         version: 1.3.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -813,7 +810,7 @@ importers:
         version: 12.10.2(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       ai:
         specifier: 'catalog:'
-        version: 6.0.141(zod@4.3.6)
+        version: 6.0.143(zod@4.3.6)
       arktype:
         specifier: 'catalog:'
         version: 2.2.0
@@ -823,6 +820,9 @@ importers:
       better-auth:
         specifier: 'catalog:'
         version: 1.5.4(@prisma/client@7.5.0(prisma@7.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@6.0.2))(typescript@6.0.2))(@tanstack/react-start@1.167.16(crossws@0.4.4(srvx@0.11.12))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.2)))(drizzle-kit@1.0.0-beta.20)(drizzle-orm@1.0.0-beta.20(@electric-sql/pglite@0.4.2)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.11)(mssql@12.2.1(@azure/core-client@1.10.1))(mysql2@3.20.0(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@6.0.2))(zod@4.3.6))(mongodb@7.1.0(socks@2.8.7))(mysql2@3.20.0(@types/node@25.5.0))(pg@8.20.0)(prisma@7.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@6.0.2))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(solid-js@1.9.11)
+      better-result:
+        specifier: 'catalog:'
+        version: 2.8.2
       change-case:
         specifier: 'catalog:'
         version: 5.4.4
@@ -894,7 +894,7 @@ importers:
         version: 4.0.1
       seitu:
         specifier: 'catalog:'
-        version: 0.10.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 0.12.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1251,7 +1251,7 @@ importers:
         version: 4.8.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       seitu:
         specifier: 'catalog:'
-        version: 0.10.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 0.12.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1276,20 +1276,20 @@ packages:
   7zip-bin@5.2.0:
     resolution: {integrity: sha512-ukTPVhqG4jNzMro2qA9HSCSSVJN3aN7tlb+hfqYCt3ER0yWroeA2VR38MNrOHLQ/cVj+DaIMad0kFCtWWowh/A==}
 
-  '@ai-sdk/anthropic@3.0.64':
-    resolution: {integrity: sha512-rwLi/Rsuj2pYniQXIrvClHvXDzgM4UQHHnvHTWEF14efnlKclG/1ghpNC+adsRujAbCTr6gRsSbDE2vEqriV7g==}
+  '@ai-sdk/anthropic@3.0.65':
+    resolution: {integrity: sha512-wUSTNKk5NWjETqNtUT3kBHl+ic0ZSTgGB/Go8A5URRt4Zb1nMLH1135uZT3xnjrCZra0teMq9BhmfZ4Jfw6SdQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/gateway@3.0.83':
-    resolution: {integrity: sha512-LvlWujbSdEkTBXBLFtF7GS6riXdHhH0O+DpDrCaNQvXeHmSF2jKsOg7JWXiCgygAHM5cWFAO3JYmZp83DjiuBQ==}
+  '@ai-sdk/gateway@3.0.85':
+    resolution: {integrity: sha512-oPvs3bYnxndBY/O0gFSFuc5aA/QKCJbk/CaJaRnKgA/ZPH17jeVvEtiUBE6/N8hWhK7XgX53NFI7F3CGmDfm1g==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/google@3.0.54':
-    resolution: {integrity: sha512-EgYYdA2LpHZefLDU/FIpmeTlL5Hi4WKQZY3nACMh0wVhrS1fAvlfrdwnD1G4ISCOKWMWrMcRZX9ubs3NM/KHfA==}
+  '@ai-sdk/google@3.0.55':
+    resolution: {integrity: sha512-lIID7kDdeqzSR/eg+LrEFJGoe/mIwuW4eBdjS84Bi0cIY4cmGwSsvwYILSdiad0197Ha+DUbCxOUuSOnORUx7g==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -1312,22 +1312,12 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/provider-utils@4.0.9':
-    resolution: {integrity: sha512-bB4r6nfhBOpmoS9mePxjRoCy+LnzP3AfhyMGCkGL4Mn9clVNlqEeKj26zEKEtB6yoSVcT1IQ0Zh9fytwMCDnow==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/provider@3.0.5':
-    resolution: {integrity: sha512-2Xmoq6DBJqmSl80U6V9z5jJSJP7ehaJJQMy2iFUqTay06wdCqTnPVBBQbtEL8RCChenL+q5DC5H5WzU3vV3v8w==}
-    engines: {node: '>=18'}
-
   '@ai-sdk/provider@3.0.8':
     resolution: {integrity: sha512-oGMAgGoQdBXbZqNG0Ze56CHjDZ1IDYOwGYxYjO5KLSlz5HiNQ9udIXsPZ61VWaHGZ5XW/jyjmr6t2xz2jGVwbQ==}
     engines: {node: '>=18'}
 
-  '@ai-sdk/react@3.0.143':
-    resolution: {integrity: sha512-yYXrrscpF3MiCycGizgw1rukbhXBnoYpisC9vt12UU4i0tkyBMBCtBrsqLTJFrItax6ZR9TjTcGdNTqKqJhyow==}
+  '@ai-sdk/react@3.0.145':
+    resolution: {integrity: sha512-7EoGTTregQt+wDKC4cmWNnsm5DvfJfWA9+9wigFMGASxujverJICVHDpvCsWK7KBHn7WeohFrk7LziOuuhwCEQ==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18 || ~19.0.1 || ~19.1.2 || ^19.2.1
@@ -5383,13 +5373,16 @@ packages:
     resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
     engines: {node: '>=8'}
 
-  ai-retry@1.3.0:
-    resolution: {integrity: sha512-NY7OkpIPC8MEdseHnLhuHGLwr/LAp/Rd2OgXcl6CKhfv8YoFIjMP+uKXDei1ixnSawsMzwEh2hmetSJPHSEEsg==}
+  ai-retry@1.4.0:
+    resolution: {integrity: sha512-RkGpo1l12zwpIXBHVBVdi01hV45zQ9oFWSINoAUSd2Xi+vuDfo3GmsxhsvXd0Vjm/9PKrjgU06TLQcAg08EfTg==}
     peerDependencies:
+      '@ai-sdk/provider': ^3.0.0
+      '@ai-sdk/provider-utils': ^4.0.0
       ai: 6.x
+      zod: ^4.0.0
 
-  ai@6.0.141:
-    resolution: {integrity: sha512-+GomGQWaId3xN0wcugUW/H7xMMaFkID2PiS7K/Wugj45G3efv0BXhQ3psRZoQVoRbOpdNoUqcK/KTB+FR4h6qg==}
+  ai@6.0.143:
+    resolution: {integrity: sha512-wVDb7StQ1EPQ9GDAOmi1AsuAXQRSii+zZT2sFK+MCisH4vV7XNEAdzXL+sKsUAFhhq+EtVFWWlB4mCk4hcoIMw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -5713,6 +5706,14 @@ packages:
       vue:
         optional: true
 
+  better-call@1.2.1:
+    resolution: {integrity: sha512-Ccgd5hj2Fmtu9Vjb9APXNYxutJWPRDhJanWAzFLwSzYAiOvkXN61OmYdvSirfrL2Z7REuK7TRklP8SIbZRlGwA==}
+    peerDependencies:
+      zod: ^4.0.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
+
   better-call@1.3.2:
     resolution: {integrity: sha512-4cZIfrerDsNTn3cm+MhLbUePN0gdwkhSXEuG7r/zuQ8c/H7iU0/jSK5TD3FW7U0MgKHce/8jGpPYNO4Ve+4NBw==}
     peerDependencies:
@@ -5720,6 +5721,9 @@ packages:
     peerDependenciesMeta:
       zod:
         optional: true
+
+  better-result@2.8.2:
+    resolution: {integrity: sha512-YOf0VSj5nUPI27doTtXF+BBnsiRq3qY7avHqfIWnppxTLGyvkLq1QV2RTxkwoZwJ60ywLfZ0raFF4J/G886i7A==}
 
   bignumber.js@9.3.1:
     resolution: {integrity: sha512-Ko0uX15oIUS7wJ3Rb30Fs6SkVbLmPBAKdlm7q9+ak9bbIeFf0MwuBsQV6z7+X768/cHsfg+WlysDWJcmthjsjQ==}
@@ -9912,9 +9916,6 @@ packages:
     resolution: {integrity: sha512-oMA2dcrw6u0YfxJQXm342bFKX/E4sG9rbTzO9ptUcR/e8A33cHuvStiYOwH7fszkZlZ1z/ta9AAoPk2F4qIOHA==}
     engines: {node: '>=18'}
 
-  resumable-stream@2.2.12:
-    resolution: {integrity: sha512-e6boHekmb72MdWDn7vSV9kiuRb9K3CepcDj+3Z0NNhdAfld7uHbVU8+NKlHRf3LO2Chtj4cXuWL88StLg64eIw==}
-
   ret@0.1.15:
     resolution: {integrity: sha512-TTlYpa+OL+vMMNG24xSlQGEJ3B/RzEfUlLct7b5G/ytav+wPrplCpVMFuwzXbkecJrb6IYo1iFb0S9v37754mg==}
     engines: {node: '>=0.12'}
@@ -10022,8 +10023,8 @@ packages:
     resolution: {integrity: sha512-3A6sD0WYP7+QrjbfNA2FN3FsOaGGFoekCVgTyypy53gPxhbkCIjtO6YWgdrfM+n/8sI8JeXZOIxsHjMTNxQ4nQ==}
     engines: {node: ^14.0.0 || >=16.0.0}
 
-  seitu@0.10.8:
-    resolution: {integrity: sha512-nwLIo2FUpaCL5vX583iJMNIhmUjuYnaT+gl1dvixh59hJk8KZRTo3gBJ2iEl0T4K6qtCmox8ht5VjKWkhzltjg==}
+  seitu@0.12.1:
+    resolution: {integrity: sha512-qqPBZuEzQf7K10ADlqnNQDtD5VDeYNmeUirNoUorQBeosxmL6ldPAxAljRwmKIUZUsREsOM572WpF6fYzCvUbw==}
     engines: {node: '>=22'}
     peerDependencies:
       react: '>=19'
@@ -10072,6 +10073,9 @@ packages:
   seroval@1.5.1:
     resolution: {integrity: sha512-OwrZRZAfhHww0WEnKHDY8OM0U/Qs8OTfIDWhUD4BLpNJUfXK4cGmjiagGze086m+mhI+V2nD0gfbHEnJjb9STA==}
     engines: {node: '>=10'}
+
+  set-cookie-parser@2.7.2:
+    resolution: {integrity: sha512-oeM1lpU/UvhTxw+g3cIfxXHyJRc/uidd3yK1P242gzHds0udQBYzs3y8j4gCCW+ZJ7ad0yctld8RYO+bdurlvw==}
 
   set-cookie-parser@3.0.1:
     resolution: {integrity: sha512-n7Z7dXZhJbwuAHhNzkTti6Aw9QDDjZtm3JTpTGATIdNzdQz5GuFs22w90BcvF4INfnrL5xrX3oGsuqO5Dx3A1Q==}
@@ -11197,20 +11201,20 @@ snapshots:
 
   7zip-bin@5.2.0: {}
 
-  '@ai-sdk/anthropic@3.0.64(zod@4.3.6)':
+  '@ai-sdk/anthropic@3.0.65(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.21(zod@4.3.6)
       zod: 4.3.6
 
-  '@ai-sdk/gateway@3.0.83(zod@4.3.6)':
+  '@ai-sdk/gateway@3.0.85(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.21(zod@4.3.6)
       '@vercel/oidc': 3.1.0
       zod: 4.3.6
 
-  '@ai-sdk/google@3.0.54(zod@4.3.6)':
+  '@ai-sdk/google@3.0.55(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.21(zod@4.3.6)
@@ -11235,25 +11239,14 @@ snapshots:
       eventsource-parser: 3.0.6
       zod: 4.3.6
 
-  '@ai-sdk/provider-utils@4.0.9(zod@4.3.6)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.5
-      '@standard-schema/spec': 1.1.0
-      eventsource-parser: 3.0.6
-      zod: 4.3.6
-
-  '@ai-sdk/provider@3.0.5':
-    dependencies:
-      json-schema: 0.4.0
-
   '@ai-sdk/provider@3.0.8':
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@3.0.143(react@19.2.4)(zod@4.3.6)':
+  '@ai-sdk/react@3.0.145(react@19.2.4)(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider-utils': 4.0.21(zod@4.3.6)
-      ai: 6.0.141(zod@4.3.6)
+      ai: 6.0.143(zod@4.3.6)
       react: 19.2.4
       swr: 2.4.1(react@19.2.4)
       throttleit: 2.1.0
@@ -11649,12 +11642,12 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.14
 
-  '@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.3.6))(jose@6.2.1)(kysely@0.28.15)(nanostores@1.2.0)':
+  '@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.2.1(zod@4.3.6))(jose@6.2.1)(kysely@0.28.15)(nanostores@1.2.0)':
     dependencies:
       '@better-auth/utils': 0.3.1
       '@better-fetch/fetch': 1.1.21
       '@standard-schema/spec': 1.1.0
-      better-call: 1.3.2(zod@4.3.6)
+      better-call: 1.2.1(zod@4.3.6)
       jose: 6.2.1
       kysely: 0.28.15
       nanostores: 1.2.0
@@ -11683,9 +11676,9 @@ snapshots:
       '@better-auth/utils': 0.3.1
       drizzle-orm: 1.0.0-beta.20(@electric-sql/pglite@0.4.2)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.11)(mssql@12.2.1(@azure/core-client@1.10.1))(mysql2@3.20.0(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@6.0.2))(zod@4.3.6)
 
-  '@better-auth/drizzle-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913(@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.3.6))(jose@6.2.1)(kysely@0.28.15)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(drizzle-orm@1.0.0-beta.20(@electric-sql/pglite@0.4.2)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.11)(mssql@12.2.1(@azure/core-client@1.10.1))(mysql2@3.20.0(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@6.0.2))(zod@4.3.6))(prettier@3.8.1)':
+  '@better-auth/drizzle-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913(@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.2.1(zod@4.3.6))(jose@6.2.1)(kysely@0.28.15)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(drizzle-orm@1.0.0-beta.20(@electric-sql/pglite@0.4.2)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.11)(mssql@12.2.1(@azure/core-client@1.10.1))(mysql2@3.20.0(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@6.0.2))(zod@4.3.6))(prettier@3.8.1)':
     dependencies:
-      '@better-auth/core': 1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.3.6))(jose@6.2.1)(kysely@0.28.15)(nanostores@1.2.0)
+      '@better-auth/core': 1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.2.1(zod@4.3.6))(jose@6.2.1)(kysely@0.28.15)(nanostores@1.2.0)
       '@better-auth/utils': 0.3.1
       drizzle-orm: 1.0.0-beta.20(@electric-sql/pglite@0.4.2)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.11)(mssql@12.2.1(@azure/core-client@1.10.1))(mysql2@3.20.0(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.2.0(typescript@6.0.2))(zod@4.3.6)
       prettier: 3.8.1
@@ -12234,9 +12227,9 @@ snapshots:
       '@eslint/core': 1.1.1
       levn: 0.4.1
 
-  '@exalabs/ai-sdk@2.0.1(ai@6.0.141(zod@4.3.6))':
+  '@exalabs/ai-sdk@2.0.1(ai@6.0.143(zod@4.3.6))':
     dependencies:
-      ai: 6.0.141(zod@4.3.6)
+      ai: 6.0.143(zod@4.3.6)
       zod: 3.25.76
 
   '@faker-js/faker@10.4.0': {}
@@ -15160,10 +15153,10 @@ snapshots:
       firebase: 12.10.0
       git-rev-sync: 3.0.2
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
-      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
-      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
-      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
-      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2)
+      ink-gradient: 2.0.0(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
+      ink-link: 2.0.1(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
+      ink-select-input: 4.2.2(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
+      ink-text-input: 4.0.3(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2)
       is-ci: 4.1.0
       is-installed-globally: 0.4.0
       js-yaml: 4.1.1
@@ -15657,10 +15650,10 @@ snapshots:
 
   '@upstash/context7-sdk@0.3.0': {}
 
-  '@upstash/context7-tools-ai-sdk@0.2.2(@upstash/context7-sdk@0.3.0)(ai@6.0.141(zod@4.3.6))(zod@4.3.6)':
+  '@upstash/context7-tools-ai-sdk@0.2.2(@upstash/context7-sdk@0.3.0)(ai@6.0.143(zod@4.3.6))(zod@4.3.6)':
     dependencies:
       '@upstash/context7-sdk': 0.3.0
-      ai: 6.0.141(zod@4.3.6)
+      ai: 6.0.143(zod@4.3.6)
       zod: 4.3.6
 
   '@valibot/to-json-schema@1.5.0(valibot@1.2.0(typescript@6.0.2))':
@@ -15771,16 +15764,16 @@ snapshots:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  ai-retry@1.3.0(ai@6.0.141(zod@4.3.6)):
+  ai-retry@1.4.0(@ai-sdk/provider-utils@4.0.21(zod@4.3.6))(@ai-sdk/provider@3.0.8)(ai@6.0.143(zod@4.3.6))(zod@4.3.6):
     dependencies:
-      '@ai-sdk/provider': 3.0.5
-      '@ai-sdk/provider-utils': 4.0.9(zod@4.3.6)
-      ai: 6.0.141(zod@4.3.6)
+      '@ai-sdk/provider': 3.0.8
+      '@ai-sdk/provider-utils': 4.0.21(zod@4.3.6)
+      ai: 6.0.143(zod@4.3.6)
       zod: 4.3.6
 
-  ai@6.0.141(zod@4.3.6):
+  ai@6.0.143(zod@4.3.6):
     dependencies:
-      '@ai-sdk/gateway': 3.0.83(zod@4.3.6)
+      '@ai-sdk/gateway': 3.0.85(zod@4.3.6)
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.21(zod@4.3.6)
       '@opentelemetry/api': 1.9.0
@@ -16127,6 +16120,15 @@ snapshots:
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
 
+  better-call@1.2.1(zod@4.3.6):
+    dependencies:
+      '@better-auth/utils': 0.3.1
+      '@better-fetch/fetch': 1.1.21
+      rou3: 0.7.12
+      set-cookie-parser: 2.7.2
+    optionalDependencies:
+      zod: 4.3.6
+
   better-call@1.3.2(zod@4.3.6):
     dependencies:
       '@better-auth/utils': 0.3.1
@@ -16135,6 +16137,8 @@ snapshots:
       set-cookie-parser: 3.0.1
     optionalDependencies:
       zod: 4.3.6
+
+  better-result@2.8.2: {}
 
   bignumber.js@9.3.1: {}
 
@@ -18520,7 +18524,7 @@ snapshots:
 
   ini@2.0.0: {}
 
-  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-gradient@2.0.0(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       gradient-string: 1.2.0
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
@@ -18528,14 +18532,14 @@ snapshots:
       react: 17.0.2
       strip-ansi: 6.0.1
 
-  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-link@2.0.1(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
       prop-types: 15.8.1
       react: 17.0.2
       terminal-link: 2.1.1
 
-  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-select-input@4.2.2(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       arr-rotate: 1.0.0
       figures: 3.2.0
@@ -18543,7 +18547,7 @@ snapshots:
       lodash.isequal: 4.5.0
       react: 17.0.2
 
-  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.14)(react@19.2.4))(react@17.0.2):
+  ink-text-input@4.0.3(ink@3.2.0(@types/react@19.2.14)(react@17.0.2))(react@17.0.2):
     dependencies:
       chalk: 4.1.2
       ink: 3.2.0(@types/react@19.2.14)(react@17.0.2)
@@ -20871,8 +20875,6 @@ snapshots:
       onetime: 7.0.0
       signal-exit: 4.1.0
 
-  resumable-stream@2.2.12: {}
-
   ret@0.1.15: {}
 
   retry@0.12.0: {}
@@ -21015,7 +21017,7 @@ snapshots:
       refa: 0.12.1
       regexp-ast-analysis: 0.7.1
 
-  seitu@0.10.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  seitu@0.12.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       fast-equals: 6.0.0
     optionalDependencies:
@@ -21047,6 +21049,8 @@ snapshots:
       seroval: 1.5.1
 
   seroval@1.5.1: {}
+
+  set-cookie-parser@2.7.2: {}
 
   set-cookie-parser@3.0.1: {}
 

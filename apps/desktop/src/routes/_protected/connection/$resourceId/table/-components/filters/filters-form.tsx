@@ -1,6 +1,6 @@
 import type { ActiveFilter, Filter } from '@conar/shared/filters'
 import { useEffect, useRef, useState } from 'react'
-import { useInternalContext } from './context'
+import { useTableColumns } from '../../-columns'
 import { FiltersColumnSelector } from './filters-column-selector'
 import { FiltersSelector } from './filters-selector'
 import { FilterValueSelector } from './filters-value-selector'
@@ -9,7 +9,7 @@ export function FilterForm({ onAdd }: { onAdd: (filter: ActiveFilter) => void })
   const [selectedColumn, setSelectedColumn] = useState<string | null>(null)
   const [selectedFilter, setSelectedFilter] = useState<Filter | null>(null)
   const [values, setValues] = useState<string[]>([''])
-  const { columns } = useInternalContext()
+  const columns = useTableColumns()
 
   const operatorRef = useRef<HTMLInputElement>(null)
 

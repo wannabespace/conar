@@ -107,7 +107,7 @@ function DatabaseEnumsPage() {
                     {enumItem.metadata?.table && (
                       <>
                         <Badge variant="outline" className="text-xs">
-                          <RiTable2 className="mr-1 size-3" />
+                          <RiTable2 className="size-3" />
                           {enumItem.metadata.table}
                         </Badge>
                         {enumItem.metadata.column && (
@@ -117,7 +117,7 @@ function DatabaseEnumsPage() {
                               variant="outline"
                               className="font-mono text-xs"
                             >
-                              <RiLayoutColumnLine className="mr-1 size-3" />
+                              <RiLayoutColumnLine className="size-3" />
                               {enumItem.metadata.column}
                             </Badge>
                           </>

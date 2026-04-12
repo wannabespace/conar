@@ -9,19 +9,16 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { RiAddLine, RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiCloseLine } from '@remixicon/react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { Route } from '../..'
-import { useTableColumns } from '../../-queries/use-columns-query'
-import { useTablePageStore } from '../../-store'
-import { useColumnsOrder } from '../use-columns-order'
+import { useTableColumns } from '../../-columns'
+import { columnsOrder, useTablePageStore } from '../../-store'
 
-export function HeaderActionsOrder({ table, schema }: { table: string, schema: string }) {
-  const { connectionResource } = Route.useRouteContext()
+export function HeaderActionsOrder() {
   const store = useTablePageStore()
   const orderEntries = useSubscription(store, { selector: state => Object.entries(state.orderBy || {}) })
-  const columns = useTableColumns({ connectionResource, table, schema })
+  const columns = useTableColumns()
   const [open, setOpen] = useState(false)
   const [showAddColumn, setShowAddColumn] = useState(false)
-  const { setOrder, removeOrder } = useColumnsOrder()
+  const { setOrder, removeOrder } = columnsOrder(store)
 
   const addColumn = (columnId: string) => {
     setOrder(columnId, 'ASC')

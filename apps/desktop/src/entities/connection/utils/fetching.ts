@@ -19,7 +19,7 @@ export async function prefetchConnectionResourceCore(connectionResource: typeof 
 
   const store = getConnectionResourceStore(connectionResource.id)
   await Promise.all([
-    queryClient.prefetchQuery(resourceTablesAndSchemasQueryOptions({ silent: true, connectionResource, showSystem: store.get().showSystem })),
+    queryClient.prefetchQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem: store.get().showSystem })),
     queryClient.prefetchQuery(resourceEnumsQueryOptions({ connectionResource })),
     queryClient.prefetchQuery(resourceConstraintsQueryOptions({ connectionResource })),
   ])

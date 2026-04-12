@@ -160,7 +160,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
     if (!monacoRef.current)
       return
 
-    const kAction = monacoRef.current.addAction({
+    const disposable = monacoRef.current.addAction({
       id: 'conar.execute-on-k',
       label: 'Execute on K',
       keybindings: [KeyMod.CtrlCmd | KeyCode.KeyK],
@@ -181,6 +181,6 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
       },
     })
 
-    return () => kAction.dispose()
+    return () => disposable.dispose()
   }, [monacoRef])
 }

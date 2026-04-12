@@ -33,7 +33,7 @@ import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
 import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
-import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
+import { getConnectionStringToShow, lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
@@ -203,7 +203,6 @@ function ConnectionCard({
   const [isCopied, setIsCopied] = useState(false)
 
   const connectionString = new SafeURL(connection.connectionString)
-  const connectionStringToShow = `${connectionString.hostname}${connectionString.port ? `:${connectionString.port}` : ''}`
 
   const connectionStore = getConnectionStore(connection.id)
   const { selectedResourceName, pinnedResourcesNames } = useSubscription(connectionStore, {
@@ -329,7 +328,7 @@ function ConnectionCard({
                     `}
                     onClick={() => handleCopy()}
                   >
-                    {connectionStringToShow}
+                    {getConnectionStringToShow(connection.connectionString)}
                     {isResourcesShown
                       ? <span>/</span>
                       : selectedResourceName !== CONNECTION_RESOURCE_ROOT_SYMBOL && (

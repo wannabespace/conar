@@ -1,5 +1,4 @@
 import type { QueryParams, SchemaParams } from '..'
-import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
 import { formatEnumAsUnionType, formatValue, getColumnType, toLiteralKey } from '../utils'
 
@@ -26,13 +25,11 @@ export function generateSchemaKysely({
   table,
   columns,
   dialect,
-  enums = [],
 }: SchemaParams) {
-  const body = columns.map((c) => {
-    let tsType = getColumnType(c.type, 'ts', dialect)
-    const foundEnum = findEnum(enums, c, table)
-    if (foundEnum?.values.length) {
-      tsType = formatEnumAsUnionType(foundEnum.values, c.type)
+  const body = columns.filter(c => c.type).map((c) => {
+    let tsType = getColumnType(c.type!, 'ts', dialect)
+    if (c.enumName && c.availableValues?.length) {
+      tsType = formatEnumAsUnionType(c.availableValues, c.type)
     }
 
     const isGenerated = c.primaryKey

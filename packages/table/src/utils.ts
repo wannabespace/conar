@@ -1,8 +1,8 @@
 import type { CSSProperties } from 'react'
 
-const regex = /\s+/g
+const SPACE_DOT_REGEX = /[\s.]+/g
 export function prepareColumnId(id: string) {
-  return id.trim().replace(regex, '_')
+  return id.trim().replace(SPACE_DOT_REGEX, '_')
 }
 
 export function getBaseColumnStyle({ id, defaultSize }: { id: string, defaultSize: number }): CSSProperties {

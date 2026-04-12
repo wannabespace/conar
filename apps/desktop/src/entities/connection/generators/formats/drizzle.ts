@@ -1,7 +1,6 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'
-import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
 import { filterExplicitIndexes, getColumnType, groupIndexes, isValidIdentifier, toLiteralKey } from '../utils'
 
@@ -54,7 +53,6 @@ export function generateSchemaDrizzle({
   table,
   columns,
   dialect,
-  enums = [],
   indexes = [],
 }: SchemaParams) {
   const { tableFunc, dialectImportPath, enumFunc } = dialectConfig[dialect]
@@ -66,17 +64,16 @@ export function generateSchemaDrizzle({
 
   const varName = camelCase(table)
 
-  const cols = columns.map((c) => {
-    let typeFunc = getColumnType(c.type, 'drizzle', dialect)
+  const cols = columns.filter(c => c.type).map((c) => {
+    let typeFunc = getColumnType(c.type!, 'drizzle', dialect)
 
     dialectImports.add(typeFunc)
 
-    const foundEnum = findEnum(enums, c, table)
-    const isEnum = enumFunc && foundEnum?.values.length
+    const isEnum = enumFunc && c.enumName && c.availableValues?.length
     if (isEnum) {
-      const eName = foundEnum.name || `${table}_${c.id}`
+      const eName = c.enumName || `${table}_${c.id}`
       const enumTypeName = `${camelCase(eName)}Enum`
-      const valuesList = foundEnum.values.map(v => `'${v}'`).join(', ')
+      const valuesList = c.availableValues!.map(v => `'${v}'`).join(', ')
 
       dialectImports.add(enumFunc)
       extras.push(`export const ${enumTypeName} = ${enumFunc}('${eName}', [${valuesList}]);`)

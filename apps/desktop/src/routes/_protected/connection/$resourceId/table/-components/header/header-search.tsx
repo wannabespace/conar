@@ -17,7 +17,7 @@ import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 import { Route } from '../..'
-import { useTableColumns } from '../../-queries/use-columns-query'
+import { useTableColumns } from '../../-columns'
 import { useTablePageStore } from '../../-store'
 
 export function HeaderSearch({ table, schema }: { table: string, schema: string }) {
@@ -61,7 +61,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
       }
     },
   }))
-  const columns = useTableColumns({ connectionResource, table, schema })
+  const columns = useTableColumns()
   const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const context = `
     Filters working with AND operator.
@@ -70,7 +70,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
     Columns: ${JSON.stringify(columns?.map(col => ({
       id: col.id,
       type: col.type,
-      default: col.default,
+      default: col.defaultValue,
       isNullable: col.isNullable,
     })), null, 2)}
     Enums: ${JSON.stringify(enums, null, 2)}

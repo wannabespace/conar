@@ -98,12 +98,6 @@ function Log({ query, className, connectionResource }: { query: QueryLog, classN
 
   const connection = connectionsCollection.get(connectionResource.connectionId)!
 
-  const formatValues = (values?: unknown[]) => {
-    if (!values || values.length === 0)
-      return ''
-    return `[${values.map(v => typeof v === 'string' ? `"${v}"` : String(v)).join(', ')}]`
-  }
-
   if (!canInteract) {
     return (
       <LogTrigger
@@ -151,7 +145,7 @@ function Log({ query, className, connectionResource }: { query: QueryLog, classN
                 overflow-x-auto rounded-sm bg-accent/50 p-2 font-mono text-xs
               `}
               >
-                {formatValues(query.values)}
+                {JSON.stringify(query.values)}
               </pre>
             </div>
           )}
@@ -173,7 +167,7 @@ function Log({ query, className, connectionResource }: { query: QueryLog, classN
               <Label className="text-destructive">Error</Label>
               <pre className={`
                 overflow-x-auto rounded-sm bg-red-50 p-2 font-mono text-xs
-                text-red-700
+                whitespace-break-spaces text-red-700
                 dark:bg-red-950 dark:text-red-300
               `}
               >

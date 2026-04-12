@@ -1,5 +1,9 @@
 import type { ComponentProps } from 'react'
+import { motion } from 'motion/react'
 import { useId } from 'react'
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const AppLogoSquareMotion = motion.create(AppLogoSquare)
 
 export function AppLogoSquare(props: ComponentProps<'svg'>) {
   const id = useId()

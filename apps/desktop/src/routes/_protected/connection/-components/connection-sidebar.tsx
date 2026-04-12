@@ -1,6 +1,4 @@
 import type { LinkProps } from '@tanstack/react-router'
-import type { connectionsResources } from '~/drizzle/schema'
-import { CONNECTION_RESOURCE_ROOT_LABEL } from '@conar/shared/constants'
 import { getOS } from '@conar/shared/utils/os'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
@@ -13,27 +11,19 @@ import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiCommandLine, RiFileListLine, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiShieldCheckLine, RiSunLine, RiTableLine } from '@remixicon/react'
-import { inArray, useLiveQuery } from '@tanstack/react-db'
+import { RiCommandLine, RiFileListLine, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiShieldCheckLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useMatches, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
-import { ConnectionIcon } from '~/entities/connection/components'
-import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { connectionsResourcesCollection } from '~/entities/connection/sync'
-import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { UserButton } from '~/entities/user/components'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 import { Route } from '../$resourceId'
 
 const os = getOS(navigator.userAgent)
-
-const nameRegex = /[^a-z0-9\s]/gi
-const whitespaceRegex = /\s+/g
 
 function baseClasses(isActive = false) {
   return cn(
@@ -112,76 +102,6 @@ function SupportButton() {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
-}
-
-function LastOpenedConnection({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) {
-  const { resourceId } = Route.useParams()
-  const { connection } = Route.useRouteContext()
-  const isActive = connectionResource.id === resourceId
-  const params = useConnectionResourceLinkParams(connectionResource.id)
-
-  async function onCloseClick() {
-    lastOpenedResourcesStorageValue.set(state => state.filter(resourceId => resourceId !== connectionResource.id))
-  }
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div className="group relative">
-          {!isActive && (
-            <button
-              type="button"
-              className={cn(
-                `
-                  absolute top-0 right-0 z-20 flex size-4 translate-x-1/2
-                  -translate-y-1/2 items-center justify-center rounded-full
-                  bg-background text-foreground opacity-0
-                  group-hover:opacity-100
-                `,
-              )}
-              onClick={onCloseClick}
-            >
-              <RiCloseLine className="size-3" />
-            </button>
-          )}
-          <Link
-            className={cn(
-              baseClasses(isActive),
-              connection.color && isActive
-                ? `
-                  border-(--color)/20 bg-(--color)/10 text-(--color)
-                  hover:bg-(--color)/20
-                `
-                : '',
-            )}
-            style={connection.color ? { '--color': connection.color } : {}}
-            preload={false}
-            {...params}
-          >
-            <span className="text-sm font-bold">
-              {(connectionResource.name || CONNECTION_RESOURCE_ROOT_LABEL)
-                .replace(nameRegex, '')
-                .split(whitespaceRegex)
-                .map(word => word[0])
-                .join('')
-                .slice(0, 2)
-                .toUpperCase()}
-            </span>
-          </Link>
-        </div>
-      </TooltipTrigger>
-      <TooltipContent side="right" sideOffset={10}>
-        <span className="flex items-center gap-2 font-medium">
-          <ConnectionIcon type={connection.type} className="-ml-1 size-4" />
-          {connection.name}
-          {' '}
-          /
-          {' '}
-          {connectionResource.name}
-        </span>
-      </TooltipContent>
-    </Tooltip>
   )
 }
 
@@ -294,12 +214,7 @@ function MainLinks() {
 
 export function ConnectionSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const { connectionResource } = Route.useRouteContext()
-  const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
   const store = getConnectionResourceStore(connectionResource.id)
-  const { data: openedResources } = useLiveQuery(q => q
-    .from({ connectionsResources: connectionsResourcesCollection })
-    .where(({ connectionsResources }) => inArray(connectionsResources.id, lastOpenedResources))
-    .orderBy(({ connectionsResources }) => connectionsResources.createdAt, 'desc'))
 
   return (
     <div className={cn('flex flex-col items-center', className)} {...props}>
@@ -320,17 +235,6 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
         <div className="w-full p-4">
           <div className="flex w-full flex-col">
             <MainLinks />
-            {openedResources.length > 1 && (
-              <>
-                <Separator className="my-4" />
-                {openedResources.map(connectionResource => (
-                  <LastOpenedConnection
-                    key={connectionResource.id}
-                    connectionResource={connectionResource}
-                  />
-                ))}
-              </>
-            )}
           </div>
         </div>
       </ScrollArea>

@@ -1,109 +1,35 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { decrypt, encrypt } from '@conar/shared/utils/encryption'
 import { tryParseJson } from '@conar/shared/utils/helpers'
-import { isNetworkError } from '@conar/shared/utils/network-error'
 import { app, ipcMain } from 'electron'
-import { autoUpdater, sendToast } from '..'
+import { autoUpdater } from '..'
 import { getClient as getClickhouseClient } from '../connections/clickhouse'
 import { getPool as getMssqlPool } from '../connections/mssql'
 import { getPool as getMysqlPool } from '../connections/mysql'
 import { getPool as getPgPool } from '../connections/pg'
 
-const MAX_RECONNECTION_ATTEMPTS = 5
-const RECONNECTION_DELAY = 3000
+// if (error instanceof AggregateError) {
+//   return Promise.reject(error.errors[0])
+// }
 
-function handleAggregatedError<T>(promise: Promise<T>): Promise<T> {
-  return promise.catch((error) => {
-    if (error instanceof AggregateError) {
-      return Promise.reject(error.errors[0])
-    }
-
-    return Promise.reject(error)
-  })
-}
-
-async function retryIfConnectionError<T>(func: () => Promise<T>, {
-  onRetry,
-  onError,
-  onSuccess,
-  attempt = 0,
-}: {
-  onRetry?: (props: { attempt: number }) => void
-  onError?: (error: unknown) => void
-  onSuccess?: (props: { attempt: number }) => void
-  attempt?: number
-} = {
-  attempt: 0,
-}): Promise<T> {
-  try {
-    const result = await func()
-    onSuccess?.({ attempt })
-    return result
-  }
-  catch (error) {
-    if (isNetworkError(error)) {
-      if (attempt < MAX_RECONNECTION_ATTEMPTS) {
-        await new Promise(resolve => setTimeout(resolve, RECONNECTION_DELAY))
-        onRetry?.({ attempt: attempt + 1 })
-        return retryIfConnectionError(func, {
-          attempt: attempt + 1,
-          onError,
-          onRetry,
-          onSuccess,
-        })
-      }
-      onError?.(error)
-    }
-    throw error
-  }
-}
-
-function retryOptions({ silent, connectionString, query }: { silent?: boolean, connectionString: string, query: string }) {
-  return {
-    onSuccess: ({ attempt }) => {
-      if (attempt > 0 && !silent) {
-        sendToast({ message: `Database connection successful after reconnection ${attempt} attempt${attempt > 1 ? 's' : ''}.`, type: 'success' })
-      }
-    },
-    onRetry({ attempt }) {
-      if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
-        console.log('Connection string on retry', connectionString, query)
-      }
-      if (!silent) {
-        sendToast({ message: `Could not connect to the database. Reconnection attempt ${attempt + 1}/${MAX_RECONNECTION_ATTEMPTS}.`, type: 'info' })
-      }
-    },
-    onError: () => {
-      if (!silent) {
-        sendToast({ message: 'Could not connect to the database. Please check your network or database server and try again.', type: 'error' })
-      }
-    },
-  } satisfies Parameters<typeof retryIfConnectionError>[1]
-}
+// return Promise.reject(error)
 
 const queryMap = {
-  postgres: async ({ connectionString, query, values, silent }: { query: string, values: unknown[], connectionString: string, silent?: boolean }) => {
-    let start = 0
-    const result = await handleAggregatedError(retryIfConnectionError(async () => {
-      const pool = await getPgPool(connectionString)
-      start = performance.now()
-      return pool.query(query, values)
-    }, retryOptions({ silent, connectionString, query })))
+  postgres: async ({ connectionString, query, values }: { query: string, values: unknown[], connectionString: string }) => {
+    const pool = await getPgPool(connectionString)
+    const start = performance.now()
+    const result = await pool.query(query, values)
 
     return { result: result.rows as unknown, duration: performance.now() - start }
   },
-  mysql: async ({ connectionString, query, values, silent }: { query: string, values: unknown[], connectionString: string, silent?: boolean }) => {
-    let start = 0
-    const [result] = await handleAggregatedError(retryIfConnectionError(async () => {
-      const pool = await getMysqlPool(connectionString)
-      start = performance.now()
-      return pool.query(query, values)
-    }, retryOptions({ silent, connectionString, query })))
+  mysql: async ({ connectionString, query, values }: { query: string, values: unknown[], connectionString: string }) => {
+    const pool = await getMysqlPool(connectionString)
+    const start = performance.now()
+    const [result] = await pool.query(query, values)
 
-    return { result: result as unknown, duration: performance.now() - start! }
+    return { result: result as unknown, duration: performance.now() - start }
   },
-  clickhouse: async ({ connectionString, query, silent }: { query: string, connectionString: string, insertValues?: unknown[], silent?: boolean }) => {
+  clickhouse: async ({ connectionString, query }: { query: string, connectionString: string }) => {
     try {
       const client = getClickhouseClient(connectionString)
       const isSelect = [
@@ -114,20 +40,15 @@ const queryMap = {
         'WITH',
         'CHECK',
       ].some(keyword => query.trim().toUpperCase().startsWith(keyword))
-      let start = 0
 
       if (isSelect) {
-        const result = await handleAggregatedError(retryIfConnectionError(() => {
-          start = performance.now()
-          return client.query({ query, format: 'JSONEachRow' }).then(result => result.json())
-        }, retryOptions({ silent, connectionString, query })))
+        const start = performance.now()
+        const result = await client.query({ query, format: 'JSONEachRow' }).then(result => result.json())
         return { result, duration: performance.now() - start }
       }
 
-      await handleAggregatedError(retryIfConnectionError(() => {
-        start = performance.now()
-        return client.exec({ query })
-      }, retryOptions({ silent, connectionString, query })))
+      const start = performance.now()
+      await client.exec({ query })
 
       return { result: [], duration: performance.now() - start }
     }
@@ -142,22 +63,18 @@ const queryMap = {
       throw error
     }
   },
-  mssql: async ({ connectionString, query, values, silent }: { query: string, values: unknown[], connectionString: string, silent?: boolean }) => {
-    let start = 0
+  mssql: async ({ connectionString, query, values }: { query: string, values: unknown[], connectionString: string }) => {
+    const pool = await getMssqlPool(connectionString)
+    let request = pool.request()
 
-    const result = await handleAggregatedError(retryIfConnectionError(async () => {
-      const pool = await getMssqlPool(connectionString)
-      let request = pool.request()
+    for (let i = 0; i < values.length; i++) {
+      request = request.input(`${i + 1}`, values[i])
+    }
 
-      for (let i = 0; i < values.length; i++) {
-        request = request.input(`${i + 1}`, values[i])
-      }
+    const start = performance.now()
+    const result = await request.query(query)
 
-      start = performance.now()
-      return request.query(query)
-    }, retryOptions({ silent, connectionString, query })))
-
-    return { result: result.recordset as unknown, duration: performance.now() - start! }
+    return { result: result.recordset as unknown, duration: performance.now() - start }
   },
 // eslint-disable-next-line ts/no-explicit-any
 } satisfies Record<ConnectionType, (...args: any[]) => Promise<{

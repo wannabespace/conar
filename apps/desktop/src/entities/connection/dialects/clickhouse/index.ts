@@ -23,6 +23,16 @@ function prepareQuery(compiledQuery: CompiledQuery) {
       return 'NULL'
     }
 
+    if (Array.isArray(param)) {
+      return `[${param.map(v =>
+        v === null || v === undefined
+          ? 'NULL'
+          : typeof v === 'number'
+            ? `${v}`
+            : `'${escapeSqlString(String(v))}'`,
+      ).join(', ')}]`
+    }
+
     if (typeof param === 'number') {
       return `${param}`
     }
@@ -58,7 +68,6 @@ function execute(options: DialectExecutionOptions) {
   const promise = window.electron.query.clickhouse({
     connectionString: options.connectionString,
     query: preparedQuery,
-    silent: options.silent,
   })
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })

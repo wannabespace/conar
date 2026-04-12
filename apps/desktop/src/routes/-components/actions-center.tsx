@@ -18,7 +18,7 @@ import { appStore, setIsActionCenterOpen } from '~/store'
 function ActionsResourceTables({ connection, connectionResource }: { connection: typeof connections.$inferSelect, connectionResource: typeof connectionsResources.$inferSelect }) {
   const store = getConnectionResourceStore(connectionResource.id)
   const { data: tablesAndSchemas } = useQuery({
-    ...resourceTablesAndSchemasQueryOptions({ silent: true, connectionResource, showSystem: store.get().showSystem }),
+    ...resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem: store.get().showSystem }),
     throwOnError: false,
   })
   const router = useRouter()
