@@ -269,7 +269,7 @@ export function HeaderActionsSeed({
                         <TooltipContent>Allow random NULL values</TooltipContent>
                       </Tooltip>
                     )}
-                    {column.foreign || column.enumName
+                    {column.foreign || (column.enumName && column.availableValues && column.availableValues.length > 0)
                       ? (
                           <Button
                             variant="outline"

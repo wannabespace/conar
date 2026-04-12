@@ -45,10 +45,12 @@ export const INTERNAL_COLUMN_IDS = {
 const columnsSizeMap: Record<string, number> = {
   boolean: 160,
   number: 170,
+  function: 180,
+  variant: 200,
   int: 150,
   uint: 150,
   tinyint: 150,
-  decimal: 150,
+  decimal: 160,
   integer: 150,
   bigint: 170,
   timestamp: 240,

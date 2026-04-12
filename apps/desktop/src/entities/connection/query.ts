@@ -65,7 +65,10 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
     })
     const queryFn = options.query[queryParams.type]
 
-    const connectionStringToShow = getConnectionStringToShow(queryParams.connectionString, true)
+    const connectionStringToShow = getConnectionStringToShow(queryParams.connectionString, {
+      withPathname: true,
+      withProtocol: true,
+    })
     let attempt = 0
 
     const resolvers = Promise.withResolvers()

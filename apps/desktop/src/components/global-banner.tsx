@@ -60,7 +60,7 @@ function Banner({ className, children }: { className?: string, children: ReactNo
 
 export function GlobalBanner() {
   const { resourceId } = useParams({ strict: false })
-  const reconnectingData = useSubscription(reconnectingPromises, { selector: state => Object.values(state).find(p => p.resourceId === resourceId) ?? null })
+  const reconnectingData = useSubscription(reconnectingPromises, { selector: state => (resourceId && Object.values(state).find(p => p.resourceId === resourceId)) || null })
   const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const dismissed = useSubscription(bannerDismissedValue)
 

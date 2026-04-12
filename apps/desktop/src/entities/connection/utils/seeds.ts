@@ -211,7 +211,7 @@ export function autoDetectGenerator(column: Column): GeneratorId {
   if (column.foreign)
     return REFERENCE_GENERATOR
 
-  if (column.enumName)
+  if (column.enumName && column.availableValues && column.availableValues.length > 0)
     return ENUM_GENERATOR
 
   if (column.primaryKey) {

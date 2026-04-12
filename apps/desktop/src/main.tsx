@@ -63,7 +63,6 @@ export const subscriptionQueryClient = new QueryClient({
 
 // Native trigger don't work for some reason, so we need to use this workaround
 window.addEventListener('focus', () => {
-  queryClient.refetchQueries()
   subscriptionQueryClient.refetchQueries()
 })
 

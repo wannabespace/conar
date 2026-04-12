@@ -4,14 +4,16 @@ import { createBooleanTransformer } from './boolean'
 import { createListTransformer } from './list'
 import { createRawTransformer } from './raw'
 
+type InputFromDB = unknown
+
 export interface ValueTransformer<O = unknown> {
-  fromConnection: (value: unknown) => {
+  fromConnection: (value: InputFromDB) => {
     toUI: () => O
     toRaw: () => string
   }
   toConnection: {
-    fromUI: (value: O) => unknown
-    fromRaw: (value: string) => unknown
+    fromUI: (value: O) => InputFromDB
+    fromRaw: (value: string) => InputFromDB
   }
 }
 

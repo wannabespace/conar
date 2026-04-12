@@ -83,10 +83,11 @@ export function tryParseToJsonArray(editedValue: string): string[] {
 }
 
 export function memoize<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F): F {
-  const cache = new Map<string, ReturnType<F>>()
+  const cache = new Map<unknown, ReturnType<F>>()
 
   return ((...args: Parameters<F>) => {
-    const key = JSON.stringify(args)
+    const key = (args as unknown[])[0]
+
     if (cache.has(key)) {
       return cache.get(key)!
     }
