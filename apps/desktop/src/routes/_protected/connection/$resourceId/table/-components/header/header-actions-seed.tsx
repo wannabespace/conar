@@ -16,6 +16,7 @@ import {
   ComboboxPopup,
   ComboboxTrigger,
 } from '@conar/ui/components/combobox'
+import { Indicator } from '@conar/ui/components/custom/indicator'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import {
   Drawer,
@@ -36,24 +37,26 @@ import {
   NumberFieldIncrement,
   NumberFieldInput,
 } from '@conar/ui/components/number-field'
+import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '@conar/ui/components/popover'
 import { Switch } from '@conar/ui/components/switch'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import NumberFlow from '@number-flow/react'
-import { RiSearchLine, RiSeedlingLine } from '@remixicon/react'
+import { RiCodeSSlashLine, RiSearchLine, RiSeedlingLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
+import { Monaco } from '~/components/monaco'
 import { distinctQuery, insertQuery, resourceRowsQueryInfiniteOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
-import { autoDetectGenerator, ENUM_GENERATOR, generateRows, getGeneratorGroups, getGenerators, REFERENCE_GENERATOR, SKIP_GENERATOR } from '~/entities/connection/utils/seeds'
+import { autoDetectGenerator, CUSTOM_GENERATOR, ENUM_GENERATOR, generateRows, getGeneratorGroups, getGenerators, REFERENCE_GENERATOR, SKIP_GENERATOR } from '~/entities/connection/utils/seeds'
 import { queryClient } from '~/main'
 import { Route } from '../..'
 import { useTableColumns } from '../../-columns'
 import { useTablePageStore } from '../../-store'
 import { DefaultValueTooltipIcon, NullableTooltipIcon, PrimaryKeyTooltipIcon, ReadOnlyTooltipIcon, UniqueTooltipIcon } from '../table/table-header-cell'
 
-function getAvailableGeneratorGroups(column: Column, dialect?: ConnectionType) {
+function getAvailableGeneratorGroups(column: Column, dialect: ConnectionType) {
   return getGeneratorGroups(dialect)
     .map(group => ({
       ...group,
@@ -68,6 +71,95 @@ function getAvailableGeneratorGroups(column: Column, dialect?: ConnectionType) {
       }),
     }))
     .filter(group => group.items.length > 0)
+}
+
+function CustomExpressionPopover({
+  columnId,
+}: {
+  columnId: string
+}) {
+  const store = useTablePageStore()
+  const customExpression = useSubscription(store, { selector: state => state.generators[columnId]?.customExpression })
+
+  const updateCustomExpression = (expression?: string) => {
+    store.set(state => ({
+      ...state,
+      generators: {
+        ...state.generators,
+        [columnId]: {
+          ...state.generators[columnId]!,
+          customExpression: expression,
+        },
+      },
+    } satisfies typeof state))
+  }
+
+  return (
+    <Popover
+      onOpenChangeComplete={(open) => {
+        if (!open && !customExpression?.trim()) {
+          updateCustomExpression()
+        }
+      }}
+    >
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <PopoverTrigger
+            render={(
+              <Button
+                variant="outline"
+                size="icon-sm"
+              />
+            )}
+          >
+            {customExpression && <Indicator />}
+            <RiCodeSSlashLine />
+          </PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent>Edit SQL expression</TooltipContent>
+      </Tooltip>
+      <PopoverContent
+        side="left"
+        sideOffset={8}
+        className="w-96 gap-0 p-0"
+      >
+        <PopoverTitle className="border-b p-2">
+          Custom SQL Expression
+        </PopoverTitle>
+        <Monaco
+          value={customExpression ?? 'SELECT 1'}
+          language="sql"
+          onChange={value => updateCustomExpression(value)}
+          className="h-32"
+          options={{
+            lineNumbers: 'off',
+            glyphMargin: false,
+            folding: false,
+            scrollBeyondLastLine: false,
+            overviewRulerLanes: 0,
+            hideCursorInOverviewRuler: true,
+            overviewRulerBorder: false,
+            renderLineHighlight: 'none',
+            scrollbar: { vertical: 'hidden', horizontal: 'auto' },
+            padding: { top: 8, bottom: 8 },
+          }}
+        />
+        <div className="border-t p-2 text-xs text-muted-foreground">
+          Enter a raw SQL expression, for example:
+          <br />
+          {' '}
+          <Badge variant="secondary" size="sm">NOW()</Badge>
+          ,
+          {' '}
+          <Badge variant="secondary" size="sm">gen_random_uuid()</Badge>
+          ,
+          {' '}
+          <Badge variant="secondary" size="sm">SELECT id FROM users LIMIT 1</Badge>
+          or any other valid SQL expression.
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
 }
 
 export function HeaderActionsSeed({
@@ -107,7 +199,7 @@ export function HeaderActionsSeed({
         newGenerators[column.id] = isValid
           ? saved
           : {
-              generatorId: autoDetectGenerator(column),
+              generatorId: autoDetectGenerator(column, connection.type),
               isNullable: false,
             }
       }
@@ -125,6 +217,7 @@ export function HeaderActionsSeed({
       generators: {
         ...state.generators,
         [columnId]: {
+          ...state.generators[columnId],
           generatorId: state.generators[columnId]?.generatorId ?? SKIP_GENERATOR,
           isNullable: !state.generators[columnId]?.isNullable,
         },
@@ -150,7 +243,7 @@ export function HeaderActionsSeed({
           })),
       )
 
-      const rows = generateRows(columns, generators, rowCount, connection.type, referenceData)
+      const rows = generateRows({ columns, columnGenerators: generators, count: rowCount, dialect: connection.type, referenceData })
 
       const BATCH_SIZE = 500
       for (let i = 0; i < rows.length; i += BATCH_SIZE) {
@@ -262,57 +355,66 @@ export function HeaderActionsSeed({
                           </Button>
                         )
                       : (
-                          <Combobox
-                            items={getAvailableGeneratorGroups(column, connection.type)}
-                            itemToStringLabel={id => allGenerators[id as GeneratorId]?.label ?? String(id)}
-                            autoHighlight
-                            value={generators[column.id]?.generatorId ?? SKIP_GENERATOR}
-                            onValueChange={(value) => {
-                              if (value && value in allGenerators) {
-                                store.set(state => ({
-                                  ...state,
-                                  generators: {
-                                    ...state.generators,
-                                    [column.id]: {
-                                      generatorId: value as GeneratorId,
-                                      isNullable: state.generators[column.id]?.isNullable ?? false,
+                          <div className="flex w-56 gap-1">
+                            <Combobox
+                              items={getAvailableGeneratorGroups(column, connection.type)}
+                              itemToStringLabel={id => allGenerators[id]?.label ?? id}
+                              autoHighlight
+                              value={generators[column.id]?.generatorId ?? SKIP_GENERATOR}
+                              onValueChange={(value) => {
+                                if (value && value in allGenerators) {
+                                  store.set(state => ({
+                                    ...state,
+                                    generators: {
+                                      ...state.generators,
+                                      [column.id]: {
+                                        ...state.generators[column.id],
+                                        generatorId: value,
+                                        isNullable: state.generators[column.id]?.isNullable ?? false,
+                                        customExpression: value === CUSTOM_GENERATOR
+                                          ? state.generators[column.id]?.customExpression
+                                          : undefined,
+                                      },
                                     },
-                                  },
-                                } satisfies typeof state))
-                              }
-                            }}
-                          >
-                            <ComboboxTrigger
-                              className="w-56 justify-start"
-                              render={<Button variant="outline" size="sm" />}
+                                  } satisfies typeof state))
+                                }
+                              }}
                             >
-                              {allGenerators[generators[column.id]?.generatorId ?? SKIP_GENERATOR]?.label ?? 'Select a generator'}
-                            </ComboboxTrigger>
-                            <ComboboxPopup className="min-w-48">
-                              <div className="border-b p-2">
-                                <ComboboxInput
-                                  placeholder="Search generators..."
-                                  showTrigger={false}
-                                  startAddon={<RiSearchLine />}
-                                />
-                              </div>
-                              <ComboboxEmpty>No generators found.</ComboboxEmpty>
-                              <ComboboxList>
-                                {(group: GeneratorGroup) => (
-                                  <ComboboxGroup key={group.value} items={group.items}>
-                                    <ComboboxGroupLabel>{group.value}</ComboboxGroupLabel>
-                                    <ComboboxCollection>
-                                      {(id: GeneratorId) => (
-                                        <ComboboxItem key={id} value={id}>
-                                          {allGenerators[id]?.label}
-                                        </ComboboxItem>
-                                      )}
-                                    </ComboboxCollection>
-                                  </ComboboxGroup>
-                                )}
-                              </ComboboxList>
-                            </ComboboxPopup>
-                          </Combobox>
+                              <ComboboxTrigger
+                                className="flex-1 justify-start"
+                                render={<Button variant="outline" size="sm" />}
+                              >
+                                {allGenerators[generators[column.id]?.generatorId ?? SKIP_GENERATOR]?.label ?? 'Select a generator'}
+                              </ComboboxTrigger>
+                              <ComboboxPopup className="min-w-48">
+                                <div className="border-b p-2">
+                                  <ComboboxInput
+                                    placeholder="Search generators..."
+                                    showTrigger={false}
+                                    startAddon={<RiSearchLine />}
+                                  />
+                                </div>
+                                <ComboboxEmpty>No generators found.</ComboboxEmpty>
+                                <ComboboxList>
+                                  {(group: GeneratorGroup) => (
+                                    <ComboboxGroup key={group.value} items={group.items}>
+                                      <ComboboxGroupLabel>{group.value}</ComboboxGroupLabel>
+                                      <ComboboxCollection>
+                                        {(id: GeneratorId) => (
+                                          <ComboboxItem key={id} value={id}>
+                                            {allGenerators[id]?.label}
+                                          </ComboboxItem>
+                                        )}
+                                      </ComboboxCollection>
+                                    </ComboboxGroup>
+                                  )}
+                                </ComboboxList>
+                              </ComboboxPopup>
+                            </Combobox>
+                            {generators[column.id]?.generatorId === CUSTOM_GENERATOR && (
+                              <CustomExpressionPopover columnId={column.id} />
+                            )}
+                          </div>
                         )}
                   </div>
                 </div>

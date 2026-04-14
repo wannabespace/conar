@@ -19,6 +19,7 @@
     "@conar/configs": "workspace:*",
     "arktype": "catalog:",
     "drizzle-orm": "catalog:",
+    "memoize": "catalog:",
     "nanoid": "catalog:"
   },
   "devDependencies": {

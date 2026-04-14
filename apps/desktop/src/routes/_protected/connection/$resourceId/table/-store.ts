@@ -30,8 +30,9 @@ export const storeState = type({
   columnSizes: 'Record<string, number>',
   generators: {
     '[string]': {
-      generatorId: 'string' as type.cast<GeneratorId>,
-      isNullable: 'boolean',
+      'generatorId': 'string' as type.cast<GeneratorId>,
+      'isNullable': 'boolean',
+      'customExpression?': 'string',
     },
   },
 })

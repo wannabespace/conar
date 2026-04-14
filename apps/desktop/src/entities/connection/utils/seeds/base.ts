@@ -1,11 +1,5 @@
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import type { Column } from '../components/table/cell'
+import type { GeneratorMap } from '.'
 import { faker } from '@faker-js/faker'
-import { toPgArrayLiteral } from '../transformers/list/postgres'
-
-export const SKIP_GENERATOR = 'skip-generator'
-export const REFERENCE_GENERATOR = 'reference-generator'
-export const ENUM_GENERATOR = 'enum-generator'
 
 function generateRandomJsonValue(depth = 0): unknown {
   const scalarGenerators = [
@@ -48,10 +42,11 @@ function generateRandomJsonObject(depth = 0): Record<string, unknown> {
   return object
 }
 
-export const GENERATORS = {
-  [SKIP_GENERATOR]: { label: 'Generate default', category: 'Special', generate: () => undefined },
-  [REFERENCE_GENERATOR]: { label: 'Random reference value', category: 'Special', generate: () => undefined },
-  [ENUM_GENERATOR]: { label: 'Random enum value', category: 'Special', generate: () => undefined },
+export const BASE_GENERATORS = {
+  'skip-generator': { label: 'Generate default', category: 'Special', generate: () => undefined },
+  'reference-generator': { label: 'Random reference value', category: 'Special', generate: () => undefined },
+  'enum-generator': { label: 'Random enum value', category: 'Special', generate: () => undefined },
+  'custom-generator': { label: 'Custom', category: 'Special', generate: () => undefined },
   'null': { label: 'NULL', category: 'Special', generate: () => null },
 
   'lorem.word': { label: 'Word', category: 'Text', generate: () => faker.lorem.word() },
@@ -179,188 +174,7 @@ export const GENERATORS = {
   'json.array': { label: 'JSON Array', category: 'Other', generate: () => faker.helpers.multiple(() => generateRandomJsonValue(), { count: faker.number.int({ min: 1, max: 5 }) }) },
 } satisfies GeneratorMap
 
-const PG_GENERATORS = {
-  'pg.point': { label: 'Point (x,y)', category: 'Postgres', generate: () => `(${faker.location.longitude()},${faker.location.latitude()})` },
-  'pg.line': { label: 'Line {A,B,C}', category: 'Postgres', generate: () => `{${faker.number.float({ min: -100, max: 100, fractionDigits: 4 })},${faker.number.float({ min: -100, max: 100, fractionDigits: 4 })},${faker.number.float({ min: -100, max: 100, fractionDigits: 4 })}}` },
-  'pg.lseg': { label: 'Line Segment', category: 'Postgres', generate: () => `[(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})]` },
-  'pg.box': { label: 'Box', category: 'Postgres', generate: () => `(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})` },
-  'pg.path': {
-    label: 'Path',
-    category: 'Postgres',
-    generate: () => {
-      const pts = faker.helpers.multiple(() => `(${faker.location.longitude()},${faker.location.latitude()})`, { count: faker.number.int({ min: 2, max: 5 }) })
-      return `[${pts.join(',')}]`
-    },
-  },
-  'pg.polygon': {
-    label: 'Polygon',
-    category: 'Postgres',
-    generate: () => {
-      const pts = faker.helpers.multiple(() => `(${faker.location.longitude()},${faker.location.latitude()})`, { count: faker.number.int({ min: 3, max: 6 }) })
-      return `(${pts.join(',')})`
-    },
-  },
-  'pg.circle': { label: 'Circle', category: 'Postgres', generate: () => `<(${faker.location.longitude()},${faker.location.latitude()}),${faker.number.float({ min: 0.1, max: 100, fractionDigits: 2 })}>` },
-  'pg.interval': { label: 'Interval', category: 'Postgres', generate: () => `${faker.number.int({ min: 0, max: 99 })} ${faker.helpers.arrayElement(['seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'years'])}` },
-  'pg.intrange': {
-    label: 'Int Range',
-    category: 'Postgres',
-    generate: () => {
-      const a = faker.number.int({ min: -10000, max: 10000 })
-      const b = faker.number.int({ min: a + 1, max: a + 10000 })
-      return `[${a},${b})`
-    },
-  },
-  'pg.numrange': {
-    label: 'Numeric Range',
-    category: 'Postgres',
-    generate: () => {
-      const a = faker.number.float({ min: -10000, max: 10000, fractionDigits: 2 })
-      const b = faker.number.float({ min: a + 0.01, max: a + 10000, fractionDigits: 2 })
-      return `[${a},${b})`
-    },
-  },
-  'pg.daterange': {
-    label: 'Date Range',
-    category: 'Postgres',
-    generate: () => {
-      const a = faker.date.past()
-      const b = faker.date.future({ refDate: a })
-      return `[${a.toISOString().slice(0, 10)},${b.toISOString().slice(0, 10)})`
-    },
-  },
-  'pg.tsrange': {
-    label: 'Timestamp Range',
-    category: 'Postgres',
-    generate: () => {
-      const a = faker.date.past()
-      const b = faker.date.future({ refDate: a })
-      return `[${a.toISOString()},${b.toISOString()})`
-    },
-  },
-  'pg.intmultirange': {
-    label: 'Int Multirange',
-    category: 'Postgres',
-    generate: () => {
-      const ranges = faker.helpers.multiple(() => {
-        const a = faker.number.int({ min: -10000, max: 10000 })
-        return `[${a},${faker.number.int({ min: a + 1, max: a + 10000 })})`
-      }, { count: faker.number.int({ min: 1, max: 3 }) })
-      return `{${ranges.join(',')}}`
-    },
-  },
-  'pg.nummultirange': {
-    label: 'Numeric Multirange',
-    category: 'Postgres',
-    generate: () => {
-      const ranges = faker.helpers.multiple(() => {
-        const a = faker.number.float({ min: -10000, max: 10000, fractionDigits: 2 })
-        return `[${a},${faker.number.float({ min: a + 0.01, max: a + 10000, fractionDigits: 2 })})`
-      }, { count: faker.number.int({ min: 1, max: 3 }) })
-      return `{${ranges.join(',')}}`
-    },
-  },
-  'pg.datemultirange': {
-    label: 'Date Multirange',
-    category: 'Postgres',
-    generate: () => {
-      const ranges = faker.helpers.multiple(() => {
-        const a = faker.date.past()
-        const b = faker.date.future({ refDate: a })
-        return `[${a.toISOString().slice(0, 10)},${b.toISOString().slice(0, 10)})`
-      }, { count: faker.number.int({ min: 1, max: 3 }) })
-      return `{${ranges.join(',')}}`
-    },
-  },
-  'pg.tsmultirange': {
-    label: 'Timestamp Multirange',
-    category: 'Postgres',
-    generate: () => {
-      const ranges = faker.helpers.multiple(() => {
-        const a = faker.date.past()
-        const b = faker.date.future({ refDate: a })
-        return `[${a.toISOString()},${b.toISOString()})`
-      }, { count: faker.number.int({ min: 1, max: 3 }) })
-      return `{${ranges.join(',')}}`
-    },
-  },
-} satisfies GeneratorMap
-
-const DIALECT_GENERATORS: Partial<Record<ConnectionType, GeneratorMap>> = {
-  postgres: PG_GENERATORS,
-}
-
-export type GeneratorId = keyof typeof GENERATORS | keyof typeof PG_GENERATORS
-
-export interface GeneratorDef {
-  label: string
-  category: string
-  generate: () => unknown
-}
-
-type GeneratorMap = Record<string, GeneratorDef>
-
-export interface Generator {
-  generatorId: GeneratorId
-  isNullable: boolean
-}
-
-export interface GeneratorGroup {
-  value: string
-  items: GeneratorId[]
-}
-
-export function getGenerators(dialect?: ConnectionType): Record<string, GeneratorDef> {
-  const extra = dialect ? DIALECT_GENERATORS[dialect] : undefined
-  return extra ? { ...GENERATORS, ...extra } : GENERATORS
-}
-
-export function getGeneratorGroups(dialect?: ConnectionType): GeneratorGroup[] {
-  return Object.entries(getGenerators(dialect)).reduce<GeneratorGroup[]>(
-    (groups, [id, gen]) => {
-      const group = groups.find(g => g.value === gen.category)
-      if (group) {
-        group.items.push(id as GeneratorId)
-        return groups
-      }
-      return [...groups, { value: gen.category, items: [id as GeneratorId] }]
-    },
-    [],
-  )
-}
-
-export function autoDetectGenerator(column: Column): GeneratorId {
-  const name = column.id.toLowerCase().replaceAll('_', '')
-  const label = (column.label?.toLowerCase() ?? '').replace('[]', '')
-  const type = (column.type?.toLowerCase() ?? '').replace('[]', '')
-
-  if (column.foreign)
-    return REFERENCE_GENERATOR
-
-  if (column.enumName && column.availableValues && column.availableValues.length > 0)
-    return ENUM_GENERATOR
-
-  if (column.primaryKey) {
-    return SKIP_GENERATOR
-  }
-
-  if (label === 'int4range' || label === 'int8range')
-    return 'pg.intrange'
-  if (label === 'numrange')
-    return 'pg.numrange'
-  if (label === 'daterange')
-    return 'pg.daterange'
-  if (label === 'tsrange' || label === 'tstzrange')
-    return 'pg.tsrange'
-  if (label === 'int4multirange' || label === 'int8multirange')
-    return 'pg.intmultirange'
-  if (label === 'nummultirange')
-    return 'pg.nummultirange'
-  if (label === 'datemultirange')
-    return 'pg.datemultirange'
-  if (label === 'tsmultirange' || label === 'tstzmultirange')
-    return 'pg.tsmultirange'
-
+export function baseAutoDetectGenerator(name: string, type: string): keyof typeof BASE_GENERATORS {
   if (name.includes('email'))
     return 'internet.email'
   if (name === 'firstname')
@@ -456,42 +270,10 @@ export function autoDetectGenerator(column: Column): GeneratorId {
 
   if (type === 'uuid')
     return 'string.uuidV4'
-  if (type === 'bit varying' || type === 'varbit' || type === 'bit')
-    return 'number.binary'
   if (type === 'bool' || type === 'boolean')
     return 'datatype.boolean'
-  if (type === 'bytea')
-    return 'string.hexadecimal'
-  if (type === 'xml' || type === 'tsvector')
-    return 'lorem.sentence'
-  if (type === 'tsquery')
-    return 'lorem.word'
-  if (type === 'inet' || type === 'cidr')
-    return 'internet.ip'
-  if (type === 'inet6')
-    return 'internet.ipv6'
-  if (type === 'macaddr' || type === 'macaddr8')
-    return 'internet.mac'
-  if (type === 'point')
-    return 'pg.point'
-  if (type === 'line')
-    return 'pg.line'
-  if (type === 'lseg')
-    return 'pg.lseg'
-  if (type === 'box')
-    return 'pg.box'
-  if (type === 'path')
-    return 'pg.path'
-  if (type === 'polygon')
-    return 'pg.polygon'
-  if (type === 'circle')
-    return 'pg.circle'
-  if (type === 'interval')
-    return 'pg.interval'
   if (type === 'date')
     return 'date.recent'
-  if (type === 'oid')
-    return 'number.int'
   if (type.includes('int') || type === 'serial' || type === 'bigserial' || type === 'smallserial')
     return 'number.int'
   if (type.includes('float') || type.includes('double') || type.includes('decimal') || type.includes('numeric') || type === 'real' || type === 'money')
@@ -506,94 +288,4 @@ export function autoDetectGenerator(column: Column): GeneratorId {
     return 'lorem.sentence'
 
   return 'lorem.word'
-}
-
-function generateValue(
-  generator: Generator,
-  column: Column,
-  generators: Record<string, GeneratorDef>,
-  dialect?: ConnectionType,
-  referenceValues?: unknown[],
-): unknown {
-  const type = (column.type?.toLowerCase() ?? '').replace('[]', '')
-  const generatorId = generator.generatorId
-  const generatorImpl = generators[generatorId]
-  if (!generatorImpl || generatorId === SKIP_GENERATOR)
-    return undefined
-  if (generatorId === 'null')
-    return null
-
-  if (generator.isNullable && column.isNullable && faker.datatype.boolean())
-    return null
-
-  if (generatorId === REFERENCE_GENERATOR) {
-    if (!referenceValues || referenceValues.length === 0) {
-      throw new Error(
-        `Cannot generate seed data: no reference values available for column "${column.id}".`,
-      )
-    }
-    if (column.isArray) {
-      const count = faker.number.int({ min: 1, max: 5 })
-      return faker.helpers.multiple(() => faker.helpers.arrayElement(referenceValues), { count })
-    }
-    return faker.helpers.arrayElement(referenceValues)
-  }
-
-  if (generatorId === ENUM_GENERATOR) {
-    if (!column.availableValues || column.availableValues.length === 0) {
-      throw new Error(
-        `Cannot generate seed data: no enum values available for column "${column.id}".`,
-      )
-    }
-    if (column.isArray) {
-      const count = faker.number.int({ min: 1, max: Math.min(5, column.availableValues.length) })
-      return faker.helpers.arrayElements(column.availableValues, count)
-    }
-    return faker.helpers.arrayElement(column.availableValues)
-  }
-
-  if (column.isArray) {
-    const count = faker.number.int({ min: 1, max: 5 })
-    const items = faker.helpers.multiple(() => generatorImpl.generate(), { count })
-    if (dialect === 'postgres') {
-      const strings = items.map(v => typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v))
-      if (type === 'box')
-        return toPgArrayLiteral(strings, ';')
-      return toPgArrayLiteral(strings)
-    }
-    return items
-  }
-
-  return generatorImpl.generate()
-}
-
-export function generateRows(
-  columns: Column[],
-  columnGenerators: Record<string, Generator>,
-  count: number,
-  dialect?: ConnectionType,
-  referenceData?: Record<string, unknown[]>,
-) {
-  const generators = getGenerators(dialect)
-  return Array.from({ length: count }, () => {
-    const row: Record<string, unknown> = {}
-    for (const column of columns) {
-      const generator = columnGenerators[column.id]
-      if (!generator || generator.generatorId === SKIP_GENERATOR)
-        continue
-
-      const value = generateValue(
-        generator,
-        column,
-        generators,
-        dialect,
-        referenceData?.[column.id],
-      )
-
-      if (value !== undefined) {
-        row[column.id] = value
-      }
-    }
-    return row
-  })
 }

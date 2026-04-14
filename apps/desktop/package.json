@@ -32,6 +32,7 @@
     "@tanstack/react-hotkeys": "catalog:",
     "@todesktop/runtime": "catalog:",
     "electron-store": "catalog:",
+    "memoize": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
     "pg": "catalog:"
