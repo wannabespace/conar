@@ -1,6 +1,11 @@
-export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+export function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 
-export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F, waitFor: number) {
+export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
+  func: F,
+  waitFor: number,
+) {
   let timeout: ReturnType<typeof setTimeout>
 
   const debounced = (...args: Parameters<F>) => {
@@ -44,18 +49,12 @@ export type MaybePromise<T> = T | Promise<T>
 
 export type MaybeArray<T> = T | T[]
 
+// eslint-disable-next-line ts/no-explicit-any
+export type AnyFunction = (...args: any[]) => any
+
 export function tryCatch<T>(fn: () => T): { data: T, error: null } | { data: null, error: unknown } {
   try {
     return { data: fn(), error: null }
-  }
-  catch (error) {
-    return { data: null, error }
-  }
-}
-
-export async function tryCatchAsync<T>(fn: () => Promise<T>): Promise<{ data: T, error: null } | { data: null, error: unknown }> {
-  try {
-    return { data: await fn(), error: null }
   }
   catch (error) {
     return { data: null, error }
@@ -80,26 +79,4 @@ export function tryParseToJsonArray(editedValue: string): string[] {
   if (Array.isArray(parsed))
     return parsed.map(String)
   return [editedValue]
-}
-
-export function memoize<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F): F {
-  const cache = new Map<unknown, ReturnType<F>>()
-
-  return ((...args: Parameters<F>) => {
-    const key = (args as unknown[])[0]
-
-    if (cache.has(key)) {
-      return cache.get(key)!
-    }
-    const result = func(...args)
-    cache.set(key, result)
-
-    if (result instanceof Promise) {
-      result.catch(() => {
-        cache.delete(key)
-      })
-    }
-
-    return result
-  }) as F
 }

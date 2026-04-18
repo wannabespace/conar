@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module'
 import { parseConnectionString } from '@conar/connection'
 import { parseSSLConfig } from '@conar/connection/ssl/mssql'
-import { memoize } from '@conar/shared/utils/helpers'
+import { memoize } from '@conar/memoize'
 
 const mssql = createRequire(import.meta.url)('mssql') as typeof import('mssql')
 

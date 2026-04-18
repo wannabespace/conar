@@ -1,0 +1,27 @@
+{
+  "name": "@conar/memoize",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "prepublishOnly": "tsdown",
+    "check-types": "tsc",
+    "test": "bun test",
+    "build": "tsdown",
+    "dev": "tsdown --watch"
+  },
+  "dependencies": {
+    "fast-equals": "catalog:"
+  },
+  "devDependencies": {
+    "@conar/configs": "workspace:*",
+    "@types/bun": "catalog:",
+    "tsdown": "catalog:",
+    "type-fest": "catalog:",
+    "typescript": "catalog:"
+  }
+}

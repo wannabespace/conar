@@ -1,53 +1,53 @@
 import type { GeneratorId } from '..'
 
-export function pgAutoDetect(label: string, type: string): GeneratorId | undefined {
+export function pgAutoDetect(label: string): GeneratorId | undefined {
   if (label === 'int4range' || label === 'int8range')
-    return 'pg.intrange'
+    return 'postgres.intrange'
   if (label === 'numrange')
-    return 'pg.numrange'
+    return 'postgres.numrange'
   if (label === 'daterange')
-    return 'pg.daterange'
+    return 'postgres.daterange'
   if (label === 'tsrange' || label === 'tstzrange')
-    return 'pg.tsrange'
+    return 'postgres.tsrange'
   if (label === 'int4multirange' || label === 'int8multirange')
-    return 'pg.intmultirange'
+    return 'postgres.intmultirange'
   if (label === 'nummultirange')
-    return 'pg.nummultirange'
+    return 'postgres.nummultirange'
   if (label === 'datemultirange')
-    return 'pg.datemultirange'
+    return 'postgres.datemultirange'
   if (label === 'tsmultirange' || label === 'tstzmultirange')
-    return 'pg.tsmultirange'
+    return 'postgres.tsmultirange'
 
-  if (type === 'bit varying' || type === 'varbit' || type === 'bit' || label === 'varbit' || label === 'bit')
+  if (label === 'varbit' || label === 'bit')
     return 'number.binary'
-  if (type === 'bytea' || label === 'bytea')
+  if (label === 'bytea')
     return 'string.hexadecimal'
-  if (type === 'xml' || type === 'tsvector' || label === 'xml' || label === 'tsvector')
+  if (label === 'xml' || label === 'tsvector')
     return 'lorem.sentence'
-  if (type === 'tsquery' || label === 'tsquery')
+  if (label === 'tsquery')
     return 'lorem.word'
-  if (type === 'inet' || type === 'cidr' || label === 'inet' || label === 'cidr')
+  if (label === 'inet' || label === 'cidr')
     return 'internet.ip'
-  if (type === 'inet6' || label === 'inet6')
+  if (label === 'inet6')
     return 'internet.ipv6'
-  if (type === 'macaddr' || type === 'macaddr8' || label === 'macaddr' || label === 'macaddr8')
+  if (label === 'macaddr' || label === 'macaddr8')
     return 'internet.mac'
-  if (type === 'point' || label === 'point')
-    return 'pg.point'
-  if (type === 'line' || label === 'line')
-    return 'pg.line'
-  if (type === 'lseg' || label === 'lseg')
-    return 'pg.lseg'
-  if (type === 'box' || label === 'box')
-    return 'pg.box'
-  if (type === 'path' || label === 'path')
-    return 'pg.path'
-  if (type === 'polygon' || label === 'polygon')
-    return 'pg.polygon'
-  if (type === 'circle' || label === 'circle')
-    return 'pg.circle'
-  if (type === 'interval' || label === 'interval')
-    return 'pg.interval'
-  if (type === 'oid' || label === 'oid')
+  if (label === 'point')
+    return 'postgres.point'
+  if (label === 'line')
+    return 'postgres.line'
+  if (label === 'lseg')
+    return 'postgres.lseg'
+  if (label === 'box')
+    return 'postgres.box'
+  if (label === 'path')
+    return 'postgres.path'
+  if (label === 'polygon')
+    return 'postgres.polygon'
+  if (label === 'circle')
+    return 'postgres.circle'
+  if (label === 'interval')
+    return 'postgres.interval'
+  if (label === 'oid')
     return 'number.int'
 }

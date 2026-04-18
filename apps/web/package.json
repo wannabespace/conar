@@ -9,6 +9,7 @@
     "check-types": "tsc"
   },
   "dependencies": {
+    "@conar/memoize": "workspace:*",
     "@number-flow/react": "catalog:",
     "@orpc/client": "catalog:",
     "@orpc/tanstack-query": "catalog:",

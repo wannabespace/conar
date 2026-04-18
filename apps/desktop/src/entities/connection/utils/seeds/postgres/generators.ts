@@ -1,12 +1,13 @@
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { GeneratorMap } from '..'
 import { faker } from '@faker-js/faker'
 
 export const PG_GENERATORS = {
-  'pg.point': { label: 'Point (x,y)', category: 'Postgres', generate: () => `(${faker.location.longitude()},${faker.location.latitude()})` },
-  'pg.line': { label: 'Line {A,B,C}', category: 'Postgres', generate: () => `{${faker.number.float({ min: -100, max: 100, fractionDigits: 4 })},${faker.number.float({ min: -100, max: 100, fractionDigits: 4 })},${faker.number.float({ min: -100, max: 100, fractionDigits: 4 })}}` },
-  'pg.lseg': { label: 'Line Segment', category: 'Postgres', generate: () => `[(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})]` },
-  'pg.box': { label: 'Box', category: 'Postgres', generate: () => `(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})` },
-  'pg.path': {
+  'postgres.point': { label: 'Point (x,y)', category: 'Postgres', generate: () => `(${faker.location.longitude()},${faker.location.latitude()})` },
+  'postgres.line': { label: 'Line {A,B,C}', category: 'Postgres', generate: () => `{${faker.number.float({ min: -100, max: 100, fractionDigits: 4 })},${faker.number.float({ min: -100, max: 100, fractionDigits: 4 })},${faker.number.float({ min: -100, max: 100, fractionDigits: 4 })}}` },
+  'postgres.lseg': { label: 'Line Segment', category: 'Postgres', generate: () => `[(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})]` },
+  'postgres.box': { label: 'Box', category: 'Postgres', generate: () => `(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})` },
+  'postgres.path': {
     label: 'Path',
     category: 'Postgres',
     generate: () => {
@@ -14,7 +15,7 @@ export const PG_GENERATORS = {
       return `[${pts.join(',')}]`
     },
   },
-  'pg.polygon': {
+  'postgres.polygon': {
     label: 'Polygon',
     category: 'Postgres',
     generate: () => {
@@ -22,9 +23,9 @@ export const PG_GENERATORS = {
       return `(${pts.join(',')})`
     },
   },
-  'pg.circle': { label: 'Circle', category: 'Postgres', generate: () => `<(${faker.location.longitude()},${faker.location.latitude()}),${faker.number.float({ min: 0.1, max: 100, fractionDigits: 2 })}>` },
-  'pg.interval': { label: 'Interval', category: 'Postgres', generate: () => `${faker.number.int({ min: 0, max: 99 })} ${faker.helpers.arrayElement(['seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'years'])}` },
-  'pg.intrange': {
+  'postgres.circle': { label: 'Circle', category: 'Postgres', generate: () => `<(${faker.location.longitude()},${faker.location.latitude()}),${faker.number.float({ min: 0.1, max: 100, fractionDigits: 2 })}>` },
+  'postgres.interval': { label: 'Interval', category: 'Postgres', generate: () => `${faker.number.int({ min: 0, max: 99 })} ${faker.helpers.arrayElement(['seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'years'])}` },
+  'postgres.intrange': {
     label: 'Int Range',
     category: 'Postgres',
     generate: () => {
@@ -33,7 +34,7 @@ export const PG_GENERATORS = {
       return `[${a},${b})`
     },
   },
-  'pg.numrange': {
+  'postgres.numrange': {
     label: 'Numeric Range',
     category: 'Postgres',
     generate: () => {
@@ -42,7 +43,7 @@ export const PG_GENERATORS = {
       return `[${a},${b})`
     },
   },
-  'pg.daterange': {
+  'postgres.daterange': {
     label: 'Date Range',
     category: 'Postgres',
     generate: () => {
@@ -51,7 +52,7 @@ export const PG_GENERATORS = {
       return `[${a.toISOString().slice(0, 10)},${b.toISOString().slice(0, 10)})`
     },
   },
-  'pg.tsrange': {
+  'postgres.tsrange': {
     label: 'Timestamp Range',
     category: 'Postgres',
     generate: () => {
@@ -60,7 +61,7 @@ export const PG_GENERATORS = {
       return `[${a.toISOString()},${b.toISOString()})`
     },
   },
-  'pg.intmultirange': {
+  'postgres.intmultirange': {
     label: 'Int Multirange',
     category: 'Postgres',
     generate: () => {
@@ -71,7 +72,7 @@ export const PG_GENERATORS = {
       return `{${ranges.join(',')}}`
     },
   },
-  'pg.nummultirange': {
+  'postgres.nummultirange': {
     label: 'Numeric Multirange',
     category: 'Postgres',
     generate: () => {
@@ -82,7 +83,7 @@ export const PG_GENERATORS = {
       return `{${ranges.join(',')}}`
     },
   },
-  'pg.datemultirange': {
+  'postgres.datemultirange': {
     label: 'Date Multirange',
     category: 'Postgres',
     generate: () => {
@@ -94,7 +95,7 @@ export const PG_GENERATORS = {
       return `{${ranges.join(',')}}`
     },
   },
-  'pg.tsmultirange': {
+  'postgres.tsmultirange': {
     label: 'Timestamp Multirange',
     category: 'Postgres',
     generate: () => {
@@ -106,4 +107,4 @@ export const PG_GENERATORS = {
       return `{${ranges.join(',')}}`
     },
   },
-} satisfies GeneratorMap
+} satisfies GeneratorMap<ConnectionType.Postgres>

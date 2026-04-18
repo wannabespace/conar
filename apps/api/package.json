@@ -19,6 +19,7 @@
     "@ai-sdk/xai": "catalog:",
     "@better-auth/drizzle-adapter": "catalog:",
     "@conar/connection": "workspace:*",
+    "@conar/memoize": "workspace:*",
     "@conar/shared": "workspace:*",
     "@exalabs/ai-sdk": "catalog:",
     "@hackylabs/deep-redact": "catalog:",

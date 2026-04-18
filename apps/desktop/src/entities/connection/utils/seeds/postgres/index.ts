@@ -5,7 +5,8 @@ import { PG_GENERATORS } from './generators'
 
 function pgTransformArray(items: unknown[], type: string): unknown {
   const strings = items.map(v => typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v))
-  if (type === 'box')
+  const baseType = type.replace('[]', '')
+  if (baseType === 'box')
     return toPgArrayLiteral(strings, ';')
   return toPgArrayLiteral(strings)
 }
