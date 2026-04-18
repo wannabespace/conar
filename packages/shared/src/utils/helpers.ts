@@ -52,12 +52,12 @@ export type MaybeArray<T> = T | T[]
 // eslint-disable-next-line ts/no-explicit-any
 export type AnyFunction = (...args: any[]) => any
 
-export function tryCatch<T>(fn: () => T): { data: T, error: null } | { data: null, error: unknown } {
+export function tryCatch<T>(fn: () => T): { data: T, error: null } | { data: null, error: Error } {
   try {
     return { data: fn(), error: null }
   }
   catch (error) {
-    return { data: null, error }
+    return { data: null, error: error instanceof Error ? error : new Error(String(error)) }
   }
 }
 

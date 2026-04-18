@@ -5,9 +5,13 @@
     ".": {
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
+    },
+    "./ts": {
+      "import": "./src/index.ts"
     }
   },
   "scripts": {
+    "postinstall": "tsdown",
     "prepublishOnly": "tsdown",
     "check-types": "tsc",
     "test": "bun test",
@@ -15,13 +19,11 @@
     "dev": "tsdown --watch"
   },
   "dependencies": {
-    "fast-equals": "catalog:"
+    "devalue": "catalog:"
   },
   "devDependencies": {
     "@conar/configs": "workspace:*",
-    "@types/bun": "catalog:",
     "tsdown": "catalog:",
-    "type-fest": "catalog:",
     "typescript": "catalog:"
   }
 }

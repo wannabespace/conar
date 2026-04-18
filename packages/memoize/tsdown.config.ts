@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsdown'
 
-export default defineConfig({
+export default defineConfig(({ watch }) => ({
   entry: ['./src/index.ts'],
   dts: true,
-  attw: true,
-})
+  clean: !watch,
+}))
