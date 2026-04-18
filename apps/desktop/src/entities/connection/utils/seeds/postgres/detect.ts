@@ -17,7 +17,6 @@ export function pgAutoDetect(label: string): GeneratorId | undefined {
     return 'postgres.datemultirange'
   if (label === 'tsmultirange' || label === 'tstzmultirange')
     return 'postgres.tsmultirange'
-
   if (label === 'varbit' || label === 'bit')
     return 'number.binary'
   if (label === 'bytea')

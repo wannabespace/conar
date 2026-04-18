@@ -5,21 +5,16 @@ export function mysqlAutoDetect(label: string): GeneratorId | undefined {
     return 'mysql.date'
   if (label === 'datetime' || label === 'timestamp')
     return 'mysql.datetime'
-
   if (label === 'tinyint')
     return 'datatype.boolean'
-
   if (label === 'year')
     return 'mysql.year'
-
   if (label === 'bit')
     return 'mysql.bit'
-
   if (label === 'binary' || label === 'varbinary')
     return 'mysql.binary'
   if (label === 'tinyblob' || label === 'blob' || label === 'mediumblob' || label === 'longblob')
     return 'mysql.binary'
-
   if (label === 'geometry')
     return 'mysql.point'
   if (label === 'point')
