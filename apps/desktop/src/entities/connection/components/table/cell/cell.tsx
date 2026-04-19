@@ -67,7 +67,7 @@ function ForeignButton(props: ComponentProps<'button'>) {
       size="icon-xs"
       {...props}
     >
-      <RiArrowRightUpLine className="text-muted-foreground size-3" />
+      <RiArrowRightUpLine className="size-3 text-muted-foreground" />
     </Button>
   )
 }
@@ -80,8 +80,8 @@ function ReferenceButton({ children, className, ...props }: ComponentProps<typeo
       className={cn('px-1.5!', className)}
       {...props}
     >
-      <RiArrowLeftDownLine className="text-muted-foreground size-3" />
-      <span className="text-muted-foreground text-xs">
+      <RiArrowLeftDownLine className="size-3 text-muted-foreground" />
+      <span className="text-xs text-muted-foreground">
         {children}
       </span>
     </Button>
@@ -126,7 +126,7 @@ export function TableCell({
     (isForeignOpen || isReferencesOpen) && 'bg-accent/30 ring-accent/60',
     status === 'error' && 'bg-destructive/20 ring-destructive/50',
     status === 'success' && 'bg-success/10 ring-success/50',
-    status === 'pending' && 'bg-primary/10 animate-pulse',
+    status === 'pending' && 'animate-pulse bg-primary/10',
     (column.foreign || (column.references?.length ?? 0) > 0) && 'pr-1!',
   )
 

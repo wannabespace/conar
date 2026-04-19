@@ -19,7 +19,6 @@
     "@conar/configs": "workspace:*",
     "arktype": "catalog:",
     "drizzle-orm": "catalog:",
-    "fast-equals": "catalog:",
     "nanoid": "catalog:"
   }
 }

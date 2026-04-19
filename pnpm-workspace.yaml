@@ -108,7 +108,6 @@ catalog:
   eslint-plugin-react-hooks: ^7.0.1
   eslint-plugin-react-refresh: ^0.5.2
   facehash: ^0.1.0
-  fast-equals: ^6.0.0
   hono: ^4.12.9
   hookable: ^6.1.0
   husky: ^9.1.7

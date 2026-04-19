@@ -72,8 +72,8 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
     >
       <div className="relative size-full">
         <div className={`
-          bg-background text-muted-foreground flex h-8 items-center
-          justify-between px-4 text-xs
+          flex h-8 items-center justify-between bg-background px-4 text-xs
+          text-muted-foreground
         `}
         >
           <div>
@@ -108,7 +108,7 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
           </Button>
         </div>
         <Table className={`
-          bg-background h-[calc(100%-(--spacing(8)))] rounded-b-lg
+          h-[calc(100%-(--spacing(8)))] rounded-b-lg bg-background
         `}
         >
           <TableHeader />
