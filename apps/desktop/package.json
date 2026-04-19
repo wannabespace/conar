@@ -46,6 +46,7 @@
     "@conar/table": "workspace:*",
     "@conar/ui": "workspace:*",
     "@dagrejs/dagre": "catalog:",
+    "@date-fns/tz": "catalog:",
     "@electric-sql/pglite": "catalog:",
     "@faker-js/faker": "catalog:",
     "@fluentui/react-context-selector": "catalog:",

@@ -1,5 +1,6 @@
 import type { Column } from '../../components'
 import type { ValueTransformer } from '../create-transformer'
+import { getDisplayValue } from '../create-transformer'
 import { parseToArray } from './shared'
 
 const PG_ARRAY_LITERAL_RE = /^\{.*\}$/
@@ -45,6 +46,7 @@ export function toPgArrayLiteral(items: string[], separator = ','): string {
 export function createPostgresListTransformer(column: Column): ValueTransformer<string[]> {
   const isEnum = !!column.enumName && !!column.availableValues
   return {
+    toDisplay: getDisplayValue,
     fromConnection: value => ({
       toUI: () => {
         if (isEnum && typeof value === 'string')

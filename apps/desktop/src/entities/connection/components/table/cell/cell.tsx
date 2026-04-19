@@ -12,7 +12,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiArrowLeftDownLine, RiArrowRightUpLine } from '@remixicon/react'
 import { format, isValid } from 'date-fns'
 import { useState } from 'react'
-import { getDisplayValue } from '~/entities/connection/utils/helpers'
+import { createTransformer } from '~/entities/connection/transformers'
 import { TableCellContent } from './cell-content'
 import { useCellContext } from './cell-context'
 import { TableCellContextMenu } from './cell-menu'
@@ -110,7 +110,8 @@ export function TableCell({
   onRenameColumn?: () => void
   connectionType: ConnectionType
 } & TableCellProps) {
-  const displayValue = getDisplayValue(value, size)
+  const transformer = createTransformer(connectionType, column)
+  const displayValue = transformer.toDisplay(value, size)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isForeignOpen, setIsForeignOpen] = useState(false)
   const [isReferencesOpen, setIsReferencesOpen] = useState(false)
@@ -154,7 +155,7 @@ export function TableCell({
   }
 
   const date = (column.uiType === 'date' || column.uiType === 'datetime' || column.type?.includes('timestamp'))
-    && (typeof value === 'string' || typeof value === 'number')
+    && (value instanceof Date || typeof value === 'string' || typeof value === 'number')
     && isValid(new Date(value))
     ? new Date(value)
     : null
@@ -163,6 +164,7 @@ export function TableCell({
     <TableCellProvider
       column={column}
       rowIndex={rowIndex}
+      transformer={transformer}
       value={value}
       status={status}
       setStatus={setStatus}
@@ -171,7 +173,6 @@ export function TableCell({
       onSort={onSort}
       sortOrder={sortOrder}
       onRenameColumn={onRenameColumn}
-      connectionType={connectionType}
     >
       <SetNullAlertDialog
         open={isSetNullDialogOpen}

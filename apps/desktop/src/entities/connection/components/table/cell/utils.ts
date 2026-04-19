@@ -3,7 +3,7 @@ import { DEFAULT_COLUMN_WIDTH } from '@conar/table/constants'
 
 export interface Column {
   id: string
-  uiType: 'select' | 'list' | 'boolean' | 'date' | 'datetime' | 'raw'
+  uiType: 'select' | 'list' | 'boolean' | 'date' | 'time' | 'datetime' | 'raw'
   type?: string
   label?: string
   enumName?: string
@@ -16,6 +16,7 @@ export interface Column {
   scale?: number | null
   unique?: string
   primaryKey?: string
+  isIdentity?: boolean
   defaultValue?: string | null
   foreign?: {
     name: string
@@ -75,11 +76,14 @@ export function getColumnUiType(column: typeof columnType.infer): Column['uiType
   if (column.type === 'boolean')
     return 'boolean'
 
-  // if (column.type.toLowerCase().includes('datetime') || column.type.toLowerCase().includes('timestamp'))
-  //   return 'datetime'
+  if (column.type.toLowerCase().includes('datetime') || column.type.toLowerCase().includes('timestamp'))
+    return 'datetime'
 
-  // if (column.type.toLowerCase().includes('date'))
-  //   return 'date'
+  if (column.type.toLowerCase().includes('date'))
+    return 'date'
+
+  if (column.type.toLowerCase().includes('time'))
+    return 'time'
 
   return 'raw'
 }

@@ -1,4 +1,5 @@
 import type { ValueTransformer } from '../create-transformer'
+import { getDisplayValue } from '../create-transformer'
 import { parseToArray } from './shared'
 
 function parseMysqlSet(value: string): string[] | undefined {
@@ -8,6 +9,7 @@ function parseMysqlSet(value: string): string[] | undefined {
 
 export function createMysqlListTransformer(): ValueTransformer<string[]> {
   return {
+    toDisplay: getDisplayValue,
     fromConnection: value => ({
       toUI: () =>
         Array.isArray(value)

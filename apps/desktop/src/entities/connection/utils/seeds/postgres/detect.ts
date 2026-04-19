@@ -1,52 +1,40 @@
 import type { GeneratorId } from '..'
 
+const TYPE_TO_GENERATOR: Record<string, GeneratorId> = {
+  int4range: 'postgres.intrange',
+  int8range: 'postgres.intrange',
+  numrange: 'postgres.numrange',
+  daterange: 'postgres.daterange',
+  tsrange: 'postgres.tsrange',
+  tstzrange: 'postgres.tsrange',
+  int4multirange: 'postgres.intmultirange',
+  int8multirange: 'postgres.intmultirange',
+  nummultirange: 'postgres.nummultirange',
+  datemultirange: 'postgres.datemultirange',
+  tsmultirange: 'postgres.tsmultirange',
+  tstzmultirange: 'postgres.tsmultirange',
+  bit: 'number.binary',
+  varbit: 'number.binary',
+  bytea: 'string.hexadecimal',
+  xml: 'lorem.sentence',
+  tsvector: 'lorem.sentence',
+  tsquery: 'lorem.word',
+  inet: 'internet.ip',
+  cidr: 'internet.ip',
+  inet6: 'internet.ipv6',
+  macaddr: 'internet.mac',
+  macaddr8: 'internet.mac',
+  point: 'postgres.point',
+  line: 'postgres.line',
+  lseg: 'postgres.lseg',
+  box: 'postgres.box',
+  path: 'postgres.path',
+  polygon: 'postgres.polygon',
+  circle: 'postgres.circle',
+  interval: 'postgres.interval',
+  oid: 'number.int',
+}
+
 export function pgAutoDetect(label: string): GeneratorId | undefined {
-  if (label === 'int4range' || label === 'int8range')
-    return 'postgres.intrange'
-  if (label === 'numrange')
-    return 'postgres.numrange'
-  if (label === 'daterange')
-    return 'postgres.daterange'
-  if (label === 'tsrange' || label === 'tstzrange')
-    return 'postgres.tsrange'
-  if (label === 'int4multirange' || label === 'int8multirange')
-    return 'postgres.intmultirange'
-  if (label === 'nummultirange')
-    return 'postgres.nummultirange'
-  if (label === 'datemultirange')
-    return 'postgres.datemultirange'
-  if (label === 'tsmultirange' || label === 'tstzmultirange')
-    return 'postgres.tsmultirange'
-  if (label === 'varbit' || label === 'bit')
-    return 'number.binary'
-  if (label === 'bytea')
-    return 'string.hexadecimal'
-  if (label === 'xml' || label === 'tsvector')
-    return 'lorem.sentence'
-  if (label === 'tsquery')
-    return 'lorem.word'
-  if (label === 'inet' || label === 'cidr')
-    return 'internet.ip'
-  if (label === 'inet6')
-    return 'internet.ipv6'
-  if (label === 'macaddr' || label === 'macaddr8')
-    return 'internet.mac'
-  if (label === 'point')
-    return 'postgres.point'
-  if (label === 'line')
-    return 'postgres.line'
-  if (label === 'lseg')
-    return 'postgres.lseg'
-  if (label === 'box')
-    return 'postgres.box'
-  if (label === 'path')
-    return 'postgres.path'
-  if (label === 'polygon')
-    return 'postgres.polygon'
-  if (label === 'circle')
-    return 'postgres.circle'
-  if (label === 'interval')
-    return 'postgres.interval'
-  if (label === 'oid')
-    return 'number.int'
+  return TYPE_TO_GENERATOR[label]
 }

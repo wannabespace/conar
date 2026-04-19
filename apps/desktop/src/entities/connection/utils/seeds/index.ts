@@ -3,6 +3,8 @@ import type { Column } from '../../components/table/cell'
 import { faker } from '@faker-js/faker'
 import { sql } from 'kysely'
 import { BASE_GENERATORS, baseAutoDetectGenerator } from './base'
+import { mssqlSeedConfig } from './mssql'
+import { MSSQL_GENERATORS } from './mssql/generators'
 import { mysqlSeedConfig } from './mysql'
 import { MYSQL_GENERATORS } from './mysql/generators'
 import { pgSeedConfig } from './postgres'
@@ -35,6 +37,7 @@ export interface GeneratorGroup {
 export interface DialectSeedConfig {
   generators: GeneratorMap
   autoDetect: (label: string) => GeneratorId | undefined
+  shouldSkip?: (column: Column) => boolean
   transformArray?: (items: unknown[], type: string) => unknown
   transformValue?: (value: unknown, column: Column) => unknown
 }
@@ -43,6 +46,7 @@ export const GENERATORS = {
   ...BASE_GENERATORS,
   ...PG_GENERATORS,
   ...MYSQL_GENERATORS,
+  ...MSSQL_GENERATORS,
 } satisfies GeneratorMap
 
 export type GeneratorId<D extends ConnectionType | '' = ''> = D extends ''
@@ -52,6 +56,7 @@ export type GeneratorId<D extends ConnectionType | '' = ''> = D extends ''
 const DIALECT_CONFIGS: Partial<Record<ConnectionType, DialectSeedConfig>> = {
   postgres: pgSeedConfig,
   mysql: mysqlSeedConfig,
+  mssql: mssqlSeedConfig,
 }
 
 export function getGenerators(dialect: ConnectionType): Partial<Record<GeneratorId, GeneratorDef>> {
@@ -84,15 +89,17 @@ export function autoDetectGenerator(column: Column, dialect: ConnectionType): Ge
   if (column.enumName && column.availableValues && column.availableValues.length > 0)
     return ENUM_GENERATOR
 
+  const config = DIALECT_CONFIGS[dialect]
+
+  if (config?.shouldSkip?.(column))
+    return SKIP_GENERATOR
+
   if (column.defaultValue)
     return SKIP_GENERATOR
 
-  const config = DIALECT_CONFIGS[dialect]
-  if (config) {
-    const dialectResult = config.autoDetect(label)
-    if (dialectResult)
-      return dialectResult
-  }
+  const dialectResult = config?.autoDetect(label)
+  if (dialectResult)
+    return dialectResult
 
   return baseAutoDetectGenerator(name, type)
 }
@@ -105,8 +112,10 @@ function generateValue({ generator, column, generators, referenceValues }: {
 }): unknown {
   const generatorId = generator.generatorId
   const generatorImpl = generators[generatorId]
+
   if (!generatorImpl || generatorId === SKIP_GENERATOR)
     return undefined
+
   if (generatorId === 'null')
     return null
 
@@ -123,10 +132,12 @@ function generateValue({ generator, column, generators, referenceValues }: {
         `Cannot generate seed data: no reference values available for column "${column.id}".`,
       )
     }
+
     if (column.isArray) {
       const count = faker.number.int({ min: 1, max: 5 })
       return faker.helpers.multiple(() => faker.helpers.arrayElement(referenceValues), { count })
     }
+
     return faker.helpers.arrayElement(referenceValues)
   }
 
@@ -136,10 +147,12 @@ function generateValue({ generator, column, generators, referenceValues }: {
         `Cannot generate seed data: no enum values available for column "${column.id}".`,
       )
     }
+
     if (column.isArray) {
       const count = faker.number.int({ min: 1, max: Math.min(5, column.availableValues.length) })
       return faker.helpers.arrayElements(column.availableValues, count)
     }
+
     return faker.helpers.arrayElement(column.availableValues)
   }
 
@@ -159,6 +172,9 @@ export function generateRows({ columns, columnGenerators, count, dialect, refere
   referenceData?: Record<string, unknown[]>
 }) {
   const generators = getGenerators(dialect)
+
+  const config = DIALECT_CONFIGS[dialect]
+
   return Array.from({ length: count }, () => {
     const row: Record<string, unknown> = {}
 
@@ -174,19 +190,21 @@ export function generateRows({ columns, columnGenerators, count, dialect, refere
         referenceValues: referenceData?.[column.id],
       })
 
-      if (value !== undefined) {
-        const config = DIALECT_CONFIGS[dialect]
-        if (column.isArray && Array.isArray(value)) {
-          if (config?.transformArray)
-            value = config.transformArray(value, column.type?.toLowerCase() ?? '')
-        }
-        if (config?.transformValue)
-          value = config.transformValue(value, column)
-        if (typeof value === 'string' && column.maxLength && value.length > column.maxLength)
-          value = value.slice(0, column.maxLength)
-        row[column.id] = value
-      }
+      if (value === undefined)
+        continue
+
+      if (column.isArray && Array.isArray(value) && config?.transformArray)
+        value = config.transformArray(value, column.type?.toLowerCase() ?? '')
+
+      if (config?.transformValue)
+        value = config.transformValue(value, column)
+
+      if (typeof value === 'string' && column.maxLength && column.maxLength > 0 && value.length > column.maxLength)
+        value = value.slice(0, column.maxLength)
+
+      row[column.id] = value
     }
+
     return row
   })
 }

@@ -2,6 +2,7 @@ import type { connectionsResources } from '~/drizzle/schema'
 import { memoize } from '@conar/memoize'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { sql } from 'kysely'
 import { connectionResourceToQueryParams, createQuery } from '../query'
 
 export const columnType = type({
@@ -18,11 +19,13 @@ export const columnType = type({
   'maxLength?': 'number | null',
   'precision?': 'number | null',
   'scale?': 'number | null',
+  'isIdentity?': 'boolean | number',
 })
-  .pipe(({ editable, nullable, ...data }) => ({
+  .pipe(({ editable, nullable, isIdentity, ...data }) => ({
     ...data,
     isEditable: Boolean(editable ?? true),
     isNullable: Boolean(nullable),
+    isIdentity: Boolean(isIdentity),
   }))
 
 const clickhouseEnumRegex = /^Enum\d+/
@@ -166,6 +169,13 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
             'NUMERIC_PRECISION as precision',
             'NUMERIC_SCALE as scale',
             'DATA_TYPE as type',
+            sql<boolean>`
+              COLUMNPROPERTY(
+                OBJECT_ID(TABLE_SCHEMA + '.' + TABLE_NAME),
+                COLUMN_NAME,
+                'IsIdentity'
+              )
+            `.as('isIdentity'),
             eb
               .case('IS_NULLABLE')
               .when('YES')
