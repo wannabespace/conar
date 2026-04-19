@@ -26,8 +26,13 @@ function formatTime(value: Date) {
 export function createTimeTransformer(column: Column): ValueTransformer<string> {
   return {
     toDisplay: (value, size) => {
-      if (value instanceof Date)
+      if (value instanceof Date && isValid(value)) {
         return formatTime(value)
+      }
+
+      if ((typeof value === 'string' || typeof value === 'number') && isValid(new Date(value))) {
+        return formatTime(new Date(value))
+      }
 
       return getDisplayValue(value, size)
     },
