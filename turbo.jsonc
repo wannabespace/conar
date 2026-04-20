@@ -31,7 +31,7 @@
     "drizzle:generate": {
       "cache": false
     },
-    "test:unit": {
+    "test": {
       "cache": false
     },
     "test:e2e": {

@@ -82,7 +82,7 @@ Conar is an AI-powered open-source project that simplifies database interactions
 
 - **Unit Tests**
   ```bash
-  pnpm run test:unit
+  pnpm run test
   ```
 
 > Before running E2E tests, make sure to start the test server: `pnpm run test:start` and db `postgresql://postgres:postgres@localhost:5432/conar`

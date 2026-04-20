@@ -10,7 +10,7 @@
     "./server": "./src/server.ts"
   },
   "scripts": {
-    "test:unit": "bun test",
+    "test": "bun test",
     "check-types": "tsc"
   },
   "dependencies": {

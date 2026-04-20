@@ -13,7 +13,7 @@
   },
   "scripts": {
     "check-types": "tsc",
-    "test:unit": "bun test"
+    "test": "bun test"
   },
   "dependencies": {
     "@conar/configs": "workspace:*",
