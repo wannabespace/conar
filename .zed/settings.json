@@ -2,68 +2,87 @@
   "lsp": {
     "eslint": {
       "settings": {
-        "workingDirectories": ["./"],
-      },
-    },
+        "workingDirectories": ["./"]
+      }
+    }
   },
   "languages": {
     "HTML": {
       "formatter": [],
+      "language_servers": ["eslint"],
       "code_actions_on_format": {
-        "source.fixAll.eslint": true,
-      },
+        "source.fixAll.eslint": true
+      }
     },
     "SQL": {
       "formatter": [],
+      "language_servers": ["eslint"],
       "code_actions_on_format": {
-        "source.fixAll.eslint": true,
-      },
+        "source.fixAll.eslint": true
+      }
     },
     "JavaScript": {
       "formatter": [],
+      "language_servers": ["eslint"],
       "code_actions_on_format": {
-        "source.fixAll.eslint": true,
-      },
+        "source.fixAll.eslint": true
+      }
     },
     "TypeScript": {
       "formatter": [],
+      "language_servers": ["eslint"],
       "code_actions_on_format": {
-        "source.fixAll.eslint": true,
-      },
+        "source.fixAll.eslint": true
+      }
     },
     "TSX": {
       "formatter": [],
+      "language_servers": ["eslint"],
       "code_actions_on_format": {
-        "source.fixAll.eslint": true,
-      },
+        "source.fixAll.eslint": true
+      }
     },
     "JSON": {
       "formatter": [],
       "language_servers": ["eslint"],
       "code_actions_on_format": {
-        "source.fixAll.eslint": true,
-      },
+        "source.fixAll.eslint": true
+      }
+    },
+    "JSONC": {
+      "formatter": [],
+      "language_servers": ["eslint"],
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true
+      }
     },
     "Markdown": {
       "formatter": [],
       "language_servers": ["eslint"],
       "code_actions_on_format": {
-        "source.fixAll.eslint": true,
-      },
+        "source.fixAll.eslint": true
+      }
     },
     "Markdown-Inline": {
       "formatter": [],
       "language_servers": ["eslint"],
       "code_actions_on_format": {
-        "source.fixAll.eslint": true,
-      },
+        "source.fixAll.eslint": true
+      }
     },
     "YAML": {
       "formatter": [],
       "language_servers": ["eslint"],
       "code_actions_on_format": {
-        "source.fixAll.eslint": true,
-      },
+        "source.fixAll.eslint": true
+      }
     },
-  },
+    "CSS": {
+      "formatter": [],
+      "language_servers": ["eslint"],
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true
+      }
+    }
+  }
 }
