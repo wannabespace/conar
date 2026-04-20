@@ -1,0 +1,69 @@
+{
+  "lsp": {
+    "eslint": {
+      "settings": {
+        "workingDirectories": ["./"],
+      },
+    },
+  },
+  "languages": {
+    "HTML": {
+      "formatter": [],
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true,
+      },
+    },
+    "SQL": {
+      "formatter": [],
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true,
+      },
+    },
+    "JavaScript": {
+      "formatter": [],
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true,
+      },
+    },
+    "TypeScript": {
+      "formatter": [],
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true,
+      },
+    },
+    "TSX": {
+      "formatter": [],
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true,
+      },
+    },
+    "JSON": {
+      "formatter": [],
+      "language_servers": ["eslint"],
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true,
+      },
+    },
+    "Markdown": {
+      "formatter": [],
+      "language_servers": ["eslint"],
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true,
+      },
+    },
+    "Markdown-Inline": {
+      "formatter": [],
+      "language_servers": ["eslint"],
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true,
+      },
+    },
+    "YAML": {
+      "formatter": [],
+      "language_servers": ["eslint"],
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true,
+      },
+    },
+  },
+}
