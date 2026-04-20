@@ -45,9 +45,6 @@ catalogs:
     '@electric-sql/pglite':
       specifier: ^0.4.2
       version: 0.4.2
-    '@emotion/memoize':
-      specifier: ^0.9.0
-      version: 0.9.0
     '@eslint-react/eslint-plugin':
       specifier: ^2.13.0
       version: 2.13.0
@@ -60,9 +57,6 @@ catalogs:
     '@fluentui/react-context-selector':
       specifier: ^9.2.15
       version: 9.2.15
-    '@formatjs/fast-memoize':
-      specifier: ^3.1.2
-      version: 3.1.2
     '@hackylabs/deep-redact':
       specifier: ^3.0.5
       version: 3.0.5
@@ -225,12 +219,6 @@ catalogs:
     '@types/ioredis-mock':
       specifier: ^8.2.7
       version: 8.2.7
-    '@types/lodash.memoize':
-      specifier: ^4.1.9
-      version: 4.1.9
-    '@types/memoizee':
-      specifier: ^0.4.12
-      version: 0.4.12
     '@types/mssql':
       specifier: ^9.1.11
       version: 9.1.11
@@ -291,9 +279,6 @@ catalogs:
     date-fns:
       specifier: ^4.1.0
       version: 4.1.0
-    devalue:
-      specifier: ^5.7.1
-      version: 5.7.1
     drizzle-kit:
       specifier: 1.0.0-beta.20
       version: 1.0.0-beta.20
@@ -354,21 +339,12 @@ catalogs:
     kysely:
       specifier: ^0.28.15
       version: 0.28.15
-    lodash.memoize:
-      specifier: ^4.1.2
-      version: 4.1.2
     lucide-react:
       specifier: ^1.7.0
       version: 1.7.0
     marked:
       specifier: ^17.0.5
       version: 17.0.5
-    memoize:
-      specifier: ^11.0.0
-      version: 11.0.0
-    memoizee:
-      specifier: ^0.4.17
-      version: 0.4.17
     monaco-editor:
       specifier: ^0.54.0
       version: 0.54.0
@@ -1125,32 +1101,29 @@ importers:
   packages/memoize:
     dependencies:
       devalue:
-        specifier: 'catalog:'
+        specifier: ^5.7.1
         version: 5.7.1
     devDependencies:
-      '@conar/configs':
-        specifier: workspace:*
-        version: link:../configs
       '@emotion/memoize':
-        specifier: 'catalog:'
+        specifier: ^0.9.0
         version: 0.9.0
       '@formatjs/fast-memoize':
-        specifier: 'catalog:'
+        specifier: ^3.1.2
         version: 3.1.2
       '@types/lodash.memoize':
-        specifier: 'catalog:'
+        specifier: ^4.1.9
         version: 4.1.9
       '@types/memoizee':
-        specifier: 'catalog:'
+        specifier: ^0.4.12
         version: 0.4.12
       lodash.memoize:
-        specifier: 'catalog:'
+        specifier: ^4.1.2
         version: 4.1.2
       memoize:
-        specifier: 'catalog:'
+        specifier: ^11.0.0
         version: 11.0.0
       memoizee:
-        specifier: 'catalog:'
+        specifier: ^0.4.17
         version: 0.4.17
       tsdown:
         specifier: 'catalog:'

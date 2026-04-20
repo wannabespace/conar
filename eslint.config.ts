@@ -51,7 +51,7 @@ export default antfu(
   {
     files: ['**/packages/memoize/**/*'],
     rules: {
-      'pnpm/json-enforce-catalog)': 'off',
+      'pnpm/json-enforce-catalog': 'off',
     },
   },
   {
