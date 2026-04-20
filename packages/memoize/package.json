@@ -15,6 +15,7 @@
     "prepublishOnly": "tsdown",
     "check-types": "tsc",
     "test": "bun test",
+    "bench": "bun ./bench/index.ts",
     "build": "tsdown",
     "dev": "tsdown --watch"
   },
@@ -23,6 +24,13 @@
   },
   "devDependencies": {
     "@conar/configs": "workspace:*",
+    "@emotion/memoize": "catalog:",
+    "@formatjs/fast-memoize": "catalog:",
+    "@types/lodash.memoize": "catalog:",
+    "@types/memoizee": "catalog:",
+    "lodash.memoize": "catalog:",
+    "memoize": "catalog:",
+    "memoizee": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   }

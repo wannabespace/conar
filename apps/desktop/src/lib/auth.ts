@@ -23,6 +23,7 @@ export function successAuthToast(newUser: boolean) {
       : 'Welcome back! Your connections are ready for you.',
     {
       duration: 10000,
+      position: 'top-center',
     },
   )
 }

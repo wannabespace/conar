@@ -1,4 +1,4 @@
-import { stringify } from 'devalue'
+import { findReferenceEntry, getCacheKey } from './key'
 
 // eslint-disable-next-line ts/no-explicit-any
 export type AnyFunction = (...args: any[]) => any
@@ -45,17 +45,15 @@ export function memoize<F extends AnyFunction>(
   const fallbackEntries: MemoizedEntry<F>[] = []
 
   const fn = ((...params: Parameters<F>) => {
-    const args = transformArgs ? transformArgs(params) : params
-    let key: string | null
+    const args = transformArgs
+      ? transformArgs(params)
+      : params.length === 1
+        ? params[0]
+        : params
 
-    try {
-      key = stringify(args)
-    }
-    catch {
-      key = null
-    }
+    const key = getCacheKey(args)
 
-    if (key !== null) {
+    if (typeof key === 'string') {
       const cached = cache.get(key)
       if (cached !== undefined || cache.has(key))
         return cached!
@@ -73,16 +71,7 @@ export function memoize<F extends AnyFunction>(
       return result
     }
 
-    const hit = fallbackEntries.find((entry) => {
-      if (entry.key === args)
-        return true
-
-      if (Array.isArray(entry.key) && Array.isArray(args) && entry.key.length === args.length)
-        return entry.key.every((v, i) => v === args[i])
-
-      return false
-    })
-
+    const hit = findReferenceEntry(fallbackEntries, args)
     if (hit)
       return hit.value
 
@@ -112,6 +101,10 @@ export function isMemoized<F extends (...args: Parameters<F>) => ReturnType<F>>(
   return CACHE_SYMBOL in fn
 }
 
+export function getCacheStore<F extends AnyFunction>(fn: F): CacheStore<F> | null {
+  return isMemoized(fn) ? fn[CACHE_SYMBOL]() : null
+}
+
 export function clearMemoizeCache<F extends (...args: Parameters<F>) => ReturnType<F>>(
   fn: F,
 ): void {
@@ -121,8 +114,4 @@ export function clearMemoizeCache<F extends (...args: Parameters<F>) => ReturnTy
 
   store.cache.clear()
   store.fallbackEntries.length = 0
-}
-
-export function getCacheStore<F extends AnyFunction>(fn: F): CacheStore<F> | null {
-  return isMemoized(fn) ? fn[CACHE_SYMBOL]() : null
 }
