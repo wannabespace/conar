@@ -7,8 +7,8 @@
   },
   "scripts": {
     "prepare": "husky && bun scripts/sync-pnpm-versions.ts && bun scripts/setup-dev.ts",
-    "lint": "eslint . --quiet",
-    "lint:fix": "eslint . --quiet --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
     "test:start": "turbo run test:start",

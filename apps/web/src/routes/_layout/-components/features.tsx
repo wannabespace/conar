@@ -608,8 +608,7 @@ export function Features() {
           Features
         </h2>
         <p className={`
-          mx-auto max-w-3xl text-center text-2xl/tight font-bold
-          text-balance
+          mx-auto max-w-3xl text-center text-2xl/tight font-bold text-balance
           sm:text-3xl
         `}
         >

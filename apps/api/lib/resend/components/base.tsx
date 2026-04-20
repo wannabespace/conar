@@ -28,7 +28,7 @@ export function Base({
         <Head />
         <Body className="font-sans">
           <Preview>{preview}</Preview>
-          <Container className="max-w-[480px] mx-auto p-[20px_0_48px]">
+          <Container className="mx-auto max-w-[480px] p-[20px_0_48px]">
             <Section className="mb-[20px]">
               <Img
                 src={`${env.WEB_URL}/logo.png`}
@@ -36,11 +36,11 @@ export function Base({
                 height="48"
                 alt="Conar"
               />
-              <Heading className="text-[24px] mt-[20px] mb-0 font-bold">{title}</Heading>
+              <Heading className="mt-[20px] mb-0 text-[24px] font-bold">{title}</Heading>
             </Section>
             {children}
             <Section>
-              <Text className="text-center mt-[40px] text-[12px]">
+              <Text className="mt-[40px] text-center text-[12px]">
                 <Link className="text-primary" href={SOCIAL_LINKS.TWITTER}>X</Link>
                 {' '}
                 ・
