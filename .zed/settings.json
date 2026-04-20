@@ -44,6 +44,13 @@
         "source.fixAll.eslint": true
       }
     },
+    "JSONC": {
+      "formatter": [],
+      "language_servers": ["eslint"],
+      "code_actions_on_format": {
+        "source.fixAll.eslint": true
+      }
+    },
     "Markdown": {
       "formatter": [],
       "language_servers": ["eslint"],
