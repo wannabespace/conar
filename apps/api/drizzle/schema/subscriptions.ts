@@ -1,4 +1,3 @@
-import type { Stripe } from 'stripe'
 import {
   boolean,
   numeric,
@@ -20,7 +19,7 @@ export const subscriptions = pgTable('subscriptions', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   stripeSubscriptionId: text(),
-  status: text().$type<Stripe.Subscription.Status>().default('incomplete'),
+  status: text().$type<'canceled' | 'active' | 'incomplete' | 'incomplete_expired' | 'past_due' | 'paused' | 'trialing' | 'unpaid'>().default('incomplete'),
   period: subscriptionPeriod().notNull(),
   price: numeric({ mode: 'number' }).notNull(),
   periodStart: timestamp({ withTimezone: true }),

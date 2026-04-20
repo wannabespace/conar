@@ -46,8 +46,8 @@ export function ToggleGroup<T extends string>({
               *:not-last:rounded-e-none *:not-last:border-e-0
               *:not-first:before:rounded-s-none
               *:not-last:before:rounded-e-none
-              *:not-first:not-data-[slot=separator]:before:-inset-s-[0.5px]
-              *:not-last:not-data-[slot=separator]:before:-inset-e-[0.5px]
+              *:not-first:not-data-[slot=separator]:before:inset-s-[-0.5px]
+              *:not-last:not-data-[slot=separator]:before:inset-e-[-0.5px]
             `
             : `
               flex-col
@@ -55,8 +55,8 @@ export function ToggleGroup<T extends string>({
               *:not-last:rounded-b-none *:not-last:border-b-0
               *:not-first:before:rounded-t-none
               *:not-last:before:rounded-b-none
-              *:not-first:not-data-[slot=separator]:before:-top-[0.5px]
-              *:not-last:not-data-[slot=separator]:before:-bottom-[0.5px]
+              *:not-first:not-data-[slot=separator]:before:top-[-0.5px]
+              *:not-last:not-data-[slot=separator]:before:bottom-[-0.5px]
               *:data-[slot=toggle]:not-last:before:hidden
               dark:*:first:before:block
               dark:*:last:before:hidden

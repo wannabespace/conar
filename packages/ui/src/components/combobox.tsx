@@ -89,7 +89,7 @@ export function ComboboxInput({
         <div
           aria-hidden="true"
           className="
-            pointer-events-none absolute inset-y-0 start-px z-10 flex
+            pointer-events-none absolute inset-y-0 inset-s-px z-10 flex
             items-center ps-[calc(--spacing(3)-1px)] opacity-80
             has-[+[data-size=sm]]:ps-[calc(--spacing(2.5)-1px)]
             [&_svg]:-mx-0.5

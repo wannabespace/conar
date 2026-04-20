@@ -25,7 +25,7 @@ export const invoices = orpc
     return invoices?.data.map(invoice => ({
       id: invoice.id,
       amount: invoice.amount_paid,
-      status: invoice.status,
+      status: invoice.status as 'canceled' | 'active' | 'incomplete' | 'incomplete_expired' | 'past_due' | 'paused' | 'trialing' | 'unpaid',
       createdAt: new Date(invoice.created * 1000),
       url: invoice.hosted_invoice_url,
     })) ?? []
