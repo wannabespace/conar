@@ -3,35 +3,39 @@ import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { webSearch } from '@exalabs/ai-sdk'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
 import { tool } from 'ai'
-import { type } from 'arktype'
+import * as z from 'zod/mini'
 import { env } from '~/env'
 
 export const tools = {
   columns: tool({
     description: 'Use this tool if you need to get the list of columns in a table.',
-    inputSchema: type({
-      tableAndSchema: type({
-        tableName: 'string',
-        schemaName: 'string',
+    inputSchema: z.object({
+      tableAndSchema: z.object({
+        tableName: z.string(),
+        schemaName: z.string(),
       }),
     }),
-    outputSchema: type({
-      isEditable: 'boolean',
-      isNullable: 'boolean',
-      table: 'string',
-      id: 'string',
-      type: 'string',
-      default: 'string | null',
-    }).array(),
+    outputSchema: z.array(
+      z.object({
+        isEditable: z.boolean(),
+        isNullable: z.boolean(),
+        table: z.string(),
+        id: z.string(),
+        type: z.string(),
+        default: z.union([z.string(), z.null()]),
+      }),
+    ),
   }),
   enums: tool({
     description: 'Use this tool if you need to get the list of enums in a database',
-    inputSchema: type({}),
-    outputSchema: type({
-      schema: 'string',
-      name: 'string',
-      value: 'string',
-    }).array(),
+    inputSchema: z.object({}),
+    outputSchema: z.array(
+      z.object({
+        schema: z.string(),
+        name: z.string(),
+        value: z.string(),
+      }),
+    ),
   }),
   select: tool({
     description: [
@@ -43,25 +47,28 @@ export const tools = {
       'tableName and schemaName will be concatenated to "schemaName.tableName".',
       'For tableName use only table without schema prefix.',
     ].join('\n'),
-    inputSchema: type({
-      whereConcatOperator: type('"AND" | "OR"').describe('The operator to use to concatenate the where clauses'),
-      whereFilters: type({
-        column: 'string',
-        operator: type.enumerated(...SQL_FILTERS_LIST.map(filter => filter.operator)),
-        values: 'string[]',
-      })
-        .array()
-        .describe('The columns to use in the where clause'),
-      select: type('string[] | null').describe('The columns to select. If not provided, all columns will be selected'),
-      limit: 'number',
-      offset: 'number',
-      orderBy: 'Record<string, "ASC" | "DESC"> | null',
-      tableAndSchema: type({
-        tableName: 'string',
-        schemaName: 'string',
-      }).describe('The name of the table and schema to query'),
-    }).describe('Input schema for database select query with filters, ordering, and pagination'),
-    outputSchema: type('unknown'),
+    inputSchema: z.object({
+      whereConcatOperator: z.enum(['AND', 'OR']),
+      whereFilters: z.array(
+        z.object({
+          column: z.string(),
+          operator: z.enum(SQL_FILTERS_LIST.map(filter => filter.operator) as [string, ...string[]]),
+          values: z.array(z.string()),
+        }),
+      ),
+      select: z.array(z.string()),
+      limit: z.number(),
+      offset: z.number(),
+      orderBy: z.union([
+        z.record(z.string(), z.enum(['ASC', 'DESC'])),
+        z.null(),
+      ]),
+      tableAndSchema: z.object({
+        tableName: z.string(),
+        schemaName: z.string(),
+      }),
+    }),
+    outputSchema: z.unknown(),
   }),
   ...(env.EXA_API_KEY && { webSearch: webSearch({ apiKey: env.EXA_API_KEY }) }),
   ...(env.CONTEXT7_API_KEY && {

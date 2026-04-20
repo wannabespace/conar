@@ -8,7 +8,7 @@ import { getConnectionResourceStore } from '~/entities/connection/store'
 export function useDefinitionsState({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) {
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data } = useQuery(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem }))
+  const { data } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')

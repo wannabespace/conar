@@ -1,22 +1,18 @@
 import type { SchemaParams } from '..'
-import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
 import { getColumnType, toLiteralKey } from '../utils'
 
 function buildZodType(
   column: SchemaParams['columns'][number],
-  table: string,
   dialect: SchemaParams['dialect'],
-  enums: NonNullable<SchemaParams['enums']>,
 ): string | null {
   let zodType = column.type ? getColumnType(column.type, 'zod', dialect) : null
 
   if (!zodType)
     return null
 
-  const foundEnum = findEnum(enums, column, table)
-  if (foundEnum?.values.length) {
-    zodType = `z.enum([${foundEnum.values.map(v => `'${v}'`).join(', ')}])`
+  if (column.enumName && column.availableValues?.length) {
+    zodType = `z.enum([${column.availableValues.map(v => `'${v}'`).join(', ')}])`
     if (column.type === 'set') {
       zodType = `${zodType}.array()`
     }
@@ -28,7 +24,7 @@ function buildZodType(
     zodType = zodType.replace('z.string()', `z.string().max(${column.maxLength})`)
   }
   // eslint-disable-next-line e18e/prefer-static-regex
-  if (zodType.includes('z.number()') && /int/i.test(column.type)) {
+  if (zodType.includes('z.number()') && /int/i.test(column.type!)) {
     zodType = zodType.replace('z.number()', 'z.int()')
   }
   return zodType
@@ -38,12 +34,11 @@ export function generateSchemaZod({
   table,
   columns,
   dialect,
-  enums = [],
 }: SchemaParams) {
   const lines = columns
     .map((column) => {
       const key = toLiteralKey(column.id)
-      const zodType = buildZodType(column, table, dialect, enums ?? [])
+      const zodType = buildZodType(column, dialect)
 
       if (!zodType)
         return null

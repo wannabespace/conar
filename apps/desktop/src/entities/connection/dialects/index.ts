@@ -21,7 +21,6 @@ export interface DialectOptions {
     query: string
     values?: unknown[]
   }) => void
-  silent?: boolean
 }
 
 export interface DialectExecutionOptions extends DialectOptions {

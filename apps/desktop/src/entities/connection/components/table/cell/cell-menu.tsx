@@ -1,4 +1,6 @@
+import type { Filter } from '@conar/shared/filters'
 import type { CSSProperties, ReactNode } from 'react'
+import { cellToFilterValues, FILTER_GROUPS, SQL_FILTERS_GROUPED } from '@conar/shared/filters'
 import {
   formatValueForPlainCell,
   recordToMarkdownTable,
@@ -20,12 +22,16 @@ import {
   ContextMenuTrigger,
 } from '@conar/ui/components/context-menu'
 import { copy } from '@conar/ui/lib/copy'
-import { useMemo } from 'react'
+import { Fragment, useMemo } from 'react'
+import { toast } from 'sonner'
 import { useCellContext } from './cell-context'
-import { TableAddFilterSubmenu } from './table-add-filter-submenu'
 import { INTERNAL_COLUMN_IDS } from './utils'
 
 const internalColumnIds = Object.values(INTERNAL_COLUMN_IDS)
+
+function isDisabledFilter(filter: Filter, cellValue: unknown): boolean {
+  return filter.hasValue !== false && (cellValue === null || cellValue === undefined)
+}
 
 export function TableCellContextMenu({
   open,
@@ -79,7 +85,43 @@ export function TableCellContextMenu({
                 </ContextMenuItem>
               )}
               {onAddFilter && (
-                <TableAddFilterSubmenu onAdd={onAddFilter} />
+                <ContextMenuSub>
+                  <ContextMenuSubTrigger>
+                    Add filter
+                  </ContextMenuSubTrigger>
+                  <ContextMenuSubContent>
+                    {SQL_FILTERS_GROUPED.map(({ group, filters }, index) => (
+                      <Fragment key={group}>
+                        {index > 0 && <ContextMenuSeparator />}
+                        <ContextMenuLabel>
+                          {FILTER_GROUPS[group]}
+                        </ContextMenuLabel>
+                        {filters.map(filter => (
+                          <ContextMenuItem
+                            key={filter.operator}
+                            disabled={isDisabledFilter(filter, value)}
+                            onClick={() => {
+                              onAddFilter({
+                                column: column.id,
+                                ref: filter,
+                                values: cellToFilterValues(filter, value),
+                              })
+                              toast.success('Filter added')
+                            }}
+                          >
+                            {filter.label}
+                            <span className="
+                              ml-auto pl-2 text-xs text-muted-foreground
+                            "
+                            >
+                              {filter.operator}
+                            </span>
+                          </ContextMenuItem>
+                        ))}
+                      </Fragment>
+                    ))}
+                  </ContextMenuSubContent>
+                </ContextMenuSub>
               )}
               {onSort && (
                 <ContextMenuSub>

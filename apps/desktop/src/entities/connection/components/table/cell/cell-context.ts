@@ -1,18 +1,23 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { UseMutateFunction } from '@tanstack/react-query'
 import type { Dispatch, SetStateAction } from 'react'
 import type { Column } from './utils'
+import type { ValueTransformer } from '~/entities/connection/transformers'
 import { createContext, use } from 'react'
+
+export type SaveStatus = 'idle' | 'pending' | 'success' | 'error'
 
 export const CellContext = createContext<{
   rowIndex: number
-  newValue: string
-  setNewValue: Dispatch<SetStateAction<string>>
+  newValue: unknown
+  setNewValue: Dispatch<SetStateAction<unknown>>
+  rawValue: string
+  setRawValue: Dispatch<SetStateAction<string>>
   column: Column
   value: unknown
-  displayValue: string
-  update: UseMutateFunction<void, Error, { value: string | null, rowIndex: number }>
-  availableValues?: string[]
+  status: SaveStatus
+  setStatus: Dispatch<SetStateAction<SaveStatus>>
+  onSaveValue?: (rawValue: unknown) => void
+  transformer: ValueTransformer
   onAddFilter?: (filter: ActiveFilter) => void
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
   sortOrder?: 'ASC' | 'DESC' | null

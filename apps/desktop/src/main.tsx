@@ -23,10 +23,12 @@ window.electron?.app.onDeepLink(async (url) => {
   window.initialDeepLink = url
 })
 
-window.electron?.app.onSendToast(({ message, type }) => {
+window.electron?.app.onSendToast(({ message, type, description, duration }) => {
   toast[type](message, {
-    id: `${type}-${message}`,
+    id: `${type}-${message}-${description}`,
+    description,
     position: 'bottom-center',
+    duration,
   })
 })
 

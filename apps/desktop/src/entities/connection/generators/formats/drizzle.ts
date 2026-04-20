@@ -1,10 +1,21 @@
-/* eslint-disable e18e/prefer-static-regex */
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'
-import { findEnum } from '~/entities/connection/queries/enums'
 import * as templates from '../templates'
-import { filterExplicitIndexes, getColumnType, groupIndexes } from '../utils'
+import { filterExplicitIndexes, getColumnType, groupIndexes, isValidIdentifier, toLiteralKey } from '../utils'
+
+const dialectConfig: Record<ConnectionType, { tableFunc: string, dialectImportPath: string, enumFunc?: string }> = {
+  postgres: { tableFunc: 'pgTable', dialectImportPath: 'drizzle-orm/pg-core', enumFunc: 'pgEnum' },
+  mysql: { tableFunc: 'mysqlTable', dialectImportPath: 'drizzle-orm/mysql-core', enumFunc: 'mysqlEnum' },
+  mssql: { tableFunc: 'mssqlTable', dialectImportPath: 'drizzle-orm/mssql-core' },
+  clickhouse: { tableFunc: 'clickhouseTable', dialectImportPath: 'drizzle-orm/clickhouse-core', enumFunc: 'enum' },
+}
+
+const FK_SUFFIX_RE = /(_id|Id)$/
+
+function resolveRefTable(table: string): string {
+  return isValidIdentifier(table) ? table : pascalCase(table)
+}
 
 export function generateQueryDrizzle({
   table,
@@ -38,18 +49,10 @@ export function generateQueryDrizzle({
   return templates.drizzleQueryTemplate(varName, conditions)
 }
 
-const dialectConfig: Record<ConnectionType, { tableFunc: string, dialectImportPath: string, enumFunc?: string }> = {
-  postgres: { tableFunc: 'pgTable', dialectImportPath: 'drizzle-orm/pg-core', enumFunc: 'pgEnum' },
-  mysql: { tableFunc: 'mysqlTable', dialectImportPath: 'drizzle-orm/mysql-core', enumFunc: 'mysqlEnum' },
-  mssql: { tableFunc: 'mssqlTable', dialectImportPath: 'drizzle-orm/mssql-core' },
-  clickhouse: { tableFunc: 'clickhouseTable', dialectImportPath: 'drizzle-orm/clickhouse-core', enumFunc: 'enum' },
-}
-
 export function generateSchemaDrizzle({
   table,
   columns,
   dialect,
-  enums = [],
   indexes = [],
 }: SchemaParams) {
   const { tableFunc, dialectImportPath, enumFunc } = dialectConfig[dialect]
@@ -61,16 +64,16 @@ export function generateSchemaDrizzle({
 
   const varName = camelCase(table)
 
-  const cols = columns.map((c) => {
-    let typeFunc = getColumnType(c.type, 'drizzle', dialect)
+  const cols = columns.filter(c => c.type).map((c) => {
+    let typeFunc = getColumnType(c.type!, 'drizzle', dialect)
 
     dialectImports.add(typeFunc)
 
-    const foundEnum = findEnum(enums, c, table)
-    if (enumFunc && foundEnum?.values.length) {
-      const eName = foundEnum.name || `${table}_${c.id}`
+    const isEnum = enumFunc && c.enumName && c.availableValues?.length
+    if (isEnum) {
+      const eName = c.enumName || `${table}_${c.id}`
       const enumTypeName = `${camelCase(eName)}Enum`
-      const valuesList = foundEnum.values.map(v => `'${v}'`).join(', ')
+      const valuesList = c.availableValues!.map(v => `'${v}'`).join(', ')
 
       dialectImports.add(enumFunc)
       extras.push(`export const ${enumTypeName} = ${enumFunc}('${eName}', [${valuesList}]);`)
@@ -79,11 +82,11 @@ export function generateSchemaDrizzle({
     }
 
     const key = camelCase(c.id)
-    const safeKey = /^[a-z_$][\w$]*$/i.test(key) ? key : `'${key}'`
+    const safeKey = toLiteralKey(key)
     const sameCase = key === c.id
 
     let options = ''
-    if (!(enumFunc && foundEnum?.values.length)) {
+    if (!isEnum) {
       if (c.maxLength && c.maxLength !== -1 && ['varchar', 'char', 'nvarchar'].includes(typeFunc)) {
         options = `, { length: ${c.maxLength} }`
       }
@@ -102,8 +105,7 @@ export function generateSchemaDrizzle({
       chain += '.unique()'
 
     if (c.foreign && dialect !== 'clickhouse') {
-      const isValidRef = /^[a-z_$][\w$]*$/i.test(c.foreign.table)
-      const refTable = isValidRef ? c.foreign.table : pascalCase(c.foreign.table)
+      const refTable = resolveRefTable(c.foreign.table)
       const fkOptions = []
       if (c.foreign.onDelete)
         fkOptions.push(`onDelete: '${c.foreign.onDelete.toLowerCase()}'`)
@@ -125,16 +127,14 @@ export function generateSchemaDrizzle({
     relationshipFkImports: Set<string>
   }>((acc, c) => {
     if (c.foreign && dialect !== 'clickhouse') {
-      const isValidRef = /^[a-z_$][\w$]*$/i.test(c.foreign.table)
-      const refTable = isValidRef ? c.foreign.table : pascalCase(c.foreign.table)
-      const fieldName = camelCase(c.id.replace(/(_id|Id)$/, ''))
+      const refTable = resolveRefTable(c.foreign.table)
+      const fieldName = camelCase(c.id.replace(FK_SUFFIX_RE, ''))
       acc.usedNames.add(fieldName)
       acc.relationships.push(`  ${fieldName}: one(${refTable}, {\n    fields: [${varName}.${camelCase(c.id)}],\n    references: [${refTable}.${camelCase(c.foreign.column)}],\n  }),`)
     }
 
     const refEntries = (c.references ?? []).map((ref) => {
-      const isValidRef = /^[a-z_$][\w$]*$/i.test(ref.table)
-      const refTable = isValidRef ? ref.table : pascalCase(ref.table)
+      const refTable = resolveRefTable(ref.table)
       let fieldName = camelCase(ref.table)
       if (acc.usedNames.has(fieldName)) {
         fieldName = camelCase(`${ref.table}_${ref.column}`)
@@ -147,7 +147,7 @@ export function generateSchemaDrizzle({
       return { rel, fkImport }
     })
     acc.relationships.push(...refEntries.map(e => e.rel))
-    refEntries.map(e => e.fkImport).map(imp => acc.relationshipFkImports.add(imp))
+    refEntries.forEach(e => acc.relationshipFkImports.add(e.fkImport))
     return acc
   }, { relationships: [], usedNames: new Set<string>(), relationshipFkImports: new Set<string>() })
 
@@ -174,8 +174,7 @@ export function generateSchemaDrizzle({
 
       const onCols = idx.columns.map((col) => {
         const key = camelCase(col)
-        const isSafe = /^[a-z_$][\w$]*$/i.test(key)
-        return isSafe ? `t.${key}` : `t['${key}']`
+        return isValidIdentifier(key) ? `t.${key}` : `t['${key}']`
       })
       return `  ${func}('${idx.name}').on(${[...onCols, ...idx.customExpressions.map(c => `sql\`${c}\``)].join(', ')}),`
     })

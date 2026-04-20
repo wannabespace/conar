@@ -5,15 +5,13 @@ import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/po
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiCheckLine, RiDatabase2Line, RiLayoutColumnLine } from '@remixicon/react'
 import { useSubscription } from 'seitu/react'
-import { Route } from '../..'
-import { useTableColumns } from '../../-queries/use-columns-query'
+import { useTableColumns } from '../../-columns'
 import { useTablePageStore } from '../../-store'
 
-export function HeaderActionsColumns({ table, schema }: { table: string, schema: string }) {
-  const { connectionResource } = Route.useRouteContext()
+export function HeaderActionsColumns() {
   const store = useTablePageStore()
   const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
-  const columns = useTableColumns({ connectionResource, table, schema })
+  const columns = useTableColumns()
 
   return (
     <Popover>
@@ -70,7 +68,7 @@ export function HeaderActionsColumns({ table, schema }: { table: string, schema:
                 <CommandItem
                   key={column.id}
                   value={column.id}
-                  keywords={[column.id, column.type]}
+                  keywords={[column.id, column.type ?? '', column.label ?? '']}
                   onSelect={() => store.set(state => ({
                     ...state,
                     hiddenColumns: hiddenColumns.includes(column.id)

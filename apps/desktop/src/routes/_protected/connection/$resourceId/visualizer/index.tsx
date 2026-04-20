@@ -41,7 +41,7 @@ function VisualizerPage() {
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data: tablesAndSchemas } = useQuery({
-    ...resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem }),
+    ...resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
     select: data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table: table.name }))),
   })
   const columnsQueries = useQueries({

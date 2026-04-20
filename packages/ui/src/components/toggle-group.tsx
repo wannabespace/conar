@@ -69,9 +69,9 @@ export function ToggleGroup<T extends string>({
       orientation={orientation}
       {...props}
     >
-      <ToggleGroupContext.Provider value={{ size, variant }}>
+      <ToggleGroupContext value={{ size, variant }}>
         {children}
-      </ToggleGroupContext.Provider>
+      </ToggleGroupContext>
     </ToggleGroupPrimitive>
   )
 }

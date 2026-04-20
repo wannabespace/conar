@@ -11,7 +11,6 @@ function execute(options: DialectExecutionOptions) {
     connectionString: options.connectionString,
     query: options.compiledQuery.sql,
     values: options.compiledQuery.parameters as unknown[],
-    silent: options.silent,
   })
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })

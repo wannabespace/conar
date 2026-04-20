@@ -1,5 +1,6 @@
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { ColumnRenderer } from '@conar/table'
-import type { Column } from '~/entities/connection/components/table/utils'
+import type { Column } from '~/entities/connection/components/table/cell'
 import { Table, TableBody, TableHeader, TableProvider } from '@conar/table'
 import { DEFAULT_COLUMN_WIDTH } from '@conar/table/constants'
 import { Button } from '@conar/ui/components/button'
@@ -18,10 +19,12 @@ export function RunnerResultsTable({
   data,
   columns,
   duration,
+  connectionType,
 }: {
   data: Record<string, unknown>[]
   columns: Pick<Column, 'id'>[]
   duration: number
+  connectionType: ConnectionType
 }) {
   const [search, setSearch] = useState('')
 
@@ -58,7 +61,8 @@ export function RunnerResultsTable({
       ),
       cell: props => (
         <TableCell
-          column={{ id: column.id, type: 'text' }}
+          column={{ id: column.id, uiType: 'raw' }}
+          connectionType={connectionType}
           {...props}
         />
       ),

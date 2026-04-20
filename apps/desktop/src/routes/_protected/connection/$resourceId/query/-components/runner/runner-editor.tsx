@@ -52,10 +52,6 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
 
   useEffect(() => {
     const appendToBottomHook = runnerHooks.hook('appendToBottom', (query) => {
-      const editor = monacoRef.current
-      if (!editor)
-        return
-
       store.set(state => ({
         ...state,
         query: `${state.query}\n\n${query}`,
@@ -149,7 +145,7 @@ export function RunnerEditor() {
     if (!monacoRef.current)
       return
 
-    const enterAction = monacoRef.current?.addAction({
+    const disposable = monacoRef.current?.addAction({
       id: 'conar.execute-on-enter',
       label: 'Execute on Enter',
       keybindings: [KeyMod.CtrlCmd | KeyCode.Enter],
@@ -177,7 +173,7 @@ export function RunnerEditor() {
       },
     })
 
-    return () => enterAction.dispose()
+    return () => disposable.dispose()
   }, [])
 
   return (

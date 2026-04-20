@@ -1,4 +1,4 @@
-import type { Column } from '../components/table/utils'
+import type { Column } from '../components/table/cell'
 import { faker } from '@faker-js/faker'
 
 export const SKIP_GENERATOR = 'skip-generator'
@@ -206,23 +206,15 @@ export const GENERATOR_GROUPS: GeneratorGroup[] = Object.entries(GENERATORS).red
 
 export function autoDetectGenerator(column: Column): GeneratorId {
   const name = column.id.toLowerCase().replaceAll('_', '')
-  const type = column.type.toLowerCase()
+  const type = column.type?.toLowerCase() ?? ''
 
   if (column.foreign)
     return REFERENCE_GENERATOR
 
-  if (column.enum)
+  if (column.enumName && column.availableValues && column.availableValues.length > 0)
     return ENUM_GENERATOR
 
-  if (
-    column.primaryKey
-    && column.defaultValue
-    && (column.defaultValue.includes('nextval')
-      || column.defaultValue.includes('auto_increment')
-      || column.defaultValue.includes('identity')
-      || column.defaultValue.includes('gen_random_uuid')
-      || column.defaultValue.includes('uuid_generate'))
-  ) {
+  if (column.primaryKey) {
     return SKIP_GENERATOR
   }
 
@@ -349,7 +341,6 @@ function generateValue(
   generator: Generator,
   column: Column,
   referenceValues?: unknown[],
-  enumValues?: string[],
 ): unknown {
   const generatorId = generator.generatorId
   const generatorImpl = GENERATORS[generatorId]
@@ -367,16 +358,24 @@ function generateValue(
         `Cannot generate seed data: no reference values available for column "${column.id}".`,
       )
     }
+    if (column.isArray) {
+      const count = faker.number.int({ min: 1, max: 5 })
+      return faker.helpers.multiple(() => faker.helpers.arrayElement(referenceValues), { count })
+    }
     return faker.helpers.arrayElement(referenceValues)
   }
 
   if (generatorId === ENUM_GENERATOR) {
-    if (!enumValues || enumValues.length === 0) {
+    if (!column.availableValues || column.availableValues.length === 0) {
       throw new Error(
         `Cannot generate seed data: no enum values available for column "${column.id}".`,
       )
     }
-    return faker.helpers.arrayElement(enumValues)
+    if (column.isArray) {
+      const count = faker.number.int({ min: 1, max: Math.min(5, column.availableValues.length) })
+      return faker.helpers.arrayElements(column.availableValues, count)
+    }
+    return faker.helpers.arrayElement(column.availableValues)
   }
 
   if (column.isArray) {
@@ -392,7 +391,6 @@ export function generateRows(
   generators: Record<string, Generator>,
   count: number,
   referenceData?: Record<string, unknown[]>,
-  enumData?: Record<string, string[]>,
 ) {
   return Array.from({ length: count }, () => {
     const row: Record<string, unknown> = {}
@@ -405,7 +403,6 @@ export function generateRows(
         generator,
         column,
         referenceData?.[column.id],
-        enumData?.[column.id],
       )
 
       if (value !== undefined) {

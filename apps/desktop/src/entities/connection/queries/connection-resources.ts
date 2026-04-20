@@ -5,7 +5,6 @@ import { createQuery } from '../query'
 
 export const connectionResourcesQuery = createQuery({
   type: type('string[]'),
-  silent: true,
   query: {
     postgres: db => db
       .selectFrom('pg_catalog.pg_database')

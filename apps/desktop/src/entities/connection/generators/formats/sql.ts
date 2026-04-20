@@ -1,9 +1,7 @@
 /* eslint-disable e18e/prefer-static-regex */
 import type { QueryParams, SchemaParams } from '..'
-import type { Column } from '../../components/table/utils'
-import type { enumType } from '~/entities/connection/queries/enums'
+import type { Column } from '../../components/table/cell'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
-import { findEnum } from '~/entities/connection/queries/enums'
 import { formatSql } from '~/lib/formatter'
 import { coldDialects } from '../../dialects'
 import { buildWhere } from '../../queries/rows'
@@ -31,26 +29,26 @@ function escapeSqlString(s: string): string {
   return s.replace(/'/g, '\'\'')
 }
 
-function formatEnumType(foundEnum: typeof enumType.infer, dialect: ConnectionType): string {
+function formatEnumType(values: string[], name: string, dialect: ConnectionType): string {
   if (dialect === ConnectionType.ClickHouse) {
-    const prefix = foundEnum.values.length > 255 ? 'Enum16' : 'Enum8'
-    const pairs = foundEnum.values
+    const prefix = values.length > 255 ? 'Enum16' : 'Enum8'
+    const pairs = values
       .map((v, i) => `'${escapeSqlString(v)}' = ${i + 1}`)
       .join(', ')
     return `${prefix}(${pairs})`
   }
   if (dialect === ConnectionType.MySQL) {
-    const valuesList = foundEnum.values.map(v => `'${escapeSqlString(v)}'`).join(', ')
+    const valuesList = values.map(v => `'${escapeSqlString(v)}'`).join(', ')
     return `ENUM(${valuesList})`
   }
   if (dialect === ConnectionType.MSSQL) {
-    return foundEnum.name
+    return name
   }
-  return `"${foundEnum.name}"`
+  return `"${name}"`
 }
 
 function formatScalarType(c: Column, dialect: ConnectionType) {
-  let typeDef = getColumnType(c.type, 'sql', dialect)
+  let typeDef = getColumnType(c.type!, 'sql', dialect)
 
   if (c.maxLength !== undefined) {
     const len = c.maxLength === -1 ? 'MAX' : c.maxLength
@@ -76,30 +74,15 @@ function formatScalarType(c: Column, dialect: ConnectionType) {
 
 function getTypeDef(
   c: Column,
-  table: string,
-  enums: typeof enumType.infer[],
   dialect: ConnectionType,
-  usedEnums: Map<string, typeof enumType.infer>,
+  usedEnums: Map<string, string[]>,
 ): string {
-  const lowerType = c.type.toLowerCase()
-  const foundEnum = findEnum(enums, c, table)
-  const isList = foundEnum
-    || lowerType === 'enum'
-    || lowerType === 'set'
-    || (dialect === ConnectionType.ClickHouse && lowerType.startsWith('enum'))
-
-  if (isList && foundEnum?.values.length) {
+  if (c.enumName && c.availableValues?.length) {
+    const enumName = c.enumName
     if (dialect === ConnectionType.Postgres) {
-      usedEnums.set(foundEnum.name, foundEnum)
+      usedEnums.set(enumName, c.availableValues)
     }
-    return formatEnumType(foundEnum, dialect)
-  }
-
-  if (isList && c.enum) {
-    if (dialect === ConnectionType.MySQL && c.enum.includes('\'')) {
-      return `ENUM(${c.enum})`
-    }
-    return c.enum
+    return formatEnumType(c.availableValues, enumName, dialect)
   }
 
   return formatScalarType(c, dialect)
@@ -117,10 +100,10 @@ function buildColumnParts(
 
   if (c.primaryKey) {
     pkColumns.push(quoted)
-    if (dialect === ConnectionType.MySQL && /int|serial/i.test(c.type)) {
+    if (dialect === ConnectionType.MySQL && /int|serial/i.test(c.type!)) {
       parts.push('AUTO_INCREMENT')
     }
-    if (dialect === ConnectionType.MSSQL && /int/i.test(c.type)) {
+    if (dialect === ConnectionType.MSSQL && /int/i.test(c.type!)) {
       parts.push('IDENTITY(1,1)')
     }
   }
@@ -157,10 +140,10 @@ function buildColumnParts(
   return { parts, foreignKey }
 }
 
-function buildPostgresEnumStatements(usedEnums: Map<string, typeof enumType.infer>): string[] {
-  return Array.from(usedEnums.values(), (e) => {
-    const vals = e.values.map(v => `'${escapeSqlString(v)}'`).join(', ')
-    return `CREATE TYPE "${e.name}" AS ENUM (${vals});`
+function buildPostgresEnumStatements(usedEnums: Map<string, string[]>): string[] {
+  return Array.from(usedEnums.entries(), ([name, values]) => {
+    const vals = values.map(v => `'${escapeSqlString(v)}'`).join(', ')
+    return `CREATE TYPE "${name}" AS ENUM (${vals});`
   })
 }
 
@@ -186,7 +169,7 @@ function appendIndexStatements(
       dialect === ConnectionType.Postgres && idx.type ? `USING ${idx.type}` : '',
       `(${[
         ...idx.columns.map(c => quoteIdentifier(c, dialect)),
-        ...idx.customExpressions.map(c => c),
+        ...idx.customExpressions,
       ].join(', ')})`,
     ].filter(Boolean).join(' ')
   })
@@ -197,17 +180,16 @@ export function generateSchemaSQL({
   table,
   columns,
   dialect,
-  enums = [],
   indexes = [],
 }: SchemaParams) {
-  const usedEnums = new Map<string, typeof enumType.infer>()
+  const usedEnums = new Map<string, string[]>()
   const pkColumns: string[] = []
   const { columnLines, foreignKeys } = columns.reduce<{
     columnLines: string[]
     foreignKeys: string[]
   }>(
     (acc, c) => {
-      let typeDef = getTypeDef(c, table, enums, dialect, usedEnums)
+      let typeDef = getTypeDef(c, dialect, usedEnums)
       let defaultValue = c.defaultValue
 
       if (dialect === ConnectionType.Postgres && defaultValue?.toLowerCase().startsWith('nextval')) {

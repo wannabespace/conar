@@ -1,10 +1,10 @@
 import type { RefObject } from 'react'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { RiDatabase2Line } from '@remixicon/react'
-import { useInternalContext } from './context'
+import { useTableColumns } from '../../-columns'
 
 export function FiltersColumnSelector({ ref, onSelect }: { ref?: RefObject<HTMLInputElement | null>, onSelect: (column: string) => void }) {
-  const { columns } = useInternalContext()
+  const columns = useTableColumns()
 
   return (
     <Command>
@@ -16,7 +16,7 @@ export function FiltersColumnSelector({ ref, onSelect }: { ref?: RefObject<HTMLI
             <CommandItem
               key={column.id}
               value={column.id}
-              keywords={[column.id, column.type, column.label]}
+              keywords={[column.id, column.type ?? '', column.label ?? '']}
               onSelect={onSelect}
             >
               <RiDatabase2Line className="size-4 opacity-50" />

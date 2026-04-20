@@ -17,7 +17,7 @@ export function Sidebar() {
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const search = useSubscription(store, { selector: state => state.tablesSearch })
-  const { data: tablesAndSchemas, refetch: refetchTablesAndSchemas, isFetching: isRefreshingTablesAndSchemas, dataUpdatedAt } = useQuery(resourceTablesAndSchemasQueryOptions({ silent: false, connectionResource, showSystem }))
+  const { data: tablesAndSchemas, refetch: refetchTablesAndSchemas, isFetching: isRefreshingTablesAndSchemas, dataUpdatedAt } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))
 
   useRefreshHotkey(refetchTablesAndSchemas, isRefreshingTablesAndSchemas)
 

@@ -3,7 +3,7 @@ import type { UpdatesStatus } from '~/use-updates-observer'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { isNetworkError } from '@conar/shared/utils/network-error'
+import { isReconnectError } from '@conar/shared/utils/connections'
 import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
 import { setupProtocolHandler } from './lib/deep-link'
@@ -19,7 +19,7 @@ export const { autoUpdater } = todesktop
 initElectronEvents()
 
 process.on('uncaughtException', (error) => {
-  if (isNetworkError(error)) {
+  if (isReconnectError(error)) {
     console.error('[Suppressed Connection Error]', error.message)
     return
   }
@@ -27,7 +27,7 @@ process.on('uncaughtException', (error) => {
 })
 
 process.on('unhandledRejection', (reason) => {
-  if (isNetworkError(reason)) {
+  if (isReconnectError(reason)) {
     console.error('[Suppressed Connection Rejection]', reason instanceof Error ? reason.message : reason)
     return
   }
@@ -131,8 +131,18 @@ app.on('activate', () => {
   }
 })
 
-export function sendToast({ message, type }: { message: string, type: 'success' | 'error' | 'info' }) {
-  mainWindow?.webContents.send('toast', { message, type })
+export function sendToast({
+  message,
+  description,
+  type,
+  duration,
+}: {
+  message: string
+  description?: string
+  type: 'success' | 'error' | 'info' | 'warning'
+  duration?: number
+}) {
+  mainWindow?.webContents.send('toast', { message, description, type, duration })
 }
 
 function sendUpdatesStatus(status: UpdatesStatus, message?: string) {
