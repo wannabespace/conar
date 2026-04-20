@@ -49,6 +49,12 @@ export default antfu(
     },
   },
   {
+    files: ['**/packages/memoize/**/*'],
+    rules: {
+      'pnpm/json-enforce-catalog': 'off',
+    },
+  },
+  {
     plugins: {
       'better-tailwindcss': eslintPluginBetterTailwindcss,
     },

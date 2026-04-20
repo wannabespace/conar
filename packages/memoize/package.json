@@ -20,17 +20,16 @@
     "dev": "tsdown --watch"
   },
   "dependencies": {
-    "devalue": "catalog:"
+    "devalue": "^5.7.1"
   },
   "devDependencies": {
-    "@conar/configs": "workspace:*",
-    "@emotion/memoize": "catalog:",
-    "@formatjs/fast-memoize": "catalog:",
-    "@types/lodash.memoize": "catalog:",
-    "@types/memoizee": "catalog:",
-    "lodash.memoize": "catalog:",
-    "memoize": "catalog:",
-    "memoizee": "catalog:",
+    "@emotion/memoize": "^0.9.0",
+    "@formatjs/fast-memoize": "^3.1.2",
+    "@types/lodash.memoize": "^4.1.9",
+    "@types/memoizee": "^0.4.12",
+    "lodash.memoize": "^4.1.2",
+    "memoize": "^11.0.0",
+    "memoizee": "^0.4.17",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   }
