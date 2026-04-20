@@ -38,7 +38,7 @@ export interface DialectSeedConfig {
   generators: GeneratorMap
   autoDetect: (label: string) => GeneratorId | undefined
   shouldSkip?: (column: Column) => boolean
-  transformArray?: (items: unknown[], type: string) => unknown
+  transformArray?: (items: unknown[], column: Column) => unknown
   transformValue?: (value: unknown, column: Column) => unknown
 }
 
@@ -80,8 +80,7 @@ export function getGeneratorGroups(dialect: ConnectionType): GeneratorGroup[] {
 
 export function autoDetectGenerator(column: Column, dialect: ConnectionType): GeneratorId {
   const name = column.id.toLowerCase().replaceAll('_', '')
-  const label = (column.label?.toLowerCase() ?? '').replace('[]', '')
-  const type = (column.type?.toLowerCase() ?? '').replace('[]', '')
+  const typeLabel = (column.typeLabel?.toLowerCase() ?? '').replace('[]', '')
 
   if (column.foreign)
     return REFERENCE_GENERATOR
@@ -97,11 +96,11 @@ export function autoDetectGenerator(column: Column, dialect: ConnectionType): Ge
   if (column.defaultValue)
     return SKIP_GENERATOR
 
-  const dialectResult = config?.autoDetect(label)
+  const dialectResult = config?.autoDetect(typeLabel)
   if (dialectResult)
     return dialectResult
 
-  return baseAutoDetectGenerator(name, type)
+  return baseAutoDetectGenerator(name, typeLabel)
 }
 
 function generateValue({ generator, column, generators, referenceValues }: {
@@ -194,7 +193,7 @@ export function generateRows({ columns, columnGenerators, count, dialect, refere
         continue
 
       if (column.isArray && Array.isArray(value) && config?.transformArray)
-        value = config.transformArray(value, column.type?.toLowerCase() ?? '')
+        value = config.transformArray(value, column)
 
       if (config?.transformValue)
         value = config.transformValue(value, column)

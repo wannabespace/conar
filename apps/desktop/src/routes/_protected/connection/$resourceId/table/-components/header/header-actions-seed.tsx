@@ -325,7 +325,7 @@ export function HeaderActionsSeed({
                         size="sm"
                         className="text-muted-foreground"
                       >
-                        {column.label}
+                        {column.typeLabel}
                       </Badge>
                     </div>
                   </div>

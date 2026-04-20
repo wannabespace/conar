@@ -11,7 +11,7 @@ export const columnType = type({
   'id': 'string',
   'default': 'string | null',
   'type': 'string',
-  'label': 'string',
+  'typeLabel?': 'string',
   'enumName?': 'string',
   'isArray?': 'boolean',
   'editable?': 'boolean | 1 | 0',
@@ -21,8 +21,9 @@ export const columnType = type({
   'scale?': 'number | null',
   'isIdentity?': 'boolean | number',
 })
-  .pipe(({ editable, nullable, isIdentity, ...data }) => ({
+  .pipe(({ typeLabel, editable, nullable, isIdentity, ...data }) => ({
     ...data,
+    typeLabel: typeLabel ?? data.type,
     isEditable: Boolean(editable ?? true),
     isNullable: Boolean(nullable),
     isIdentity: Boolean(isIdentity),
@@ -112,7 +113,7 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
         return query.map(({ data_type, udt_name, ...row }) => ({
           ...row,
           type: data_type === 'ARRAY' ? `${udt_name.slice(1)}[]` : data_type,
-          label: data_type === 'ARRAY' ? `${getPgColumnType(data_type, udt_name)}[]` : getPgColumnType(data_type, udt_name),
+          typeLabel: data_type === 'ARRAY' ? `${getPgColumnType(data_type, udt_name)}[]` : getPgColumnType(data_type, udt_name),
           enumName: data_type === 'USER-DEFINED'
             ? udt_name
             : data_type === 'ARRAY'
@@ -151,7 +152,6 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
 
         return query.map(column => ({
           ...column,
-          label: column.type,
           enumName: column.type === 'set' || column.type === 'enum' ? column.id : undefined,
           isArray: column.type === 'set',
           maxLength: column.max_length,
@@ -194,7 +194,6 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
         return query.map(({ name, ...column }) => ({
           ...column,
           id: name,
-          label: column.type,
           enumName: column.type === 'set' || column.type === 'enum' ? name : undefined,
           isArray: column.type === 'set',
           maxLength: column.max_length,

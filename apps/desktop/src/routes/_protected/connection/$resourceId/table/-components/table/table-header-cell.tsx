@@ -282,8 +282,11 @@ export function TableHeaderCell({
             </Button>
           )}
         </div>
-        {column?.label && (
-          <div data-footer={!!column.label} className="flex items-center gap-1">
+        {column?.typeLabel && (
+          <div
+            data-footer={!!column.typeLabel}
+            className="flex items-center gap-1"
+          >
             {column.primaryKey && <PrimaryKeyTooltipIcon primaryKey={column.primaryKey} />}
             {column.isNullable && <NullableTooltipIcon />}
             {column.unique && <UniqueTooltipIcon unique={column.unique} />}
@@ -304,20 +307,20 @@ export function TableHeaderCell({
                       decoration-dotted
                     `}
                     >
-                      {column.label}
+                      {column.typeLabel}
                     </span>
                   </EnumTooltipIcon>
                 )
               : (
                   <span className="truncate font-mono text-muted-foreground">
-                    {column.label}
+                    {column.typeLabel}
                   </span>
                 )}
           </div>
         )}
       </div>
       <div className="flex h-full items-center gap-1">
-        {onSort && column.label && !CANNOT_SORT_TYPES.includes(column.label) && (
+        {onSort && column.typeLabel && !CANNOT_SORT_TYPES.includes(column.typeLabel) && (
           <SortButton order={order} onClick={onSort} />
         )}
         {onResize && (

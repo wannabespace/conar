@@ -1,12 +1,13 @@
 import type { DialectSeedConfig } from '../index'
+import type { Column } from '~/entities/connection/components'
 import { toPgArrayLiteral } from '~/entities/connection/transformers/list/postgres'
 import { pgAutoDetect } from './detect'
 import { PG_GENERATORS } from './generators'
 
-function pgTransformArray(items: unknown[], type: string): unknown {
+function pgTransformArray(items: unknown[], column: Column): unknown {
   const strings = items.map(v => typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v))
-  const baseType = type.replace('[]', '')
-  if (baseType === 'box')
+  const type = column.typeLabel?.toLowerCase().replace('[]', '')
+  if (type === 'box')
     return toPgArrayLiteral(strings, ';')
   return toPgArrayLiteral(strings)
 }

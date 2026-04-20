@@ -112,9 +112,9 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
                 )}
                 <span data-mask className="truncate font-medium">{column.id}</span>
               </div>
-              {(column.label || column.type) && (
+              {(column.typeLabel || column.type) && (
                 <span className="max-w-1/2 truncate text-muted-foreground/60">
-                  {column.label || column.type}
+                  {column.typeLabel || column.type}
                 </span>
               )}
               {column.foreign && (

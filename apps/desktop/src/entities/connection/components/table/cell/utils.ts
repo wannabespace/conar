@@ -5,7 +5,7 @@ export interface Column {
   id: string
   uiType: 'select' | 'list' | 'boolean' | 'date' | 'time' | 'datetime' | 'raw'
   type?: string
-  label?: string
+  typeLabel?: string
   enumName?: string
   availableValues?: string[]
   isArray?: boolean

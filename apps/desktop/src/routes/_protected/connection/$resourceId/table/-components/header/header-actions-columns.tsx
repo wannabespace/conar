@@ -68,7 +68,7 @@ export function HeaderActionsColumns() {
                 <CommandItem
                   key={column.id}
                   value={column.id}
-                  keywords={[column.id, column.type ?? '', column.label ?? '']}
+                  keywords={[column.id, column.type ?? '', column.typeLabel ?? '']}
                   onSelect={() => store.set(state => ({
                     ...state,
                     hiddenColumns: hiddenColumns.includes(column.id)
