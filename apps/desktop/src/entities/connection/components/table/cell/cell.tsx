@@ -33,7 +33,7 @@ function SetNullAlertDialog({
     if (!onSaveValue)
       return
 
-    onSaveValue(null)
+    await onSaveValue(null)
     onOpenChange(false)
   }
 
