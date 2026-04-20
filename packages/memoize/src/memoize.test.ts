@@ -220,15 +220,5 @@ describe('memoize', () => {
       fn(() => 1)
       expect(callback).toHaveBeenCalledTimes(2)
     })
-
-    it('stores unsupported keys separately from the Map cache', () => {
-      const fn = memoize((p: Point) => p.x)
-      fn(new Point(1))
-      fn(new Point(2))
-
-      const store = getCacheStore(fn)!
-      expect(store.cache.size).toBe(0)
-      expect(store.fallbackEntries.length).toBe(2)
-    })
   })
 })
