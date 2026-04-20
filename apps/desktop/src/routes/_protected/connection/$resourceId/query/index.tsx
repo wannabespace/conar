@@ -34,13 +34,13 @@ export const Route = createFileRoute(
   }),
 })
 
-const MIN_CHAT_SIZE = '15%'
+const MIN_CHAT_SIZE = '200px'
 
 // eslint-disable-next-line react-refresh/only-export-components
 function ChatPanel() {
   return (
     <ResizablePanel
-      defaultSize="30%"
+      defaultSize="300px"
       minSize={MIN_CHAT_SIZE}
       maxSize="50%"
       className="rounded-lg bg-background"

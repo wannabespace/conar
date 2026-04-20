@@ -1,9 +1,5 @@
-import type { Column } from '../components/table/cell'
+import type { GeneratorMap } from '.'
 import { faker } from '@faker-js/faker'
-
-export const SKIP_GENERATOR = 'skip-generator'
-export const REFERENCE_GENERATOR = 'reference-generator'
-export const ENUM_GENERATOR = 'enum-generator'
 
 function generateRandomJsonValue(depth = 0): unknown {
   const scalarGenerators = [
@@ -46,10 +42,11 @@ function generateRandomJsonObject(depth = 0): Record<string, unknown> {
   return object
 }
 
-export const GENERATORS = {
-  [SKIP_GENERATOR]: { label: 'Generate default', category: 'Special', generate: () => undefined },
-  [REFERENCE_GENERATOR]: { label: 'Random reference value', category: 'Special', generate: () => undefined },
-  [ENUM_GENERATOR]: { label: 'Random enum value', category: 'Special', generate: () => undefined },
+export const BASE_GENERATORS = {
+  'skip-generator': { label: 'Generate default', category: 'Special', generate: () => undefined },
+  'reference-generator': { label: 'Random reference value', category: 'Special', generate: () => undefined },
+  'enum-generator': { label: 'Random enum value', category: 'Special', generate: () => undefined },
+  'custom-generator': { label: 'Custom', category: 'Special', generate: () => undefined },
   'null': { label: 'NULL', category: 'Special', generate: () => null },
 
   'lorem.word': { label: 'Word', category: 'Text', generate: () => faker.lorem.word() },
@@ -91,7 +88,7 @@ export const GENERATORS = {
   'number.int': { label: 'Integer', category: 'Number', generate: () => faker.number.int({ max: 10000 }) },
   'number.float': { label: 'Float', category: 'Number', generate: () => faker.number.float({ max: 10000, fractionDigits: 2 }) },
   'number.bigInt': { label: 'Big Integer', category: 'Number', generate: () => String(faker.number.bigInt({ max: 9007199254740991n })) },
-  'number.binary': { label: 'Binary', category: 'Number', generate: () => faker.number.binary({ max: 255 }) },
+  'number.binary': { label: 'Binary', category: 'Number', generate: () => faker.number.binary({ max: 255 }).replace('0b', '') },
   'number.octal': { label: 'Octal', category: 'Number', generate: () => faker.number.octal({ max: 255 }) },
   'number.percentage': { label: 'Percentage', category: 'Number', generate: () => faker.number.float({ min: 0, max: 100, fractionDigits: 2 }) },
 
@@ -102,6 +99,7 @@ export const GENERATORS = {
   'date.birthdate': { label: 'Birthdate', category: 'Date', generate: () => faker.date.birthdate().toISOString() },
   'date.month': { label: 'Month Name', category: 'Date', generate: () => faker.date.month() },
   'date.weekday': { label: 'Weekday', category: 'Date', generate: () => faker.date.weekday() },
+  'date.time': { label: 'Time', category: 'Date', generate: () => faker.date.recent().toISOString().slice(11, 19) },
   'date.timeZone': { label: 'Time Zone', category: 'Date', generate: () => faker.location.timeZone() },
 
   'datatype.boolean': { label: 'Boolean', category: 'Boolean', generate: () => faker.datatype.boolean() },
@@ -174,50 +172,9 @@ export const GENERATORS = {
   'color.hex': { label: 'Color Hex', category: 'Other', generate: () => faker.color.rgb({ format: 'hex' }) },
   'json.object': { label: 'JSON Object', category: 'Other', generate: () => generateRandomJsonObject() },
   'json.array': { label: 'JSON Array', category: 'Other', generate: () => faker.helpers.multiple(() => generateRandomJsonValue(), { count: faker.number.int({ min: 1, max: 5 }) }) },
-} satisfies Record<string, {
-  label: string
-  category: string
-  generate: () => unknown
-}>
+} satisfies GeneratorMap
 
-export type GeneratorId = keyof typeof GENERATORS
-
-export interface Generator {
-  generatorId: GeneratorId
-  isNullable: boolean
-}
-
-export interface GeneratorGroup {
-  value: string
-  items: GeneratorId[]
-}
-
-export const GENERATOR_GROUPS: GeneratorGroup[] = Object.entries(GENERATORS).reduce<GeneratorGroup[]>(
-  (groups, [id, gen]) => {
-    const group = groups.find(g => g.value === gen.category)
-    if (group) {
-      group.items.push(id as GeneratorId)
-      return groups
-    }
-    return [...groups, { value: gen.category, items: [id as GeneratorId] }]
-  },
-  [],
-)
-
-export function autoDetectGenerator(column: Column): GeneratorId {
-  const name = column.id.toLowerCase().replaceAll('_', '')
-  const type = column.type?.toLowerCase() ?? ''
-
-  if (column.foreign)
-    return REFERENCE_GENERATOR
-
-  if (column.enumName && column.availableValues && column.availableValues.length > 0)
-    return ENUM_GENERATOR
-
-  if (column.primaryKey) {
-    return SKIP_GENERATOR
-  }
-
+export function baseAutoDetectGenerator(name: string, type: string): keyof typeof BASE_GENERATORS {
   if (name.includes('email'))
     return 'internet.email'
   if (name === 'firstname')
@@ -313,102 +270,22 @@ export function autoDetectGenerator(column: Column): GeneratorId {
 
   if (type === 'uuid')
     return 'string.uuidV4'
-  if (type === 'bool' || type === 'boolean' || type === 'bit')
+  if (type === 'bool' || type === 'boolean')
     return 'datatype.boolean'
+  if (type === 'date')
+    return 'date.recent'
   if (type.includes('int') || type === 'serial' || type === 'bigserial' || type === 'smallserial')
     return 'number.int'
   if (type.includes('float') || type.includes('double') || type.includes('decimal') || type.includes('numeric') || type === 'real' || type === 'money')
     return 'number.float'
   if (type.includes('timestamp') || type === 'datetime' || type === 'datetime2' || type === 'datetimeoffset')
     return 'date.recent'
-  if (type === 'date')
-    return 'date.recent'
+  if (type.includes('time') || type === 'timetz')
+    return 'date.time'
   if (type.includes('json'))
     return 'json.object'
-  if (type === 'inet' || type === 'cidr')
-    return 'internet.ip'
-  if (type === 'inet6')
-    return 'internet.ipv6'
-  if (type === 'macaddr' || type === 'macaddr8')
-    return 'internet.mac'
   if (type.includes('char') || type.includes('text') || type === 'string' || type.includes('varchar') || type.includes('nchar'))
     return 'lorem.sentence'
 
   return 'lorem.word'
-}
-
-function generateValue(
-  generator: Generator,
-  column: Column,
-  referenceValues?: unknown[],
-): unknown {
-  const generatorId = generator.generatorId
-  const generatorImpl = GENERATORS[generatorId]
-  if (!generatorImpl || generatorId === SKIP_GENERATOR)
-    return undefined
-  if (generatorId === 'null')
-    return null
-
-  if (generator.isNullable && column.isNullable && faker.datatype.boolean())
-    return null
-
-  if (generatorId === REFERENCE_GENERATOR) {
-    if (!referenceValues || referenceValues.length === 0) {
-      throw new Error(
-        `Cannot generate seed data: no reference values available for column "${column.id}".`,
-      )
-    }
-    if (column.isArray) {
-      const count = faker.number.int({ min: 1, max: 5 })
-      return faker.helpers.multiple(() => faker.helpers.arrayElement(referenceValues), { count })
-    }
-    return faker.helpers.arrayElement(referenceValues)
-  }
-
-  if (generatorId === ENUM_GENERATOR) {
-    if (!column.availableValues || column.availableValues.length === 0) {
-      throw new Error(
-        `Cannot generate seed data: no enum values available for column "${column.id}".`,
-      )
-    }
-    if (column.isArray) {
-      const count = faker.number.int({ min: 1, max: Math.min(5, column.availableValues.length) })
-      return faker.helpers.arrayElements(column.availableValues, count)
-    }
-    return faker.helpers.arrayElement(column.availableValues)
-  }
-
-  if (column.isArray) {
-    const count = faker.number.int({ min: 1, max: 5 })
-    return faker.helpers.multiple(() => generatorImpl.generate(), { count })
-  }
-
-  return generatorImpl.generate()
-}
-
-export function generateRows(
-  columns: Column[],
-  generators: Record<string, Generator>,
-  count: number,
-  referenceData?: Record<string, unknown[]>,
-) {
-  return Array.from({ length: count }, () => {
-    const row: Record<string, unknown> = {}
-    for (const column of columns) {
-      const generator = generators[column.id]
-      if (!generator || generator.generatorId === SKIP_GENERATOR)
-        continue
-
-      const value = generateValue(
-        generator,
-        column,
-        referenceData?.[column.id],
-      )
-
-      if (value !== undefined) {
-        row[column.id] = value
-      }
-    }
-    return row
-  })
 }

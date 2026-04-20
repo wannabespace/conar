@@ -93,29 +93,20 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
           reconnectingPromises.set((state) => {
             const existing = state[queryParams.connectionString]
 
-            if (existing) {
-              return {
-                ...state,
-                [queryParams.connectionString]: {
-                  ...existing,
-                  attempt,
-                },
-              }
-            }
-
-            return state
-          })
-
-          if (!reconnectingPromises.get()[queryParams.connectionString]) {
-            reconnectingPromises.set(state => ({
+            return {
               ...state,
-              [queryParams.connectionString]: {
-                promise: resolvers.promise,
-                resourceId: queryParams.resourceId,
-                attempt,
-              },
-            }))
-          }
+              [queryParams.connectionString]: existing
+                ? {
+                    ...existing,
+                    attempt,
+                  }
+                : {
+                    promise: resolvers.promise,
+                    resourceId: queryParams.resourceId,
+                    attempt,
+                  },
+            }
+          })
         }
 
         return error

@@ -1,11 +1,10 @@
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Dispatch, SetStateAction } from 'react'
 import type { SaveStatus } from './cell-context'
 import type { Column } from './utils'
+import type { ValueTransformer } from '~/entities/connection/transformers'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { createTransformer } from '~/entities/connection/transformers'
 import { CellContext } from './cell-context'
 
 export function TableCellProvider({
@@ -20,7 +19,7 @@ export function TableCellProvider({
   value,
   setStatus,
   onSaveValue,
-  connectionType,
+  transformer,
 }: {
   rowIndex: number
   column: Column
@@ -32,10 +31,9 @@ export function TableCellProvider({
   sortOrder?: 'ASC' | 'DESC' | null
   onRenameColumn?: () => void
   onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<unknown>
-  connectionType: ConnectionType
+  transformer: ValueTransformer
   children: React.ReactNode
 }) {
-  const transformer = createTransformer(connectionType, column)
   const [newValue, setNewValue] = useState(() => transformer.fromConnection(value).toUI())
   const [rawValue, setRawValue] = useState(() => transformer.fromConnection(value).toRaw())
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -58,9 +56,7 @@ export function TableCellProvider({
       )
       const newRawValue = result === undefined ? rawValue : result
       setNewValue(transformer.fromConnection(newRawValue).toUI())
-      setRawValue(typeof newRawValue === 'string'
-        ? newRawValue
-        : JSON.stringify(newRawValue))
+      setRawValue(transformer.fromConnection(newRawValue).toRaw())
       setStatus('success')
       timeoutRef.current = setTimeout(setStatus, 3000, 'idle')
     }

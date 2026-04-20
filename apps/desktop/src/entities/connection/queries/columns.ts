@@ -1,7 +1,8 @@
 import type { connectionsResources } from '~/drizzle/schema'
-import { memoize } from '@conar/shared/utils/helpers'
+import { memoize } from '@conar/memoize'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { sql } from 'kysely'
 import { connectionResourceToQueryParams, createQuery } from '../query'
 
 export const columnType = type({
@@ -10,7 +11,7 @@ export const columnType = type({
   'id': 'string',
   'default': 'string | null',
   'type': 'string',
-  'label': 'string',
+  'typeLabel?': 'string',
   'enumName?': 'string',
   'isArray?': 'boolean',
   'editable?': 'boolean | 1 | 0',
@@ -18,11 +19,14 @@ export const columnType = type({
   'maxLength?': 'number | null',
   'precision?': 'number | null',
   'scale?': 'number | null',
+  'isIdentity?': 'boolean | number',
 })
-  .pipe(({ editable, nullable, ...data }) => ({
+  .pipe(({ typeLabel, editable, nullable, isIdentity, ...data }) => ({
     ...data,
+    typeLabel: typeLabel ?? data.type,
     isEditable: Boolean(editable ?? true),
     isNullable: Boolean(nullable),
+    isIdentity: Boolean(isIdentity),
   }))
 
 const clickhouseEnumRegex = /^Enum\d+/
@@ -109,7 +113,7 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
         return query.map(({ data_type, udt_name, ...row }) => ({
           ...row,
           type: data_type === 'ARRAY' ? `${udt_name.slice(1)}[]` : data_type,
-          label: data_type === 'ARRAY' ? `${getPgColumnType(data_type, udt_name)}[]` : getPgColumnType(data_type, udt_name),
+          typeLabel: data_type === 'ARRAY' ? `${getPgColumnType(data_type, udt_name)}[]` : getPgColumnType(data_type, udt_name),
           enumName: data_type === 'USER-DEFINED'
             ? udt_name
             : data_type === 'ARRAY'
@@ -148,7 +152,6 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
 
         return query.map(column => ({
           ...column,
-          label: column.type,
           enumName: column.type === 'set' || column.type === 'enum' ? column.id : undefined,
           isArray: column.type === 'set',
           maxLength: column.max_length,
@@ -166,6 +169,13 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
             'NUMERIC_PRECISION as precision',
             'NUMERIC_SCALE as scale',
             'DATA_TYPE as type',
+            sql<boolean>`
+              COLUMNPROPERTY(
+                OBJECT_ID(TABLE_SCHEMA + '.' + TABLE_NAME),
+                COLUMN_NAME,
+                'IsIdentity'
+              )
+            `.as('isIdentity'),
             eb
               .case('IS_NULLABLE')
               .when('YES')
@@ -184,7 +194,6 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
         return query.map(({ name, ...column }) => ({
           ...column,
           id: name,
-          label: column.type,
           enumName: column.type === 'set' || column.type === 'enum' ? name : undefined,
           isArray: column.type === 'set',
           maxLength: column.max_length,

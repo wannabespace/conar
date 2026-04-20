@@ -16,7 +16,7 @@ export const CellContext = createContext<{
   value: unknown
   status: SaveStatus
   setStatus: Dispatch<SetStateAction<SaveStatus>>
-  onSaveValue?: (rawValue: unknown) => void
+  onSaveValue?: (rawValue: unknown) => Promise<void>
   transformer: ValueTransformer
   onAddFilter?: (filter: ActiveFilter) => void
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void

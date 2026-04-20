@@ -1,5 +1,6 @@
 import type { ValueTransformer } from './create-transformer'
 import { getValueForEditor } from '~/entities/connection/utils/helpers'
+import { getDisplayValue } from './create-transformer'
 
 function toBooleanUiString(value: unknown): boolean {
   if (value === null || value === undefined)
@@ -13,6 +14,7 @@ function toBooleanUiString(value: unknown): boolean {
 
 export function createBooleanTransformer(): ValueTransformer<boolean> {
   return {
+    toDisplay: getDisplayValue,
     fromConnection: value => ({
       toUI: () => toBooleanUiString(value),
       toRaw: () => getValueForEditor(value),

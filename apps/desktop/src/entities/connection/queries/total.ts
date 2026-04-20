@@ -1,6 +1,6 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { connectionsResources } from '~/drizzle/schema'
-import { memoize } from '@conar/shared/utils/helpers'
+import { memoize } from '@conar/memoize'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'

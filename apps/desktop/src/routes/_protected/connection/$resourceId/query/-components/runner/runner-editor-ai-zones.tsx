@@ -48,7 +48,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
   const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
-  const editorQueries = useSubscription(editorQueriesStore, { selector: state => state })
+  const editorQueries = useSubscription(editorQueriesStore)
   const domElementRef = useRef<HTMLElement>(null)
   const { subscription } = useUserSubscription()
 

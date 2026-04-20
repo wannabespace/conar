@@ -9,7 +9,7 @@ import { RiCornerRightUpLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi, Link } from '@tanstack/react-router'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
-import { getDisplayValue } from '~/entities/connection/utils/helpers'
+import { createTransformer } from '~/entities/connection/transformers'
 import { useTableColumnsQuery } from '~/routes/_protected/connection/$resourceId/table/-columns'
 import { TableError } from '~/routes/_protected/connection/$resourceId/table/-components/table/table'
 import { TableEmpty } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-empty'
@@ -22,7 +22,7 @@ import { getColumnSize } from './utils'
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export function TableCellTable({ schema, table, column, value }: { schema: string, table: string, column: string, value: unknown }) {
-  const { connectionResource } = useRouteContext()
+  const { connection, connectionResource } = useRouteContext()
   const filters = [{
     column,
     ref: SQL_FILTERS_LIST.find(filter => filter.operator === '=')!,
@@ -43,6 +43,7 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
     id: column.id,
     size: column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH,
     cell: (props) => {
+      const transformer = createTransformer(connection.type, column)
       return (
         <TableCellContent
           column={column}
@@ -51,7 +52,7 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
           style={props.style}
         >
           <span className="truncate">
-            {getDisplayValue(props.value, props.size)}
+            {transformer.toDisplay(props.value, props.size)}
           </span>
         </TableCellContent>
       )

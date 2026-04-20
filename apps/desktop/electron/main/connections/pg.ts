@@ -3,7 +3,7 @@ import { createRequire } from 'node:module'
 import { parseConnectionString } from '@conar/connection'
 import { readSSLFiles } from '@conar/connection/server'
 import { defaultSSLConfig, parseSSLConfig } from '@conar/connection/ssl/pg'
-import { memoize } from '@conar/shared/utils/helpers'
+import { memoize } from '@conar/memoize'
 import { tries } from '@conar/shared/utils/tries'
 
 const pg = createRequire(import.meta.url)('pg') as typeof import('pg')

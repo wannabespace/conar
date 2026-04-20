@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",
+    "@conar/configs": "workspace:*",
     "@eslint-react/eslint-plugin": "catalog:",
     "@types/bun": "catalog:",
     "cross-env": "catalog:",

@@ -27,7 +27,7 @@ function createDriver(options: DialectOptions) {
           const { result } = await execute({ ...options, compiledQuery })
 
           return {
-            rows: result as R[],
+            rows: Array.isArray(result) ? result as R[] : [],
           }
         },
         streamQuery() {

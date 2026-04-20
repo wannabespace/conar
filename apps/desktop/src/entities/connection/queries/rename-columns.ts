@@ -1,4 +1,4 @@
-import { memoize } from '@conar/shared/utils/helpers'
+import { memoize } from '@conar/memoize'
 import { sql } from 'kysely'
 import { createQuery } from '../query'
 
