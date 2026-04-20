@@ -36,10 +36,8 @@ function toggleTheme() {
   const root = window.document.documentElement
   const resolved = resolvedThemeComputed.get()
 
-  document.startViewTransition(() => {
-    root.classList.toggle('dark', resolved === 'dark')
-    root.classList.toggle('light', resolved === 'light')
-  })
+  root.classList.toggle('dark', resolved === 'dark')
+  root.classList.toggle('light', resolved === 'light')
 }
 
 mediaQuery.subscribe(toggleTheme)
