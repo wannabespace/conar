@@ -41,7 +41,7 @@ import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '@conar/ui
 import { Switch } from '@conar/ui/components/switch'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import NumberFlow from '@number-flow/react'
-import { RiCodeSSlashLine, RiSearchLine, RiSeedlingLine } from '@remixicon/react'
+import { RiCodeSSlashLine, RiSearchLine, RiSeedlingLine, RiVipCrownLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -50,7 +50,10 @@ import { Monaco } from '~/components/monaco'
 import { distinctQuery, insertQuery, resourceRowsQueryInfiniteOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { autoDetectGenerator, CUSTOM_GENERATOR, ENUM_GENERATOR, generateRows, getGeneratorGroups, getGenerators, REFERENCE_GENERATOR, SKIP_GENERATOR } from '~/entities/connection/utils/seeds'
+import { FREE_SEED_LIMIT, incrementSeedUsage, seedUsageValue } from '~/entities/connection/utils/seeds/usage'
+import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 import { queryClient } from '~/main'
+import { setIsSubscriptionDialogOpen } from '~/store'
 import { Route } from '../..'
 import { useTableColumns } from '../../-columns'
 import { useTablePageStore } from '../../-store'
@@ -178,6 +181,11 @@ export function HeaderActionsSeed({
   const generators = useSubscription(store, { selector: state => state.generators })
   const { filters, orderBy, exact } = useSubscription(store, { selector: state => pick(state, ['filters', 'orderBy', 'exact']) })
 
+  const { subscription } = useUserSubscription()
+  const seedUsageCount = useSubscription(seedUsageValue)
+  const remainingFreeSeeds = Math.max(0, FREE_SEED_LIMIT - seedUsageCount)
+  const hasReachedFreeLimit = !subscription && remainingFreeSeeds === 0
+
   const handleOpenChange = (open: boolean) => {
     setOpen(open)
 
@@ -252,6 +260,9 @@ export function HeaderActionsSeed({
       }
     },
     onSuccess: () => {
+      if (!subscription) {
+        incrementSeedUsage()
+      }
       toast.success(`Seeded ${rowCount} rows into ${schema}.${table}`)
       queryClient.invalidateQueries(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }))
       queryClient.invalidateQueries(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters, exact } }))
@@ -299,6 +310,28 @@ export function HeaderActionsSeed({
           </DrawerDescription>
         </DrawerHeader>
         <DrawerPanel>
+          {!subscription && (
+            <div
+              className="
+                mb-4 flex items-center gap-2 rounded-md border bg-muted/50 px-3
+                py-2 text-sm
+              "
+            >
+              <RiVipCrownLine className="size-4 shrink-0 text-primary" />
+              <span className="flex-1">
+                {hasReachedFreeLimit
+                  ? 'You have used all your free seed generations.'
+                  : `${remainingFreeSeeds} of ${FREE_SEED_LIMIT} free seed generations remaining.`}
+              </span>
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={() => setIsSubscriptionDialogOpen(true)}
+              >
+                Upgrade
+              </Button>
+            </div>
+          )}
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <Label className="mb-1">Columns</Label>
@@ -440,17 +473,34 @@ export function HeaderActionsSeed({
             Cancel
           </DrawerClose>
           <Button
-            onClick={() => seed()}
+            onClick={() => {
+              if (hasReachedFreeLimit) {
+                setIsSubscriptionDialogOpen(true)
+                return
+              }
+              seed()
+            }}
             disabled={isPending || activeCount === 0}
           >
             <LoadingContent loading={isPending}>
-              <RiSeedlingLine className="size-4" />
-              <NumberFlow
-                value={rowCount}
-                className="tabular-nums"
-                prefix="Seed "
-                suffix={rowCount === 1 ? ' row' : ' rows'}
-              />
+              {hasReachedFreeLimit
+                ? (
+                    <>
+                      <RiVipCrownLine className="size-4" />
+                      Upgrade to Seed
+                    </>
+                  )
+                : (
+                    <>
+                      <RiSeedlingLine className="size-4" />
+                      <NumberFlow
+                        value={rowCount}
+                        className="tabular-nums"
+                        prefix="Seed "
+                        suffix={rowCount === 1 ? ' row' : ' rows'}
+                      />
+                    </>
+                  )}
             </LoadingContent>
           </Button>
         </DrawerFooter>
