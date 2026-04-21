@@ -11,8 +11,8 @@ import { RPCHandler } from '@orpc/server/fetch'
 import { generateText } from 'ai'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { sql } from 'drizzle-orm'
 import { db } from './drizzle'
-import { users } from './drizzle/schema'
 import { env, nodeEnv } from './env'
 import { auth } from './lib/auth'
 import { createContext } from './orpc/context'
@@ -159,17 +159,6 @@ const app = new Hono<{
     }
 
     function createAnswer(status: 'error' | 'ok', service: string, message: string) {
-      if (env.ALERTS_EMAIL) {
-        sendEmail({
-          to: env.ALERTS_EMAIL,
-          subject: `Alert from API: ${status} ${service}`,
-          template: 'Alert',
-          props: {
-            service,
-            text: message,
-          },
-        })
-      }
       return {
         status,
         service,
@@ -179,16 +168,7 @@ const app = new Hono<{
 
     const promises = await Promise.all([
       db
-        .select()
-        .from(users)
-        .limit(1)
-        .then(([user]) => {
-          if (!user) {
-            throw new Error('User not found')
-          }
-
-          return user
-        })
+        .execute(sql`select 1`)
         .then(() => createAnswer('ok', 'database', 'Database connection ok'))
         .catch(e => createAnswer('error', 'database', e instanceof Error ? e.message : 'Database connection failed')),
       generateText({
