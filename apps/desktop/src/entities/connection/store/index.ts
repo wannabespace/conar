@@ -2,11 +2,11 @@ import type { FileRoutesById } from '~/routeTree.gen'
 import { memoize } from '@conar/memoize'
 import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { type } from 'arktype'
-import { createComputed, createStore } from 'seitu'
+import { createStore } from 'seitu'
 import { repairValueObjectWithDefault } from 'seitu/utils'
 import { createWebStorageValue } from 'seitu/web'
-import { getEditorQueries } from '~/entities/connection/utils'
 
+export * from './editor-queries'
 export * from './helpers'
 
 const schema = type({
@@ -106,28 +106,5 @@ export const getConnectionResourceStore = memoize((id: string) => createWebStora
   schema: connectionResourceType,
   onValidationError: repairValueObjectWithDefault,
 }))
-
-export const getEditorQueriesComputed = memoize((id: string) => {
-  const store = getConnectionResourceStore(id)
-  const computed = createComputed(store, state => getEditorQueries(state.query))
-
-  computed.subscribe((editorQueries) => {
-    const state = store.get()
-    const currentLineNumbers = editorQueries.map(query => query.startLineNumber)
-    const newSelectedLines = state.selectedLines.filter(line => currentLineNumbers.includes(line))
-
-    if (
-      newSelectedLines.length !== state.selectedLines.length
-      || newSelectedLines.some((line, i) => line !== state.selectedLines[i])
-    ) {
-      store.set(state => ({
-        ...state,
-        selectedLines: newSelectedLines.toSorted((a, b) => a - b),
-      } satisfies typeof state))
-    }
-  })
-
-  return computed
-})
 
 export const getFilesStore = memoize((_id: string) => createStore<File[]>([]))
