@@ -107,13 +107,13 @@ function ConnectionResourcesCombobox({
       onValueChange={onSelectedResourceNameChange}
     >
       <ComboboxTrigger
-        className="text-xs"
+        className="pointer-events-auto text-xs"
         render={<Button variant="outline" size="xs" />}
       >
         {selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_LABEL : selectedResourceName}
         <RiArrowDownSLine />
       </ComboboxTrigger>
-      <ComboboxPopup className="max-w-80 min-w-48">
+      <ComboboxPopup className="pointer-events-auto max-w-80 min-w-48">
         <div className="border-b p-2">
           <ComboboxInput
             className="
@@ -287,12 +287,12 @@ function ConnectionCard({
           gap-4 px-6 py-4
         "
         >
-          <div className={cn(`flex items-center gap-4`, isFetching && `
+          <div className={cn(`flex min-w-0 items-center gap-4`, isFetching && `
             animate-pulse
           `)}
           >
             <ConnectionIconWithVersion connection={connection} />
-            <div className="flex flex-col gap-1">
+            <div className="flex min-w-0 flex-col gap-1">
               <div className="flex items-center gap-2 leading-none font-medium">
                 <span title={connection.name}>
                   {connection.name}
@@ -319,29 +319,35 @@ function ConnectionCard({
                   </Tooltip>
                 )}
               </div>
-              <div className="pointer-events-auto flex h-4 items-center gap-1">
+              <div className="
+                flex h-4 min-w-0 items-center gap-1 text-xs
+                text-muted-foreground
+              "
+              >
                 <Tooltip open={isOpen || isCopied} onOpenChange={setIsOpen}>
                   <TooltipTrigger
-                    className={`
-                      group flex cursor-pointer items-center gap-1 text-xs
-                      text-muted-foreground
-                    `}
+                    className="
+                      pointer-events-auto flex min-w-0 cursor-pointer
+                      items-center
+                    "
                     onClick={() => handleCopy()}
                   >
-                    {getConnectionStringToShow(connection.connectionString)}
-                    {isResourcesShown
-                      ? <span>/</span>
-                      : selectedResourceName !== CONNECTION_RESOURCE_ROOT_SYMBOL && (
-                        <span>
-                          /
-                          {selectedResourceName}
-                        </span>
-                      )}
+                    <span className="truncate">
+                      {getConnectionStringToShow(connection.connectionString)}
+                    </span>
                   </TooltipTrigger>
                   <TooltipContent className="flex items-center gap-1" side="bottom">
                     {isCopied ? 'Connection string copied!' : 'Copy connection string'}
                   </TooltipContent>
                 </Tooltip>
+                {(isResourcesShown || selectedResourceName !== CONNECTION_RESOURCE_ROOT_SYMBOL) && (
+                  <span className="shrink-0">
+                    /
+                    {!isResourcesShown && selectedResourceName !== CONNECTION_RESOURCE_ROOT_SYMBOL
+                      ? selectedResourceName
+                      : null}
+                  </span>
+                )}
                 {isResourcesShown && (
                   <ConnectionResourcesCombobox
                     resources={resources}
