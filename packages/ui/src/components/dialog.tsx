@@ -81,7 +81,7 @@ function DialogPopup({
           className={cn(
             `
               relative row-start-2 flex max-h-full min-h-0 w-full max-w-lg
-              min-w-0 -translate-y-[calc(1.25rem*var(--nested-dialogs))]
+              min-w-0 translate-y-[calc(-1.25rem*var(--nested-dialogs))]
               scale-[calc(1-0.1*var(--nested-dialogs))] flex-col rounded-2xl
               border bg-popover text-popover-foreground
               opacity-[calc(1-0.1*var(--nested-dialogs))] shadow-lg/5

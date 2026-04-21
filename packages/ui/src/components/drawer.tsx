@@ -101,7 +101,7 @@ export function DrawerBackdrop({
           opacity-[calc(1-var(--drawer-swipe-progress))] backdrop-blur-sm
           transition-opacity duration-450 ease-[cubic-bezier(0.32,0.72,0,1)]
           data-ending-style:opacity-0
-          data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)]
+          data-ending-style:duration-[calc(var(--drawer-swipe-strength)*0.4s)]
           data-starting-style:opacity-0
           data-swiping:duration-0
           supports-[-webkit-touch-callout:none]:absolute
@@ -186,7 +186,7 @@ export function DrawerPopup({
               before:shadow-[0_1px_--theme(--color-black/4%)]
               after:pointer-events-none after:absolute after:bg-popover
               data-ending-style:shadow-transparent
-              data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)]
+              data-ending-style:duration-[calc(var(--drawer-swipe-strength)*0.4s)]
               data-nested-drawer-open:overflow-hidden
               data-nested-drawer-open:bg-[color-mix(in_srgb,var(--popover),var(--color-black)_calc(2%*(var(--nested-drawers)-var(--stack-progress))))]
               data-starting-style:shadow-transparent
@@ -198,7 +198,7 @@ export function DrawerPopup({
             position === 'bottom'
             && `
               row-start-2
-              -mb-[max(0px,calc(var(--drawer-snap-point-offset,0px)+clamp(0,1,var(--drawer-snap-point-offset,0px)/1px)*var(--drawer-swipe-movement-y,0px)))]
+              -mb-[max(0,calc(var(--drawer-snap-point-offset,0)+clamp(0,1,var(--drawer-snap-point-offset,0)/1px)*var(--drawer-swipe-movement-y,0)))]
               transform-[translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))]
               border-t
               pb-[max(0px,calc(env(safe-area-inset-bottom,0px)+var(--drawer-snap-point-offset,0px)+clamp(0,1,var(--drawer-snap-point-offset,0px)/1px)*var(--drawer-swipe-movement-y,0px)))]
@@ -224,7 +224,7 @@ export function DrawerPopup({
             && `
               w-[calc(100%-(--spacing(12)))] max-w-md
               transform-[translateX(var(--drawer-swipe-movement-x))] border-e
-              after:inset-y-0 after:end-full after:w-(--bleed)
+              after:inset-y-0 after:inset-e-full after:w-(--bleed)
               has-data-[slot=drawer-bar]:pe-2
               data-ending-style:transform-[translateX(calc(-100%-var(--inset)))]
               data-starting-style:transform-[translateX(calc(-100%-var(--inset)))]
@@ -233,7 +233,7 @@ export function DrawerPopup({
             && `
               col-start-2 w-[calc(100%-(--spacing(12)))] max-w-md
               transform-[translateX(var(--drawer-swipe-movement-x))] border-s
-              after:inset-y-0 after:start-full after:w-(--bleed)
+              after:inset-y-0 after:inset-s-full after:w-(--bleed)
               has-data-[slot=drawer-bar]:ps-2
               data-ending-style:transform-[translateX(calc(100%+var(--inset)))]
               data-starting-style:transform-[translateX(calc(100%+var(--inset)))]
@@ -373,11 +373,11 @@ export function DrawerFooter({
       variant === 'default'
       && `
         border-t bg-muted/72 pt-4
-        pb-[calc(env(safe-area-inset-bottom,0px)+--spacing(4))]
+        pb-[calc(env(safe-area-inset-bottom,0)+--spacing(4))]
       `,
       variant === 'bare'
       && `
-        pt-4 pb-[calc(env(safe-area-inset-bottom,0px)+--spacing(6))]
+        pt-4 pb-[calc(env(safe-area-inset-bottom,0)+--spacing(6))]
         in-[[data-slot=drawer-popup]:has([data-slot=drawer-panel])]:pt-3
       `,
       className,

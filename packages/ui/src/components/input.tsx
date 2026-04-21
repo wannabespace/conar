@@ -69,6 +69,7 @@ export function Input({
               data-slot="input"
               size={typeof size === 'number' ? size : undefined}
               {...props}
+              style={typeof props.style === 'function' ? undefined : props.style}
             />
           )
         : (

@@ -1,9 +1,12 @@
+import type Stripe from 'stripe'
 import { ORPCError } from '@orpc/server'
 import { eq } from 'drizzle-orm'
 import { db } from '~/drizzle'
 import { users } from '~/drizzle/schema'
 import { stripe } from '~/lib/stripe'
 import { authMiddleware, orpc } from '~/orpc'
+
+export type InvoiceStatus = Extract<Stripe.Invoice.Status, string>
 
 export const invoices = orpc
   .use(authMiddleware)
@@ -25,7 +28,7 @@ export const invoices = orpc
     return invoices?.data.map(invoice => ({
       id: invoice.id,
       amount: invoice.amount_paid,
-      status: invoice.status,
+      status: invoice.status as InvoiceStatus | null,
       createdAt: new Date(invoice.created * 1000),
       url: invoice.hosted_invoice_url,
     })) ?? []

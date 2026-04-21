@@ -1,4 +1,4 @@
-import type { Stripe } from 'stripe'
+import type Stripe from 'stripe'
 import {
   boolean,
   numeric,
@@ -11,6 +11,9 @@ import {
 import { baseTable } from '../base-table'
 import { users } from './auth'
 
+// Strange solution to fix TS compiler error
+export type SubscriptionStatus = Extract<Stripe.Subscription.Status, string>
+
 export const subscriptionPeriod = pgEnum('subscription_period', ['monthly', 'yearly'])
 
 export const subscriptions = pgTable('subscriptions', {
@@ -20,7 +23,7 @@ export const subscriptions = pgTable('subscriptions', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   stripeSubscriptionId: text(),
-  status: text().$type<Stripe.Subscription.Status>().default('incomplete'),
+  status: text().$type<SubscriptionStatus>().default('incomplete'),
   period: subscriptionPeriod().notNull(),
   price: numeric({ mode: 'number' }).notNull(),
   periodStart: timestamp({ withTimezone: true }),

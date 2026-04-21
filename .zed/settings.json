@@ -1,49 +1,49 @@
 {
+  "code_actions_on_format": {
+    "source.fixAll.eslint": true
+  },
+  "formatter": [],
+  "languages": {
+    "HTML": {
+      "language_servers": ["...", "eslint"]
+    },
+    "Markdown": {
+      "language_servers": ["...", "eslint"]
+    },
+    "Markdown-Inline": {
+      "language_servers": ["...", "eslint"]
+    },
+    "JSON": {
+      "language_servers": ["...", "eslint"]
+    },
+    "JSONC": {
+      "language_servers": ["...", "eslint"]
+    },
+    "YAML": {
+      "language_servers": ["...", "eslint"]
+    },
+    "CSS": {
+      "language_servers": ["...", "eslint"]
+    }
+  },
   "lsp": {
     "eslint": {
       "settings": {
-        "workingDirectories": ["./"]
-      }
-    }
-  },
-  "languages": {
-    "JavaScript": {
-      "formatter": [],
-      "code_actions_on_format": {
-        "source.fixAll.eslint": true
-      }
-    },
-    "TypeScript": {
-      "formatter": [],
-      "code_actions_on_format": {
-        "source.fixAll.eslint": true
-      }
-    },
-    "TSX": {
-      "formatter": [],
-      "code_actions_on_format": {
-        "source.fixAll.eslint": true
-      }
-    },
-    "JSON": {
-      "formatter": [],
-      "language_servers": ["...", "eslint"],
-      "code_actions_on_format": {
-        "source.fixAll.eslint": true
-      }
-    },
-    "JSONC": {
-      "formatter": [],
-      "language_servers": ["...", "eslint"],
-      "code_actions_on_format": {
-        "source.fixAll.eslint": true
-      }
-    },
-    "YAML": {
-      "formatter": [],
-      "language_servers": ["...", "eslint"],
-      "code_actions_on_format": {
-        "source.fixAll.eslint": true
+        "workingDirectories": ["./"],
+
+        // Silent the stylistic rules in your IDE, but still auto fix them
+        "rulesCustomizations": [
+          { "rule": "style/*", "severity": "off", "fixable": true },
+          { "rule": "format/*", "severity": "off", "fixable": true },
+          { "rule": "*-indent", "severity": "off", "fixable": true },
+          { "rule": "*-spacing", "severity": "off", "fixable": true },
+          { "rule": "*-spaces", "severity": "off", "fixable": true },
+          { "rule": "*-order", "severity": "off", "fixable": true },
+          { "rule": "*-dangle", "severity": "off", "fixable": true },
+          { "rule": "*-newline", "severity": "off", "fixable": true },
+          { "rule": "*quotes", "severity": "off", "fixable": true },
+          { "rule": "*semi", "severity": "off", "fixable": true }
+        ]
       }
     }
   }
