@@ -6,7 +6,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "start": "bun run .output/server/index.mjs",
-    "check-types": "tsc"
+    "check-types": "tsgo"
   },
   "dependencies": {
     "@conar/memoize": "workspace:*",
@@ -43,12 +43,12 @@
     "@tailwindcss/vite": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "react-scan": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
-    "typescript": "catalog:",
     "vite": "catalog:",
     "vite-tsconfig-paths": "catalog:"
   }

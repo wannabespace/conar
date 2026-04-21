@@ -1,3 +1,4 @@
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { drizzle as drizzlePglite } from 'drizzle-orm/pglite'
 import { env, nodeEnv } from '~/env'
@@ -18,5 +19,5 @@ const config = {
 } satisfies Parameters<typeof drizzle>[1]
 
 export const db = nodeEnv === 'test'
-  ? drizzlePglite(env.DATABASE_URL, config)
+  ? drizzlePglite(env.DATABASE_URL, config) as unknown as NodePgDatabase<Record<string, never>, typeof config['relations']>
   : drizzle(env.DATABASE_URL, config)

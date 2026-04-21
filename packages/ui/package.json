@@ -12,7 +12,7 @@
     "./theme-store": "./src/theme-store.ts"
   },
   "scripts": {
-    "check-types": "tsc"
+    "check-types": "tsgo"
   },
   "dependencies": {
     "@base-ui/react": "catalog:",

@@ -4,6 +4,12 @@
   },
   "formatter": [],
   "languages": {
+    "TypeScript": {
+      "language_servers": ["tsgo", "eslint"]
+    },
+    "TSX": {
+      "language_servers": ["tsgo", "eslint"]
+    },
     "HTML": {
       "language_servers": ["...", "eslint"]
     },
