@@ -33,6 +33,7 @@
     "@conar/configs": "workspace:*",
     "@eslint-react/eslint-plugin": "catalog:",
     "@types/bun": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "cross-env": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-better-tailwindcss": "catalog:",
@@ -44,7 +45,6 @@
     "playwright": "catalog:",
     "tailwindcss": "catalog:",
     "taze": "catalog:",
-    "turbo": "catalog:",
-    "typescript": "catalog:"
+    "turbo": "catalog:"
   }
 }

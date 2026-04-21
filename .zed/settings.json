@@ -4,6 +4,9 @@
   },
   "formatter": [],
   "languages": {
+    "TypeScript": {
+      "language_servers": ["tsgo", "eslint"]
+    },
     "HTML": {
       "language_servers": ["...", "eslint"]
     },
