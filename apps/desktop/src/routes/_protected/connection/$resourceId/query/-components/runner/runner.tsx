@@ -1,4 +1,5 @@
 import type { ComponentRef } from 'react'
+import type { QueryToRun } from './runner-context'
 import { Button } from '@conar/ui/components/button'
 import { CardHeader, CardTitle } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
@@ -9,7 +10,7 @@ import NumberFlow from '@number-flow/react'
 import { RiBrush2Line, RiCheckLine, RiPlayFill, RiSettings3Line, RiStarLine } from '@remixicon/react'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
@@ -26,6 +27,55 @@ import { RunnerResults } from './runner-results'
 import { RunnerSaveDialog } from './runner-save-dialog'
 import { RunnerSettings } from './runner-settings'
 
+function useQueriesToRun(): QueryToRun[] {
+  const { connectionResource } = Route.useRouteContext()
+  const store = getConnectionResourceStore(connectionResource.id)
+  const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
+  const editorQueries = useSubscription(editorQueriesStore)
+  const selectedLines = useSubscription(store, { selector: state => state.selectedLines })
+
+  const queries = selectedLines.length > 0
+    ? editorQueries.filter(query => selectedLines.includes(query.startLineNumber))
+    : editorQueries
+
+  return queries.flatMap(({ startLineNumber, endLineNumber, queries }) => queries.map(query => ({
+    startLineNumber,
+    endLineNumber,
+    query,
+  })))
+}
+
+function RunnerRunButton({ onRun }: { onRun: (queries: QueryToRun[]) => void }) {
+  const { connectionResource } = Route.useRouteContext()
+  const store = getConnectionResourceStore(connectionResource.id)
+  const selectedLinesLength = useSubscription(store, { selector: state => state.selectedLines.length })
+  const queriesToRun = useQueriesToRun()
+  const { fetchStatus } = useQuery(runnerQueryOptions(connectionResource))
+  const isDisabled = fetchStatus === 'fetching' || queriesToRun.length === 0
+
+  return (
+    <Button
+      disabled={isDisabled}
+      size="sm"
+      onClick={() => onRun(queriesToRun)}
+    >
+      <RiPlayFill />
+      Run
+      {' '}
+      {selectedLinesLength > 0 ? 'selected' : 'all'}
+      {selectedLinesLength > 0 && (
+        <NumberFlow
+          value={queriesToRun.length}
+          prefix="("
+          suffix=")"
+          className="tabular-nums"
+          spinTiming={{ duration: 200 }}
+        />
+      )}
+    </Button>
+  )
+}
+
 export function Runner() {
   const { connection, connectionResource } = Route.useRouteContext()
   const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
@@ -38,14 +88,7 @@ export function Runner() {
   )
   const [isFormatting, setIsFormatting] = useState(false)
   const store = getConnectionResourceStore(connectionResource.id)
-  const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
-  const editorQueries = useSubscription(editorQueriesStore)
-  const { selectedLines, resultsVisible } = useSubscription(store, {
-    selector: state => ({
-      selectedLines: state.selectedLines,
-      resultsVisible: state.layout.resultsVisible,
-    }),
-  })
+  const resultsVisible = useSubscription(store, { selector: state => state.layout.resultsVisible })
 
   function format() {
     const formatted = formatSql(store.get().query, connection.type)
@@ -56,22 +99,9 @@ export function Runner() {
     } satisfies typeof state))
   }
 
-  const queriesToRun = useMemo(() => {
-    const queries = selectedLines.length > 0
-      ? editorQueries.filter(query => selectedLines.includes(query.startLineNumber))
-      : editorQueries
+  const { refetch: refetchRunner } = useQuery(runnerQueryOptions(connectionResource))
 
-    return queries.flatMap(({ startLineNumber, endLineNumber, queries }) => queries.map(query => ({
-      startLineNumber,
-      endLineNumber,
-      query,
-    })))
-  }, [selectedLines, editorQueries])
-
-  const { refetch: refetchRunner, fetchStatus } = useQuery(runnerQueryOptions(connectionResource))
-  const isRunnerExecutionDisabled = fetchStatus === 'fetching' || queriesToRun.length === 0
-
-  const runQueries = (queries: typeof queriesToRun) => {
+  function runQueries(queries: QueryToRun[]) {
     store.set(state => ({
       ...state,
       queriesToRun: queries,
@@ -79,7 +109,7 @@ export function Runner() {
     refetchRunner()
   }
 
-  function runQueriesWithAlert(editorQueries: Parameters<typeof runQueries>[0]) {
+  function runQueriesWithAlert(editorQueries: QueryToRun[]) {
     const hasDangerousKeywords = editorQueries.some(({ query }) => hasDangerousSqlKeywords(query))
 
     if (hasDangerousKeywords) {
@@ -170,25 +200,7 @@ export function Runner() {
                   </ContentSwitch>
                   Format
                 </Button>
-                <Button
-                  disabled={isRunnerExecutionDisabled}
-                  size="sm"
-                  onClick={() => runQueriesWithAlert(queriesToRun)}
-                >
-                  <RiPlayFill />
-                  Run
-                  {' '}
-                  {selectedLines.length > 0 ? 'selected' : 'all'}
-                  {selectedLines.length > 0 && (
-                    <NumberFlow
-                      value={queriesToRun.length}
-                      prefix="("
-                      suffix=")"
-                      className="tabular-nums"
-                      spinTiming={{ duration: 200 }}
-                    />
-                  )}
-                </Button>
+                <RunnerRunButton onRun={runQueriesWithAlert} />
               </div>
             </CardTitle>
           </CardHeader>

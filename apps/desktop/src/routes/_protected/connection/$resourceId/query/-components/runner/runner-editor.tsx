@@ -4,7 +4,6 @@ import type { RefObject } from 'react'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { LanguageIdEnum, setupLanguageFeatures } from 'monaco-sql-languages'
 import { useEffect, useEffectEvent, useRef } from 'react'
-import { useSubscription } from 'seitu/react'
 import { Monaco } from '~/components/monaco'
 import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
 import { connectionCompletionService } from '~/entities/connection/utils/monaco'
@@ -20,6 +19,8 @@ const dialectsMap = {
   mssql: LanguageIdEnum.PG,
   clickhouse: LanguageIdEnum.MYSQL,
 } satisfies Record<ConnectionType, LanguageIdEnum>
+
+const MONACO_OPTIONS = { wordWrap: 'on' } satisfies editor.IStandaloneEditorConstructionOptions
 
 function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { connectionResource } = Route.useRouteContext()
@@ -114,7 +115,6 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
 export function RunnerEditor() {
   const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const query = useSubscription(store, { selector: state => state.query })
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const run = useRunnerContext(({ run }) => run)
@@ -124,6 +124,33 @@ export function RunnerEditor() {
   useRunnerEditorHooks(monacoRef)
   useRunnerEditorQueryZones(monacoRef)
   useRunnerEditorAIZones(monacoRef)
+
+  useEffect(() => {
+    const unsubscribe = store.subscribe(() => {
+      const editor = monacoRef.current
+      if (!editor)
+        return
+
+      const model = editor.getModel()
+      if (!model)
+        return
+
+      const nextQuery = store.get().query
+      if (editor.getValue() === nextQuery)
+        return
+
+      editor.executeEdits('', [
+        {
+          range: model.getFullModelRange(),
+          text: nextQuery,
+          forceMoveMarkers: true,
+        },
+      ])
+      editor.pushUndoStop()
+    })
+
+    return unsubscribe
+  }, [store])
 
   useEffect(() => {
     setupLanguageFeatures(dialectsMap[connection.type], {
@@ -181,15 +208,17 @@ export function RunnerEditor() {
       data-mask
       ref={monacoRef}
       language={dialectsMap[connection.type]}
-      value={query}
-      onChange={q => store.set(state => ({
-        ...state,
-        query: q,
-      } satisfies typeof state))}
-      className="size-full"
-      options={{
-        wordWrap: 'on',
+      value={store.get().query}
+      onChange={(q) => {
+        if (q === store.get().query)
+          return
+        store.set(state => ({
+          ...state,
+          query: q,
+        } satisfies typeof state))
       }}
+      className="size-full"
+      options={MONACO_OPTIONS}
     />
   )
 }
