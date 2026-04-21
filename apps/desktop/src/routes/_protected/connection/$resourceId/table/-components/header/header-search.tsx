@@ -14,14 +14,16 @@ import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
+import { useAiLocked } from '~/entities/user/hooks'
 import { orpc } from '~/lib/orpc'
-import { appStore } from '~/store'
+import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 import { Route } from '../..'
 import { useTableColumns } from '../../-columns'
 import { useTablePageStore } from '../../-store'
 
 export function HeaderSearch({ table, schema }: { table: string, schema: string }) {
   const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
+  const { isAiLocked, isAnonymous } = useAiLocked()
   const { connectionResource } = Route.useRouteContext()
   const inputRef = useRef<HTMLInputElement>(null)
   const store = useTablePageStore()
@@ -85,6 +87,11 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
       className="relative w-full max-w-full"
       onSubmit={(e) => {
         e.preventDefault()
+        if (isAiLocked) {
+          if (!isAnonymous)
+            setIsSubscriptionDialogOpen(true)
+          return
+        }
         if (prompt.trim() === '') {
           toast.info('Please enter a prompt to generate filters', {
             id: 'no-prompt',
@@ -95,59 +102,71 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
         generateFilter({ prompt, context })
       }}
     >
-      <InputGroup>
-        <InputGroupInput
-          ref={inputRef}
-          placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
-          disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
-          value={prompt}
-          autoFocus
-          onChange={e => store.set(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
-        />
-        <InputGroupAddon>
-          <LoadingContent
-            className="pointer-events-none size-4 text-muted-foreground"
-            loading={isPending}
-          >
-            <RiBardLine />
-          </LoadingContent>
-        </InputGroupAddon>
-        <InputGroupAddon align="inline-end">
-          {freeAiUsage && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div
-                  className="
-                    cursor-help text-xs whitespace-nowrap text-muted-foreground
-                  "
-                  tabIndex={0}
-                  aria-label={`You have ${freeAiUsage.remaining} out of ${freeAiUsage.max} free AI filter uses left this month.`}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="w-full">
+            <InputGroup>
+              <InputGroupInput
+                ref={inputRef}
+                placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
+                disabled={!isOnline || isPending || isAiLocked || freeAiUsage?.remaining === 0}
+                value={prompt}
+                autoFocus
+                onChange={e => store.set(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
+              />
+              <InputGroupAddon>
+                <LoadingContent
+                  className="pointer-events-none size-4 text-muted-foreground"
+                  loading={isPending}
                 >
-                  <NumberFlow
-                    value={freeAiUsage.remaining}
-                    className="tabular-nums"
-                  />
-                  /
-                  {freeAiUsage.max}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                You have
-                {' '}
-                {freeAiUsage.remaining}
-                /
-                {freeAiUsage.max}
-                {' '}
-                free AI filter uses left this month. Reset at
-                {' '}
-                {format(freeAiUsage.resetAt, 'MMM d, yyyy')}
-                .
-              </TooltipContent>
-            </Tooltip>
-          )}
-          <KbdCtrlLetter userAgent={navigator.userAgent} letter="F" />
-        </InputGroupAddon>
-      </InputGroup>
+                  <RiBardLine />
+                </LoadingContent>
+              </InputGroupAddon>
+              <InputGroupAddon align="inline-end">
+                {freeAiUsage && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div
+                        className="
+                          cursor-help text-xs whitespace-nowrap
+                          text-muted-foreground
+                        "
+                        tabIndex={0}
+                        aria-label={`You have ${freeAiUsage.remaining} out of ${freeAiUsage.max} free AI filter uses left this month.`}
+                      >
+                        <NumberFlow
+                          value={freeAiUsage.remaining}
+                          className="tabular-nums"
+                        />
+                        /
+                        {freeAiUsage.max}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      You have
+                      {' '}
+                      {freeAiUsage.remaining}
+                      /
+                      {freeAiUsage.max}
+                      {' '}
+                      free AI filter uses left this month. Reset at
+                      {' '}
+                      {format(freeAiUsage.resetAt, 'MMM d, yyyy')}
+                      .
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+                <KbdCtrlLetter userAgent={navigator.userAgent} letter="F" />
+              </InputGroupAddon>
+            </InputGroup>
+          </div>
+        </TooltipTrigger>
+        {isAiLocked && (
+          <TooltipContent>
+            {isAnonymous ? 'Sign in to use AI filters' : 'Upgrade to Pro to use AI filters'}
+          </TooltipContent>
+        )}
+      </Tooltip>
     </form>
   )
 }

@@ -13,6 +13,7 @@ import { useLiveQuery } from '@tanstack/react-db'
 import { useId } from 'react'
 import { ConnectionDetails } from '~/components/connection-details'
 import { connectionsCollection } from '~/entities/connection/sync'
+import { useAnonymousUser } from '~/entities/user/hooks'
 
 export function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud, label, setLabel, color, setColor }: {
   type: ConnectionType
@@ -29,6 +30,7 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
 }) {
   const { data: connections } = useLiveQuery(q => q.from({ connections: connectionsCollection }).orderBy(({ connections }) => connections.createdAt, 'desc'))
   const existingLabels = connections.map(connection => connection.label).filter((label): label is string => label !== null)
+  const isAnonymous = useAnonymousUser()
   const labels = [...new Set([...LABEL_OPTIONS, ...existingLabels])].toSorted()
   const nameId = useId()
   const labelId = useId()
@@ -133,20 +135,22 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
               </div>
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <label className="flex items-center gap-2 text-sm">
-              <Checkbox
-                checked={saveInCloud}
-                onCheckedChange={() => setSaveInCloud(!saveInCloud)}
-              />
-              Do you want to sync the password in our cloud?
-            </label>
-            <div className="text-xs text-balance text-muted-foreground/50">
-              Syncing passwords in our cloud allows access from any device without re-entering the password.
-              <br />
-              If not synced, we will store the connection string without the password.
+          {!isAnonymous && (
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={saveInCloud}
+                  onCheckedChange={() => setSaveInCloud(!saveInCloud)}
+                />
+                Do you want to sync the password in our cloud?
+              </label>
+              <div className="text-xs text-balance text-muted-foreground/50">
+                Syncing passwords in our cloud allows access from any device without re-entering the password.
+                <br />
+                If not synced, we will store the connection string without the password.
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </CardContent>
     </Card>
