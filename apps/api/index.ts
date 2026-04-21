@@ -159,6 +159,17 @@ const app = new Hono<{
     }
 
     function createAnswer(status: 'error' | 'ok', service: string, message: string) {
+      if (env.ALERTS_EMAIL) {
+        sendEmail({
+          to: env.ALERTS_EMAIL,
+          subject: `Alert from API: ${status} ${service}`,
+          template: 'Alert',
+          props: {
+            service,
+            text: message,
+          },
+        })
+      }
       return {
         status,
         service,
