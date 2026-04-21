@@ -185,22 +185,22 @@ export function ChatForm() {
       `}
       >
         {!subscription && (
-          <span
-            className="z-10 bg-muted px-2 py-1 text-sm text-muted-foreground"
+          <div
+            className="
+              z-10 flex items-center gap-2 border-b px-3 py-1.5 text-xs
+            "
           >
-            Please
-            {' '}
+            <span className="flex-1 text-muted-foreground">
+              Upgrade to Pro to generate SQL queries with AI.
+            </span>
             <Button
               variant="outline"
-              className="px-1 py-0.5"
               size="xs"
               onClick={() => setIsSubscriptionDialogOpen(true)}
             >
-              upgrade
+              Upgrade
             </Button>
-            {' '}
-            your subscription to generate SQL queries.
-          </span>
+          </div>
         )}
         <TipTap
           ref={ref}
