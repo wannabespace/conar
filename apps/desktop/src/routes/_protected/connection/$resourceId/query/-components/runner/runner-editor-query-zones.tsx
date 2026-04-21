@@ -8,12 +8,6 @@ import { Route } from '../..'
 import { useRunnerContext } from './runner-context'
 import { RunnerEditorQueryZone } from './runner-editor-query-zone'
 
-interface ZoneEntry {
-  zoneId: string
-  domNode: HTMLDivElement
-  root: Root
-}
-
 export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
@@ -73,7 +67,11 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
     if (!editor)
       return
 
-    const zones = new Map<number, ZoneEntry>()
+    const zones = new Map<number, {
+      zoneId: string
+      domNode: HTMLDivElement
+      root: Root
+    }>()
 
     const syncZones = () => {
       const nextLines = editorQueriesStore.get().map(q => q.startLineNumber)
