@@ -1,94 +1,63 @@
 import type { KeyboardEvent } from 'react'
+import type { ShiftSelectionState } from './shift-selection-state'
 import { useCallback } from 'react'
+import { reduceShiftArrowKey } from './shift-selection-state'
 
-export interface SelectionState {
-  anchorIndex: number | null
-  focusIndex: number | null
-  lastExpandDirection: 'up' | 'down' | null
-}
-
-export interface UseShiftSelectionKeyDownOptions {
+export interface UseShiftSelectionKeyDownOptions<TItem> {
+  /** Total number of selectable rows currently visible. */
   rowCount: number
-  getRowKey: (index: number) => Record<string, string>
-  getRangeKeys: (startIndex: number, endIndex: number) => Record<string, string>[]
-  getSelectionState: () => SelectionState
-  onSelectionChange: (selected: Record<string, string>[], selectionState: SelectionState) => void
+  /**
+   * Returns the items inside the inclusive range `[startIndex, endIndex]`.
+   * Called with `start === end` to resolve a single row.
+   */
+  getItemsInRange: (startIndex: number, endIndex: number) => TItem[]
+  /** Read the current selection state from the caller's store. */
+  getSelectionState: () => ShiftSelectionState
+  /** Commit a new selection plus its accompanying selection state. */
+  onSelectionChange: (selected: TItem[], state: ShiftSelectionState) => void
 }
 
-export function useShiftSelectionKeyDown({
+const ARROW_DIRECTIONS = {
+  ArrowDown: 'down',
+  ArrowUp: 'up',
+} as const
+
+/**
+ * Keyboard handler for Shift+ArrowUp / Shift+ArrowDown range selection.
+ *
+ * The hook itself is intentionally thin — all non‑trivial logic lives in the
+ * pure `reduceShiftArrowKey` reducer (see `./shift-selection-state`), which
+ * makes the behaviour unit‑testable without a React renderer.
+ *
+ * Generic over the row shape `TItem` so it can be reused with arbitrary item
+ * representations (primary‑key tuples, row objects, ids, …).
+ */
+export function useShiftSelectionKeyDown<TItem, TElement extends HTMLElement = HTMLDivElement>({
   rowCount,
-  getRowKey,
-  getRangeKeys,
+  getItemsInRange,
   getSelectionState,
   onSelectionChange,
-}: UseShiftSelectionKeyDownOptions) {
-  return useCallback((event: KeyboardEvent<HTMLDivElement>) => {
+}: UseShiftSelectionKeyDownOptions<TItem>) {
+  return useCallback((event: KeyboardEvent<TElement>) => {
     if (!event.shiftKey || rowCount === 0)
       return
 
-    const isArrowDown = event.key === 'ArrowDown'
-    const isArrowUp = event.key === 'ArrowUp'
+    const direction = ARROW_DIRECTIONS[event.key as keyof typeof ARROW_DIRECTIONS]
 
-    if (!isArrowDown && !isArrowUp)
+    if (!direction)
       return
 
     event.preventDefault()
 
-    const { anchorIndex, focusIndex } = getSelectionState()
-    const currentDirection = isArrowDown ? 'down' : 'up'
+    const action = reduceShiftArrowKey({
+      direction,
+      rowCount,
+      state: getSelectionState(),
+    })
 
-    if (anchorIndex === null || focusIndex === null) {
-      const startIndex = isArrowDown ? 0 : rowCount - 1
-      const rowKeys = getRowKey(startIndex)
-
-      onSelectionChange([rowKeys], {
-        anchorIndex: startIndex,
-        focusIndex: startIndex,
-        lastExpandDirection: null,
-      })
-      return
-    }
-
-    const newFocusIndex = isArrowDown
-      ? Math.min(focusIndex + 1, rowCount - 1)
-      : Math.max(focusIndex - 1, 0)
-
-    const atBoundary = newFocusIndex === focusIndex
-
-    if (anchorIndex === focusIndex) {
-      if (atBoundary)
-        return
-
-      const start = Math.min(anchorIndex, newFocusIndex)
-      const end = Math.max(anchorIndex, newFocusIndex)
-      const rangeKeys = getRangeKeys(start, end)
-
-      onSelectionChange(rangeKeys, {
-        anchorIndex,
-        focusIndex: newFocusIndex,
-        lastExpandDirection: currentDirection,
-      })
-      return
-    }
-
-    if (atBoundary)
+    if (action.type === 'noop')
       return
 
-    const wasExpandedDown = focusIndex > anchorIndex
-    const wasExpandedUp = focusIndex < anchorIndex
-    const isShrinking = (wasExpandedDown && isArrowUp) || (wasExpandedUp && isArrowDown)
-    const { lastExpandDirection } = getSelectionState()
-
-    const updatedSelectionState: SelectionState = {
-      anchorIndex,
-      focusIndex: newFocusIndex,
-      lastExpandDirection: isShrinking ? lastExpandDirection : currentDirection,
-    }
-
-    const start = Math.min(anchorIndex, newFocusIndex)
-    const end = Math.max(anchorIndex, newFocusIndex)
-    const rangeKeys = getRangeKeys(start, end)
-
-    onSelectionChange(rangeKeys, updatedSelectionState)
-  }, [rowCount, getRowKey, getRangeKeys, getSelectionState, onSelectionChange])
+    onSelectionChange(getItemsInRange(action.range.start, action.range.end), action.state)
+  }, [rowCount, getItemsInRange, getSelectionState, onSelectionChange])
 }

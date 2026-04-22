@@ -117,15 +117,12 @@ export function SelectionCell({ rowIndex, columnIndex, className, style, keys }:
     rowIndex,
     currentSelected,
     lastClickedIndex,
-    getRangeKeys: (start, end) => {
-      const rangeRows = rows.slice(start, end + 1)
-      return rangeRows.map(row =>
-        keys.reduce<Record<string, string>>(
-          (acc, key) => ({ ...acc, [key]: row[key] as string }),
-          {},
-        ),
-      )
-    },
+    getItemsInRange: (start, end) => rows.slice(start, end + 1).map(row =>
+      keys.reduce<Record<string, string>>(
+        (acc, key) => ({ ...acc, [key]: row[key] as string }),
+        {},
+      ),
+    ),
     onSelectionChange: (selected, selectionState, newLastClickedIndex) => {
       store.set(state => ({ ...state, selected } satisfies typeof state))
       selectionStore.set(state => ({
