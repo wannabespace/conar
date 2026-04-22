@@ -91,21 +91,27 @@ function applySavedValuesToCache(
   queryKey: RowsQueryKey,
   savedValuesByRow: Map<number, Record<string, unknown>>,
 ) {
-  queryClient.setQueryData(queryKey, data => data
-    ? ({
-        ...data,
-        pages: data.pages.map((page, pageIndex) => ({
-          ...page,
-          rows: page.rows.map((row, rIndex) => {
-            const absoluteIndex = pageIndex * data.pages[0]!.rows.length + rIndex
-            const savedValues = savedValuesByRow.get(absoluteIndex)
-            if (!savedValues)
-              return row
-            return { ...row, ...savedValues }
-          }),
-        })),
-      })
-    : data)
+  queryClient.setQueryData(queryKey, (data) => {
+    if (!data)
+      return data
+
+    const pageOffsets = data.pages.map((_, pageIndex) =>
+      data.pages.slice(0, pageIndex).reduce((sum, page) => sum + page.rows.length, 0))
+
+    return {
+      ...data,
+      pages: data.pages.map((page, pageIndex) => ({
+        ...page,
+        rows: page.rows.map((row, rIndex) => {
+          const absoluteIndex = pageOffsets[pageIndex]! + rIndex
+          const savedValues = savedValuesByRow.get(absoluteIndex)
+          if (!savedValues)
+            return row
+          return { ...row, ...savedValues }
+        }),
+      })),
+    }
+  })
 }
 
 export function DraftsToolbar({
