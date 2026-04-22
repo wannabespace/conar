@@ -1,19 +1,15 @@
 import type { ActiveFilter, Filter } from '@conar/shared/filters'
+import type { ShiftSelectionState } from '@conar/table/hooks'
 import type { WebStorageValue } from 'seitu/web'
 import type { GeneratorId } from '~/entities/connection/utils/seeds'
 import { memoize } from '@conar/memoize'
 import { omit } from '@conar/shared/utils/helpers'
+import { INITIAL_SHIFT_SELECTION_STATE } from '@conar/table/hooks'
 import { type } from 'arktype'
 import { createContext, use } from 'react'
 import { createSchemaStore } from 'seitu'
 import { repairValueObjectWithDefault } from 'seitu/utils'
 import { createWebStorageValue } from 'seitu/web'
-
-export interface SelectionState {
-  anchorIndex: number | null
-  focusIndex: number | null
-  lastExpandDirection: 'up' | 'down' | null
-}
 
 export const storeState = type({
   selected: 'Record<string, unknown>[]',
@@ -107,11 +103,11 @@ export function useTablePageStore() {
 export const tablePageSelectionStore = memoize((_: { id: string, schema: string, table: string }) => createSchemaStore({
   schema: type({
     lastClickedIndex: 'number | null',
-    selectionState: 'object' as type.cast<SelectionState>,
+    selectionState: 'object' as type.cast<ShiftSelectionState>,
   }),
   defaultValue: {
     lastClickedIndex: null,
-    selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
+    selectionState: INITIAL_SHIFT_SELECTION_STATE,
   },
 }))
 
