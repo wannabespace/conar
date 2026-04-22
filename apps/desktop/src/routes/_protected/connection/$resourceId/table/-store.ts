@@ -14,7 +14,7 @@ export interface SelectionState {
   lastExpandDirection: 'up' | 'down' | null
 }
 
-interface TableDraft {
+export interface TableDraft {
   rowIndex: number
   columnId: string
   value: unknown

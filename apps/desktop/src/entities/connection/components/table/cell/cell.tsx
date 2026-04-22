@@ -34,7 +34,7 @@ function SetNullAlertDialog({
     if (!onQueueValue)
       return
 
-    await onQueueValue(null)
+    onQueueValue(null)
     onOpenChange(false)
   }
 
@@ -109,7 +109,7 @@ export function TableCell({
   connectionType,
   draft,
 }: {
-  onQueueValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<unknown>
+  onQueueValue?: (rowIndex: number, columnName: string, value: unknown) => unknown
   column: Column
   onAddFilter?: (filter: ActiveFilter) => void
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void

@@ -1,3 +1,4 @@
+import type { TableDraft } from '../../-store'
 import type { connectionsResources } from '~/drizzle/schema'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { Button } from '@conar/ui/components/button'
@@ -15,11 +16,97 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
+import { selectQuery } from '~/entities/connection/queries/select'
 import { setQuery } from '~/entities/connection/queries/set'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { useSaveHotkey } from '~/hooks/use-save-hotkey'
 import { queryClient } from '~/main'
 import { draftsActions, useTablePageStore } from '../../-store'
+
+type RowsQueryKey = ReturnType<typeof resourceRowsQueryInfiniteOptions>['queryKey']
+
+async function saveRowToDb({
+  row,
+  schema,
+  table,
+  connectionResource,
+}: {
+  row: {
+    data: Record<string, unknown>
+    index: number
+    drafts: TableDraft[]
+    primaryColumns: string[]
+  }
+  schema: string
+  table: string
+  connectionResource: typeof connectionsResources.$inferSelect
+}) {
+  const sqlFilters = row.primaryColumns.map(column => ({
+    column,
+    ref: SQL_FILTERS_LIST.find(f => f.operator === '=')!,
+    values: [row.data[column]],
+  }))
+
+  const values = row.drafts.reduce<Record<string, unknown>>((acc, d) => {
+    acc[d.columnId] = d.value
+    return acc
+  }, {})
+
+  await setQuery({
+    schema,
+    table,
+    values,
+    filters: sqlFilters,
+  }).run(connectionResourceToQueryParams(connectionResource))
+
+  const modifiedColumns = Object.keys(values)
+  const updatedFilters = sqlFilters.map(filter => modifiedColumns.includes(filter.column)
+    ? { ...filter, values: [values[filter.column]] }
+    : filter)
+
+  let refreshedValues: Record<string, unknown> | undefined
+  try {
+    const [result] = await selectQuery({
+      schema,
+      table,
+      select: modifiedColumns,
+      filters: updatedFilters,
+    }).run(connectionResourceToQueryParams(connectionResource))
+
+    if (result)
+      refreshedValues = result
+  }
+  catch (e) {
+    toast.warning('Row was saved, but the updated value could not be refreshed', {
+      id: `refresh-row-error-${row.index}`,
+      description: e instanceof Error ? e.message : String(e),
+      duration: 4000,
+    })
+  }
+
+  return { rowIndex: row.index, values, refreshedValues }
+}
+
+function applySavedValuesToCache(
+  queryKey: RowsQueryKey,
+  savedValuesByRow: Map<number, Record<string, unknown>>,
+) {
+  queryClient.setQueryData(queryKey, data => data
+    ? ({
+        ...data,
+        pages: data.pages.map((page, pageIndex) => ({
+          ...page,
+          rows: page.rows.map((row, rIndex) => {
+            const absoluteIndex = pageIndex * data.pages[0]!.rows.length + rIndex
+            const savedValues = savedValuesByRow.get(absoluteIndex)
+            if (!savedValues)
+              return row
+            return { ...row, ...savedValues }
+          }),
+        })),
+      })
+    : data)
+}
 
 export function DraftsToolbar({
   connectionResource,
@@ -73,89 +160,63 @@ export function DraftsToolbar({
         throw new Error('No data found. Please refresh the page.')
 
       const allRows = cachedData.pages.flatMap(page => page.rows)
+      const rowEntries = Array.from(rowsWithDrafts.entries())
 
-      for (const rowIndex of rowsWithDrafts.keys()) {
+      for (const [rowIndex] of rowEntries) {
         setRowStatus(rowIndex, { isCommitting: true, error: undefined })
       }
 
-      const rowEntries = Array.from(rowsWithDrafts.entries())
-
       const results = await Promise.allSettled(
-        rowEntries.map(async ([rowIndex, rowDrafts]) => {
+        rowEntries.map(([rowIndex, rowDrafts]) => {
           const row = allRows[rowIndex]
           if (!row)
             throw new Error('Row not found in cache. Please refresh the page.')
 
-          const sqlFilters = primaryColumns.map(column => ({
-            column,
-            ref: SQL_FILTERS_LIST.find(f => f.operator === '=')!,
-            values: [row[column]],
-          }))
-
-          const values = rowDrafts.reduce<Record<string, unknown>>((acc, d) => {
-            acc[d.columnId] = d.value
-            return acc
-          }, {})
-
-          await setQuery({
+          return saveRowToDb({
+            row: {
+              data: row,
+              index: rowIndex,
+              drafts: rowDrafts,
+              primaryColumns,
+            },
             schema,
             table,
-            values,
-            filters: sqlFilters,
-          }).run(connectionResourceToQueryParams(connectionResource))
-
-          return { rowIndex, values }
+            connectionResource,
+          })
         }),
       )
 
       return { results, rowEntries, rowsQueryOpts, filters, orderBy }
     },
     onSuccess: ({ results, rowEntries, rowsQueryOpts, filters, orderBy }) => {
-      const successfulRows: number[] = []
+      const savedValuesByRow = new Map<number, Record<string, unknown>>()
       let hadError = false
 
       results.forEach((result, idx) => {
         const [rowIndex] = rowEntries[idx]!
 
         if (result.status === 'fulfilled') {
-          successfulRows.push(rowIndex)
+          savedValuesByRow.set(rowIndex, result.value.refreshedValues ?? result.value.values)
+          return
         }
-        else {
-          hadError = true
-          const message = result.reason instanceof Error ? result.reason.message : String(result.reason)
-          setRowStatus(rowIndex, {
-            isCommitting: false,
-            error: message,
-          })
-          toast.error(`Failed to save row`, {
-            id: `save-row-error-${rowIndex}-${message}`,
-            description: message,
-            duration: 4000,
-          })
-        }
+
+        hadError = true
+        const message = result.reason instanceof Error ? result.reason.message : String(result.reason)
+        setRowStatus(rowIndex, {
+          isCommitting: false,
+          error: message,
+        })
+        toast.error(`Failed to save row`, {
+          id: `save-row-error-${rowIndex}-${message}`,
+          description: message,
+          duration: 4000,
+        })
       })
 
-      if (successfulRows.length > 0) {
-        queryClient.setQueryData(rowsQueryOpts.queryKey, data => data
-          ? ({
-              ...data,
-              pages: data.pages.map((page, pageIndex) => ({
-                ...page,
-                rows: page.rows.map((row, rIndex) => {
-                  const absoluteIndex = pageIndex * data.pages[0]!.rows.length + rIndex
-                  const rowDrafts = rowsWithDrafts.get(absoluteIndex)
-                  if (!rowDrafts || !successfulRows.includes(absoluteIndex))
-                    return row
-                  return rowDrafts.reduce(
-                    (acc, d) => ({ ...acc, [d.columnId]: d.value }),
-                    { ...row },
-                  )
-                }),
-              })),
-            })
-          : data)
+      if (savedValuesByRow.size > 0) {
+        applySavedValuesToCache(rowsQueryOpts.queryKey, savedValuesByRow)
 
-        for (const rowIndex of successfulRows) {
+        for (const rowIndex of savedValuesByRow.keys()) {
           removeRow(rowIndex)
         }
 
@@ -163,8 +224,13 @@ export function DraftsToolbar({
           queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
       }
 
-      if (!hadError && successfulRows.length > 0)
-        toast.success(`Saved ${successfulRows.length} row${successfulRows.length === 1 ? '' : 's'}`)
+      if (savedValuesByRow.size > 0) {
+        toast[hadError ? 'warning' : 'success'](
+          hadError
+            ? `Saved ${savedValuesByRow.size} row${savedValuesByRow.size === 1 ? '' : 's'}, ${results.length - savedValuesByRow.size} failed`
+            : `Saved ${savedValuesByRow.size} row${savedValuesByRow.size === 1 ? '' : 's'}`,
+        )
+      }
     },
     onError: (error) => {
       toast.error(error.message)

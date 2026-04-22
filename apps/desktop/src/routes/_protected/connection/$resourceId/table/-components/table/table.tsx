@@ -106,15 +106,12 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         />
       ),
       cell: (props) => {
-        const draft = draftsMap.get(draftKey(props.rowIndex, column.id))
         return (
           <TableCell
             column={column}
             onQueueValue={primaryColumns.length > 0 ? queueValue : undefined}
             connectionType={connection.type}
-            draft={draft
-              ? { value: draft.value, error: draft.error, isCommitting: draft.isCommitting }
-              : undefined}
+            draft={draftsMap.get(draftKey(props.rowIndex, column.id))}
             onAddFilter={filter => store.set(state => ({
               ...state,
               filters: [...state.filters, filter],
