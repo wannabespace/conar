@@ -1,15 +1,5 @@
 export type ShiftSelectionDirection = 'up' | 'down'
 
-/**
- * Anchor/focus model used for keyboard and shift‑click range selection.
- *
- * - `anchorIndex` is the pivot point where the current selection started.
- * - `focusIndex` is the currently focused row; the inclusive range between
- *   anchor and focus defines the selection.
- * - `lastExpandDirection` is the last direction in which the range was
- *   extended (not shrunk). It is preserved while the selection is shrinking,
- *   which matches the behaviour of native macOS / Finder‑style selection.
- */
 export interface ShiftSelectionState {
   anchorIndex: number | null
   focusIndex: number | null
@@ -22,15 +12,14 @@ export const INITIAL_SHIFT_SELECTION_STATE: ShiftSelectionState = {
   lastExpandDirection: null,
 }
 
+export interface ShiftSelectionRange {
+  start: number
+  end: number
+}
+
 export type ShiftSelectionAction
   = | { type: 'noop' }
-    | {
-      type: 'select'
-      /** Inclusive `[start, end]` range of row indices to mark as selected. */
-      range: { start: number, end: number }
-      /** Next selection state to commit. */
-      state: ShiftSelectionState
-    }
+    | { type: 'select', range: ShiftSelectionRange, state: ShiftSelectionState }
 
 export interface ShiftArrowKeyParams {
   direction: ShiftSelectionDirection
@@ -38,11 +27,21 @@ export interface ShiftArrowKeyParams {
   state: ShiftSelectionState
 }
 
-/**
- * Pure reducer that computes the next selection after a shift+ArrowUp / ArrowDown
- * press. Kept free of React so it can be unit‑tested in isolation and reused by
- * non‑hook callers.
- */
+function clampIndex(index: number, rowCount: number) {
+  return Math.max(0, Math.min(index, rowCount - 1))
+}
+
+function makeRange(a: number, b: number): ShiftSelectionRange {
+  return { start: Math.min(a, b), end: Math.max(a, b) }
+}
+
+function isShrinkingTowards(direction: ShiftSelectionDirection, anchorIndex: number, focusIndex: number) {
+  const expandedDown = focusIndex > anchorIndex
+  const expandedUp = focusIndex < anchorIndex
+
+  return (expandedDown && direction === 'up') || (expandedUp && direction === 'down')
+}
+
 export function reduceShiftArrowKey({
   direction,
   rowCount,
@@ -51,16 +50,15 @@ export function reduceShiftArrowKey({
   if (rowCount === 0)
     return { type: 'noop' }
 
-  const isDown = direction === 'down'
   const { anchorIndex, focusIndex, lastExpandDirection } = state
+  const hasSelection = anchorIndex !== null && focusIndex !== null
 
-  // No active selection yet — anchor on the nearest edge in the pressed direction.
-  if (anchorIndex === null || focusIndex === null) {
-    const startIndex = isDown ? 0 : rowCount - 1
+  if (!hasSelection) {
+    const startIndex = direction === 'down' ? 0 : rowCount - 1
 
     return {
       type: 'select',
-      range: { start: startIndex, end: startIndex },
+      range: makeRange(startIndex, startIndex),
       state: {
         anchorIndex: startIndex,
         focusIndex: startIndex,
@@ -69,24 +67,17 @@ export function reduceShiftArrowKey({
     }
   }
 
-  const newFocusIndex = isDown
-    ? Math.min(focusIndex + 1, rowCount - 1)
-    : Math.max(focusIndex - 1, 0)
+  const step = direction === 'down' ? 1 : -1
+  const newFocusIndex = clampIndex(focusIndex + step, rowCount)
 
-  // Already at the top/bottom edge — nothing to do.
   if (newFocusIndex === focusIndex)
     return { type: 'noop' }
 
-  const wasExpandedDown = focusIndex > anchorIndex
-  const wasExpandedUp = focusIndex < anchorIndex
-  const isShrinking = (wasExpandedDown && !isDown) || (wasExpandedUp && isDown)
+  const isShrinking = isShrinkingTowards(direction, anchorIndex, focusIndex)
 
   return {
     type: 'select',
-    range: {
-      start: Math.min(anchorIndex, newFocusIndex),
-      end: Math.max(anchorIndex, newFocusIndex),
-    },
+    range: makeRange(anchorIndex, newFocusIndex),
     state: {
       anchorIndex,
       focusIndex: newFocusIndex,

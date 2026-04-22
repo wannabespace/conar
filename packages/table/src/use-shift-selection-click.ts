@@ -3,21 +3,11 @@ import type { ShiftSelectionState } from './shift-selection-state'
 import { useRef } from 'react'
 
 export interface UseShiftSelectionClickOptions<TItem> {
-  /** The row's identity (anything comparable via `isEqual`). */
   rowKey: TItem
-  /** The row's index in the current listing. */
   rowIndex: number
-  /** Currently selected items, as stored by the caller. */
   currentSelected: TItem[]
-  /** Index of the row that was clicked last, used as the anchor for shift‑click. */
   lastClickedIndex: number | null
-  /** Returns the items inside the inclusive range `[startIndex, endIndex]`. */
   getItemsInRange: (startIndex: number, endIndex: number) => TItem[]
-  /**
-   * Optional identity comparator. Defaults to reference equality, with a
-   * structural fallback for plain objects (shallow, by `Object.keys(rowKey)`)
-   * to preserve the previous default behaviour.
-   */
   isEqual?: (a: TItem, b: TItem) => boolean
   onSelectionChange: (
     selected: TItem[],
@@ -26,53 +16,73 @@ export interface UseShiftSelectionClickOptions<TItem> {
   ) => void
 }
 
-function defaultIsEqual<TItem>(a: TItem, b: TItem): boolean {
+const SELECTION_KEYS = new Set([' ', 'Enter'])
+
+function shallowEqualByLeftKeys<TItem>(a: TItem, b: TItem): boolean {
   if (Object.is(a, b))
     return true
 
-  if (
-    typeof a !== 'object' || a === null
-    || typeof b !== 'object' || b === null
-  ) {
+  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null)
     return false
-  }
 
-  const aKeys = Object.keys(a as object)
+  const aRecord = a as Record<string, unknown>
+  const bRecord = b as Record<string, unknown>
+  const aKeys = Object.keys(aRecord)
 
   if (aKeys.length === 0)
-    return aKeys.length === Object.keys(b as object).length
+    return Object.keys(bRecord).length === 0
 
-  return aKeys.every(key =>
-    (a as Record<string, unknown>)[key] === (b as Record<string, unknown>)[key],
-  )
+  return aKeys.every(key => aRecord[key] === bRecord[key])
 }
 
-/**
- * Checkbox handlers for click‑to‑toggle and shift+click range selection.
- *
- * Generic over the row shape `TItem`. Callers provide `getItemsInRange` (to
- * resolve a range into concrete rows) and optionally `isEqual` (for identity).
- */
 export function useShiftSelectionClick<TItem>({
   rowKey,
   rowIndex,
   currentSelected,
   lastClickedIndex,
   getItemsInRange,
-  isEqual = defaultIsEqual,
+  isEqual = shallowEqualByLeftKeys,
   onSelectionChange,
 }: UseShiftSelectionClickOptions<TItem>) {
   const shiftKeyRef = useRef(false)
 
-  const isSelected = currentSelected.some(row => isEqual(rowKey, row))
+  const matchesRow = (row: TItem) => isEqual(rowKey, row)
+  const isSelected = currentSelected.some(matchesRow)
 
   const handleMouseDown = (event: MouseEvent<HTMLInputElement>) => {
     shiftKeyRef.current = event.shiftKey
   }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === ' ' || event.key === 'Enter')
+    if (SELECTION_KEYS.has(event.key))
       shiftKeyRef.current = event.shiftKey
+  }
+
+  const selectRangeTo = (targetIndex: number, anchorIndex: number) => {
+    const start = Math.min(anchorIndex, targetIndex)
+    const end = Math.max(anchorIndex, targetIndex)
+
+    onSelectionChange(getItemsInRange(start, end), {
+      anchorIndex,
+      focusIndex: targetIndex,
+      lastExpandDirection: targetIndex > anchorIndex ? 'down' : 'up',
+    }, targetIndex)
+  }
+
+  const deselectRow = () => {
+    onSelectionChange(
+      currentSelected.filter(row => !matchesRow(row)),
+      { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
+      rowIndex,
+    )
+  }
+
+  const selectRow = () => {
+    onSelectionChange(
+      [...currentSelected, rowKey],
+      { anchorIndex: rowIndex, focusIndex: rowIndex, lastExpandDirection: null },
+      rowIndex,
+    )
   }
 
   const handleChange = () => {
@@ -80,31 +90,16 @@ export function useShiftSelectionClick<TItem>({
     shiftKeyRef.current = false
 
     if (isShiftHeld && lastClickedIndex !== null && lastClickedIndex !== rowIndex) {
-      const start = Math.min(lastClickedIndex, rowIndex)
-      const end = Math.max(lastClickedIndex, rowIndex)
-
-      onSelectionChange(getItemsInRange(start, end), {
-        anchorIndex: lastClickedIndex,
-        focusIndex: rowIndex,
-        lastExpandDirection: rowIndex > lastClickedIndex ? 'down' : 'up',
-      }, rowIndex)
+      selectRangeTo(rowIndex, lastClickedIndex)
       return
     }
 
     if (isSelected) {
-      onSelectionChange(
-        currentSelected.filter(row => !isEqual(rowKey, row)),
-        { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
-        rowIndex,
-      )
+      deselectRow()
       return
     }
 
-    onSelectionChange(
-      [...currentSelected, rowKey],
-      { anchorIndex: rowIndex, focusIndex: rowIndex, lastExpandDirection: null },
-      rowIndex,
-    )
+    selectRow()
   }
 
   return {
