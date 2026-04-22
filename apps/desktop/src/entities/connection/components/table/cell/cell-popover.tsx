@@ -38,7 +38,7 @@ export function CellPopoverContent({
     setRawValue,
     value,
     column,
-    onSaveValue,
+    onQueueValue,
     transformer,
   } = useCellContext()
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
@@ -147,8 +147,8 @@ export function CellPopoverContent({
 
   const [isRaw, setIsRaw] = useState(!uiRender)
 
-  const save = async () => {
-    if (!onSaveValue)
+  const queue = async () => {
+    if (!onQueueValue)
       return
 
     let value: unknown
@@ -162,10 +162,10 @@ export function CellPopoverContent({
       return
     }
 
-    onSaveValue(value)
+    onQueueValue(value)
     onClose()
   }
-  const saveEvent = useEffectEvent(save)
+  const queueEvent = useEffectEvent(queue)
 
   const monacoOptions = {
     lineNumbers: isBig ? 'on' : 'off',
@@ -190,14 +190,14 @@ export function CellPopoverContent({
       label: 'Execute on Enter',
       keybindings: [KeyMod.CtrlCmd | KeyCode.Enter],
       run: () => {
-        saveEvent()
+        queueEvent()
       },
     })
 
     return () => disposable.dispose()
   }, [monacoRef, isRaw])
 
-  useHotkey('Mod+Enter', () => save(), { enabled: canEdit })
+  useHotkey('Mod+Enter', () => queue(), { enabled: canEdit })
 
   return (
     <>
@@ -286,9 +286,9 @@ export function CellPopoverContent({
               )}
               <Button
                 size="xs"
-                onClick={() => save()}
+                onClick={() => queue()}
               >
-                Save
+                Queue
                 <KbdCtrlEnter
                   userAgent={navigator.userAgent}
                   className="text-white"
