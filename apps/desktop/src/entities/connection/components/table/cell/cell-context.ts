@@ -14,7 +14,7 @@ export const CellContext = createContext<{
   setRawValue: Dispatch<SetStateAction<string>>
   column: Column
   value: unknown
-  onQueueValue?: (rawValue: unknown) => Promise<void>
+  onQueueValue?: (rawValue: unknown) => void
   transformer: ValueTransformer
   onAddFilter?: (filter: ActiveFilter) => void
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void

@@ -24,7 +24,7 @@ export function TableCellProvider({
   onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
   sortOrder?: 'ASC' | 'DESC' | null
   onRenameColumn?: () => void
-  onQueueValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<unknown>
+  onQueueValue?: (rowIndex: number, columnName: string, value: unknown) => unknown
   transformer: ValueTransformer
   children: React.ReactNode
 }) {
@@ -36,10 +36,9 @@ export function TableCellProvider({
       return
 
     try {
-      const result = await onQueueValue(rowIndex, column.id, rawValue)
-      const newRawValue = result === undefined ? rawValue : result
-      setNewValue(transformer.fromConnection(newRawValue).toUI())
-      setRawValue(transformer.fromConnection(newRawValue).toRaw())
+      onQueueValue(rowIndex, column.id, rawValue)
+      setNewValue(transformer.fromConnection(rawValue).toUI())
+      setRawValue(transformer.fromConnection(rawValue).toRaw())
     }
     catch (e) {
       const error = e instanceof Error ? e : new Error(String(e))
