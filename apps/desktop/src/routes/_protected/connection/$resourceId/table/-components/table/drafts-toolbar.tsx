@@ -126,17 +126,16 @@ export function DraftsToolbar({
   primaryColumns: string[]
 }) {
   const store = useTablePageStore()
-  const { drafts, rowsWithDrafts } = useSubscription(store, {
-    selector: state => ({
-      drafts: state.drafts,
-      rowsWithDrafts: state.drafts.reduce<Map<number, typeof state.drafts>>((acc, draft) => {
-        const list = acc.get(draft.rowIndex) ?? []
-        list.push(draft)
-        acc.set(draft.rowIndex, list)
-        return acc
-      }, new Map()),
-    }),
-  })
+  const drafts = useSubscription(store, { selector: state => state.drafts })
+  const rowsWithDrafts = drafts.reduce<Map<number, typeof drafts>>(
+    (acc, draft) => {
+      const list = acc.get(draft.rowIndex) ?? []
+      list.push(draft)
+      acc.set(draft.rowIndex, list)
+      return acc
+    },
+    new Map(),
+  )
   const { clear, removeRow, setRowStatus } = draftsActions(store)
 
   const errorCount = drafts.filter(d => !!d.error).length
