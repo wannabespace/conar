@@ -190,7 +190,6 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
                       <>
                         <TableBody data-mask className="bg-background" />
                         <TableInfiniteLoader
-                          connectionResource={connectionResource}
                           table={table}
                           schema={schema}
                           filters={filters}
@@ -200,10 +199,8 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
                     )}
         </Table>
         <DraftsToolbar
-          connectionResource={connectionResource}
           table={table}
           schema={schema}
-          primaryColumns={primaryColumns}
         />
       </div>
       <RenameColumnDialog ref={renameColumnRef} />

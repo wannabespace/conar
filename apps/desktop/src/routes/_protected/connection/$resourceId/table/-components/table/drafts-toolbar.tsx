@@ -1,5 +1,4 @@
-import type { TableDraft } from '../../-store'
-import type { connectionsResources } from '~/drizzle/schema'
+import type { Kysely } from 'kysely'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -10,82 +9,24 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@conar/ui/components/tooltip'
-import { RiAlertLine, RiCloseLine, RiSaveLine } from '@remixicon/react'
+import { RiAlertLine, RiEyeLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
+import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
+import { dialects } from '~/entities/connection/dialects'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
-import { selectQuery } from '~/entities/connection/queries/select'
-import { setQuery } from '~/entities/connection/queries/set'
+import { buildWhere } from '~/entities/connection/queries/rows'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { useSaveHotkey } from '~/hooks/use-save-hotkey'
 import { queryClient } from '~/main'
+import { Route } from '../..'
+import { useTableColumns } from '../../-columns'
 import { draftsActions, useTablePageStore } from '../../-store'
+import { DraftsReviewDrawer } from './drafts-review-drawer'
 
 type RowsQueryKey = ReturnType<typeof resourceRowsQueryInfiniteOptions>['queryKey']
-
-async function saveRowToDb({
-  row,
-  schema,
-  table,
-  connectionResource,
-}: {
-  row: {
-    data: Record<string, unknown>
-    index: number
-    drafts: TableDraft[]
-    primaryColumns: string[]
-  }
-  schema: string
-  table: string
-  connectionResource: typeof connectionsResources.$inferSelect
-}) {
-  const sqlFilters = row.primaryColumns.map(column => ({
-    column,
-    ref: SQL_FILTERS_LIST.find(f => f.operator === '=')!,
-    values: [row.data[column]],
-  }))
-
-  const values = row.drafts.reduce<Record<string, unknown>>((acc, d) => {
-    acc[d.columnId] = d.value
-    return acc
-  }, {})
-
-  await setQuery({
-    schema,
-    table,
-    values,
-    filters: sqlFilters,
-  }).run(connectionResourceToQueryParams(connectionResource))
-
-  const modifiedColumns = Object.keys(values)
-  const updatedFilters = sqlFilters.map(filter => modifiedColumns.includes(filter.column)
-    ? { ...filter, values: [values[filter.column]] }
-    : filter)
-
-  let refreshedValues: Record<string, unknown> | undefined
-  try {
-    const [result] = await selectQuery({
-      schema,
-      table,
-      select: modifiedColumns,
-      filters: updatedFilters,
-    }).run(connectionResourceToQueryParams(connectionResource))
-
-    if (result)
-      refreshedValues = result
-  }
-  catch (e) {
-    toast.warning('Row was saved, but the updated value could not be refreshed', {
-      id: `refresh-row-error-${row.index}`,
-      description: e instanceof Error ? e.message : String(e),
-      duration: 4000,
-    })
-  }
-
-  return { rowIndex: row.index, values, refreshedValues }
-}
 
 function applySavedValuesToCache(
   queryKey: RowsQueryKey,
@@ -115,17 +56,16 @@ function applySavedValuesToCache(
 }
 
 export function DraftsToolbar({
-  connectionResource,
   table,
   schema,
-  primaryColumns,
 }: {
-  connectionResource: typeof connectionsResources.$inferSelect
   table: string
   schema: string
-  primaryColumns: string[]
 }) {
+  const { connectionResource } = Route.useRouteContext()
   const store = useTablePageStore()
+  const columns = useTableColumns()
+  const primaryColumns = columns.filter(c => c.primaryKey).map(c => c.id)
   const drafts = useSubscription(store, { selector: state => state.drafts })
   const rowsWithDrafts = drafts.reduce<Map<number, typeof drafts>>(
     (acc, draft) => {
@@ -137,6 +77,7 @@ export function DraftsToolbar({
     new Map(),
   )
   const { clear, removeRow, setRowStatus } = draftsActions(store)
+  const [isReviewOpen, setIsReviewOpen] = useState(false)
 
   const errorCount = drafts.filter(d => !!d.error).length
   const totalCount = drafts.length
@@ -144,6 +85,7 @@ export function DraftsToolbar({
 
   const handleDiscard = () => {
     clear()
+    setIsReviewOpen(false)
   }
 
   const { mutate: saveDrafts, isPending: isSaving } = useMutation({
@@ -171,71 +113,124 @@ export function DraftsToolbar({
         setRowStatus(rowIndex, { isCommitting: true, error: undefined })
       }
 
-      const results = await Promise.allSettled(
-        rowEntries.map(([rowIndex, rowDrafts]) => {
-          const row = allRows[rowIndex]
-          if (!row)
-            throw new Error('Row not found in cache. Please refresh the page.')
+      const queryParams = connectionResourceToQueryParams(connectionResource)
+      const db = dialects[queryParams.type]({
+        connectionString: queryParams.connectionString,
+        log: queryParams.log,
+        // eslint-disable-next-line ts/no-explicit-any
+      }) as unknown as Kysely<any>
 
-          return saveRowToDb({
-            row: {
-              data: row,
-              index: rowIndex,
-              drafts: rowDrafts,
-              primaryColumns,
-            },
-            schema,
-            table,
-            connectionResource,
-          })
-        }),
-      )
+      let failingRowIndex: number | null = null
 
-      return { results, rowEntries, rowsQueryOpts, filters, orderBy }
+      try {
+        const savedValuesByRow = await db.transaction().execute(async (trx) => {
+          const saved = new Map<number, Record<string, unknown>>()
+
+          for (const [rowIndex, rowDrafts] of rowEntries) {
+            failingRowIndex = rowIndex
+
+            const row = allRows[rowIndex]
+            if (!row)
+              throw new Error('Row not found in cache. Please refresh the page.')
+
+            const sqlFilters = primaryColumns.map(column => ({
+              column,
+              ref: SQL_FILTERS_LIST.find(f => f.operator === '=')!,
+              values: [row[column]],
+            }))
+
+            const values = rowDrafts.reduce<Record<string, unknown>>((acc, d) => {
+              acc[d.columnId] = d.value
+              return acc
+            }, {})
+
+            await trx
+              .withSchema(schema)
+              .withTables<{ [table]: Record<string, unknown> }>()
+              .updateTable(table)
+              .set(values)
+              // eslint-disable-next-line ts/no-explicit-any
+              .where((eb: any) => buildWhere(eb, sqlFilters))
+              .execute()
+
+            const modifiedColumns = Object.keys(values)
+            const updatedFilters = sqlFilters.map(filter => modifiedColumns.includes(filter.column)
+              ? { ...filter, values: [values[filter.column]] }
+              : filter)
+
+            const refreshedRows = await trx
+              .withSchema(schema)
+              .withTables<{ [table]: Record<string, unknown> }>()
+              .selectFrom(table)
+              .select(modifiedColumns)
+              // eslint-disable-next-line ts/no-explicit-any
+              .where((eb: any) => buildWhere(eb, updatedFilters))
+              .execute()
+
+            const refreshed = Array.isArray(refreshedRows) && refreshedRows.length > 0
+              ? refreshedRows[0] as Record<string, unknown>
+              : undefined
+
+            saved.set(rowIndex, refreshed ?? values)
+          }
+
+          failingRowIndex = null
+          return saved
+        })
+
+        return { status: 'success' as const, savedValuesByRow, rowEntries, rowsQueryOpts, filters, orderBy }
+      }
+      catch (error) {
+        return { status: 'error' as const, error, failingRowIndex, rowEntries }
+      }
     },
-    onSuccess: ({ results, rowEntries, rowsQueryOpts, filters, orderBy }) => {
-      const savedValuesByRow = new Map<number, Record<string, unknown>>()
-      let hadError = false
+    onSuccess: (data) => {
+      if (data.status === 'error') {
+        const { error, failingRowIndex, rowEntries } = data
 
-      results.forEach((result, idx) => {
-        const [rowIndex] = rowEntries[idx]!
-
-        if (result.status === 'fulfilled') {
-          savedValuesByRow.set(rowIndex, result.value.refreshedValues ?? result.value.values)
-          return
+        for (const [rowIndex] of rowEntries) {
+          setRowStatus(rowIndex, { isCommitting: false })
         }
 
-        hadError = true
-        const message = result.reason instanceof Error ? result.reason.message : String(result.reason)
-        setRowStatus(rowIndex, {
-          isCommitting: false,
-          error: message,
-        })
-        toast.error(`Failed to save row`, {
-          id: `save-row-error-${rowIndex}-${message}`,
-          description: message,
-          duration: 4000,
-        })
-      })
+        const message = error instanceof Error ? error.message : String(error)
 
-      if (savedValuesByRow.size > 0) {
-        applySavedValuesToCache(rowsQueryOpts.queryKey, savedValuesByRow)
+        if (failingRowIndex !== null) {
+          setRowStatus(failingRowIndex, {
+            isCommitting: false,
+            error: message,
+          })
 
-        for (const rowIndex of savedValuesByRow.keys()) {
-          removeRow(rowIndex)
+          toast.error('Failed to save changes', {
+            id: `save-transaction-error-${failingRowIndex}-${message}`,
+            description: `${message}. Transaction rolled back — no rows were saved.`,
+            duration: 6000,
+          })
+        }
+        else {
+          toast.error('Failed to save changes', {
+            description: `${message}. Transaction rolled back — no rows were saved.`,
+            duration: 6000,
+          })
         }
 
-        if (filters.length > 0 || Object.keys(orderBy).length > 0)
-          queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
+        return
       }
 
-      if (savedValuesByRow.size > 0) {
-        toast[hadError ? 'warning' : 'success'](
-          hadError
-            ? `Saved ${savedValuesByRow.size} row${savedValuesByRow.size === 1 ? '' : 's'}, ${results.length - savedValuesByRow.size} failed`
-            : `Saved ${savedValuesByRow.size} row${savedValuesByRow.size === 1 ? '' : 's'}`,
-        )
+      const { savedValuesByRow, rowsQueryOpts, filters, orderBy } = data
+
+      applySavedValuesToCache(rowsQueryOpts.queryKey, savedValuesByRow)
+
+      for (const rowIndex of savedValuesByRow.keys()) {
+        removeRow(rowIndex)
       }
+
+      if (filters.length > 0 || Object.keys(orderBy).length > 0)
+        queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
+
+      const count = savedValuesByRow.size
+      toast.success(`Saved ${count} row${count === 1 ? '' : 's'}`)
+
+      setIsReviewOpen(false)
     },
     onError: (error) => {
       toast.error(error.message)
@@ -257,16 +252,17 @@ export function DraftsToolbar({
           exit={{ opacity: 0, y: 30 }}
           transition={{ duration: 0.3, type: 'spring' }}
           className="
-            pointer-events-auto absolute inset-x-0 bottom-3 z-20 mx-auto flex
-            w-fit items-center gap-2 rounded-lg border bg-card py-1.5 pr-1.5
-            pl-3 text-card-foreground shadow-lg backdrop-blur-sm
+            bg-card text-card-foreground
             dark:bg-input/32
+            pointer-events-auto absolute inset-x-0 bottom-3 z-20 mx-auto flex
+            w-fit items-center gap-2 rounded-lg border py-1.5 pr-1.5 pl-3
+            shadow-lg backdrop-blur-sm
           "
         >
           <div className="flex items-center gap-2 text-xs">
             {errorCount > 0 && (
               <>
-                <span className="flex items-center gap-1 text-destructive">
+                <span className="text-destructive flex items-center gap-1">
                   <RiAlertLine className="size-3.5" />
                   <span className="font-medium">
                     {errorCount}
@@ -299,16 +295,15 @@ export function DraftsToolbar({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="ghost"
-                size="xs"
-                onClick={handleDiscard}
+                variant="outline"
+                size="icon-xs"
+                onClick={() => setIsReviewOpen(true)}
                 disabled={isSaving}
               >
-                <RiCloseLine className="size-3.5" />
-                Discard
+                <RiEyeLine className="size-3.5" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="top">Discard all unsaved changes</TooltipContent>
+            <TooltipContent side="top">Review changes before saving</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -318,8 +313,7 @@ export function DraftsToolbar({
                 disabled={isSaving}
               >
                 <LoadingContent loading={isSaving}>
-                  <RiSaveLine className="size-3.5" />
-                  {errorCount > 0 ? 'Retry save' : 'Save all'}
+                  {errorCount > 0 ? 'Retry' : 'Save'}
                   <KbdCtrlLetter
                     userAgent={navigator.userAgent}
                     letter="S"
@@ -328,8 +322,17 @@ export function DraftsToolbar({
                 </LoadingContent>
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="top">Save all unsaved changes</TooltipContent>
+            <TooltipContent side="top">Save all unsaved changes atomically in a transaction</TooltipContent>
           </Tooltip>
+          <DraftsReviewDrawer
+            open={isReviewOpen}
+            onOpenChange={setIsReviewOpen}
+            table={table}
+            schema={schema}
+            isSaving={isSaving}
+            onSave={handleSave}
+            onDiscardAll={handleDiscard}
+          />
         </motion.div>
       )}
     </AnimatePresence>
