@@ -1,9 +1,9 @@
 import { google } from '@ai-sdk/google'
-import { FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT } from '@conar/shared/constants'
+import { FREE_AI_FILTERS_USAGE_DAILY_LIMIT } from '@conar/shared/constants'
 import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { generateText, Output } from 'ai'
 import { type } from 'arktype'
-import { addDays, differenceInSeconds, endOfMonth, format } from 'date-fns'
+import { addDays, differenceInSeconds, format, startOfDay } from 'date-fns'
 import * as z from 'zod/mini'
 import { withPosthog } from '~/lib/posthog'
 import { redis } from '~/lib/redis'
@@ -24,14 +24,15 @@ const schema = z.object({
 
 const redisUsage = {
   get: async (userId: string) => {
-    const value = await redis.get(`ai:usage:${userId}:filters:${format(new Date(), 'yyyy-MM')}`)
+    const value = await redis.get(`ai:usage:${userId}:filters:${format(new Date(), 'yyyy-MM-dd')}`)
     return value ? Number(value) : 0
   },
   increment: async (userId: string) => {
     const now = new Date()
-    const key = `ai:usage:${userId}:filters:${format(now, 'yyyy-MM')}`
+    const key = `ai:usage:${userId}:filters:${format(now, 'yyyy-MM-dd')}`
     const value = await redis.incr(key)
-    await redis.expire(key, differenceInSeconds(endOfMonth(now), now))
+    const resetAt = addDays(startOfDay(now), 1)
+    await redis.expire(key, Math.max(1, differenceInSeconds(resetAt, now)))
     return value
   },
 }
@@ -62,13 +63,13 @@ export const filters = orpc
     if (!context.subscription) {
       usage = await redisUsage.get(context.user.id)
 
-      if (usage >= FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT) {
+      if (usage >= FREE_AI_FILTERS_USAGE_DAILY_LIMIT) {
         throw errors.FORBIDDEN({
           message: 'You have reached the free AI usage limit. Please subscribe to a Pro plan to continue using AI features.',
           data: {
             remaining: 0,
-            max: FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT,
-            resetAt: addDays(endOfMonth(new Date()), 1),
+            max: FREE_AI_FILTERS_USAGE_DAILY_LIMIT,
+            resetAt: addDays(startOfDay(new Date()), 1),
           },
         })
       }
@@ -125,7 +126,7 @@ export const filters = orpc
       usage = await redisUsage.increment(context.user.id)
     }
 
-    const remainingFreeAiUsage = context.subscription ? null : FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT - usage
+    const remainingFreeAiUsage = context.subscription ? null : FREE_AI_FILTERS_USAGE_DAILY_LIMIT - usage
 
     context.addLogData({
       filterResult: result,
@@ -138,8 +139,8 @@ export const filters = orpc
       ...(remainingFreeAiUsage !== null && {
         freeAiUsage: {
           remaining: remainingFreeAiUsage,
-          max: FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT,
-          resetAt: addDays(endOfMonth(new Date()), 1),
+          max: FREE_AI_FILTERS_USAGE_DAILY_LIMIT,
+          resetAt: addDays(startOfDay(new Date()), 1),
         },
       }),
     }

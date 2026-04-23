@@ -121,7 +121,7 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
                     cursor-help text-xs whitespace-nowrap text-muted-foreground
                   "
                   tabIndex={0}
-                  aria-label={`You have ${freeAiUsage.remaining} out of ${freeAiUsage.max} free AI filter uses left this month.`}
+                  aria-label={`You have ${freeAiUsage.remaining} out of ${freeAiUsage.max} free AI filter uses left today.`}
                 >
                   <NumberFlow
                     value={freeAiUsage.remaining}
@@ -138,9 +138,9 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
                 /
                 {freeAiUsage.max}
                 {' '}
-                free AI filter uses left this month. Reset at
+                free AI filter uses left today. Reset at
                 {' '}
-                {format(freeAiUsage.resetAt, 'MMM d, yyyy')}
+                {format(freeAiUsage.resetAt, 'MMM d, yyyy HH:mm')}
                 .
               </TooltipContent>
             </Tooltip>
