@@ -77,7 +77,7 @@ const fieldVariants = cva(
           '*:data-[slot=field-label]:flex-auto',
           `
             has-[>[data-slot=field-content]]:items-start
-            has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px
+            has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-(--border-hairline)
           `,
         ],
         responsive: [
@@ -91,7 +91,7 @@ const fieldVariants = cva(
           '@md/field-group:*:data-[slot=field-label]:flex-auto',
           `
             @md/field-group:has-[>[data-slot=field-content]]:items-start
-            @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px
+            @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-(--border-hairline)
           `,
         ],
       },

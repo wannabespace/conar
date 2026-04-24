@@ -118,7 +118,7 @@ function ConnectionResourcesCombobox({
           <ComboboxInput
             className="
               rounded-md
-              before:rounded-[calc(var(--radius-md)-1px)]
+              before:rounded-[calc(var(--radius-md)-var(--border-hairline))]
             "
             placeholder="Search resources"
             showTrigger={false}
@@ -500,7 +500,7 @@ export function ConnectionsList() {
             value={sort}
             onValueChange={value => sortValue.set(value!)}
           >
-            <SelectTrigger className="w-[200px] shrink-0">
+            <SelectTrigger className="w-50 shrink-0">
               {sort.includes('asc') ? <RiSortAsc /> : <RiSortDesc />}
               <SelectValue>
                 {sortOptions.find(option => option.value === sort)!.label}

@@ -89,9 +89,10 @@ export function ComboboxInput({
         <div
           aria-hidden="true"
           className="
-            pointer-events-none absolute inset-y-0 inset-s-px z-10 flex
-            items-center ps-[calc(--spacing(3)-1px)] opacity-80
-            has-[+[data-size=sm]]:ps-[calc(--spacing(2.5)-1px)]
+            pointer-events-none absolute inset-y-0 inset-s-(--border-hairline)
+            z-10 flex items-center
+            ps-[calc(--spacing(3)-var(--border-hairline))] opacity-80
+            has-[+[data-size=sm]]:ps-[calc(--spacing(2.5)-var(--border-hairline))]
             [&_svg]:-mx-0.5
             [&_svg:not([class*='size-'])]:size-4.5
             sm:[&_svg:not([class*='size-'])]:size-4
@@ -105,10 +106,10 @@ export function ComboboxInput({
         className={cn(
           startAddon
           && `
-            *:data-[slot=combobox-input]:ps-[calc(--spacing(8.5)-1px)]
-            data-[size=sm]:*:data-[slot=combobox-input]:ps-[calc(--spacing(7.5)-1px)]
-            sm:*:data-[slot=combobox-input]:ps-[calc(--spacing(8)-1px)]
-            sm:data-[size=sm]:*:data-[slot=combobox-input]:ps-[calc(--spacing(7)-1px)]
+            *:data-[slot=combobox-input]:ps-[calc(--spacing(8.5)-var(--border-hairline))]
+            data-[size=sm]:*:data-[slot=combobox-input]:ps-[calc(--spacing(7.5)-var(--border-hairline))]
+            sm:*:data-[slot=combobox-input]:ps-[calc(--spacing(8)-var(--border-hairline))]
+            sm:data-[size=sm]:*:data-[slot=combobox-input]:ps-[calc(--spacing(7)-var(--border-hairline))]
           `,
           size === 'sm'
             ? `
@@ -235,9 +236,9 @@ export function ComboboxPopup({
               border bg-popover shadow-lg/5 transition-[scale,opacity]
               not-dark:bg-clip-padding
               before:pointer-events-none before:absolute before:inset-0
-              before:rounded-[calc(var(--radius-lg)-1px)]
-              before:shadow-[0_1px_--theme(--color-black/4%)]
-              dark:before:shadow-[0_-1px_--theme(--color-white/6%)]
+              before:rounded-[calc(var(--radius-lg)-var(--border-hairline))]
+              before:shadow-[0_var(--border-hairline)_--theme(--color-black/4%)]
+              dark:before:shadow-[0_-var(--border-hairline)_--theme(--color-white/6%)]
             `,
             className,
           )}
@@ -310,7 +311,7 @@ export function ComboboxSeparator({
   return (
     <ComboboxPrimitive.Separator
       className={cn(`
-        mx-2 my-1 h-px bg-border
+        mx-2 my-1 h-(--border-hairline) bg-border
         last:hidden
       `, className)}
       data-slot="combobox-separator"
@@ -463,14 +464,15 @@ export function ComboboxChips({
       className={cn(
         `
           relative inline-flex min-h-9 w-full flex-wrap gap-1 rounded-lg border
-          border-input bg-background p-[calc(--spacing(1)-1px)] text-base
-          shadow-xs/5 ring-ring/24 transition-shadow outline-none
+          border-input bg-background
+          p-[calc(--spacing(1)-var(--border-hairline))] text-base shadow-xs/5
+          ring-ring/24 transition-shadow outline-none
           *:min-h-7
           not-dark:bg-clip-padding
           before:pointer-events-none before:absolute before:inset-0
-          before:rounded-[calc(var(--radius-lg)-1px)]
-          not-has-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_1px_--theme(--color-black/4%)]
-          focus-within:border-ring focus-within:ring-[3px]
+          before:rounded-[calc(var(--radius-lg)-var(--border-hairline))]
+          not-has-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_var(--border-hairline)_--theme(--color-black/4%)]
+          focus-within:border-ring focus-within:ring-[0.1875rem]
           has-autofill:bg-foreground/4
           has-disabled:pointer-events-none has-disabled:opacity-64
           has-aria-invalid:border-destructive/36
@@ -488,7 +490,7 @@ export function ComboboxChips({
           sm:has-data-[size=sm]:min-h-7
           sm:has-data-[size=sm]:*:min-h-5
           dark:not-has-disabled:bg-input/32
-          dark:not-has-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_-1px_--theme(--color-white/6%)]
+          dark:not-has-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_-var(--border-hairline)_--theme(--color-white/6%)]
           dark:has-autofill:bg-foreground/8
           dark:has-aria-invalid:ring-destructive/24
         `,
@@ -530,7 +532,8 @@ export function ComboboxChip({
   return (
     <ComboboxPrimitive.Chip
       className="
-        flex items-center rounded-[calc(var(--radius-md)-1px)] bg-accent ps-2
+        flex items-center
+        rounded-[calc(var(--radius-md)-var(--border-hairline))] bg-accent ps-2
         text-sm font-medium text-accent-foreground outline-none
         sm:text-xs/(--text-xs--line-height)
         [&_svg:not([class*='size-'])]:size-4

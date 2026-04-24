@@ -179,9 +179,7 @@ export function RunnerEditorQueryZone({
                         </TooltipContent>
                       </Tooltip>
                       <PopoverContent
-                        className="
-                          max-h-[400px] w-auto max-w-[600px] overflow-auto
-                        "
+                        className="max-h-100 w-auto max-w-150 overflow-auto"
                         side="top"
                       >
                         {isExplainError && (

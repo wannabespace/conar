@@ -211,7 +211,7 @@ export function ChatForm() {
           }}
           placeholder={isOnline ? 'Generate SQL queries using natural language' : 'Check your internet connection to generate SQL queries'}
           className={`
-            max-h-[250px] min-h-[50px] overflow-y-auto p-2 text-sm outline-none
+            max-h-62.5 min-h-12.5 overflow-y-auto p-2 text-sm outline-none
           `}
           disabled={!subscription || !isOnline}
           onEnter={handleSend}

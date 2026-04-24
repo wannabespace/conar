@@ -15,6 +15,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* 1px at default 16px root — use for hairlines so UI scales with font-size */
+  --border-hairline: 0.0625rem;
   --font-sans: "Geist", sans-serif;
   --font-heading: "Geist", sans-serif;
   --font-mono: "Geist Mono", monospace;
@@ -171,10 +173,10 @@
   &::before {
     content: "";
     position: absolute;
-    top: var(--hit-area-t, 0px);
-    right: var(--hit-area-r, 0px);
-    bottom: var(--hit-area-b, 0px);
-    left: var(--hit-area-l, 0px);
+    top: var(--hit-area-t, 0rem);
+    right: var(--hit-area-r, 0rem);
+    bottom: var(--hit-area-b, 0rem);
+    left: var(--hit-area-l, 0rem);
     pointer-events: inherit;
     @apply border border-dashed border-blue-500 bg-blue-500/10;
   }
@@ -188,10 +190,10 @@
   &::before {
     content: "";
     position: absolute;
-    top: var(--hit-area-t, 0px);
-    right: var(--hit-area-r, 0px);
-    bottom: var(--hit-area-b, 0px);
-    left: var(--hit-area-l, 0px);
+    top: var(--hit-area-t, 0rem);
+    right: var(--hit-area-r, 0rem);
+    bottom: var(--hit-area-b, 0rem);
+    left: var(--hit-area-l, 0rem);
     pointer-events: inherit;
   }
 }
@@ -213,10 +215,10 @@
   &::before {
     content: "";
     position: absolute;
-    top: var(--hit-area-t, 0px);
-    right: var(--hit-area-r, 0px);
-    bottom: var(--hit-area-b, 0px);
-    left: var(--hit-area-l, 0px);
+    top: var(--hit-area-t, 0rem);
+    right: var(--hit-area-r, 0rem);
+    bottom: var(--hit-area-b, 0rem);
+    left: var(--hit-area-l, 0rem);
     pointer-events: inherit;
   }
 }
@@ -229,10 +231,10 @@
   &::before {
     content: "";
     position: absolute;
-    top: var(--hit-area-t, 0px);
-    right: var(--hit-area-r, 0px);
-    bottom: var(--hit-area-b, 0px);
-    left: var(--hit-area-l, 0px);
+    top: var(--hit-area-t, 0rem);
+    right: var(--hit-area-r, 0rem);
+    bottom: var(--hit-area-b, 0rem);
+    left: var(--hit-area-l, 0rem);
     pointer-events: inherit;
   }
 }
@@ -245,10 +247,10 @@
   &::before {
     content: "";
     position: absolute;
-    top: var(--hit-area-t, 0px);
-    right: var(--hit-area-r, 0px);
-    bottom: var(--hit-area-b, 0px);
-    left: var(--hit-area-l, 0px);
+    top: var(--hit-area-t, 0rem);
+    right: var(--hit-area-r, 0rem);
+    bottom: var(--hit-area-b, 0rem);
+    left: var(--hit-area-l, 0rem);
     pointer-events: inherit;
   }
 }
@@ -261,10 +263,10 @@
   &::before {
     content: "";
     position: absolute;
-    top: var(--hit-area-t, 0px);
-    right: var(--hit-area-r, 0px);
-    bottom: var(--hit-area-b, 0px);
-    left: var(--hit-area-l, 0px);
+    top: var(--hit-area-t, 0rem);
+    right: var(--hit-area-r, 0rem);
+    bottom: var(--hit-area-b, 0rem);
+    left: var(--hit-area-l, 0rem);
     pointer-events: inherit;
   }
 }
@@ -277,10 +279,10 @@
   &::before {
     content: "";
     position: absolute;
-    top: var(--hit-area-t, 0px);
-    right: var(--hit-area-r, 0px);
-    bottom: var(--hit-area-b, 0px);
-    left: var(--hit-area-l, 0px);
+    top: var(--hit-area-t, 0rem);
+    right: var(--hit-area-r, 0rem);
+    bottom: var(--hit-area-b, 0rem);
+    left: var(--hit-area-l, 0rem);
     pointer-events: inherit;
   }
 }
@@ -296,10 +298,10 @@
   &::before {
     content: "";
     position: absolute;
-    top: var(--hit-area-t, 0px);
-    right: var(--hit-area-r, 0px);
-    bottom: var(--hit-area-b, 0px);
-    left: var(--hit-area-l, 0px);
+    top: var(--hit-area-t, 0rem);
+    right: var(--hit-area-r, 0rem);
+    bottom: var(--hit-area-b, 0rem);
+    left: var(--hit-area-l, 0rem);
     pointer-events: inherit;
   }
 }
@@ -315,10 +317,10 @@
   &::before {
     content: "";
     position: absolute;
-    top: var(--hit-area-t, 0px);
-    right: var(--hit-area-r, 0px);
-    bottom: var(--hit-area-b, 0px);
-    left: var(--hit-area-l, 0px);
+    top: var(--hit-area-t, 0rem);
+    right: var(--hit-area-r, 0rem);
+    bottom: var(--hit-area-b, 0rem);
+    left: var(--hit-area-l, 0rem);
     pointer-events: inherit;
   }
 }

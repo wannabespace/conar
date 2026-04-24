@@ -58,9 +58,7 @@ export function ChatImages({
               <img
                 src={image.url}
                 alt={image.name}
-                className="
-                  max-h-[400px] max-w-[400px] rounded-md object-contain
-                "
+                className="max-h-100 max-w-100 rounded-md object-contain"
               />
             </div>
           </TooltipContent>

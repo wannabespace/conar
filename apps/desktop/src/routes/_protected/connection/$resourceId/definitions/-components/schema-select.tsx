@@ -17,7 +17,7 @@ export function SchemaSelect({ schemas, selectedSchema, setSelectedSchema }: {
         }
       }}
     >
-      <SelectTrigger className="max-w-56 min-w-[180px]">
+      <SelectTrigger className="max-w-56 min-w-45">
         <div className="flex flex-1 items-center gap-2 overflow-hidden">
           <span className="shrink-0 text-muted-foreground">schema</span>
           <span className="truncate"><SelectValue /></span>

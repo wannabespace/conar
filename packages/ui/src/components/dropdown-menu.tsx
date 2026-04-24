@@ -171,7 +171,7 @@ function DropdownMenuSubContent({
     <DropdownMenuContent
       data-slot="dropdown-menu-sub-content"
       className={cn(`
-        w-auto min-w-[96px] rounded-lg bg-popover p-1 text-popover-foreground
+        w-auto min-w-24 rounded-lg bg-popover p-1 text-popover-foreground
         shadow-lg ring-1 ring-foreground/10 duration-100
         data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95
         data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95
@@ -291,7 +291,7 @@ function DropdownMenuSeparator({
   return (
     <MenuPrimitive.Separator
       data-slot="dropdown-menu-separator"
-      className={cn('-mx-1 my-1 h-px bg-border', className)}
+      className={cn('-mx-1 my-1 h-(--border-hairline) bg-border', className)}
       {...props}
     />
   )

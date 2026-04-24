@@ -65,7 +65,7 @@ function AuthLayout() {
           </div>
           <div className={`
             mx-auto flex w-full flex-col justify-center gap-6
-            sm:w-[350px]
+            sm:w-87.5
           `}
           >
             <Outlet />

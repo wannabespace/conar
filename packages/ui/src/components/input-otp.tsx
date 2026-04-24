@@ -58,7 +58,7 @@ function InputOTPSlot({
           last:rounded-r-md
           aria-invalid:border-destructive
           data-[active=true]:z-10 data-[active=true]:border-ring
-          data-[active=true]:ring-[3px] data-[active=true]:ring-ring/50
+          data-[active=true]:ring-[0.1875rem] data-[active=true]:ring-ring/50
           data-[active=true]:aria-invalid:border-destructive
           data-[active=true]:aria-invalid:ring-destructive/20
           dark:bg-input/30
@@ -75,7 +75,8 @@ function InputOTPSlot({
         "
         >
           <div className="
-            h-4 w-px animate-caret-blink bg-foreground duration-1000
+            h-4 w-(--border-hairline) animate-caret-blink bg-foreground
+            duration-1000
           "
           />
         </div>

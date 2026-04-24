@@ -64,9 +64,9 @@ export function TabsList({
             ? `
               z-10 bg-primary
               data-[orientation=horizontal]:h-0.5
-              data-[orientation=horizontal]:translate-y-px
+              data-[orientation=horizontal]:translate-y-(--border-hairline)
               data-[orientation=vertical]:w-0.5
-              data-[orientation=vertical]:-translate-x-px
+              data-[orientation=vertical]:-translate-x-(--border-hairline)
             `
             : `
               -z-1 rounded-md bg-background shadow-sm/5
@@ -89,8 +89,9 @@ export function TabsTab({
         `
           relative flex h-9 shrink-0 grow cursor-pointer items-center
           justify-center gap-1.5 rounded-md border border-transparent
-          px-[calc(--spacing(2.5)-1px)] text-base font-medium whitespace-nowrap
-          transition-[color,background-color,box-shadow] outline-none
+          px-[calc(--spacing(2.5)-var(--border-hairline))] text-base font-medium
+          whitespace-nowrap transition-[color,background-color,box-shadow]
+          outline-none
           hover:text-muted-foreground
           focus-visible:ring-2 focus-visible:ring-ring
           data-active:text-foreground

@@ -131,9 +131,10 @@ export function SelectPopup({
             className="
               top-0 z-50 flex h-6 w-full cursor-default items-center
               justify-center
-              before:pointer-events-none before:absolute before:inset-x-px
-              before:top-px before:h-[200%]
-              before:rounded-t-[calc(var(--radius-lg)-1px)]
+              before:pointer-events-none before:absolute
+              before:inset-x-(--border-hairline) before:top-(--border-hairline)
+              before:h-[200%]
+              before:rounded-t-[calc(var(--radius-lg)-var(--border-hairline))]
               before:bg-linear-to-b before:from-popover before:from-50%
             "
             data-slot="select-scroll-up-arrow"
@@ -149,9 +150,9 @@ export function SelectPopup({
             shadow-lg/5
             not-dark:bg-clip-padding
             before:pointer-events-none before:absolute before:inset-0
-            before:rounded-[calc(var(--radius-lg)-1px)]
-            before:shadow-[0_1px_--theme(--color-black/4%)]
-            dark:before:shadow-[0_-1px_--theme(--color-white/6%)]
+            before:rounded-[calc(var(--radius-lg)-var(--border-hairline))]
+            before:shadow-[0_var(--border-hairline)_--theme(--color-black/4%)]
+            dark:before:shadow-[0_-var(--border-hairline)_--theme(--color-white/6%)]
           "
           >
             <SelectPrimitive.List
@@ -168,9 +169,10 @@ export function SelectPopup({
             className="
               bottom-0 z-50 flex h-6 w-full cursor-default items-center
               justify-center
-              before:pointer-events-none before:absolute before:inset-x-px
-              before:bottom-px before:h-[200%]
-              before:rounded-b-[calc(var(--radius-lg)-1px)]
+              before:pointer-events-none before:absolute
+              before:inset-x-(--border-hairline)
+              before:bottom-(--border-hairline) before:h-[200%]
+              before:rounded-b-[calc(var(--radius-lg)-var(--border-hairline))]
               before:bg-linear-to-t before:from-popover before:from-50%
             "
             data-slot="select-scroll-down-arrow"
@@ -240,7 +242,7 @@ export function SelectSeparator({
 }: SelectPrimitive.Separator.Props): React.ReactElement {
   return (
     <SelectPrimitive.Separator
-      className={cn('mx-2 my-1 h-px bg-border', className)}
+      className={cn('mx-2 my-1 h-(--border-hairline) bg-border', className)}
       data-slot="select-separator"
       {...props}
     />

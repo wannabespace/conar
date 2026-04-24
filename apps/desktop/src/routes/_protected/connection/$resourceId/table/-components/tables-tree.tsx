@@ -343,7 +343,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                             ))}
                             {schema.pinnedTables.length > 0 && schema.unpinnedTables.length > 0 && (
                               <SeparatorMotion
-                                className="my-2 h-px!"
+                                className="my-2 h-(--border-hairline)!"
                                 layout
                                 variants={treeVariants}
                                 initial={search ? treeVariants.hidden : false}

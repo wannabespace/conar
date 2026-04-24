@@ -100,7 +100,7 @@ function CommandList({
     <CommandPrimitive.List
       data-slot="command-list"
       className={cn(
-        'max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto',
+        'max-h-75 scroll-py-1 overflow-x-hidden overflow-y-auto',
         className,
       )}
       {...props}
@@ -149,7 +149,7 @@ function CommandSeparator({
   return (
     <CommandPrimitive.Separator
       data-slot="command-separator"
-      className={cn('-mx-1 h-px bg-border', className)}
+      className={cn('-mx-1 h-(--border-hairline) bg-border', className)}
       {...props}
     />
   )

@@ -174,16 +174,17 @@ export function DrawerPopup({
               bg-popover text-popover-foreground shadow-lg/5
               transition-[transform,box-shadow,height,background-color]
               duration-450 ease-[cubic-bezier(0.32,0.72,0,1)]
-              will-change-transform outline-none [--peek:calc(--spacing(6)-1px)]
+              will-change-transform outline-none
+              [--peek:calc(--spacing(6)-var(--border-hairline))]
               [--scale-base:calc(max(0,1-(var(--nested-drawers)*var(--stack-step))))]
               [--scale:clamp(0,calc(var(--scale-base)+(var(--stack-step)*var(--stack-progress))),1)]
               [--shrink:calc(1-var(--scale))]
-              [--stack-peek-offset:max(0px,calc((var(--nested-drawers)-var(--stack-progress))*var(--peek)))]
+              [--stack-peek-offset:max(0rem,calc((var(--nested-drawers)-var(--stack-progress))*var(--peek)))]
               [--stack-progress:clamp(0,var(--drawer-swipe-progress),1)]
               [--stack-step:0.05]
               not-dark:bg-clip-padding
               before:pointer-events-none before:absolute before:inset-0
-              before:shadow-[0_1px_--theme(--color-black/4%)]
+              before:shadow-[0_var(--border-hairline)_--theme(--color-black/4%)]
               after:pointer-events-none after:absolute after:bg-popover
               data-ending-style:shadow-transparent
               data-ending-style:duration-[calc(var(--drawer-swipe-strength)*0.4s)]
@@ -191,25 +192,25 @@ export function DrawerPopup({
               data-nested-drawer-open:bg-[color-mix(in_srgb,var(--popover),var(--color-black)_calc(2%*(var(--nested-drawers)-var(--stack-progress))))]
               data-starting-style:shadow-transparent
               data-swiping:select-none
-              dark:before:shadow-[0_-1px_--theme(--color-white/6%)]
+              dark:before:shadow-[0_-var(--border-hairline)_--theme(--color-white/6%)]
               dark:data-nested-drawer-open:bg-[color-mix(in_srgb,var(--popover),var(--color-black)_calc(6%*(var(--nested-drawers)-var(--stack-progress))))]
             `,
             'touch-none',
             position === 'bottom'
             && `
               row-start-2
-              -mb-[max(0,calc(var(--drawer-snap-point-offset,0)+clamp(0,1,var(--drawer-snap-point-offset,0)/1px)*var(--drawer-swipe-movement-y,0)))]
+              -mb-[max(0,calc(var(--drawer-snap-point-offset,0)+clamp(0,1,var(--drawer-snap-point-offset,0)/var(--border-hairline))*var(--drawer-swipe-movement-y,0)))]
               transform-[translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))]
               border-t
-              pb-[max(0px,calc(env(safe-area-inset-bottom,0px)+var(--drawer-snap-point-offset,0px)+clamp(0,1,var(--drawer-snap-point-offset,0px)/1px)*var(--drawer-swipe-movement-y,0px)))]
+              pb-[max(0rem,calc(env(safe-area-inset-bottom,0rem)+var(--drawer-snap-point-offset,0rem)+clamp(0,1,var(--drawer-snap-point-offset,0rem)/var(--border-hairline))*var(--drawer-swipe-movement-y,0rem)))]
               not-data-starting-style:not-data-ending-style:transition-[transform,box-shadow,height,background-color,margin,padding]
               after:inset-x-0 after:top-full after:h-(--bleed)
               has-data-[slot=drawer-bar]:pt-2
               data-ending-style:mb-0
-              data-ending-style:transform-[translateY(calc(100%+env(safe-area-inset-bottom,0px)+var(--inset)))]
+              data-ending-style:transform-[translateY(calc(100%+env(safe-area-inset-bottom,0rem)+var(--inset)))]
               data-ending-style:pb-0
               data-starting-style:mb-0
-              data-starting-style:transform-[translateY(calc(100%+env(safe-area-inset-bottom,0px)+var(--inset)))]
+              data-starting-style:transform-[translateY(calc(100%+env(safe-area-inset-bottom,0rem)+var(--inset)))]
               data-starting-style:pb-0
             `,
             position === 'top'
@@ -244,43 +245,51 @@ export function DrawerPopup({
               position === 'top'
               && `
                 rounded-b-2xl
-                **:data-[slot=drawer-footer]:rounded-b-[calc(var(--radius-2xl)-1px)]
+                **:data-[slot=drawer-footer]:rounded-b-[calc(var(--radius-2xl)-var(--border-hairline))]
               `,
               position === 'left'
               && `
                 rounded-e-2xl
-                **:data-[slot=drawer-footer]:rounded-ee-[calc(var(--radius-2xl)-1px)]
+                **:data-[slot=drawer-footer]:rounded-ee-[calc(var(--radius-2xl)-var(--border-hairline))]
               `,
               position === 'right'
               && `
                 rounded-s-2xl
-                **:data-[slot=drawer-footer]:rounded-es-[calc(var(--radius-2xl)-1px)]
+                **:data-[slot=drawer-footer]:rounded-es-[calc(var(--radius-2xl)-var(--border-hairline))]
               `,
             ),
             variant === 'default'
             && cn(
               position === 'bottom'
-              && 'before:rounded-t-[calc(var(--radius-2xl)-1px)]',
+              && `
+                before:rounded-t-[calc(var(--radius-2xl)-var(--border-hairline))]
+              `,
               position === 'top'
-              && 'before:rounded-b-[calc(var(--radius-2xl)-1px)]',
+              && `
+                before:rounded-b-[calc(var(--radius-2xl)-var(--border-hairline))]
+              `,
               position === 'left'
-              && 'before:rounded-e-[calc(var(--radius-2xl)-1px)]',
+              && `
+                before:rounded-e-[calc(var(--radius-2xl)-var(--border-hairline))]
+              `,
               position === 'right'
-              && 'before:rounded-s-[calc(var(--radius-2xl)-1px)]',
+              && `
+                before:rounded-s-[calc(var(--radius-2xl)-var(--border-hairline))]
+              `,
             ),
             variant === 'inset'
             && `
               before:hidden
               sm:rounded-2xl sm:border
-              sm:before:rounded-[calc(var(--radius-2xl)-1px)]
+              sm:before:rounded-[calc(var(--radius-2xl)-var(--border-hairline))]
               sm:after:bg-transparent
-              sm:**:data-[slot=drawer-footer]:rounded-b-[calc(var(--radius-2xl)-1px)]
+              sm:**:data-[slot=drawer-footer]:rounded-b-[calc(var(--radius-2xl)-var(--border-hairline))]
             `,
             variant === 'straight' && '[--stack-step:0]',
             (position === 'bottom' || position === 'top')
             && `
               h-(--drawer-height,auto)
-              [--height:max(0px,calc(var(--drawer-frontmost-height,var(--drawer-height))))]
+              [--height:max(0rem,calc(var(--drawer-frontmost-height,var(--drawer-height))))]
               data-nested-drawer-open:h-(--height)
             `,
             position === 'bottom'
@@ -567,7 +576,7 @@ export function DrawerMenuSeparator({
   ...props
 }: useRender.ComponentProps<'div'>): React.ReactElement {
   const defaultProps = {
-    'className': cn('mx-2 my-1 h-px bg-border', className),
+    'className': cn('mx-2 my-1 h-(--border-hairline) bg-border', className),
     'data-slot': 'drawer-menu-separator',
   }
 
@@ -690,10 +699,10 @@ export function DrawerMenuCheckboxItem({
               <span className="col-start-1">{children}</span>
               <CheckboxPrimitive.Indicator
                 className="
-                  col-start-2 inline-flex h-[calc(var(--thumb-size)+2px)]
-                  w-[calc(var(--thumb-size)*2-2px)] shrink-0 items-center
-                  rounded-full p-px
-                  inset-shadow-[0_1px_--theme(--color-black/4%)]
+                  col-start-2 inline-flex h-[calc(var(--thumb-size)+0.125rem)]
+                  w-[calc(var(--thumb-size)*2-0.125rem)] shrink-0 items-center
+                  rounded-full p-(--border-hairline)
+                  inset-shadow-[0_var(--border-hairline)_--theme(--color-black/4%)]
                   transition-[background-color,box-shadow] duration-200
                   outline-none [--thumb-size:--spacing(4)]
                   focus-visible:ring-2 focus-visible:ring-ring
@@ -714,7 +723,7 @@ export function DrawerMenuCheckboxItem({
                   in-[[data-slot=drawer-menu-checkbox-item]:active]:rounded-[var(--thumb-size)/calc(var(--thumb-size)*1.10)]
                   in-[[data-slot=drawer-menu-checkbox-item]:active]:not-data-disabled:scale-x-110
                   in-[[data-slot=drawer-menu-checkbox-item][data-checked]]:origin-[var(--thumb-size)_50%]
-                  in-[[data-slot=drawer-menu-checkbox-item][data-checked]]:translate-x-[calc(var(--thumb-size)-4px)]
+                  in-[[data-slot=drawer-menu-checkbox-item][data-checked]]:translate-x-[calc(var(--thumb-size)-0.25rem)]
                 "
                 />
               </CheckboxPrimitive.Indicator>

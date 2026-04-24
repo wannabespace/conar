@@ -14,9 +14,9 @@ function Card({
         shadow-xs/5
         not-dark:bg-clip-padding
         before:pointer-events-none before:absolute before:inset-0
-        before:rounded-[calc(var(--radius-2xl)-1px)]
-        before:shadow-[0_1px_--theme(--color-black/4%)]
-        dark:before:shadow-[0_-1px_--theme(--color-white/6%)]
+        before:rounded-[calc(var(--radius-2xl)-var(--border-hairline))]
+        before:shadow-[0_var(--border-hairline)_--theme(--color-black/4%)]
+        dark:before:shadow-[0_-var(--border-hairline)_--theme(--color-white/6%)]
       `,
       className,
     ),
@@ -42,19 +42,20 @@ function CardFrame({
         shadow-xs/5
         not-dark:bg-clip-padding
         before:pointer-events-none before:absolute before:inset-0
-        before:rounded-[calc(var(--radius-2xl)-1px)] before:bg-muted/72
-        before:shadow-[0_1px_--theme(--color-black/4%)]
-        *:data-[slot=card]:-m-px *:data-[slot=card]:bg-clip-padding
-        *:data-[slot=card]:shadow-none
-        *:data-[slot=card]:[clip-path:inset(-1rem_1px)]
+        before:rounded-[calc(var(--radius-2xl)-var(--border-hairline))]
+        before:bg-muted/72
+        before:shadow-[0_var(--border-hairline)_--theme(--color-black/4%)]
+        *:data-[slot=card]:-m-(--border-hairline)
+        *:data-[slot=card]:bg-clip-padding *:data-[slot=card]:shadow-none
+        *:data-[slot=card]:[clip-path:inset(-1rem_var(--border-hairline))]
         *:not-first:data-[slot=card]:rounded-t-xl
         *:not-last:data-[slot=card]:rounded-b-xl
         *:data-[slot=card]:before:hidden
-        *:not-first:data-[slot=card]:before:rounded-t-[calc(var(--radius-xl)-1px)]
-        *:not-last:data-[slot=card]:before:rounded-b-[calc(var(--radius-xl)-1px)]
-        *:data-[slot=card]:first:[clip-path:inset(1px_1px_-1rem_1px_round_calc(var(--radius-2xl)-1px))]
-        *:data-[slot=card]:last:[clip-path:inset(-1rem_1px_1px_1px_round_calc(var(--radius-2xl)-1px))]
-        dark:before:shadow-[0_-1px_--theme(--color-white/6%)]
+        *:not-first:data-[slot=card]:before:rounded-t-[calc(var(--radius-xl)-var(--border-hairline))]
+        *:not-last:data-[slot=card]:before:rounded-b-[calc(var(--radius-xl)-var(--border-hairline))]
+        *:data-[slot=card]:first:[clip-path:inset(var(--border-hairline)_var(--border-hairline)_-1rem_var(--border-hairline)_round_calc(var(--radius-2xl)-var(--border-hairline)))]
+        *:data-[slot=card]:last:[clip-path:inset(-1rem_var(--border-hairline)_var(--border-hairline)_var(--border-hairline)_round_calc(var(--radius-2xl)-var(--border-hairline)))]
+        dark:before:shadow-[0_-var(--border-hairline)_--theme(--color-white/6%)]
       `,
       className,
     ),

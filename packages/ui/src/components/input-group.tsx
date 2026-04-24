@@ -17,7 +17,7 @@ const inputGroupAddonVariants = cva(
     in-[[data-slot=input-group]:has([data-slot=input-control],[data-slot=textarea-control])]:[&_svg:not([class*='size-'])]:size-4.5
     sm:in-[[data-slot=input-group]:has([data-slot=input-control],[data-slot=textarea-control])]:[&_svg:not([class*='size-'])]:size-4
     not-has-[button]:**:[svg:not([class*='opacity-'])]:opacity-80
-    [&>kbd]:rounded-[calc(var(--radius)-5px)]
+    [&>kbd]:rounded-[calc(var(--radius)-0.3125rem)]
   `,
   {
     defaultVariants: {
@@ -27,33 +27,35 @@ const inputGroupAddonVariants = cva(
       align: {
         'block-end':
           `
-            order-last w-full justify-start px-[calc(--spacing(3)-1px)]
-            pb-[calc(--spacing(3)-1px)]
-            [.border-t]:pt-[calc(--spacing(3)-1px)]
-            [[data-size=sm]+&]:px-[calc(--spacing(2.5)-1px)]
+            order-last w-full justify-start
+            px-[calc(--spacing(3)-var(--border-hairline))]
+            pb-[calc(--spacing(3)-var(--border-hairline))]
+            [.border-t]:pt-[calc(--spacing(3)-var(--border-hairline))]
+            [[data-size=sm]+&]:px-[calc(--spacing(2.5)-var(--border-hairline))]
           `,
         'block-start':
           `
-            order-first w-full justify-start px-[calc(--spacing(3)-1px)]
-            pt-[calc(--spacing(3)-1px)]
-            [.border-b]:pb-[calc(--spacing(3)-1px)]
-            [[data-size=sm]+&]:px-[calc(--spacing(2.5)-1px)]
+            order-first w-full justify-start
+            px-[calc(--spacing(3)-var(--border-hairline))]
+            pt-[calc(--spacing(3)-var(--border-hairline))]
+            [.border-b]:pb-[calc(--spacing(3)-var(--border-hairline))]
+            [[data-size=sm]+&]:px-[calc(--spacing(2.5)-var(--border-hairline))]
           `,
         'inline-end':
           `
-            order-last pe-[calc(--spacing(3)-1px)]
+            order-last pe-[calc(--spacing(3)-var(--border-hairline))]
             has-[>:last-child[data-slot=badge]]:-me-1.5
             has-[>button]:-me-2
             has-[>kbd:last-child]:me-[-0.35rem]
-            [[data-size=sm]+&]:pe-[calc(--spacing(2.5)-1px)]
+            [[data-size=sm]+&]:pe-[calc(--spacing(2.5)-var(--border-hairline))]
           `,
         'inline-start':
           `
-            order-first ps-[calc(--spacing(3)-1px)]
+            order-first ps-[calc(--spacing(3)-var(--border-hairline))]
             has-[>:last-child[data-slot=badge]]:-ms-1.5
             has-[>button]:-ms-2
             has-[>kbd:last-child]:ms-[-0.35rem]
-            [[data-size=sm]+&]:ps-[calc(--spacing(2.5)-1px)]
+            [[data-size=sm]+&]:ps-[calc(--spacing(2.5)-var(--border-hairline))]
           `,
       },
     },
@@ -73,8 +75,8 @@ export function InputGroup({
           ring-ring/24 transition-shadow
           not-dark:bg-clip-padding
           before:pointer-events-none before:absolute before:inset-0
-          before:rounded-[calc(var(--radius-lg)-1px)]
-          not-has-[input:disabled,textarea:disabled]:not-has-[input:focus-visible,textarea:focus-visible]:not-has-[input[aria-invalid],textarea[aria-invalid]]:before:shadow-[0_1px_--theme(--color-black/4%)]
+          before:rounded-[calc(var(--radius-lg)-var(--border-hairline))]
+          not-has-[input:disabled,textarea:disabled]:not-has-[input:focus-visible,textarea:focus-visible]:not-has-[input[aria-invalid],textarea[aria-invalid]]:before:shadow-[0_var(--border-hairline)_--theme(--color-black/4%)]
           has-autofill:bg-foreground/4
           has-data-[align=block-end]:h-auto has-data-[align=block-end]:flex-col
           has-data-[align=block-start]:h-auto
@@ -82,14 +84,14 @@ export function InputGroup({
           has-[input:disabled,textarea:disabled]:opacity-64
           has-[input:disabled,textarea:disabled,input:focus-visible,textarea:focus-visible,input[aria-invalid],textarea[aria-invalid]]:shadow-none
           has-[input:focus-visible,textarea:focus-visible]:border-ring
-          has-[input:focus-visible,textarea:focus-visible]:ring-[3px]
+          has-[input:focus-visible,textarea:focus-visible]:ring-[0.1875rem]
           has-[input[aria-invalid],textarea[aria-invalid]]:border-destructive/36
           has-[input:focus-visible,textarea:focus-visible]:has-[input[aria-invalid],textarea[aria-invalid]]:border-destructive/64
           has-[input:focus-visible,textarea:focus-visible]:has-[input[aria-invalid],textarea[aria-invalid]]:ring-destructive/16
           has-[textarea]:h-auto
           sm:text-sm
           dark:bg-input/32
-          dark:not-has-[input:disabled,textarea:disabled]:not-has-[input:focus-visible,textarea:focus-visible]:not-has-[input[aria-invalid],textarea[aria-invalid]]:before:shadow-[0_-1px_--theme(--color-white/6%)]
+          dark:not-has-[input:disabled,textarea:disabled]:not-has-[input:focus-visible,textarea:focus-visible]:not-has-[input[aria-invalid],textarea[aria-invalid]]:before:shadow-[0_-var(--border-hairline)_--theme(--color-white/6%)]
           dark:has-autofill:bg-foreground/8
           dark:has-[input[aria-invalid],textarea[aria-invalid]]:ring-destructive/24
           has-data-[align=inline-end]:**:[[data-size=sm]_input]:pe-1.5
@@ -101,9 +103,9 @@ export function InputGroup({
           has-data-[align=inline-end]:**:[input]:pe-2
           has-data-[align=inline-start]:**:[input]:ps-2
           has-[[data-align=block-start],[data-align=block-end]]:**:[input]:h-auto
-          **:[textarea_button]:rounded-[calc(var(--radius-md)-1px)]
+          **:[textarea_button]:rounded-[calc(var(--radius-md)-var(--border-hairline))]
           **:[textarea]:min-h-20.5 **:[textarea]:resize-none
-          **:[textarea]:py-[calc(--spacing(3)-1px)]
+          **:[textarea]:py-[calc(--spacing(3)-var(--border-hairline))]
           **:[textarea]:max-sm:min-h-23.5
         `,
         className,

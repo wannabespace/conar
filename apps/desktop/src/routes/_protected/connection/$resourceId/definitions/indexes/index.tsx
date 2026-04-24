@@ -118,7 +118,7 @@ function DatabaseIndexesPage() {
             }
           }}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Type">
               {value => value ? filterOptions.find(option => option.value === value)?.label : 'Filter Type'}
             </SelectValue>
