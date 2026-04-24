@@ -1,16 +1,24 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
-import { useOnChange } from '~/hooks/use-on-change'
 import { draftsActions, useTablePageStore } from './-store'
 
 export function useClearDraftsOnQueryChange() {
   const store = useTablePageStore()
   const filters = useSubscription(store, { selector: state => state.filters })
   const orderBy = useSubscription(store, { selector: state => state.orderBy })
-  const { clear } = draftsActions(store)
+  const previousRef = useRef({ store, filters, orderBy })
 
-  useOnChange(filters, clear)
-  useOnChange(orderBy, clear)
+  useEffect(() => {
+    const previous = previousRef.current
+    previousRef.current = { store, filters, orderBy }
+
+    if (previous.store !== store)
+      return
+
+    if (previous.filters !== filters || previous.orderBy !== orderBy) {
+      draftsActions(store).clear()
+    }
+  }, [store, filters, orderBy])
 }
 
 export function useSyncSelectionWithRows(rows: Record<string, unknown>[], primaryColumns: string[]) {

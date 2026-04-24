@@ -12,8 +12,16 @@ import {
   DrawerPopup,
   DrawerTitle,
 } from '@conar/ui/components/drawer'
+import {
+  Frame,
+  FrameDescription,
+  FrameHeader,
+  FramePanel,
+  FrameTitle,
+} from '@conar/ui/components/frame'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAlertLine, RiArrowRightLine, RiCloseLine, RiSaveLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowGoBackLine, RiArrowRightLine, RiSaveLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -34,21 +42,21 @@ function ValueCell({
   children: string
   className?: string
 }) {
-  const isSpecial = value === null || value === undefined || value === ''
-
   return (
     <div
       className={cn(
         `
-          min-w-0 flex-1 truncate rounded-sm bg-muted/50 px-1.5 py-0.5 font-mono
-          text-xs
+          min-w-0 flex-1 rounded-md border bg-muted/30 px-2 py-1 font-mono
+          text-[11px]/4 wrap-break-word
         `,
-        isSpecial && 'text-muted-foreground italic',
+        (value === null || value === undefined || value === '') && `
+          text-muted-foreground italic
+        `,
         className,
       )}
       title={children}
     >
-      {children}
+      <span className="line-clamp-2 min-h-10">{children}</span>
     </div>
   )
 }
@@ -119,7 +127,7 @@ export function DraftsReviewDrawer({
           <DrawerDescription>
             {drafts.length}
             {' '}
-            unsaved change
+            change
             {drafts.length === 1 ? '' : 's'}
             {' '}
             in
@@ -129,124 +137,136 @@ export function DraftsReviewDrawer({
               .
               {table}
             </span>
-            {errorCount > 0 && (
-              <>
-                {' · '}
-                <span className="
-                  inline-flex items-center gap-1 text-destructive
-                "
-                >
-                  <RiAlertLine className="size-3.5" />
-                  {errorCount}
-                  {' '}
-                  failed
-                </span>
-              </>
-            )}
           </DrawerDescription>
         </DrawerHeader>
         <DrawerPanel>
-          {rowEntries.length === 0
-            ? (
-                <div className="
-                  flex h-40 items-center justify-center text-sm
-                  text-muted-foreground
-                "
-                >
-                  No pending changes
-                </div>
-              )
-            : (
-                <div className="flex flex-col gap-3">
-                  {rowEntries.map(([rowIndex, rowDrafts]) => {
-                    const row = rows[rowIndex]
-                    const primaryLabel = row && primaryColumns.length > 0
-                      ? primaryColumns.map(pc => `${pc}: ${displayFor(pc, row[pc])}`).join(', ')
-                      : `row #${rowIndex + 1}`
+          <div className="flex flex-col gap-3">
+            {rowEntries.map(([rowIndex, rowDrafts]) => {
+              const row = rows[rowIndex]
+              const primaryLabel = row && primaryColumns.length > 0
+                ? primaryColumns.map(pc => `${pc}: ${displayFor(pc, row[pc])}`)
+                : [`row #${rowIndex + 1}`]
 
-                    return (
-                      <div
-                        key={rowIndex}
-                        className="flex flex-col gap-2 rounded-lg border p-3"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="
-                              truncate font-mono text-xs text-muted-foreground
-                            "
-                            title={primaryLabel}
+              return (
+                <Frame key={rowIndex}>
+                  <FrameHeader>
+                    <div className="flex items-start justify-between gap-2">
+                      <FrameTitle>
+                        Row
+                        {rowDrafts.some(draft => draft.error) && (
+                          <span className="
+                            inline-flex items-center gap-1 rounded-full
+                            bg-destructive/10 px-1.5 py-0.5 text-[10px]
+                            font-medium text-destructive
+                          "
                           >
-                            {primaryLabel}
+                            <RiAlertLine className="size-3" />
+                            Error
                           </span>
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => removeRow(rowIndex)}
-                            disabled={isSaving}
-                            className="ml-auto"
-                          >
-                            <RiCloseLine className="size-3.5" />
-                            Discard row
-                          </Button>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          {rowDrafts.map((draft) => {
-                            const before = row ? displayFor(draft.columnId, row[draft.columnId]) : 'unavailable'
-                            const after = displayFor(draft.columnId, draft.value)
+                        )}
+                      </FrameTitle>
+                      <FrameDescription className="font-mono text-[11px]">
+                        {primaryLabel.map(label => (
+                          <div key={label} className="truncate" title={label}>
+                            {label}
+                          </div>
+                        ))}
+                      </FrameDescription>
+                    </div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon-xs"
+                          onClick={() => removeRow(rowIndex)}
+                          disabled={isSaving}
+                        >
+                          <RiArrowGoBackLine />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="left">Discard row</TooltipContent>
+                    </Tooltip>
+                  </FrameHeader>
+                  <FramePanel>
+                    <div className="flex flex-col gap-2.5">
+                      {rowDrafts.map((draft) => {
+                        const before = row ? displayFor(draft.columnId, row[draft.columnId]) : 'unavailable'
+                        const after = displayFor(draft.columnId, draft.value)
 
-                            return (
-                              <div
-                                key={draft.columnId}
-                                className="flex flex-col gap-1"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span className="
-                                    shrink-0 font-mono text-xs font-medium
+                        return (
+                          <div key={draft.columnId}>
+                            <div className="
+                              grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]
+                              items-start gap-2
+                            "
+                            >
+                              <div className="min-w-0 space-y-1">
+                                <div className="
+                                  truncate font-mono text-[10px] font-semibold
+                                  text-muted-foreground uppercase
+                                "
+                                >
+                                  {draft.columnId}
+                                </div>
+                                <ValueCell value={row?.[draft.columnId]}>{before}</ValueCell>
+                              </div>
+
+                              <div className="min-w-0 space-y-1">
+                                <div className="
+                                  flex items-center gap-1 text-[10px]
+                                  font-medium text-muted-foreground uppercase
+                                "
+                                >
+                                  <RiArrowRightLine className="size-3 shrink-0" />
+                                  Modified
+                                </div>
+                                <ValueCell
+                                  value={draft.value}
+                                  className="
+                                    border-warning/30 bg-warning/10
+                                    text-warning-foreground
                                   "
-                                  >
-                                    {draft.columnId}
-                                  </span>
-                                  <ValueCell value={row?.[draft.columnId]}>{before}</ValueCell>
-                                  <RiArrowRightLine className="
-                                    size-3.5 shrink-0 text-muted-foreground
-                                  "
-                                  />
-                                  <ValueCell
-                                    value={draft.value}
-                                    className="
-                                      bg-warning/15 text-warning-foreground
-                                    "
-                                  >
-                                    {after}
-                                  </ValueCell>
+                                >
+                                  {after}
+                                </ValueCell>
+                              </div>
+
+                              <Tooltip>
+                                <TooltipTrigger asChild>
                                   <Button
                                     variant="ghost"
                                     size="icon-xs"
                                     onClick={() => removeDraft(rowIndex, draft.columnId)}
                                     disabled={isSaving}
+                                    className="mt-5 shrink-0"
                                   >
-                                    <RiCloseLine className="size-3.5" />
+                                    <RiArrowGoBackLine className="size-3.5" />
                                   </Button>
-                                </div>
-                                {draft.error && (
-                                  <div className="
-                                    flex items-center gap-1 pl-2 text-xs
-                                    text-destructive
-                                  "
-                                  >
-                                    <RiAlertLine className="size-3 shrink-0" />
-                                    <span className="truncate" title={draft.error}>{draft.error}</span>
-                                  </div>
-                                )}
+                                </TooltipTrigger>
+                                <TooltipContent side="left">Discard change</TooltipContent>
+                              </Tooltip>
+                            </div>
+
+                            {draft.error && (
+                              <div className="
+                                mt-2 flex items-start gap-2 rounded-md border
+                                border-destructive/20 bg-destructive/5 px-2.5
+                                py-2 text-xs text-destructive
+                              "
+                              >
+                                <RiAlertLine className="mt-0.5 size-3 shrink-0" />
+                                <span title={draft.error}>{draft.error}</span>
                               </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </FramePanel>
+                </Frame>
+              )
+            })}
+          </div>
         </DrawerPanel>
         <DrawerFooter>
           <Button
@@ -255,7 +275,7 @@ export function DraftsReviewDrawer({
             disabled={isSaving || drafts.length === 0}
             className="mr-auto"
           >
-            <RiCloseLine />
+            <RiArrowGoBackLine />
             Discard all
           </Button>
           <DrawerClose render={<Button variant="outline" />}>

@@ -5,10 +5,7 @@
   "formatter": [],
   "languages": {
     "TypeScript": {
-      "language_servers": ["tsgo", "eslint"]
-    },
-    "TSX": {
-      "language_servers": ["tsgo", "eslint"]
+      "language_servers": ["tsgo", "...", "!vtsls"]
     },
     "HTML": {
       "language_servers": ["...", "eslint"]

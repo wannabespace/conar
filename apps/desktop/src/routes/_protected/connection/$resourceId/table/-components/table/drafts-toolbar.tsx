@@ -252,17 +252,16 @@ export function DraftsToolbar({
           exit={{ opacity: 0, y: 30 }}
           transition={{ duration: 0.3, type: 'spring' }}
           className="
-            bg-card text-card-foreground
-            dark:bg-input/32
             pointer-events-auto absolute inset-x-0 bottom-3 z-20 mx-auto flex
-            w-fit items-center gap-2 rounded-lg border py-1.5 pr-1.5 pl-3
-            shadow-lg backdrop-blur-sm
+            w-fit items-center gap-2 rounded-lg border bg-card/60 py-1.5 pr-1.5
+            pl-3 text-card-foreground shadow-lg backdrop-blur-md
+            dark:bg-input/32
           "
         >
           <div className="flex items-center gap-2 text-xs">
             {errorCount > 0 && (
               <>
-                <span className="text-destructive flex items-center gap-1">
+                <span className="flex items-center gap-1 text-destructive">
                   <RiAlertLine className="size-3.5" />
                   <span className="font-medium">
                     {errorCount}

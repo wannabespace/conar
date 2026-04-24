@@ -1,5 +1,4 @@
 import type { ActiveFilter, Filter } from '@conar/shared/filters'
-import type { WebStorageValue } from 'seitu/web'
 import type { GeneratorId } from '~/entities/connection/utils/seeds'
 import { memoize } from '@conar/memoize'
 import { omit } from '@conar/shared/utils/helpers'
@@ -62,15 +61,15 @@ const defaultState: typeof storeState.infer = {
   drafts: [],
 }
 
-export type TablePageStore = WebStorageValue<typeof storeState.infer>
-
-export const tablePageStore = memoize(({ id, schema, table }: { id: string, schema: string, table: string }): TablePageStore => createWebStorageValue({
+export const tablePageStore = memoize(({ id, schema, table }: { id: string, schema: string, table: string }) => createWebStorageValue({
   type: 'localStorage',
   key: `${id}.${schema}-${table}.store`,
   defaultValue: defaultState,
   schema: storeState,
   onValidationError: repairValueObjectWithDefault,
 }))
+
+type TablePageStore = ReturnType<typeof tablePageStore>
 
 export const TablePageStoreContext = createContext<TablePageStore>(null!)
 

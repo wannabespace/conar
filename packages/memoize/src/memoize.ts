@@ -8,7 +8,7 @@ export interface MemoizeOptions<F extends AnyFunction> {
    * @example
    * ```ts
    * const fn = memoize((a: number, b: number) => a + b, {
-   *   transformArgs: ([a, b]) => `${a}-${b > 2}`,
+   *   transformArgs: (a, b) => `${a}-${b > 2}`,
    * })
    *
    * fn(1, 2) // Stored
@@ -17,7 +17,7 @@ export interface MemoizeOptions<F extends AnyFunction> {
    * fn(1, 7) // From cache
    * ```
    */
-  transformArgs?: (args: Parameters<F>) => unknown
+  transformArgs?: (...args: Parameters<F>) => unknown
 }
 
 export interface MemoizedEntry<F extends AnyFunction> {
@@ -46,7 +46,7 @@ export function memoize<F extends AnyFunction>(
 
   const fn = ((...params: Parameters<F>) => {
     const args = transformArgs
-      ? transformArgs(params)
+      ? transformArgs(...params)
       : params.length === 1
         ? params[0]
         : params
