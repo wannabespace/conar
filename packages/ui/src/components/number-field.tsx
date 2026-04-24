@@ -49,7 +49,7 @@ export function NumberFieldGroup({
           before:pointer-events-none before:absolute before:inset-0
           before:rounded-[calc(var(--radius-lg)-1px)]
           not-data-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_1px_--theme(--color-black/4%)]
-          focus-within:border-ring focus-within:ring-[3px]
+          focus-within:border-ring focus-within:ring-[0.1875rem]
           has-autofill:bg-foreground/4
           has-aria-invalid:border-destructive/36
           focus-within:has-aria-invalid:border-destructive/64

@@ -195,7 +195,7 @@ export function HeaderActionsCopy({ table }: { table: string }) {
       </Tooltip>
       <DialogContent className={cn(
         `
-          flex h-[600px] w-[60vw] flex-row gap-0 overflow-hidden p-0
+          flex h-150 w-[60vw] flex-row gap-0 overflow-hidden p-0
           sm:max-w-[60vw]
         `,
       )}

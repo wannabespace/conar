@@ -87,7 +87,7 @@ function DatabaseTriggersPage() {
             }
           }}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Event">
               {value => value ? eventFilterOptions.find(option => option.value === value)?.label : 'Filter Event'}
             </SelectValue>
@@ -108,7 +108,7 @@ function DatabaseTriggersPage() {
             }
           }}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Timing">
               {value => value ? timingFilterOptions.find(option => option.value === value)?.label : 'Filter Timing'}
             </SelectValue>

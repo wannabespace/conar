@@ -226,7 +226,7 @@ function Visualizer({
             }
           }}
         >
-          <SelectTrigger className="max-w-56 min-w-[180px]">
+          <SelectTrigger className="max-w-56 min-w-45">
             <div className="
               flex flex-1 items-center gap-2 overflow-hidden text-left
             "

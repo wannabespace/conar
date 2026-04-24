@@ -10,7 +10,7 @@ export const selectTriggerVariants = cva(
     before:pointer-events-none before:absolute before:inset-0
     before:rounded-[calc(var(--radius-lg)-1px)]
     not-data-disabled:not-focus-visible:not-aria-invalid:not-data-pressed:before:shadow-[0_1px_--theme(--color-black/4%)]
-    focus-visible:border-ring focus-visible:ring-[3px]
+    focus-visible:border-ring focus-visible:ring-[0.1875rem]
     aria-invalid:border-destructive/36
     focus-visible:aria-invalid:border-destructive/64
     focus-visible:aria-invalid:ring-destructive/16

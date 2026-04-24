@@ -11,7 +11,7 @@ export function ResetPassword({ name, url }: { name: string, url: string }) {
       preview={`${name}, reset your password`}
       title="Reset your password"
     >
-      <Section className="mb-[20px]">
+      <Section className="mb-5">
         <Text>
           Hello,
           {' '}
@@ -22,7 +22,7 @@ export function ResetPassword({ name, url }: { name: string, url: string }) {
           We received a request to reset your password. Click the button below to set a new password:
         </Text>
       </Section>
-      <Section className="mb-[20px]">
+      <Section className="mb-5">
         <Button href={url}>
           Reset Password
         </Button>

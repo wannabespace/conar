@@ -34,7 +34,7 @@ function MonacoOutput({ value, language = 'json' }: { value: string, language?: 
       value={value}
       language={language}
       options={monacoOptions}
-      className="-mx-2 h-[200px] max-h-[50vh]"
+      className="-mx-2 h-50 max-h-[50vh]"
     />
   )
 }
@@ -193,7 +193,7 @@ const CONTENT: { [K in Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[num
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`
-                        group flex max-w-full min-w-[200px] flex-1 basis-1/3
+                        group flex max-w-full min-w-50 flex-1 basis-1/3
                         items-center gap-1 rounded-md border bg-accent/20 px-1.5
                         py-0.5 text-xs transition-colors
                         hover:bg-accent/40
