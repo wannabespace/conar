@@ -12,9 +12,8 @@ export function Switch({
         `
           inline-flex h-[calc(var(--thumb-size)+0.125rem)]
           w-[calc(var(--thumb-size)*2-0.125rem)] shrink-0 items-center
-          rounded-full p-(--border-hairline)
-          transition-[background-color,box-shadow] duration-200 outline-none
-          [--thumb-size:--spacing(5)]
+          rounded-full p-px transition-[background-color,box-shadow]
+          duration-200 outline-none [--thumb-size:--spacing(5)]
           focus-visible:ring-2 focus-visible:ring-ring
           focus-visible:ring-offset-1 focus-visible:ring-offset-background
           data-checked:bg-primary

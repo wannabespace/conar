@@ -38,10 +38,9 @@ export function AutocompleteInput({
         <div
           aria-hidden="true"
           className="
-            pointer-events-none absolute inset-y-0 inset-s-(--border-hairline)
-            z-10 flex items-center
-            ps-[calc(--spacing(3)-var(--border-hairline))] opacity-80
-            has-[+[data-size=sm]]:ps-[calc(--spacing(2.5)-var(--border-hairline))]
+            pointer-events-none absolute inset-y-0 inset-s-px z-10 flex
+            items-center ps-[calc(--spacing(3)-1px)] opacity-80
+            has-[+[data-size=sm]]:ps-[calc(--spacing(2.5)-1px)]
             [&_svg]:-mx-0.5
             [&_svg:not([class*='size-'])]:size-4.5
             sm:[&_svg:not([class*='size-'])]:size-4
@@ -55,10 +54,10 @@ export function AutocompleteInput({
         className={cn(
           startAddon
           && `
-            *:data-[slot=autocomplete-input]:ps-[calc(--spacing(8.5)-var(--border-hairline))]
-            data-[size=sm]:*:data-[slot=autocomplete-input]:ps-[calc(--spacing(7.5)-var(--border-hairline))]
-            sm:*:data-[slot=autocomplete-input]:ps-[calc(--spacing(8)-var(--border-hairline))]
-            sm:data-[size=sm]:*:data-[slot=autocomplete-input]:ps-[calc(--spacing(7)-var(--border-hairline))]
+            *:data-[slot=autocomplete-input]:ps-[calc(--spacing(8.5)-1px)]
+            data-[size=sm]:*:data-[slot=autocomplete-input]:ps-[calc(--spacing(7.5)-1px)]
+            sm:*:data-[slot=autocomplete-input]:ps-[calc(--spacing(8)-1px)]
+            sm:data-[size=sm]:*:data-[slot=autocomplete-input]:ps-[calc(--spacing(7)-1px)]
           `,
           sizeValue === 'sm'
             ? `
@@ -160,9 +159,9 @@ export function AutocompletePopup({
               border bg-popover shadow-lg/5 transition-[scale,opacity]
               not-dark:bg-clip-padding
               before:pointer-events-none before:absolute before:inset-0
-              before:rounded-[calc(var(--radius-lg)-var(--border-hairline))]
-              before:shadow-[0_var(--border-hairline)_--theme(--color-black/4%)]
-              dark:before:shadow-[0_-var(--border-hairline)_--theme(--color-white/6%)]
+              before:rounded-[calc(var(--radius-lg)-1px)]
+              before:shadow-[0_1px_--theme(--color-black/4%)]
+              dark:before:shadow-[0_-1px_--theme(--color-white/6%)]
             `,
             className,
           )}
@@ -215,7 +214,7 @@ export function AutocompleteSeparator({
   return (
     <AutocompletePrimitive.Separator
       className={cn(`
-        mx-2 my-1 h-(--border-hairline) bg-border
+        mx-2 my-1 h-px bg-border
         last:hidden
       `, className)}
       data-slot="autocomplete-separator"

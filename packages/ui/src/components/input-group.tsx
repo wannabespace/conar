@@ -27,35 +27,33 @@ const inputGroupAddonVariants = cva(
       align: {
         'block-end':
           `
-            order-last w-full justify-start
-            px-[calc(--spacing(3)-var(--border-hairline))]
-            pb-[calc(--spacing(3)-var(--border-hairline))]
-            [.border-t]:pt-[calc(--spacing(3)-var(--border-hairline))]
-            [[data-size=sm]+&]:px-[calc(--spacing(2.5)-var(--border-hairline))]
+            order-last w-full justify-start px-[calc(--spacing(3)-1px)]
+            pb-[calc(--spacing(3)-1px)]
+            [.border-t]:pt-[calc(--spacing(3)-1px)]
+            [[data-size=sm]+&]:px-[calc(--spacing(2.5)-1px)]
           `,
         'block-start':
           `
-            order-first w-full justify-start
-            px-[calc(--spacing(3)-var(--border-hairline))]
-            pt-[calc(--spacing(3)-var(--border-hairline))]
-            [.border-b]:pb-[calc(--spacing(3)-var(--border-hairline))]
-            [[data-size=sm]+&]:px-[calc(--spacing(2.5)-var(--border-hairline))]
+            order-first w-full justify-start px-[calc(--spacing(3)-1px)]
+            pt-[calc(--spacing(3)-1px)]
+            [.border-b]:pb-[calc(--spacing(3)-1px)]
+            [[data-size=sm]+&]:px-[calc(--spacing(2.5)-1px)]
           `,
         'inline-end':
           `
-            order-last pe-[calc(--spacing(3)-var(--border-hairline))]
+            order-last pe-[calc(--spacing(3)-1px)]
             has-[>:last-child[data-slot=badge]]:-me-1.5
             has-[>button]:-me-2
             has-[>kbd:last-child]:me-[-0.35rem]
-            [[data-size=sm]+&]:pe-[calc(--spacing(2.5)-var(--border-hairline))]
+            [[data-size=sm]+&]:pe-[calc(--spacing(2.5)-1px)]
           `,
         'inline-start':
           `
-            order-first ps-[calc(--spacing(3)-var(--border-hairline))]
+            order-first ps-[calc(--spacing(3)-1px)]
             has-[>:last-child[data-slot=badge]]:-ms-1.5
             has-[>button]:-ms-2
             has-[>kbd:last-child]:ms-[-0.35rem]
-            [[data-size=sm]+&]:ps-[calc(--spacing(2.5)-var(--border-hairline))]
+            [[data-size=sm]+&]:ps-[calc(--spacing(2.5)-1px)]
           `,
       },
     },
@@ -75,8 +73,8 @@ export function InputGroup({
           ring-ring/24 transition-shadow
           not-dark:bg-clip-padding
           before:pointer-events-none before:absolute before:inset-0
-          before:rounded-[calc(var(--radius-lg)-var(--border-hairline))]
-          not-has-[input:disabled,textarea:disabled]:not-has-[input:focus-visible,textarea:focus-visible]:not-has-[input[aria-invalid],textarea[aria-invalid]]:before:shadow-[0_var(--border-hairline)_--theme(--color-black/4%)]
+          before:rounded-[calc(var(--radius-lg)-1px)]
+          not-has-[input:disabled,textarea:disabled]:not-has-[input:focus-visible,textarea:focus-visible]:not-has-[input[aria-invalid],textarea[aria-invalid]]:before:shadow-[0_1px_--theme(--color-black/4%)]
           has-autofill:bg-foreground/4
           has-data-[align=block-end]:h-auto has-data-[align=block-end]:flex-col
           has-data-[align=block-start]:h-auto
@@ -91,7 +89,7 @@ export function InputGroup({
           has-[textarea]:h-auto
           sm:text-sm
           dark:bg-input/32
-          dark:not-has-[input:disabled,textarea:disabled]:not-has-[input:focus-visible,textarea:focus-visible]:not-has-[input[aria-invalid],textarea[aria-invalid]]:before:shadow-[0_-var(--border-hairline)_--theme(--color-white/6%)]
+          dark:not-has-[input:disabled,textarea:disabled]:not-has-[input:focus-visible,textarea:focus-visible]:not-has-[input[aria-invalid],textarea[aria-invalid]]:before:shadow-[0_-1px_--theme(--color-white/6%)]
           dark:has-autofill:bg-foreground/8
           dark:has-[input[aria-invalid],textarea[aria-invalid]]:ring-destructive/24
           has-data-[align=inline-end]:**:[[data-size=sm]_input]:pe-1.5
@@ -103,9 +101,9 @@ export function InputGroup({
           has-data-[align=inline-end]:**:[input]:pe-2
           has-data-[align=inline-start]:**:[input]:ps-2
           has-[[data-align=block-start],[data-align=block-end]]:**:[input]:h-auto
-          **:[textarea_button]:rounded-[calc(var(--radius-md)-var(--border-hairline))]
+          **:[textarea_button]:rounded-[calc(var(--radius-md)-1px)]
           **:[textarea]:min-h-20.5 **:[textarea]:resize-none
-          **:[textarea]:py-[calc(--spacing(3)-var(--border-hairline))]
+          **:[textarea]:py-[calc(--spacing(3)-1px)]
           **:[textarea]:max-sm:min-h-23.5
         `,
         className,

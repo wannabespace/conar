@@ -47,8 +47,8 @@ export function NumberFieldGroup({
           transition-shadow
           not-dark:bg-clip-padding
           before:pointer-events-none before:absolute before:inset-0
-          before:rounded-[calc(var(--radius-lg)-var(--border-hairline))]
-          not-data-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_var(--border-hairline)_--theme(--color-black/4%)]
+          before:rounded-[calc(var(--radius-lg)-1px)]
+          not-data-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_1px_--theme(--color-black/4%)]
           focus-within:border-ring focus-within:ring-[0.1875rem]
           has-autofill:bg-foreground/4
           has-aria-invalid:border-destructive/36
@@ -57,7 +57,7 @@ export function NumberFieldGroup({
           data-disabled:pointer-events-none data-disabled:opacity-64
           sm:text-sm
           dark:bg-input/32
-          dark:not-data-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_-var(--border-hairline)_--theme(--color-white/6%)]
+          dark:not-data-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_-1px_--theme(--color-white/6%)]
           dark:has-autofill:bg-foreground/8
           dark:has-aria-invalid:ring-destructive/24
           [&_svg]:pointer-events-none [&_svg]:shrink-0
@@ -82,10 +82,10 @@ export function NumberFieldDecrement({
       className={cn(
         `
           relative flex shrink-0 cursor-pointer items-center justify-center
-          rounded-s-[calc(var(--radius-lg)-var(--border-hairline))]
-          px-[calc(--spacing(3)-var(--border-hairline))] transition-colors
+          rounded-s-[calc(var(--radius-lg)-1px)] px-[calc(--spacing(3)-1px)]
+          transition-colors
           hover:bg-accent
-          in-data-[size=sm]:px-[calc(--spacing(2.5)-var(--border-hairline))]
+          in-data-[size=sm]:px-[calc(--spacing(2.5)-1px)]
           pointer-coarse:after:absolute pointer-coarse:after:size-full
           pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11
         `,
@@ -108,10 +108,10 @@ export function NumberFieldIncrement({
       className={cn(
         `
           relative flex shrink-0 cursor-pointer items-center justify-center
-          rounded-e-[calc(var(--radius-lg)-var(--border-hairline))]
-          px-[calc(--spacing(3)-var(--border-hairline))] transition-colors
+          rounded-e-[calc(var(--radius-lg)-1px)] px-[calc(--spacing(3)-1px)]
+          transition-colors
           hover:bg-accent
-          in-data-[size=sm]:px-[calc(--spacing(2.5)-var(--border-hairline))]
+          in-data-[size=sm]:px-[calc(--spacing(2.5)-1px)]
           pointer-coarse:after:absolute pointer-coarse:after:size-full
           pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11
         `,
@@ -133,13 +133,12 @@ export function NumberFieldInput({
     <NumberFieldPrimitive.Input
       className={cn(
         `
-          h-8.5 w-full min-w-0 grow bg-transparent
-          px-[calc(--spacing(3)-var(--border-hairline))] text-center leading-8.5
-          tabular-nums outline-none
+          h-8.5 w-full min-w-0 grow bg-transparent px-[calc(--spacing(3)-1px)]
+          text-center leading-8.5 tabular-nums outline-none
           [transition:background-color_5000000s_ease-in-out_0s]
           in-data-[size=lg]:h-9.5 in-data-[size=lg]:leading-9.5
           in-data-[size=sm]:h-7.5
-          in-data-[size=sm]:px-[calc(--spacing(2.5)-var(--border-hairline))]
+          in-data-[size=sm]:px-[calc(--spacing(2.5)-1px)]
           in-data-[size=sm]:leading-7.5
           sm:h-7.5 sm:leading-7.5
           sm:in-data-[size=lg]:h-8.5 sm:in-data-[size=lg]:leading-8.5
@@ -178,8 +177,7 @@ export function NumberFieldScrubArea({
         {label}
       </Label>
       <NumberFieldPrimitive.ScrubAreaCursor className="
-        drop-shadow-[0_var(--border-hairline)_var(--border-hairline)_#0008]
-        filter
+        drop-shadow-[0_1px_1px_#0008] filter
       "
       >
         <CursorGrowIcon />

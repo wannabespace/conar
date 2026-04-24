@@ -89,14 +89,14 @@ function DialogPopup({
               will-change-transform
               not-dark:bg-clip-padding
               before:pointer-events-none before:absolute before:inset-0
-              before:rounded-[calc(var(--radius-2xl)-var(--border-hairline))]
-              before:shadow-[0_var(--border-hairline)_--theme(--color-black/4%)]
+              before:rounded-[calc(var(--radius-2xl)-1px)]
+              before:shadow-[0_1px_--theme(--color-black/4%)]
               data-ending-style:scale-98 data-ending-style:opacity-0
               data-nested:data-ending-style:translate-y-8
               data-nested-dialog-open:origin-top
               data-starting-style:scale-98 data-starting-style:opacity-0
               data-nested:data-starting-style:translate-y-8
-              dark:before:shadow-[0_-var(--border-hairline)_--theme(--color-white/6%)]
+              dark:before:shadow-[0_-1px_--theme(--color-white/6%)]
             `,
             bottomStickOnMobile
             && `
@@ -157,8 +157,7 @@ function DialogFooter({
       className={cn(
         `
           flex flex-col-reverse gap-2 px-6
-          sm:flex-row sm:justify-end
-          sm:rounded-b-[calc(var(--radius-2xl)-var(--border-hairline))]
+          sm:flex-row sm:justify-end sm:rounded-b-[calc(var(--radius-2xl)-1px)]
         `,
         variant === 'default' && 'border-t bg-muted/72 py-4',
         variant === 'bare'

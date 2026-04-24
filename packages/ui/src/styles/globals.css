@@ -15,8 +15,6 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* 1px at default 16px root — use for hairlines so UI scales with font-size */
-  --border-hairline: 0.0625rem;
   --font-sans: "Geist", sans-serif;
   --font-heading: "Geist", sans-serif;
   --font-mono: "Geist Mono", monospace;

@@ -4,13 +4,12 @@ export const selectTriggerVariants = cva(
   `
     relative inline-flex min-h-9 w-full min-w-36 items-center justify-between
     gap-2 rounded-lg border border-input bg-background
-    px-[calc(--spacing(3)-var(--border-hairline))] text-left text-base
-    text-foreground shadow-xs/5 ring-ring/24 transition-shadow outline-none
-    select-none
+    px-[calc(--spacing(3)-1px)] text-left text-base text-foreground shadow-xs/5
+    ring-ring/24 transition-shadow outline-none select-none
     not-dark:bg-clip-padding
     before:pointer-events-none before:absolute before:inset-0
-    before:rounded-[calc(var(--radius-lg)-var(--border-hairline))]
-    not-data-disabled:not-focus-visible:not-aria-invalid:not-data-pressed:before:shadow-[0_var(--border-hairline)_--theme(--color-black/4%)]
+    before:rounded-[calc(var(--radius-lg)-1px)]
+    not-data-disabled:not-focus-visible:not-aria-invalid:not-data-pressed:before:shadow-[0_1px_--theme(--color-black/4%)]
     focus-visible:border-ring focus-visible:ring-[0.1875rem]
     aria-invalid:border-destructive/36
     focus-visible:aria-invalid:border-destructive/64
@@ -18,7 +17,7 @@ export const selectTriggerVariants = cva(
     data-disabled:pointer-events-none data-disabled:opacity-64
     sm:min-h-8 sm:text-sm
     dark:bg-input/32
-    dark:not-data-disabled:not-focus-visible:not-aria-invalid:not-data-pressed:before:shadow-[0_-var(--border-hairline)_--theme(--color-white/6%)]
+    dark:not-data-disabled:not-focus-visible:not-aria-invalid:not-data-pressed:before:shadow-[0_-1px_--theme(--color-white/6%)]
     dark:aria-invalid:ring-destructive/24
     pointer-coarse:after:absolute pointer-coarse:after:size-full
     pointer-coarse:after:min-h-11
@@ -40,7 +39,7 @@ export const selectTriggerVariants = cva(
           sm:min-h-9
         `,
         sm: `
-          min-h-8 gap-1.5 px-[calc(--spacing(2.5)-var(--border-hairline))]
+          min-h-8 gap-1.5 px-[calc(--spacing(2.5)-1px)]
           sm:min-h-7
         `,
       },

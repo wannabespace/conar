@@ -118,7 +118,7 @@ function ConnectionResourcesCombobox({
           <ComboboxInput
             className="
               rounded-md
-              before:rounded-[calc(var(--radius-md)-var(--border-hairline))]
+              before:rounded-[calc(var(--radius-md)-1px)]
             "
             placeholder="Search resources"
             showTrigger={false}

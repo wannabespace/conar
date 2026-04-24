@@ -75,8 +75,7 @@ function InputOTPSlot({
         "
         >
           <div className="
-            h-4 w-(--border-hairline) animate-caret-blink bg-foreground
-            duration-1000
+            h-4 w-px animate-caret-blink bg-foreground duration-1000
           "
           />
         </div>

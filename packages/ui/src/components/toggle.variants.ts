@@ -6,7 +6,7 @@ export const toggleVariants = cva(
     gap-2 rounded-lg border text-base font-medium whitespace-nowrap
     text-foreground transition-shadow outline-none select-none
     before:pointer-events-none before:absolute before:inset-0
-    before:rounded-[calc(var(--radius-lg)-var(--border-hairline))]
+    before:rounded-[calc(var(--radius-lg)-1px)]
     hover:bg-accent
     focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
     focus-visible:ring-offset-background
@@ -28,15 +28,15 @@ export const toggleVariants = cva(
     variants: {
       size: {
         default: `
-          h-9 min-w-9 px-[calc(--spacing(2)-var(--border-hairline))]
+          h-9 min-w-9 px-[calc(--spacing(2)-1px)]
           sm:h-8 sm:min-w-8
         `,
         lg: `
-          h-10 min-w-10 px-[calc(--spacing(2.5)-var(--border-hairline))]
+          h-10 min-w-10 px-[calc(--spacing(2.5)-1px)]
           sm:h-9 sm:min-w-9
         `,
         sm: `
-          h-8 min-w-8 px-[calc(--spacing(1.5)-var(--border-hairline))]
+          h-8 min-w-8 px-[calc(--spacing(1.5)-1px)]
           sm:h-7 sm:min-w-7
         `,
       },
@@ -46,10 +46,10 @@ export const toggleVariants = cva(
           `
             border-input bg-background shadow-xs/5
             not-dark:bg-clip-padding
-            not-disabled:not-active:not-data-pressed:before:shadow-[0_var(--border-hairline)_--theme(--color-black/4%)]
+            not-disabled:not-active:not-data-pressed:before:shadow-[0_1px_--theme(--color-black/4%)]
             dark:bg-input/32
-            dark:not-disabled:not-data-pressed:before:shadow-[0_-var(--border-hairline)_--theme(--color-white/2%)]
-            dark:not-disabled:not-active:not-data-pressed:before:shadow-[0_-var(--border-hairline)_--theme(--color-white/6%)]
+            dark:not-disabled:not-data-pressed:before:shadow-[0_-1px_--theme(--color-white/2%)]
+            dark:not-disabled:not-active:not-data-pressed:before:shadow-[0_-1px_--theme(--color-white/6%)]
             dark:hover:bg-input/64
             dark:data-pressed:bg-input
             [:disabled,:active,[data-pressed]]:shadow-none

@@ -51,9 +51,9 @@ export function ResizableSeparator({
           pointer-events-none absolute top-1/2 left-1/2 -translate-1/2
           rounded-xs bg-border delay-75 duration-75
           group-aria-[orientation='horizontal']:px-0.5
-          group-aria-[orientation='horizontal']:py-(--border-hairline)
+          group-aria-[orientation='horizontal']:py-px
           group-aria-[orientation='vertical']:px-0.5
-          group-aria-[orientation='vertical']:py-(--border-hairline)
+          group-aria-[orientation='vertical']:py-px
           group-data-[separator='active']:bg-primary
           group-data-[separator='hover']:bg-primary
           group-data-[separator='hover']:text-primary-foreground
