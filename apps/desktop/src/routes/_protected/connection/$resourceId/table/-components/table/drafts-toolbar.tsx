@@ -244,96 +244,98 @@ export function DraftsToolbar({
   useSaveHotkey(handleSave, totalCount === 0 || isSaving)
 
   return (
-    <AnimatePresence initial={false}>
-      {drafts.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 30 }}
-          transition={{ duration: 0.3, type: 'spring' }}
-          className="
-            pointer-events-auto absolute inset-x-0 bottom-3 z-20 mx-auto flex
-            w-fit items-center gap-2 rounded-lg border bg-card/60 py-1.5 pr-1.5
-            pl-3 text-card-foreground shadow-lg backdrop-blur-md
-            dark:bg-input/32
-          "
-        >
-          <div className="flex items-center gap-2 text-xs">
-            {errorCount > 0 && (
-              <>
-                <span className="flex items-center gap-1 text-destructive">
-                  <RiAlertLine className="size-3.5" />
-                  <span className="font-medium">
-                    {errorCount}
-                    {' '}
-                    failed
+    <>
+      <AnimatePresence initial={false}>
+        {drafts.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 30 }}
+            transition={{ duration: 0.3, type: 'spring' }}
+            className="
+              pointer-events-auto absolute inset-x-0 bottom-3 z-20 mx-auto flex
+              w-fit items-center gap-2 rounded-lg border bg-card/60 py-1.5
+              pr-1.5 pl-3 text-card-foreground shadow-lg backdrop-blur-md
+              dark:bg-input/32
+            "
+          >
+            <div className="flex items-center gap-2 text-xs">
+              {errorCount > 0 && (
+                <>
+                  <span className="flex items-center gap-1 text-destructive">
+                    <RiAlertLine className="size-3.5" />
+                    <span className="font-medium">
+                      {errorCount}
+                      {' '}
+                      failed
+                    </span>
                   </span>
+                  <span className="text-muted-foreground">·</span>
+                </>
+              )}
+              <span>
+                <span className="font-medium">
+                  {totalCount}
                 </span>
-                <span className="text-muted-foreground">·</span>
-              </>
-            )}
-            <span>
-              <span className="font-medium">
-                {totalCount}
+                {' '}
+                unsaved change
+                {totalCount === 1 ? '' : 's'}
+                {' '}
+                in
+                {' '}
+                <span className="font-medium">
+                  {rowCount}
+                </span>
+                {' '}
+                row
+                {rowCount === 1 ? '' : 's'}
               </span>
-              {' '}
-              unsaved change
-              {totalCount === 1 ? '' : 's'}
-              {' '}
-              in
-              {' '}
-              <span className="font-medium">
-                {rowCount}
-              </span>
-              {' '}
-              row
-              {rowCount === 1 ? '' : 's'}
-            </span>
-          </div>
-          <Separator orientation="vertical" className="mx-1 h-4" />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon-xs"
-                onClick={() => setIsReviewOpen(true)}
-                disabled={isSaving}
-              >
-                <RiEyeLine className="size-3.5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top">Review changes before saving</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="xs"
-                onClick={handleSave}
-                disabled={isSaving}
-              >
-                <LoadingContent loading={isSaving}>
-                  {errorCount > 0 ? 'Retry' : 'Save'}
-                  <KbdCtrlLetter
-                    userAgent={navigator.userAgent}
-                    letter="S"
-                    className="text-white"
-                  />
-                </LoadingContent>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top">Save all unsaved changes atomically in a transaction</TooltipContent>
-          </Tooltip>
-          <DraftsReviewDrawer
-            open={isReviewOpen}
-            onOpenChange={setIsReviewOpen}
-            table={table}
-            schema={schema}
-            isSaving={isSaving}
-            onSave={handleSave}
-            onDiscardAll={handleDiscard}
-          />
-        </motion.div>
-      )}
-    </AnimatePresence>
+            </div>
+            <Separator orientation="vertical" className="mx-1 h-4" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon-xs"
+                  onClick={() => setIsReviewOpen(true)}
+                  disabled={isSaving}
+                >
+                  <RiEyeLine className="size-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">Review changes before saving</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="xs"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                >
+                  <LoadingContent loading={isSaving}>
+                    Save
+                    <KbdCtrlLetter
+                      userAgent={navigator.userAgent}
+                      letter="S"
+                      className="text-white"
+                    />
+                  </LoadingContent>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">Save all unsaved changes atomically in a transaction</TooltipContent>
+            </Tooltip>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <DraftsReviewDrawer
+        open={isReviewOpen}
+        onOpenChange={setIsReviewOpen}
+        table={table}
+        schema={schema}
+        isSaving={isSaving}
+        onSave={handleSave}
+        onDiscardAll={handleDiscard}
+      />
+    </>
   )
 }
