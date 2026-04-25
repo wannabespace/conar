@@ -202,13 +202,13 @@ export function DraftsToolbar({
 
           toast.error('Failed to save changes', {
             id: `save-transaction-error-${failingRowIndex}-${message}`,
-            description: `${message}. Transaction rolled back — no rows were saved.`,
+            description: message,
             duration: 6000,
           })
         }
         else {
           toast.error('Failed to save changes', {
-            description: `${message}. Transaction rolled back — no rows were saved.`,
+            description: message,
             duration: 6000,
           })
         }

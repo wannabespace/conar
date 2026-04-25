@@ -288,7 +288,7 @@ export function CellPopoverContent({
                 size="xs"
                 onClick={() => queue()}
               >
-                Queue
+                Apply
                 <KbdCtrlEnter
                   userAgent={navigator.userAgent}
                   className="text-white"
