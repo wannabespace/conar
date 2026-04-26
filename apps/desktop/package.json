@@ -89,6 +89,7 @@
     "better-result": "catalog:",
     "change-case": "catalog:",
     "date-fns": "catalog:",
+    "devalue": "catalog:",
     "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",
     "electron": "catalog:",
