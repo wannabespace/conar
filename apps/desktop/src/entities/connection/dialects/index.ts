@@ -30,16 +30,16 @@ export interface DialectExecutionOptions extends DialectOptions {
 
 export const dialects = {
   postgres: memoize((options: DialectOptions) => new Kysely<PostgresDatabase>({ dialect: postgresDialect(options) }), {
-    transformArgs: ([options]) => [options.connectionString, !!options.log],
+    transformArgs: options => [options.connectionString, !!options.log],
   }),
   mysql: memoize((options: DialectOptions) => new Kysely<MysqlDatabase>({ dialect: mysqlDialect(options) }), {
-    transformArgs: ([options]) => [options.connectionString, !!options.log],
+    transformArgs: options => [options.connectionString, !!options.log],
   }),
   clickhouse: memoize((options: DialectOptions) => new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(options) }), {
-    transformArgs: ([options]) => [options.connectionString, !!options.log],
+    transformArgs: options => [options.connectionString, !!options.log],
   }),
   mssql: memoize((options: DialectOptions) => new Kysely<MssqlDatabase>({ dialect: mssqlDialect(options) }), {
-    transformArgs: ([options]) => [options.connectionString, !!options.log],
+    transformArgs: options => [options.connectionString, !!options.log],
   }),
 } satisfies Record<ConnectionType, AnyFunction>
 

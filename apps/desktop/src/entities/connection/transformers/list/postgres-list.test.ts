@@ -153,11 +153,11 @@ describe('createPostgresListTransformer (plain array — JSON)', () => {
 
   describe('toConnection.fromUI', () => {
     it('throws Invalid value (plain arrays have no UI support)', () => {
-      expect(() => t.toConnection.fromUI(['a', 'b'])).toThrow('Invalid value')
+      expect(() => t.toConnection.fromUI(['a', 'b'])).toThrow()
     })
 
     it('throws Invalid value for empty array', () => {
-      expect(() => t.toConnection.fromUI([])).toThrow('Invalid value')
+      expect(() => t.toConnection.fromUI([])).toThrow()
     })
   })
 

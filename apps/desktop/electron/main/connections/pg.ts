@@ -5,6 +5,7 @@ import { readSSLFiles } from '@conar/connection/server'
 import { defaultSSLConfig, parseSSLConfig } from '@conar/connection/ssl/pg'
 import { memoize } from '@conar/memoize'
 import { tries } from '@conar/shared/utils/tries'
+import { disposeTransaction, getTransaction, registerTransaction } from '../lib/transactions'
 
 const pg = createRequire(import.meta.url)('pg') as typeof import('pg')
 
@@ -45,3 +46,79 @@ export const getPool = memoize(async (connectionString: string) => {
     }),
   )
 })
+
+export const query = {
+  execute: async ({ connectionString, query, values }: { connectionString: string, query: string, values: unknown[] }) => {
+    const pool = await getPool(connectionString)
+    const start = performance.now()
+    const result = await pool.query(query, values)
+
+    return { result: result.rows as unknown, duration: performance.now() - start }
+  },
+
+  beginTransaction: async ({ connectionString }: { connectionString: string }) => {
+    const pool = await getPool(connectionString)
+    const client = await pool.connect()
+
+    try {
+      await client.query('BEGIN')
+    }
+    catch (error) {
+      client.release()
+      throw error
+    }
+
+    const txId = registerTransaction({
+      execute: async (query, values) => {
+        const start = performance.now()
+        const result = await client.query(query, values)
+        return { result: result.rows as unknown, duration: performance.now() - start }
+      },
+      commit: async () => {
+        await client.query('COMMIT')
+      },
+      rollback: async () => {
+        await client.query('ROLLBACK')
+      },
+      release: async () => {
+        client.release()
+      },
+    })
+
+    return { txId }
+  },
+
+  executeTransaction: async ({ txId, query, values }: { txId: string, query: string, values: unknown[] }) => {
+    const handle = getTransaction(txId)
+    if (!handle)
+      throw new Error(`No active transaction found for id: ${txId}`)
+
+    return handle.execute(query, values)
+  },
+
+  commitTransaction: async ({ txId }: { txId: string }) => {
+    const handle = disposeTransaction(txId)
+    if (!handle)
+      return
+
+    try {
+      await handle.commit()
+    }
+    finally {
+      await handle.release().catch(() => {})
+    }
+  },
+
+  rollbackTransaction: async ({ txId }: { txId: string }) => {
+    const handle = disposeTransaction(txId)
+    if (!handle)
+      return
+
+    try {
+      await handle.rollback()
+    }
+    finally {
+      await handle.release().catch(() => {})
+    }
+  },
+}
