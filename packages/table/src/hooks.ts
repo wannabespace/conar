@@ -1,9 +1,9 @@
 export {
   INITIAL_SHIFT_SELECTION_STATE,
   reduceShiftArrowKey,
-  type ShiftSelectionAction,
   type ShiftSelectionDirection,
   type ShiftSelectionState,
+  type ShiftSelectionUpdate,
 } from './shift-selection-state'
 export { useTableContext } from './table-context'
 export type { TableContextType } from './table-context'

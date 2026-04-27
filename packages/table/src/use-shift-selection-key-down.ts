@@ -22,27 +22,16 @@ export function useShiftSelectionKeyDown<TItem, TElement extends HTMLElement = H
   onSelectionChange,
 }: UseShiftSelectionKeyDownOptions<TItem>) {
   return useCallback((event: KeyboardEvent<TElement>) => {
-    if (!event.shiftKey || rowCount === 0)
-      return
-
     const direction = ARROW_KEY_TO_DIRECTION[event.key]
 
-    if (!direction)
+    if (!event.shiftKey || !direction || rowCount === 0)
       return
 
     event.preventDefault()
 
-    const action = reduceShiftArrowKey({
-      direction,
-      rowCount,
-      state: getSelectionState(),
-    })
+    const update = reduceShiftArrowKey(direction, rowCount, getSelectionState())
 
-    if (action.type === 'noop')
-      return
-
-    const items = getItemsInRange(action.range.start, action.range.end)
-
-    onSelectionChange(items, action.state)
+    if (update)
+      onSelectionChange(getItemsInRange(update.range.start, update.range.end), update.state)
   }, [rowCount, getItemsInRange, getSelectionState, onSelectionChange])
 }
