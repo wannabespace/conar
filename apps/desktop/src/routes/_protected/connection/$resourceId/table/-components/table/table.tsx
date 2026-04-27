@@ -13,7 +13,7 @@ import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { Route } from '../..'
 import { useTableColumns } from '../../-columns'
 import { useClearDraftsOnQueryChange, useSyncSelectionWithRows } from '../../-hooks'
-import { columnsOrder, draftKey, draftsActions, useTablePageStore } from '../../-store'
+import { columnsOrder, draftKey, draftsActions, getRowPrimaryKeysValues, useTablePageStore } from '../../-store'
 import { DraftsToolbar } from './drafts-toolbar'
 import { RenameColumnDialog } from './rename-column-dialog'
 import { TableEmpty } from './table-empty'
@@ -54,13 +54,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const filters = useSubscription(store, { selector: state => state.filters })
   const orderBy = useSubscription(store, { selector: state => state.orderBy })
   const draftsMap = useSubscription(store, {
-    selector: (state) => {
-      const map = new Map<string, typeof state.drafts[number]>()
-      for (const d of state.drafts) {
-        map.set(draftKey(d.rowIndex, d.columnId), d)
-      }
-      return map
-    },
+    selector: state => new Map(state.drafts.map(d => [draftKey(d.primaryKeys, d.columnId), d])),
   })
   const { toggleOrder, setOrder, removeOrder } = columnsOrder(store)
   const { upsert: upsertDraft } = draftsActions(store)
@@ -75,7 +69,17 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     if (primaryColumns.length === 0)
       throw new Error('No primary keys found. Please use SQL Runner to update this row.')
 
-    upsertDraft({ rowIndex, columnId, value: newValue, error: undefined, isCommitting: false })
+    const row = rows[rowIndex]
+    if (!row)
+      throw new Error('Row not found. Please refresh the page.')
+
+    upsertDraft({
+      primaryKeys: getRowPrimaryKeysValues(row, primaryColumns),
+      columnId,
+      value: newValue,
+      error: undefined,
+      isCommitting: false,
+    })
   }
 
   const tableColumns: ColumnRenderer[] = columns
@@ -106,12 +110,16 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         />
       ),
       cell: (props) => {
+        const row = rows[props.rowIndex]
+
         return (
           <TableCell
             column={column}
             onQueueValue={primaryColumns.length > 0 ? queueValue : undefined}
             connectionType={connection.type}
-            draft={draftsMap.get(draftKey(props.rowIndex, column.id))}
+            draft={row && primaryColumns.length > 0
+              ? draftsMap.get(draftKey(getRowPrimaryKeysValues(row, primaryColumns), column.id))
+              : undefined}
             onAddFilter={filter => store.set(state => ({
               ...state,
               filters: [...state.filters, filter],
@@ -129,18 +137,10 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
   const handleShiftSelectionKeyDown = useShiftSelectionKeyDown({
     rowCount: rows.length,
-    getRowKey: index => primaryColumns.reduce<Record<string, string>>(
-      (acc, key) => ({ ...acc, [key]: rows[index]![key] as string }),
-      {},
-    ),
+    getRowKey: index => getRowPrimaryKeysValues(rows[index]!, primaryColumns) as Record<string, string>,
     getRangeKeys: (start, end) => {
       const rangeRows = rows.slice(start, end + 1)
-      return rangeRows.map(row =>
-        primaryColumns.reduce<Record<string, string>>(
-          (acc, key) => ({ ...acc, [key]: row[key] as string }),
-          {},
-        ),
-      )
+      return rangeRows.map(row => getRowPrimaryKeysValues(row, primaryColumns) as Record<string, string>)
     },
     getSelectionState: () => store.get().selectionState,
     onSelectionChange: (selected, selectionState) => {

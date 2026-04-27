@@ -1,6 +1,5 @@
-import type { TableDraft } from '../../-store'
+import type { draftType } from '../../-store'
 import { pick } from '@conar/shared/utils/helpers'
-import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import {
@@ -15,7 +14,6 @@ import {
 } from '@conar/ui/components/drawer'
 import {
   Frame,
-  FrameDescription,
   FrameHeader,
   FramePanel,
   FrameTitle,
@@ -24,13 +22,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { cn } from '@conar/ui/lib/utils'
 import { RiAlertLine, RiArrowGoBackLine, RiArrowRightLine, RiSaveLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
 import { useSubscription } from 'seitu/react'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { createTransformer, getDisplayValue } from '~/entities/connection/transformers'
 import { Route } from '../..'
 import { useTableColumns } from '../../-columns'
-import { draftsActions, useTablePageStore } from '../../-store'
+import { draftsActions, getRowKeyByPrimaryKeys, primaryKeysKey, useTablePageStore } from '../../-store'
 
 const DISPLAY_SIZE = 500
 
@@ -93,19 +90,15 @@ export function DraftsReviewDrawer({
     query: { filters, orderBy },
   }))
 
-  const rowEntries = useMemo(() => {
-    const map = new Map<number, TableDraft[]>()
-    for (const d of drafts) {
-      const list = map.get(d.rowIndex) ?? []
-      list.push(d)
-      map.set(d.rowIndex, list)
-    }
-    return Array.from(map.entries()).sort(([a], [b]) => a - b)
-  }, [drafts])
+  const rowsByPrimaryKey = new Map(
+    rows.map((row, index) => [getRowKeyByPrimaryKeys(row, primaryColumns), { row, index }] as const),
+  )
+  const draftIndex = (rowDrafts: typeof draftType.infer[]) =>
+    rowsByPrimaryKey.get(primaryKeysKey(rowDrafts[0]!.primaryKeys))?.index ?? Number.MAX_SAFE_INTEGER
+  const rowsEntries = Array.from(Map.groupBy(drafts, d => primaryKeysKey(d.primaryKeys)).values())
+    .sort((a, b) => draftIndex(a) - draftIndex(b))
 
-  const errorCount = drafts.filter(d => !!d.error).length
-
-  const displayFor = (columnId: string, value: unknown) => {
+  const columnDisplay = (columnId: string, value: unknown) => {
     const column = columns.find(c => c.id === columnId)
 
     if (!column)
@@ -140,7 +133,7 @@ export function DraftsReviewDrawer({
           </DrawerDescription>
         </DrawerHeader>
         <DrawerPanel>
-          {rowEntries.length === 0
+          {rowsEntries.length === 0
             ? (
                 <div className="
                   flex h-full min-h-40 items-center justify-center rounded-md
@@ -154,28 +147,25 @@ export function DraftsReviewDrawer({
               )
             : (
                 <div className="flex flex-col gap-3">
-                  {rowEntries.map(([rowIndex, rowDrafts]) => {
-                    const row = rows[rowIndex]
-                    const primaryLabel = row && primaryColumns.length > 0
-                      ? primaryColumns.map(pc => `${pc} = ${displayFor(pc, row[pc])}`)
-                      : [`row #${rowIndex + 1}`]
+                  {rowsEntries.map((rowDrafts) => {
+                    const { primaryKeys } = rowDrafts[0]!
+                    const row = rowsByPrimaryKey.get(primaryKeysKey(primaryKeys))?.row
+                    const primaryLabel = Object.entries(primaryKeys).length > 0
+                      ? Object.entries(primaryKeys).map(([columnId, value]) => `${columnId} = ${columnDisplay(columnId, value)}`)
+                      : ['Unknown row']
                     const errors = [...new Set(rowDrafts.map(draft => draft.error).filter(Boolean))] as string[]
 
                     return (
-                      <Frame key={rowIndex}>
-                        <FrameHeader className="
-                          flex-row items-start justify-between px-3 py-2
-                        "
-                        >
-                          <FrameTitle className="flex items-center gap-2">
-                            Row
+                      <Frame key={primaryKeysKey(primaryKeys)}>
+                        <FrameHeader className="flex-row px-3 py-2">
+                          <FrameTitle className="flex gap-1">
                             {!!errors.length && (
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Badge variant="destructive-info">
-                                    <RiAlertLine className="size-3" />
-                                    Error
-                                  </Badge>
+                                  <RiAlertLine className="
+                                    mt-1 size-3 text-destructive
+                                  "
+                                  />
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-lg">
                                   {errors.map(error => (
@@ -193,36 +183,42 @@ export function DraftsReviewDrawer({
                                 </TooltipContent>
                               </Tooltip>
                             )}
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon-2xs"
-                                  onClick={() => removeRow(rowIndex)}
-                                  disabled={isSaving}
-                                >
-                                  <RiArrowGoBackLine />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Discard row</TooltipContent>
-                            </Tooltip>
+                            Row
                           </FrameTitle>
-                          <FrameDescription className="
-                            pt-0.5 font-mono text-[0.7rem]
+                          <div className="
+                            mt-1 ml-2 flex flex-1 flex-col gap-0.5 pt-px
+                            text-[0.7rem] text-muted-foreground
                           "
                           >
                             {primaryLabel.map(label => (
-                              <div key={label} className="truncate" title={label}>
+                              <span
+                                key={label}
+                                className="truncate leading-none"
+                                title={label}
+                              >
                                 {label}
-                              </div>
+                              </span>
                             ))}
-                          </FrameDescription>
+                          </div>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon-xs"
+                                onClick={() => removeRow(primaryKeys)}
+                                disabled={isSaving}
+                              >
+                                <RiArrowGoBackLine />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Discard row</TooltipContent>
+                          </Tooltip>
                         </FrameHeader>
                         <FramePanel className="p-3">
                           <div className="flex flex-col gap-2.5">
                             {rowDrafts.map((draft) => {
-                              const before = row ? displayFor(draft.columnId, row[draft.columnId]) : ''
-                              const after = displayFor(draft.columnId, draft.value)
+                              const before = row ? columnDisplay(draft.columnId, row[draft.columnId]) : ''
+                              const after = columnDisplay(draft.columnId, draft.value)
 
                               return (
                                 <div
@@ -267,7 +263,7 @@ export function DraftsReviewDrawer({
                                       <Button
                                         variant="ghost"
                                         size="icon-2xs"
-                                        onClick={() => removeDraft(rowIndex, draft.columnId)}
+                                        onClick={() => removeDraft(primaryKeys, draft.columnId)}
                                         disabled={isSaving}
                                         className="mt-6 shrink-0"
                                       >
@@ -306,7 +302,7 @@ export function DraftsReviewDrawer({
           >
             <LoadingContent loading={isSaving}>
               <RiSaveLine />
-              {errorCount > 0 ? 'Retry save' : 'Save all'}
+              Save all
             </LoadingContent>
           </Button>
         </DrawerFooter>

@@ -1,4 +1,6 @@
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { Kysely } from 'kysely'
+import type { primaryKeysType } from '../../-store'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
@@ -23,37 +25,8 @@ import { useSaveHotkey } from '~/hooks/use-save-hotkey'
 import { queryClient } from '~/main'
 import { Route } from '../..'
 import { useTableColumns } from '../../-columns'
-import { draftsActions, useTablePageStore } from '../../-store'
+import { draftsActions, getRowKeyByPrimaryKeys, primaryKeysKey, useTablePageStore } from '../../-store'
 import { DraftsReviewDrawer } from './drafts-review-drawer'
-
-type RowsQueryKey = ReturnType<typeof resourceRowsQueryInfiniteOptions>['queryKey']
-
-function applySavedValuesToCache(
-  queryKey: RowsQueryKey,
-  savedValuesByRow: Map<number, Record<string, unknown>>,
-) {
-  queryClient.setQueryData(queryKey, (data) => {
-    if (!data)
-      return data
-
-    const pageOffsets = data.pages.map((_, pageIndex) =>
-      data.pages.slice(0, pageIndex).reduce((sum, page) => sum + page.rows.length, 0))
-
-    return {
-      ...data,
-      pages: data.pages.map((page, pageIndex) => ({
-        ...page,
-        rows: page.rows.map((row, rIndex) => {
-          const absoluteIndex = pageOffsets[pageIndex]! + rIndex
-          const savedValues = savedValuesByRow.get(absoluteIndex)
-          if (!savedValues)
-            return row
-          return { ...row, ...savedValues }
-        }),
-      })),
-    }
-  })
-}
 
 export function DraftsToolbar({
   table,
@@ -67,15 +40,7 @@ export function DraftsToolbar({
   const columns = useTableColumns()
   const primaryColumns = columns.filter(c => c.primaryKey).map(c => c.id)
   const drafts = useSubscription(store, { selector: state => state.drafts })
-  const rowsWithDrafts = drafts.reduce<Map<number, typeof drafts>>(
-    (acc, draft) => {
-      const list = acc.get(draft.rowIndex) ?? []
-      list.push(draft)
-      acc.set(draft.rowIndex, list)
-      return acc
-    },
-    new Map(),
-  )
+  const rowsWithDrafts = Map.groupBy(drafts, d => primaryKeysKey(d.primaryKeys))
   const { clear, removeRow, setRowStatus } = draftsActions(store)
   const [isReviewOpen, setIsReviewOpen] = useState(false)
 
@@ -87,6 +52,13 @@ export function DraftsToolbar({
     clear()
     setIsReviewOpen(false)
   }
+
+  const queryParams = connectionResourceToQueryParams(connectionResource)
+  const db = dialects[queryParams.type]({
+    connectionString: queryParams.connectionString,
+    log: queryParams.log,
+    // eslint-disable-next-line ts/no-explicit-any
+  }) as unknown as Kysely<any>
 
   const { mutate: saveDrafts, isPending: isSaving } = useMutation({
     mutationFn: async () => {
@@ -107,33 +79,35 @@ export function DraftsToolbar({
         throw new Error('No data found. Please refresh the page.')
 
       const allRows = cachedData.pages.flatMap(page => page.rows)
-      const rowEntries = Array.from(rowsWithDrafts.entries())
+      const rowEntries = Array.from(rowsWithDrafts.values())
 
-      for (const [rowIndex] of rowEntries) {
-        setRowStatus(rowIndex, { isCommitting: true, error: undefined })
+      for (const rowDrafts of rowEntries) {
+        setRowStatus(rowDrafts[0]!.primaryKeys, { isCommitting: true, error: undefined })
       }
 
-      const queryParams = connectionResourceToQueryParams(connectionResource)
-      const db = dialects[queryParams.type]({
-        connectionString: queryParams.connectionString,
-        log: queryParams.log,
-        // eslint-disable-next-line ts/no-explicit-any
-      }) as unknown as Kysely<any>
-
-      let failingRowIndex: number | null = null
+      let failedPrimaryKeys: typeof primaryKeysType.infer | null = null
 
       try {
-        const savedValuesByRow = await db.transaction().execute(async (trx) => {
-          const saved = new Map<number, Record<string, unknown>>()
+        const commits = await db.transaction().execute(async (tx) => {
+          const allRowsByPrimaryKey = new Map(
+            allRows.map(row => [getRowKeyByPrimaryKeys(row, primaryColumns), row] as const),
+          )
+          const commits: {
+            primaryKeys: typeof primaryKeysType.infer
+            values: Record<string, unknown>
+            modifiedColumns: string[]
+            updatedFilters: ActiveFilter[]
+          }[] = []
 
-          for (const [rowIndex, rowDrafts] of rowEntries) {
-            failingRowIndex = rowIndex
+          for (const rowDrafts of rowEntries) {
+            const { primaryKeys } = rowDrafts[0]!
+            failedPrimaryKeys = primaryKeys
 
-            const row = allRows[rowIndex]
+            const row = allRowsByPrimaryKey.get(primaryKeysKey(primaryKeys))
             if (!row)
               throw new Error('Row not found in cache. Please refresh the page.')
 
-            const sqlFilters = primaryColumns.map(column => ({
+            const sqlFilters: ActiveFilter[] = primaryColumns.map(column => ({
               column,
               ref: SQL_FILTERS_LIST.find(f => f.operator === '=')!,
               values: [row[column]],
@@ -144,13 +118,12 @@ export function DraftsToolbar({
               return acc
             }, {})
 
-            await trx
+            await tx
               .withSchema(schema)
               .withTables<{ [table]: Record<string, unknown> }>()
               .updateTable(table)
               .set(values)
-              // eslint-disable-next-line ts/no-explicit-any
-              .where((eb: any) => buildWhere(eb, sqlFilters))
+              .where(eb => buildWhere(eb, sqlFilters))
               .execute()
 
             const modifiedColumns = Object.keys(values)
@@ -158,50 +131,37 @@ export function DraftsToolbar({
               ? { ...filter, values: [values[filter.column]] }
               : filter)
 
-            const refreshedRows = await trx
-              .withSchema(schema)
-              .withTables<{ [table]: Record<string, unknown> }>()
-              .selectFrom(table)
-              .select(modifiedColumns)
-              // eslint-disable-next-line ts/no-explicit-any
-              .where((eb: any) => buildWhere(eb, updatedFilters))
-              .execute()
-
-            const refreshed = Array.isArray(refreshedRows) && refreshedRows.length > 0
-              ? refreshedRows[0] as Record<string, unknown>
-              : undefined
-
-            saved.set(rowIndex, refreshed ?? values)
+            commits.push({ primaryKeys, values, modifiedColumns, updatedFilters })
           }
 
-          failingRowIndex = null
-          return saved
+          failedPrimaryKeys = null
+          return commits
         })
 
-        return { status: 'success' as const, savedValuesByRow, rowEntries, rowsQueryOpts, filters, orderBy }
+        return { status: 'success' as const, commits, rowEntries, rowsQueryOpts, filters, orderBy }
       }
       catch (error) {
-        return { status: 'error' as const, error, failingRowIndex, rowEntries }
+        return { status: 'error' as const, error, failedPrimaryKeys, rowEntries }
       }
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data.status === 'error') {
-        const { error, failingRowIndex, rowEntries } = data
+        const { error, failedPrimaryKeys, rowEntries } = data
 
-        for (const [rowIndex] of rowEntries) {
-          setRowStatus(rowIndex, { isCommitting: false })
+        for (const rowDrafts of rowEntries) {
+          setRowStatus(rowDrafts[0]!.primaryKeys, { isCommitting: false })
         }
 
         const message = error instanceof Error ? error.message : String(error)
 
-        if (failingRowIndex !== null) {
-          setRowStatus(failingRowIndex, {
+        if (failedPrimaryKeys !== null) {
+          setRowStatus(failedPrimaryKeys, {
             isCommitting: false,
             error: message,
           })
 
           toast.error('Failed to save changes', {
-            id: `save-transaction-error-${failingRowIndex}-${message}`,
+            id: `save-transaction-error-${primaryKeysKey(failedPrimaryKeys)}-${message}`,
             description: message,
             duration: 6000,
           })
@@ -216,13 +176,53 @@ export function DraftsToolbar({
         return
       }
 
-      const { savedValuesByRow, rowsQueryOpts, filters, orderBy } = data
+      const { commits, rowsQueryOpts } = data
 
-      applySavedValuesToCache(rowsQueryOpts.queryKey, savedValuesByRow)
+      const savedValuesByRow = new Map(
+        await Promise.all(commits.map(async ({ primaryKeys, values, modifiedColumns, updatedFilters }) => {
+          const refreshed = await db
+            .withSchema(schema)
+            .withTables<{ [table]: Record<string, unknown> }>()
+            .selectFrom(table)
+            .select(modifiedColumns)
+            .where(eb => buildWhere(eb, updatedFilters))
+            .execute()
+            .then(rows => rows[0])
+            .catch(() => {
+              toast.warning('Failed to refresh row', { description: `Failed to refresh row ${primaryKeysKey(primaryKeys)}` })
+              return null
+            })
 
-      for (const rowIndex of savedValuesByRow.keys()) {
-        removeRow(rowIndex)
+          return [
+            primaryKeysKey(primaryKeys),
+            { primaryKeys, values: refreshed ?? values },
+          ] as const
+        })),
+      )
+
+      queryClient.setQueryData(rowsQueryOpts.queryKey, (data) => {
+        if (!data)
+          return data
+
+        return {
+          ...data,
+          pages: data.pages.map(page => ({
+            ...page,
+            rows: page.rows.map((row) => {
+              const savedValues = savedValuesByRow.get(getRowKeyByPrimaryKeys(row, primaryColumns))
+              if (!savedValues)
+                return row
+              return { ...row, ...savedValues.values }
+            }),
+          })),
+        }
+      })
+
+      for (const { primaryKeys } of savedValuesByRow.values()) {
+        removeRow(primaryKeys)
       }
+
+      const { filters, orderBy } = store.get()
 
       if (filters.length > 0 || Object.keys(orderBy).length > 0)
         queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
