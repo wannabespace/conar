@@ -1,8 +1,7 @@
 import type { TableHeaderCellProps } from '@conar/table'
 import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
-import type { ColumnHandlers } from '../../-columns'
 import type { tablePageType } from '../../-store'
-import type { Column } from '~/entities/connection/components/table/cell'
+import type { Column, ColumnHandlers } from '~/entities/connection/components/table/cell'
 import { useTableContext } from '@conar/table/hooks'
 import { Button } from '@conar/ui/components/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -323,18 +322,20 @@ export function TableHeaderCell({
         {onOrder && column.typeLabel && !CANNOT_SORT_TYPES.includes(column.typeLabel) && (
           <SortButton order={order} onClick={() => onOrder()} />
         )}
-        <div
-          role="separator"
-          aria-orientation="vertical"
-          className={cn(`
-            h-full w-1 cursor-col-resize rounded-xs bg-foreground/20 opacity-0
-            transition-opacity select-none
-            group-hover/header-cell:opacity-100
-            hover:bg-primary
-          `, isResizing && `bg-primary! opacity-100!`)}
-          onDoubleClick={removeSize}
-          onMouseDown={handleResize}
-        />
+        {onResize && (
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            className={cn(`
+              h-full w-1 cursor-col-resize rounded-xs bg-foreground/20 opacity-0
+              transition-opacity select-none
+              group-hover/header-cell:opacity-100
+              hover:bg-primary
+            `, isResizing && `bg-primary! opacity-100!`)}
+            onDoubleClick={removeSize}
+            onMouseDown={handleResize}
+          />
+        )}
       </div>
     </div>
   )

@@ -1,18 +1,9 @@
-import type { ActiveFilter } from '@conar/shared/filters'
 import type { connectionsResources } from '~/drizzle/schema'
 import type { Column } from '~/entities/connection/components/table/cell'
 import { useQueries } from '@tanstack/react-query'
 import { createContext, use } from 'react'
 import { getColumnUiType } from '~/entities/connection/components/table/cell'
 import { findEnum, resourceConstraintsQueryOptions, resourceEnumsQueryOptions, resourceTableColumnsQueryOptions } from '~/entities/connection/queries'
-
-export interface ColumnHandlers {
-  onQueueValue?: (rowIndex: number, newValue: unknown) => Promise<void>
-  onAddFilter?: (filter: ActiveFilter) => void
-  onOrder?: (order?: 'ASC' | 'DESC' | null) => void
-  onResize?: (newWidth: number) => void
-  onRename?: () => void
-}
 
 export function useTableColumnsQuery({ connectionResource, table, schema }: { connectionResource: typeof connectionsResources.$inferSelect, table: string, schema: string }) {
   return useQueries({
