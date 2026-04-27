@@ -35,6 +35,7 @@ function RootDocument() {
 
   useHotkey('Mod+R', () => globalHooks.callHook('refreshPressed'))
   useHotkey('Mod+Shift+R', () => location.reload())
+  useHotkey('Mod+S', () => globalHooks.callHook('savePressed'))
 
   useUpdatesObserver()
   useDeepLinksObserver()

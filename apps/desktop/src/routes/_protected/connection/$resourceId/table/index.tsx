@@ -14,7 +14,7 @@ import { Header } from './-components/header/header'
 import { Sidebar } from './-components/sidebar'
 import { Table } from './-components/table/table'
 import { TablesTabs } from './-components/tabs'
-import { tablePageSelectionStore, TablePageSelectionStoreContext, tablePageStore, TablePageStoreContext } from './-store'
+import { tablePageStore, TablePageStoreContext } from './-store'
 
 export const Route = createFileRoute(
   '/_protected/connection/$resourceId/table/',
@@ -147,12 +147,10 @@ function DatabaseTablesPage() {
         {schema && table
           ? (
               <TablePageStoreContext value={tablePageStore({ id: connectionResource.id, schema, table })}>
-                <TablePageSelectionStoreContext value={tablePageSelectionStore({ id: connectionResource.id, schema, table })}>
-                  <TableContent
-                    table={table}
-                    schema={schema}
-                  />
-                </TablePageSelectionStoreContext>
+                <TableContent
+                  table={table}
+                  schema={schema}
+                />
               </TablePageStoreContext>
             )
           : (

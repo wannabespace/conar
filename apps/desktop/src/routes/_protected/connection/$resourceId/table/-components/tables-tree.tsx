@@ -3,6 +3,7 @@ import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
 import { Button } from '@conar/ui/components/button'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
+import { Indicator } from '@conar/ui/components/custom/indicator'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { SeparatorMotion } from '@conar/ui/components/separator.motion'
@@ -19,6 +20,7 @@ import { SidebarLink } from '~/components/sidebar-link'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { addTab, cleanupPinnedTables, getConnectionResourceStore, togglePinTable } from '~/entities/connection/store'
 import { Route } from '..'
+import { tablePageStore } from '../-store'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
 
@@ -62,6 +64,8 @@ function TableItem({ schema, table, isView = false, pinned = false, search, onRe
 }) {
   const { connectionResource } = Route.useRouteContext()
   const Icon = isView ? RiEyeLine : RiTableLine
+  const store = tablePageStore({ id: connectionResource.id, schema, table })
+  const hasDrafts = useSubscription(store, { selector: state => state.drafts.length > 0 })
 
   return (
     <SidebarLink
@@ -76,15 +80,19 @@ function TableItem({ schema, table, isView = false, pinned = false, search, onRe
         <>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Icon
-                className={cn(
-                  'size-4 shrink-0 text-muted-foreground opacity-50',
-                  isActive && 'text-primary opacity-100',
-                )}
-              />
+              <span className="relative shrink-0">
+                <Icon
+                  className={cn(
+                    'size-4 text-muted-foreground opacity-50',
+                    isActive && 'text-primary opacity-100',
+                  )}
+                />
+                {hasDrafts && <Indicator />}
+              </span>
             </TooltipTrigger>
-            <TooltipContent side="left">
+            <TooltipContent>
               {isView ? 'View' : 'Table'}
+              {hasDrafts && ' has unsaved changes'}
             </TooltipContent>
           </Tooltip>
           <span className="truncate">

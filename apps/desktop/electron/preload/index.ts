@@ -36,12 +36,22 @@ async function handleError(func: () => Promise<any>) {
   }
 }
 
+function dialectQueryBridge(dialect: string) {
+  return {
+    execute: (arg: unknown) => handleError(() => ipcRenderer.invoke(`query.${dialect}.execute`, arg)),
+    beginTransaction: (arg: unknown) => handleError(() => ipcRenderer.invoke(`query.${dialect}.beginTransaction`, arg)),
+    executeTransaction: (arg: unknown) => handleError(() => ipcRenderer.invoke(`query.${dialect}.executeTransaction`, arg)),
+    commitTransaction: (arg: unknown) => handleError(() => ipcRenderer.invoke(`query.${dialect}.commitTransaction`, arg)),
+    rollbackTransaction: (arg: unknown) => handleError(() => ipcRenderer.invoke(`query.${dialect}.rollbackTransaction`, arg)),
+  }
+}
+
 contextBridge.exposeInMainWorld('electron', {
   query: {
-    postgres: arg => handleError(() => ipcRenderer.invoke('query.postgres', arg)),
-    mysql: arg => handleError(() => ipcRenderer.invoke('query.mysql', arg)),
-    clickhouse: arg => handleError(() => ipcRenderer.invoke('query.clickhouse', arg)),
-    mssql: arg => handleError(() => ipcRenderer.invoke('query.mssql', arg)),
+    postgres: dialectQueryBridge('postgres'),
+    mysql: dialectQueryBridge('mysql'),
+    clickhouse: dialectQueryBridge('clickhouse'),
+    mssql: dialectQueryBridge('mssql'),
   },
   encryption: {
     encrypt: arg => handleError(() => ipcRenderer.invoke('encryption.encrypt', arg)),
