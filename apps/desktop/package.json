@@ -60,7 +60,6 @@
     "@remixicon/react": "catalog:",
     "@standard-schema/spec": "catalog:",
     "@tailwindcss/vite": "catalog:",
-    "@tanstack/db": "catalog:",
     "@tanstack/react-db": "catalog:",
     "@tanstack/react-devtools": "catalog:",
     "@tanstack/react-form": "catalog:",

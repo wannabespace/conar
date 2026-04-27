@@ -11,7 +11,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { KeyCode, KeyMod } from 'monaco-editor'
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { CellSwitch } from '~/components/cell-switch'
@@ -46,7 +46,7 @@ export function CellPopoverContent({
 
   const canEdit = !!column?.isEditable && hasUpdateFn
 
-  const uiRender = ((() => {
+  const uiRender = useMemo(() => {
     if (column.uiType === 'boolean') {
       return (
         <CellSwitch
@@ -143,7 +143,7 @@ export function CellPopoverContent({
     }
 
     return null
-  })())
+  }, [canEdit, column, contentRef, newValue, scrollRef, setNewValue])
 
   const [isRaw, setIsRaw] = useState(!uiRender)
 
