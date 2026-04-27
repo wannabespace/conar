@@ -14,7 +14,10 @@ export async function handleError(error: unknown) {
     return
 
   const shouldIgnoreError = error instanceof Error
-    ? error.name === 'AbortError' || error.message.includes('net::') || error.message.toLowerCase().includes('failed to fetch')
+    ? error.name === 'AbortError'
+    || error.message.includes('net::')
+    || error.message.toLowerCase().includes('failed to fetch')
+    || error.message.toLowerCase().includes('cannot parse response body')
     : false
 
   if (!shouldIgnoreError) {
