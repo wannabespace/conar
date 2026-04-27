@@ -2,6 +2,7 @@ import type { ActiveFilter, Filter } from '@conar/shared/filters'
 import type { GeneratorId } from '~/entities/connection/utils/seeds'
 import { memoize } from '@conar/memoize'
 import { omit } from '@conar/shared/utils/helpers'
+import { INITIAL_SHIFT_SELECTION_STATE } from '@conar/table/hooks'
 import { type } from 'arktype'
 import { createContext, use } from 'react'
 import { repairValueObjectWithDefault } from 'seitu/utils'
@@ -57,7 +58,7 @@ const defaultState: typeof tablePageType.infer = {
   columnSizes: {},
   generators: {},
   lastClickedIndex: null,
-  selectionState: { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
+  selectionState: INITIAL_SHIFT_SELECTION_STATE,
   drafts: [],
 }
 

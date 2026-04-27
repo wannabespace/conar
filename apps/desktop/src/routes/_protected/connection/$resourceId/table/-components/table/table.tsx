@@ -204,11 +204,9 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
   const handleShiftSelectionKeyDown = useShiftSelectionKeyDown({
     rowCount: rows.length,
-    getRowKey: index => getRowPrimaryKeysValues(rows[index]!, primaryColumns) as Record<string, string>,
-    getRangeKeys: (start, end) => {
-      const rangeRows = rows.slice(start, end + 1)
-      return rangeRows.map(row => getRowPrimaryKeysValues(row, primaryColumns) as Record<string, string>)
-    },
+    getItemsInRange: (start, end) => rows
+      .slice(start, end + 1)
+      .map(row => getRowPrimaryKeysValues(row, primaryColumns)),
     getSelectionState: () => store.get().selectionState,
     onSelectionChange: (selected, selectionState) => {
       store.set(state => ({ ...state, selected, selectionState } satisfies typeof state))
