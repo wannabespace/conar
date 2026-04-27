@@ -51,7 +51,7 @@ export function Sidebar() {
               </TooltipTrigger>
               <TooltipContent side="right">
                 Refresh tables and schemas list
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs opacity-70">
                   Last updated:
                   {' '}
                   {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}

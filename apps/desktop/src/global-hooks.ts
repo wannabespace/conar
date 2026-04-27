@@ -6,6 +6,7 @@ let isEntered = false
 export const globalHooks = createHooks<{
   animationFinished: () => void
   refreshPressed: () => void
+  savePressed: () => void
 }>()
 
 export function enterAppAnimation() {

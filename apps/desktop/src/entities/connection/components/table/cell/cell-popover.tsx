@@ -11,7 +11,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { KeyCode, KeyMod } from 'monaco-editor'
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { CellSwitch } from '~/components/cell-switch'
@@ -38,7 +38,7 @@ export function CellPopoverContent({
     setRawValue,
     value,
     column,
-    onSaveValue,
+    onQueueValue,
     transformer,
   } = useCellContext()
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
@@ -46,7 +46,7 @@ export function CellPopoverContent({
 
   const canEdit = !!column?.isEditable && hasUpdateFn
 
-  const uiRender = ((() => {
+  const uiRender = useMemo(() => {
     if (column.uiType === 'boolean') {
       return (
         <CellSwitch
@@ -143,12 +143,12 @@ export function CellPopoverContent({
     }
 
     return null
-  })())
+  }, [canEdit, column, contentRef, newValue, scrollRef, setNewValue])
 
   const [isRaw, setIsRaw] = useState(!uiRender)
 
-  const save = async () => {
-    if (!onSaveValue)
+  const queue = async () => {
+    if (!onQueueValue)
       return
 
     let value: unknown
@@ -162,10 +162,10 @@ export function CellPopoverContent({
       return
     }
 
-    onSaveValue(value)
+    onQueueValue(value)
     onClose()
   }
-  const saveEvent = useEffectEvent(save)
+  const queueEvent = useEffectEvent(queue)
 
   const monacoOptions = {
     lineNumbers: isBig ? 'on' : 'off',
@@ -190,14 +190,14 @@ export function CellPopoverContent({
       label: 'Execute on Enter',
       keybindings: [KeyMod.CtrlCmd | KeyCode.Enter],
       run: () => {
-        saveEvent()
+        queueEvent()
       },
     })
 
     return () => disposable.dispose()
   }, [monacoRef, isRaw])
 
-  useHotkey('Mod+Enter', () => save(), { enabled: canEdit })
+  useHotkey('Mod+Enter', () => queue(), { enabled: canEdit })
 
   return (
     <>
@@ -286,9 +286,9 @@ export function CellPopoverContent({
               )}
               <Button
                 size="xs"
-                onClick={() => save()}
+                onClick={() => queue()}
               >
-                Save
+                Apply
                 <KbdCtrlEnter
                   userAgent={navigator.userAgent}
                   className="text-white"

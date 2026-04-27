@@ -57,7 +57,6 @@ catalog:
   '@standard-schema/spec': ^1.1.0
   '@tailwindcss/typography': ^0.5.19
   '@tailwindcss/vite': ^4.2.3
-  '@tanstack/db': ^0.6.5
   '@tanstack/react-db': ^0.1.83
   '@tanstack/react-devtools': ^0.10.2
   '@tanstack/react-form': ^1.29.0

@@ -1,5 +1,4 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { connectionsResources } from '~/drizzle/schema'
 import { useTableContext } from '@conar/table/hooks'
 import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
@@ -7,21 +6,21 @@ import { RiLoaderLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
+import { Route } from '../..'
 import { TableEmpty } from './table-empty'
 
 export function TableInfiniteLoader({
-  connectionResource,
   table,
   schema,
   filters,
   orderBy,
 }: {
-  connectionResource: typeof connectionsResources.$inferSelect
   table: string
   schema: string
   filters: ActiveFilter[]
   orderBy: Record<string, 'ASC' | 'DESC'>
 }) {
+  const { connectionResource } = Route.useRouteContext()
   const { fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery(
     resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }),
   )

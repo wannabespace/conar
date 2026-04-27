@@ -124,7 +124,6 @@ export function TableCellTable({ schema, table, column, value }: { schema: strin
                       <>
                         <TableBody data-mask className="bg-background" />
                         <TableInfiniteLoader
-                          connectionResource={connectionResource}
                           table={table}
                           schema={schema}
                           filters={filters}

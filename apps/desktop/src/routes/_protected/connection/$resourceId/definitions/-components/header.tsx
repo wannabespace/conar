@@ -30,7 +30,7 @@ export function DefinitionsHeader({
           </TooltipTrigger>
           <TooltipContent side="left">
             Refresh
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs opacity-70">
               Last updated:
               {' '}
               {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}

@@ -1,8 +1,8 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import type { ActiveFilter } from '@conar/shared/filters'
 import type { TableCellProps } from '@conar/table'
 import type { ComponentProps } from 'react'
-import type { Column } from './utils'
+import type { SaveStatus } from './cell-context'
+import type { Column, ColumnHandlers } from './utils'
 import { sleep } from '@conar/shared/utils/helpers'
 import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
@@ -27,13 +27,13 @@ function SetNullAlertDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const { value, onSaveValue } = useCellContext()
+  const { value, onQueueValue } = useCellContext()
 
   const setNull = async () => {
-    if (!onSaveValue)
+    if (!onQueueValue)
       return
 
-    await onSaveValue(null)
+    onQueueValue(null)
     onOpenChange(false)
   }
 
@@ -87,6 +87,12 @@ function ReferenceButton({ children, className, ...props }: ComponentProps<typeo
   )
 }
 
+export interface TableCellDraft {
+  value: unknown
+  error?: string
+  isCommitting?: boolean
+}
+
 export function TableCell({
   value,
   rowIndex,
@@ -94,23 +100,23 @@ export function TableCell({
   style,
   position,
   size,
-  onSaveValue,
+  onQueueValue,
   onAddFilter,
-  onSort,
-  sortOrder,
-  onRenameColumn,
+  onOrder,
+  order,
+  onRename,
   connectionType,
+  draft,
 }: {
-  onSaveValue?: (rowIndex: number, columnName: string, value: unknown) => Promise<unknown>
   column: Column
-  onAddFilter?: (filter: ActiveFilter) => void
-  onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
-  sortOrder?: 'ASC' | 'DESC' | null
-  onRenameColumn?: () => void
+  order?: 'ASC' | 'DESC' | null
   connectionType: ConnectionType
-} & TableCellProps) {
+  draft?: TableCellDraft
+} & TableCellProps & ColumnHandlers) {
   const transformer = createTransformer(connectionType, column)
-  const displayValue = transformer.toDisplay(value, size)
+  const hasDraft = !!draft
+  const effectiveValue = hasDraft ? draft.value : value
+  const displayValue = transformer.toDisplay(effectiveValue, size)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [isForeignOpen, setIsForeignOpen] = useState(false)
   const [isReferencesOpen, setIsReferencesOpen] = useState(false)
@@ -118,14 +124,21 @@ export function TableCell({
   const [isBig, setIsBig] = useState(false)
   const [isSetNullDialogOpen, setIsSetNullDialogOpen] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
-  const [status, setStatus] = useState<'error' | 'idle' | 'pending' | 'success'>('idle')
+
+  const status: SaveStatus = draft?.error
+    ? 'error'
+    : draft?.isCommitting
+      ? 'pending'
+      : hasDraft
+        ? 'draft'
+        : 'idle'
 
   const cellClassName = cn(
     isPopoverOpen && 'bg-primary/10 ring-primary/30',
     (isForeignOpen || isReferencesOpen) && 'bg-accent/30 ring-accent/60',
-    status === 'error' && 'bg-destructive/20 ring-destructive/50',
-    status === 'success' && 'bg-success/10 ring-success/50',
+    status === 'error' && 'bg-destructive/15 ring-destructive/50',
     status === 'pending' && 'animate-pulse bg-primary/10',
+    status === 'draft' && 'bg-warning/15 ring-warning/50',
     (column.foreign || (column.references?.length ?? 0) > 0) && 'pr-1!',
   )
 
@@ -143,12 +156,13 @@ export function TableCell({
         onMouseOver={() => setCanInteract(true)}
         onMouseLeave={disableInteractIfPossible}
         style={style}
-        value={value}
+        value={effectiveValue}
         position={position}
+        title={draft?.error}
       >
         <span className="truncate">{displayValue}</span>
-        {!!value && column.foreign && <ForeignButton />}
-        {!!value && column.references && column.references.length > 0 && <ReferenceButton>{column.references.length}</ReferenceButton>}
+        {!!effectiveValue && column.foreign && <ForeignButton />}
+        {!!effectiveValue && column.references && column.references.length > 0 && <ReferenceButton>{column.references.length}</ReferenceButton>}
       </TableCellContent>
     )
   }
@@ -158,14 +172,12 @@ export function TableCell({
       column={column}
       rowIndex={rowIndex}
       transformer={transformer}
-      value={value}
-      status={status}
-      setStatus={setStatus}
-      onSaveValue={onSaveValue}
+      value={effectiveValue}
+      onQueueValue={onQueueValue}
       onAddFilter={onAddFilter}
-      onSort={onSort}
-      sortOrder={sortOrder}
-      onRenameColumn={onRenameColumn}
+      onOrder={onOrder}
+      order={order}
+      onRename={onRename}
     >
       <SetNullAlertDialog
         open={isSetNullDialogOpen}
@@ -185,7 +197,7 @@ export function TableCell({
           }
         }}
         style={style}
-        onSetNull={onSaveValue && column.isNullable
+        onSetNull={onQueueValue && column.isNullable
           ? () => setIsSetNullDialogOpen(true)
           : undefined}
       >
@@ -205,15 +217,16 @@ export function TableCell({
             render={(
               <TableCellContent
                 style={style}
-                value={value}
+                value={effectiveValue}
                 position={position}
                 className={cellClassName}
                 column={column}
+                title={draft?.error}
               />
             )}
           >
             <span className="truncate">{displayValue}</span>
-            {!!value && column.foreign && (
+            {!!effectiveValue && column.foreign && (
               <Popover
                 open={isForeignOpen}
                 onOpenChange={setIsForeignOpen}
@@ -250,12 +263,12 @@ export function TableCell({
                     schema={column.foreign.schema}
                     table={column.foreign.table}
                     column={column.foreign.column}
-                    value={value}
+                    value={effectiveValue}
                   />
                 </PopoverContent>
               </Popover>
             )}
-            {!!value && column.references && column.references.length > 0 && (
+            {!!effectiveValue && column.references && column.references.length > 0 && (
               <Popover
                 open={isReferencesOpen}
                 onOpenChange={setIsReferencesOpen}
@@ -298,7 +311,7 @@ export function TableCell({
                 >
                   <TableCellReferences
                     references={column.references}
-                    value={value}
+                    value={effectiveValue}
                   />
                 </PopoverContent>
               </Popover>
@@ -306,7 +319,7 @@ export function TableCell({
           </PopoverTrigger>
           <PopoverContent
             className={cn(`
-              w-80 overflow-auto p-0 duration-100
+              w-80 gap-0 overflow-auto p-0 duration-100
               [transition:opacity_0.15s,transform_0.15s,width_0.3s]
               **:data-[slot=popover-viewport]:p-0
             `, isBig && `w-[min(50vw,60rem)]`)}
@@ -316,7 +329,7 @@ export function TableCell({
               isBig={isBig}
               setIsBig={setIsBig}
               onClose={() => setIsPopoverOpen(false)}
-              hasUpdateFn={!!onSaveValue}
+              hasUpdateFn={!!onQueueValue}
               onSetNull={() => setIsSetNullDialogOpen(true)}
             />
           </PopoverContent>

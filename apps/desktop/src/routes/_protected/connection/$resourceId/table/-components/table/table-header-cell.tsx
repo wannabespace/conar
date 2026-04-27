@@ -1,7 +1,7 @@
 import type { TableHeaderCellProps } from '@conar/table'
 import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
-import type { storeState } from '../../-store'
-import type { Column } from '~/entities/connection/components/table/cell'
+import type { tablePageType } from '../../-store'
+import type { Column, ColumnHandlers } from '~/entities/connection/components/table/cell'
 import { useTableContext } from '@conar/table/hooks'
 import { Button } from '@conar/ui/components/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -180,21 +180,18 @@ const resizeOverlay = document.createElement('div')
 resizeOverlay.className = 'cursor-col-resize size-full fixed top-0 left-0 z-1000'
 
 export function TableHeaderCell({
-  onResize,
-  onSort,
-  onRename,
   column,
   position,
   columnIndex,
   className,
   style,
+  onOrder,
+  onRename,
+  onResize,
 }: {
-  onResize?: (newWidth: number) => void
   column: Column
-  onSort?: () => void
-  onRename?: () => void
   className?: string
-} & TableHeaderCellProps) {
+} & TableHeaderCellProps & ColumnHandlers) {
   const { connectionResource } = Route.useRouteContext()
   const store = useTablePageStore()
   const [isResizing, setIsResizing] = useState(false)
@@ -236,12 +233,14 @@ export function TableHeaderCell({
   }
 
   const removeSize = () => {
-    const newColumnSizes = { ...store.get().columnSizes }
-    delete newColumnSizes[column.id]
-    store.set(state => ({
-      ...state,
-      columnSizes: newColumnSizes,
-    } satisfies typeof storeState.infer))
+    store.set((state) => {
+      const newColumnSizes = { ...state.columnSizes }
+      delete newColumnSizes[column.id]
+      return {
+        ...state,
+        columnSizes: newColumnSizes,
+      } satisfies typeof tablePageType.infer
+    })
   }
 
   return (
@@ -320,8 +319,8 @@ export function TableHeaderCell({
         )}
       </div>
       <div className="flex h-full items-center gap-1">
-        {onSort && column.typeLabel && !CANNOT_SORT_TYPES.includes(column.typeLabel) && (
-          <SortButton order={order} onClick={onSort} />
+        {onOrder && column.typeLabel && !CANNOT_SORT_TYPES.includes(column.typeLabel) && (
+          <SortButton order={order} onClick={() => onOrder()} />
         )}
         {onResize && (
           <div

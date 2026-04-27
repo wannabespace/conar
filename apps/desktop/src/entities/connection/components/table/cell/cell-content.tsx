@@ -19,7 +19,7 @@ export function TableCellContent({
       className={cn(
         `
           flex h-full cursor-default items-center justify-between gap-1 truncate
-          rounded-md p-2 font-mono text-xs ring-2 ring-transparent outline-none
+          rounded-md p-2 font-mono text-xs ring-1 ring-transparent outline-none
           select-none
         `,
         (value === null || value === '') && 'text-muted-foreground/50',

@@ -161,7 +161,7 @@ export function Header({ table, schema }: { table: string, schema: string }) {
         </TooltipTrigger>
         <TooltipContent>
           Refresh rows
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs opacity-70">
             Last updated:
             {' '}
             {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
