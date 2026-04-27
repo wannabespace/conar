@@ -12,75 +12,43 @@ export const INITIAL_SHIFT_SELECTION_STATE: ShiftSelectionState = {
   lastExpandDirection: null,
 }
 
-export interface ShiftSelectionRange {
-  start: number
-  end: number
-}
-
-export type ShiftSelectionAction
-  = | { type: 'noop' }
-    | { type: 'select', range: ShiftSelectionRange, state: ShiftSelectionState }
-
-export interface ShiftArrowKeyParams {
-  direction: ShiftSelectionDirection
-  rowCount: number
+export interface ShiftSelectionUpdate {
   state: ShiftSelectionState
+  range: { start: number, end: number }
 }
 
-function clampIndex(index: number, rowCount: number) {
-  return Math.max(0, Math.min(index, rowCount - 1))
-}
-
-function makeRange(a: number, b: number): ShiftSelectionRange {
-  return { start: Math.min(a, b), end: Math.max(a, b) }
-}
-
-function isShrinkingTowards(direction: ShiftSelectionDirection, anchorIndex: number, focusIndex: number) {
-  const expandedDown = focusIndex > anchorIndex
-  const expandedUp = focusIndex < anchorIndex
-
-  return (expandedDown && direction === 'up') || (expandedUp && direction === 'down')
-}
-
-export function reduceShiftArrowKey({
-  direction,
-  rowCount,
-  state,
-}: ShiftArrowKeyParams): ShiftSelectionAction {
+export function reduceShiftArrowKey(
+  direction: ShiftSelectionDirection,
+  rowCount: number,
+  state: ShiftSelectionState,
+): ShiftSelectionUpdate | null {
   if (rowCount === 0)
-    return { type: 'noop' }
+    return null
 
   const { anchorIndex, focusIndex, lastExpandDirection } = state
-  const hasSelection = anchorIndex !== null && focusIndex !== null
+  const step = direction === 'down' ? 1 : -1
 
-  if (!hasSelection) {
-    const startIndex = direction === 'down' ? 0 : rowCount - 1
+  if (anchorIndex === null || focusIndex === null) {
+    const index = direction === 'down' ? 0 : rowCount - 1
 
     return {
-      type: 'select',
-      range: makeRange(startIndex, startIndex),
-      state: {
-        anchorIndex: startIndex,
-        focusIndex: startIndex,
-        lastExpandDirection: null,
-      },
+      range: { start: index, end: index },
+      state: { anchorIndex: index, focusIndex: index, lastExpandDirection: null },
     }
   }
 
-  const step = direction === 'down' ? 1 : -1
-  const newFocusIndex = clampIndex(focusIndex + step, rowCount)
+  const newFocus = Math.max(0, Math.min(focusIndex + step, rowCount - 1))
 
-  if (newFocusIndex === focusIndex)
-    return { type: 'noop' }
+  if (newFocus === focusIndex)
+    return null
 
-  const isShrinking = isShrinkingTowards(direction, anchorIndex, focusIndex)
+  const isShrinking = (focusIndex - anchorIndex) * step < 0
 
   return {
-    type: 'select',
-    range: makeRange(anchorIndex, newFocusIndex),
+    range: { start: Math.min(anchorIndex, newFocus), end: Math.max(anchorIndex, newFocus) },
     state: {
       anchorIndex,
-      focusIndex: newFocusIndex,
+      focusIndex: newFocus,
       lastExpandDirection: isShrinking ? lastExpandDirection : direction,
     },
   }
