@@ -39,7 +39,7 @@ function createDriver(options: DialectOptions) {
 
   return {
     async init() {},
-    async acquireConnection(): Promise<DatabaseConnection> {
+    async acquireConnection() {
       const state: { txId: string | null } = { txId: null }
       const connection: DatabaseConnection = {
         executeQuery: async <R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> => {
