@@ -1,3 +1,4 @@
+import type { ActiveFilter } from '@conar/shared/filters'
 import type { columnType } from '~/entities/connection/queries/columns'
 import { DEFAULT_COLUMN_WIDTH } from '@conar/table/constants'
 
@@ -86,4 +87,12 @@ export function getColumnUiType(column: typeof columnType.infer): Column['uiType
     return 'time'
 
   return 'raw'
+}
+
+export interface ColumnHandlers {
+  onQueueValue?: (rowIndex: number, newValue: unknown) => Promise<void>
+  onAddFilter?: (filter: ActiveFilter) => void
+  onOrder?: (order?: 'ASC' | 'DESC' | null) => void
+  onResize?: (newWidth: number) => void
+  onRename?: () => void
 }

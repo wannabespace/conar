@@ -9,9 +9,9 @@ export function TableCellProvider({
   rowIndex,
   children,
   onAddFilter,
-  onSort,
-  sortOrder,
-  onRenameColumn,
+  onOrder,
+  order,
+  onRename,
   column,
   value,
   onQueueValue,
@@ -21,10 +21,10 @@ export function TableCellProvider({
   column: Column
   value: unknown
   onAddFilter?: (filter: ActiveFilter) => void
-  onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
-  sortOrder?: 'ASC' | 'DESC' | null
-  onRenameColumn?: () => void
-  onQueueValue?: (rowIndex: number, columnName: string, value: unknown) => unknown
+  onOrder?: (order: 'ASC' | 'DESC' | null) => void
+  order?: 'ASC' | 'DESC' | null
+  onRename?: () => void
+  onQueueValue?: (rowIndex: number, value: unknown) => unknown
   transformer: ValueTransformer
   children: React.ReactNode
 }) {
@@ -36,7 +36,7 @@ export function TableCellProvider({
       return
 
     try {
-      onQueueValue(rowIndex, column.id, rawValue)
+      onQueueValue(rowIndex, rawValue)
       setNewValue(transformer.fromConnection(rawValue).toUI())
       setRawValue(transformer.fromConnection(rawValue).toRaw())
     }
@@ -64,9 +64,9 @@ export function TableCellProvider({
       setRawValue,
       transformer,
       onAddFilter,
-      onSort,
-      sortOrder,
-      onRenameColumn,
+      onOrder,
+      order,
+      onRename,
     }}
     >
       {children}
