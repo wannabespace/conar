@@ -260,13 +260,13 @@ export function DrawerPopup({
             variant === 'default'
             && cn(
               position === 'bottom'
-              && 'before:rounded-t-[calc(var(--radius-2xl)-1px)]',
+              && `before:rounded-t-[calc(var(--radius-2xl)-1px)]`,
               position === 'top'
-              && 'before:rounded-b-[calc(var(--radius-2xl)-1px)]',
+              && `before:rounded-b-[calc(var(--radius-2xl)-1px)]`,
               position === 'left'
-              && 'before:rounded-e-[calc(var(--radius-2xl)-1px)]',
+              && `before:rounded-e-[calc(var(--radius-2xl)-1px)]`,
               position === 'right'
-              && 'before:rounded-s-[calc(var(--radius-2xl)-1px)]',
+              && `before:rounded-s-[calc(var(--radius-2xl)-1px)]`,
             ),
             variant === 'inset'
             && `
@@ -690,8 +690,8 @@ export function DrawerMenuCheckboxItem({
               <span className="col-start-1">{children}</span>
               <CheckboxPrimitive.Indicator
                 className="
-                  col-start-2 inline-flex h-[calc(var(--thumb-size)+2px)]
-                  w-[calc(var(--thumb-size)*2-2px)] shrink-0 items-center
+                  col-start-2 inline-flex h-[calc(var(--thumb-size)+0.125rem)]
+                  w-[calc(var(--thumb-size)*2-0.125rem)] shrink-0 items-center
                   rounded-full p-px
                   inset-shadow-[0_1px_--theme(--color-black/4%)]
                   transition-[background-color,box-shadow] duration-200
@@ -714,7 +714,7 @@ export function DrawerMenuCheckboxItem({
                   in-[[data-slot=drawer-menu-checkbox-item]:active]:rounded-[var(--thumb-size)/calc(var(--thumb-size)*1.10)]
                   in-[[data-slot=drawer-menu-checkbox-item]:active]:not-data-disabled:scale-x-110
                   in-[[data-slot=drawer-menu-checkbox-item][data-checked]]:origin-[var(--thumb-size)_50%]
-                  in-[[data-slot=drawer-menu-checkbox-item][data-checked]]:translate-x-[calc(var(--thumb-size)-4px)]
+                  in-[[data-slot=drawer-menu-checkbox-item][data-checked]]:translate-x-[calc(var(--thumb-size)-0.25rem)]
                 "
                 />
               </CheckboxPrimitive.Indicator>

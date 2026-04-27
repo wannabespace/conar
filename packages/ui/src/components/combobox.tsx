@@ -470,7 +470,7 @@ export function ComboboxChips({
           before:pointer-events-none before:absolute before:inset-0
           before:rounded-[calc(var(--radius-lg)-1px)]
           not-has-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_1px_--theme(--color-black/4%)]
-          focus-within:border-ring focus-within:ring-[3px]
+          focus-within:border-ring focus-within:ring-[0.1875rem]
           has-autofill:bg-foreground/4
           has-disabled:pointer-events-none has-disabled:opacity-64
           has-aria-invalid:border-destructive/36

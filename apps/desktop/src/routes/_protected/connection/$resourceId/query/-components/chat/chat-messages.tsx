@@ -154,7 +154,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
             </Tooltip>
             <DropdownMenuContent
               align="end"
-              className="max-h-64 min-w-[220px] overflow-auto"
+              className="max-h-64 min-w-55 overflow-auto"
               onClick={e => e.stopPropagation()}
             >
               <div className="p-2 text-xs font-medium text-muted-foreground">
@@ -183,7 +183,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
                     {getQueryNumber(index)}
                   </span>
                   <span className={`
-                    font-mono text-[10px] text-muted-foreground/70
+                    font-mono text-[0.625rem] text-muted-foreground/70
                   `}
                   >
                     {q.startLineNumber === q.endLineNumber
@@ -262,7 +262,7 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
               relative inline-flex rounded-lg bg-primary px-2 py-1
               text-primary-foreground
             `,
-            canHide && !isVisible && 'max-h-[100px] overflow-hidden',
+            canHide && !isVisible && 'max-h-25 overflow-hidden',
           )}
         >
           <div

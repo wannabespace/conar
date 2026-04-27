@@ -12,7 +12,7 @@ export function SingleAccordionTrigger({ children, className, ...props }: React.
             flex flex-1 cursor-pointer items-center justify-between gap-4
             rounded-md p-2 text-left text-sm font-medium transition-all
             outline-none
-            focus-visible:border-ring focus-visible:ring-[3px]
+            focus-visible:border-ring focus-visible:ring-[0.1875rem]
             focus-visible:ring-ring/50
             disabled:pointer-events-none disabled:opacity-50
             [&[data-state=open]>svg]:rotate-180

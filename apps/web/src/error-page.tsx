@@ -34,8 +34,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
             <CardContent>
               {!(error instanceof TraversalError) && !error.stack && (
                 <ScrollArea className={`
-                  h-[200px] rounded-md bg-muted p-4 text-sm
-                  text-muted-foreground
+                  h-50 rounded-md bg-muted p-4 text-sm text-muted-foreground
                 `}
                 >
                   {error.message}
@@ -43,7 +42,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
               )}
               {!(error instanceof TraversalError) && error.stack && (
                 <ScrollArea className={`
-                  h-[300px] rounded-md bg-muted p-4 font-mono text-xs
+                  h-75 rounded-md bg-muted p-4 font-mono text-xs
                   text-muted-foreground
                 `}
                 >
@@ -52,7 +51,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
               )}
               {error instanceof TraversalError && (
                 <ScrollArea className={`
-                  h-[300px] rounded-md bg-muted p-4 font-mono text-xs
+                  h-75 rounded-md bg-muted p-4 font-mono text-xs
                   text-muted-foreground
                 `}
                 >

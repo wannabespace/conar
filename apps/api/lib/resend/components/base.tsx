@@ -28,19 +28,19 @@ export function Base({
         <Head />
         <Body className="font-sans">
           <Preview>{preview}</Preview>
-          <Container className="mx-auto max-w-[480px] p-[20px_0_48px]">
-            <Section className="mb-[20px]">
+          <Container className="mx-auto max-w-120 px-0 pt-5 pb-12">
+            <Section className="mb-5">
               <Img
                 src={`${env.WEB_URL}/logo.png`}
                 width="48"
                 height="48"
                 alt="Conar"
               />
-              <Heading className="mt-[20px] mb-0 text-[24px] font-bold">{title}</Heading>
+              <Heading className="mt-5 mb-0 text-2xl font-bold">{title}</Heading>
             </Section>
             {children}
             <Section>
-              <Text className="mt-[40px] text-center text-[12px]">
+              <Text className="mt-10 text-center text-xs">
                 <Link className="text-primary" href={SOCIAL_LINKS.TWITTER}>X</Link>
                 {' '}
                 ・

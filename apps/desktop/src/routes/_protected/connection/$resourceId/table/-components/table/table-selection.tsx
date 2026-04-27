@@ -17,10 +17,10 @@ function IndeterminateCheckbox({
         type="checkbox"
         className={cn(
           `
-            peer hit-area-2.5 size-4 appearance-none rounded-[4px] border
+            peer hit-area-2.5 size-4 appearance-none rounded-sm border
             border-border transition-colors duration-100 outline-none
             checked:border-primary checked:bg-primary
-            focus-visible:border-ring focus-visible:ring-[3px]
+            focus-visible:border-ring focus-visible:ring-[0.1875rem]
             focus-visible:ring-ring/50
             disabled:cursor-not-allowed disabled:opacity-50
           `,
