@@ -162,9 +162,6 @@ catalogs:
     '@tailwindcss/vite':
       specifier: ^4.2.3
       version: 4.2.3
-    '@tanstack/db':
-      specifier: ^0.6.5
-      version: 0.6.5
     '@tanstack/react-db':
       specifier: ^0.1.83
       version: 0.1.83
@@ -763,9 +760,6 @@ importers:
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.2.3(vite@7.3.2(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.3))
-      '@tanstack/db':
-        specifier: 'catalog:'
-        version: 0.6.5(typescript@6.0.3)
       '@tanstack/react-db':
         specifier: 'catalog:'
         version: 0.1.83(react@19.2.5)(typescript@6.0.3)
