@@ -1,5 +1,5 @@
 import type { ColumnRenderer } from '@conar/table'
-import type { storeState } from '../../-store'
+import type { tablePageType } from '../../-store'
 import { TableHeader } from '@conar/table'
 import { useTableContext } from '@conar/table/hooks'
 import { Button } from '@conar/ui/components/button'
@@ -41,7 +41,7 @@ function getVisibleColumns(element: HTMLElement) {
   }, [])
 }
 
-function getNotVisibleColumns(element: HTMLElement, allColumns: ColumnRenderer[], store: typeof storeState.infer): {
+function getNotVisibleColumns(element: HTMLElement, allColumns: ColumnRenderer[], store: typeof tablePageType.infer): {
   left: HeaderColumn[]
   right: HeaderColumn[]
 } {

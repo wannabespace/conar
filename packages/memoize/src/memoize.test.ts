@@ -25,7 +25,7 @@ describe('memoize', () => {
     it('reduces the key to a subset of arguments', () => {
       const callback = mock((a: number, b: number, c: number) => a + b + c)
       const fn = memoize(callback, {
-        transformArgs: ([firstArg]) => firstArg,
+        transformArgs: firstArg => firstArg,
       })
 
       expect(fn(1, 2, 3)).toBe(6)
@@ -37,7 +37,7 @@ describe('memoize', () => {
     it('allows a custom composite key', () => {
       const callback = mock((a: number, b: number) => a + b)
       const fn = memoize(callback, {
-        transformArgs: ([a, b]) => `${a}-${b > 2}`,
+        transformArgs: (a, b) => `${a}-${b > 2}`,
       })
 
       expect(fn(1, 2)).toBe(3)

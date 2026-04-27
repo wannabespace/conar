@@ -1,24 +1,20 @@
 import type { ColumnRenderer } from '@conar/table'
 import type { ComponentRef } from 'react'
 import { CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME } from '@conar/shared/constants'
-import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { Table, TableBody, TableProvider } from '@conar/table'
 import { DEFAULT_COLUMN_WIDTH } from '@conar/table/constants'
 import { useShiftSelectionKeyDown } from '@conar/table/hooks'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
-import { toast } from 'sonner'
 import { TableCell } from '~/entities/connection/components'
 import { getColumnSize, INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
-import { selectQuery } from '~/entities/connection/queries/select'
-import { setQuery } from '~/entities/connection/queries/set'
-import { connectionResourceToQueryParams } from '~/entities/connection/query'
-import { queryClient } from '~/main'
 import { Route } from '../..'
 import { useTableColumns } from '../../-columns'
-import { columnsOrder, useTablePageSelectionStore, useTablePageStore } from '../../-store'
+import { useClearDraftsOnQueryChange, useSyncSelectionWithRows } from '../../-hooks'
+import { columnsOrder, draftKey, draftsActions, getRowPrimaryKeysValues, useTablePageStore } from '../../-store'
+import { DraftsToolbar } from './drafts-toolbar'
 import { RenameColumnDialog } from './rename-column-dialog'
 import { TableEmpty } from './table-empty'
 import { TableHeader } from './table-header'
@@ -53,136 +49,40 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const { connection, connectionResource } = Route.useRouteContext()
   const columns = useTableColumns()
   const store = useTablePageStore()
-  const selectionStore = useTablePageSelectionStore()
   const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
   const columnSizes = useSubscription(store, { selector: state => state.columnSizes })
   const filters = useSubscription(store, { selector: state => state.filters })
   const orderBy = useSubscription(store, { selector: state => state.orderBy })
+  const draftsMap = useSubscription(store, {
+    selector: state => new Map(state.drafts.map(d => [draftKey(d.primaryKeys, d.columnId), d])),
+  })
+  const { toggleOrder, setOrder, removeOrder } = columnsOrder(store)
+  const { upsert: upsertDraft } = draftsActions(store)
   const { data: rows = [], error, isPending: isRowsPending } = useInfiniteQuery(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }))
-  const primaryColumns = useMemo(() => columns.filter(c => c.primaryKey).map(c => c.id), [columns])
-  const { toggleOrder, setOrder, removeOrder } = useMemo(() => columnsOrder(store), [store])
+  const primaryColumns = columns.filter(c => c.primaryKey).map(c => c.id)
   const renameColumnRef = useRef<ComponentRef<typeof RenameColumnDialog>>(null)
 
-  useEffect(() => {
-    store.set(state => ({
-      ...state,
-      selected: state.selected.filter(selectedRow =>
-        rows.some(row => primaryColumns.every(key => row[key] === selectedRow[key])),
-      ),
-    } satisfies typeof state))
-  }, [store, rows, primaryColumns])
+  useSyncSelectionWithRows(rows, primaryColumns)
+  useClearDraftsOnQueryChange()
 
-  const setValue = useCallback((rowIndex: number, columnName: string, value: unknown) => {
-    const { filters, orderBy } = store.get()
-    const rowsQueryOpts = resourceRowsQueryInfiniteOptions({
-      connectionResource,
-      table,
-      schema,
-      query: {
-        filters,
-        orderBy,
-      },
-    })
-
-    queryClient.setQueryData(rowsQueryOpts.queryKey, data => data
-      ? ({
-          ...data,
-          pages: data.pages.map((page, pageIndex) => ({
-            ...page,
-            rows: page.rows.map((row, rIndex) => pageIndex * data.pages[0]!.rows.length + rIndex === rowIndex
-              ? ({
-                  ...row,
-                  [columnName]: value,
-                })
-              : row),
-          })),
-        })
-      : data)
-  }, [connectionResource, table, schema, store])
-
-  const saveValue = useCallback(async (rowIndex: number, columnId: string, newValue: unknown) => {
-    const { filters, orderBy } = store.get()
-    const rowsQueryOpts = resourceRowsQueryInfiniteOptions({
-      connectionResource,
-      table,
-      schema,
-      query: {
-        filters,
-        orderBy,
-      },
-    })
-
-    const data = queryClient.getQueryData(rowsQueryOpts.queryKey)
-
-    if (!data)
-      throw new Error('No data found. Please refresh the page.')
-
+  const queueValue = async (rowIndex: number, columnId: string, newValue: unknown) => {
     if (primaryColumns.length === 0)
       throw new Error('No primary keys found. Please use SQL Runner to update this row.')
 
-    const rows = data.pages.flatMap(page => page.rows)
-    const initialValue = rows[rowIndex]![columnId]
+    const row = rows[rowIndex]
+    if (!row)
+      throw new Error('Row not found. Please refresh the page.')
 
-    setValue(rowIndex, columnId, newValue)
+    upsertDraft({
+      primaryKeys: getRowPrimaryKeysValues(row, primaryColumns),
+      columnId,
+      value: newValue,
+      error: undefined,
+      isCommitting: false,
+    })
+  }
 
-    const sqlFilters = primaryColumns.map(column => ({
-      column,
-      ref: SQL_FILTERS_LIST.find(f => f.operator === '=')!,
-      values: [rows[rowIndex]![column]],
-    }))
-
-    const setValues = { [columnId]: newValue }
-
-    try {
-      await setQuery({
-        schema,
-        table,
-        values: setValues,
-        filters: sqlFilters,
-      }).run(connectionResourceToQueryParams(connectionResource))
-
-      if (filters.length > 0 || Object.keys(orderBy).length > 0)
-        queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
-    }
-    catch (e) {
-      setValue(rowIndex, columnId, initialValue)
-      throw e
-    }
-
-    const modifiedColumns = Object.keys(setValues)
-    const updatedFilters = sqlFilters.map(filter => filter.column in modifiedColumns
-      ? {
-        ...filter,
-        values: [setValues[filter.column]],
-      } satisfies typeof filter
-      : filter)
-
-    try {
-      const [result] = await selectQuery({
-        schema,
-        table,
-        select: modifiedColumns.map(column => column),
-        filters: updatedFilters,
-      }).run(connectionResourceToQueryParams(connectionResource))
-
-      if (!result || !(columnId in result))
-        return
-
-      const realValue = result[columnId]
-
-      if (newValue !== realValue)
-        setValue(rowIndex, columnId, realValue)
-
-      return realValue
-    }
-    catch (e) {
-      toast.error('New value was saved, but the updated value was not refreshed', {
-        description: e instanceof Error ? e.message : String(e),
-      })
-    }
-  }, [connectionResource, primaryColumns, schema, table, setValue, store])
-
-  const tableColumns = useMemo((): ColumnRenderer[] => columns
+  const tableColumns: ColumnRenderer[] = columns
     .filter(c => !hiddenColumns.includes(c.id))
     .map(column => ({
       id: column.id,
@@ -209,45 +109,42 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           {...props}
         />
       ),
-      cell: props => (
-        <TableCell
-          column={column}
-          onSaveValue={primaryColumns.length > 0 ? saveValue : undefined}
-          connectionType={connection.type}
-          onAddFilter={filter => store.set(state => ({
-            ...state,
-            filters: [...state.filters, filter],
-          } satisfies typeof state))}
-          onSort={(columnId, order) => order ? setOrder(columnId, order) : removeOrder(columnId)}
-          sortOrder={orderBy[column.id] ?? null}
-          onRenameColumn={!column.primaryKey && !CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME.includes(connection.type)
-            ? () => renameColumnRef.current?.rename(schema, table, column.id)
-            : undefined}
-          {...props}
-        />
-      ),
-    }) satisfies ColumnRenderer,
-    ), [connection, table, schema, columns, hiddenColumns, primaryColumns, saveValue, toggleOrder, setOrder, removeOrder, store, orderBy])
+      cell: (props) => {
+        const row = rows[props.rowIndex]
+
+        return (
+          <TableCell
+            column={column}
+            onQueueValue={primaryColumns.length > 0 ? queueValue : undefined}
+            connectionType={connection.type}
+            draft={row && primaryColumns.length > 0
+              ? draftsMap.get(draftKey(getRowPrimaryKeysValues(row, primaryColumns), column.id))
+              : undefined}
+            onAddFilter={filter => store.set(state => ({
+              ...state,
+              filters: [...state.filters, filter],
+            } satisfies typeof state))}
+            onSort={(columnId, order) => order ? setOrder(columnId, order) : removeOrder(columnId)}
+            sortOrder={orderBy[column.id] ?? null}
+            onRenameColumn={!column.primaryKey && !CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME.includes(connection.type)
+              ? () => renameColumnRef.current?.rename(schema, table, column.id)
+              : undefined}
+            {...props}
+          />
+        )
+      },
+    }) satisfies ColumnRenderer)
 
   const handleShiftSelectionKeyDown = useShiftSelectionKeyDown({
     rowCount: rows.length,
-    getRowKey: index => primaryColumns.reduce<Record<string, string>>(
-      (acc, key) => ({ ...acc, [key]: rows[index]![key] as string }),
-      {},
-    ),
+    getRowKey: index => getRowPrimaryKeysValues(rows[index]!, primaryColumns) as Record<string, string>,
     getRangeKeys: (start, end) => {
       const rangeRows = rows.slice(start, end + 1)
-      return rangeRows.map(row =>
-        primaryColumns.reduce<Record<string, string>>(
-          (acc, key) => ({ ...acc, [key]: row[key] as string }),
-          {},
-        ),
-      )
+      return rangeRows.map(row => getRowPrimaryKeysValues(row, primaryColumns) as Record<string, string>)
     },
-    getSelectionState: () => selectionStore.get().selectionState,
+    getSelectionState: () => store.get().selectionState,
     onSelectionChange: (selected, selectionState) => {
-      store.set(state => ({ ...state, selected } satisfies typeof state))
-      selectionStore.set(state => ({ ...state, selectionState } satisfies typeof state))
+      store.set(state => ({ ...state, selected, selectionState } satisfies typeof state))
     },
   })
 
@@ -293,7 +190,6 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
                       <>
                         <TableBody data-mask className="bg-background" />
                         <TableInfiniteLoader
-                          connectionResource={connectionResource}
                           table={table}
                           schema={schema}
                           filters={filters}
@@ -302,6 +198,10 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
                       </>
                     )}
         </Table>
+        <DraftsToolbar
+          table={table}
+          schema={schema}
+        />
       </div>
       <RenameColumnDialog ref={renameColumnRef} />
     </TableProvider>

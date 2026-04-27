@@ -66,7 +66,7 @@ export function createPostgresListTransformer(column: Column): ValueTransformer<
           return toPgArrayLiteral(value)
 
         // Only enums can have a UI
-        throw new Error('Invalid value')
+        throw new Error('Invalid array value')
       },
       fromRaw: (value) => {
         if (isEnum)
@@ -88,7 +88,7 @@ export function createPostgresListTransformer(column: Column): ValueTransformer<
           }
         }
 
-        throw new Error('Invalid value')
+        throw new Error('Invalid array value')
       },
     },
   }

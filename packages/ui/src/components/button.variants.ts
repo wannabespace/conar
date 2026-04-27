@@ -56,6 +56,13 @@ export const buttonVariants = cva(
             not-in-data-[slot=input-group]:[&_svg:not([class*='size-'])]:size-4
             sm:not-in-data-[slot=input-group]:[&_svg:not([class*='size-'])]:size-3.5
           `,
+        'icon-2xs': `
+          size-6 rounded-sm
+          before:rounded-[calc(var(--radius-sm)-1px)]
+          sm:size-5
+          not-in-data-[slot=input-group]:[&_svg:not([class*='size-'])]:size-3
+          sm:not-in-data-[slot=input-group]:[&_svg:not([class*='size-'])]:size-2.5
+        `,
         'lg': `
           h-10 px-[calc(--spacing(3.5)-1px)]
           sm:h-9

@@ -68,7 +68,7 @@ export function RunnerResultsTable({
       ),
       size: DEFAULT_COLUMN_WIDTH,
     } satisfies ColumnRenderer))
-  }, [columns])
+  }, [columns, connectionType])
 
   const getData = async ({ limit }: { limit?: number }) => {
     return limit ? filteredData.slice(0, limit) : filteredData
