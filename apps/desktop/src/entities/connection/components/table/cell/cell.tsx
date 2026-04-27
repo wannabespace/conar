@@ -1,9 +1,9 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import type { ActiveFilter } from '@conar/shared/filters'
 import type { TableCellProps } from '@conar/table'
 import type { ComponentProps } from 'react'
 import type { SaveStatus } from './cell-context'
 import type { Column } from './utils'
+import type { ColumnHandlers } from '~/routes/_protected/connection/$resourceId/table/-columns'
 import { sleep } from '@conar/shared/utils/helpers'
 import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
@@ -103,21 +103,17 @@ export function TableCell({
   size,
   onQueueValue,
   onAddFilter,
-  onSort,
-  sortOrder,
-  onRenameColumn,
+  onOrder,
+  order,
+  onRename,
   connectionType,
   draft,
 }: {
-  onQueueValue?: (rowIndex: number, columnName: string, value: unknown) => unknown
   column: Column
-  onAddFilter?: (filter: ActiveFilter) => void
-  onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
-  sortOrder?: 'ASC' | 'DESC' | null
-  onRenameColumn?: () => void
+  order?: 'ASC' | 'DESC' | null
   connectionType: ConnectionType
   draft?: TableCellDraft
-} & TableCellProps) {
+} & TableCellProps & ColumnHandlers) {
   const transformer = createTransformer(connectionType, column)
   const hasDraft = !!draft
   const effectiveValue = hasDraft ? draft.value : value
@@ -180,9 +176,9 @@ export function TableCell({
       value={effectiveValue}
       onQueueValue={onQueueValue}
       onAddFilter={onAddFilter}
-      onSort={onSort}
-      sortOrder={sortOrder}
-      onRenameColumn={onRenameColumn}
+      onOrder={onOrder}
+      order={order}
+      onRename={onRename}
     >
       <SetNullAlertDialog
         open={isSetNullDialogOpen}
@@ -324,7 +320,7 @@ export function TableCell({
           </PopoverTrigger>
           <PopoverContent
             className={cn(`
-              w-80 overflow-auto p-0 duration-100
+              w-80 gap-0 overflow-auto p-0 duration-100
               [transition:opacity_0.15s,transform_0.15s,width_0.3s]
               **:data-[slot=popover-viewport]:p-0
             `, isBig && `w-[min(50vw,60rem)]`)}

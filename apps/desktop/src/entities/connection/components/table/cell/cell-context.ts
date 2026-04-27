@@ -17,9 +17,9 @@ export const CellContext = createContext<{
   onQueueValue?: (rawValue: unknown) => void
   transformer: ValueTransformer
   onAddFilter?: (filter: ActiveFilter) => void
-  onSort?: (columnId: string, order: 'ASC' | 'DESC' | null) => void
-  sortOrder?: 'ASC' | 'DESC' | null
-  onRenameColumn?: () => void
+  onOrder?: (order: 'ASC' | 'DESC' | null) => void
+  order?: 'ASC' | 'DESC' | null
+  onRename?: () => void
 }>(null!)
 
 export function useCellContext() {

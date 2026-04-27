@@ -46,7 +46,7 @@ export function TableCellContextMenu({
   onSetNull?: () => void
   children: ReactNode
 }) {
-  const { value, column, rowIndex, onAddFilter, onSort, sortOrder, onRenameColumn } = useCellContext()
+  const { value, column, rowIndex, onAddFilter, onOrder, order, onRename } = useCellContext()
   const row = useTableContext(({ rows }) => rows[rowIndex]!)
   const columns = useTableContext(({ columns }) => columns)
   const columnKeys = useMemo(() =>
@@ -74,13 +74,13 @@ export function TableCellContextMenu({
             </ContextMenuItem>
           )}
         </ContextMenuGroup>
-        {(onRenameColumn || onAddFilter || onSort) && (
+        {(onRename || onAddFilter || onOrder) && (
           <>
             <ContextMenuSeparator />
             <ContextMenuGroup>
               <ContextMenuLabel>Column</ContextMenuLabel>
-              {onRenameColumn && (
-                <ContextMenuItem onClick={onRenameColumn}>
+              {onRename && (
+                <ContextMenuItem onClick={onRename}>
                   Rename
                 </ContextMenuItem>
               )}
@@ -123,16 +123,16 @@ export function TableCellContextMenu({
                   </ContextMenuSubContent>
                 </ContextMenuSub>
               )}
-              {onSort && (
+              {onOrder && (
                 <ContextMenuSub>
                   <ContextMenuSubTrigger>
                     Sort
                   </ContextMenuSubTrigger>
                   <ContextMenuSubContent>
                     <ContextMenuRadioGroup
-                      value={sortOrder ?? 'default'}
+                      value={order ?? 'default'}
                       onValueChange={(value) => {
-                        onSort(column.id, value === 'default' ? null : value as 'ASC' | 'DESC')
+                        onOrder(value === 'default' ? null : value as 'ASC' | 'DESC')
                       }}
                     >
                       <ContextMenuRadioItem value="default">
