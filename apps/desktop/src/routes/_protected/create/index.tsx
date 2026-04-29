@@ -200,8 +200,12 @@ function CreateConnectionPage() {
           <StepperContent value="type">
             <StepType
               type={typeValue}
-              setType={(type) => {
-                form.setFieldValue('type', type)
+              setType={(newType) => {
+                if (newType !== typeValue) {
+                  form.setFieldValue('connectionString', '')
+                  reset()
+                }
+                form.setFieldValue('type', newType)
                 setStep('credentials')
               }}
             />

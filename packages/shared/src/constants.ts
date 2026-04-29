@@ -68,4 +68,6 @@ export const RECONNECT_ERROR_PATTERNS = [
   'socketerror',
   'network',
   'application failed to respond',
+  'ssh connect failed',
+  'channel open failure',
 ]

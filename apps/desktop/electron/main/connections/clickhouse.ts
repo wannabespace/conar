@@ -1,18 +1,33 @@
 import { createRequire } from 'node:module'
+import { parseConnectionString } from '@conar/connection'
+import { parseSshConfig } from '@conar/connection/server'
 import { memoize } from '@conar/memoize'
 import { tryParseJson } from '@conar/shared/utils/helpers'
 import { disposeTransaction, getTransaction, registerTransaction } from '../lib/transactions'
+import { ensureTunnel } from './ssh-tunnel'
 
 const clickhouse = createRequire(import.meta.url)('@clickhouse/client') as typeof import('@clickhouse/client')
 
-export const getClient = memoize((connectionString: string) => {
+const CLICKHOUSES_PROTOCOL_RE = /^clickhouses/
+const CLICKHOUSE_PROTOCOL_RE = /^clickhouse:/
+
+export const getClient = memoize(async (connectionString: string) => {
+  const { searchParams, host, port } = parseConnectionString(connectionString)
+  const ssh = parseSshConfig(searchParams)
+
   let url = connectionString
-  if (connectionString.startsWith('clickhouses')) {
-    url = connectionString.replace('clickhouses', 'https')
+    .replace(CLICKHOUSES_PROTOCOL_RE, 'https')
+    .replace(CLICKHOUSE_PROTOCOL_RE, 'http:')
+
+  if (ssh) {
+    const targetPort = port ?? (url.startsWith('https') ? 8443 : 8123)
+    const endpoint = await ensureTunnel(ssh, host, targetPort)
+    const u = new URL(url)
+    u.hostname = endpoint.host
+    u.port = String(endpoint.port)
+    url = u.toString()
   }
-  else if (connectionString.startsWith('clickhouse')) {
-    url = connectionString.replace('clickhouse', 'http')
-  }
+
   return clickhouse.createClient({
     url,
     clickhouse_settings: {
@@ -44,7 +59,7 @@ function isSelectLikeQuery(query: string) {
 export const query = {
   execute: async ({ connectionString, query }: { connectionString: string, query: string }) => {
     try {
-      const client = getClient(connectionString)
+      const client = await getClient(connectionString)
 
       if (isSelectLikeQuery(query)) {
         const start = performance.now()
@@ -64,7 +79,7 @@ export const query = {
 
   beginTransaction: async ({ connectionString }: { connectionString: string }) => {
     // ClickHouse does not support transactions
-    const client = getClient(connectionString)
+    const client = await getClient(connectionString)
 
     const txId = registerTransaction({
       execute: async (query) => {

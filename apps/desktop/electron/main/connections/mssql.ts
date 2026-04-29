@@ -1,18 +1,30 @@
 import { createRequire } from 'node:module'
 import { parseConnectionString } from '@conar/connection'
+import { parseSshConfig } from '@conar/connection/server'
 import { parseSSLConfig } from '@conar/connection/ssl/mssql'
 import { memoize } from '@conar/memoize'
 import { disposeTransaction, getTransaction, registerTransaction } from '../lib/transactions'
+import { ensureTunnel } from './ssh-tunnel'
 
 const mssql = createRequire(import.meta.url)('mssql') as typeof import('mssql')
 
-export const getPool = memoize((connectionString: string) => {
+export const getPool = memoize(async (connectionString: string) => {
   const { searchParams, ...config } = parseConnectionString(connectionString)
   const options = parseSSLConfig(searchParams)
+  const ssh = parseSshConfig(searchParams)
+  let host = config.host
+  let port = config.port
+  if (ssh) {
+    // TODO: SNI/cert handling for SSH+TLS — local socket is 127.0.0.1 but the
+    // server cert is for the original hostname.
+    const endpoint = await ensureTunnel(ssh, host, port ?? 1433)
+    host = endpoint.host
+    port = endpoint.port
+  }
 
   return mssql.connect({
-    server: config.host,
-    port: config.port,
+    server: host,
+    port,
     database: config.database,
     user: config.user,
     password: config.password,

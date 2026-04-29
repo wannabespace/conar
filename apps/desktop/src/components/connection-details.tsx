@@ -7,6 +7,9 @@ import { useState } from 'react'
 export function ConnectionDetails({ className, connectionString, type }: { className?: string, connectionString: string, type: ConnectionType }) {
   const url = new SafeURL(connectionString)
   const [showPassword, setShowPassword] = useState(false)
+  const sshHost = url.searchParams.get('ssh_host')
+  const sshUser = url.searchParams.get('ssh_user') ?? ''
+  const sshPort = url.searchParams.get('ssh_port') ?? '22'
 
   return (
     <table className={cn('w-full border-collapse font-mono text-xs', className)}>
@@ -51,6 +54,18 @@ export function ConnectionDetails({ className, connectionString, type }: { class
           <td className="py-1 pr-4 text-muted-foreground">Database</td>
           <td data-mask>{url.pathname.slice(1)}</td>
         </tr>
+        {sshHost && (
+          <tr>
+            <td className="py-1 pr-4 text-muted-foreground">via SSH</td>
+            <td data-mask>
+              {sshUser}
+              @
+              {sshHost}
+              :
+              {sshPort}
+            </td>
+          </tr>
+        )}
         {Object.keys(url.searchParams.entries()).length > 0 && (
           <>
             <tr>
