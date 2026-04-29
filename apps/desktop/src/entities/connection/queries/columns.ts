@@ -142,6 +142,7 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
             ...row,
             type: row.type.endsWith('[]') ? row.type.slice(0, -2) : row.type,
             isArray: row.type.endsWith('[]'),
+            editable: false,
           } satisfies typeof columnType.inferIn))
         }
 

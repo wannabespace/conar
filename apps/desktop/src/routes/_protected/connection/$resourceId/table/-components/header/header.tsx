@@ -173,10 +173,7 @@ export function Header({ table, schema }: { table: string, schema: string }) {
           </p>
         </TooltipContent>
       </Tooltip>
-      <HeaderActionsDelete
-        table={table}
-        schema={schema}
-      />
+      {tableType === 'table' && <HeaderActionsDelete table={table} schema={schema} />}
       <Separator orientation="vertical" className="mx-2 h-6!" />
       <HeaderActionsColumns />
       <HeaderActionsFilters />
