@@ -20,7 +20,6 @@ export interface PgCatalog {
 }
 
 /**
-<<<<<<< HEAD
  * @name pg_policy
  * @type table
  */
