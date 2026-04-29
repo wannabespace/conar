@@ -117,23 +117,19 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
       const existingMessage = chatsMessagesCollection.get(message.id)
 
       if (existingMessage) {
-        const nextCreatedAt = message.metadata?.createdAt || existingMessage.createdAt
-        const nextUpdatedAt = message.metadata?.updatedAt || new Date()
-
-        const hasChanges
-          = message.role !== existingMessage.role
-            || id !== existingMessage.chatId
-            || JSON.stringify(message.parts) !== JSON.stringify(existingMessage.parts)
-            || nextCreatedAt.getTime() !== existingMessage.createdAt.getTime()
-            || nextUpdatedAt.getTime() !== existingMessage.updatedAt.getTime()
+        const hasChanges = message.role !== existingMessage.role
+          || JSON.stringify(message.parts) !== JSON.stringify(existingMessage.parts)
 
         if (hasChanges) {
           chatsMessagesCollection.update(message.id, (draft) => {
             draft.parts = message.parts
             draft.role = message.role
-            draft.chatId = id
-            draft.createdAt = nextCreatedAt
-            draft.updatedAt = nextUpdatedAt
+            if (message.metadata?.createdAt) {
+              draft.createdAt = message.metadata?.createdAt
+            }
+            if (message.metadata?.updatedAt) {
+              draft.updatedAt = message.metadata?.updatedAt
+            }
           })
         }
       }
