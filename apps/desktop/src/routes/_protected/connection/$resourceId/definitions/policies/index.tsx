@@ -2,7 +2,7 @@ import type { policyType } from '~/entities/connection/queries'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
+import { CardContent, CardTitle } from '@conar/ui/components/card'
 import { CardMotion } from '@conar/ui/components/card.motion'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
@@ -11,13 +11,13 @@ import { RiEyeLine, RiEyeOffLine, RiShieldCheckLine, RiTable2 } from '@remixicon
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useSubscription } from 'seitu/react'
-import { resourcePoliciesQuery, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
-import { getConnectionResourceStore } from '~/entities/connection/store'
+import { resourcePoliciesQuery } from '~/entities/connection/queries'
+import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { DefinitionsEmptyState } from '~/routes/_protected/connection/$resourceId/definitions/-components/empty-state'
 import { DefinitionsGrid } from '~/routes/_protected/connection/$resourceId/definitions/-components/grid'
 import { DefinitionsHeader } from '~/routes/_protected/connection/$resourceId/definitions/-components/header'
 import { MOTION_BLOCK_PROPS } from '~/routes/_protected/connection/$resourceId/definitions/-constants'
+import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/policies/')({
   component: DatabasePoliciesPage,
@@ -48,16 +48,10 @@ function getIcon(type: PolicyType) {
 function DatabasePoliciesPage() {
   const { connectionResource } = Route.useLoaderData()
   const { data: policies, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourcePoliciesQuery({ connectionResource }))
-  const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))
-  const schemas = data?.schemas.map(({ name }) => name) ?? []
-  const [selectedSchema, setSelectedSchema] = useState(schemas[0])
-  const [search, setSearch] = useState('')
+  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({ connectionResource })
   const [filterType, setFilterType] = useState<PolicyType | 'all'>('all')
 
-  if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
-    setSelectedSchema(schemas[0])
+  useRefreshHotkey(refetch, isFetching)
 
   const filteredPolicies = policies?.filter(item =>
     item.schema === selectedSchema
@@ -133,73 +127,57 @@ function DatabasePoliciesPage() {
             layout
             {...MOTION_BLOCK_PROPS}
           >
-            <CardHeader className="bg-muted/30 px-4 py-3">
+            <CardContent className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2 text-base">
+                  <CardTitle className="mb-2 flex items-center gap-2 text-base">
                     {getIcon(item.type)}
                     <HighlightText text={item.name} match={search} />
-                    <Badge
-                      variant={item.type === 'PERMISSIVE' ? 'secondary' : 'destructive'}
-                      className="text-xs"
-                    >
-                      {formatType(item.type)}
-                    </Badge>
-                    {item.command && (
-                      <Badge variant="outline" className="text-xs">
-                        {item.command}
-                      </Badge>
-                    )}
+                    <Badge variant="secondary">{formatType(item.type)}</Badge>
+                    <Badge variant="secondary">{item.command}</Badge>
+                    {!item.enabled && <Badge variant="destructive">Disabled</Badge>}
                   </CardTitle>
-                  <div className={`
-                    mt-2 flex items-center gap-2 text-sm text-muted-foreground
-                  `}
+                  <div className="
+                    flex items-center gap-1.5 text-sm text-muted-foreground
+                  "
                   >
-                    <Badge variant="outline" className="text-xs">
-                      <RiTable2 className="mr-1 size-3" />
+                    <Badge variant="outline">
+                      <RiTable2 className="size-3" />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
+                    {item.roles.length > 0 && (
+                      <>
+                        <span>to</span>
+                        {item.roles.map(role => (
+                          <Badge key={role} variant="outline">
+                            {role}
+                          </Badge>
+                        ))}
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
-            </CardHeader>
-            {(item.using || item.check || (item.roles && item.roles.length > 0)) && (
-              <CardContent className="
-                space-y-2 border-t bg-muted/10 px-4 py-3 text-sm
-              "
-              >
-                {item.roles && item.roles.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-muted-foreground">Roles:</span>
-                    <div className="flex flex-wrap gap-1">
-                      {item.roles.map(role => (
-                        <Badge key={role} variant="outline" className="text-xs">{role}</Badge>
-                      ))}
+            </CardContent>
+            {(item.using || item.check) && (
+              <CardContent className="border-t bg-muted/10 px-4 py-3 text-sm">
+                <div className="
+                  flex flex-col gap-1.5 text-xs text-muted-foreground
+                "
+                >
+                  {item.using && (
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-medium text-foreground">USING:</span>
+                      <code>{item.using}</code>
                     </div>
-                  </div>
-                )}
-                {item.using && (
-                  <div className="flex flex-col gap-1">
-                    <span className="font-semibold text-muted-foreground">Using:</span>
-                    <code className="
-                      rounded-sm bg-muted px-2 py-1 font-mono text-xs
-                    "
-                    >
-                      {item.using}
-                    </code>
-                  </div>
-                )}
-                {item.check && (
-                  <div className="flex flex-col gap-1">
-                    <span className="font-semibold text-muted-foreground">With Check:</span>
-                    <code className="
-                      rounded-sm bg-muted px-2 py-1 font-mono text-xs
-                    "
-                    >
-                      {item.check}
-                    </code>
-                  </div>
-                )}
+                  )}
+                  {item.check && (
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-medium text-foreground">CHECK:</span>
+                      <code>{item.check}</code>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             )}
           </CardMotion>
