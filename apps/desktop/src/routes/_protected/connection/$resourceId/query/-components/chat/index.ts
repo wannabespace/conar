@@ -56,20 +56,14 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
         const existingMessage = chatsMessagesCollection.get(lastMessage.id)
 
         if (existingMessage) {
-          const nextParts = lastMessage.parts
-          const nextRole = lastMessage.role
-          const nextChatId = options.chatId
-
           const hasChanges
-            = nextRole !== existingMessage.role
-              || nextChatId !== existingMessage.chatId
-              || JSON.stringify(nextParts) !== JSON.stringify(existingMessage.parts)
+            = lastMessage.role !== existingMessage.role
+              || JSON.stringify(lastMessage.parts) !== JSON.stringify(existingMessage.parts)
 
           if (hasChanges) {
             await chatsMessagesCollection.update(lastMessage.id, (draft) => {
-              draft.parts = nextParts
-              draft.role = nextRole
-              draft.chatId = nextChatId
+              draft.parts = lastMessage.parts
+              draft.role = lastMessage.role
             }).isPersisted.promise
           }
         }
