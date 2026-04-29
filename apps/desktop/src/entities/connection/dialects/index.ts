@@ -1,22 +1,16 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { AnyFunction } from '@conar/shared/utils/helpers'
 import type { CompiledQuery } from 'kysely'
 import type { Database as ClickhouseDatabase } from './clickhouse/schema'
 import type { Database as MssqlDatabase } from './mssql/schema'
 import type { Database as MysqlDatabase } from './mysql/schema'
 import type { Database as PostgresDatabase } from './postgres/schema'
-import { memoize } from '@conar/shared/utils/helpers'
+import { memoize } from '@conar/memoize'
 import { Kysely } from 'kysely'
 import { clickhouseColdDialect, clickhouseDialect } from './clickhouse'
 import { mssqlColdDialect, mssqlDialect } from './mssql'
 import { mysqlColdDialect, mysqlDialect } from './mysql'
 import { postgresColdDialect, postgresDialect } from './postgres'
-
-const coldDialects = {
-  postgres: postgresColdDialect,
-  mysql: mysqlColdDialect,
-  clickhouse: clickhouseColdDialect,
-  mssql: mssqlColdDialect,
-} satisfies Record<ConnectionType, () => unknown>
 
 export interface DialectOptions {
   connectionString: string
@@ -28,7 +22,6 @@ export interface DialectOptions {
     query: string
     values?: unknown[]
   }) => void
-  silent?: boolean
 }
 
 export interface DialectExecutionOptions extends DialectOptions {
@@ -36,12 +29,23 @@ export interface DialectExecutionOptions extends DialectOptions {
 }
 
 export const dialects = {
-  postgres: memoize((options: DialectOptions) => new Kysely<PostgresDatabase>({ dialect: postgresDialect(options) })),
-  mysql: memoize((options: DialectOptions) => new Kysely<MysqlDatabase>({ dialect: mysqlDialect(options) })),
-  clickhouse: memoize((options: DialectOptions) => new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(options) })),
-  mssql: memoize((options: DialectOptions) => new Kysely<MssqlDatabase>({ dialect: mssqlDialect(options) })),
-} satisfies Record<ConnectionType, (options: DialectOptions) => unknown>
+  postgres: memoize((options: DialectOptions) => new Kysely<PostgresDatabase>({ dialect: postgresDialect(options) }), {
+    transformArgs: options => [options.connectionString, !!options.log],
+  }),
+  mysql: memoize((options: DialectOptions) => new Kysely<MysqlDatabase>({ dialect: mysqlDialect(options) }), {
+    transformArgs: options => [options.connectionString, !!options.log],
+  }),
+  clickhouse: memoize((options: DialectOptions) => new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(options) }), {
+    transformArgs: options => [options.connectionString, !!options.log],
+  }),
+  mssql: memoize((options: DialectOptions) => new Kysely<MssqlDatabase>({ dialect: mssqlDialect(options) }), {
+    transformArgs: options => [options.connectionString, !!options.log],
+  }),
+} satisfies Record<ConnectionType, AnyFunction>
 
-export function getColdDialect(dialect: ConnectionType) {
-  return new Kysely<Record<string, Record<string, unknown>>>({ dialect: coldDialects[dialect]() })
-}
+export const coldDialects = {
+  postgres: memoize(() => new Kysely({ dialect: postgresColdDialect() })),
+  mysql: memoize(() => new Kysely({ dialect: mysqlColdDialect() })),
+  clickhouse: memoize(() => new Kysely({ dialect: clickhouseColdDialect() })),
+  mssql: memoize(() => new Kysely({ dialect: mssqlColdDialect() })),
+} satisfies Record<ConnectionType, AnyFunction>

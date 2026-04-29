@@ -1,7 +1,7 @@
 import type { connectionsResources } from '~/drizzle/schema'
-import { memoize } from '@conar/shared/utils/helpers'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { sql } from 'kysely'
 import { connectionResourceToQueryParams, createQuery } from '../query'
 
 const constraintType = type('"PRIMARY KEY" | "UNIQUE" | "FOREIGN KEY" | "CHECK" | "EXCLUSION"')
@@ -36,28 +36,37 @@ export const constraintsType = type({
     foreignSchema: foreign_schema,
   }))
 
-const query = createQuery({
+export const resourceConstraintsQuery = createQuery({
   type: constraintsType.array(),
   query: {
     postgres: db => db
-      .selectFrom('information_schema.table_constraints as tc')
-      .leftJoin('information_schema.key_column_usage as kcu', 'tc.constraint_name', 'kcu.constraint_name')
-      .leftJoin('information_schema.constraint_column_usage as ccu', 'tc.constraint_name', 'ccu.constraint_name')
-      .leftJoin('information_schema.referential_constraints as rc', 'tc.constraint_name', 'rc.constraint_name')
+      .selectFrom('pg_catalog.pg_constraint as con')
+      .innerJoin('pg_catalog.pg_class as c', 'con.conrelid', 'c.oid')
+      .innerJoin('pg_catalog.pg_namespace as n', 'c.relnamespace', 'n.oid')
+      .innerJoin('pg_catalog.pg_attribute as a', join => join
+        .onRef('a.attrelid', '=', 'con.conrelid')
+        .on(sql<boolean>`a.attnum = ANY(con.conkey)`))
+      .leftJoin('pg_catalog.pg_class as fc', 'con.confrelid', 'fc.oid')
+      .leftJoin('pg_catalog.pg_namespace as fn', join => join
+        .onRef('fn.oid', '=', 'fc.relnamespace'))
+      .leftJoin('pg_catalog.pg_attribute as fa', join => join
+        .onRef('fa.attrelid', '=', 'con.confrelid')
+        .on(sql<boolean>`fa.attnum = (con.confkey)[array_position(con.conkey, a.attnum)]`))
       .select([
-        'tc.table_schema as schema',
-        'tc.table_name as table',
-        'tc.constraint_name as name',
-        'tc.constraint_type as type',
-        'kcu.column_name as column',
-        'ccu.table_schema as foreign_schema',
-        'ccu.table_name as foreign_table',
-        'ccu.column_name as foreign_column',
-        'rc.delete_rule as onDelete',
-        'rc.update_rule as onUpdate',
+        'n.nspname as schema',
+        'c.relname as table',
+        'con.conname as name',
+        sql<typeof constraintType.infer>`CASE con.contype WHEN 'p' THEN 'PRIMARY KEY' WHEN 'u' THEN 'UNIQUE' WHEN 'f' THEN 'FOREIGN KEY' END`.as('type'),
+        sql<string | null>`a.attname`.as('column'),
+        'fn.nspname as foreign_schema',
+        'fc.relname as foreign_table',
+        'fa.attname as foreign_column',
+        sql<string | null>`CASE con.confdeltype WHEN 'a' THEN 'NO ACTION' WHEN 'r' THEN 'RESTRICT' WHEN 'c' THEN 'CASCADE' WHEN 'n' THEN 'SET NULL' WHEN 'd' THEN 'SET DEFAULT' END`.as('onDelete'),
+        sql<string | null>`CASE con.confupdtype WHEN 'a' THEN 'NO ACTION' WHEN 'r' THEN 'RESTRICT' WHEN 'c' THEN 'CASCADE' WHEN 'n' THEN 'SET NULL' WHEN 'd' THEN 'SET DEFAULT' END`.as('onUpdate'),
       ])
-      .where('tc.constraint_type', 'in', neededConstraintTypes)
-      .where('ccu.table_schema', 'not like', 'pg_%')
+      .where('con.contype', 'in', ['p', 'u', 'f'])
+      .where('n.nspname', 'not like', 'pg_%')
+      .where('n.nspname', '!=', 'information_schema')
       .execute(),
     mysql: db => db
       .selectFrom('information_schema.TABLE_CONSTRAINTS as tc')
@@ -141,9 +150,9 @@ const query = createQuery({
   },
 })
 
-export const resourceConstraintsQuery = memoize(({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) => {
+export function resourceConstraintsQueryOptions({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) {
   return queryOptions({
-    queryFn: () => query.run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: () => resourceConstraintsQuery.run(connectionResourceToQueryParams(connectionResource)),
     queryKey: ['connection-resource', connectionResource.id, 'constraints'],
   })
-})
+}

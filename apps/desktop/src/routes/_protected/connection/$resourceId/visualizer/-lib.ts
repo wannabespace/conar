@@ -1,10 +1,11 @@
 import type { Edge } from '@xyflow/react'
 import type { NodeType } from '~/entities/connection/components'
-import type { Column } from '~/entities/connection/components/table/utils'
+import type { Column } from '~/entities/connection/components/table/cell'
 import type { constraintsType } from '~/entities/connection/queries'
 import type { columnType } from '~/entities/connection/queries/columns'
 import dagre from '@dagrejs/dagre'
 import { Position } from '@xyflow/react'
+import { getColumnUiType } from '~/entities/connection/components/table/cell'
 
 export function getEdges({ constraints }: { constraints: typeof constraintsType.infer[] }): Edge[] {
   return constraints
@@ -85,10 +86,8 @@ export function getNodes({
           const foreign = tableForeignKeys.find(foreignKey => foreignKey.column === c.id && foreignKey.schema === schema && foreignKey.table === table)
 
           return {
-            id: c.id,
-            type: c.type,
-            isEditable: c.isEditable,
-            isNullable: c.isNullable,
+            ...c,
+            uiType: getColumnUiType(c),
             foreign: foreign && foreign.foreignSchema && foreign.foreignTable && foreign.foreignColumn
               ? {
                   name: foreign.name,

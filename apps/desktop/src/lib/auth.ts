@@ -1,15 +1,16 @@
 import { type } from 'arktype'
 import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
-import { createLocalStorageValue } from 'seitu/web'
+import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 import { clearDb } from '~/drizzle'
 import { identifyUser } from './events-utils'
 import { apiUrl } from './utils'
 
-const BEARER_TOKEN_KEY = 'conar.bearer_token'
+const BEARER_TOKEN_KEY = 'tamery.bearer_token'
 
-export const bearerToken = createLocalStorageValue({
+export const bearerToken = createWebStorageValue({
+  type: 'localStorage',
   key: BEARER_TOKEN_KEY,
   schema: type('string | null'),
   defaultValue: null,
@@ -22,6 +23,7 @@ export function successAuthToast(newUser: boolean) {
       : 'Welcome back! Your connections are ready for you.',
     {
       duration: 10000,
+      position: 'top-center',
     },
   )
 }
@@ -50,7 +52,7 @@ export const authClient = createAuthClient({
 
 export async function fullSignOut() {
   await authClient.signOut()
-  bearerToken.remove()
+  bearerToken.clear()
   clearDb()
   identifyUser(null)
 }

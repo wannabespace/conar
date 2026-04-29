@@ -47,6 +47,7 @@ function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
   return routesIds.findLast(route => route.includes('/_protected/connection/$resourceId')) as typeof connectionResourceType.infer['lastOpenedPage']
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabasePage() {
   const { connection, connectionResource } = Route.useRouteContext()
   const currentPageId = useMatches({
@@ -110,7 +111,7 @@ function DatabasePage() {
                 defaultSize="30%"
                 minSize="10%"
                 maxSize="50%"
-                className="overflow-auto rounded-lg border bg-background"
+                className="overflow-auto rounded-lg bg-background"
               >
                 <QueryLogger connectionResource={connectionResource} />
               </ResizablePanel>

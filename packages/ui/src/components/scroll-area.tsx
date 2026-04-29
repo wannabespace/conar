@@ -7,10 +7,12 @@ export function ScrollArea({
   children,
   scrollFade = false,
   scrollbarGutter = false,
+  viewportRef,
   ...props
 }: ScrollAreaPrimitive.Root.Props & {
   scrollFade?: boolean
   scrollbarGutter?: boolean
+  viewportRef?: React.RefObject<HTMLElement | null>
 }): React.ReactElement {
   return (
     <ScrollAreaPrimitive.Root
@@ -18,6 +20,7 @@ export function ScrollArea({
       {...props}
     >
       <ScrollAreaPrimitive.Viewport
+        ref={viewportRef as React.RefObject<HTMLDivElement>}
         className={cn(
           `
             h-full rounded-[inherit] transition-all outline-none
@@ -82,5 +85,3 @@ export function ScrollBar({
     </ScrollAreaPrimitive.Scrollbar>
   )
 }
-
-export { ScrollAreaPrimitive }

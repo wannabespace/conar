@@ -5,6 +5,7 @@ import { getBase64FromFiles } from '@conar/shared/utils/base64'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { Spinner } from '@conar/ui/components/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
@@ -12,7 +13,7 @@ import { useLocation, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
-import { createSessionStorageValue } from 'seitu/web'
+import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 import { TipTap } from '~/components/tiptap'
 import { getFilesStore } from '~/entities/connection/store'
@@ -57,7 +58,8 @@ export function ChatForm() {
   const { connectionResource } = Route.useRouteContext()
   const filesStore = getFilesStore(connectionResource.id)
   const files = useSubscription(filesStore)
-  const inputValue = createSessionStorageValue({
+  const inputValue = createWebStorageValue({
+    type: 'sessionStorage',
     key: `${connectionResource.id}.chat-input`,
     schema: type('string'),
     defaultValue: '',
@@ -183,22 +185,22 @@ export function ChatForm() {
       `}
       >
         {!subscription && (
-          <span
-            className="z-10 bg-muted px-2 py-1 text-sm text-muted-foreground"
+          <div
+            className="
+              z-10 flex items-center gap-2 border-b px-3 py-1.5 text-xs
+            "
           >
-            Please
-            {' '}
+            <span className="flex-1 text-muted-foreground">
+              Upgrade to Pro to generate SQL queries with AI.
+            </span>
             <Button
               variant="outline"
-              className="px-1 py-0.5"
               size="xs"
               onClick={() => setIsSubscriptionDialogOpen(true)}
             >
-              upgrade
+              Upgrade
             </Button>
-            {' '}
-            your subscription to generate SQL queries.
-          </span>
+          </div>
         )}
         <TipTap
           ref={ref}
@@ -209,7 +211,7 @@ export function ChatForm() {
           }}
           placeholder={isOnline ? 'Generate SQL queries using natural language' : 'Check your internet connection to generate SQL queries'}
           className={`
-            max-h-[250px] min-h-[50px] overflow-y-auto p-2 text-sm outline-none
+            max-h-62.5 min-h-12.5 overflow-y-auto p-2 text-sm outline-none
           `}
           disabled={!subscription || !isOnline}
           onEnter={handleSend}
@@ -256,7 +258,7 @@ export function ChatForm() {
                 >
                   <LoadingContent
                     loading={isEnhancingPrompt}
-                    loaderClassName="size-3"
+                    spinner={<Spinner className="size-3" />}
                   >
                     <ContentSwitch
                       active={isEnhancingPrompt}

@@ -1,5 +1,4 @@
 import type { connections } from '~/drizzle/schema'
-import { memoize } from '@conar/shared/utils/helpers'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -9,70 +8,69 @@ export const connectionVersionType = type({
   version: 'string',
 }).pipe(data => data.version)
 
-export const connectionVersionQuery = memoize((connection: typeof connections.$inferSelect) => {
-  const query = createQuery({
-    type: connectionVersionType,
-    silent: true,
-    // Each query has a fallback to get a version in older versions
-    query: {
-      postgres: async (db) => {
-        try {
-          return await db
-            .selectFrom('pg_catalog.pg_settings')
-            .select('setting as version')
-            .where('name', '=', 'server_version')
-            .executeTakeFirstOrThrow()
-        }
-        catch {
-          return (await sql<{ version: string }>`SELECT current_setting('server_version') as version`.execute(db)).rows[0]!
-        }
-      },
-      mysql: async (db) => {
-        try {
-          // for mysql >= v8.0
-          return await db
-            .selectFrom('performance_schema.global_variables')
-            .select('VARIABLE_VALUE as version')
-            .where('VARIABLE_NAME', '=', 'version')
-            .executeTakeFirstOrThrow()
-        }
-        catch {
-          return (await sql<{ version: string }>`SELECT VERSION() as version`.execute(db)).rows[0]!
-        }
-      },
-      mssql: async (db) => {
-        try {
-          return await db
-            .selectFrom('sys.databases')
-            .select(eb => eb.fn<string>('SERVERPROPERTY', [eb.val('ProductVersion')]).as('version'))
-            .orderBy('name')
-            .limit(1)
-            .executeTakeFirstOrThrow()
-        }
-        catch {
-          return (await sql<{ version: string }>`SELECT SERVERPROPERTY('ProductVersion') as version`.execute(db)).rows[0]!
-        }
-      },
-      clickhouse: async (db) => {
-        try {
-          return await db
-            .selectFrom('system.one')
-            .select(eb => eb.fn<string>('version', []).as('version'))
-            .executeTakeFirstOrThrow()
-        }
-        catch {
-          return (await sql<{ version: string }>`SELECT version() as version`.execute(db)).rows[0]!
-        }
-      },
+export const connectionVersionQuery = createQuery({
+  type: connectionVersionType,
+  // Each query has a fallback to get a version in older versions
+  query: {
+    postgres: async (db) => {
+      try {
+        return await db
+          .selectFrom('pg_catalog.pg_settings')
+          .select('setting as version')
+          .where('name', '=', 'server_version')
+          .executeTakeFirstOrThrow()
+      }
+      catch {
+        return (await sql<{ version: string }>`SELECT current_setting('server_version') as version`.execute(db)).rows[0]!
+      }
     },
-  })
+    mysql: async (db) => {
+      try {
+        // for mysql >= v8.0
+        return await db
+          .selectFrom('performance_schema.global_variables')
+          .select('VARIABLE_VALUE as version')
+          .where('VARIABLE_NAME', '=', 'version')
+          .executeTakeFirstOrThrow()
+      }
+      catch {
+        return (await sql<{ version: string }>`SELECT VERSION() as version`.execute(db)).rows[0]!
+      }
+    },
+    mssql: async (db) => {
+      try {
+        return await db
+          .selectFrom('sys.databases')
+          .select(eb => eb.fn<string>('SERVERPROPERTY', [eb.val('ProductVersion')]).as('version'))
+          .orderBy('name')
+          .limit(1)
+          .executeTakeFirstOrThrow()
+      }
+      catch {
+        return (await sql<{ version: string }>`SELECT SERVERPROPERTY('ProductVersion') as version`.execute(db)).rows[0]!
+      }
+    },
+    clickhouse: async (db) => {
+      try {
+        return await db
+          .selectFrom('system.one')
+          .select(eb => eb.fn<string>('version', []).as('version'))
+          .executeTakeFirstOrThrow()
+      }
+      catch {
+        return (await sql<{ version: string }>`SELECT version() as version`.execute(db)).rows[0]!
+      }
+    },
+  },
+})
 
+export function connectionVersionQueryOptions(connection: typeof connections.$inferSelect) {
   return queryOptions({
     queryKey: ['connection-resource', connection.id, 'version'],
-    queryFn: () => query.run({
+    queryFn: () => connectionVersionQuery.run({
       connectionString: connection.connectionString,
       type: connection.type,
     }),
     throwOnError: false,
   })
-})
+}

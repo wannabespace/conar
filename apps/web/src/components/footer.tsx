@@ -7,7 +7,6 @@ export function Footer() {
   return (
     <footer className={`
       container mx-auto flex flex-col items-center justify-between gap-4 p-4
-      
       sm:flex-row sm:gap-0 sm:px-0
     `}
     >

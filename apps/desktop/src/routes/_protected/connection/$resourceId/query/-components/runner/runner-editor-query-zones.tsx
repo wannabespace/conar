@@ -1,19 +1,17 @@
 import type { editor } from 'monaco-editor'
 import type { RefObject } from 'react'
-import { copy } from '@conar/ui/lib/copy'
-import { render } from '@conar/ui/lib/render'
-import { useEffect, useEffectEvent, useRef } from 'react'
-import { useSubscription } from 'seitu/react'
+import type { Root } from 'react-dom/client'
+import { renderWithRoot } from '@conar/ui/lib/render'
+import { useEffect, useEffectEvent } from 'react'
 import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
 import { Route } from '../..'
 import { useRunnerContext } from './runner-context'
 import { RunnerEditorQueryZone } from './runner-editor-query-zone'
 
 export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
-  const { connectionResource } = Route.useRouteContext()
+  const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
-  const linesWithQueries = useSubscription(editorQueriesStore, { selector: state => state.map(({ startLineNumber }) => startLineNumber) })
 
   const getQueriesEvent = useEffectEvent((lineNumber: number) =>
     editorQueriesStore.get().find(query => query.startLineNumber === lineNumber),
@@ -24,64 +22,100 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
   const save = useRunnerContext(({ save }) => save)
   const saveEvent = useEffectEvent(save)
 
-  const elementsRef = useRef<Record<number, HTMLDivElement>>({})
+  const createZoneHandlers = useEffectEvent((lineNumber: number) => ({
+    onRun: (index: number) => {
+      const editorQuery = getQueriesEvent(lineNumber)
+
+      if (!editorQuery)
+        return
+
+      const query = editorQuery.queries.at(index)
+
+      if (!query)
+        return
+
+      runEvent([{
+        startLineNumber: editorQuery.startLineNumber,
+        endLineNumber: editorQuery.endLineNumber,
+        query,
+      }])
+    },
+    getQuery: () => {
+      const query = getQueriesEvent(lineNumber)
+
+      if (!query)
+        throw new Error('Query not found')
+
+      const { startLineNumber, endLineNumber } = query
+
+      return store.get().query.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n')
+    },
+    onSave: () => {
+      const query = getQueriesEvent(lineNumber)
+
+      if (!query)
+        return
+
+      const { startLineNumber, endLineNumber } = query
+
+      saveEvent(store.get().query.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
+    },
+  }))
 
   useEffect(() => {
-    if (!monacoRef.current)
+    const editor = monacoRef.current
+    if (!editor)
       return
 
-    const editor = monacoRef.current
-    const elements = elementsRef.current
-    const viewZoneIds: { id: string, lineNumber: number }[] = []
+    const zones = new Map<number, {
+      zoneId: string
+      domNode: HTMLDivElement
+      root: Root
+    }>()
 
-    queueMicrotask(() => {
+    const syncZones = () => {
+      const nextLines = editorQueriesStore.get().map(q => q.startLineNumber)
+      const nextSet = new Set(nextLines)
+
+      let needsChange = zones.size !== nextSet.size
+      if (!needsChange) {
+        for (const line of nextLines) {
+          if (!zones.has(line)) {
+            needsChange = true
+            break
+          }
+        }
+      }
+
+      if (!needsChange)
+        return
+
       editor.changeViewZones((changeAccessor) => {
-        linesWithQueries.forEach((lineNumber) => {
-          elements[lineNumber] ||= render(
+        for (const [lineNumber, zone] of zones) {
+          if (nextSet.has(lineNumber))
+            continue
+
+          changeAccessor.removeZone(zone.zoneId)
+          zone.domNode.remove()
+          queueMicrotask(() => zone.root.unmount())
+          zones.delete(lineNumber)
+        }
+
+        for (const lineNumber of nextLines) {
+          if (zones.has(lineNumber))
+            continue
+
+          const handlers = createZoneHandlers(lineNumber)
+          const { domNode, root } = renderWithRoot(
             <RunnerEditorQueryZone
               connectionResource={connectionResource}
+              connectionType={connection.type}
               lineNumber={lineNumber}
-              onRun={(index) => {
-                const editorQuery = getQueriesEvent(lineNumber)
-
-                if (!editorQuery)
-                  return
-
-                const query = editorQuery.queries.at(index)
-
-                if (!query)
-                  return
-
-                runEvent([{
-                  startLineNumber: editorQuery.startLineNumber,
-                  endLineNumber: editorQuery.endLineNumber,
-                  query,
-                }])
-              }}
-              onCopy={() => {
-                const query = getQueriesEvent(lineNumber)
-
-                if (!query)
-                  return
-
-                const { startLineNumber, endLineNumber } = query
-
-                copy(store.get().query.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
-              }}
-              onSave={() => {
-                const query = getQueriesEvent(lineNumber)
-
-                if (!query)
-                  return
-
-                const { startLineNumber, endLineNumber } = query
-
-                saveEvent(store.get().query.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
-              }}
+              onRun={handlers.onRun}
+              getQuery={handlers.getQuery}
+              onSave={handlers.onSave}
             />,
           )
-
-          const domNode = elements[lineNumber]!
 
           domNode.style.zIndex = '100'
 
@@ -91,22 +125,25 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
             domNode,
           })
 
-          viewZoneIds.push({ id: zoneId, lineNumber })
-        })
-      })
-    })
-
-    return () => {
-      editor.changeViewZones((changeAccessor) => {
-        viewZoneIds.forEach(({ id, lineNumber }) => {
-          changeAccessor.removeZone(id)
-
-          if (!linesWithQueries.includes(lineNumber)) {
-            elements[lineNumber]?.remove()
-            delete elements[lineNumber]
-          }
-        })
+          zones.set(lineNumber, { zoneId, domNode, root })
+        }
       })
     }
-  }, [monacoRef, linesWithQueries, connectionResource, store])
+
+    queueMicrotask(syncZones)
+
+    const unsubscribe = editorQueriesStore.subscribe(syncZones)
+
+    return () => {
+      unsubscribe()
+      editor.changeViewZones((changeAccessor) => {
+        for (const zone of zones.values()) {
+          changeAccessor.removeZone(zone.zoneId)
+          zone.domNode.remove()
+          queueMicrotask(() => zone.root.unmount())
+        }
+        zones.clear()
+      })
+    }
+  }, [monacoRef, editorQueriesStore, connectionResource, connection.type])
 }

@@ -1,12 +1,11 @@
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
-import { enumValues } from '@conar/shared/utils/helpers'
 import { pgEnum, pgTable, unique } from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 
-export const connectionType = pgEnum('connection_type', enumValues(ConnectionType))
+export const connectionType = pgEnum('connection_type', ConnectionType)
 
-export const syncType = pgEnum('sync_type', enumValues(SyncType))
+export const syncType = pgEnum('sync_type', SyncType)
 
 export const connections = pgTable('connections', ({ text, boolean }) => ({
   ...baseTable,
@@ -23,7 +22,7 @@ export const connections = pgTable('connections', ({ text, boolean }) => ({
 export const connectionsResources = pgTable('connections_resources', ({ uuid, text }) => ({
   ...baseTable,
   connectionId: uuid().references(() => connections.id, { onDelete: 'cascade' }).notNull(),
-  name: text().notNull(),
+  name: text(),
 }), t => [
   unique().on(t.connectionId, t.name),
 ])

@@ -1,6 +1,8 @@
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { ColumnRenderer } from '@conar/table'
-import type { Column } from '~/entities/connection/components/table/utils'
+import type { Column } from '~/entities/connection/components/table/cell'
 import { Table, TableBody, TableHeader, TableProvider } from '@conar/table'
+import { DEFAULT_COLUMN_WIDTH } from '@conar/table/constants'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Input } from '@conar/ui/components/input'
@@ -12,16 +14,17 @@ import { RiCloseLine, RiExportLine, RiSearchLine } from '@remixicon/react'
 import { useMemo, useState } from 'react'
 import { ExportData } from '~/components/export-data'
 import { TableCell } from '~/entities/connection/components'
-import { DEFAULT_COLUMN_WIDTH } from '~/entities/connection/components/table/utils'
 
 export function RunnerResultsTable({
   data,
   columns,
   duration,
+  connectionType,
 }: {
   data: Record<string, unknown>[]
   columns: Pick<Column, 'id'>[]
   duration: number
+  connectionType: ConnectionType
 }) {
   const [search, setSearch] = useState('')
 
@@ -58,13 +61,14 @@ export function RunnerResultsTable({
       ),
       cell: props => (
         <TableCell
-          column={{ id: column.id, type: 'text' }}
+          column={{ id: column.id, uiType: 'raw' }}
+          connectionType={connectionType}
           {...props}
         />
       ),
       size: DEFAULT_COLUMN_WIDTH,
     } satisfies ColumnRenderer))
-  }, [columns])
+  }, [columns, connectionType])
 
   const getData = async ({ limit }: { limit?: number }) => {
     return limit ? filteredData.slice(0, limit) : filteredData
@@ -117,7 +121,7 @@ export function RunnerResultsTable({
             filename="runner_results"
             trigger={({ isExporting }) => (
               <Button
-                variant="outline"
+                variant="secondary"
                 size="icon-sm"
                 disabled={isExporting || filteredData.length === 0}
               >

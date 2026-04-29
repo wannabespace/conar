@@ -1,6 +1,4 @@
-import type { Column } from '../components/table/utils'
 import type { connectionsResources } from '~/drizzle/schema'
-import { memoize } from '@conar/shared/utils/helpers'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { connectionResourceToQueryParams, createQuery } from '../query'
@@ -16,11 +14,22 @@ export const enumType = type({
   }).optional(),
 })
 
-export function findEnum(enums: typeof enumType.infer[], column: Column, table: string) {
-  return enums.find(e => (e.metadata?.table === table && e.metadata?.column === column.id)
-    || (column.enum && e.name === column.enum)
-    || (column.type && e.name === column.type),
-  )
+export function findEnum({
+  enums,
+  column,
+  table,
+}: {
+  enums: typeof enumType.infer[]
+  column: {
+    id: string
+    enumName?: string
+    type?: string
+  }
+  table: string
+}) {
+  return enums.find(e => e.metadata?.table === table && e.metadata?.column === column.id)
+    ?? enums.find(e => (column.enumName && e.name === column.enumName)
+      || (column.type && e.name === column.type))
 }
 
 const clickhouseEnumRegex = /^Enum\d+\((.*)\)$/
@@ -28,7 +37,26 @@ const clickhouseEnumValueRegex = /,(?=(?:[^']*'[^']*')*[^']*$)/
 const clickhouseEnumValuePairRegex = /'([^']+)' *= *\d+/
 
 function parseClickhouseEnum(type: string): string[] {
-  const match = type.match(clickhouseEnumRegex)
+  let inner = type
+  let changed = true
+
+  while (changed) {
+    changed = false
+    if (inner.startsWith('Array(') && inner.endsWith(')')) {
+      inner = inner.slice(6, -1)
+      changed = true
+    }
+    if (inner.startsWith('Nullable(') && inner.endsWith(')')) {
+      inner = inner.slice(9, -1)
+      changed = true
+    }
+    if (inner.startsWith('LowCardinality(') && inner.endsWith(')')) {
+      inner = inner.slice(15, -1)
+      changed = true
+    }
+  }
+
+  const match = inner.match(clickhouseEnumRegex)
 
   if (!match || !match[1])
     return []
@@ -57,7 +85,7 @@ function parseMysqlEnumOrSet(typeString: string): string[] {
     : valuesString.split(mysqlEnumOrSetValuePairRegex).map(v => v.trim().replace(/^'/, '').replace(/'$/, '').replace(/''/g, '\''))
 }
 
-const query = createQuery({
+export const resourceEnumsQuery = createQuery({
   type: enumType.array(),
   query: {
     postgres: async (db) => {
@@ -166,7 +194,7 @@ const query = createQuery({
         ])
         .where(({ and, eb }) => and([
           eb('table_schema', 'not in', ['INFORMATION_SCHEMA', 'information_schema', 'system']),
-          eb('data_type', 'ilike', 'Enum%'),
+          eb('data_type', 'ilike', '%Enum%'),
         ]))
         .execute()
 
@@ -185,9 +213,9 @@ const query = createQuery({
   },
 })
 
-export const resourceEnumsQuery = memoize(({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) => {
+export function resourceEnumsQueryOptions({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'enums'],
-    queryFn: () => query.run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: () => resourceEnumsQuery.run(connectionResourceToQueryParams(connectionResource)),
   })
-})
+}

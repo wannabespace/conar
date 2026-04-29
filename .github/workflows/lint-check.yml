@@ -16,6 +16,11 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
       - name: Install Bun
         uses: oven-sh/setup-bun@v1
         with:
@@ -24,10 +29,10 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.32.1
+          version: 10.33.0
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Lint
-        run: pnpm lint
+        run: pnpm run lint

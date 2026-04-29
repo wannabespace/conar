@@ -47,7 +47,15 @@ function Image({ className, image, index, type }: { className?: string, image: s
     index === 0 ? 'mx-auto' : 'absolute top-0 left-0 rounded-xl',
     className,
   )
-  const alt = `Demo part ${index + 1}`
+
+  const altTexts = [
+    'Conar database management interface overview',
+    'Conar query editor and results view',
+    'Conar table data browsing and filtering',
+    'Conar AI-powered data management features',
+  ]
+
+  const alt = altTexts[index] ?? `Conar app screenshot ${index + 1}`
 
   if (index === 0) {
     return (

@@ -7,6 +7,7 @@ export interface System {
   columns: Columns
   parts: Parts
   one: One
+  tables: Tables
   row_policies: RowPolicies
 }
 
@@ -22,6 +23,17 @@ interface RowPolicies {
   id: string
   is_restrictive: number
   select_filter: string
+}
+
+/**
+ * @name tables
+ * @type table
+ */
+interface Tables {
+  database: string
+  name: string
+  engine: string
+  is_temporary: number
 }
 
 /**

@@ -48,7 +48,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
   const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
-  const editorQueries = useSubscription(editorQueriesStore, { selector: state => state })
+  const editorQueries = useSubscription(editorQueriesStore)
   const domElementRef = useRef<HTMLElement>(null)
   const { subscription } = useUserSubscription()
 
@@ -116,6 +116,11 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
               editor.changeViewZones((changeAccessor) => {
                 changeAccessor.removeZone(zoneId)
               })
+              editor.setPosition({
+                lineNumber: currentAIZoneQuery.startLineNumber,
+                column: 1,
+              })
+              editor.focus()
               highlightCollection.clear()
               setCurrentAIZoneLineNumber(null)
             }}
@@ -160,7 +165,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
     if (!monacoRef.current)
       return
 
-    const kAction = monacoRef.current.addAction({
+    const disposable = monacoRef.current.addAction({
       id: 'conar.execute-on-k',
       label: 'Execute on K',
       keybindings: [KeyMod.CtrlCmd | KeyCode.KeyK],
@@ -181,6 +186,6 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
       },
     })
 
-    return () => kAction.dispose()
+    return () => disposable.dispose()
   }, [monacoRef])
 }

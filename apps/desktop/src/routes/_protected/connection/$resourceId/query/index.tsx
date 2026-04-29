@@ -34,33 +34,36 @@ export const Route = createFileRoute(
   }),
 })
 
-const MIN_CHAT_SIZE = '15%'
+const MIN_CHAT_SIZE = '200px'
 
+// eslint-disable-next-line react-refresh/only-export-components
 function ChatPanel() {
   return (
     <ResizablePanel
-      defaultSize="30%"
+      defaultSize="300px"
       minSize={MIN_CHAT_SIZE}
       maxSize="50%"
-      className="rounded-lg border bg-background"
+      className="rounded-lg bg-background"
     >
       <Chat className="h-full" />
     </ResizablePanel>
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
   return (
     <ResizablePanel
       defaultSize={chatVisible ? '70%' : '100%'}
       minSize="30%"
-      className="rounded-lg border bg-background"
+      className="rounded-lg bg-background"
     >
       <Runner />
     </ResizablePanel>
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabaseSqlPage() {
   const { connectionResource } = Route.useRouteContext()
   const { chatId } = Route.useSearch()

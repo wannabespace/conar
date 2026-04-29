@@ -1,23 +1,23 @@
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardMotion, CardTitle } from '@conar/ui/components/card'
+import { CardContent, CardTitle } from '@conar/ui/components/card'
+import { CardMotion } from '@conar/ui/components/card.motion'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { cn } from '@conar/ui/lib/utils'
 import { RiLayoutColumnLine, RiListIndefinite, RiListUnordered, RiTable2 } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
-import { useSubscription } from 'seitu/react'
-import { resourceEnumsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
-import { getConnectionResourceStore } from '~/entities/connection/store'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
+import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
+import { SchemaSelect } from '../-components/schema-select'
 import { MOTION_BLOCK_PROPS } from '../-constants'
+import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/enums/')({
   component: DatabaseEnumsPage,
@@ -27,18 +27,13 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/definit
   }),
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabaseEnumsPage() {
   const { connection, connectionResource } = Route.useRouteContext()
-  const { data: enums, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceEnumsQuery({ connectionResource }))
-  const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
-  const schemas = data?.schemas.map(({ name }) => name) ?? []
-  const [selectedSchema, setSelectedSchema] = useState(schemas[0])
-  const [search, setSearch] = useState('')
+  const { data: enums, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
+  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({ connectionResource })
 
-  if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
-    setSelectedSchema(schemas[0])
+  useRefreshHotkey(refetch, isFetching)
 
   const filteredEnums = enums
     ?.filter(enumItem =>
@@ -73,21 +68,7 @@ function DatabaseEnumsPage() {
           onChange={e => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
-        {schemas.length > 1 && (
-          <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
-            <SelectTrigger className="max-w-56 min-w-[180px]">
-              <div className="flex flex-1 items-center gap-2 overflow-hidden">
-                <span className="shrink-0 text-muted-foreground">schema</span>
-                <span className="truncate"><SelectValue /></span>
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {schemas.map(schema => (
-                <SelectItem key={schema} value={schema}>{schema}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+        <SchemaSelect schemas={schemas} selectedSchema={selectedSchema} setSelectedSchema={setSelectedSchema} />
       </div>
       <DefinitionsGrid loading={isPending}>
         {filteredEnums.length === 0 && (
@@ -126,7 +107,7 @@ function DatabaseEnumsPage() {
                     {enumItem.metadata?.table && (
                       <>
                         <Badge variant="outline" className="text-xs">
-                          <RiTable2 className="mr-1 size-3" />
+                          <RiTable2 className="size-3" />
                           {enumItem.metadata.table}
                         </Badge>
                         {enumItem.metadata.column && (
@@ -136,7 +117,7 @@ function DatabaseEnumsPage() {
                               variant="outline"
                               className="font-mono text-xs"
                             >
-                              <RiLayoutColumnLine className="mr-1 size-3" />
+                              <RiLayoutColumnLine className="size-3" />
                               {enumItem.metadata.column}
                             </Badge>
                           </>

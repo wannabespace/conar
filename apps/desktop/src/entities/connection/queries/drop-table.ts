@@ -1,4 +1,4 @@
-import { memoize } from '@conar/shared/utils/helpers'
+import { memoize } from '@conar/memoize'
 import { createQuery } from '../query'
 
 export const dropTableQuery = memoize(({ table, schema, cascade }: { table: string, schema: string, cascade: boolean }) => createQuery({

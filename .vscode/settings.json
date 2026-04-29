@@ -1,4 +1,6 @@
 {
+  "js/ts.experimental.useTsgo": true,
+
   // Disable the default formatter, use eslint instead
   "prettier.enable": false,
   "editor.formatOnSave": false,
@@ -47,7 +49,6 @@
     "pcss",
     "postcss"
   ],
-  "typescript.tsdk": "node_modules/typescript/lib",
   "files.watcherExclude": {
     "**/routeTree.gen.ts": true
   },

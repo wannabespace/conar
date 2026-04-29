@@ -1,5 +1,5 @@
 import type { Edge, Node, NodeProps } from '@xyflow/react'
-import type { Column } from './table/utils'
+import type { Column } from './table/cell'
 import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
 import { RiBookOpenLine, RiEraserLine, RiExternalLinkLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiTableLine } from '@remixicon/react'
@@ -22,12 +22,10 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
       className={cn(
         `
           w-66 rounded-xl bg-card font-mono
-          shadow-[0_1px_1px_rgba(0,0,0,0.02),0_2px_2px_rgba(0,0,0,0.02),0_4px_4px_rgba(0,0,0,0.02),0_8px_8px_rgba(0,0,0,0.02),0_16px_16px_rgba(0,0,0,0.02),0_32px_32px_rgba(0,0,0,0.02)]
+          shadow-[0_0.0625rem_0.0625rem_rgba(0,0,0,0.02),0_0.125rem_0.125rem_rgba(0,0,0,0.02),0_0.25rem_0.25rem_rgba(0,0,0,0.02),0_0.5rem_0.5rem_rgba(0,0,0,0.02),0_1rem_1rem_rgba(0,0,0,0.02),0_2rem_2rem_rgba(0,0,0,0.02)]
           transition-opacity
         `,
-        data.searchActive && data.tableSearchMatched && `
-          ring-2 ring-primary/60 ring-offset-2
-        `,
+        data.searchActive && data.tableSearchMatched && `ring-1 ring-primary/60`,
         data.searchActive && !data.tableSearchMatched && !data.columns.some(c => c.searchMatched) && `
           opacity-50
         `,
@@ -69,7 +67,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
             className={cn(
               'group relative px-4 transition-opacity',
               data.searchActive && column.searchMatched && `
-                rounded-sm text-primary ring-2 ring-primary/60 ring-offset-2
+                rounded-sm text-primary ring-1 ring-primary/60
               `,
               data.searchActive && data.columns.some(c => c.searchMatched) && !column.searchMatched && `
                 opacity-50
@@ -114,7 +112,11 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
                 )}
                 <span data-mask className="truncate font-medium">{column.id}</span>
               </div>
-              <span className="max-w-1/2 truncate text-muted-foreground/60">{column.type}</span>
+              {(column.typeLabel || column.type) && (
+                <span className="max-w-1/2 truncate text-muted-foreground/60">
+                  {column.typeLabel || column.type}
+                </span>
+              )}
               {column.foreign && (
                 <Handle
                   type="source"

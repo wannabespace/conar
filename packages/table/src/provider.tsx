@@ -5,8 +5,8 @@ import { useScrollDirection } from '@conar/ui/hookas/use-scroll-direction'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useRef } from 'react'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from './constants'
-import { prepareColumnId } from './index'
 import { TableContext } from './table-context'
+import { prepareColumnId } from './utils'
 
 export type { TableContextType } from './table-context'
 

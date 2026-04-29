@@ -1,10 +1,10 @@
 import type { TableCellProps, TableHeaderCellProps } from '@conar/table'
 import type { ComponentProps } from 'react'
-import { useShiftSelectionClick, useTableContext } from '@conar/table'
+import { useShiftSelectionClick, useTableContext } from '@conar/table/hooks'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
 import { useSubscription } from 'seitu/react'
-import { usePageStoreContext } from '../../-store'
+import { useTablePageStore } from '../../-store'
 
 function IndeterminateCheckbox({
   indeterminate,
@@ -17,13 +17,12 @@ function IndeterminateCheckbox({
         type="checkbox"
         className={cn(
           `
-            peer size-4 appearance-none rounded-[4px] border border-border
-            transition-colors duration-100 outline-none
+            peer hit-area-2.5 size-4 appearance-none rounded-sm border
+            border-border transition-colors duration-100 outline-none
             checked:border-primary checked:bg-primary
-            focus-visible:border-ring focus-visible:ring-[3px]
+            focus-visible:border-ring focus-visible:ring-[0.1875rem]
             focus-visible:ring-ring/50
             disabled:cursor-not-allowed disabled:opacity-50
-            hit-area-2.5
           `,
           !props.checked && indeterminate && 'border-primary bg-primary',
           className,
@@ -55,7 +54,7 @@ export function SelectionHeaderCell({ columnIndex, className, style, keys }: Tab
   className?: string
 }) {
   const rows = useTableContext(state => state.rows)
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const [checked, indeterminate] = useSubscription(store, {
     selector: state => [
       !!rows && rows.length > 0 && state.selected.length === rows.length,
@@ -97,13 +96,15 @@ export function SelectionCell({ rowIndex, columnIndex, className, style, keys }:
   keys: string[]
   className?: string
 }) {
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const rows = useTableContext(state => state.rows)
-  const isSelected = useSubscription(store, { selector: state => state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])) })
-  const [currentSelected, lastClickedIndex] = useSubscription(store, { selector: state => [
-    state.selected,
-    state.lastClickedIndex,
-  ] })
+  const { isSelected, currentSelected, lastClickedIndex } = useSubscription(store, {
+    selector: state => ({
+      isSelected: state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])),
+      currentSelected: state.selected,
+      lastClickedIndex: state.lastClickedIndex,
+    }),
+  })
 
   const rowKey = keys.reduce<Record<string, string>>(
     (acc, key) => ({ ...acc, [key]: rows[rowIndex]![key] as string }),
@@ -115,15 +116,12 @@ export function SelectionCell({ rowIndex, columnIndex, className, style, keys }:
     rowIndex,
     currentSelected,
     lastClickedIndex,
-    getRangeKeys: (start, end) => {
-      const rangeRows = rows.slice(start, end + 1)
-      return rangeRows.map(row =>
-        keys.reduce<Record<string, string>>(
-          (acc, key) => ({ ...acc, [key]: row[key] as string }),
-          {},
-        ),
-      )
-    },
+    getItemsInRange: (start, end) => rows.slice(start, end + 1).map(row =>
+      keys.reduce<Record<string, string>>(
+        (acc, key) => ({ ...acc, [key]: row[key] as string }),
+        {},
+      ),
+    ),
     onSelectionChange: (selected, selectionState, newLastClickedIndex) => {
       store.set(state => ({
         ...state,

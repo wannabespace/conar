@@ -1,1 +1,0 @@
-ALTER TABLE "chats" ALTER COLUMN "database_id" SET NOT NULL;

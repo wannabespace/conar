@@ -23,10 +23,12 @@ window.electron?.app.onDeepLink(async (url) => {
   window.initialDeepLink = url
 })
 
-window.electron?.app.onSendToast(({ message, type }) => {
+window.electron?.app.onSendToast(({ message, type, description, duration }) => {
   toast[type](message, {
-    id: `${type}-${message}`,
+    id: `${type}-${message}-${description}`,
+    description,
     position: 'bottom-center',
+    duration,
   })
 })
 
@@ -52,6 +54,7 @@ export const queryClient = new QueryClient({
 export const subscriptionQueryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      retry: 0,
       refetchOnWindowFocus: 'always',
       placeholderData: keepPreviousData,
     },
@@ -78,10 +81,35 @@ declare module '@tanstack/react-router' {
 
 const root = createRoot(document.getElementById('root')!)
 
-runMigrations().then(async () => {
-  await Promise.all([
-    connectionsCollection.stateWhenReady(),
-    chatsCollection.stateWhenReady(),
-  ])
-  root.render(<RouterProvider router={router} />)
-})
+runMigrations()
+  // Migration from old architecture to new and rename the project
+  // TODO: Remove in future
+  .then(async () => {
+    const dbs = await indexedDB.databases()
+    const hasOldDb = dbs.some(db => db.name?.includes('conar'))
+
+    if (!hasOldDb) {
+      return
+    }
+
+    indexedDB.deleteDatabase('/pglite/conar')
+
+    // clear local storage except for bearer token
+    Object.keys(localStorage).forEach((key) => {
+      if (!key.includes('bearer_token')) {
+        localStorage.removeItem(key)
+      }
+    })
+
+    if (localStorage.getItem('conar.bearer_token')) {
+      localStorage.setItem('tamery.bearer_token', localStorage.getItem('conar.bearer_token')!)
+      localStorage.removeItem('conar.bearer_token')
+    }
+  })
+  .then(async () => {
+    await Promise.all([
+      connectionsCollection.stateWhenReady(),
+      chatsCollection.stateWhenReady(),
+    ])
+    root.render(<RouterProvider router={router} />)
+  })

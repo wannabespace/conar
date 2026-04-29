@@ -10,18 +10,19 @@
     "./server": "./src/server.ts"
   },
   "scripts": {
-    "test:unit": "bun test",
-    "check-types": "tsc"
+    "test": "bun test",
+    "check-types": "tsgo"
   },
   "dependencies": {
     "@conar/shared": "workspace:*"
   },
   "devDependencies": {
     "@conar/configs": "workspace:*",
+    "@types/bun": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "mssql": "catalog:",
-    "mysql2": "catalog:",
-    "typescript": "catalog:"
+    "mysql2": "catalog:"
   }
 }

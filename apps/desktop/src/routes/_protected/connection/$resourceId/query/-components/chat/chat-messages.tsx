@@ -7,10 +7,10 @@ import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
+import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
-import { UserAvatar } from '@conar/ui/components/custom/user-avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useElementSize } from '@conar/ui/hookas/use-element-size'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
@@ -22,7 +22,6 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
 import { getEditorQueriesComputed } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
-import { authClient } from '~/lib/auth'
 import { Route } from '../..'
 import { chatHooks, runnerHooks } from '../../-page'
 import { ChatImages } from './chat-images'
@@ -40,21 +39,19 @@ function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
 
 function ChatMessageFooterButton({ onClick, icon, tooltip, disabled }: { onClick: () => void, icon: ReactNode, tooltip: string, disabled?: boolean }) {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={onClick}
-            disabled={disabled}
-          >
-            {icon}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{tooltip}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={onClick}
+          disabled={disabled}
+        >
+          {icon}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{tooltip}</TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -63,7 +60,6 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
   const editorQueries = useSubscription(editorQueriesStore)
 
-  const [isCopying, setIsCopying] = useState(false)
   const [isAppending, setIsAppending] = useState(false)
   const [isReplacing, setIsReplacing] = useState(false)
 
@@ -90,86 +86,73 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
 
   return (
     <div className="flex gap-1">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="icon-xs"
-              variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation()
-                setIsCopying(true)
-                copy(content)
-              }}
-            >
-              <ContentSwitch
-                active={isCopying}
-                activeContent={<RiCheckLine className="text-success" />}
-                onSwitchEnd={() => setIsCopying(false)}
-              >
-                <RiFileCopyLine className="size-3.5" />
-              </ContentSwitch>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            Copy to clipboard
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <CopyButton
+            size="icon-xs"
+            variant="ghost"
+            text={content}
+            successIcon={<RiCheckLine className="text-success" />}
+            copyIcon={<RiFileCopyLine className="size-3.5" />}
+            onClick={(e) => {
+              e.stopPropagation()
+            }}
+          />
+        </TooltipTrigger>
+        <TooltipContent>
+          Copy to clipboard
+        </TooltipContent>
+      </Tooltip>
       {lang === 'sql' && (
         <>
-          <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon-xs"
+                variant="ghost"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  runnerHooks.callHook('appendToBottomAndFocus', content)
+                  setIsAppending(true)
+                }}
+              >
+                <ContentSwitch
+                  active={isAppending}
+                  activeContent={<RiCheckLine className="text-success" />}
+                  onSwitchEnd={() => setIsAppending(false)}
+                >
+                  <RiPlayListAddLine className="size-3.5" />
+                </ContentSwitch>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Append to bottom of runner
+            </TooltipContent>
+          </Tooltip>
+          <DropdownMenu>
             <Tooltip>
-              <TooltipTrigger asChild>
+              <DropdownMenuTrigger render={<TooltipTrigger asChild />}>
                 <Button
                   size="icon-xs"
                   variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    runnerHooks.callHook('appendToBottomAndFocus', content)
-                    setIsAppending(true)
-                  }}
+                  onClick={e => e.stopPropagation()}
                 >
                   <ContentSwitch
-                    active={isAppending}
+                    active={isReplacing}
                     activeContent={<RiCheckLine className="text-success" />}
-                    onSwitchEnd={() => setIsAppending(false)}
+                    onSwitchEnd={() => setIsReplacing(false)}
                   >
-                    <RiPlayListAddLine className="size-3.5" />
+                    <RiLoopLeftLine className="size-3.5" />
                   </ContentSwitch>
                 </Button>
-              </TooltipTrigger>
+              </DropdownMenuTrigger>
               <TooltipContent>
-                Append to bottom of runner
+                Replace a query in the runner
               </TooltipContent>
             </Tooltip>
-          </TooltipProvider>
-          <DropdownMenu>
-            <TooltipProvider>
-              <Tooltip>
-                <DropdownMenuTrigger render={<TooltipTrigger asChild />}>
-                  <Button
-                    size="icon-xs"
-                    variant="ghost"
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <ContentSwitch
-                      active={isReplacing}
-                      activeContent={<RiCheckLine className="text-success" />}
-                      onSwitchEnd={() => setIsReplacing(false)}
-                    >
-                      <RiLoopLeftLine className="size-3.5" />
-                    </ContentSwitch>
-                  </Button>
-                </DropdownMenuTrigger>
-                <TooltipContent>
-                  Replace a query in the runner
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
             <DropdownMenuContent
               align="end"
-              className="max-h-64 min-w-[220px] overflow-auto"
+              className="max-h-64 min-w-55 overflow-auto"
               onClick={e => e.stopPropagation()}
             >
               <div className="p-2 text-xs font-medium text-muted-foreground">
@@ -198,7 +181,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
                     {getQueryNumber(index)}
                   </span>
                   <span className={`
-                    font-mono text-[10px] text-muted-foreground/70
+                    font-mono text-[0.625rem] text-muted-foreground/70
                   `}
                   >
                     {q.startLineNumber === q.endLineNumber
@@ -264,12 +247,10 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
     height: 0,
   })
   const images = message.parts.filter(part => part.type === 'file').map(part => part.url)
-  const { data } = authClient.useSession()
   const canHide = height > 200
 
   return (
     <ChatMessage className={cn('group/message', className)} {...props}>
-      <UserAvatar className="size-7" user={data?.user} />
       <div>
         <div
           className={cn(
@@ -277,7 +258,7 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
               relative inline-flex rounded-lg bg-primary px-2 py-1
               text-primary-foreground
             `,
-            canHide && !isVisible && 'max-h-[100px] overflow-hidden',
+            canHide && !isVisible && 'max-h-25 overflow-hidden',
           )}
         >
           <div
@@ -403,6 +384,10 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
 
 function ErrorMessage({ error, className, ...props }: { error: Error } & ComponentProps<'div'>) {
   const { chat } = Route.useLoaderData()
+
+  useEffect(() => {
+    console.error(error)
+  }, [error])
 
   return (
     <ChatMessage

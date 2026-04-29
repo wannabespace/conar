@@ -1,0 +1,44 @@
+{
+  "$schema": "./node_modules/turbo/schema.json",
+  "ui": "tui",
+  "envMode": "loose",
+  "tasks": {
+    "start": {
+      "persistent": true
+    },
+    "check-types": {
+      "cache": false,
+      "dependsOn": ["^check-types"]
+    },
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "build:vite": {
+      "dependsOn": ["check-types", "^check-types"],
+      "cache": false
+    },
+    "conar#build:todesktop": {
+      "dependsOn": ["build:vite"]
+    },
+    "drizzle:migrate": {
+      "cache": false
+    },
+    "drizzle:generate": {
+      "cache": false
+    },
+    "test": {
+      "cache": false
+    },
+    "test:e2e": {
+      "cache": false
+    },
+    "test:start": {
+      "persistent": true
+    }
+  }
+}

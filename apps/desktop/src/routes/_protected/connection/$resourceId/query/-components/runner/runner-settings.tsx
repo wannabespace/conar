@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import type { ReactElement } from 'react'
+import { pick } from '@conar/shared/utils/helpers'
 import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Switch } from '@conar/ui/components/switch'
@@ -38,7 +39,7 @@ function PositionSelector<T extends string>({
   onChange,
 }: {
   label: string
-  value: string
+  value: T
   options: { value: T, label: string }[]
   onChange: (value: T) => void
 }) {
@@ -46,13 +47,12 @@ function PositionSelector<T extends string>({
     <div className="flex items-center justify-between">
       <Label className="text-sm font-medium text-foreground">{label}</Label>
       <ToggleGroup
-        type="single"
         variant="outline"
-        size="xs"
-        value={value}
+        size="sm"
+        value={[value]}
         onValueChange={(newValue) => {
-          if (newValue) {
-            onChange(newValue as T)
+          if (newValue[0]) {
+            onChange(newValue[0])
           }
         }}
       >
@@ -70,7 +70,7 @@ function PositionSelector<T extends string>({
   )
 }
 
-export function RunnerSettings({ children }: { children: ReactNode }) {
+export function RunnerSettings({ children }: { children: ReactElement }) {
   const [open, setOpen] = useState(false)
   const { resourceId } = Route.useParams()
 
@@ -79,23 +79,12 @@ export function RunnerSettings({ children }: { children: ReactNode }) {
     chatVisible,
     resultsVisible,
     chatPosition,
-  } = useSubscription(store, {
-    selector: s => ({
-      chatVisible: s.layout.chatVisible,
-      resultsVisible: s.layout.resultsVisible,
-      chatPosition: s.layout.chatPosition,
-    }),
-  })
+  } = useSubscription(store, { selector: s => pick(s.layout, ['chatVisible', 'resultsVisible', 'chatPosition']) })
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        {children}
-      </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        onOpenAutoFocus={e => e.preventDefault()}
-      >
+      <PopoverTrigger render={children} />
+      <PopoverContent align="start" className="w-64">
         <div className="space-y-1">
           <ToggleRow
             label="Chat Panel"

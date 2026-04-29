@@ -1,0 +1,36 @@
+{
+  "name": "@conar/memoize",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./ts": {
+      "import": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "postinstall": "tsdown",
+    "prepublishOnly": "tsdown",
+    "check-types": "tsgo",
+    "test": "bun test",
+    "bench": "bun ./bench/index.ts",
+    "build": "tsdown",
+    "dev": "tsdown --watch"
+  },
+  "dependencies": {
+    "devalue": "^5.7.1"
+  },
+  "devDependencies": {
+    "@emotion/memoize": "^0.9.0",
+    "@formatjs/fast-memoize": "^3.1.2",
+    "@types/lodash.memoize": "^4.1.9",
+    "@types/memoizee": "^0.4.12",
+    "@typescript/native-preview": "catalog:",
+    "lodash.memoize": "^4.1.2",
+    "memoize": "^11.0.0",
+    "memoizee": "^0.4.17",
+    "tsdown": "catalog:"
+  }
+}

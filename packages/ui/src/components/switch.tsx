@@ -10,10 +10,10 @@ export function Switch({
     <SwitchPrimitive.Root
       className={cn(
         `
-          inline-flex h-[calc(var(--thumb-size)+2px)]
-          w-[calc(var(--thumb-size)*2-2px)] shrink-0 items-center rounded-full
-          p-px transition-[background-color,box-shadow] duration-200
-          outline-none [--thumb-size:--spacing(5)]
+          inline-flex h-[calc(var(--thumb-size)+0.125rem)]
+          w-[calc(var(--thumb-size)*2-0.125rem)] shrink-0 items-center
+          rounded-full p-px transition-[background-color,box-shadow]
+          duration-200 outline-none [--thumb-size:--spacing(5)]
           focus-visible:ring-2 focus-visible:ring-ring
           focus-visible:ring-offset-1 focus-visible:ring-offset-background
           data-checked:bg-primary
@@ -36,7 +36,7 @@ export function Switch({
             in-[[role=switch]:active,[data-slot=label]:active,[data-slot=field-label]:active]:rounded-[var(--thumb-size)/calc(var(--thumb-size)*1.1)]
             in-[[role=switch]:active,[data-slot=label]:active,[data-slot=field-label]:active]:not-data-disabled:scale-x-110
             data-checked:origin-[var(--thumb-size)_50%]
-            data-checked:translate-x-[calc(var(--thumb-size)-4px)]
+            data-checked:translate-x-[calc(var(--thumb-size)-0.25rem)]
           `,
         )}
         data-slot="switch-thumb"
@@ -44,5 +44,3 @@ export function Switch({
     </SwitchPrimitive.Root>
   )
 }
-
-export { SwitchPrimitive }

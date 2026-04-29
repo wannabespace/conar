@@ -8,6 +8,7 @@ export const Route = createFileRoute('/_auth')({
   component: AuthLayout,
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function AuthLayout() {
   const match = useMatches({
     select: matches => matches.map(match => match.routeId).at(-1),
@@ -64,7 +65,7 @@ function AuthLayout() {
           </div>
           <div className={`
             mx-auto flex w-full flex-col justify-center gap-6
-            sm:w-[350px]
+            sm:w-87.5
           `}
           >
             <Outlet />

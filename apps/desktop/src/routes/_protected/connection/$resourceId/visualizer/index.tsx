@@ -1,10 +1,9 @@
-import type { constraintsType, tablesAndSchemasType } from '~/entities/connection/queries'
+import type { constraintsType } from '~/entities/connection/queries'
 import type { columnType } from '~/entities/connection/queries/columns'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
-import { CtrlLetter } from '@conar/ui/components/custom/shortcuts'
-import { Input } from '@conar/ui/components/input'
-import { Kbd } from '@conar/ui/components/kbd'
+import { KbdCtrlLetter } from '@conar/ui/components/custom/shortcuts'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
 import { ReactFlowEdge } from '@conar/ui/components/react-flow/edge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
@@ -15,11 +14,11 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, useEdgesState, useNodesState } from '@xyflow/react'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { animationHooks } from '~/enter'
 import { ReactFlowNode } from '~/entities/connection/components'
-import { resourceConstraintsQuery, resourceTableColumnsQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { resourceConstraintsQueryOptions, resourceTableColumnsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
+import { globalHooks } from '~/global-hooks'
 import { applySearchHighlight, getVisualizerLayout } from './-lib'
 
 export const Route = createFileRoute(
@@ -35,21 +34,22 @@ export const Route = createFileRoute(
   }),
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function VisualizerPage() {
   const { connection } = Route.useLoaderData()
   const { connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data: tablesAndSchemas } = useQuery({
-    ...resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }),
-    select: data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table }))),
+    ...resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
+    select: data => data.schemas.flatMap(({ name, tables }) => tables.map(table => ({ schema: name, table: table.name }))),
   })
   const columnsQueries = useQueries({
     queries: tablesAndSchemas?.flatMap(({ schema, table }) =>
-      resourceTableColumnsQuery({ connectionResource, schema, table }),
+      resourceTableColumnsQueryOptions({ connectionResource, schema, table }),
     ) ?? [],
   })
-  const { data: constraints } = useQuery(resourceConstraintsQuery({ connectionResource }))
+  const { data: constraints } = useQuery(resourceConstraintsQueryOptions({ connectionResource }))
 
   if (!tablesAndSchemas || !constraints || columnsQueries.some(q => q.isPending)) {
     return (
@@ -96,12 +96,13 @@ const edgeTypes = {
   custom: ReactFlowEdge,
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function Visualizer({
   tablesAndSchemas,
   columns,
   constraints,
 }: {
-  tablesAndSchemas: typeof tablesAndSchemasType.infer[]
+  tablesAndSchemas: { schema: string, table: string }[]
   columns: typeof columnType.infer[]
   constraints: typeof constraintsType.infer[]
 }) {
@@ -153,7 +154,7 @@ function Visualizer({
   useEffect(() => {
     // It's needed for fixing lines between nodes
     // Because lines started calculation before the app loaded
-    return animationHooks.hook('finished', () => {
+    return globalHooks.hook('animationFinished', () => {
       recalculateLayoutEvent()
     })
   }, [])
@@ -168,68 +169,64 @@ function Visualizer({
   })
 
   return (
-    <div className="
-      relative size-full overflow-hidden rounded-lg
-      dark:border
-    "
-    >
+    <div className="relative size-full overflow-hidden rounded-lg">
       <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-        <div className="relative w-48">
-          <Input
-            ref={searchRef}
-            placeholder="Search tables"
-            className="pr-8 pl-7"
-            value={searchQuery}
-            autoFocus
-            onChange={(e) => {
-              setSearchQuery(e.target.value)
-              setNodes(nodes => applySearchHighlight({
-                nodes,
-                searchQuery: e.target.value.trim(),
-                tables,
-                columns,
-              }))
-            }}
-          />
-          <RiSearchLine className="
-            pointer-events-none absolute top-1/2 left-2 size-3.5
-            -translate-y-1/2 text-muted-foreground
-          "
-          />
-
-          {!searchQuery && (
-            <div className="
-              pointer-events-none absolute top-1/2 right-2 flex -translate-y-1/2
-              items-center gap-1 text-xs text-muted-foreground
-            "
-            >
-              <Kbd asChild>
-                <CtrlLetter userAgent={navigator.userAgent} letter="F" />
-              </Kbd>
-            </div>
-          )}
-
-          {searchQuery && (
-            <button
-              type="button"
-              className="
-                absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
+        <div className="relative w-56">
+          <InputGroup>
+            <InputGroupInput
+              ref={searchRef}
+              placeholder="Search tables"
+              value={searchQuery}
+              autoFocus
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setNodes(nodes => applySearchHighlight({
+                  nodes,
+                  searchQuery: e.target.value.trim(),
+                  tables,
+                  columns,
+                }))
+              }}
+            />
+            <InputGroupAddon>
+              <RiSearchLine className="
+                pointer-events-none size-3.5 text-muted-foreground
               "
-              onClick={() => setSearchQuery('')}
-              aria-label="Clear table search"
-            >
-              <RiCloseLine className="size-4 text-muted-foreground" />
-            </button>
-          )}
+              />
+            </InputGroupAddon>
+            <InputGroupAddon align="inline-end">
+              {!searchQuery && (
+                <div className="
+                  pointer-events-none flex items-center gap-1 text-xs
+                  text-muted-foreground
+                "
+                >
+                  <KbdCtrlLetter userAgent={navigator.userAgent} letter="F" />
+                </div>
+              )}
+
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear table search"
+                >
+                  <RiCloseLine className="size-4 text-muted-foreground" />
+                </button>
+              )}
+            </InputGroupAddon>
+          </InputGroup>
         </div>
         <Select
           value={schema}
           onValueChange={(v) => {
-            setSchema(v)
-            setSearchQuery('')
+            if (v) {
+              setSchema(v)
+              setSearchQuery('')
+            }
           }}
         >
-          <SelectTrigger className="max-w-56 min-w-[180px]">
+          <SelectTrigger className="max-w-56 min-w-45">
             <div className="
               flex flex-1 items-center gap-2 overflow-hidden text-left
             "

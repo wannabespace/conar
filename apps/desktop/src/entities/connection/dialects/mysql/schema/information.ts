@@ -11,6 +11,8 @@ export interface InformationSchema {
   STATISTICS: Statistics
   REFERENTIAL_CONSTRAINTS: ReferentialConstraints
   SCHEMATA: Schemata
+  TRIGGERS: Triggers
+  ROUTINES: Routines
   TABLE_PRIVILEGES: TablePrivileges
 }
 
@@ -173,4 +175,52 @@ interface ReferentialConstraints {
   DELETE_RULE: string
   TABLE_NAME: string
   REFERENCED_TABLE_NAME: string
+}
+
+/**
+ * @name TRIGGERS
+ * @type table
+ */
+interface Triggers {
+  TRIGGER_CATALOG: string
+  TRIGGER_SCHEMA: string
+  TRIGGER_NAME: string
+  EVENT_MANIPULATION: string
+  EVENT_OBJECT_CATALOG: string
+  EVENT_OBJECT_SCHEMA: string
+  EVENT_OBJECT_TABLE: string
+  ACTION_ORDER: number
+  ACTION_CONDITION: string | null
+  ACTION_STATEMENT: string
+  ACTION_ORIENTATION: string
+  ACTION_TIMING: string
+  ACTION_REFERENCE_OLD_TABLE: string | null
+  ACTION_REFERENCE_NEW_TABLE: string | null
+  ACTION_REFERENCE_OLD_ROW: string
+  ACTION_REFERENCE_NEW_ROW: string
+  CREATED: string
+  SQL_MODE: string
+  DEFINER: string
+  CHARACTER_SET_CLIENT: string
+  COLLATION_CONNECTION: string
+  DATABASE_COLLATION: string
+}
+
+/**
+ * @name ROUTINES
+ * @type table
+ */
+interface Routines {
+  ROUTINE_CATALOG: string
+  ROUTINE_SCHEMA: string
+  ROUTINE_NAME: string
+  ROUTINE_TYPE: string
+  DATA_TYPE: string
+  ROUTINE_DEFINITION: string | null
+  IS_DETERMINISTIC: string
+  SQL_DATA_ACCESS: string
+  SECURITY_TYPE: string
+  DEFINER: string
+  CREATED: string
+  LAST_ALTERED: string
 }

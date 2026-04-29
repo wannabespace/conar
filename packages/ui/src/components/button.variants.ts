@@ -10,7 +10,6 @@ export const buttonVariants = cva(
     focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
     focus-visible:ring-offset-background
     disabled:pointer-events-none disabled:opacity-64
-    data-loading:text-transparent data-loading:select-none
     sm:text-sm
     pointer-coarse:after:absolute pointer-coarse:after:size-full
     pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11
@@ -57,6 +56,13 @@ export const buttonVariants = cva(
             not-in-data-[slot=input-group]:[&_svg:not([class*='size-'])]:size-4
             sm:not-in-data-[slot=input-group]:[&_svg:not([class*='size-'])]:size-3.5
           `,
+        'icon-2xs': `
+          size-6 rounded-sm
+          before:rounded-[calc(var(--radius-sm)-1px)]
+          sm:size-5
+          not-in-data-[slot=input-group]:[&_svg:not([class*='size-'])]:size-3
+          sm:not-in-data-[slot=input-group]:[&_svg:not([class*='size-'])]:size-2.5
+        `,
         'lg': `
           h-10 px-[calc(--spacing(3.5)-1px)]
           sm:h-9
@@ -114,6 +120,14 @@ export const buttonVariants = cva(
             dark:not-disabled:before:shadow-[0_-1px_--theme(--color-white/2%)]
             dark:not-disabled:not-active:not-data-pressed:before:shadow-[0_-1px_--theme(--color-white/6%)]
             [:disabled,:active,[data-pressed]]:shadow-none
+          `,
+        'warning':
+          `
+            border-warning bg-warning text-white shadow-xs shadow-warning/24
+            not-disabled:inset-shadow-[0_1px_--theme(--color-white/16%)]
+            hover:bg-warning/90
+            data-pressed:bg-warning/90
+            *:data-[slot=button-loading-indicator]:text-white
           `,
         'ghost':
           `

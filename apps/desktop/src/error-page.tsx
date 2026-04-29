@@ -9,7 +9,7 @@ import { useRouter } from '@tanstack/react-router'
 import { TraversalError } from 'arktype'
 import posthog from 'posthog-js'
 import { useEffect } from 'react'
-import { enterAppAnimation } from './enter'
+import { enterAppAnimation } from './global-hooks'
 import { EventsProvider } from './lib/events'
 
 // User specific errors that we don't want to track
@@ -65,7 +65,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
             <CardContent>
               {!(error instanceof TraversalError) && (
                 <ScrollArea className={`
-                  h-[300px] rounded-md bg-muted p-4 font-mono text-sm
+                  h-75 rounded-md bg-muted p-4 font-mono text-sm
                 `}
                 >
                   {error.message}
@@ -87,7 +87,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
               )}
               {error instanceof TraversalError && (
                 <ScrollArea className={`
-                  h-[300px] rounded-md bg-muted p-4 font-mono text-xs
+                  h-75 rounded-md bg-muted p-4 font-mono text-xs
                   text-muted-foreground
                 `}
                 >
@@ -120,7 +120,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                 className="flex-1"
                 onClick={() => router.history.back()}
               >
-                <RiArrowGoBackLine className="mr-1" />
+                <RiArrowGoBackLine />
                 Go back
               </Button>
               <Button
@@ -128,14 +128,14 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                 variant="outline"
                 onClick={() => router.navigate({ to: '/' })}
               >
-                <RiHomeLine className="mr-1" />
+                <RiHomeLine />
                 Home
               </Button>
               <Button
                 className="flex-1"
                 onClick={() => window.location.reload()}
               >
-                <RiLoopLeftLine className="mr-1" />
+                <RiLoopLeftLine />
                 Refresh
               </Button>
             </CardFooter>

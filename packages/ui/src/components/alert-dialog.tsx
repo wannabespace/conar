@@ -1,8 +1,6 @@
 import { AlertDialog as AlertDialogPrimitive } from '@base-ui/react/alert-dialog'
 import { cn } from '@conar/ui/lib/utils'
 
-const AlertDialogCreateHandle = AlertDialogPrimitive.createHandle
-
 const AlertDialog = AlertDialogPrimitive.Root
 
 const AlertDialogPortal = AlertDialogPrimitive.Portal
@@ -73,7 +71,7 @@ function AlertDialogPopup({
           className={cn(
             `
               relative row-start-2 flex max-h-full min-h-0 w-full max-w-lg
-              min-w-0 -translate-y-[calc(1.25rem*var(--nested-dialogs))]
+              min-w-0 translate-y-[calc(-1.25rem*var(--nested-dialogs))]
               scale-[calc(1-0.1*var(--nested-dialogs))] flex-col rounded-2xl
               border bg-popover text-popover-foreground
               opacity-[calc(1-0.1*var(--nested-dialogs))] shadow-lg/5
@@ -193,13 +191,11 @@ export {
   AlertDialogBackdrop,
   AlertDialogClose,
   AlertDialogPopup as AlertDialogContent,
-  AlertDialogCreateHandle,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogBackdrop as AlertDialogOverlay,
   AlertDialogPopup,
-  AlertDialogPortal,
   AlertDialogTitle,
   AlertDialogTrigger,
   AlertDialogViewport,

@@ -1,16 +1,17 @@
 import type { ColumnRenderer } from '@conar/table'
-import type { storeState } from '../../-store'
-import { TableHeader, useTableContext } from '@conar/table'
+import type { tablePageType } from '../../-store'
+import { TableHeader } from '@conar/table'
+import { useTableContext } from '@conar/table/hooks'
 import { Button } from '@conar/ui/components/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { useIsScrolled } from '@conar/ui/hookas/use-is-scrolled'
 import { useThrottledCallback } from '@conar/ui/hookas/use-throttled-callback'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowLeftSLine, RiArrowRightSLine, RiDatabase2Line } from '@remixicon/react'
 import { animate } from 'motion'
 import { useEffect, useState } from 'react'
-import { INTERNAL_COLUMN_IDS } from '../../-lib'
-import { usePageStoreContext } from '../../-store'
+import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell'
+import { useTablePageStore } from '../../-store'
 
 interface HeaderColumn {
   id: string
@@ -40,7 +41,7 @@ function getVisibleColumns(element: HTMLElement) {
   }, [])
 }
 
-function getNotVisibleColumns(element: HTMLElement, allColumns: ColumnRenderer[], store: typeof storeState.infer): {
+function getNotVisibleColumns(element: HTMLElement, allColumns: ColumnRenderer[], store: typeof tablePageType.infer): {
   left: HeaderColumn[]
   right: HeaderColumn[]
 } {
@@ -72,7 +73,7 @@ function getNotVisibleColumns(element: HTMLElement, allColumns: ColumnRenderer[]
 }
 
 function Header() {
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const scrollRef = useTableContext(state => state.scrollRef)
   const direction = useTableContext(state => state.scrollDirection)
   const columns = useTableContext(state => state.columns)
@@ -145,12 +146,12 @@ function Header() {
                 size="icon-sm"
                 className={cn(
                   `
-                    group absolute top-1/2 -translate-y-1/2 shadow-none
-                    transition-[left,opacity] duration-150
+                    group absolute top-1/2 left-2 -translate-y-1/2
+                    transition-opacity duration-150
                   `,
                   notVisibleColumns.left.length > 0
-                    ? 'left-2 opacity-100'
-                    : 'pointer-events-none left-0 opacity-0',
+                    ? 'opacity-100'
+                    : 'pointer-events-none opacity-0',
                 )}
               />
             )}
@@ -162,17 +163,24 @@ function Header() {
               align="start"
               className="min-w-48"
             >
-              <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {notVisibleColumns.left.map(column => (
-                <DropdownMenuItem
-                  key={column.id}
-                  onClick={() => scrollToColumn(column, 'left')}
-                >
-                  <RiDatabase2Line className="size-4 text-muted-foreground" />
-                  {column.id}
-                </DropdownMenuItem>
-              ))}
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {notVisibleColumns.left.map(column => (
+                  <DropdownMenuItem
+                    key={column.id}
+                    onClick={() => scrollToColumn(column, 'left')}
+                  >
+                    <RiDatabase2Line className="size-4 text-muted-foreground" />
+                    {column.id}
+                  </DropdownMenuItem>
+                ))}
+                {notVisibleColumns.left.length === 0 && (
+                  <DropdownMenuItem className="text-xs" disabled>
+                    No more columns to scroll to
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -186,12 +194,12 @@ function Header() {
                 size="icon-sm"
                 className={cn(
                   `
-                    group absolute top-1/2 -translate-y-1/2 shadow-none
-                    transition-[right,opacity] duration-150
+                    group absolute top-1/2 right-2 -translate-y-1/2 shadow-none
+                    transition-opacity duration-150
                   `,
                   notVisibleColumns.right.length > 0
-                    ? 'right-2 opacity-100'
-                    : `pointer-events-none right-0 opacity-0`,
+                    ? 'opacity-100'
+                    : `pointer-events-none opacity-0`,
                 )}
               />
             )}
@@ -199,17 +207,24 @@ function Header() {
               <RiArrowRightSLine className="relative z-10 size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent side="bottom" align="end" className="min-w-48">
-              <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {notVisibleColumns.right.map(column => (
-                <DropdownMenuItem
-                  key={column.id}
-                  onClick={() => scrollToColumn(column, 'right')}
-                >
-                  <RiDatabase2Line className="size-4 text-muted-foreground" />
-                  {column.id}
-                </DropdownMenuItem>
-              ))}
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {notVisibleColumns.right.map(column => (
+                  <DropdownMenuItem
+                    key={column.id}
+                    onClick={() => scrollToColumn(column, 'right')}
+                  >
+                    <RiDatabase2Line className="size-4 text-muted-foreground" />
+                    {column.id}
+                  </DropdownMenuItem>
+                ))}
+                {notVisibleColumns.right.length === 0 && (
+                  <DropdownMenuItem className="text-xs" disabled>
+                    No more columns to scroll to
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

@@ -7,7 +7,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { ChevronsUpDownIcon, XIcon } from 'lucide-react'
 import * as React from 'react'
 
-export const ComboboxContext: React.Context<{
+const ComboboxContext: React.Context<{
   chipsRef: React.RefObject<Element | null> | null
   multiple: boolean
 }> = React.createContext<{
@@ -89,7 +89,7 @@ export function ComboboxInput({
         <div
           aria-hidden="true"
           className="
-            pointer-events-none absolute inset-y-0 start-px z-10 flex
+            pointer-events-none absolute inset-y-0 inset-s-px z-10 flex
             items-center ps-[calc(--spacing(3)-1px)] opacity-80
             has-[+[data-size=sm]]:ps-[calc(--spacing(2.5)-1px)]
             [&_svg]:-mx-0.5
@@ -298,7 +298,7 @@ export function ComboboxItem({
           <path d="M5.252 12.7 10.2 18.63 18.748 5.37" />
         </svg>
       </ComboboxPrimitive.ItemIndicator>
-      <div className="col-start-2">{children}</div>
+      <div className="col-start-2 min-w-0">{children}</div>
     </ComboboxPrimitive.Item>
   )
 }
@@ -470,7 +470,7 @@ export function ComboboxChips({
           before:pointer-events-none before:absolute before:inset-0
           before:rounded-[calc(var(--radius-lg)-1px)]
           not-has-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_1px_--theme(--color-black/4%)]
-          focus-within:border-ring focus-within:ring-[3px]
+          focus-within:border-ring focus-within:ring-[0.1875rem]
           has-autofill:bg-foreground/4
           has-disabled:pointer-events-none has-disabled:opacity-64
           has-aria-invalid:border-destructive/36
@@ -564,8 +564,3 @@ export function ComboboxChipRemove(
     </ComboboxPrimitive.ChipRemove>
   )
 }
-
-export const useComboboxFilter: typeof ComboboxPrimitive.useFilter
-  = ComboboxPrimitive.useFilter
-
-export { ComboboxPrimitive }

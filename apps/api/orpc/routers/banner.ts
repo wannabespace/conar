@@ -6,6 +6,7 @@ import { getSubscription, optionalAuthMiddleware, orpc } from '~/orpc'
 const bannerType = type({
   text: 'string',
   type: type.enumerated('info', 'warning', 'error', 'success'),
+  dismissible: 'boolean',
 }).array()
 
 export const banner = orpc
@@ -20,6 +21,7 @@ export const banner = orpc
       items.push({
         text: SUBSCRIPTION_PAST_DUE_MESSAGE,
         type: 'error',
+        dismissible: false,
       })
     }
 
@@ -27,20 +29,31 @@ export const banner = orpc
       items.push({
         text: env.BANNER_TEXT,
         type: 'info',
+        dismissible: false,
       })
     }
 
-    if (env.MIN_DESKTOP_VERSION && context.majorVersion && context.majorVersion < env.MIN_DESKTOP_VERSION) {
+    if (env.MIN_DESKTOP_VERSION && context.appVersion?.minor && context.appVersion.minor < env.MIN_DESKTOP_VERSION) {
       items.push({
-        text: `You are using an outdated version of the desktop app. Please update to the latest version.`,
+        text: `You are using an outdated version of the desktop app. Please download the latest version from conar.app/download`,
         type: 'warning',
+        dismissible: true,
       })
     }
 
-    if (context.desktopVersion === '0.25.0' && context.ua?.getOS().name === 'Linux') {
+    if (context.appVersion?.minor && context.appVersion.minor === 25 && context.os === 'linux') {
       items.push({
-        text: 'Linux updates broken in 0.25.0 due to provider change. Please download new version manually on conar.app/download',
+        text: 'Linux updates broken in 0.25.0 due to provider change. Please download the latest version from conar.app/download',
         type: 'warning',
+        dismissible: true,
+      })
+    }
+
+    if (context.appVersion?.minor && context.appVersion.minor === 28) {
+      items.push({
+        text: 'Heads up! Conar is becoming Tamery. Our next big update will have the new name - thanks for being part of the journey!',
+        type: 'info',
+        dismissible: true,
       })
     }
 

@@ -1,12 +1,13 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import { Button } from '@conar/ui/components/button'
+import { Group, GroupSeparator } from '@conar/ui/components/group'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
-import { Separator } from '@conar/ui/components/separator'
 import { useToggle } from '@conar/ui/hookas/use-toggle'
 import { RiAddLine, RiCloseLine, RiDatabase2Line, RiFilterOffLine } from '@remixicon/react'
-import { useState } from 'react'
+import { useEffect, useEffectEvent, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { usePageStoreContext } from '../../-store'
+import { useTableColumns } from '../../-columns'
+import { useTablePageStore } from '../../-store'
 import { FiltersColumnSelector } from './filters-column-selector'
 import { FilterForm } from './filters-form'
 import { FiltersSelector } from './filters-selector'
@@ -27,23 +28,20 @@ function FilterItem({
   const [values, setValues] = useState(filter.values)
 
   return (
-    <div className={`
-      flex h-6 items-center overflow-hidden rounded-sm border bg-card
-    `}
-    >
+    <Group>
       <Popover open={isColumnOpen} onOpenChange={setIsColumnOpen}>
         <PopoverTrigger
           data-mask
-          className={`
-            flex h-full items-center gap-1 px-2 text-xs font-medium
-            transition-colors
-            hover:bg-accent/50
-          `}
+          render={<Button size="xs" variant="outline" />}
         >
-          <RiDatabase2Line className="size-3 text-primary/70" />
+          <RiDatabase2Line className="size-3 text-muted-foreground" />
           {filter.column}
         </PopoverTrigger>
-        <PopoverContent className="p-0 shadow-md">
+        <PopoverContent className="
+          p-0
+          **:data-[slot=popover-viewport]:p-0
+        "
+        >
           <FiltersColumnSelector
             onSelect={(column) => {
               onEdit({ column, ref: filter.ref, values })
@@ -52,16 +50,18 @@ function FilterItem({
           />
         </PopoverContent>
       </Popover>
-      <Separator orientation="vertical" />
+      <GroupSeparator />
       <Popover open={isOperatorOpen} onOpenChange={setIsOperatorOpen}>
-        <PopoverTrigger className={`
-          h-full px-2 text-xs text-muted-foreground transition-colors
-          hover:bg-accent/50
-        `}
+        <PopoverTrigger
+          render={<Button size="xs" variant="outline" />}
         >
           {filter.ref.operator}
         </PopoverTrigger>
-        <PopoverContent className="p-0 shadow-md">
+        <PopoverContent className="
+          p-0
+          **:data-[slot=popover-viewport]:p-0
+        "
+        >
           <FiltersSelector
             onSelect={(operator) => {
               onEdit({ column: filter.column, ref: operator, values })
@@ -70,25 +70,25 @@ function FilterItem({
           />
         </PopoverContent>
       </Popover>
-      <Separator orientation="vertical" />
       {filter.ref.hasValue !== false && (
         <>
+          <GroupSeparator />
           <Popover open={isValueOpen} onOpenChange={setIsValueOpen}>
-            <PopoverTrigger className={`
-              h-full px-2 text-xs transition-colors
-              hover:bg-accent/50
-            `}
+            <PopoverTrigger
+              render={<Button size="xs" variant="outline" />}
+              className="max-w-72"
             >
-              <div data-mask className="max-w-60 truncate font-mono">
-                {filter.values?.join(', ')}
-                {(filter.values?.length === 0 || filter.values?.every(value => value === '')) && (
-                  <span className="opacity-30">
-                    Empty
-                  </span>
-                )}
-              </div>
+              <span className="truncate">
+                {(filter.values?.length === 0 || filter.values?.every(value => value === ''))
+                  ? <span className="opacity-30">Empty</span>
+                  : filter.values?.join(', ')}
+              </span>
             </PopoverTrigger>
-            <PopoverContent className="max-h-[calc(100vh-10rem)] p-0 shadow-md">
+            <PopoverContent className="
+              max-h-[calc(100vh-10rem)] p-0
+              **:data-[slot=popover-viewport]:p-0
+            "
+            >
               <FilterValueSelector
                 column={filter.column}
                 operator={filter.ref.operator}
@@ -102,63 +102,92 @@ function FilterItem({
               />
             </PopoverContent>
           </Popover>
-          <Separator orientation="vertical" className="h-6" />
         </>
       )}
-      <button
-        type="button"
-        className={`
-          flex h-full w-6 items-center justify-center transition-colors
-          hover:bg-destructive/10 hover:text-destructive
-        `}
+      <GroupSeparator />
+      <Button
+        size="icon-xs"
+        variant="destructive-outline"
         onClick={onRemove}
         aria-label="Remove filter"
       >
         <RiCloseLine className="size-3.5" />
-      </button>
-    </div>
+      </Button>
+    </Group>
   )
 }
 
 export function Filters() {
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const filters = useSubscription(store, { selector: state => state.filters })
   const [isOpened, toggleForm] = useToggle()
+  const columns = useTableColumns()
+
+  const removeUnusedOrdersEvent = useEffectEvent(() => {
+    if (!columns || columns.length === 0)
+      return
+
+    const columnIds = columns.map(col => col.id)
+    const invalidOrderByKeys = Object.keys(store.get().orderBy).filter(key => !columnIds.includes(key))
+
+    if (invalidOrderByKeys.length === 0)
+      return
+
+    const newOrderBy = Object.fromEntries(
+      Object.entries(store.get().orderBy).filter(([key]) => !invalidOrderByKeys.includes(key)),
+    )
+
+    store.set(state => ({
+      ...state,
+      orderBy: newOrderBy,
+    } satisfies typeof state))
+  })
+
+  useEffect(() => {
+    removeUnusedOrdersEvent()
+  }, [columns, store])
 
   if (filters.length === 0) {
     return null
   }
 
   return (
+
     <div className="flex justify-between gap-2">
       <div className="flex flex-wrap gap-2">
-        {filters.map(filter => (
+        {filters.map((filter, index) => (
           <FilterItem
-            key={`${filter.column}-${filter.ref.operator}-${filter.values.join(',')}`}
+            // eslint-disable-next-line react/no-array-index-key
+            key={`${filter.column}-${filter.ref.operator}-${filter.values.join(',')}-${index}`}
             filter={filter}
             onRemove={() => store.set(state => ({
               ...state,
-              filters: state.filters.filter(f => f !== filter),
+              filters: state.filters.filter((_, i) => i !== index),
             } satisfies typeof state))}
             onEdit={({ column, ref, values }) => store.set(state => ({
               ...state,
-              filters: state.filters.map(f => f === filter
+              filters: state.filters.map((f, i) => i === index
                 ? { column, ref, values }
                 : f),
             } satisfies typeof state))}
           />
         ))}
         <Popover open={isOpened} onOpenChange={toggleForm}>
-          <PopoverTrigger asChild>
+          <PopoverTrigger render={(
             <Button
               variant="outline"
               size="icon-xs"
               onClick={() => toggleForm()}
-            >
-              <RiAddLine className="size-4" />
-            </Button>
+            />
+          )}
+          >
+            <RiAddLine className="size-4" />
           </PopoverTrigger>
-          <PopoverContent className="p-0">
+          <PopoverContent className="
+            p-0
+            **:data-[slot=popover-viewport]:p-0
+          "
+          >
             <FilterForm
               onAdd={(filter) => {
                 toggleForm(false)
@@ -172,14 +201,14 @@ export function Filters() {
         </Popover>
       </div>
       <Button
-        variant="outline"
+        variant="destructive-outline"
         size="xs"
         onClick={() => store.set(state => ({
           ...state,
           filters: [],
         } satisfies typeof state))}
       >
-        <RiFilterOffLine className="size-3 text-destructive" />
+        <RiFilterOffLine className="size-3" />
         Clear
       </Button>
     </div>

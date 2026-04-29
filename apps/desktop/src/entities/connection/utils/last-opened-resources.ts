@@ -1,7 +1,8 @@
 import { type } from 'arktype'
-import { createLocalStorageValue } from 'seitu/web'
+import { createWebStorageValue } from 'seitu/web'
 
-export const lastOpenedResourcesStorageValue = createLocalStorageValue({
+export const lastOpenedResourcesStorageValue = createWebStorageValue({
+  type: 'localStorage',
   key: 'last-opened-resources',
   schema: type('string[]'),
   defaultValue: [],

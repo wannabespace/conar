@@ -1,10 +1,11 @@
-export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-
-export function enumValues<T extends { [key: string]: string }>(enumType: T) {
-  return Object.values(enumType) as [T[keyof T], ...T[keyof T][]]
+export function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F, waitFor: number) {
+export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
+  func: F,
+  waitFor: number,
+) {
   let timeout: ReturnType<typeof setTimeout>
 
   const debounced = (...args: Parameters<F>) => {
@@ -48,21 +49,15 @@ export type MaybePromise<T> = T | Promise<T>
 
 export type MaybeArray<T> = T | T[]
 
-export function tryCatch<T>(fn: () => T): { data: T, error: null } | { data: null, error: unknown } {
+// eslint-disable-next-line ts/no-explicit-any
+export type AnyFunction = (...args: any[]) => any
+
+export function tryCatch<T>(fn: () => T): { data: T, error: null } | { data: null, error: Error } {
   try {
     return { data: fn(), error: null }
   }
   catch (error) {
-    return { data: null, error }
-  }
-}
-
-export async function tryCatchAsync<T>(fn: () => Promise<T>): Promise<{ data: T, error: null } | { data: null, error: unknown }> {
-  try {
-    return { data: await fn(), error: null }
-  }
-  catch (error) {
-    return { data: null, error }
+    return { data: null, error: error instanceof Error ? error : new Error(String(error)) }
   }
 }
 
@@ -79,23 +74,9 @@ export function tryParseJson<T>(json: string): T | null {
   }
 }
 
-export function memoize<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F): F {
-  const cache = new Map<string, ReturnType<F>>()
-
-  return ((...args: Parameters<F>) => {
-    const key = JSON.stringify(args)
-    if (cache.has(key)) {
-      return cache.get(key)!
-    }
-    const result = func(...args)
-    cache.set(key, result)
-
-    if (result instanceof Promise) {
-      result.catch(() => {
-        cache.delete(key)
-      })
-    }
-
-    return result
-  }) as F
+export function tryParseToJsonArray(editedValue: string): string[] {
+  const parsed = tryParseJson<unknown[]>(editedValue)
+  if (Array.isArray(parsed))
+    return parsed.map(String)
+  return [editedValue]
 }

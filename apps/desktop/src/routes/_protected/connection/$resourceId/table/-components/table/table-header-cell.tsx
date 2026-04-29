@@ -1,188 +1,178 @@
 import type { TableHeaderCellProps } from '@conar/table'
 import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
-import type { storeState } from '../../-store'
-import type { Column } from '~/entities/connection/components/table/utils'
-import { useTableContext } from '@conar/table'
-import { Badge } from '@conar/ui/components/badge'
+import type { tablePageType } from '../../-store'
+import type { Column, ColumnHandlers } from '~/entities/connection/components/table/cell'
+import { useTableContext } from '@conar/table/hooks'
 import { Button } from '@conar/ui/components/button'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiEraserLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiPencilLine } from '@remixicon/react'
+import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiCharacterRecognitionLine, RiEraserLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiPencilLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { resourceEnumsQuery } from '~/entities/connection/queries'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
 import { Route } from '../..'
-import { usePageStoreContext } from '../../-store'
+import { useTablePageStore } from '../../-store'
 
 const CANNOT_SORT_TYPES = ['json']
 
 function SortButton({ order, onClick }: { order: 'ASC' | 'DESC' | null, onClick: () => void }) {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={onClick}
-            className={cn(order !== null && 'text-primary')}
-          >
-            {order === 'ASC'
-              ? (
-                  <RiArrowUpLine className="size-3 shrink-0" />
-                )
-              : order === 'DESC'
-                ? (
-                    <RiArrowDownLine className="size-3 shrink-0" />
-                  )
-                : (
-                    <RiArrowUpDownLine className="size-3 shrink-0 opacity-30" />
-                  )}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {order === null ? 'Sort' : order === 'ASC' ? 'Sort ascending' : 'Sort descending'}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={onClick}
+          className={cn(order !== null && 'text-primary')}
+        >
+          {order === 'ASC'
+            ? <RiArrowUpLine className="size-3 shrink-0" />
+            : order === 'DESC'
+              ? <RiArrowDownLine className="size-3 shrink-0" />
+              : <RiArrowUpDownLine className="size-3 shrink-0 opacity-30" />}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        {order === null ? 'Sort' : order === 'ASC' ? 'Sort ascending' : 'Sort descending'}
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
-function PrimaryKeyBadge({ primaryKey }: { primaryKey: string }) {
+export function PrimaryKeyTooltipIcon({ primaryKey }: { primaryKey: string }) {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <RiKey2Line className="size-3 shrink-0 text-primary" />
-        </TooltipTrigger>
-        <TooltipContent>
-          <div className="mb-1 flex items-center gap-1">
-            <RiKey2Line className="size-3 text-primary" />
-            Primary key
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {primaryKey}
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger>
+        <RiKey2Line className="size-3 shrink-0 text-primary" />
+      </TooltipTrigger>
+      <TooltipContent className="max-w-none">
+        <div className="flex items-center gap-1">
+          <RiKey2Line className="size-3 text-primary" />
+          Primary key
+        </div>
+        <div className="text-xs opacity-70">
+          {primaryKey}
+        </div>
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
-function NullableBadge() {
+export function NullableTooltipIcon() {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <RiEraserLine className="size-3 shrink-0 text-muted-foreground/70" />
-        </TooltipTrigger>
-        <TooltipContent>
-          <div className="flex items-center gap-1">
-            <RiEraserLine className="size-3 text-muted-foreground/70" />
-            Nullable
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <RiEraserLine className="size-3 shrink-0 opacity-70" />
+      </TooltipTrigger>
+      <TooltipContent>
+        <div className="flex items-center gap-1">
+          <RiEraserLine className="size-3 opacity-70" />
+          Nullable
+        </div>
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
-function UniqueBadge({ unique }: { unique: string }) {
+export function UniqueTooltipIcon({ unique }: { unique: string }) {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <RiFingerprintLine className="
-            size-3 shrink-0 text-muted-foreground/70
-          "
-          />
-        </TooltipTrigger>
-        <TooltipContent>
-          <div className="mb-1 flex items-center gap-1">
-            <RiFingerprintLine className="size-3 text-muted-foreground/70" />
-            Unique
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {unique}
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger>
+        <RiFingerprintLine className="size-3 shrink-0 opacity-70" />
+      </TooltipTrigger>
+      <TooltipContent className="max-w-none">
+        <div className="flex items-center gap-1">
+          <RiFingerprintLine className="size-3 opacity-70" />
+          Unique
+        </div>
+        <div className="text-xs opacity-70">
+          {unique}
+        </div>
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
-function ReadOnlyBadge() {
+export function ReadOnlyTooltipIcon() {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <RiBookOpenLine className="size-3 shrink-0 text-muted-foreground/70" />
-        </TooltipTrigger>
-        <TooltipContent>
-          <div className="flex items-center gap-1">
-            <RiBookOpenLine className="size-3 text-muted-foreground/70" />
-            Read only
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger>
+        <RiBookOpenLine className="size-3 shrink-0 opacity-70" />
+      </TooltipTrigger>
+      <TooltipContent>
+        <div className="flex items-center gap-1">
+          <RiBookOpenLine className="size-3 opacity-70" />
+          Read only
+        </div>
+      </TooltipContent>
+    </Tooltip>
 
   )
 }
 
-function ForeignBadge({ name, table, column }: { name: string, table: string, column: string }) {
+export function DefaultValueTooltipIcon({ defaultValue }: { defaultValue: string }) {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <RiLinksLine className="size-3 shrink-0 text-muted-foreground/70" />
-        </TooltipTrigger>
-        <TooltipContent>
-          <div className="flex items-center gap-1">
-            <RiLinksLine className="size-3 text-muted-foreground/70" />
-            Foreign key
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {name}
-            {' '}
-            (
-            {table}
-            .
-            {column}
-            )
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger>
+        <RiCharacterRecognitionLine className="size-3 shrink-0 opacity-70" />
+      </TooltipTrigger>
+      <TooltipContent className="max-w-none">
+        <div className="flex items-center gap-1">
+          <RiCharacterRecognitionLine className="size-3 opacity-70" />
+          Default
+        </div>
+        <div className="max-w-sm font-mono text-xs break-all opacity-70">
+          {defaultValue}
+        </div>
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
-function EnumBadge({ values, children }: { values: string[], children: ReactNode }) {
+function ForeignTooltipIcon({ name, table, column }: { name: string, table: string, column: string }) {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {children}
-        </TooltipTrigger>
-        <TooltipContent>
-          <div className="mb-1 text-xs text-muted-foreground">
-            Available values:
-          </div>
-          <div className="flex max-w-sm flex-wrap gap-1">
-            {values.map((val: string) => (
-              <Badge
-                key={val}
-                variant="secondary"
-                className="font-mono text-xs"
-              >
-                {val}
-              </Badge>
-            ))}
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <RiLinksLine className="size-3 shrink-0 opacity-70" />
+      </TooltipTrigger>
+      <TooltipContent className="max-w-none">
+        <div className="flex items-center gap-1">
+          <RiLinksLine className="size-3 opacity-70" />
+          Foreign key
+        </div>
+        <div className="text-xs opacity-70">
+          {name}
+          {' '}
+          (
+          {table}
+          .
+          {column}
+          )
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+function EnumTooltipIcon({ values, children }: { values: string[], children: ReactNode }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        {children}
+      </TooltipTrigger>
+      <TooltipContent>
+        <div className="mb-1 text-xs opacity-70">
+          Available values:
+        </div>
+        <div className="
+          flex max-w-sm flex-wrap gap-1 font-mono text-xs font-medium
+        "
+        >
+          {values.join(', ')}
+        </div>
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -190,29 +180,26 @@ const resizeOverlay = document.createElement('div')
 resizeOverlay.className = 'cursor-col-resize size-full fixed top-0 left-0 z-1000'
 
 export function TableHeaderCell({
-  onResize,
-  onSort,
-  onRename,
   column,
   position,
   columnIndex,
   className,
   style,
+  onOrder,
+  onRename,
+  onResize,
 }: {
-  onResize?: (newWidth: number) => void
   column: Column
-  onSort?: () => void
-  onRename?: () => void
   className?: string
-} & TableHeaderCellProps) {
+} & TableHeaderCellProps & ColumnHandlers) {
   const { connectionResource } = Route.useRouteContext()
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const [isResizing, setIsResizing] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const order = useSubscription(store, { selector: state => state.orderBy?.[column.id] ?? null })
   const { data: enumsData } = useQuery({
-    ...resourceEnumsQuery({ connectionResource }),
-    select: data => data?.find(e => e.name === column.enum),
+    ...resourceEnumsQueryOptions({ connectionResource }),
+    select: data => data?.find(e => e.name === column.enumName),
   })
   const scrollRef = useTableContext(state => state.scrollRef)
 
@@ -246,12 +233,14 @@ export function TableHeaderCell({
   }
 
   const removeSize = () => {
-    const newColumnSizes = { ...store.get().columnSizes }
-    delete newColumnSizes[column.id]
-    store.set(state => ({
-      ...state,
-      columnSizes: newColumnSizes,
-    } satisfies typeof storeState.infer))
+    store.set((state) => {
+      const newColumnSizes = { ...state.columnSizes }
+      delete newColumnSizes[column.id]
+      return {
+        ...state,
+        columnSizes: newColumnSizes,
+      } satisfies typeof tablePageType.infer
+    })
   }
 
   return (
@@ -292,42 +281,46 @@ export function TableHeaderCell({
             </Button>
           )}
         </div>
-        {column?.label && (
-          <div data-footer={!!column.label} className="flex items-center gap-1">
-            {column.primaryKey && <PrimaryKeyBadge primaryKey={column.primaryKey} />}
-            {column.isNullable && <NullableBadge />}
-            {column.unique && <UniqueBadge unique={column.unique} />}
-            {column.isEditable === false && <ReadOnlyBadge />}
+        {column?.typeLabel && (
+          <div
+            data-footer={!!column.typeLabel}
+            className="flex items-center gap-1"
+          >
+            {column.primaryKey && <PrimaryKeyTooltipIcon primaryKey={column.primaryKey} />}
+            {column.isNullable && <NullableTooltipIcon />}
+            {column.unique && <UniqueTooltipIcon unique={column.unique} />}
+            {column.isEditable === false && <ReadOnlyTooltipIcon />}
             {column.foreign && (
-              <ForeignBadge
+              <ForeignTooltipIcon
                 name={column.foreign.name}
                 table={column.foreign.table}
                 column={column.foreign.column}
               />
             )}
+            {column.defaultValue && <DefaultValueTooltipIcon defaultValue={column.defaultValue} />}
             {enumsData
               ? (
-                  <EnumBadge values={enumsData.values}>
+                  <EnumTooltipIcon values={enumsData.values}>
                     <span className={`
                       truncate font-mono text-muted-foreground underline
                       decoration-dotted
                     `}
                     >
-                      {column.label}
+                      {column.typeLabel}
                     </span>
-                  </EnumBadge>
+                  </EnumTooltipIcon>
                 )
               : (
                   <span className="truncate font-mono text-muted-foreground">
-                    {column.label}
+                    {column.typeLabel}
                   </span>
                 )}
           </div>
         )}
       </div>
       <div className="flex h-full items-center gap-1">
-        {onSort && column.label && !CANNOT_SORT_TYPES.includes(column.label) && (
-          <SortButton order={order} onClick={onSort} />
+        {onOrder && column.typeLabel && !CANNOT_SORT_TYPES.includes(column.typeLabel) && (
+          <SortButton order={order} onClick={() => onOrder()} />
         )}
         {onResize && (
           <div

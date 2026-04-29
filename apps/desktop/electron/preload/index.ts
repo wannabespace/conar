@@ -1,3 +1,4 @@
+import type { AnyFunction } from '@conar/shared/utils/helpers'
 import type { sendToast } from '../main'
 import type { electron } from '../main/lib/events'
 import type { UpdatesStatus } from '~/use-updates-observer'
@@ -17,17 +18,13 @@ export type ElectronPreload = typeof electron & {
   }
 }
 
-// eslint-disable-next-line ts/no-explicit-any
-async function handleError(func: () => Promise<any>) {
+async function handleError(func: AnyFunction) {
   try {
     const result = await func()
 
     return result
   }
   catch (error) {
-    if (import.meta.env.DEV) {
-      console.error(error)
-    }
     if (error instanceof Error) {
       // eslint-disable-next-line e18e/prefer-static-regex
       const message = error.message.replace(/^Error invoking remote method '[^']+': /, '')
@@ -39,12 +36,22 @@ async function handleError(func: () => Promise<any>) {
   }
 }
 
+function dialectQueryBridge(dialect: string) {
+  return {
+    execute: (arg: unknown) => handleError(() => ipcRenderer.invoke(`query.${dialect}.execute`, arg)),
+    beginTransaction: (arg: unknown) => handleError(() => ipcRenderer.invoke(`query.${dialect}.beginTransaction`, arg)),
+    executeTransaction: (arg: unknown) => handleError(() => ipcRenderer.invoke(`query.${dialect}.executeTransaction`, arg)),
+    commitTransaction: (arg: unknown) => handleError(() => ipcRenderer.invoke(`query.${dialect}.commitTransaction`, arg)),
+    rollbackTransaction: (arg: unknown) => handleError(() => ipcRenderer.invoke(`query.${dialect}.rollbackTransaction`, arg)),
+  }
+}
+
 contextBridge.exposeInMainWorld('electron', {
   query: {
-    postgres: arg => handleError(() => ipcRenderer.invoke('query.postgres', arg)),
-    mysql: arg => handleError(() => ipcRenderer.invoke('query.mysql', arg)),
-    clickhouse: arg => handleError(() => ipcRenderer.invoke('query.clickhouse', arg)),
-    mssql: arg => handleError(() => ipcRenderer.invoke('query.mssql', arg)),
+    postgres: dialectQueryBridge('postgres'),
+    mysql: dialectQueryBridge('mysql'),
+    clickhouse: dialectQueryBridge('clickhouse'),
+    mssql: dialectQueryBridge('mssql'),
   },
   encryption: {
     encrypt: arg => handleError(() => ipcRenderer.invoke('encryption.encrypt', arg)),

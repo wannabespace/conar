@@ -1,7 +1,8 @@
 import type { indexesType } from '~/entities/connection/queries'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardMotion, CardTitle } from '@conar/ui/components/card'
+import { CardContent, CardTitle } from '@conar/ui/components/card'
+import { CardMotion } from '@conar/ui/components/card.motion'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
@@ -9,13 +10,14 @@ import { RiFileList3Line, RiKey2Line, RiLayoutColumnLine, RiTable2 } from '@remi
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useSubscription } from 'seitu/react'
-import { resourceIndexesQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
-import { getConnectionResourceStore } from '~/entities/connection/store'
+import { resourceIndexesQueryOptions } from '~/entities/connection/queries'
+import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
+import { SchemaSelect } from '../-components/schema-select'
 import { MOTION_BLOCK_PROPS } from '../-constants'
+import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/indexes/')({
   component: DatabaseIndexesPage,
@@ -34,39 +36,27 @@ interface GroupedIndex extends Pick<IndexItem, 'schema' | 'table' | 'type' | 'na
 
 type IndexType = 'primary' | 'unique' | 'regular'
 
-const filterOptions: { label: string, value: IndexType }[] = [
+const filterOptions: { label: string, value: IndexType | 'all' }[] = [
+  { label: 'All Types', value: 'all' },
   { label: 'Primary Key', value: 'primary' },
   { label: 'Unique Index', value: 'unique' },
   { label: 'Regular Index', value: 'regular' },
 ]
 
-function getIndexType(indexItem: IndexItem): IndexType {
-  if (indexItem.isPrimary)
-    return 'primary'
-  if (indexItem.isUnique)
-    return 'unique'
-  return 'regular'
-}
-
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabaseIndexesPage() {
   const { connectionResource } = Route.useRouteContext()
-  const { data: indexes, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceIndexesQuery({ connectionResource }))
-  const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
-  const schemas = data?.schemas.map(({ name }) => name) ?? []
-  const [selectedSchema, setSelectedSchema] = useState(schemas[0])
-  const [search, setSearch] = useState('')
-  const [filterType, setFilterType] = useState<IndexType | 'all'>('all')
+  const { data: indexes, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
+  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({ connectionResource })
+  const [filterType, setFilterType] = useState<typeof filterOptions[number]['value']>('all')
 
-  if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
-    setSelectedSchema(schemas[0])
+  useRefreshHotkey(refetch, isFetching)
 
   const groupedIndexes = indexes?.reduce<Record<string, GroupedIndex>>((acc, indexItem) => {
     if (indexItem.schema !== selectedSchema)
       return acc
 
-    const matchesFilter = filterType === 'all' || filterType === getIndexType(indexItem)
+    const matchesFilter = filterType === 'all' || filterOptions.find(option => option.value === filterType)?.value === indexItem.type
 
     if (!matchesFilter)
       return acc
@@ -122,13 +112,18 @@ function DatabaseIndexesPage() {
         />
         <Select
           value={filterType}
-          onValueChange={v => setFilterType(v as IndexType | 'all')}
+          onValueChange={(v) => {
+            if (v) {
+              setFilterType(v)
+            }
+          }}
         >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter Type" />
+          <SelectTrigger className="w-45">
+            <SelectValue placeholder="Filter Type">
+              {value => value ? filterOptions.find(option => option.value === value)?.label : 'Filter Type'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
             {filterOptions.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
@@ -136,21 +131,7 @@ function DatabaseIndexesPage() {
             ))}
           </SelectContent>
         </Select>
-        {schemas.length > 1 && (
-          <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
-            <SelectTrigger className="max-w-56 min-w-[180px]">
-              <div className="flex flex-1 items-center gap-2 overflow-hidden">
-                <span className="shrink-0 text-muted-foreground">schema</span>
-                <span className="truncate"><SelectValue /></span>
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {schemas.map(schema => (
-                <SelectItem key={schema} value={schema}>{schema}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+        <SchemaSelect schemas={schemas} selectedSchema={selectedSchema} setSelectedSchema={setSelectedSchema} />
       </div>
       <DefinitionsGrid loading={isPending}>
         {indexList.length === 0 && (

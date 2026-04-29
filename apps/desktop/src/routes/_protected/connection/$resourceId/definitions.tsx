@@ -17,11 +17,12 @@ export const Route = createFileRoute(
   },
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DefinitionsLayout() {
   return (
     <div className="flex size-full gap-1">
       <Sidebar />
-      <ScrollArea className="h-full flex-1 rounded-lg border bg-background">
+      <ScrollArea className="h-full flex-1 rounded-lg bg-background">
         <div className="mx-auto flex max-w-3xl flex-col px-4 py-6">
           <Outlet />
         </div>

@@ -8,16 +8,16 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
-import { deleteRowsQuery, resourceRowsQuery, resourceTableTotalQuery } from '~/entities/connection/queries'
+import { deleteRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { queryClient } from '~/main'
 import { Route } from '../..'
-import { usePageStoreContext } from '../../-store'
+import { useTablePageStore } from '../../-store'
 
 export function HeaderActionsDelete({ table, schema }: { table: string, schema: string }) {
   const { connectionResource } = Route.useRouteContext()
   const [isOpened, setIsOpened] = useState(false)
-  const store = usePageStoreContext()
+  const store = useTablePageStore()
   const selected = useSubscription(store, { selector: state => state.selected })
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
@@ -26,8 +26,8 @@ export function HeaderActionsDelete({ table, schema }: { table: string, schema: 
     },
     onSuccess: () => {
       toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)
-      queryClient.invalidateQueries(resourceRowsQuery({ connectionResource, table, schema, query: { filters: store.get().filters, orderBy: store.get().orderBy } }))
-      queryClient.invalidateQueries(resourceTableTotalQuery({ connectionResource, table, schema, query: { filters: store.get().filters, exact: store.get().exact } }))
+      queryClient.invalidateQueries(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters: store.get().filters, orderBy: store.get().orderBy } }))
+      queryClient.invalidateQueries(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters: store.get().filters, exact: store.get().exact } }))
       store.set(state => ({
         ...state,
         selected: [],
@@ -79,9 +79,9 @@ export function HeaderActionsDelete({ table, schema }: { table: string, schema: 
       <AnimatePresence>
         {selected.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: 'auto' }}
+            exit={{ opacity: 0, width: 0 }}
             transition={{ duration: 0.1 }}
           >
             <Button variant="destructive" onClick={() => setIsOpened(true)}>

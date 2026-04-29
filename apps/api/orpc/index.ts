@@ -1,5 +1,5 @@
-/* eslint-disable e18e/prefer-spread-syntax */
 import type { Context } from './context'
+
 import { ACTIVE_SUBSCRIPTION_STATUSES, LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
 import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
@@ -40,14 +40,16 @@ async function getSession(headers: Headers) {
 export const logMiddleware = orpc.middleware(async ({ context, next }, input) => {
   const result = await next()
 
-  context.addLogData({
-    input,
-    output: (Array.isArray(result.output) && result.output.length > 0)
-      || (typeof result.output === 'object' && Object.keys(result.output).length > 0)
-      || (!Array.isArray(result.output) && typeof result.output !== 'object' && !!result.output)
-      ? result.output
-      : undefined,
-  })
+  if (!context.request.url.endsWith('/sync')) {
+    context.addLogData({
+      input,
+      output: (Array.isArray(result.output) && result.output.length > 0)
+        || (typeof result.output === 'object' && Object.keys(result.output).length > 0)
+        || (!Array.isArray(result.output) && typeof result.output !== 'object' && !!result.output)
+        ? result.output
+        : undefined,
+    })
+  }
 
   return result
 })
@@ -88,7 +90,7 @@ export async function getSubscription(userId: string) {
 
 export const subscriptionMiddleware = logMiddleware.concat(orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers)
-  const minorVersion = context.minorVersion ?? 0
+  const minorVersion = context.appVersion?.minor ?? 0
   const subscription = await getSubscription(session.user.id)
 
   if (session) {

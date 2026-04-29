@@ -1,6 +1,7 @@
 import type { connections, connectionsResources } from '~/drizzle/schema'
+import { CONNECTION_RESOURCE_ROOT_LABEL } from '@conar/shared/constants'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
-import { RiAddLine, RiDashboardLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
+import { RiAddLine, RiDashboardLine, RiEyeFill, RiEyeLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
@@ -8,7 +9,7 @@ import { useParams, useRouter } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
-import { resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
@@ -17,7 +18,7 @@ import { appStore, setIsActionCenterOpen } from '~/store'
 function ActionsResourceTables({ connection, connectionResource }: { connection: typeof connections.$inferSelect, connectionResource: typeof connectionsResources.$inferSelect }) {
   const store = getConnectionResourceStore(connectionResource.id)
   const { data: tablesAndSchemas } = useQuery({
-    ...resourceTablesAndSchemasQuery({ silent: true, connectionResource, showSystem: store.get().showSystem }),
+    ...resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem: store.get().showSystem }),
     throwOnError: false,
   })
   const router = useRouter()
@@ -31,18 +32,28 @@ function ActionsResourceTables({ connection, connectionResource }: { connection:
   }
 
   return (
-    <CommandGroup heading={`${connection.name} - ${connectionResource.name} Tables`} value={connectionResource.name}>
+    <CommandGroup heading={`${connection.name}${connectionResource.name ? ` - ${connectionResource.name}` : ''} Tables`} value={connectionResource.name || CONNECTION_RESOURCE_ROOT_LABEL}>
       {tablesAndSchemas.schemas.map(schema => schema.tables.map(table => (
         <CommandItem
-          key={table}
-          keywords={[schema.name, table]}
-          value={`${schema.name}.${table}`}
-          onSelect={() => onTableSelect(schema.name, table)}
+          key={table.name}
+          keywords={[schema.name, table.name]}
+          value={`${schema.name}.${table.name}`}
+          onSelect={() => onTableSelect(schema.name, table.name)}
         >
-          <RiTableLine className="size-4 shrink-0 text-muted-foreground" />
+          {table.type === 'materialized view'
+            ? (
+                <RiEyeFill className="size-4 shrink-0 text-muted-foreground" />
+              )
+            : table.type === 'view'
+              ? (
+                  <RiEyeLine className="size-4 shrink-0 text-muted-foreground" />
+                )
+              : (
+                  <RiTableLine className="size-4 shrink-0 text-muted-foreground" />
+                )}
           {schema.name}
           .
-          {table}
+          {table.name}
         </CommandItem>
       )))}
     </CommandGroup>

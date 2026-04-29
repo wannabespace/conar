@@ -164,7 +164,7 @@ function FilterWithAI() {
           </Button>
         </div>
         <div className="overflow-hidden overflow-x-auto rounded-lg border">
-          <table className="w-full min-w-[400px] text-xs" role="table" aria-label="Filtered data results">
+          <table className="w-full min-w-100 text-xs" role="table" aria-label="Filtered data results">
             <thead className="bg-muted/50">
               <tr>
                 <th className={`
@@ -608,8 +608,7 @@ export function Features() {
           Features
         </h2>
         <p className={`
-          mx-auto max-w-3xl text-center text-2xl/tight font-bold
-          text-balance
+          mx-auto max-w-3xl text-center text-2xl/tight font-bold text-balance
           sm:text-3xl
         `}
         >

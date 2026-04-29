@@ -1,25 +1,38 @@
 import type { FileRoutesById } from '~/routeTree.gen'
-import { memoize } from '@conar/shared/utils/helpers'
+import { memoize } from '@conar/memoize'
+import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { type } from 'arktype'
-import { createComputed, createStore } from 'seitu'
-import { createLocalStorageValue } from 'seitu/web'
-import { getEditorQueries } from '~/entities/connection/utils'
+import { createStore } from 'seitu'
+import { repairValueObjectWithDefault } from 'seitu/utils'
+import { createWebStorageValue } from 'seitu/web'
 
+export * from './editor-queries'
 export * from './helpers'
 
-export const getConnectionStore = memoize((id: string) => createLocalStorageValue({
+const schema = type({
+  lastOpenedResourceName: 'string | null',
+  pinnedResourcesNames: 'string[]',
+}).pipe(({ lastOpenedResourceName, pinnedResourcesNames }) => ({
+  lastOpenedResourceName: (lastOpenedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL.description
+    ? CONNECTION_RESOURCE_ROOT_SYMBOL
+    : lastOpenedResourceName) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
+  pinnedResourcesNames: pinnedResourcesNames.map(name => name === CONNECTION_RESOURCE_ROOT_SYMBOL.description ? CONNECTION_RESOURCE_ROOT_SYMBOL : name),
+}))
+
+export const getConnectionStore = memoize((id: string) => createWebStorageValue({
+  type: 'localStorage',
   key: `connection-store-${id}`,
   defaultValue: {
     lastOpenedResourceName: null,
+    pinnedResourcesNames: [],
   },
-  schema: type({
-    lastOpenedResourceName: 'string | null',
-  }),
+  schema,
+  onValidationError: repairValueObjectWithDefault,
 }))
 
 export const connectionResourceType = type({
   lastOpenedPage: 'string | null' as type.cast<Extract<keyof FileRoutesById, `/_protected/connection/$resourceId/${string}`> | null>,
-  lastOpenedChatId: 'string | null',
+  lastOpenedChatId: 'string.uuid | null',
   lastOpenedTable: type({
     schema: 'string',
     table: 'string',
@@ -39,7 +52,6 @@ export const connectionResourceType = type({
     preview: 'boolean',
   }).array(),
   tablesSearch: 'string',
-  definitionsSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
   pinnedTables: type({
     schema: 'string',
@@ -78,7 +90,6 @@ const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   loggerOpened: false,
   tabs: [],
   tablesSearch: '',
-  definitionsSearch: '',
   tablesTreeOpenedSchemas: null,
   pinnedTables: [],
   layout: {
@@ -88,33 +99,12 @@ const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   },
 }
 
-export const getConnectionResourceStore = memoize((id: string) => createLocalStorageValue({
+export const getConnectionResourceStore = memoize((id: string) => createWebStorageValue({
+  type: 'localStorage',
   key: `connection-resource-store-${id}`,
   defaultValue: connectionResourceDefaultState,
   schema: connectionResourceType,
+  onValidationError: repairValueObjectWithDefault,
 }))
-
-export const getEditorQueriesComputed = memoize((id: string) => {
-  const store = getConnectionResourceStore(id)
-  const computed = createComputed(store, state => getEditorQueries(state.query))
-
-  computed.subscribe((editorQueries) => {
-    const state = store.get()
-    const currentLineNumbers = editorQueries.map(query => query.startLineNumber)
-    const newSelectedLines = state.selectedLines.filter(line => currentLineNumbers.includes(line))
-
-    if (
-      newSelectedLines.length !== state.selectedLines.length
-      || newSelectedLines.some((line, i) => line !== state.selectedLines[i])
-    ) {
-      store.set(state => ({
-        ...state,
-        selectedLines: newSelectedLines.toSorted((a, b) => a - b),
-      } satisfies typeof state))
-    }
-  })
-
-  return computed
-})
 
 export const getFilesStore = memoize((_id: string) => createStore<File[]>([]))

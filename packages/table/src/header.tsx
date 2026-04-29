@@ -1,10 +1,10 @@
 import type { VirtualItem } from '@tanstack/react-virtual'
 import type { ComponentProps, CSSProperties, ReactNode } from 'react'
-import type { ColumnRenderer } from '.'
+import type { ColumnRenderer } from './'
 import { cn } from '@conar/ui/lib/utils'
 import { memo } from 'react'
-import { getBaseColumnStyle } from '.'
 import { useTableContext } from './table-context'
+import { getBaseColumnStyle } from './utils'
 
 const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
   virtualColumn,
@@ -67,7 +67,7 @@ export function TableHeader({
       {...props}
     >
       {before}
-      <div className="flex h-full w-fit min-w-full items-center bg-card">
+      <div className="flex h-full w-fit min-w-full items-center bg-secondary/50">
         <div
           aria-hidden="true"
           className="

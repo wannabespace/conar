@@ -5,12 +5,18 @@
 export interface PgCatalog {
   pg_namespace: PgNamespace
   pg_class: PgClass
+  pg_constraint: PgConstraint
   pg_index: PgIndex
   pg_attribute: PgAttribute
   pg_settings: PgSettings
   pg_policy: PgPolicy
   pg_database: PgDatabase
   pg_am: PgAm
+  pg_trigger: PgTrigger
+  pg_proc: PgProc
+  pg_language: PgLanguage
+  pg_type: PgType
+  pg_attrdef: PgAttrdef
 }
 
 /**
@@ -98,6 +104,23 @@ interface PgClass {
 }
 
 /**
+ * @name pg_constraint
+ * @type table
+ */
+interface PgConstraint {
+  oid: number
+  conname: string
+  connamespace: number
+  contype: string
+  conrelid: number
+  confrelid: number
+  conkey: number[]
+  confkey: number[]
+  confdeltype: string
+  confupdtype: string
+}
+
+/**
  * @name pg_index
  * @type table
  */
@@ -115,8 +138,30 @@ interface PgIndex {
  */
 interface PgAttribute {
   attrelid: number
-  attnum: number
   attname: string
+  atttypid: number
+  attlen: number
+  attnum: number
+  attcacheoff: number
+  atttypmod: number
+  attndims: number
+  attbyval: boolean
+  attalign: number
+  attstorage: string
+  attcompression: string
+  attnotnull: boolean
+  atthasdef: boolean
+  atthasmissing: boolean
+  attidentity: string
+  attgenerated: string
+  attisdropped: boolean
+  attislocal: boolean
+  attinhcount: number
+  attcollation: number
+  attstattarget: number | null
+  attacl: unknown | null
+  attoptions: string[] | null
+  attmissingval: unknown | null
 }
 
 /**
@@ -128,4 +173,64 @@ interface PgAm {
   amname: string
   amhandler: string
   amtype: string
+}
+
+/**
+ * @name pg_trigger
+ * @type table
+ */
+interface PgTrigger {
+  oid: number
+  tgrelid: number
+  tgname: string
+  tgfoid: number
+  tgtype: number
+  tgenabled: string
+  tgisinternal: boolean
+}
+
+/**
+ * @name pg_proc
+ * @type table
+ */
+interface PgProc {
+  oid: number
+  proname: string
+  pronamespace: number
+  prokind: string
+  prorettype: number
+  prolang: number
+  provolatile: string
+  pronargs: number
+  proargtypes: string
+}
+
+/**
+ * @name pg_language
+ * @type table
+ */
+interface PgLanguage {
+  oid: number
+  lanname: string
+}
+
+/**
+ * @name pg_type
+ * @type table
+ */
+interface PgType {
+  oid: number
+  typname: string
+  typnamespace: number
+}
+
+/**
+ * @name pg_attrdef
+ * @type table
+ */
+interface PgAttrdef {
+  oid: number
+  adrelid: number
+  adnum: number
+  adbin: string
 }

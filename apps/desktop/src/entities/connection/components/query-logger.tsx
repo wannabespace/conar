@@ -3,12 +3,12 @@ import type { QueryLog } from '../log'
 import type { connectionsResources } from '~/drizzle/schema'
 import { sleep } from '@conar/shared/utils/helpers'
 import { Button } from '@conar/ui/components/button'
-import { ButtonGroup } from '@conar/ui/components/button-group'
 import { CardTitle } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
-import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
+import { Group, GroupSeparator } from '@conar/ui/components/group'
 import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
+import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiCheckboxCircleLine, RiCheckLine, RiCloseCircleLine, RiCloseLine, RiDeleteBinLine, RiFileListLine, RiTimeLine } from '@remixicon/react'
 import { useVirtualizer } from '@tanstack/react-virtual'
@@ -98,12 +98,6 @@ function Log({ query, className, connectionResource }: { query: QueryLog, classN
 
   const connection = connectionsCollection.get(connectionResource.connectionId)!
 
-  const formatValues = (values?: unknown[]) => {
-    if (!values || values.length === 0)
-      return ''
-    return `[${values.map(v => typeof v === 'string' ? `"${v}"` : String(v)).join(', ')}]`
-  }
-
   if (!canInteract) {
     return (
       <LogTrigger
@@ -122,15 +116,16 @@ function Log({ query, className, connectionResource }: { query: QueryLog, classN
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger render={(
         <LogTrigger
           query={query}
           className={cn(className, isOpen && 'bg-accent/30')}
           onMouseLeave={closePopover}
         />
-      </PopoverTrigger>
+      )}
+      />
       <PopoverContent
-        className="flex w-[95vw] gap-4"
+        className="flex w-[95vw] flex-row gap-4"
         onAnimationEnd={closePopover}
       >
         <div className="min-w-0 flex-1 space-y-2">
@@ -150,7 +145,7 @@ function Log({ query, className, connectionResource }: { query: QueryLog, classN
                 overflow-x-auto rounded-sm bg-accent/50 p-2 font-mono text-xs
               `}
               >
-                {formatValues(query.values)}
+                {JSON.stringify(query.values)}
               </pre>
             </div>
           )}
@@ -172,7 +167,7 @@ function Log({ query, className, connectionResource }: { query: QueryLog, classN
               <Label className="text-destructive">Error</Label>
               <pre className={`
                 overflow-x-auto rounded-sm bg-red-50 p-2 font-mono text-xs
-                text-red-700
+                whitespace-break-spaces text-red-700
                 dark:bg-red-950 dark:text-red-300
               `}
               >
@@ -253,7 +248,7 @@ export function QueryLogger({ connectionResource, className }: {
           <CardTitle>
             Query Logger
           </CardTitle>
-          <ButtonGroup>
+          <Group>
             <Button
               size="xs"
               variant="outline"
@@ -265,6 +260,7 @@ export function QueryLogger({ connectionResource, className }: {
               <RiCheckboxCircleLine className="size-3" />
               {statusCounts.success}
             </Button>
+            <GroupSeparator />
             <Button
               size="xs"
               variant="outline"
@@ -276,6 +272,7 @@ export function QueryLogger({ connectionResource, className }: {
               <RiCloseCircleLine className="size-3" />
               {statusCounts.error}
             </Button>
+            <GroupSeparator />
             <Button
               size="xs"
               variant="outline"
@@ -287,7 +284,7 @@ export function QueryLogger({ connectionResource, className }: {
               <RiTimeLine className="size-3" />
               {statusCounts.pending}
             </Button>
-          </ButtonGroup>
+          </Group>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -313,21 +310,17 @@ export function QueryLogger({ connectionResource, className }: {
         </div>
       </div>
       <ScrollArea
-        ref={scrollRef}
-        className={cn(
-          'relative min-h-0',
-          filteredQueries.length === 0 && `
-            flex flex-col items-center justify-center py-12
-          `,
-        )}
+        viewportRef={scrollRef}
+        scrollFade
+        className="relative min-h-0"
       >
         {filteredQueries.length === 0 && (
-          <>
+          <div className="flex flex-col items-center justify-center py-12">
             <div className="mb-3">
               <RiFileListLine className="size-10 text-muted-foreground/30" />
             </div>
             <p className="mb-1 text-base font-medium text-muted-foreground">No queries yet</p>
-          </>
+          </div>
         )}
         <div ref={contentRef} style={{ height: `${totalSize}px` }}>
           <div className="h-(--scroll-top-offset)" />

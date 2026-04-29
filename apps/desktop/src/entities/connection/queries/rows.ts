@@ -1,7 +1,7 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { ExpressionBuilder } from 'kysely'
 import type { connectionsResources } from '~/drizzle/schema'
-import { memoize } from '@conar/shared/utils/helpers'
+import { memoize } from '@conar/memoize'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -47,7 +47,7 @@ export interface RowsQueryProps {
   }
 }
 
-export function rowsQuery({
+export const resourceRowsQuery = memoize(({
   limit = DEFAULT_PAGE_LIMIT,
   select,
   offset,
@@ -58,7 +58,7 @@ export function rowsQuery({
     filters,
     filtersConcatOperator,
   },
-}: RowsQueryProps & { offset: number }) {
+}: RowsQueryProps & { offset: number }) => {
   return createQuery({
     type: rowType.array(),
     query: {
@@ -149,9 +149,9 @@ export function rowsQuery({
       },
     },
   })
-}
+})
 
-export const resourceRowsQuery = memoize(({
+export const resourceRowsQueryInfiniteOptions = memoize(({
   connectionResource,
   schema,
   table,
@@ -180,7 +180,7 @@ export const resourceRowsQuery = memoize(({
       },
     ],
     queryFn: async ({ pageParam: offset }) => {
-      const result = await rowsQuery({
+      const result = await resourceRowsQuery({
         offset,
         table,
         schema,

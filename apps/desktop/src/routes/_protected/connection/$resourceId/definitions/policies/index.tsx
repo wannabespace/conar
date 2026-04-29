@@ -2,7 +2,8 @@ import type { policyType } from '~/entities/connection/queries'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
-import { CardContent, CardHeader, CardMotion, CardTitle } from '@conar/ui/components/card'
+import { CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
+import { CardMotion } from '@conar/ui/components/card.motion'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
@@ -11,7 +12,7 @@ import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { resourcePoliciesQuery, resourceTablesAndSchemasQuery } from '~/entities/connection/queries'
+import { resourcePoliciesQuery, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { DefinitionsEmptyState } from '~/routes/_protected/connection/$resourceId/definitions/-components/empty-state'
 import { DefinitionsGrid } from '~/routes/_protected/connection/$resourceId/definitions/-components/grid'
@@ -43,12 +44,13 @@ function getIcon(type: PolicyType) {
   }
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabasePoliciesPage() {
   const { connectionResource } = Route.useLoaderData()
   const { data: policies, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourcePoliciesQuery({ connectionResource }))
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data } = useQuery(resourceTablesAndSchemasQuery({ silent: false, connectionResource, showSystem }))
+  const { data } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
@@ -95,7 +97,14 @@ function DatabasePoliciesPage() {
           </SelectContent>
         </Select>
         {schemas.length > 1 && (
-          <Select value={selectedSchema ?? ''} onValueChange={setSelectedSchema}>
+          <Select
+            value={selectedSchema ?? ''}
+            onValueChange={(v) => {
+              if (v) {
+                setSelectedSchema(v)
+              }
+            }}
+          >
             <SelectTrigger className="w-[180px]">
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">schema</span>
@@ -155,11 +164,14 @@ function DatabasePoliciesPage() {
               </div>
             </CardHeader>
             {(item.using || item.check || (item.roles && item.roles.length > 0)) && (
-              <CardContent className="border-t bg-muted/10 px-4 py-3 text-sm space-y-2">
+              <CardContent className="
+                space-y-2 border-t bg-muted/10 px-4 py-3 text-sm
+              "
+              >
                 {item.roles && item.roles.length > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground font-semibold">Roles:</span>
-                    <div className="flex gap-1 flex-wrap">
+                    <span className="font-semibold text-muted-foreground">Roles:</span>
+                    <div className="flex flex-wrap gap-1">
                       {item.roles.map(role => (
                         <Badge key={role} variant="outline" className="text-xs">{role}</Badge>
                       ))}
@@ -168,14 +180,24 @@ function DatabasePoliciesPage() {
                 )}
                 {item.using && (
                   <div className="flex flex-col gap-1">
-                    <span className="text-muted-foreground font-semibold">Using:</span>
-                    <code className="rounded-sm bg-muted px-2 py-1 font-mono text-xs">{item.using}</code>
+                    <span className="font-semibold text-muted-foreground">Using:</span>
+                    <code className="
+                      rounded-sm bg-muted px-2 py-1 font-mono text-xs
+                    "
+                    >
+                      {item.using}
+                    </code>
                   </div>
                 )}
                 {item.check && (
                   <div className="flex flex-col gap-1">
-                    <span className="text-muted-foreground font-semibold">With Check:</span>
-                    <code className="rounded-sm bg-muted px-2 py-1 font-mono text-xs">{item.check}</code>
+                    <span className="font-semibold text-muted-foreground">With Check:</span>
+                    <code className="
+                      rounded-sm bg-muted px-2 py-1 font-mono text-xs
+                    "
+                    >
+                      {item.check}
+                    </code>
                   </div>
                 )}
               </CardContent>

@@ -1,29 +1,29 @@
 import type { KeyboardEvent, MouseEvent } from 'react'
-import type { SelectionState } from './use-shift-selection-key-down'
+import type { ShiftSelectionState } from './shift-selection-state'
 import { useRef } from 'react'
+import { INITIAL_SHIFT_SELECTION_STATE } from './shift-selection-state'
 
-export interface UseShiftSelectionClickOptions {
-  // Example: { id: string, type: string }
-  rowKey: Record<string, string>
+export interface UseShiftSelectionClickOptions<TItem> {
+  rowKey: TItem
   rowIndex: number
-  currentSelected: Record<string, string>[]
+  currentSelected: TItem[]
   lastClickedIndex: number | null
-  getRangeKeys: (startIndex: number, endIndex: number) => Record<string, string>[]
+  getItemsInRange: (startIndex: number, endIndex: number) => TItem[]
   onSelectionChange: (
-    selected: Record<string, string>[],
-    selectionState: SelectionState,
+    selected: TItem[],
+    state: ShiftSelectionState,
     lastClickedIndex: number,
   ) => void
 }
 
-export function useShiftSelectionClick({
+export function useShiftSelectionClick<TItem extends Record<string, unknown>>({
   rowKey,
   rowIndex,
   currentSelected,
   lastClickedIndex,
-  getRangeKeys,
+  getItemsInRange,
   onSelectionChange,
-}: UseShiftSelectionClickOptions) {
+}: UseShiftSelectionClickOptions<TItem>) {
   const shiftKeyRef = useRef(false)
 
   const isSelected = currentSelected.some(row =>
@@ -35,51 +35,44 @@ export function useShiftSelectionClick({
   }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === ' ' || event.key === 'Enter') {
+    if (event.key === ' ' || event.key === 'Enter')
       shiftKeyRef.current = event.shiftKey
-    }
   }
 
   const handleChange = () => {
     const isShiftHeld = shiftKeyRef.current
+    shiftKeyRef.current = false
 
     if (isShiftHeld && lastClickedIndex !== null && lastClickedIndex !== rowIndex) {
       const start = Math.min(lastClickedIndex, rowIndex)
       const end = Math.max(lastClickedIndex, rowIndex)
-      const rangeKeys = getRangeKeys(start, end)
 
-      onSelectionChange(rangeKeys, {
+      onSelectionChange(getItemsInRange(start, end), {
         anchorIndex: lastClickedIndex,
         focusIndex: rowIndex,
         lastExpandDirection: rowIndex > lastClickedIndex ? 'down' : 'up',
       }, rowIndex)
-    }
-    else {
-      if (isSelected) {
-        const newSelected = currentSelected.filter(row =>
-          !Object.keys(rowKey).every(key => row[key] === rowKey[key]),
-        )
-        onSelectionChange(
-          newSelected,
-          { anchorIndex: null, focusIndex: null, lastExpandDirection: null },
-          rowIndex,
-        )
-      }
-      else {
-        onSelectionChange(
-          [...currentSelected, rowKey],
-          { anchorIndex: rowIndex, focusIndex: rowIndex, lastExpandDirection: null },
-          rowIndex,
-        )
-      }
+      return
     }
 
-    shiftKeyRef.current = false
+    if (isSelected) {
+      const newSelected = currentSelected.filter(row =>
+        !Object.keys(rowKey).every(key => row[key] === rowKey[key]),
+      )
+      onSelectionChange(
+        newSelected,
+        INITIAL_SHIFT_SELECTION_STATE,
+        rowIndex,
+      )
+      return
+    }
+
+    onSelectionChange(
+      [...currentSelected, rowKey],
+      { anchorIndex: rowIndex, focusIndex: rowIndex, lastExpandDirection: null },
+      rowIndex,
+    )
   }
 
-  return {
-    handleMouseDown,
-    handleKeyDown,
-    handleChange,
-  }
+  return { isSelected, handleMouseDown, handleKeyDown, handleChange }
 }

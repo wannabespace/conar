@@ -13,13 +13,18 @@ export default antfu(
       'prefer-arrow-callback': 'off',
       'react/no-context-provider': 'off', // Due to context selector
       'react/no-unstable-context-value': 'off', // Due to React Compiler
-      'react-hooks/rules-of-hooks': ['error', {
-        additionalHooks: '(useMountedEffect|useAsyncEffect)',
-      }],
-      'react-hooks/exhaustive-deps': ['warn', {
-        additionalHooks: '(useMountedEffect|useAsyncEffect)',
-      }],
-      'react-refresh/only-export-components': 'off',
+      'react-hooks/rules-of-hooks': [
+        'error',
+        {
+          additionalHooks: '(useMountedEffect|useAsyncEffect)',
+        },
+      ],
+      'react-hooks/exhaustive-deps': [
+        'warn',
+        {
+          additionalHooks: '(useMountedEffect|useAsyncEffect)',
+        },
+      ],
       'pnpm/yaml-enforce-settings': 'off',
     },
     ignores: [
@@ -50,6 +55,12 @@ export default antfu(
     },
   },
   {
+    files: ['**/packages/memoize/**/*'],
+    rules: {
+      'pnpm/json-enforce-catalog': 'off',
+    },
+  },
+  {
     plugins: {
       'better-tailwindcss': eslintPluginBetterTailwindcss,
     },
@@ -58,9 +69,12 @@ export default antfu(
       ...eslintPluginBetterTailwindcss.configs['recommended-error'].rules,
       'better-tailwindcss/enforce-consistent-line-wrapping': 'warn',
       'better-tailwindcss/enforce-consistent-class-order': 'warn',
-      'better-tailwindcss/no-unknown-classes': ['error', {
-        ignore: ['toaster', 'typography', 'typography-disabled'],
-      }],
+      'better-tailwindcss/no-unknown-classes': [
+        'error',
+        {
+          ignore: ['toaster', 'typography', 'typography-disabled'],
+        },
+      ],
     },
     settings: {
       'better-tailwindcss': {

@@ -17,7 +17,7 @@ const inputGroupAddonVariants = cva(
     in-[[data-slot=input-group]:has([data-slot=input-control],[data-slot=textarea-control])]:[&_svg:not([class*='size-'])]:size-4.5
     sm:in-[[data-slot=input-group]:has([data-slot=input-control],[data-slot=textarea-control])]:[&_svg:not([class*='size-'])]:size-4
     not-has-[button]:**:[svg:not([class*='opacity-'])]:opacity-80
-    [&>kbd]:rounded-[calc(var(--radius)-5px)]
+    [&>kbd]:rounded-[calc(var(--radius)-0.3125rem)]
   `,
   {
     defaultVariants: {
@@ -82,7 +82,7 @@ export function InputGroup({
           has-[input:disabled,textarea:disabled]:opacity-64
           has-[input:disabled,textarea:disabled,input:focus-visible,textarea:focus-visible,input[aria-invalid],textarea[aria-invalid]]:shadow-none
           has-[input:focus-visible,textarea:focus-visible]:border-ring
-          has-[input:focus-visible,textarea:focus-visible]:ring-[3px]
+          has-[input:focus-visible,textarea:focus-visible]:ring-[0.1875rem]
           has-[input[aria-invalid],textarea[aria-invalid]]:border-destructive/36
           has-[input:focus-visible,textarea:focus-visible]:has-[input[aria-invalid],textarea[aria-invalid]]:border-destructive/64
           has-[input:focus-visible,textarea:focus-visible]:has-[input[aria-invalid],textarea[aria-invalid]]:ring-destructive/16

@@ -1,6 +1,8 @@
-/* eslint-disable e18e/prefer-static-regex */
 import { camelCase, pascalCase } from 'change-case'
 import { toLiteralKey } from './utils'
+
+const SINGLE_QUOTE_RE = /'/g
+const NEWLINE_RE = /\n/g
 
 export function sqlSchemaTemplate(table: string, columns: string) {
   return [
@@ -21,7 +23,7 @@ export function typeScriptSchemaTemplate(table: string, columns: string) {
 
 export function zodSchemaTemplate(table: string, columns: string) {
   const pascalName = pascalCase(table)
-  const camelName = pascalName.charAt(0).toLowerCase() + pascalName.slice(1)
+  const camelName = camelCase(table)
   return [
     `import * as z from 'zod';`,
     '',
@@ -60,7 +62,7 @@ export function drizzleSchemaTemplate({
   dialectImportPath?: string
   extraConfig?: string
 }) {
-  const escapedTable = table.replace(/'/g, '\\\'')
+  const escapedTable = table.replace(SINGLE_QUOTE_RE, '\\\'')
   const varName = camelCase(table)
   return [
     `import { ${coreImports.join(', ')} } from 'drizzle-orm';`,
@@ -88,20 +90,11 @@ export function kyselySchemaTemplate(table: string, body: string) {
   ].join('\n')
 }
 
-export function sqlQueryTemplate(table: string, where: string) {
-  return where
-    ? [
-        `SELECT * FROM "${table}"`,
-        `WHERE ${where};`,
-      ].join('\n')
-    : `SELECT * FROM "${table}";`
-}
-
 export function prismaQueryTemplate(table: string, whereObj: string) {
   if (whereObj === '{}')
     return `await prisma.${table}.findMany()`
 
-  const indented = whereObj.replace(/\n/g, '\n  ')
+  const indented = whereObj.replace(NEWLINE_RE, '\n  ')
   return [
     `await prisma.${table}.findMany({`,
     `  where: ${indented}`,
@@ -122,7 +115,7 @@ export function drizzleQueryTemplate(table: string, conditions: string) {
 }
 
 export function kyselyQueryTemplate(table: string, conditions: string) {
-  const escapedTable = table.replace(/'/g, '\\\'')
+  const escapedTable = table.replace(SINGLE_QUOTE_RE, '\\\'')
   return conditions
     ? [
         `await db.selectFrom('${escapedTable}')`,
