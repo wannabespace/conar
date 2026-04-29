@@ -3,7 +3,6 @@ import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { EnterIcon } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
-import { Textarea } from '@conar/ui/components/textarea'
 import { TooltipProvider } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
@@ -44,19 +43,27 @@ export function RunnerEditorAIZone({
     setPrompt('')
   }
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      ref.current?.focus()
-    }, 100)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null)
 
-    return () => {
-      clearTimeout(timeout)
+  const timeoutFocus = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
     }
-  }, [ref])
+
+    timeoutRef.current = setTimeout(() => {
+      ref.current?.focus()
+      timeoutRef.current = null
+    }, 100)
+  }
+
+  useEffect(() => {
+    timeoutFocus()
+  }, [])
 
   const { mutate: updateSQL, isPending } = useMutation(orpc.ai.updateSQL.mutationOptions({
     onSuccess: (data) => {
       setAiSuggestion(data)
+      timeoutFocus()
     },
   }), queryClient)
 
@@ -90,12 +97,14 @@ export function RunnerEditorAIZone({
     <TooltipProvider>
       <div className="flex h-full flex-col py-1 pr-6">
         <Popover open={!!aiSuggestion}>
-          <PopoverTrigger render={(
-            <div className="
-              relative flex h-full w-lg flex-col rounded-md border
-            "
-            />
-          )}
+          <PopoverTrigger
+            nativeButton={false}
+            render={(
+              <div className="
+                relative flex h-full w-lg flex-col rounded-md border
+              "
+              />
+            )}
           >
             {!subscription && (
               <div
@@ -117,7 +126,7 @@ export function RunnerEditorAIZone({
                 your subscription to generate SQL queries.
               </div>
             )}
-            <Textarea
+            <textarea
               ref={ref}
               value={prompt}
               disabled={isPending || !subscription || !isOnline}
@@ -128,7 +137,7 @@ export function RunnerEditorAIZone({
               className={cn(
                 `
                   field-sizing-content flex-1 resize-none border-none px-2
-                  py-1.5 pb-8
+                  py-1.5 pb-8 text-sm
                 `,
                 // Disable monaco default styles
                 `

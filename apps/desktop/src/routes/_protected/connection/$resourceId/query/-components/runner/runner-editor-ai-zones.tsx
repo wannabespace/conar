@@ -116,6 +116,11 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
               editor.changeViewZones((changeAccessor) => {
                 changeAccessor.removeZone(zoneId)
               })
+              editor.setPosition({
+                lineNumber: currentAIZoneQuery.startLineNumber,
+                column: 1,
+              })
+              editor.focus()
               highlightCollection.clear()
               setCurrentAIZoneLineNumber(null)
             }}

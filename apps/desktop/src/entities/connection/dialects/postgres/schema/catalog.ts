@@ -15,6 +15,7 @@ export interface PgCatalog {
   pg_proc: PgProc
   pg_language: PgLanguage
   pg_type: PgType
+  pg_attrdef: PgAttrdef
 }
 
 /**
@@ -120,8 +121,30 @@ interface PgIndex {
  */
 interface PgAttribute {
   attrelid: number
-  attnum: number
   attname: string
+  atttypid: number
+  attlen: number
+  attnum: number
+  attcacheoff: number
+  atttypmod: number
+  attndims: number
+  attbyval: boolean
+  attalign: number
+  attstorage: string
+  attcompression: string
+  attnotnull: boolean
+  atthasdef: boolean
+  atthasmissing: boolean
+  attidentity: string
+  attgenerated: string
+  attisdropped: boolean
+  attislocal: boolean
+  attinhcount: number
+  attcollation: number
+  attstattarget: number | null
+  attacl: unknown | null
+  attoptions: string[] | null
+  attmissingval: unknown | null
 }
 
 /**
@@ -182,4 +205,15 @@ interface PgType {
   oid: number
   typname: string
   typnamespace: number
+}
+
+/**
+ * @name pg_attrdef
+ * @type table
+ */
+interface PgAttrdef {
+  oid: number
+  adrelid: number
+  adnum: number
+  adbin: string
 }

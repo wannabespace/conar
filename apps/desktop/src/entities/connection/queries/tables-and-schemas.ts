@@ -2,13 +2,23 @@ import type { connectionsResources } from '~/drizzle/schema'
 import { memoize } from '@conar/memoize'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
-import { sql } from 'kysely'
 import { connectionResourceToQueryParams, createQuery } from '../query'
+
+const tableTypes = ['base table', 'view', 'materialized view'] as const
 
 export const tablesAndSchemasType = type({
   schema: 'string',
   table: 'string',
-  type: '\'BASE TABLE\' | \'VIEW\'',
+  type: type.or(
+    type.enumerated(...tableTypes),
+    type.enumerated(...tableTypes.map(t => t.toUpperCase()) as Uppercase<typeof tableTypes[number]>[]),
+  ),
+}).pipe(({ type, ...props }) => {
+  const formattedType = type.toLowerCase() as typeof tableTypes[number]
+  return {
+    ...props,
+    type: formattedType === 'base table' ? 'table' as const : formattedType,
+  }
 })
 
 export const resourceTablesAndSchemasQuery = memoize(({ connectionResource, showSystem }: { connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) => {
@@ -16,20 +26,26 @@ export const resourceTablesAndSchemasQuery = memoize(({ connectionResource, show
     type: tablesAndSchemasType.array(),
     query: {
       postgres: db => db
-        .selectFrom('information_schema.tables')
-        .select([
-          'table_schema as schema',
-          'table_name as table',
-          'table_type as type',
+        .selectFrom('pg_catalog.pg_class as c')
+        .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 'c.relnamespace')
+        .select(eb => [
+          'n.nspname as schema',
+          'c.relname as table',
+          eb.case('c.relkind')
+            .when('v')
+            .then('view' as const)
+            .when('m')
+            .then('materialized view' as const)
+            .else('base table' as const)
+            .end()
+            .as('type'),
         ])
+        .where('c.relkind', 'in', ['r', 'p', 'v', 'm'])
         .where(({ eb, and, not }) => and([
-          not(eb('table_schema', 'like', 'pg_toast%')),
-          not(eb('table_schema', 'like', 'pg_temp%')),
-          eb('table_type', 'in', ['BASE TABLE', 'VIEW']),
+          not(eb('n.nspname', 'like', 'pg_toast%')),
+          not(eb('n.nspname', 'like', 'pg_temp%')),
         ]))
-        .$if(!showSystem, qb => qb.where(({ eb, and }) => and([
-          eb('table_schema', 'not in', ['pg_catalog', 'information_schema']),
-        ])))
+        .$if(!showSystem, qb => qb.where('n.nspname', 'not in', ['pg_catalog', 'information_schema']))
         .execute(),
       mysql: db => db
         .selectFrom('information_schema.TABLES')
@@ -39,7 +55,7 @@ export const resourceTablesAndSchemasQuery = memoize(({ connectionResource, show
           'TABLE_TYPE as type',
         ])
         .where('TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
-        .$castTo<{ schema: string, table: string, type: 'BASE TABLE' | 'VIEW' }>()
+        .$narrowType<{ type: 'BASE TABLE' | 'VIEW' }>()
         .$if(!showSystem, qb => qb.where(eb => eb('TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])))
         .execute(),
       mssql: db => db
@@ -52,16 +68,21 @@ export const resourceTablesAndSchemasQuery = memoize(({ connectionResource, show
         .where('TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
         .execute(),
       clickhouse: db => db
-        .selectFrom('information_schema.tables')
-        .select([
-          'table_schema as schema',
-          'table_name as table',
-          'table_type as type',
+        .selectFrom('system.tables')
+        .select(eb => [
+          'database as schema',
+          'name as table',
+          eb.case()
+            .when('engine', '=', 'MaterializedView')
+            .then('materialized view' as const)
+            .when('engine', 'ilike', '%View%')
+            .then('view' as const)
+            .else('base table' as const)
+            .end()
+            .as('type'),
         ])
-        // Some clickhouse versions throws an error when not using toString
-        .where(sql<boolean>`toString(table_type) in ('BASE TABLE', 'VIEW', '1', '2')`)
-        .$castTo<{ schema: string, table: string, type: 'BASE TABLE' | 'VIEW' }>()
-        .where('table_schema', '=', connectionResource.name)
+        .where('database', '=', connectionResource.name)
+        .where('is_temporary', '=', 0)
         .execute(),
     },
   })
@@ -74,7 +95,7 @@ export function resourceTablesAndSchemasQueryOptions({ connectionResource, showS
       const results = await resourceTablesAndSchemasQuery({ connectionResource, showSystem }).run(connectionResourceToQueryParams(connectionResource))
       const schemas = Object.entries(Object.groupBy(results, table => table.schema)).map(([schema, tables]) => ({
         name: schema,
-        tables: tables!.map(table => ({ name: table.table, isView: table.type === 'VIEW' })),
+        tables: tables!.map(table => ({ name: table.table, type: table.type })),
       }))
 
       return {

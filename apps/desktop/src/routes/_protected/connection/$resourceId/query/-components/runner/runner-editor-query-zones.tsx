@@ -96,8 +96,8 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
             continue
 
           changeAccessor.removeZone(zone.zoneId)
-          zone.root.unmount()
           zone.domNode.remove()
+          queueMicrotask(() => zone.root.unmount())
           zones.delete(lineNumber)
         }
 
@@ -139,8 +139,8 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
       editor.changeViewZones((changeAccessor) => {
         for (const zone of zones.values()) {
           changeAccessor.removeZone(zone.zoneId)
-          zone.root.unmount()
           zone.domNode.remove()
+          queueMicrotask(() => zone.root.unmount())
         }
         zones.clear()
       })

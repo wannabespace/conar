@@ -110,6 +110,42 @@ const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string, s
           ]))
           .execute()
 
+        // Materialized views do not have columns, fallback to pg_attribute
+        if (query.length === 0) {
+          const fallback = await db
+            .selectFrom('pg_catalog.pg_attribute as a')
+            .innerJoin('pg_catalog.pg_class as c', 'c.oid', 'a.attrelid')
+            .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 'c.relnamespace')
+            .leftJoin('pg_catalog.pg_attrdef as ad', join =>
+              join
+                .onRef('ad.adrelid', '=', 'a.attrelid')
+                .onRef('ad.adnum', '=', 'a.attnum'))
+            .select(eb => [
+              'n.nspname as schema',
+              'c.relname as table',
+              'a.attname as id',
+              eb.fn<string | null>('pg_get_expr', [eb.ref('ad.adbin'), eb.ref('ad.adrelid')]).as('default'),
+              eb.fn<string>('format_type', [eb.ref('a.atttypid'), eb.ref('a.atttypmod')]).as('type'),
+              sql<boolean>`not a.attnotnull`.as('nullable'),
+            ])
+            .where(({ and, eb }) => and([
+              eb('n.nspname', '=', schema),
+              eb('c.relname', '=', table),
+              eb('a.attnum', '>', 0),
+              eb('a.attisdropped', '=', false),
+              eb('c.relkind', 'in', ['r', 'p', 'v', 'm']),
+            ]))
+            .orderBy('a.attnum', 'asc')
+            .execute()
+
+          return fallback.map(row => ({
+            ...row,
+            type: row.type.endsWith('[]') ? row.type.slice(0, -2) : row.type,
+            isArray: row.type.endsWith('[]'),
+            editable: false,
+          } satisfies typeof columnType.inferIn))
+        }
+
         return query.map(({ data_type, udt_name, ...row }) => ({
           ...row,
           type: data_type === 'ARRAY' ? `${udt_name.slice(1)}[]` : data_type,

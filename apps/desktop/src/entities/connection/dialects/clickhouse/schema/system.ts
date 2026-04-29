@@ -7,6 +7,18 @@ export interface System {
   columns: Columns
   parts: Parts
   one: One
+  tables: Tables
+}
+
+/**
+ * @name tables
+ * @type table
+ */
+interface Tables {
+  database: string
+  name: string
+  engine: string
+  is_temporary: number
 }
 
 /**

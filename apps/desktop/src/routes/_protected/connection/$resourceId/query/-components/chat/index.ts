@@ -1,10 +1,11 @@
 import type { AITools } from '@conar/api/ai/tools'
 import type { AppUIMessage } from '@conar/api/ai/tools/helpers'
-import type { chatsMessages, connectionsResources } from '~/drizzle/schema'
+import type { connectionsResources } from '~/drizzle/schema'
 import { Chat } from '@ai-sdk/react'
 import { memoize } from '@conar/memoize'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { eventIteratorToStream } from '@orpc/client'
+import { eq, queryOnce } from '@tanstack/react-db'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { v7 as uuid } from 'uuid'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
@@ -56,13 +57,16 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
         const existingMessage = chatsMessagesCollection.get(lastMessage.id)
 
         if (existingMessage) {
-          await chatsMessagesCollection.update(lastMessage.id, (draft) => {
-            Object.assign(draft, {
-              ...lastMessage,
-              chatId: options.chatId,
-              metadata: existingMessage.metadata,
-            } satisfies typeof chatsMessages.$inferInsert)
-          }).isPersisted.promise
+          const hasChanges
+            = lastMessage.role !== existingMessage.role
+              || JSON.stringify(lastMessage.parts) !== JSON.stringify(existingMessage.parts)
+
+          if (hasChanges) {
+            await chatsMessagesCollection.update(lastMessage.id, (draft) => {
+              draft.parts = lastMessage.parts
+              draft.role = lastMessage.role
+            }).isPersisted.promise
+          }
         }
         else {
           const updatedAt = new Date()
@@ -106,25 +110,29 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
         throw new Error('Unsupported')
       },
     },
-    messages: (await chatsMessagesCollection.toArrayWhenReady())
-      .filter(m => m.chatId === id)
-      .toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-      .map(convertToAppUIMessage),
+    messages: await queryOnce(q => q.from({ chatsMessages: chatsMessagesCollection })
+      .where(({ chatsMessages }) => eq(chatsMessages.chatId, id))
+      .orderBy(({ chatsMessages }) => chatsMessages.createdAt, 'asc'),
+    ).then(results => results.map(convertToAppUIMessage)),
     onFinish: ({ message }) => {
       const existingMessage = chatsMessagesCollection.get(message.id)
 
       if (existingMessage) {
-        chatsMessagesCollection.update(message.id, (draft) => {
-          Object.assign(draft, {
-            id: message.id,
-            parts: message.parts,
-            role: message.role,
-            chatId: id,
-            metadata: existingMessage.metadata,
-            createdAt: message.metadata?.createdAt || new Date(),
-            updatedAt: message.metadata?.updatedAt || new Date(),
-          } satisfies typeof draft)
-        })
+        const hasChanges = message.role !== existingMessage.role
+          || JSON.stringify(message.parts) !== JSON.stringify(existingMessage.parts)
+
+        if (hasChanges) {
+          chatsMessagesCollection.update(message.id, (draft) => {
+            draft.parts = message.parts
+            draft.role = message.role
+            if (message.metadata?.createdAt) {
+              draft.createdAt = message.metadata?.createdAt
+            }
+            if (message.metadata?.updatedAt) {
+              draft.updatedAt = message.metadata?.updatedAt
+            }
+          })
+        }
       }
       else {
         chatsMessagesCollection.insert({
