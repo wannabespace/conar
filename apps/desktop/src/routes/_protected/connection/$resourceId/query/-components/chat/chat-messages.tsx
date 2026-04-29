@@ -389,6 +389,10 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
 function ErrorMessage({ error, className, ...props }: { error: Error } & ComponentProps<'div'>) {
   const { chat } = Route.useLoaderData()
 
+  useEffect(() => {
+    console.error(error)
+  }, [error])
+
   return (
     <ChatMessage
       className={cn(

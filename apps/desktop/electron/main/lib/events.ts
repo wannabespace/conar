@@ -1,4 +1,5 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { AnyFunction } from '@conar/shared/utils/helpers'
 import { decrypt, encrypt } from '@conar/shared/utils/encryption'
 import { app, ipcMain } from 'electron'
 import { autoUpdater } from '..'
@@ -7,11 +8,8 @@ import * as mssql from '../connections/mssql'
 import * as mysql from '../connections/mysql'
 import * as pg from '../connections/pg'
 
-// eslint-disable-next-line ts/no-explicit-any
-type AnyAsync = (arg: any) => Promise<unknown>
-
-function wrapAggregateErrors<T extends Record<string, AnyAsync>>(handlers: T): T {
-  const wrapped: Record<string, AnyAsync> = {}
+function wrapAggregateErrors<T extends Record<string, AnyFunction>>(handlers: T): T {
+  const wrapped: Record<string, AnyFunction> = {}
 
   for (const [key, fn] of Object.entries(handlers)) {
     wrapped[key] = async (arg) => {
@@ -64,7 +62,7 @@ export const electron = {
 
 function registerHandlers(prefix: string, value: unknown) {
   if (typeof value === 'function') {
-    ipcMain.handle(prefix, (_event, arg) => (value as AnyAsync)(arg))
+    ipcMain.handle(prefix, (_event, arg) => value(arg))
     return
   }
   if (value && typeof value === 'object') {

@@ -1,3 +1,4 @@
+import type { AnyFunction } from '@conar/shared/utils/helpers'
 import type { sendToast } from '../main'
 import type { electron } from '../main/lib/events'
 import type { UpdatesStatus } from '~/use-updates-observer'
@@ -17,8 +18,7 @@ export type ElectronPreload = typeof electron & {
   }
 }
 
-// eslint-disable-next-line ts/no-explicit-any
-async function handleError(func: () => Promise<any>) {
+async function handleError(func: AnyFunction) {
   try {
     const result = await func()
 

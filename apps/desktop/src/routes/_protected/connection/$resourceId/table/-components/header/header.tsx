@@ -11,8 +11,9 @@ import { RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useSubscription } from 'seitu/react'
 import { ExportData } from '~/components/export-data'
-import { resourceConstraintsQueryOptions, resourceEnumsQueryOptions, resourceRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableColumnsQueryOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
+import { resourceConstraintsQueryOptions, resourceEnumsQueryOptions, resourceRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableColumnsQueryOptions, resourceTablesAndSchemasQueryOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { queryClient } from '~/main'
 import { Route } from '../..'
@@ -30,6 +31,10 @@ export function Header({ table, schema }: { table: string, schema: string }) {
   const { connectionResource } = Route.useRouteContext()
   const columns = useTableColumns()
   const store = useTablePageStore()
+  const connectionStore = getConnectionResourceStore(connectionResource.id)
+  const showSystem = useSubscription(connectionStore, { selector: state => state.showSystem })
+  const { data: tablesAndSchemas } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))
+  const tableType = tablesAndSchemas?.schemas.find(s => s.name === schema)?.tables?.find(t => t.name === table)?.type ?? 'table'
   const { filters, exact, orderBy, selected } = useSubscription(store, { selector: state => pick(state, ['filters', 'orderBy', 'exact', 'selected']) })
   const { data: total, isLoading } = useQuery(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters, exact } }))
 
@@ -177,11 +182,8 @@ export function Header({ table, schema }: { table: string, schema: string }) {
       <HeaderActionsFilters />
       <HeaderActionsOrder />
       <Separator orientation="vertical" className="mx-2 h-6!" />
-      <HeaderActionsCopy table={table} />
-      <HeaderActionsSeed
-        table={table}
-        schema={schema}
-      />
+      {tableType === 'table' && <HeaderActionsCopy table={table} />}
+      {tableType === 'table' && <HeaderActionsSeed table={table} schema={schema} />}
       <ExportData
         selected={selected}
         filename={`${schema}_${table}`}

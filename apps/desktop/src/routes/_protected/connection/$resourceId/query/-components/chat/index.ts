@@ -1,6 +1,6 @@
 import type { AITools } from '@conar/api/ai/tools'
 import type { AppUIMessage } from '@conar/api/ai/tools/helpers'
-import type { chatsMessages, connectionsResources } from '~/drizzle/schema'
+import type { connectionsResources } from '~/drizzle/schema'
 import { Chat } from '@ai-sdk/react'
 import { memoize } from '@conar/memoize'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
@@ -56,13 +56,22 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
         const existingMessage = chatsMessagesCollection.get(lastMessage.id)
 
         if (existingMessage) {
-          await chatsMessagesCollection.update(lastMessage.id, (draft) => {
-            Object.assign(draft, {
-              ...lastMessage,
-              chatId: options.chatId,
-              metadata: existingMessage.metadata,
-            } satisfies typeof chatsMessages.$inferInsert)
-          }).isPersisted.promise
+          const nextParts = lastMessage.parts
+          const nextRole = lastMessage.role
+          const nextChatId = options.chatId
+
+          const hasChanges
+            = nextRole !== existingMessage.role
+              || nextChatId !== existingMessage.chatId
+              || JSON.stringify(nextParts) !== JSON.stringify(existingMessage.parts)
+
+          if (hasChanges) {
+            await chatsMessagesCollection.update(lastMessage.id, (draft) => {
+              draft.parts = nextParts
+              draft.role = nextRole
+              draft.chatId = nextChatId
+            }).isPersisted.promise
+          }
         }
         else {
           const updatedAt = new Date()
@@ -114,17 +123,25 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
       const existingMessage = chatsMessagesCollection.get(message.id)
 
       if (existingMessage) {
-        chatsMessagesCollection.update(message.id, (draft) => {
-          Object.assign(draft, {
-            id: message.id,
-            parts: message.parts,
-            role: message.role,
-            chatId: id,
-            metadata: existingMessage.metadata,
-            createdAt: message.metadata?.createdAt || new Date(),
-            updatedAt: message.metadata?.updatedAt || new Date(),
-          } satisfies typeof draft)
-        })
+        const nextCreatedAt = message.metadata?.createdAt || existingMessage.createdAt
+        const nextUpdatedAt = message.metadata?.updatedAt || new Date()
+
+        const hasChanges
+          = message.role !== existingMessage.role
+            || id !== existingMessage.chatId
+            || JSON.stringify(message.parts) !== JSON.stringify(existingMessage.parts)
+            || nextCreatedAt.getTime() !== existingMessage.createdAt.getTime()
+            || nextUpdatedAt.getTime() !== existingMessage.updatedAt.getTime()
+
+        if (hasChanges) {
+          chatsMessagesCollection.update(message.id, (draft) => {
+            draft.parts = message.parts
+            draft.role = message.role
+            draft.chatId = id
+            draft.createdAt = nextCreatedAt
+            draft.updatedAt = nextUpdatedAt
+          })
+        }
       }
       else {
         chatsMessagesCollection.insert({

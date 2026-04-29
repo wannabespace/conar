@@ -1,4 +1,6 @@
+import type { RemixiconComponentType } from '@remixicon/react'
 import type { ComponentRef } from 'react'
+import type { tablesAndSchemasType } from '~/entities/connection/queries'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
 import { Button } from '@conar/ui/components/button'
@@ -10,7 +12,7 @@ import { SeparatorMotion } from '@conar/ui/components/separator.motion'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiDeleteBin7Line, RiEditLine, RiEyeLine, RiFileCopyLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiStackLine, RiTableLine } from '@remixicon/react'
+import { RiDeleteBin7Line, RiEditLine, RiEyeFill, RiEyeLine, RiFileCopyLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiStackLine, RiTableLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useSearch } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
@@ -53,17 +55,30 @@ function Skeleton() {
   )
 }
 
-function TableItem({ schema, table, isView = false, pinned = false, search, onRename, onDrop }: {
+const tableTypeIcon: Record<typeof tablesAndSchemasType.infer['type'], RemixiconComponentType> = {
+  'table': RiTableLine,
+  'view': RiEyeLine,
+  'materialized view': RiEyeFill,
+}
+
+const tableTypeLabel: Record<typeof tablesAndSchemasType.infer['type'], string> = {
+  'table': 'Table',
+  'view': 'View',
+  'materialized view': 'Materialized View',
+}
+
+function TableItem({ schema, table, type = 'table', pinned = false, search, onRename, onDrop }: {
   schema: string
   table: string
-  isView?: boolean
+  type?: typeof tablesAndSchemasType.infer['type']
   pinned?: boolean
   search?: string
   onRename: () => void
   onDrop: () => void
 }) {
   const { connectionResource } = Route.useRouteContext()
-  const Icon = isView ? RiEyeLine : RiTableLine
+  const Icon = tableTypeIcon[type]
+  const isReadOnly = type !== 'table'
   const store = tablePageStore({ id: connectionResource.id, schema, table })
   const hasDrafts = useSubscription(store, { selector: state => state.drafts.length > 0 })
 
@@ -91,7 +106,7 @@ function TableItem({ schema, table, isView = false, pinned = false, search, onRe
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              {isView ? 'View' : 'Table'}
+              {tableTypeLabel[type]}
               {hasDrafts && ' has unsaved changes'}
             </TooltipContent>
           </Tooltip>
@@ -156,7 +171,7 @@ function TableItem({ schema, table, isView = false, pinned = false, search, onRe
                 Copy Name
               </DropdownMenuItem>
               <DropdownMenuItem
-                disabled={isView}
+                disabled={isReadOnly}
                 onClick={(e) => {
                   e.stopPropagation()
                   onRename()
@@ -166,7 +181,7 @@ function TableItem({ schema, table, isView = false, pinned = false, search, onRe
                 Rename
               </DropdownMenuItem>
               <DropdownMenuItem
-                disabled={isView}
+                disabled={isReadOnly}
                 variant="destructive"
                 onClick={(e) => {
                   e.stopPropagation()
@@ -219,8 +234,8 @@ export function TablesTree({ className, search }: { className?: string, search?:
     const pinnedSet = new Set(pinnedTables.map(t => `${t.schema}:${t.table}`))
 
     return schemas.map((schema) => {
-      const pinned: { name: string, isView: boolean }[] = []
-      const unpinned: { name: string, isView: boolean }[] = []
+      const pinned: typeof schemas[number]['tables'] = []
+      const unpinned: typeof schemas[number]['tables'] = []
 
       schema.tables.forEach((table) => {
         const isPinned = pinnedSet.has(`${schema.name}:${table.name}`)
@@ -341,7 +356,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                                 <TableItem
                                   schema={schema.name}
                                   table={table.name}
-                                  isView={table.isView}
+                                  type={table.type}
                                   pinned
                                   search={search}
                                   onRename={() => renameTableDialogRef.current?.rename(schema.name, table.name)}
@@ -373,7 +388,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                                 <TableItem
                                   schema={schema.name}
                                   table={table.name}
-                                  isView={table.isView}
+                                  type={table.type}
                                   search={search}
                                   onRename={() => renameTableDialogRef.current?.rename(schema.name, table.name)}
                                   onDrop={() => dropTableDialogRef.current?.drop(schema.name, table.name)}

@@ -139,14 +139,14 @@ export function connectionCompletionService(connectionResource: typeof connectio
           {
             label: tableEntry.name,
             kind: languages.CompletionItemKind.Class,
-            detail: `${tableEntry.isView ? 'view' : 'table'} (${schema.name})`,
+            detail: `${tableEntry.type} (${schema.name})`,
             sortText: `2${tableEntry.name}`,
             insertText: tableEntry.name,
           } satisfies ICompletionItem,
           {
             label: `${schema.name}.${tableEntry.name}`,
             kind: languages.CompletionItemKind.Class,
-            detail: `${tableEntry.isView ? 'view' : 'table'} (${schema.name})`,
+            detail: `${tableEntry.type} (${schema.name})`,
             sortText: `2${schema.name}.${tableEntry.name}`,
             insertText: `${schema.name}.${tableEntry.name}`,
           } satisfies ICompletionItem,

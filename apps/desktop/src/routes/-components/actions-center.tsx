@@ -1,7 +1,7 @@
 import type { connections, connectionsResources } from '~/drizzle/schema'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@conar/shared/constants'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
-import { RiAddLine, RiDashboardLine, RiEyeLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
+import { RiAddLine, RiDashboardLine, RiEyeFill, RiEyeLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
@@ -40,13 +40,17 @@ function ActionsResourceTables({ connection, connectionResource }: { connection:
           value={`${schema.name}.${table.name}`}
           onSelect={() => onTableSelect(schema.name, table.name)}
         >
-          {table.isView
+          {table.type === 'materialized view'
             ? (
-                <RiEyeLine className="size-4 shrink-0 text-muted-foreground" />
+                <RiEyeFill className="size-4 shrink-0 text-muted-foreground" />
               )
-            : (
-                <RiTableLine className="size-4 shrink-0 text-muted-foreground" />
-              )}
+            : table.type === 'view'
+              ? (
+                  <RiEyeLine className="size-4 shrink-0 text-muted-foreground" />
+                )
+              : (
+                  <RiTableLine className="size-4 shrink-0 text-muted-foreground" />
+                )}
           {schema.name}
           .
           {table.name}
