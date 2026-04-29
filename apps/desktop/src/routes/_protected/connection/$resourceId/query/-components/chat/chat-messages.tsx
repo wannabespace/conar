@@ -9,7 +9,6 @@ import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
-import { UserAvatar } from '@conar/ui/components/custom/user-avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useElementSize } from '@conar/ui/hookas/use-element-size'
@@ -23,7 +22,6 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 import { Markdown } from '~/components/markdown'
 import { getEditorQueriesComputed } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
-import { authClient } from '~/lib/auth'
 import { Route } from '../..'
 import { chatHooks, runnerHooks } from '../../-page'
 import { ChatImages } from './chat-images'
@@ -249,12 +247,10 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
     height: 0,
   })
   const images = message.parts.filter(part => part.type === 'file').map(part => part.url)
-  const { data } = authClient.useSession()
   const canHide = height > 200
 
   return (
     <ChatMessage className={cn('group/message', className)} {...props}>
-      <UserAvatar className="size-7" user={data?.user} />
       <div>
         <div
           className={cn(

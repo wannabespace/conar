@@ -5,6 +5,7 @@ import { Chat } from '@ai-sdk/react'
 import { memoize } from '@conar/memoize'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { eventIteratorToStream } from '@orpc/client'
+import { eq, queryOnce } from '@tanstack/react-db'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { v7 as uuid } from 'uuid'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
@@ -109,10 +110,10 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
         throw new Error('Unsupported')
       },
     },
-    messages: (await chatsMessagesCollection.toArrayWhenReady())
-      .filter(m => m.chatId === id)
-      .toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-      .map(convertToAppUIMessage),
+    messages: await queryOnce(q => q.from({ chatsMessages: chatsMessagesCollection })
+      .where(({ chatsMessages }) => eq(chatsMessages.chatId, id))
+      .orderBy(({ chatsMessages }) => chatsMessages.createdAt, 'asc'),
+    ).then(results => results.map(convertToAppUIMessage)),
     onFinish: ({ message }) => {
       const existingMessage = chatsMessagesCollection.get(message.id)
 
