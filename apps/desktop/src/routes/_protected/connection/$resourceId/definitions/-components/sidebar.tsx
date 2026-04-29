@@ -4,7 +4,7 @@ import type { FileRoutesByTo } from '~/routeTree.gen'
 import { CONNECTION_TYPES_WITH_FUNCTIONS, CONNECTION_TYPES_WITH_TRIGGERS } from '@conar/shared/constants'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { CardTitle } from '@conar/ui/components/card'
-import { RiCodeSSlashLine, RiFileList3Line, RiFlashlightLine, RiKey2Line, RiListUnordered } from '@remixicon/react'
+import { RiCodeSSlashLine, RiFileList3Line, RiFlashlightLine, RiKey2Line, RiListUnordered, RiShieldCheckLine } from '@remixicon/react'
 import { SidebarLink } from '~/components/sidebar-link'
 import { Route } from '../../definitions'
 
@@ -24,6 +24,11 @@ function sidebarItems(connection: typeof connections.$inferSelect) {
       to: '/connection/$resourceId/definitions/constraints',
       Icon: RiKey2Line,
       label: 'Constraints',
+    },
+    {
+      to: '/connection/$resourceId/definitions/policies',
+      Icon: RiShieldCheckLine,
+      label: 'Policies',
     },
     ...(CONNECTION_TYPES_WITH_FUNCTIONS.includes(connection.type)
       ? [{

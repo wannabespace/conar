@@ -8,6 +8,21 @@ export interface System {
   parts: Parts
   one: One
   tables: Tables
+  row_policies: RowPolicies
+}
+
+/**
+ * @name row_policies
+ * @type table
+ */
+interface RowPolicies {
+  name: string
+  short_name: string
+  database: string
+  table: string
+  id: string
+  is_restrictive: number
+  select_filter: string
 }
 
 /**

@@ -9,6 +9,7 @@ export interface PgCatalog {
   pg_index: PgIndex
   pg_attribute: PgAttribute
   pg_settings: PgSettings
+  pg_policy: PgPolicy
   pg_database: PgDatabase
   pg_am: PgAm
   pg_trigger: PgTrigger
@@ -16,6 +17,21 @@ export interface PgCatalog {
   pg_language: PgLanguage
   pg_type: PgType
   pg_attrdef: PgAttrdef
+}
+
+/**
+ * @name pg_policy
+ * @type table
+ */
+interface PgPolicy {
+  oid: number
+  polname: string
+  polrelid: number
+  polcmd: 'r' | 'a' | 'w' | 'd' | '*'
+  polpermissive: boolean
+  polroles: unknown
+  polqual: unknown
+  polwithcheck: unknown
 }
 
 /**

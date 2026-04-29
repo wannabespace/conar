@@ -13,6 +13,19 @@ export interface InformationSchema {
   SCHEMATA: Schemata
   TRIGGERS: Triggers
   ROUTINES: Routines
+  TABLE_PRIVILEGES: TablePrivileges
+}
+
+/**
+ * @name TABLE_PRIVILEGES
+ * @type table
+ */
+interface TablePrivileges {
+  GRANTEE: string
+  TABLE_SCHEMA: string
+  TABLE_NAME: string
+  PRIVILEGE_TYPE: string
+  IS_GRANTABLE: string
 }
 
 /**

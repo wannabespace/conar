@@ -19,6 +19,7 @@ import { Route as ProtectedConnectionResourceIdVisualizerIndexRouteImport } from
 import { Route as ProtectedConnectionResourceIdTableIndexRouteImport } from './routes/_protected/connection/$resourceId/table/index'
 import { Route as ProtectedConnectionResourceIdQueryIndexRouteImport } from './routes/_protected/connection/$resourceId/query/index'
 import { Route as ProtectedConnectionResourceIdDefinitionsTriggersIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/triggers/index'
+import { Route as ProtectedConnectionResourceIdDefinitionsPoliciesIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/policies/index'
 import { Route as ProtectedConnectionResourceIdDefinitionsIndexesIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/indexes/index'
 import { Route as ProtectedConnectionResourceIdDefinitionsFunctionsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/functions/index'
 import { Route as ProtectedConnectionResourceIdDefinitionsEnumsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/enums/index'
@@ -79,6 +80,12 @@ const ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute =
     path: '/triggers/',
     getParentRoute: () => ProtectedConnectionResourceIdDefinitionsRoute,
   } as any)
+const ProtectedConnectionResourceIdDefinitionsPoliciesIndexRoute =
+  ProtectedConnectionResourceIdDefinitionsPoliciesIndexRouteImport.update({
+    id: '/policies/',
+    path: '/policies/',
+    getParentRoute: () => ProtectedConnectionResourceIdDefinitionsRoute,
+  } as any)
 const ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute =
   ProtectedConnectionResourceIdDefinitionsIndexesIndexRouteImport.update({
     id: '/indexes/',
@@ -117,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/connection/$resourceId/definitions/enums/': typeof ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute
   '/connection/$resourceId/definitions/functions/': typeof ProtectedConnectionResourceIdDefinitionsFunctionsIndexRoute
   '/connection/$resourceId/definitions/indexes/': typeof ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute
+  '/connection/$resourceId/definitions/policies/': typeof ProtectedConnectionResourceIdDefinitionsPoliciesIndexRoute
   '/connection/$resourceId/definitions/triggers/': typeof ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute
 }
 export interface FileRoutesByTo {
@@ -132,6 +140,7 @@ export interface FileRoutesByTo {
   '/connection/$resourceId/definitions/enums': typeof ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute
   '/connection/$resourceId/definitions/functions': typeof ProtectedConnectionResourceIdDefinitionsFunctionsIndexRoute
   '/connection/$resourceId/definitions/indexes': typeof ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute
+  '/connection/$resourceId/definitions/policies': typeof ProtectedConnectionResourceIdDefinitionsPoliciesIndexRoute
   '/connection/$resourceId/definitions/triggers': typeof ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute
 }
 export interface FileRoutesById {
@@ -149,6 +158,7 @@ export interface FileRoutesById {
   '/_protected/connection/$resourceId/definitions/enums/': typeof ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute
   '/_protected/connection/$resourceId/definitions/functions/': typeof ProtectedConnectionResourceIdDefinitionsFunctionsIndexRoute
   '/_protected/connection/$resourceId/definitions/indexes/': typeof ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute
+  '/_protected/connection/$resourceId/definitions/policies/': typeof ProtectedConnectionResourceIdDefinitionsPoliciesIndexRoute
   '/_protected/connection/$resourceId/definitions/triggers/': typeof ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute
 }
 export interface FileRouteTypes {
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/connection/$resourceId/definitions/enums/'
     | '/connection/$resourceId/definitions/functions/'
     | '/connection/$resourceId/definitions/indexes/'
+    | '/connection/$resourceId/definitions/policies/'
     | '/connection/$resourceId/definitions/triggers/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/connection/$resourceId/definitions/enums'
     | '/connection/$resourceId/definitions/functions'
     | '/connection/$resourceId/definitions/indexes'
+    | '/connection/$resourceId/definitions/policies'
     | '/connection/$resourceId/definitions/triggers'
   id:
     | '__root__'
@@ -197,6 +209,7 @@ export interface FileRouteTypes {
     | '/_protected/connection/$resourceId/definitions/enums/'
     | '/_protected/connection/$resourceId/definitions/functions/'
     | '/_protected/connection/$resourceId/definitions/indexes/'
+    | '/_protected/connection/$resourceId/definitions/policies/'
     | '/_protected/connection/$resourceId/definitions/triggers/'
   fileRoutesById: FileRoutesById
 }
@@ -277,6 +290,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsTriggersIndexRouteImport
       parentRoute: typeof ProtectedConnectionResourceIdDefinitionsRoute
     }
+    '/_protected/connection/$resourceId/definitions/policies/': {
+      id: '/_protected/connection/$resourceId/definitions/policies/'
+      path: '/policies'
+      fullPath: '/connection/$resourceId/definitions/policies/'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsPoliciesIndexRouteImport
+      parentRoute: typeof ProtectedConnectionResourceIdDefinitionsRoute
+    }
     '/_protected/connection/$resourceId/definitions/indexes/': {
       id: '/_protected/connection/$resourceId/definitions/indexes/'
       path: '/indexes'
@@ -313,6 +333,7 @@ interface ProtectedConnectionResourceIdDefinitionsRouteChildren {
   ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute: typeof ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute
   ProtectedConnectionResourceIdDefinitionsFunctionsIndexRoute: typeof ProtectedConnectionResourceIdDefinitionsFunctionsIndexRoute
   ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute: typeof ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute
+  ProtectedConnectionResourceIdDefinitionsPoliciesIndexRoute: typeof ProtectedConnectionResourceIdDefinitionsPoliciesIndexRoute
   ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute: typeof ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute
 }
 
@@ -326,6 +347,8 @@ const ProtectedConnectionResourceIdDefinitionsRouteChildren: ProtectedConnection
       ProtectedConnectionResourceIdDefinitionsFunctionsIndexRoute,
     ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute:
       ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute,
+    ProtectedConnectionResourceIdDefinitionsPoliciesIndexRoute:
+      ProtectedConnectionResourceIdDefinitionsPoliciesIndexRoute,
     ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute:
       ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute,
   }
