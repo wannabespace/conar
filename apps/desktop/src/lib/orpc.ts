@@ -1,5 +1,5 @@
 import type { ORPCRouter, router } from '@conar/api/orpc/routers'
-import type { InferContractRouterInputs, InferContractRouterOutputs } from '@orpc/contract'
+import type { InferRouterInputs, InferRouterOutputs } from '@orpc/server'
 import { createORPCClient, onError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
@@ -30,5 +30,5 @@ const link = new RPCLink({
 export const client: ORPCRouter = createORPCClient(link)
 export const orpc = createTanstackQueryUtils(client)
 
-export type ORPCInputs = InferContractRouterInputs<typeof router>
-export type ORPCOutputs = InferContractRouterOutputs<typeof router>
+export type ORPCInputs = InferRouterInputs<typeof router>
+export type ORPCOutputs = InferRouterOutputs<typeof router>
