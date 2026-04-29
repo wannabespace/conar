@@ -54,7 +54,6 @@
     "@monaco-editor/loader": "catalog:",
     "@number-flow/react": "catalog:",
     "@orpc/client": "catalog:",
-    "@orpc/contract": "catalog:",
     "@orpc/server": "catalog:",
     "@orpc/tanstack-query": "catalog:",
     "@playwright/test": "catalog:",
