@@ -33,11 +33,11 @@ interface PgPolicy {
   polqual: unknown
   polwithcheck: unknown
 }
+
 /**
  * @name pg_database
  * @type table
  */
-
 interface PgDatabase {
   datname: string
   datistemplate: boolean
