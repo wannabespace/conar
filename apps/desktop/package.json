@@ -33,7 +33,8 @@
     "electron-store": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:",
-    "pg": "catalog:"
+    "pg": "catalog:",
+    "ssh2": "catalog:"
   },
   "devDependencies": {
     "@ai-sdk/react": "catalog:",
@@ -77,6 +78,7 @@
     "@types/pg": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@types/ssh2": "catalog:",
     "@typescript/native-preview": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@xyflow/react": "catalog:",

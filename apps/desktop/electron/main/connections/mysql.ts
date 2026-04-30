@@ -1,19 +1,30 @@
 import type { PoolOptions } from 'mysql2'
 import { createRequire } from 'node:module'
 import { parseConnectionString } from '@conar/connection'
-import { readSSLFiles } from '@conar/connection/server'
+import { parseSshConfig, readSSLFiles } from '@conar/connection/server'
 import { defaultSSLConfig, parseSSLConfig } from '@conar/connection/ssl/mysql'
 import { memoize } from '@conar/memoize'
 import { tries } from '@conar/shared/utils/tries'
 import { disposeTransaction, getTransaction, registerTransaction } from '../lib/transactions'
+import { ensureTunnel } from './ssh-tunnel'
 
 const mysql2 = createRequire(import.meta.url)('mysql2/promise') as typeof import('mysql2/promise')
 
 export const getPool = memoize(async (connectionString: string) => {
   const { searchParams, ...config } = parseConnectionString(connectionString)
   const ssl = parseSSLConfig(searchParams)
+  const ssh = parseSshConfig(searchParams)
+  let host = config.host
+  let port = config.port
+  if (ssh) {
+    const endpoint = await ensureTunnel(ssh, host, port ?? 3306)
+    host = endpoint.host
+    port = endpoint.port
+  }
   const conf: PoolOptions = {
     ...config,
+    host,
+    port,
     connectionLimit: 1,
     dateStrings: true,
     ...(ssl ? { ssl: readSSLFiles(ssl) } : {}),

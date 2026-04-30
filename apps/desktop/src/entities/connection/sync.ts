@@ -1,3 +1,4 @@
+import { SSH_SECRET_PARAMS } from '@conar/connection'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { createCollection } from '@tanstack/react-db'
@@ -11,6 +12,9 @@ function prepareConnectionStringToCloud(connectionString: string, syncType: Sync
   const url = new SafeURL(connectionString.trim())
   if (syncType !== SyncType.Cloud) {
     url.password = ''
+    for (const p of SSH_SECRET_PARAMS) {
+      url.searchParams.delete(p)
+    }
   }
   return url.toString()
 }
@@ -49,12 +53,21 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
           throw new Error('Entity not found')
         }
 
-        const cloudPassword = new SafeURL(item.value.connectionString).password
-        const localPassword = new SafeURL(existed.connectionString).password
+        const cloudUrl = new SafeURL(item.value.connectionString)
+        const localUrl = new SafeURL(existed.connectionString)
         const newConnectionString = new SafeURL(item.value.connectionString)
 
-        if (item.value.syncType === SyncType.CloudWithoutPassword && localPassword && !cloudPassword) {
-          newConnectionString.password = localPassword
+        if (item.value.syncType === SyncType.CloudWithoutPassword) {
+          if (localUrl.password && !cloudUrl.password) {
+            newConnectionString.password = localUrl.password
+          }
+          for (const p of SSH_SECRET_PARAMS) {
+            const cloudValue = cloudUrl.searchParams.get(p)
+            const localValue = localUrl.searchParams.get(p)
+            if (localValue && !cloudValue) {
+              newConnectionString.searchParams.set(p, localValue)
+            }
+          }
         }
 
         write({

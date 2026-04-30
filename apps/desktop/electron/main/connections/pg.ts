@@ -1,11 +1,12 @@
 import type { PoolConfig } from 'pg'
 import { createRequire } from 'node:module'
 import { parseConnectionString } from '@conar/connection'
-import { readSSLFiles } from '@conar/connection/server'
+import { parseSshConfig, readSSLFiles } from '@conar/connection/server'
 import { defaultSSLConfig, parseSSLConfig } from '@conar/connection/ssl/pg'
 import { memoize } from '@conar/memoize'
 import { tries } from '@conar/shared/utils/tries'
 import { disposeTransaction, getTransaction, registerTransaction } from '../lib/transactions'
+import { ensureTunnel } from './ssh-tunnel'
 
 const pg = createRequire(import.meta.url)('pg') as typeof import('pg')
 
@@ -20,8 +21,18 @@ pg.types.setTypeParser(pg.types.builtins.TIMETZ, parseDate)
 export const getPool = memoize(async (connectionString: string) => {
   const { searchParams, ...config } = parseConnectionString(connectionString)
   const ssl = parseSSLConfig(searchParams)
+  const ssh = parseSshConfig(searchParams)
+  let host = config.host
+  let port = config.port
+  if (ssh) {
+    const endpoint = await ensureTunnel(ssh, host, port ?? 5432)
+    host = endpoint.host
+    port = endpoint.port
+  }
   const conf: PoolConfig = {
     ...config,
+    host,
+    port,
     max: 1,
     ...(typeof ssl === 'object' ? { ssl: readSSLFiles(ssl) } : {}),
     ...(typeof ssl === 'boolean' ? { ssl } : {}),
