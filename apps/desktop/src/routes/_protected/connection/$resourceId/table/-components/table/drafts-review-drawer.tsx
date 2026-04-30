@@ -153,7 +153,7 @@ export function DraftsReviewDrawer({
                     const primaryLabel = Object.entries(primaryKeys).length > 0
                       ? Object.entries(primaryKeys).map(([columnId, value]) => `${columnId} = ${columnDisplay(columnId, value)}`)
                       : ['Unknown row']
-                    const errors = [...new Set(rowDrafts.map(draft => draft.error).filter(Boolean))] as string[]
+                    const errors = [...new Set(rowDrafts.flatMap(draft => draft.error ? [draft.error] : []))]
 
                     return (
                       <Frame key={primaryKeysKey(primaryKeys)}>

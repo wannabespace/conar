@@ -123,7 +123,6 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
               placeholder={table}
               spellCheck={false}
               autoComplete="off"
-              autoFocus
             />
           </div>
           {connection.type !== ConnectionType.ClickHouse && (

@@ -228,7 +228,7 @@ export function ChatForm() {
               type="button"
               size="icon-xs"
               variant="outline"
-              render={<label htmlFor="chat-file-upload" />}
+              render={<label htmlFor="chat-file-upload" aria-label="Attach files" />}
             >
               <RiAttachment2 className="size-3" />
               <input
