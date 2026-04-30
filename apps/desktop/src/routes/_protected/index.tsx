@@ -159,7 +159,7 @@ function DashboardPage() {
               <Tooltip>
                 <TooltipTrigger>
                   <RiDownloadLine className={`
-                    size-3 animate-pulse text-muted-foreground/50
+                    size-3 animate-bounce text-muted-foreground/50
                   `}
                   />
                 </TooltipTrigger>
