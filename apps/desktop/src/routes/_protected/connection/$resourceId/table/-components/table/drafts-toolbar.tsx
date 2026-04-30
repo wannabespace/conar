@@ -302,7 +302,7 @@ export function DraftsToolbar({
               variant="outline"
               size="icon-xs"
               onClick={() => setIsReviewOpen(true)}
-              disabled={isSaving}
+              disabled={isSaving || drafts.length === 0}
             >
               <RiEyeLine className="size-3.5" />
             </Button>
@@ -314,7 +314,7 @@ export function DraftsToolbar({
             <Button
               size="xs"
               onClick={handleSave}
-              disabled={isSaving}
+              disabled={isSaving || drafts.length === 0}
             >
               <LoadingContent loading={isSaving}>
                 Save

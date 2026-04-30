@@ -134,13 +134,13 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="flex items-center gap-2 text-sm">
+            <Label className="flex items-center gap-2 text-sm font-normal">
               <Checkbox
                 checked={saveInCloud}
                 onCheckedChange={() => setSaveInCloud(!saveInCloud)}
               />
               Do you want to sync the password in our cloud?
-            </label>
+            </Label>
             <div className="text-xs text-balance text-muted-foreground/50">
               Syncing passwords in our cloud allows access from any device without re-entering the password.
               <br />

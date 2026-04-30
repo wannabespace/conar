@@ -101,7 +101,6 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
           placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
           disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
           value={prompt}
-          autoFocus
           onChange={e => store.set(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
         />
         <InputGroupAddon>
