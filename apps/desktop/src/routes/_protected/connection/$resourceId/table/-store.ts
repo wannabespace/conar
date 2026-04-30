@@ -39,6 +39,7 @@ export const tablePageType = type({
       'customExpression?': 'string',
     },
   },
+  seedsCount: 'number',
   lastClickedIndex: 'number | null',
   selectionState: {
     anchorIndex: 'number | null',
@@ -57,6 +58,7 @@ const defaultState: typeof tablePageType.infer = {
   orderBy: {},
   columnSizes: {},
   generators: {},
+  seedsCount: 10,
   lastClickedIndex: null,
   selectionState: INITIAL_SHIFT_SELECTION_STATE,
   drafts: [],

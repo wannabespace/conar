@@ -176,8 +176,8 @@ export function HeaderActionsSeed({
   const { connection, connectionResource } = Route.useRouteContext()
   const allGenerators = getGenerators(connection.type)
   const [open, setOpen] = useState(false)
-  const [rowCount, setRowCount] = useState(10)
   const store = useTablePageStore()
+  const seedsCount = useSubscription(store, { selector: state => state.seedsCount })
   const generators = useSubscription(store, { selector: state => state.generators })
   const { filters, orderBy, exact } = useSubscription(store, { selector: state => pick(state, ['filters', 'orderBy', 'exact']) })
 
@@ -251,7 +251,7 @@ export function HeaderActionsSeed({
           })),
       )
 
-      const rows = generateRows({ columns, columnGenerators: generators, count: rowCount, dialect: connection.type, referenceData })
+      const rows = generateRows({ columns, columnGenerators: generators, count: seedsCount, dialect: connection.type, referenceData })
 
       const BATCH_SIZE = 500
       for (let i = 0; i < rows.length; i += BATCH_SIZE) {
@@ -263,7 +263,7 @@ export function HeaderActionsSeed({
       if (!subscription) {
         incrementSeedUsage()
       }
-      toast.success(`Seeded ${rowCount} rows into ${schema}.${table}`)
+      toast.success(`Seeded ${seedsCount} row${seedsCount === 1 ? '' : 's'} into ${schema}.${table}`)
       queryClient.invalidateQueries(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }))
       queryClient.invalidateQueries(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters, exact } }))
       setOpen(false)
@@ -459,8 +459,11 @@ export function HeaderActionsSeed({
           <NumberField
             min={1}
             max={10000}
-            value={rowCount}
-            onValueChange={value => setRowCount(Math.max(1, Math.min(10000, value ?? 1)))}
+            value={seedsCount}
+            onValueChange={value => store.set(state => ({
+              ...state,
+              seedsCount: Math.max(1, Math.min(10000, value ?? 1)),
+            } satisfies typeof state))}
             className="mr-auto w-32"
           >
             <NumberFieldGroup>
@@ -494,10 +497,10 @@ export function HeaderActionsSeed({
                     <>
                       <RiSeedlingLine className="size-4" />
                       <NumberFlow
-                        value={rowCount}
+                        value={seedsCount}
                         className="tabular-nums"
                         prefix="Seed "
-                        suffix={rowCount === 1 ? ' row' : ' rows'}
+                        suffix={seedsCount === 1 ? ' row' : ' rows'}
                       />
                     </>
                   )}
