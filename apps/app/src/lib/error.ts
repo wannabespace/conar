@@ -22,8 +22,9 @@ export async function handleError(error: unknown) {
 
   if (!shouldIgnoreError) {
     const message = getErrorMessage(error)
+
     toast.error(message, {
-      id: `error-${message}`,
+      id: message.includes('session') ? 'session-expired' : `error-${message}`,
     })
   }
 

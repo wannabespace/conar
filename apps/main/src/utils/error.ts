@@ -1,4 +1,5 @@
 import { ORPCError } from '@orpc/client'
+import { BASE_ERROR_CODES } from 'better-auth'
 import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
 
@@ -13,7 +14,10 @@ export async function handleError(error: unknown) {
     return
 
   const shouldIgnoreError = error instanceof Error
-    ? error.name === 'AbortError' || error.message.includes('net::')
+    ? error.name === 'AbortError'
+    || error.message.includes('net::')
+    || error.message.toLowerCase().includes('failed to fetch')
+    || error.message.toLowerCase().includes('cannot parse response body')
     : false
 
   if (!shouldIgnoreError) {
@@ -30,8 +34,7 @@ export async function handleError(error: unknown) {
       && 'status' in error
       && 'code' in error
       && error.status === 401
-      && error.code !== 'INVALID_EMAIL_OR_PASSWORD'
-      && error.code !== 'INVALID_CODE'
+      && error.code !== BASE_ERROR_CODES.INVALID_EMAIL_OR_PASSWORD.code
     )
     || (error instanceof ORPCError && error.code === 'UNAUTHORIZED')
   ) {
