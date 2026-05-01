@@ -941,15 +941,6 @@ importers:
       '@typescript/native-preview':
         specifier: 'catalog:'
         version: 7.0.0-dev.20260421.2
-      better-result:
-        specifier: 'catalog:'
-        version: 2.9.0
-      change-case:
-        specifier: 'catalog:'
-        version: 5.4.4
-      tsdown:
-        specifier: 'catalog:'
-        version: 0.21.10(@typescript/native-preview@7.0.0-dev.20260421.2)(publint@0.3.18)(synckit@0.11.12)(typescript@6.0.3)
       vite:
         specifier: 'catalog:'
         version: 8.0.10(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)

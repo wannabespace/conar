@@ -35,9 +35,6 @@
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
     "@typescript/native-preview": "catalog:",
-    "better-result": "catalog:",
-    "change-case": "catalog:",
-    "tsdown": "catalog:",
     "vite": "catalog:",
     "vite-plugin-electron": "catalog:"
   }
