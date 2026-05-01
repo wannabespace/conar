@@ -157,8 +157,8 @@ export const auth = betterAuth({
   trustedOrigins: [
     env.WEB_URL,
     'file://',
-    ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`] : []),
-    ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`] : []),
+    ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`, `http://localhost:${PORTS.DEV.APP}`] : []),
+    ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`, `http://localhost:${PORTS.TEST.APP}`] : []),
   ],
   advanced: {
     cookiePrefix: AUTH_COOKIE_PREFIX,
@@ -169,10 +169,6 @@ export const auth = betterAuth({
     database: {
       generateId: 'uuid',
     },
-  },
-  // TODO: Remove this in future, it needed only for desktop auth in old versions
-  account: {
-    skipStateCookieCheck: true,
   },
   database: drizzleAdapter(db, {
     provider: 'pg',

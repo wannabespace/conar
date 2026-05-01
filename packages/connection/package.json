@@ -2,13 +2,6 @@
   "name": "@conar/connection",
   "type": "module",
   "private": true,
-  "exports": {
-    ".": "./src/index.ts",
-    "./ssl/pg": "./src/ssl/pg.ts",
-    "./ssl/mysql": "./src/ssl/mysql.ts",
-    "./ssl/mssql": "./src/ssl/mssql.ts",
-    "./server": "./src/server.ts"
-  },
   "scripts": {
     "test": "bun test",
     "check-types": "tsgo"
