@@ -35,10 +35,12 @@ export const authClient = createAuthClient({
     bearer(),
   ],
   fetchOptions: {
-    auth: {
-      type: 'Bearer',
-      token: () => bearerToken.get() ?? undefined,
-    },
+    auth: window.electron
+      ? {
+          type: 'Bearer',
+          token: () => bearerToken.get() ?? undefined,
+        }
+      : undefined,
     headers: {
       'x-desktop': 'true',
     },
