@@ -2,37 +2,37 @@ import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { defineRelations } from 'drizzle-orm'
 import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-orm/arktype'
-import { pgEnum, pgTable, unique } from 'drizzle-orm/pg-core'
+import * as d from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 import { encryptedText } from '../utils'
 import { users } from './auth'
 
-export const connectionType = pgEnum('connection_type', ConnectionType)
+export const connectionType = d.pgEnum('connection_type', ConnectionType)
 
-export const syncType = pgEnum('sync_type', SyncType)
+export const syncType = d.pgEnum('sync_type', SyncType)
 
-export const connections = pgTable('connections', ({ uuid, text, boolean }) => ({
+export const connections = d.snakeCase.table('connections', {
   ...baseTable,
-  userId: uuid().references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  userId: d.uuid().references(() => users.id, { onDelete: 'cascade' }).notNull(),
   type: connectionType().notNull(),
-  name: text().notNull(),
+  name: d.text().notNull(),
   connectionString: encryptedText().notNull(),
-  label: text(),
-  color: text(),
-  isPasswordExists: boolean('password_exists').notNull(),
+  label: d.text(),
+  color: d.text(),
+  isPasswordExists: d.boolean('password_exists').notNull(),
   syncType: syncType().notNull(),
-}))
+})
 
 export const connectionsSelectSchema = createSelectSchema(connections)
 export const connectionsUpdateSchema = createUpdateSchema(connections)
 export const connectionsInsertSchema = createInsertSchema(connections)
 
-export const connectionsResources = pgTable('connections_resources', ({ uuid, text }) => ({
+export const connectionsResources = d.snakeCase.table('connections_resources', {
   ...baseTable,
-  connectionId: uuid().references(() => connections.id, { onDelete: 'cascade' }).notNull(),
-  name: text(),
-}), t => [
-  unique().on(t.connectionId, t.name),
+  connectionId: d.uuid().references(() => connections.id, { onDelete: 'cascade' }).notNull(),
+  name: d.text(),
+}, t => [
+  d.unique().on(t.connectionId, t.name),
 ])
 
 export const connectionsResourcesSelectSchema = createSelectSchema(connectionsResources)

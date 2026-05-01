@@ -15,9 +15,8 @@ const config = {
     ...connectionsRelations,
     ...queriesRelations,
   },
-  casing: 'snake_case',
 } satisfies Parameters<typeof drizzle>[1]
 
 export const db = nodeEnv === 'test'
-  ? drizzlePglite(env.DATABASE_URL, config) as unknown as NodePgDatabase<Record<string, never>, typeof config['relations']>
+  ? drizzlePglite(env.DATABASE_URL, config) as unknown as NodePgDatabase<typeof config['relations']>
   : drizzle(env.DATABASE_URL, config)

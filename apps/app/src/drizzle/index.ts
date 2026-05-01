@@ -24,7 +24,6 @@ if (import.meta.env.DEV) {
 
 export const db = drizzle({
   client: pg,
-  casing: 'snake_case',
   logger: import.meta.env.DEV,
   relations: {
     ...chatsRelations,

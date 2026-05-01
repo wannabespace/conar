@@ -6,7 +6,6 @@ export default defineConfig({
   out: './drizzle/migrations',
   ...(nodeEnv === 'test' && { driver: 'pglite' }),
   dialect: 'postgresql',
-  casing: 'snake_case',
   dbCredentials: {
     url: env.DATABASE_URL,
   },

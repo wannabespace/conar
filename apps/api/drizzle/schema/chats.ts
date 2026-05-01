@@ -1,38 +1,38 @@
 import type { AppUIMessage } from '~/ai/tools/helpers'
 import { defineRelations } from 'drizzle-orm'
 import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-orm/arktype'
-import { index, pgTable, text, uuid } from 'drizzle-orm/pg-core'
+import * as d from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 import { encryptedJson } from '../utils'
 import { users } from './auth'
 import { connections, connectionsResources } from './connections'
 
-export const chats = pgTable('chats', {
+export const chats = d.snakeCase.table('chats', {
   ...baseTable,
-  userId: uuid().references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  userId: d.uuid().references(() => users.id, { onDelete: 'cascade' }).notNull(),
   // TODO: remove it in the future versions, saving connectionId for backward compatibility
-  connectionId: uuid().references(() => connections.id, { onDelete: 'cascade' }),
-  connectionResourceId: uuid().references(() => connectionsResources.id, { onDelete: 'cascade' }),
-  title: text(),
-  activeStreamId: uuid(),
+  connectionId: d.uuid().references(() => connections.id, { onDelete: 'cascade' }),
+  connectionResourceId: d.uuid().references(() => connectionsResources.id, { onDelete: 'cascade' }),
+  title: d.text(),
+  activeStreamId: d.uuid(),
 }, t => [
-  index().on(t.userId),
-  index().on(t.connectionId),
+  d.index().on(t.userId),
+  d.index().on(t.connectionId),
 ])
 
 export const chatsSelectSchema = createSelectSchema(chats)
 export const chatsInsertSchema = createInsertSchema(chats)
 export const chatsUpdateSchema = createUpdateSchema(chats)
 
-export const chatsMessages = pgTable('chats_messages', {
+export const chatsMessages = d.snakeCase.table('chats_messages', {
   ...baseTable,
-  chatId: uuid().references(() => chats.id, { onDelete: 'cascade' }).notNull(),
+  chatId: d.uuid().references(() => chats.id, { onDelete: 'cascade' }).notNull(),
   parts: encryptedJson().$type<AppUIMessage['parts'][number]>().array().notNull(),
-  role: text().$type<AppUIMessage['role']>().notNull(),
+  role: d.text().$type<AppUIMessage['role']>().notNull(),
   metadata: encryptedJson().$type<NonNullable<AppUIMessage['metadata']>>(),
 }, t => [
-  index().on(t.chatId),
-  index().on(t.role),
+  d.index().on(t.chatId),
+  d.index().on(t.role),
 ])
 
 export const chatsMessagesSelectSchema = createSelectSchema(chatsMessages)

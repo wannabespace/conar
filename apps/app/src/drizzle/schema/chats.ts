@@ -1,21 +1,21 @@
 import type { AppUIMessage } from '@conar/api/ai/tools/helpers'
 import { defineRelations } from 'drizzle-orm'
-import { jsonb, pgTable, text, uuid } from 'drizzle-orm/pg-core'
+import * as d from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 import { connectionsResources } from './connections'
 
-export const chats = pgTable('chats', {
+export const chats = d.snakeCase.table('chats', {
   ...baseTable,
-  connectionResourceId: uuid().references(() => connectionsResources.id, { onDelete: 'cascade' }).notNull(),
-  title: text(),
+  connectionResourceId: d.uuid().references(() => connectionsResources.id, { onDelete: 'cascade' }).notNull(),
+  title: d.text(),
 })
 
-export const chatsMessages = pgTable('chats_messages', {
+export const chatsMessages = d.snakeCase.table('chats_messages', {
   ...baseTable,
-  chatId: uuid().references(() => chats.id, { onDelete: 'cascade' }).notNull(),
-  parts: jsonb().$type<AppUIMessage['parts'][number]>().array().notNull(),
-  role: text().$type<AppUIMessage['role']>().notNull(),
-  metadata: jsonb().$type<NonNullable<AppUIMessage['metadata']>>(),
+  chatId: d.uuid().references(() => chats.id, { onDelete: 'cascade' }).notNull(),
+  parts: d.jsonb().$type<AppUIMessage['parts'][number]>().array().notNull(),
+  role: d.text().$type<AppUIMessage['role']>().notNull(),
+  metadata: d.jsonb().$type<NonNullable<AppUIMessage['metadata']>>(),
 })
 
 export const chatsRelations = defineRelations(

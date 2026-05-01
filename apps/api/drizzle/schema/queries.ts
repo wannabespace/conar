@@ -1,20 +1,20 @@
 import { defineRelations } from 'drizzle-orm'
 import { createInsertSchema, createSelectSchema } from 'drizzle-orm/arktype'
-import { pgTable } from 'drizzle-orm/pg-core'
+import * as d from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 import { encryptedText } from '../utils'
 import { users } from './auth'
 import { connections, connectionsResources } from './connections'
 
-export const queries = pgTable('queries', ({ uuid, text }) => ({
+export const queries = d.snakeCase.table('queries', {
   ...baseTable,
-  userId: uuid().references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  userId: d.uuid().references(() => users.id, { onDelete: 'cascade' }).notNull(),
   // TODO: remove it in the future versions, saving connectionId for backward compatibility
-  connectionId: uuid().references(() => connections.id, { onDelete: 'cascade' }),
-  connectionResourceId: uuid().references(() => connectionsResources.id, { onDelete: 'cascade' }),
-  name: text().notNull(),
+  connectionId: d.uuid().references(() => connections.id, { onDelete: 'cascade' }),
+  connectionResourceId: d.uuid().references(() => connectionsResources.id, { onDelete: 'cascade' }),
+  name: d.text().notNull(),
   query: encryptedText().notNull(),
-}))
+})
 
 export const queriesSelectSchema = createSelectSchema(queries)
 export const queriesInsertSchema = createInsertSchema(queries)

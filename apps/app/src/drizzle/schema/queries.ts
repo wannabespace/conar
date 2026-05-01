@@ -1,14 +1,14 @@
 import { defineRelations } from 'drizzle-orm'
-import { pgTable } from 'drizzle-orm/pg-core'
+import * as d from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 import { connectionsResources } from './connections'
 
-export const queries = pgTable('queries', ({ uuid, text }) => ({
+export const queries = d.snakeCase.table('queries', {
   ...baseTable,
-  connectionResourceId: uuid().references(() => connectionsResources.id, { onDelete: 'cascade' }).notNull(),
-  name: text().notNull(),
-  query: text().notNull(),
-}))
+  connectionResourceId: d.uuid().references(() => connectionsResources.id, { onDelete: 'cascade' }).notNull(),
+  name: d.text().notNull(),
+  query: d.text().notNull(),
+})
 
 export const queriesRelations = defineRelations({ queries, connectionsResources }, r => ({
   queries: {
