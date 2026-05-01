@@ -1,3 +1,4 @@
+import type { QueryExecutor } from '@conar/connection/queries'
 import { createRequire } from 'node:module'
 import { memoize } from '@conar/memoize'
 import { tryParseJson } from '@conar/shared/utils/helpers'
@@ -42,7 +43,7 @@ function isSelectLikeQuery(query: string) {
 }
 
 export const query = {
-  execute: async ({ connectionString, query }: { connectionString: string, query: string }) => {
+  execute: async ({ connectionString, query }) => {
     try {
       const client = getClient(connectionString)
 
@@ -123,4 +124,4 @@ export const query = {
       await handle.release().catch(() => {})
     }
   },
-}
+} satisfies QueryExecutor

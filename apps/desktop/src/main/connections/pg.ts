@@ -1,7 +1,8 @@
+import type { QueryExecutor } from '@conar/connection/queries'
 import type { PoolConfig } from 'pg'
 import { createRequire } from 'node:module'
 import { parseConnectionString } from '@conar/connection'
-import { readSSLFiles } from '@conar/connection/server'
+import { readSSLFiles } from '@conar/connection/read-ssl-files'
 import { defaultSSLConfig, parseSSLConfig } from '@conar/connection/ssl/pg'
 import { memoize } from '@conar/memoize'
 import { tries } from '@conar/shared/utils/tries'
@@ -48,7 +49,7 @@ export const getPool = memoize(async (connectionString: string) => {
 })
 
 export const query = {
-  execute: async ({ connectionString, query, values }: { connectionString: string, query: string, values: unknown[] }) => {
+  execute: async ({ connectionString, query, values = [] }) => {
     const pool = await getPool(connectionString)
     const start = performance.now()
     const result = await pool.query(query, values)
@@ -121,4 +122,4 @@ export const query = {
       await handle.release().catch(() => {})
     }
   },
-}
+} satisfies QueryExecutor

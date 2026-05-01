@@ -1,3 +1,4 @@
+import type { QueryExecutor } from '@conar/connection/queries'
 import { createRequire } from 'node:module'
 import { parseConnectionString } from '@conar/connection'
 import { parseSSLConfig } from '@conar/connection/ssl/mssql'
@@ -24,7 +25,7 @@ export const getPool = memoize((connectionString: string) => {
 })
 
 export const query = {
-  execute: async ({ connectionString, query, values }: { connectionString: string, query: string, values: unknown[] }) => {
+  execute: async ({ connectionString, query, values = [] }) => {
     const pool = await getPool(connectionString)
     let request = pool.request()
 
@@ -101,4 +102,4 @@ export const query = {
       await handle.release().catch(() => {})
     }
   },
-}
+} satisfies QueryExecutor

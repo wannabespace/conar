@@ -1,3 +1,4 @@
+import type { QueryExecutor } from '@conar/connection/queries'
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { AnyFunction } from '@conar/shared/utils/helpers'
 import { decrypt, encrypt } from '@conar/shared/utils/encryption'
@@ -33,7 +34,7 @@ const queryMap = {
   mysql: wrapAggregateErrors(mysql.query),
   clickhouse: wrapAggregateErrors(clickhouse.query),
   mssql: wrapAggregateErrors(mssql.query),
-} satisfies Record<ConnectionType, unknown>
+} satisfies Record<ConnectionType, QueryExecutor>
 
 const encryption = {
   encrypt: async (arg: Parameters<typeof encrypt>[0]) => encrypt(arg),
