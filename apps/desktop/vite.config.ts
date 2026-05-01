@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import electron from 'vite-plugin-electron/simple'
 import packageJson from './package.json'
 
-export default defineConfig(() => ({
+export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
@@ -37,4 +37,4 @@ export default defineConfig(() => ({
       external: Object.keys(packageJson.dependencies),
     },
   },
-}))
+})
