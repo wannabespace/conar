@@ -1,5 +1,5 @@
 {
-  "name": "@conar/web",
+  "name": "@conar/main",
   "type": "module",
   "private": true,
   "scripts": {
