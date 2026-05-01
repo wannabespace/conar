@@ -1,6 +1,8 @@
 import type { ComponentProps } from 'react'
+import type { CreateEmailOptions } from 'resend'
 import { Resend } from 'resend'
 import { env } from '~/env'
+import { redisMemoize } from '../redis'
 import * as templates from './templates'
 
 export const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null
@@ -29,20 +31,24 @@ export async function sendEmail<
     return
   }
 
-  try {
-    const Template = templates[template] as (props?: P) => React.ReactElement
-    const { error } = await resend.emails.send({
-      from: `Conar <${env.RESEND_FROM_EMAIL}>`,
-      to,
-      subject,
-      react: Template(props),
-    })
+  const Template = templates[template] as (props?: P) => React.ReactElement
+  const options: CreateEmailOptions = {
+    from: `Conar <${env.RESEND_FROM_EMAIL}>`,
+    to,
+    subject,
+    react: Template(props),
+  }
 
-    if (error) {
-      throw error
+  await redisMemoize(async () => {
+    try {
+      const { error } = await resend.emails.send(options)
+
+      if (error) {
+        throw error
+      }
     }
-  }
-  catch (error) {
-    console.error('Resend email service error:', error instanceof Error ? error.message : 'Unknown error', error)
-  }
+    catch (error) {
+      console.error('Resend email service error:', error instanceof Error ? error.message : 'Unknown error', error)
+    }
+  }, `resend:${JSON.stringify(options)}`, 10 * 60)
 }

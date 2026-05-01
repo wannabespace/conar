@@ -35,6 +35,7 @@ export default antfu(
       '**/.tanstack/**/*',
       '**/.nitro/**/*',
       '**/.output/**/*',
+      '**/dist-electron/**/*',
       '**/playwright-report/**/*',
       '**/test-results/**/*',
       '**/.types/**/*',

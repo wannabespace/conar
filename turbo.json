@@ -18,12 +18,9 @@
       "dependsOn": ["^build"],
       "cache": false
     },
-    "build:vite": {
-      "dependsOn": ["check-types", "^check-types"],
+    "build:todesktop": {
+      "dependsOn": ["@conar/app#build"],
       "cache": false
-    },
-    "conar#build:todesktop": {
-      "dependsOn": ["build:vite"]
     },
     "drizzle:migrate": {
       "cache": false

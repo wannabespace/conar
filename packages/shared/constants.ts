@@ -1,0 +1,73 @@
+import { ConnectionType } from './enums/connection-type'
+
+export const SOCIAL_LINKS = {
+  GITHUB: 'https://github.com/wannabespace/conar',
+  TWITTER: 'https://x.com/conar_app',
+  DISCORD: 'https://discord.gg/XweDPUVadR',
+} as const
+
+export const GITHUB_REPO_OWNER = 'wannabespace' as const
+export const GITHUB_REPO_NAME = 'conar' as const
+
+export const SUPPORT_EMAIL = 'valerii.strilets@gmail.com'
+
+export const BREW_INSTALL_COMMAND = 'brew install --cask conar'
+
+export const AUTH_COOKIE_PREFIX = 'conar' as const
+
+export const PORTS = {
+  DEV: {
+    API: 3000,
+    APP: 3001,
+    WEB: 3002,
+    DESKTOP: 3003,
+  },
+  TEST: {
+    API: 4000,
+    APP: 4001,
+    WEB: 4002,
+    DESKTOP: 4003,
+  },
+} as const
+
+export const LABEL_OPTIONS = ['Local', 'Test', 'Dev', 'Staging', 'Prod']
+
+export const COLOR_OPTIONS = [
+  '#ef4444',
+  '#f97316',
+  '#f59e0b',
+  '#16a34a',
+  '#06b6d4',
+  '#2563eb',
+  '#9333ea',
+  '#db2777',
+]
+
+export const LATEST_VERSION_BEFORE_SUBSCRIPTION = 26 as const
+
+export const SUBSCRIPTION_PAST_DUE_MESSAGE = 'We couldn\'t process your recent payment. Please update your payment method to avoid any interruption to your subscription.' as const
+export const ACTIVE_SUBSCRIPTION_STATUSES = ['active', 'trialing', 'past_due'] as const
+
+export const FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT = 50 as const
+
+export const CONNECTION_RESOURCE_ROOT_SYMBOL = Symbol('CONNECTION_RESOURCE_ROOT')
+export const CONNECTION_RESOURCE_ROOT_LABEL = 'root' as const
+export const CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES: ConnectionType[] = [ConnectionType.MSSQL, ConnectionType.ClickHouse]
+export const CONNECTION_TYPES_WITHOUT_SCHEMAS: ConnectionType[] = [ConnectionType.ClickHouse]
+export const CONNECTION_TYPES_WITH_EXPLAIN: ConnectionType[] = [ConnectionType.Postgres, ConnectionType.MySQL]
+export const CONNECTION_TYPES_WITH_TRIGGERS: ConnectionType[] = [ConnectionType.Postgres, ConnectionType.MySQL, ConnectionType.MSSQL]
+export const CONNECTION_TYPES_WITH_FUNCTIONS: ConnectionType[] = [ConnectionType.Postgres, ConnectionType.MySQL, ConnectionType.MSSQL]
+export const CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME: ConnectionType[] = [ConnectionType.ClickHouse]
+
+export const RECONNECT_ERROR_PATTERNS = [
+  'econnreset',
+  'etimedout',
+  'epipe',
+  'econnrefused',
+  'enotfound',
+  'connection lost',
+  'socket hang up',
+  'socketerror',
+  'network',
+  'application failed to respond',
+]
