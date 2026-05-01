@@ -11,8 +11,7 @@
   "asar": true,
   "copyright": "Copyright © 2024 Wannabe Space, LLC",
   "appFiles": [
-    "out/**",
-    "index.html"
+    "dist-electron/**"
   ],
   "uploadSizeLimit": 80,
   "bundleWorkspacePackages": {
