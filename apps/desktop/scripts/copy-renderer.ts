@@ -3,7 +3,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const appDist = resolve(root, '../app/dist')
+const appDist = resolve(root, '../app/dist-desktop')
 const rendererDest = resolve(root, 'dist-electron/renderer')
 
 if (!existsSync(appDist)) {

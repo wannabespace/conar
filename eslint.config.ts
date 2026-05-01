@@ -30,12 +30,12 @@ export default antfu(
     ignores: [
       '**/*.md',
       '**/routeTree.gen.ts',
-      '**/out/**/*',
       '**/release/**/*',
       '**/.tanstack/**/*',
       '**/.nitro/**/*',
       '**/.output/**/*',
       '**/dist-electron/**/*',
+      '**/dist-desktop/**/*',
       '**/playwright-report/**/*',
       '**/test-results/**/*',
       '**/.types/**/*',

@@ -5,9 +5,10 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "build:desktop": "vite build --mode desktop",
     "start": "serve -s dist -l $PORT",
     "check-types": "tsgo",
-    "test:start": "vite -c vite.test.config.ts build --mode test && vite -c vite.test.config.ts preview --mode test",
+    "test:start": "vite build --mode test && vite preview --mode test",
     "test": "bun test ./src",
     "test:e2e": "playwright test --headed",
     "drizzle:generate": "drizzle-kit generate && bun run ./scripts/compile-migrations.ts",
