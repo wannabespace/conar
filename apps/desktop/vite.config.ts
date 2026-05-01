@@ -1,6 +1,17 @@
+import type { InlineConfig } from 'vite'
 import { defineConfig } from 'vite'
 import electron from 'vite-plugin-electron/simple'
 import packageJson from './package.json'
+
+const rolldownOptions: NonNullable<NonNullable<InlineConfig['build']>['rolldownOptions']> = {
+  output: {
+    format: 'es',
+  },
+  external: [
+    ...Object.keys(packageJson.dependencies),
+    ...Object.keys(packageJson.devDependencies),
+  ].filter(dep => !dep.startsWith('@conar/')),
+}
 
 export default defineConfig({
   resolve: {
@@ -12,9 +23,7 @@ export default defineConfig({
         entry: 'src/main/main.ts',
         vite: {
           build: {
-            rolldownOptions: {
-              external: Object.keys(packageJson.dependencies),
-            },
+            rolldownOptions,
           },
         },
       },
@@ -22,10 +31,7 @@ export default defineConfig({
         input: 'src/preload/preload.ts',
         vite: {
           build: {
-            rolldownOptions: {
-              output: { format: 'es' },
-              external: Object.keys(packageJson.dependencies),
-            },
+            rolldownOptions,
           },
         },
       },
@@ -33,8 +39,6 @@ export default defineConfig({
   ],
   build: {
     minify: false,
-    rolldownOptions: {
-      external: Object.keys(packageJson.dependencies),
-    },
+    rolldownOptions,
   },
 })
