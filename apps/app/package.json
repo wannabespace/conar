@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "start": "serve dist -l $PORT",
     "check-types": "tsgo",
     "test:start": "vite -c vite.test.config.ts build --mode test && vite -c vite.test.config.ts preview --mode test",
     "test": "bun test ./src",
@@ -88,6 +89,7 @@
     "@typescript/native-preview": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "react-scan": "catalog:",
+    "serve": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
     "vite": "catalog:"

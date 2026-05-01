@@ -22,6 +22,8 @@
     "start:api": "cd apps/api && pnpm run start",
     "build:main": "turbo run @conar/main#build",
     "start:main": "cd apps/main && pnpm run start",
+    "build:app": "turbo run @conar/app#build",
+    "start:app": "cd apps/app && pnpm run start",
     "build:todesktop": "turbo run @conar/desktop#build:todesktop",
     "aur:sync": "bun scripts/sync-aur-version.ts",
     "aur:sync:checksum": "bun scripts/sync-aur-version.ts --checksum",
