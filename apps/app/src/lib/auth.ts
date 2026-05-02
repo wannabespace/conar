@@ -31,9 +31,11 @@ export function successAuthToast(newUser: boolean) {
 export const authClient = createAuthClient({
   baseURL: apiUrl,
   basePath: '/auth',
-  plugins: [
-    bearer(),
-  ],
+  plugins: window.electron
+    ? [
+        bearer(),
+      ]
+    : [],
   fetchOptions: {
     auth: {
       type: 'Bearer',
