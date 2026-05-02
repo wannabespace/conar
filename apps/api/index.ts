@@ -69,7 +69,7 @@ const app = new Hono<{
         ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`, `http://localhost:${PORTS.DEV.APP}`] : []),
         ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`, `http://localhost:${PORTS.TEST.APP}`] : []),
       ]
-      return origin.endsWith(new URL(env.WEB_URL).host) || allowedOrigins.includes(origin) ? origin : null
+      return origin.endsWith(`.${new URL(env.WEB_URL).host}`) || allowedOrigins.includes(origin) ? origin : null
     },
     credentials: true,
   }))
