@@ -50,6 +50,10 @@ export const authClient = createAuthClient({
   },
 })
 
+export async function isSignedIn() {
+  return !!(await authClient.getSession()).data?.user
+}
+
 export async function fullSignOut() {
   await authClient.signOut()
   bearerToken.clear()

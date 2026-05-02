@@ -3,7 +3,7 @@ import { drizzleCollectionOptions } from 'tanstack-db-pglite'
 import { db, waitForMigrations } from '~/drizzle'
 import { queries } from '~/drizzle/schema'
 import { connectionsCollection } from '~/entities/connection/sync'
-import { bearerToken } from '~/lib/auth'
+import { isSignedIn } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
 export const queriesCollection = createCollection(drizzleCollectionOptions({
@@ -13,7 +13,7 @@ export const queriesCollection = createCollection(drizzleCollectionOptions({
   startSync: false,
   prepare: waitForMigrations,
   sync: async ({ collection, write }) => {
-    if (!bearerToken.get() || !navigator.onLine) {
+    if (!await isSignedIn() || !navigator.onLine) {
       return
     }
 

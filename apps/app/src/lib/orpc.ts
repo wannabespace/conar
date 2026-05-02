@@ -22,6 +22,14 @@ const link = new RPCLink({
         : {}),
     }
   },
+  fetch: window.electron
+    ? undefined
+    : (request, init) => {
+        return globalThis.fetch(request, {
+          ...init,
+          credentials: 'include',
+        })
+      },
   interceptors: [
     onError(handleError),
   ],
