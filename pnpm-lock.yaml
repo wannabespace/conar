@@ -853,6 +853,9 @@ importers:
       '@conar/configs':
         specifier: workspace:*
         version: link:../../packages/configs
+      '@conar/connection':
+        specifier: workspace:*
+        version: link:../../packages/connection
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.59.1

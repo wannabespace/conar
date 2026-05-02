@@ -7,6 +7,7 @@ import * as chatsMessages from './chats-messages'
 import * as connections from './connections'
 import * as connectionsResources from './connections-resources'
 import { contact } from './contact'
+import * as proxy from './proxy'
 import * as queries from './queries'
 import { releases } from './releases'
 import { repo } from './repo'
@@ -23,6 +24,7 @@ export const router = {
   // TODO: remove this in the future
   databases: connections,
   banner,
+  proxy,
   account,
   webhooks,
   repo,

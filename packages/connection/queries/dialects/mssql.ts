@@ -1,6 +1,7 @@
 import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
 import { memoize } from '@conar/memoize'
+import { wrapAggregateError } from '@conar/shared/utils/helpers'
 import { parseConnectionString } from '../..'
 import { parseSSLConfig } from '../../ssl/mssql'
 import { disposeTransaction, getTransaction, registerTransaction } from '../transactions'
@@ -25,7 +26,7 @@ export const getPool = memoize((connectionString: string) => {
 })
 
 export const query = {
-  execute: async ({ connectionString, query, values = [] }) => {
+  execute: wrapAggregateError(async ({ connectionString, query, values = [] }) => {
     const pool = await getPool(connectionString)
     let request = pool.request()
 
@@ -37,9 +38,9 @@ export const query = {
     const result = await request.query(query)
 
     return { result: result.recordset as unknown, duration: performance.now() - start }
-  },
+  }),
 
-  beginTransaction: async ({ connectionString }: { connectionString: string }) => {
+  beginTransaction: wrapAggregateError(async ({ connectionString }: { connectionString: string }) => {
     const pool = await getPool(connectionString)
     const transaction = pool.transaction()
 
@@ -67,17 +68,17 @@ export const query = {
     })
 
     return { txId }
-  },
+  }),
 
-  executeTransaction: async ({ txId, query, values }: { txId: string, query: string, values: unknown[] }) => {
+  executeTransaction: wrapAggregateError(async ({ txId, query, values }: { txId: string, query: string, values: unknown[] }) => {
     const handle = getTransaction(txId)
     if (!handle)
       throw new Error(`No active transaction found for id: ${txId}`)
 
     return handle.execute(query, values)
-  },
+  }),
 
-  commitTransaction: async ({ txId }: { txId: string }) => {
+  commitTransaction: wrapAggregateError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
     if (!handle)
       return
@@ -88,9 +89,9 @@ export const query = {
     finally {
       await handle.release().catch(() => {})
     }
-  },
+  }),
 
-  rollbackTransaction: async ({ txId }: { txId: string }) => {
+  rollbackTransaction: wrapAggregateError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
     if (!handle)
       return
@@ -101,5 +102,5 @@ export const query = {
     finally {
       await handle.release().catch(() => {})
     }
-  },
+  }),
 } satisfies QueryExecutor

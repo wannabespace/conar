@@ -1,7 +1,8 @@
+import type { AnyFunction } from '@conar/memoize'
 import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
 import { memoize } from '@conar/memoize'
-import { tryParseJson } from '@conar/shared/utils/helpers'
+import { tryParseJson, wrapAggregateError } from '@conar/shared/utils/helpers'
 import { disposeTransaction, getTransaction, registerTransaction } from '../transactions'
 
 const clickhouse = createRequire(import.meta.url)('@clickhouse/client') as typeof import('@clickhouse/client')
@@ -22,13 +23,20 @@ export const getClient = memoize((connectionString: string) => {
   })
 })
 
-function throwWithClickhouseMessage(error: unknown): never {
-  if (error instanceof Error) {
-    const parsed = tryParseJson<Partial<{ message: string, status: string, code: number, request_id: string }>>(error.message)
-    if (parsed?.message)
-      throw new Error(parsed.message, { cause: error })
-  }
-  throw error
+export function wrapClickhouseError<T extends AnyFunction>(fn: T): T {
+  return (async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
+    try {
+      return await wrapAggregateError(fn(...args))
+    }
+    catch (error) {
+      if (error instanceof Error) {
+        const parsed = tryParseJson<Partial<{ message: string, status: string, code: number, request_id: string }>>(error.message)
+        if (parsed?.message)
+          throw new Error(parsed.message, { cause: error })
+      }
+      throw error
+    }
+  }) as T
 }
 
 function isSelectLikeQuery(query: string) {
@@ -43,46 +51,25 @@ function isSelectLikeQuery(query: string) {
 }
 
 export const query = {
-  execute: async ({ connectionString, query }) => {
-    try {
-      const client = getClient(connectionString)
+  execute: wrapClickhouseError(async ({ connectionString, query }) => {
+    const client = getClient(connectionString)
 
-      if (isSelectLikeQuery(query)) {
-        const start = performance.now()
-        const result = await client.query({ query, format: 'JSONEachRow' }).then(result => result.json())
-        return { result, duration: performance.now() - start }
-      }
-
+    if (isSelectLikeQuery(query)) {
       const start = performance.now()
-      await client.exec({ query })
+      const result = await client.query({ query, format: 'JSONEachRow' }).then(result => result.json())
+      return { result, duration: performance.now() - start }
+    }
 
-      return { result: [], duration: performance.now() - start }
-    }
-    catch (error) {
-      throwWithClickhouseMessage(error)
-    }
-  },
+    const start = performance.now()
+    await client.exec({ query })
+
+    return { result: [], duration: performance.now() - start }
+  }),
 
   beginTransaction: async ({ connectionString }: { connectionString: string }) => {
     // ClickHouse does not support transactions
-    const client = getClient(connectionString)
-
     const txId = registerTransaction({
-      execute: async (query) => {
-        try {
-          if (isSelectLikeQuery(query)) {
-            const start = performance.now()
-            const result = await client.query({ query, format: 'JSONEachRow' }).then(r => r.json())
-            return { result, duration: performance.now() - start }
-          }
-          const start = performance.now()
-          await client.exec({ query })
-          return { result: [], duration: performance.now() - start }
-        }
-        catch (error) {
-          throwWithClickhouseMessage(error)
-        }
-      },
+      execute: (q, values) => query.execute({ connectionString, query: q, values }),
       commit: async () => {},
       rollback: async () => {},
       release: async () => {},

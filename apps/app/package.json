@@ -79,6 +79,7 @@
   "devDependencies": {
     "@conar/api": "workspace:*",
     "@conar/configs": "workspace:*",
+    "@conar/connection": "workspace:*",
     "@playwright/test": "catalog:",
     "@rolldown/plugin-babel": "catalog:",
     "@standard-schema/spec": "catalog:",

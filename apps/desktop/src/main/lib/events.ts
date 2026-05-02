@@ -5,15 +5,14 @@ import * as mssql from '@conar/connection/queries/dialects/mssql'
 import * as mysql from '@conar/connection/queries/dialects/mysql'
 import * as pg from '@conar/connection/queries/dialects/pg'
 import { decrypt, encrypt } from '@conar/shared/utils/encryption'
-import { wrapAggregateErrors } from '@conar/shared/utils/helpers'
 import { app, ipcMain } from 'electron'
 import { autoUpdater } from '../main'
 
 const queryMap = {
-  postgres: wrapAggregateErrors(pg.query),
-  mysql: wrapAggregateErrors(mysql.query),
-  clickhouse: wrapAggregateErrors(clickhouse.query),
-  mssql: wrapAggregateErrors(mssql.query),
+  postgres: pg.query,
+  mysql: mysql.query,
+  clickhouse: clickhouse.query,
+  mssql: mssql.query,
 } satisfies Record<ConnectionType, QueryExecutor>
 
 const encryption = {

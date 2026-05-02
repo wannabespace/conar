@@ -1,7 +1,9 @@
+import type { QueryExecutor } from '@conar/connection/queries'
 import type { CompiledQuery, DatabaseConnection, Dialect, Driver, QueryResult } from 'kysely'
 import type { DialectExecutionOptions, DialectOptions } from '..'
 import { type } from 'arktype'
 import { DummyDriver, MysqlQueryCompiler } from 'kysely'
+import { orpc } from '~/lib/orpc'
 
 const escapeSqlStringRegex = /[\\']/g
 
@@ -59,16 +61,16 @@ function prepareQuery(compiledQuery: CompiledQuery) {
 }
 
 function execute(options: DialectExecutionOptions) {
-  if (!window.electron) {
-    throw new Error('Electron is not available')
-  }
-
   const preparedQuery = prepareQuery(options.compiledQuery)
 
-  const promise = window.electron.query.clickhouse.execute({
+  const params: Parameters<QueryExecutor['execute']>[0] = {
     connectionString: options.connectionString,
     query: preparedQuery,
-  })
+  }
+
+  const promise = window.electron
+    ? window.electron.query.clickhouse.execute(params)
+    : orpc.proxy.query.clickhouse.execute.call(params)
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -76,17 +78,17 @@ function execute(options: DialectExecutionOptions) {
 }
 
 function executeInTransaction(options: DialectOptions & { txId: string, compiledQuery: CompiledQuery }) {
-  if (!window.electron) {
-    throw new Error('Electron is not available')
-  }
-
   const preparedQuery = prepareQuery(options.compiledQuery)
 
-  const promise = window.electron.query.clickhouse.executeTransaction({
+  const params: Parameters<QueryExecutor['executeTransaction']>[0] = {
     txId: options.txId,
     query: preparedQuery,
     values: [],
-  })
+  }
+
+  const promise = window.electron
+    ? window.electron.query.clickhouse.executeTransaction(params)
+    : orpc.proxy.query.clickhouse.executeTransaction.call(params)
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -138,28 +140,37 @@ function createDriver(options: DialectOptions) {
     },
     async commitTransaction(connection: DatabaseConnection) {
       const state = txStates.get(connection)
-      if (!state?.txId || !window.electron)
+      if (!state?.txId)
         return
 
       const txId = state.txId
       state.txId = null
-      await window.electron.query.clickhouse.commitTransaction({ txId })
+      const params: Parameters<QueryExecutor['commitTransaction']>[0] = { txId }
+      await (window.electron
+        ? window.electron.query.clickhouse.commitTransaction(params)
+        : orpc.proxy.query.clickhouse.commitTransaction.call(params))
     },
     async rollbackTransaction(connection: DatabaseConnection) {
       const state = txStates.get(connection)
-      if (!state?.txId || !window.electron)
+      if (!state?.txId)
         return
 
       const txId = state.txId
       state.txId = null
-      await window.electron.query.clickhouse.rollbackTransaction({ txId })
+      const params: Parameters<QueryExecutor['rollbackTransaction']>[0] = { txId }
+      await (window.electron
+        ? window.electron.query.clickhouse.rollbackTransaction(params)
+        : orpc.proxy.query.clickhouse.rollbackTransaction.call(params))
     },
     async releaseConnection(connection: DatabaseConnection) {
       const state = txStates.get(connection)
-      if (state?.txId && window.electron) {
+      if (state?.txId) {
         const txId = state.txId
         state.txId = null
-        await window.electron.query.clickhouse.rollbackTransaction({ txId }).catch(() => {})
+        const params: Parameters<QueryExecutor['rollbackTransaction']>[0] = { txId }
+        await (window.electron
+          ? window.electron.query.clickhouse.rollbackTransaction(params)
+          : orpc.proxy.query.clickhouse.rollbackTransaction.call(params)).catch(() => {})
       }
     },
     async destroy() {},
