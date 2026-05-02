@@ -15,6 +15,8 @@ import { resend, sendEmail } from '~/lib/resend'
 import { redisMemoize } from './redis'
 
 const webUrl = new URL(env.WEB_URL)
+const webHostParts = webUrl.hostname.split('.')
+export const webRootDomain = webHostParts.length > 2 ? webHostParts.slice(-2).join('.') : webUrl.hostname
 
 export const auth = betterAuth({
   appName: 'Conar',
@@ -158,7 +160,7 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     env.WEB_URL,
-    `${webUrl.protocol}//*.${webUrl.host}`,
+    `${webUrl.protocol}//*.${webRootDomain}`,
     'file://',
     ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`, `http://localhost:${PORTS.DEV.APP}`] : []),
     ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`, `http://localhost:${PORTS.TEST.APP}`] : []),
@@ -167,7 +169,7 @@ export const auth = betterAuth({
     cookiePrefix: AUTH_COOKIE_PREFIX,
     crossSubDomainCookies: {
       enabled: nodeEnv === 'production',
-      domain: webUrl.host,
+      domain: webRootDomain,
     },
     database: {
       generateId: 'uuid',

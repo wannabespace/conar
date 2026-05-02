@@ -14,7 +14,7 @@ import { cors } from 'hono/cors'
 import { sql } from 'drizzle-orm'
 import { db } from './drizzle'
 import { env, nodeEnv } from './env'
-import { auth } from './lib/auth'
+import { auth, webRootDomain } from './lib/auth'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
 import { sendEmail } from './lib/resend'
@@ -64,12 +64,13 @@ const app = new Hono<{
 }>()
   .use(cors({
     origin(origin) {
+      const webUrl = new URL(env.WEB_URL)
       const allowedOrigins = [
         env.WEB_URL,
         ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`, `http://localhost:${PORTS.DEV.APP}`] : []),
         ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`, `http://localhost:${PORTS.TEST.APP}`] : []),
       ]
-      return origin.endsWith(new URL(env.WEB_URL).host) || allowedOrigins.includes(origin) ? origin : null
+      return origin.endsWith(`.${webRootDomain}`) || origin === `${webUrl.protocol}//${webRootDomain}` || allowedOrigins.includes(origin) ? origin : null
     },
     credentials: true,
   }))
