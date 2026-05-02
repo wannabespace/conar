@@ -1,12 +1,12 @@
-import type { QueryExecutor } from '@conar/connection/queries'
 import type { PoolOptions } from 'mysql2'
+import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
-import { parseConnectionString } from '@conar/connection'
-import { readSSLFiles } from '@conar/connection/read-ssl-files'
-import { defaultSSLConfig, parseSSLConfig } from '@conar/connection/ssl/mysql'
 import { memoize } from '@conar/memoize'
 import { tries } from '@conar/shared/utils/tries'
-import { disposeTransaction, getTransaction, registerTransaction } from '../lib/transactions'
+import { parseConnectionString } from '../..'
+import { readSSLFiles } from '../../read-ssl-files'
+import { defaultSSLConfig, parseSSLConfig } from '../../ssl/mysql'
+import { disposeTransaction, getTransaction, registerTransaction } from '../transactions'
 
 const mysql2 = createRequire(import.meta.url)('mysql2/promise') as typeof import('mysql2/promise')
 

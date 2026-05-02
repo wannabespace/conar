@@ -1,33 +1,13 @@
 import type { QueryExecutor } from '@conar/connection/queries'
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import type { AnyFunction } from '@conar/shared/utils/helpers'
+import * as clickhouse from '@conar/connection/queries/dialects/clickhouse'
+import * as mssql from '@conar/connection/queries/dialects/mssql'
+import * as mysql from '@conar/connection/queries/dialects/mysql'
+import * as pg from '@conar/connection/queries/dialects/pg'
 import { decrypt, encrypt } from '@conar/shared/utils/encryption'
+import { wrapAggregateErrors } from '@conar/shared/utils/helpers'
 import { app, ipcMain } from 'electron'
-import * as clickhouse from '../connections/clickhouse'
-import * as mssql from '../connections/mssql'
-import * as mysql from '../connections/mysql'
-import * as pg from '../connections/pg'
 import { autoUpdater } from '../main'
-
-function wrapAggregateErrors<T extends Record<string, AnyFunction>>(handlers: T): T {
-  const wrapped: Record<string, AnyFunction> = {}
-
-  for (const [key, fn] of Object.entries(handlers)) {
-    wrapped[key] = async (arg) => {
-      try {
-        return await fn(arg)
-      }
-      catch (error) {
-        if (error instanceof AggregateError) {
-          throw error.errors[0]
-        }
-        throw error
-      }
-    }
-  }
-
-  return wrapped as T
-}
 
 const queryMap = {
   postgres: wrapAggregateErrors(pg.query),

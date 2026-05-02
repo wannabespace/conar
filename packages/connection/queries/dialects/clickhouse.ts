@@ -1,8 +1,8 @@
-import type { QueryExecutor } from '@conar/connection/queries'
+import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
 import { memoize } from '@conar/memoize'
 import { tryParseJson } from '@conar/shared/utils/helpers'
-import { disposeTransaction, getTransaction, registerTransaction } from '../lib/transactions'
+import { disposeTransaction, getTransaction, registerTransaction } from '../transactions'
 
 const clickhouse = createRequire(import.meta.url)('@clickhouse/client') as typeof import('@clickhouse/client')
 

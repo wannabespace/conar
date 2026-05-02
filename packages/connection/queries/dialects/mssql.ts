@@ -1,9 +1,9 @@
-import type { QueryExecutor } from '@conar/connection/queries'
+import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
-import { parseConnectionString } from '@conar/connection'
-import { parseSSLConfig } from '@conar/connection/ssl/mssql'
 import { memoize } from '@conar/memoize'
-import { disposeTransaction, getTransaction, registerTransaction } from '../lib/transactions'
+import { parseConnectionString } from '../..'
+import { parseSSLConfig } from '../../ssl/mssql'
+import { disposeTransaction, getTransaction, registerTransaction } from '../transactions'
 
 const mssql = createRequire(import.meta.url)('mssql') as typeof import('mssql')
 

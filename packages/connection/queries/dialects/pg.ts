@@ -1,12 +1,12 @@
-import type { QueryExecutor } from '@conar/connection/queries'
 import type { PoolConfig } from 'pg'
+import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
-import { parseConnectionString } from '@conar/connection'
-import { readSSLFiles } from '@conar/connection/read-ssl-files'
-import { defaultSSLConfig, parseSSLConfig } from '@conar/connection/ssl/pg'
 import { memoize } from '@conar/memoize'
 import { tries } from '@conar/shared/utils/tries'
-import { disposeTransaction, getTransaction, registerTransaction } from '../lib/transactions'
+import { parseConnectionString } from '../..'
+import { readSSLFiles } from '../../read-ssl-files'
+import { defaultSSLConfig, parseSSLConfig } from '../../ssl/pg'
+import { disposeTransaction, getTransaction, registerTransaction } from '../transactions'
 
 const pg = createRequire(import.meta.url)('pg') as typeof import('pg')
 

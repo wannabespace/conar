@@ -80,3 +80,23 @@ export function tryParseToJsonArray(editedValue: string): string[] {
     return parsed.map(String)
   return [editedValue]
 }
+
+export function wrapAggregateErrors<T extends Record<string, AnyFunction>>(handlers: T): T {
+  const wrapped: Record<string, AnyFunction> = {}
+
+  for (const [key, fn] of Object.entries(handlers)) {
+    wrapped[key] = async (arg) => {
+      try {
+        return await fn(arg)
+      }
+      catch (error) {
+        if (error instanceof AggregateError) {
+          throw error.errors[0]
+        }
+        throw error
+      }
+    }
+  }
+
+  return wrapped as T
+}

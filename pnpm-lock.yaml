@@ -544,7 +544,7 @@ importers:
         version: 3.0.85(zod@4.4.1)
       '@better-auth/drizzle-adapter':
         specifier: 'catalog:'
-        version: https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913(@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.2.1(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(drizzle-orm@1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.1))(prettier@3.8.1)
+        version: https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913(@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(drizzle-orm@1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.1))(prettier@3.8.1)
       '@conar/connection':
         specifier: workspace:*
         version: link:../../packages/connection
@@ -1079,9 +1079,18 @@ importers:
 
   packages/connection:
     dependencies:
+      '@clickhouse/client':
+        specifier: 'catalog:'
+        version: 1.18.3
+      '@conar/memoize':
+        specifier: workspace:*
+        version: link:../memoize
       '@conar/shared':
         specifier: workspace:*
         version: link:../shared
+      pg:
+        specifier: 'catalog:'
+        version: 8.20.0
     devDependencies:
       '@conar/configs':
         specifier: workspace:*
@@ -5930,14 +5939,6 @@ packages:
       vue:
         optional: true
 
-  better-call@1.2.1:
-    resolution: {integrity: sha512-Ccgd5hj2Fmtu9Vjb9APXNYxutJWPRDhJanWAzFLwSzYAiOvkXN61OmYdvSirfrL2Z7REuK7TRklP8SIbZRlGwA==}
-    peerDependencies:
-      zod: ^4.0.0
-    peerDependenciesMeta:
-      zod:
-        optional: true
-
   better-call@1.3.2:
     resolution: {integrity: sha512-4cZIfrerDsNTn3cm+MhLbUePN0gdwkhSXEuG7r/zuQ8c/H7iU0/jSK5TD3FW7U0MgKHce/8jGpPYNO4Ve+4NBw==}
     peerDependencies:
@@ -10070,9 +10071,6 @@ packages:
     engines: {node: '>= 14'}
     hasBin: true
 
-  set-cookie-parser@2.7.2:
-    resolution: {integrity: sha512-oeM1lpU/UvhTxw+g3cIfxXHyJRc/uidd3yK1P242gzHds0udQBYzs3y8j4gCCW+ZJ7ad0yctld8RYO+bdurlvw==}
-
   set-cookie-parser@3.0.1:
     resolution: {integrity: sha512-n7Z7dXZhJbwuAHhNzkTti6Aw9QDDjZtm3JTpTGATIdNzdQz5GuFs22w90BcvF4INfnrL5xrX3oGsuqO5Dx3A1Q==}
 
@@ -11651,12 +11649,12 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.14
 
-  '@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.2.1(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)':
+  '@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)':
     dependencies:
       '@better-auth/utils': 0.3.1
       '@better-fetch/fetch': 1.1.21
       '@standard-schema/spec': 1.1.0
-      better-call: 1.2.1(zod@4.4.1)
+      better-call: 1.3.2(zod@4.4.1)
       jose: 6.2.1
       kysely: 0.28.16
       nanostores: 1.2.0
@@ -11685,9 +11683,9 @@ snapshots:
       '@better-auth/utils': 0.3.1
       drizzle-orm: 1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.1)
 
-  '@better-auth/drizzle-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913(@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.2.1(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(drizzle-orm@1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.1))(prettier@3.8.1)':
+  '@better-auth/drizzle-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913(@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(drizzle-orm@1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.1))(prettier@3.8.1)':
     dependencies:
-      '@better-auth/core': 1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.2.1(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
+      '@better-auth/core': 1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
       '@better-auth/utils': 0.3.1
       drizzle-orm: 1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.1)
       prettier: 3.8.1
@@ -16172,15 +16170,6 @@ snapshots:
       solid-js: 1.9.11
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
-
-  better-call@1.2.1(zod@4.4.1):
-    dependencies:
-      '@better-auth/utils': 0.3.1
-      '@better-fetch/fetch': 1.1.21
-      rou3: 0.7.12
-      set-cookie-parser: 2.7.2
-    optionalDependencies:
-      zod: 4.4.1
 
   better-call@1.3.2(zod@4.4.1):
     dependencies:
@@ -20894,8 +20883,6 @@ snapshots:
       update-check: 1.5.4
     transitivePeerDependencies:
       - supports-color
-
-  set-cookie-parser@2.7.2: {}
 
   set-cookie-parser@3.0.1: {}
 
