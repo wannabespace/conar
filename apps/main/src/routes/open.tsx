@@ -1,7 +1,7 @@
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { copy } from '@conar/ui/lib/copy'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
 import { authClient } from '~/lib/auth'
@@ -11,16 +11,30 @@ export const Route = createFileRoute('/open')({
   validateSearch: type({
     'code-challenge?': 'string',
     'new-user?': 'boolean',
+    'web': 'boolean = false',
   }),
+  loaderDeps: ({ search }) => search,
+  loader: async ({ deps }) => {
+    const { web } = deps
+
+    const { data } = await authClient.getSession()
+
+    if (web && data?.user) {
+      throw redirect({ href: import.meta.env.VITE_PUBLIC_WEB_URL! })
+    }
+  },
 })
 
 // eslint-disable-next-line react-refresh/only-export-components
 function OpenPageContent() {
   const { data } = authClient.useSession()
+  const { web } = Route.useSearch()
 
   useEffect(() => {
-    location.assign('conar://')
-  }, [])
+    if (!web) {
+      location.assign('conar://')
+    }
+  }, [web])
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4">

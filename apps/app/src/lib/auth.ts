@@ -31,16 +31,18 @@ export function successAuthToast(newUser: boolean) {
 export const authClient = createAuthClient({
   baseURL: apiUrl,
   basePath: '/auth',
-  plugins: [
-    bearer(),
-  ],
+  plugins: window.electron
+    ? [
+        bearer(),
+      ]
+    : [],
   fetchOptions: {
     auth: {
       type: 'Bearer',
       token: () => bearerToken.get() ?? undefined,
     },
     headers: {
-      'x-desktop': 'true',
+      'x-desktop': JSON.stringify(!!window.electron),
     },
     async onError({ error }) {
       if (error.status === 401) {

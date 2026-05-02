@@ -1,10 +1,14 @@
 import { ACTIVE_SUBSCRIPTION_STATUSES } from '@conar/shared/constants'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
+import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
 export function useSubscription() {
-  const { data: list, isPending } = useQuery(orpc.account.subscription.list.queryOptions())
+  const { data } = authClient.useSession()
+  const { data: list, isPending } = useQuery(orpc.account.subscription.list.queryOptions({
+    enabled: !!data?.user.id,
+  }))
 
   const subscription = list?.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number])) ?? null
 

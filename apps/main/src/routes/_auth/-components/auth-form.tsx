@@ -9,9 +9,11 @@ import { useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
+import { BASE_ERROR_CODES } from 'better-auth'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
+import { Route } from '~/routes/_auth'
 import { handleError } from '~/utils/error'
 
 type Type = 'sign-up' | 'sign-in'
@@ -31,7 +33,8 @@ const signUpSchema = baseAuthSchema.and({
   name: 'string',
 })
 
-function useSocialMutation(provider: 'google' | 'github', redirectPath?: string) {
+function useSocialMutation(provider: 'google' | 'github') {
+  const { redirectPath } = Route.useSearch()
   const router = useRouter()
   const href = router.buildLocation({ to: '/account' }).href
 
@@ -67,10 +70,10 @@ function Last() {
   )
 }
 
-function SocialAuthForm({ redirectPath }: { redirectPath?: string }) {
+function SocialAuthForm() {
   const lastMethod = authClient.getLastUsedLoginMethod()
-  const { mutate: googleSignIn, isPending: isGoogleSignInPending } = useSocialMutation('google', redirectPath)
-  const { mutate: githubSignIn, isPending: isGithubSignInPending } = useSocialMutation('github', redirectPath)
+  const { mutate: googleSignIn, isPending: isGoogleSignInPending } = useSocialMutation('google')
+  const { mutate: githubSignIn, isPending: isGithubSignInPending } = useSocialMutation('github')
 
   return (
     <>
@@ -108,7 +111,8 @@ function SocialAuthForm({ redirectPath }: { redirectPath?: string }) {
   )
 }
 
-export function AuthForm({ type, redirectPath }: { type: Type, redirectPath?: string }) {
+export function AuthForm({ type }: { type: Type }) {
+  const search = Route.useSearch()
   const lastMethod = authClient.getLastUsedLoginMethod()
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
@@ -133,7 +137,7 @@ export function AuthForm({ type, redirectPath }: { type: Type, redirectPath?: st
           })
 
       if (type === 'sign-in' && twoFactorRedirectSchema.allows(data)) {
-        await router.navigate({ to: '/two-factor', search: redirectPath ? { redirectPath } : {} })
+        await router.navigate({ to: '/two-factor', search })
         return
       }
 
@@ -143,12 +147,12 @@ export function AuthForm({ type, redirectPath }: { type: Type, redirectPath?: st
           return
         }
 
-        if (type === 'sign-up' && (error!.code === 'USER_ALREADY_EXISTS' || error!.code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL')) {
+        if (type === 'sign-up' && (error!.code === BASE_ERROR_CODES.USER_ALREADY_EXISTS.code || error!.code === BASE_ERROR_CODES.USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL.code)) {
           toast.error('User already exists. Please sign in or use a different email address.', {
             action: {
               label: 'Sign in',
               onClick: () => {
-                router.navigate({ to: '/sign-in', search: { redirectPath } })
+                router.navigate({ to: '/sign-in', search })
               },
             },
           })
@@ -158,8 +162,8 @@ export function AuthForm({ type, redirectPath }: { type: Type, redirectPath?: st
         }
       }
 
-      if (redirectPath) {
-        const url = new URL(location.origin + redirectPath)
+      if (search.redirectPath) {
+        const url = new URL(location.origin + search.redirectPath)
 
         if (type === 'sign-up') {
           url.searchParams.set('newUser', 'true')
@@ -188,7 +192,7 @@ export function AuthForm({ type, redirectPath }: { type: Type, redirectPath?: st
           {' '}
           <Link
             to={type === 'sign-up' ? '/sign-in' : '/sign-up'}
-            search={{ redirectPath }}
+            search={search}
           >
             {type === 'sign-up' ? 'Sign in' : 'Sign up'}
           </Link>
@@ -292,7 +296,7 @@ export function AuthForm({ type, redirectPath }: { type: Type, redirectPath?: st
           Or continue with
         </span>
       </div>
-      <SocialAuthForm redirectPath={redirectPath} />
+      <SocialAuthForm />
     </>
   )
 }

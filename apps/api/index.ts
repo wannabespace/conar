@@ -63,11 +63,14 @@ const app = new Hono<{
   Variables: AppVariables
 }>()
   .use(cors({
-    origin: [
-      env.WEB_URL,
-      ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`, `http://localhost:${PORTS.DEV.APP}`] : []),
-      ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`, `http://localhost:${PORTS.TEST.APP}`] : []),
-    ],
+    origin(origin) {
+      const allowedOrigins = [
+        env.WEB_URL,
+        ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`, `http://localhost:${PORTS.DEV.APP}`] : []),
+        ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`, `http://localhost:${PORTS.TEST.APP}`] : []),
+      ]
+      return origin.endsWith(`.${new URL(env.WEB_URL).host}`) || allowedOrigins.includes(origin) ? origin : null
+    },
     credentials: true,
   }))
   .get('/', c => c.redirect(env.WEB_URL))

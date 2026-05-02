@@ -14,6 +14,8 @@ import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
 import { redisMemoize } from './redis'
 
+const webUrl = new URL(env.WEB_URL)
+
 export const auth = betterAuth({
   appName: 'Conar',
   secret: env.BETTER_AUTH_SECRET,
@@ -156,6 +158,7 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     env.WEB_URL,
+    `${webUrl.protocol}//*.${webUrl.host}`,
     'file://',
     ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`, `http://localhost:${PORTS.DEV.APP}`] : []),
     ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`, `http://localhost:${PORTS.TEST.APP}`] : []),
@@ -164,7 +167,7 @@ export const auth = betterAuth({
     cookiePrefix: AUTH_COOKIE_PREFIX,
     crossSubDomainCookies: {
       enabled: nodeEnv === 'production',
-      domain: new URL(env.WEB_URL).host,
+      domain: webUrl.host,
     },
     database: {
       generateId: 'uuid',

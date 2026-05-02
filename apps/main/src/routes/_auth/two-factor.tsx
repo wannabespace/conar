@@ -19,6 +19,7 @@ export const Route = createFileRoute('/_auth/two-factor')({
 // eslint-disable-next-line react-refresh/only-export-components
 function TwoFactorPage() {
   const router = useRouter()
+  const search = Route.useSearch()
   const [code, setCode] = useState('')
 
   const { mutate: verifyTotp, isPending } = useMutation({
@@ -30,7 +31,14 @@ function TwoFactorPage() {
       }
     },
     onSuccess: async () => {
-      await router.navigate({ to: '/account' })
+      if (search.redirectPath) {
+        const url = new URL(location.origin + search.redirectPath)
+
+        await router.navigate({ to: url.pathname + url.search })
+      }
+      else {
+        await router.navigate({ to: '/account' })
+      }
     },
     onError: handleError,
   })

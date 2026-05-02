@@ -18,12 +18,15 @@
       "dependsOn": ["^build"],
       "cache": false
     },
+    "build:desktop": {
+      "cache": false
+    },
     "@conar/desktop#build": {
-      "dependsOn": ["^@conar/app#build"],
+      "dependsOn": ["^@conar/app#build:desktop"],
       "cache": false
     },
     "build:todesktop": {
-      "dependsOn": ["build", "@conar/app#build"],
+      "dependsOn": ["build"],
       "cache": false
     },
     "drizzle:migrate": {

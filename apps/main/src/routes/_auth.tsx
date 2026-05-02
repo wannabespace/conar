@@ -2,10 +2,15 @@ import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { FieldDescription } from '@conar/ui/components/field'
 import { createFileRoute, Link, Outlet, useMatches } from '@tanstack/react-router'
+import { type } from 'arktype'
 import { SEO } from '~/constants'
 
 export const Route = createFileRoute('/_auth')({
   component: AuthLayout,
+  validateSearch: type({
+    'redirectPath?': 'string',
+    'web': 'boolean = false',
+  }),
 })
 
 // eslint-disable-next-line react-refresh/only-export-components

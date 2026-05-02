@@ -5,9 +5,16 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { PORTS } from '../../packages/shared/constants'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   resolve: {
     tsconfigPaths: true,
+  },
+  base: mode === 'desktop' ? './' : '/',
+  define: {
+    'import.meta.env.VITE_TEST': mode === 'test',
+  },
+  build: {
+    outDir: mode === 'desktop' ? 'dist-desktop' : 'dist',
   },
   plugins: [
     tailwindcss(),
@@ -25,6 +32,6 @@ export default defineConfig({
   },
   server: {
     strictPort: true,
-    port: PORTS.DEV.APP,
+    port: mode === 'test' ? PORTS.TEST.DESKTOP : PORTS.DEV.APP,
   },
-})
+}))
