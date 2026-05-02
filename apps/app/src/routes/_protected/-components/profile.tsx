@@ -50,7 +50,7 @@ export function Profile({ className }: { className?: string }) {
           <Button
             variant="outline"
             size="sm"
-            render={<a href={`${import.meta.env.VITE_PUBLIC_WEB_URL}/account`} target="_blank" />}
+            render={<a href={`${import.meta.env.VITE_PUBLIC_MAIN_URL}/account`} target="_blank" />}
           >
             Account
             <RiExternalLinkLine className="size-3.5 text-muted-foreground" />

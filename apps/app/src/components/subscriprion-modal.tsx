@@ -18,7 +18,7 @@ export function SubscriptionModal() {
     }
   }, [isSubscriptionDialogOpen, subscription])
 
-  const accountUrl = `${import.meta.env.VITE_PUBLIC_WEB_URL}/account`
+  const accountUrl = `${import.meta.env.VITE_PUBLIC_MAIN_URL}/account`
 
   return (
     <Dialog open={isSubscriptionDialogOpen} onOpenChange={setIsSubscriptionDialogOpen}>

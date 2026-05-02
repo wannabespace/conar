@@ -24,7 +24,13 @@ function AuthPage() {
     const codeChallenge = await generateCodeChallenge(verifier)
     setVerifier(verifier)
     setCodeChallenge(codeChallenge)
-    window.open(`${import.meta.env.VITE_PUBLIC_WEB_URL}/deep/sign-in?codeChallenge=${codeChallenge}`, '_blank')
+    const url = `${import.meta.env.VITE_PUBLIC_MAIN_URL}/deep/sign-in?codeChallenge=${codeChallenge}&web=${!window.electron}`
+    if (window.electron) {
+      window.open(url, '_blank')
+    }
+    else {
+      location.assign(url)
+    }
   }
 
   const { data, error, isPending } = useQuery(orpc.account.challenge.listen.experimental_liveOptions({

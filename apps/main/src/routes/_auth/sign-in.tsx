@@ -1,13 +1,9 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { type } from 'arktype'
 import { authClient } from '~/lib/auth'
 import { AuthForm } from './-components/auth-form'
 
 export const Route = createFileRoute('/_auth/sign-in')({
   component: SignInPage,
-  validateSearch: type({
-    'redirectPath?': 'string',
-  }),
   loader: async () => {
     const { data } = await authClient.getSession()
 
@@ -19,6 +15,5 @@ export const Route = createFileRoute('/_auth/sign-in')({
 
 // eslint-disable-next-line react-refresh/only-export-components
 function SignInPage() {
-  const { redirectPath } = Route.useSearch()
-  return <AuthForm type="sign-in" redirectPath={redirectPath} />
+  return <AuthForm type="sign-in" />
 }
