@@ -1,5 +1,5 @@
 import type { RouterClient } from '@orpc/server'
-import * as encryption from './encryption'
+import { encryption } from './encryption'
 import { query } from './query'
 
 export const router = {

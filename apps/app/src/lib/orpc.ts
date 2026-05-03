@@ -23,14 +23,12 @@ export const orpc = createTanstackQueryUtils(createORPCClient(new RPCLink({
         : {}),
     }
   },
-  fetch: window.electron
-    ? undefined
-    : (request, init) => {
-        return globalThis.fetch(request, {
-          ...init,
-          credentials: 'include',
-        })
-      },
+  fetch: (request, init) => {
+    return globalThis.fetch(request, {
+      ...init,
+      credentials: 'include',
+    })
+  },
   interceptors: [
     onError(handleError),
   ],
@@ -45,14 +43,12 @@ export const orpcProxy = createTanstackQueryUtils(createORPCClient(new RPCLink({
       Authorization: token ? `Bearer ${token}` : undefined,
     }
   },
-  fetch: window.electron
-    ? undefined
-    : (request, init) => {
-        return globalThis.fetch(request, {
-          ...init,
-          credentials: 'include',
-        })
-      },
+  fetch: (request, init) => {
+    return globalThis.fetch(request, {
+      ...init,
+      credentials: 'include',
+    })
+  },
   interceptors: [
     onError(handleError),
   ],
