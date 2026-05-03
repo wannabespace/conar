@@ -1,7 +1,7 @@
 {
   "name": "@conar/desktop",
   "type": "module",
-  "version": "0.30.2",
+  "version": "0.31.0",
   "productName": "Conar",
   "private": true,
   "description": "AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse.",
