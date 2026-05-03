@@ -182,7 +182,7 @@ function FieldDescription({ className, ...props }: React.ComponentProps<'p'>) {
       data-slot="field-description"
       className={cn(
         `
-          text-sm/normal font-normal text-muted-foreground
+          text-xs/normal font-normal text-muted-foreground
           group-has-data-[orientation=horizontal]/field:text-balance
         `,
         `

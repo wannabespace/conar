@@ -11,7 +11,7 @@ export const create = orpc
   .handler(async ({ context, input }) => {
     const newConnectionString = new SafeURL(input.connectionString)
 
-    if (input.syncType === SyncType.CloudWithoutPassword) {
+    if (input.syncType !== SyncType.Cloud) {
       newConnectionString.password = ''
     }
 

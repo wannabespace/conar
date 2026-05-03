@@ -13,12 +13,7 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     tanstackStart(),
-    nitro({
-      preset: 'bun',
-      devProxy: {
-        '/web': `http://localhost:${PORTS.DEV.APP}`,
-      },
-    }),
+    nitro({ preset: 'bun' }),
     react(),
     babel({
       presets: [reactCompilerPreset()],

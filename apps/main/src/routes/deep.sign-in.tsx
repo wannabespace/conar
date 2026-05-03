@@ -7,7 +7,7 @@ export const Route = createFileRoute('/deep/sign-in')({
   validateSearch: type({
     'codeChallenge': 'string',
     'newUser?': 'boolean',
-    'web': 'boolean = false',
+    'web?': 'boolean',
   }),
   loaderDeps: ({ search }) => search,
   loader: async ({ deps }) => {
@@ -23,7 +23,7 @@ export const Route = createFileRoute('/deep/sign-in')({
 
     throw redirect({
       to: '/sign-in',
-      search: { redirectPath: `/deep/sign-in?codeChallenge=${codeChallenge}&web=${deps.web}` },
+      search: { redirectPath: `/deep/sign-in?codeChallenge=${codeChallenge}${deps.web ? '&web=true' : ''}` },
     })
   },
 })

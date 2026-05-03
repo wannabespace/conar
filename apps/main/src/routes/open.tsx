@@ -11,7 +11,7 @@ export const Route = createFileRoute('/open')({
   validateSearch: type({
     'code-challenge?': 'string',
     'new-user?': 'boolean',
-    'web': 'boolean = false',
+    'web?': 'boolean',
   }),
   loaderDeps: ({ search }) => search,
   loader: async ({ deps }) => {

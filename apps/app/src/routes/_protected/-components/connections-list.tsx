@@ -1,6 +1,7 @@
 import type { ComponentRef } from 'react'
 import type { connections as connectionsTable } from '~/drizzle/schema'
 import { CONNECTION_RESOURCE_ROOT_LABEL, CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
+import { SyncType } from '@conar/shared/enums/sync-type'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
@@ -33,29 +34,12 @@ import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
 import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
-import { getConnectionStringToShow, lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
+import { checkSendQueryAbility, getConnectionStringToShow, lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
-const LOOPBACK_IPV4 = /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/
-
-function canSendQueryIfLocalhost(connectionString: string): boolean {
-  if (window.electron) {
-    return true
-  }
-
-  const hostname = new SafeURL(connectionString).hostname.toLowerCase()
-  const isLoopback = (
-    hostname === 'localhost'
-    || hostname === '::1'
-    || hostname === '[::1]'
-    || LOOPBACK_IPV4.test(hostname)
-  )
-  return !isLoopback
-}
-
 function ConnectionIconWithVersion({ connection }: { connection: typeof connectionsTable.$inferSelect }) {
-  const canSend = canSendQueryIfLocalhost(connection.connectionString)
+  const canSend = checkSendQueryAbility(connection)
   const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery({
     ...connectionVersionQueryOptions(connection),
     enabled: canSend,
@@ -218,7 +202,7 @@ function ConnectionCard({
     .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
     .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
   const storedResourcesNames = storedResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
-  const canSend = canSendQueryIfLocalhost(connection.connectionString)
+  const canSend = checkSendQueryAbility(connection)
 
   const {
     data: resources = storedResourcesNames,
@@ -286,7 +270,7 @@ function ConnectionCard({
     }, 3000)
   }
 
-  const isResourcesShown = resources.length > 1 && (canSend || !isPending)
+  const isResourcesShown = resources.length > 1 && (!canSend || !isPending)
 
   return (
     <FrameMotion
@@ -347,7 +331,9 @@ function ConnectionCard({
                       />
                     </TooltipTrigger>
                     <TooltipContent className="pointer-events-auto max-w-xs">
-                      Loopback hosts are not reachable from the web app. Open this connection in the desktop app instead.
+                      {connection.syncType === SyncType.CloudWithoutPassword
+                        ? 'Connections saved without password can only be queried in the desktop app.'
+                        : 'You cannot reach localhost from the web app. Open this connection in the desktop app instead.'}
                     </TooltipContent>
                   </Tooltip>
                 )}

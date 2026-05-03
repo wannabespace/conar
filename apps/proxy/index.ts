@@ -9,7 +9,6 @@ import { cors } from 'hono/cors'
 import { env, nodeEnv } from './env'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
-import { sanitizeLogData } from '@conar/shared/utils/sanitize-log'
 
 const handler = new RPCHandler(router, {
   interceptors: [
@@ -56,41 +55,6 @@ const app = new Hono<{
     credentials: true,
   }))
   .get('/', c => c.redirect(env.MAIN_URL))
-  .use('*', async (c, next) => {
-    const startTime = Date.now()
-    c.set('logEvent', {})
-
-    await next()
-
-    const status = c.res.status
-    const method = c.req.method
-    const path = new URL(c.req.url).pathname
-    const userAgent = c.req.header('User-Agent')
-    const logEvent = c.get('logEvent') || {}
-
-    if (!logEvent.userId && c.req.header('user-id')) {
-      logEvent.userId = c.req.header('user-id')
-    }
-
-    const logInfo = {
-      method,
-      status,
-      path,
-      duration: `${Date.now() - startTime}ms`,
-      ...(userAgent ? { userAgent } : {}),
-      ...sanitizeLogData(logEvent),
-    }
-
-    const log = JSON.stringify(logInfo, null, nodeEnv === 'production' ? undefined : 2)
-
-    if (status >= 400) {
-      console.error(log)
-    }
-    else {
-      // eslint-disable-next-line no-console
-      console.info(log)
-    }
-  })
   .use('/rpc/*', async (c, next) => {
     const { matched, response } = await handler.handle(c.req.raw.clone(), {
       prefix: '/rpc',

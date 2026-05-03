@@ -1,5 +1,7 @@
+import { isLocalhostConnectionString } from '@conar/connection/utils'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
+import { tryCatch } from '@conar/shared/utils/helpers'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { title } from '@conar/shared/utils/title'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
@@ -19,6 +21,7 @@ import { testConnectionQuery } from '~/entities/connection/queries/test-connecti
 import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
+import { checkSendQueryAbility } from '~/entities/connection/utils/fetching'
 import { generateRandomName } from '~/lib/utils'
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
@@ -37,7 +40,7 @@ const createConnectionType = type({
   name: 'string > 1',
   type: type.valueOf(ConnectionType).or('null'),
   connectionString: 'string > 1',
-  saveInCloud: 'boolean',
+  syncType: type.valueOf(SyncType),
   label: 'string | null',
   color: 'string | null',
 })
@@ -52,7 +55,7 @@ function CreateConnectionPage() {
     connectionString: string
     name: string
     type: ConnectionType
-    saveInCloud: boolean
+    syncType: SyncType
     label: string | null
     color: string | null
   }) {
@@ -68,7 +71,7 @@ function CreateConnectionPage() {
       color: data.color || null,
       isPasswordExists: !!url.password,
       isPasswordPopulated: !!url.password,
-      syncType: data.saveInCloud ? SyncType.Cloud : SyncType.CloudWithoutPassword,
+      syncType: data.syncType,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -101,7 +104,7 @@ function CreateConnectionPage() {
     connectionString: '',
     name: generateRandomName(),
     type: null,
-    saveInCloud: true,
+    syncType: SyncType.Cloud,
     label: null,
     color: null,
   }
@@ -112,14 +115,14 @@ function CreateConnectionPage() {
       onChange: createConnectionType,
     },
     onSubmit(e) {
-      const { type, connectionString, name, saveInCloud, label, color } = e.value
+      const { type, connectionString, name, syncType, label, color } = e.value
 
       if (!type) {
         toast.error('Select a database type')
         return
       }
 
-      createConnection({ type, connectionString, name, saveInCloud, label, color })
+      createConnection({ type, connectionString, name, syncType, label, color })
     },
   })
 
@@ -142,11 +145,15 @@ function CreateConnectionPage() {
 
   const typeValue = useStore(form.store, state => state.values.type)
   const connectionString = useStore(form.store, state => state.values.connectionString)
+  const url = tryCatch(() => new SafeURL(connectionString.trim()))
   const name = useStore(form.store, state => state.values.name)
-  const saveInCloud = useStore(form.store, state => state.values.saveInCloud)
+  const syncType = useStore(form.store, state => state.values.syncType)
   const label = useStore(form.store, state => state.values.label)
   const color = useStore(form.store, state => state.values.color)
   const isValid = useStore(form.store, state => state.isValid)
+
+  const canSendIfLocalhost = !!window.electron || !tryCatch(() => isLocalhostConnectionString(connectionString)).data
+  const canSaveInCloud = url.data ? checkSendQueryAbility({ syncType, connectionString, isPasswordExists: !!url.data?.password }) : false
 
   return (
     <ScrollArea className="py-[10vh]">
@@ -216,11 +223,13 @@ function CreateConnectionPage() {
                 form.setFieldValue('connectionString', connectionString)
               }}
               onEnter={() => {
-                test({ type: typeValue!, connectionString })
+                if (canSendIfLocalhost) {
+                  test({ type: typeValue!, connectionString })
+                }
               }}
             />
             <div className="mt-auto flex justify-end gap-2 pt-4">
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -241,7 +250,7 @@ function CreateConnectionPage() {
                     )
                   : (
                       <Button
-                        disabled={status === 'pending' || !connectionString}
+                        disabled={status === 'pending' || !connectionString || !canSendIfLocalhost}
                         onClick={() => test({ type: typeValue!, connectionString })}
                       >
                         <LoadingContent loading={status === 'pending'}>
@@ -259,8 +268,8 @@ function CreateConnectionPage() {
               connectionString={connectionString}
               setName={name => form.setFieldValue('name', name)}
               onRandomName={() => form.setFieldValue('name', generateRandomName())}
-              saveInCloud={saveInCloud}
-              setSaveInCloud={saveInCloud => form.setFieldValue('saveInCloud', saveInCloud)}
+              syncType={syncType}
+              setSyncType={syncType => form.setFieldValue('syncType', syncType)}
               label={label}
               setLabel={label => form.setFieldValue('label', label)}
               color={color}
@@ -272,7 +281,7 @@ function CreateConnectionPage() {
               </Button>
               <Button
                 type="submit"
-                disabled={status === 'pending' || !isValid}
+                disabled={status === 'pending' || !isValid || !canSaveInCloud}
               >
                 <LoadingContent loading={status === 'pending'}>
                   <AppLogo className="w-4" />

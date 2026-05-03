@@ -1,5 +1,6 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { COLOR_OPTIONS, LABEL_OPTIONS } from '@conar/shared/constants'
+import { SyncType } from '@conar/shared/enums/sync-type'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { Checkbox } from '@conar/ui/components/checkbox'
@@ -14,14 +15,14 @@ import { useId } from 'react'
 import { ConnectionDetails } from '~/components/connection-details'
 import { connectionsCollection } from '~/entities/connection/sync'
 
-export function StepSave({ type, name, connectionString, setName, onRandomName, saveInCloud, setSaveInCloud, label, setLabel, color, setColor }: {
+export function StepSave({ type, name, connectionString, setName, onRandomName, syncType, setSyncType, label, setLabel, color, setColor }: {
   type: ConnectionType
   name: string
   connectionString: string
   setName: (name: string) => void
   onRandomName: () => void
-  saveInCloud: boolean
-  setSaveInCloud: (saveInCloud: boolean) => void
+  syncType: SyncType
+  setSyncType: (syncType: SyncType) => void
   label: string | null
   setLabel: (label: string | null) => void
   color: string | null
@@ -136,8 +137,8 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
           <div className="flex flex-col gap-2">
             <Label className="flex items-center gap-2 text-sm font-normal">
               <Checkbox
-                checked={saveInCloud}
-                onCheckedChange={() => setSaveInCloud(!saveInCloud)}
+                checked={syncType === SyncType.Cloud}
+                onCheckedChange={() => setSyncType(syncType === SyncType.Cloud ? SyncType.CloudWithoutPassword : SyncType.Cloud)}
               />
               Do you want to sync the password in our cloud?
             </Label>

@@ -1,5 +1,6 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { connectionsResources } from '~/drizzle/schema'
+import type { connections, connectionsResources } from '~/drizzle/schema'
+import { canSendQueryInCloud } from '@conar/connection/utils'
 import { queryClient } from '~/main'
 import { resourceRowsQueryInfiniteOptions } from '../queries'
 import { resourceTableColumnsQueryOptions } from '../queries/columns'
@@ -40,4 +41,11 @@ export async function prefetchConnectionResourceTableCore({ connectionResource, 
     queryClient.prefetchQuery(resourceTableTotalQueryOptions({ connectionResource, table, schema, query })),
     queryClient.prefetchQuery(resourceTableColumnsQueryOptions({ connectionResource, table, schema })),
   ])
+}
+
+export function checkSendQueryAbility(connection: Pick<typeof connections.$inferSelect, 'syncType' | 'connectionString' | 'isPasswordExists'>) {
+  if (window.electron) {
+    return true
+  }
+  return canSendQueryInCloud(connection)
 }

@@ -1,4 +1,6 @@
 import type { LinkProps } from '@tanstack/react-router'
+import { isLocalhostConnectionString } from '@conar/connection/utils'
+import { SyncType } from '@conar/shared/enums/sync-type'
 import { getOS } from '@conar/shared/utils/os'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
@@ -11,9 +13,9 @@ import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCommandLine, RiFileListLine, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiShieldCheckLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiCommandLine, RiFileListLine, RiGlobalLine, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiShieldCheckLine, RiSunLine, RiTableLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { Link, useMatches, useSearch } from '@tanstack/react-router'
+import { Link, useLocation, useMatches, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
@@ -213,8 +215,13 @@ function MainLinks() {
 }
 
 export function ConnectionSidebar({ className, ...props }: React.ComponentProps<'div'>) {
-  const { connectionResource } = Route.useRouteContext()
+  const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
+  const location = useLocation()
+
+  const canOpenWeb = window.electron
+    ? connection.syncType === SyncType.Cloud && !isLocalhostConnectionString(connection.connectionString)
+    : false
 
   return (
     <div className={cn('flex flex-col items-center', className)} {...props}>
@@ -239,6 +246,20 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
         </div>
       </ScrollArea>
       <div className="flex flex-col items-center p-4 pt-0">
+        {canOpenWeb && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => window.open(import.meta.env.VITE_PUBLIC_WEB_URL + location.href)}
+              >
+                <RiGlobalLine className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Open this connection in the web app</TooltipContent>
+          </Tooltip>
+        )}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
