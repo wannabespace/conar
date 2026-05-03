@@ -1,4 +1,4 @@
-import { db } from '~/drizzle'
+import { db } from '@conar/db'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const list = orpc

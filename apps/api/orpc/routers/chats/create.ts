@@ -1,5 +1,5 @@
-import { db } from '~/drizzle'
-import { chats, chatsInsertSchema } from '~/drizzle/schema'
+import { db } from '@conar/db'
+import { chats, chatsInsertSchema } from '@conar/db/schema'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const create = orpc

@@ -1,10 +1,10 @@
 import type { Context } from './context'
 
+import { db } from '@conar/db'
+import { subscriptions } from '@conar/db/schema'
 import { ACTIVE_SUBSCRIPTION_STATUSES, LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
 import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
-import { db } from '~/drizzle'
-import { subscriptions } from '~/drizzle/schema'
 import { auth } from '~/lib/auth'
 import { redis } from '~/lib/redis'
 

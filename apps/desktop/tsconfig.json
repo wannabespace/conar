@@ -6,5 +6,5 @@
     },
     "noEmit": true
   },
-  "include": [".", "../../packages/connection/queries/transactions.tstions.ts"]
+  "include": ["."]
 }

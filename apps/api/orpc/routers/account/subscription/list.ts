@@ -1,6 +1,6 @@
+import { db } from '@conar/db'
+import { subscriptions } from '@conar/db/schema'
 import { eq } from 'drizzle-orm'
-import { db } from '~/drizzle'
-import { subscriptions } from '~/drizzle/schema'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const list = orpc

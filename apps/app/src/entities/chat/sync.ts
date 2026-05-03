@@ -17,7 +17,7 @@ export const chatsCollection = createCollection(drizzleCollectionOptions({
   startSync: false,
   prepare: waitForMigrations,
   sync: async ({ collection, write }) => {
-    if (!await isSignedIn() || !navigator.onLine) {
+    if (!navigator.onLine || !await isSignedIn()) {
       return
     }
 
@@ -83,7 +83,7 @@ export const chatsMessagesCollection = createCollection(drizzleCollectionOptions
   startSync: false,
   prepare: waitForMigrations,
   sync: async ({ collection, write }) => {
-    if (!await isSignedIn() || !navigator.onLine) {
+    if (!navigator.onLine || !await isSignedIn()) {
       return
     }
 

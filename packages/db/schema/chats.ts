@@ -1,4 +1,4 @@
-import type { AppUIMessage } from '~/ai/tools/helpers'
+import type { AppUIMessage } from '@conar/ai/tools/helpers'
 import { defineRelations } from 'drizzle-orm'
 import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-orm/arktype'
 import * as d from 'drizzle-orm/pg-core'

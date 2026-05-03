@@ -26,7 +26,7 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
   startSync: false,
   prepare: waitForMigrations,
   sync: async ({ write, collection }) => {
-    if (!await isSignedIn() || !navigator.onLine) {
+    if (!navigator.onLine || !await isSignedIn()) {
       return
     }
 
@@ -130,7 +130,7 @@ export const connectionsResourcesCollection = createCollection(drizzleCollection
   startSync: false,
   prepare: waitForMigrations,
   sync: async ({ collection, write }) => {
-    if (!await isSignedIn() || !navigator.onLine) {
+    if (!navigator.onLine || !await isSignedIn()) {
       return
     }
 

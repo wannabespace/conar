@@ -5,7 +5,7 @@ import * as mssql from '@conar/connection/queries/dialects/mssql'
 import * as mysql from '@conar/connection/queries/dialects/mysql'
 import * as pg from '@conar/connection/queries/dialects/pg'
 import { type } from '@orpc/server'
-import { orpc } from '~/orpc'
+import { authMiddleware, orpc } from '~/orpc'
 
 function createQueryExecutor(dialect: QueryExecutor) {
   return {
@@ -17,9 +17,9 @@ function createQueryExecutor(dialect: QueryExecutor) {
   } satisfies Record<keyof QueryExecutor, unknown>
 }
 
-export const query = {
+export const query = orpc.use(authMiddleware).router({
   postgres: createQueryExecutor(pg.query),
   mysql: createQueryExecutor(mysql.query),
   clickhouse: createQueryExecutor(clickhouse.query),
   mssql: createQueryExecutor(mssql.query),
-} satisfies Record<ConnectionType, Record<keyof QueryExecutor, unknown>>
+} satisfies Record<ConnectionType, Record<keyof QueryExecutor, unknown>>)

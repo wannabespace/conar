@@ -77,9 +77,11 @@
     "uuid": "catalog:"
   },
   "devDependencies": {
+    "@conar/ai": "workspace:*",
     "@conar/api": "workspace:*",
     "@conar/configs": "workspace:*",
     "@conar/connection": "workspace:*",
+    "@conar/proxy": "workspace:*",
     "@playwright/test": "catalog:",
     "@rolldown/plugin-babel": "catalog:",
     "@standard-schema/spec": "catalog:",

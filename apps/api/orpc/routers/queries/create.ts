@@ -1,7 +1,7 @@
+import { db } from '@conar/db'
+import { queriesInsertSchema } from '@conar/db/schema'
+import { queries } from '@conar/db/schema/queries'
 import { type } from 'arktype'
-import { db } from '~/drizzle'
-import { queriesInsertSchema } from '~/drizzle/schema'
-import { queries } from '~/drizzle/schema/queries'
 import { authMiddleware, orpc } from '~/orpc'
 
 const schema = queriesInsertSchema

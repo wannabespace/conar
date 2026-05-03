@@ -31,7 +31,7 @@ export function Base({
           <Container className="mx-auto max-w-120 px-0 pt-5 pb-12">
             <Section className="mb-5">
               <Img
-                src={`${env.WEB_URL}/logo.png`}
+                src={`${env.MAIN_URL}/logo.png`}
                 width="48"
                 height="48"
                 alt="Conar"
@@ -53,7 +53,7 @@ export function Base({
                 {' '}
                 ・
                 {' '}
-                <Link className="text-primary" href={env.WEB_URL}>Website</Link>
+                <Link className="text-primary" href={env.MAIN_URL}>Website</Link>
               </Text>
             </Section>
           </Container>

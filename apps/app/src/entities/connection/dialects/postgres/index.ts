@@ -2,7 +2,7 @@ import type { QueryExecutor } from '@conar/connection/queries'
 import type { CompiledQuery, DatabaseConnection, Dialect, Driver, QueryResult } from 'kysely'
 import type { DialectExecutionOptions, DialectOptions } from '..'
 import { DummyDriver, PostgresAdapter, PostgresQueryCompiler } from 'kysely'
-import { orpc } from '~/lib/orpc'
+import { orpcProxy } from '~/lib/orpc'
 
 function execute(options: DialectExecutionOptions) {
   const params: Parameters<QueryExecutor['execute']>[0] = {
@@ -13,7 +13,7 @@ function execute(options: DialectExecutionOptions) {
 
   const promise = window.electron
     ? window.electron.query.postgres.execute(params)
-    : orpc.proxy.query.postgres.execute.call(params)
+    : orpcProxy.query.postgres.execute.call(params)
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -29,7 +29,7 @@ function executeInTransaction(options: DialectOptions & { txId: string, compiled
 
   const promise = window.electron
     ? window.electron.query.postgres.executeTransaction(params)
-    : orpc.proxy.query.postgres.executeTransaction.call(params)
+    : orpcProxy.query.postgres.executeTransaction.call(params)
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -72,7 +72,7 @@ function createDriver(options: DialectOptions) {
 
       const { txId } = await (window.electron
         ? window.electron.query.postgres.beginTransaction(params)
-        : orpc.proxy.query.postgres.beginTransaction.call(params))
+        : orpcProxy.query.postgres.beginTransaction.call(params))
 
       state.txId = txId
     },
@@ -87,7 +87,7 @@ function createDriver(options: DialectOptions) {
       const params: Parameters<QueryExecutor['commitTransaction']>[0] = { txId }
       await (window.electron
         ? window.electron.query.postgres.commitTransaction(params)
-        : orpc.proxy.query.postgres.commitTransaction.call(params))
+        : orpcProxy.query.postgres.commitTransaction.call(params))
     },
     async rollbackTransaction(connection) {
       const state = txStates.get(connection)
@@ -100,7 +100,7 @@ function createDriver(options: DialectOptions) {
       const params: Parameters<QueryExecutor['rollbackTransaction']>[0] = { txId }
       await (window.electron
         ? window.electron.query.postgres.rollbackTransaction(params)
-        : orpc.proxy.query.postgres.rollbackTransaction.call(params))
+        : orpcProxy.query.postgres.rollbackTransaction.call(params))
     },
     async releaseConnection(connection) {
       const state = txStates.get(connection)
@@ -111,7 +111,7 @@ function createDriver(options: DialectOptions) {
         const params: Parameters<QueryExecutor['rollbackTransaction']>[0] = { txId }
         await (window.electron
           ? window.electron.query.postgres.rollbackTransaction(params)
-          : orpc.proxy.query.postgres.rollbackTransaction.call(params)).catch(() => {})
+          : orpcProxy.query.postgres.rollbackTransaction.call(params)).catch(() => {})
       }
     },
     async destroy() {},

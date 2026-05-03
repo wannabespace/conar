@@ -12,13 +12,13 @@ import { generateText } from 'ai'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { sql } from 'drizzle-orm'
-import { db } from './drizzle'
+import { db } from '@conar/db'
 import { env, nodeEnv } from './env'
 import { auth } from './lib/auth'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
 import { sendEmail } from './lib/resend'
-import { sanitizeLogData } from './lib/sanitize-log'
+import { sanitizeLogData } from '@conar/shared/utils/sanitize-log'
 
 const handler = new RPCHandler(router, {
   interceptors: [
@@ -65,15 +65,15 @@ const app = new Hono<{
   .use(cors({
     origin(origin) {
       const allowedOrigins = [
-        env.WEB_URL,
+        env.MAIN_URL,
         ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`, `http://localhost:${PORTS.DEV.APP}`] : []),
         ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`, `http://localhost:${PORTS.TEST.APP}`] : []),
       ]
-      return origin.endsWith(`.${new URL(env.WEB_URL).host}`) || allowedOrigins.includes(origin) ? origin : null
+      return origin.endsWith(`.${new URL(env.MAIN_URL).host}`) || allowedOrigins.includes(origin) ? origin : null
     },
     credentials: true,
   }))
-  .get('/', c => c.redirect(env.WEB_URL))
+  .get('/', c => c.redirect(env.MAIN_URL))
   .use('*', async (c, next) => {
     const startTime = Date.now()
     c.set('logEvent', {})

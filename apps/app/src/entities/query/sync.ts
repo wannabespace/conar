@@ -13,7 +13,7 @@ export const queriesCollection = createCollection(drizzleCollectionOptions({
   startSync: false,
   prepare: waitForMigrations,
   sync: async ({ collection, write }) => {
-    if (!await isSignedIn() || !navigator.onLine) {
+    if (!navigator.onLine || !await isSignedIn()) {
       return
     }
 

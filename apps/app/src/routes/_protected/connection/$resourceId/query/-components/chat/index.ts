@@ -1,7 +1,8 @@
-import type { AITools } from '@conar/api/ai/tools'
-import type { AppUIMessage } from '@conar/api/ai/tools/helpers'
+import type { AITools } from '@conar/ai/tools'
+import type { AppUIMessage } from '@conar/ai/tools/helpers'
 import type { connectionsResources } from '~/drizzle/schema'
 import { Chat } from '@ai-sdk/react'
+import { convertToAppUIMessage } from '@conar/ai/tools/helpers'
 import { memoize } from '@conar/memoize'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { eventIteratorToStream } from '@orpc/client'
@@ -13,7 +14,6 @@ import { resourceEnumsQueryOptions, resourceRowsQuery, resourceTableColumnsQuery
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsCollection } from '~/entities/connection/sync'
-import { convertToAppUIMessage } from '~/lib/ai'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
 

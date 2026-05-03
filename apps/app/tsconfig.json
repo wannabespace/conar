@@ -9,6 +9,9 @@
   "references": [
     {
       "path": "../api"
+    },
+    {
+      "path": "../proxy"
     }
   ],
   "include": ["."]

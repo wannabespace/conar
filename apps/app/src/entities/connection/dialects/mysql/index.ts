@@ -2,7 +2,7 @@ import type { QueryExecutor } from '@conar/connection/queries'
 import type { CompiledQuery, DatabaseConnection, Dialect, Driver, QueryResult } from 'kysely'
 import type { DialectExecutionOptions, DialectOptions } from '..'
 import { DummyDriver, MysqlAdapter, MysqlQueryCompiler } from 'kysely'
-import { orpc } from '~/lib/orpc'
+import { orpcProxy } from '~/lib/orpc'
 
 function execute(options: DialectExecutionOptions) {
   const params: Parameters<QueryExecutor['execute']>[0] = {
@@ -13,7 +13,7 @@ function execute(options: DialectExecutionOptions) {
 
   const promise = window.electron
     ? window.electron.query.mysql.execute(params)
-    : orpc.proxy.query.mysql.execute.call(params)
+    : orpcProxy.query.mysql.execute.call(params)
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -29,7 +29,7 @@ function executeInTransaction(options: DialectOptions & { txId: string, compiled
 
   const promise = window.electron
     ? window.electron.query.mysql.executeTransaction(params)
-    : orpc.proxy.query.mysql.executeTransaction.call(params)
+    : orpcProxy.query.mysql.executeTransaction.call(params)
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -72,7 +72,7 @@ function createDriver(options: DialectOptions) {
 
       const { txId } = await (window.electron
         ? window.electron.query.mysql.beginTransaction(params)
-        : orpc.proxy.query.mysql.beginTransaction.call(params))
+        : orpcProxy.query.mysql.beginTransaction.call(params))
 
       state.txId = txId
     },
@@ -87,7 +87,7 @@ function createDriver(options: DialectOptions) {
       const params: Parameters<QueryExecutor['commitTransaction']>[0] = { txId }
       await (window.electron
         ? window.electron.query.mysql.commitTransaction(params)
-        : orpc.proxy.query.mysql.commitTransaction.call(params))
+        : orpcProxy.query.mysql.commitTransaction.call(params))
     },
     async rollbackTransaction(connection: DatabaseConnection) {
       const state = txStates.get(connection)
@@ -100,7 +100,7 @@ function createDriver(options: DialectOptions) {
       const params: Parameters<QueryExecutor['rollbackTransaction']>[0] = { txId }
       await (window.electron
         ? window.electron.query.mysql.rollbackTransaction(params)
-        : orpc.proxy.query.mysql.rollbackTransaction.call(params))
+        : orpcProxy.query.mysql.rollbackTransaction.call(params))
     },
     async releaseConnection(connection: DatabaseConnection) {
       const state = txStates.get(connection)
@@ -110,7 +110,7 @@ function createDriver(options: DialectOptions) {
         const params: Parameters<QueryExecutor['rollbackTransaction']>[0] = { txId }
         await (window.electron
           ? window.electron.query.mysql.rollbackTransaction(params)
-          : orpc.proxy.query.mysql.rollbackTransaction.call(params)).catch(() => {})
+          : orpcProxy.query.mysql.rollbackTransaction.call(params)).catch(() => {})
       }
     },
     async destroy() {},

@@ -3,7 +3,7 @@ import type { CompiledQuery, DatabaseConnection, Dialect, Driver, QueryResult } 
 import type { DialectExecutionOptions, DialectOptions } from '..'
 import { type } from 'arktype'
 import { DummyDriver, MysqlQueryCompiler } from 'kysely'
-import { orpc } from '~/lib/orpc'
+import { orpcProxy } from '~/lib/orpc'
 
 const escapeSqlStringRegex = /[\\']/g
 
@@ -70,7 +70,7 @@ function execute(options: DialectExecutionOptions) {
 
   const promise = window.electron
     ? window.electron.query.clickhouse.execute(params)
-    : orpc.proxy.query.clickhouse.execute.call(params)
+    : orpcProxy.query.clickhouse.execute.call(params)
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -88,7 +88,7 @@ function executeInTransaction(options: DialectOptions & { txId: string, compiled
 
   const promise = window.electron
     ? window.electron.query.clickhouse.executeTransaction(params)
-    : orpc.proxy.query.clickhouse.executeTransaction.call(params)
+    : orpcProxy.query.clickhouse.executeTransaction.call(params)
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -148,7 +148,7 @@ function createDriver(options: DialectOptions) {
       const params: Parameters<QueryExecutor['commitTransaction']>[0] = { txId }
       await (window.electron
         ? window.electron.query.clickhouse.commitTransaction(params)
-        : orpc.proxy.query.clickhouse.commitTransaction.call(params))
+        : orpcProxy.query.clickhouse.commitTransaction.call(params))
     },
     async rollbackTransaction(connection: DatabaseConnection) {
       const state = txStates.get(connection)
@@ -160,7 +160,7 @@ function createDriver(options: DialectOptions) {
       const params: Parameters<QueryExecutor['rollbackTransaction']>[0] = { txId }
       await (window.electron
         ? window.electron.query.clickhouse.rollbackTransaction(params)
-        : orpc.proxy.query.clickhouse.rollbackTransaction.call(params))
+        : orpcProxy.query.clickhouse.rollbackTransaction.call(params))
     },
     async releaseConnection(connection: DatabaseConnection) {
       const state = txStates.get(connection)
@@ -170,7 +170,7 @@ function createDriver(options: DialectOptions) {
         const params: Parameters<QueryExecutor['rollbackTransaction']>[0] = { txId }
         await (window.electron
           ? window.electron.query.clickhouse.rollbackTransaction(params)
-          : orpc.proxy.query.clickhouse.rollbackTransaction.call(params)).catch(() => {})
+          : orpcProxy.query.clickhouse.rollbackTransaction.call(params)).catch(() => {})
       }
     },
     async destroy() {},

@@ -61,6 +61,15 @@ export function tryCatch<T>(fn: () => T): { data: T, error: null } | { data: nul
   }
 }
 
+export async function tryCatchAsync<T>(fn: () => Promise<T>): Promise<{ data: T, error: null } | { data: null, error: Error }> {
+  try {
+    return { data: await fn(), error: null }
+  }
+  catch (error) {
+    return { data: null, error: error instanceof Error ? error : new Error(String(error)) }
+  }
+}
+
 export function uppercaseFirst(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1)
 }

@@ -12,7 +12,7 @@ import type {
 } from 'kysely'
 import type { DialectExecutionOptions, DialectOptions } from '..'
 import { MssqlQueryCompiler as DefaultMssqlQueryCompiler, DummyDriver, MssqlAdapter } from 'kysely'
-import { orpc } from '~/lib/orpc'
+import { orpcProxy } from '~/lib/orpc'
 
 function isSelectQueryNode(node: OperationNode): node is SelectQueryNode {
   return node.kind === 'SelectQueryNode'
@@ -55,7 +55,7 @@ function execute(options: DialectExecutionOptions) {
 
   const promise = window.electron
     ? window.electron.query.mssql.execute(params)
-    : orpc.proxy.query.mssql.execute.call(params)
+    : orpcProxy.query.mssql.execute.call(params)
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -71,7 +71,7 @@ function executeInTransaction(options: DialectOptions & { txId: string, compiled
 
   const promise = window.electron
     ? window.electron.query.mssql.executeTransaction(params)
-    : orpc.proxy.query.mssql.executeTransaction.call(params)
+    : orpcProxy.query.mssql.executeTransaction.call(params)
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -114,7 +114,7 @@ function createDriver(options: DialectOptions) {
 
       const { txId } = await (window.electron
         ? window.electron.query.mssql.beginTransaction(params)
-        : orpc.proxy.query.mssql.beginTransaction.call(params))
+        : orpcProxy.query.mssql.beginTransaction.call(params))
 
       state.txId = txId
     },
@@ -129,7 +129,7 @@ function createDriver(options: DialectOptions) {
       const params: Parameters<QueryExecutor['commitTransaction']>[0] = { txId }
       await (window.electron
         ? window.electron.query.mssql.commitTransaction(params)
-        : orpc.proxy.query.mssql.commitTransaction.call(params))
+        : orpcProxy.query.mssql.commitTransaction.call(params))
     },
     async rollbackTransaction(connection: DatabaseConnection) {
       const state = txStates.get(connection)
@@ -142,7 +142,7 @@ function createDriver(options: DialectOptions) {
       const params: Parameters<QueryExecutor['rollbackTransaction']>[0] = { txId }
       await (window.electron
         ? window.electron.query.mssql.rollbackTransaction(params)
-        : orpc.proxy.query.mssql.rollbackTransaction.call(params))
+        : orpcProxy.query.mssql.rollbackTransaction.call(params))
     },
     async releaseConnection(connection: DatabaseConnection) {
       const state = txStates.get(connection)
@@ -152,7 +152,7 @@ function createDriver(options: DialectOptions) {
         const params: Parameters<QueryExecutor['rollbackTransaction']>[0] = { txId }
         await (window.electron
           ? window.electron.query.mssql.rollbackTransaction(params)
-          : orpc.proxy.query.mssql.rollbackTransaction.call(params)).catch(() => {})
+          : orpcProxy.query.mssql.rollbackTransaction.call(params)).catch(() => {})
       }
     },
     async destroy() {},
