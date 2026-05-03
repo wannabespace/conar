@@ -121,8 +121,9 @@ function AccountLayout() {
             variant="outline"
             disabled
             size="sm"
+            render={<Link to={import.meta.env.VITE_PUBLIC_WEB_URL!} />}
           >
-            Web version (soon)
+            Web version
           </Button>
           <Button
             size="sm"
