@@ -21,6 +21,7 @@ type Params<T extends AnyFunction, P extends Parameters<T>[0] = Parameters<T>[0]
 
 async function resolveQueryConnectionString(
   input: { connectionString?: string, resourceId?: string, connectionId?: string },
+  userId: string,
   getUserSecret: () => Promise<string>,
 ) {
   let connectionString = input.connectionString
@@ -40,6 +41,11 @@ async function resolveQueryConnectionString(
               connectionString: true,
               syncType: true,
             },
+            where: {
+              userId: {
+                eq: userId,
+              },
+            },
           },
         },
       }),
@@ -50,8 +56,8 @@ async function resolveQueryConnectionString(
       throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
     }
 
-    if (connection.connection?.syncType === SyncType.CloudWithoutPassword) {
-      throw new ORPCError('FORBIDDEN', { message: 'This connection is not allowed to be used because it was created with a cloud connection string without a password.' })
+    if (connection.connection.syncType === SyncType.CloudWithoutPassword) {
+      throw new ORPCError('FORBIDDEN', { message: 'This connection is not allowed to be used because it was created as a cloud connection without a password.' })
     }
 
     connectionString = decrypt({ encryptedText: connection.connection.connectionString, secret })
@@ -61,16 +67,24 @@ async function resolveQueryConnectionString(
     const connection = await db.query.connections.findFirst({
       columns: {
         connectionString: true,
+        syncType: true,
       },
       where: {
         id: {
           eq: input.connectionId,
+        },
+        userId: {
+          eq: userId,
         },
       },
     })
 
     if (!connection) {
       throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
+    }
+
+    if (connection.syncType === SyncType.CloudWithoutPassword) {
+      throw new ORPCError('FORBIDDEN', { message: 'This connection is not allowed to be used because it was created as a cloud connection without a password.' })
     }
 
     connectionString = decrypt({ encryptedText: connection.connectionString, secret: await getUserSecret() })
@@ -86,14 +100,14 @@ function createQueryExecutor(dialect: QueryExecutor) {
       .input(type<Params<typeof dialect.execute>>())
       .handler(async ({ input, context }) => dialect.execute({
         ...input,
-        connectionString: await resolveQueryConnectionString(input, context.getUserSecret),
+        connectionString: await resolveQueryConnectionString(input, context.user.id, context.getUserSecret),
       })),
     beginTransaction: orpc
       .use(authMiddleware)
       .input(type<Params<typeof dialect.beginTransaction>>())
       .handler(async ({ input, context }) => dialect.beginTransaction({
         ...input,
-        connectionString: await resolveQueryConnectionString(input, context.getUserSecret),
+        connectionString: await resolveQueryConnectionString(input, context.user.id, context.getUserSecret),
       })),
     executeTransaction: orpc
       .use(authMiddleware)

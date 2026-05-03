@@ -96,7 +96,7 @@ export function wrapAggregateError<T extends AnyFunction>(fn: T): T {
       return await fn(...args)
     }
     catch (error) {
-      if (error instanceof AggregateError) {
+      if (error instanceof AggregateError && error.errors.length > 0) {
         throw error.errors[0]
       }
       throw error
