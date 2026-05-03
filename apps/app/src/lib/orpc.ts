@@ -49,9 +49,6 @@ export const orpcProxy = createTanstackQueryUtils(createORPCClient(new RPCLink({
       credentials: 'include',
     })
   },
-  interceptors: [
-    onError(handleError),
-  ],
 })) satisfies proxyOrpc.ORPCRouter)
 
 export type ORPCInputs = InferRouterInputs<typeof apiOrpc.router>
