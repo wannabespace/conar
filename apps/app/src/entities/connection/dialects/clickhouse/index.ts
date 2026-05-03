@@ -63,14 +63,25 @@ function prepareQuery(compiledQuery: CompiledQuery) {
 function execute(options: DialectExecutionOptions) {
   const preparedQuery = prepareQuery(options.compiledQuery)
 
-  const params: Parameters<QueryExecutor['execute']>[0] = {
-    connectionString: options.connectionString,
-    query: preparedQuery,
-  }
-
   const promise = window.electron
-    ? window.electron.query.clickhouse.execute(params)
-    : orpcProxy.query.clickhouse.execute.call(params)
+    ? window.electron.query.clickhouse.execute({
+        connectionString: options.connectionString,
+        query: preparedQuery,
+      })
+    : orpcProxy.query.clickhouse.execute.call(options.resourceId
+        ? {
+            resourceId: options.resourceId,
+            query: preparedQuery,
+          }
+        : options.connectionId
+          ? {
+              connectionId: options.connectionId,
+              query: preparedQuery,
+            }
+          : {
+              connectionString: options.connectionString,
+              query: preparedQuery,
+            })
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -120,21 +131,26 @@ function createDriver(options: DialectOptions) {
       return connection
     },
     async beginTransaction(connection: DatabaseConnection) {
-      // ClickHouse does not support real multi-statement transactions.
-      // We still allocate a tx id so Kysely's transaction API works uniformly,
-      // but commit/rollback on the server side are no-ops.
-      if (!window.electron) {
-        throw new Error('Electron is not available')
-      }
-
       const state = txStates.get(connection)
       if (!state) {
         throw new Error('Transaction state missing for acquired connection')
       }
 
-      const { txId } = await window.electron.query.clickhouse.beginTransaction({
-        connectionString: options.connectionString,
-      })
+      const { txId } = await (window.electron
+        ? window.electron.query.clickhouse.beginTransaction({
+            connectionString: options.connectionString,
+          })
+        : orpcProxy.query.clickhouse.beginTransaction.call(options.resourceId
+            ? {
+                resourceId: options.resourceId,
+              }
+            : options.connectionId
+              ? {
+                  connectionId: options.connectionId,
+                }
+              : {
+                  connectionString: options.connectionString,
+                }))
 
       state.txId = txId
     },

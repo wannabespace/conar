@@ -47,15 +47,29 @@ class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
 }
 
 function execute(options: DialectExecutionOptions) {
-  const params: Parameters<QueryExecutor['execute']>[0] = {
-    connectionString: options.connectionString,
-    query: options.compiledQuery.sql,
-    values: options.compiledQuery.parameters as unknown[],
-  }
-
   const promise = window.electron
-    ? window.electron.query.mssql.execute(params)
-    : orpcProxy.query.mssql.execute.call(params)
+    ? window.electron.query.mssql.execute({
+        connectionString: options.connectionString,
+        query: options.compiledQuery.sql,
+        values: options.compiledQuery.parameters as unknown[],
+      })
+    : orpcProxy.query.mssql.execute.call(options.resourceId
+        ? {
+            resourceId: options.resourceId,
+            query: options.compiledQuery.sql,
+            values: options.compiledQuery.parameters as unknown[],
+          }
+        : options.connectionId
+          ? {
+              connectionId: options.connectionId,
+              query: options.compiledQuery.sql,
+              values: options.compiledQuery.parameters as unknown[],
+            }
+          : {
+              connectionString: options.connectionString,
+              query: options.compiledQuery.sql,
+              values: options.compiledQuery.parameters as unknown[],
+            })
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -108,13 +122,21 @@ function createDriver(options: DialectOptions) {
         throw new Error('Transaction state missing for acquired connection')
       }
 
-      const params: Parameters<QueryExecutor['beginTransaction']>[0] = {
-        connectionString: options.connectionString,
-      }
-
       const { txId } = await (window.electron
-        ? window.electron.query.mssql.beginTransaction(params)
-        : orpcProxy.query.mssql.beginTransaction.call(params))
+        ? window.electron.query.mssql.beginTransaction({
+            connectionString: options.connectionString,
+          })
+        : orpcProxy.query.mssql.beginTransaction.call(options.resourceId
+            ? {
+                resourceId: options.resourceId,
+              }
+            : options.connectionId
+              ? {
+                  connectionId: options.connectionId,
+                }
+              : {
+                  connectionString: options.connectionString,
+                }))
 
       state.txId = txId
     },

@@ -14,6 +14,8 @@ import { postgresColdDialect, postgresDialect } from './postgres'
 
 export interface DialectOptions {
   connectionString: string
+  connectionId?: string
+  resourceId?: string
   log?: (params: {
     promise: Promise<{
       result: unknown

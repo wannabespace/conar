@@ -60,6 +60,7 @@ export function DraftsToolbar({
   const queryParams = connectionResourceToQueryParams(connectionResource)
   const db = dialects[queryParams.type]({
     connectionString: queryParams.connectionString,
+    resourceId: queryParams.resourceId,
     log: queryParams.log,
     // eslint-disable-next-line ts/no-explicit-any
   }) as unknown as Kysely<any>
@@ -254,6 +255,7 @@ export function DraftsToolbar({
     <>
       <motion.div
         variants={motionVariants}
+        initial="hidden"
         animate={drafts.length > 0 ? 'visible' : 'hidden'}
         transition={{ duration: 0.3, type: 'spring' }}
         className="

@@ -5,15 +5,29 @@ import { DummyDriver, PostgresAdapter, PostgresQueryCompiler } from 'kysely'
 import { orpcProxy } from '~/lib/orpc'
 
 function execute(options: DialectExecutionOptions) {
-  const params: Parameters<QueryExecutor['execute']>[0] = {
-    connectionString: options.connectionString,
-    query: options.compiledQuery.sql,
-    values: options.compiledQuery.parameters as unknown[],
-  }
-
   const promise = window.electron
-    ? window.electron.query.postgres.execute(params)
-    : orpcProxy.query.postgres.execute.call(params)
+    ? window.electron.query.postgres.execute({
+        connectionString: options.connectionString,
+        query: options.compiledQuery.sql,
+        values: options.compiledQuery.parameters as unknown[],
+      })
+    : orpcProxy.query.postgres.execute.call(options.resourceId
+        ? {
+            resourceId: options.resourceId,
+            query: options.compiledQuery.sql,
+            values: options.compiledQuery.parameters as unknown[],
+          }
+        : options.connectionId
+          ? {
+              connectionId: options.connectionId,
+              query: options.compiledQuery.sql,
+              values: options.compiledQuery.parameters as unknown[],
+            }
+          : {
+              connectionString: options.connectionString,
+              query: options.compiledQuery.sql,
+              values: options.compiledQuery.parameters as unknown[],
+            })
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -66,13 +80,21 @@ function createDriver(options: DialectOptions) {
         throw new Error('Transaction state missing for acquired connection')
       }
 
-      const params: Parameters<QueryExecutor['beginTransaction']>[0] = {
-        connectionString: options.connectionString,
-      }
-
       const { txId } = await (window.electron
-        ? window.electron.query.postgres.beginTransaction(params)
-        : orpcProxy.query.postgres.beginTransaction.call(params))
+        ? window.electron.query.postgres.beginTransaction({
+            connectionString: options.connectionString,
+          })
+        : orpcProxy.query.postgres.beginTransaction.call(options.resourceId
+            ? {
+                resourceId: options.resourceId,
+              }
+            : options.connectionId
+              ? {
+                  connectionId: options.connectionId,
+                }
+              : {
+                  connectionString: options.connectionString,
+                }))
 
       state.txId = txId
     },

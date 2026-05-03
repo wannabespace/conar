@@ -5,15 +5,29 @@ import { DummyDriver, MysqlAdapter, MysqlQueryCompiler } from 'kysely'
 import { orpcProxy } from '~/lib/orpc'
 
 function execute(options: DialectExecutionOptions) {
-  const params: Parameters<QueryExecutor['execute']>[0] = {
-    connectionString: options.connectionString,
-    query: options.compiledQuery.sql,
-    values: options.compiledQuery.parameters as unknown[],
-  }
-
   const promise = window.electron
-    ? window.electron.query.mysql.execute(params)
-    : orpcProxy.query.mysql.execute.call(params)
+    ? window.electron.query.mysql.execute({
+        connectionString: options.connectionString,
+        query: options.compiledQuery.sql,
+        values: options.compiledQuery.parameters as unknown[],
+      })
+    : orpcProxy.query.mysql.execute.call(options.resourceId
+        ? {
+            resourceId: options.resourceId,
+            query: options.compiledQuery.sql,
+            values: options.compiledQuery.parameters as unknown[],
+          }
+        : options.connectionId
+          ? {
+              connectionId: options.connectionId,
+              query: options.compiledQuery.sql,
+              values: options.compiledQuery.parameters as unknown[],
+            }
+          : {
+              connectionString: options.connectionString,
+              query: options.compiledQuery.sql,
+              values: options.compiledQuery.parameters as unknown[],
+            })
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -66,13 +80,21 @@ function createDriver(options: DialectOptions) {
         throw new Error('Transaction state missing for acquired connection')
       }
 
-      const params: Parameters<QueryExecutor['beginTransaction']>[0] = {
-        connectionString: options.connectionString,
-      }
-
       const { txId } = await (window.electron
-        ? window.electron.query.mysql.beginTransaction(params)
-        : orpcProxy.query.mysql.beginTransaction.call(params))
+        ? window.electron.query.mysql.beginTransaction({
+            connectionString: options.connectionString,
+          })
+        : orpcProxy.query.mysql.beginTransaction.call(options.resourceId
+            ? {
+                resourceId: options.resourceId,
+              }
+            : options.connectionId
+              ? {
+                  connectionId: options.connectionId,
+                }
+              : {
+                  connectionString: options.connectionString,
+                }))
 
       state.txId = txId
     },

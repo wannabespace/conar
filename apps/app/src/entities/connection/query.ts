@@ -1,6 +1,6 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { Type } from 'arktype'
-import type { connectionsResources } from '~/drizzle/schema'
+import type { connections, connectionsResources } from '~/drizzle/schema'
 import { isReconnectError } from '@conar/shared/utils/connections'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Result } from 'better-result'
@@ -10,6 +10,16 @@ import { dialects } from './dialects'
 import { logQuery } from './log'
 import { connectionsCollection } from './sync'
 import { getConnectionStringToShow } from './utils'
+
+export function connectionToQueryParams(connection: typeof connections.$inferSelect): QueryParams {
+  const foundConnection = connectionsCollection.get(connection.id)!
+
+  return {
+    connectionString: foundConnection.connectionString,
+    type: connection.type,
+    connectionId: foundConnection.id,
+  }
+}
 
 export function connectionResourceToQueryParams(connectionResource: typeof connectionsResources.$inferSelect): QueryParams {
   const connection = connectionsCollection.get(connectionResource.connectionId)!
@@ -28,6 +38,7 @@ export interface QueryParams {
   connectionString: string
   type: ConnectionType
   resourceId?: string
+  connectionId?: string
   log?: (params: {
     promise: Promise<{
       result: unknown
@@ -61,6 +72,8 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
     const dialect = dialects[queryParams.type]
     const instance = dialect({
       connectionString: queryParams.connectionString,
+      connectionId: queryParams.connectionId,
+      resourceId: queryParams.resourceId,
       log: queryParams.log,
     })
     const queryFn = options.query[queryParams.type]
