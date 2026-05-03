@@ -1,4 +1,4 @@
-import type { AppUIMessage } from '@conar/api/ai/tools/helpers'
+import type { AppUIMessage } from '@conar/ai/tools/helpers'
 import { defineRelations } from 'drizzle-orm'
 import * as d from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'

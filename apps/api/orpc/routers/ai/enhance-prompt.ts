@@ -1,9 +1,9 @@
 import { openai } from '@ai-sdk/openai'
+import { db } from '@conar/db'
+import { chatsMessages } from '@conar/db/schema'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { asc, eq } from 'drizzle-orm'
-import { db } from '~/drizzle'
-import { chatsMessages } from '~/drizzle/schema'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 

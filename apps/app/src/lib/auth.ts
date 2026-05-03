@@ -1,3 +1,4 @@
+import { tryCatchAsync } from '@conar/shared/utils/helpers'
 import { type } from 'arktype'
 import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
@@ -51,6 +52,12 @@ export const authClient = createAuthClient({
     },
   },
 })
+
+export async function isSignedIn() {
+  const { data } = await tryCatchAsync(authClient.getSession)
+
+  return !!data?.data?.user
+}
 
 export async function fullSignOut() {
   await authClient.signOut()

@@ -1,6 +1,7 @@
 import type { ComponentRef } from 'react'
 import type { chats } from '~/drizzle/schema'
 import type { ChatMutationMetadata } from '~/entities/chat/sync'
+import { convertToAppUIMessage } from '@conar/ai/tools/helpers'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -25,7 +26,6 @@ import {
   chatsMessagesCollection,
 } from '~/entities/chat/sync'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { convertToAppUIMessage } from '~/lib/ai'
 import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
 import { RemoveChatDialog } from './remove-chat-dialog'

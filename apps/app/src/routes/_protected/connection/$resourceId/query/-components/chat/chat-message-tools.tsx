@@ -1,4 +1,4 @@
-import type { ToolUIPart } from '@conar/api/ai/tools/helpers'
+import type { ToolUIPart } from '@conar/ai/tools/helpers'
 import type { editor } from 'monaco-editor'
 import { FaviconWithFallback } from '@conar/ui/components/custom/favicon-with-fallback'
 import {

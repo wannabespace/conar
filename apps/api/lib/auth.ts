@@ -1,5 +1,8 @@
 import type { BetterAuthOptions } from 'better-auth'
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
+import { db } from '@conar/db'
+import { users } from '@conar/db/schema'
+import * as schema from '@conar/db/schema'
 import { AUTH_COOKIE_PREFIX, PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
@@ -7,14 +10,11 @@ import { createAuthMiddleware } from 'better-auth/api'
 import { anonymous, bearer, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
-import { db } from '~/drizzle'
-import { users } from '~/drizzle/schema'
-import * as schema from '~/drizzle/schema'
 import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
 import { redisMemoize } from './redis'
 
-const webUrl = new URL(env.WEB_URL)
+const mainUrl = new URL(env.MAIN_URL)
 
 export const auth = betterAuth({
   appName: 'Conar',
@@ -157,8 +157,8 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [
-    env.WEB_URL,
-    `${webUrl.protocol}//*.${webUrl.host}`,
+    env.MAIN_URL,
+    `${mainUrl.protocol}//*.${mainUrl.host}`,
     'file://',
     ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`, `http://localhost:${PORTS.DEV.APP}`] : []),
     ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`, `http://localhost:${PORTS.TEST.APP}`] : []),
@@ -167,7 +167,7 @@ export const auth = betterAuth({
     cookiePrefix: AUTH_COOKIE_PREFIX,
     crossSubDomainCookies: {
       enabled: nodeEnv === 'production',
-      domain: webUrl.host,
+      domain: mainUrl.host,
     },
     database: {
       generateId: 'uuid',

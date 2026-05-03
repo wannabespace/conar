@@ -1,7 +1,7 @@
+import { db } from '@conar/db'
+import { queries } from '@conar/db/schema/queries'
 import { type } from 'arktype'
 import { and, eq, inArray } from 'drizzle-orm'
-import { db } from '~/drizzle'
-import { queries } from '~/drizzle/schema/queries'
 import { authMiddleware, orpc } from '~/orpc'
 
 const input = type({

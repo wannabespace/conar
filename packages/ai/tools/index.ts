@@ -4,7 +4,7 @@ import { webSearch } from '@exalabs/ai-sdk'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
 import { tool } from 'ai'
 import * as z from 'zod/mini'
-import { env } from '~/env'
+import { env } from '../env'
 
 export const tools = {
   columns: tool({

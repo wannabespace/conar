@@ -61,6 +61,15 @@ export function tryCatch<T>(fn: () => T): { data: T, error: null } | { data: nul
   }
 }
 
+export async function tryCatchAsync<T>(fn: () => Promise<T>): Promise<{ data: T, error: null } | { data: null, error: Error }> {
+  try {
+    return { data: await fn(), error: null }
+  }
+  catch (error) {
+    return { data: null, error: error instanceof Error ? error : new Error(String(error)) }
+  }
+}
+
 export function uppercaseFirst(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1)
 }
@@ -79,4 +88,18 @@ export function tryParseToJsonArray(editedValue: string): string[] {
   if (Array.isArray(parsed))
     return parsed.map(String)
   return [editedValue]
+}
+
+export function wrapAggregateError<T extends AnyFunction>(fn: T): T {
+  return (async (...args: Parameters<T>) => {
+    try {
+      return await fn(...args)
+    }
+    catch (error) {
+      if (error instanceof AggregateError && error.errors.length > 0) {
+        throw error.errors[0]
+      }
+      throw error
+    }
+  }) as T
 }

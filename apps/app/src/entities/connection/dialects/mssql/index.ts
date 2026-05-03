@@ -1,3 +1,4 @@
+import type { QueryExecutor } from '@conar/connection/queries'
 import type {
   CompiledQuery,
   DatabaseConnection,
@@ -11,6 +12,7 @@ import type {
 } from 'kysely'
 import type { DialectExecutionOptions, DialectOptions } from '..'
 import { MssqlQueryCompiler as DefaultMssqlQueryCompiler, DummyDriver, MssqlAdapter } from 'kysely'
+import { orpcProxy } from '~/lib/orpc'
 
 function isSelectQueryNode(node: OperationNode): node is SelectQueryNode {
   return node.kind === 'SelectQueryNode'
@@ -45,15 +47,29 @@ class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
 }
 
 function execute(options: DialectExecutionOptions) {
-  if (!window.electron) {
-    throw new Error('Electron is not available')
-  }
-
-  const promise = window.electron.query.mssql.execute({
-    connectionString: options.connectionString,
-    query: options.compiledQuery.sql,
-    values: options.compiledQuery.parameters as unknown[],
-  })
+  const promise = window.electron
+    ? window.electron.query.mssql.execute({
+        connectionString: options.connectionString,
+        query: options.compiledQuery.sql,
+        values: options.compiledQuery.parameters as unknown[],
+      })
+    : orpcProxy.query.mssql.execute.call(options.resourceId
+        ? {
+            resourceId: options.resourceId,
+            query: options.compiledQuery.sql,
+            values: options.compiledQuery.parameters as unknown[],
+          }
+        : options.connectionId
+          ? {
+              connectionId: options.connectionId,
+              query: options.compiledQuery.sql,
+              values: options.compiledQuery.parameters as unknown[],
+            }
+          : {
+              connectionString: options.connectionString,
+              query: options.compiledQuery.sql,
+              values: options.compiledQuery.parameters as unknown[],
+            })
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -61,15 +77,15 @@ function execute(options: DialectExecutionOptions) {
 }
 
 function executeInTransaction(options: DialectOptions & { txId: string, compiledQuery: CompiledQuery }) {
-  if (!window.electron) {
-    throw new Error('Electron is not available')
-  }
-
-  const promise = window.electron.query.mssql.executeTransaction({
+  const params: Parameters<QueryExecutor['executeTransaction']>[0] = {
     txId: options.txId,
     query: options.compiledQuery.sql,
     values: options.compiledQuery.parameters as unknown[],
-  })
+  }
+
+  const promise = window.electron
+    ? window.electron.query.mssql.executeTransaction(params)
+    : orpcProxy.query.mssql.executeTransaction.call(params)
 
   options.log?.({ promise, query: options.compiledQuery.sql, values: options.compiledQuery.parameters as unknown[] })
 
@@ -101,45 +117,64 @@ function createDriver(options: DialectOptions) {
       return connection
     },
     async beginTransaction(connection: DatabaseConnection) {
-      if (!window.electron) {
-        throw new Error('Electron is not available')
-      }
-
       const state = txStates.get(connection)
       if (!state) {
         throw new Error('Transaction state missing for acquired connection')
       }
 
-      const { txId } = await window.electron.query.mssql.beginTransaction({
-        connectionString: options.connectionString,
-      })
+      const { txId } = await (window.electron
+        ? window.electron.query.mssql.beginTransaction({
+            connectionString: options.connectionString,
+          })
+        : orpcProxy.query.mssql.beginTransaction.call(options.resourceId
+            ? {
+                resourceId: options.resourceId,
+              }
+            : options.connectionId
+              ? {
+                  connectionId: options.connectionId,
+                }
+              : {
+                  connectionString: options.connectionString,
+                }))
 
       state.txId = txId
     },
     async commitTransaction(connection: DatabaseConnection) {
       const state = txStates.get(connection)
-      if (!state?.txId || !window.electron)
+      if (!state?.txId)
         return
 
       const txId = state.txId
       state.txId = null
-      await window.electron.query.mssql.commitTransaction({ txId })
+
+      const params: Parameters<QueryExecutor['commitTransaction']>[0] = { txId }
+      await (window.electron
+        ? window.electron.query.mssql.commitTransaction(params)
+        : orpcProxy.query.mssql.commitTransaction.call(params))
     },
     async rollbackTransaction(connection: DatabaseConnection) {
       const state = txStates.get(connection)
-      if (!state?.txId || !window.electron)
+      if (!state?.txId)
         return
 
       const txId = state.txId
       state.txId = null
-      await window.electron.query.mssql.rollbackTransaction({ txId })
+
+      const params: Parameters<QueryExecutor['rollbackTransaction']>[0] = { txId }
+      await (window.electron
+        ? window.electron.query.mssql.rollbackTransaction(params)
+        : orpcProxy.query.mssql.rollbackTransaction.call(params))
     },
     async releaseConnection(connection: DatabaseConnection) {
       const state = txStates.get(connection)
-      if (state?.txId && window.electron) {
+      if (state?.txId) {
         const txId = state.txId
         state.txId = null
-        await window.electron.query.mssql.rollbackTransaction({ txId }).catch(() => {})
+        const params: Parameters<QueryExecutor['rollbackTransaction']>[0] = { txId }
+        await (window.electron
+          ? window.electron.query.mssql.rollbackTransaction(params)
+          : orpcProxy.query.mssql.rollbackTransaction.call(params)).catch(() => {})
       }
     },
     async destroy() {},

@@ -1,0 +1,12 @@
+{
+  "extends": "@conar/configs/ts/base.json",
+  "compilerOptions": {
+    "composite": true,
+    "paths": {
+      "~/*": ["./*"]
+    },
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./.types"
+  }
+}

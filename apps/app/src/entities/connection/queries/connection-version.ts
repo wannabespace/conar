@@ -2,7 +2,7 @@ import type { connections } from '~/drizzle/schema'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
-import { createQuery } from '../query'
+import { connectionToQueryParams, createQuery } from '../query'
 
 export const connectionVersionType = type({
   version: 'string',
@@ -67,10 +67,7 @@ export const connectionVersionQuery = createQuery({
 export function connectionVersionQueryOptions(connection: typeof connections.$inferSelect) {
   return queryOptions({
     queryKey: ['connection-resource', connection.id, 'version'],
-    queryFn: () => connectionVersionQuery.run({
-      connectionString: connection.connectionString,
-      type: connection.type,
-    }),
+    queryFn: () => connectionVersionQuery.run(connectionToQueryParams(connection)),
     throwOnError: false,
   })
 }

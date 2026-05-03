@@ -1,7 +1,7 @@
 import type { connections } from '~/drizzle/schema'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
-import { createQuery } from '../query'
+import { connectionToQueryParams, createQuery } from '../query'
 
 export const connectionResourcesQuery = createQuery({
   type: type('string[]'),
@@ -43,10 +43,7 @@ export const connectionResourcesQuery = createQuery({
 export function connectionResourcesQueryOptions(connection: typeof connections.$inferSelect) {
   return queryOptions({
     queryKey: ['connection', connection.id, 'resources'],
-    queryFn: () => connectionResourcesQuery.run({
-      connectionString: connection.connectionString,
-      type: connection.type,
-    }),
+    queryFn: () => connectionResourcesQuery.run(connectionToQueryParams(connection)),
     throwOnError: false,
   })
 }

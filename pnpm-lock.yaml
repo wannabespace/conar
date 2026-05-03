@@ -60,9 +60,6 @@ catalogs:
     '@hackylabs/deep-redact':
       specifier: ^3.0.5
       version: 3.0.5
-    '@hono/arktype-validator':
-      specifier: ^2.0.1
-      version: 2.0.1
     '@monaco-editor/loader':
       specifier: ^1.7.0
       version: 1.7.0
@@ -544,10 +541,16 @@ importers:
         version: 3.0.85(zod@4.4.1)
       '@better-auth/drizzle-adapter':
         specifier: 'catalog:'
-        version: https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913(@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.2.1(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(drizzle-orm@1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.1))(prettier@3.8.1)
+        version: https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913(@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(drizzle-orm@1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.1))(prettier@3.8.1)
+      '@conar/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@conar/connection':
         specifier: workspace:*
         version: link:../../packages/connection
+      '@conar/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@conar/memoize':
         specifier: workspace:*
         version: link:../../packages/memoize
@@ -557,12 +560,6 @@ importers:
       '@exalabs/ai-sdk':
         specifier: 'catalog:'
         version: 2.0.1(ai@6.0.172(zod@4.4.1))
-      '@hackylabs/deep-redact':
-        specifier: 'catalog:'
-        version: 3.0.5
-      '@hono/arktype-validator':
-        specifier: 'catalog:'
-        version: 2.0.1(arktype@2.2.0)(hono@4.12.16)
       '@octokit/rest':
         specifier: 'catalog:'
         version: 22.0.1
@@ -847,12 +844,21 @@ importers:
         specifier: 'catalog:'
         version: 14.0.0
     devDependencies:
+      '@conar/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@conar/api':
         specifier: workspace:*
         version: link:../api
       '@conar/configs':
         specifier: workspace:*
         version: link:../../packages/configs
+      '@conar/connection':
+        specifier: workspace:*
+        version: link:../../packages/connection
+      '@conar/proxy':
+        specifier: workspace:*
+        version: link:../proxy
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.59.1
@@ -1075,13 +1081,86 @@ importers:
         specifier: 'catalog:'
         version: 8.0.10(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)
 
-  packages/configs: {}
+  apps/proxy:
+    dependencies:
+      '@better-auth/drizzle-adapter':
+        specifier: 'catalog:'
+        version: https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913(@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.2.1(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(drizzle-orm@1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.1))(prettier@3.8.1)
+      '@conar/connection':
+        specifier: workspace:*
+        version: link:../../packages/connection
+      '@conar/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@conar/memoize':
+        specifier: workspace:*
+        version: link:../../packages/memoize
+      '@conar/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@orpc/server':
+        specifier: 'catalog:'
+        version: 1.14.0(@opentelemetry/api@1.9.0)(crossws@0.4.4(srvx@0.11.15))(ws@8.19.0)
+      arktype:
+        specifier: 'catalog:'
+        version: 2.2.0
+      better-auth:
+        specifier: 'catalog:'
+        version: 1.5.4(@prisma/client@7.5.0(prisma@7.5.0(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@6.0.3))(typescript@6.0.3))(@tanstack/react-start@1.167.57(crossws@0.4.4(srvx@0.11.15))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vite@8.0.10(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)))(drizzle-kit@1.0.0-rc.1)(drizzle-orm@1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.1))(mongodb@7.1.0(socks@2.8.7))(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(prisma@7.5.0(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@6.0.3))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(solid-js@1.9.11)
+      hono:
+        specifier: 'catalog:'
+        version: 4.12.16
+      ua-parser-js:
+        specifier: 'catalog:'
+        version: 2.0.9
+      uuid:
+        specifier: 'catalog:'
+        version: 14.0.0
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.1
+    devDependencies:
+      '@conar/configs':
+        specifier: workspace:*
+        version: link:../../packages/configs
 
-  packages/connection:
+  packages/ai:
     dependencies:
       '@conar/shared':
         specifier: workspace:*
         version: link:../shared
+      '@exalabs/ai-sdk':
+        specifier: 'catalog:'
+        version: 2.0.1(ai@6.0.172(zod@4.4.1))
+      '@upstash/context7-tools-ai-sdk':
+        specifier: 'catalog:'
+        version: 0.2.3(@upstash/context7-sdk@0.3.0)(ai@6.0.172(zod@4.4.1))(zod@4.4.1)
+      ai:
+        specifier: 'catalog:'
+        version: 6.0.172(zod@4.4.1)
+      arktype:
+        specifier: 'catalog:'
+        version: 2.2.0
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.1
+
+  packages/configs: {}
+
+  packages/connection:
+    dependencies:
+      '@clickhouse/client':
+        specifier: 'catalog:'
+        version: 1.18.3
+      '@conar/memoize':
+        specifier: workspace:*
+        version: link:../memoize
+      '@conar/shared':
+        specifier: workspace:*
+        version: link:../shared
+      pg:
+        specifier: 'catalog:'
+        version: 8.20.0
     devDependencies:
       '@conar/configs':
         specifier: workspace:*
@@ -1104,6 +1183,43 @@ importers:
       mysql2:
         specifier: 'catalog:'
         version: 3.22.3(@types/node@25.5.0)
+
+  packages/db:
+    dependencies:
+      '@conar/shared':
+        specifier: workspace:*
+        version: link:../shared
+      arktype:
+        specifier: 'catalog:'
+        version: 2.2.0
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.1)
+      pg:
+        specifier: 'catalog:'
+        version: 8.20.0
+      uuid:
+        specifier: 'catalog:'
+        version: 14.0.0
+    devDependencies:
+      '@conar/ai':
+        specifier: workspace:*
+        version: link:../ai
+      '@conar/configs':
+        specifier: workspace:*
+        version: link:../configs
+      '@electric-sql/pglite':
+        specifier: 'catalog:'
+        version: 0.4.5
+      '@types/pg':
+        specifier: 'catalog:'
+        version: 8.20.0
+      drizzle-kit:
+        specifier: 'catalog:'
+        version: 1.0.0-rc.1
+      stripe:
+        specifier: 'catalog:'
+        version: 22.1.0(@types/node@25.5.0)
 
   packages/memoize:
     dependencies:
@@ -1144,6 +1260,9 @@ importers:
       '@conar/configs':
         specifier: workspace:*
         version: link:../configs
+      '@hackylabs/deep-redact':
+        specifier: 'catalog:'
+        version: 3.0.5
       arktype:
         specifier: 'catalog:'
         version: 2.2.0
@@ -2588,12 +2707,6 @@ packages:
 
   '@henrygd/queue@1.2.0':
     resolution: {integrity: sha512-jW/BLSTpcvExDhqJGxtIPgGr2O0IFF8XUNDwEbfCfhrXT8a4xztQ9Lv6U/vbYzYC0xVWn+3zv6YnLUh3bEFUKA==}
-
-  '@hono/arktype-validator@2.0.1':
-    resolution: {integrity: sha512-Z4PQFtzgbGneBap+TTViRIBAoUWbwEwg8PaKNqALAP6z9N2ksJI81PfcsSQNUzwtrn8LipkMvBb8/D9Pei2GJw==}
-    peerDependencies:
-      arktype: ^2.0.0-dev.14
-      hono: '*'
 
   '@hono/node-server@1.19.9':
     resolution: {integrity: sha512-vHL6w3ecZsky+8P5MD+eFfaGTyCeOHUIFYMGpQGbrBTSmNNoxv0if69rEZ5giu36weC5saFuznL411gRX7bJDw==}
@@ -11662,6 +11775,17 @@ snapshots:
       nanostores: 1.2.0
       zod: 4.4.1
 
+  '@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)':
+    dependencies:
+      '@better-auth/utils': 0.3.1
+      '@better-fetch/fetch': 1.1.21
+      '@standard-schema/spec': 1.1.0
+      better-call: 1.3.2(zod@4.4.1)
+      jose: 6.2.1
+      kysely: 0.28.16
+      nanostores: 1.2.0
+      zod: 4.4.1
+
   '@better-auth/core@1.5.4(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)':
     dependencies:
       '@better-auth/utils': 0.3.1
@@ -11688,6 +11812,13 @@ snapshots:
   '@better-auth/drizzle-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913(@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.2.1(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(drizzle-orm@1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.1))(prettier@3.8.1)':
     dependencies:
       '@better-auth/core': 1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.2.1(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
+      '@better-auth/utils': 0.3.1
+      drizzle-orm: 1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.1)
+      prettier: 3.8.1
+
+  '@better-auth/drizzle-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913(@better-auth/core@1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(drizzle-orm@1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.1))(prettier@3.8.1)':
+    dependencies:
+      '@better-auth/core': 1.5.0-beta.13(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.4.1))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
       '@better-auth/utils': 0.3.1
       drizzle-orm: 1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.5.0))(pg@8.20.0)(postgres@3.4.7)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.1)
       prettier: 3.8.1
@@ -12085,7 +12216,7 @@ snapshots:
       eslint: 10.2.1(jiti@2.6.1)
       ts-pattern: 5.9.0
       typescript: 6.0.3
-      zod: 4.3.6
+      zod: 4.4.1
     transitivePeerDependencies:
       - supports-color
 
@@ -12583,11 +12714,6 @@ snapshots:
   '@hackylabs/deep-redact@3.0.5': {}
 
   '@henrygd/queue@1.2.0': {}
-
-  '@hono/arktype-validator@2.0.1(arktype@2.2.0)(hono@4.12.16)':
-    dependencies:
-      arktype: 2.2.0
-      hono: 4.12.16
 
   '@hono/node-server@1.19.9(hono@4.11.4)':
     dependencies:

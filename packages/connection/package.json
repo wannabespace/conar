@@ -6,7 +6,14 @@
     "test": "bun test",
     "check-types": "tsgo"
   },
+  "peerDependencies": {
+    "@clickhouse/client": "catalog:",
+    "mssql": "catalog:",
+    "mysql2": "catalog:",
+    "pg": "catalog:"
+  },
   "dependencies": {
+    "@conar/memoize": "workspace:*",
     "@conar/shared": "workspace:*"
   },
   "devDependencies": {

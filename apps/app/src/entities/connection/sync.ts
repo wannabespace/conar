@@ -4,7 +4,7 @@ import { createCollection } from '@tanstack/react-db'
 import { drizzleCollectionOptions } from 'tanstack-db-pglite'
 import { db, waitForMigrations } from '~/drizzle'
 import { connections, connectionsResources } from '~/drizzle/schema'
-import { bearerToken } from '~/lib/auth'
+import { isSignedIn } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
 function prepareConnectionStringToCloud(connectionString: string, syncType: SyncType) {
@@ -26,7 +26,7 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
   startSync: false,
   prepare: waitForMigrations,
   sync: async ({ write, collection }) => {
-    if (!bearerToken.get() || !navigator.onLine) {
+    if (!navigator.onLine || !await isSignedIn()) {
       return
     }
 
@@ -130,7 +130,7 @@ export const connectionsResourcesCollection = createCollection(drizzleCollection
   startSync: false,
   prepare: waitForMigrations,
   sync: async ({ collection, write }) => {
-    if (!bearerToken.get() || !navigator.onLine) {
+    if (!navigator.onLine || !await isSignedIn()) {
       return
     }
 

@@ -23,7 +23,6 @@ catalog:
   '@faker-js/faker': ^10.4.0
   '@fluentui/react-context-selector': ^9.2.16
   '@hackylabs/deep-redact': ^3.0.5
-  '@hono/arktype-validator': ^2.0.1
   '@monaco-editor/loader': ^1.7.0
   '@number-flow/react': ^0.6.0
   '@octokit/rest': ^22.0.1
