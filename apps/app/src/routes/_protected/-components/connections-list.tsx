@@ -37,8 +37,30 @@ import { getConnectionStringToShow, lastOpenedResourcesStorageValue } from '~/en
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
+const LOOPBACK_IPV4 = /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/
+
+function canSendQueryIfLocalhost(connectionString: string): boolean {
+  if (window.electron) {
+    return true
+  }
+
+  const hostname = new SafeURL(connectionString).hostname.toLowerCase()
+  const isLoopback = (
+    hostname === 'localhost'
+    || hostname === '::1'
+    || hostname === '[::1]'
+    || LOOPBACK_IPV4.test(hostname)
+  )
+  return !isLoopback
+}
+
 function ConnectionIconWithVersion({ connection }: { connection: typeof connectionsTable.$inferSelect }) {
-  const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery(connectionVersionQueryOptions(connection))
+  const canSend = canSendQueryIfLocalhost(connection.connectionString)
+  const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery({
+    ...connectionVersionQueryOptions(connection),
+    enabled: canSend,
+  })
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -53,24 +75,26 @@ function ConnectionIconWithVersion({ connection }: { connection: typeof connecti
         sideOffset={10}
       >
         <span className="opacity-50">Version: </span>
-        {isVersionPending
-          ? <span className="animate-pulse">Loading version...</span>
-          : version
-            ? (
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    className="cursor-pointer"
-                    onClick={() => refetchVersion()}
-                  >
-                    {version}
-                  </button>
-                  {isVersionRefetching && (
-                    <Spinner className="size-3" />
-                  )}
-                </div>
-              )
-            : <span className="opacity-50">Version cannot be detected</span>}
+        {!canSend
+          ? <span className="opacity-50">Unavailable in web app</span>
+          : isVersionPending
+            ? <span className="animate-pulse">Loading version...</span>
+            : version
+              ? (
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      className="cursor-pointer"
+                      onClick={() => refetchVersion()}
+                    >
+                      {version}
+                    </button>
+                    {isVersionRefetching && (
+                      <Spinner className="size-3" />
+                    )}
+                  </div>
+                )
+              : <span className="opacity-50">Version cannot be detected</span>}
       </TooltipContent>
     </Tooltip>
   )
@@ -82,12 +106,14 @@ function ConnectionResourcesCombobox({
   onSelectedResourceNameChange,
   pinnedResourcesNames,
   onPinnedResourceNameChange,
+  disabled,
 }: {
   resources: (string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL)[]
   selectedResourceName: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null
   onSelectedResourceNameChange: (resource: string | null) => void
   pinnedResourcesNames: (string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL)[]
   onPinnedResourceNameChange: (resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL) => void
+  disabled: boolean
 }) {
   const groupedResources = Object.entries(resources.reduce<{ pinned: typeof resources[number][], unpinned: typeof resources[number][] }>((acc, resource) => {
     const isPinned = pinnedResourcesNames.includes(resource)
@@ -102,13 +128,14 @@ function ConnectionResourcesCombobox({
 
   return (
     <Combobox
+      disabled={disabled}
       items={groupedResources}
       value={selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_SYMBOL.description : selectedResourceName}
       onValueChange={onSelectedResourceNameChange}
     >
       <ComboboxTrigger
         className="pointer-events-auto text-xs"
-        render={<Button variant="outline" size="xs" />}
+        render={<Button variant="outline" size="xs" disabled={disabled} />}
       >
         {selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_LABEL : selectedResourceName}
         <RiArrowDownSLine />
@@ -191,13 +218,18 @@ function ConnectionCard({
     .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
     .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
   const storedResourcesNames = storedResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
+  const canSend = canSendQueryIfLocalhost(connection.connectionString)
+
   const {
     data: resources = storedResourcesNames,
     isPending,
     isFetching,
     error,
     refetch,
-  } = useQuery(connectionResourcesQueryOptions(connection))
+  } = useQuery({
+    ...connectionResourcesQueryOptions(connection),
+    enabled: canSend,
+  })
 
   const [isOpen, setIsOpen] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
@@ -223,7 +255,7 @@ function ConnectionCard({
   })
 
   useEffect(() => {
-    if (!selectedResource && !isFetching && !error && !isWaitForSyncPending) {
+    if (canSend && !selectedResource && !isFetching && !error && !isWaitForSyncPending) {
       connectionsResourcesCollection.insert({
         id: v7(),
         connectionId: connection.id,
@@ -232,7 +264,7 @@ function ConnectionCard({
         updatedAt: new Date(),
       })
     }
-  }, [resolvedSelectedResourceName, selectedResource, connection.id, isFetching, error, isWaitForSyncPending])
+  }, [canSend, resolvedSelectedResourceName, selectedResource, connection.id, isFetching, error, isWaitForSyncPending])
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -254,7 +286,7 @@ function ConnectionCard({
     }, 3000)
   }
 
-  const isResourcesShown = resources.length > 1 && !isPending
+  const isResourcesShown = resources.length > 1 && (canSend || !isPending)
 
   return (
     <FrameMotion
@@ -272,7 +304,7 @@ function ConnectionCard({
           `has-[:where([data-resource-link]:hover)]:bg-accent`,
         )}
       >
-        {selectedResource
+        {selectedResource && canSend
           ? (
               <ConnectionResourceLink
                 resourceId={selectedResource.id}
@@ -302,8 +334,24 @@ function ConnectionCard({
                     {connection.label}
                   </Badge>
                 )}
-                {isFetching && <Spinner className="size-3" />}
-                {error && (
+                {isFetching && canSend && (
+                  <Spinner className="size-3" />
+                )}
+                {!canSend && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <RiAlertLine
+                        className="
+                          pointer-events-auto size-3 text-muted-foreground
+                        "
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent className="pointer-events-auto max-w-xs">
+                      Loopback hosts are not reachable from the web app. Open this connection in the desktop app instead.
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+                {error && canSend && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <RiAlertLine className="
@@ -360,6 +408,7 @@ function ConnectionCard({
                         ? state.pinnedResourcesNames.filter(name => name !== value)
                         : [...state.pinnedResourcesNames, value],
                     } satisfies typeof state))}
+                    disabled={!canSend}
                   />
                 )}
               </div>
@@ -374,6 +423,7 @@ function ConnectionCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
+                disabled={!canSend}
                 onClick={() => refetch()}
               >
                 <RiRefreshLine className="size-4" />
