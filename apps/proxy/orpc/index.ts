@@ -1,6 +1,5 @@
 import type { Context } from './context'
 import { db } from '@conar/db'
-import { memoize } from '@conar/memoize'
 import { ORPCError, os } from '@orpc/server'
 import { authClient } from '~/auth'
 
@@ -23,7 +22,7 @@ async function getUserSecret(userId: string) {
   return user.secret
 }
 
-const getSession = memoize(async (headers: Headers) => {
+async function getSession(headers: Headers) {
   const { data: session } = await authClient.getSession({ fetchOptions: { headers } })
 
   if (!session) {
@@ -31,10 +30,7 @@ const getSession = memoize(async (headers: Headers) => {
   }
 
   return session
-}, {
-  maxAge: 1000 * 60 * 5, // 5 minutes
-  transformArgs: headers => headers.toString(),
-})
+}
 
 export const logMiddleware = orpc.middleware(async ({ context, next }, input) => {
   const result = await next()
