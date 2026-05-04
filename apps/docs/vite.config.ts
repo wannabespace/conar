@@ -23,6 +23,11 @@ export default defineConfig({
       preset: 'bun',
     }),
   ],
+  build: {
+    rolldownOptions: {
+      external: ['shiki/wasm'],
+    },
+  },
   resolve: {
     tsconfigPaths: true,
     alias: {
