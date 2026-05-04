@@ -1,0 +1,11 @@
+{
+  "extends": "@conar/configs/ts/react.json",
+  "compilerOptions": {
+    "paths": {
+      "~/*": ["./src/*"],
+      "collections/*": ["./.source/*"]
+    },
+    "noEmit": true
+  },
+  "include": ["."]
+}
