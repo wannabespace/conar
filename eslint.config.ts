@@ -34,6 +34,7 @@ export default antfu(
       '**/.tanstack/**/*',
       '**/.nitro/**/*',
       '**/.output/**/*',
+      '**/.source/**/*',
       '**/dist-electron/**/*',
       '**/dist-desktop/**/*',
       '**/playwright-report/**/*',
@@ -42,6 +43,12 @@ export default antfu(
       '**/migrations/**/*',
       '**/migrations.json',
     ],
+  },
+  {
+    files: ['**/packages/memoize/**/*', '**/apps/docs/**/*'],
+    rules: {
+      'pnpm/json-enforce-catalog': 'off',
+    },
   },
   {
     files: ['apps/desktop/**/*'],
@@ -56,12 +63,6 @@ export default antfu(
     },
   },
   {
-    files: ['**/packages/memoize/**/*'],
-    rules: {
-      'pnpm/json-enforce-catalog': 'off',
-    },
-  },
-  {
     plugins: {
       'better-tailwindcss': eslintPluginBetterTailwindcss,
     },
@@ -73,7 +74,27 @@ export default antfu(
       'better-tailwindcss/no-unknown-classes': [
         'error',
         {
-          ignore: ['toaster', 'typography', 'typography-disabled'],
+          ignore: [
+            'toaster',
+            'typography',
+            'typography-disabled',
+            'bg-fd-secondary',
+            'text-fd-secondary-foreground',
+            'text-fd-muted-foreground',
+            'fd-scroll-container',
+            'placeholder:text-fd-muted-foreground',
+            'text-fd-primary',
+            'text-fd-error',
+            'bg-fd-overlay',
+            'animate-fd-fade-in',
+            'animate-fd-fade-out',
+            'bg-fd-card',
+            'text-fd-card-foreground',
+            'animate-fd-dialog-in',
+            'animate-fd-dialog-out',
+            'text-fd-muted-foreground/80',
+            'focus-visible:ring-fd-ring',
+          ],
         },
       ],
     },

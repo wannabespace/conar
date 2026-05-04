@@ -1,0 +1,52 @@
+{
+  "name": "@conar/docs",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "start": "vite preview",
+    "preview": "vite preview",
+    "types:check": "fumadocs-mdx && tsc --noEmit",
+    "postinstall": "fumadocs-mdx"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "catalog:",
+    "@ai-sdk/react": "catalog:",
+    "@radix-ui/react-presence": "^1.1.5",
+    "@tanstack/react-router": "catalog:",
+    "@tanstack/react-router-devtools": "catalog:",
+    "@tanstack/react-start": "catalog:",
+    "ai": "catalog:",
+    "class-variance-authority": "catalog:",
+    "flexsearch": "^0.8.212",
+    "fumadocs-core": "16.8.7",
+    "fumadocs-mdx": "14.3.2",
+    "fumadocs-ui": "16.8.7",
+    "hast-util-to-jsx-runtime": "^2.3.6",
+    "lucide-react": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "remark": "^15.0.1",
+    "remark-gfm": "catalog:",
+    "remark-rehype": "^11.1.2",
+    "tailwind-merge": "catalog:",
+    "unist-util-visit": "^5.1.0",
+    "vite": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@conar/configs": "workspace:*",
+    "@conar/shared": "workspace:*",
+    "@tailwindcss/vite": "catalog:",
+    "@types/hast": "^3.0.4",
+    "@types/mdx": "^2.0.13",
+    "@types/node": "^25.6.0",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "nitro": "catalog:",
+    "tailwindcss": "catalog:"
+  }
+}
