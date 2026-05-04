@@ -1,11 +1,13 @@
 import type { Context } from './context'
 import { db } from '@conar/db'
+import { memoize } from '@conar/memoize'
+import { pick } from '@conar/shared/utils/helpers'
 import { ORPCError, os } from '@orpc/server'
 import { authClient } from '~/auth'
 
 export const orpc = os.$context<Context>()
 
-async function getUserSecret(userId: string) {
+const getUserSecret = memoize(async (userId: string) => {
   const user = await db.query.users.findFirst({
     columns: {
       secret: true,
@@ -20,9 +22,9 @@ async function getUserSecret(userId: string) {
   }
 
   return user.secret
-}
+})
 
-async function getSession(headers: Headers) {
+const getSession = memoize(async (headers: Headers) => {
   const { data: session } = await authClient.getSession({ fetchOptions: { headers } })
 
   if (!session) {
@@ -30,24 +32,12 @@ async function getSession(headers: Headers) {
   }
 
   return session
-}
-
-export const logMiddleware = orpc.middleware(async ({ context, next }, input) => {
-  const result = await next()
-
-  context.addLogData({
-    input,
-    output: (Array.isArray(result.output) && result.output.length > 0)
-      || (typeof result.output === 'object' && result.output !== null && Object.keys(result.output).length > 0)
-      || (!Array.isArray(result.output) && typeof result.output !== 'object' && result.output !== null && !!result.output)
-      ? result.output
-      : undefined,
-  })
-
-  return result
+}, {
+  maxAge: 1000 * 60, // 1 minute
+  transformArgs: headers => pick(headers.toJSON(), ['authorization', 'cookie']),
 })
 
-export const authMiddleware = logMiddleware.concat(orpc.middleware(async ({ context, next }) => {
+export const authMiddleware = orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers)
 
   context.addLogData({ userId: session.user.id })
@@ -58,4 +48,4 @@ export const authMiddleware = logMiddleware.concat(orpc.middleware(async ({ cont
       getUserSecret: () => getUserSecret(session.user.id),
     },
   })
-}))
+})

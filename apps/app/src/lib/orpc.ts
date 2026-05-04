@@ -3,6 +3,7 @@ import type * as proxyOrpc from '@conar/proxy/orpc/routers'
 import type { InferRouterInputs, InferRouterOutputs } from '@orpc/server'
 import { createORPCClient, onError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
+import { BatchLinkPlugin } from '@orpc/client/plugins'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import { bearerToken } from './auth'
 import { handleError } from './error'
@@ -49,6 +50,16 @@ export const orpcProxy = createTanstackQueryUtils(createORPCClient(new RPCLink({
       credentials: 'include',
     })
   },
+  plugins: [
+    new BatchLinkPlugin({
+      groups: [
+        {
+          condition: () => true,
+          context: {},
+        },
+      ],
+    }),
+  ],
 })) satisfies proxyOrpc.ORPCRouter)
 
 export type ORPCInputs = InferRouterInputs<typeof apiOrpc.router>

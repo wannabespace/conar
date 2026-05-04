@@ -1,7 +1,9 @@
 import type { Context } from './context'
 import { db } from '@conar/db'
 import { subscriptions } from '@conar/db/schema'
+import { memoize } from '@conar/memoize'
 import { ACTIVE_SUBSCRIPTION_STATUSES, LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
+import { pick } from '@conar/shared/utils/helpers'
 import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
 import { auth } from '~/lib/auth'
@@ -9,7 +11,7 @@ import { redis } from '~/lib/redis'
 
 export const orpc = os.$context<Context>()
 
-async function getUserSecret(userId: string) {
+const getUserSecret = memoize(async (userId: string) => {
   const user = await db.query.users.findFirst({
     columns: {
       secret: true,
@@ -24,9 +26,9 @@ async function getUserSecret(userId: string) {
   }
 
   return user.secret
-}
+})
 
-async function getSession(headers: Headers) {
+const getSession = memoize(async (headers: Headers) => {
   const session = await auth.api.getSession({ headers })
 
   if (!session) {
@@ -34,7 +36,10 @@ async function getSession(headers: Headers) {
   }
 
   return session
-}
+}, {
+  maxAge: 1000 * 60, // 1 minute
+  transformArgs: headers => pick(headers.toJSON(), ['authorization', 'cookie']),
+})
 
 export const logMiddleware = orpc.middleware(async ({ context, next }, input) => {
   const result = await next()
