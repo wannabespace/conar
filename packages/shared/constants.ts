@@ -1,5 +1,7 @@
 import { ConnectionType } from './enums/connection-type'
 
+export { PORTS } from './ports'
+
 export const SOCIAL_LINKS = {
   GITHUB: 'https://github.com/wannabespace/conar',
   TWITTER: 'https://x.com/conar_app',
@@ -14,23 +16,6 @@ export const SUPPORT_EMAIL = 'valerii.strilets@gmail.com'
 export const BREW_INSTALL_COMMAND = 'brew install --cask conar'
 
 export const AUTH_COOKIE_PREFIX = 'conar' as const
-
-export const PORTS = {
-  DEV: {
-    API: 3000,
-    APP: 3001,
-    WEB: 3002,
-    DESKTOP: 3003,
-    PROXY: 3004,
-  },
-  TEST: {
-    API: 4000,
-    APP: 4001,
-    WEB: 4002,
-    DESKTOP: 4003,
-    PROXY: 4004,
-  },
-} as const
 
 export const LABEL_OPTIONS = ['Local', 'Test', 'Dev', 'Staging', 'Prod']
 
