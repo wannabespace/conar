@@ -5,6 +5,12 @@ export type AnyFunction = (...args: any[]) => any
 
 export interface MemoizeOptions<F extends AnyFunction> {
   /**
+   * Maximum time in milliseconds a cached entry remains valid. After this,
+   * the next call with the same key recomputes the result.
+   * @default Number.POSITIVE_INFINITY
+   */
+  maxAge?: number
+  /**
    * @example
    * ```ts
    * const fn = memoize((a: number, b: number) => a + b, {
@@ -20,15 +26,21 @@ export interface MemoizeOptions<F extends AnyFunction> {
   transformArgs?: (...args: Parameters<F>) => unknown
 }
 
+export interface MemoizedCacheEntry<F extends AnyFunction> {
+  value: ReturnType<F>
+  storedAt: number
+}
+
 export interface MemoizedEntry<F extends AnyFunction> {
   key: unknown
   value: ReturnType<F>
+  storedAt: number
 }
 
 const CACHE_SYMBOL = Symbol('memoize-cache')
 
 export interface CacheStore<F extends AnyFunction> {
-  cache: Map<string, ReturnType<F>>
+  cache: Map<string, MemoizedCacheEntry<F>>
   fallbackEntries: MemoizedEntry<F>[]
 }
 
@@ -36,12 +48,16 @@ export type MemoizedFn<F extends AnyFunction> = F & {
   [CACHE_SYMBOL]: () => CacheStore<F>
 }
 
+function isCacheFresh(storedAt: number, maxAge: number) {
+  return maxAge === Number.POSITIVE_INFINITY || Date.now() - storedAt <= maxAge
+}
+
 export function memoize<F extends AnyFunction>(
   func: F,
   options?: MemoizeOptions<F>,
 ): F {
-  const { transformArgs } = options || {}
-  const cache = new Map<string, ReturnType<F>>()
+  const { transformArgs, maxAge = Number.POSITIVE_INFINITY } = options || {}
+  const cache = new Map<string, MemoizedCacheEntry<F>>()
   const fallbackEntries: MemoizedEntry<F>[] = []
 
   const fn = ((...params: Parameters<F>) => {
@@ -54,16 +70,22 @@ export function memoize<F extends AnyFunction>(
     const key = getCacheKey(args)
 
     if (typeof key === 'string') {
-      const cached = cache.get(key)
-      if (cached !== undefined || cache.has(key))
-        return cached!
+      if (cache.has(key)) {
+        const wrapped = cache.get(key)!
+        if (isCacheFresh(wrapped.storedAt, maxAge))
+          return wrapped.value
+
+        cache.delete(key)
+      }
 
       const result = func(...params)
-      cache.set(key, result)
+      const storedAt = Date.now()
+      cache.set(key, { value: result, storedAt })
 
       if (result instanceof Promise) {
         result.catch(() => {
-          if (cache.get(key) === result)
+          const entry = cache.get(key)
+          if (entry !== undefined && entry.value === result)
             cache.delete(key)
         })
       }
@@ -72,11 +94,18 @@ export function memoize<F extends AnyFunction>(
     }
 
     const hit = findReferenceEntry(fallbackEntries, args)
-    if (hit)
-      return hit.value
+    if (hit) {
+      if (isCacheFresh(hit.storedAt, maxAge))
+        return hit.value
+
+      const index = fallbackEntries.indexOf(hit)
+      if (index !== -1)
+        fallbackEntries.splice(index, 1)
+    }
 
     const result = func(...params)
-    const entry: MemoizedEntry<F> = { key: args, value: result }
+    const storedAt = Date.now()
+    const entry: MemoizedEntry<F> = { key: args, value: result, storedAt }
     fallbackEntries.push(entry)
 
     if (result instanceof Promise) {

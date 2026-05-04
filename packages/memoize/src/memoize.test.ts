@@ -21,6 +21,99 @@ describe('memoize', () => {
     expect(callback).toHaveBeenCalledTimes(1)
   })
 
+  describe('maxAge option', () => {
+    it('defaults to no expiry (same as Number.POSITIVE_INFINITY)', () => {
+      let now = 1_000_000
+      const dateNow = Date.now
+      Date.now = () => now
+
+      try {
+        const callback = mock((x: number) => x * 2)
+        const fn = memoize(callback)
+
+        expect(fn(5)).toBe(10)
+        expect(callback).toHaveBeenCalledTimes(1)
+
+        now += 9999999999
+        expect(fn(5)).toBe(10)
+        expect(callback).toHaveBeenCalledTimes(1)
+      }
+      finally {
+        Date.now = dateNow
+      }
+    })
+
+    it('recomputes after maxAge for string keys', () => {
+      let now = 1000
+      const dateNow = Date.now
+      Date.now = () => now
+
+      try {
+        const callback = mock((x: number) => x * 2)
+        const fn = memoize(callback, { maxAge: 50 })
+
+        expect(fn(5)).toBe(10)
+        expect(callback).toHaveBeenCalledTimes(1)
+
+        now += 51
+        expect(fn(5)).toBe(10)
+        expect(callback).toHaveBeenCalledTimes(2)
+
+        now += 1
+        expect(fn(5)).toBe(10)
+        expect(callback).toHaveBeenCalledTimes(2)
+      }
+      finally {
+        Date.now = dateNow
+      }
+    })
+
+    it('recomputes after maxAge for reference keys', () => {
+      class Point { constructor(public x: number) {} }
+
+      let now = 2000
+      const dateNow = Date.now
+      Date.now = () => now
+
+      try {
+        const callback = mock((_: Point) => 'ok')
+        const fn = memoize(callback, { maxAge: 10 })
+        const p = new Point(1)
+
+        expect(fn(p)).toBe('ok')
+        expect(callback).toHaveBeenCalledTimes(1)
+
+        now += 11
+        expect(fn(p)).toBe('ok')
+        expect(callback).toHaveBeenCalledTimes(2)
+      }
+      finally {
+        Date.now = dateNow
+      }
+    })
+
+    it('recomputes expired promises', async () => {
+      let now = 0
+      const dateNow = Date.now
+      Date.now = () => now
+
+      try {
+        const callback = mock(async (x: number) => x * 2)
+        const fn = memoize(callback, { maxAge: 100 })
+
+        expect(await fn(3)).toBe(6)
+        expect(callback).toHaveBeenCalledTimes(1)
+
+        now += 101
+        expect(await fn(3)).toBe(6)
+        expect(callback).toHaveBeenCalledTimes(2)
+      }
+      finally {
+        Date.now = dateNow
+      }
+    })
+  })
+
   describe('transformArgs option', () => {
     it('reduces the key to a subset of arguments', () => {
       const callback = mock((a: number, b: number, c: number) => a + b + c)
