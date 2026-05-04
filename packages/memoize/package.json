@@ -5,11 +5,10 @@
     ".": {
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
-    },
-    "./ts": {
-      "import": "./src/index.ts"
     }
   },
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "scripts": {
     "postinstall": "tsdown",
     "prepublishOnly": "tsdown",
@@ -20,11 +19,11 @@
     "dev": "tsdown --watch"
   },
   "dependencies": {
-    "devalue": "^5.7.1"
+    "devalue": "catalog:"
   },
   "devDependencies": {
     "@emotion/memoize": "^0.9.0",
-    "@formatjs/fast-memoize": "^3.1.2",
+    "@formatjs/fast-memoize": "^3.1.3",
     "@types/lodash.memoize": "^4.1.9",
     "@types/memoizee": "^0.4.12",
     "@typescript/native-preview": "catalog:",

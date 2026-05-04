@@ -1,7 +1,7 @@
+import { db } from '@conar/db'
+import { chats, chatsMessages, chatsMessagesInsertSchema } from '@conar/db/schema'
 import { ORPCError } from '@orpc/server'
 import { and, eq } from 'drizzle-orm'
-import { db } from '~/drizzle'
-import { chats, chatsMessages, chatsMessagesInsertSchema } from '~/drizzle/schema'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const create = orpc

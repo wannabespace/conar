@@ -1,8 +1,8 @@
+import { db } from '@conar/db'
+import { connectionsResources, connectionsResourcesUpdateSchema } from '@conar/db/schema'
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
-import { db } from '~/drizzle'
-import { connectionsResources, connectionsResourcesUpdateSchema } from '~/drizzle/schema'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const update = orpc

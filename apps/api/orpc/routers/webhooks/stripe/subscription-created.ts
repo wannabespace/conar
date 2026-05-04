@@ -1,8 +1,8 @@
 import type Stripe from 'stripe'
+import { db } from '@conar/db'
+import { subscriptions, users } from '@conar/db/schema'
 import { eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
-import { db } from '~/drizzle'
-import { subscriptions, users } from '~/drizzle/schema'
 import { env } from '~/env'
 
 export async function subscriptionCreated(event: Stripe.Event) {

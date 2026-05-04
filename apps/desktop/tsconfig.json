@@ -1,15 +1,10 @@
 {
-  "extends": "@conar/configs/ts/react.json",
+  "extends": "@conar/configs/ts/base.json",
   "compilerOptions": {
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": ["./*"]
     },
     "noEmit": true
   },
-  "references": [
-    {
-      "path": "../api"
-    }
-  ],
   "include": ["."]
 }

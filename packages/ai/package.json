@@ -1,0 +1,15 @@
+{
+  "name": "@conar/ai",
+  "type": "module",
+  "scripts": {
+    "check-types": "tsgo"
+  },
+  "dependencies": {
+    "@conar/shared": "workspace:*",
+    "@exalabs/ai-sdk": "catalog:",
+    "@upstash/context7-tools-ai-sdk": "catalog:",
+    "ai": "catalog:",
+    "arktype": "catalog:",
+    "zod": "catalog:"
+  }
+}

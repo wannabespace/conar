@@ -1,6 +1,6 @@
+import { db } from '@conar/db'
+import { connectionsResources, connectionsResourcesInsertSchema } from '@conar/db/schema'
 import { ORPCError } from '@orpc/server'
-import { db } from '~/drizzle'
-import { connectionsResources, connectionsResourcesInsertSchema } from '~/drizzle/schema'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const create = orpc

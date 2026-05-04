@@ -1,0 +1,38 @@
+import type { AppUIMessage } from '@conar/ai/tools/helpers'
+import { defineRelations } from 'drizzle-orm'
+import * as d from 'drizzle-orm/pg-core'
+import { baseTable } from '../base-table'
+import { connectionsResources } from './connections'
+
+export const chats = d.snakeCase.table('chats', {
+  ...baseTable,
+  connectionResourceId: d.uuid().references(() => connectionsResources.id, { onDelete: 'cascade' }).notNull(),
+  title: d.text(),
+})
+
+export const chatsMessages = d.snakeCase.table('chats_messages', {
+  ...baseTable,
+  chatId: d.uuid().references(() => chats.id, { onDelete: 'cascade' }).notNull(),
+  parts: d.jsonb().$type<AppUIMessage['parts'][number]>().array().notNull(),
+  role: d.text().$type<AppUIMessage['role']>().notNull(),
+  metadata: d.jsonb().$type<NonNullable<AppUIMessage['metadata']>>(),
+})
+
+export const chatsRelations = defineRelations(
+  { chats, chatsMessages, connectionsResources },
+  r => ({
+    chats: {
+      connectionResource: r.one.connectionsResources({
+        from: r.chats.connectionResourceId,
+        to: r.connectionsResources.id,
+      }),
+      messages: r.many.chatsMessages(),
+    },
+    chatsMessages: {
+      chat: r.one.chats({
+        from: r.chatsMessages.chatId,
+        to: r.chats.id,
+      }),
+    },
+  }),
+)

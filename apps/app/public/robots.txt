@@ -1,0 +1,3 @@
+# Block automated crawlers from indexing this application.
+User-agent: *
+Disallow: /

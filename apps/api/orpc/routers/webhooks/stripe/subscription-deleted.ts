@@ -1,7 +1,7 @@
 import type Stripe from 'stripe'
+import { db } from '@conar/db'
+import { subscriptions } from '@conar/db/schema'
 import { eq } from 'drizzle-orm'
-import { db } from '~/drizzle'
-import { subscriptions } from '~/drizzle/schema'
 import { env } from '~/env'
 
 export async function subscriptionDeleted(event: Stripe.Event) {

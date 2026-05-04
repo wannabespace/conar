@@ -1,10 +1,10 @@
-import type { AppUIMessage } from '~/ai/tools/helpers'
+import type { AppUIMessage } from '@conar/ai/tools/helpers'
 import { google } from '@ai-sdk/google'
+import { db } from '@conar/db'
+import { chats } from '@conar/db/schema'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
-import { db } from '~/drizzle'
-import { chats } from '~/drizzle/schema'
 import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
 

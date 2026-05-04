@@ -2,18 +2,19 @@
   "name": "@conar/connection",
   "type": "module",
   "private": true,
-  "exports": {
-    ".": "./src/index.ts",
-    "./ssl/pg": "./src/ssl/pg.ts",
-    "./ssl/mysql": "./src/ssl/mysql.ts",
-    "./ssl/mssql": "./src/ssl/mssql.ts",
-    "./server": "./src/server.ts"
-  },
   "scripts": {
     "test": "bun test",
     "check-types": "tsgo"
   },
+  "peerDependencies": {
+    "@clickhouse/client": "catalog:",
+    "mssql": "catalog:",
+    "mysql2": "catalog:",
+    "pg": "catalog:",
+    "ssh2": "catalog:"
+  },
   "dependencies": {
+    "@conar/memoize": "workspace:*",
     "@conar/shared": "workspace:*"
   },
   "devDependencies": {
@@ -21,6 +22,7 @@
     "@types/bun": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
+    "@types/ssh2": "catalog:",
     "@typescript/native-preview": "catalog:",
     "mssql": "catalog:",
     "mysql2": "catalog:"

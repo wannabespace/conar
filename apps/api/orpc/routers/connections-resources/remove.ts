@@ -1,8 +1,8 @@
+import { db } from '@conar/db'
+import { connectionsResources } from '@conar/db/schema'
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { inArray } from 'drizzle-orm'
-import { db } from '~/drizzle'
-import { connectionsResources } from '~/drizzle/schema'
 import { authMiddleware, orpc } from '~/orpc'
 
 const input = type({

@@ -1,8 +1,8 @@
+import { db } from '@conar/db'
+import { chats, chatsSelectSchema } from '@conar/db/schema'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
 import { and, eq, gt, inArray, notInArray, or } from 'drizzle-orm'
-import { db } from '~/drizzle'
-import { chats, chatsSelectSchema } from '~/drizzle/schema'
 import { authMiddleware, orpc } from '~/orpc'
 
 const output = type.or(

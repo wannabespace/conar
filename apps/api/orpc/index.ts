@@ -1,10 +1,10 @@
 import type { Context } from './context'
 
+import { db } from '@conar/db'
+import { subscriptions } from '@conar/db/schema'
 import { ACTIVE_SUBSCRIPTION_STATUSES, LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
 import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
-import { db } from '~/drizzle'
-import { subscriptions } from '~/drizzle/schema'
 import { auth } from '~/lib/auth'
 import { redis } from '~/lib/redis'
 
@@ -44,8 +44,8 @@ export const logMiddleware = orpc.middleware(async ({ context, next }, input) =>
     context.addLogData({
       input,
       output: (Array.isArray(result.output) && result.output.length > 0)
-        || (typeof result.output === 'object' && Object.keys(result.output).length > 0)
-        || (!Array.isArray(result.output) && typeof result.output !== 'object' && !!result.output)
+        || (typeof result.output === 'object' && result.output !== null && Object.keys(result.output).length > 0)
+        || (!Array.isArray(result.output) && typeof result.output !== 'object' && result.output !== null && !!result.output)
         ? result.output
         : undefined,
     })

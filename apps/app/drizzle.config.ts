@@ -1,0 +1,11 @@
+import { defineConfig } from 'drizzle-kit'
+
+export default defineConfig({
+  schema: './src/drizzle/schema/index.ts',
+  out: './src/drizzle/migrations',
+  dialect: 'postgresql',
+  driver: 'pglite',
+  dbCredentials: {
+    url: 'idb://conar',
+  },
+})

@@ -1,8 +1,8 @@
 import type Stripe from 'stripe'
+import { db } from '@conar/db'
+import { users } from '@conar/db/schema'
 import { ORPCError } from '@orpc/server'
 import { eq } from 'drizzle-orm'
-import { db } from '~/drizzle'
-import { users } from '~/drizzle/schema'
 import { stripe } from '~/lib/stripe'
 import { authMiddleware, orpc } from '~/orpc'
 

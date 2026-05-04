@@ -1,8 +1,8 @@
+import { db } from '@conar/db'
+import { connections, connectionsInsertSchema } from '@conar/db/schema'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { encrypt } from '@conar/shared/utils/encryption'
 import { SafeURL } from '@conar/shared/utils/safe-url'
-import { db } from '~/drizzle'
-import { connections, connectionsInsertSchema } from '~/drizzle/schema'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const create = orpc
@@ -11,7 +11,7 @@ export const create = orpc
   .handler(async ({ context, input }) => {
     const newConnectionString = new SafeURL(input.connectionString)
 
-    if (input.syncType === SyncType.CloudWithoutPassword) {
+    if (input.syncType !== SyncType.Cloud) {
       newConnectionString.password = ''
     }
 

@@ -1,7 +1,7 @@
+import { db } from '@conar/db'
+import { chats, chatsUpdateSchema } from '@conar/db/schema'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm/sql'
-import { db } from '~/drizzle'
-import { chats, chatsUpdateSchema } from '~/drizzle/schema'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const update = orpc

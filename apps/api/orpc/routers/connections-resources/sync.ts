@@ -1,8 +1,8 @@
+import { db } from '@conar/db'
+import { connections, connectionsResources, connectionsResourcesSelectSchema } from '@conar/db/schema'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
 import { and, eq, getColumns, gt, inArray, notInArray, or } from 'drizzle-orm'
-import { db } from '~/drizzle'
-import { connections, connectionsResources, connectionsResourcesSelectSchema } from '~/drizzle/schema'
 import { authMiddleware, orpc } from '~/orpc'
 
 const output = type.or(
