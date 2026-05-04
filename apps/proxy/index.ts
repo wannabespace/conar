@@ -9,11 +9,8 @@ import { env, nodeEnv } from './env'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
 import { sanitizeLogData } from '@conar/shared/utils/sanitize-log'
-import { BatchHandlerPlugin } from '@orpc/server/plugins'
 
-const handler = new RPCHandler(router, {
-  plugins: [new BatchHandlerPlugin()],
-})
+const handler = new RPCHandler(router)
 
 export interface AppVariables {
   logEvent?: Record<string, unknown>
