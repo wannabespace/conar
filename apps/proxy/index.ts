@@ -48,6 +48,8 @@ const app = new Hono<{
       logEvent.userId = c.req.header('user-id')
     }
 
+    const body = status >= 400 ? await c.res.clone().text() : undefined
+
     const logInfo = {
       method,
       status,
@@ -55,6 +57,7 @@ const app = new Hono<{
       duration: `${Date.now() - startTime}ms`,
       ...(version ? { version } : {}),
       ...(userAgent ? { userAgent } : {}),
+      ...(body !== undefined ? { body } : {}),
       ...sanitizeLogData(logEvent),
     }
 
