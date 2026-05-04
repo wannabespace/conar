@@ -27,7 +27,7 @@ import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { createTransformer, getDisplayValue } from '~/entities/connection/transformers'
 import { Route } from '../..'
 import { useTableColumns } from '../../-columns'
-import { draftsActions, getRowKeyByPrimaryKeys, primaryKeysKey, useTablePageStore } from '../../-store'
+import { draftsActions, getRowKeyByPrimaryKeys, isNewRow, primaryKeysKey, useTablePageStore } from '../../-store'
 
 const DISPLAY_SIZE = 500
 
@@ -149,10 +149,13 @@ export function DraftsReviewDrawer({
                 <div className="flex flex-col gap-3">
                   {rowsEntries.map((rowDrafts) => {
                     const { primaryKeys } = rowDrafts[0]!
-                    const row = rowsByPrimaryKey.get(primaryKeysKey(primaryKeys))?.row
-                    const primaryLabel = Object.entries(primaryKeys).length > 0
-                      ? Object.entries(primaryKeys).map(([columnId, value]) => `${columnId} = ${columnDisplay(columnId, value)}`)
-                      : ['Unknown row']
+                    const isInsert = isNewRow(primaryKeys)
+                    const row = isInsert ? undefined : rowsByPrimaryKey.get(primaryKeysKey(primaryKeys))?.row
+                    const primaryLabel = isInsert
+                      ? ['Will be inserted on save']
+                      : Object.entries(primaryKeys).length > 0
+                        ? Object.entries(primaryKeys).map(([columnId, value]) => `${columnId} = ${columnDisplay(columnId, value)}`)
+                        : ['Unknown row']
                     const errors = [...new Set(rowDrafts.flatMap(draft => draft.error ? [draft.error] : []))]
 
                     return (
@@ -183,7 +186,7 @@ export function DraftsReviewDrawer({
                                 </TooltipContent>
                               </Tooltip>
                             )}
-                            Row
+                            {isInsert ? 'New row' : 'Row'}
                           </FrameTitle>
                           <div className="
                             mt-1 ml-2 flex flex-1 flex-col gap-0.5 pt-px
@@ -225,9 +228,10 @@ export function DraftsReviewDrawer({
                                   key={draft.columnId}
                                   className="flex items-start gap-2"
                                 >
-                                  <div className="
-                                    grid flex-1 grid-cols-2 gap-x-2 gap-y-1
-                                  "
+                                  <div className={cn(
+                                    'grid flex-1 gap-x-2 gap-y-1',
+                                    isInsert ? 'grid-cols-1' : 'grid-cols-2',
+                                  )}
                                   >
                                     <div className="
                                       truncate font-mono text-[0.7rem]
@@ -236,18 +240,22 @@ export function DraftsReviewDrawer({
                                     >
                                       {draft.columnId}
                                     </div>
-                                    <div className="
-                                      flex items-center gap-1 text-[0.7rem]
-                                      font-medium text-muted-foreground
-                                    "
-                                    >
-                                      <RiArrowRightLine className="
-                                        size-3 shrink-0
+                                    {!isInsert && (
+                                      <div className="
+                                        flex items-center gap-1 text-[0.7rem]
+                                        font-medium text-muted-foreground
                                       "
-                                      />
-                                      Modified
-                                    </div>
-                                    <ValueCell value={row?.[draft.columnId]}>{before}</ValueCell>
+                                      >
+                                        <RiArrowRightLine className="
+                                          size-3 shrink-0
+                                        "
+                                        />
+                                        Modified
+                                      </div>
+                                    )}
+                                    {!isInsert && (
+                                      <ValueCell value={row?.[draft.columnId]}>{before}</ValueCell>
+                                    )}
                                     <ValueCell
                                       value={draft.value}
                                       className="

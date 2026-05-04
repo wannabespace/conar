@@ -95,4 +95,5 @@ export interface ColumnHandlers {
   onOrder?: (order?: 'ASC' | 'DESC' | null) => void
   onResize?: (newWidth: number) => void
   onRename?: () => void
+  onDuplicateRow?: (rowIndex: number) => void
 }

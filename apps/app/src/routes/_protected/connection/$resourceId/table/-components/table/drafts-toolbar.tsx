@@ -25,7 +25,7 @@ import { useSaveHotkey } from '~/hooks/use-save-hotkey'
 import { queryClient } from '~/main'
 import { Route } from '../..'
 import { useTableColumns } from '../../-columns'
-import { draftsActions, getRowKeyByPrimaryKeys, primaryKeysKey, useTablePageStore } from '../../-store'
+import { draftsActions, getRowKeyByPrimaryKeys, isNewRow, primaryKeysKey, useTablePageStore } from '../../-store'
 import { DraftsReviewDrawer } from './drafts-review-drawer'
 
 const motionVariants = {
@@ -67,7 +67,11 @@ export function DraftsToolbar({
 
   const { mutate: saveDrafts, isPending: isSaving } = useMutation({
     mutationFn: async () => {
-      if (primaryColumns.length === 0)
+      const rowEntries = Array.from(rowsWithDrafts.values())
+      const updateEntries = rowEntries.filter(g => !isNewRow(g[0]!.primaryKeys))
+      const insertEntries = rowEntries.filter(g => isNewRow(g[0]!.primaryKeys))
+
+      if (updateEntries.length > 0 && primaryColumns.length === 0)
         throw new Error('No primary keys found. Please use SQL Runner to update rows.')
 
       const { filters, orderBy } = store.get()
@@ -80,11 +84,10 @@ export function DraftsToolbar({
 
       const cachedData = queryClient.getQueryData(rowsQueryOpts.queryKey)
 
-      if (!cachedData)
+      if (updateEntries.length > 0 && !cachedData)
         throw new Error('No data found. Please refresh the page.')
 
-      const allRows = cachedData.pages.flatMap(page => page.rows)
-      const rowEntries = Array.from(rowsWithDrafts.values())
+      const allRows = cachedData ? cachedData.pages.flatMap(page => page.rows) : []
 
       for (const rowDrafts of rowEntries) {
         setRowStatus(rowDrafts[0]!.primaryKeys, { isCommitting: true, error: undefined })
@@ -102,9 +105,29 @@ export function DraftsToolbar({
             values: Record<string, unknown>
             modifiedColumns: string[]
             updatedFilters: ActiveFilter[]
+            isInsert: boolean
           }[] = []
 
-          for (const rowDrafts of rowEntries) {
+          for (const rowDrafts of insertEntries) {
+            const { primaryKeys } = rowDrafts[0]!
+            failedPrimaryKeys = primaryKeys
+
+            const values = rowDrafts.reduce<Record<string, unknown>>((acc, d) => {
+              acc[d.columnId] = d.value
+              return acc
+            }, {})
+
+            await tx
+              .withSchema(schema)
+              .withTables<{ [table]: Record<string, unknown> }>()
+              .insertInto(table)
+              .values(values)
+              .execute()
+
+            commits.push({ primaryKeys, values, modifiedColumns: [], updatedFilters: [], isInsert: true })
+          }
+
+          for (const rowDrafts of updateEntries) {
             const { primaryKeys } = rowDrafts[0]!
             failedPrimaryKeys = primaryKeys
 
@@ -139,7 +162,7 @@ export function DraftsToolbar({
               ? { ...filter, values: [values[filter.column]] }
               : filter)
 
-            commits.push({ primaryKeys, values, modifiedColumns, updatedFilters })
+            commits.push({ primaryKeys, values, modifiedColumns, updatedFilters, isInsert: false })
           }
 
           failedPrimaryKeys = null
@@ -185,9 +208,11 @@ export function DraftsToolbar({
       }
 
       const { commits, rowsQueryOpts } = data
+      const insertCommits = commits.filter(c => c.isInsert)
+      const updateCommits = commits.filter(c => !c.isInsert)
 
       const savedValuesByRow = new Map(
-        await Promise.all(commits.map(async ({ primaryKeys, values, modifiedColumns, updatedFilters }) => {
+        await Promise.all(updateCommits.map(async ({ primaryKeys, values, modifiedColumns, updatedFilters }) => {
           const refreshed = await db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
@@ -229,13 +254,16 @@ export function DraftsToolbar({
       for (const { primaryKeys } of savedValuesByRow.values()) {
         removeRow(primaryKeys)
       }
+      for (const { primaryKeys } of insertCommits) {
+        removeRow(primaryKeys)
+      }
 
       const { filters, orderBy } = store.get()
 
-      if (filters.length > 0 || Object.keys(orderBy).length > 0)
+      if (insertCommits.length > 0 || filters.length > 0 || Object.keys(orderBy).length > 0)
         queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
 
-      const count = savedValuesByRow.size
+      const count = savedValuesByRow.size + insertCommits.length
       toast.success(`Saved ${count} row${count === 1 ? '' : 's'}`)
 
       setIsReviewOpen(false)

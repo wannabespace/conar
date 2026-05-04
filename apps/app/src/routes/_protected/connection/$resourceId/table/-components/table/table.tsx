@@ -9,13 +9,15 @@ import { useShiftSelectionKeyDown, useTableContext } from '@conar/table/hooks'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useCallback, useMemo, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
+import { toast } from 'sonner'
+import { v7 } from 'uuid'
 import { TableCell } from '~/entities/connection/components'
 import { getColumnSize, INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { Route } from '../..'
 import { useTableColumns } from '../../-columns'
 import { useClearDraftsOnQueryChange, useSyncSelectionWithRows } from '../../-hooks'
-import { columnsOrder, draftKey, draftsActions, getRowPrimaryKeysValues, useTablePageStore } from '../../-store'
+import { columnsOrder, draftKey, draftsActions, getRowPrimaryKeysValues, isNewRow, NEW_ROW_KEY, useTablePageStore } from '../../-store'
 import { DraftsToolbar } from './drafts-toolbar'
 import { RenameColumnDialog } from './rename-column-dialog'
 import { TableEmpty } from './table-empty'
@@ -54,6 +56,26 @@ const ACTIONS_COLUMN: ColumnRenderer = {
   header: () => <div />,
 }
 
+const AUTO_TIMESTAMP_NAME_REGEX = /^(?:created_at|updated_at|inserted_at|modified_at)$/i
+
+function buildDuplicateValues(row: Record<string, unknown>, columns: Column[]): Record<string, unknown> {
+  const values: Record<string, unknown> = {}
+  for (const column of columns) {
+    const hasDefault = column.defaultValue != null
+    if (column.isIdentity || (hasDefault && (column.primaryKey || AUTO_TIMESTAMP_NAME_REGEX.test(column.id))))
+      continue
+    const isUuidPk = column.primaryKey && column.type?.toLowerCase().includes('uuid')
+    values[column.id] = isUuidPk ? v7() : row[column.id]
+  }
+  return values
+}
+
+function getRowPrimaryKeys(row: Record<string, unknown>, primaryColumns: string[]) {
+  if (isNewRow(row))
+    return { [NEW_ROW_KEY]: row[NEW_ROW_KEY] }
+  return primaryColumns.length > 0 ? getRowPrimaryKeysValues(row, primaryColumns) : null
+}
+
 function BodyCellRenderer({
   column,
   connectionType,
@@ -62,6 +84,7 @@ function BodyCellRenderer({
   onAddFilter,
   onOrder,
   onRename,
+  onDuplicateRow,
   ...props
 }: TableCellProps & ColumnHandlers & {
   column: Column
@@ -70,7 +93,8 @@ function BodyCellRenderer({
 }) {
   const store = useTablePageStore()
   const row = useTableContext(ctx => ctx.rows[props.rowIndex])
-  const rowDraftKey = row && primaryColumns.length > 0 ? draftKey(getRowPrimaryKeysValues(row, primaryColumns), column.id) : null
+  const primaryKeys = row ? getRowPrimaryKeys(row, primaryColumns) : null
+  const rowDraftKey = primaryKeys ? draftKey(primaryKeys, column.id) : null
 
   const draft = useSubscription(store, {
     selector: state => rowDraftKey
@@ -82,13 +106,14 @@ function BodyCellRenderer({
   return (
     <TableCell
       column={column}
-      onQueueValue={primaryColumns.length > 0 ? onQueueValue : undefined}
+      onQueueValue={primaryKeys ? onQueueValue : undefined}
       connectionType={connectionType}
       draft={draft}
       onAddFilter={onAddFilter}
       onOrder={onOrder}
       order={order}
       onRename={onRename}
+      onDuplicateRow={onDuplicateRow}
       {...props}
     />
   )
@@ -102,24 +127,41 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const columnSizes = useSubscription(store, { selector: state => state.columnSizes })
   const filters = useSubscription(store, { selector: state => state.filters })
   const orderBy = useSubscription(store, { selector: state => state.orderBy })
+  const drafts = useSubscription(store, { selector: state => state.drafts })
   const { data: rows = [], error, isPending: isRowsPending } = useInfiniteQuery(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns.filter(c => c.primaryKey).map(c => c.id), [columns])
   const renameColumnRef = useRef<ComponentRef<typeof RenameColumnDialog>>(null)
+
+  const newRows = useMemo(() => {
+    const groups = new Map<string, Record<string, unknown>>()
+    for (const draft of drafts) {
+      if (!isNewRow(draft.primaryKeys))
+        continue
+      const id = draft.primaryKeys[NEW_ROW_KEY] as string
+      const row = groups.get(id) ?? { [NEW_ROW_KEY]: id }
+      row[draft.columnId] = draft.value
+      groups.set(id, row)
+    }
+    return Array.from(groups.values())
+  }, [drafts])
+
+  const allRows = useMemo(() => [...newRows, ...rows], [newRows, rows])
 
   useSyncSelectionWithRows(rows, primaryColumns)
   useClearDraftsOnQueryChange()
 
   const getHandlers = useCallback((column: Column): ColumnHandlers => ({
     onQueueValue: async (rowIndex, newValue) => {
-      if (primaryColumns.length === 0)
-        throw new Error('No primary keys found. Please use SQL Runner to update this row.')
-
-      const row = rows[rowIndex]
+      const row = allRows[rowIndex]
       if (!row)
         throw new Error('Row not found. Please refresh the page.')
 
+      const primaryKeys = getRowPrimaryKeys(row, primaryColumns)
+      if (!primaryKeys)
+        throw new Error('No primary keys found. Please use SQL Runner to update this row.')
+
       draftsActions(store).upsert({
-        primaryKeys: getRowPrimaryKeysValues(row, primaryColumns),
+        primaryKeys,
         columnId: column.id,
         value: newValue,
         error: undefined,
@@ -154,7 +196,20 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           renameColumnRef.current?.rename(schema, table, column.id)
         }
       : undefined,
-  }), [store, rows, primaryColumns, schema, table, connection.type])
+    onDuplicateRow: (rowIndex) => {
+      const row = allRows[rowIndex]
+      if (!row)
+        return
+      const values = buildDuplicateValues(row, columns)
+      if (Object.keys(values).length === 0) {
+        toast.warning('Nothing to duplicate', {
+          description: 'All columns are auto-generated (identity, default-PK, or default timestamp).',
+        })
+        return
+      }
+      draftsActions(store).addNewRow(values)
+    },
+  }), [store, allRows, primaryColumns, columns, schema, table, connection.type])
 
   const tableColumns = useMemo<ColumnRenderer[]>(() => {
     return columns
@@ -203,9 +258,10 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   }, [primaryColumns, tableColumns])
 
   const handleShiftSelectionKeyDown = useShiftSelectionKeyDown({
-    rowCount: rows.length,
-    getItemsInRange: (start, end) => rows
+    rowCount: allRows.length,
+    getItemsInRange: (start, end) => allRows
       .slice(start, end + 1)
+      .filter(row => !isNewRow(row))
       .map(row => getRowPrimaryKeysValues(row, primaryColumns)),
     getSelectionState: () => store.get().selectionState,
     onSelectionChange: (selected, selectionState) => {
@@ -215,7 +271,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
 
   return (
     <TableProvider
-      rows={rows}
+      rows={allRows}
       columns={providerColumns}
       customColumnSizes={columnSizes}
     >
@@ -231,7 +287,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
             ? <TableBodySkeleton selectable={primaryColumns.length > 0} />
             : error
               ? <TableError error={error} />
-              : rows?.length === 0
+              : allRows.length === 0
                 ? <TableEmpty className="bottom-0 h-[calc(100%-5rem)]" title="Table is empty" description="There are no records to show" />
                 : tableColumns.length === 0
                   ? <TableEmpty className="h-[calc(100%-5rem)]" title="No columns to show" description="Please show at least one column" />

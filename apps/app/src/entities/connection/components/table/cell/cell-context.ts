@@ -20,6 +20,7 @@ export const CellContext = createContext<{
   onOrder?: (order: 'ASC' | 'DESC' | null) => void
   order?: 'ASC' | 'DESC' | null
   onRename?: () => void
+  onDuplicateRow?: () => void
 }>(null!)
 
 export function useCellContext() {

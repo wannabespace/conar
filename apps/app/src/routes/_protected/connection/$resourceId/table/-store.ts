@@ -7,8 +7,15 @@ import { type } from 'arktype'
 import { createContext, use } from 'react'
 import { repairValueObjectWithDefault } from 'seitu/utils'
 import { createWebStorageValue } from 'seitu/web'
+import { v7 } from 'uuid'
+
+export const NEW_ROW_KEY = '__newRowId__'
 
 export const primaryKeysType = type('Record<string, unknown>')
+
+export function isNewRow(rowOrKeys: Record<string, unknown>) {
+  return Object.hasOwn(rowOrKeys, NEW_ROW_KEY)
+}
 
 export const draftType = type({
   'primaryKeys': primaryKeysType,
@@ -182,11 +189,27 @@ export function draftsActions(store: TablePageStore) {
     } satisfies typeof state))
   }
 
+  const addNewRow = (values: Record<string, unknown>) => {
+    const primaryKeys = { [NEW_ROW_KEY]: v7() }
+    store.set(state => ({
+      ...state,
+      drafts: [
+        ...state.drafts,
+        ...Object.entries(values).map(([columnId, value]) => ({
+          primaryKeys,
+          columnId,
+          value,
+        })),
+      ],
+    } satisfies typeof state))
+  }
+
   return {
     upsert,
     remove,
     clear,
     setRowStatus,
     removeRow,
+    addNewRow,
   }
 }
