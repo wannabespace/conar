@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "start": "vite preview",
+    "start": "bun run .output/server/index.mjs",
     "preview": "vite preview",
-    "types:check": "fumadocs-mdx && tsc --noEmit",
+    "check-types": "fumadocs-mdx && tsgo",
     "postinstall": "fumadocs-mdx"
   },
   "dependencies": {
