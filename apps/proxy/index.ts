@@ -2,7 +2,6 @@
 import '@conar/shared/arktype-config'
 import process from 'node:process'
 import { PORTS } from '@conar/shared/constants'
-import { ORPCError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
@@ -10,31 +9,7 @@ import { env, nodeEnv } from './env'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
 
-const handler = new RPCHandler(router, {
-  interceptors: [
-    async (options) => {
-      try {
-        return await options.next()
-      }
-      catch (error) {
-        options.context.addLogData({
-          error: {
-            type: error instanceof Error ? error.constructor.name : typeof error,
-            message: error instanceof Error ? error.message : String(error),
-            cause: error instanceof Error ? error.cause : undefined,
-            stack: error instanceof Error ? error.stack : undefined,
-          },
-        })
-
-        if (error instanceof ORPCError) {
-          throw error
-        }
-
-        throw new ORPCError('INTERNAL_SERVER_ERROR', { message: 'An unexpected error occurred' })
-      }
-    },
-  ],
-})
+const handler = new RPCHandler(router)
 
 export interface AppVariables {
   logEvent?: Record<string, unknown>
