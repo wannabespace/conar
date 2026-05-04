@@ -6,24 +6,21 @@ import * as mssql from '@conar/connection/queries/dialects/mssql'
 import * as mysql from '@conar/connection/queries/dialects/mysql'
 import * as pg from '@conar/connection/queries/dialects/pg'
 import { db } from '@conar/db'
+import { memoize } from '@conar/memoize'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { decrypt } from '@conar/shared/utils/encryption'
 import { ORPCError, type } from '@orpc/server'
 import { authMiddleware, orpc } from '~/orpc'
 
-type Params<T extends AnyFunction, P extends Parameters<T>[0] = Parameters<T>[0]> = Prettify<P extends { connectionString: string }
-  ? Omit<P, 'connectionString'> & {
-    connectionString?: string
-    connectionId?: string
-    resourceId?: string
-  } & ({ resourceId: string } | { connectionString: string } | { connectionId: string })
-  : P>
-
-async function resolveQueryConnectionString(
-  input: { connectionString?: string, resourceId?: string, connectionId?: string },
-  userId: string,
-  getUserSecret: () => Promise<string>,
-) {
+const resolveQueryConnectionString = memoize(async ({
+  input,
+  userId,
+  getUserSecret,
+}: {
+  input: { connectionString?: string, resourceId?: string, connectionId?: string }
+  userId: string
+  getUserSecret: () => Promise<string>
+}) => {
   let connectionString = input.connectionString
 
   if (input.resourceId) {
@@ -93,7 +90,20 @@ async function resolveQueryConnectionString(
   }
 
   return connectionString!
-}
+}, {
+  maxAge: 1000 * 60 * 5, // 5 minutes
+})
+
+type Params<T extends AnyFunction, P extends Parameters<T>[0] = Parameters<T>[0]> = Prettify<
+  P extends { connectionString: string }
+    // eslint-disable-next-line style/indent-binary-ops
+    ? Omit<P, 'connectionString'> & {
+      connectionString?: string
+      connectionId?: string
+      resourceId?: string
+    } & ({ resourceId: string } | { connectionString: string } | { connectionId: string })
+    : P
+>
 
 function createQueryExecutor(dialect: QueryExecutor) {
   return {
@@ -102,14 +112,14 @@ function createQueryExecutor(dialect: QueryExecutor) {
       .input(type<Params<typeof dialect.execute>>())
       .handler(async ({ input, context }) => dialect.execute({
         ...input,
-        connectionString: await resolveQueryConnectionString(input, context.user.id, context.getUserSecret),
+        connectionString: await resolveQueryConnectionString({ input, userId: context.user.id, getUserSecret: context.getUserSecret }),
       })),
     beginTransaction: orpc
       .use(authMiddleware)
       .input(type<Params<typeof dialect.beginTransaction>>())
       .handler(async ({ input, context }) => dialect.beginTransaction({
         ...input,
-        connectionString: await resolveQueryConnectionString(input, context.user.id, context.getUserSecret),
+        connectionString: await resolveQueryConnectionString({ input, userId: context.user.id, getUserSecret: context.getUserSecret }),
       })),
     executeTransaction: orpc
       .use(authMiddleware)

@@ -1,7 +1,8 @@
 import type { Context } from './context'
 import { db } from '@conar/db'
+import { memoize } from '@conar/memoize'
 import { ORPCError, os } from '@orpc/server'
-import { auth } from '~/auth'
+import { authClient } from '~/auth'
 
 export const orpc = os.$context<Context>()
 
@@ -22,15 +23,18 @@ async function getUserSecret(userId: string) {
   return user.secret
 }
 
-async function getSession(headers: Headers) {
-  const session = await auth.api.getSession({ headers })
+const getSession = memoize(async (headers: Headers) => {
+  const { data: session } = await authClient.getSession({ fetchOptions: { headers } })
 
   if (!session) {
     throw new ORPCError('UNAUTHORIZED', { message: 'We could not find your session. Please sign in again.' })
   }
 
   return session
-}
+}, {
+  maxAge: 1000 * 60 * 5, // 5 minutes
+  transformArgs: headers => headers.toString(),
+})
 
 export const logMiddleware = orpc.middleware(async ({ context, next }, input) => {
   const result = await next()

@@ -1,7 +1,7 @@
 import type { Context } from './context'
-
 import { db } from '@conar/db'
 import { subscriptions } from '@conar/db/schema'
+import { memoize } from '@conar/memoize'
 import { ACTIVE_SUBSCRIPTION_STATUSES, LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
 import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
@@ -27,7 +27,7 @@ async function getUserSecret(userId: string) {
   return user.secret
 }
 
-async function getSession(headers: Headers) {
+const getSession = memoize(async (headers: Headers) => {
   const session = await auth.api.getSession({ headers })
 
   if (!session) {
@@ -35,7 +35,10 @@ async function getSession(headers: Headers) {
   }
 
   return session
-}
+}, {
+  maxAge: 1000 * 60 * 5, // 5 minutes
+  transformArgs: headers => headers.toString(),
+})
 
 export const logMiddleware = orpc.middleware(async ({ context, next }, input) => {
   const result = await next()
