@@ -7,12 +7,9 @@ export const authClient = createAuthClient({
   basePath: '/auth',
   plugins: [bearer()],
   fetchOptions: {
-    onRequest(request) {
-      request.headers.delete('connection')
-      request.headers.delete('content-length')
-      request.headers.delete('host')
-      request.headers.delete('transfer-encoding')
-      return request
-    },
+    customFetchImpl: (input, init) => globalThis.fetch(input, {
+      ...init,
+      verbose: true,
+    }),
   },
 })
