@@ -33,6 +33,9 @@ catalogs:
     '@better-auth/drizzle-adapter':
       specifier: https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913
       version: 1.5.0-beta.13
+    '@clack/prompts':
+      specifier: ^1.2.0
+      version: 1.2.0
     '@clickhouse/client':
       specifier: ^1.18.3
       version: 1.18.3
@@ -366,6 +369,9 @@ catalogs:
     npm-run-all2:
       specifier: ^8.0.4
       version: 8.0.4
+    open:
+      specifier: ^10.2.0
+      version: 10.2.0
     pg:
       specifier: ^8.20.0
       version: 8.20.0
@@ -904,6 +910,37 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)
+
+  apps/cli:
+    dependencies:
+      '@clack/prompts':
+        specifier: 'catalog:'
+        version: 1.2.0
+      '@conar/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@orpc/client':
+        specifier: 'catalog:'
+        version: 1.14.1(@opentelemetry/api@1.9.0)
+      open:
+        specifier: 'catalog:'
+        version: 10.2.0
+    devDependencies:
+      '@conar/api':
+        specifier: workspace:*
+        version: link:../../apps/api
+      '@conar/configs':
+        specifier: workspace:*
+        version: link:../../packages/configs
+      '@conar/proxy':
+        specifier: workspace:*
+        version: link:../../apps/proxy
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.13
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20260421.2
 
   apps/desktop:
     dependencies:

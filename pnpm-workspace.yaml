@@ -14,6 +14,7 @@ catalog:
   '@antfu/eslint-config': ^7.7.3
   '@base-ui/react': ^1.4.1
   '@better-auth/drizzle-adapter': https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913
+  '@clack/prompts': ^1.2.0
   '@clickhouse/client': ^1.18.3
   '@dagrejs/dagre': 1.1.8
   '@date-fns/tz': ^1.4.1
@@ -125,6 +126,7 @@ catalog:
   nitro: 3.0.260311-beta
   node-modules-inspector: ^1.4.2
   npm-run-all2: ^8.0.4
+  open: ^10.2.0
   pg: ^8.20.0
   playwright: ^1.59.1
   posthog-js: ^1.372.8

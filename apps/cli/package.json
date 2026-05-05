@@ -1,0 +1,24 @@
+{
+  "name": "@conar/cli",
+  "type": "module",
+  "bin": {
+    "conar": "./index.ts"
+  },
+  "scripts": {
+    "dev": "bun run ./index.ts",
+    "check-types": "tsgo"
+  },
+  "dependencies": {
+    "@clack/prompts": "catalog:",
+    "@conar/shared": "workspace:*",
+    "@orpc/client": "catalog:",
+    "open": "catalog:"
+  },
+  "devDependencies": {
+    "@conar/api": "workspace:*",
+    "@conar/configs": "workspace:*",
+    "@conar/proxy": "workspace:*",
+    "@types/bun": "catalog:",
+    "@typescript/native-preview": "catalog:"
+  }
+}
