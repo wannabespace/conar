@@ -2,6 +2,7 @@
 import '@conar/shared/arktype-config'
 import process from 'node:process'
 import { PORTS } from '@conar/shared/constants'
+import { ORPCError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
@@ -10,11 +11,43 @@ import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
 import { sanitizeLogData } from '@conar/shared/utils/sanitize-log'
 
-const handler = new RPCHandler(router)
+const handler = new RPCHandler(router, {
+  interceptors: [
+    async (options) => {
+      try {
+        return await options.next()
+      }
+      catch (error) {
+        options.context.addLogData({
+          error: {
+            type: error instanceof Error ? error.constructor.name : typeof error,
+            message: error instanceof Error ? error.message : String(error),
+            cause: error instanceof Error ? error.cause : undefined,
+            stack: error instanceof Error ? error.stack : undefined,
+          },
+        })
+
+        if (error instanceof ORPCError) {
+          throw error
+        }
+
+        if (error instanceof Error) {
+          throw new ORPCError('INTERNAL_SERVER_ERROR', { message: error.message, cause: error })
+        }
+
+        throw error
+      }
+    },
+  ],
+})
 
 export interface AppVariables {
   logEvent?: Record<string, unknown>
 }
+
+const BODY_PARSER_METHODS = new Set(['arrayBuffer', 'blob', 'formData', 'json', 'text'] as const)
+
+type BodyParserMethod = typeof BODY_PARSER_METHODS extends Set<infer T> ? T : never
 
 const app = new Hono<{
   Variables: AppVariables
@@ -72,7 +105,16 @@ const app = new Hono<{
     }
   })
   .use('/rpc/*', async (c, next) => {
-    const { matched, response } = await handler.handle(c.req.raw.clone(), {
+    const request = new Proxy(c.req.raw, {
+      get(target, prop) {
+        if (BODY_PARSER_METHODS.has(prop as BodyParserMethod)) {
+          return () => c.req[prop as BodyParserMethod]()
+        }
+        return Reflect.get(target, prop, target)
+      },
+    })
+
+    const { matched, response } = await handler.handle(request, {
       prefix: '/rpc',
       context: createContext(c),
     })
