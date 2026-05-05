@@ -39,6 +39,11 @@
     "deps:inspect": "node-modules-inspector",
     "deps:build": "node-modules-inspector build"
   },
+  "pnpm": {
+    "overrides": {
+      "hono": "^4.12.17"
+    }
+  },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",
     "@conar/configs": "workspace:*",
