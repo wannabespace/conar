@@ -2,7 +2,7 @@ import { createCollection, inArray, queryOnce } from '@tanstack/react-db'
 import { drizzleCollectionOptions } from 'tanstack-db-pglite'
 import { db, waitForMigrations } from '~/drizzle'
 import { chats, chatsMessages } from '~/drizzle/schema'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
+import { connectionsResourcesCollection } from '~/entities/connection/sync'
 import { isSignedIn } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
@@ -21,10 +21,7 @@ export const chatsCollection = createCollection(drizzleCollectionOptions({
       return
     }
 
-    await Promise.all([
-      connectionsCollection.utils.waitForSync(),
-      connectionsResourcesCollection.utils.waitForSync(),
-    ])
+    await connectionsResourcesCollection.utils.waitForSync()
     const sync = await orpc.chats.sync.call(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
 
     sync.forEach((item) => {
