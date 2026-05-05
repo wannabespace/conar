@@ -12,6 +12,7 @@ export function TableCellProvider({
   onOrder,
   order,
   onRename,
+  onDuplicateRow,
   column,
   value,
   onQueueValue,
@@ -24,6 +25,7 @@ export function TableCellProvider({
   onOrder?: (order: 'ASC' | 'DESC' | null) => void
   order?: 'ASC' | 'DESC' | null
   onRename?: () => void
+  onDuplicateRow?: () => void
   onQueueValue?: (rowIndex: number, value: unknown) => unknown
   transformer: ValueTransformer
   children: React.ReactNode
@@ -67,6 +69,7 @@ export function TableCellProvider({
       onOrder,
       order,
       onRename,
+      onDuplicateRow,
     }}
     >
       {children}

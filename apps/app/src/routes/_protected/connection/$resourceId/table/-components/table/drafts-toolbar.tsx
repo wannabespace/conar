@@ -18,14 +18,14 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { dialects } from '~/entities/connection/dialects'
-import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
+import { resourceRowsQueryInfiniteOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
 import { buildWhere } from '~/entities/connection/queries/rows'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { useSaveHotkey } from '~/hooks/use-save-hotkey'
 import { queryClient } from '~/main'
 import { Route } from '../..'
 import { useTableColumns } from '../../-columns'
-import { draftsActions, getRowKeyByPrimaryKeys, primaryKeysKey, useTablePageStore } from '../../-store'
+import { draftsActions, getRowKeyByPrimaryKeys, isNewRowKeys, primaryKeysKey, useTablePageStore } from '../../-store'
 import { DraftsReviewDrawer } from './drafts-review-drawer'
 
 const motionVariants = {
@@ -102,11 +102,29 @@ export function DraftsToolbar({
             values: Record<string, unknown>
             modifiedColumns: string[]
             updatedFilters: ActiveFilter[]
+            isInsert: boolean
           }[] = []
 
           for (const rowDrafts of rowEntries) {
             const { primaryKeys } = rowDrafts[0]!
             failedPrimaryKeys = primaryKeys
+
+            const values = rowDrafts.reduce<Record<string, unknown>>((acc, d) => {
+              acc[d.columnId] = d.value
+              return acc
+            }, {})
+
+            if (isNewRowKeys(primaryKeys)) {
+              await tx
+                .withSchema(schema)
+                .withTables<{ [table]: Record<string, unknown> }>()
+                .insertInto(table)
+                .values(values)
+                .execute()
+
+              commits.push({ primaryKeys, values, modifiedColumns: Object.keys(values), updatedFilters: [], isInsert: true })
+              continue
+            }
 
             const row = allRowsByPrimaryKey.get(primaryKeysKey(primaryKeys))
 
@@ -121,11 +139,6 @@ export function DraftsToolbar({
               values: [row[column]],
             }))
 
-            const values = rowDrafts.reduce<Record<string, unknown>>((acc, d) => {
-              acc[d.columnId] = d.value
-              return acc
-            }, {})
-
             await tx
               .withSchema(schema)
               .withTables<{ [table]: Record<string, unknown> }>()
@@ -139,7 +152,7 @@ export function DraftsToolbar({
               ? { ...filter, values: [values[filter.column]] }
               : filter)
 
-            commits.push({ primaryKeys, values, modifiedColumns, updatedFilters })
+            commits.push({ primaryKeys, values, modifiedColumns, updatedFilters, isInsert: false })
           }
 
           failedPrimaryKeys = null
@@ -185,9 +198,11 @@ export function DraftsToolbar({
       }
 
       const { commits, rowsQueryOpts } = data
+      const updateCommits = commits.filter(c => !c.isInsert)
+      const insertCommits = commits.filter(c => c.isInsert)
 
       const savedValuesByRow = new Map(
-        await Promise.all(commits.map(async ({ primaryKeys, values, modifiedColumns, updatedFilters }) => {
+        await Promise.all(updateCommits.map(async ({ primaryKeys, values, modifiedColumns, updatedFilters }) => {
           const refreshed = await db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
@@ -229,13 +244,19 @@ export function DraftsToolbar({
       for (const { primaryKeys } of savedValuesByRow.values()) {
         removeRow(primaryKeys)
       }
+      for (const { primaryKeys } of insertCommits) {
+        removeRow(primaryKeys)
+      }
 
-      const { filters, orderBy } = store.get()
+      const { filters, orderBy, exact } = store.get()
 
-      if (filters.length > 0 || Object.keys(orderBy).length > 0)
+      if (insertCommits.length > 0 || filters.length > 0 || Object.keys(orderBy).length > 0)
         queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
 
-      const count = savedValuesByRow.size
+      if (insertCommits.length > 0)
+        queryClient.invalidateQueries(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters, exact } }))
+
+      const count = savedValuesByRow.size + insertCommits.length
       toast.success(`Saved ${count} row${count === 1 ? '' : 's'}`)
 
       setIsReviewOpen(false)

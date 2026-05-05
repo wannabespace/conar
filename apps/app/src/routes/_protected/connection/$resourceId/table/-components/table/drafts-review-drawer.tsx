@@ -20,14 +20,14 @@ import {
 } from '@conar/ui/components/frame'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAlertLine, RiArrowGoBackLine, RiArrowRightLine, RiSaveLine } from '@remixicon/react'
+import { RiAlertLine, RiArrowGoBackLine, RiSaveLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useSubscription } from 'seitu/react'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { createTransformer, getDisplayValue } from '~/entities/connection/transformers'
 import { Route } from '../..'
 import { useTableColumns } from '../../-columns'
-import { draftsActions, getRowKeyByPrimaryKeys, primaryKeysKey, useTablePageStore } from '../../-store'
+import { draftsActions, getRowKeyByPrimaryKeys, isNewRowKeys, primaryKeysKey, useTablePageStore } from '../../-store'
 
 const DISPLAY_SIZE = 500
 
@@ -93,8 +93,12 @@ export function DraftsReviewDrawer({
   const rowsByPrimaryKey = new Map(
     rows.map((row, index) => [getRowKeyByPrimaryKeys(row, primaryColumns), { row, index }] as const),
   )
-  const draftIndex = (rowDrafts: typeof draftType.infer[]) =>
-    rowsByPrimaryKey.get(primaryKeysKey(rowDrafts[0]!.primaryKeys))?.index ?? Number.MAX_SAFE_INTEGER
+  const draftIndex = (rowDrafts: typeof draftType.infer[]) => {
+    const { primaryKeys } = rowDrafts[0]!
+    if (isNewRowKeys(primaryKeys))
+      return -1
+    return rowsByPrimaryKey.get(primaryKeysKey(primaryKeys))?.index ?? Number.MAX_SAFE_INTEGER
+  }
   const rowsEntries = Array.from(Map.groupBy(drafts, d => primaryKeysKey(d.primaryKeys)).values())
     .sort((a, b) => draftIndex(a) - draftIndex(b))
 
@@ -149,10 +153,13 @@ export function DraftsReviewDrawer({
                 <div className="flex flex-col gap-3">
                   {rowsEntries.map((rowDrafts) => {
                     const { primaryKeys } = rowDrafts[0]!
-                    const row = rowsByPrimaryKey.get(primaryKeysKey(primaryKeys))?.row
-                    const primaryLabel = Object.entries(primaryKeys).length > 0
-                      ? Object.entries(primaryKeys).map(([columnId, value]) => `${columnId} = ${columnDisplay(columnId, value)}`)
-                      : ['Unknown row']
+                    const isInsert = isNewRowKeys(primaryKeys)
+                    const row = isInsert ? undefined : rowsByPrimaryKey.get(primaryKeysKey(primaryKeys))?.row
+                    const primaryLabel = isInsert
+                      ? []
+                      : Object.entries(primaryKeys).length > 0
+                        ? Object.entries(primaryKeys).map(([columnId, value]) => `${columnId} = ${columnDisplay(columnId, value)}`)
+                        : ['Unknown row']
                     const errors = [...new Set(rowDrafts.flatMap(draft => draft.error ? [draft.error] : []))]
 
                     return (
@@ -183,23 +190,25 @@ export function DraftsReviewDrawer({
                                 </TooltipContent>
                               </Tooltip>
                             )}
-                            Row
+                            {isInsert ? 'New row' : 'Row'}
                           </FrameTitle>
-                          <div className="
-                            mt-1 ml-2 flex flex-1 flex-col gap-0.5 pt-px
-                            text-[0.7rem] text-muted-foreground
-                          "
-                          >
-                            {primaryLabel.map(label => (
-                              <span
-                                key={label}
-                                className="truncate leading-none"
-                                title={label}
-                              >
-                                {label}
-                              </span>
-                            ))}
-                          </div>
+                          {primaryLabel.length > 0 && (
+                            <div className="
+                              mt-1 ml-2 flex flex-1 flex-col gap-0.5 pt-px
+                              text-[0.7rem] text-muted-foreground
+                            "
+                            >
+                              {primaryLabel.map(label => (
+                                <span
+                                  key={label}
+                                  className="truncate leading-none"
+                                  title={label}
+                                >
+                                  {label}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
@@ -207,6 +216,7 @@ export function DraftsReviewDrawer({
                                 size="icon-xs"
                                 onClick={() => removeRow(primaryKeys)}
                                 disabled={isSaving}
+                                className="ml-auto"
                               >
                                 <RiArrowGoBackLine />
                               </Button>
@@ -217,18 +227,15 @@ export function DraftsReviewDrawer({
                         <FramePanel className="p-3">
                           <div className="flex flex-col gap-2.5">
                             {rowDrafts.map((draft) => {
-                              const before = row ? columnDisplay(draft.columnId, row[draft.columnId]) : ''
                               const after = columnDisplay(draft.columnId, draft.value)
+                              const showBefore = !isInsert && row
 
                               return (
                                 <div
                                   key={draft.columnId}
                                   className="flex items-start gap-2"
                                 >
-                                  <div className="
-                                    grid flex-1 grid-cols-2 gap-x-2 gap-y-1
-                                  "
-                                  >
+                                  <div className="flex flex-1 flex-col gap-1">
                                     <div className="
                                       truncate font-mono text-[0.7rem]
                                       font-medium text-muted-foreground
@@ -236,27 +243,22 @@ export function DraftsReviewDrawer({
                                     >
                                       {draft.columnId}
                                     </div>
-                                    <div className="
-                                      flex items-center gap-1 text-[0.7rem]
-                                      font-medium text-muted-foreground
-                                    "
-                                    >
-                                      <RiArrowRightLine className="
-                                        size-3 shrink-0
-                                      "
-                                      />
-                                      Modified
+                                    <div className={cn('grid gap-2', showBefore && 'grid-cols-2')}>
+                                      {showBefore && (
+                                        <ValueCell value={row[draft.columnId]}>
+                                          {columnDisplay(draft.columnId, row[draft.columnId])}
+                                        </ValueCell>
+                                      )}
+                                      <ValueCell
+                                        value={draft.value}
+                                        className="
+                                          border-warning/30 bg-warning/10
+                                          text-warning-foreground
+                                        "
+                                      >
+                                        {after}
+                                      </ValueCell>
                                     </div>
-                                    <ValueCell value={row?.[draft.columnId]}>{before}</ValueCell>
-                                    <ValueCell
-                                      value={draft.value}
-                                      className="
-                                        border-warning/30 bg-warning/10
-                                        text-warning-foreground
-                                      "
-                                    >
-                                      {after}
-                                    </ValueCell>
                                   </div>
                                   <Tooltip>
                                     <TooltipTrigger asChild>

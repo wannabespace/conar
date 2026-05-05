@@ -15,7 +15,7 @@ import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { Route } from '../..'
 import { useTableColumns } from '../../-columns'
 import { useClearDraftsOnQueryChange, useSyncSelectionWithRows } from '../../-hooks'
-import { columnsOrder, draftKey, draftsActions, getRowPrimaryKeysValues, useTablePageStore } from '../../-store'
+import { buildNewRowsFromDrafts, columnsOrder, draftKey, draftsActions, getRowDraftKeys, useTablePageStore } from '../../-store'
 import { DraftsToolbar } from './drafts-toolbar'
 import { RenameColumnDialog } from './rename-column-dialog'
 import { TableEmpty } from './table-empty'
@@ -62,6 +62,7 @@ function BodyCellRenderer({
   onAddFilter,
   onOrder,
   onRename,
+  onDuplicateRow,
   ...props
 }: TableCellProps & ColumnHandlers & {
   column: Column
@@ -70,7 +71,7 @@ function BodyCellRenderer({
 }) {
   const store = useTablePageStore()
   const row = useTableContext(ctx => ctx.rows[props.rowIndex])
-  const rowDraftKey = row && primaryColumns.length > 0 ? draftKey(getRowPrimaryKeysValues(row, primaryColumns), column.id) : null
+  const rowDraftKey = row && primaryColumns.length > 0 ? draftKey(getRowDraftKeys(row, primaryColumns), column.id) : null
 
   const draft = useSubscription(store, {
     selector: state => rowDraftKey
@@ -89,6 +90,7 @@ function BodyCellRenderer({
       onOrder={onOrder}
       order={order}
       onRename={onRename}
+      onDuplicateRow={onDuplicateRow}
       {...props}
     />
   )
@@ -102,8 +104,11 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
   const columnSizes = useSubscription(store, { selector: state => state.columnSizes })
   const filters = useSubscription(store, { selector: state => state.filters })
   const orderBy = useSubscription(store, { selector: state => state.orderBy })
-  const { data: rows = [], error, isPending: isRowsPending } = useInfiniteQuery(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }))
+  const drafts = useSubscription(store, { selector: state => state.drafts })
+  const { data: serverRows = [], error, isPending: isRowsPending } = useInfiniteQuery(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }))
   const primaryColumns = useMemo(() => columns.filter(c => c.primaryKey).map(c => c.id), [columns])
+  const newRows = useMemo(() => buildNewRowsFromDrafts(drafts, columns.map(c => c.id)), [drafts, columns])
+  const rows = useMemo(() => newRows.length > 0 ? [...newRows, ...serverRows] : serverRows, [newRows, serverRows])
   const renameColumnRef = useRef<ComponentRef<typeof RenameColumnDialog>>(null)
 
   useSyncSelectionWithRows(rows, primaryColumns)
@@ -119,13 +124,21 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
         throw new Error('Row not found. Please refresh the page.')
 
       draftsActions(store).upsert({
-        primaryKeys: getRowPrimaryKeysValues(row, primaryColumns),
+        primaryKeys: getRowDraftKeys(row, primaryColumns),
         columnId: column.id,
         value: newValue,
         error: undefined,
         isCommitting: false,
       })
     },
+    onDuplicateRow: primaryColumns.length > 0
+      ? (rowIndex) => {
+          const row = rows[rowIndex]
+          if (!row)
+            return
+          draftsActions(store).duplicateRow({ row, columns })
+        }
+      : undefined,
     onAddFilter: (filter) => {
       store.set(state => ({
         ...state,
@@ -154,7 +167,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
           renameColumnRef.current?.rename(schema, table, column.id)
         }
       : undefined,
-  }), [store, rows, primaryColumns, schema, table, connection.type])
+  }), [store, rows, columns, primaryColumns, schema, table, connection.type])
 
   const tableColumns = useMemo<ColumnRenderer[]>(() => {
     return columns
@@ -206,7 +219,7 @@ function TableComponent({ table, schema }: { table: string, schema: string }) {
     rowCount: rows.length,
     getItemsInRange: (start, end) => rows
       .slice(start, end + 1)
-      .map(row => getRowPrimaryKeysValues(row, primaryColumns)),
+      .map(row => getRowDraftKeys(row, primaryColumns)),
     getSelectionState: () => store.get().selectionState,
     onSelectionChange: (selected, selectionState) => {
       store.set(state => ({ ...state, selected, selectionState } satisfies typeof state))

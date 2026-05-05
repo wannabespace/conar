@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
-import { draftsActions, useTablePageStore } from './-store'
+import { draftsActions, isNewRowKeys, NEW_ROW_ID_KEY, useTablePageStore } from './-store'
 
 export function useClearDraftsOnQueryChange() {
   const store = useTablePageStore()
@@ -28,7 +28,11 @@ export function useSyncSelectionWithRows(rows: Record<string, unknown>[], primar
     store.set(state => ({
       ...state,
       selected: state.selected.filter(selectedRow =>
-        rows.some(row => primaryColumns.every(key => row[key] === selectedRow[key])),
+        rows.some(row =>
+          isNewRowKeys(selectedRow)
+            ? row[NEW_ROW_ID_KEY] === selectedRow[NEW_ROW_ID_KEY]
+            : primaryColumns.every(key => row[key] === selectedRow[key]),
+        ),
       ),
     } satisfies typeof state))
   }, [store, rows, primaryColumns])

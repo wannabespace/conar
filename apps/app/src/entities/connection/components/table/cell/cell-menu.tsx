@@ -46,7 +46,7 @@ export function TableCellContextMenu({
   onSetNull?: () => void
   children: ReactNode
 }) {
-  const { value, column, rowIndex, onAddFilter, onOrder, order, onRename } = useCellContext()
+  const { value, column, rowIndex, onAddFilter, onOrder, order, onRename, onDuplicateRow } = useCellContext()
   const row = useTableContext(({ rows }) => rows[rowIndex]!)
   const columns = useTableContext(({ columns }) => columns)
   const columnKeys = useMemo(() =>
@@ -185,6 +185,11 @@ export function TableCellContextMenu({
               </ContextMenuItem>
             </ContextMenuSubContent>
           </ContextMenuSub>
+          {onDuplicateRow && (
+            <ContextMenuItem onClick={onDuplicateRow}>
+              Duplicate row
+            </ContextMenuItem>
+          )}
         </ContextMenuGroup>
       </ContextMenuContent>
     </ContextMenu>

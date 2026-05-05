@@ -105,6 +105,7 @@ export function TableCell({
   onOrder,
   order,
   onRename,
+  onDuplicateRow,
   connectionType,
   draft,
 }: {
@@ -178,6 +179,7 @@ export function TableCell({
       onOrder={onOrder}
       order={order}
       onRename={onRename}
+      onDuplicateRow={onDuplicateRow ? () => onDuplicateRow(rowIndex) : undefined}
     >
       <SetNullAlertDialog
         open={isSetNullDialogOpen}
