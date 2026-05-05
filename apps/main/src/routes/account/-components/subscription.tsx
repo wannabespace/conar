@@ -35,6 +35,7 @@ export function Subscription() {
   const { openBillingPortal, isOpening } = useBillingPortal({ returnHref })
   const { upgrade, isUpgrading } = useUpgradeSubscription()
   const [isYearly, setIsYearly] = useState(period === 'yearly')
+  const hasUpcomingTrialEnd = Boolean(subscription?.trialEnd && subscription.trialEnd.getTime() > Date.now())
 
   if (subscription && subscription.period === 'yearly' && !isYearly) {
     setIsYearly(true)
@@ -78,7 +79,7 @@ export function Subscription() {
                   <RiTimeLine className="size-3.5" />
                   {(subscription.cancelAtPeriodEnd || subscription.cancelAt)
                     ? subscription.cancelAt ? `Cancels at ${format(subscription.cancelAt, 'MMM d, yyyy')}` : 'Cancels at period end'
-                    : subscription.status === 'trialing' && subscription.trialEnd
+                    : subscription.status === 'trialing' && hasUpcomingTrialEnd && subscription.trialEnd
                       ? (
                           <Tooltip>
                             <TooltipTrigger asChild>
