@@ -17,7 +17,7 @@ export const exchange = orpc
     const generatedCodeChallenge = await generateCodeChallenge(input.verifier)
 
     if (generatedCodeChallenge !== input.codeChallenge) {
-      throw new ORPCError('FORBIDDEN', { message: 'We couldn\'t authenticate you. Please try signing in again.' })
+      throw new ORPCError('NOT_ACCEPTABLE', { message: 'We couldn\'t authenticate you. Please try signing in again.' })
     }
 
     const data = await codeChallengeRedis.get(input.codeChallenge)
