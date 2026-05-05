@@ -18,6 +18,15 @@ const handler = new RPCHandler(router, {
         return await options.next()
       }
       catch (error) {
+        options.context.addLogData({
+          error: {
+            type: error instanceof Error ? error.constructor.name : typeof error,
+            message: error instanceof Error ? error.message : String(error),
+            cause: error instanceof Error ? error.cause : undefined,
+            stack: error instanceof Error ? error.stack : undefined,
+          },
+        })
+
         if (error instanceof ORPCError) {
           throw error
         }
