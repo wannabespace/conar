@@ -212,7 +212,7 @@ function ConnectionCard({
     refetch,
   } = useQuery({
     ...connectionResourcesQueryOptions(connection),
-    enabled: canSend,
+    enabled: canSend && connection.syncType === SyncType.CloudWithoutPassword && connection.isPasswordPopulated,
   })
 
   const [isOpen, setIsOpen] = useState(false)
@@ -409,7 +409,7 @@ function ConnectionCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
-                disabled={!canSend}
+                disabled={!canSend || (connection.syncType === SyncType.CloudWithoutPassword && !connection.isPasswordPopulated)}
                 onClick={() => refetch()}
               >
                 <RiRefreshLine className="size-4" />
