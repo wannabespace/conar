@@ -7,7 +7,7 @@ import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { ThemeToggle } from '@conar/ui/components/custom/theme-toggle'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogTitle, DialogTrigger } from '@conar/ui/components/dialog'
-import { Label } from '@conar/ui/components/label'
+import { Field, FieldLabel } from '@conar/ui/components/field'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
@@ -80,16 +80,18 @@ function SupportButton() {
           </DialogDescription>
         </DialogHeader>
         <DialogPanel>
-          <form onSubmit={handleSubmit} className="space-y-2">
-            <Label htmlFor="support-message">Message</Label>
-            <Textarea
-              id="support-message"
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-              required
-              placeholder="Type any message you'd like to send us"
-              className="min-h-48"
-            />
+          <form onSubmit={handleSubmit}>
+            <Field>
+              <FieldLabel htmlFor="support-message">Message</FieldLabel>
+              <Textarea
+                id="support-message"
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                required
+                placeholder="Type any message you'd like to send us"
+                className="min-h-48"
+              />
+            </Field>
           </form>
         </DialogPanel>
         <DialogFooter>
