@@ -74,7 +74,15 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
     }>()
 
     const syncZones = () => {
-      const nextLines = editorQueriesStore.get().map(q => q.startLineNumber)
+      const model = editor.getModel()
+      if (!model)
+        return
+
+      const modelLineCount = model.getLineCount()
+      const nextLines = editorQueriesStore
+        .get()
+        .map(q => q.startLineNumber)
+        .filter(line => line <= modelLineCount)
       const nextSet = new Set(nextLines)
 
       let needsChange = zones.size !== nextSet.size
@@ -130,9 +138,21 @@ export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandalon
       })
     }
 
-    queueMicrotask(syncZones)
+    let scheduled = false
 
-    const unsubscribe = editorQueriesStore.subscribe(syncZones)
+    const scheduleSync = () => {
+      if (scheduled)
+        return
+      scheduled = true
+      queueMicrotask(() => {
+        scheduled = false
+        syncZones()
+      })
+    }
+
+    scheduleSync()
+
+    const unsubscribe = editorQueriesStore.subscribe(scheduleSync)
 
     return () => {
       unsubscribe()
