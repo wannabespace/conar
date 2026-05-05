@@ -7,6 +7,7 @@ const envType = type({
   API_URL: 'string',
   MAIN_URL: 'string',
   DATABASE_URL: 'string',
+  BETTER_AUTH_SECRET: 'string',
 })
 
 export const env = envType.assert(process.env)
