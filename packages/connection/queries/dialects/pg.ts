@@ -2,8 +2,8 @@ import type { PoolConfig } from 'pg'
 import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
 import { memoize } from '@conar/memoize'
-import { wrapAggregateError } from '@conar/shared/utils/helpers'
 import { tries } from '@conar/shared/utils/tries'
+import { handleQueryError } from '..'
 import { parseConnectionString } from '../..'
 import { readSSLFiles } from '../../read-ssl-files'
 import { defaultSSLConfig, parseSSLConfig } from '../../ssl/pg'
@@ -19,7 +19,7 @@ pg.types.setTypeParser(pg.types.builtins.TIMESTAMPTZ, parseDate)
 pg.types.setTypeParser(pg.types.builtins.TIME, parseDate)
 pg.types.setTypeParser(pg.types.builtins.TIMETZ, parseDate)
 
-export const getPool = memoize(async (connectionString: string) => {
+const getPool = memoize(async (connectionString: string) => {
   const { searchParams, ...config } = parseConnectionString(connectionString)
   const ssl = parseSSLConfig(searchParams)
   const conf: PoolConfig = {
@@ -50,14 +50,14 @@ export const getPool = memoize(async (connectionString: string) => {
 })
 
 export const query = {
-  execute: wrapAggregateError(async ({ connectionString, query, values = [] }) => {
+  execute: handleQueryError(async ({ connectionString, query, values = [] }) => {
     const pool = await getPool(connectionString)
     const start = performance.now()
     const result = await pool.query(query, values)
 
     return { result: result.rows as unknown, duration: performance.now() - start }
   }),
-  beginTransaction: wrapAggregateError(async ({ connectionString }: { connectionString: string }) => {
+  beginTransaction: handleQueryError(async ({ connectionString }: { connectionString: string }) => {
     const pool = await getPool(connectionString)
     const client = await pool.connect()
 
@@ -89,7 +89,7 @@ export const query = {
     return { txId }
   }),
 
-  executeTransaction: wrapAggregateError(async ({ txId, query, values }: { txId: string, query: string, values: unknown[] }) => {
+  executeTransaction: handleQueryError(async ({ txId, query, values }: { txId: string, query: string, values: unknown[] }) => {
     const handle = getTransaction(txId)
     if (!handle)
       throw new Error(`No active transaction found for id: ${txId}`)
@@ -97,7 +97,7 @@ export const query = {
     return handle.execute(query, values)
   }),
 
-  commitTransaction: wrapAggregateError(async ({ txId }: { txId: string }) => {
+  commitTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
     if (!handle)
       return
@@ -110,7 +110,7 @@ export const query = {
     }
   }),
 
-  rollbackTransaction: wrapAggregateError(async ({ txId }: { txId: string }) => {
+  rollbackTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
     if (!handle)
       return

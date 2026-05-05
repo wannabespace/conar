@@ -4,7 +4,6 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PORTS } from '@conar/shared/constants'
-import { isReconnectError } from '@conar/shared/utils/connections'
 import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
 import { setupProtocolHandler } from './lib/deep-link'
@@ -19,21 +18,21 @@ export const { autoUpdater } = todesktop
 
 initElectronEvents()
 
-process.on('uncaughtException', (error) => {
-  if (isReconnectError(error)) {
-    console.error('[Suppressed Connection Error]', error.message)
-    return
-  }
-  throw error
-})
+// process.on('uncaughtException', (error) => {
+//   if (isReconnectError(error)) {
+//     console.error('[Suppressed Connection Error]', error.message)
+//     return
+//   }
+//   throw error
+// })
 
-process.on('unhandledRejection', (reason) => {
-  if (isReconnectError(reason)) {
-    console.error('[Suppressed Connection Rejection]', reason instanceof Error ? reason.message : reason)
-    return
-  }
-  throw reason
-})
+// process.on('unhandledRejection', (reason) => {
+//   if (isReconnectError(reason)) {
+//     console.error('[Suppressed Connection Rejection]', reason instanceof Error ? reason.message : reason)
+//     return
+//   }
+//   throw reason
+// })
 
 export const store = new Store<{
   bounds?: Rectangle

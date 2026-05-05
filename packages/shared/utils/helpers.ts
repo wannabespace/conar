@@ -90,7 +90,7 @@ export function tryParseToJsonArray(editedValue: string): string[] {
   return [editedValue]
 }
 
-export function wrapAggregateError<T extends AnyFunction>(fn: T): T {
+export function handleAggregateError<T extends AnyFunction>(fn: T): T {
   return (async (...args: Parameters<T>) => {
     try {
       return await fn(...args)

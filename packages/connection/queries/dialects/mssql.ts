@@ -1,14 +1,14 @@
 import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
 import { memoize } from '@conar/memoize'
-import { wrapAggregateError } from '@conar/shared/utils/helpers'
+import { handleQueryError } from '..'
 import { parseConnectionString } from '../..'
 import { parseSSLConfig } from '../../ssl/mssql'
 import { disposeTransaction, getTransaction, registerTransaction } from '../transactions'
 
 const mssql = createRequire(import.meta.url)('mssql') as typeof import('mssql')
 
-export const getPool = memoize((connectionString: string) => {
+const getPool = memoize((connectionString: string) => {
   const { searchParams, ...config } = parseConnectionString(connectionString)
   const options = parseSSLConfig(searchParams)
 
@@ -26,7 +26,7 @@ export const getPool = memoize((connectionString: string) => {
 })
 
 export const query = {
-  execute: wrapAggregateError(async ({ connectionString, query, values = [] }) => {
+  execute: handleQueryError(async ({ connectionString, query, values = [] }) => {
     const pool = await getPool(connectionString)
     let request = pool.request()
 
@@ -40,7 +40,7 @@ export const query = {
     return { result: result.recordset as unknown, duration: performance.now() - start }
   }),
 
-  beginTransaction: wrapAggregateError(async ({ connectionString }: { connectionString: string }) => {
+  beginTransaction: handleQueryError(async ({ connectionString }: { connectionString: string }) => {
     const pool = await getPool(connectionString)
     const transaction = pool.transaction()
 
@@ -70,7 +70,7 @@ export const query = {
     return { txId }
   }),
 
-  executeTransaction: wrapAggregateError(async ({ txId, query, values }: { txId: string, query: string, values: unknown[] }) => {
+  executeTransaction: handleQueryError(async ({ txId, query, values }: { txId: string, query: string, values: unknown[] }) => {
     const handle = getTransaction(txId)
     if (!handle)
       throw new Error(`No active transaction found for id: ${txId}`)
@@ -78,7 +78,7 @@ export const query = {
     return handle.execute(query, values)
   }),
 
-  commitTransaction: wrapAggregateError(async ({ txId }: { txId: string }) => {
+  commitTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
     if (!handle)
       return
@@ -91,7 +91,7 @@ export const query = {
     }
   }),
 
-  rollbackTransaction: wrapAggregateError(async ({ txId }: { txId: string }) => {
+  rollbackTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
     if (!handle)
       return

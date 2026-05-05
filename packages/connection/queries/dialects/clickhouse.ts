@@ -2,12 +2,13 @@ import type { AnyFunction } from '@conar/memoize'
 import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
 import { memoize } from '@conar/memoize'
-import { tryParseJson, wrapAggregateError } from '@conar/shared/utils/helpers'
+import { tryParseJson } from '@conar/shared/utils/helpers'
+import { handleQueryError } from '..'
 import { disposeTransaction, getTransaction, registerTransaction } from '../transactions'
 
 const clickhouse = createRequire(import.meta.url)('@clickhouse/client') as typeof import('@clickhouse/client')
 
-export const getClient = memoize((connectionString: string) => {
+const getClient = memoize((connectionString: string) => {
   let url = connectionString
   if (connectionString.startsWith('clickhouses')) {
     url = connectionString.replace('clickhouses', 'https')
@@ -26,7 +27,7 @@ export const getClient = memoize((connectionString: string) => {
 export function wrapClickhouseError<T extends AnyFunction>(fn: T): T {
   return (async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
     try {
-      return await wrapAggregateError(fn(...args))
+      return await handleQueryError(fn)(...args)
     }
     catch (error) {
       if (error instanceof Error) {
@@ -66,7 +67,7 @@ export const query = {
     return { result: [], duration: performance.now() - start }
   }),
 
-  beginTransaction: async ({ connectionString }: { connectionString: string }) => {
+  beginTransaction: handleQueryError(async ({ connectionString }: { connectionString: string }) => {
     // ClickHouse does not support transactions
     const txId = registerTransaction({
       execute: (q, values) => query.execute({ connectionString, query: q, values }),
@@ -76,17 +77,17 @@ export const query = {
     })
 
     return { txId }
-  },
+  }),
 
-  executeTransaction: async ({ txId, query, values }: { txId: string, query: string, values: unknown[] }) => {
+  executeTransaction: handleQueryError(async ({ txId, query, values }: { txId: string, query: string, values: unknown[] }) => {
     const handle = getTransaction(txId)
     if (!handle)
       throw new Error(`No active transaction found for id: ${txId}`)
 
     return handle.execute(query, values)
-  },
+  }),
 
-  commitTransaction: async ({ txId }: { txId: string }) => {
+  commitTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
     if (!handle)
       return
@@ -97,9 +98,9 @@ export const query = {
     finally {
       await handle.release().catch(() => {})
     }
-  },
+  }),
 
-  rollbackTransaction: async ({ txId }: { txId: string }) => {
+  rollbackTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
     if (!handle)
       return
@@ -110,5 +111,5 @@ export const query = {
     finally {
       await handle.release().catch(() => {})
     }
-  },
+  }),
 } satisfies QueryExecutor
