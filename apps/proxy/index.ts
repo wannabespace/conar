@@ -45,10 +45,6 @@ export interface AppVariables {
   logEvent?: Record<string, unknown>
 }
 
-const BODY_PARSER_METHODS = new Set(['arrayBuffer', 'blob', 'formData', 'json', 'text'] as const)
-
-type BodyParserMethod = typeof BODY_PARSER_METHODS extends Set<infer T> ? T : never
-
 const app = new Hono<{
   Variables: AppVariables
 }>()
@@ -105,16 +101,7 @@ const app = new Hono<{
     }
   })
   .use('/rpc/*', async (c, next) => {
-    const request = new Proxy(c.req.raw, {
-      get(target, prop) {
-        if (BODY_PARSER_METHODS.has(prop as BodyParserMethod)) {
-          return () => c.req[prop as BodyParserMethod]()
-        }
-        return Reflect.get(target, prop, target)
-      },
-    })
-
-    const { matched, response } = await handler.handle(request, {
+    const { matched, response } = await handler.handle(c.req.raw.clone(), {
       prefix: '/rpc',
       context: createContext(c),
     })
