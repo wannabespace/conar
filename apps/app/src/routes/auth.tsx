@@ -24,7 +24,7 @@ function AuthPage() {
     const codeChallenge = await generateCodeChallenge(verifier)
     setVerifier(verifier)
     setCodeChallenge(codeChallenge)
-    const url = `${import.meta.env.VITE_PUBLIC_MAIN_URL}/deep/sign-in?codeChallenge=${codeChallenge}&web=${!window.electron}`
+    const url = `${import.meta.env.VITE_PUBLIC_MAIN_URL}/deep/sign-in?codeChallenge=${codeChallenge}&type=${window.electron ? 'desktop' : 'web'}`
     if (window.electron) {
       window.open(url, '_blank')
     }

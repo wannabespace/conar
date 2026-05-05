@@ -11,15 +11,15 @@ export const Route = createFileRoute('/open')({
   validateSearch: type({
     'code-challenge?': 'string',
     'new-user?': 'boolean',
-    'web?': 'boolean',
+    'type?': '"web" | "desktop" | "cli"',
   }),
   loaderDeps: ({ search }) => search,
   loader: async ({ deps }) => {
-    const { web } = deps
+    const { type } = deps
 
     const { data } = await authClient.getSession()
 
-    if (web && data?.user) {
+    if (type === 'web' && data?.user) {
       throw redirect({ href: import.meta.env.VITE_PUBLIC_WEB_URL! })
     }
   },
@@ -28,13 +28,13 @@ export const Route = createFileRoute('/open')({
 // eslint-disable-next-line react-refresh/only-export-components
 function OpenPageContent() {
   const { data } = authClient.useSession()
-  const { web } = Route.useSearch()
+  const { type } = Route.useSearch()
 
   useEffect(() => {
-    if (!web) {
+    if (type === 'desktop') {
       location.assign('conar://')
     }
-  }, [web])
+  }, [type])
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4">

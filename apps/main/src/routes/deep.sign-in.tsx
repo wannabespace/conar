@@ -7,7 +7,7 @@ export const Route = createFileRoute('/deep/sign-in')({
   validateSearch: type({
     'codeChallenge': 'string',
     'newUser?': 'boolean',
-    'web?': 'boolean',
+    'type': '"web" | "desktop" | "cli" = "desktop"',
   }),
   loaderDeps: ({ search }) => search,
   loader: async ({ deps }) => {
@@ -18,12 +18,12 @@ export const Route = createFileRoute('/deep/sign-in')({
     if (data) {
       await orpc.account.challenge.publish.call({ codeChallenge, newUser })
 
-      throw redirect({ to: '/open', search: { web: deps.web } })
+      throw redirect({ to: '/open', search: { type: deps.type } })
     }
 
     throw redirect({
       to: '/sign-in',
-      search: { redirectPath: `/deep/sign-in?codeChallenge=${codeChallenge}${deps.web ? '&web=true' : ''}` },
+      search: { redirectPath: `/deep/sign-in?codeChallenge=${codeChallenge}&type=${deps.type}` },
     })
   },
 })
