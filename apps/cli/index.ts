@@ -1,9 +1,9 @@
-#!/usr/bin/env bun
-import '@conar/shared/arktype-config'
+import process from 'node:process'
 import { intro, isCancel, log, outro, select } from '@clack/prompts'
 import { auth } from '~/commands/auth'
 import { query } from '~/commands/query'
 import { getToken } from '~/config'
+import '@conar/shared/arktype-config'
 
 async function main() {
   intro('Conar CLI')

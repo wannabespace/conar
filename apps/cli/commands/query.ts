@@ -44,7 +44,7 @@ export async function query() {
     message: 'Enter SQL query:',
     placeholder: 'SELECT 1',
     validate(value) {
-      if (!value.trim())
+      if (value && !value.trim())
         return 'Query cannot be empty.'
     },
   })

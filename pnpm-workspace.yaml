@@ -98,7 +98,7 @@ catalog:
   devalue: ^5.8.0
   drizzle-kit: 1.0.0-rc.1
   drizzle-orm: 1.0.0-rc.1
-  electron: 39.8.1
+  electron: 39.2.6
   electron-store: ^11.0.2
   eslint: ^10.3.0
   eslint-plugin-better-tailwindcss: ^4.5.0

@@ -3,7 +3,16 @@
   "compilerOptions": {
     "paths": {
       "~/*": ["./*"]
-    }
+    },
+    "noEmit": true
   },
+  "references": [
+    {
+      "path": "../api"
+    },
+    {
+      "path": "../proxy"
+    }
+  ],
   "include": ["."]
 }

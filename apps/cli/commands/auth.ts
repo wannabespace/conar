@@ -1,5 +1,5 @@
-import { generateCodeChallenge, generateVerifier } from '@conar/shared/utils/challenge'
 import { log, spinner } from '@clack/prompts'
+import { generateCodeChallenge, generateVerifier } from '@conar/shared/utils/challenge'
 import open from 'open'
 import { saveToken } from '~/config'
 import { MAIN_URL } from '~/env'
