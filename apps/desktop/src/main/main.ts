@@ -36,6 +36,7 @@ initElectronEvents()
 
 export const store = new Store<{
   bounds?: Rectangle
+  fullscreen?: boolean
 }>()
 
 let mainWindow: BrowserWindow | null = null
@@ -64,16 +65,42 @@ export function createWindow() {
   if (bounds)
     mainWindow.setBounds(bounds)
 
-  const isFullscreen = store.get('fullscreen', false) as boolean
+  const isFullscreen = store.get('fullscreen', false)
   if (isFullscreen) {
     mainWindow.setFullScreen(true)
   }
+
+  let saveBoundsTimeout: NodeJS.Timeout | null = null
+  const saveBounds = () => {
+    if (saveBoundsTimeout)
+      clearTimeout(saveBoundsTimeout)
+
+    saveBoundsTimeout = setTimeout(() => {
+      if (!mainWindow || mainWindow.isDestroyed())
+        return
+
+      if (!mainWindow.isFullScreen() && !mainWindow.isMinimized()) {
+        store.set('bounds', mainWindow.getNormalBounds())
+      }
+      store.set('fullscreen', mainWindow.isFullScreen())
+    }, 300)
+  }
+
+  mainWindow.on('move', saveBounds)
+  mainWindow.on('resize', saveBounds)
+  mainWindow.on('enter-full-screen', saveBounds)
+  mainWindow.on('leave-full-screen', saveBounds)
 
   mainWindow.on('close', () => {
     if (!mainWindow)
       return
 
-    store.set('bounds', mainWindow.getBounds())
+    if (saveBoundsTimeout)
+      clearTimeout(saveBoundsTimeout)
+
+    if (!mainWindow.isFullScreen() && !mainWindow.isMinimized()) {
+      store.set('bounds', mainWindow.getNormalBounds())
+    }
     store.set('fullscreen', mainWindow.isFullScreen())
     mainWindow = null
   })
