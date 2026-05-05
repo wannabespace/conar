@@ -2,10 +2,6 @@ import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { log, select, spinner, text } from '@clack/prompts'
 import { apiClient, proxyClient } from '~/orpc'
 
-function getQueryExecutor(type: ConnectionType) {
-  return proxyClient.query[type]
-}
-
 export async function query() {
   const s = spinner()
   s.start('Loading connections...')
@@ -38,7 +34,11 @@ export async function query() {
     return
   }
 
-  const connection = connections.find(c => c.id === connectionId)!
+  const connection = connections.find(c => c.id === connectionId)
+
+  if (!connection) {
+    return
+  }
 
   const sql = await text({
     message: 'Enter SQL query:',
@@ -53,7 +53,7 @@ export async function query() {
     return
   }
 
-  const executor = getQueryExecutor(connection.type as ConnectionType)
+  const executor = proxyClient.query[connection.type as ConnectionType]
 
   s.start('Executing query...')
 
