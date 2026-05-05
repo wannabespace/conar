@@ -9,7 +9,6 @@ export const Route = createFileRoute('/_auth')({
   component: AuthLayout,
   validateSearch: type({
     'redirectPath?': 'string',
-    'type?': '"web" | "desktop" | "cli"',
   }),
 })
 
