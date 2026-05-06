@@ -17,6 +17,7 @@ catalog:
   '@clickhouse/client': ^1.18.3
   '@dagrejs/dagre': 1.1.8
   '@date-fns/tz': ^1.4.1
+  '@drizzle-team/brocli': ^0.12.0
   '@electric-sql/pglite': ^0.4.5
   '@eslint-react/eslint-plugin': ^2.13.0
   '@exalabs/ai-sdk': ^2.0.1
@@ -24,6 +25,7 @@ catalog:
   '@fluentui/react-context-selector': ^9.2.16
   '@hackylabs/deep-redact': ^3.0.5
   '@monaco-editor/loader': ^1.7.0
+  '@noble/hashes': ^2.0.1
   '@number-flow/react': ^0.6.0
   '@octokit/rest': ^22.0.1
   '@opentelemetry/exporter-trace-otlp-http': ^0.216.0
@@ -92,6 +94,7 @@ catalog:
   class-variance-authority: ^0.7.1
   clsx: ^2.1.1
   cmdk: ^1.1.1
+  consola: ^3.4.2
   cross-env: ^10.1.0
   date-fns: ^4.1.0
   devalue: ^5.8.0
@@ -125,6 +128,8 @@ catalog:
   nitro: 3.0.260311-beta
   node-modules-inspector: ^1.4.2
   npm-run-all2: ^8.0.4
+  open: ^10.2.0
+  ora: ^9.4.0
   pg: ^8.20.0
   playwright: ^1.59.1
   posthog-js: ^1.372.8

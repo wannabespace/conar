@@ -28,6 +28,8 @@
     "build:app": "turbo run @conar/app#build",
     "build:todesktop": "turbo run @conar/desktop#build:todesktop",
     "build:docs": "turbo run @conar/docs#build",
+    "build:cli": "turbo run conar#build",
+    "publish": "cd apps/cli && pnpm publish --access public --no-git-checks",
     "aur:sync": "bun scripts/sync-aur-version.ts",
     "aur:sync:checksum": "bun scripts/sync-aur-version.ts --checksum",
     "drizzle:generate": "turbo run drizzle:generate",

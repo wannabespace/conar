@@ -9,6 +9,7 @@
   "dependencies": {
     "@conar/configs": "workspace:*",
     "@hackylabs/deep-redact": "catalog:",
+    "@noble/hashes": "catalog:",
     "arktype": "catalog:",
     "drizzle-orm": "catalog:",
     "nanoid": "catalog:"

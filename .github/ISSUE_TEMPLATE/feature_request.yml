@@ -10,7 +10,7 @@ body:
       placeholder: |
         I'm always frustrated when ...
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: proposed-solution
@@ -18,7 +18,7 @@ body:
       label: Proposed solution
       description: Describe the solution or behavior you'd like
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: alternatives
