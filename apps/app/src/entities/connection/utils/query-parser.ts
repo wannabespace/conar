@@ -22,60 +22,61 @@ interface ParserState {
   transactionStartLine: number | null
 }
 
+// Returns true when `word` appears as a whole word at `pos` inside `text`.
 function hasWordAt(word: string, text: string, pos: number): boolean {
   return (pos === 0 || WORD_BOUNDARY_RE.test(text[pos - 1]!))
     && text.substring(pos, pos + word.length).toUpperCase() === word
     && (pos + word.length === text.length || WORD_BOUNDARY_RE.test(text[pos + word.length]!))
 }
 
-function getTransactionKeyword(line: string): 'begin' | 'commit' | 'rollback' | null {
-  const keyword = line.trim().replace(TRAILING_SEMICOLON_RE, '').toUpperCase()
-  if (keyword === 'BEGIN')
-    return 'begin'
-  if (keyword === 'COMMIT')
-    return 'commit'
-  if (keyword === 'ROLLBACK')
-    return 'rollback'
-  return null
+const TRANSACTION_KEYWORDS: Record<string, 'begin' | 'commit' | 'rollback'> = {
+  BEGIN: 'begin',
+  COMMIT: 'commit',
+  ROLLBACK: 'rollback',
 }
 
+// Returns the transaction keyword when the entire line is just that keyword
+// (with an optional trailing semicolon), otherwise null.
+function getTransactionKeyword(line: string): 'begin' | 'commit' | 'rollback' | null {
+  const keyword = line.trim().replace(TRAILING_SEMICOLON_RE, '').toUpperCase()
+  return TRANSACTION_KEYWORDS[keyword] ?? null
+}
+
+// Scans `line` for dollar-quote delimiters, toggling in/out of quoting as they appear.
+// Returns the still-open tag if the line ends inside a dollar-quoted string, otherwise null.
 function trackDollarQuotes(line: string, activeTag: string | null): string | null {
   let tag = activeTag
-  let i = 0
-  while (i < line.length) {
+  let pos = 0
+
+  while (pos < line.length) {
     if (tag === null) {
-      const match = line.substring(i).match(DOLLAR_QUOTE_RE)
-      if (match) {
-        tag = match[0]
-        i += tag.length
-        continue
-      }
+      const match = line.substring(pos).match(DOLLAR_QUOTE_RE)
+      if (!match) break
+      tag = match[0]
+      pos += tag.length
     }
     else {
-      const closeIdx = line.indexOf(tag, i)
-      if (closeIdx !== -1) {
-        i = closeIdx + tag.length
-        tag = null
-        continue
-      }
-      return tag
+      const closePos = line.indexOf(tag, pos)
+      if (closePos === -1) return tag // tag is still open at end of line
+      pos = closePos + tag.length
+      tag = null
     }
-    i++
   }
+
   return tag
 }
 
-function updateBeginEndDepth(line: string, depth: number): number {
+// Counts unmatched BEGIN keywords in `line` and returns the updated depth.
+function updateBeginDepth(line: string, depth: number): number {
   const upper = line.toUpperCase()
   for (let i = 0; i < upper.length;) {
     if (hasWordAt('BEGIN', upper, i)) {
       depth++
-      i += 5
+      i += 'BEGIN'.length
     }
     else if (hasWordAt('END', upper, i)) {
-      if (depth > 0)
-        depth--
-      i += 3
+      if (depth > 0) depth--
+      i += 'END'.length
     }
     else {
       i++
@@ -84,20 +85,23 @@ function updateBeginEndDepth(line: string, depth: number): number {
   return depth
 }
 
+// Splits a SQL string on semicolons into individual statements,
+// respecting dollar-quoted strings and BEGIN/END blocks.
 function splitStatements(query: string): string[] {
   const trimmed = query.trim()
 
-  if (STARTS_WITH_BEGIN_RE.test(trimmed) && HAS_COMMIT_ROLLBACK_RE.test(trimmed)) {
+  // A transaction block (BEGIN … COMMIT/ROLLBACK) is kept as one statement.
+  if (STARTS_WITH_BEGIN_RE.test(trimmed) && HAS_COMMIT_ROLLBACK_RE.test(trimmed))
     return [trimmed]
-  }
 
-  const parts: string[] = []
+  const statements: string[] = []
   let current = ''
   let dollarTag: string | null = null
   let insideBeginEnd = false
   let i = 0
 
   while (i < query.length) {
+    // Inside a dollar-quoted string: consume everything up to the closing tag.
     if (dollarTag !== null) {
       const closeIdx = query.indexOf(dollarTag, i)
       if (closeIdx !== -1) {
@@ -121,23 +125,24 @@ function splitStatements(query: string): string[] {
     }
 
     const rest = query.substring(i)
+
     if (!insideBeginEnd && STARTS_WITH_BEGIN_RE.test(rest)) {
       insideBeginEnd = true
-      current += rest.slice(0, 5)
-      i += 5
+      current += rest.slice(0, 'BEGIN'.length)
+      i += 'BEGIN'.length
       continue
     }
+
     if (insideBeginEnd && STARTS_WITH_END_RE.test(rest)) {
       insideBeginEnd = false
-      current += rest.slice(0, 3)
-      i += 3
+      current += rest.slice(0, 'END'.length)
+      i += 'END'.length
       continue
     }
 
     if (query[i] === ';' && !insideBeginEnd) {
-      const part = current.trim()
-      if (part)
-        parts.push(part)
+      const statement = current.trim()
+      if (statement) statements.push(statement)
       current = ''
       i++
       continue
@@ -148,9 +153,8 @@ function splitStatements(query: string): string[] {
   }
 
   const remaining = current.trim()
-  if (remaining)
-    parts.push(remaining)
-  return parts
+  if (remaining) statements.push(remaining)
+  return statements
 }
 
 function flushTransaction(results: EditorQuery[], state: ParserState, endLine: number) {
@@ -164,8 +168,8 @@ function flushTransaction(results: EditorQuery[], state: ParserState, endLine: n
   }
   state.buffer = ''
   state.dollarTag = null
-  state.beginStartLine = null
   state.beginDepth = 0
+  state.beginStartLine = null
   state.inTransaction = false
   state.transactionStartLine = null
 }
@@ -188,28 +192,30 @@ export function getEditorQueries(sql: string): EditorQuery[] {
     const lineNum = i + 1
     let line = lines[i]!
 
+    // Skip block-comment lines.
     if (!state.inBlockComment && line.includes('/*'))
       state.inBlockComment = true
     if (state.inBlockComment) {
-      if (line.includes('*/'))
-        state.inBlockComment = false
+      if (line.includes('*/')) state.inBlockComment = false
       continue
     }
 
-    const wasInDollarQuote = state.dollarTag !== null
+    // Update dollar-quote state before stripping inline comments so we know
+    // whether the line started inside a quoted string.
+    const lineStartsInDollarQuote = state.dollarTag !== null
     state.dollarTag = trackDollarQuotes(line, state.dollarTag)
     const inDollarQuote = state.dollarTag !== null
 
-    if (!wasInDollarQuote) {
+    // Strip inline comments, but never inside a dollar-quoted string.
+    if (!lineStartsInDollarQuote) {
       const commentIdx = line.indexOf('--')
-      if (commentIdx !== -1)
-        line = line.substring(0, commentIdx)
+      if (commentIdx !== -1) line = line.substring(0, commentIdx)
     }
 
     line = line.trim()
-    if (!line)
-      continue
+    if (!line) continue
 
+    // Detect bare transaction keywords (BEGIN / COMMIT / ROLLBACK).
     if (!inDollarQuote) {
       const txn = getTransactionKeyword(line)
       if (txn === 'begin') {
@@ -223,14 +229,15 @@ export function getEditorQueries(sql: string): EditorQuery[] {
       }
     }
 
+    // Track BEGIN/END nesting depth for PL/pgSQL blocks.
     if (!inDollarQuote) {
       const prevDepth = state.beginDepth
-      state.beginDepth = updateBeginEndDepth(line, state.beginDepth)
-      if (prevDepth === 0 && state.beginDepth > 0 && !state.buffer) {
+      state.beginDepth = updateBeginDepth(line, state.beginDepth)
+      if (prevDepth === 0 && state.beginDepth > 0 && !state.buffer)
         state.beginStartLine = lineNum
-      }
     }
 
+    // Remember where the current statement started.
     if (!state.buffer) {
       state.startLine = lineNum
       if (state.inTransaction && state.transactionStartLine !== null)
@@ -241,6 +248,7 @@ export function getEditorQueries(sql: string): EditorQuery[] {
 
     state.buffer += (state.buffer ? ' ' : '') + line
 
+    // Flush completed top-level statements (terminated by a semicolon).
     const atTopLevel = !state.inTransaction && state.beginDepth === 0 && !inDollarQuote
     if (atTopLevel && line.endsWith(';')) {
       const query = state.buffer.slice(0, -1).trim()
@@ -257,6 +265,7 @@ export function getEditorQueries(sql: string): EditorQuery[] {
     }
   }
 
+  // Flush any unterminated statement at the end of input.
   if (state.buffer.trim()) {
     results.push({
       startLineNumber: state.transactionStartLine ?? state.beginStartLine ?? state.startLine,
