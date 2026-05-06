@@ -116,40 +116,33 @@ function splitStatements(query: string): string[] {
       continue
     }
 
-    const dollarMatch = query.substring(i).match(DOLLAR_QUOTE_RE)
+    const rest = query.substring(i)
+    const dollarMatch = rest.match(DOLLAR_QUOTE_RE)
+
     if (dollarMatch) {
       dollarTag = dollarMatch[0]
       current += dollarTag
       i += dollarTag.length
-      continue
     }
-
-    const rest = query.substring(i)
-
-    if (!insideBeginEnd && STARTS_WITH_BEGIN_RE.test(rest)) {
+    else if (!insideBeginEnd && STARTS_WITH_BEGIN_RE.test(rest)) {
       insideBeginEnd = true
       current += rest.slice(0, 'BEGIN'.length)
       i += 'BEGIN'.length
-      continue
     }
-
-    if (insideBeginEnd && STARTS_WITH_END_RE.test(rest)) {
+    else if (insideBeginEnd && STARTS_WITH_END_RE.test(rest)) {
       insideBeginEnd = false
       current += rest.slice(0, 'END'.length)
       i += 'END'.length
-      continue
     }
-
-    if (query[i] === ';' && !insideBeginEnd) {
+    else if (query[i] === ';' && !insideBeginEnd) {
       const statement = current.trim()
       if (statement) statements.push(statement)
       current = ''
       i++
-      continue
     }
-
-    current += query[i]
-    i++
+    else {
+      current += query[i++]
+    }
   }
 
   const remaining = current.trim()
@@ -193,8 +186,7 @@ export function getEditorQueries(sql: string): EditorQuery[] {
     let line = lines[i]!
 
     // Skip block-comment lines.
-    if (!state.inBlockComment && line.includes('/*'))
-      state.inBlockComment = true
+    if (line.includes('/*')) state.inBlockComment = true
     if (state.inBlockComment) {
       if (line.includes('*/')) state.inBlockComment = false
       continue
@@ -215,7 +207,7 @@ export function getEditorQueries(sql: string): EditorQuery[] {
     line = line.trim()
     if (!line) continue
 
-    // Detect bare transaction keywords (BEGIN / COMMIT / ROLLBACK).
+    // Detect bare transaction keywords and track BEGIN/END depth.
     if (!inDollarQuote) {
       const txn = getTransactionKeyword(line)
       if (txn === 'begin') {
@@ -227,10 +219,7 @@ export function getEditorQueries(sql: string): EditorQuery[] {
         flushTransaction(results, state, lineNum)
         continue
       }
-    }
 
-    // Track BEGIN/END nesting depth for PL/pgSQL blocks.
-    if (!inDollarQuote) {
       const prevDepth = state.beginDepth
       state.beginDepth = updateBeginDepth(line, state.beginDepth)
       if (prevDepth === 0 && state.beginDepth > 0 && !state.buffer)
@@ -238,13 +227,8 @@ export function getEditorQueries(sql: string): EditorQuery[] {
     }
 
     // Remember where the current statement started.
-    if (!state.buffer) {
-      state.startLine = lineNum
-      if (state.inTransaction && state.transactionStartLine !== null)
-        state.startLine = state.transactionStartLine
-      else if (state.beginDepth > 0 && state.beginStartLine !== null)
-        state.startLine = state.beginStartLine
-    }
+    if (!state.buffer)
+      state.startLine = state.transactionStartLine ?? state.beginStartLine ?? lineNum
 
     state.buffer += (state.buffer ? ' ' : '') + line
 
