@@ -1,7 +1,5 @@
+import type { AnyFunction } from '@conar/shared/utils/helpers'
 import { findReferenceEntry, getCacheKey } from './key'
-
-// eslint-disable-next-line ts/no-explicit-any
-export type AnyFunction = (...args: any[]) => any
 
 export interface MemoizeOptions<F extends AnyFunction> {
   /**

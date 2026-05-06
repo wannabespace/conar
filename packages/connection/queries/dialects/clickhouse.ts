@@ -1,4 +1,4 @@
-import type { AnyFunction } from '@conar/memoize'
+import type { AnyFunction } from '@conar/shared/utils/helpers'
 import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
 import { memoize } from '@conar/memoize'
