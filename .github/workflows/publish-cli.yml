@@ -1,4 +1,4 @@
-name: Build and publish
+name: Build and publish CLI package
 
 on:
   workflow_dispatch:
