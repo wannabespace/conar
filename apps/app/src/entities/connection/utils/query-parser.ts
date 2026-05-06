@@ -22,7 +22,6 @@ interface ParserState {
   transactionStartLine: number | null
 }
 
-// Returns true when `word` appears as a whole word at `pos` inside `text`.
 function hasWordAt(word: string, text: string, pos: number): boolean {
   return (pos === 0 || WORD_BOUNDARY_RE.test(text[pos - 1]!))
     && text.substring(pos, pos + word.length).toUpperCase() === word
@@ -35,15 +34,11 @@ const TRANSACTION_KEYWORDS: Record<string, 'begin' | 'commit' | 'rollback'> = {
   ROLLBACK: 'rollback',
 }
 
-// Returns the transaction keyword when the entire line is just that keyword
-// (with an optional trailing semicolon), otherwise null.
 function getTransactionKeyword(line: string): 'begin' | 'commit' | 'rollback' | null {
   const keyword = line.trim().replace(TRAILING_SEMICOLON_RE, '').toUpperCase()
   return TRANSACTION_KEYWORDS[keyword] ?? null
 }
 
-// Scans `line` for dollar-quote delimiters, toggling in/out of quoting as they appear.
-// Returns the still-open tag if the line ends inside a dollar-quoted string, otherwise null.
 function trackDollarQuotes(line: string, activeTag: string | null): string | null {
   let tag = activeTag
   let pos = 0
@@ -57,7 +52,7 @@ function trackDollarQuotes(line: string, activeTag: string | null): string | nul
     }
     else {
       const closePos = line.indexOf(tag, pos)
-      if (closePos === -1) return tag // tag is still open at end of line
+      if (closePos === -1) return tag
       pos = closePos + tag.length
       tag = null
     }
@@ -66,7 +61,6 @@ function trackDollarQuotes(line: string, activeTag: string | null): string | nul
   return tag
 }
 
-// Counts unmatched BEGIN keywords in `line` and returns the updated depth.
 function updateBeginDepth(line: string, depth: number): number {
   const upper = line.toUpperCase()
   for (let i = 0; i < upper.length;) {
@@ -85,12 +79,9 @@ function updateBeginDepth(line: string, depth: number): number {
   return depth
 }
 
-// Splits a SQL string on semicolons into individual statements,
-// respecting dollar-quoted strings and BEGIN/END blocks.
 function splitStatements(query: string): string[] {
   const trimmed = query.trim()
 
-  // A transaction block (BEGIN … COMMIT/ROLLBACK) is kept as one statement.
   if (STARTS_WITH_BEGIN_RE.test(trimmed) && HAS_COMMIT_ROLLBACK_RE.test(trimmed))
     return [trimmed]
 
@@ -101,7 +92,6 @@ function splitStatements(query: string): string[] {
   let i = 0
 
   while (i < query.length) {
-    // Inside a dollar-quoted string: consume everything up to the closing tag.
     if (dollarTag !== null) {
       const closeIdx = query.indexOf(dollarTag, i)
       if (closeIdx !== -1) {
@@ -185,20 +175,16 @@ export function getEditorQueries(sql: string): EditorQuery[] {
     const lineNum = i + 1
     let line = lines[i]!
 
-    // Skip block-comment lines.
     if (line.includes('/*')) state.inBlockComment = true
     if (state.inBlockComment) {
       if (line.includes('*/')) state.inBlockComment = false
       continue
     }
 
-    // Update dollar-quote state before stripping inline comments so we know
-    // whether the line started inside a quoted string.
     const lineStartsInDollarQuote = state.dollarTag !== null
     state.dollarTag = trackDollarQuotes(line, state.dollarTag)
     const inDollarQuote = state.dollarTag !== null
 
-    // Strip inline comments, but never inside a dollar-quoted string.
     if (!lineStartsInDollarQuote) {
       const commentIdx = line.indexOf('--')
       if (commentIdx !== -1) line = line.substring(0, commentIdx)
@@ -207,7 +193,6 @@ export function getEditorQueries(sql: string): EditorQuery[] {
     line = line.trim()
     if (!line) continue
 
-    // Detect bare transaction keywords and track BEGIN/END depth.
     if (!inDollarQuote) {
       const txn = getTransactionKeyword(line)
       if (txn === 'begin') {
@@ -226,13 +211,11 @@ export function getEditorQueries(sql: string): EditorQuery[] {
         state.beginStartLine = lineNum
     }
 
-    // Remember where the current statement started.
     if (!state.buffer)
       state.startLine = state.transactionStartLine ?? state.beginStartLine ?? lineNum
 
     state.buffer += (state.buffer ? ' ' : '') + line
 
-    // Flush completed top-level statements (terminated by a semicolon).
     const atTopLevel = !state.inTransaction && state.beginDepth === 0 && !inDollarQuote
     if (atTopLevel && line.endsWith(';')) {
       const query = state.buffer.slice(0, -1).trim()
@@ -249,7 +232,6 @@ export function getEditorQueries(sql: string): EditorQuery[] {
     }
   }
 
-  // Flush any unterminated statement at the end of input.
   if (state.buffer.trim()) {
     results.push({
       startLineNumber: state.transactionStartLine ?? state.beginStartLine ?? state.startLine,
