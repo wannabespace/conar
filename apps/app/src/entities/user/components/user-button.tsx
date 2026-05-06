@@ -1,6 +1,6 @@
 import { UserAvatar } from '@conar/ui/components/custom/user-avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
-import { RiBrushLine, RiLogoutCircleRLine } from '@remixicon/react'
+import { RiBrushLine, RiGlobalLine, RiLogoutCircleRLine, RiUserLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { clearDb } from '~/drizzle'
@@ -51,11 +51,25 @@ export function UserButton() {
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem
+          onClick={() => window.open(`${import.meta.env.VITE_PUBLIC_MAIN_URL}/account`, window.electron ? '_blank' : '_self')}
+        >
+          <RiUserLine />
+          Account
+        </DropdownMenuItem>
+        {window.electron && (
+          <DropdownMenuItem
+            onClick={() => window.open(import.meta.env.VITE_PUBLIC_WEB_URL, '_blank')}
+          >
+            <RiGlobalLine />
+            Web app
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem
           disabled={isSigningOut || isClearingCache}
           onClick={() => clearLocalCache()}
         >
           <RiBrushLine />
-          Clear local cache
+          Clear cache
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem

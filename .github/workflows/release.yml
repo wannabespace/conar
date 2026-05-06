@@ -30,11 +30,6 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=8192
           TODESKTOP_ACCESS_TOKEN: ${{ secrets.TODESKTOP_ACCESS_TOKEN }}
           TODESKTOP_EMAIL: ${{ secrets.TODESKTOP_EMAIL }}
-          API_URL: ${{ secrets.API_URL }}
-          WEB_URL: ${{ secrets.WEB_URL }}
-          PROXY_URL: ${{ secrets.PROXY_URL }}
-          POSTHOG_TOKEN: ${{ secrets.POSTHOG_TOKEN }}
-          MAIN_URL: ${{ secrets.MAIN_URL }}
           VITE_PUBLIC_API_URL: ${{ secrets.API_URL }}
           VITE_PUBLIC_WEB_URL: ${{ secrets.WEB_URL }}
           VITE_PUBLIC_PROXY_URL: ${{ secrets.PROXY_URL }}

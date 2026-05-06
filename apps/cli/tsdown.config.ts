@@ -1,11 +1,8 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'tsdown'
-
-const pkg = JSON.parse(
-  readFileSync(new URL('./package.json', import.meta.url), 'utf-8'),
-) as { version: string }
+import pkg from './package.json' with { type: 'json' }
 
 const envPath = fileURLToPath(new URL('./.env', import.meta.url))
 

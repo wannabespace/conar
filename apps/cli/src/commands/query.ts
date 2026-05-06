@@ -174,7 +174,7 @@ export const queryCommand = command({
 
       if (opts.json) {
         consola.log(JSON.stringify(result.result, null, 2))
-        return
+        return process.exit(0)
       }
 
       if (Array.isArray(result.result)) {
@@ -183,6 +183,7 @@ export const queryCommand = command({
       else {
         consola.log(JSON.stringify(result.result, null, 2))
       }
+      return process.exit(0)
     }
     catch (error) {
       querySpinner.stop()

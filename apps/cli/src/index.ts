@@ -6,7 +6,6 @@ import { loginCommand } from '~/commands/login'
 import { logoutCommand } from '~/commands/logout'
 import { queryCommand } from '~/commands/query'
 import { whoamiCommand } from '~/commands/whoami'
-import '@conar/shared/arktype-config'
 
 const commands = [
   loginCommand,
