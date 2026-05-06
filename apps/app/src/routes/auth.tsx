@@ -1,4 +1,4 @@
-import { generateCodeChallenge, generateVerifier } from '@conar/shared/utils/challenge'
+import { challenge } from '@conar/shared/utils/challenge'
 import { AppLogoSquareMotion } from '@conar/ui/components/brand/app-logo-square'
 import { ButtonMotion } from '@conar/ui/components/button.motion'
 import { RiErrorWarningLine } from '@remixicon/react'
@@ -20,8 +20,8 @@ function AuthPage() {
   const [codeChallenge, setCodeChallenge] = useState<string | null>(null)
 
   const signInWithChallenge = async () => {
-    const verifier = generateVerifier()
-    const codeChallenge = await generateCodeChallenge(verifier)
+    const verifier = challenge.noble.generateVerifier()
+    const codeChallenge = challenge.noble.generateCode(verifier)
     setVerifier(verifier)
     setCodeChallenge(codeChallenge)
     const url = `${import.meta.env.VITE_PUBLIC_MAIN_URL}/deep/sign-in?codeChallenge=${codeChallenge}&type=${window.electron ? 'desktop' : 'web'}`
@@ -50,7 +50,7 @@ function AuthPage() {
       return
     }
 
-    exchange({ codeChallenge, verifier })
+    exchange({ codeChallenge, verifier, type: 'noble' })
   }, [data, exchange, codeChallenge, verifier])
 
   return (

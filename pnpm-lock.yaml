@@ -42,6 +42,9 @@ catalogs:
     '@date-fns/tz':
       specifier: ^1.4.1
       version: 1.4.1
+    '@drizzle-team/brocli':
+      specifier: ^0.12.0
+      version: 0.12.0
     '@electric-sql/pglite':
       specifier: ^0.4.5
       version: 0.4.5
@@ -63,6 +66,9 @@ catalogs:
     '@monaco-editor/loader':
       specifier: ^1.7.0
       version: 1.7.0
+    '@noble/hashes':
+      specifier: ^2.0.1
+      version: 2.0.1
     '@number-flow/react':
       specifier: ^0.6.0
       version: 0.6.0
@@ -267,6 +273,9 @@ catalogs:
     cmdk:
       specifier: ^1.1.1
       version: 1.1.1
+    consola:
+      specifier: ^3.4.2
+      version: 3.4.2
     cross-env:
       specifier: ^10.1.0
       version: 10.1.0
@@ -366,6 +375,12 @@ catalogs:
     npm-run-all2:
       specifier: ^8.0.4
       version: 8.0.4
+    open:
+      specifier: ^10.2.0
+      version: 10.2.0
+    ora:
+      specifier: ^9.4.0
+      version: 9.4.0
     pg:
       specifier: ^8.20.0
       version: 8.20.0
@@ -905,6 +920,76 @@ importers:
         specifier: 'catalog:'
         version: 8.0.10(@types/node@25.6.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)
 
+  apps/cli:
+    dependencies:
+      '@clickhouse/client':
+        specifier: 'catalog:'
+        version: 1.18.3
+      '@drizzle-team/brocli':
+        specifier: 'catalog:'
+        version: 0.12.0
+      '@noble/hashes':
+        specifier: 'catalog:'
+        version: 2.0.1
+      '@orpc/client':
+        specifier: 'catalog:'
+        version: 1.14.1(@opentelemetry/api@1.9.0)
+      arktype:
+        specifier: 'catalog:'
+        version: 2.2.0
+      consola:
+        specifier: 'catalog:'
+        version: 3.4.2
+      mssql:
+        specifier: 'catalog:'
+        version: 12.5.2(@azure/core-client@1.10.1)
+      mysql2:
+        specifier: 'catalog:'
+        version: 3.22.3(@types/node@25.6.0)
+      open:
+        specifier: 'catalog:'
+        version: 10.2.0
+      ora:
+        specifier: 'catalog:'
+        version: 9.4.0
+      pg:
+        specifier: 'catalog:'
+        version: 8.20.0
+    devDependencies:
+      '@conar/api':
+        specifier: workspace:*
+        version: link:../api
+      '@conar/configs':
+        specifier: workspace:*
+        version: link:../../packages/configs
+      '@conar/connection':
+        specifier: workspace:*
+        version: link:../../packages/connection
+      '@conar/memoize':
+        specifier: workspace:*
+        version: link:../../packages/memoize
+      '@conar/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@orpc/server':
+        specifier: 'catalog:'
+        version: 1.14.1(@opentelemetry/api@1.9.0)(crossws@0.4.5(srvx@0.11.15))(ws@8.19.0)
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.13
+      '@types/mssql':
+        specifier: 'catalog:'
+        version: 12.3.0(@azure/core-client@1.10.1)
+      '@types/pg':
+        specifier: 'catalog:'
+        version: 8.20.0
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20260421.2
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.21.10(@typescript/native-preview@7.0.0-dev.20260421.2)(publint@0.3.18)(synckit@0.11.12)(typescript@6.0.3)
+
   apps/desktop:
     dependencies:
       '@clickhouse/client':
@@ -1336,6 +1421,12 @@ importers:
         specifier: 'catalog:'
         version: 5.8.0
     devDependencies:
+      '@conar/configs':
+        specifier: workspace:*
+        version: link:../configs
+      '@conar/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@emotion/memoize':
         specifier: ^0.9.0
         version: 0.9.0
@@ -1372,6 +1463,9 @@ importers:
       '@hackylabs/deep-redact':
         specifier: 'catalog:'
         version: 3.0.5
+      '@noble/hashes':
+        specifier: 'catalog:'
+        version: 2.0.1
       arktype:
         specifier: 'catalog:'
         version: 2.2.0
@@ -2050,6 +2144,9 @@ packages:
 
   '@drizzle-team/brocli@0.11.0':
     resolution: {integrity: sha512-hD3pekGiPg0WPCCGAZmusBBJsDqGUR66Y452YgQsZOnkdQ7ViEPKuyP4huUGEZQefp8g34RRodXYmJ2TbCH+tg==}
+
+  '@drizzle-team/brocli@0.12.0':
+    resolution: {integrity: sha512-mlUE+rZ8CatQekLhnaiN91Iemdd+e2gFKooGlnRB3oPTL3VghLfX24dx7HrzMNeC1JrIB/0kpsfyty3f5HNfxQ==}
 
   '@e18e/eslint-plugin@0.2.0':
     resolution: {integrity: sha512-mXgODVwhuDjTJ+UT+XSvmMmCidtGKfrV5nMIv1UtpWex2pYLsIM3RSpT8HWIMAebS9qANbXPKlSX4BE7ZvuCgA==}
@@ -12584,6 +12681,8 @@ snapshots:
   '@date-fns/tz@1.4.1': {}
 
   '@drizzle-team/brocli@0.11.0': {}
+
+  '@drizzle-team/brocli@0.12.0': {}
 
   '@e18e/eslint-plugin@0.2.0(eslint@10.3.0(jiti@2.6.1))':
     dependencies:

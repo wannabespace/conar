@@ -6,6 +6,13 @@
     },
     "noEmit": true
   },
-  "include": ["./src"],
-  "exclude": ["node_modules"]
+  "references": [
+    {
+      "path": "../api"
+    },
+    {
+      "path": "../proxy"
+    }
+  ],
+  "include": ["."]
 }

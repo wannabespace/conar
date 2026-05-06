@@ -1,0 +1,71 @@
+{
+  "name": "conar",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Conar CLI – manage and query your connections from the terminal.",
+  "author": {
+    "name": "Wannabe Space, LLC",
+    "email": "wannabespace.llc@gmail.com"
+  },
+  "homepage": "https://conar.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wannabespace/conar.git",
+    "directory": "apps/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/wannabespace/conar/issues"
+  },
+  "keywords": [
+    "conar",
+    "cli",
+    "database",
+    "postgres",
+    "mysql",
+    "mssql",
+    "clickhouse",
+    "sql"
+  ],
+  "bin": {
+    "conar": "./dist/index.js"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "check-types": "tsgo",
+    "prepublishOnly": "tsdown"
+  },
+  "dependencies": {
+    "@clickhouse/client": "catalog:",
+    "@drizzle-team/brocli": "catalog:",
+    "@noble/hashes": "catalog:",
+    "@orpc/client": "catalog:",
+    "arktype": "catalog:",
+    "consola": "catalog:",
+    "mssql": "catalog:",
+    "mysql2": "catalog:",
+    "open": "catalog:",
+    "ora": "catalog:",
+    "pg": "catalog:"
+  },
+  "devDependencies": {
+    "@conar/api": "workspace:*",
+    "@conar/configs": "workspace:*",
+    "@conar/connection": "workspace:*",
+    "@conar/memoize": "workspace:*",
+    "@conar/shared": "workspace:*",
+    "@orpc/server": "catalog:",
+    "@types/bun": "catalog:",
+    "@types/mssql": "catalog:",
+    "@types/pg": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "tsdown": "catalog:"
+  }
+}
