@@ -46,15 +46,18 @@ function trackDollarQuotes(line: string, activeTag: string | null): string | nul
   while (pos < line.length) {
     if (tag === null) {
       const rest = line.substring(pos)
+      // eslint-disable-next-line e18e/prefer-static-regex
       const match = rest.match(/\$\$|\$[a-z_]\w*\$/i)
-      if (!match || match.index === undefined) break
+      if (!match || match.index === undefined)
+        break
       pos += match.index
       tag = match[0]
       pos += tag.length
     }
     else {
       const closePos = line.indexOf(tag, pos)
-      if (closePos === -1) return tag
+      if (closePos === -1)
+        return tag
       pos = closePos + tag.length
       tag = null
     }
@@ -71,7 +74,8 @@ function updateBeginDepth(line: string, depth: number): number {
       i += 'BEGIN'.length
     }
     else if (hasWordAt('END', upper, i)) {
-      if (depth > 0) depth--
+      if (depth > 0)
+        depth--
       i += 'END'.length
     }
     else {
@@ -128,7 +132,8 @@ function splitStatements(query: string): string[] {
     }
     else if (query[i] === ';' && !insideBeginEnd) {
       const statement = current.trim()
-      if (statement) statements.push(statement)
+      if (statement)
+        statements.push(statement)
       current = ''
       i++
     }
@@ -138,7 +143,8 @@ function splitStatements(query: string): string[] {
   }
 
   const remaining = current.trim()
-  if (remaining) statements.push(remaining)
+  if (remaining)
+    statements.push(remaining)
   return statements
 }
 
@@ -177,9 +183,11 @@ export function getEditorQueries(sql: string): EditorQuery[] {
     const lineNum = i + 1
     let line = lines[i]!
 
-    if (line.includes('/*')) state.inBlockComment = true
+    if (line.includes('/*'))
+      state.inBlockComment = true
     if (state.inBlockComment) {
-      if (line.includes('*/')) state.inBlockComment = false
+      if (line.includes('*/'))
+        state.inBlockComment = false
       continue
     }
 
@@ -189,11 +197,13 @@ export function getEditorQueries(sql: string): EditorQuery[] {
 
     if (!lineStartsInDollarQuote) {
       const commentIdx = line.indexOf('--')
-      if (commentIdx !== -1) line = line.substring(0, commentIdx)
+      if (commentIdx !== -1)
+        line = line.substring(0, commentIdx)
     }
 
     line = line.trim()
-    if (!line) continue
+    if (!line)
+      continue
 
     if (!inDollarQuote) {
       const txn = getTransactionKeyword(line)
