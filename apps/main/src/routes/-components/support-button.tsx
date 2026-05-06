@@ -1,7 +1,7 @@
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@conar/ui/components/dialog'
-import { Label } from '@conar/ui/components/label'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogTitle, DialogTrigger } from '@conar/ui/components/dialog'
+import { Field, FieldLabel } from '@conar/ui/components/field'
 import { Textarea } from '@conar/ui/components/textarea'
 import { RiMessageLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
@@ -40,34 +40,36 @@ export function SupportButton() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Contact Support</DialogTitle>
+          <DialogDescription>
+            Have a question, suggestion, or need assistance?
+            We're here to listen!
+          </DialogDescription>
         </DialogHeader>
-        <div className="mb-2 text-muted-foreground">
-          Have a question, suggestion, or need assistance?
-          We're here to listen!
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="support-message">Message</Label>
-            <Textarea
-              id="support-message"
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-              required
-              placeholder="Type any message you'd like to send us"
-              className="min-h-48"
-            />
-          </div>
-          <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>
-              Cancel
-            </DialogClose>
-            <Button type="submit" disabled={loading || !message}>
-              <LoadingContent loading={loading}>
-                Send
-              </LoadingContent>
-            </Button>
-          </DialogFooter>
-        </form>
+        <DialogPanel>
+          <form onSubmit={handleSubmit} className="space-y-2">
+            <Field>
+              <FieldLabel htmlFor="support-message">Message</FieldLabel>
+              <Textarea
+                id="support-message"
+                value={message}
+                onChange={e => setMessage(e.target.value)}
+                required
+                placeholder="Type any message you'd like to send us"
+                className="min-h-48"
+              />
+            </Field>
+          </form>
+        </DialogPanel>
+        <DialogFooter>
+          <DialogClose render={<Button type="button" variant="outline" />}>
+            Cancel
+          </DialogClose>
+          <Button type="submit" disabled={loading || !message}>
+            <LoadingContent loading={loading}>
+              Send
+            </LoadingContent>
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

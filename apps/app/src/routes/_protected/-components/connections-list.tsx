@@ -203,6 +203,7 @@ function ConnectionCard({
     .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
   const storedResourcesNames = storedResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
   const canSend = checkSendQueryAbility(connection)
+  const canQuery = canSend && connection.syncType === SyncType.CloudWithoutPassword && connection.isPasswordPopulated
 
   const {
     data: resources = storedResourcesNames,
@@ -212,7 +213,7 @@ function ConnectionCard({
     refetch,
   } = useQuery({
     ...connectionResourcesQueryOptions(connection),
-    enabled: canSend && connection.syncType === SyncType.CloudWithoutPassword && connection.isPasswordPopulated,
+    enabled: canQuery,
   })
 
   const [isOpen, setIsOpen] = useState(false)
@@ -239,7 +240,7 @@ function ConnectionCard({
   })
 
   useEffect(() => {
-    if (canSend && !selectedResource && !isFetching && !error && !isWaitForSyncPending) {
+    if (canQuery && !selectedResource && !isFetching && !error && !isWaitForSyncPending) {
       connectionsResourcesCollection.insert({
         id: v7(),
         connectionId: connection.id,
@@ -248,7 +249,7 @@ function ConnectionCard({
         updatedAt: new Date(),
       })
     }
-  }, [canSend, resolvedSelectedResourceName, selectedResource, connection.id, isFetching, error, isWaitForSyncPending])
+  }, [canQuery, resolvedSelectedResourceName, selectedResource, connection.id, isFetching, error, isWaitForSyncPending])
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 

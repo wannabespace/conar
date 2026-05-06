@@ -3,8 +3,8 @@ import { withTracing } from '@posthog/ai'
 import { PostHog } from 'posthog-node'
 import { env } from '~/env'
 
-export const posthog = env.POSTHOG_API_KEY
-  ? new PostHog(env.POSTHOG_API_KEY, { host: 'https://eu.i.posthog.com' })
+export const posthog = env.POSTHOG_TOKEN
+  ? new PostHog(env.POSTHOG_TOKEN, { host: 'https://eu.i.posthog.com' })
   : null
 
 export function withPosthog(model: LanguageModelV3, {

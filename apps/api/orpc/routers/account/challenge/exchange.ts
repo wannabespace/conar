@@ -1,6 +1,6 @@
 import { db } from '@conar/db'
 import { sessions } from '@conar/db/schema'
-import { generateCodeChallenge } from '@conar/shared/utils/challenge'
+import { challenge } from '@conar/shared/utils/challenge'
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
@@ -12,9 +12,10 @@ export const exchange = orpc
   .input(type({
     codeChallenge: 'string',
     verifier: 'string',
+    type: '"crypto" | "noble" = "crypto"',
   }))
   .handler(async function ({ input, context: { headers } }) {
-    const generatedCodeChallenge = await generateCodeChallenge(input.verifier)
+    const generatedCodeChallenge = await challenge[input.type].generateCode(input.verifier)
 
     if (generatedCodeChallenge !== input.codeChallenge) {
       throw new ORPCError('NOT_ACCEPTABLE', { message: 'We couldn\'t authenticate you. Please try signing in again.' })

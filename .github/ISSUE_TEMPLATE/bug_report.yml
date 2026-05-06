@@ -20,7 +20,7 @@ body:
         1. Connect to a PostgreSQL database with a JSON column
         2. Change the value of a JSON entry
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: expected
@@ -34,7 +34,7 @@ body:
       label: Conar version
       placeholder: e.g., v1.3.0
     validations:
-      required: true
+      required: false
 
   - type: input
     id: environment
@@ -42,7 +42,7 @@ body:
       label: OS and environment
       placeholder: e.g., macOS 15.3.2, Ubuntu 24.04 LTS
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: logs

@@ -1,6 +1,15 @@
 {
   "name": "@conar/memoize",
   "type": "module",
+  "homepage": "https://conar.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wannabespace/conar.git",
+    "directory": "packages/memoize"
+  },
+  "bugs": {
+    "url": "https://github.com/wannabespace/conar/issues"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
@@ -15,13 +24,14 @@
     "check-types": "tsgo",
     "test": "bun test",
     "bench": "bun ./bench/index.ts",
-    "build": "tsdown",
-    "dev": "tsdown --watch"
+    "build": "tsdown"
   },
   "dependencies": {
     "devalue": "catalog:"
   },
   "devDependencies": {
+    "@conar/configs": "workspace:*",
+    "@conar/shared": "workspace:*",
     "@emotion/memoize": "^0.9.0",
     "@formatjs/fast-memoize": "^3.1.3",
     "@types/lodash.memoize": "^4.1.9",

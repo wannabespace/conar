@@ -55,7 +55,7 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
     const appendToBottomHook = runnerHooks.hook('appendToBottom', (query) => {
       store.set(state => ({
         ...state,
-        query: `${state.query}\n\n${query}`,
+        query: state.query ? `${state.query}\n\n${query}` : query,
       } satisfies typeof state))
     })
     const appendToBottomAndFocusHook = runnerHooks.hook('appendToBottomAndFocus', (query) => {

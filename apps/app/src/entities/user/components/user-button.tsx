@@ -1,12 +1,36 @@
 import { UserAvatar } from '@conar/ui/components/custom/user-avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
-import { RiLogoutCircleRLine } from '@remixicon/react'
+import { RiBrushLine, RiGlobalLine, RiLogoutCircleRLine, RiUserLine } from '@remixicon/react'
+import { useMutation } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { clearDb } from '~/drizzle'
 import { authClient } from '~/lib/auth'
 import { useSignOut } from '../hooks/use-sign-out'
+
+async function clearLocalAppCache() {
+  await clearDb()
+  for (const key of Object.keys(localStorage)) {
+    if (!key.includes('bearer_token')) {
+      localStorage.removeItem(key)
+    }
+  }
+}
 
 export function UserButton() {
   const { signOut, isSigningOut } = useSignOut()
   const { data } = authClient.useSession()
+
+  const { mutate: clearLocalCache, isPending: isClearingCache } = useMutation({
+    mutationFn: clearLocalAppCache,
+    onSuccess: () => {
+      toast.success('Local cache cleared. Reloading...')
+      window.location.reload()
+    },
+    onError: (err) => {
+      console.error(err)
+      toast.error('Failed to clear cache')
+    },
+  })
 
   return (
     <DropdownMenu>
@@ -25,6 +49,28 @@ export function UserButton() {
             </span>
           </div>
         </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => window.open(`${import.meta.env.VITE_PUBLIC_MAIN_URL}/account`, window.electron ? '_blank' : '_self')}
+        >
+          <RiUserLine />
+          Account
+        </DropdownMenuItem>
+        {window.electron && (
+          <DropdownMenuItem
+            onClick={() => window.open(import.meta.env.VITE_PUBLIC_WEB_URL, '_blank')}
+          >
+            <RiGlobalLine />
+            Web app
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem
+          disabled={isSigningOut || isClearingCache}
+          onClick={() => clearLocalCache()}
+        >
+          <RiBrushLine />
+          Clear cache
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           disabled={isSigningOut}

@@ -6,7 +6,7 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <PostHogProvider
-      apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_API_KEY}
+      apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_TOKEN}
       options={{
         session_recording: {
           maskAllInputs: true,
