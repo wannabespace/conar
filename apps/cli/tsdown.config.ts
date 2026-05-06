@@ -14,15 +14,9 @@ if (existsSync(envPath)) {
 }
 
 export default defineConfig(({ watch }) => ({
-  entry: ['./index.ts'],
-  format: 'esm',
+  entry: ['./src/index.ts'],
   target: 'node20',
-  platform: 'node',
-  outDir: './dist',
   clean: !watch,
-  dts: false,
-  sourcemap: false,
-  minify: false,
   outExtensions: () => ({ js: '.js' }),
   deps: {
     // eslint-disable-next-line e18e/prefer-static-regex

@@ -2,7 +2,7 @@
   "extends": "@conar/configs/ts/base.json",
   "compilerOptions": {
     "paths": {
-      "~/*": ["./*"]
+      "~/*": ["./src/*"]
     },
     "noEmit": true
   },
