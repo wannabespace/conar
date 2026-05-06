@@ -45,8 +45,10 @@ function trackDollarQuotes(line: string, activeTag: string | null): string | nul
 
   while (pos < line.length) {
     if (tag === null) {
-      const match = line.substring(pos).match(DOLLAR_QUOTE_RE)
-      if (!match) break
+      const rest = line.substring(pos)
+      const match = rest.match(/\$\$|\$[a-z_]\w*\$/i)
+      if (!match || match.index === undefined) break
+      pos += match.index
       tag = match[0]
       pos += tag.length
     }
