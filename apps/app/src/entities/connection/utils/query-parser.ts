@@ -28,54 +28,55 @@ function hasWordAt(word: string, text: string, pos: number): boolean {
     && (pos + word.length === text.length || WORD_BOUNDARY_RE.test(text[pos + word.length]!))
 }
 
+const TRANSACTION_KEYWORDS: Record<string, 'begin' | 'commit' | 'rollback'> = {
+  BEGIN: 'begin',
+  COMMIT: 'commit',
+  ROLLBACK: 'rollback',
+}
+
 function getTransactionKeyword(line: string): 'begin' | 'commit' | 'rollback' | null {
   const keyword = line.trim().replace(TRAILING_SEMICOLON_RE, '').toUpperCase()
-  if (keyword === 'BEGIN')
-    return 'begin'
-  if (keyword === 'COMMIT')
-    return 'commit'
-  if (keyword === 'ROLLBACK')
-    return 'rollback'
-  return null
+  return TRANSACTION_KEYWORDS[keyword] ?? null
 }
 
 function trackDollarQuotes(line: string, activeTag: string | null): string | null {
   let tag = activeTag
-  let i = 0
-  while (i < line.length) {
+  let pos = 0
+
+  while (pos < line.length) {
     if (tag === null) {
-      const match = line.substring(i).match(DOLLAR_QUOTE_RE)
-      if (match) {
-        tag = match[0]
-        i += tag.length
-        continue
-      }
+      const rest = line.substring(pos)
+      // eslint-disable-next-line e18e/prefer-static-regex
+      const match = rest.match(/\$\$|\$[a-z_]\w*\$/i)
+      if (!match || match.index === undefined)
+        break
+      pos += match.index
+      tag = match[0]
+      pos += tag.length
     }
     else {
-      const closeIdx = line.indexOf(tag, i)
-      if (closeIdx !== -1) {
-        i = closeIdx + tag.length
-        tag = null
-        continue
-      }
-      return tag
+      const closePos = line.indexOf(tag, pos)
+      if (closePos === -1)
+        return tag
+      pos = closePos + tag.length
+      tag = null
     }
-    i++
   }
+
   return tag
 }
 
-function updateBeginEndDepth(line: string, depth: number): number {
+function updateBeginDepth(line: string, depth: number): number {
   const upper = line.toUpperCase()
   for (let i = 0; i < upper.length;) {
     if (hasWordAt('BEGIN', upper, i)) {
       depth++
-      i += 5
+      i += 'BEGIN'.length
     }
     else if (hasWordAt('END', upper, i)) {
       if (depth > 0)
         depth--
-      i += 3
+      i += 'END'.length
     }
     else {
       i++
@@ -87,11 +88,10 @@ function updateBeginEndDepth(line: string, depth: number): number {
 function splitStatements(query: string): string[] {
   const trimmed = query.trim()
 
-  if (STARTS_WITH_BEGIN_RE.test(trimmed) && HAS_COMMIT_ROLLBACK_RE.test(trimmed)) {
+  if (STARTS_WITH_BEGIN_RE.test(trimmed) && HAS_COMMIT_ROLLBACK_RE.test(trimmed))
     return [trimmed]
-  }
 
-  const parts: string[] = []
+  const statements: string[] = []
   let current = ''
   let dollarTag: string | null = null
   let insideBeginEnd = false
@@ -112,45 +112,40 @@ function splitStatements(query: string): string[] {
       continue
     }
 
-    const dollarMatch = query.substring(i).match(DOLLAR_QUOTE_RE)
+    const rest = query.substring(i)
+    const dollarMatch = rest.match(DOLLAR_QUOTE_RE)
+
     if (dollarMatch) {
       dollarTag = dollarMatch[0]
       current += dollarTag
       i += dollarTag.length
-      continue
     }
-
-    const rest = query.substring(i)
-    if (!insideBeginEnd && STARTS_WITH_BEGIN_RE.test(rest)) {
+    else if (!insideBeginEnd && STARTS_WITH_BEGIN_RE.test(rest)) {
       insideBeginEnd = true
-      current += rest.slice(0, 5)
-      i += 5
-      continue
+      current += rest.slice(0, 'BEGIN'.length)
+      i += 'BEGIN'.length
     }
-    if (insideBeginEnd && STARTS_WITH_END_RE.test(rest)) {
+    else if (insideBeginEnd && STARTS_WITH_END_RE.test(rest)) {
       insideBeginEnd = false
-      current += rest.slice(0, 3)
-      i += 3
-      continue
+      current += rest.slice(0, 'END'.length)
+      i += 'END'.length
     }
-
-    if (query[i] === ';' && !insideBeginEnd) {
-      const part = current.trim()
-      if (part)
-        parts.push(part)
+    else if (query[i] === ';' && !insideBeginEnd) {
+      const statement = current.trim()
+      if (statement)
+        statements.push(statement)
       current = ''
       i++
-      continue
     }
-
-    current += query[i]
-    i++
+    else {
+      current += query[i++]
+    }
   }
 
   const remaining = current.trim()
   if (remaining)
-    parts.push(remaining)
-  return parts
+    statements.push(remaining)
+  return statements
 }
 
 function flushTransaction(results: EditorQuery[], state: ParserState, endLine: number) {
@@ -164,8 +159,8 @@ function flushTransaction(results: EditorQuery[], state: ParserState, endLine: n
   }
   state.buffer = ''
   state.dollarTag = null
-  state.beginStartLine = null
   state.beginDepth = 0
+  state.beginStartLine = null
   state.inTransaction = false
   state.transactionStartLine = null
 }
@@ -188,7 +183,7 @@ export function getEditorQueries(sql: string): EditorQuery[] {
     const lineNum = i + 1
     let line = lines[i]!
 
-    if (!state.inBlockComment && line.includes('/*'))
+    if (line.includes('/*'))
       state.inBlockComment = true
     if (state.inBlockComment) {
       if (line.includes('*/'))
@@ -196,11 +191,11 @@ export function getEditorQueries(sql: string): EditorQuery[] {
       continue
     }
 
-    const wasInDollarQuote = state.dollarTag !== null
+    const lineStartsInDollarQuote = state.dollarTag !== null
     state.dollarTag = trackDollarQuotes(line, state.dollarTag)
     const inDollarQuote = state.dollarTag !== null
 
-    if (!wasInDollarQuote) {
+    if (!lineStartsInDollarQuote) {
       const commentIdx = line.indexOf('--')
       if (commentIdx !== -1)
         line = line.substring(0, commentIdx)
@@ -221,23 +216,15 @@ export function getEditorQueries(sql: string): EditorQuery[] {
         flushTransaction(results, state, lineNum)
         continue
       }
-    }
 
-    if (!inDollarQuote) {
       const prevDepth = state.beginDepth
-      state.beginDepth = updateBeginEndDepth(line, state.beginDepth)
-      if (prevDepth === 0 && state.beginDepth > 0 && !state.buffer) {
+      state.beginDepth = updateBeginDepth(line, state.beginDepth)
+      if (prevDepth === 0 && state.beginDepth > 0 && !state.buffer)
         state.beginStartLine = lineNum
-      }
     }
 
-    if (!state.buffer) {
-      state.startLine = lineNum
-      if (state.inTransaction && state.transactionStartLine !== null)
-        state.startLine = state.transactionStartLine
-      else if (state.beginDepth > 0 && state.beginStartLine !== null)
-        state.startLine = state.beginStartLine
-    }
+    if (!state.buffer)
+      state.startLine = state.transactionStartLine ?? state.beginStartLine ?? lineNum
 
     state.buffer += (state.buffer ? ' ' : '') + line
 

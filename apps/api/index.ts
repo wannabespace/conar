@@ -211,7 +211,7 @@ const app = new Hono<{
         })
         .catch(e => createAnswer('error', 'anthropic', e instanceof Error ? e.message : 'Anthropic connection failed')),
       generateText({
-        model: xai('grok-4'),
+        model: xai('grok-4-latest'),
         prompt: 'Hello, how are you?',
       })
         .then((result) => {
