@@ -1,3 +1,4 @@
+import { title } from '@conar/shared/utils/title'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { Sidebar } from './definitions/-components/sidebar'
@@ -15,6 +16,15 @@ export const Route = createFileRoute(
       })
     }
   },
+  loader: ({ context }) => ({
+    connection: context.connection,
+    connectionResource: context.connectionResource,
+  }),
+  head: ({ loaderData }) => ({
+    meta: loaderData
+      ? [{ title: title('Definitions', loaderData.connection.name, loaderData.connectionResource.name) }]
+      : [],
+  }),
 })
 
 // eslint-disable-next-line react-refresh/only-export-components

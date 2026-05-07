@@ -29,6 +29,7 @@ import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 
 const AccountBillingLazyRouteImport = createFileRoute('/account/billing')()
+const AccountApiKeysLazyRouteImport = createFileRoute('/account/api-keys')()
 const AuthForgotPasswordLazyRouteImport = createFileRoute(
   '/_auth/forgot-password',
 )()
@@ -69,6 +70,13 @@ const AccountBillingLazyRoute = AccountBillingLazyRouteImport.update({
   getParentRoute: () => AccountRoute,
 } as any).lazy(() =>
   import('./routes/account/billing.lazy').then((d) => d.Route),
+)
+const AccountApiKeysLazyRoute = AccountApiKeysLazyRouteImport.update({
+  id: '/api-keys',
+  path: '/api-keys',
+  getParentRoute: () => AccountRoute,
+} as any).lazy(() =>
+  import('./routes/account/api-keys.lazy').then((d) => d.Route),
 )
 const AuthForgotPasswordLazyRoute = AuthForgotPasswordLazyRouteImport.update({
   id: '/forgot-password',
@@ -155,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/deep/sign-in': typeof DeepSignInRoute
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
+  '/account/api-keys': typeof AccountApiKeysLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
   '/account/': typeof AccountIndexRoute
   '/account/settings/': typeof AccountSettingsIndexLazyRoute
@@ -173,6 +182,7 @@ export interface FileRoutesByTo {
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/deep/sign-in': typeof DeepSignInRoute
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
+  '/account/api-keys': typeof AccountApiKeysLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
   '/account': typeof AccountIndexRoute
   '/account/settings': typeof AccountSettingsIndexLazyRoute
@@ -194,6 +204,7 @@ export interface FileRoutesById {
   '/_layout/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/deep/sign-in': typeof DeepSignInRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordLazyRoute
+  '/account/api-keys': typeof AccountApiKeysLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
   '/_layout/': typeof LayoutIndexRoute
   '/account/': typeof AccountIndexRoute
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/deep/sign-in'
     | '/forgot-password'
+    | '/account/api-keys'
     | '/account/billing'
     | '/account/'
     | '/account/settings/'
@@ -234,6 +246,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/deep/sign-in'
     | '/forgot-password'
+    | '/account/api-keys'
     | '/account/billing'
     | '/account'
     | '/account/settings'
@@ -254,6 +267,7 @@ export interface FileRouteTypes {
     | '/_layout/terms-of-service'
     | '/deep/sign-in'
     | '/_auth/forgot-password'
+    | '/account/api-keys'
     | '/account/billing'
     | '/_layout/'
     | '/account/'
@@ -317,6 +331,13 @@ declare module '@tanstack/react-router' {
       path: '/billing'
       fullPath: '/account/billing'
       preLoaderRoute: typeof AccountBillingLazyRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/api-keys': {
+      id: '/account/api-keys'
+      path: '/api-keys'
+      fullPath: '/account/api-keys'
+      preLoaderRoute: typeof AccountApiKeysLazyRouteImport
       parentRoute: typeof AccountRoute
     }
     '/_auth/forgot-password': {
@@ -446,12 +467,14 @@ const LayoutRouteWithChildren =
   LayoutRoute._addFileChildren(LayoutRouteChildren)
 
 interface AccountRouteChildren {
+  AccountApiKeysLazyRoute: typeof AccountApiKeysLazyRoute
   AccountBillingLazyRoute: typeof AccountBillingLazyRoute
   AccountIndexRoute: typeof AccountIndexRoute
   AccountSettingsIndexLazyRoute: typeof AccountSettingsIndexLazyRoute
 }
 
 const AccountRouteChildren: AccountRouteChildren = {
+  AccountApiKeysLazyRoute: AccountApiKeysLazyRoute,
   AccountBillingLazyRoute: AccountBillingLazyRoute,
   AccountIndexRoute: AccountIndexRoute,
   AccountSettingsIndexLazyRoute: AccountSettingsIndexLazyRoute,

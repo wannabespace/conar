@@ -9,6 +9,7 @@
     "check-types": "tsgo"
   },
   "dependencies": {
+    "@better-auth/api-key": "catalog:",
     "@conar/memoize": "workspace:*",
     "@number-flow/react": "catalog:",
     "@orpc/client": "catalog:",

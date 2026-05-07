@@ -1,4 +1,5 @@
 import type { BetterAuthOptions } from 'better-auth'
+import { apiKey } from '@better-auth/api-key'
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { db } from '@conar/db'
 import { users } from '@conar/db/schema'
@@ -49,6 +50,13 @@ export const auth = betterAuth({
     lastLoginMethod(),
     emailHarmony(),
     anonymous(),
+    apiKey({
+      schema: {
+        apikey: {
+          modelName: 'api_key',
+        },
+      },
+    }),
   ],
   user: {
     additionalFields: {

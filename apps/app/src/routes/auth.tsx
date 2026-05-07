@@ -1,4 +1,5 @@
 import { challenge } from '@conar/shared/utils/challenge'
+import { title } from '@conar/shared/utils/title'
 import { AppLogoSquareMotion } from '@conar/ui/components/brand/app-logo-square'
 import { ButtonMotion } from '@conar/ui/components/button.motion'
 import { RiErrorWarningLine } from '@remixicon/react'
@@ -11,6 +12,9 @@ import { orpc } from '~/lib/orpc'
 
 export const Route = createFileRoute('/auth')({
   component: AuthPage,
+  head: () => ({
+    meta: [{ title: title('Sign in') }],
+  }),
 })
 
 // eslint-disable-next-line react-refresh/only-export-components
