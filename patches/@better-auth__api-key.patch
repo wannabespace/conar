@@ -1,0 +1,13 @@
+diff --git a/dist/index-CajK1bx0.d.mts b/dist/index-CajK1bx0.d.mts
+index b17046627928eb938a0200bb46ef4760755eab83..7836040febf1ab0125884bb2a3781e3ec9498c05 100644
+--- a/dist/index-CajK1bx0.d.mts
++++ b/dist/index-CajK1bx0.d.mts
+@@ -666,7 +666,7 @@ type StrictEndpoint<Path extends string, Options extends EndpointOptions, R = an
+ //#endregion
+ //#region ../../node_modules/.pnpm/better-call@1.3.5_zod@4.3.6/node_modules/better-call/dist/middleware.d.mts
+ //#region src/middleware.d.ts
+-interface MiddlewareOptions extends Omit<EndpointOptions, "method"> {}
++export interface MiddlewareOptions extends Omit<EndpointOptions, "method"> {}
+ type MiddlewareContext<Options extends MiddlewareOptions, Context = {}> = EndpointContext<string, Options & {
+   method: "*";
+ }> & {

@@ -40,6 +40,7 @@
     "@conar/configs": "workspace:*",
     "@conar/shared": "workspace:*",
     "@conar/ui": "workspace:*",
+    "@orpc/server": "catalog:",
     "@remixicon/react": "catalog:",
     "@rolldown/plugin-babel": "catalog:",
     "@tailwindcss/vite": "catalog:",

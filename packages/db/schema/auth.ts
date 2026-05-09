@@ -122,7 +122,7 @@ export const apiKeys = d.snakeCase.table(
   {
     ...baseTable,
     configId: d.text().default('default').notNull(),
-    name: d.text(),
+    name: d.text().notNull(),
     start: d.text(),
     referenceId: d.text().notNull(),
     prefix: d.text(),
@@ -138,7 +138,7 @@ export const apiKeys = d.snakeCase.table(
     remaining: d.integer(),
     lastRequest: d.timestamp({ withTimezone: true }),
     expiresAt: d.timestamp({ withTimezone: true }),
-    permissions: d.text(),
+    permissions: d.jsonb(),
     metadata: d.text(),
   },
   table => [

@@ -3,7 +3,7 @@ CREATE TABLE "api_keys" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"config_id" text DEFAULT 'default' NOT NULL,
-	"name" text,
+	"name" text NOT NULL,
 	"start" text,
 	"reference_id" text NOT NULL,
 	"prefix" text,
@@ -19,7 +19,7 @@ CREATE TABLE "api_keys" (
 	"remaining" integer,
 	"last_request" timestamp with time zone,
 	"expires_at" timestamp with time zone,
-	"permissions" text,
+	"permissions" jsonb,
 	"metadata" text
 );
 --> statement-breakpoint

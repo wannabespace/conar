@@ -6,6 +6,8 @@ packages:
   - apps/*
 overrides:
   '@better-auth/drizzle-adapter': 'https://pkg.pr.new/better-auth/better-auth/@better-auth/drizzle-adapter@6913'
+patchedDependencies:
+  '@better-auth/api-key': patches/@better-auth__api-key.patch
 catalog:
   '@ai-sdk/anthropic': ^3.0.74
   '@ai-sdk/google': ^3.0.67

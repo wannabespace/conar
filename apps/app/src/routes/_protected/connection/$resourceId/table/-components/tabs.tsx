@@ -315,7 +315,9 @@ export function TablesTabs({
     removeTab(connectionResource.id, schema, table)
   }
 
-  useHotkey('Mod+W', () => {
+  useHotkey('Mod+W', (e) => {
+    e.preventDefault()
+
     if (schemaParam && tableParam) {
       closeTab(schemaParam, tableParam)
     }

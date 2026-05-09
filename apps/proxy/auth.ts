@@ -15,34 +15,15 @@ export const auth = betterAuth({
   plugins: [
     bearer(),
   ],
-  user: {
-    additionalFields: {
-      secret: {
-        type: 'string',
-        returned: false,
-        input: false,
-      },
-      stripeCustomerId: {
-        type: 'string',
-        returned: false,
-        input: false,
-        required: false,
-        fieldName: 'stripe_customer_id',
-      },
-      desktopVersion: {
-        fieldName: 'desktop_version',
-        type: 'string',
-        input: false,
-        required: false,
-      },
-    },
-  },
   advanced: {
     cookiePrefix: AUTH_COOKIE_PREFIX,
   },
   database: drizzleAdapter(db, {
     provider: 'pg',
     usePlural: true,
-    schema,
+    schema: {
+      ...schema,
+      api_keys: schema.apiKeys,
+    },
   }),
 } satisfies BetterAuthOptions as BetterAuthOptions)

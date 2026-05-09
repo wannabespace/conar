@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "50fe2978-0a06-45e7-a8f2-cacda05c81c0",
+  "id": "7adab5b3-9f8c-4ff5-a418-2fbb5946d58c",
   "prevIds": [
     "9b8c7131-b1a1-485c-be50-8f94d7971011"
   ],
@@ -349,7 +349,7 @@
     {
       "type": "text",
       "typeSchema": null,
-      "notNull": false,
+      "notNull": true,
       "dimensions": 0,
       "default": null,
       "generated": null,
@@ -555,7 +555,7 @@
       "table": "api_keys"
     },
     {
-      "type": "text",
+      "type": "jsonb",
       "typeSchema": null,
       "notNull": false,
       "dimensions": 0,

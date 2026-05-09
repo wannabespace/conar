@@ -39,6 +39,8 @@ export function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Om
 
 export function noop() {}
 
+export const objectEntries = Object.entries as <T extends object>(obj: T) => [keyof T, T[keyof T]][]
+
 export type Prettify<T> = {
   [K in keyof T]: T[K]
 } & {}

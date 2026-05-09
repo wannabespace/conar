@@ -1,19 +1,21 @@
 import type { ComponentRef } from 'react'
-import type { CreatedApiKey } from './-components/create-api-key-dialog'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
-import { CopyButton } from '@conar/ui/components/custom/copy-button'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Skeleton } from '@conar/ui/components/skeleton'
+import { Spinner } from '@conar/ui/components/spinner'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@conar/ui/components/table'
-import { RiDeleteBinLine, RiKey2Line } from '@remixicon/react'
-import { useQuery } from '@tanstack/react-query'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { cn } from '@conar/ui/lib/utils'
+import { RiDeleteBinLine, RiKey2Line, RiMoreLine, RiPauseCircleLine, RiPlayCircleLine } from '@remixicon/react'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { formatDistanceToNow } from 'date-fns'
-import { useRef, useState } from 'react'
+import { format, formatDistanceToNow } from 'date-fns'
+import { useRef } from 'react'
 import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
+import { handleError } from '~/utils/error'
 import { CreateApiKeyDialog } from './-components/create-api-key-dialog'
 import { RevokeApiKeyDialog } from './-components/revoke-api-key-dialog'
 
@@ -42,7 +44,7 @@ function ApiKeysEmptyState({ onCreateClick }: { onCreateClick: () => void }) {
         No API keys yet
       </h3>
       <p className="mb-6 max-w-sm text-sm text-muted-foreground">
-        Secret is shown once. Use as Bearer or
+        Key is shown only once. Use as Bearer or
         {' '}
         <code className="
           rounded-sm bg-muted px-1 py-0.5 font-mono text-[0.7rem]
@@ -61,54 +63,15 @@ function ApiKeysEmptyState({ onCreateClick }: { onCreateClick: () => void }) {
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-function CreatedKeyBanner({ apiKey, onClose }: { apiKey: CreatedApiKey, onClose: () => void }) {
-  return (
-    <div className="
-      rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4
-    "
-    >
-      <div className="mb-3 flex items-center gap-2 text-sm font-medium">
-        <RiKey2Line className="size-4 text-emerald-500" />
-        New API key created
-      </div>
-      <p className="mb-2 text-xs text-muted-foreground">
-        This key is shown only once. Copy and store it safely.
-      </p>
-      <div className="mb-3 min-w-0">
-        <InputGroup className="font-mono text-xs shadow-none">
-          <InputGroupInput
-            readOnly
-            value={apiKey.key}
-            className="min-w-0 overflow-x-auto font-mono text-xs"
-          />
-          <InputGroupAddon align="inline-end">
-            <CopyButton
-              text={apiKey.key}
-              variant="ghost"
-              size="icon-xs"
-              aria-label="Copy API key"
-              onClick={() => toast.success('API key copied')}
-            />
-          </InputGroupAddon>
-        </InputGroup>
-      </div>
-      <div className="flex justify-end">
-        <Button size="sm" onClick={onClose}>Done</Button>
-      </div>
-    </div>
-  )
-}
-
-// eslint-disable-next-line react-refresh/only-export-components
 function RouteComponent() {
   const createDialogRef = useRef<ComponentRef<typeof CreateApiKeyDialog>>(null)
   const revokeDialogRef = useRef<ComponentRef<typeof RevokeApiKeyDialog>>(null)
-  const [createdKey, setCreatedKey] = useState<CreatedApiKey | null>(null)
 
   const {
     data: apiKeys = [],
     isPending,
     refetch,
+    isFetching,
   } = useQuery({
     queryKey: ['api-keys'],
     queryFn: async () => {
@@ -117,6 +80,19 @@ function RouteComponent() {
         throw error
       return data.apiKeys
     },
+  })
+
+  const { mutate: setKeyEnabled, isPending: isUpdatingEnabled } = useMutation({
+    mutationFn: async ({ keyId, enabled }: { keyId: string, enabled: boolean }) => {
+      const { error } = await authClient.apiKey.update({ keyId, enabled })
+      if (error)
+        throw error
+    },
+    onSuccess: (_, { enabled }) => {
+      refetch()
+      toast.success(enabled ? 'API key activated' : 'API key deactivated')
+    },
+    onError: handleError,
   })
 
   return (
@@ -129,25 +105,18 @@ function RouteComponent() {
         </Button>
       </div>
 
-      <CreateApiKeyDialog
-        ref={createDialogRef}
-        onCreated={setCreatedKey}
-        onRefetch={refetch}
-      />
+      <CreateApiKeyDialog ref={createDialogRef} onRefetch={refetch} />
       <RevokeApiKeyDialog ref={revokeDialogRef} onRefetch={refetch} />
 
       <Card>
         <CardHeader>
-          <CardTitle>Your API keys</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Your API keys
+            {isFetching && <Spinner className="size-4" />}
+          </CardTitle>
           <CardDescription>Revoke any key that is no longer in use.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {createdKey && (
-            <CreatedKeyBanner
-              apiKey={createdKey}
-              onClose={() => setCreatedKey(null)}
-            />
-          )}
           {isPending
             ? (
                 <div className="space-y-2">
@@ -162,37 +131,83 @@ function RouteComponent() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Name</TableHead>
-                        <TableHead>Prefix</TableHead>
                         <TableHead>Created</TableHead>
+                        <TableHead>Last used</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="w-10"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {apiKeys.map(key => (
                         <TableRow key={key.id}>
                           <TableCell className="font-medium">{key.name || 'Untitled key'}</TableCell>
-                          <TableCell className="font-mono text-xs">{key.start || key.prefix || 'n/a'}</TableCell>
                           <TableCell>
                             {key.createdAt
-                              ? formatDistanceToNow(new Date(key.createdAt), { addSuffix: true })
+                              ? (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className="cursor-default">
+                                        {formatDistanceToNow(new Date(key.createdAt), { addSuffix: true })}
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {format(new Date(key.createdAt), 'MMM d, yyyy h:mm a')}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )
                               : 'Unknown'}
                           </TableCell>
+                          <TableCell className={cn(!key.lastRequest && `
+                            text-muted-foreground
+                          `)}
+                          >
+                            {key.lastRequest
+                              ? formatDistanceToNow(new Date(key.lastRequest), { addSuffix: true })
+                              : 'Never'}
+                          </TableCell>
                           <TableCell>
-                            <Badge variant={key.enabled === false ? 'secondary' : 'outline'}>
+                            <Badge variant="outline">
                               {key.enabled === false ? 'Disabled' : 'Active'}
                             </Badge>
                           </TableCell>
                           <TableCell>
                             <div className="flex justify-end">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => revokeDialogRef.current?.revoke(key.id)}
-                              >
-                                <RiDeleteBinLine className="size-4" />
-                                Revoke
-                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger
+                                  render={<Button variant="ghost" size="icon-sm" aria-label="Key actions" />}
+                                >
+                                  <RiMoreLine className="size-4" />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  {key.enabled === false
+                                    ? (
+                                        <DropdownMenuItem
+                                          disabled={isUpdatingEnabled}
+                                          onClick={() => setKeyEnabled({ keyId: key.id, enabled: true })}
+                                        >
+                                          <RiPlayCircleLine className="size-4" />
+                                          Activate
+                                        </DropdownMenuItem>
+                                      )
+                                    : (
+                                        <DropdownMenuItem
+                                          disabled={isUpdatingEnabled}
+                                          onClick={() => setKeyEnabled({ keyId: key.id, enabled: false })}
+                                        >
+                                          <RiPauseCircleLine className="size-4" />
+                                          Deactivate
+                                        </DropdownMenuItem>
+                                      )}
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    variant="destructive"
+                                    onClick={() => revokeDialogRef.current?.revoke(key.id)}
+                                  >
+                                    <RiDeleteBinLine className="size-4" />
+                                    Revoke
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </TableCell>
                         </TableRow>

@@ -1,10 +1,9 @@
-import type { BetterAuthOptions } from 'better-auth'
 import { apiKey } from '@better-auth/api-key'
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { db } from '@conar/db'
 import { users } from '@conar/db/schema'
 import * as schema from '@conar/db/schema'
-import { AUTH_COOKIE_PREFIX, PORTS } from '@conar/shared/constants'
+import { API_KEY_PERMISSIONS, AUTH_COOKIE_PREFIX, PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { createAuthMiddleware } from 'better-auth/api'
@@ -51,6 +50,14 @@ export const auth = betterAuth({
     emailHarmony(),
     anonymous(),
     apiKey({
+      defaultPrefix: nodeEnv === 'production' ? 'tmy_' : 'tmy_test_',
+      permissions: {
+        defaultPermissions: API_KEY_PERMISSIONS,
+      },
+      startingCharactersConfig: {
+        charactersLength: nodeEnv === 'production' ? 20 : 15,
+      },
+      requireName: true,
       schema: {
         apikey: {
           modelName: 'api_key',
@@ -184,8 +191,11 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',
     usePlural: true,
-    schema,
-  }),
+    schema: {
+      ...schema,
+      api_keys: schema.apiKeys,
+    },
+  }) as ReturnType<typeof drizzleAdapter>,
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
@@ -224,4 +234,4 @@ export const auth = betterAuth({
       clientSecret: env.GITHUB_CLIENT_SECRET,
     },
   },
-} satisfies BetterAuthOptions as BetterAuthOptions)
+})
