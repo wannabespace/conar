@@ -1,23 +1,32 @@
 import { command } from '@drizzle-team/brocli'
 import { consola } from 'consola'
 import ora from 'ora'
-import { clearToken, getToken } from '~/config'
+import { clearStoredAuth, CONAR_API_KEY_ENV, getAuthState } from '~/config'
 import { serverSignOut } from '~/session'
 
 export const logoutCommand = command({
   name: 'logout',
-  desc: 'Sign out of your Conar account',
+  desc: 'Clear saved CLI authentication',
   options: {},
   handler: async () => {
-    if (!getToken()) {
+    const auth = getAuthState()
+
+    if (!auth) {
       consola.info('You are not signed in.')
       return
     }
 
-    const spinner = ora('Signing out...').start()
+    if (auth.source === 'env') {
+      clearStoredAuth()
+      consola.info(`Cleared any saved credentials, but ${CONAR_API_KEY_ENV} is still set.`)
+      consola.info(`Unset ${CONAR_API_KEY_ENV} to stop using that API key.`)
+      return
+    }
+
+    const spinner = ora(auth.method === 'session' ? 'Signing out...' : 'Removing saved API key...').start()
     await serverSignOut()
-    clearToken()
+    clearStoredAuth()
     spinner.stop()
-    consola.success('Signed out.')
+    consola.success(auth.method === 'session' ? 'Signed out.' : 'Removed saved API key.')
   },
 })

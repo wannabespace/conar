@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { consola } from 'consola'
 import ora from 'ora'
-import { clearToken, getToken } from '~/config'
+import { clearStoredAuth, CONAR_API_KEY_ENV, getAuthState } from '~/config'
 
 export interface Session {
   user: {
@@ -11,9 +11,7 @@ export interface Session {
   }
 }
 
-export async function getSession(): Promise<Session | null> {
-  const token = getToken()
-
+export async function getSessionFromToken(token: string): Promise<Session | null> {
   if (!token) {
     return null
   }
@@ -40,19 +38,43 @@ export async function getSession(): Promise<Session | null> {
   }
 }
 
+export async function getSession(): Promise<Session | null> {
+  const auth = getAuthState()
+
+  if (!auth) {
+    return null
+  }
+
+  return getSessionFromToken(auth.token)
+}
+
 export async function requireSession(): Promise<Session> {
-  if (!getToken()) {
-    consola.error('You are not signed in. Run `conar login` first.')
+  const auth = getAuthState()
+
+  if (!auth) {
+    consola.error(`You are not authenticated. Run \`conar login\` or set \`${CONAR_API_KEY_ENV}\`.`)
     process.exit(1)
   }
 
   const spinner = ora('Verifying session...').start()
-  const session = await getSession()
+  const session = await getSessionFromToken(auth.token)
   spinner.stop()
 
   if (!session) {
-    clearToken()
-    consola.fail('Your session has expired. Run `conar login` to sign in again.')
+    if (auth.source === 'config') {
+      clearStoredAuth()
+    }
+
+    if (auth.source === 'env') {
+      consola.fail(`The \`${CONAR_API_KEY_ENV}\` value is invalid. Update it and try again.`)
+      process.exit(1)
+    }
+
+    consola.fail(
+      auth.method === 'api-key'
+        ? `Your saved API key is no longer valid. Run \`conar login --api-key <key>\` or set \`${CONAR_API_KEY_ENV}\`.`
+        : 'Your session has expired. Run `conar login` to sign in again.',
+    )
     process.exit(1)
   }
 
@@ -64,16 +86,16 @@ export async function requireSession(): Promise<Session> {
  * server call fails so the user is never stuck with a stale token.
  */
 export async function serverSignOut(): Promise<void> {
-  const token = getToken()
+  const auth = getAuthState()
 
-  if (!token) {
+  if (!auth || auth.source !== 'config' || auth.method !== 'session') {
     return
   }
 
   try {
     await fetch(`${import.meta.env.API_URL}/auth/sign-out`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${auth.token}` },
     })
   }
   catch {

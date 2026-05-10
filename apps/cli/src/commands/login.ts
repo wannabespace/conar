@@ -1,12 +1,12 @@
 import process from 'node:process'
 import { challenge } from '@conar/shared/utils/challenge'
-import { boolean, command } from '@drizzle-team/brocli'
+import { boolean, command, string } from '@drizzle-team/brocli'
 import { consola } from 'consola'
 import open from 'open'
 import ora from 'ora'
-import { clearToken, saveToken } from '~/config'
+import { clearStoredAuth, CONAR_API_KEY_ENV, getAuthState, saveApiKey, saveSessionToken } from '~/config'
 import { orpc } from '~/orpc'
-import { getSession } from '~/session'
+import { getSession, getSessionFromToken } from '~/session'
 
 const MAIN_URL = import.meta.env.MAIN_URL
 
@@ -14,12 +14,22 @@ const AUTH_TIMEOUT_MS = 5 * 60 * 1000
 
 export const loginCommand = command({
   name: 'login',
-  desc: 'Sign in to your Conar account',
+  desc: 'Sign in to your Conar account or save an API key',
   options: {
     force: boolean().alias('f').desc('Sign in even if already authenticated'),
+    apiKey: string('api-key').desc('Use an API key instead of browser sign-in'),
     noOpen: boolean('no-open').desc('Do not attempt to open the browser automatically'),
   },
   handler: async (opts) => {
+    const auth = getAuthState()
+    const usingEnvApiKey = auth?.source === 'env'
+
+    if (usingEnvApiKey) {
+      consola.info(`${CONAR_API_KEY_ENV} is set, so the CLI is already using that API key.`)
+      consola.info(`Unset ${CONAR_API_KEY_ENV} to sign in with the browser or save a different API key.`)
+      return
+    }
+
     const existing = await getSession()
 
     if (existing && !opts.force) {
@@ -28,8 +38,31 @@ export const loginCommand = command({
       return
     }
 
+    if (opts.apiKey) {
+      const spinner = ora('Verifying API key...').start()
+
+      try {
+        const session = await getSessionFromToken(opts.apiKey.trim())
+
+        if (!session) {
+          throw new Error('Invalid API key')
+        }
+
+        saveApiKey(opts.apiKey.trim())
+        spinner.stop()
+        consola.success(`Authenticated with API key as ${session.user.email}.`)
+      }
+      catch (error) {
+        spinner.stop()
+        consola.fail(`API key authentication failed: ${error instanceof Error ? error.message : String(error)}`)
+        process.exit(1)
+      }
+
+      return
+    }
+
     if (existing) {
-      clearToken()
+      clearStoredAuth()
     }
 
     const verifier = challenge.noble.generateVerifier()
@@ -90,7 +123,7 @@ export const loginCommand = command({
         { signal: controller.signal },
       )
 
-      saveToken(token)
+      saveSessionToken(token)
 
       const session = await getSession()
       spinner.stop()
