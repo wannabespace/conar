@@ -1,6 +1,5 @@
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
-import { FieldDescription } from '@conar/ui/components/field'
 import { createFileRoute, Link, Outlet, useMatches } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { SEO } from '~/constants'
@@ -74,7 +73,7 @@ function AuthLayout() {
           >
             <Outlet />
             {isSignIn && (
-              <FieldDescription className="px-6 text-center">
+              <p className="px-6 text-center text-xs text-muted-foreground">
                 By clicking continue, you agree to our
                 {' '}
                 <Link
@@ -99,7 +98,7 @@ function AuthLayout() {
                   Privacy Policy
                 </Link>
                 .
-              </FieldDescription>
+              </p>
             )}
           </div>
         </div>

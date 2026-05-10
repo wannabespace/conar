@@ -5,8 +5,7 @@
     "check-types": "tsgo",
     "drizzle:generate": "cross-env NODE_ENV=development drizzle-kit generate",
     "drizzle:generate-custom": "cross-env NODE_ENV=development drizzle-kit generate --custom",
-    "drizzle:migrate": "cross-env NODE_ENV=development drizzle-kit migrate",
-    "better-auth:generate": "cross-env NODE_ENV=development pnpx https://pkg.pr.new/better-auth/better-auth/@better-auth/cli@6913 generate --output ./schema/auth.ts"
+    "drizzle:migrate": "cross-env NODE_ENV=development drizzle-kit migrate"
   },
   "dependencies": {
     "@conar/shared": "workspace:*",

@@ -14,7 +14,7 @@ import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
-import QRCode from 'react-qr-code'
+import { QRCode } from 'react-qr-code'
 import { toast } from 'sonner'
 import { TotpCodeInput } from '~/components/totp-code-input'
 import { authClient } from '~/lib/auth'
@@ -36,7 +36,11 @@ export function EnableTfaDialog({ open, onOpenChange }: {
         throw error
       }
 
-      return data.totpURI
+      if (data.method === 'totp') {
+        return data.totpURI
+      }
+
+      return null
     },
     onSuccess: () => {
       setSetupOpen(true)
@@ -46,7 +50,7 @@ export function EnableTfaDialog({ open, onOpenChange }: {
 
   const { mutate: verifyTotp, isPending: isVerifyTotpPending } = useMutation({
     mutationFn: async (code: string) => {
-      const { error } = await authClient.twoFactor.verifyTotp({ code })
+      const { error } = await authClient.twoFactor.verifyTotp({ code, trustDevice: true })
 
       if (error) {
         throw error
@@ -132,7 +136,7 @@ export function EnableTfaDialog({ open, onOpenChange }: {
               </DialogHeader>
               <DialogPanel className="flex flex-col items-center gap-4">
                 <div className="rounded-lg bg-white p-4">
-                  {totpURI && <QRCode value={totpURI} size={176} />}
+                  {!!totpURI && <QRCode value={totpURI} size={176} />}
                 </div>
                 <TotpCodeInput
                   label="Verification code"

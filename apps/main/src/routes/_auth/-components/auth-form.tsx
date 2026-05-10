@@ -1,16 +1,16 @@
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { FieldGroup } from '@conar/ui/components/field'
+import { Field, FieldLabel } from '@conar/ui/components/field'
+import { Fieldset } from '@conar/ui/components/fieldset'
 import { Separator } from '@conar/ui/components/separator'
-import { useAppForm } from '@conar/ui/hooks/use-app-form'
+import { useAppForm } from '@conar/ui/components/tanstack-form'
 import { RiGithubFill, RiGoogleFill } from '@remixicon/react'
 import { useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { BASE_ERROR_CODES } from 'better-auth'
-import { useState } from 'react'
 import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
 import { Route } from '~/routes/_auth'
@@ -19,8 +19,8 @@ import { handleError } from '~/utils/error'
 type Type = 'sign-up' | 'sign-in'
 
 const baseAuthSchema = type({
-  email: 'string.email',
-  password: 'string >= 8',
+  email: type('string.email').configure({ message: 'Invalid email address' }),
+  password: type('string >= 8').configure({ message: 'Password must be at least 8 characters long' }),
 })
 
 const twoFactorRedirectSchema = type({
@@ -30,7 +30,7 @@ const twoFactorRedirectSchema = type({
 const signInSchema = baseAuthSchema
 
 const signUpSchema = baseAuthSchema.and({
-  name: 'string',
+  name: type('string').configure({ message: 'Name is required' }),
 })
 
 function useSocialMutation(provider: 'google' | 'github') {
@@ -78,34 +78,30 @@ function SocialAuthForm() {
   return (
     <>
       <div className="grid grid-cols-2 gap-4">
-        <div className="relative">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => googleSignIn()}
-            disabled={isGoogleSignInPending || isGithubSignInPending}
-          >
-            <LoadingContent loading={isGoogleSignInPending}>
-              <RiGoogleFill className="size-4" />
-              Google
-            </LoadingContent>
-          </Button>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => googleSignIn()}
+          disabled={isGoogleSignInPending || isGithubSignInPending}
+        >
+          <LoadingContent loading={isGoogleSignInPending}>
+            <RiGoogleFill className="size-4" />
+            Google
+          </LoadingContent>
           {lastMethod === 'google' && <Last />}
-        </div>
-        <div className="relative">
-          <Button
-            variant="outline"
-            className="w-full"
-            disabled={isGithubSignInPending || isGoogleSignInPending}
-            onClick={() => githubSignIn()}
-          >
-            <LoadingContent loading={isGithubSignInPending}>
-              <RiGithubFill className="size-4" />
-              GitHub
-            </LoadingContent>
-          </Button>
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full"
+          disabled={isGithubSignInPending || isGoogleSignInPending}
+          onClick={() => githubSignIn()}
+        >
+          <LoadingContent loading={isGithubSignInPending}>
+            <RiGithubFill className="size-4" />
+            GitHub
+          </LoadingContent>
           {lastMethod === 'github' && <Last />}
-        </div>
+        </Button>
       </div>
     </>
   )
@@ -114,7 +110,6 @@ function SocialAuthForm() {
 export function AuthForm({ type }: { type: Type }) {
   const search = Route.useSearch()
   const lastMethod = authClient.getLastUsedLoginMethod()
-  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
 
   const form = useAppForm({
@@ -205,86 +200,79 @@ export function AuthForm({ type }: { type: Type }) {
           form.handleSubmit()
         }}
       >
-        <FieldGroup className="gap-4">
+        <Fieldset className="flex w-full flex-col gap-6">
           <form.AppField name="email">
             {field => (
-              <field.Input
-                label="Email"
-                placeholder="example@gmail.com"
-                type="email"
-                autoCapitalize="none"
-                autoComplete="email"
-                spellCheck={false}
-                required
-                autoFocus
-              />
+              <Field>
+                <FieldLabel>
+                  Email
+                </FieldLabel>
+                <field.Input
+                  placeholder="example@gmail.com"
+                  type="email"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  spellCheck={false}
+                  required
+                  autoFocus
+                />
+                <field.Error />
+              </Field>
             )}
           </form.AppField>
-
           {type === 'sign-up' && (
             <form.AppField name="name">
               {field => (
-                <field.Input
-                  label="Name"
-                  placeholder="John Doe"
-                  autoComplete="name"
-                  spellCheck={false}
-                  required
-                />
+                <Field>
+                  <FieldLabel>
+                    Name
+                  </FieldLabel>
+                  <field.Input
+                    placeholder="John Doe"
+                    autoComplete="name"
+                    spellCheck={false}
+                    required
+                  />
+                  <field.Error />
+                </Field>
               )}
             </form.AppField>
           )}
-
-          {type === 'sign-in'
-            ? (
-                <form.AppField name="password">
-                  {field => (
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Password</span>
-                        <Button
-                          variant="link"
-                          size="xs"
-                          className="text-muted-foreground"
-                          render={<Link to="/forgot-password" />}
-                        >
-                          Forgot password?
-                        </Button>
-                      </div>
-                      <field.Password
-                        showPassword={showPassword}
-                        onToggle={() => setShowPassword(!showPassword)}
-                        autoComplete="password"
-                      />
-                    </div>
+          <form.AppField name="password">
+            {field => (
+              <Field>
+                <div className="flex w-full items-center justify-between">
+                  <FieldLabel>Password</FieldLabel>
+                  {type === 'sign-in' && (
+                    <Button
+                      variant="link"
+                      size="xs"
+                      className="text-muted-foreground"
+                      render={<Link to="/forgot-password" />}
+                    >
+                      Forgot password?
+                    </Button>
                   )}
-                </form.AppField>
-              )
-            : (
-                <form.AppField name="password">
-                  {field => (
-                    <field.Password
-                      label="Password"
-                      showPassword={showPassword}
-                      onToggle={() => setShowPassword(!showPassword)}
-                      autoComplete="password"
-                    />
-                  )}
-                </form.AppField>
-              )}
-          <div className="relative">
-            <Button
-              className="w-full"
-              type="submit"
-              disabled={isSubmitting}
-            >
-              <LoadingContent loading={isSubmitting}>
-                {type === 'sign-up' ? 'Get started' : 'Sign in'}
-              </LoadingContent>
-            </Button>
+                </div>
+                <field.PasswordInput
+                  autoComplete="password"
+                  placeholder="••••••••"
+                />
+                <field.Error />
+              </Field>
+            )}
+          </form.AppField>
+          <Button
+            className="w-full"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            <LoadingContent loading={isSubmitting}>
+              {type === 'sign-up' ? 'Get started' : 'Sign in'}
+            </LoadingContent>
             {type === 'sign-in' && lastMethod === 'email' && <Last />}
-          </div>
-        </FieldGroup>
+          </Button>
+        </Fieldset>
       </form>
       <div className="relative">
         <Separator />

@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import { Toaster } from '@conar/ui/components/sonner'
 import { TooltipProvider } from '@conar/ui/components/tooltip'
 import appCss from '@conar/ui/globals.css?url'
+import { cn } from '@conar/ui/lib/utils'
 import { ThemeObserver } from '@conar/ui/theme-observer'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -66,10 +67,10 @@ function RootComponent() {
       <head>
         <HeadContent />
       </head>
-      <body className={`
+      <body className={cn(`
         relative bg-gray-100
         dark:bg-neutral-950
-      `}
+      `)}
       >
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>

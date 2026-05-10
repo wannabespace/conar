@@ -58,3 +58,7 @@ export const RECONNECT_ERROR_PATTERNS = [
   'network',
   'application failed to respond',
 ]
+
+export const API_KEY_PERMISSIONS = {
+  connections: ['read', 'write'] as const,
+}

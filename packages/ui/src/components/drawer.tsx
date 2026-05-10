@@ -373,11 +373,11 @@ export function DrawerFooter({
       variant === 'default'
       && `
         border-t bg-muted/72 pt-4
-        pb-[calc(env(safe-area-inset-bottom,0)+--spacing(4))]
+        pb-[calc(env(safe-area-inset-bottom,0)+(--spacing(4)))]
       `,
       variant === 'bare'
       && `
-        pt-4 pb-[calc(env(safe-area-inset-bottom,0)+--spacing(6))]
+        pt-4 pb-[calc(env(safe-area-inset-bottom,0)+(--spacing(6)))]
         in-[[data-slot=drawer-popup]:has([data-slot=drawer-panel])]:pt-3
       `,
       className,

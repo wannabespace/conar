@@ -1,11 +1,11 @@
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { FieldGroup } from '@conar/ui/components/field'
-import { useAppForm } from '@conar/ui/hooks/use-app-form'
+import { Field, FieldLabel } from '@conar/ui/components/field'
+import { Fieldset } from '@conar/ui/components/fieldset'
+import { useAppForm } from '@conar/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { useState } from 'react'
 import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
 
@@ -20,16 +20,14 @@ export const Route = createFileRoute('/_auth/reset-password')({
 })
 
 const passwordSchema = type({
-  password: 'string >= 8',
-  confirmPassword: 'string >= 8',
+  password: type('string >= 8').configure({ message: 'Password must be at least 8 characters long' }),
+  confirmPassword: type('string >= 8').configure({ message: 'Password must be at least 8 characters long' }),
 })
 
 // eslint-disable-next-line react-refresh/only-export-components
 function ResetPasswordPage() {
   const navigate = useNavigate()
   const { token } = Route.useSearch()
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const form = useAppForm({
     defaultValues: {
@@ -88,15 +86,23 @@ function ResetPasswordPage() {
           form.handleSubmit()
         }}
       >
-        <FieldGroup className="gap-4">
+        <Fieldset className="flex w-full flex-col gap-6">
           <form.AppField name="password">
             {field => (
-              <field.Password
-                label="New Password"
-                showPassword={showPassword}
-                onToggle={() => setShowPassword(!showPassword)}
-                autoFocus
-              />
+              <Field>
+                <FieldLabel>
+                  New Password
+                </FieldLabel>
+                <field.PasswordInput
+                  autoFocus
+                  autoComplete="new-password"
+                  required
+                  aria-invalid={field.state.meta.isTouched && !field.state.meta.isValid}
+                  spellCheck={false}
+                  autoCapitalize="none"
+                />
+                <field.Error />
+              </Field>
             )}
           </form.AppField>
 
@@ -110,14 +116,21 @@ function ResetPasswordPage() {
             }}
           >
             {field => (
-              <field.Password
-                label="Confirm Password"
-                showPassword={showConfirmPassword}
-                onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
-              />
+              <Field>
+                <FieldLabel>
+                  Confirm Password
+                </FieldLabel>
+                <field.PasswordInput
+                  autoComplete="confirm-password"
+                  required
+                  aria-invalid={field.state.meta.isTouched && !field.state.meta.isValid}
+                  spellCheck={false}
+                  autoCapitalize="none"
+                />
+                <field.Error />
+              </Field>
             )}
           </form.AppField>
-
           <Button
             className="w-full"
             type="submit"
@@ -127,7 +140,7 @@ function ResetPasswordPage() {
               Reset password
             </LoadingContent>
           </Button>
-        </FieldGroup>
+        </Fieldset>
       </form>
     </>
   )

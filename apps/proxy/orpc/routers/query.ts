@@ -23,6 +23,10 @@ const resolveQueryConnectionString = memoize(async ({
 }) => {
   let connectionString = input.connectionString
 
+  if (connectionString) {
+    return connectionString
+  }
+
   if (input.resourceId) {
     const [connection, secret] = await Promise.all([
       db.query.connectionsResources.findFirst({

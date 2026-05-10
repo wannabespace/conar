@@ -9,6 +9,7 @@
     "check-types": "tsgo"
   },
   "dependencies": {
+    "@better-auth/api-key": "catalog:",
     "@conar/memoize": "workspace:*",
     "@number-flow/react": "catalog:",
     "@orpc/client": "catalog:",
@@ -39,6 +40,7 @@
     "@conar/configs": "workspace:*",
     "@conar/shared": "workspace:*",
     "@conar/ui": "workspace:*",
+    "@orpc/server": "catalog:",
     "@remixicon/react": "catalog:",
     "@rolldown/plugin-babel": "catalog:",
     "@tailwindcss/vite": "catalog:",
@@ -46,6 +48,7 @@
     "@types/react-dom": "catalog:",
     "@typescript/native-preview": "catalog:",
     "@vitejs/plugin-react": "catalog:",
+    "babel-plugin-react-compiler": "catalog:",
     "react-scan": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",

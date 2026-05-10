@@ -7,7 +7,7 @@
   "schemaVersion": 1,
   "nodeVersion": "24.6.0",
   "packageManager": "pnpm",
-  "pnpmVersion": "10.33.3",
+  "pnpmVersion": "11.0.9",
   "copyright": "Copyright © 2024 Wannabe Space, LLC",
   "appFiles": [
     "dist-electron/**"
