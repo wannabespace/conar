@@ -51,54 +51,65 @@ function CreateConnectionPage() {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  function createConnection(data: {
-    connectionString: string
-    name: string
-    type: ConnectionType
-    syncType: SyncType
-    label: string | null
-    color: string | null
-  }) {
-    const id = v7()
-    const url = new SafeURL(data.connectionString.trim())
+  const { mutate: createConnection, isPending: isCreatingConnection } = useMutation({
+    mutationFn: async (data: {
+      connectionString: string
+      name: string
+      type: ConnectionType
+      syncType: SyncType
+      label: string | null
+      color: string | null
+    }) => {
+      const id = v7()
+      const url = new SafeURL(data.connectionString.trim())
 
-    connectionsCollection.insert({
-      id,
-      name: data.name,
-      type: data.type,
-      connectionString: data.connectionString,
-      label: data.label || null,
-      color: data.color || null,
-      isPasswordExists: !!url.password,
-      isPasswordPopulated: !!url.password,
-      syncType: data.syncType,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-
-    toast.success('Connection created successfully 🎉')
-
-    const resource = url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
-
-    if (resource) {
-      getConnectionStore(id).set({
-        lastOpenedResourceName: resource,
-        pinnedResourcesNames: [resource],
+      const connectionTx = connectionsCollection.insert({
+        id,
+        name: data.name,
+        type: data.type,
+        connectionString: data.connectionString,
+        label: data.label || null,
+        color: data.color || null,
+        isPasswordExists: !!url.password,
+        isPasswordPopulated: !!url.password,
+        syncType: data.syncType,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       })
-    }
 
-    const resourceId = v7()
+      if (!window.electron) {
+        await connectionTx.isPersisted.promise
+      }
 
-    connectionsResourcesCollection.insert({
-      id: resourceId,
-      connectionId: id,
-      name: resource,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
-    prefetchConnectionResourceCore(connectionsResourcesCollection.get(resourceId)!)
-    router.navigate({ to: '/connection/$resourceId/table', params: { resourceId } })
-  }
+      toast.success('Connection created successfully 🎉')
+
+      const resource = url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
+
+      if (resource) {
+        getConnectionStore(id).set({
+          lastOpenedResourceName: resource,
+          pinnedResourcesNames: [resource],
+        })
+      }
+
+      const resourceId = v7()
+
+      const resourceTx = connectionsResourcesCollection.insert({
+        id: resourceId,
+        connectionId: id,
+        name: resource,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+
+      if (!window.electron) {
+        await resourceTx.isPersisted.promise
+      }
+
+      prefetchConnectionResourceCore(connectionsResourcesCollection.get(resourceId)!)
+      router.navigate({ to: '/connection/$resourceId/table', params: { resourceId } })
+    },
+  })
 
   const defaultValues: typeof createConnectionType.infer = {
     connectionString: '',
@@ -126,7 +137,7 @@ function CreateConnectionPage() {
     },
   })
 
-  const { mutate: test, reset, status } = useMutation({
+  const { mutate: test, reset, status: testingStatus } = useMutation({
     mutationFn: ({ type, connectionString }: { type: ConnectionType, connectionString: string }) => testConnectionQuery.run({
       type,
       connectionString,
@@ -239,7 +250,7 @@ function CreateConnectionPage() {
                 >
                   Back
                 </Button>
-                {status === 'success'
+                {testingStatus === 'success'
                   ? (
                       <Button
                         variant="default"
@@ -250,11 +261,11 @@ function CreateConnectionPage() {
                     )
                   : (
                       <Button
-                        disabled={status === 'pending' || !connectionString || !canSendIfLocalhost}
+                        disabled={testingStatus === 'pending' || !connectionString || !canSendIfLocalhost}
                         onClick={() => test({ type: typeValue!, connectionString })}
                       >
                         <LoadingContent loading={status === 'pending'}>
-                          {status === 'error' ? 'Try again' : 'Test connection'}
+                          {testingStatus === 'error' ? 'Try again' : 'Test connection'}
                         </LoadingContent>
                       </Button>
                     )}
@@ -281,9 +292,9 @@ function CreateConnectionPage() {
               </Button>
               <Button
                 type="submit"
-                disabled={status === 'pending' || !isValid || !canSaveInCloud}
+                disabled={!isValid || !canSaveInCloud}
               >
-                <LoadingContent loading={status === 'pending'}>
+                <LoadingContent loading={isCreatingConnection}>
                   <AppLogo className="w-4" />
                   Save connection
                 </LoadingContent>
