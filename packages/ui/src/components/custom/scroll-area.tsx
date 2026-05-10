@@ -6,8 +6,8 @@ export function ScrollArea({ className, ...props }: ComponentProps<'div'>) {
     <div
       className={cn(
         `
-          scrollbar-thin overflow-auto scrollbar-thumb-black/15
-          scrollbar-track-transparent
+          scrollbar-thin scrollbar-thumb-black/15 scrollbar-track-transparent
+          overflow-auto
           dark:scrollbar-thumb-white/15
         `,
         className,
