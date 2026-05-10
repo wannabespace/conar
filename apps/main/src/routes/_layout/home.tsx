@@ -22,21 +22,19 @@ export const Route = createFileRoute('/_layout/home')({
 
 export function HomePage() {
   return (
-    <>
-      <main className={`
-        px-4
-        sm:px-6
-        lg:px-10
-      `}
-      >
-        <div>
-          <Hero className="sticky top-(--navbar-height)" />
-          <Demo />
-        </div>
-        <Features />
-        <Testimonials />
-        <Pricing />
-      </main>
-    </>
+    <main className={`
+      px-4
+      sm:px-6
+      lg:px-10
+    `}
+    >
+      <div>
+        <Hero className="sticky top-(--navbar-height)" />
+        <Demo />
+      </div>
+      <Features />
+      <Testimonials />
+      <Pricing />
+    </main>
   )
 }

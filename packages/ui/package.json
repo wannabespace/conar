@@ -6,6 +6,8 @@
     "./globals.css": "./src/styles/globals.css",
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
+    "./components/tanstack-form": "./src/components/tanstack-form/index.ts",
+    "./components/tanstack-form/*": "./src/components/tanstack-form/*",
     "./hooks/*": "./src/hooks/*.ts",
     "./hookas/*": "./src/hookas/*.ts",
     "./theme-observer": "./src/theme-observer.tsx",

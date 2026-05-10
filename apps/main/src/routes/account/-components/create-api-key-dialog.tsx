@@ -5,9 +5,10 @@ import { Checkbox } from '@conar/ui/components/checkbox'
 import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogTitle } from '@conar/ui/components/dialog'
-import { Field, FieldError, FieldGroup, FieldLabel } from '@conar/ui/components/field'
+import { Field, FieldLabel } from '@conar/ui/components/field'
+import { Fieldset } from '@conar/ui/components/fieldset'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
-import { useAppForm } from '@conar/ui/hooks/use-app-form'
+import { useAppForm } from '@conar/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
@@ -46,12 +47,13 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
   ref?: React.RefObject<{ open: () => void } | null>
   onRefetch: () => void
 }) {
-  const [open, setOpen] = useState(false)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [revealKeyDialogOpen, setRevealKeyDialogOpen] = useState(false)
   const [createdKey, setCreatedKey] = useState<{ id: string, key: string } | null>(null)
 
   useImperativeHandle(ref, () => ({
     open: () => {
-      setOpen(true)
+      setCreateDialogOpen(true)
     },
   }), [])
 
@@ -63,6 +65,9 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
           name: value.name.trim(),
           permissions: permissionSelectionToPayload(value.permissions),
         })
+        setCreateDialogOpen(false)
+        setRevealKeyDialogOpen(true)
+        form.reset()
         setCreatedKey({ id: data.id, key: data.key })
         onRefetch()
         toast.success('API key created')
@@ -73,79 +78,67 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
     },
   })
 
-  function handleCloseFlow() {
-    setCreatedKey(null)
-    setOpen(false)
-    form.reset()
-  }
-
   const isSubmitting = useStore(form.store, state => state.isSubmitting)
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(nextOpen) => {
-        setOpen(nextOpen)
-        if (!nextOpen) {
-          setCreatedKey(null)
-          form.reset()
-        }
-      }}
-    >
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Create API key</DialogTitle>
-          <DialogDescription>
-            Name it so you can tell keys apart later, and choose what this key is allowed to do.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogPanel>
-          <form
-            id="create-api-key-form"
-            className="space-y-4"
-            onSubmit={(e) => {
-              e.preventDefault()
-              form.handleSubmit()
-            }}
-          >
-            <FieldGroup className="gap-4">
-              <form.AppField
-                name="name"
-                validators={{
-                  onSubmit: ({ value }) => {
-                    if (value.trim().length < 2) {
-                      return 'Name must be at least 2 characters'
-                    }
-                  },
-                }}
-              >
-                {field => (
-                  <field.Input
-                    label="Name"
-                    id="api-key-name"
-                    placeholder="e.g. local-mcp, ci-bot"
-                    maxLength={100}
-                  />
-                )}
-              </form.AppField>
-              <form.Field
-                name="permissions"
-                validators={{
-                  onSubmit: ({ value }) => {
-                    const atLeastOne = Object.values(value).some(actions =>
-                      Object.values(actions).some(Boolean),
-                    )
-                    if (!atLeastOne) {
-                      return 'Select at least one permission'
-                    }
-                  },
-                }}
-              >
-                {(field) => {
-                  const selection = field.state.value
-
-                  return (
-                    <Field data-invalid={!field.state.meta.isValid}>
+    <>
+      <Dialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create API key</DialogTitle>
+            <DialogDescription>
+              Name it so you can tell keys apart later, and choose what this key is allowed to do.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogPanel>
+            <form
+              id="create-api-key-form"
+              className="space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault()
+                form.handleSubmit()
+              }}
+            >
+              <Fieldset className="flex w-full flex-col gap-6">
+                <form.AppField
+                  name="name"
+                  validators={{
+                    onSubmit: ({ value }) => {
+                      if (value.trim().length < 2) {
+                        return 'Name must be at least 2 characters'
+                      }
+                    },
+                  }}
+                >
+                  {field => (
+                    <Field>
+                      <FieldLabel>Name</FieldLabel>
+                      <field.Input
+                        placeholder="e.g. local-mcp, ci-bot"
+                        maxLength={100}
+                      />
+                      <field.Error />
+                    </Field>
+                  )}
+                </form.AppField>
+                <form.AppField
+                  name="permissions"
+                  validators={{
+                    onSubmit: ({ value }) => {
+                      const atLeastOne = Object.values(value).some(actions =>
+                        Object.values(actions).some(Boolean),
+                      )
+                      if (!atLeastOne) {
+                        return 'Select at least one permission'
+                      }
+                    },
+                  }}
+                >
+                  {field => (
+                    <Field>
                       <FieldLabel>Permissions</FieldLabel>
                       {objectEntries(API_KEY_PERMISSIONS).map(([resource, actions]) => (
                         <Field key={resource} className="gap-1">
@@ -157,12 +150,12 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
                               `}
                             >
                               <Checkbox
-                                checked={selection[resource][action]}
+                                checked={field.state.value[resource][action]}
                                 onCheckedChange={(checked) => {
                                   field.handleChange({
-                                    ...selection,
+                                    ...field.state.value,
                                     [resource]: {
-                                      ...selection[resource],
+                                      ...field.state.value[resource],
                                       [action]: checked === true,
                                     },
                                   })
@@ -175,77 +168,71 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
                           ))}
                         </Field>
                       ))}
-                      {!field.state.meta.isValid && (
-                        <FieldError
-                          errors={field.state.meta.errors.map(err =>
-                            typeof err === 'string' ? { message: err } : err,
-                          )}
-                        />
-                      )}
+                      <field.Error />
                     </Field>
-                  )
-                }}
-              </form.Field>
-            </FieldGroup>
-          </form>
-        </DialogPanel>
-        <DialogFooter>
-          <DialogClose render={<Button type="button" variant="outline" />}>
-            Cancel
-          </DialogClose>
-          <Button type="submit" form="create-api-key-form" disabled={isSubmitting}>
-            <LoadingContent loading={isSubmitting}>
-              Create
-            </LoadingContent>
-          </Button>
-        </DialogFooter>
-
-        <Dialog
-          open={!!createdKey}
-          onOpenChange={(next) => {
-            if (!next) {
-              handleCloseFlow()
-            }
-          }}
+                  )}
+                </form.AppField>
+              </Fieldset>
+            </form>
+          </DialogPanel>
+          <DialogFooter>
+            <DialogClose render={<Button type="button" variant="outline" />}>
+              Cancel
+            </DialogClose>
+            <Button type="submit" form="create-api-key-form" disabled={isSubmitting}>
+              <LoadingContent loading={isSubmitting}>
+                Create
+              </LoadingContent>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={revealKeyDialogOpen}
+        onOpenChange={setRevealKeyDialogOpen}
+        onOpenChangeComplete={(isOpen) => {
+          if (!isOpen) {
+            setCreatedKey(null)
+          }
+        }}
+      >
+        <DialogContent
+          className="sm:max-w-md"
+          showCloseButton={false}
         >
-          <DialogContent
-            className="sm:max-w-md"
-            showCloseButton={false}
-          >
-            <DialogHeader>
-              <DialogTitle>Your new API key</DialogTitle>
-              <DialogDescription>
-                This key is shown only once. Copy and store it safely.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogPanel>
-              {createdKey && (
-                <InputGroup className="font-mono text-xs shadow-none">
-                  <InputGroupInput
-                    readOnly
-                    value={createdKey.key}
-                    className="min-w-0 overflow-x-auto font-mono text-xs"
+          <DialogHeader>
+            <DialogTitle>Your new API key</DialogTitle>
+            <DialogDescription>
+              This key is shown only once. Copy and store it safely.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogPanel>
+            {createdKey && (
+              <InputGroup className="font-mono text-xs shadow-none">
+                <InputGroupInput
+                  readOnly
+                  value={createdKey.key}
+                  className="min-w-0 overflow-x-auto font-mono text-xs"
+                />
+                <InputGroupAddon align="inline-end">
+                  <CopyButton
+                    text={createdKey.key}
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label="Copy API key"
+                    onClick={() => toast.success('API key copied')}
                   />
-                  <InputGroupAddon align="inline-end">
-                    <CopyButton
-                      text={createdKey.key}
-                      variant="ghost"
-                      size="icon-xs"
-                      aria-label="Copy API key"
-                      onClick={() => toast.success('API key copied')}
-                    />
-                  </InputGroupAddon>
-                </InputGroup>
-              )}
-            </DialogPanel>
-            <DialogFooter>
-              <Button type="button" onClick={handleCloseFlow}>
-                Done
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </DialogContent>
-    </Dialog>
+                </InputGroupAddon>
+              </InputGroup>
+            )}
+          </DialogPanel>
+          <DialogFooter>
+            <Button type="button" onClick={() => setRevealKeyDialogOpen(false)}>
+              Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
