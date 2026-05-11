@@ -1,6 +1,6 @@
 import type { Context } from './context'
 import { db } from '@conar/db'
-import { subscriptions } from '@conar/db/schema'
+import { subscriptions, users } from '@conar/db/schema'
 import { memoize } from '@conar/memoize'
 import { ACTIVE_SUBSCRIPTION_STATUSES, LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
 import { ORPCError, os } from '@orpc/server'
@@ -83,7 +83,15 @@ export const optionalAuthMiddleware = logMiddleware.concat(orpc.middleware(async
 }))
 
 export async function getSubscription(userId: string) {
-  const userSubscriptions = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId))
+  const userSubscriptions = await db
+    .select({
+      id: subscriptions.id,
+      status: subscriptions.status,
+      stripeCustomerId: users.stripeCustomerId,
+    })
+    .from(subscriptions)
+    .innerJoin(users, eq(subscriptions.userId, users.id))
+    .where(eq(subscriptions.userId, userId))
 
   return userSubscriptions.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number])) ?? null
 }
