@@ -51,6 +51,7 @@ function getEnvApiKey(): string | null {
 
 export function getAuthState(): AuthState | null {
   const envApiKey = getEnvApiKey()
+
   if (envApiKey) {
     return {
       token: envApiKey,
