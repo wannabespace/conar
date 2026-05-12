@@ -118,7 +118,6 @@ switch (mode) {
     await runDocker(getComposeArgs('up', '-d', '--remove-orphans'))
     break
   case 'stop':
-    ensureEnvFile()
     await runDocker(getComposeArgs('down'))
     break
   default:

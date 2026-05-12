@@ -289,8 +289,8 @@ catalogs:
       specifier: 1.0.0-rc.1
       version: 1.0.0-rc.1
     electron:
-      specifier: 39.2.6
-      version: 39.2.6
+      specifier: 39.8.1
+      version: 39.8.1
     electron-store:
       specifier: ^11.0.2
       version: 11.0.2
@@ -1045,7 +1045,7 @@ importers:
         version: 7.0.0-dev.20260507.1
       electron:
         specifier: 'catalog:'
-        version: 39.2.6
+        version: 39.8.1
       vite:
         specifier: 'catalog:'
         version: 8.0.11(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(yaml@2.8.3)
@@ -7356,8 +7356,8 @@ packages:
   electron-updater@6.8.3:
     resolution: {integrity: sha512-Z6sgw3jgbikWKXei1ENdqFOxBP0WlXg3TtKfz0rgw2vIZFJUyI4pD7ZN7jrkm7EoMK+tcm/qTnPUdqfZukBlBQ==}
 
-  electron@39.2.6:
-    resolution: {integrity: sha512-dHBgTodWBZd+tL1Dt0PSh/CFLHeDkFCTKCTXu1dgPhlE9Z3k2zzlBQ9B2oW55CFsKanBDHiUomHJNw0XaSdQpA==}
+  electron@39.8.1:
+    resolution: {integrity: sha512-8gHotB8Adb+f8d+xkHk6om32j4McOF7D6X8J2kwZoSNciAXHd84kqVwwr6mi/x43LAmdqkM13RXbPy3Jfq2wnQ==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
@@ -17731,7 +17731,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  electron@39.2.6:
+  electron@39.8.1:
     dependencies:
       '@electron/get': 2.0.3
       '@types/node': 22.19.15
