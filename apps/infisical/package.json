@@ -1,0 +1,11 @@
+{
+  "name": "@conar/infisical",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "node ./scripts/manage.mjs dev",
+    "start": "node ./scripts/manage.mjs start",
+    "stop": "node ./scripts/manage.mjs stop",
+    "check-types": "node --check ./scripts/manage.mjs"
+  }
+}

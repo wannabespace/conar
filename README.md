@@ -78,6 +78,8 @@ Conar is an AI-powered open-source project that simplifies database interactions
   pnpm run dev
   ```
 
+  This now also starts a self-hosted Infisical instance from `apps/infisical` on `http://localhost:8081`. The first run creates `apps/infisical/.env` automatically.
+
 ## Testing
 
 - **Unit Tests**
