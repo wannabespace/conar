@@ -38,6 +38,62 @@ services:
       timeout: 5s
       retries: 5
 
+  infisical:
+    container_name: conar-infisical
+    image: infisical/infisical:latest
+    restart: unless-stopped
+    profiles: [infisical]
+    depends_on:
+      infisical-db:
+        condition: service_healthy
+      infisical-redis:
+        condition: service_started
+    env_file: apps/infisical/.env
+    environment:
+      NODE_ENV: production
+    ports:
+      - '8081:8080'
+    networks:
+      - infisical
+
+  infisical-redis:
+    container_name: conar-infisical-redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    profiles: [infisical]
+    ports:
+      - '6380:6379'
+    volumes:
+      - infisical_redis_data:/data
+    networks:
+      - infisical
+
+  infisical-db:
+    container_name: conar-infisical-db
+    image: postgres:14-alpine
+    restart: unless-stopped
+    profiles: [infisical]
+    environment:
+      POSTGRES_PASSWORD: infisical
+      POSTGRES_USER: infisical
+      POSTGRES_DB: infisical
+    ports:
+      - '5433:5432'
+    volumes:
+      - infisical_pg_data:/var/lib/postgresql/data
+    networks:
+      - infisical
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --username=$$POSTGRES_USER --dbname=$$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
 volumes:
   postgres_data:
   redis-data:
+  infisical_pg_data:
+  infisical_redis_data:
+
+networks:
+  infisical:
