@@ -1,7 +1,10 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { connections, connectionsResources } from '~/drizzle/schema'
-import { canSendQueryInCloud } from '@conar/connection/utils'
+import { isLocalhostConnectionString } from '@conar/connection/utils'
+import { SyncType } from '@conar/shared/enums/sync-type'
+import { tryCatch } from '@conar/shared/utils/helpers'
 import { queryClient } from '~/main'
+import { isLocalProxyAvailable } from '../local-proxy'
 import { resourceRowsQueryInfiniteOptions } from '../queries'
 import { resourceTableColumnsQueryOptions } from '../queries/columns'
 import { resourceConstraintsQueryOptions } from '../queries/constraints'
@@ -43,9 +46,33 @@ export async function prefetchConnectionResourceTableCore({ connectionResource, 
   ])
 }
 
-export function checkSendQueryAbility(connection: Pick<typeof connections.$inferSelect, 'syncType' | 'connectionString' | 'isPasswordExists'>) {
-  if (window.electron) {
-    return true
+type FetchingConnection = Pick<typeof connections.$inferSelect, 'syncType' | 'connectionString' | 'isPasswordExists' | 'isPasswordPopulated'>
+
+export function fetchingConfig(connection: FetchingConnection, options?: {
+  isLocalProxyAvailable?: boolean
+}): {
+  type: 'cloud' | 'localhost' | 'local-proxy' | 'waiting-for-password'
+  canSend: boolean
+} {
+  if (connection.isPasswordExists && !connection.isPasswordPopulated) {
+    return { type: 'waiting-for-password', canSend: false }
   }
-  return canSendQueryInCloud(connection)
+
+  if (window.electron) {
+    return { type: 'localhost', canSend: true }
+  }
+
+  const isLocalhost = tryCatch(() => isLocalhostConnectionString(connection.connectionString)).data === true
+  const isPasswordFilled = (connection.syncType === SyncType.CloudWithoutPassword && connection.isPasswordPopulated)
+    || connection.syncType === SyncType.Cloud
+
+  if ((isLocalhost || isPasswordFilled) && (options?.isLocalProxyAvailable ?? isLocalProxyAvailable())) {
+    return { type: 'local-proxy', canSend: true }
+  }
+
+  if (isLocalhost) {
+    return { type: 'local-proxy', canSend: false }
+  }
+
+  return { type: 'cloud', canSend: true }
 }

@@ -7,6 +7,7 @@ export const list = orpc
     return db.query.connectionsResources.findMany({
       columns: {
         id: true,
+        connectionId: true,
         name: true,
         createdAt: true,
         updatedAt: true,

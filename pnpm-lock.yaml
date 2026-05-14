@@ -60,6 +60,9 @@ catalogs:
     '@hackylabs/deep-redact':
       specifier: ^3.0.5
       version: 3.0.5
+    '@hono/node-server':
+      specifier: ^1.14.1
+      version: 1.19.14
     '@monaco-editor/loader':
       specifier: ^1.7.0
       version: 1.7.0
@@ -882,6 +885,9 @@ importers:
       '@conar/proxy':
         specifier: workspace:*
         version: link:../proxy
+      '@conar/query-proxy':
+        specifier: workspace:*
+        version: link:../../packages/query-proxy
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.59.1
@@ -936,18 +942,21 @@ importers:
       '@drizzle-team/brocli':
         specifier: 'catalog:'
         version: 0.12.0
+      '@hono/node-server':
+        specifier: 'catalog:'
+        version: 1.19.14(hono@4.12.18)
       '@noble/hashes':
         specifier: 'catalog:'
         version: 2.2.0
       '@orpc/client':
         specifier: 'catalog:'
         version: 1.14.2(@opentelemetry/api@1.9.0)
-      arktype:
-        specifier: 'catalog:'
-        version: 2.2.0
       consola:
         specifier: 'catalog:'
         version: 3.4.2
+      hono:
+        specifier: 'catalog:'
+        version: 4.12.18
       mssql:
         specifier: 'catalog:'
         version: 12.5.2(@azure/core-client@1.10.1)
@@ -976,6 +985,9 @@ importers:
       '@conar/memoize':
         specifier: workspace:*
         version: link:../../packages/memoize
+      '@conar/query-proxy':
+        specifier: workspace:*
+        version: link:../../packages/query-proxy
       '@conar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -1306,6 +1318,9 @@ importers:
       '@conar/memoize':
         specifier: workspace:*
         version: link:../../packages/memoize
+      '@conar/query-proxy':
+        specifier: workspace:*
+        version: link:../../packages/query-proxy
       '@conar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -1471,6 +1486,25 @@ importers:
       tsdown:
         specifier: 'catalog:'
         version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(publint@0.3.18)(typescript@6.0.3)
+
+  packages/query-proxy:
+    dependencies:
+      '@conar/connection':
+        specifier: workspace:*
+        version: link:../connection
+      '@conar/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@orpc/server':
+        specifier: 'catalog:'
+        version: 1.14.2(@opentelemetry/api@1.9.0)(crossws@0.4.5(srvx@0.11.15))(ws@8.19.0)
+    devDependencies:
+      '@conar/configs':
+        specifier: workspace:*
+        version: link:../configs
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20260507.1
 
   packages/shared:
     dependencies:
@@ -2957,6 +2991,12 @@ packages:
 
   '@henrygd/queue@1.2.0':
     resolution: {integrity: sha512-jW/BLSTpcvExDhqJGxtIPgGr2O0IFF8XUNDwEbfCfhrXT8a4xztQ9Lv6U/vbYzYC0xVWn+3zv6YnLUh3bEFUKA==}
+
+  '@hono/node-server@1.19.14':
+    resolution: {integrity: sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      hono: ^4
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -13157,6 +13197,10 @@ snapshots:
   '@hackylabs/deep-redact@3.0.5': {}
 
   '@henrygd/queue@1.2.0': {}
+
+  '@hono/node-server@1.19.14(hono@4.12.18)':
+    dependencies:
+      hono: 4.12.18
 
   '@humanfs/core@0.19.1': {}
 

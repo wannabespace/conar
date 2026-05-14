@@ -22,6 +22,6 @@ export default defineConfig(({ watch }) => ({
   env: {
     API_URL: process.env.API_URL,
     MAIN_URL: process.env.MAIN_URL,
-    VERSION: JSON.stringify(pkg.version),
+    VERSION: pkg.version,
   },
 }))

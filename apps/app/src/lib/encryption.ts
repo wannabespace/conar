@@ -8,7 +8,7 @@ export function encrypt(text: string, secret: string) {
     })
   }
 
-  return orpcProxy.encryption.encrypt.call({
+  return orpcProxy.encryption.encrypt({
     text,
     secret,
   })
@@ -22,7 +22,7 @@ export function decrypt(encryptedText: string, secret: string) {
     })
   }
 
-  return orpcProxy.encryption.decrypt.call({
+  return orpcProxy.encryption.decrypt({
     encryptedText,
     secret,
   })

@@ -1,7 +1,6 @@
 import type { ComponentRef } from 'react'
 import type { connections as connectionsTable } from '~/drizzle/schema'
 import { CONNECTION_RESOURCE_ROOT_LABEL, CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
-import { SyncType } from '@conar/shared/enums/sync-type'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
@@ -30,16 +29,19 @@ import { createWebStorageValue } from 'seitu/web'
 import { v7 } from 'uuid'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
+import { useLocalProxyAvailable } from '~/entities/connection/local-proxy'
 import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
 import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
-import { checkSendQueryAbility, getConnectionStringToShow, lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
+import { getConnectionStringToShow, lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
+import { fetchingConfig } from '~/entities/connection/utils/fetching'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
 function ConnectionIconWithVersion({ connection }: { connection: typeof connectionsTable.$inferSelect }) {
-  const canSend = checkSendQueryAbility(connection)
+  const isLocalProxyAvailable = useLocalProxyAvailable()
+  const { canSend } = fetchingConfig(connection, { isLocalProxyAvailable })
   const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery({
     ...connectionVersionQueryOptions(connection),
     enabled: canSend,
@@ -202,8 +204,8 @@ function ConnectionCard({
     .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
     .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
   const storedResourcesNames = storedResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
-  const canSend = checkSendQueryAbility(connection)
-  const canQuery = canSend && connection.syncType === SyncType.CloudWithoutPassword && connection.isPasswordPopulated
+  const isLocalProxyAvailable = useLocalProxyAvailable()
+  const { type, canSend } = fetchingConfig(connection, { isLocalProxyAvailable })
 
   const {
     data: resources = storedResourcesNames,
@@ -213,7 +215,7 @@ function ConnectionCard({
     refetch,
   } = useQuery({
     ...connectionResourcesQueryOptions(connection),
-    enabled: canQuery,
+    enabled: canSend,
   })
 
   const [isOpen, setIsOpen] = useState(false)
@@ -240,7 +242,7 @@ function ConnectionCard({
   })
 
   useEffect(() => {
-    if (canQuery && !selectedResource && !isFetching && !error && !isWaitForSyncPending) {
+    if (canSend && !selectedResource && !isFetching && !error && !isWaitForSyncPending) {
       connectionsResourcesCollection.insert({
         id: v7(),
         connectionId: connection.id,
@@ -249,7 +251,7 @@ function ConnectionCard({
         updatedAt: new Date(),
       })
     }
-  }, [canQuery, resolvedSelectedResourceName, selectedResource, connection.id, isFetching, error, isWaitForSyncPending])
+  }, [canSend, resolvedSelectedResourceName, selectedResource, connection.id, isFetching, error, isWaitForSyncPending])
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -332,9 +334,9 @@ function ConnectionCard({
                       />
                     </TooltipTrigger>
                     <TooltipContent className="pointer-events-auto max-w-xs">
-                      {connection.syncType === SyncType.CloudWithoutPassword
-                        ? 'Connections saved without password can only be queried in the desktop app.'
-                        : 'You cannot reach localhost from the web app. Open this connection in the desktop app instead.'}
+                      {type === 'waiting-for-password'
+                        ? 'Filled password is required to query this connection.'
+                        : 'You cannot reach this connection from the web app. Run `conar proxy` or open this connection in the desktop app.'}
                     </TooltipContent>
                   </Tooltip>
                 )}
@@ -410,7 +412,7 @@ function ConnectionCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
-                disabled={!canSend || (connection.syncType === SyncType.CloudWithoutPassword && !connection.isPasswordPopulated)}
+                disabled={!canSend}
                 onClick={() => refetch()}
               >
                 <RiRefreshLine className="size-4" />

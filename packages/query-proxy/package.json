@@ -1,0 +1,17 @@
+{
+  "name": "@conar/query-proxy",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "check-types": "tsgo"
+  },
+  "dependencies": {
+    "@conar/connection": "workspace:*",
+    "@conar/shared": "workspace:*",
+    "@orpc/server": "catalog:"
+  },
+  "devDependencies": {
+    "@conar/configs": "workspace:*",
+    "@typescript/native-preview": "catalog:"
+  }
+}

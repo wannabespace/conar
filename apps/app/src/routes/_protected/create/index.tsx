@@ -1,4 +1,3 @@
-import { isLocalhostConnectionString } from '@conar/connection/utils'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { tryCatch } from '@conar/shared/utils/helpers'
@@ -17,11 +16,12 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
+import { useLocalProxyAvailable } from '~/entities/connection/local-proxy'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
-import { checkSendQueryAbility } from '~/entities/connection/utils/fetching'
+import { fetchingConfig } from '~/entities/connection/utils/fetching'
 import { generateRandomName } from '~/lib/utils'
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
@@ -154,17 +154,20 @@ function CreateConnectionPage() {
     },
   })
 
-  const typeValue = useStore(form.store, state => state.values.type)
   const connectionString = useStore(form.store, state => state.values.connectionString)
-  const url = tryCatch(() => new SafeURL(connectionString.trim()))
-  const name = useStore(form.store, state => state.values.name)
-  const syncType = useStore(form.store, state => state.values.syncType)
-  const label = useStore(form.store, state => state.values.label)
-  const color = useStore(form.store, state => state.values.color)
+  const url = tryCatch(() => new SafeURL(connectionString.trim())).data
+  const { name, syncType, label, color, type: typeValue } = useStore(form.store, state => state.values)
   const isValid = useStore(form.store, state => state.isValid)
 
-  const canSendIfLocalhost = !!window.electron || !tryCatch(() => isLocalhostConnectionString(connectionString)).data
-  const canSaveInCloud = url.data ? checkSendQueryAbility({ syncType, connectionString, isPasswordExists: !!url.data?.password }) : false
+  const isLocalProxyAvailable = useLocalProxyAvailable()
+  const hasPassword = !!url?.password
+  const { canSend } = fetchingConfig({
+    syncType,
+    connectionString,
+    isPasswordExists: hasPassword,
+    isPasswordPopulated: hasPassword,
+  }, { isLocalProxyAvailable })
+  const canSaveInCloud = !!url && canSend
 
   return (
     <ScrollArea className="py-[10vh]">
@@ -234,7 +237,7 @@ function CreateConnectionPage() {
                 form.setFieldValue('connectionString', connectionString)
               }}
               onEnter={() => {
-                if (canSendIfLocalhost) {
+                if (canSend) {
                   test({ type: typeValue!, connectionString })
                 }
               }}
@@ -261,7 +264,7 @@ function CreateConnectionPage() {
                     )
                   : (
                       <Button
-                        disabled={testingStatus === 'pending' || !connectionString || !canSendIfLocalhost}
+                        disabled={testingStatus === 'pending' || !connectionString || !canSend}
                         onClick={() => test({ type: typeValue!, connectionString })}
                       >
                         <LoadingContent loading={status === 'pending'}>

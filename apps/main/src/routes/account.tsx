@@ -6,7 +6,7 @@ import { UserAvatar } from '@conar/ui/components/custom/user-avatar'
 import { Separator } from '@conar/ui/components/separator'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import { RiDashboard3Line, RiFileListLine, RiGitBranchLine, RiGithubFill, RiKey2Line, RiLogoutCircleLine, RiMoonLine, RiSettingsLine, RiSunLine } from '@remixicon/react'
+import { RiDashboard3Line, RiFileListLine, RiGitBranchLine, RiGithubFill, RiLogoutCircleLine, RiMoonLine, RiSettingsLine, RiSunLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, Outlet, redirect, useMatches, useRouter } from '@tanstack/react-router'
 import { Footer } from '~/components/footer'
@@ -155,10 +155,10 @@ function AccountLayout() {
               <RiFileListLine className="size-4" />
               Billing & Invoices
             </SidebarButton>
-            <SidebarButton active={match === '/account/api-keys'} render={<Link to="/account/api-keys" />}>
+            {/* <SidebarButton active={match === '/account/api-keys'} render={<Link to="/account/api-keys" />}>
               <RiKey2Line className="size-4" />
               API Keys
-            </SidebarButton>
+            </SidebarButton> */}
             <SidebarButton active={match === '/account/settings/'} render={<Link to="/account/settings" />}>
               <RiSettingsLine className="size-4" />
               Settings

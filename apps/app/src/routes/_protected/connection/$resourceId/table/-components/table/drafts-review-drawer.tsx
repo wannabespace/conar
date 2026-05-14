@@ -29,8 +29,6 @@ import { Route } from '../..'
 import { useTableColumns } from '../../-columns'
 import { draftsActions, getRowKeyByPrimaryKeys, primaryKeysKey, useTablePageStore } from '../../-store'
 
-const DISPLAY_SIZE = 500
-
 function ValueCell({
   value,
   children,
@@ -102,9 +100,9 @@ export function DraftsReviewDrawer({
     const column = columns.find(c => c.id === columnId)
 
     if (!column)
-      return getDisplayValue(value, DISPLAY_SIZE)
+      return getDisplayValue(value, Number.POSITIVE_INFINITY)
 
-    return createTransformer(connection.type, column).toDisplay(value, DISPLAY_SIZE)
+    return createTransformer(connection.type, column).toDisplay(value, Number.POSITIVE_INFINITY)
   }
 
   return (

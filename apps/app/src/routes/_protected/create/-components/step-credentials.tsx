@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@cona
 import { Field, FieldDescription, FieldLabel } from '@conar/ui/components/field'
 import { Input } from '@conar/ui/components/input'
 import { useId } from 'react'
+import { useLocalProxyAvailable } from '~/entities/connection/local-proxy'
 
 export function StepCredentials({
   ref,
@@ -20,6 +21,7 @@ export function StepCredentials({
   onEnter: () => void
 }) {
   const id = useId()
+  const localProxyAvailable = useLocalProxyAvailable()
 
   return (
     <Card className="w-full">
@@ -48,7 +50,9 @@ export function StepCredentials({
           />
           {!window.electron && (
             <FieldDescription>
-              The web app cannot query local connections
+              {localProxyAvailable
+                ? 'Local connections will be routed through your conar proxy.'
+                : 'Run `conar proxy` to query local connections from the web.'}
             </FieldDescription>
           )}
         </Field>

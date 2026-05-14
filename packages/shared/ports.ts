@@ -14,4 +14,5 @@ export const PORTS = {
     DESKTOP: 4003,
     PROXY: 4004,
   },
+  LOCAL_PROXY: 8263,
 } as const

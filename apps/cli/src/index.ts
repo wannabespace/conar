@@ -4,12 +4,14 @@ import { run } from '@drizzle-team/brocli'
 import { consola } from 'consola'
 import { loginCommand } from '~/commands/login'
 import { logoutCommand } from '~/commands/logout'
+import { proxyCommand } from '~/commands/proxy'
 import { queryCommand } from '~/commands/query'
 import { whoamiCommand } from '~/commands/whoami'
 
 const commands = [
   loginCommand,
   logoutCommand,
+  proxyCommand,
   queryCommand,
   whoamiCommand,
 ]

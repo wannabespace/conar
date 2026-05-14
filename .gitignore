@@ -4,3 +4,4 @@ node_modules
 *.tsbuildinfo
 .idea
 .node-modules-inspector
+.pnpm-store
