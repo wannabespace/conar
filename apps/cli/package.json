@@ -46,7 +46,6 @@
     "@clickhouse/client": "catalog:",
     "@drizzle-team/brocli": "catalog:",
     "@hono/node-server": "catalog:",
-    "@noble/hashes": "catalog:",
     "@orpc/client": "catalog:",
     "consola": "catalog:",
     "hono": "catalog:",
