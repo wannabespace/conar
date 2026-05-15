@@ -46,7 +46,11 @@ function OpenPageContent() {
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <p>
-            You can open the desktop app and leave this page.
+            {type === 'cli'
+              ? 'You can close this tab and return to the Conar CLI.'
+              : type === 'desktop'
+                ? 'You can open the desktop app and leave this page.'
+                : 'You can continue in Conar or close this page.'}
           </p>
           <div className="flex">
             {data

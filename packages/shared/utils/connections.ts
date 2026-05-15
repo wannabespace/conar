@@ -8,7 +8,7 @@ export const placeholderMap: Record<ConnectionType, string> = {
   [ConnectionType.ClickHouse]: 'https://user:password@host:port',
 }
 
-export function isReconnectError(error: unknown): boolean {
+export function isConnectionError(error: unknown): boolean {
   if (error instanceof Error) {
     const msg = error.message.toLowerCase()
     return RECONNECT_ERROR_PATTERNS.some(pattern => msg.includes(pattern.toLowerCase()))

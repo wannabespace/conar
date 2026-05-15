@@ -3,7 +3,6 @@ import { memoize } from '@conar/memoize'
 import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { type } from 'arktype'
 import { createStore } from 'seitu'
-import { repairValueObjectWithDefault } from 'seitu/utils'
 import { createWebStorageValue } from 'seitu/web'
 
 export * from './editor-queries'
@@ -12,11 +11,16 @@ export * from './helpers'
 const schema = type({
   lastOpenedResourceName: 'string | null',
   pinnedResourcesNames: 'string[]',
-}).pipe(({ lastOpenedResourceName, pinnedResourcesNames }) => ({
+  proxy: {
+    enabled: 'boolean',
+    url: 'string | null',
+  },
+}).pipe(({ lastOpenedResourceName, pinnedResourcesNames, proxy }) => ({
   lastOpenedResourceName: (lastOpenedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL.description
     ? CONNECTION_RESOURCE_ROOT_SYMBOL
     : lastOpenedResourceName) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
   pinnedResourcesNames: pinnedResourcesNames.map(name => name === CONNECTION_RESOURCE_ROOT_SYMBOL.description ? CONNECTION_RESOURCE_ROOT_SYMBOL : name),
+  proxy,
 }))
 
 export const getConnectionStore = memoize((id: string) => createWebStorageValue({
@@ -25,9 +29,9 @@ export const getConnectionStore = memoize((id: string) => createWebStorageValue(
   defaultValue: {
     lastOpenedResourceName: null,
     pinnedResourcesNames: [],
+    proxy: { enabled: !window.electron, url: null },
   },
   schema,
-  onValidationError: repairValueObjectWithDefault,
 }))
 
 export const connectionResourceType = type({
@@ -104,7 +108,6 @@ export const getConnectionResourceStore = memoize((id: string) => createWebStora
   key: `connection-resource-store-${id}`,
   defaultValue: connectionResourceDefaultState,
   schema: connectionResourceType,
-  onValidationError: repairValueObjectWithDefault,
 }))
 
 export const getFilesStore = memoize((_id: string) => createStore<File[]>([]))

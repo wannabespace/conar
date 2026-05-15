@@ -60,6 +60,9 @@ catalogs:
     '@hackylabs/deep-redact':
       specifier: ^3.0.5
       version: 3.0.5
+    '@hono/node-server':
+      specifier: ^1.14.1
+      version: 1.19.14
     '@monaco-editor/loader':
       specifier: ^1.7.0
       version: 1.7.0
@@ -418,8 +421,8 @@ catalogs:
       specifier: ^6.12.3
       version: 6.12.3
     seitu:
-      specifier: ^0.13.0
-      version: 0.13.0
+      specifier: ^0.14.0
+      version: 0.14.0
     serve:
       specifier: ^14.2.6
       version: 14.2.6
@@ -850,7 +853,7 @@ importers:
         version: 4.0.1
       seitu:
         specifier: 'catalog:'
-        version: 0.13.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 0.14.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -882,6 +885,9 @@ importers:
       '@conar/proxy':
         specifier: workspace:*
         version: link:../proxy
+      '@conar/query-proxy':
+        specifier: workspace:*
+        version: link:../../packages/query-proxy
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.59.1
@@ -936,18 +942,18 @@ importers:
       '@drizzle-team/brocli':
         specifier: 'catalog:'
         version: 0.12.0
-      '@noble/hashes':
+      '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.2.0
+        version: 1.19.14(hono@4.12.18)
       '@orpc/client':
         specifier: 'catalog:'
         version: 1.14.2(@opentelemetry/api@1.9.0)
-      arktype:
-        specifier: 'catalog:'
-        version: 2.2.0
       consola:
         specifier: 'catalog:'
         version: 3.4.2
+      hono:
+        specifier: 'catalog:'
+        version: 4.12.18
       mssql:
         specifier: 'catalog:'
         version: 12.5.2(@azure/core-client@1.10.1)
@@ -976,6 +982,9 @@ importers:
       '@conar/memoize':
         specifier: workspace:*
         version: link:../../packages/memoize
+      '@conar/query-proxy':
+        specifier: workspace:*
+        version: link:../../packages/query-proxy
       '@conar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -1306,6 +1315,9 @@ importers:
       '@conar/memoize':
         specifier: workspace:*
         version: link:../../packages/memoize
+      '@conar/query-proxy':
+        specifier: workspace:*
+        version: link:../../packages/query-proxy
       '@conar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -1471,6 +1483,25 @@ importers:
       tsdown:
         specifier: 'catalog:'
         version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(publint@0.3.18)(typescript@6.0.3)
+
+  packages/query-proxy:
+    dependencies:
+      '@conar/connection':
+        specifier: workspace:*
+        version: link:../connection
+      '@conar/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@orpc/server':
+        specifier: 'catalog:'
+        version: 1.14.2(@opentelemetry/api@1.9.0)(crossws@0.4.5(srvx@0.11.15))(ws@8.19.0)
+    devDependencies:
+      '@conar/configs':
+        specifier: workspace:*
+        version: link:../configs
+      '@typescript/native-preview':
+        specifier: 'catalog:'
+        version: 7.0.0-dev.20260507.1
 
   packages/shared:
     dependencies:
@@ -1648,7 +1679,7 @@ importers:
         version: 4.11.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       seitu:
         specifier: 'catalog:'
-        version: 0.13.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        version: 0.14.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -1791,11 +1822,6 @@ packages:
 
   '@antfu/ni@30.0.0':
     resolution: {integrity: sha512-DqBVB3XqXH4VsDpER7iLlEtayMC98iXrY7kwBzp1v6LGc/6U6+qnN3+X0bcPK63LMXJCRG2D/XDq7dvtKDGogg==}
-    engines: {node: '>=20.19.0'}
-    hasBin: true
-
-  '@antfu/ni@30.1.0':
-    resolution: {integrity: sha512-3VuAbPjgY52rQNn4wABaXMhBU2Oq91uy6L8nX49eJ35OLI68CyckGU+HZxcaHix4ymuGM2nFL1D6sLpgODK5xw==}
     engines: {node: '>=20.19.0'}
     hasBin: true
 
@@ -2957,6 +2983,12 @@ packages:
 
   '@henrygd/queue@1.2.0':
     resolution: {integrity: sha512-jW/BLSTpcvExDhqJGxtIPgGr2O0IFF8XUNDwEbfCfhrXT8a4xztQ9Lv6U/vbYzYC0xVWn+3zv6YnLUh3bEFUKA==}
+
+  '@hono/node-server@1.19.14':
+    resolution: {integrity: sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      hono: ^4
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -4404,8 +4436,8 @@ packages:
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
-  '@react-grab/cli@0.1.33':
-    resolution: {integrity: sha512-UOc3PwN11Osw0NzaxRLK8trP4X+5iW1Dst3gvHRCafe3wXHyadzHYH8H1hdkcXdlIx3gsoD9ASJ+G/JH+A/jqA==}
+  '@react-grab/cli@0.1.34':
+    resolution: {integrity: sha512-L2eAxN46Vq2Ss3nDegrH7wQVMeWH03ahawp+OdzUtQWqL3cq6Bt149q9XhY3cWc9fJsxuWjLfCn+3T9uApIlBA==}
     hasBin: true
 
   '@redis/bloom@5.12.1':
@@ -6381,6 +6413,11 @@ packages:
 
   bippy@0.5.39:
     resolution: {integrity: sha512-8hE8rKSl8JWyeaY+JjpnmceWAZPpLEyzOZQpWXM5Rc7861c5WotMJHy2aRZKZrGA8nMpvLNF01t4yQQ+HcZG3w==}
+    peerDependencies:
+      react: '>=17.0.1'
+
+  bippy@0.5.40:
+    resolution: {integrity: sha512-3QPSDG5tgd7FCIkcKsUqmbGdlHxBxP7II5drXPNp1I0rpA9+4+/VjQOigDTbzeqTi6Xkaf1Dq7x4E8vbOuwOkA==}
     peerDependencies:
       react: '>=17.0.1'
 
@@ -10181,8 +10218,8 @@ packages:
       final-form: ^5.0.0
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  react-grab@0.1.33:
-    resolution: {integrity: sha512-ER919JMsE4TTrb2CpEivqsIjNMSycD4HtS8v7mS3pq67U7WL1K3+C8m9AYOwW4dpuYh+EanC2eJBmfuczHJZ0A==}
+  react-grab@0.1.34:
+    resolution: {integrity: sha512-jtdOdv0kb90oqL+pMszSh9DOLgVRaX4ZE6XN4GkDEpNNUqveQfZT014+EeJraljpqQfuWKW+96NrrRqUD93D2g==}
     hasBin: true
     peerDependencies:
       react: '>=17.0.0'
@@ -10569,8 +10606,8 @@ packages:
     resolution: {integrity: sha512-3A6sD0WYP7+QrjbfNA2FN3FsOaGGFoekCVgTyypy53gPxhbkCIjtO6YWgdrfM+n/8sI8JeXZOIxsHjMTNxQ4nQ==}
     engines: {node: ^14.0.0 || >=16.0.0}
 
-  seitu@0.13.0:
-    resolution: {integrity: sha512-FNQiXVyIXHX7ERWQ6poBuk/BcBHWIcLgSsZzSPpVgG+vW8FVudAefzyz6wND9cW4gDPYVyjrTkYlTjSyctan8Q==}
+  seitu@0.14.0:
+    resolution: {integrity: sha512-Cf6S0zmKCYQtyc49DKP7MCVcKOg1sjgE3OXcB6b2SQZORbk+vkmilinYFT0XiL8XyJcHQqw8x871p9ErteEqWg==}
     engines: {node: '>=22'}
     peerDependencies:
       react: '>=19'
@@ -11866,13 +11903,6 @@ snapshots:
       tinyexec: 1.1.1
       tinyglobby: 0.2.16
 
-  '@antfu/ni@30.1.0':
-    dependencies:
-      fzf: 0.5.2
-      package-manager-detector: 1.6.0
-      tinyexec: 1.1.2
-      tinyglobby: 0.2.16
-
   '@anthropic-ai/sdk@0.78.0(zod@4.4.3)':
     dependencies:
       json-schema-to-ts: 3.1.1
@@ -13157,6 +13187,10 @@ snapshots:
   '@hackylabs/deep-redact@3.0.5': {}
 
   '@henrygd/queue@1.2.0': {}
+
+  '@hono/node-server@1.19.14(hono@4.12.18)':
+    dependencies:
+      hono: 4.12.18
 
   '@humanfs/core@0.19.1': {}
 
@@ -14717,16 +14751,17 @@ snapshots:
     dependencies:
       react: 19.2.6
 
-  '@react-grab/cli@0.1.33':
+  '@react-grab/cli@0.1.34':
     dependencies:
-      '@antfu/ni': 30.1.0
       commander: 14.0.3
       ignore: 7.0.5
       jsonc-parser: 3.3.1
       ora: 9.4.0
+      package-manager-detector: 1.6.0
       picocolors: 1.1.1
       prompts: 2.4.2
       smol-toml: 1.6.1
+      tinyexec: 1.1.2
 
   '@redis/bloom@5.12.1(@redis/client@5.12.1(@opentelemetry/api@1.9.0))':
     dependencies:
@@ -16835,6 +16870,10 @@ snapshots:
   binary-extensions@2.3.0: {}
 
   bippy@0.5.39(react@19.2.6):
+    dependencies:
+      react: 19.2.6
+
+  bippy@0.5.40(react@19.2.6):
     dependencies:
       react: 19.2.6
 
@@ -21189,10 +21228,10 @@ snapshots:
       final-form: 5.0.0
       react: 17.0.2
 
-  react-grab@0.1.33(react@19.2.6):
+  react-grab@0.1.34(react@19.2.6):
     dependencies:
-      '@react-grab/cli': 0.1.33
-      bippy: 0.5.39(react@19.2.6)
+      '@react-grab/cli': 0.1.34
+      bippy: 0.5.40(react@19.2.6)
     optionalDependencies:
       react: 19.2.6
 
@@ -21266,7 +21305,7 @@ snapshots:
       prompts: 2.4.2
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
-      react-grab: 0.1.33(react@19.2.6)
+      react-grab: 0.1.34(react@19.2.6)
     optionalDependencies:
       esbuild: 0.28.0
       unplugin: 2.1.0
@@ -21705,7 +21744,7 @@ snapshots:
       refa: 0.12.1
       regexp-ast-analysis: 0.7.1
 
-  seitu@0.13.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
+  seitu@0.14.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6):
     dependencies:
       fast-equals: 6.0.0
     optionalDependencies:

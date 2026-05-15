@@ -12,6 +12,7 @@
     "@conar/connection": "workspace:*",
     "@conar/db": "workspace:*",
     "@conar/memoize": "workspace:*",
+    "@conar/query-proxy": "workspace:*",
     "@conar/shared": "workspace:*",
     "@orpc/server": "catalog:",
     "arktype": "catalog:",

@@ -82,6 +82,7 @@
     "@conar/configs": "workspace:*",
     "@conar/connection": "workspace:*",
     "@conar/proxy": "workspace:*",
+    "@conar/query-proxy": "workspace:*",
     "@playwright/test": "catalog:",
     "@rolldown/plugin-babel": "catalog:",
     "@standard-schema/spec": "catalog:",

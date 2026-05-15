@@ -1,7 +1,10 @@
 import type * as apiOrpc from '@conar/api/orpc/routers'
 import type * as proxyOrpc from '@conar/proxy/orpc/routers'
+import type * as queryProxy from '@conar/query-proxy'
 import type { InferRouterInputs, InferRouterOutputs } from '@orpc/server'
-import { createORPCClient, onError } from '@orpc/client'
+import { memoize } from '@conar/memoize'
+import { isConnectionError } from '@conar/shared/utils/connections'
+import { createORPCClient, onError, ORPCError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import { bearerToken } from './auth'
@@ -34,8 +37,26 @@ export const orpc = createTanstackQueryUtils(createORPCClient(new RPCLink({
   ],
 })) satisfies apiOrpc.ORPCRouter)
 
-export const orpcProxy = createTanstackQueryUtils(createORPCClient(new RPCLink({
+export const orpcProxy = createORPCClient(new RPCLink({
   url: `${proxyUrl}/rpc`,
+  interceptors: [
+    async (options) => {
+      try {
+        return await options.next()
+      }
+      catch (error) {
+        if (error instanceof ORPCError) {
+          throw error
+        }
+
+        if (error instanceof Error && isConnectionError(error)) {
+          throw new Error('We can\'t connect to the proxy, please check your connection and try again.', { cause: error })
+        }
+
+        throw error
+      }
+    },
+  ],
   headers: async () => {
     const token = bearerToken.get()
 
@@ -49,7 +70,43 @@ export const orpcProxy = createTanstackQueryUtils(createORPCClient(new RPCLink({
       credentials: 'include',
     })
   },
-})) satisfies proxyOrpc.ORPCRouter)
+})) satisfies proxyOrpc.ORPCRouter
+
+export const createProxyClient = memoize((url: string): queryProxy.ORPCRouter => {
+  return createORPCClient(new RPCLink({
+    url,
+    interceptors: [
+      async (options) => {
+        try {
+          return await options.next()
+        }
+        catch (error) {
+          if (error instanceof ORPCError) {
+            throw error
+          }
+
+          if (error instanceof Error && isConnectionError(error)) {
+            throw new Error('We can\'t connect to the proxy, please check your connection and try again.', { cause: error })
+          }
+
+          throw error
+        }
+      },
+    ],
+    headers: async () => {
+      const token = bearerToken.get()
+      return {
+        Authorization: token ? `Bearer ${token}` : undefined,
+      }
+    },
+    fetch: (request, init) => {
+      return globalThis.fetch(request, {
+        ...init,
+        credentials: 'include',
+      })
+    },
+  }))
+})
 
 export type ORPCInputs = InferRouterInputs<typeof apiOrpc.router>
 export type ORPCOutputs = InferRouterOutputs<typeof apiOrpc.router>

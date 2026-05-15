@@ -1,7 +1,7 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { Type } from 'arktype'
 import type { connections, connectionsResources } from '~/drizzle/schema'
-import { isReconnectError } from '@conar/shared/utils/connections'
+import { isConnectionError } from '@conar/shared/utils/connections'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Result } from 'better-result'
 import { createStore } from 'seitu'
@@ -100,7 +100,7 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
         return queryFn(instance as any)
       },
       catch: (error) => {
-        if (isReconnectError(error)) {
+        if (isConnectionError(error)) {
           attempt += 1
 
           reconnectingPromises.set((state) => {
@@ -129,7 +129,7 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
         times: MAX_RECONNECTION_ATTEMPTS,
         delayMs: RECONNECTION_DELAY,
         backoff: 'constant',
-        shouldRetry: isReconnectError,
+        shouldRetry: isConnectionError,
       },
     })
 
@@ -152,7 +152,7 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
         : result.value
     }
 
-    if (canShowToast() && isReconnectError(result.error)) {
+    if (canShowToast() && isConnectionError(result.error)) {
       toast.error('Could not connect to the database. Please check your network or database server and try again.', {
         id: `reconnection-error-${connectionStringToShow}`,
         description: connectionStringToShow,

@@ -1,7 +1,10 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { connections, connectionsResources } from '~/drizzle/schema'
-import { canSendQueryInCloud } from '@conar/connection/utils'
+import { isLocalhostConnectionString } from '@conar/connection/utils'
+import { SyncType } from '@conar/shared/enums/sync-type'
+import { tryCatch } from '@conar/shared/utils/helpers'
 import { queryClient } from '~/main'
+import { isLocalProxyAvailable } from '../proxy'
 import { resourceRowsQueryInfiniteOptions } from '../queries'
 import { resourceTableColumnsQueryOptions } from '../queries/columns'
 import { resourceConstraintsQueryOptions } from '../queries/constraints'
@@ -43,9 +46,38 @@ export async function prefetchConnectionResourceTableCore({ connectionResource, 
   ])
 }
 
-export function checkSendQueryAbility(connection: Pick<typeof connections.$inferSelect, 'syncType' | 'connectionString' | 'isPasswordExists'>) {
-  if (window.electron) {
-    return true
+type FetchingConnection = Pick<typeof connections.$inferSelect, 'syncType' | 'connectionString' | 'isPasswordExists' | 'isPasswordPopulated'>
+
+export function fetchingConfig(connection: FetchingConnection, options?: {
+  isLocalProxyAvailable?: boolean
+  proxy?: { enabled: boolean, url: string | null }
+}): {
+  type: 'cloud-proxy' | 'local' | 'proxy' | 'waiting-for-password'
+  canSend: boolean
+} {
+  if (connection.isPasswordExists && !connection.isPasswordPopulated) {
+    return { type: 'waiting-for-password', canSend: false }
   }
-  return canSendQueryInCloud(connection)
+
+  const isLocalhost = tryCatch(() => isLocalhostConnectionString(connection.connectionString)).data === true
+  const isPasswordFilled = (connection.syncType === SyncType.CloudWithoutPassword && connection.isPasswordPopulated)
+    || connection.syncType === SyncType.Cloud
+  const proxyAvailable = options?.isLocalProxyAvailable ?? isLocalProxyAvailable()
+  const proxyEnabled = options?.proxy?.enabled === true
+  const hasCustomUrl = !!options?.proxy?.url
+  const preferProxy = !window.electron || proxyEnabled
+
+  if ((isLocalhost || isPasswordFilled) && (proxyAvailable || hasCustomUrl) && preferProxy) {
+    return { type: 'proxy', canSend: true }
+  }
+
+  if (window.electron) {
+    return { type: 'local', canSend: true }
+  }
+
+  if (isLocalhost) {
+    return { type: 'proxy', canSend: false }
+  }
+
+  return { type: 'cloud-proxy', canSend: true }
 }

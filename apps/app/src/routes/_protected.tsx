@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
+import { useLocalProxyAvailable } from '~/entities/connection/proxy'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { queriesCollection } from '~/entities/query/sync'
 import { authClient } from '~/lib/auth'
@@ -17,6 +18,7 @@ export const Route = createFileRoute('/_protected')({
 function ProtectedLayout() {
   const { data } = authClient.useSession()
   const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
+  useLocalProxyAvailable()
 
   const hasUser = !!data?.user
 

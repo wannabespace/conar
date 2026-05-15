@@ -38,12 +38,13 @@ function RootDocument() {
     useHotkey('Mod+R', () => globalHooks.callHook('refreshPressed'))
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useHotkey('Mod+Shift+R', () => location.reload())
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useDeepLinksObserver()
   }
 
   useHotkey('Mod+S', () => globalHooks.callHook('savePressed'))
 
   useUpdatesObserver()
-  useDeepLinksObserver()
 
   useEffect(() => {
     if (isPending)

@@ -5,7 +5,6 @@ import { omit } from '@conar/shared/utils/helpers'
 import { INITIAL_SHIFT_SELECTION_STATE } from '@conar/table/hooks'
 import { type } from 'arktype'
 import { createContext, use } from 'react'
-import { repairValueObjectWithDefault } from 'seitu/utils'
 import { createWebStorageValue } from 'seitu/web'
 
 export const primaryKeysType = type('Record<string, unknown>')
@@ -69,7 +68,6 @@ export const tablePageStore = memoize(({ id, schema, table }: { id: string, sche
   key: `${id}.${schema}-${table}.store`,
   defaultValue: defaultState,
   schema: tablePageType,
-  onValidationError: repairValueObjectWithDefault,
 }))
 
 type TablePageStore = ReturnType<typeof tablePageStore>

@@ -1,15 +1,9 @@
-import type { QueryExecutor } from '@conar/connection/queries'
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import type { AnyFunction, Prettify } from '@conar/shared/utils/helpers'
-import * as clickhouse from '@conar/connection/queries/dialects/clickhouse'
-import * as mssql from '@conar/connection/queries/dialects/mssql'
-import * as mysql from '@conar/connection/queries/dialects/mysql'
-import * as pg from '@conar/connection/queries/dialects/pg'
 import { db } from '@conar/db'
 import { memoize } from '@conar/memoize'
+import { createQueryRouter } from '@conar/query-proxy'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { decrypt } from '@conar/shared/utils/encryption'
-import { ORPCError, type } from '@orpc/server'
+import { ORPCError } from '@orpc/server'
 import { authMiddleware, orpc } from '~/orpc'
 
 const resolveQueryConnectionString = memoize(async ({
@@ -98,51 +92,7 @@ const resolveQueryConnectionString = memoize(async ({
   maxAge: 1000 * 60 * 5, // 5 minutes
 })
 
-type Params<T extends AnyFunction, P extends Parameters<T>[0] = Parameters<T>[0]> = Prettify<
-  P extends { connectionString: string }
-    // eslint-disable-next-line style/indent-binary-ops
-    ? Omit<P, 'connectionString'> & {
-      connectionString?: string
-      connectionId?: string
-      resourceId?: string
-    } & ({ resourceId: string } | { connectionString: string } | { connectionId: string })
-    : P
->
-
-function createQueryExecutor(dialect: QueryExecutor) {
-  return {
-    execute: orpc
-      .use(authMiddleware)
-      .input(type<Params<typeof dialect.execute>>())
-      .handler(async ({ input, context }) => dialect.execute({
-        ...input,
-        connectionString: await resolveQueryConnectionString({ input, userId: context.user.id, getUserSecret: context.getUserSecret }),
-      })),
-    beginTransaction: orpc
-      .use(authMiddleware)
-      .input(type<Params<typeof dialect.beginTransaction>>())
-      .handler(async ({ input, context }) => dialect.beginTransaction({
-        ...input,
-        connectionString: await resolveQueryConnectionString({ input, userId: context.user.id, getUserSecret: context.getUserSecret }),
-      })),
-    executeTransaction: orpc
-      .use(authMiddleware)
-      .input(type<Params<typeof dialect.executeTransaction>>())
-      .handler(({ input }) => dialect.executeTransaction(input)),
-    commitTransaction: orpc
-      .use(authMiddleware)
-      .input(type<Params<typeof dialect.commitTransaction>>())
-      .handler(({ input }) => dialect.commitTransaction(input)),
-    rollbackTransaction: orpc
-      .use(authMiddleware)
-      .input(type<Params<typeof dialect.rollbackTransaction>>())
-      .handler(({ input }) => dialect.rollbackTransaction(input)),
-  } satisfies Record<keyof QueryExecutor, unknown>
-}
-
-export const query = {
-  postgres: createQueryExecutor(pg.query),
-  mysql: createQueryExecutor(mysql.query),
-  clickhouse: createQueryExecutor(clickhouse.query),
-  mssql: createQueryExecutor(mssql.query),
-} satisfies Record<ConnectionType, Record<keyof QueryExecutor, unknown>>
+export const query = createQueryRouter(
+  orpc.use(authMiddleware),
+  (input, context) => resolveQueryConnectionString({ input, userId: context.user.id, getUserSecret: context.getUserSecret }),
+)
