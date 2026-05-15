@@ -1,9 +1,9 @@
 import type { ActiveFilter, Filter } from '@conar/shared/filters'
 import type { GeneratorId } from '~/entities/connection/utils/seeds'
-import { memoize } from '@conar/memoize'
 import { omit } from '@conar/shared/utils/helpers'
 import { INITIAL_SHIFT_SELECTION_STATE } from '@conar/table/hooks'
 import { type } from 'arktype'
+import { memoize } from 'memoza'
 import { createContext, use } from 'react'
 import { createWebStorageValue } from 'seitu/web'
 

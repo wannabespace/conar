@@ -1,8 +1,8 @@
 import type { AnyFunction } from '@conar/shared/utils/helpers'
 import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
-import { memoize } from '@conar/memoize'
 import { tryParseJson } from '@conar/shared/utils/helpers'
+import { memoize } from 'memoza'
 import { handleQueryError } from '..'
 import { disposeTransaction, getTransaction, registerTransaction } from '../transactions'
 

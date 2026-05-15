@@ -17,7 +17,6 @@
   "dependencies": {
     "@ai-sdk/react": "catalog:",
     "@base-ui/react": "catalog:",
-    "@conar/memoize": "workspace:*",
     "@conar/shared": "workspace:*",
     "@conar/table": "workspace:*",
     "@conar/ui": "workspace:*",
@@ -58,6 +57,7 @@
     "js-base64": "catalog:",
     "kysely": "catalog:",
     "marked": "catalog:",
+    "memoza": "catalog:",
     "monaco-editor": "catalog:",
     "monaco-sql-languages": "catalog:",
     "monaco-themes": "catalog:",

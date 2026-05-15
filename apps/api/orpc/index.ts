@@ -1,10 +1,10 @@
 import type { Context } from './context'
 import { db } from '@conar/db'
 import { subscriptions } from '@conar/db/schema'
-import { memoize } from '@conar/memoize'
 import { ACTIVE_SUBSCRIPTION_STATUSES, LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
 import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
+import { memoize } from 'memoza'
 import { auth } from '~/lib/auth'
 import { redis } from '~/lib/redis'
 

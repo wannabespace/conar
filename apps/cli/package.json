@@ -59,7 +59,6 @@
     "@conar/api": "workspace:*",
     "@conar/configs": "workspace:*",
     "@conar/connection": "workspace:*",
-    "@conar/memoize": "workspace:*",
     "@conar/query-proxy": "workspace:*",
     "@conar/shared": "workspace:*",
     "@orpc/server": "catalog:",
@@ -67,6 +66,7 @@
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
     "@typescript/native-preview": "catalog:",
+    "memoza": "catalog:",
     "tsdown": "catalog:"
   }
 }

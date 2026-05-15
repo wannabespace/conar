@@ -1,7 +1,7 @@
 import type { Context } from './context'
 import { db } from '@conar/db'
-import { memoize } from '@conar/memoize'
 import { ORPCError, os } from '@orpc/server'
+import { memoize } from 'memoza'
 import { auth } from '~/auth'
 
 export const orpc = os.$context<Context>()

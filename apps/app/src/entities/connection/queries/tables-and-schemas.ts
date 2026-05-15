@@ -1,7 +1,7 @@
 import type { connectionsResources } from '~/drizzle/schema'
-import { memoize } from '@conar/memoize'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { memoize } from 'memoza'
 import { connectionResourceToQueryParams, createQuery } from '../query'
 
 const tableTypes = ['base table', 'view', 'materialized view'] as const
