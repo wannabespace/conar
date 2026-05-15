@@ -152,7 +152,7 @@ export const queryCommand = command({
     }
 
     if (!sql || !sql.trim()) {
-      return fail('No SQL provided. Pass it as a positional argument or with --file <path>.')
+      return fail('No SQL provided. Pass it as a query string argument or with --file <path>.')
     }
 
     const connection = pickConnection(connections, opts.connection)

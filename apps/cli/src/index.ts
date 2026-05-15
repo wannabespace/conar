@@ -23,7 +23,7 @@ const updateCheck = checkForUpdate(currentVersion)
 
 run(commands, {
   name: 'conar',
-  description: 'Conar CLI – manage and query your databases from the terminal.',
+  description: 'Conar CLI – manage and query your connections from the terminal.',
   version: currentVersion,
 }).catch((error: unknown) => {
   consola.error(error instanceof Error ? error.message : String(error))
