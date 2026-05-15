@@ -19,7 +19,7 @@ export const { autoUpdater } = todesktop
 initElectronEvents()
 
 // process.on('uncaughtException', (error) => {
-//   if (isReconnectError(error)) {
+//   if (isConnectionError(error)) {
 //     console.error('[Suppressed Connection Error]', error.message)
 //     return
 //   }
@@ -27,7 +27,7 @@ initElectronEvents()
 // })
 
 // process.on('unhandledRejection', (reason) => {
-//   if (isReconnectError(reason)) {
+//   if (isConnectionError(reason)) {
 //     console.error('[Suppressed Connection Rejection]', reason instanceof Error ? reason.message : reason)
 //     return
 //   }

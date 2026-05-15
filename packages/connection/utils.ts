@@ -1,4 +1,3 @@
-import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 
 /** IPv4 addresses in 127.0.0.0/8 (often used like localhost). */
@@ -12,19 +11,4 @@ export function isLocalhostConnectionString(connectionString: string): boolean {
     || hostname === '[::1]'
     || LOCALHOST_IPV4.test(hostname)
   )
-}
-
-export function canSendQueryInCloud({
-  syncType,
-  connectionString,
-  isPasswordExists,
-}: {
-  syncType: SyncType
-  connectionString: string
-  isPasswordExists: boolean
-}) {
-  if (syncType === SyncType.CloudWithoutPassword && isPasswordExists) {
-    return false
-  }
-  return !isLocalhostConnectionString(connectionString)
 }

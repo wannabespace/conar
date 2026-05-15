@@ -10,7 +10,7 @@ import { useSubscription } from 'seitu/react'
 import { QueryLogger } from '~/entities/connection/components'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
-import { lastOpenedResourcesStorageValue, prefetchConnectionResourceCore } from '~/entities/connection/utils'
+import { fetchingConfig, lastOpenedResourcesStorageValue, prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { ConnectionSidebar } from './-components/connection-sidebar'
 import { PasswordForm } from './-components/password-form'
 
@@ -76,7 +76,9 @@ function DatabasePage() {
     storage: localStorage,
   })
 
-  if (connection.isPasswordExists && !connection.isPasswordPopulated) {
+  const { type } = fetchingConfig(connection)
+
+  if (type === 'waiting-for-password') {
     return <PasswordForm connection={connection} connectionResource={connectionResource} />
   }
 

@@ -4,7 +4,7 @@ import { isLocalhostConnectionString } from '@conar/connection/utils'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { tryCatch } from '@conar/shared/utils/helpers'
 import { queryClient } from '~/main'
-import { isLocalProxyAvailable } from '../local-proxy'
+import { isLocalProxyAvailable } from '../proxy'
 import { resourceRowsQueryInfiniteOptions } from '../queries'
 import { resourceTableColumnsQueryOptions } from '../queries/columns'
 import { resourceConstraintsQueryOptions } from '../queries/constraints'
@@ -50,29 +50,34 @@ type FetchingConnection = Pick<typeof connections.$inferSelect, 'syncType' | 'co
 
 export function fetchingConfig(connection: FetchingConnection, options?: {
   isLocalProxyAvailable?: boolean
+  proxy?: { enabled: boolean, url: string | null }
 }): {
-  type: 'cloud' | 'localhost' | 'local-proxy' | 'waiting-for-password'
+  type: 'cloud-proxy' | 'local' | 'proxy' | 'waiting-for-password'
   canSend: boolean
 } {
   if (connection.isPasswordExists && !connection.isPasswordPopulated) {
     return { type: 'waiting-for-password', canSend: false }
   }
 
-  if (window.electron) {
-    return { type: 'localhost', canSend: true }
-  }
-
   const isLocalhost = tryCatch(() => isLocalhostConnectionString(connection.connectionString)).data === true
   const isPasswordFilled = (connection.syncType === SyncType.CloudWithoutPassword && connection.isPasswordPopulated)
     || connection.syncType === SyncType.Cloud
+  const proxyAvailable = options?.isLocalProxyAvailable ?? isLocalProxyAvailable()
+  const proxyEnabled = options?.proxy?.enabled === true
+  const hasCustomUrl = !!options?.proxy?.url
+  const preferProxy = !window.electron || proxyEnabled
 
-  if ((isLocalhost || isPasswordFilled) && (options?.isLocalProxyAvailable ?? isLocalProxyAvailable())) {
-    return { type: 'local-proxy', canSend: true }
+  if ((isLocalhost || isPasswordFilled) && (proxyAvailable || hasCustomUrl) && preferProxy) {
+    return { type: 'proxy', canSend: true }
+  }
+
+  if (window.electron) {
+    return { type: 'local', canSend: true }
   }
 
   if (isLocalhost) {
-    return { type: 'local-proxy', canSend: false }
+    return { type: 'proxy', canSend: false }
   }
 
-  return { type: 'cloud', canSend: true }
+  return { type: 'cloud-proxy', canSend: true }
 }

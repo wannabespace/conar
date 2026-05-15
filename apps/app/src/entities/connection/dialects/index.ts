@@ -5,11 +5,13 @@ import type { Database as ClickhouseDatabase } from './clickhouse/schema'
 import type { Database as MssqlDatabase } from './mssql/schema'
 import type { Database as MysqlDatabase } from './mysql/schema'
 import type { Database as PostgresDatabase } from './postgres/schema'
-import { isLocalhostConnectionString } from '@conar/connection/utils'
 import { memoize } from '@conar/memoize'
+import { PORTS } from '@conar/shared/ports'
 import { Kysely } from 'kysely'
-import { orpcLocalProxy, orpcProxy } from '~/lib/orpc'
-import { isLocalProxyAvailable } from '../local-proxy'
+import { createProxyClient, orpcProxy } from '~/lib/orpc'
+import { getConnectionStore } from '../store'
+import { connectionsCollection, connectionsResourcesCollection } from '../sync'
+import { fetchingConfig } from '../utils'
 import { clickhouseColdDialect, clickhouseDialect } from './clickhouse'
 import { mssqlColdDialect, mssqlDialect } from './mssql'
 import { mysqlColdDialect, mysqlDialect } from './mysql'
@@ -47,32 +49,51 @@ interface TxQueryPayload extends QueryPayload {
 }
 
 export function createDialectProvider(type: ConnectionType, options: DialectOptions) {
-  const electron = window.electron?.query[type]
-  const useLocalProxy = !electron
-    && isLocalProxyAvailable()
-    && isLocalhostConnectionString(options.connectionString)
-    && !!(options.connectionId || options.resourceId)
-  const proxy = useLocalProxy ? orpcLocalProxy[type] : orpcProxy.query[type]
+  const resource = options.resourceId ? connectionsResourcesCollection.get(options.resourceId) : null
+  const connectionId = options.connectionId || resource?.connectionId
+  const connection = connectionId ? connectionsCollection.get(connectionId) : null
+
+  function resolveTransport() {
+    const proxy = connectionId ? getConnectionStore(connectionId).get().proxy : { enabled: false, url: null }
+    const config = connection ? fetchingConfig(connection, { proxy }) : null
+
+    if (config?.type === 'proxy') {
+      const client = createProxyClient(proxy.url || `http://localhost:${PORTS.LOCAL_PROXY}`)
+      return { kind: 'proxy' as const, proxy: client[type] }
+    }
+
+    const electron = window.electron?.query[type]
+    if (electron) {
+      return { kind: 'electron' as const, electron }
+    }
+
+    return { kind: 'cloud-proxy' as const, proxy: orpcProxy.query[type] }
+  }
 
   return {
     execute(payload: QueryPayload) {
-      if (electron)
-        return electron.execute({ connectionString: options.connectionString, ...payload })
-      return proxy.execute({ ...resolveProxyIdParams(options), ...payload })
+      const t = resolveTransport()
+      if (t.kind === 'electron')
+        return t.electron.execute({ connectionString: options.connectionString, ...payload })
+      return t.proxy.execute({ ...resolveProxyIdParams(options), ...payload })
     },
     beginTransaction() {
-      if (electron)
-        return electron.beginTransaction({ connectionString: options.connectionString })
-      return proxy.beginTransaction(resolveProxyIdParams(options))
+      const t = resolveTransport()
+      if (t.kind === 'electron')
+        return t.electron.beginTransaction({ connectionString: options.connectionString })
+      return t.proxy.beginTransaction(resolveProxyIdParams(options))
     },
     executeTransaction(params: TxQueryPayload) {
-      return electron ? electron.executeTransaction(params) : proxy.executeTransaction(params)
+      const t = resolveTransport()
+      return t.kind === 'electron' ? t.electron.executeTransaction(params) : t.proxy.executeTransaction(params)
     },
     commitTransaction(params: { txId: string }) {
-      return electron ? electron.commitTransaction(params) : proxy.commitTransaction(params)
+      const t = resolveTransport()
+      return t.kind === 'electron' ? t.electron.commitTransaction(params) : t.proxy.commitTransaction(params)
     },
     rollbackTransaction(params: { txId: string }) {
-      return electron ? electron.rollbackTransaction(params) : proxy.rollbackTransaction(params)
+      const t = resolveTransport()
+      return t.kind === 'electron' ? t.electron.rollbackTransaction(params) : t.proxy.rollbackTransaction(params)
     },
   }
 }
@@ -161,18 +182,10 @@ export function createKyselyDriver({
 }
 
 export const dialects = {
-  postgres: memoize((options: DialectOptions) => new Kysely<PostgresDatabase>({ dialect: postgresDialect(options) }), {
-    transformArgs: options => [options.connectionString, !!options.log],
-  }),
-  mysql: memoize((options: DialectOptions) => new Kysely<MysqlDatabase>({ dialect: mysqlDialect(options) }), {
-    transformArgs: options => [options.connectionString, !!options.log],
-  }),
-  clickhouse: memoize((options: DialectOptions) => new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(options) }), {
-    transformArgs: options => [options.connectionString, !!options.log],
-  }),
-  mssql: memoize((options: DialectOptions) => new Kysely<MssqlDatabase>({ dialect: mssqlDialect(options) }), {
-    transformArgs: options => [options.connectionString, !!options.log],
-  }),
+  postgres: memoize((options: DialectOptions) => new Kysely<PostgresDatabase>({ dialect: postgresDialect(options) })),
+  mysql: memoize((options: DialectOptions) => new Kysely<MysqlDatabase>({ dialect: mysqlDialect(options) })),
+  clickhouse: memoize((options: DialectOptions) => new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(options) })),
+  mssql: memoize((options: DialectOptions) => new Kysely<MssqlDatabase>({ dialect: mssqlDialect(options) })),
 } satisfies Record<ConnectionType, AnyFunction>
 
 export const coldDialects = {

@@ -147,7 +147,11 @@ export const proxyCommand = command({
               throw error
             }
 
-            throw new ORPCError('INTERNAL_SERVER_ERROR', { message: 'An unexpected error occurred' })
+            if (error instanceof Error) {
+              throw new ORPCError('INTERNAL_SERVER_ERROR', { message: error.message, cause: error })
+            }
+
+            throw error
           }
         },
       ],

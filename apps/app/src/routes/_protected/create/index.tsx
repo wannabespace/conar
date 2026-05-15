@@ -16,7 +16,7 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { useLocalProxyAvailable } from '~/entities/connection/local-proxy'
+import { useLocalProxyAvailable } from '~/entities/connection/proxy'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
@@ -89,6 +89,7 @@ function CreateConnectionPage() {
         getConnectionStore(id).set({
           lastOpenedResourceName: resource,
           pinnedResourcesNames: [resource],
+          proxy: { enabled: !window.electron, url: null },
         })
       }
 

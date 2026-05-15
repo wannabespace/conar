@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@cona
 import { Field, FieldDescription, FieldLabel } from '@conar/ui/components/field'
 import { Input } from '@conar/ui/components/input'
 import { useId } from 'react'
-import { useLocalProxyAvailable } from '~/entities/connection/local-proxy'
+import { useLocalProxyAvailable } from '~/entities/connection/proxy'
 
 export function StepCredentials({
   ref,
