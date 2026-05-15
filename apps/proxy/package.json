@@ -8,21 +8,18 @@
     "test:start": "cross-env NODE_ENV=test bun --env-file=.env.test drizzle-kit migrate && cross-env NODE_ENV=test bun --env-file=.env.test run ./index.ts"
   },
   "dependencies": {
-    "@better-auth/drizzle-adapter": "catalog:",
     "@conar/connection": "workspace:*",
     "@conar/db": "workspace:*",
     "@conar/query-proxy": "workspace:*",
     "@conar/shared": "workspace:*",
     "@orpc/server": "catalog:",
     "arktype": "catalog:",
-    "better-auth": "catalog:",
     "hono": "catalog:",
     "memoza": "catalog:",
-    "ua-parser-js": "catalog:",
-    "uuid": "catalog:",
-    "zod": "catalog:"
+    "ua-parser-js": "catalog:"
   },
   "devDependencies": {
-    "@conar/configs": "workspace:*"
+    "@conar/configs": "workspace:*",
+    "better-auth": "catalog:"
   }
 }

@@ -94,5 +94,5 @@ const resolveQueryConnectionString = memoize(async ({
 
 export const query = createQueryRouter(
   orpc.use(authMiddleware),
-  (input, context) => resolveQueryConnectionString({ input, userId: context.user.id, getUserSecret: context.getUserSecret }),
+  (input, context) => resolveQueryConnectionString({ input, userId: context.session.userId, getUserSecret: context.getUserSecret }),
 )
