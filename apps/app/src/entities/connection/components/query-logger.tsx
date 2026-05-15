@@ -12,9 +12,8 @@ import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiCheckboxCircleLine, RiCheckLine, RiCloseCircleLine, RiCloseLine, RiDeleteBinLine, RiFileListLine, RiTimeLine } from '@remixicon/react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { useStickToBottom } from 'use-stick-to-bottom'
 import { Monaco } from '~/components/monaco'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { formatSql } from '~/lib/formatter'
@@ -181,11 +180,14 @@ function Log({ query, className, connectionResource }: { query: QueryLog, classN
   )
 }
 
+const nearBottomThresholdPx = 64
+
 export function QueryLogger({ connectionResource, className }: {
   connectionResource: typeof connectionsResources.$inferSelect
   className?: string
 }) {
-  const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({ initial: 'instant' })
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [isNearBottom, setIsNearBottom] = useState(true)
   const queries = useSubscription(queryLogsStore, { selector: state => Object.values(state[connectionResource.id] || {}).toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime()) })
   const [statusGroup, setStatusGroup] = useState<QueryStatus>()
   const [isClearing, setIsClearing] = useState(false)
@@ -233,6 +235,39 @@ export function QueryLogger({ connectionResource, className }: {
 
   const virtualItems = getVirtualItems()
   const totalSize = getTotalSize()
+
+  function scrollToBottom() {
+    const el = scrollRef.current
+    if (!el) return
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
+  }
+
+  useLayoutEffect(() => {
+    let raf1 = 0
+    let raf2 = 0
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        const el = scrollRef.current
+        if (el) el.scrollTop = el.scrollHeight
+      })
+    })
+    return () => {
+      cancelAnimationFrame(raf1)
+      cancelAnimationFrame(raf2)
+    }
+  }, [])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const updateNearBottom = () => {
+      const { scrollTop, scrollHeight, clientHeight } = el
+      setIsNearBottom(scrollHeight - scrollTop - clientHeight < nearBottomThresholdPx)
+    }
+    updateNearBottom()
+    el.addEventListener('scroll', updateNearBottom, { passive: true })
+    return () => el.removeEventListener('scroll', updateNearBottom)
+  }, [filteredQueries.length, totalSize, virtualItems.length])
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -314,25 +349,31 @@ export function QueryLogger({ connectionResource, className }: {
         scrollFade
         className="relative min-h-0"
       >
-        {filteredQueries.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="mb-3">
-              <RiFileListLine className="size-10 text-muted-foreground/30" />
+        <div className="[&_*]:[overflow-anchor:none]">
+          {filteredQueries.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="mb-3">
+                <RiFileListLine className="size-10 text-muted-foreground/30" />
+              </div>
+              <p className="mb-1 text-base font-medium text-muted-foreground">No queries yet</p>
             </div>
-            <p className="mb-1 text-base font-medium text-muted-foreground">No queries yet</p>
+          )}
+          <div style={{ height: `${totalSize}px` }}>
+            <div className="h-(--scroll-top-offset)" />
+            {virtualItems.map(virtualItem => (
+              <Log
+                key={virtualItem.key}
+                query={filteredQueries[virtualItem.index]!}
+                connectionResource={connectionResource}
+              />
+            ))}
+            <div className="h-(--scroll-bottom-offset)" />
           </div>
-        )}
-        <div ref={contentRef} style={{ height: `${totalSize}px` }}>
-          <div className="h-(--scroll-top-offset)" />
-          {virtualItems.map(virtualItem => (
-            <Log
-              key={virtualItem.key}
-              query={filteredQueries[virtualItem.index]!}
-              connectionResource={connectionResource}
-            />
-          ))}
-          <div className="h-(--scroll-bottom-offset)" />
         </div>
+        <div
+          className="h-px w-full shrink-0 [overflow-anchor:auto]"
+          aria-hidden
+        />
         <div className="sticky bottom-0 h-0">
           <Button
             className={cn('absolute bottom-2 left-1/2 -translate-x-1/2', isNearBottom
