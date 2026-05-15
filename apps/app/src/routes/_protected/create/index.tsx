@@ -86,11 +86,11 @@ function CreateConnectionPage() {
       const resource = url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
 
       if (resource) {
-        getConnectionStore(id).set({
+        getConnectionStore(id).set(state => ({
+          ...state,
           lastOpenedResourceName: resource,
           pinnedResourcesNames: [resource],
-          proxy: { enabled: !window.electron, url: null },
-        })
+        }))
       }
 
       const resourceId = v7()
