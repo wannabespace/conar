@@ -19,6 +19,7 @@
     "@conar/ai": "workspace:*",
     "@conar/connection": "workspace:*",
     "@conar/db": "workspace:*",
+    "@conar/infisical": "workspace:*",
     "@conar/shared": "workspace:*",
     "@exalabs/ai-sdk": "catalog:",
     "@octokit/rest": "catalog:",
@@ -35,7 +36,6 @@
     "drizzle-orm": "catalog:",
     "hono": "catalog:",
     "ioredis": "catalog:",
-    "ioredis-mock": "catalog:",
     "memoza": "catalog:",
     "nanoid": "catalog:",
     "pg": "catalog:",
@@ -53,7 +53,6 @@
     "@electric-sql/pglite": "catalog:",
     "@opentelemetry/exporter-trace-otlp-http": "catalog:",
     "@playwright/test": "catalog:",
-    "@types/ioredis-mock": "catalog:",
     "@types/pg": "catalog:",
     "@types/react": "catalog:",
     "drizzle-kit": "catalog:"

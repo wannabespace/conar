@@ -8,6 +8,7 @@
     "drizzle:migrate": "cross-env NODE_ENV=development drizzle-kit migrate"
   },
   "dependencies": {
+    "@conar/infisical": "workspace:*",
     "@conar/shared": "workspace:*",
     "arktype": "catalog:",
     "drizzle-orm": "catalog:",

@@ -3,6 +3,7 @@ import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { db } from '@conar/db'
 import { users } from '@conar/db/schema'
 import * as schema from '@conar/db/schema'
+import { infisical } from '@conar/infisical'
 import { API_KEY_PERMISSIONS, AUTH_COOKIE_PREFIX, PORTS } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
@@ -10,6 +11,7 @@ import { createAuthMiddleware } from 'better-auth/api'
 import { anonymous, bearer, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
+import { v7 } from 'uuid'
 import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
 import { redisMemoize } from './redis'
@@ -110,6 +112,11 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
+        before: async (user) => {
+          // Better auth doesn't have a user id in the before hook
+          user.id = v7()
+          await infisical.secrets.set({ path: ['users', user.id], name: 'ENCRYPTION_SECRET', value: nanoid() })
+        },
         after: async (user) => {
           if (nodeEnv !== 'production' || !resend) {
             return
@@ -125,6 +132,11 @@ export const auth = betterAuth({
               id: user.id,
             },
           })
+        },
+      },
+      delete: {
+        after: async (user) => {
+          await infisical.secrets.delete({ path: ['users', user.id], name: 'ENCRYPTION_SECRET' })
         },
       },
       update: {

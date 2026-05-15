@@ -1,10 +1,5 @@
-# This is a development compose file needed only for the database.
-# Run the project using `pnpm run dev` and then run this command if you need to start the databases manually.
-# `pnpm run docker:start` to run the databases
-# `pnpm run docker:stop` to stop the databases
-
 services:
-  postgresql:
+  db:
     image: postgres:16-alpine
     ports:
       - '5432:5432'
@@ -22,7 +17,6 @@ services:
       retries: 5
 
   redis:
-    container_name: redis-server
     image: redis/redis-stack:7.2.0-v19
     restart: always
     ports:
@@ -31,13 +25,65 @@ services:
     environment:
       - REDIS_ARGS="--requirepass root"
     volumes:
-      - redis-data:/data
+      - redis_data:/data
     healthcheck:
       test: [CMD, redis-cli, -a, root, ping]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  infisical-db:
+    image: postgres:16-alpine
+    ports:
+      - '5433:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=infisical
+    volumes:
+      - infisical_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - infisical
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  infisical-redis:
+    image: redis/redis-stack:7.2.0-v19
+    restart: unless-stopped
+    volumes:
+      - infisical_redis_data:/data
+    networks:
+      - infisical
+
+  infisical:
+    image: infisical/infisical:latest
+    restart: unless-stopped
+    depends_on:
+      infisical-db:
+        condition: service_healthy
+      infisical-redis:
+        condition: service_started
+    ports:
+      - '8082:8080'
+    environment:
+      - NODE_ENV=production
+      - ENCRYPTION_KEY=devfe4e407b8cfb185b406438a42a777
+      - AUTH_SECRET=devERxgNsBMhQkMpMdn6MknRbjRsSvCx
+      - DB_CONNECTION_URI=postgres://postgres:postgres@infisical-db:5432/infisical
+      - REDIS_URL=redis://infisical-redis:6379
+      - SITE_URL=http://localhost:8082
+    networks:
+      - infisical
+
 volumes:
   postgres_data:
-  redis-data:
+  redis_data:
+  infisical_postgres_data:
+  infisical_redis_data:
+
+networks:
+  infisical:
