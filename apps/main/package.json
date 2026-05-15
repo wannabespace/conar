@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@better-auth/api-key": "catalog:",
-    "@conar/memoize": "workspace:*",
     "@number-flow/react": "catalog:",
     "@orpc/client": "catalog:",
     "@orpc/tanstack-query": "catalog:",
@@ -24,6 +23,7 @@
     "better-auth": "catalog:",
     "date-fns": "catalog:",
     "js-confetti": "catalog:",
+    "memoza": "catalog:",
     "motion": "catalog:",
     "nitro": "catalog:",
     "react": "catalog:",

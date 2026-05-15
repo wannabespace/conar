@@ -1,7 +1,7 @@
 import type { FileRoutesById } from '~/routeTree.gen'
-import { memoize } from '@conar/memoize'
 import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { type } from 'arktype'
+import { memoize } from 'memoza'
 import { createStore } from 'seitu'
 import { createWebStorageValue } from 'seitu/web'
 

@@ -1,8 +1,8 @@
 import type { connectionsResources } from '~/drizzle/schema'
-import { memoize } from '@conar/memoize'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
+import { memoize } from 'memoza'
 import { connectionResourceToQueryParams, createQuery } from '../query'
 
 export const columnType = type({

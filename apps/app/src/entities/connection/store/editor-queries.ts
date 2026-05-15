@@ -1,4 +1,4 @@
-import { memoize } from '@conar/memoize'
+import { memoize } from 'memoza'
 import { createComputed } from 'seitu'
 import { getEditorQueries } from '~/entities/connection/utils'
 import { getConnectionResourceStore } from '.'

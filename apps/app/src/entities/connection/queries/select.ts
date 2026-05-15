@@ -1,6 +1,6 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import { memoize } from '@conar/memoize'
 import { type } from 'arktype'
+import { memoize } from 'memoza'
 import { createQuery } from '../query'
 import { buildWhere } from './rows'
 

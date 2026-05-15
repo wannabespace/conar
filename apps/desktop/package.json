@@ -28,13 +28,13 @@
   "devDependencies": {
     "@conar/configs": "workspace:*",
     "@conar/connection": "workspace:*",
-    "@conar/memoize": "workspace:*",
     "@conar/shared": "workspace:*",
     "@todesktop/cli": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
     "@typescript/native-preview": "catalog:",
     "electron": "catalog:",
+    "memoza": "catalog:",
     "vite": "catalog:",
     "vite-plugin-electron": "catalog:"
   }

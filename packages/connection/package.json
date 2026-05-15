@@ -13,8 +13,8 @@
     "pg": "catalog:"
   },
   "dependencies": {
-    "@conar/memoize": "workspace:*",
-    "@conar/shared": "workspace:*"
+    "@conar/shared": "workspace:*",
+    "memoza": "catalog:"
   },
   "devDependencies": {
     "@conar/configs": "workspace:*",

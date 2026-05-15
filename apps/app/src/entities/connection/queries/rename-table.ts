@@ -1,5 +1,5 @@
-import { memoize } from '@conar/memoize'
 import { sql } from 'kysely'
+import { memoize } from 'memoza'
 import { createQuery } from '../query'
 
 export const renameTableQuery = memoize(({ schema, oldTable, newTable }: { schema: string, oldTable: string, newTable: string }) => createQuery({

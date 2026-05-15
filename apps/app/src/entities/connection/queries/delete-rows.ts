@@ -1,4 +1,4 @@
-import { memoize } from '@conar/memoize'
+import { memoize } from 'memoza'
 import { createQuery } from '../query'
 
 export const deleteRowsQuery = memoize(({ table, schema, primaryKeys }: {

@@ -1,10 +1,10 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { ExpressionBuilder } from 'kysely'
 import type { connectionsResources } from '~/drizzle/schema'
-import { memoize } from '@conar/memoize'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
+import { memoize } from 'memoza'
 import { connectionResourceToQueryParams, createQuery } from '../query'
 import { DEFAULT_PAGE_LIMIT } from '../utils/helpers'
 

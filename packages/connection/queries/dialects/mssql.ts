@@ -1,6 +1,6 @@
 import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
-import { memoize } from '@conar/memoize'
+import { memoize } from 'memoza'
 import { handleQueryError } from '..'
 import { parseConnectionString } from '../..'
 import { parseSSLConfig } from '../../ssl/mssql'

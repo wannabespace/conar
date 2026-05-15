@@ -1,9 +1,9 @@
 import { db } from '@conar/db'
-import { memoize } from '@conar/memoize'
 import { createQueryRouter } from '@conar/query-proxy'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { decrypt } from '@conar/shared/utils/encryption'
 import { ORPCError } from '@orpc/server'
+import { memoize } from 'memoza'
 import { authMiddleware, orpc } from '~/orpc'
 
 const resolveQueryConnectionString = memoize(async ({
