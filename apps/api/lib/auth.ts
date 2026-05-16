@@ -69,12 +69,6 @@ export const auth = betterAuth({
   ],
   user: {
     additionalFields: {
-      secret: {
-        type: 'string',
-        returned: false,
-        input: false,
-        defaultValue: () => nanoid(),
-      },
       stripeCustomerId: {
         type: 'string',
         returned: false,
@@ -116,7 +110,7 @@ export const auth = betterAuth({
           await infisical.secrets.set({
             path: ['users', user.id],
             name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
-            value: user.secret as string,
+            value: nanoid(),
           }).catch(async (error) => {
             console.error(`Failed to set user secret in Infisical: ${error instanceof Error ? error.message : error}`, error instanceof Error && error.cause ? error.cause : undefined)
             await db.delete(users).where(eq(users.id, user.id))

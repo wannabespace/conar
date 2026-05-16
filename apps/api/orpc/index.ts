@@ -12,23 +12,9 @@ import { redis } from '~/lib/redis'
 
 export const orpc = os.$context<Context>()
 
-export const getUserSecret = memoize(async (userId: string) => {
-  try {
-    return await infisical.secrets.get({ path: ['users', userId], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME })
-  }
-  catch {
-    const user = await db.query.users.findFirst({
-      columns: { secret: true },
-      where: { id: userId },
-    })
-
-    if (!user) {
-      throw new ORPCError('UNAUTHORIZED', { message: `We could not find the user with id ${userId}. Please sign in again.` })
-    }
-
-    return user.secret
-  }
-})
+export const getUserSecret = memoize((userId: string) => {
+  return infisical.secrets.get({ path: ['users', userId], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME })
+}, { maxAge: 10 * 60 * 1000 }) // 10 minutes
 
 async function getSession(headers: Headers) {
   const session = await auth.api.getSession({ headers })

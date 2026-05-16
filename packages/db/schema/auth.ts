@@ -11,7 +11,6 @@ export const users = d.snakeCase.table('users', {
   twoFactorEnabled: d.boolean().default(false),
   normalizedEmail: d.text().unique(),
   isAnonymous: d.boolean().default(false),
-  secret: d.text().notNull(),
   stripeCustomerId: d.text(),
   desktopVersion: d.text(),
 })
