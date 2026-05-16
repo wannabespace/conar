@@ -12,6 +12,7 @@ import { anonymous, bearer, lastLoginMethod, organization, twoFactor } from 'bet
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import { v7 } from 'uuid'
+import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
 import { redisMemoize } from './redis'
@@ -115,7 +116,7 @@ export const auth = betterAuth({
         before: async (user) => {
           // Better auth doesn't have a user id in the before hook
           user.id = v7()
-          await infisical.secrets.set({ path: ['users', user.id], name: 'ENCRYPTION_SECRET', value: nanoid() })
+          await infisical.secrets.set({ path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME, value: nanoid() })
         },
         after: async (user) => {
           if (nodeEnv !== 'production' || !resend) {
@@ -136,7 +137,7 @@ export const auth = betterAuth({
       },
       delete: {
         after: async (user) => {
-          await infisical.secrets.delete({ path: ['users', user.id], name: 'ENCRYPTION_SECRET' })
+          await infisical.secrets.delete({ path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME })
         },
       },
       update: {

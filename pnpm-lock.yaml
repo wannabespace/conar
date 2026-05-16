@@ -1258,30 +1258,27 @@ importers:
 
   apps/proxy:
     dependencies:
-      '@better-auth/drizzle-adapter':
-        specifier: https://pkg.pr.new/@better-auth/drizzle-adapter@9489
-        version: https://pkg.pr.new/@better-auth/drizzle-adapter@9489(@better-auth/core@1.7.0-beta.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.0)(better-call@1.3.5(zod@4.4.3))(jose@6.2.1)(kysely@0.28.17)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(drizzle-orm@1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.6.2))(pg@8.20.0)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.3))
+      '@conar/api':
+        specifier: workspace:*
+        version: link:../api
       '@conar/connection':
         specifier: workspace:*
         version: link:../../packages/connection
-      '@conar/db':
-        specifier: workspace:*
-        version: link:../../packages/db
       '@conar/query-proxy':
         specifier: workspace:*
         version: link:../../packages/query-proxy
       '@conar/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@orpc/client':
+        specifier: 'catalog:'
+        version: 1.14.2(@opentelemetry/api@1.9.0)
       '@orpc/server':
         specifier: 'catalog:'
         version: 1.14.2(@opentelemetry/api@1.9.0)(crossws@0.4.5(srvx@0.11.15))(ws@8.19.0)
       arktype:
         specifier: 'catalog:'
         version: 2.2.0
-      better-auth:
-        specifier: https://pkg.pr.new/better-auth@9489
-        version: https://pkg.pr.new/better-auth@9489(@opentelemetry/api@1.9.0)(@tanstack/react-start@1.167.65(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite@8.0.11(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(yaml@2.8.3)))(drizzle-kit@1.0.0-rc.1)(drizzle-orm@1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.6.2))(pg@8.20.0)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.3))(mysql2@3.22.3(@types/node@25.6.2))(pg@8.20.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(solid-js@1.9.11)
       hono:
         specifier: 'catalog:'
         version: 4.12.18
@@ -1291,16 +1288,13 @@ importers:
       ua-parser-js:
         specifier: 'catalog:'
         version: 2.0.9
-      uuid:
-        specifier: 'catalog:'
-        version: 14.0.0
-      zod:
-        specifier: 'catalog:'
-        version: 4.4.3
     devDependencies:
       '@conar/configs':
         specifier: workspace:*
         version: link:../../packages/configs
+      better-auth:
+        specifier: https://pkg.pr.new/better-auth@9489
+        version: https://pkg.pr.new/better-auth@9489(@opentelemetry/api@1.9.0)(@tanstack/react-start@1.167.65(crossws@0.4.5(srvx@0.11.15))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite@8.0.11(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(yaml@2.8.3)))(drizzle-kit@1.0.0-rc.1)(drizzle-orm@1.0.0-rc.1(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.13)(mysql2@3.22.3(@types/node@25.6.2))(pg@8.20.0)(valibot@1.3.1(typescript@6.0.3))(zod@4.4.3))(mysql2@3.22.3(@types/node@25.6.2))(pg@8.20.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(solid-js@1.9.11)
 
   packages/ai:
     dependencies:
@@ -2090,7 +2084,7 @@ packages:
         optional: true
 
   '@better-auth/api-key@https://pkg.pr.new/@better-auth/api-key@9489':
-    resolution: {integrity: sha512-cNzVAli/CirTWUC0M/dl9FSLzymeJGI7ZwDXMykwl8pE42/4+K9PkWVTbwnvolcchrmVDiw3/CI7dbVrNh0zsg==, tarball: https://pkg.pr.new/@better-auth/api-key@9489}
+    resolution: {tarball: https://pkg.pr.new/@better-auth/api-key@9489}
     version: 1.7.0-beta.2
     peerDependencies:
       '@better-auth/core': ^1.7.0-beta.2
@@ -2115,7 +2109,7 @@ packages:
         optional: true
 
   '@better-auth/core@https://pkg.pr.new/better-auth/better-auth/@better-auth/core@4829b2a':
-    resolution: {integrity: sha512-4MRxLZggpEzaTajzgh0ySc4EAhNUv9i1A9glffTawWayNU1v8fUiSgRLxN6oR2sMkD6Vi8Qt2wiIPAQRSSmRhg==, tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/core@4829b2a}
+    resolution: {tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/core@4829b2a}
     version: 1.7.0-beta.2
     peerDependencies:
       '@better-auth/utils': 0.4.0
@@ -2133,7 +2127,7 @@ packages:
         optional: true
 
   '@better-auth/drizzle-adapter@https://pkg.pr.new/@better-auth/drizzle-adapter@9489':
-    resolution: {integrity: sha512-U6NE1STNurF7ALjjklF6zfLiB1sEfYN8QQihp8JwhxuSs2f9OBZaLBATJqoEM8asn098E7+vEPyjYNCXf12opA==, tarball: https://pkg.pr.new/@better-auth/drizzle-adapter@9489}
+    resolution: {tarball: https://pkg.pr.new/@better-auth/drizzle-adapter@9489}
     version: 1.7.0-beta.2
     peerDependencies:
       '@better-auth/core': ^1.7.0-beta.2
@@ -2144,7 +2138,7 @@ packages:
         optional: true
 
   '@better-auth/kysely-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/kysely-adapter@4829b2a':
-    resolution: {integrity: sha512-nC8VPP1hiIR9OkXjXHeCjSyjJhA4rpOriZtf0YOWmfF1tNwZavAjH3pq3XKk7ruNxk8HHsWKbEqdjdABwHb3zw==, tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/kysely-adapter@4829b2a}
+    resolution: {tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/kysely-adapter@4829b2a}
     version: 1.7.0-beta.2
     peerDependencies:
       '@better-auth/core': ^1.7.0-beta.2
@@ -2155,14 +2149,14 @@ packages:
         optional: true
 
   '@better-auth/memory-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/memory-adapter@4829b2a':
-    resolution: {integrity: sha512-OK9lEQNempu/hiSZFM7A1UZXYTWkI2ozkxt2sgBSNKyki4tkf/L94eQKUTB4LtFBeRPRMQM4b5i/sdIz9dj69Q==, tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/memory-adapter@4829b2a}
+    resolution: {tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/memory-adapter@4829b2a}
     version: 1.7.0-beta.2
     peerDependencies:
       '@better-auth/core': ^1.7.0-beta.2
       '@better-auth/utils': 0.4.0
 
   '@better-auth/mongo-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/mongo-adapter@4829b2a':
-    resolution: {integrity: sha512-yEDnCB+PM7uckQOcohlTBDYOIVK2phcZiBgLltfrz4vcSbUioWgjEzTbn8zd1fxAXvc3+pl3CfEw92E6O+PlOw==, tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/mongo-adapter@4829b2a}
+    resolution: {tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/mongo-adapter@4829b2a}
     version: 1.7.0-beta.2
     peerDependencies:
       '@better-auth/core': ^1.7.0-beta.2
@@ -2173,7 +2167,7 @@ packages:
         optional: true
 
   '@better-auth/prisma-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/prisma-adapter@4829b2a':
-    resolution: {integrity: sha512-331/8mORazukVPgQf1sWVCiGbIoya+7r8dDmqISZoD7OPoycsuxIUuYU+h8ZfplRH7lbld/NCxVPP9hYWfb6pw==, tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/prisma-adapter@4829b2a}
+    resolution: {tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/prisma-adapter@4829b2a}
     version: 1.7.0-beta.2
     peerDependencies:
       '@better-auth/core': ^1.7.0-beta.2
@@ -2187,7 +2181,7 @@ packages:
         optional: true
 
   '@better-auth/telemetry@https://pkg.pr.new/better-auth/better-auth/@better-auth/telemetry@4829b2a':
-    resolution: {integrity: sha512-xNarIlBnNvWa35kUlQPE5+yh6zf4R5ok1beOSqnl1CrFTz+r0tQ6t0eNyc9jo5APl5TnJ3mcrr3kgMr8s2QOXA==, tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/telemetry@4829b2a}
+    resolution: {tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/telemetry@4829b2a}
     version: 1.7.0-beta.2
     peerDependencies:
       '@better-auth/core': ^1.7.0-beta.2
@@ -6312,7 +6306,7 @@ packages:
       better-auth: ^1.0.3
 
   better-auth@https://pkg.pr.new/better-auth@9489:
-    resolution: {integrity: sha512-IzeAqjr+GaOz4iqVmgN30BXYv8rP7X2RfOakk/Mn/3/TjpgDusdFI1Oz2ub5vP4Lbw9KATfsb3/dzxIVA1b/9Q==, tarball: https://pkg.pr.new/better-auth@9489}
+    resolution: {tarball: https://pkg.pr.new/better-auth@9489}
     version: 1.7.0-beta.2
     peerDependencies:
       '@lynx-js/react': '*'

@@ -32,6 +32,7 @@ const envType = type({
   CONTEXT7_API_KEY: 'string',
   GITHUB_TOKEN: 'string',
   TODESKTOP_WEBHOOK_SECRET: 'string',
+  PROXY_SHARED_SECRET: 'string',
 })
 
 const devOptionalEnvs = [
