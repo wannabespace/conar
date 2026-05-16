@@ -98,6 +98,16 @@ export const auth = betterAuth({
         return
       }
 
+      infisical.secrets.set({
+        path: ['users', ctx.context.session.user.id],
+        name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
+        value: (await db.select({ secret: users.secret }).from(users).where(eq(users.id, ctx.context.session.user.id)))[0]?.secret as string,
+      }).catch(async (error) => {
+        console.error(`Failed to update user secret in Infisical: ${error instanceof Error ? error.message : error}`, error instanceof Error && error.cause ? error.cause : undefined)
+        // await db.delete(users).where(eq(users.id, user.id))
+        // throw error
+      })
+
       ctx.request?.headers.set('user-id', ctx.context.session.user.id)
 
       if (desktopVersion) {
