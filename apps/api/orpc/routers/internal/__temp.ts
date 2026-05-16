@@ -4,6 +4,8 @@ import { infisical } from '@conar/infisical'
 import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { orpc } from '~/orpc'
 
+const CONCURRENCY = 20
+
 export const migrateSecrets = orpc
   .use(async ({ context, next }) => {
     context.setHeader('Transfer-Encoding', 'chunked')
@@ -20,26 +22,30 @@ export const migrateSecrets = orpc
     let skipped = 0
     let failed = 0
 
-    for (const user of allUsers) {
-      const location = { path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME }
+    for (let i = 0; i < allUsers.length; i += CONCURRENCY) {
+      const batch = allUsers.slice(i, i + CONCURRENCY)
 
-      try {
-        await infisical.secrets.get(location)
-        skipped++
-      }
-      catch {
+      await Promise.all(batch.map(async (user) => {
+        const location = { path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME }
+
         try {
-          await infisical.secrets.set({ ...location, value: user.secret })
-          migrated++
+          await infisical.secrets.get(location)
+          skipped++
         }
-        catch (err) {
-          context.addLogData({ error: { message: `Failed to migrate user ${user.id}:`, cause: err } })
-          failed++
+        catch {
+          try {
+            await infisical.secrets.set({ ...location, value: user.secret })
+            migrated++
+          }
+          catch (err) {
+            context.addLogData({ error: { message: `Failed to migrate user ${user.id}:`, cause: err } })
+            failed++
+          }
         }
-      }
+      }))
 
       const processed = migrated + skipped + failed
-      if (processed % 50 === 0) {
+      if (processed % 50 === 0 || processed === allUsers.length) {
         context.addLogData({ progress: { migrated, skipped, failed } })
         yield { type: 'progress' as const, migrated, skipped, failed, total: allUsers.length }
       }
