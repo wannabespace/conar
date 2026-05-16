@@ -9,7 +9,7 @@ import { authMiddleware, orpc } from '~/orpc'
 const proxySecretMiddleware = orpc.middleware(({ context, next }) => {
   const token = context.headers.get('x-proxy-token')
 
-  if (!env.PROXY_SHARED_SECRET || token !== env.PROXY_SHARED_SECRET) {
+  if (token !== env.PROXY_SHARED_SECRET) {
     throw new ORPCError('FORBIDDEN', { message: 'Invalid proxy token' })
   }
 
