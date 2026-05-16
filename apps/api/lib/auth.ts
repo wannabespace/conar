@@ -74,7 +74,6 @@ export const auth = betterAuth({
         type: 'string',
         returned: false,
         input: false,
-        defaultValue: () => nanoid(),
       },
       stripeCustomerId: {
         type: 'string',
@@ -114,9 +113,14 @@ export const auth = betterAuth({
     user: {
       create: {
         before: async (user) => {
+          const secret = nanoid()
           // Better auth doesn't have a user id in the before hook
           user.id = v7()
-          await infisical.secrets.set({ path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME, value: nanoid() })
+          user.secret = secret
+          await infisical.secrets.set({ path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME, value: secret })
+
+          // ID IS NOT SAVED
+          return { data: user }
         },
         after: async (user) => {
           if (nodeEnv !== 'production' || !resend) {

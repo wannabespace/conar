@@ -60,7 +60,7 @@ services:
       - infisical
 
   infisical:
-    image: infisical/infisical:latest
+    image: infisical/infisical:v0.159.2
     restart: unless-stopped
     depends_on:
       infisical-db:
