@@ -59,7 +59,8 @@ function createEnvFile(envExamplePath: string) {
  * Main function to setup development environment
  */
 function setupDev() {
-  const appsDir = path.join(__dirname, '..', 'apps')
+  const repoRoot = path.join(__dirname, '..')
+  const appsDir = path.join(repoRoot, 'apps')
 
   if (!fs.existsSync(appsDir)) {
     console.error('Apps directory not found')
@@ -67,6 +68,11 @@ function setupDev() {
   }
 
   const envExampleFiles = findEnvExampleFiles(appsDir)
+  const rootEnvExample = path.join(repoRoot, '.env.example')
+
+  if (fs.existsSync(rootEnvExample)) {
+    envExampleFiles.unshift(rootEnvExample)
+  }
 
   if (envExampleFiles.length === 0) {
     return

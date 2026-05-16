@@ -107,7 +107,6 @@ catalog:
   hookable: ^6.1.1
   husky: ^9.1.7
   input-otp: ^1.4.2
-  ioredis: ^5.10.1
   js-base64: ^3.7.8
   js-confetti: ^0.13.1
   kysely: ^0.28.17

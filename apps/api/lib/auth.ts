@@ -11,7 +11,6 @@ import { createAuthMiddleware } from 'better-auth/api'
 import { anonymous, bearer, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
-import { v7 } from 'uuid'
 import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
@@ -74,6 +73,7 @@ export const auth = betterAuth({
         type: 'string',
         returned: false,
         input: false,
+        defaultValue: () => nanoid(),
       },
       stripeCustomerId: {
         type: 'string',
@@ -112,36 +112,36 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        before: async (user) => {
-          const secret = nanoid()
-          // Better auth doesn't have a user id in the before hook
-          user.id = v7()
-          user.secret = secret
-          await infisical.secrets.set({ path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME, value: secret })
-
-          // ID IS NOT SAVED
-          return { data: user }
-        },
         after: async (user) => {
-          if (nodeEnv !== 'production' || !resend) {
-            return
-          }
-
-          const [firstName, ...lastName] = user.name.split(' ')
-
-          await resend.contacts.create({
-            email: user.email,
-            firstName: firstName!,
-            lastName: lastName.join(' '),
-            properties: {
-              id: user.id,
-            },
+          await infisical.secrets.set({
+            path: ['users', user.id],
+            name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
+            value: user.secret as string,
+          }).catch(async (error) => {
+            console.error(`Failed to set user secret in Infisical: ${error instanceof Error ? error.message : error}`, error instanceof Error && error.cause ? error.cause : undefined)
+            await db.delete(users).where(eq(users.id, user.id))
+            throw error
           })
+
+          if (resend) {
+            const [firstName, ...lastName] = user.name.split(' ')
+
+            await resend.contacts.create({
+              email: user.email,
+              firstName: firstName!,
+              lastName: lastName.join(' '),
+              properties: {
+                id: user.id,
+              },
+            })
+          }
         },
       },
       delete: {
         after: async (user) => {
-          await infisical.secrets.delete({ path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME })
+          await infisical.secrets.delete({ path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME }).catch(async (error) => {
+            console.error(`Failed to delete user secret in Infisical: ${error instanceof Error ? error.message : error}`, error instanceof Error && error.cause ? error.cause : undefined)
+          })
         },
       },
       update: {
@@ -166,26 +166,26 @@ export const auth = betterAuth({
   },
   onAPIError: {
     onError: async (error) => {
-      if (!env.ALERTS_EMAIL) {
-        console.error('ALERTS_EMAIL is not set')
-        return
-      }
-
       const text = typeof error === 'object' && error !== null ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2) : String(error)
 
       if (text.includes('Invalid email')) {
         return
       }
 
-      await sendEmail({
-        to: env.ALERTS_EMAIL,
-        subject: 'Alert from Better Auth',
-        template: 'Alert',
-        props: {
-          text,
-          service: 'Better Auth',
-        },
-      })
+      if (env.ALERTS_EMAIL) {
+        await sendEmail({
+          to: env.ALERTS_EMAIL,
+          subject: 'Alert from Better Auth',
+          template: 'Alert',
+          props: {
+            text,
+            service: 'Better Auth',
+          },
+        })
+      }
+      else {
+        console.error('Alert from Better Auth', { text })
+      }
     },
   },
   trustedOrigins: [

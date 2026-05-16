@@ -35,7 +35,6 @@
     "date-fns": "catalog:",
     "drizzle-orm": "catalog:",
     "hono": "catalog:",
-    "ioredis": "catalog:",
     "memoza": "catalog:",
     "nanoid": "catalog:",
     "pg": "catalog:",
