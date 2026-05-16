@@ -119,8 +119,8 @@ export const auth = betterAuth({
             value: user.secret as string,
           }).catch(async (error) => {
             console.error(`Failed to set user secret in Infisical: ${error instanceof Error ? error.message : error}`, error instanceof Error && error.cause ? error.cause : undefined)
-            await db.delete(users).where(eq(users.id, user.id))
-            throw error
+            // await db.delete(users).where(eq(users.id, user.id))
+            // throw error
           })
 
           if (resend) {
