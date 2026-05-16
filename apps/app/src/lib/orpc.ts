@@ -72,6 +72,8 @@ export const orpcProxy = createORPCClient(new RPCLink({
   },
 })) satisfies proxyOrpc.ORPCRouter
 
+export const PROXY_ERROR_MESSAGE = 'We can\'t connect to the proxy, please check your connection and try again.'
+
 export const createProxyClient = memoize((url: string): queryProxy.ORPCRouter => {
   return createORPCClient(new RPCLink({
     url,
@@ -86,7 +88,7 @@ export const createProxyClient = memoize((url: string): queryProxy.ORPCRouter =>
           }
 
           if (error instanceof Error && isConnectionError(error)) {
-            throw new Error('We can\'t connect to the proxy, please check your connection and try again.', { cause: error })
+            throw new Error(PROXY_ERROR_MESSAGE, { cause: error })
           }
 
           throw error

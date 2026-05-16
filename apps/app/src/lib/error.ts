@@ -2,6 +2,7 @@ import { ORPCError } from '@orpc/client'
 import { BASE_ERROR_CODES } from 'better-auth'
 import { toast } from 'sonner'
 import { fullSignOut } from '~/lib/auth'
+import { PROXY_ERROR_MESSAGE } from './orpc'
 
 function getErrorMessage(error: unknown) {
   return (error instanceof ORPCError && error.message)
@@ -18,6 +19,7 @@ export async function handleError(error: unknown) {
     || error.message.includes('net::')
     || error.message.toLowerCase().includes('failed to fetch')
     || error.message.toLowerCase().includes('cannot parse response body')
+    || error.message.includes(PROXY_ERROR_MESSAGE)
     : false
 
   if (!shouldIgnoreError) {
