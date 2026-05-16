@@ -1,26 +1,18 @@
 import type { MaybePromise } from '@conar/shared/utils/helpers'
-import Redis from 'ioredis'
-import RedisMock from 'ioredis-mock'
+import { RedisClient } from 'bun'
 import { env } from '~/env'
 
-export function createRedisPubSub() {
-  const redisSubscriber: Redis = env.REDIS_URL
-    ? new Redis(`${env.REDIS_URL}?family=0`)
-    : new RedisMock()
+export const redis = new RedisClient(`${env.REDIS_URL}?family=0`)
 
-  const redisPublisher: Redis = env.REDIS_URL
-    ? new Redis(`${env.REDIS_URL}?family=0`)
-    : new RedisMock()
+export async function createRedisPubSub() {
+  const redisSubscriber = await redis.duplicate()
+  const redisPublisher = await redis.duplicate()
 
   return {
     subscriber: redisSubscriber,
     publisher: redisPublisher,
   }
 }
-
-export const redis: Redis = env.REDIS_URL
-  ? new Redis(`${env.REDIS_URL}?family=0`)
-  : new RedisMock()
 
 export async function redisMemoize<T>(fn: () => MaybePromise<T>, key: string, ttl: number = 60 * 60 * 24) {
   const cached = await redis.get(key)

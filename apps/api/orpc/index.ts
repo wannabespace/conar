@@ -1,30 +1,33 @@
 import type { Context } from './context'
 import { db } from '@conar/db'
 import { subscriptions } from '@conar/db/schema'
+import { infisical } from '@conar/infisical'
 import { ACTIVE_SUBSCRIPTION_STATUSES, LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
 import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
 import { memoize } from 'memoza'
+import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { auth } from '~/lib/auth'
 import { redis } from '~/lib/redis'
 
 export const orpc = os.$context<Context>()
 
-const getUserSecret = memoize(async (userId: string) => {
-  const user = await db.query.users.findFirst({
-    columns: {
-      secret: true,
-    },
-    where: {
-      id: userId,
-    },
-  })
-
-  if (!user) {
-    throw new ORPCError('UNAUTHORIZED', { message: `We could not find the user with id ${userId}. Please sign in again.` })
+export const getUserSecret = memoize(async (userId: string) => {
+  try {
+    return await infisical.secrets.get({ path: ['users', userId], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME })
   }
+  catch {
+    const user = await db.query.users.findFirst({
+      columns: { secret: true },
+      where: { id: userId },
+    })
 
-  return user.secret
+    if (!user) {
+      throw new ORPCError('UNAUTHORIZED', { message: `We could not find the user with id ${userId}. Please sign in again.` })
+    }
+
+    return user.secret
+  }
 })
 
 async function getSession(headers: Headers) {

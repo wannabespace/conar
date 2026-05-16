@@ -58,6 +58,7 @@ export const RECONNECT_ERROR_PATTERNS = [
   'network',
   'application failed to respond',
   'failed to fetch',
+  'connection terminated unexpectedly',
 ]
 
 export const API_KEY_PERMISSIONS = {

@@ -1,0 +1,15 @@
+{
+  "name": "@conar/infisical",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "check-types": "tsgo"
+  },
+  "dependencies": {
+    "@conar/configs": "workspace:*",
+    "@infisical/sdk": "catalog:",
+    "arktype": "catalog:",
+    "better-result": "catalog:",
+    "memoza": "catalog:"
+  }
+}

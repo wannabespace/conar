@@ -32,6 +32,7 @@ const envType = type({
   CONTEXT7_API_KEY: 'string',
   GITHUB_TOKEN: 'string',
   TODESKTOP_WEBHOOK_SECRET: 'string',
+  PROXY_SHARED_SECRET: 'string',
 })
 
 const devOptionalEnvs = [
@@ -41,7 +42,6 @@ const devOptionalEnvs = [
   'STRIPE_WEBHOOK_SECRET',
   'STRIPE_MONTH_PRICE_ID',
   'STRIPE_ANNUAL_PRICE_ID',
-  'REDIS_URL',
   'POSTHOG_TOKEN',
   'RESEND_API_KEY',
   'OPENAI_API_KEY',

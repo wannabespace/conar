@@ -8,5 +8,10 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "./.types"
-  }
+  },
+  "references": [
+    {
+      "path": "../api"
+    }
+  ]
 }

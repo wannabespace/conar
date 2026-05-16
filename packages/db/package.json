@@ -17,7 +17,6 @@
   "devDependencies": {
     "@conar/ai": "workspace:*",
     "@conar/configs": "workspace:*",
-    "@electric-sql/pglite": "catalog:",
     "@types/pg": "catalog:",
     "drizzle-kit": "catalog:",
     "stripe": "catalog:"

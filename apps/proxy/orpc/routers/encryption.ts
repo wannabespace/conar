@@ -5,10 +5,16 @@ import { authMiddleware, orpc } from '~/orpc'
 export const encryption = {
   encrypt: orpc
     .use(authMiddleware)
-    .input(type('object' as type.cast<Parameters<typeof encrypt>[0]>))
+    .input(type({
+      text: 'string',
+      secret: 'string',
+    }))
     .handler(async ({ input }) => encrypt(input)),
   decrypt: orpc
     .use(authMiddleware)
-    .input(type('object' as type.cast<Parameters<typeof decrypt>[0]>))
+    .input(type({
+      encryptedText: 'string',
+      secret: 'string',
+    }))
     .handler(async ({ input }) => decrypt(input)),
 }

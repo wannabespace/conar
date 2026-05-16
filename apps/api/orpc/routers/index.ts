@@ -7,6 +7,7 @@ import * as chatsMessages from './chats-messages'
 import * as connections from './connections'
 import * as connectionsResources from './connections-resources'
 import { contact } from './contact'
+import { internal } from './internal'
 import * as queries from './queries'
 import { releases } from './releases'
 import { repo } from './repo'
@@ -27,6 +28,7 @@ export const router = {
   webhooks,
   repo,
   releases,
+  internal,
 }
 
 export type ORPCRouter = RouterClient<typeof router>
