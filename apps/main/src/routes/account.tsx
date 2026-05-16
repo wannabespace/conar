@@ -6,7 +6,7 @@ import { UserAvatar } from '@conar/ui/components/custom/user-avatar'
 import { Separator } from '@conar/ui/components/separator'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import { RiDashboard3Line, RiFileListLine, RiGitBranchLine, RiGithubFill, RiLogoutCircleLine, RiMoonLine, RiSettingsLine, RiSunLine } from '@remixicon/react'
+import { RiDashboard3Line, RiDeleteBinLine, RiFileListLine, RiGitBranchLine, RiGithubFill, RiLogoutCircleLine, RiMoonLine, RiSettingsLine, RiSunLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, Outlet, redirect, useMatches, useRouter } from '@tanstack/react-router'
 import { Footer } from '~/components/footer'
@@ -165,6 +165,10 @@ function AccountLayout() {
             </SidebarButton>
             <SupportButton />
             <Separator className="my-2" />
+            <SidebarButton active={match === '/account/delete'} render={<Link to="/account/delete" />}>
+              <RiDeleteBinLine className="size-4" />
+              Delete Account
+            </SidebarButton>
             <Button
               variant="ghost"
               className="w-full justify-start text-foreground"
