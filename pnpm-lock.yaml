@@ -1352,9 +1352,6 @@ importers:
 
   packages/db:
     dependencies:
-      '@conar/infisical':
-        specifier: workspace:*
-        version: link:../infisical
       '@conar/shared':
         specifier: workspace:*
         version: link:../shared
@@ -1377,9 +1374,6 @@ importers:
       '@conar/configs':
         specifier: workspace:*
         version: link:../configs
-      '@electric-sql/pglite':
-        specifier: 'catalog:'
-        version: 0.4.5
       '@types/pg':
         specifier: 'catalog:'
         version: 8.20.0
