@@ -10,9 +10,9 @@ overrides:
   '@better-auth/core': 1.7.0-beta.3
   '@better-auth/drizzle-adapter': 'https://pkg.pr.new/@better-auth/drizzle-adapter@9489'
   better-auth: 'https://pkg.pr.new/better-auth@9489'
-  kysely: ^0.29.2
 patchedDependencies:
   '@better-auth/api-key': patches/@better-auth__api-key.patch
+  '@better-auth/core': patches/@better-auth__core.patch
 catalog:
   '@ai-sdk/anthropic': ^3.0.78
   '@ai-sdk/google': ^3.0.75
