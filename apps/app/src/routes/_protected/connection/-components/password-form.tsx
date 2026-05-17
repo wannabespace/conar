@@ -50,7 +50,7 @@ export function PasswordForm({ connection, connectionResource }: { connection: t
     },
     onError: (error) => {
       toast.error('We couldn\'t connect to the database', {
-        // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
+        // eslint-disable-next-line react/dom-no-dangerously-set-innerhtml
         description: <span dangerouslySetInnerHTML={{ __html: error.message.replaceAll('\n', '<br />') }} />,
       })
     },

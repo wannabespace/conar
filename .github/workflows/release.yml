@@ -17,9 +17,9 @@ jobs:
           bun-version: latest
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
-          version: 11.0.9
+          version: 11.1.2
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile

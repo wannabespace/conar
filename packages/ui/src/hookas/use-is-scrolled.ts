@@ -21,7 +21,7 @@ export function useIsScrolled(
     const scrollTop = element.scrollTop
     const scrollLeft = element.scrollLeft
 
-    let scrolled = false
+    let scrolled: boolean
     if (direction === 'vertical') {
       scrolled = scrollTop > threshold
     }

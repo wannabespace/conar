@@ -1,4 +1,3 @@
-/* eslint-disable e18e/prefer-static-regex */
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'

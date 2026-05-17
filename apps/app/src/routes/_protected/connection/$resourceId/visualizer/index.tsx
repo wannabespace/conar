@@ -160,7 +160,6 @@ function Visualizer({
   }, [])
 
   useMountedEffect(() => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     recalculateLayoutEvent()
   }, [schema])
 

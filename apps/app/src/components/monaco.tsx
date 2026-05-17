@@ -101,7 +101,7 @@ export function Monaco({
       return
 
     monacoInstanceRef.current.updateOptions(options)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react/exhaustive-deps
   }, [JSON.stringify(options)])
 
   useMountedEffect(() => {
