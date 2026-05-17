@@ -28,7 +28,6 @@ import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 
-const AccountDeleteLazyRouteImport = createFileRoute('/account/delete')()
 const AccountBillingLazyRouteImport = createFileRoute('/account/billing')()
 const AccountApiKeysLazyRouteImport = createFileRoute('/account/api-keys')()
 const AuthForgotPasswordLazyRouteImport = createFileRoute(
@@ -65,13 +64,6 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
-const AccountDeleteLazyRoute = AccountDeleteLazyRouteImport.update({
-  id: '/delete',
-  path: '/delete',
-  getParentRoute: () => AccountRoute,
-} as any).lazy(() =>
-  import('./routes/account/delete.lazy').then((d) => d.Route),
-)
 const AccountBillingLazyRoute = AccountBillingLazyRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -173,7 +165,6 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
   '/account/api-keys': typeof AccountApiKeysLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
-  '/account/delete': typeof AccountDeleteLazyRoute
   '/account/': typeof AccountIndexRoute
   '/account/settings/': typeof AccountSettingsIndexLazyRoute
 }
@@ -193,7 +184,6 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
   '/account/api-keys': typeof AccountApiKeysLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
-  '/account/delete': typeof AccountDeleteLazyRoute
   '/account': typeof AccountIndexRoute
   '/account/settings': typeof AccountSettingsIndexLazyRoute
 }
@@ -216,7 +206,6 @@ export interface FileRoutesById {
   '/_auth/forgot-password': typeof AuthForgotPasswordLazyRoute
   '/account/api-keys': typeof AccountApiKeysLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
-  '/account/delete': typeof AccountDeleteLazyRoute
   '/_layout/': typeof LayoutIndexRoute
   '/account/': typeof AccountIndexRoute
   '/account/settings/': typeof AccountSettingsIndexLazyRoute
@@ -240,7 +229,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/account/api-keys'
     | '/account/billing'
-    | '/account/delete'
     | '/account/'
     | '/account/settings/'
   fileRoutesByTo: FileRoutesByTo
@@ -260,7 +248,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/account/api-keys'
     | '/account/billing'
-    | '/account/delete'
     | '/account'
     | '/account/settings'
   id:
@@ -282,7 +269,6 @@ export interface FileRouteTypes {
     | '/_auth/forgot-password'
     | '/account/api-keys'
     | '/account/billing'
-    | '/account/delete'
     | '/_layout/'
     | '/account/'
     | '/account/settings/'
@@ -339,13 +325,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
-    }
-    '/account/delete': {
-      id: '/account/delete'
-      path: '/delete'
-      fullPath: '/account/delete'
-      preLoaderRoute: typeof AccountDeleteLazyRouteImport
-      parentRoute: typeof AccountRoute
     }
     '/account/billing': {
       id: '/account/billing'
@@ -490,7 +469,6 @@ const LayoutRouteWithChildren =
 interface AccountRouteChildren {
   AccountApiKeysLazyRoute: typeof AccountApiKeysLazyRoute
   AccountBillingLazyRoute: typeof AccountBillingLazyRoute
-  AccountDeleteLazyRoute: typeof AccountDeleteLazyRoute
   AccountIndexRoute: typeof AccountIndexRoute
   AccountSettingsIndexLazyRoute: typeof AccountSettingsIndexLazyRoute
 }
@@ -498,7 +476,6 @@ interface AccountRouteChildren {
 const AccountRouteChildren: AccountRouteChildren = {
   AccountApiKeysLazyRoute: AccountApiKeysLazyRoute,
   AccountBillingLazyRoute: AccountBillingLazyRoute,
-  AccountDeleteLazyRoute: AccountDeleteLazyRoute,
   AccountIndexRoute: AccountIndexRoute,
   AccountSettingsIndexLazyRoute: AccountSettingsIndexLazyRoute,
 }
