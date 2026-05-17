@@ -16,7 +16,6 @@ export default defineConfig(({ watch }) => ({
   clean: !watch,
   outExtensions: () => ({ js: '.js' }),
   deps: {
-
     alwaysBundle: [/^@conar\//],
   },
   env: {
