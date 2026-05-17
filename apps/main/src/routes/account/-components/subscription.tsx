@@ -35,6 +35,7 @@ export function Subscription() {
   const { openBillingPortal, isOpening } = useBillingPortal({ returnHref })
   const { upgrade, isUpgrading } = useUpgradeSubscription()
   const [isYearly, setIsYearly] = useState(period === 'yearly')
+  // eslint-disable-next-line react/purity
   const hasUpcomingTrialEnd = Boolean(subscription?.trialEnd && subscription.trialEnd.getTime() > Date.now())
 
   if (subscription && subscription.period === 'yearly' && !isYearly) {

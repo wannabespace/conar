@@ -70,19 +70,17 @@ function parseClickhouseEnum(type: string): string[] {
 }
 
 const mysqlEnumOrSetRegex = /^(enum|set)\(/i
-const mysqlEnumOrSetValuePairRegex = /,(?=(?:[^']*'[^']*')*[^']*$)/
 
 // Helper to parse values from enum/set column type string
 function parseMysqlEnumOrSet(typeString: string): string[] {
   // Remove "enum(" or "set(" prefix and ending ")"
-  // eslint-disable-next-line e18e/prefer-static-regex
+
   const valuesString = typeString.replace(mysqlEnumOrSetRegex, '').replace(/\)$/, '')
   // Split values; values are quoted (single quotes), can have commas inside values if escaped, etc.
   // This splits on commas only outside of single quotes
   return valuesString.length === 0
     ? []
-    // eslint-disable-next-line e18e/prefer-static-regex
-    : valuesString.split(mysqlEnumOrSetValuePairRegex).map(v => v.trim().replace(/^'/, '').replace(/'$/, '').replace(/''/g, '\''))
+    : valuesString.split(/,(?=(?:[^']*'[^']*')*[^']*$)/).map(v => v.trim().replace(/^'/, '').replace(/'$/, '').replace(/''/g, '\''))
 }
 
 export const resourceEnumsQuery = createQuery({

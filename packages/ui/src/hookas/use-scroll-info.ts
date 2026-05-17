@@ -22,7 +22,7 @@ export function useScrollInfo(ref: React.RefObject<HTMLElement | null>) {
 
     const { scrollLeft, scrollTop, scrollWidth, scrollHeight, clientWidth, clientHeight } = el
 
-    // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
+    // eslint-disable-next-line react/set-state-in-effect
     setScrollInfo({
       left: scrollLeft,
       top: scrollTop,

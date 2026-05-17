@@ -1,7 +1,7 @@
 {
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@11.0.9",
+  "packageManager": "pnpm@11.1.2",
   "description": "AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse.",
   "author": {
     "name": "Wannabe Space, LLC",

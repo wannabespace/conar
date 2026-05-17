@@ -21,6 +21,6 @@ export function useAsyncEffect(
       if (typeof destroyRef.current === 'function')
         destroyRef.current()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react/exhaustive-deps
   }, deps)
 }

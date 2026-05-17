@@ -139,7 +139,7 @@ function DatabaseEnumsPage() {
                                   matched && 'border-primary/30 bg-primary/10',
                                 )}
                               >
-                                {/* eslint-disable-next-line react-dom/no-dangerously-set-innerhtml */}
+                                {/* eslint-disable-next-line react/dom-no-dangerously-set-innerhtml */}
                                 <span dangerouslySetInnerHTML={{ __html: html }} />
                               </Badge>
                             </motion.div>

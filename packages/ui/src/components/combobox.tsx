@@ -1,5 +1,3 @@
-'use client'
-
 import { Combobox as ComboboxPrimitive } from '@base-ui/react/combobox'
 import { Input } from '@conar/ui/components/input'
 import { ScrollArea } from '@conar/ui/components/scroll-area'

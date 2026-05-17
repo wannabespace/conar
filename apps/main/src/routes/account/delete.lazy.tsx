@@ -32,7 +32,7 @@ function DeleteAccountPage() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
-      const options: { password?: string; callbackURL?: string } = {
+      const options: { password?: string, callbackURL?: string } = {
         callbackURL: '/sign-in',
       }
 

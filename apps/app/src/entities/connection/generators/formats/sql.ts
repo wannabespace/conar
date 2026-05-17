@@ -1,4 +1,3 @@
-/* eslint-disable e18e/prefer-static-regex */
 import type { QueryParams, SchemaParams } from '..'
 import type { Column } from '../../components/table/cell'
 import { ConnectionType } from '@conar/shared/enums/connection-type'

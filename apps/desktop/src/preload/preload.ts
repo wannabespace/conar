@@ -25,7 +25,6 @@ function handleElectronError<T extends AnyFunction>(fn: T): (...args: Parameters
     }
     catch (error) {
       if (error instanceof Error) {
-        // eslint-disable-next-line e18e/prefer-static-regex
         const message = replaceErrorPrefix(error.message.replace(/^Error invoking remote method '[^']+': /, ''))
 
         throw new Error(message, { cause: error })

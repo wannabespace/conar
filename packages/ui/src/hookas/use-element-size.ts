@@ -25,17 +25,17 @@ export function useElementSize<T extends Element = Element>(
     height: initial?.height ?? null,
   })
 
-  const previousObserver = React.useRef<ResizeObserver | null>(null)
+  const previousObserverRef = React.useRef<ResizeObserver | null>(null)
 
   React.useEffect(() => {
     const element = ref.current
 
-    if (previousObserver.current) {
-      previousObserver.current.disconnect()
-      previousObserver.current = null
+    if (previousObserverRef.current) {
+      previousObserverRef.current.disconnect()
+      previousObserverRef.current = null
     }
 
-    let observer: ResizeObserver | null = null
+    let observer: ResizeObserver
 
     if (element?.nodeType === Node.ELEMENT_NODE) {
       observer = new ResizeObserver(([entry]) => {
@@ -48,13 +48,13 @@ export function useElementSize<T extends Element = Element>(
       })
 
       observer.observe(element, { box: 'border-box' })
-      previousObserver.current = observer
+      previousObserverRef.current = observer
     }
 
     return () => {
-      if (previousObserver.current) {
-        previousObserver.current.disconnect()
-        previousObserver.current = null
+      if (previousObserverRef.current) {
+        previousObserverRef.current.disconnect()
+        previousObserverRef.current = null
       }
     }
   }, [ref])

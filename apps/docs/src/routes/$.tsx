@@ -61,7 +61,7 @@ const clientLoader = browserCollections.docs.createClientLoader({
           />
         </div>
         <DocsBody>
-          {/* eslint-disable-next-line react-hooks/rules-of-hooks */}
+          {/* eslint-disable-next-line react/rules-of-hooks */}
           <MDX components={useMDXComponents()} />
         </DocsBody>
       </DocsPage>

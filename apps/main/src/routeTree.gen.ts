@@ -340,18 +340,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/account/billing': {
-      id: '/account/billing'
-      path: '/billing'
-      fullPath: '/account/billing'
-      preLoaderRoute: typeof AccountBillingLazyRouteImport
-      parentRoute: typeof AccountRoute
-    }
     '/account/delete': {
       id: '/account/delete'
       path: '/delete'
       fullPath: '/account/delete'
       preLoaderRoute: typeof AccountDeleteLazyRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/billing': {
+      id: '/account/billing'
+      path: '/billing'
+      fullPath: '/account/billing'
+      preLoaderRoute: typeof AccountBillingLazyRouteImport
       parentRoute: typeof AccountRoute
     }
     '/account/api-keys': {

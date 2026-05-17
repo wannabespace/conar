@@ -3,7 +3,7 @@ import { escapeSpecialCharacters } from '@conar/shared/utils/helpers'
 
 function DefaultRender({ html }: { html: string }) {
   return (
-    // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
+    // eslint-disable-next-line react/dom-no-dangerously-set-innerhtml
     <span dangerouslySetInnerHTML={{ __html: html }} />
   )
 }
