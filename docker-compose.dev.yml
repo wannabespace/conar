@@ -7,6 +7,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=conar
+    command: [postgres, -c, wal_level=logical]
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -78,6 +79,16 @@ services:
       - SITE_URL=http://localhost:8082
     networks:
       - infisical
+
+  electric:
+    image: electricsql/electric:1.6.4
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/conar
+      ELECTRIC_INSECURE: true
+    ports:
+      - 30000:3000
+    depends_on:
+      - db
 
 volumes:
   postgres_data:
