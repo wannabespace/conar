@@ -13,13 +13,13 @@ export default antfu(
       'prefer-arrow-callback': 'off',
       'react/no-context-provider': 'off', // Due to context selector
       'react/no-unstable-context-value': 'off', // Due to React Compiler
-      'react-hooks/rules-of-hooks': [
+      'react/rules-of-hooks': [
         'error',
         {
           additionalHooks: '(useMountedEffect|useAsyncEffect)',
         },
       ],
-      'react-hooks/exhaustive-deps': [
+      'react/exhaustive-deps': [
         'warn',
         {
           additionalHooks: '(useMountedEffect|useAsyncEffect)',
@@ -59,7 +59,7 @@ export default antfu(
   {
     files: ['**/e2e/**/*'],
     rules: {
-      'react-hooks/rules-of-hooks': 'off',
+      'react/rules-of-hooks': 'off',
     },
   },
   {

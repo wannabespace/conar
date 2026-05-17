@@ -22,13 +22,12 @@ export function ContentSwitch({
 
   useMountedEffect(() => {
     if (active) {
-      // eslint-disable-next-line react-hooks-extra/no-direct-set-state-in-use-effect
+      // eslint-disable-next-line react/set-state-in-effect
       setIsActive(true)
     }
 
     const timeout = setTimeout(() => {
       setIsActive(false)
-      // eslint-disable-next-line react-hooks/rules-of-hooks
       onSwitchEndEvent(false)
     }, 3000)
 

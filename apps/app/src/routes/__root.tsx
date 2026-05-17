@@ -34,11 +34,11 @@ function RootDocument() {
   const router = useRouter()
 
   if (window.electron) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+    // eslint-disable-next-line react/rules-of-hooks
     useHotkey('Mod+R', () => globalHooks.callHook('refreshPressed'))
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+    // eslint-disable-next-line react/rules-of-hooks
     useHotkey('Mod+Shift+R', () => location.reload())
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+    // eslint-disable-next-line react/rules-of-hooks
     useDeepLinksObserver()
   }
 

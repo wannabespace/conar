@@ -28,7 +28,6 @@ export function rehypeWrapWords() {
       if (node.type !== 'text' || !parent || index === undefined)
         return
 
-      // eslint-disable-next-line e18e/prefer-static-regex
       const words = node.value.split(/(?=\s)/)
 
       // Create new span nodes for each word and whitespace

@@ -16,7 +16,6 @@ export default defineConfig(({ watch }) => ({
   clean: !watch,
   outExtensions: () => ({ js: '.js' }),
   deps: {
-    // eslint-disable-next-line e18e/prefer-static-regex
     alwaysBundle: [/^@conar\//],
   },
   env: {
