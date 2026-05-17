@@ -1,4 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
+import { DeleteAccountCard } from './-components/delete-account-card'
 import { SecurityCard } from './-components/security-card'
 import { SessionsCard } from './-components/sessions-card'
 
@@ -14,6 +15,7 @@ function SettingsPage() {
       <div className="space-y-4">
         <SecurityCard />
         <SessionsCard />
+        <DeleteAccountCard />
       </div>
     </>
   )
