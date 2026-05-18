@@ -80,16 +80,6 @@ services:
     networks:
       - infisical
 
-  electric:
-    image: electricsql/electric:1.6.4
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/conar
-      ELECTRIC_INSECURE: true
-    ports:
-      - 30000:3000
-    depends_on:
-      - db
-
 volumes:
   postgres_data:
   redis_data:
