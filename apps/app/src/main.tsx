@@ -4,8 +4,6 @@ import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { runMigrations } from './drizzle'
-import { chatsCollection } from './entities/chat/sync'
-import { connectionsCollection } from './entities/connection/sync'
 import { initEvents } from './lib/events-utils'
 import { routeTree } from './routeTree.gen'
 import './monaco-worker'
@@ -109,9 +107,5 @@ runMigrations()
     }
   })
   .then(async () => {
-    await Promise.all([
-      connectionsCollection.stateWhenReady(),
-      chatsCollection.stateWhenReady(),
-    ])
     root.render(<RouterProvider router={router} />)
   })

@@ -3,7 +3,7 @@ import { connections } from '@conar/db/schema'
 import { type } from 'arktype'
 import { and, eq, inArray } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'
-import { publisher } from '../sync/connections'
+import { publisher } from './events'
 
 const input = type({
   id: 'string.uuid',
@@ -27,7 +27,7 @@ export const remove = orpc
     for (const item of input) {
       publisher.publish('event', {
         type: 'delete',
-        value: item.id,
+        key: item.id,
         clientId: context.clientId,
       })
     }

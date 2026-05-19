@@ -2,23 +2,11 @@ import { db } from '@conar/db'
 import { chats, chatsSelectSchema } from '@conar/db/schema'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
-import { and, eq, gt, inArray, notInArray, or } from 'drizzle-orm'
+import { and, eq, gte, inArray, notInArray, or } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'
+import { createSyncOutputSchema, syncDiff } from '~/orpc/lib/sync'
 
-const output = type.or(
-  type({
-    type: '"insert"',
-    value: chatsSelectSchema,
-  }),
-  type({
-    type: '"update"',
-    value: chatsSelectSchema,
-  }),
-  type({
-    type: '"delete"',
-    value: 'string.uuid.v7',
-  }),
-).array()
+const output = createSyncOutputSchema(chatsSelectSchema).array()
 
 export const sync = orpc
   .use(authMiddleware)
@@ -28,41 +16,34 @@ export const sync = orpc
   }).array())
   .output(output)
   .handler(async function ({ input, context }) {
-    const inputIds = input.map(i => i.id)
-    const [updatedItems, newItems, existingIds] = await Promise.all([
-      inputIds.length > 0
-        ? db.select().from(chats).where(
-            and(
-              eq(chats.userId, context.user.id),
-              or(...input.map(chat =>
-                and(eq(chats.id, chat.id), gt(chats.updatedAt, addSeconds(chat.updatedAt, 1))),
-              )),
-            ),
-          )
-        : [],
-      db
-        .select()
-        .from(chats)
-        .where(and(
+    const { updatedItems, newItems, missingIds } = await syncDiff({
+      input,
+      queries: {
+        updated: items => db.select().from(chats).where(
+          and(
+            eq(chats.userId, context.user.id),
+            or(...items.map(c =>
+              and(eq(chats.id, c.id), gte(chats.updatedAt, addSeconds(c.updatedAt, 1))),
+            )),
+          ),
+        ),
+        new: excludeIds => db.select().from(chats).where(and(
           eq(chats.userId, context.user.id),
-          notInArray(chats.id, inputIds),
+          notInArray(chats.id, excludeIds),
         )),
-      db
-        .select({ id: chats.id })
-        .from(chats)
-        .where(and(
+        existing: includeIds => db.select({ id: chats.id }).from(chats).where(and(
           eq(chats.userId, context.user.id),
-          inArray(chats.id, inputIds),
-        ))
-        .then(r => r.map(item => item.id)),
-    ])
-    const missingIds = inputIds.filter(id => !existingIds.includes(id))
+          inArray(chats.id, includeIds),
+        )).then(r => r.map(i => i.id)),
+      },
+    })
 
     const sync: typeof output.infer = []
 
     updatedItems.forEach((item) => {
       sync.push({
         type: 'update',
+        key: item.id,
         value: item,
       })
     })
@@ -70,6 +51,7 @@ export const sync = orpc
     newItems.forEach((item) => {
       sync.push({
         type: 'insert',
+        key: item.id,
         value: item,
       })
     })
@@ -77,6 +59,8 @@ export const sync = orpc
     missingIds.forEach((item) => {
       sync.push({
         type: 'delete',
+        key: item,
+        // @ts-expect-error - TODO: change any to null in future, currently this is saved for backwards compatibility
         value: item,
       })
     })

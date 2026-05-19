@@ -150,7 +150,7 @@ catalog:
   tailwind-merge: ^3.6.0
   tailwind-scrollbar: ^4.0.2
   tailwindcss: ^4.3.0
-  tanstack-db-pglite: ^1.3.5
+  tanstack-db-pglite: ^1.5.0
   taze: ^19.12.0
   tsdown: ^0.22.0
   turbo: ^2.9.14

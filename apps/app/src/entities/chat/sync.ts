@@ -1,3 +1,4 @@
+import type { ORPCOutputs } from '~/lib/orpc'
 import { createCollection } from '@tanstack/react-db'
 import { drizzleCollectionOptions } from 'tanstack-db-pglite'
 import { db, waitForMigrations } from '~/drizzle'
@@ -16,48 +17,56 @@ export const chatsCollection = createCollection(drizzleCollectionOptions({
   primaryColumn: chats.id,
   startSync: false,
   prepare: waitForMigrations,
-  sync: async ({ write, markReady }) => {
-    if (!navigator.onLine || !await isSignedIn()) {
-      markReady()
-      return
-    }
+  sync: {
+    sync: async ({ writeAsync, markReady }) => {
+      if (!navigator.onLine || !await isSignedIn()) {
+        return
+      }
 
-    await connectionsResourcesCollection.stateWhenReady()
+      await connectionsResourcesCollection.stateWhenReady()
 
-    const abortController = new AbortController()
+      const abortController = new AbortController()
 
-    const sync = await orpc.sync.chats.call(
-      await db.select({ id: chats.id, updatedAt: chats.updatedAt }).from(chats),
-      { signal: abortController.signal },
-    )
+      const events = await orpc.chats.events.call({}, {
+        signal: abortController.signal,
+      })
 
-    ;(async () => {
-      for await (const item of sync) {
-        if (item.type === 'synced') {
-          markReady()
+      const writeItem = async (item: ORPCOutputs['chats']['sync'][number]) => {
+        if (item.type === 'delete') {
+          await writeAsync(item)
         }
-        else if (item.type === 'delete') {
-          write({ type: 'delete', key: item.value })
-        }
-        else {
-          const { type, value: { connectionResourceId, ...value } } = item
-
-          if (connectionResourceId) {
-            write({
-              type,
-              value: {
-                ...value,
-                connectionResourceId,
-              },
-            })
-          }
+        else if (item.value?.connectionResourceId) {
+          await writeAsync({
+            type: item.type,
+            value: {
+              ...item.value,
+              connectionResourceId: item.value.connectionResourceId!,
+            },
+          })
         }
       }
-    })()
 
-    return () => {
-      abortController.abort()
-    }
+      ;(async () => {
+        for await (const item of events) {
+          await writeItem(item)
+        }
+      })()
+
+      const sync = await orpc.chats.sync.call(
+        await db.select({ id: chats.id, updatedAt: chats.updatedAt }).from(chats),
+        { signal: abortController.signal },
+      )
+
+      for (const item of sync) {
+        await writeItem(item)
+      }
+
+      markReady()
+
+      return () => {
+        abortController.abort()
+      }
+    },
   },
   onInsert: async ({ transaction }) => {
     const mutations = transaction.mutations.filter(m => (m.metadata as ChatMutationMetadata)?.cloudSync !== false)
@@ -98,38 +107,41 @@ export const chatsMessagesCollection = createCollection(drizzleCollectionOptions
   primaryColumn: chatsMessages.id,
   startSync: false,
   prepare: waitForMigrations,
-  sync: async ({ write, markReady }) => {
-    if (!navigator.onLine || !await isSignedIn()) {
-      markReady()
-      return
-    }
-
-    await chatsCollection.stateWhenReady()
-
-    const abortController = new AbortController()
-
-    const sync = await orpc.sync.chatsMessages.call(
-      await db.select({ id: chatsMessages.id, updatedAt: chatsMessages.updatedAt }).from(chatsMessages),
-      { signal: abortController.signal },
-    )
-
-    ;(async () => {
-      for await (const item of sync) {
-        if (item.type === 'synced') {
-          markReady()
-        }
-        else if (item.type === 'delete') {
-          write({ type: 'delete', key: item.value })
-        }
-        else {
-          write(item)
-        }
+  sync: {
+    sync: async ({ writeAsync, markReady }) => {
+      if (!navigator.onLine || !await isSignedIn()) {
+        return
       }
-    })()
 
-    return () => {
-      abortController.abort()
-    }
+      await chatsCollection.stateWhenReady()
+
+      const abortController = new AbortController()
+
+      const events = await orpc.chatsMessages.events.call({}, {
+        signal: abortController.signal,
+      })
+
+      ;(async () => {
+        for await (const item of events) {
+          await writeAsync(item)
+        }
+      })()
+
+      const sync = await orpc.chatsMessages.sync.call(
+        await db.select({ id: chatsMessages.id, updatedAt: chatsMessages.updatedAt }).from(chatsMessages),
+        { signal: abortController.signal },
+      )
+
+      for (const item of sync) {
+        await writeAsync(item)
+      }
+
+      markReady()
+
+      return () => {
+        abortController.abort()
+      }
+    },
   },
   onInsert: async ({ transaction }) => {
     const mutations = transaction.mutations.filter(m => (m.metadata as ChatMessagesMutationMetadata)?.cloudSync !== false)

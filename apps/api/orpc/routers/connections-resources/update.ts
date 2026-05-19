@@ -4,7 +4,7 @@ import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'
-import { publisher } from '../sync/connections-resources'
+import { publisher } from './events'
 
 export const update = orpc
   .use(authMiddleware)

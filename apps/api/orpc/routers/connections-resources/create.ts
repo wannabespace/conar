@@ -2,7 +2,7 @@ import { db } from '@conar/db'
 import { connectionsResources, connectionsResourcesInsertSchema } from '@conar/db/schema'
 import { ORPCError } from '@orpc/server'
 import { authMiddleware, orpc } from '~/orpc'
-import { publisher } from '../sync/connections-resources'
+import { publisher } from './events'
 
 export const create = orpc
   .use(authMiddleware)

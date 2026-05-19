@@ -3,7 +3,7 @@ import { chats, chatsUpdateSchema } from '@conar/db/schema'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm/sql'
 import { orpc, subscriptionMiddleware } from '~/orpc'
-import { publisher } from '../sync/chats'
+import { publisher } from './events'
 
 export const update = orpc
   .use(subscriptionMiddleware)

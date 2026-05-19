@@ -3,7 +3,7 @@ import { queriesInsertSchema } from '@conar/db/schema'
 import { queries } from '@conar/db/schema/queries'
 import { type } from 'arktype'
 import { authMiddleware, orpc } from '~/orpc'
-import { publisher } from '../sync/queries'
+import { publisher } from './events'
 
 const schema = queriesInsertSchema
   .omit('userId', 'connectionId')

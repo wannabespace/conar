@@ -7,7 +7,7 @@ import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'
-import { publisher } from '../sync/connections'
+import { publisher } from './events'
 
 export const update = orpc
   .use(authMiddleware)
@@ -17,7 +17,7 @@ export const update = orpc
   ))
   .handler(async ({ context, input }) => {
     const { id, ...changes } = input
-    const [found] = await db.select().from(connections).where(eq(connections.id, id)).limit(1)
+    const [found] = await db.select().from(connections).where(and(eq(connections.id, id), eq(connections.userId, context.user.id))).limit(1)
 
     if (!found) {
       throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
@@ -40,7 +40,7 @@ export const update = orpc
         ...changes,
         connectionString: encrypt({ text: newConnectionString.toString(), secret }),
       })
-      .where(and(eq(connections.id, id), eq(connections.userId, context.user.id)))
+      .where(and(eq(connections.userId, context.user.id), eq(connections.id, id)))
       .returning()
 
     if (!connection) {

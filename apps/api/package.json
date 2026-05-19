@@ -51,7 +51,6 @@
   },
   "devDependencies": {
     "@conar/configs": "workspace:*",
-    "@electric-sql/pglite": "catalog:",
     "@playwright/test": "catalog:",
     "@types/pg": "catalog:",
     "@types/react": "catalog:",

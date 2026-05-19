@@ -4,7 +4,7 @@ import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
 import { orpc, subscriptionMiddleware } from '~/orpc'
-import { publisher } from '../sync/chats-messages'
+import { publisher } from './events'
 
 export const update = orpc
   .use(subscriptionMiddleware)

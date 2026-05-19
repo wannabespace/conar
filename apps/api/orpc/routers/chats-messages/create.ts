@@ -3,7 +3,7 @@ import { chats, chatsMessages, chatsMessagesInsertSchema } from '@conar/db/schem
 import { ORPCError } from '@orpc/server'
 import { and, eq } from 'drizzle-orm'
 import { orpc, subscriptionMiddleware } from '~/orpc'
-import { publisher } from '../sync/chats-messages'
+import { publisher } from './events'
 
 export const create = orpc
   .use(subscriptionMiddleware)

@@ -1,26 +1,28 @@
 import type { Type } from 'arktype'
 import { IORedisPublisher } from '@orpc/experimental-publisher/ioredis'
+import { eventIterator } from '@orpc/server'
 import { type } from 'arktype'
+
 import { redis } from '~/lib/redis'
+import { authMiddleware, orpc } from '~/orpc'
 
 export function createSyncOutputSchema<const T>(
   schema: type.validate<T>,
 ): type.instantiate<
-  | { type: '"insert"', value: T }
-  | { type: '"update"', value: T }
-  | { type: '"delete"', value: 'string.uuid.v7' }
-  | { type: '"synced"' }
+  | { type: '"insert"', key?: 'string.uuid.v7', value: T }
+  | { type: '"update"', key?: 'string.uuid.v7', value: T }
+  | { type: '"delete"', key: 'string.uuid.v7', value?: 'null' }
 >
 export function createSyncOutputSchema(schema: Type) {
   return type.or(
-    type({ type: '"insert"', value: schema }),
-    type({ type: '"update"', value: schema }),
-    type({ type: '"delete"', value: 'string.uuid.v7' }),
-    type({ type: '"synced"' }),
+    type({ type: '"insert"', key: 'string.uuid.v7?', value: schema }),
+    type({ type: '"update"', key: 'string.uuid.v7?', value: schema }),
+    // TODO: change any to null in future
+    type({ type: '"delete"', key: 'string.uuid.v7', value: 'unknown.any?' }),
   )
 }
 
-export function createSyncPublisher<T extends Type>(
+export function createSyncPublisher<T extends Type<{ type: 'insert' | 'update' | 'delete' }>>(
   output: T,
   prefix: string,
 ) {
@@ -43,10 +45,24 @@ export async function syncDiff<TItem>(opts: {
 }) {
   const inputIds = opts.input.map(i => i.id)
   const [updatedItems, newItems, existingIds] = await Promise.all([
-    inputIds.length > 0 ? opts.queries.updated(opts.input) : [],
+    inputIds.length > 0 ? opts.queries.updated(opts.input) : [] as TItem[],
     opts.queries.new(inputIds),
     opts.queries.existing(inputIds),
   ])
   const missingIds = inputIds.filter(id => !existingIds.includes(id))
   return { updatedItems, newItems, missingIds }
+}
+
+// eslint-disable-next-line ts/no-explicit-any
+export function createEventsEndpoint<O extends Type<{ type: 'insert' | 'update' | 'delete' }>, P extends IORedisPublisher<any>>(output: O, publisher: P) {
+  return orpc
+    .use(authMiddleware)
+    .output(eventIterator(output))
+    .handler(async function* ({ context, signal, lastEventId }) {
+      for await (const { clientId, ...payload } of publisher.subscribe('event', { signal, lastEventId })) {
+        if (clientId && clientId === context.clientId)
+          continue
+        yield payload
+      }
+    })
 }

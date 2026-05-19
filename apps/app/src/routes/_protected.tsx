@@ -25,12 +25,6 @@ function runAllSync() {
   for (const collection of allCollections) {
     collection.utils.runSync()
   }
-
-  return () => {
-    for (const collection of allCollections) {
-      collection.cleanup()
-    }
-  }
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -45,7 +39,7 @@ function ProtectedLayout() {
       return
     }
 
-    return runAllSync()
+    runAllSync()
   }, [hasUser, isOnline])
 
   return (

@@ -1,7 +1,7 @@
 import { db } from '@conar/db'
 import { chats, chatsInsertSchema } from '@conar/db/schema'
 import { orpc, subscriptionMiddleware } from '~/orpc'
-import { publisher } from '../sync/chats'
+import { publisher } from './events'
 
 export const create = orpc
   .use(subscriptionMiddleware)

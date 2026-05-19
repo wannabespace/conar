@@ -1,3 +1,4 @@
+import type { ORPCOutputs } from '~/lib/orpc'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { createCollection } from '@tanstack/react-db'
@@ -25,26 +26,21 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
   primaryColumn: connections.id,
   startSync: false,
   prepare: waitForMigrations,
-  sync: async ({ write, collection, markReady }) => {
-    if (!navigator.onLine || !await isSignedIn()) {
-      markReady()
-      return
-    }
+  sync: {
+    sync: async ({ writeAsync, collection, markReady }) => {
+      if (!navigator.onLine || !await isSignedIn()) {
+        return
+      }
 
-    const abortController = new AbortController()
+      const abortController = new AbortController()
 
-    const sync = await orpc.sync.connections.call(
-      await db.select({ id: connections.id, updatedAt: connections.updatedAt }).from(connections),
-      { signal: abortController.signal },
-    )
+      const events = await orpc.connections.events.call({}, {
+        signal: abortController.signal,
+      })
 
-    ;(async () => {
-      for await (const item of sync) {
-        if (item.type === 'synced') {
-          markReady()
-        }
-        else if (item.type === 'insert') {
-          write({
+      const writeItem = async (item: ORPCOutputs['connections']['sync'][number]) => {
+        if (item.type === 'insert') {
+          await writeAsync({
             type: 'insert',
             value: {
               ...item.value,
@@ -67,7 +63,7 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
             newConnectionString.password = localPassword
           }
 
-          write({
+          await writeAsync({
             type: 'update',
             value: {
               ...item.value,
@@ -78,17 +74,37 @@ export const connectionsCollection = createCollection(drizzleCollectionOptions({
           })
         }
         else if (item.type === 'delete') {
-          write({
+          await writeAsync({
             type: 'delete',
-            key: item.value,
+            key: item.key,
           })
         }
       }
-    })()
 
-    return () => {
-      abortController.abort()
-    }
+      ;(async () => {
+        for await (const item of events) {
+          writeItem(item)
+        }
+      })()
+
+      const sync = await orpc.connections.sync.call(
+        await db.select({ id: connections.id, updatedAt: connections.updatedAt }).from(connections),
+        { signal: abortController.signal },
+      )
+
+      for (const item of sync) {
+        await writeItem(item)
+      }
+
+      markReady()
+
+      return () => {
+        try {
+          abortController.abort()
+        }
+        catch {}
+      }
+    },
   },
   onInsert: async ({ transaction }) => {
     const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionMutationMetadata)?.cloudSync !== false)
@@ -138,38 +154,44 @@ export const connectionsResourcesCollection = createCollection(drizzleCollection
   primaryColumn: connectionsResources.id,
   startSync: false,
   prepare: waitForMigrations,
-  sync: async ({ write, markReady }) => {
-    if (!navigator.onLine || !await isSignedIn()) {
-      markReady()
-      return
-    }
-
-    await connectionsCollection.stateWhenReady()
-
-    const abortController = new AbortController()
-
-    const sync = await orpc.sync.connectionsResources.call(
-      await db.select({ id: connectionsResources.id, updatedAt: connectionsResources.updatedAt }).from(connectionsResources),
-      { signal: abortController.signal },
-    )
-
-    ;(async () => {
-      for await (const item of sync) {
-        if (item.type === 'synced') {
-          markReady()
-        }
-        else if (item.type === 'delete') {
-          write({ type: 'delete', key: item.value })
-        }
-        else {
-          write(item)
-        }
+  sync: {
+    sync: async ({ writeAsync, markReady }) => {
+      if (!navigator.onLine || !await isSignedIn()) {
+        return
       }
-    })()
 
-    return () => {
-      abortController.abort()
-    }
+      await connectionsCollection.stateWhenReady()
+
+      const abortController = new AbortController()
+
+      const events = await orpc.connectionsResources.events.call({}, {
+        signal: abortController.signal,
+      })
+
+      ;(async () => {
+        for await (const item of events) {
+          await writeAsync(item)
+        }
+      })()
+
+      const sync = await orpc.connectionsResources.sync.call(
+        await db.select({ id: connectionsResources.id, updatedAt: connectionsResources.updatedAt }).from(connectionsResources),
+        { signal: abortController.signal },
+      )
+
+      for (const item of sync) {
+        await writeAsync(item)
+      }
+
+      markReady()
+
+      return () => {
+        try {
+          abortController.abort()
+        }
+        catch {}
+      }
+    },
   },
   onInsert: async ({ transaction }) => {
     const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionResourcesMutationMetadata)?.cloudSync !== false)

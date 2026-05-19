@@ -11,7 +11,6 @@ import * as internal from './internal'
 import * as queries from './queries'
 import { releases } from './releases'
 import { repo } from './repo'
-import * as sync from './sync'
 import * as webhooks from './webhooks'
 
 export const router = {
@@ -22,7 +21,6 @@ export const router = {
   queries,
   connections,
   connectionsResources,
-  sync,
   // TODO: remove this in the future
   databases: connections,
   banner,

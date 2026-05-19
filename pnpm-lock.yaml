@@ -406,8 +406,8 @@ catalogs:
       specifier: ^4.3.0
       version: 4.3.0
     tanstack-db-pglite:
-      specifier: ^1.3.5
-      version: 1.3.5
+      specifier: ^1.5.0
+      version: 1.5.0
     taze:
       specifier: ^19.12.0
       version: 19.12.0
@@ -628,9 +628,6 @@ importers:
       '@conar/configs':
         specifier: workspace:*
         version: link:../../packages/configs
-      '@electric-sql/pglite':
-        specifier: 'catalog:'
-        version: 0.4.5
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.60.0
@@ -819,7 +816,7 @@ importers:
         version: 15.7.4
       tanstack-db-pglite:
         specifier: 'catalog:'
-        version: 1.3.5(@electric-sql/pglite@0.4.5)(@tanstack/db@0.6.5(typescript@5.9.3))(drizzle-orm@1.0.0-rc.2(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.1)(@types/mssql@12.3.0(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.14)(mysql2@3.22.3(@types/node@25.8.0))(pg@8.20.0)(valibot@1.4.0(typescript@5.9.3))(zod@4.4.3))(zod@4.4.3)
+        version: 1.5.0(@electric-sql/pglite@0.4.5)(@tanstack/db@0.6.5(typescript@5.9.3))(drizzle-orm@1.0.0-rc.2(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.1)(@types/mssql@12.3.0(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.14)(mysql2@3.22.3(@types/node@25.8.0))(pg@8.20.0)(valibot@1.4.0(typescript@5.9.3))(zod@4.4.3))(zod@4.4.3)
       use-stick-to-bottom:
         specifier: 'catalog:'
         version: 1.1.4(react@19.2.6)
@@ -4323,8 +4320,8 @@ packages:
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
-  '@react-grab/cli@0.1.34':
-    resolution: {integrity: sha512-L2eAxN46Vq2Ss3nDegrH7wQVMeWH03ahawp+OdzUtQWqL3cq6Bt149q9XhY3cWc9fJsxuWjLfCn+3T9uApIlBA==}
+  '@react-grab/cli@0.1.37':
+    resolution: {integrity: sha512-1ln28VkVHUbd5qy+ccXG68voWc0mgZMhBnwG0umxfD+wbkXUcvRzVrLjSqao7N8hCrDqp+Pt5j9Tsqef+9yQQQ==}
     hasBin: true
 
   '@redis/bloom@5.12.1':
@@ -6118,6 +6115,11 @@ packages:
 
   bippy@0.5.40:
     resolution: {integrity: sha512-3QPSDG5tgd7FCIkcKsUqmbGdlHxBxP7II5drXPNp1I0rpA9+4+/VjQOigDTbzeqTi6Xkaf1Dq7x4E8vbOuwOkA==}
+    peerDependencies:
+      react: '>=17.0.1'
+
+  bippy@0.5.41:
+    resolution: {integrity: sha512-jCP2pXXLhXqPrAN+iSEFZmLI4uUM4fjSqajh0K+TmM062VehfDT3ZJNkrTGyN701Z5XMejs9qAudSqkMGhSMKg==}
     peerDependencies:
       react: '>=17.0.1'
 
@@ -9887,8 +9889,8 @@ packages:
       final-form: ^5.0.0
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  react-grab@0.1.34:
-    resolution: {integrity: sha512-jtdOdv0kb90oqL+pMszSh9DOLgVRaX4ZE6XN4GkDEpNNUqveQfZT014+EeJraljpqQfuWKW+96NrrRqUD93D2g==}
+  react-grab@0.1.37:
+    resolution: {integrity: sha512-XVAc/qPyxsDT8Putu9UnP7iVHmAORMzvaN/3GDTOfbuLIRXWdOt7vebPOzM9RVTVUjucXv0135JI++kSVPSfYg==}
     hasBin: true
     peerDependencies:
       react: '>=17.0.0'
@@ -10603,11 +10605,11 @@ packages:
   tailwindcss@4.3.0:
     resolution: {integrity: sha512-y6nxMGB1nMW9R6k96e5gdIFzcfL/gTJRNaqGes1YvkLnPVXzWgbqFF2yLC0T8G774n24cx3Pe8XrKoniCOAH+Q==}
 
-  tanstack-db-pglite@1.3.5:
-    resolution: {integrity: sha512-XwP6WIhcpNruo+/U8IZJSRU7vz0F5hAV2SwmwU0ns57uc8fuiZbHXbgF1YMZHH5s/omP99w5goIwqdZoxJdUUQ==}
+  tanstack-db-pglite@1.5.0:
+    resolution: {integrity: sha512-wRzDNSFgS3ebf8bZDpVxmkqkRuIVf7HXEowQkxkfW5c8FAFTH4nG4mPPmg4SLOPSARJbBhjTFWM2WLwdFoOhww==}
     peerDependencies:
-      '@electric-sql/pglite': '>=0.3.0'
-      '@tanstack/db': '>=0.5.0'
+      '@electric-sql/pglite': '>=0.4.0'
+      '@tanstack/db': '>=0.6.5'
       drizzle-orm: '>=0.45.0'
     peerDependenciesMeta:
       drizzle-orm:
@@ -14515,7 +14517,7 @@ snapshots:
     dependencies:
       react: 19.2.6
 
-  '@react-grab/cli@0.1.34':
+  '@react-grab/cli@0.1.37':
     dependencies:
       commander: 14.0.3
       ignore: 7.0.5
@@ -16548,6 +16550,10 @@ snapshots:
   binary-extensions@2.3.0: {}
 
   bippy@0.5.40(react@19.2.6):
+    dependencies:
+      react: 19.2.6
+
+  bippy@0.5.41(react@19.2.6):
     dependencies:
       react: 19.2.6
 
@@ -20839,10 +20845,10 @@ snapshots:
       final-form: 5.0.1
       react: 17.0.2
 
-  react-grab@0.1.34(react@19.2.6):
+  react-grab@0.1.37(react@19.2.6):
     dependencies:
-      '@react-grab/cli': 0.1.34
-      bippy: 0.5.40(react@19.2.6)
+      '@react-grab/cli': 0.1.37
+      bippy: 0.5.41(react@19.2.6)
     optionalDependencies:
       react: 19.2.6
 
@@ -20916,7 +20922,7 @@ snapshots:
       prompts: 2.4.2
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
-      react-grab: 0.1.34(react@19.2.6)
+      react-grab: 0.1.37(react@19.2.6)
     optionalDependencies:
       esbuild: 0.28.0
       unplugin: 2.1.0
@@ -21671,7 +21677,7 @@ snapshots:
 
   tailwindcss@4.3.0: {}
 
-  tanstack-db-pglite@1.3.5(@electric-sql/pglite@0.4.5)(@tanstack/db@0.6.5(typescript@5.9.3))(drizzle-orm@1.0.0-rc.2(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.1)(@types/mssql@12.3.0(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.14)(mysql2@3.22.3(@types/node@25.8.0))(pg@8.20.0)(valibot@1.4.0(typescript@5.9.3))(zod@4.4.3))(zod@4.4.3):
+  tanstack-db-pglite@1.5.0(@electric-sql/pglite@0.4.5)(@tanstack/db@0.6.5(typescript@5.9.3))(drizzle-orm@1.0.0-rc.2(@electric-sql/pglite@0.4.5)(@opentelemetry/api@1.9.1)(@types/mssql@12.3.0(@azure/core-client@1.10.1))(@types/pg@8.20.0)(arktype@2.2.0)(bun-types@1.3.14)(mysql2@3.22.3(@types/node@25.8.0))(pg@8.20.0)(valibot@1.4.0(typescript@5.9.3))(zod@4.4.3))(zod@4.4.3):
     dependencies:
       '@electric-sql/pglite': 0.4.5
       '@tanstack/db': 0.6.5(typescript@5.9.3)

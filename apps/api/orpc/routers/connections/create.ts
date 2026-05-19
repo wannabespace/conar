@@ -4,7 +4,7 @@ import { SyncType } from '@conar/shared/enums/sync-type'
 import { decrypt, encrypt } from '@conar/shared/utils/encryption'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { authMiddleware, orpc } from '~/orpc'
-import { publisher } from '../sync/connections'
+import { publisher } from './events'
 
 export const create = orpc
   .use(authMiddleware)

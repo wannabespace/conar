@@ -3,7 +3,7 @@ import { chats, chatsMessages } from '@conar/db/schema'
 import { type } from 'arktype'
 import { and, eq, inArray, or } from 'drizzle-orm'
 import { orpc, subscriptionMiddleware } from '~/orpc'
-import { publisher } from '../sync/chats-messages'
+import { publisher } from './events'
 
 const input = type({
   id: 'string.uuid.v7',
@@ -38,7 +38,7 @@ export const remove = orpc
     for (const item of toRemove) {
       publisher.publish('event', {
         type: 'delete',
-        value: item.id,
+        key: item.id,
         clientId: context.clientId,
       })
     }

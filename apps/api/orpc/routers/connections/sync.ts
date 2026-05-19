@@ -3,23 +3,11 @@ import { connections, connectionsSelectSchema } from '@conar/db/schema'
 import { decrypt } from '@conar/shared/utils/encryption'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
-import { and, eq, gt, inArray, notInArray, or } from 'drizzle-orm'
+import { and, eq, gte, inArray, notInArray, or } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'
+import { createSyncOutputSchema, syncDiff } from '~/orpc/lib/sync'
 
-const output = type.or(
-  type({
-    type: '"insert"',
-    value: connectionsSelectSchema,
-  }),
-  type({
-    type: '"update"',
-    value: connectionsSelectSchema,
-  }),
-  type({
-    type: '"delete"',
-    value: 'string.uuid.v7',
-  }),
-).array()
+const output = createSyncOutputSchema(connectionsSelectSchema).array()
 
 export const sync = orpc
   .use(authMiddleware)
@@ -29,41 +17,34 @@ export const sync = orpc
   }).array())
   .output(output)
   .handler(async function ({ input, context }) {
-    const inputIds = input.map(i => i.id)
-    const [updatedItems, newItems, existingIds] = await Promise.all([
-      inputIds.length > 0
-        ? db.select().from(connections).where(
-            and(
-              eq(connections.userId, context.user.id),
-              or(...input.map(connection =>
-                and(eq(connections.id, connection.id), gt(connections.updatedAt, addSeconds(connection.updatedAt, 1))),
-              )),
-            ),
-          )
-        : [],
-      db
-        .select()
-        .from(connections)
-        .where(and(
+    const { updatedItems, newItems, missingIds } = await syncDiff({
+      input,
+      queries: {
+        updated: items => db.select().from(connections).where(
+          and(
+            eq(connections.userId, context.user.id),
+            or(...items.map(c =>
+              and(eq(connections.id, c.id), gte(connections.updatedAt, addSeconds(c.updatedAt, 1))),
+            )),
+          ),
+        ),
+        new: excludeIds => db.select().from(connections).where(and(
           eq(connections.userId, context.user.id),
-          notInArray(connections.id, inputIds),
+          notInArray(connections.id, excludeIds),
         )),
-      db
-        .select({ id: connections.id })
-        .from(connections)
-        .where(and(
+        existing: includeIds => db.select({ id: connections.id }).from(connections).where(and(
           eq(connections.userId, context.user.id),
-          inArray(connections.id, inputIds),
-        ))
-        .then(r => r.map(item => item.id)),
-    ])
-    const missingIds = inputIds.filter(id => !existingIds.includes(id))
+          inArray(connections.id, includeIds),
+        )).then(r => r.map(i => i.id)),
+      },
+    })
     const secret = await context.getUserSecret()
     const sync: typeof output.infer = []
 
     updatedItems.forEach((item) => {
       sync.push({
         type: 'update',
+        key: item.id,
         value: {
           ...item,
           connectionString: decrypt({ encryptedText: item.connectionString, secret }),
@@ -74,6 +55,7 @@ export const sync = orpc
     newItems.forEach((item) => {
       sync.push({
         type: 'insert',
+        key: item.id,
         value: {
           ...item,
           connectionString: decrypt({ encryptedText: item.connectionString, secret }),
@@ -84,6 +66,8 @@ export const sync = orpc
     missingIds.forEach((item) => {
       sync.push({
         type: 'delete',
+        key: item,
+        // @ts-expect-error - TODO: change any to null in future, currently this is saved for backwards compatibility
         value: item,
       })
     })
