@@ -13,6 +13,26 @@ export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
 })
 
+const allCollections = [
+  connectionsCollection,
+  connectionsResourcesCollection,
+  chatsCollection,
+  chatsMessagesCollection,
+  queriesCollection,
+]
+
+function runAllSync() {
+  for (const collection of allCollections) {
+    collection.utils.runSync()
+  }
+
+  return () => {
+    for (const collection of allCollections) {
+      collection.cleanup()
+    }
+  }
+}
+
 // eslint-disable-next-line react-refresh/only-export-components
 function ProtectedLayout() {
   const { data } = authClient.useSession()
@@ -25,11 +45,7 @@ function ProtectedLayout() {
       return
     }
 
-    connectionsCollection.utils.runSync()
-    connectionsResourcesCollection.utils.runSync()
-    chatsCollection.utils.runSync()
-    chatsMessagesCollection.utils.runSync()
-    queriesCollection.utils.runSync()
+    return runAllSync()
   }, [hasUser, isOnline])
 
   return (
