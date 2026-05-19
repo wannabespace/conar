@@ -12,32 +12,35 @@ export const queriesCollection = createCollection(drizzleCollectionOptions({
   primaryColumn: queries.id,
   startSync: false,
   prepare: waitForMigrations,
-  sync: async ({ collection, write }) => {
+  sync: async ({ write, markReady }) => {
     if (!navigator.onLine || !await isSignedIn()) {
+      markReady()
       return
     }
 
-    await connectionsCollection.utils.waitForSync()
-    const sync = await orpc.queries.sync.call(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+    await connectionsCollection.stateWhenReady()
 
-    sync.forEach((item) => {
-      if (item.type === 'delete') {
-        write({ type: 'delete', value: collection.get(item.value)! })
-      }
-      else {
-        const { type, value: { connectionResourceId, connectionId: _, ...value } } = item
+    const abortController = new AbortController()
 
-        if (connectionResourceId) {
-          write({
-            type,
-            value: {
-              ...value,
-              connectionResourceId,
-            },
-          })
+    const sync = await orpc.sync.queries.call(
+      await db.select({ id: queries.id, updatedAt: queries.updatedAt }).from(queries),
+      { signal: abortController.signal },
+    )
+
+    ;(async () => {
+      for await (const item of sync) {
+        if (item.type === 'synced') {
+          markReady()
+        }
+        else if (item.type === 'delete') {
+          write({ type: 'delete', key: item.value })
         }
       }
-    })
+    })()
+
+    return () => {
+      abortController.abort()
+    }
   },
   onInsert: async ({ transaction }) => {
     await orpc.queries.create.call(transaction.mutations.map(m => m.modified))

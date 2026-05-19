@@ -1,4 +1,4 @@
-import { createCollection, inArray, queryOnce } from '@tanstack/react-db'
+import { createCollection } from '@tanstack/react-db'
 import { drizzleCollectionOptions } from 'tanstack-db-pglite'
 import { db, waitForMigrations } from '~/drizzle'
 import { chats, chatsMessages } from '~/drizzle/schema'
@@ -16,32 +16,48 @@ export const chatsCollection = createCollection(drizzleCollectionOptions({
   primaryColumn: chats.id,
   startSync: false,
   prepare: waitForMigrations,
-  sync: async ({ collection, write }) => {
+  sync: async ({ write, markReady }) => {
     if (!navigator.onLine || !await isSignedIn()) {
+      markReady()
       return
     }
 
-    await connectionsResourcesCollection.utils.waitForSync()
-    const sync = await orpc.chats.sync.call(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+    await connectionsResourcesCollection.stateWhenReady()
 
-    sync.forEach((item) => {
-      if (item.type === 'delete') {
-        write({ type: 'delete', value: collection.get(item.value)! })
-      }
-      else {
-        const { type, value: { connectionResourceId, ...value } } = item
+    const abortController = new AbortController()
 
-        if (connectionResourceId) {
-          write({
-            type,
-            value: {
-              ...value,
-              connectionResourceId,
-            },
-          })
+    const sync = await orpc.sync.chats.call(
+      await db.select({ id: chats.id, updatedAt: chats.updatedAt }).from(chats),
+      { signal: abortController.signal },
+    )
+
+    ;(async () => {
+      for await (const item of sync) {
+        if (item.type === 'synced') {
+          markReady()
+        }
+        else if (item.type === 'delete') {
+          write({ type: 'delete', key: item.value })
+        }
+        else {
+          const { type, value: { connectionResourceId, ...value } } = item
+
+          if (connectionResourceId) {
+            write({
+              type,
+              value: {
+                ...value,
+                connectionResourceId,
+              },
+            })
+          }
         }
       }
-    })
+    })()
+
+    return () => {
+      abortController.abort()
+    }
   },
   onInsert: async ({ transaction }) => {
     const mutations = transaction.mutations.filter(m => (m.metadata as ChatMutationMetadata)?.cloudSync !== false)
@@ -82,29 +98,38 @@ export const chatsMessagesCollection = createCollection(drizzleCollectionOptions
   primaryColumn: chatsMessages.id,
   startSync: false,
   prepare: waitForMigrations,
-  sync: async ({ collection, write }) => {
+  sync: async ({ write, markReady }) => {
     if (!navigator.onLine || !await isSignedIn()) {
+      markReady()
       return
     }
 
-    await chatsCollection.utils.waitForSync()
-    const sync = await orpc.chatsMessages.sync.call(collection.toArray.map(m => ({ id: m.id, updatedAt: m.updatedAt })))
-    const chats = await queryOnce(q => q
-      .from({ chats: chatsCollection })
-      .where(({ chats }) => inArray(chats.id, sync.filter(m => m.type === 'insert' || m.type === 'update').map(m => m.value.chatId)))
-      .select(({ chats }) => ({ id: chats.id })))
-    const chatsIds = chats.map(c => c.id)
+    await chatsCollection.stateWhenReady()
 
-    sync.forEach((item) => {
-      if (item.type === 'delete') {
-        write({ type: 'delete', value: collection.get(item.value)! })
-      }
-      else {
-        if (chatsIds.includes(item.value.chatId)) {
+    const abortController = new AbortController()
+
+    const sync = await orpc.sync.chatsMessages.call(
+      await db.select({ id: chatsMessages.id, updatedAt: chatsMessages.updatedAt }).from(chatsMessages),
+      { signal: abortController.signal },
+    )
+
+    ;(async () => {
+      for await (const item of sync) {
+        if (item.type === 'synced') {
+          markReady()
+        }
+        else if (item.type === 'delete') {
+          write({ type: 'delete', key: item.value })
+        }
+        else {
           write(item)
         }
       }
-    })
+    })()
+
+    return () => {
+      abortController.abort()
+    }
   },
   onInsert: async ({ transaction }) => {
     const mutations = transaction.mutations.filter(m => (m.metadata as ChatMessagesMutationMetadata)?.cloudSync !== false)

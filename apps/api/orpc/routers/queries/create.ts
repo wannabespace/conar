@@ -3,6 +3,7 @@ import { queriesInsertSchema } from '@conar/db/schema'
 import { queries } from '@conar/db/schema/queries'
 import { type } from 'arktype'
 import { authMiddleware, orpc } from '~/orpc'
+import { publisher } from '../sync/queries'
 
 const schema = queriesInsertSchema
   .omit('userId', 'connectionId')
@@ -19,11 +20,18 @@ export const create = orpc
     schema.array(),
   ).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
-    await db
+    const [query] = await db
       .insert(queries)
       .values(input.map(({ connectionId, databaseId, ...item }) => ({
         ...item,
         connectionId: (connectionId ?? databaseId)!,
         userId: context.session.userId,
       })))
+      .returning()
+
+    publisher.publish('event', {
+      type: 'insert',
+      value: query!,
+      clientId: context.clientId,
+    })
   })

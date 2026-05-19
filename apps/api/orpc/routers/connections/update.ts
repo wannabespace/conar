@@ -7,6 +7,7 @@ import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'
+import { publisher } from '../sync/connections'
 
 export const update = orpc
   .use(authMiddleware)
@@ -16,9 +17,9 @@ export const update = orpc
   ))
   .handler(async ({ context, input }) => {
     const { id, ...changes } = input
-    const [connection] = await db.select().from(connections).where(eq(connections.id, id)).limit(1)
+    const [found] = await db.select().from(connections).where(eq(connections.id, id)).limit(1)
 
-    if (!connection) {
+    if (!found) {
       throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
     }
 
@@ -26,18 +27,29 @@ export const update = orpc
 
     const newConnectionString = new SafeURL(
       changes.connectionString
-      ?? decrypt({ encryptedText: connection.connectionString, secret }),
+      ?? decrypt({ encryptedText: found.connectionString, secret }),
     )
 
-    if ((changes.syncType ?? connection.syncType) !== SyncType.Cloud) {
+    if ((changes.syncType ?? found.syncType) !== SyncType.Cloud) {
       newConnectionString.password = ''
     }
 
-    await db
+    const [connection] = await db
       .update(connections)
       .set({
         ...changes,
         connectionString: encrypt({ text: newConnectionString.toString(), secret }),
       })
       .where(and(eq(connections.id, id), eq(connections.userId, context.user.id)))
+      .returning()
+
+    if (!connection) {
+      throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
+    }
+
+    publisher.publish('event', {
+      type: 'update',
+      value: connection,
+      clientId: context.clientId,
+    })
   })

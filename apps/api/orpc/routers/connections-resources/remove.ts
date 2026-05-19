@@ -4,6 +4,7 @@ import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { inArray } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'
+import { publisher } from '../sync/connections-resources'
 
 const input = type({
   id: 'string.uuid',
@@ -40,4 +41,12 @@ export const remove = orpc
     await db
       .delete(connectionsResources)
       .where(inArray(connectionsResources.id, input.map(item => item.id)))
+
+    for (const item of input) {
+      publisher.publish('event', {
+        type: 'delete',
+        value: item.id,
+        clientId: context.clientId,
+      })
+    }
   })

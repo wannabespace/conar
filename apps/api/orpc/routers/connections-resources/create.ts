@@ -2,6 +2,7 @@ import { db } from '@conar/db'
 import { connectionsResources, connectionsResourcesInsertSchema } from '@conar/db/schema'
 import { ORPCError } from '@orpc/server'
 import { authMiddleware, orpc } from '~/orpc'
+import { publisher } from '../sync/connections-resources'
 
 export const create = orpc
   .use(authMiddleware)
@@ -22,8 +23,14 @@ export const create = orpc
       throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
     }
 
-    await db.insert(connectionsResources).values(input).onConflictDoUpdate({
+    const [resource] = await db.insert(connectionsResources).values(input).onConflictDoUpdate({
       target: [connectionsResources.connectionId, connectionsResources.name],
       set: input,
+    }).returning()
+
+    publisher.publish('event', {
+      type: 'insert',
+      value: resource!,
+      clientId: context.clientId,
     })
   })

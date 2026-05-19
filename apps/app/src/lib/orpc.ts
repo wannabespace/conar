@@ -11,13 +11,16 @@ import { bearerToken } from './auth'
 import { handleError } from './error'
 import { apiUrl, proxyUrl } from './utils'
 
+const clientId = crypto.randomUUID()
+
 export const orpc = createTanstackQueryUtils(createORPCClient(new RPCLink({
   url: `${apiUrl}/rpc`,
   headers: async () => {
     const token = bearerToken.get()
 
     return {
-      Authorization: token ? `Bearer ${token}` : undefined,
+      'Authorization': token ? `Bearer ${token}` : undefined,
+      'x-client-id': clientId,
       ...(window.electron
         ? {
             'x-desktop': 'true',

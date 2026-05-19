@@ -236,7 +236,7 @@ function ConnectionCard({
   const { isPending: isWaitForSyncPending } = useQuery({
     queryKey: ['connections-resources-wait-for-sync', connection.id],
     queryFn: async () => {
-      await connectionsResourcesCollection.utils.waitForSync()
+      await connectionsResourcesCollection.stateWhenReady()
       return null
     },
   })

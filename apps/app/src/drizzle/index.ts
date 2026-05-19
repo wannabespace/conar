@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
-// import PGWorker from './worker?worker'
-import { PGlite } from '@electric-sql/pglite'
-// import { PGliteWorker } from '@electric-sql/pglite/worker'
+import type { PGlite } from '@electric-sql/pglite'
+import { PGliteWorker } from '@electric-sql/pglite/worker'
 import { drizzle } from 'drizzle-orm/pglite'
 import { createStore } from 'seitu'
 import migrations from './migrations.json'
@@ -9,8 +8,9 @@ import { chatsRelations } from './schema/chats'
 import { connections } from './schema/connections'
 import { queriesRelations } from './schema/queries'
 
-// const pg = new PGliteWorker(new PGWorker({ name: 'pglite-worker' }))
-const pg = new PGlite('idb://tamery')
+const pg = new PGliteWorker(
+  new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' }),
+) as unknown as PGlite // Drizzle does not support PGliteWorker
 
 if (import.meta.env.DEV) {
   // @ts-expect-error - window.db is not typed

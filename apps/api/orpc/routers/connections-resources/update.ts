@@ -4,6 +4,7 @@ import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'
+import { publisher } from '../sync/connections-resources'
 
 export const update = orpc
   .use(authMiddleware)
@@ -14,7 +15,7 @@ export const update = orpc
   .handler(async ({ context, input }) => {
     const { id, ...changes } = input
 
-    const resource = await db.query.connectionsResources.findFirst({
+    const found = await db.query.connectionsResources.findFirst({
       columns: {
         id: true,
       },
@@ -30,12 +31,19 @@ export const update = orpc
       },
     })
 
-    if (!resource) {
+    if (!found) {
       throw new ORPCError('NOT_FOUND', { message: 'Connection resource not found' })
     }
 
-    await db
+    const [resource] = await db
       .update(connectionsResources)
       .set(changes)
       .where(eq(connectionsResources.id, id))
+      .returning()
+
+    publisher.publish('event', {
+      type: 'update',
+      value: resource!,
+      clientId: context.clientId,
+    })
   })
