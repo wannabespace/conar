@@ -1,7 +1,7 @@
 import { db } from '@conar/db'
 import { connections, connectionsInsertSchema } from '@conar/db/schema'
 import { SyncType } from '@conar/shared/enums/sync-type'
-import { decrypt, encrypt } from '@conar/shared/utils/encryption'
+import { encrypt } from '@conar/shared/utils/encryption'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { authMiddleware, orpc } from '~/orpc'
 import { publisher } from './events'
@@ -26,7 +26,7 @@ export const create = orpc
       type: 'insert',
       value: {
         ...connection!,
-        connectionString: decrypt({ encryptedText: connection!.connectionString, secret: await context.getUserSecret() }),
+        connectionString: newConnectionString.toString(),
       },
       clientId: context.clientId,
     })
