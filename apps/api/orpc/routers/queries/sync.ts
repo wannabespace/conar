@@ -4,21 +4,9 @@ import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
 import { and, eq, gte, inArray, notInArray, or } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'
+import { createSyncOutputSchema, syncDiff } from '~/orpc/lib/sync'
 
-const output = type.or(
-  type({
-    type: '"insert"',
-    value: queriesSelectSchema,
-  }),
-  type({
-    type: '"update"',
-    value: queriesSelectSchema,
-  }),
-  type({
-    type: '"delete"',
-    value: 'string.uuid.v7',
-  }),
-).array()
+const output = createSyncOutputSchema(queriesSelectSchema).array()
 
 export const sync = orpc
   .use(authMiddleware)
@@ -28,35 +16,27 @@ export const sync = orpc
   }).array())
   .output(output)
   .handler(async function ({ input, context }) {
-    const inputIds = input.map(i => i.id)
-    const [updatedItems, newItems, existingIds] = await Promise.all([
-      inputIds.length > 0
-        ? db.select().from(queries).where(
-            and(
-              eq(queries.userId, context.user.id),
-              or(...input.map(query =>
-                and(eq(queries.id, query.id), gte(queries.updatedAt, addSeconds(query.updatedAt, 1))),
-              )),
-            ),
-          )
-        : [],
-      db
-        .select()
-        .from(queries)
-        .where(and(
+    const { updatedItems, newItems, missingIds } = await syncDiff({
+      input,
+      queries: {
+        updated: items => db.select().from(queries).where(
+          and(
+            eq(queries.userId, context.user.id),
+            or(...items.map(q =>
+              and(eq(queries.id, q.id), gte(queries.updatedAt, addSeconds(q.updatedAt, 1))),
+            )),
+          ),
+        ),
+        new: excludeIds => db.select().from(queries).where(and(
           eq(queries.userId, context.user.id),
-          notInArray(queries.id, inputIds),
+          notInArray(queries.id, excludeIds),
         )),
-      db
-        .select({ id: queries.id })
-        .from(queries)
-        .where(and(
+        existing: includeIds => db.select({ id: queries.id }).from(queries).where(and(
           eq(queries.userId, context.user.id),
-          inArray(queries.id, inputIds),
-        ))
-        .then(r => r.map(item => item.id)),
-    ])
-    const missingIds = inputIds.filter(id => !existingIds.includes(id))
+          inArray(queries.id, includeIds),
+        )).then(r => r.map(i => i.id)),
+      },
+    })
 
     const sync: typeof output.infer = []
 
@@ -77,6 +57,8 @@ export const sync = orpc
     missingIds.forEach((item) => {
       sync.push({
         type: 'delete',
+        key: item,
+        // @ts-expect-error TODO: remove this in future, currently saved for backward compatibility
         value: item,
       })
     })

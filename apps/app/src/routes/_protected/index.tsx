@@ -2,19 +2,13 @@ import { SOCIAL_LINKS } from '@conar/shared/constants'
 import { pick } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Button } from '@conar/ui/components/button'
-import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
 import { Spinner } from '@conar/ui/components/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { RiAddLine, RiCheckLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiLoopLeftLine, RiTwitterXLine } from '@remixicon/react'
-import { useMutation } from '@tanstack/react-query'
+import { RiAddLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiTwitterXLine } from '@remixicon/react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
-import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
-import { queryClient } from '~/main'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 import { ConnectionsList } from './-components/connections-list'
 import { Profile } from './-components/profile'
@@ -28,21 +22,6 @@ export const Route = createFileRoute('/_protected/')({
 
 // eslint-disable-next-line react-refresh/only-export-components
 function DashboardPage() {
-  const { mutate: sync, isPending: isSyncing } = useMutation({
-    mutationFn: async () => {
-      await Promise.all([
-        connectionsCollection.utils.runSync(),
-        connectionsResourcesCollection.utils.runSync(),
-      ])
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['connection'] })
-      queryClient.invalidateQueries({ queryKey: ['connection-resources'] })
-    },
-  })
-
-  useRefreshHotkey(sync, isSyncing)
-
   const { version, status } = useSubscription(updatesStore, { selector: state => pick(state, ['version', 'status']) })
 
   return (
@@ -65,23 +44,6 @@ function DashboardPage() {
             Connections
           </h2>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              disabled={isSyncing}
-              onClick={() => sync()}
-            >
-              <LoadingContent loading={isSyncing}>
-                <ContentSwitch
-                  active={isSyncing}
-                  activeContent={(
-                    <RiCheckLine className="text-success" />
-                  )}
-                >
-                  <RiLoopLeftLine />
-                </ContentSwitch>
-              </LoadingContent>
-            </Button>
             <Button render={<Link to="/create" />}>
               <RiAddLine className="size-4" />
               Add new

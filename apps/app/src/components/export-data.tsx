@@ -20,7 +20,7 @@ import { copy } from '@conar/ui/lib/copy'
 import { RiBracesLine, RiDownloadLine, RiFileCopyLine, RiMarkdownLine, RiTableLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { formatDate } from 'date-fns'
-import { handleError } from '~/lib/error'
+import { handleError } from '~/utils/error'
 
 const EXPORT_LIMITS = [50, 100, 500, 1000, 5000] as const
 

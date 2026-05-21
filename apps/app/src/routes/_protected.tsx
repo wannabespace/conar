@@ -3,7 +3,6 @@ import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
 import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
-import { useLocalProxyAvailable } from '~/entities/connection/proxy'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { queriesCollection } from '~/entities/query/sync'
 import { authClient } from '~/lib/auth'
@@ -14,11 +13,30 @@ export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
 })
 
+const allCollections = [
+  connectionsCollection,
+  connectionsResourcesCollection,
+  chatsCollection,
+  chatsMessagesCollection,
+  queriesCollection,
+]
+
+function preloadCollections() {
+  for (const collection of allCollections) {
+    collection.preload()
+  }
+}
+
+function cleanupCollections() {
+  for (const collection of allCollections) {
+    collection.cleanup()
+  }
+}
+
 // eslint-disable-next-line react-refresh/only-export-components
 function ProtectedLayout() {
   const { data } = authClient.useSession()
   const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
-  useLocalProxyAvailable()
 
   const hasUser = !!data?.user
 
@@ -27,11 +45,11 @@ function ProtectedLayout() {
       return
     }
 
-    connectionsCollection.utils.runSync()
-    connectionsResourcesCollection.utils.runSync()
-    chatsCollection.utils.runSync()
-    chatsMessagesCollection.utils.runSync()
-    queriesCollection.utils.runSync()
+    preloadCollections()
+
+    return () => {
+      cleanupCollections()
+    }
   }, [hasUser, isOnline])
 
   return (

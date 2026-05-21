@@ -1,4 +1,4 @@
-import type { queries } from '~/drizzle/schema'
+import type { Query } from '~/entities/query/sync'
 import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { useImperativeHandle, useState } from 'react'
@@ -7,16 +7,16 @@ import { queriesCollection } from '~/entities/query/sync'
 
 interface RemoveQueryDialogProps {
   ref?: React.RefObject<{
-    remove: (query: typeof queries.$inferSelect) => void
+    remove: (query: Query) => void
   } | null>
 }
 
 export function RemoveQueryDialog({ ref }: RemoveQueryDialogProps) {
   const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState<typeof queries.$inferSelect | null>(null)
+  const [query, setQuery] = useState<Query | null>(null)
 
   useImperativeHandle(ref, () => ({
-    remove: (q: typeof queries.$inferSelect) => {
+    remove: (q: Query) => {
       setQuery(q)
       setOpen(true)
     },

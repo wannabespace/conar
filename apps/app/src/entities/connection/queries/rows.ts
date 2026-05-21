@@ -1,6 +1,6 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { ExpressionBuilder } from 'kysely'
-import type { connectionsResources } from '~/drizzle/schema'
+import type { ConnectionResource } from '~/entities/connection/sync'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -67,7 +67,7 @@ export const resourceRowsQuery = memoize(({
 
         let query = db
           .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
+          .$extendTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .$if(select !== undefined, qb => qb.select(select!))
           .$if(select === undefined, qb => qb.selectAll())
@@ -88,7 +88,7 @@ export const resourceRowsQuery = memoize(({
 
         let query = db
           .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
+          .$extendTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .$if(select !== undefined, qb => qb.select(select!))
           .$if(select === undefined, qb => qb.selectAll())
@@ -109,7 +109,7 @@ export const resourceRowsQuery = memoize(({
 
         let query = db
           .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
+          .$extendTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .$if(select !== undefined, qb => qb.select(select!))
           .$if(select === undefined, qb => qb.selectAll())
@@ -131,7 +131,7 @@ export const resourceRowsQuery = memoize(({
 
         let query = db
           .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
+          .$extendTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .$if(select !== undefined, qb => qb.select(select!))
           .$if(select === undefined, qb => qb.selectAll())
@@ -158,7 +158,7 @@ export const resourceRowsQueryInfiniteOptions = memoize(({
   query: { orderBy, filters, filtersConcatOperator },
   ...props
 }: {
-  connectionResource: typeof connectionsResources.$inferSelect
+  connectionResource: ConnectionResource
 } & RowsQueryProps) => {
   return infiniteQueryOptions({
     initialPageParam: 0,

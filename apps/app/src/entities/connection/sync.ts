@@ -1,11 +1,12 @@
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { ORPCOutputs } from '~/lib/orpc'
+import type { BaseTable } from '~/lib/sync'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
-import { createCollection } from '@tanstack/react-db'
-import { drizzleCollectionOptions } from 'tanstack-db-pglite'
-import { db, waitForMigrations } from '~/drizzle'
-import { connections, connectionsResources } from '~/drizzle/schema'
-import { isSignedIn } from '~/lib/auth'
+import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
+import { BasicIndex, createCollection } from '@tanstack/react-db'
 import { orpc } from '~/lib/orpc'
+import { persistence } from '~/lib/sync'
 
 function prepareConnectionStringToCloud(connectionString: string, syncType: SyncType) {
   const url = new SafeURL(connectionString.trim())
@@ -19,67 +20,104 @@ export interface ConnectionMutationMetadata {
   cloudSync?: false
 }
 
-export const connectionsCollection = createCollection(drizzleCollectionOptions({
-  db,
-  table: connections,
-  primaryColumn: connections.id,
-  startSync: false,
-  prepare: waitForMigrations,
-  sync: async ({ write, collection }) => {
-    if (!navigator.onLine || !await isSignedIn()) {
-      return
-    }
+export interface Connection extends BaseTable {
+  type: ConnectionType
+  name: string
+  connectionString: string
+  label: string | null
+  color: string | null
+  isPasswordExists: boolean
+  isPasswordPopulated: boolean
+  syncType: SyncType
+}
 
-    const sync = await orpc.connections.sync.call(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+export const connectionsCollection = createCollection(persistedCollectionOptions<Connection, string>({
+  id: 'connections',
+  persistence,
+  autoIndex: 'eager',
+  defaultIndexType: BasicIndex,
+  schemaVersion: 1,
+  getKey: item => item.id,
+  sync: {
+    sync: ({ begin, commit, write, collection, markReady }) => {
+      const abortController = new AbortController()
 
-    for (const item of sync) {
-      if (item.type === 'insert') {
-        write({
-          type: 'insert',
-          value: {
-            ...item.value,
-            isPasswordPopulated: !!new SafeURL(item.value.connectionString).password,
-          },
-        })
-      }
-      else if (item.type === 'update') {
-        const existed = collection.get(item.value.id)
-
-        if (!existed) {
-          throw new Error('Entity not found')
+      const writeItem = async (item: ORPCOutputs['connections']['sync'][number]) => {
+        if (item.type === 'insert') {
+          write({
+            type: 'insert',
+            value: {
+              ...item.value,
+              isPasswordPopulated: !!new SafeURL(item.value.connectionString).password,
+            },
+          })
         }
+        else if (item.type === 'update') {
+          const existed = collection.get(item.value.id)
 
-        const cloudPassword = new SafeURL(item.value.connectionString).password
-        const localPassword = new SafeURL(existed.connectionString).password
-        const newConnectionString = new SafeURL(item.value.connectionString)
+          if (!existed) {
+            throw new Error('Entity not found')
+          }
 
-        if (item.value.syncType === SyncType.CloudWithoutPassword && localPassword && !cloudPassword) {
-          newConnectionString.password = localPassword
+          const cloudPassword = new SafeURL(item.value.connectionString).password
+          const localPassword = new SafeURL(existed.connectionString).password
+          const newConnectionString = new SafeURL(item.value.connectionString)
+
+          if (item.value.syncType === SyncType.CloudWithoutPassword && localPassword && !cloudPassword) {
+            newConnectionString.password = localPassword
+          }
+
+          write({
+            type: 'update',
+            value: {
+              ...item.value,
+              connectionString: newConnectionString.toString(),
+              isPasswordPopulated: !!newConnectionString.password,
+              syncType: item.value.syncType ?? SyncType.CloudWithoutPassword,
+            },
+          })
         }
-
-        write({
-          type: 'update',
-          value: {
-            ...item.value,
-            connectionString: newConnectionString.toString(),
-            isPasswordPopulated: !!newConnectionString.password,
-            syncType: item.value.syncType ?? SyncType.CloudWithoutPassword,
-          },
-        })
-      }
-      else if (item.type === 'delete') {
-        const existed = collection.get(item.value)
-
-        if (!existed) {
-          throw new Error('Entity not found')
+        else if (item.type === 'delete') {
+          write({
+            type: 'delete',
+            key: item.key,
+          })
         }
-
-        write({
-          type: 'delete',
-          value: existed,
-        })
       }
-    }
+
+      orpc.connections.events.call({}, {
+        signal: abortController.signal,
+      })
+        .then(async (events) => {
+          markReady()
+          for await (const item of events) {
+            begin()
+            writeItem(item)
+            commit()
+          }
+        })
+        .catch(() => {
+          markReady()
+        })
+
+      collection.toArrayWhenReady().then(async (rows) => {
+        orpc.connections.sync.call(
+          rows,
+          { signal: abortController.signal },
+        )
+          .then(async (sync) => {
+            begin()
+            for (const item of sync) {
+              writeItem(item)
+            }
+            commit()
+          })
+      })
+
+      return () => {
+        abortController.abort()
+      }
+    },
   },
   onInsert: async ({ transaction }) => {
     const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionMutationMetadata)?.cloudSync !== false)
@@ -123,28 +161,70 @@ export interface ConnectionResourcesMutationMetadata {
   cloudSync?: false
 }
 
-export const connectionsResourcesCollection = createCollection(drizzleCollectionOptions({
-  db,
-  table: connectionsResources,
-  primaryColumn: connectionsResources.id,
-  startSync: false,
-  prepare: waitForMigrations,
-  sync: async ({ collection, write }) => {
-    if (!navigator.onLine || !await isSignedIn()) {
-      return
-    }
+export interface ConnectionResource extends BaseTable {
+  connectionId: string
+  name: string | null
+}
 
-    await connectionsCollection.utils.waitForSync()
-    const sync = await orpc.connectionsResources.sync.call(collection.toArray.map(c => ({ id: c.id, updatedAt: c.updatedAt })))
+export const connectionsResourcesCollection = createCollection(persistedCollectionOptions<ConnectionResource, string>({
+  id: 'connections-resources',
+  persistence,
+  autoIndex: 'eager',
+  defaultIndexType: BasicIndex,
+  schemaVersion: 1,
+  getKey: item => item.id,
+  sync: {
+    sync: ({ begin, commit, write, collection, markReady }) => {
+      const abortController = new AbortController()
 
-    sync.forEach((item) => {
-      if (item.type === 'delete') {
-        write({ type: 'delete', value: collection.get(item.value)! })
+      const writeItem = (item: ORPCOutputs['connectionsResources']['sync'][number]) => {
+        if (item.type === 'delete') {
+          write({
+            type: 'delete',
+            key: item.key,
+          })
+        }
+        else {
+          write({
+            type: item.type,
+            value: item.value,
+          })
+        }
       }
-      else {
-        write(item)
+
+      orpc.connectionsResources.events.call({}, {
+        signal: abortController.signal,
+      })
+        .then(async (events) => {
+          markReady()
+          for await (const item of events) {
+            begin()
+            writeItem(item)
+            commit()
+          }
+        })
+        .catch(() => {
+          markReady()
+        })
+
+      collection.toArrayWhenReady().then(async (rows) => {
+        orpc.connectionsResources.sync.call(
+          rows,
+          { signal: abortController.signal },
+        )
+          .then(async (sync) => {
+            begin()
+            for (const item of sync) {
+              writeItem(item)
+            }
+            commit()
+          })
+      })
+
+      return () => {
+        abortController.abort()
       }
-    })
+    },
   },
   onInsert: async ({ transaction }) => {
     const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionResourcesMutationMetadata)?.cloudSync !== false)

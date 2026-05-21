@@ -1,5 +1,5 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { connections, connectionsResources } from '~/drizzle/schema'
+import type { Connection, ConnectionResource } from '~/entities/connection/sync'
 import { isLocalhostConnectionString } from '@conar/connection/utils'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { tryCatch } from '@conar/shared/utils/helpers'
@@ -14,7 +14,7 @@ import { resourceTableTotalQueryOptions } from '../queries/total'
 import { getConnectionResourceStore } from '../store'
 import { connectionsCollection } from '../sync'
 
-export async function prefetchConnectionResourceCore(connectionResource: typeof connectionsResources.$inferSelect) {
+export async function prefetchConnectionResourceCore(connectionResource: ConnectionResource) {
   const connection = connectionsCollection.get(connectionResource.connectionId)!
 
   if (connection.isPasswordExists && !connection.isPasswordPopulated) {
@@ -30,7 +30,7 @@ export async function prefetchConnectionResourceCore(connectionResource: typeof 
 }
 
 export async function prefetchConnectionResourceTableCore({ connectionResource, schema, table, query }: {
-  connectionResource: typeof connectionsResources.$inferSelect
+  connectionResource: ConnectionResource
   schema: string
   table: string
   query: {
@@ -46,7 +46,7 @@ export async function prefetchConnectionResourceTableCore({ connectionResource, 
   ])
 }
 
-type FetchingConnection = Pick<typeof connections.$inferSelect, 'syncType' | 'connectionString' | 'isPasswordExists' | 'isPasswordPopulated'>
+type FetchingConnection = Pick<Connection, 'syncType' | 'connectionString' | 'isPasswordExists' | 'isPasswordPopulated'>
 
 export function fetchingConfig(connection: FetchingConnection, options?: {
   isLocalProxyAvailable?: boolean

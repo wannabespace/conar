@@ -1,5 +1,5 @@
-import type { connectionsResources } from '~/drizzle/schema'
 import type { connectionResourceType } from '~/entities/connection/store'
+import type { ConnectionResource } from '~/entities/connection/sync'
 import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { customQuery } from '~/entities/connection/queries/custom'
@@ -37,7 +37,7 @@ function transformError({ error, query, startLineNumber, endLineNumber, duration
   }
 }
 
-export function runnerQueryOptions(connectionResource: typeof connectionsResources.$inferSelect) {
+export function runnerQueryOptions(connectionResource: ConnectionResource) {
   const store = getConnectionResourceStore(connectionResource.id)
 
   return queryOptions({

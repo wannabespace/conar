@@ -1,4 +1,4 @@
-import type { connections } from '~/drizzle/schema'
+import type { Connection } from '~/entities/connection/sync'
 import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { eq, queryOnce } from '@tanstack/react-db'
@@ -9,16 +9,16 @@ import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 
 interface RemoveConnectionDialogProps {
   ref?: React.RefObject<{
-    remove: (connection: typeof connections.$inferSelect) => void
+    remove: (connection: Connection) => void
   } | null>
 }
 
 export function RemoveConnectionDialog({ ref }: RemoveConnectionDialogProps) {
   const [open, setOpen] = useState(false)
-  const [connection, setConnection] = useState<typeof connections.$inferSelect | null>(null)
+  const [connection, setConnection] = useState<Connection | null>(null)
 
   useImperativeHandle(ref, () => ({
-    remove: (connection: typeof connections.$inferSelect) => {
+    remove: (connection: Connection) => {
       setConnection(connection)
       setOpen(true)
     },

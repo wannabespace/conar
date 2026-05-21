@@ -1,4 +1,4 @@
-import type { connectionsResources } from '~/drizzle/schema'
+import type { ConnectionResource } from '~/entities/connection/sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -150,7 +150,7 @@ export const resourceConstraintsQuery = createQuery({
   },
 })
 
-export function resourceConstraintsQueryOptions({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) {
+export function resourceConstraintsQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
   return queryOptions({
     queryFn: () => resourceConstraintsQuery.run(connectionResourceToQueryParams(connectionResource)),
     queryKey: ['connection-resource', connectionResource.id, 'constraints'],

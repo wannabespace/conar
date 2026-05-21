@@ -1,5 +1,4 @@
-import type { connections, connectionsResources } from '~/drizzle/schema'
-import type { ConnectionMutationMetadata } from '~/entities/connection/sync'
+import type { Connection, ConnectionMutationMetadata, ConnectionResource } from '~/entities/connection/sync'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
@@ -13,7 +12,7 @@ import { toast } from 'sonner'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 import { connectionsCollection } from '~/entities/connection/sync'
 
-export function PasswordForm({ connection, connectionResource }: { connection: typeof connections.$inferSelect, connectionResource: typeof connectionsResources.$inferSelect }) {
+export function PasswordForm({ connection, connectionResource }: { connection: Connection, connectionResource: ConnectionResource }) {
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)

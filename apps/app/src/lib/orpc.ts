@@ -7,9 +7,11 @@ import { createORPCClient, onError, ORPCError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import { memoize } from 'memoza'
+import { handleError } from '../utils/error'
+import { apiUrl, proxyUrl } from '../utils/utils'
 import { bearerToken } from './auth'
-import { handleError } from './error'
-import { apiUrl, proxyUrl } from './utils'
+
+const clientId = crypto.randomUUID()
 
 export const orpc = createTanstackQueryUtils(createORPCClient(new RPCLink({
   url: `${apiUrl}/rpc`,
@@ -17,7 +19,8 @@ export const orpc = createTanstackQueryUtils(createORPCClient(new RPCLink({
     const token = bearerToken.get()
 
     return {
-      Authorization: token ? `Bearer ${token}` : undefined,
+      'Authorization': token ? `Bearer ${token}` : undefined,
+      'x-client-id': clientId,
       ...(window.electron
         ? {
             'x-desktop': 'true',

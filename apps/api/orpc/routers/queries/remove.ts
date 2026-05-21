@@ -3,6 +3,7 @@ import { queries } from '@conar/db/schema/queries'
 import { type } from 'arktype'
 import { and, eq, inArray } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'
+import { publisher } from './events'
 
 const input = type({
   id: 'string.uuid.v7',
@@ -24,4 +25,13 @@ export const remove = orpc
           inArray(queries.id, input.map(item => item.id)),
         ),
       )
+      .returning()
+
+    for (const item of input) {
+      publisher.publish('event', {
+        type: 'delete',
+        key: item.id,
+        clientId: context.clientId,
+      })
+    }
   })

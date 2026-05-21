@@ -1,11 +1,11 @@
-import type { connectionsResources } from '~/drizzle/schema'
+import type { ConnectionResource } from '~/entities/connection/sync'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 
-export function useDefinitionsState({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) {
+export function useDefinitionsState({ connectionResource }: { connectionResource: ConnectionResource }) {
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))

@@ -25,6 +25,7 @@ export function createContext(c: HonoContext<{ Variables: AppVariables }>) {
   return {
     request: c.req.raw,
     headers: c.req.raw.headers,
+    clientId: c.req.header('x-client-id'),
     setHeader: (key: string, value: string) => {
       c.res.headers.set(key, value)
     },

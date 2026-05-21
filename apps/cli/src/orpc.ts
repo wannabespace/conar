@@ -4,14 +4,18 @@ import { createORPCClient } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { getToken } from '~/config'
 
-function authHeaders() {
-  const token = getToken()
-  return token ? { Authorization: `Bearer ${token}` } : {}
-}
+const clientId = crypto.randomUUID()
 
 export const orpc = createORPCClient(new RPCLink({
   url: `${import.meta.env.API_URL}/rpc`,
-  headers: authHeaders,
+  headers: async () => {
+    const token = getToken()
+
+    return {
+      'Authorization': token ? `Bearer ${token}` : undefined,
+      'x-client-id': clientId,
+    }
+  },
 })) satisfies apiOrpc.ORPCRouter
 
 export type ORPCInputs = InferRouterInputs<typeof apiOrpc.router>

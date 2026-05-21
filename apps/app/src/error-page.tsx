@@ -9,8 +9,8 @@ import { useRouter } from '@tanstack/react-router'
 import { TraversalError } from 'arktype'
 import posthog from 'posthog-js'
 import { useEffect } from 'react'
+import { EventsProvider } from '~/events'
 import { enterAppAnimation } from './global-hooks'
-import { EventsProvider } from './lib/events'
 
 // User specific errors that we don't want to track
 const CONNECTION_ERRORS = [

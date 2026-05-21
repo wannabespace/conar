@@ -3,10 +3,6 @@ import '@conar/shared/arktype-config'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
-import { runMigrations } from './drizzle'
-import { chatsCollection } from './entities/chat/sync'
-import { connectionsCollection } from './entities/connection/sync'
-import { initEvents } from './lib/events-utils'
 import { routeTree } from './routeTree.gen'
 import './monaco-worker'
 import './assets/styles.css'
@@ -31,8 +27,6 @@ window.electron?.app.onSendToast(({ message, type, description, duration }) => {
     duration,
   })
 })
-
-initEvents()
 
 if (window.electron) {
   window.addEventListener('keydown', (event) => {
@@ -83,35 +77,4 @@ declare module '@tanstack/react-router' {
 
 const root = createRoot(document.getElementById('root')!)
 
-runMigrations()
-  // Migration from old architecture to new and rename the project
-  // TODO: Remove in future
-  .then(async () => {
-    const dbs = await indexedDB.databases()
-    const hasOldDb = dbs.some(db => db.name?.includes('conar'))
-
-    if (!hasOldDb) {
-      return
-    }
-
-    indexedDB.deleteDatabase('/pglite/conar')
-
-    // clear local storage except for bearer token
-    Object.keys(localStorage).forEach((key) => {
-      if (!key.includes('bearer_token')) {
-        localStorage.removeItem(key)
-      }
-    })
-
-    if (localStorage.getItem('conar.bearer_token')) {
-      localStorage.setItem('tamery.bearer_token', localStorage.getItem('conar.bearer_token')!)
-      localStorage.removeItem('conar.bearer_token')
-    }
-  })
-  .then(async () => {
-    await Promise.all([
-      connectionsCollection.stateWhenReady(),
-      chatsCollection.stateWhenReady(),
-    ])
-    root.render(<RouterProvider router={router} />)
-  })
+root.render(<RouterProvider router={router} />)

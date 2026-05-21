@@ -1,4 +1,4 @@
-import type { connections, connectionsResources } from '~/drizzle/schema'
+import type { Connection, ConnectionResource as ConnectionResourceType } from '~/entities/connection/sync'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@conar/shared/constants'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { RiAddLine, RiDashboardLine, RiEyeFill, RiEyeLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
@@ -15,7 +15,7 @@ import { connectionsCollection, connectionsResourcesCollection } from '~/entitie
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { appStore, setIsActionCenterOpen } from '~/store'
 
-function ActionsResourceTables({ connection, connectionResource }: { connection: typeof connections.$inferSelect, connectionResource: typeof connectionsResources.$inferSelect }) {
+function ActionsResourceTables({ connection, connectionResource }: { connection: Connection, connectionResource: ConnectionResourceType }) {
   const store = getConnectionResourceStore(connectionResource.id)
   const { data: tablesAndSchemas } = useQuery({
     ...resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem: store.get().showSystem }),
@@ -60,11 +60,11 @@ function ActionsResourceTables({ connection, connectionResource }: { connection:
   )
 }
 
-function ConnectionResource({ connection, connectionResource }: { connection: typeof connections.$inferSelect, connectionResource: typeof connectionsResources.$inferSelect }) {
+function ConnectionResource({ connection, connectionResource }: { connection: Connection, connectionResource: ConnectionResourceType }) {
   const router = useRouter()
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
-  function onResourceSelect(connectionResource: typeof connectionsResources.$inferSelect) {
+  function onResourceSelect(connectionResource: ConnectionResourceType) {
     setIsActionCenterOpen(false)
 
     prefetchConnectionResourceCore(connectionResource)

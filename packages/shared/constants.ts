@@ -59,6 +59,7 @@ export const RECONNECT_ERROR_PATTERNS = [
   'application failed to respond',
   'failed to fetch',
   'connection terminated unexpectedly',
+  'the database system is starting up',
 ]
 
 export const API_KEY_PERMISSIONS = {

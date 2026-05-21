@@ -1,5 +1,5 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { connectionsResources } from '~/drizzle/schema'
+import type { ConnectionResource } from '../sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -46,7 +46,7 @@ export const resourceTableTotalQuery = memoize(({
 
         const query = await db
           .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
+          .$extendTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .select(db.fn.countAll().as('total'))
           .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
@@ -71,7 +71,7 @@ export const resourceTableTotalQuery = memoize(({
 
         const query = await db
           .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
+          .$extendTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .select(db.fn.countAll().as('total'))
           .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
@@ -83,7 +83,7 @@ export const resourceTableTotalQuery = memoize(({
       mssql: async (db) => {
         const query = await db
           .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
+          .$extendTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .select(db.fn.countAll().as('total'))
           .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
@@ -113,7 +113,7 @@ export const resourceTableTotalQuery = memoize(({
 
         const query = await db
           .withSchema(schema)
-          .withTables<{ [table]: Record<string, unknown> }>()
+          .$extendTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .select(db.fn.countAll().as('total'))
           .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
@@ -131,7 +131,7 @@ export function resourceTableTotalQueryOptions({
   schema,
   query: { filters, exact },
 }: {
-  connectionResource: typeof connectionsResources.$inferSelect
+  connectionResource: ConnectionResource
   table: string
   schema: string
   query: { filters: ActiveFilter[], exact: boolean }

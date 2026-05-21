@@ -1,4 +1,4 @@
-import type { connections } from '~/drizzle/schema'
+import type { Connection } from '~/entities/connection/sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -64,7 +64,7 @@ export const connectionVersionQuery = createQuery({
   },
 })
 
-export function connectionVersionQueryOptions(connection: typeof connections.$inferSelect) {
+export function connectionVersionQueryOptions(connection: Connection) {
   return queryOptions({
     queryKey: ['connection-resource', connection.id, 'version'],
     queryFn: () => connectionVersionQuery.run(connectionToQueryParams(connection)),

@@ -3,6 +3,7 @@ import { chats, chatsMessages, chatsMessagesInsertSchema } from '@conar/db/schem
 import { ORPCError } from '@orpc/server'
 import { and, eq } from 'drizzle-orm'
 import { orpc, subscriptionMiddleware } from '~/orpc'
+import { publisher } from './events'
 
 export const create = orpc
   .use(subscriptionMiddleware)
@@ -18,5 +19,11 @@ export const create = orpc
       })
     }
 
-    await db.insert(chatsMessages).values(input)
+    const [message] = await db.insert(chatsMessages).values(input).returning()
+
+    publisher.publish('event', {
+      type: 'insert',
+      value: message!,
+      clientId: context.clientId,
+    })
   })

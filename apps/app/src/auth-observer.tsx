@@ -2,7 +2,6 @@ import { useMatches, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
-import { identifyUser } from '~/lib/events-utils'
 import { authClient, bearerToken } from './lib/auth'
 import { appStore } from './store'
 
@@ -13,18 +12,6 @@ export function AuthObserver() {
   const match = useMatches({
     select: matches => matches.map(match => match.routeId).at(-1),
   })
-
-  useEffect(() => {
-    if (data?.user) {
-      identifyUser(data.user.id, {
-        email: data.user.email,
-        name: data.user.name,
-      })
-    }
-    else {
-      identifyUser(null)
-    }
-  }, [data?.user])
 
   useEffect(() => {
     if (isPending)

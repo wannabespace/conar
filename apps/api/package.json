@@ -23,6 +23,7 @@
     "@conar/shared": "workspace:*",
     "@exalabs/ai-sdk": "catalog:",
     "@octokit/rest": "catalog:",
+    "@orpc/experimental-publisher": "catalog:",
     "@orpc/server": "catalog:",
     "@posthog/ai": "catalog:",
     "@react-email/components": "catalog:",
@@ -35,6 +36,7 @@
     "date-fns": "catalog:",
     "drizzle-orm": "catalog:",
     "hono": "catalog:",
+    "ioredis": "catalog:",
     "memoza": "catalog:",
     "nanoid": "catalog:",
     "pg": "catalog:",
@@ -49,7 +51,6 @@
   },
   "devDependencies": {
     "@conar/configs": "workspace:*",
-    "@electric-sql/pglite": "catalog:",
     "@playwright/test": "catalog:",
     "@types/pg": "catalog:",
     "@types/react": "catalog:",

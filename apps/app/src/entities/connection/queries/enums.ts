@@ -1,4 +1,4 @@
-import type { connectionsResources } from '~/drizzle/schema'
+import type { ConnectionResource } from '../sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { connectionResourceToQueryParams, createQuery } from '../query'
@@ -211,7 +211,7 @@ export const resourceEnumsQuery = createQuery({
   },
 })
 
-export function resourceEnumsQueryOptions({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) {
+export function resourceEnumsQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'enums'],
     queryFn: () => resourceEnumsQuery.run(connectionResourceToQueryParams(connectionResource)),

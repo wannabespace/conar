@@ -9,25 +9,25 @@ export function insertQuery({ schema, table, rows }: {
     query: {
       postgres: db => db
         .withSchema(schema)
-        .withTables<{ [table: string]: Record<string, unknown> }>()
+        .$extendTables<{ [table: string]: Record<string, unknown> }>()
         .insertInto(table)
         .values(rows)
         .execute(),
       mysql: db => db
         .withSchema(schema)
-        .withTables<{ [table: string]: Record<string, unknown> }>()
+        .$extendTables<{ [table: string]: Record<string, unknown> }>()
         .insertInto(table)
         .values(rows)
         .execute(),
       mssql: db => db
         .withSchema(schema)
-        .withTables<{ [table: string]: Record<string, unknown> }>()
+        .$extendTables<{ [table: string]: Record<string, unknown> }>()
         .insertInto(table)
         .values(rows)
         .execute(),
       clickhouse: db => db
         .withSchema(schema)
-        .withTables<{ [table: string]: Record<string, unknown> }>()
+        .$extendTables<{ [table: string]: Record<string, unknown> }>()
         .insertInto(table)
         .values(rows)
         .execute(),

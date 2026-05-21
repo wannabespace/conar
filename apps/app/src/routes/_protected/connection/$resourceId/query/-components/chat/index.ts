@@ -1,6 +1,6 @@
 import type { AITools } from '@conar/ai/tools'
 import type { AppUIMessage } from '@conar/ai/tools/helpers'
-import type { connectionsResources } from '~/drizzle/schema'
+import type { ConnectionResource } from '~/entities/connection/sync'
 import { Chat } from '@ai-sdk/react'
 import { convertToAppUIMessage } from '@conar/ai/tools/helpers'
 import { SQL_FILTERS_LIST } from '@conar/shared/filters'
@@ -37,7 +37,7 @@ async function ensureChat({ chatId, connectionResourceId }: { chatId: string, co
   return chatsCollection.get(chatId)!
 }
 
-export const createChat = memoize(async ({ id, connectionResource }: { id: string, connectionResource: typeof connectionsResources.$inferSelect }) => {
+export const createChat = memoize(async ({ id, connectionResource }: { id: string, connectionResource: ConnectionResource }) => {
   const connection = connectionsCollection.get(connectionResource.connectionId)!
 
   const chat = new Chat<AppUIMessage>({

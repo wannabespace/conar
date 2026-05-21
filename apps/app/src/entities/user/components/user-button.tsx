@@ -3,8 +3,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { RiBrushLine, RiGlobalLine, RiLogoutCircleRLine, RiUserLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { clearDb } from '~/drizzle'
 import { authClient } from '~/lib/auth'
+import { clearDb } from '~/lib/sync'
 import { useSignOut } from '../hooks/use-sign-out'
 
 async function clearLocalAppCache() {

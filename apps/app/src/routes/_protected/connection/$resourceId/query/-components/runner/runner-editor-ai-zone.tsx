@@ -1,4 +1,4 @@
-import type { connections, connectionsResources } from '~/drizzle/schema'
+import type { Connection, ConnectionResource } from '~/entities/connection/sync'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { EnterIcon } from '@conar/ui/components/custom/shortcuts'
@@ -23,8 +23,8 @@ export function RunnerEditorAIZone({
   onUpdate,
   onClose,
 }: {
-  connection: typeof connections.$inferSelect
-  connectionResource: typeof connectionsResources.$inferSelect
+  connection: Connection
+  connectionResource: ConnectionResource
   getSql: () => string
   onUpdate: (sql: string) => void
   onClose: () => void

@@ -1,5 +1,5 @@
 import type { ChangeEvent, ComponentRef } from 'react'
-import type { connectionsResources } from '~/drizzle/schema'
+import type { ConnectionResource } from '~/entities/connection/sync'
 import { useChat } from '@ai-sdk/react'
 import { getBase64FromFiles } from '@conar/shared/utils/base64'
 import { Button } from '@conar/ui/components/button'
@@ -24,7 +24,7 @@ import { Route } from '../..'
 import { chatHooks } from '../../-page'
 import { ChatImages } from './chat-images'
 
-function Images({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) {
+function Images({ connectionResource }: { connectionResource: ConnectionResource }) {
   const store = getFilesStore(connectionResource.id)
   const files = useSubscription(store)
 

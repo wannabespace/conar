@@ -1,12 +1,12 @@
 import type { MaybePromise } from '@conar/shared/utils/helpers'
-import { RedisClient } from 'bun'
+import { Redis } from 'ioredis'
 import { env } from '~/env'
 
-export const redis = new RedisClient(`${env.REDIS_URL}?family=0`)
+export const redis = new Redis(env.REDIS_URL)
 
 export async function createRedisPubSub() {
-  const redisSubscriber = await redis.duplicate()
-  const redisPublisher = await redis.duplicate()
+  const redisSubscriber = redis.duplicate()
+  const redisPublisher = redis.duplicate()
 
   return {
     subscriber: redisSubscriber,

@@ -1,4 +1,4 @@
-import type { chats } from '~/drizzle/schema'
+import type { Chat } from '~/entities/chat/sync'
 import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { useImperativeHandle, useState } from 'react'
@@ -7,18 +7,18 @@ import { chatsCollection } from '~/entities/chat/sync'
 
 interface RemoveChatDialogProps {
   ref?: React.RefObject<{
-    remove: (chat: typeof chats.$inferSelect, onRemove?: () => void) => void
+    remove: (chat: Chat, onRemove?: () => void) => void
   } | null>
 }
 
 export function RemoveChatDialog({ ref }: RemoveChatDialogProps) {
   const [open, setOpen] = useState(false)
-  const [chat, setChat] = useState<typeof chats.$inferSelect | null>(null)
+  const [chat, setChat] = useState<Chat | null>(null)
   const [onRemoveCallback, setOnRemoveCallback] = useState<(() => void) | null>(null)
 
   useImperativeHandle(ref, () => ({
-    remove: (c: typeof chats.$inferSelect, onRemove?: () => void) => {
-      setChat(c)
+    remove: (chat: Chat, onRemove?: () => void) => {
+      setChat(chat)
       setOnRemoveCallback(() => onRemove ?? null)
       setOpen(true)
     },

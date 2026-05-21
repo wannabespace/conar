@@ -1,6 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { chats } from '~/drizzle/schema'
-import type { ChatMutationMetadata } from '~/entities/chat/sync'
+import type { Chat, ChatMutationMetadata } from '~/entities/chat/sync'
 import { convertToAppUIMessage } from '@conar/ai/tools/helpers'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
@@ -40,8 +39,8 @@ const groupLabelMap: Record<Group, string> = {
   older: 'Older',
 }
 
-function groupChats(data: typeof chats.$inferSelect[]) {
-  const groups: Record<Group, typeof chats.$inferSelect[]> = {
+function groupChats(data: Chat[]) {
+  const groups: Record<Group, Chat[]> = {
     today: [],
     yesterday: [],
     week: [],
@@ -120,7 +119,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
 
   const grouped = groupChats(allChats)
 
-  const removeChat = (chat: typeof chats.$inferSelect) => {
+  const removeChat = (chat: Chat) => {
     removeDialogRef.current?.remove(chat, () => {
       if (chat.id === chatId) {
         store.set(state => ({

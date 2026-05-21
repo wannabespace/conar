@@ -10,9 +10,7 @@
     "check-types": "tsgo",
     "test:start": "vite build --mode test && vite preview --mode test",
     "test": "bun test ./src",
-    "test:e2e": "playwright test --headed",
-    "drizzle:generate": "drizzle-kit generate && bun run ./scripts/compile-migrations.ts",
-    "drizzle:generate-custom": "drizzle-kit generate --custom && bun run ./scripts/compile-migrations.ts"
+    "test:e2e": "playwright test --ui"
   },
   "dependencies": {
     "@ai-sdk/react": "catalog:",
@@ -22,7 +20,6 @@
     "@conar/ui": "workspace:*",
     "@dagrejs/dagre": "catalog:",
     "@date-fns/tz": "catalog:",
-    "@electric-sql/pglite": "catalog:",
     "@faker-js/faker": "catalog:",
     "@fluentui/react-context-selector": "catalog:",
     "@monaco-editor/loader": "catalog:",
@@ -32,6 +29,7 @@
     "@orpc/tanstack-query": "catalog:",
     "@remixicon/react": "catalog:",
     "@tailwindcss/vite": "catalog:",
+    "@tanstack/browser-db-sqlite-persistence": "catalog:",
     "@tanstack/react-db": "catalog:",
     "@tanstack/react-form": "catalog:",
     "@tanstack/react-hotkeys": "catalog:",
@@ -51,8 +49,6 @@
     "better-result": "catalog:",
     "change-case": "catalog:",
     "date-fns": "catalog:",
-    "drizzle-kit": "catalog:",
-    "drizzle-orm": "catalog:",
     "hookable": "catalog:",
     "js-base64": "catalog:",
     "kysely": "catalog:",
@@ -72,7 +68,6 @@
     "seitu": "catalog:",
     "sonner": "catalog:",
     "sql-formatter": "catalog:",
-    "tanstack-db-pglite": "catalog:",
     "use-stick-to-bottom": "catalog:",
     "uuid": "catalog:"
   },

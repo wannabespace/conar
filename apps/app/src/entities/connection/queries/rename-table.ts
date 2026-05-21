@@ -6,21 +6,21 @@ export const renameTableQuery = memoize(({ schema, oldTable, newTable }: { schem
   query: {
     postgres: db => db
       .withSchema(schema)
-      .withTables<{ [oldTable]: Record<string, unknown> }>()
+      .$extendTables<{ [oldTable]: Record<string, unknown> }>()
       .schema
       .alterTable(oldTable)
       .renameTo(newTable)
       .execute(),
     mysql: db => db
       .withSchema(schema)
-      .withTables<{ [oldTable]: Record<string, unknown> }>()
+      .$extendTables<{ [oldTable]: Record<string, unknown> }>()
       .schema
       .alterTable(oldTable)
       .renameTo(newTable)
       .execute(),
     mssql: db => db
       .withSchema(schema)
-      .withTables<{ [oldTable]: Record<string, unknown> }>()
+      .$extendTables<{ [oldTable]: Record<string, unknown> }>()
       .schema
       .alterTable(oldTable)
       .renameTo(newTable)
