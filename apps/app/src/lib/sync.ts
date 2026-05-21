@@ -1,5 +1,6 @@
 import { GITHUB_REPO_NAME } from '@conar/shared/constants'
 import { createBrowserWASQLitePersistence, openBrowserWASQLiteOPFSDatabase } from '@tanstack/browser-db-sqlite-persistence'
+import { posthog } from '~/lib/posthog'
 
 export interface BaseTable {
   id: string
@@ -28,6 +29,12 @@ export async function clearDb() {
   ]
   await database.close?.()
   for (const name of names) {
-    await root.removeEntry(name)
+    try {
+      await root.removeEntry(name)
+    }
+    catch (error) {
+      posthog.captureException(error)
+      console.error(error)
+    }
   }
 }

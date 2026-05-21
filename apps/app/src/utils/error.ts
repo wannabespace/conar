@@ -2,7 +2,7 @@ import { ORPCError } from '@orpc/client'
 import { BASE_ERROR_CODES } from 'better-auth'
 import { toast } from 'sonner'
 import { fullSignOut } from '~/lib/auth'
-import { PROXY_ERROR_MESSAGE } from './orpc'
+import { PROXY_ERROR_MESSAGE } from '../lib/orpc'
 
 function getErrorMessage(error: unknown) {
   return (error instanceof ORPCError && error.message)

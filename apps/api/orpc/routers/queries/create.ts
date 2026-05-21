@@ -20,7 +20,7 @@ export const create = orpc
     schema.array(),
   ).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
-    const [query] = await db
+    const data = await db
       .insert(queries)
       .values(input.map(({ connectionId, databaseId, ...item }) => ({
         ...item,
@@ -29,9 +29,11 @@ export const create = orpc
       })))
       .returning()
 
-    publisher.publish('event', {
-      type: 'insert',
-      value: query!,
-      clientId: context.clientId,
-    })
+    for (const query of data) {
+      publisher.publish('event', {
+        type: 'insert',
+        value: query,
+        clientId: context.clientId,
+      })
+    }
   })

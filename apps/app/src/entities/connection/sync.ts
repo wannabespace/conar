@@ -87,14 +87,18 @@ export const connectionsCollection = createCollection(persistedCollectionOptions
 
       orpc.connections.events.call({}, {
         signal: abortController.signal,
-      }).then(async (events) => {
-        markReady()
-        for await (const item of events) {
-          begin()
-          writeItem(item)
-          commit()
-        }
       })
+        .then(async (events) => {
+          markReady()
+          for await (const item of events) {
+            begin()
+            writeItem(item)
+            commit()
+          }
+        })
+        .catch(() => {
+          markReady()
+        })
 
       collection.toArrayWhenReady().then(async (rows) => {
         orpc.connections.sync.call(
@@ -190,14 +194,18 @@ export const connectionsResourcesCollection = createCollection(persistedCollecti
 
       orpc.connectionsResources.events.call({}, {
         signal: abortController.signal,
-      }).then(async (events) => {
-        markReady()
-        for await (const item of events) {
-          begin()
-          writeItem(item)
-          commit()
-        }
       })
+        .then(async (events) => {
+          markReady()
+          for await (const item of events) {
+            begin()
+            writeItem(item)
+            commit()
+          }
+        })
+        .catch(() => {
+          markReady()
+        })
 
       collection.toArrayWhenReady().then(async (rows) => {
         orpc.connectionsResources.sync.call(

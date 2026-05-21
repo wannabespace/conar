@@ -46,14 +46,18 @@ export const chatsCollection = createCollection(persistedCollectionOptions<Chat,
 
       orpc.chats.events.call({}, {
         signal: abortController.signal,
-      }).then(async (events) => {
-        markReady()
-        for await (const item of events) {
-          begin()
-          writeItem(item)
-          commit()
-        }
       })
+        .then(async (events) => {
+          markReady()
+          for await (const item of events) {
+            begin()
+            writeItem(item)
+            commit()
+          }
+        })
+        .catch(() => {
+          markReady()
+        })
 
       collection.toArrayWhenReady().then(async (rows) => {
         orpc.chats.sync.call(
@@ -142,14 +146,18 @@ export const chatsMessagesCollection = createCollection(persistedCollectionOptio
 
       orpc.chatsMessages.events.call({}, {
         signal: abortController.signal,
-      }).then(async (events) => {
-        markReady()
-        for await (const item of events) {
-          begin()
-          writeItem(item)
-          commit()
-        }
       })
+        .then(async (events) => {
+          markReady()
+          for await (const item of events) {
+            begin()
+            writeItem(item)
+            commit()
+          }
+        })
+        .catch(() => {
+          markReady()
+        })
 
       collection.toArrayWhenReady().then(async (rows) => {
         orpc.chatsMessages.sync.call(

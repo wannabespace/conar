@@ -42,14 +42,18 @@ export const queriesCollection = createCollection(persistedCollectionOptions<Que
 
       orpc.queries.events.call({}, {
         signal: abortController.signal,
-      }).then(async (events) => {
-        markReady()
-        for await (const item of events) {
-          begin()
-          writeItem(item)
-          commit()
-        }
       })
+        .then(async (events) => {
+          markReady()
+          for await (const item of events) {
+            begin()
+            writeItem(item)
+            commit()
+          }
+        })
+        .catch(() => {
+          markReady()
+        })
 
       collection.toArrayWhenReady().then(async (rows) => {
         orpc.queries.sync.call(

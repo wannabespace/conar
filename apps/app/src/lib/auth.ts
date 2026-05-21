@@ -4,8 +4,8 @@ import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
+import { apiUrl } from '../utils/utils'
 import { clearDb } from './sync'
-import { apiUrl } from './utils'
 
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
 

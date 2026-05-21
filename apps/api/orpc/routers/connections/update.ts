@@ -43,13 +43,9 @@ export const update = orpc
       .where(and(eq(connections.userId, context.user.id), eq(connections.id, id)))
       .returning()
 
-    if (!connection) {
-      throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
-    }
-
     publisher.publish('event', {
       type: 'update',
-      value: connection,
+      value: connection!,
       clientId: context.clientId,
     })
   })

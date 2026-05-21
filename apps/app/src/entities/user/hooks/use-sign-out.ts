@@ -1,8 +1,8 @@
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { authClient, fullSignOut } from '~/lib/auth'
-import { handleError } from '~/lib/error'
 import { queryClient } from '~/main'
+import { handleError } from '~/utils/error'
 
 export function useSignOut() {
   const { refetch } = authClient.useSession()

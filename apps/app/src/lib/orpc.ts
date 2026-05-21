@@ -7,9 +7,9 @@ import { createORPCClient, onError, ORPCError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import { memoize } from 'memoza'
+import { handleError } from '../utils/error'
+import { apiUrl, proxyUrl } from '../utils/utils'
 import { bearerToken } from './auth'
-import { handleError } from './error'
-import { apiUrl, proxyUrl } from './utils'
 
 const clientId = crypto.randomUUID()
 
