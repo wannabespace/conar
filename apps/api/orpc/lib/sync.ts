@@ -2,7 +2,6 @@ import type { Type } from 'arktype'
 import { IORedisPublisher } from '@orpc/experimental-publisher/ioredis'
 import { eventIterator } from '@orpc/server'
 import { type } from 'arktype'
-
 import { redis } from '~/lib/redis'
 import { authMiddleware, orpc } from '~/orpc'
 
@@ -17,7 +16,6 @@ export function createSyncOutputSchema(schema: Type) {
   return type.or(
     type({ type: '"insert"', value: schema }),
     type({ type: '"update"', value: schema }),
-    // TODO: change any to null in future
     type({ type: '"delete"', key: 'string.uuid.v7' }),
   )
 }
