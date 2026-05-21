@@ -14,19 +14,9 @@ export const database = await openBrowserWASQLiteOPFSDatabase({
   databaseName: DATABASE_NAME,
 })
 
-if (import.meta.env.DEV) {
-// @ts-expect-error custom
-  window.dbQuery = (query: string) => {
-    database.execute(query).then((result) => {
-      // eslint-disable-next-line no-console
-      console.table(result)
-      return result
-    })
-  }
-}
-
 export const persistence = createBrowserWASQLitePersistence({
   database,
+  schemaMismatchPolicy: 'reset',
 })
 
 export async function clearDb() {
