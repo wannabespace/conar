@@ -2,7 +2,7 @@ import { db } from '@conar/db'
 import { connections, connectionsResources, connectionsResourcesSelectSchema } from '@conar/db/schema'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
-import { and, eq, getColumns, gt, inArray, notInArray, or } from 'drizzle-orm'
+import { and, eq, getColumns, gte, inArray, notInArray, or } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'
 import { createSyncOutputSchema, syncDiff } from '~/orpc/lib/sync'
 
@@ -27,7 +27,7 @@ export const sync = orpc
             and(
               eq(connections.userId, context.user.id),
               or(...items.map(cr =>
-                and(eq(connectionsResources.id, cr.id), gt(connectionsResources.updatedAt, addSeconds(cr.updatedAt, 1))),
+                and(eq(connectionsResources.id, cr.id), gte(connectionsResources.updatedAt, addSeconds(cr.updatedAt, 1))),
               )),
             ),
           ),

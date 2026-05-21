@@ -2,7 +2,7 @@ import { db } from '@conar/db'
 import { chats, chatsMessages, chatsMessagesSelectSchema } from '@conar/db/schema'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
-import { and, eq, getColumns, gt, inArray, notInArray, or } from 'drizzle-orm'
+import { and, eq, getColumns, gte, inArray, notInArray, or } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'
 import { createSyncOutputSchema, syncDiff } from '~/orpc/lib/sync'
 
@@ -27,7 +27,7 @@ export const sync = orpc
             and(
               eq(chats.userId, context.user.id),
               or(...items.map(m =>
-                and(eq(chatsMessages.id, m.id), gt(chatsMessages.updatedAt, addSeconds(m.updatedAt, 1))),
+                and(eq(chatsMessages.id, m.id), gte(chatsMessages.updatedAt, addSeconds(m.updatedAt, 1))),
               )),
             ),
           ),
