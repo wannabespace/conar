@@ -1,4 +1,4 @@
-import type { connectionsResources } from '~/drizzle/schema'
+import type { ConnectionResource } from '../sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -274,7 +274,7 @@ export function resourceTableColumnsQueryOptions({
   table,
   schema,
 }: {
-  connectionResource: typeof connectionsResources.$inferSelect
+  connectionResource: ConnectionResource
   table: string
   schema: string
 }) {

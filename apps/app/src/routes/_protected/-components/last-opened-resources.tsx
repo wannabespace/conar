@@ -1,4 +1,4 @@
-import type { connections, connectionsResources } from '~/drizzle/schema'
+import type { Connection, ConnectionResource } from '~/entities/connection/sync'
 import { Button } from '@conar/ui/components/button'
 import { RiCloseLine } from '@remixicon/react'
 import { eq, inArray, useLiveQuery } from '@tanstack/react-db'
@@ -9,7 +9,7 @@ import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 
-function LastOpenedResource({ connectionResource, connection, onClose }: { connectionResource: typeof connectionsResources.$inferSelect, connection: typeof connections.$inferSelect, onClose: VoidFunction }) {
+function LastOpenedResource({ connectionResource, connection, onClose }: { connectionResource: ConnectionResource, connection: Connection, onClose: VoidFunction }) {
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
   return (
@@ -60,7 +60,7 @@ export function LastOpenedResources() {
   const toShow = data
     .toSorted((a, b) => lastOpenedResources.indexOf(a.connectionResource.id) - lastOpenedResources.indexOf(b.connectionResource.id))
 
-  const close = (resource: typeof connectionsResources.$inferSelect) => {
+  const close = (resource: ConnectionResource) => {
     lastOpenedResourcesStorageValue.set(prev => prev.filter(id => id !== resource.id))
   }
 

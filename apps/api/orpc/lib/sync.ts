@@ -9,16 +9,16 @@ import { authMiddleware, orpc } from '~/orpc'
 export function createSyncOutputSchema<const T>(
   schema: type.validate<T>,
 ): type.instantiate<
-  | { type: '"insert"', key?: 'string.uuid.v7', value: T }
-  | { type: '"update"', key?: 'string.uuid.v7', value: T }
-  | { type: '"delete"', key: 'string.uuid.v7', value?: 'null' }
+  | { type: '"insert"', value: T }
+  | { type: '"update"', value: T }
+  | { type: '"delete"', key: 'string.uuid.v7' }
 >
 export function createSyncOutputSchema(schema: Type) {
   return type.or(
-    type({ type: '"insert"', key: 'string.uuid.v7?', value: schema }),
-    type({ type: '"update"', key: 'string.uuid.v7?', value: schema }),
+    type({ type: '"insert"', value: schema }),
+    type({ type: '"update"', value: schema }),
     // TODO: change any to null in future
-    type({ type: '"delete"', key: 'string.uuid.v7', value: 'unknown.any?' }),
+    type({ type: '"delete"', key: 'string.uuid.v7' }),
   )
 }
 

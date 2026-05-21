@@ -27,9 +27,6 @@ export default defineConfig(({ mode }) => ({
       presets: [reactCompilerPreset()],
     }),
   ],
-  optimizeDeps: {
-    exclude: ['@electric-sql/pglite'],
-  },
   server: {
     strictPort: true,
     port: mode === 'test' ? PORTS.TEST.DESKTOP : PORTS.DEV.APP,

@@ -1,5 +1,5 @@
 import type { CompletionService, ICompletionItem } from 'monaco-sql-languages'
-import type { connectionsResources } from '~/drizzle/schema'
+import type { ConnectionResource } from '~/entities/connection/sync'
 import { languages } from 'monaco-editor'
 import { EntityContextType } from 'monaco-sql-languages'
 import { queryClient } from '~/main'
@@ -38,7 +38,7 @@ const keywordPriority = [
 
 const dotMatchesRegex = /(\w+(?:\.\w+)*)\.\s*$/g
 
-export function connectionCompletionService(connectionResource: typeof connectionsResources.$inferSelect): CompletionService {
+export function connectionCompletionService(connectionResource: ConnectionResource): CompletionService {
   const store = getConnectionResourceStore(connectionResource.id)
   queryClient.prefetchQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem: store.get().showSystem }))
   queryClient.prefetchQuery(resourceEnumsQueryOptions({ connectionResource }))

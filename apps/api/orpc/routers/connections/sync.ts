@@ -44,7 +44,6 @@ export const sync = orpc
     updatedItems.forEach((item) => {
       sync.push({
         type: 'update',
-        key: item.id,
         value: {
           ...item,
           connectionString: decrypt({ encryptedText: item.connectionString, secret }),
@@ -55,7 +54,6 @@ export const sync = orpc
     newItems.forEach((item) => {
       sync.push({
         type: 'insert',
-        key: item.id,
         value: {
           ...item,
           connectionString: decrypt({ encryptedText: item.connectionString, secret }),
@@ -67,8 +65,6 @@ export const sync = orpc
       sync.push({
         type: 'delete',
         key: item,
-        // @ts-expect-error - TODO: change any to null in future, currently this is saved for backwards compatibility
-        value: item,
       })
     })
 

@@ -1,5 +1,5 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import type { connectionsResources } from '~/drizzle/schema'
+import type { ConnectionResource } from '~/entities/connection/sync'
 import { CONNECTION_TYPES_WITH_EXPLAIN } from '@conar/shared/constants'
 import { Button } from '@conar/ui/components/button'
 import { Checkbox } from '@conar/ui/components/checkbox'
@@ -29,7 +29,7 @@ export function RunnerEditorQueryZone({
   getQuery,
   lineNumber,
 }: {
-  connectionResource: typeof connectionsResources.$inferSelect
+  connectionResource: ConnectionResource
   connectionType: ConnectionType
   onRun: (index: number) => void
   onSave: () => void

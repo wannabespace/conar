@@ -1,7 +1,7 @@
 import type { QueryParams, SchemaParams } from '..'
 import type { Column } from '../../components/table/cell'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
-import { formatSql } from '~/lib/formatter'
+import { formatSql } from '~/utils/formatter'
 import { coldDialects } from '../../dialects'
 import { buildWhere } from '../../queries/rows'
 import * as templates from '../templates'
@@ -18,7 +18,7 @@ export function generateQuerySQL({
   dialect = ConnectionType.Postgres,
 }: QueryParams) {
   const db = coldDialects[dialect]()
-  const base = db.withTables<{ [table]: Record<string, unknown> }>().selectFrom(table).selectAll()
+  const base = db.$extendTables<{ [table]: Record<string, unknown> }>().selectFrom(table).selectAll()
   const query = filters.length > 0 ? base.where(eb => buildWhere(eb, filters)) : base
   const compiled = query.compile()
   return formatSql(inlineParameters(compiled.sql, compiled.parameters), dialect)

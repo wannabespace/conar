@@ -1,5 +1,5 @@
 import type { RemixiconComponentType } from '@remixicon/react'
-import type { connections } from '~/drizzle/schema'
+import type { Connection } from '~/entities/connection/sync'
 import type { FileRoutesByTo } from '~/routeTree.gen'
 import { CONNECTION_TYPES_WITH_FUNCTIONS, CONNECTION_TYPES_WITH_TRIGGERS } from '@conar/shared/constants'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
@@ -8,7 +8,7 @@ import { RiCodeSSlashLine, RiFileList3Line, RiFlashlightLine, RiKey2Line, RiList
 import { SidebarLink } from '~/components/sidebar-link'
 import { Route } from '../../definitions'
 
-function sidebarItems(connection: typeof connections.$inferSelect) {
+function sidebarItems(connection: Connection) {
   return [
     {
       to: '/connection/$resourceId/definitions/enums',

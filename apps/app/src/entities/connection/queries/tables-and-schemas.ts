@@ -1,4 +1,4 @@
-import type { connectionsResources } from '~/drizzle/schema'
+import type { ConnectionResource } from '~/entities/connection/sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
@@ -21,7 +21,7 @@ export const tablesAndSchemasType = type({
   }
 })
 
-export const resourceTablesAndSchemasQuery = memoize(({ connectionResource, showSystem }: { connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) => {
+export const resourceTablesAndSchemasQuery = memoize(({ connectionResource, showSystem }: { connectionResource: ConnectionResource, showSystem: boolean }) => {
   return createQuery({
     type: tablesAndSchemasType.array(),
     query: {
@@ -88,7 +88,7 @@ export const resourceTablesAndSchemasQuery = memoize(({ connectionResource, show
   })
 })
 
-export function resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }: { connectionResource: typeof connectionsResources.$inferSelect, showSystem: boolean }) {
+export function resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }: { connectionResource: ConnectionResource, showSystem: boolean }) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'tables-and-schemas', showSystem],
     queryFn: async () => {

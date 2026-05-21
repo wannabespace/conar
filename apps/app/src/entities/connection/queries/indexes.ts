@@ -1,4 +1,4 @@
-import type { connectionsResources } from '~/drizzle/schema'
+import type { ConnectionResource } from '../sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
@@ -123,7 +123,7 @@ export const resourceIndexesQuery = createQuery({
   },
 })
 
-export function resourceIndexesQueryOptions({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) {
+export function resourceIndexesQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'indexes'],
     queryFn: () => resourceIndexesQuery.run(connectionResourceToQueryParams(connectionResource)),

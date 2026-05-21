@@ -21,9 +21,15 @@ const allCollections = [
   queriesCollection,
 ]
 
-function runAllSync() {
+function preloadCollections() {
   for (const collection of allCollections) {
-    collection.utils.runSync()
+    collection.preload()
+  }
+}
+
+function cleanupCollections() {
+  for (const collection of allCollections) {
+    collection.cleanup()
   }
 }
 
@@ -39,7 +45,11 @@ function ProtectedLayout() {
       return
     }
 
-    runAllSync()
+    preloadCollections()
+
+    return () => {
+      cleanupCollections()
+    }
   }, [hasUser, isOnline])
 
   return (

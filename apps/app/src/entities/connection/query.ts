@@ -1,6 +1,6 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { Type } from 'arktype'
-import type { connections, connectionsResources } from '~/drizzle/schema'
+import type { Connection, ConnectionResource } from '~/entities/connection/sync'
 import { isConnectionError } from '@conar/shared/utils/connections'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Result } from 'better-result'
@@ -11,7 +11,7 @@ import { logQuery } from './log'
 import { connectionsCollection } from './sync'
 import { getConnectionStringToShow } from './utils'
 
-export function connectionToQueryParams(connection: typeof connections.$inferSelect): QueryParams {
+export function connectionToQueryParams(connection: Connection): QueryParams {
   const foundConnection = connectionsCollection.get(connection.id)!
 
   return {
@@ -21,7 +21,7 @@ export function connectionToQueryParams(connection: typeof connections.$inferSel
   }
 }
 
-export function connectionResourceToQueryParams(connectionResource: typeof connectionsResources.$inferSelect): QueryParams {
+export function connectionResourceToQueryParams(connectionResource: ConnectionResource): QueryParams {
   const connection = connectionsCollection.get(connectionResource.connectionId)!
   const newConnectionString = new SafeURL(connection.connectionString)
   newConnectionString.pathname = connectionResource.name || ''

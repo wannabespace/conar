@@ -1,38 +1,36 @@
 import type { ORPCOutputs } from '~/lib/orpc'
-import { createCollection } from '@tanstack/react-db'
-import { drizzleCollectionOptions } from 'tanstack-db-pglite'
-import { db, waitForMigrations } from '~/drizzle'
-import { queries } from '~/drizzle/schema'
-import { connectionsCollection } from '~/entities/connection/sync'
-import { isSignedIn } from '~/lib/auth'
+import type { BaseTable } from '~/lib/sync'
+import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
+import { BasicIndex, createCollection } from '@tanstack/react-db'
 import { orpc } from '~/lib/orpc'
+import { persistence } from '~/lib/sync'
 
-export const queriesCollection = createCollection(drizzleCollectionOptions({
-  db,
-  table: queries,
-  primaryColumn: queries.id,
-  startSync: false,
-  prepare: waitForMigrations,
+export interface Query extends BaseTable {
+  connectionResourceId: string
+  name: string
+  query: string
+}
+
+export const queriesCollection = createCollection(persistedCollectionOptions<Query, string>({
+  id: 'queries',
+  persistence,
+  autoIndex: 'eager',
+  defaultIndexType: BasicIndex,
+  schemaVersion: 1,
+  getKey: item => item.id,
   sync: {
-    sync: async ({ writeAsync, markReady }) => {
-      if (!navigator.onLine || !await isSignedIn()) {
-        return
-      }
-
-      await connectionsCollection.stateWhenReady()
-
+    sync: ({ begin, commit, write, collection, markReady }) => {
       const abortController = new AbortController()
-
-      const events = await orpc.queries.events.call({}, {
-        signal: abortController.signal,
-      })
 
       const writeItem = async (item: ORPCOutputs['queries']['sync'][number]) => {
         if (item.type === 'delete') {
-          await writeAsync(item)
+          write({
+            type: item.type,
+            key: item.key,
+          })
         }
         else if (item.value?.connectionResourceId) {
-          await writeAsync({
+          write({
             type: item.type,
             value: {
               ...item.value,
@@ -42,25 +40,32 @@ export const queriesCollection = createCollection(drizzleCollectionOptions({
         }
       }
 
-      ;(async () => {
+      orpc.queries.events.call({}, {
+        signal: abortController.signal,
+      }).then(async (events) => {
+        markReady()
         for await (const item of events) {
-          await writeItem(item)
+          begin()
+          writeItem(item)
+          commit()
         }
-      })()
+      })
 
-      const sync = await orpc.queries.sync.call(
-        await db.select({ id: queries.id, updatedAt: queries.updatedAt }).from(queries),
-        { signal: abortController.signal },
-      )
-
-      for (const item of sync) {
-        await writeItem(item)
-      }
-
-      markReady()
+      collection.toArrayWhenReady().then(async (rows) => {
+        orpc.queries.sync.call(
+          rows,
+          { signal: abortController.signal },
+        )
+          .then(async (sync) => {
+            begin()
+            for (const item of sync) {
+              writeItem(item)
+            }
+            commit()
+          })
+      })
 
       return () => {
-        console.log('aborting queries sync')
         abortController.abort()
       }
     },

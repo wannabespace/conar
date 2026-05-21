@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
-import type { connectionsResources } from '~/drizzle/schema'
 import type { connectionResourceType } from '~/entities/connection/store'
+import type { ConnectionResource } from '~/entities/connection/sync'
 import { getOS } from '@conar/shared/utils/os'
 import {
   ContextMenu,
@@ -53,7 +53,7 @@ function CloseButton({ onClick }: { onClick: ComponentProps<'svg'>['onClick'] })
   )
 }
 
-function getQueryOpts(connectionResource: typeof connectionsResources.$inferSelect, schema: string, tableName: string) {
+function getQueryOpts(connectionResource: ConnectionResource, schema: string, tableName: string) {
   const state = tablePageStore({ id: connectionResource.id, schema, table: tableName }).get()
 
   return {
@@ -76,7 +76,7 @@ function SortableTab({
 }: {
   item: { id: string, tab: typeof connectionResourceType.infer['tabs'][number] }
   showSchema: boolean
-  connectionResource: typeof connectionsResources.$inferSelect
+  connectionResource: ConnectionResource
   onClose: VoidFunction
   onCloseAll: VoidFunction
   onCloseToTheRight: VoidFunction

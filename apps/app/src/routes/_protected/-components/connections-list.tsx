@@ -1,5 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { connections as connectionsTable } from '~/drizzle/schema'
+import type { Connection } from '~/entities/connection/sync'
 import { CONNECTION_RESOURCE_ROOT_LABEL, CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { SafeURL } from '@conar/shared/utils/safe-url'
@@ -39,7 +39,7 @@ import { fetchingConfig } from '~/entities/connection/utils/fetching'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
-function ConnectionIconWithVersion({ connection }: { connection: typeof connectionsTable.$inferSelect }) {
+function ConnectionIconWithVersion({ connection }: { connection: Connection }) {
   const isLocalProxyAvailable = useLocalProxyAvailable()
   const { canSend } = fetchingConfig(connection, { isLocalProxyAvailable })
   const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery({
@@ -196,7 +196,7 @@ function ConnectionCard({
   connection,
   onRemove,
 }: {
-  connection: typeof connectionsTable.$inferSelect
+  connection: Connection
   onRemove: VoidFunction
 }) {
   const { data: storedResources } = useLiveQuery(q => q

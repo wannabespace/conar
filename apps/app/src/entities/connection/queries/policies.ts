@@ -1,4 +1,4 @@
-import type { connectionsResources } from '~/drizzle/schema'
+import type { ConnectionResource } from '../sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
@@ -144,7 +144,7 @@ const query = createQuery({
   },
 })
 
-export const resourcePoliciesQuery = memoize(({ connectionResource }: { connectionResource: typeof connectionsResources.$inferSelect }) => {
+export const resourcePoliciesQuery = memoize(({ connectionResource }: { connectionResource: ConnectionResource }) => {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'policies'],
     queryFn: () => query.run(connectionResourceToQueryParams(connectionResource)),
