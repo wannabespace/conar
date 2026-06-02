@@ -1,0 +1,79 @@
+---
+title: "SQL Editor: Write and Run Queries in Your Browser"
+sidebarTitle: "SQL Editor"
+description: "Write and execute SQL with Conar's Monaco-based editor. Features multiple query zones, saved queries, inline AI assistance, and a full query log."
+---
+
+Conar's SQL Editor gives you a full-featured SQL authoring environment directly in your browser. Built on the same Monaco engine that powers Visual Studio Code, it brings familiar keyboard shortcuts, syntax highlighting, and intelligent auto-complete to every database connection. Whether you're running a quick one-liner or building a complex multi-step query, the SQL Editor is designed to stay out of your way and help you move fast.
+
+<Note>
+  The SQL Editor is powered by **Monaco Editor** — the same editor at the heart of Visual Studio Code. If you're used to VS Code, you'll feel right at home. Keyboard shortcuts like <kbd>Ctrl</kbd>+<kbd>Z</kbd> for undo, <kbd>Ctrl</kbd>+<kbd>/</kbd> to toggle comments, and multi-cursor editing all work exactly as you'd expect.
+</Note>
+
+## Writing Queries
+
+The editor surfaces full SQL syntax highlighting for your connected database dialect — PostgreSQL, MySQL, Microsoft SQL Server, and ClickHouse. As you type, auto-complete suggests table names, column names, keywords, and functions drawn from your live database schema.
+
+**Multiple query zones** let you keep several independent queries in the same editor file, separated by delimiter lines. Each zone is treated as its own executable unit — you can run a single zone without affecting the others, making it easy to iterate on one query while keeping related queries nearby for reference.
+
+- Click inside a query zone to set focus on it.
+- Use the **Run** button (or press <kbd>Ctrl</kbd>+<kbd>Enter</kbd>) to execute the focused zone.
+- Add a new delimiter line (`---`) to create additional zones in the same document.
+
+## Running Queries
+
+To execute a query, place your cursor inside a query zone and click **Run** in the toolbar, or press <kbd>Ctrl</kbd>+<kbd>Enter</kbd>. Results appear in the table panel directly below the editor.
+
+The results table supports:
+
+- **Sorting** — click any column header to sort results ascending or descending.
+- **Column resizing** — drag column borders to adjust widths.
+- **Copy** — select rows and copy them to your clipboard.
+
+If your query returns an error, Conar displays the database error message inline beneath the editor. You can use the **Fix with AI** button that appears alongside the error to let the AI suggest a corrected version of your query — see [AI Features in the Editor](#ai-features-in-the-editor) below.
+
+## Saving Queries
+
+You can save any query to revisit or share later. Click the **Save** button in the toolbar, give your query a name, and it will be stored in your saved queries list for that connection.
+
+<Steps>
+  <Step title="Save a query">
+    With your query written in the editor, click the **Save** button in the toolbar. Enter a descriptive name so you can find it easily later, then confirm.
+  </Step>
+  <Step title="Open a saved query">
+    Click the **Saved Queries** panel button to open the list of all saved queries for the current connection. Click any query name to load it into the editor.
+  </Step>
+  <Step title="Manage saved queries">
+    From the saved queries panel you can rename, duplicate, or delete any saved query. Queries are scoped to the connection, so each database connection maintains its own library.
+  </Step>
+</Steps>
+
+## AI Features in the Editor
+
+The SQL Editor integrates AI assistance at every stage of query writing — from the first blank line to debugging a failing query.
+
+<CardGroup cols={2}>
+  <Card title="Generate or Modify SQL with AI" icon="wand-magic-sparkles" href="/features/ai-assistant">
+    Press <kbd>Ctrl</kbd>+<kbd>K</kbd> (or <kbd>⌘</kbd>+<kbd>K</kbd> on macOS) while your cursor is inside a query zone to open the AI prompt panel. Type a plain-English description of what you want — for example, *"find the top 10 customers by total spend in the last 30 days"* — and the AI will write or rewrite the SQL for that zone. A diff view shows you exactly what changed before you apply it. This feature requires a subscription.
+  </Card>
+  <Card title="Fix SQL on Error" icon="circle-exclamation" href="/features/ai-assistant">
+    When a query returns an error, a **Fix with AI** button appears next to the error message. Click it and the AI will analyze the error and suggest a corrected query you can apply in one click. Fix with AI requires a subscription.
+  </Card>
+</CardGroup>
+
+All AI editor features are powered by the same assistant available in the [AI Assistant](/features/ai-assistant) chat panel. The AI has full awareness of your database schema, so its suggestions and generated queries reference your real table and column names.
+
+## Query Logger
+
+Every query executed against your current connection is recorded in the **Query Logger** panel at the bottom of the connection view. The log is a running history that includes:
+
+- The full SQL text of each executed query.
+- A timestamp showing when the query was run.
+- The execution status — success or error.
+- The number of rows returned or affected.
+
+Click any entry in the log to copy the SQL back into the editor for re-use or editing. The Query Logger is scoped to the current session and is cleared when you close the connection. Use it to retrace your steps, audit what was run, or recover a query you forgot to save.
+
+<Tip>
+  Use the Query Logger as a safety net during exploratory work. If you run a useful ad-hoc query and forget to save it, you can always find it in the log and save it from there.
+</Tip>

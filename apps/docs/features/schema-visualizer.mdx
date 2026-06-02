@@ -1,0 +1,64 @@
+---
+title: "Schema Visualizer: Interactive ER Diagrams for Your DB"
+sidebarTitle: "Schema Visualizer"
+description: "Conar's Schema Visualizer renders your database as an interactive ER diagram showing tables, columns, and all foreign-key relationships at a glance."
+---
+
+The Schema Visualizer transforms your database structure into an interactive entity-relationship (ER) diagram, giving you a bird's-eye view of every table, column, and foreign-key relationship in your schema. Whether you're onboarding to an unfamiliar codebase, planning a schema migration, or explaining your data model to a teammate, the visualizer makes it easy to understand how your tables connect — without reading a single line of SQL.
+
+## Opening the Visualizer
+
+The Schema Visualizer is accessible from any active database connection.
+
+<Steps>
+  <Step title="Open a connection">
+    Select an existing connection from your connections list, or create a new one. The connection must be active (green status indicator) before the visualizer can load your schema.
+  </Step>
+  <Step title="Navigate to the Visualizer tab">
+    In the connection's top navigation bar, click the **Visualizer** tab. Conar will load your schema and render the ER diagram automatically. For large schemas, the initial load may take a few seconds.
+  </Step>
+  <Step title="Select a schema">
+    If your database has multiple schemas (e.g., `public`, `analytics`, `auth`), use the **Schema** dropdown in the toolbar to choose which schema to visualize. The diagram updates immediately when you switch.
+  </Step>
+</Steps>
+
+## Reading the Diagram
+
+Each table in your schema appears as a **node** — a card that lists the table name at the top and its columns below. Column entries show the column name and data type side by side, making it easy to spot type mismatches or understand what a table holds at a glance.
+
+**Relationships** between tables are drawn as connecting lines (**edges**) between nodes. Each edge represents a foreign-key constraint: the line starts at the referencing column and ends at the referenced primary key in the parent table. Arrowheads indicate the direction of the reference.
+
+- A line from `orders.customer_id` → `customers.id` means `orders` references `customers`.
+- Edge labels show the column names involved in the relationship.
+- Tables with no foreign-key relationships appear as standalone nodes.
+
+## Navigating Large Schemas
+
+Schemas with many tables can span a large canvas. Conar provides several tools to help you find your way around.
+
+<CardGroup cols={2}>
+  <Card title="MiniMap" icon="map" href="/features/schema-visualizer">
+    A small overview map in the corner of the canvas shows your entire schema at a reduced scale. The highlighted rectangle represents your current viewport. Click or drag on the MiniMap to jump to any part of the diagram instantly.
+  </Card>
+  <Card title="Pan and Zoom" icon="arrows-up-down-left-right" href="/features/schema-visualizer">
+    Click and drag on the canvas background to pan. Use your scroll wheel (or pinch on a trackpad) to zoom in and out. Double-click a node to zoom to fit that table in the viewport.
+  </Card>
+  <Card title="Schema Selector" icon="layer-group" href="/features/schema-visualizer">
+    Use the Schema dropdown in the toolbar to switch between schemas in your database. Each schema is rendered as its own diagram so the canvas stays uncluttered.
+  </Card>
+  <Card title="Auto-Layout" icon="wand-sparkles" href="/features/schema-visualizer">
+    Conar automatically arranges nodes using a layout algorithm that minimizes edge crossings. Node positions are cached after your first visit, so any manual rearrangements you make are preserved when you return.
+  </Card>
+</CardGroup>
+
+## Searching Tables
+
+When you need to find a specific table in a large diagram, use the search feature to highlight it instantly.
+
+Press <kbd>Ctrl</kbd>+<kbd>F</kbd> (or <kbd>⌘</kbd>+<kbd>F</kbd> on macOS) to open the search bar. Type any part of a table name and matching nodes will be highlighted on the canvas. If a matching table is outside your current viewport, the canvas will scroll to bring it into view.
+
+Search is purely visual — it highlights nodes without hiding others, so you retain full context of the surrounding schema while focusing on the table you're looking for.
+
+<Tip>
+  The Schema Visualizer is one of the fastest ways to get up to speed on a database you've never worked with before. Open it first when connecting to a new database — understanding the table relationships upfront will make every subsequent query and edit session more productive.
+</Tip>

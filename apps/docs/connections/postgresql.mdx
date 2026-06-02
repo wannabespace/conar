@@ -1,0 +1,103 @@
+---
+title: "Connect Conar to PostgreSQL Databases"
+sidebarTitle: "PostgreSQL"
+description: "How to connect Conar to a PostgreSQL database. Connection string formats, SSL options, and tips for common PostgreSQL hosting providers."
+---
+
+PostgreSQL is one of the most widely used open-source relational databases, and Tamery supports it out of the box. Whether you're running PostgreSQL locally, on a VPS, or through a managed hosting provider, you can connect in seconds by pasting your connection string into the Tamery connection wizard.
+
+## Connection String Format
+
+Tamery accepts both the `postgresql://` and `postgres://` URI schemes. The format is the same for both:
+
+```bash
+postgresql://username:password@hostname:5432/database
+```
+
+```bash
+postgres://username:password@hostname:5432/database
+```
+
+Replace each placeholder with your actual credentials:
+
+| Placeholder | Description |
+| --- | --- |
+| `username` | Your PostgreSQL user (e.g. `postgres`) |
+| `password` | The password for that user |
+| `hostname` | The host where PostgreSQL is running (e.g. `localhost` or a remote IP/domain) |
+| `5432` | The default PostgreSQL port — change this if your instance uses a different port |
+| `database` | The name of the database you want to connect to |
+
+## Connection String Parameters
+
+You can append query parameters to the connection string to control connection behavior. Add them after the database name with a `?`, separating multiple parameters with `&`.
+
+| Parameter | Description | Example |
+| --- | --- | --- |
+| `sslmode` | Controls SSL/TLS negotiation | `sslmode=require` |
+| `connect_timeout` | Maximum seconds to wait when opening a connection | `connect_timeout=10` |
+| `application_name` | Label that appears in `pg_stat_activity` | `application_name=tamery` |
+
+**Example with parameters:**
+
+```bash
+postgresql://username:password@hostname:5432/database?sslmode=require&connect_timeout=10
+```
+
+## SSL / TLS
+
+Most managed PostgreSQL providers require an encrypted connection. Use the `sslmode` parameter to control how SSL is handled:
+
+| Value | Behavior |
+| --- | --- |
+| `disable` | No SSL — connection is unencrypted |
+| `require` | SSL required, but the server certificate is not verified |
+| `verify-ca` | SSL required; the server certificate must be signed by a trusted CA |
+| `verify-full` | SSL required; the server certificate must be signed by a trusted CA **and** the hostname must match |
+
+For most managed providers, `sslmode=require` is sufficient. For higher-security environments, use `verify-full`:
+
+```bash
+postgresql://username:password@hostname:5432/database?sslmode=verify-full
+```
+
+## Common Providers
+
+<Tabs>
+  <Tab title="Supabase">
+    In your Supabase project, go to **Settings → Database** and copy the connection string from the **Connection string** section. Make sure to replace `[YOUR-PASSWORD]` with your actual database password.
+
+    ```bash
+    postgresql://postgres:[YOUR-PASSWORD]@db.<project-ref>.supabase.co:5432/postgres
+    ```
+
+    Supabase requires SSL by default, so append `?sslmode=require` if it isn't already included in the string you copied.
+  </Tab>
+  <Tab title="Neon">
+    Neon provides two connection strings in your project dashboard: a **pooled** connection (recommended for most workloads) and a **direct** connection. Copy either one directly — Neon connection strings already include the correct SSL settings.
+
+    ```bash
+    postgresql://username:password@ep-<name>.us-east-2.aws.neon.tech/neondb?sslmode=require
+    ```
+  </Tab>
+  <Tab title="Railway">
+    Open your Railway project, select your PostgreSQL service, and navigate to the **Connect** tab. Copy the **Database URL** listed there.
+
+    ```bash
+    postgresql://postgres:password@monorail.proxy.rlwy.net:12345/railway
+    ```
+  </Tab>
+  <Tab title="Local PostgreSQL">
+    For a local PostgreSQL installation using the default settings:
+
+    ```bash
+    postgresql://postgres:password@localhost:5432/mydb
+    ```
+
+    If you didn't set a password for the `postgres` superuser, you may be able to connect without one depending on your `pg_hba.conf` configuration.
+  </Tab>
+</Tabs>
+
+<Tip>
+  Always click **Test Connection** in the Tamery wizard before saving. If the test fails, verify that your hostname, port, credentials, and database name are all correct — and that any required SSL parameters are included in your connection string.
+</Tip>

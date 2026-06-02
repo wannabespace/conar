@@ -1,0 +1,73 @@
+---
+title: "Conar CLI: Install, Authenticate, and Query Databases"
+sidebarTitle: "Overview"
+description: "The Conar CLI lets you query databases, run SQL files, and bridge the web app to local or private databases — all from your terminal."
+---
+
+The Tamery CLI brings your database workflow into the terminal. Use it to run SQL queries against any of your saved connections, execute SQL files as part of scripts or CI pipelines, and bridge the Tamery web app to databases that live on your local network or behind a firewall. If you prefer working without leaving your editor — or need to automate database tasks — the CLI is your starting point.
+
+## Installation
+
+The CLI is published as the `tamery` package on npm. Install it globally so the `tamery` command is available anywhere on your system.
+
+```bash
+npm install -g tamery
+```
+
+**Node.js 20 or later is required.** If you're on an older version, update Node.js before installing.
+
+Once installed, the CLI checks for updates automatically and notifies you in the terminal whenever a newer version is available, so you're always one command away from staying current.
+
+## Authentication
+
+Before running any commands, sign in to your Tamery account:
+
+```bash
+tamery login
+```
+
+This opens a browser window where you complete the sign-in flow securely. Once authenticated, your session is saved locally and reused across commands.
+
+If your browser doesn't open automatically — for example, when working over SSH — pass the `--no-open` flag and the CLI will print a URL you can copy and open manually:
+
+```bash
+tamery login --no-open
+```
+
+You have 5 minutes to complete the sign-in flow before the session times out. To check who you're currently signed in as, run `tamery whoami`.
+
+## Available Commands
+
+<CardGroup cols={2}>
+  <Card title="login" icon="arrow-right-to-bracket" href="/cli/commands#tamery-login">
+    Sign in to your Tamery account via browser-based authentication.
+  </Card>
+
+  <Card title="logout" icon="arrow-right-from-bracket" href="/cli/commands#tamery-logout">
+    Sign out and clear your local session.
+  </Card>
+
+  <Card title="whoami" icon="circle-user" href="/cli/commands#tamery-whoami">
+    Display the email address of the currently signed-in user.
+  </Card>
+
+  <Card title="query" icon="database" href="/cli/commands#tamery-query">
+    Run SQL queries against your saved connections — inline or from a file.
+  </Card>
+
+  <Card title="proxy" icon="plug" href="/cli/commands#tamery-proxy">
+    Start a local proxy so the Tamery web app can reach private databases.
+  </Card>
+</CardGroup>
+
+## Using the Proxy
+
+The Tamery web app at [tamery.app](https://tamery.app) connects to your databases directly from the browser. If your database is on a local machine, a private network, or otherwise not reachable from the internet, that direct connection won't work on its own.
+
+The `tamery proxy` command solves this by starting a lightweight local server that acts as a bridge. The web app routes queries through your machine, meaning your database credentials and traffic never leave your local environment. Run it in a terminal window while you're using the web app, and stop it with **Ctrl\+C** when you're done.
+
+```bash
+tamery proxy
+```
+
+See the [full command reference](/cli/commands) for detailed documentation on every command, including all flags and examples.
