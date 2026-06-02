@@ -80,8 +80,8 @@
     ],
     "primary": {
       "type": "button",
-      "label": "Open App",
-      "href": "https://conar.app/app"
+      "label": "Download",
+      "href": "https://conar.app/download"
     }
   },
   "footer": {
