@@ -30,7 +30,7 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
   const [open, setOpen] = useState(false)
 
   useImperativeHandle(ref, () => ({
-    open: (query: string) => {
+    open: (query) => {
       setName('')
       setOpen(true)
       setQuery(query)

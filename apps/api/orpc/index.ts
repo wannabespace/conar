@@ -29,7 +29,7 @@ async function getSession(headers: Headers) {
 export const logMiddleware = orpc.middleware(async ({ context, next }, input) => {
   const result = await next()
 
-  if (!context.request.url.endsWith('/sync')) {
+  if (!context.request.url.endsWith('/sync') && !context.request.url.includes('/shapes/')) {
     context.addLogData({
       input,
       output: (Array.isArray(result.output) && result.output.length > 0)

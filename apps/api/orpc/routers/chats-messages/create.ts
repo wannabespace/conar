@@ -1,29 +1,34 @@
 import { db } from '@conar/db'
 import { chats, chatsMessages, chatsMessagesInsertSchema } from '@conar/db/schema'
 import { ORPCError } from '@orpc/server'
-import { and, eq } from 'drizzle-orm'
+import { type } from 'arktype'
+import { and, eq, inArray } from 'drizzle-orm'
+import { generateTxId } from '~/lib/electric'
 import { orpc, subscriptionMiddleware } from '~/orpc'
-import { publisher } from './events'
+
+const schema = chatsMessagesInsertSchema
 
 export const create = orpc
   .use(subscriptionMiddleware)
-  .input(chatsMessagesInsertSchema)
+  .input(type.or(
+    schema,
+    schema.array(),
+  ).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
-    const [chat] = await db.select({ userId: chats.userId })
+    const chatIds = input.map(item => item.chatId)
+    const foundChats = await db.select({ id: chats.id })
       .from(chats)
-      .where(and(eq(chats.id, input.chatId), eq(chats.userId, context.user.id)))
+      .where(and(inArray(chats.id, chatIds), eq(chats.userId, context.user.id)))
 
-    if (!chat) {
+    if (foundChats.length !== chatIds.length) {
       throw new ORPCError('NOT_FOUND', {
         message: 'Chat not found',
       })
     }
 
-    const [message] = await db.insert(chatsMessages).values(input).returning()
+    return db.transaction(async (tx) => {
+      await tx.insert(chatsMessages).values(input)
 
-    publisher.publish('event', {
-      type: 'insert',
-      value: message!,
-      clientId: context.clientId,
+      return { txid: await generateTxId(tx) }
     })
   })

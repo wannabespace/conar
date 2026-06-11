@@ -8,6 +8,7 @@ import type { Database as PostgresDatabase } from './postgres/schema'
 import { PORTS } from '@conar/shared/ports'
 import { Kysely } from 'kysely'
 import { memoize } from 'memoza'
+import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { createProxyClient, orpcProxy } from '~/lib/orpc'
 import { getConnectionStore } from '../store'
 import { connectionsCollection, connectionsResourcesCollection } from '../sync'
@@ -18,7 +19,7 @@ import { mysqlColdDialect, mysqlDialect } from './mysql'
 import { postgresColdDialect, postgresDialect } from './postgres'
 
 export interface DialectOptions {
-  connectionString: string
+  connectionString?: string
   connectionId?: string
   resourceId?: string
   log?: (params: {
@@ -36,7 +37,21 @@ function resolveProxyIdParams(options: DialectOptions) {
     return { resourceId: options.resourceId }
   if (options.connectionId)
     return { connectionId: options.connectionId }
-  return { connectionString: options.connectionString }
+  return { connectionString: options.connectionString! }
+}
+
+async function resolveElectronConnectionString(options: DialectOptions, connectionId: string | undefined): Promise<string> {
+  if (options.connectionString) {
+    return options.connectionString
+  }
+
+  if (connectionId) {
+    if (connectionStringStorage.has(connectionId)) {
+      return connectionStringStorage.decrypt(connectionId)
+    }
+  }
+
+  throw new Error('No connection string available for this connection')
 }
 
 interface QueryPayload {
@@ -49,7 +64,9 @@ interface TxQueryPayload extends QueryPayload {
 }
 
 export function createDialectProvider(type: ConnectionType, options: DialectOptions) {
-  const resource = options.resourceId ? connectionsResourcesCollection.get(options.resourceId) : null
+  const resource = options.resourceId
+    ? connectionsResourcesCollection.get(options.resourceId)
+    : undefined
   const connectionId = options.connectionId || resource?.connectionId
   const connection = connectionId ? connectionsCollection.get(connectionId) : null
 
@@ -71,16 +88,20 @@ export function createDialectProvider(type: ConnectionType, options: DialectOpti
   }
 
   return {
-    execute(payload: QueryPayload) {
+    async execute(payload: QueryPayload) {
       const t = resolveTransport()
-      if (t.kind === 'electron')
-        return t.electron.execute({ connectionString: options.connectionString, ...payload })
+      if (t.kind === 'electron') {
+        const connectionString = await resolveElectronConnectionString(options, connectionId)
+        return t.electron.execute({ connectionString, ...payload })
+      }
       return t.proxy.execute({ ...resolveProxyIdParams(options), ...payload })
     },
-    beginTransaction() {
+    async beginTransaction() {
       const t = resolveTransport()
-      if (t.kind === 'electron')
-        return t.electron.beginTransaction({ connectionString: options.connectionString })
+      if (t.kind === 'electron') {
+        const connectionString = await resolveElectronConnectionString(options, connectionId)
+        return t.electron.beginTransaction({ connectionString })
+      }
       return t.proxy.beginTransaction(resolveProxyIdParams(options))
     },
     executeTransaction(params: TxQueryPayload) {

@@ -8,6 +8,7 @@ import './monaco-worker'
 import './assets/styles.css'
 import '@conar/ui/globals.css'
 import { toast } from 'sonner'
+import { connectionStringStorage } from './lib/connection-string-storage'
 
 if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
   import('react-scan').then(({ scan }) => {
@@ -77,4 +78,6 @@ declare module '@tanstack/react-router' {
 
 const root = createRoot(document.getElementById('root')!)
 
-root.render(<RouterProvider router={router} />)
+connectionStringStorage.ready.then(() => {
+  root.render(<RouterProvider router={router} />)
+})

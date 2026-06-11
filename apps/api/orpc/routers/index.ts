@@ -1,4 +1,4 @@
-import type { RouterClient } from '@orpc/server'
+import type { InferRouterInputs, InferRouterOutputs, RouterClient } from '@orpc/server'
 import * as account from './account'
 import * as ai from './ai'
 import { banner } from './banner'
@@ -32,3 +32,5 @@ export const router = {
 }
 
 export type ORPCRouter = RouterClient<typeof router>
+export type RouterOutputs = InferRouterOutputs<typeof router>
+export type RouterInputs = InferRouterInputs<typeof router>

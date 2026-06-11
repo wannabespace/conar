@@ -1,9 +1,10 @@
 {
   "name": "@conar/api",
   "type": "module",
+  "portless": "api.local.conar",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development bun --watch run ./index.ts",
-    "start": "cross-env NODE_ENV=production bun run ./index.ts",
+    "dev": "portless run cross-env NODE_ENV=development BUN_CONFIG_MAX_HTTP_REQUESTS=4096 bun --watch run ./index.ts",
+    "start": "cross-env NODE_ENV=production BUN_CONFIG_MAX_HTTP_REQUESTS=4096 bun run ./index.ts",
     "check-types": "tsgo",
     "test:start": "cross-env NODE_ENV=test bun --env-file=.env.test drizzle-kit migrate && cross-env NODE_ENV=test bun --env-file=.env.test run ./index.ts",
     "better-auth:generate": "cross-env NODE_ENV=development pnpx https://pkg.pr.new/auth@9489 generate --output ../../packages/db/schema/auth.ts"
@@ -21,9 +22,9 @@
     "@conar/db": "workspace:*",
     "@conar/infisical": "workspace:*",
     "@conar/shared": "workspace:*",
+    "@electric-sql/client": "catalog:",
     "@exalabs/ai-sdk": "catalog:",
     "@octokit/rest": "catalog:",
-    "@orpc/experimental-publisher": "catalog:",
     "@orpc/server": "catalog:",
     "@posthog/ai": "catalog:",
     "@react-email/components": "catalog:",

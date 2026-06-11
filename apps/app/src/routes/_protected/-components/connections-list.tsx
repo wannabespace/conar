@@ -2,7 +2,6 @@ import type { ComponentRef } from 'react'
 import type { Connection } from '~/entities/connection/sync'
 import { CONNECTION_RESOURCE_ROOT_LABEL, CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
-import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { Card } from '@conar/ui/components/card'
@@ -34,14 +33,17 @@ import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
 import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
-import { getConnectionStringToShow, lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching'
+import { authClient } from '~/lib/auth'
+import { connectionStringStorage, useConnectionStringInfo } from '~/lib/connection-string-storage'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
 function ConnectionIconWithVersion({ connection }: { connection: Connection }) {
   const isLocalProxyAvailable = useLocalProxyAvailable()
-  const { canSend } = fetchingConfig(connection, { isLocalProxyAvailable })
+  const info = useConnectionStringInfo(connection.id)
+  const { canSend } = fetchingConfig(connection, { isLocalProxyAvailable, info })
   const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery({
     ...connectionVersionQueryOptions(connection),
     enabled: canSend,
@@ -205,7 +207,8 @@ function ConnectionCard({
     .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
   const storedResourcesNames = storedResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
   const isLocalProxyAvailable = useLocalProxyAvailable()
-  const { type, canSend } = fetchingConfig(connection, { isLocalProxyAvailable })
+  const info = useConnectionStringInfo(connection.id)
+  const { type, canSend } = fetchingConfig(connection, { isLocalProxyAvailable, info })
 
   const {
     data: resources = storedResourcesNames,
@@ -221,12 +224,12 @@ function ConnectionCard({
   const [isOpen, setIsOpen] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
 
-  const connectionString = new SafeURL(connection.connectionString)
+  const defaultResourceName = info?.defaultResourceName ?? null
 
   const connectionStore = getConnectionStore(connection.id)
   const { selectedResourceName, pinnedResourcesNames } = useSubscription(connectionStore, {
     selector: state => ({
-      selectedResourceName: (state.lastOpenedResourceName || connectionString.pathname.slice(1) || resources[0] || null) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
+      selectedResourceName: (state.lastOpenedResourceName || defaultResourceName || resources[0] || null) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
       pinnedResourcesNames: state.pinnedResourcesNames,
     }),
   })
@@ -241,8 +244,10 @@ function ConnectionCard({
     },
   })
 
+  const canOpenResource = canSend || (type === 'waiting-for-password' && window.electron)
+
   useEffect(() => {
-    if (canSend && !selectedResource && !isFetching && !error && !isWaitForSyncPending) {
+    if (canOpenResource && !selectedResource && !isFetching && !error && !isWaitForSyncPending) {
       connectionsResourcesCollection.insert({
         id: v7(),
         connectionId: connection.id,
@@ -251,17 +256,22 @@ function ConnectionCard({
         updatedAt: new Date(),
       })
     }
-  }, [canSend, resolvedSelectedResourceName, selectedResource, connection.id, isFetching, error, isWaitForSyncPending])
+  }, [canOpenResource, resolvedSelectedResourceName, selectedResource, connection.id, isFetching, error, isWaitForSyncPending])
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
 
-    const connectionStringToCopy = new SafeURL(connectionString)
+    if (!connectionStringStorage.has(connection.id))
+      return
 
+    const { SafeURL } = await import('@conar/shared/utils/safe-url')
+    const fullString = await connectionStringStorage.decrypt(connection.id)
+
+    const connectionStringToCopy = new SafeURL(fullString)
     connectionStringToCopy.pathname = selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL || selectedResourceName === null ? '' : selectedResourceName
 
     copy(connectionStringToCopy.toString())
@@ -291,11 +301,11 @@ function ConnectionCard({
           `has-[:where([data-resource-link]:hover)]:bg-accent`,
         )}
       >
-        {selectedResource && canSend
+        {selectedResource && canOpenResource
           ? (
               <ConnectionResourceLink
                 resourceId={selectedResource.id}
-                className="absolute inset-0 rounded-lg"
+                className="absolute inset-0 rounded-lg cursor-default"
                 preload={false}
                 data-resource-link
               />
@@ -370,7 +380,7 @@ function ConnectionCard({
                     onClick={() => handleCopy()}
                   >
                     <span className="truncate">
-                      {getConnectionStringToShow(connection.connectionString)}
+                      {info?.displayUrl ?? ''}
                     </span>
                   </TooltipTrigger>
                   <TooltipContent className="flex items-center gap-1" side="bottom">
@@ -468,6 +478,8 @@ const sortValue = createWebStorageValue({
 })
 
 export function ConnectionsList() {
+  const { data: session } = authClient.useSession()
+  const hasUser = !!session?.user
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
   const sort = useSubscription(sortValue)
   const { data } = useLiveQuery((q) => {
@@ -491,7 +503,7 @@ export function ConnectionsList() {
     }
 
     return query
-  }, [selectedLabel, sort])
+  }, [selectedLabel, sort, hasUser])
 
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)

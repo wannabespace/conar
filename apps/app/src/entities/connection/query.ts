@@ -2,32 +2,25 @@ import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { Type } from 'arktype'
 import type { Connection, ConnectionResource } from '~/entities/connection/sync'
 import { isConnectionError } from '@conar/shared/utils/connections'
-import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Result } from 'better-result'
 import { createStore } from 'seitu'
 import { toast } from 'sonner'
+import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { dialects } from './dialects'
 import { logQuery } from './log'
-import { connectionsCollection } from './sync'
-import { getConnectionStringToShow } from './utils'
+import { connectionsCollection, connectionsResourcesCollection } from './sync'
+import { getConnectionStringToShow } from './utils/helpers'
 
 export function connectionToQueryParams(connection: Connection): QueryParams {
-  const foundConnection = connectionsCollection.get(connection.id)!
-
   return {
-    connectionString: foundConnection.connectionString,
     type: connection.type,
-    connectionId: foundConnection.id,
+    connectionId: connection.id,
   }
 }
 
 export function connectionResourceToQueryParams(connectionResource: ConnectionResource): QueryParams {
   const connection = connectionsCollection.get(connectionResource.connectionId)!
-  const newConnectionString = new SafeURL(connection.connectionString)
-  newConnectionString.pathname = connectionResource.name || ''
-
   return {
-    connectionString: newConnectionString.toString(),
     type: connection.type,
     resourceId: connectionResource.id,
     log: ({ promise, query, values }) => logQuery({ resourceId: connectionResource.id, promise, query, values }),
@@ -35,7 +28,7 @@ export function connectionResourceToQueryParams(connectionResource: ConnectionRe
 }
 
 export interface QueryParams {
-  connectionString: string
+  connectionString?: string
   type: ConnectionType
   resourceId?: string
   connectionId?: string
@@ -58,6 +51,29 @@ export const reconnectingPromises = createStore<Record<string, {
   attempt: number
 }>>({})
 
+function reconnectKey(params: QueryParams): string {
+  return params.resourceId ?? params.connectionId ?? params.connectionString ?? ''
+}
+
+function displayLabel(params: QueryParams): string {
+  if (params.connectionId) {
+    const resource = params.resourceId
+      ? connectionsResourcesCollection.get(params.resourceId)
+      : undefined
+    const info = connectionStringStorage.get(resource?.connectionId ?? params.connectionId)
+
+    if (info?.displayUrl) {
+      return info.displayUrl
+    }
+  }
+
+  if (params.connectionString) {
+    return getConnectionStringToShow(params.connectionString, { withPathname: true, withProtocol: true })
+  }
+
+  return params.resourceId ?? params.connectionId ?? ''
+}
+
 export function createQuery<T extends Type = Type<unknown>>(options: {
   type?: T
   query: {
@@ -78,10 +94,8 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
     })
     const queryFn = options.query[queryParams.type]
 
-    const connectionStringToShow = getConnectionStringToShow(queryParams.connectionString, {
-      withPathname: true,
-      withProtocol: true,
-    })
+    const label = displayLabel(queryParams)
+    const key = reconnectKey(queryParams)
     let attempt = 0
 
     const resolvers = Promise.withResolvers()
@@ -90,7 +104,7 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
 
     const result = await Result.tryPromise({
       try: async () => {
-        const retryPromise = reconnectingPromises.get()[queryParams.connectionString]
+        const retryPromise = reconnectingPromises.get()[key]
 
         if (attempt === 0 && retryPromise) {
           await retryPromise.promise
@@ -104,11 +118,11 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
           attempt += 1
 
           reconnectingPromises.set((state) => {
-            const existing = state[queryParams.connectionString]
+            const existing = state[key]
 
             return {
               ...state,
-              [queryParams.connectionString]: existing
+              [key]: existing
                 ? {
                     ...existing,
                     attempt,
@@ -137,13 +151,13 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
       resolvers.resolve()
       reconnectingPromises.set((state) => {
         const newState = { ...state }
-        delete newState[queryParams.connectionString]
+        delete newState[key]
         return newState
       })
       if (canShowToast() && attempt > 0) {
         toast.success(`Database connection successful after reconnection ${attempt} attempt${attempt > 1 ? 's' : ''}.`, {
-          id: `reconnection-success-${connectionStringToShow}`,
-          description: connectionStringToShow,
+          id: `reconnection-success-${label}`,
+          description: label,
         })
       }
 
@@ -154,15 +168,15 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
 
     if (canShowToast() && isConnectionError(result.error)) {
       toast.error('Could not connect to the database. Please check your network or database server and try again.', {
-        id: `reconnection-error-${connectionStringToShow}`,
-        description: connectionStringToShow,
+        id: `reconnection-error-${label}`,
+        description: label,
       })
     }
 
     resolvers.reject(result.error)
     reconnectingPromises.set((state) => {
       const newState = { ...state }
-      delete newState[queryParams.connectionString]
+      delete newState[key]
       return newState
     })
 

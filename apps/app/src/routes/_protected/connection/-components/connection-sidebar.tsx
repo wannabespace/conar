@@ -1,5 +1,4 @@
 import type { LinkProps } from '@tanstack/react-router'
-import { isLocalhostConnectionString } from '@conar/connection/utils'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { getOS } from '@conar/shared/utils/os'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
@@ -21,6 +20,7 @@ import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { UserButton } from '~/entities/user/components'
+import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 import { Route } from '../$resourceId'
@@ -222,7 +222,7 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
   const location = useLocation()
 
   const canOpenWeb = window.electron
-    ? connection.syncType === SyncType.Cloud && !isLocalhostConnectionString(connection.connectionString)
+    ? connection.syncType === SyncType.Cloud && !connectionStringStorage.get(connection.id)?.isLocalhost
     : false
 
   return (

@@ -1,83 +1,40 @@
-import type { ORPCOutputs } from '~/lib/orpc'
-import type { BaseTable } from '~/lib/sync'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
+import { electricCollectionOptions } from '@tanstack/electric-db-collection'
 import { BasicIndex, createCollection } from '@tanstack/react-db'
+import { type } from 'arktype'
+import { shapeOptions } from '~/lib/electric'
 import { orpc } from '~/lib/orpc'
 import { persistence } from '~/lib/sync'
 
-export interface Query extends BaseTable {
-  connectionResourceId: string
-  name: string
-  query: string
-}
+export const queriesSchema = type({
+  id: 'string',
+  createdAt: 'Date',
+  updatedAt: 'Date',
+  connectionResourceId: 'string | null',
+  name: 'string',
+  query: 'string',
+})
 
-export const queriesCollection = createCollection(persistedCollectionOptions<Query, string>({
-  id: 'queries',
-  persistence,
+export type Query = typeof queriesSchema.infer
+
+// @ts-expect-error waiting for https://github.com/TanStack/db/pull/1453
+export const queriesCollection = createCollection(persistedCollectionOptions<Query>({
+  ...electricCollectionOptions({
+    schema: queriesSchema,
+    id: 'queries',
+    shapeOptions: shapeOptions('queries'),
+    getKey: item => item.id,
+    onInsert: async ({ transaction, collection }) => {
+      const result = await orpc.queries.create.call(transaction.mutations.map(m => m.modified))
+      await collection.utils.awaitTxId(result.txid)
+    },
+    onDelete: async ({ transaction, collection }) => {
+      const result = await orpc.queries.remove.call(transaction.mutations.map(m => ({ id: m.key })))
+      await collection.utils.awaitTxId(result.txid)
+    },
+  }),
   autoIndex: 'eager',
   defaultIndexType: BasicIndex,
+  persistence,
   schemaVersion: 1,
-  getKey: item => item.id,
-  sync: {
-    sync: ({ begin, commit, write, collection, markReady }) => {
-      const abortController = new AbortController()
-
-      const writeItem = async (item: ORPCOutputs['queries']['sync'][number]) => {
-        if (item.type === 'delete') {
-          write({
-            type: item.type,
-            key: item.key,
-          })
-        }
-        else if (item.value?.connectionResourceId) {
-          write({
-            type: item.type,
-            value: {
-              ...item.value,
-              connectionResourceId: item.value.connectionResourceId!,
-            },
-          })
-        }
-      }
-
-      orpc.queries.events.call({}, {
-        signal: abortController.signal,
-      })
-        .then(async (events) => {
-          markReady()
-          for await (const item of events) {
-            begin()
-            writeItem(item)
-            commit()
-          }
-        })
-        .catch(() => {
-          markReady()
-        })
-
-      collection.toArrayWhenReady().then(async (rows) => {
-        orpc.queries.sync.call(
-          rows,
-          { signal: abortController.signal },
-        )
-          .then(async (sync) => {
-            begin()
-            for (const item of sync) {
-              writeItem(item)
-            }
-            commit()
-          })
-      })
-
-      return () => {
-        abortController.abort()
-      }
-    },
-  },
-  onInsert: async ({ transaction }) => {
-    await orpc.queries.create.call(transaction.mutations.map(m => m.modified))
-  },
-  onDelete: async ({ transaction }) => {
-    await orpc.queries.remove.call(transaction.mutations.map(m => ({ id: m.key })))
-  },
 }))

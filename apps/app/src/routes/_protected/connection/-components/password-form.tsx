@@ -1,4 +1,4 @@
-import type { Connection, ConnectionMutationMetadata, ConnectionResource } from '~/entities/connection/sync'
+import type { Connection, ConnectionResource } from '~/entities/connection/sync'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
@@ -10,37 +10,27 @@ import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
-import { connectionsCollection } from '~/entities/connection/sync'
+import { connectionStringStorage } from '~/lib/connection-string-storage'
 
 export function PasswordForm({ connection, connectionResource }: { connection: Connection, connectionResource: ConnectionResource }) {
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
-  const url = new SafeURL(connection.connectionString)
-  url.password = password
-  url.pathname = connectionResource.name || ''
-  const newConnectionString = url.toString()
-
   const { mutate: savePassword, status } = useMutation({
     mutationFn: async (password: string) => {
+      const baseString = await connectionStringStorage.decrypt(connection.id)
+      const url = new SafeURL(baseString)
+      url.password = password
+      url.pathname = connectionResource.name || ''
+
       await testConnectionQuery.run({
         type: connection.type,
-        connectionString: newConnectionString,
+        connectionString: url.toString(),
         resourceId: connectionResource.id,
       })
-      connectionsCollection.update(connection.id, {
-        metadata: {
-          cloudSync: false,
-        } satisfies ConnectionMutationMetadata,
-      }, (draft) => {
-        const url = new SafeURL(draft.connectionString)
 
-        url.password = password
-
-        draft.connectionString = url.toString()
-        draft.isPasswordPopulated = true
-      })
+      await connectionStringStorage.set(connection.id, url.toString())
     },
     onSuccess: () => {
       router.invalidate({ filter: r => r.routeId === '/_protected/connection/$resourceId' })

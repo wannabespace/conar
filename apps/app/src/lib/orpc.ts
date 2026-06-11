@@ -1,7 +1,6 @@
 import type * as apiOrpc from '@conar/api/orpc/routers'
 import type * as proxyOrpc from '@conar/proxy/orpc/routers'
 import type * as queryProxy from '@conar/query-proxy'
-import type { InferRouterInputs, InferRouterOutputs } from '@orpc/server'
 import { isConnectionError } from '@conar/shared/utils/connections'
 import { createORPCClient, onError, ORPCError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
@@ -11,16 +10,13 @@ import { handleError } from '../utils/error'
 import { apiUrl, proxyUrl } from '../utils/utils'
 import { bearerToken } from './auth'
 
-const clientId = crypto.randomUUID()
-
 export const orpc = createTanstackQueryUtils(createORPCClient(new RPCLink({
   url: `${apiUrl}/rpc`,
   headers: async () => {
     const token = bearerToken.get()
 
     return {
-      'Authorization': token ? `Bearer ${token}` : undefined,
-      'x-client-id': clientId,
+      Authorization: token ? `Bearer ${token}` : undefined,
       ...(window.electron
         ? {
             'x-desktop': 'true',
@@ -112,6 +108,3 @@ export const createProxyClient = memoize((url: string): queryProxy.ORPCRouter =>
     },
   }))
 })
-
-export type ORPCInputs = InferRouterInputs<typeof apiOrpc.router>
-export type ORPCOutputs = InferRouterOutputs<typeof apiOrpc.router>

@@ -1,36 +1,37 @@
 import { db } from '@conar/db'
-import { connectionsResources, connectionsResourcesInsertSchema } from '@conar/db/schema'
+import { connections, connectionsResources, connectionsResourcesInsertSchema } from '@conar/db/schema'
 import { ORPCError } from '@orpc/server'
+import { type } from 'arktype'
+import { and, eq, inArray } from 'drizzle-orm'
+import { generateTxId } from '~/lib/electric'
 import { authMiddleware, orpc } from '~/orpc'
-import { publisher } from './events'
+
+const schema = connectionsResourcesInsertSchema
 
 export const create = orpc
   .use(authMiddleware)
-  .input(connectionsResourcesInsertSchema)
+  .input(type.or(
+    schema,
+    schema.array(),
+  ).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
-    const connection = await db.query.connections.findFirst({
-      where: {
-        userId: {
-          eq: context.user.id,
-        },
-        id: {
-          eq: input.connectionId,
-        },
-      },
-    })
+    const connectionIds = [...new Set(input.map(item => item.connectionId))]
+    const foundConnections = await db.select({ id: connections.id })
+      .from(connections)
+      .where(and(inArray(connections.id, connectionIds), eq(connections.userId, context.user.id)))
 
-    if (!connection) {
+    if (foundConnections.length !== connectionIds.length) {
       throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
     }
 
-    const [resource] = await db.insert(connectionsResources).values(input).onConflictDoUpdate({
-      target: [connectionsResources.connectionId, connectionsResources.name],
-      set: input,
-    }).returning()
+    return db.transaction(async (tx) => {
+      for (const item of input) {
+        await tx.insert(connectionsResources).values(item).onConflictDoUpdate({
+          target: [connectionsResources.connectionId, connectionsResources.name],
+          set: item,
+        })
+      }
 
-    publisher.publish('event', {
-      type: 'insert',
-      value: resource!,
-      clientId: context.clientId,
+      return { txid: await generateTxId(tx) }
     })
   })

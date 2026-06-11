@@ -12,3 +12,9 @@ export function isLocalhostConnectionString(connectionString: string): boolean {
     || LOCALHOST_IPV4.test(hostname)
   )
 }
+
+export function removePasswordFromConnectionString(connectionString: string): string {
+  const url = new SafeURL(connectionString)
+  url.password = ''
+  return url.toString()
+}

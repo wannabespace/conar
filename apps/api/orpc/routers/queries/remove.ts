@@ -1,9 +1,10 @@
 import { db } from '@conar/db'
 import { queries } from '@conar/db/schema/queries'
+import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq, inArray } from 'drizzle-orm'
+import { generateTxId } from '~/lib/electric'
 import { authMiddleware, orpc } from '~/orpc'
-import { publisher } from './events'
 
 const input = type({
   id: 'string.uuid.v7',
@@ -14,24 +15,19 @@ export const remove = orpc
   .input(type.or(input, input.array()).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
     if (input.length === 0) {
-      return
+      throw new ORPCError('BAD_REQUEST', { message: 'No queries to remove' })
     }
 
-    await db
-      .delete(queries)
-      .where(
-        and(
-          eq(queries.userId, context.session.userId),
-          inArray(queries.id, input.map(item => item.id)),
-        ),
-      )
-      .returning()
+    return db.transaction(async (tx) => {
+      await tx
+        .delete(queries)
+        .where(
+          and(
+            eq(queries.userId, context.session.userId),
+            inArray(queries.id, input.map(item => item.id)),
+          ),
+        )
 
-    for (const item of input) {
-      publisher.publish('event', {
-        type: 'delete',
-        key: item.id,
-        clientId: context.clientId,
-      })
-    }
+      return { txid: await generateTxId(tx) }
+    })
   })

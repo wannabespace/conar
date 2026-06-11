@@ -1,3 +1,4 @@
+import { isLocalhostConnectionString } from '@conar/connection/utils'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { tryCatch } from '@conar/shared/utils/helpers'
@@ -22,6 +23,7 @@ import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching'
+import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { generateRandomName } from '~/utils/utils'
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
@@ -63,15 +65,15 @@ function CreateConnectionPage() {
       const id = v7()
       const url = new SafeURL(data.connectionString.trim())
 
+      await connectionStringStorage.set(id, data.connectionString.trim())
+
       const connectionTx = connectionsCollection.insert({
         id,
         name: data.name,
         type: data.type,
-        connectionString: data.connectionString,
         label: data.label || null,
         color: data.color || null,
-        isPasswordExists: !!url.password,
-        isPasswordPopulated: !!url.password,
+        passwordExists: !!url.password,
         syncType: data.syncType,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -162,12 +164,14 @@ function CreateConnectionPage() {
 
   const isLocalProxyAvailable = useLocalProxyAvailable()
   const hasPassword = !!url?.password
+  const isLocalhost = tryCatch(() => isLocalhostConnectionString(connectionString)).data === true
   const { canSend } = fetchingConfig({
     syncType,
-    connectionString,
-    isPasswordExists: hasPassword,
-    isPasswordPopulated: hasPassword,
-  }, { isLocalProxyAvailable })
+    passwordExists: hasPassword,
+  }, {
+    isLocalProxyAvailable,
+    info: { isLocalhost, isPasswordPopulated: hasPassword },
+  })
   const canSaveInCloud = !!url && canSend
 
   return (
