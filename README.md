@@ -86,7 +86,7 @@ Conar is an AI-powered open-source project that simplifies database interactions
   pnpm run dev
   ```
 
-  To run a single app without Turbo, `cd` into its directory and run `pnpm run dev:app` (or `dev:server`, `dev:main`, `dev:proxy`).
+  To run a single app without Turbo, `cd` into its directory (e.g. `apps/api`) and run `pnpm run dev`.
 
 ## Testing
 
