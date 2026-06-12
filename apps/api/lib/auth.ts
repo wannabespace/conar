@@ -4,7 +4,7 @@ import { db } from '@conar/db'
 import { users } from '@conar/db/schema'
 import * as schema from '@conar/db/schema'
 import { infisical } from '@conar/infisical'
-import { API_KEY_PERMISSIONS, AUTH_COOKIE_PREFIX, PORTS } from '@conar/shared/constants'
+import { API_KEY_PERMISSIONS, AUTH_COOKIE_PREFIX } from '@conar/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { createAuthMiddleware } from 'better-auth/api'
@@ -15,8 +15,6 @@ import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
 import { redisMemoize } from './redis'
-
-const mainUrl = new URL(env.MAIN_URL)
 
 export const auth = betterAuth({
   appName: 'Conar',
@@ -186,17 +184,15 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [
-    env.MAIN_URL,
-    `${mainUrl.protocol}//*.${mainUrl.host}`,
+    'https://conar.app',
+    'https://*.conar.app',
     'file://',
-    ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`, `http://localhost:${PORTS.DEV.APP}`] : []),
-    ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`, `http://localhost:${PORTS.TEST.APP}`] : []),
   ],
   advanced: {
     cookiePrefix: AUTH_COOKIE_PREFIX,
     crossSubDomainCookies: {
-      enabled: nodeEnv === 'production',
-      domain: mainUrl.host,
+      enabled: true,
+      domain: 'conar.app',
     },
     database: {
       generateId: 'uuid',

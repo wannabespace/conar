@@ -73,10 +73,20 @@ Conar is an AI-powered open-source project that simplifies database interactions
 
 - **🚀 Run the Project**
 
-  This will start all development servers using Turbo.
+  This starts all development servers through [portless](https://portless.sh) (HTTPS on `.local.conar.app` domains):
+
+  | Service | URL |
+  | --- | --- |
+  | API | https://api.local.conar.app |
+  | App | https://app.local.conar.app |
+  | Main | https://main.local.conar.app |
+  | Proxy | https://proxy.local.conar.app |
+
   ```bash
   pnpm run dev
   ```
+
+  To run a single app without Turbo, `cd` into its directory (e.g. `apps/api`) and run `pnpm run dev`.
 
 ## Testing
 

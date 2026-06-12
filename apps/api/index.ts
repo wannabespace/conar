@@ -5,7 +5,6 @@ import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
 import { xai } from '@ai-sdk/xai'
-import { PORTS } from '@conar/shared/constants'
 import { ORPCError, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { generateText } from 'ai'
@@ -65,11 +64,9 @@ const app = new Hono<{
   .use(cors({
     origin(origin) {
       const allowedOrigins = [
-        env.MAIN_URL,
-        ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`, `http://localhost:${PORTS.DEV.APP}`, `http://localhost:${PORTS.DEV.PROXY}`] : []),
-        ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`, `http://localhost:${PORTS.TEST.APP}`, `http://localhost:${PORTS.TEST.PROXY}`] : []),
+        'https://conar.app',
       ]
-      return origin.endsWith(`.${new URL(env.MAIN_URL).host}`) || allowedOrigins.includes(origin) ? origin : null
+      return origin.endsWith('.conar.app') || allowedOrigins.includes(origin) ? origin : null
     },
     credentials: true,
   }))
@@ -237,7 +234,12 @@ const app = new Hono<{
 
 export default {
   fetch: app.fetch,
-  port: process.env.PORT
-    ? Number(process.env.PORT)
-    : nodeEnv === 'test' ? PORTS.TEST.API : PORTS.DEV.API,
+  port: Number(process.env.PORT || 3000),
+  // Electric live shape requests (`live=true`) long-poll: Electric holds the
+  // connection open (~20 s) until new data arrives or the poll window elapses.
+  // Bun's default 30 s idle timeout can close these mid-poll, so portless sees
+  // a reset and serves its 502 page. Raise the ceiling above the poll window
+  // (255 s is Bun's max) so legitimate polls survive while truly stuck sockets
+  // still time out.
+  idleTimeout: 255,
 }
