@@ -1,16 +1,17 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Connection, ConnectionResource } from '~/entities/connection/sync'
 import { SyncType } from '@conar/shared/enums/sync-type'
-import { connectionStringStorage } from '~/lib/connection-string-storage'
+import { useSubscription } from 'seitu/react'
+import { connectionStringStorage, useConnectionString } from '~/lib/connection-string-storage'
 import { queryClient } from '~/main'
-import { isLocalProxyAvailable } from '../proxy'
+import { isLocalProxyAvailable, useLocalProxyAvailable } from '../proxy'
 import { resourceRowsQueryInfiniteOptions } from '../queries'
 import { resourceTableColumnsQueryOptions } from '../queries/columns'
 import { resourceConstraintsQueryOptions } from '../queries/constraints'
 import { resourceEnumsQueryOptions } from '../queries/enums'
 import { resourceTablesAndSchemasQueryOptions } from '../queries/tables-and-schemas'
 import { resourceTableTotalQueryOptions } from '../queries/total'
-import { getConnectionResourceStore } from '../store'
+import { getConnectionResourceStore, getConnectionStore } from '../store'
 import { connectionsCollection } from '../sync'
 
 export async function prefetchConnectionResourceCore(connectionResource: ConnectionResource) {
@@ -84,4 +85,17 @@ export function fetchingConfig(connection: FetchingConnection, options?: {
   }
 
   return { type: 'cloud-proxy', canSend: true }
+}
+
+export function useFetchingConfig(connection: Pick<Connection, 'id' | 'syncType' | 'passwordExists'>) {
+  const isLocalProxyAvailable = useLocalProxyAvailable()
+  const connectionString = useConnectionString(connection.id)
+  const proxy = useSubscription(getConnectionStore(connection.id), { selector: s => s.proxy })
+
+  return fetchingConfig(connection, {
+    isLocalProxyAvailable,
+    isPasswordPopulated: connectionString?.metadata.isPasswordPopulated,
+    isLocalhost: connectionString?.metadata.isLocalhost,
+    proxy,
+  })
 }

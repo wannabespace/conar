@@ -20,7 +20,7 @@ import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/componen
 import { useLocalProxyAvailable } from '~/entities/connection/proxy'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 import { getConnectionStore } from '~/entities/connection/store'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
+import { connectionsResourcesCollection, createConnectionWithResource } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching'
 import { connectionStringStorage } from '~/lib/connection-string-storage'
@@ -67,25 +67,31 @@ function CreateConnectionPage() {
 
       await connectionStringStorage.set(id, data.connectionString.trim())
 
-      const connectionTx = connectionsCollection.insert({
-        id,
-        name: data.name,
-        type: data.type,
-        label: data.label || null,
-        color: data.color || null,
-        passwordExists: !!url.password,
-        syncType: data.syncType,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      const resource = url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
+      const resourceId = v7()
+
+      const tx = createConnectionWithResource({
+        connection: {
+          id,
+          name: data.name,
+          type: data.type,
+          label: data.label || null,
+          color: data.color || null,
+          passwordExists: !!url.password,
+          syncType: data.syncType,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        resource: {
+          id: resourceId,
+          connectionId: id,
+          name: resource,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       })
 
-      if (!window.electron) {
-        await connectionTx.isPersisted.promise
-      }
-
       toast.success('Connection created successfully 🎉')
-
-      const resource = url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
 
       if (resource) {
         getConnectionStore(id).set(state => ({
@@ -95,18 +101,8 @@ function CreateConnectionPage() {
         }))
       }
 
-      const resourceId = v7()
-
-      const resourceTx = connectionsResourcesCollection.insert({
-        id: resourceId,
-        connectionId: id,
-        name: resource,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-
       if (!window.electron) {
-        await resourceTx.isPersisted.promise
+        await tx.isPersisted.promise
       }
 
       prefetchConnectionResourceCore(connectionsResourcesCollection.get(resourceId)!)

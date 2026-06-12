@@ -85,7 +85,7 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/conar?sslmode=disable
       ELECTRIC_SECRET: devfe1e207b8cfb185b406438a42adev
-      ELECTRIC_FEATURE_FLAGS: allow_subqueries
+      ELECTRIC_FEATURE_FLAGS: allow_subqueries,tagged_subqueries
     ports:
       - '3100:3000'
     volumes: ['electric_data:/var/lib/electric']

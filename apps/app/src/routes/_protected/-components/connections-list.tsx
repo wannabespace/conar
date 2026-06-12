@@ -30,12 +30,12 @@ import { createWebStorageValue } from 'seitu/web'
 import { v7 } from 'uuid'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
-import { useFetchingConfig } from '~/entities/connection/hooks'
 import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
 import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
+import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { authClient } from '~/lib/auth'
 import { connectionStringStorage, useConnectionString } from '~/lib/connection-string-storage'
 import { LastOpenedResources } from './last-opened-resources'
@@ -246,6 +246,7 @@ function ConnectionCard({
 
   useEffect(() => {
     if (canOpenResource && !selectedResource && !isFetching && !error && !isWaitForSyncPending) {
+      console.log(canOpenResource, !selectedResource, !isFetching, !error, !isWaitForSyncPending)
       connectionsResourcesCollection.insert({
         id: v7(),
         connectionId: connection.id,

@@ -3,7 +3,7 @@ import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import { electricCollectionOptions } from '@tanstack/electric-db-collection'
-import { BasicIndex, createCollection } from '@tanstack/react-db'
+import { BasicIndex, createCollection, createOptimisticAction } from '@tanstack/react-db'
 import { type } from 'arktype'
 import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { shapeOptions } from '~/lib/electric'
@@ -24,7 +24,7 @@ export const connectionsSchema = type({
 
 export type Connection = typeof connectionsSchema.infer
 
-async function prepareConnectionStringToCloud(connectionString: string, syncType: SyncType) {
+function prepareConnectionStringToCloud(connectionString: string, syncType: SyncType) {
   const url = new SafeURL(connectionString.trim())
   if (syncType !== SyncType.Cloud) {
     url.password = ''
@@ -40,15 +40,7 @@ export const connectionsCollection = createCollection(persistedCollectionOptions
     shapeOptions: shapeOptions('connections'),
     getKey: item => item.id,
     onInsert: async ({ transaction }) => {
-      return orpc.connections.create.call(await Promise.all(transaction.mutations.map(async (m) => {
-        const connectionString = await connectionStringStorage.decrypt(m.modified.id)
-
-        return {
-          ...m.modified,
-          isPasswordExists: m.modified.passwordExists,
-          connectionString: await prepareConnectionStringToCloud(connectionString, m.modified.syncType),
-        }
-      })))
+      return orpc.connections.create.call(await Promise.all(transaction.mutations.map(m => connectionToCloudInput(m.modified))))
     },
     onUpdate: async ({ transaction }) => {
       const result = await Promise.all(transaction.mutations.map(m => orpc.connections.update.call({
@@ -66,6 +58,16 @@ export const connectionsCollection = createCollection(persistedCollectionOptions
   persistence,
   schemaVersion: 1,
 }))
+
+async function connectionToCloudInput(connection: Connection) {
+  const connectionString = await connectionStringStorage.decrypt(connection.id)
+
+  return {
+    ...connection,
+    isPasswordExists: connection.passwordExists,
+    connectionString: prepareConnectionStringToCloud(connectionString, connection.syncType),
+  }
+}
 
 export const connectionsResourcesSchema = type({
   id: 'string',
@@ -101,3 +103,22 @@ export const connectionsResourcesCollection = createCollection(persistedCollecti
   persistence,
   schemaVersion: 1,
 }))
+
+export const createConnectionWithResource = createOptimisticAction<{
+  connection: Connection
+  resource: ConnectionResource
+}>({
+  onMutate: ({ connection, resource }) => {
+    connectionsCollection.insert(connection)
+    connectionsResourcesCollection.insert(resource)
+  },
+  mutationFn: async ({ connection, resource }) => {
+    const { txid: connectionTxid } = await orpc.connections.create.call(await connectionToCloudInput(connection))
+    const { txid: resourceTxid } = await orpc.connectionsResources.create.call(resource)
+
+    await Promise.all([
+      connectionsCollection.utils.awaitTxId(connectionTxid),
+      connectionsResourcesCollection.utils.awaitTxId(resourceTxid),
+    ])
+  },
+})
