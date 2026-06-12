@@ -1,9 +1,9 @@
 {
   "name": "@conar/app",
   "type": "module",
-  "private": true,
+  "portless": "app.local.conar",
   "scripts": {
-    "dev": "vite dev",
+    "dev": "portless run vite dev",
     "build": "vite build",
     "build:desktop": "vite build --mode desktop",
     "start": "serve -s dist -l $PORT",

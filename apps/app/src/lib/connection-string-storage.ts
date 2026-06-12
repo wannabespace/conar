@@ -1,6 +1,7 @@
 import { isLocalhostConnectionString } from '@conar/connection/utils'
+import { base64ToBytes, bytesToBase64 } from '@conar/shared/utils/base64'
+import { decryptWithKey, encryptWithKey } from '@conar/shared/utils/crypto-web'
 import { SafeURL } from '@conar/shared/utils/safe-url'
-import { base64ToBytes, bytesToBase64, decryptWithKey, encryptWithKey } from '@conar/shared/utils/web-crypto'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
 import { useSubscription } from 'seitu/react'

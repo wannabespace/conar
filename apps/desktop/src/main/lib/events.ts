@@ -5,7 +5,7 @@ import * as clickhouse from '@conar/connection/queries/dialects/clickhouse'
 import * as mssql from '@conar/connection/queries/dialects/mssql'
 import * as mysql from '@conar/connection/queries/dialects/mysql'
 import * as pg from '@conar/connection/queries/dialects/pg'
-import { decrypt, encrypt } from '@conar/shared/utils/encryption'
+import { decrypt, encrypt } from '@conar/shared/utils/crypto-node'
 import { app, ipcMain, safeStorage } from 'electron'
 import { autoUpdater } from '../main'
 

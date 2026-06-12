@@ -25,13 +25,17 @@ export function fromBase64(base64: string) {
   return new TextDecoder().decode(bytes)
 }
 
-const b64UrlEncodeRegex = /\+/g
-const b64UrlEncodeSlashRegex = /\//g
-const b64UrlEncodeEqualRegex = /=+$/
+export function bytesToBase64(bytes: Uint8Array) {
+  return btoa(String.fromCharCode(...bytes))
+}
+
+export function base64ToBytes(base64: string) {
+  return Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+}
 
 export function b64UrlEncode(buf: Uint8Array) {
   return toBase64(String.fromCharCode(...buf))
-    .replace(b64UrlEncodeRegex, '-')
-    .replace(b64UrlEncodeSlashRegex, '_')
-    .replace(b64UrlEncodeEqualRegex, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
 }

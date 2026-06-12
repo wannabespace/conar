@@ -1,4 +1,4 @@
-import { decrypt, encrypt } from '@conar/shared/utils/encryption'
+import { decrypt, encrypt } from '@conar/shared/utils/crypto-node'
 import { type } from 'arktype'
 import { authMiddleware, orpc } from '~/orpc'
 

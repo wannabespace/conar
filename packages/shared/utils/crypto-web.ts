@@ -1,18 +1,6 @@
-// Browser/renderer-side encryption primitives built on Web Crypto (AES-GCM).
-// Unlike `./encryption` (Node `node:crypto`, secret-derived key for server-side
-// at-rest encryption), these operate on an already-managed `CryptoKey`, so the
-// caller owns the key lifecycle (e.g. a non-extractable key in IndexedDB or one
-// wrapped by the OS keychain).
+import { base64ToBytes, bytesToBase64 } from './base64'
 
 const IV_LENGTH = 12
-
-export function bytesToBase64(bytes: Uint8Array) {
-  return btoa(String.fromCharCode(...bytes))
-}
-
-export function base64ToBytes(base64: string) {
-  return Uint8Array.from(atob(base64), c => c.charCodeAt(0))
-}
 
 export async function encryptWithKey(key: CryptoKey, text: string) {
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH))

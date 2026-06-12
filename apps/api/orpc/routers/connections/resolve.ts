@@ -1,5 +1,5 @@
 import { db } from '@conar/db'
-import { decrypt } from '@conar/shared/utils/encryption'
+import { decrypt } from '@conar/shared/utils/crypto-node'
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { authMiddleware, orpc } from '~/orpc'
