@@ -2,6 +2,7 @@ import type { ComponentRef } from 'react'
 import type { Connection } from '~/entities/connection/sync'
 import { CONNECTION_RESOURCE_ROOT_LABEL, CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
+import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
 import { Card } from '@conar/ui/components/card'
@@ -11,6 +12,7 @@ import { FrameMotion } from '@conar/ui/components/frame.motion'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Separator } from '@conar/ui/components/separator'
+import { Skeleton } from '@conar/ui/components/skeleton'
 import { Spinner } from '@conar/ui/components/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -28,22 +30,19 @@ import { createWebStorageValue } from 'seitu/web'
 import { v7 } from 'uuid'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
-import { useLocalProxyAvailable } from '~/entities/connection/proxy'
+import { useFetchingConfig } from '~/entities/connection/hooks'
 import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
 import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
-import { fetchingConfig } from '~/entities/connection/utils/fetching'
 import { authClient } from '~/lib/auth'
 import { connectionStringStorage, useConnectionStringInfo } from '~/lib/connection-string-storage'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
 function ConnectionIconWithVersion({ connection }: { connection: Connection }) {
-  const isLocalProxyAvailable = useLocalProxyAvailable()
-  const info = useConnectionStringInfo(connection.id)
-  const { canSend } = fetchingConfig(connection, { isLocalProxyAvailable, info })
+  const { canSend } = useFetchingConfig(connection)
   const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery({
     ...connectionVersionQueryOptions(connection),
     enabled: canSend,
@@ -206,9 +205,8 @@ function ConnectionCard({
     .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
     .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
   const storedResourcesNames = storedResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
-  const isLocalProxyAvailable = useLocalProxyAvailable()
   const info = useConnectionStringInfo(connection.id)
-  const { type, canSend } = fetchingConfig(connection, { isLocalProxyAvailable, info })
+  const { type, canSend } = useFetchingConfig(connection)
 
   const {
     data: resources = storedResourcesNames,
@@ -224,7 +222,7 @@ function ConnectionCard({
   const [isOpen, setIsOpen] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
 
-  const defaultResourceName = info?.defaultResourceName ?? null
+  const defaultResourceName = info?.metadata.defaultResourceName ?? null
 
   const connectionStore = getConnectionStore(connection.id)
   const { selectedResourceName, pinnedResourcesNames } = useSubscription(connectionStore, {
@@ -268,7 +266,6 @@ function ConnectionCard({
     if (!connectionStringStorage.has(connection.id))
       return
 
-    const { SafeURL } = await import('@conar/shared/utils/safe-url')
     const fullString = await connectionStringStorage.decrypt(connection.id)
 
     const connectionStringToCopy = new SafeURL(fullString)
@@ -305,7 +302,7 @@ function ConnectionCard({
           ? (
               <ConnectionResourceLink
                 resourceId={selectedResource.id}
-                className="absolute inset-0 rounded-lg cursor-default"
+                className="absolute inset-0 cursor-default rounded-lg"
                 preload={false}
                 data-resource-link
               />
@@ -344,7 +341,7 @@ function ConnectionCard({
                       />
                     </TooltipTrigger>
                     <TooltipContent className="pointer-events-auto max-w-xs">
-                      {type === 'waiting-for-password'
+                      {type === 'waiting-for-password' && window.electron
                         ? 'Filled password is required to query this connection.'
                         : 'You cannot reach this connection from the web app. Run `conar proxy` or open this connection in the desktop app.'}
                     </TooltipContent>
@@ -379,9 +376,9 @@ function ConnectionCard({
                     "
                     onClick={() => handleCopy()}
                   >
-                    <span className="truncate">
-                      {info?.displayUrl ?? ''}
-                    </span>
+                    {info
+                      ? <span className="truncate">{info.metadata.displayUrl}</span>
+                      : <Skeleton className="h-3 w-40" />}
                   </TooltipTrigger>
                   <TooltipContent className="flex items-center gap-1" side="bottom">
                     {isCopied ? 'Connection string copied!' : 'Copy connection string'}

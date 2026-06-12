@@ -3,9 +3,8 @@ import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import { electricCollectionOptions } from '@tanstack/electric-db-collection'
-import { BasicIndex, createCollection, createEffect } from '@tanstack/react-db'
+import { BasicIndex, createCollection } from '@tanstack/react-db'
 import { type } from 'arktype'
-import { isSignedIn } from '~/lib/auth'
 import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { shapeOptions } from '~/lib/electric'
 import { orpc } from '~/lib/orpc'
@@ -69,29 +68,6 @@ export const connectionsCollection = createCollection(persistedCollectionOptions
   persistence,
   schemaVersion: 1,
 }))
-
-// Connections sync without their credentials (those never leave the device unless
-// the user opts into cloud sync). Whenever a connection enters the collection we
-// resolve and cache its connection string locally; we re-check auth on each enter
-// instead of tying this to a React lifecycle.
-createEffect<Connection>({
-  query: q => q.from({ connections: connectionsCollection }),
-  skipInitial: false,
-  onEnter: async ({ value }) => {
-    if (!navigator.onLine || connectionStringStorage.has(value.id) || !(await isSignedIn())) {
-      return
-    }
-
-    try {
-      const { connectionString } = await orpc.connections.resolve.call({ id: value.id })
-      await connectionStringStorage.set(value.id, connectionString)
-    }
-    catch {}
-  },
-  onExit: ({ value }) => {
-    connectionStringStorage.remove(value.id)
-  },
-})
 
 export const connectionsResourcesSchema = type({
   id: 'string',

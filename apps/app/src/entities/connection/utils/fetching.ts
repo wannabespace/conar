@@ -17,7 +17,7 @@ export async function prefetchConnectionResourceCore(connectionResource: Connect
   const connection = connectionsCollection.get(connectionResource.connectionId)!
   const info = connectionStringStorage.get(connection.id)
 
-  if (connection.passwordExists && !info?.isPasswordPopulated) {
+  if (connection.passwordExists && !info?.metadata?.isPasswordPopulated) {
     return
   }
 
@@ -27,11 +27,6 @@ export async function prefetchConnectionResourceCore(connectionResource: Connect
     queryClient.prefetchQuery(resourceEnumsQueryOptions({ connectionResource })),
     queryClient.prefetchQuery(resourceConstraintsQueryOptions({ connectionResource })),
   ])
-}
-
-interface FetchingConnectionInfo {
-  isPasswordPopulated?: boolean
-  isLocalhost?: boolean
 }
 
 export async function prefetchConnectionResourceTableCore({ connectionResource, schema, table, query }: {
@@ -55,15 +50,15 @@ type FetchingConnection = Pick<Connection, 'syncType' | 'passwordExists'> & { id
 
 export function fetchingConfig(connection: FetchingConnection, options?: {
   isLocalProxyAvailable?: boolean
+  isPasswordPopulated?: boolean
+  isLocalhost?: boolean
   proxy?: { enabled: boolean, url: string | null }
-  info?: FetchingConnectionInfo
 }): {
   type: 'cloud-proxy' | 'local' | 'proxy' | 'waiting-for-password'
   canSend: boolean
 } {
-  const info = options?.info ?? (connection.id ? connectionStringStorage.get(connection.id) : undefined)
-  const isPasswordPopulated = info?.isPasswordPopulated ?? false
-  const isLocalhost = info?.isLocalhost ?? false
+  const isPasswordPopulated = options?.isPasswordPopulated ?? false
+  const isLocalhost = options?.isLocalhost ?? false
 
   if (connection.passwordExists && !isPasswordPopulated) {
     return { type: 'waiting-for-password', canSend: false }

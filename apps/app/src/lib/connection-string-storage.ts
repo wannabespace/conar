@@ -15,15 +15,19 @@ function importAesKey(raw: Uint8Array<ArrayBuffer>) {
 
 const storage = createIndexedDbStorage({
   databaseName: 'conar-secure-storage',
+  storeName: 'connections-strings',
   schemas: {
+    // Browser uses CryptoKey, Electron uses string
     encryptionKey: type.instanceOf(CryptoKey).or('string').or('null'),
     connectionStrings: type({
       '[string]': {
         encrypted: 'string',
-        isPasswordPopulated: 'boolean',
-        isLocalhost: 'boolean',
-        displayUrl: 'string',
-        defaultResourceName: 'string | null',
+        metadata: {
+          isPasswordPopulated: 'boolean',
+          isLocalhost: 'boolean',
+          displayUrl: 'string',
+          defaultResourceName: 'string | null',
+        },
       },
     }),
   },
@@ -33,17 +37,10 @@ const storage = createIndexedDbStorage({
   },
 })
 
-// When the stored key becomes unrecoverable (safe storage no longer available,
-// or its keyring backend changed), the encrypted data is lost too, so drop both
-// and start fresh instead of hard-failing.
 function resetEncryptionKey() {
   return storage.set({ encryptionKey: null, connectionStrings: {} })
 }
 
-// Data is always encrypted/decrypted with Web Crypto (AES-GCM). The only
-// platform-specific piece is where the AES key lives at rest: on desktop the
-// key is wrapped with Electron safeStorage (OS keychain), on web it is kept as
-// a non-extractable CryptoKey in IndexedDB.
 const getEncryptionKey = memoize(async (): Promise<CryptoKey> => {
   await storage.ready
 
@@ -69,8 +66,7 @@ const getEncryptionKey = memoize(async (): Promise<CryptoKey> => {
     return importAesKey(raw)
   }
 
-  // No safe storage: a leftover wrapped (string) key from a desktop session
-  // can no longer be unwrapped here.
+  // If safe storage is not available anymore
   if (typeof stored === 'string')
     await resetEncryptionKey()
 
@@ -89,18 +85,14 @@ async function decryptConnectionString(encryptedConnectionString: string) {
 
 export const connectionStringStorage = {
   ready: storage.ready,
-
   has: (id: string) => id in storage.get().connectionStrings,
-
   get: (id: string) => storage.get().connectionStrings[id],
-
   decrypt: (id: string): Promise<string> => {
     const record = storage.get().connectionStrings[id]
     if (!record)
       throw new Error(`No connection string found for connection "${id}"`)
     return decryptConnectionString(record.encrypted)
   },
-
   set: async (id: string, connectionString: string) => {
     const url = new SafeURL(connectionString)
     const encrypted = await encryptConnectionString(connectionString)
@@ -109,15 +101,16 @@ export const connectionStringStorage = {
         ...prev.connectionStrings,
         [id]: {
           encrypted,
-          isPasswordPopulated: !!url.password,
-          isLocalhost: isLocalhostConnectionString(connectionString),
-          displayUrl: `${url.hostname}${url.port ? `:${url.port}` : ''}`,
-          defaultResourceName: url.pathname && url.pathname !== '/' ? url.pathname.slice(1) : null,
+          metadata: {
+            isPasswordPopulated: !!url.password,
+            isLocalhost: isLocalhostConnectionString(connectionString),
+            displayUrl: `${url.hostname}${url.port ? `:${url.port}` : ''}`,
+            defaultResourceName: url.pathname && url.pathname !== '/' ? url.pathname.slice(1) : null,
+          },
         },
       },
     }))
   },
-
   remove: async (id: string) => {
     await storage.set((prev) => {
       const connectionStrings = { ...prev.connectionStrings }
@@ -125,13 +118,9 @@ export const connectionStringStorage = {
       return { connectionStrings }
     })
   },
-
   clear: () => storage.set({ connectionStrings: {} }),
 }
 
-// Reactive read of a connection's stored info. Unlike `get`, this re-renders the
-// component whenever the record changes (e.g. once the password is populated or
-// the connection string is resolved), so password-dependent gating stays in sync.
 export function useConnectionStringInfo(id: string) {
   return useSubscription(storage, {
     selector: state => state.connectionStrings[id],

@@ -222,7 +222,7 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
   const location = useLocation()
 
   const canOpenWeb = window.electron
-    ? connection.syncType === SyncType.Cloud && !connectionStringStorage.get(connection.id)?.isLocalhost
+    ? connection.syncType === SyncType.Cloud && !connectionStringStorage.get(connection.id)?.metadata.isLocalhost
     : false
 
   return (

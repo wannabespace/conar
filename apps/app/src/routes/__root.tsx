@@ -12,6 +12,7 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { useEffect } from 'react'
 import { AuthObserver } from '~/auth-observer'
 import { GlobalBanner } from '~/components/global-banner'
+import { useConnectionsStringsSync } from '~/entities/connection/hooks'
 import { ErrorPage } from '~/error-page'
 import { EventsProvider } from '~/events'
 import { enterAppAnimation, globalHooks } from '~/global-hooks'
@@ -45,6 +46,8 @@ function RootDocument() {
   useHotkey('Mod+S', () => globalHooks.callHook('savePressed'))
 
   useUpdatesObserver()
+
+  useConnectionsStringsSync()
 
   useEffect(() => {
     if (isPending)

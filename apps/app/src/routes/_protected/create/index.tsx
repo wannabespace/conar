@@ -170,7 +170,8 @@ function CreateConnectionPage() {
     passwordExists: hasPassword,
   }, {
     isLocalProxyAvailable,
-    info: { isLocalhost, isPasswordPopulated: hasPassword },
+    isPasswordPopulated: hasPassword,
+    isLocalhost,
   })
   const canSaveInCloud = !!url && canSend
 

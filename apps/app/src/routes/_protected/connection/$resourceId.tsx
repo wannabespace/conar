@@ -8,9 +8,10 @@ import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 import { QueryLogger } from '~/entities/connection/components'
+import { useFetchingConfig } from '~/entities/connection/hooks'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
-import { fetchingConfig, lastOpenedResourcesStorageValue, prefetchConnectionResourceCore } from '~/entities/connection/utils'
+import { lastOpenedResourcesStorageValue, prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { ConnectionSidebar } from './-components/connection-sidebar'
 import { PasswordForm } from './-components/password-form'
 
@@ -76,7 +77,7 @@ function DatabasePage() {
     storage: localStorage,
   })
 
-  const { type } = fetchingConfig(connection)
+  const { type } = useFetchingConfig(connection)
 
   if (type === 'waiting-for-password') {
     return <PasswordForm connection={connection} connectionResource={connectionResource} />

@@ -62,8 +62,8 @@ function displayLabel(params: QueryParams): string {
       : undefined
     const info = connectionStringStorage.get(resource?.connectionId ?? params.connectionId)
 
-    if (info?.displayUrl) {
-      return info.displayUrl
+    if (info?.metadata.displayUrl) {
+      return info.metadata.displayUrl
     }
   }
 
