@@ -133,7 +133,6 @@ catalog:
   ora: ^9.4.0
   pg: ^8.21.0
   playwright: ^1.60.0
-  portless: ^0.14.0
   posthog-js: ^1.382.0
   posthog-node: ^5.36.4
   react: ^19.2.7

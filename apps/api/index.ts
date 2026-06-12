@@ -1,6 +1,7 @@
 /* eslint-disable perfectionist/sort-imports */
 import '@conar/shared/arktype-config'
 import process from 'node:process'
+import { PORTS } from '@conar/shared/constants'
 import { ORPCError, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { Hono } from 'hono'
@@ -60,9 +61,11 @@ const app = new Hono<{
   .use(cors({
     origin(origin) {
       const allowedOrigins = [
-        'https://conar.app',
+        env.MAIN_URL,
+        ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`, `http://localhost:${PORTS.DEV.APP}`, `http://localhost:${PORTS.DEV.PROXY}`] : []),
+        ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`, `http://localhost:${PORTS.TEST.APP}`, `http://localhost:${PORTS.TEST.PROXY}`] : []),
       ]
-      return origin.endsWith('.conar.app') || allowedOrigins.includes(origin) ? origin : null
+      return origin.endsWith(`.${new URL(env.MAIN_URL).host}`) || allowedOrigins.includes(origin) ? origin : null
     },
     credentials: true,
     exposeHeaders: [...ELECTRIC_EXPOSED_HEADERS],
@@ -151,12 +154,12 @@ const app = new Hono<{
 
 export default {
   fetch: app.fetch,
-  port: Number(process.env.PORT || 3000),
+  port: process.env.PORT
+    ? Number(process.env.PORT)
+    : nodeEnv === 'test' ? PORTS.TEST.API : PORTS.DEV.API,
   // Electric live shape requests (`live=true`) long-poll: Electric holds the
   // connection open (~20 s) until new data arrives or the poll window elapses.
-  // Bun's default 30 s idle timeout can close these mid-poll, so portless sees
-  // a reset and serves its 502 page. Raise the ceiling above the poll window
-  // (255 s is Bun's max) so legitimate polls survive while truly stuck sockets
-  // still time out.
+  // Bun's default 30 s idle timeout can close these mid-poll. Raise the ceiling
+  // above the poll window (255 s is Bun's max) so legitimate polls survive.
   idleTimeout: 255,
 }

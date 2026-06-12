@@ -1,9 +1,9 @@
 {
   "name": "@conar/main",
   "type": "module",
-  "portless": "main.local.conar",
+  "private": true,
   "scripts": {
-    "dev": "portless run vite dev",
+    "dev": "vite dev",
     "build": "vite build",
     "start": "bun run .output/server/index.mjs",
     "check-types": "tsgo"

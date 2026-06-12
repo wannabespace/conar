@@ -162,6 +162,7 @@ export const proxyCommand = command({
         origin(origin) {
           const allowedOrigins = [
             import.meta.env.MAIN_URL,
+            `http://localhost:${PORTS.DEV.APP}`,
           ]
           return origin.endsWith(`.${new URL(import.meta.env.MAIN_URL).host}`) || allowedOrigins.includes(origin) ? origin : null
         },

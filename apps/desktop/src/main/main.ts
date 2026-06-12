@@ -3,6 +3,7 @@ import type { Rectangle } from 'electron'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { PORTS } from '@conar/shared/constants'
 import { isConnectionError } from '@conar/shared/utils/connections'
 import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
@@ -118,7 +119,7 @@ export function createWindow() {
   }
   else {
     mainWindow.webContents.openDevTools()
-    mainWindow.loadURL('https://app.local.conar.app')
+    mainWindow.loadURL(`http://localhost:${PORTS.DEV.APP}`)
   }
 
   return mainWindow

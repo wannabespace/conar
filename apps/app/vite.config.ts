@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import { PORTS } from '../../packages/shared/constants'
 
 export default defineConfig(({ mode }) => ({
   resolve: {
@@ -26,4 +27,8 @@ export default defineConfig(({ mode }) => ({
       presets: [reactCompilerPreset()],
     }),
   ],
+  server: {
+    strictPort: true,
+    port: mode === 'test' ? PORTS.TEST.DESKTOP : PORTS.DEV.APP,
+  },
 }))

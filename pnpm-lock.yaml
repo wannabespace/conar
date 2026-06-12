@@ -348,9 +348,6 @@ catalogs:
     playwright:
       specifier: ^1.60.0
       version: 1.60.0
-    portless:
-      specifier: ^0.14.0
-      version: 0.14.0
     posthog-js:
       specifier: ^1.382.0
       version: 1.384.3
@@ -498,9 +495,6 @@ importers:
       playwright:
         specifier: 'catalog:'
         version: 1.60.0
-      portless:
-        specifier: 'catalog:'
-        version: 0.14.0
       tailwindcss:
         specifier: 'catalog:'
         version: 4.3.0
@@ -9234,12 +9228,6 @@ packages:
 
   points-on-path@0.2.1:
     resolution: {integrity: sha512-25ClnWWuw7JbWZcgqY/gJ4FQWadKxGWk+3kR/7kD0tCaDtPPMj7oHu2ToLaVhfpnHrZzYby2w6tUA0eOIuUg8g==}
-
-  portless@0.14.0:
-    resolution: {integrity: sha512-kKxmxB1DQ9gI8t+V13VhuwTXu31io5nbFubvZAE82AxzXBsvcJV7qQJbmomrQUpbVxo2UVHqs14iX4YK0BClmQ==}
-    engines: {node: '>=24'}
-    os: [darwin, linux, win32]
-    hasBin: true
 
   postal-mime@2.7.4:
     resolution: {integrity: sha512-0WdnFQYUrPGGTFu1uOqD2s7omwua8xaeYGdO6rb88oD5yJ/4pPHDA4sdWqfD8wQVfCny563n/HQS7zTFft+f/g==}
@@ -19324,8 +19312,6 @@ snapshots:
     dependencies:
       path-data-parser: 0.1.0
       points-on-curve: 0.2.0
-
-  portless@0.14.0: {}
 
   postal-mime@2.7.4: {}
 

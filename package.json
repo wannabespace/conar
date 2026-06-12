@@ -13,9 +13,6 @@
   },
   "scripts": {
     "prepare": "husky && bun scripts/sync-pnpm-versions.ts && bun scripts/setup-dev.ts",
-    "postinstall": "pnpm run portless:start",
-    "portless:start": "portless proxy start --tld app",
-    "portless:stop": "portless proxy stop",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "turbo run test",
@@ -59,7 +56,6 @@
     "node-modules-inspector": "catalog:",
     "npm-run-all2": "catalog:",
     "playwright": "catalog:",
-    "portless": "catalog:",
     "tailwindcss": "catalog:",
     "taze": "catalog:",
     "turbo": "catalog:"
