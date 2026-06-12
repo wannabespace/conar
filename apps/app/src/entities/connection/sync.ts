@@ -39,8 +39,8 @@ export const connectionsCollection = createCollection(persistedCollectionOptions
     id: 'connections',
     shapeOptions: shapeOptions('connections'),
     getKey: item => item.id,
-    onInsert: async ({ transaction, collection }) => {
-      const result = await orpc.connections.create.call(await Promise.all(transaction.mutations.map(async (m) => {
+    onInsert: async ({ transaction }) => {
+      return orpc.connections.create.call(await Promise.all(transaction.mutations.map(async (m) => {
         const connectionString = await connectionStringStorage.decrypt(m.modified.id)
 
         return {
@@ -49,18 +49,16 @@ export const connectionsCollection = createCollection(persistedCollectionOptions
           connectionString: await prepareConnectionStringToCloud(connectionString, m.modified.syncType),
         }
       })))
-      await collection.utils.awaitTxId(result.txid)
     },
-    onUpdate: async ({ transaction, collection }) => {
+    onUpdate: async ({ transaction }) => {
       const result = await Promise.all(transaction.mutations.map(m => orpc.connections.update.call({
         id: m.key,
         ...m.changes,
       })))
-      await Promise.all(result.map(r => collection.utils.awaitTxId(r.txid)))
+      return { txid: result.map(r => r.txid) }
     },
-    onDelete: async ({ transaction, collection }) => {
-      const result = await orpc.connections.remove.call(transaction.mutations.map(m => ({ id: m.key })))
-      await collection.utils.awaitTxId(result.txid)
+    onDelete: async ({ transaction }) => {
+      return orpc.connections.remove.call(transaction.mutations.map(m => ({ id: m.key })))
     },
   }),
   autoIndex: 'eager',
@@ -86,17 +84,16 @@ export const connectionsResourcesCollection = createCollection(persistedCollecti
     id: 'connections-resources',
     shapeOptions: shapeOptions('connections-resources'),
     getKey: item => item.id,
-    onInsert: async ({ transaction, collection }) => {
-      const result = await orpc.connectionsResources.create.call(transaction.mutations.map(m => m.modified))
-      await collection.utils.awaitTxId(result.txid)
+    onInsert: async ({ transaction }) => {
+      return orpc.connectionsResources.create.call(transaction.mutations.map(m => m.modified))
     },
-    onUpdate: async ({ transaction, collection }) => {
-      const result = await Promise.all(transaction.mutations.map(m => orpc.connectionsResources.update.call({ id: m.key, ...m.changes })))
-      await Promise.all(result.map(r => collection.utils.awaitTxId(r.txid)))
+    onUpdate: async ({ transaction }) => {
+      const result = await Promise.all(transaction.mutations
+        .map(m => orpc.connectionsResources.update.call({ id: m.key, ...m.changes })))
+      return { txid: result.map(r => r.txid) }
     },
-    onDelete: async ({ transaction, collection }) => {
-      const result = await orpc.connectionsResources.remove.call(transaction.mutations.map(m => ({ id: m.key })))
-      await collection.utils.awaitTxId(result.txid)
+    onDelete: async ({ transaction }) => {
+      return orpc.connectionsResources.remove.call(transaction.mutations.map(m => ({ id: m.key })))
     },
   }),
   autoIndex: 'eager',

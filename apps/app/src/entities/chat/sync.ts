@@ -24,17 +24,16 @@ export const chatsCollection = createCollection(persistedCollectionOptions<Chat>
     id: 'chats',
     shapeOptions: shapeOptions('chats'),
     getKey: item => item.id,
-    onInsert: async ({ transaction, collection }) => {
-      const result = await orpc.chats.create.call(transaction.mutations.map(m => m.modified))
-      await collection.utils.awaitTxId(result.txid)
+    onInsert: async ({ transaction }) => {
+      return orpc.chats.create.call(transaction.mutations.map(m => m.modified))
     },
-    onUpdate: async ({ transaction, collection }) => {
-      const result = await Promise.all(transaction.mutations.map(m => orpc.chats.update.call({ id: m.key, ...m.changes })))
-      await Promise.all(result.map(r => collection.utils.awaitTxId(r.txid)))
+    onUpdate: async ({ transaction }) => {
+      const result = await Promise.all(transaction.mutations
+        .map(m => orpc.chats.update.call({ id: m.key, ...m.changes })))
+      return { txid: result.map(r => r.txid) }
     },
-    onDelete: async ({ transaction, collection }) => {
-      const result = await orpc.chats.remove.call(transaction.mutations.map(m => ({ id: m.key })))
-      await collection.utils.awaitTxId(result.txid)
+    onDelete: async ({ transaction }) => {
+      return orpc.chats.remove.call(transaction.mutations.map(m => ({ id: m.key })))
     },
   }),
   autoIndex: 'eager',
@@ -62,17 +61,16 @@ export const chatsMessagesCollection = createCollection(persistedCollectionOptio
     id: 'chats-messages',
     shapeOptions: shapeOptions('chats-messages'),
     getKey: item => item.id,
-    onInsert: async ({ transaction, collection }) => {
-      const result = await orpc.chatsMessages.create.call(transaction.mutations.map(m => m.modified))
-      await collection.utils.awaitTxId(result.txid)
+    onInsert: async ({ transaction }) => {
+      return orpc.chatsMessages.create.call(transaction.mutations.map(m => m.modified))
     },
-    onUpdate: async ({ transaction, collection }) => {
-      const result = await Promise.all(transaction.mutations.map(m => orpc.chatsMessages.update.call({ id: m.key, ...m.changes })))
-      await Promise.all(result.map(r => collection.utils.awaitTxId(r.txid)))
+    onUpdate: async ({ transaction }) => {
+      const result = await Promise.all(transaction.mutations
+        .map(m => orpc.chatsMessages.update.call({ id: m.key, ...m.changes })))
+      return { txid: result.map(r => r.txid) }
     },
-    onDelete: async ({ transaction, collection }) => {
-      const result = await orpc.chatsMessages.remove.call(transaction.mutations.map(m => ({ id: m.key, chatId: m.modified.chatId })))
-      await collection.utils.awaitTxId(result.txid)
+    onDelete: async ({ transaction }) => {
+      return orpc.chatsMessages.remove.call(transaction.mutations.map(m => ({ id: m.key, chatId: m.modified.chatId })))
     },
   }),
   autoIndex: 'eager',

@@ -24,13 +24,11 @@ export const queriesCollection = createCollection(persistedCollectionOptions<Que
     id: 'queries',
     shapeOptions: shapeOptions('queries'),
     getKey: item => item.id,
-    onInsert: async ({ transaction, collection }) => {
-      const result = await orpc.queries.create.call(transaction.mutations.map(m => m.modified))
-      await collection.utils.awaitTxId(result.txid)
+    onInsert: async ({ transaction }) => {
+      return orpc.queries.create.call(transaction.mutations.map(m => m.modified))
     },
-    onDelete: async ({ transaction, collection }) => {
-      const result = await orpc.queries.remove.call(transaction.mutations.map(m => ({ id: m.key })))
-      await collection.utils.awaitTxId(result.txid)
+    onDelete: async ({ transaction }) => {
+      return orpc.queries.remove.call(transaction.mutations.map(m => ({ id: m.key })))
     },
   }),
   autoIndex: 'eager',

@@ -205,7 +205,7 @@ function ConnectionCard({
     .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
     .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
   const storedResourcesNames = storedResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
-  const info = useConnectionString(connection.id)
+  const connectionString = useConnectionString(connection.id)
   const { type, canSend } = useFetchingConfig(connection)
 
   const {
@@ -222,7 +222,7 @@ function ConnectionCard({
   const [isOpen, setIsOpen] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
 
-  const defaultResourceName = info?.metadata.defaultResourceName ?? null
+  const defaultResourceName = connectionString?.metadata.defaultResourceName ?? null
 
   const connectionStore = getConnectionStore(connection.id)
   const { selectedResourceName, pinnedResourcesNames } = useSubscription(connectionStore, {
@@ -376,8 +376,8 @@ function ConnectionCard({
                     "
                     onClick={() => handleCopy()}
                   >
-                    {info
-                      ? <span className="truncate">{info.metadata.displayUrl}</span>
+                    {connectionString
+                      ? <span className="truncate">{connectionString.metadata.displayUrl}</span>
                       : <Skeleton className="h-3 w-40" />}
                   </TooltipTrigger>
                   <TooltipContent className="flex items-center gap-1" side="bottom">

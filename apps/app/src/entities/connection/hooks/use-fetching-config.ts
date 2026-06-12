@@ -5,17 +5,15 @@ import { useLocalProxyAvailable } from '../proxy'
 import { getConnectionStore } from '../store'
 import { fetchingConfig } from '../utils/fetching'
 
-type Conn = Pick<Connection, 'id' | 'syncType' | 'passwordExists'>
-
-export function useFetchingConfig(connection: Conn) {
+export function useFetchingConfig(connection: Pick<Connection, 'id' | 'syncType' | 'passwordExists'>) {
   const isLocalProxyAvailable = useLocalProxyAvailable()
-  const info = useConnectionString(connection.id)
+  const connectionString = useConnectionString(connection.id)
   const proxy = useSubscription(getConnectionStore(connection.id), { selector: s => s.proxy })
 
   return fetchingConfig(connection, {
     isLocalProxyAvailable,
-    isPasswordPopulated: info?.metadata?.isPasswordPopulated,
-    isLocalhost: info?.metadata?.isLocalhost,
+    isPasswordPopulated: connectionString?.metadata.isPasswordPopulated,
+    isLocalhost: connectionString?.metadata.isLocalhost,
     proxy,
   })
 }

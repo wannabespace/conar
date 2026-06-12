@@ -13,8 +13,8 @@ function importAesKey(raw: Uint8Array<ArrayBuffer>) {
   return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt'])
 }
 
-const storage = createIndexedDbStorage({
-  databaseName: 'conar-secure-storage',
+const connectionsStringsStorage = createIndexedDbStorage({
+  databaseName: 'secure-storage',
   storeName: 'connections-strings',
   schemas: {
     // Browser uses CryptoKey, Electron uses string
@@ -38,13 +38,13 @@ const storage = createIndexedDbStorage({
 })
 
 function resetEncryptionKey() {
-  return storage.set({ encryptionKey: null, connectionStrings: {} })
+  return connectionsStringsStorage.set({ encryptionKey: null, connectionStrings: {} })
 }
 
 const getEncryptionKey = memoize(async (): Promise<CryptoKey> => {
-  await storage.ready
+  await connectionsStringsStorage.ready
 
-  const stored = storage.get().encryptionKey
+  const stored = connectionsStringsStorage.get().encryptionKey
 
   if (stored instanceof CryptoKey)
     return stored
@@ -62,16 +62,17 @@ const getEncryptionKey = memoize(async (): Promise<CryptoKey> => {
     }
 
     const raw = crypto.getRandomValues(new Uint8Array(32))
-    await storage.set({ encryptionKey: await safeStorage.encryptString(bytesToBase64(raw)) })
+    await connectionsStringsStorage.set({ encryptionKey: await safeStorage.encryptString(bytesToBase64(raw)) })
     return importAesKey(raw)
   }
 
-  // If safe storage is not available anymore
+  // String can be only in electron
+  // So we should clear the key because somehow safe storage is not available anymore
   if (typeof stored === 'string')
     await resetEncryptionKey()
 
   const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt'])
-  await storage.set({ encryptionKey: key })
+  await connectionsStringsStorage.set({ encryptionKey: key })
   return key
 })
 
@@ -84,11 +85,11 @@ async function decryptConnectionString(encryptedConnectionString: string) {
 }
 
 export const connectionStringStorage = {
-  ready: storage.ready,
-  has: (id: string) => id in storage.get().connectionStrings,
-  get: (id: string) => storage.get().connectionStrings[id],
+  ready: connectionsStringsStorage.ready,
+  has: (id: string) => id in connectionsStringsStorage.get().connectionStrings,
+  get: (id: string) => connectionsStringsStorage.get().connectionStrings[id],
   decrypt: (id: string): Promise<string> => {
-    const record = storage.get().connectionStrings[id]
+    const record = connectionsStringsStorage.get().connectionStrings[id]
     if (!record)
       throw new Error(`No connection string found for connection "${id}"`)
     return decryptConnectionString(record.encrypted)
@@ -96,7 +97,7 @@ export const connectionStringStorage = {
   set: async (id: string, connectionString: string) => {
     const url = new SafeURL(connectionString)
     const encrypted = await encryptConnectionString(connectionString)
-    await storage.set(prev => ({
+    await connectionsStringsStorage.set(prev => ({
       connectionStrings: {
         ...prev.connectionStrings,
         [id]: {
@@ -112,17 +113,15 @@ export const connectionStringStorage = {
     }))
   },
   remove: async (id: string) => {
-    await storage.set((prev) => {
+    await connectionsStringsStorage.set((prev) => {
       const connectionStrings = { ...prev.connectionStrings }
       delete connectionStrings[id]
       return { connectionStrings }
     })
   },
-  clear: () => storage.set({ connectionStrings: {} }),
+  clear: () => connectionsStringsStorage.set({ connectionStrings: {} }),
 }
 
 export function useConnectionString(id: string) {
-  return useSubscription(storage, {
-    selector: state => state.connectionStrings[id],
-  })
+  return useSubscription(connectionsStringsStorage, { selector: state => state.connectionStrings[id] })
 }

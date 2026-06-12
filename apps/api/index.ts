@@ -51,6 +51,12 @@ const handler = new RPCHandler(router, {
 })
 
 export interface AppVariables {
+  isAppOutdated: boolean
+  parsedAppVersion: {
+    major: number
+    minor: number
+    patch: number
+  } | null
   logEvent?: Record<string, unknown>
 }
 
@@ -70,7 +76,17 @@ const app = new Hono<{
   .get('/', c => c.redirect(env.MAIN_URL))
   .use('*', async (c, next) => {
     const startTime = Date.now()
+    const xAppVersion = (c.req.header('x-app-version') || c.req.header('x-desktop-version'))?.split('.') || null
     c.set('logEvent', {})
+    const parsedAppVersion = xAppVersion
+      ? {
+          major: Number(xAppVersion[0]),
+          minor: Number(xAppVersion[1]),
+          patch: Number(xAppVersion[2]),
+        }
+      : null
+    c.set('parsedAppVersion', parsedAppVersion)
+    c.set('isAppOutdated', !!env.MIN_DESKTOP_VERSION && !!parsedAppVersion?.minor && parsedAppVersion.minor < env.MIN_DESKTOP_VERSION)
 
     await next()
 
@@ -78,7 +94,7 @@ const app = new Hono<{
     const method = c.req.method
     const path = new URL(c.req.url).pathname
     const userAgent = c.req.header('User-Agent')
-    const version = c.req.header('x-desktop-version')
+    const version = c.req.header('x-app-version')
     const logEvent = c.get('logEvent') || {}
 
     if (!logEvent.userId && c.req.header('user-id')) {
