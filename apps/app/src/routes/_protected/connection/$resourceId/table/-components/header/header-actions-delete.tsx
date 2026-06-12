@@ -22,7 +22,7 @@ export function HeaderActionsDelete({ table, schema }: { table: string, schema: 
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
-      await deleteRowsQuery({ table, schema, primaryKeys: selected }).run(connectionResourceToQueryParams(connectionResource))
+      await deleteRowsQuery({ table, schema, primaryKeys: selected }).run(await connectionResourceToQueryParams(connectionResource))
     },
     onSuccess: () => {
       toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)

@@ -92,7 +92,7 @@ export function resourceTablesAndSchemasQueryOptions({ connectionResource, showS
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'tables-and-schemas', showSystem],
     queryFn: async () => {
-      const results = await resourceTablesAndSchemasQuery({ connectionResource, showSystem }).run(connectionResourceToQueryParams(connectionResource))
+      const results = await resourceTablesAndSchemasQuery({ connectionResource, showSystem }).run(await connectionResourceToQueryParams(connectionResource))
       const schemas = Object.entries(Object.groupBy(results, table => table.schema)).map(([schema, tables]) => ({
         name: schema,
         tables: tables!.map(table => ({ name: table.table, type: table.type })),

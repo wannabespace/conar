@@ -57,13 +57,15 @@ export function DraftsToolbar({
     setIsReviewOpen(false)
   }
 
-  const queryParams = connectionResourceToQueryParams(connectionResource)
-  const db = dialects[queryParams.type]({
-    connectionString: queryParams.connectionString,
-    resourceId: queryParams.resourceId,
-    log: queryParams.log,
-    // eslint-disable-next-line ts/no-explicit-any
-  }) as unknown as Kysely<any>
+  async function createDb() {
+    const queryParams = await connectionResourceToQueryParams(connectionResource)
+    return dialects[queryParams.type]({
+      connectionString: queryParams.connectionString,
+      resourceId: queryParams.resourceId,
+      log: queryParams.log,
+      // eslint-disable-next-line ts/no-explicit-any
+    }) as unknown as Kysely<any>
+  }
 
   const { mutate: saveDrafts, isPending: isSaving } = useMutation({
     mutationFn: async () => {
@@ -91,6 +93,8 @@ export function DraftsToolbar({
       }
 
       let failedPrimaryKeys: typeof primaryKeysType.infer | null = null
+
+      const db = await createDb()
 
       try {
         const commits = await db.transaction().execute(async (tx) => {
@@ -185,6 +189,8 @@ export function DraftsToolbar({
       }
 
       const { commits, rowsQueryOpts } = data
+
+      const db = await createDb()
 
       const savedValuesByRow = new Map(
         await Promise.all(commits.map(async ({ primaryKeys, values, modifiedColumns, updatedFilters }) => {

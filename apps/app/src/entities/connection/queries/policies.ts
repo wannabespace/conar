@@ -147,6 +147,6 @@ const query = createQuery({
 export const resourcePoliciesQuery = memoize(({ connectionResource }: { connectionResource: ConnectionResource }) => {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'policies'],
-    queryFn: () => query.run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () => query.run(await connectionResourceToQueryParams(connectionResource)),
   })
 })

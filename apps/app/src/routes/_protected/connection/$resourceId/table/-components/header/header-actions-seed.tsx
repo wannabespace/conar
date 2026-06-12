@@ -235,7 +235,7 @@ export function HeaderActionsSeed({
 
   const { mutate: seed, isPending } = useMutation({
     mutationFn: async () => {
-      const queryParams = connectionResourceToQueryParams(connectionResource)
+      const queryParams = await connectionResourceToQueryParams(connectionResource)
 
       const referenceData = Object.fromEntries(
         await Promise.all(columns

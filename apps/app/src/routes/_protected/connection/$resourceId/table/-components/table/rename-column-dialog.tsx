@@ -52,7 +52,7 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
         table,
         oldColumn: column,
         newColumn: newColumnName,
-      }).run(connectionResourceToQueryParams(connectionResource))
+      }).run(await connectionResourceToQueryParams(connectionResource))
     },
     onSuccess: async () => {
       toast.success(`Column "${column}" successfully renamed to "${newColumnName}"`)

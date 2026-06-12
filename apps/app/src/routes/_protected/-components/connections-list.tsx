@@ -37,7 +37,7 @@ import { getConnectionStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { authClient } from '~/lib/auth'
-import { connectionStringStorage, useConnectionStringInfo } from '~/lib/connection-string-storage'
+import { connectionStringStorage, useConnectionString } from '~/lib/connection-string-storage'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
@@ -205,7 +205,7 @@ function ConnectionCard({
     .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
     .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
   const storedResourcesNames = storedResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
-  const info = useConnectionStringInfo(connection.id)
+  const info = useConnectionString(connection.id)
   const { type, canSend } = useFetchingConfig(connection)
 
   const {

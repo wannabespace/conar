@@ -190,7 +190,7 @@ export const resourceRowsQueryInfiniteOptions = memoize(({
           filtersConcatOperator,
         },
         ...props,
-      }).run(connectionResourceToQueryParams(connectionResource))
+      }).run(await connectionResourceToQueryParams(connectionResource))
 
       return {
         rows: result,

@@ -280,6 +280,6 @@ export function resourceTableColumnsQueryOptions({
 }) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'columns', schema, table],
-    queryFn: () => resourceTableColumnsQuery({ table, schema }).run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () => resourceTableColumnsQuery({ table, schema }).run(await connectionResourceToQueryParams(connectionResource)),
   })
 }

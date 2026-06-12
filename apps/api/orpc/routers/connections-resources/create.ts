@@ -15,7 +15,7 @@ export const create = orpc
     schema.array(),
   ).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
-    const connectionIds = [...new Set(input.map(item => item.connectionId))]
+    const connectionIds = input.map(item => item.connectionId)
     const foundConnections = await db.select({ id: connections.id })
       .from(connections)
       .where(and(inArray(connections.id, connectionIds), eq(connections.userId, context.user.id)))

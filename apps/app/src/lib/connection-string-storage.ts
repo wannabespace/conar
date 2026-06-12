@@ -121,7 +121,7 @@ export const connectionStringStorage = {
   clear: () => storage.set({ connectionStrings: {} }),
 }
 
-export function useConnectionStringInfo(id: string) {
+export function useConnectionString(id: string) {
   return useSubscription(storage, {
     selector: state => state.connectionStrings[id],
   })
