@@ -6,7 +6,7 @@ import { authMiddleware, orpc } from '~/orpc'
 
 export const resolve = orpc
   .use(authMiddleware)
-  .input(type({ id: 'string.uuid' }))
+  .input(type({ id: 'string.uuid.v7' }))
   .handler(async ({ context, input }) => {
     const [connection, secret] = await Promise.all([
       db.query.connections.findFirst({

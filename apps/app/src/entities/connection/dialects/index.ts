@@ -49,9 +49,7 @@ interface TxQueryPayload extends QueryPayload {
 }
 
 export function createDialectProvider(type: ConnectionType, options: DialectOptions) {
-  const resource = options.resourceId
-    ? connectionsResourcesCollection.get(options.resourceId)
-    : undefined
+  const resource = options.resourceId ? connectionsResourcesCollection.get(options.resourceId) : null
   const connectionId = options.connectionId || resource?.connectionId
   const connection = connectionId ? connectionsCollection.get(connectionId) : null
 
