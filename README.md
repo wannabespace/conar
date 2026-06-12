@@ -59,7 +59,10 @@ Conar is an AI-powered open-source project that simplifies database interactions
 
 - **🐳 Start Database with Docker Compose**
 
-  This will start the PostgreSQL database & Redis in the background.
+  Install Docker: https://docs.docker.com/get-docker/
+
+  This will start all services needed for development.
+
   ```bash
   pnpm run docker:start
   ```
@@ -95,7 +98,7 @@ Conar is an AI-powered open-source project that simplifies database interactions
   pnpm run test
   ```
 
-> Before running E2E tests, make sure to start the test server: `pnpm run test:start` and db `postgresql://postgres:postgres@localhost:5432/conar`
+> Before running E2E tests, make sure to start the test server: `pnpm run test:start`
 
 - **E2E Tests**
   ```bash

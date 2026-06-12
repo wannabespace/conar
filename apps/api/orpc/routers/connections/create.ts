@@ -1,33 +1,38 @@
 import { db } from '@conar/db'
 import { connections, connectionsInsertSchema } from '@conar/db/schema'
 import { SyncType } from '@conar/shared/enums/sync-type'
-import { encrypt } from '@conar/shared/utils/encryption'
+import { encrypt } from '@conar/shared/utils/crypto-node'
 import { SafeURL } from '@conar/shared/utils/safe-url'
+import { type } from 'arktype'
+import { generateTxId } from '~/lib/electric'
 import { authMiddleware, orpc } from '~/orpc'
-import { publisher } from './events'
+
+const schema = connectionsInsertSchema.omit('userId')
 
 export const create = orpc
   .use(authMiddleware)
-  .input(connectionsInsertSchema.omit('userId'))
+  .input(type.or(
+    schema,
+    schema.array(),
+  ).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
-    const newConnectionString = new SafeURL(input.connectionString)
+    const userSecret = await context.getUserSecret()
 
-    if (input.syncType !== SyncType.Cloud) {
-      newConnectionString.password = ''
-    }
+    return db.transaction(async (tx) => {
+      await tx.insert(connections).values(await Promise.all(input.map(async (item) => {
+        const newConnectionString = new SafeURL(item.connectionString)
 
-    const [connection] = await db.insert(connections).values({
-      ...input,
-      connectionString: encrypt({ text: newConnectionString.toString(), secret: await context.getUserSecret() }),
-      userId: context.user.id,
-    }).returning()
+        if (item.syncType !== SyncType.Cloud) {
+          newConnectionString.password = ''
+        }
 
-    publisher.publish('event', {
-      type: 'insert',
-      value: {
-        ...connection!,
-        connectionString: newConnectionString.toString(),
-      },
-      clientId: context.clientId,
+        return {
+          ...item,
+          connectionString: encrypt({ text: newConnectionString.toString(), secret: userSecret }),
+          userId: context.user.id,
+        }
+      })))
+
+      return { txid: await generateTxId(tx) }
     })
   })

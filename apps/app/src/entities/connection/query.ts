@@ -6,28 +6,27 @@ import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Result } from 'better-result'
 import { createStore } from 'seitu'
 import { toast } from 'sonner'
+import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { dialects } from './dialects'
 import { logQuery } from './log'
 import { connectionsCollection } from './sync'
-import { getConnectionStringToShow } from './utils'
+import { getConnectionStringToShow } from './utils/helpers'
 
-export function connectionToQueryParams(connection: Connection): QueryParams {
-  const foundConnection = connectionsCollection.get(connection.id)!
-
+export async function connectionToQueryParams(connection: Connection): Promise<QueryParams> {
   return {
-    connectionString: foundConnection.connectionString,
+    connectionString: await connectionStringStorage.decrypt(connection.id),
     type: connection.type,
-    connectionId: foundConnection.id,
+    connectionId: connection.id,
   }
 }
 
-export function connectionResourceToQueryParams(connectionResource: ConnectionResource): QueryParams {
+export async function connectionResourceToQueryParams(connectionResource: ConnectionResource): Promise<QueryParams> {
   const connection = connectionsCollection.get(connectionResource.connectionId)!
-  const newConnectionString = new SafeURL(connection.connectionString)
-  newConnectionString.pathname = connectionResource.name || ''
+  const connectionString = new SafeURL(await connectionStringStorage.decrypt(connection.id))
+  connectionString.pathname = connectionResource.name || ''
 
   return {
-    connectionString: newConnectionString.toString(),
+    connectionString: connectionString.toString(),
     type: connection.type,
     resourceId: connectionResource.id,
     log: ({ promise, query, values }) => logQuery({ resourceId: connectionResource.id, promise, query, values }),

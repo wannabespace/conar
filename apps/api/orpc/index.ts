@@ -29,7 +29,7 @@ async function getSession(headers: Headers) {
 export const logMiddleware = orpc.middleware(async ({ context, next }, input) => {
   const result = await next()
 
-  if (!context.request.url.endsWith('/sync')) {
+  if (!context.request.url.endsWith('/sync') && !context.request.url.includes('/shapes/')) {
     context.addLogData({
       input,
       output: (Array.isArray(result.output) && result.output.length > 0)
@@ -79,7 +79,7 @@ export async function getSubscription(userId: string) {
 
 export const subscriptionMiddleware = logMiddleware.concat(orpc.middleware(async ({ context, next }) => {
   const session = await getSession(context.headers)
-  const minorVersion = context.appVersion?.minor ?? 0
+  const minorVersion = context.parsedAppVersion?.minor ?? 0
   const subscription = await getSubscription(session.user.id)
 
   if (session) {

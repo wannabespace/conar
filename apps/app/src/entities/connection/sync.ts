@@ -1,12 +1,28 @@
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import type { ORPCOutputs } from '~/lib/orpc'
-import type { BaseTable } from '~/lib/sync'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
-import { BasicIndex, createCollection } from '@tanstack/react-db'
+import { electricCollectionOptions } from '@tanstack/electric-db-collection'
+import { BasicIndex, createCollection, createOptimisticAction } from '@tanstack/react-db'
+import { type } from 'arktype'
+import { connectionStringStorage } from '~/lib/connection-string-storage'
+import { shapeOptions } from '~/lib/electric'
 import { orpc } from '~/lib/orpc'
 import { persistence } from '~/lib/sync'
+
+export const connectionsSchema = type({
+  id: 'string',
+  createdAt: 'Date',
+  updatedAt: 'Date',
+  type: type.valueOf(ConnectionType),
+  name: 'string',
+  label: 'string | null',
+  color: 'string | null',
+  passwordExists: 'boolean',
+  syncType: type.valueOf(SyncType),
+})
+
+export type Connection = typeof connectionsSchema.infer
 
 function prepareConnectionStringToCloud(connectionString: string, syncType: SyncType) {
   const url = new SafeURL(connectionString.trim())
@@ -16,241 +32,93 @@ function prepareConnectionStringToCloud(connectionString: string, syncType: Sync
   return url.toString()
 }
 
-export interface ConnectionMutationMetadata {
-  cloudSync?: false
-}
-
-export interface Connection extends BaseTable {
-  type: ConnectionType
-  name: string
-  connectionString: string
-  label: string | null
-  color: string | null
-  isPasswordExists: boolean
-  isPasswordPopulated: boolean
-  syncType: SyncType
-}
-
-export const connectionsCollection = createCollection(persistedCollectionOptions<Connection, string>({
-  id: 'connections',
-  persistence,
+// @ts-expect-error waiting for https://github.com/TanStack/db/pull/1453
+export const connectionsCollection = createCollection(persistedCollectionOptions<Connection>({
+  ...electricCollectionOptions({
+    schema: connectionsSchema,
+    id: 'connections',
+    shapeOptions: shapeOptions('connections'),
+    getKey: item => item.id,
+    onInsert: async ({ transaction }) => {
+      return orpc.connections.create.call(await Promise.all(transaction.mutations.map(m => connectionToCloudInput(m.modified))))
+    },
+    onUpdate: async ({ transaction }) => {
+      const result = await Promise.all(transaction.mutations.map(m => orpc.connections.update.call({
+        id: m.key,
+        ...m.changes,
+      })))
+      return { txid: result.map(r => r.txid) }
+    },
+    onDelete: async ({ transaction }) => {
+      return orpc.connections.remove.call(transaction.mutations.map(m => ({ id: m.key })))
+    },
+  }),
   autoIndex: 'eager',
   defaultIndexType: BasicIndex,
+  persistence,
   schemaVersion: 1,
-  getKey: item => item.id,
-  sync: {
-    sync: ({ begin, commit, write, collection, markReady }) => {
-      const abortController = new AbortController()
-
-      const writeItem = async (item: ORPCOutputs['connections']['sync'][number]) => {
-        if (item.type === 'insert') {
-          write({
-            type: 'insert',
-            value: {
-              ...item.value,
-              isPasswordPopulated: !!new SafeURL(item.value.connectionString).password,
-            },
-          })
-        }
-        else if (item.type === 'update') {
-          const existed = collection.get(item.value.id)
-
-          if (!existed) {
-            throw new Error('Entity not found')
-          }
-
-          const cloudPassword = new SafeURL(item.value.connectionString).password
-          const localPassword = new SafeURL(existed.connectionString).password
-          const newConnectionString = new SafeURL(item.value.connectionString)
-
-          if (item.value.syncType === SyncType.CloudWithoutPassword && localPassword && !cloudPassword) {
-            newConnectionString.password = localPassword
-          }
-
-          write({
-            type: 'update',
-            value: {
-              ...item.value,
-              connectionString: newConnectionString.toString(),
-              isPasswordPopulated: !!newConnectionString.password,
-              syncType: item.value.syncType ?? SyncType.CloudWithoutPassword,
-            },
-          })
-        }
-        else if (item.type === 'delete') {
-          write({
-            type: 'delete',
-            key: item.key,
-          })
-        }
-      }
-
-      orpc.connections.events.call({}, {
-        signal: abortController.signal,
-      })
-        .then(async (events) => {
-          markReady()
-          for await (const item of events) {
-            begin()
-            writeItem(item)
-            commit()
-          }
-        })
-        .catch(() => {
-          markReady()
-        })
-
-      collection.toArrayWhenReady().then(async (rows) => {
-        orpc.connections.sync.call(
-          rows,
-          { signal: abortController.signal },
-        )
-          .then(async (sync) => {
-            begin()
-            for (const item of sync) {
-              writeItem(item)
-            }
-            commit()
-          })
-      })
-
-      return () => {
-        abortController.abort()
-      }
-    },
-  },
-  onInsert: async ({ transaction }) => {
-    const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionMutationMetadata)?.cloudSync !== false)
-
-    if (mutations.length === 0) {
-      return
-    }
-
-    await Promise.all(mutations.map(m => orpc.connections.create.call({
-      ...m.modified,
-      connectionString: prepareConnectionStringToCloud(m.modified.connectionString, m.modified.syncType),
-    })))
-  },
-  onUpdate: async ({ transaction }) => {
-    const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionMutationMetadata)?.cloudSync !== false)
-
-    if (mutations.length === 0) {
-      return
-    }
-
-    await Promise.all(mutations.map(m => orpc.connections.update.call({
-      id: m.key,
-      ...m.changes,
-      ...(m.changes.connectionString
-        ? { connectionString: prepareConnectionStringToCloud(m.changes.connectionString, m.modified.syncType) }
-        : {}),
-    })))
-  },
-  onDelete: async ({ transaction }) => {
-    const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionMutationMetadata)?.cloudSync !== false)
-
-    if (mutations.length === 0) {
-      return
-    }
-
-    await orpc.connections.remove.call(mutations.map(m => ({ id: m.key })))
-  },
 }))
 
-export interface ConnectionResourcesMutationMetadata {
-  cloudSync?: false
+async function connectionToCloudInput(connection: Connection) {
+  const connectionString = await connectionStringStorage.decrypt(connection.id)
+
+  return {
+    ...connection,
+    isPasswordExists: connection.passwordExists,
+    connectionString: prepareConnectionStringToCloud(connectionString, connection.syncType),
+  }
 }
 
-export interface ConnectionResource extends BaseTable {
-  connectionId: string
-  name: string | null
-}
+export const connectionsResourcesSchema = type({
+  id: 'string',
+  createdAt: 'Date',
+  updatedAt: 'Date',
+  connectionId: 'string',
+  name: 'string | null',
+})
 
-export const connectionsResourcesCollection = createCollection(persistedCollectionOptions<ConnectionResource, string>({
-  id: 'connections-resources',
-  persistence,
+export type ConnectionResource = typeof connectionsResourcesSchema.infer
+
+// @ts-expect-error waiting for https://github.com/TanStack/db/pull/1453
+export const connectionsResourcesCollection = createCollection(persistedCollectionOptions<ConnectionResource>({
+  ...electricCollectionOptions({
+    schema: connectionsResourcesSchema,
+    id: 'connections-resources',
+    shapeOptions: shapeOptions('connections-resources'),
+    getKey: item => item.id,
+    onInsert: async ({ transaction }) => {
+      return orpc.connectionsResources.create.call(transaction.mutations.map(m => m.modified))
+    },
+    onUpdate: async ({ transaction }) => {
+      const result = await Promise.all(transaction.mutations
+        .map(m => orpc.connectionsResources.update.call({ id: m.key, ...m.changes })))
+      return { txid: result.map(r => r.txid) }
+    },
+    onDelete: async ({ transaction }) => {
+      return orpc.connectionsResources.remove.call(transaction.mutations.map(m => ({ id: m.key })))
+    },
+  }),
   autoIndex: 'eager',
   defaultIndexType: BasicIndex,
+  persistence,
   schemaVersion: 1,
-  getKey: item => item.id,
-  sync: {
-    sync: ({ begin, commit, write, collection, markReady }) => {
-      const abortController = new AbortController()
-
-      const writeItem = (item: ORPCOutputs['connectionsResources']['sync'][number]) => {
-        if (item.type === 'delete') {
-          write({
-            type: 'delete',
-            key: item.key,
-          })
-        }
-        else {
-          write({
-            type: item.type,
-            value: item.value,
-          })
-        }
-      }
-
-      orpc.connectionsResources.events.call({}, {
-        signal: abortController.signal,
-      })
-        .then(async (events) => {
-          markReady()
-          for await (const item of events) {
-            begin()
-            writeItem(item)
-            commit()
-          }
-        })
-        .catch(() => {
-          markReady()
-        })
-
-      collection.toArrayWhenReady().then(async (rows) => {
-        orpc.connectionsResources.sync.call(
-          rows,
-          { signal: abortController.signal },
-        )
-          .then(async (sync) => {
-            begin()
-            for (const item of sync) {
-              writeItem(item)
-            }
-            commit()
-          })
-      })
-
-      return () => {
-        abortController.abort()
-      }
-    },
-  },
-  onInsert: async ({ transaction }) => {
-    const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionResourcesMutationMetadata)?.cloudSync !== false)
-
-    if (mutations.length === 0) {
-      return
-    }
-
-    await Promise.all(mutations.map(m => orpc.connectionsResources.create.call(m.modified)))
-  },
-  onUpdate: async ({ transaction }) => {
-    const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionResourcesMutationMetadata)?.cloudSync !== false)
-
-    if (mutations.length === 0) {
-      return
-    }
-
-    await Promise.all(mutations.map(m => orpc.connectionsResources.update.call({ id: m.key, ...m.changes })))
-  },
-  onDelete: async ({ transaction }) => {
-    const mutations = transaction.mutations.filter(m => (m.metadata as ConnectionResourcesMutationMetadata)?.cloudSync !== false)
-
-    if (mutations.length === 0) {
-      return
-    }
-
-    await orpc.connectionsResources.remove.call(mutations.map(m => ({ id: m.key })))
-  },
 }))
+
+export const createConnectionWithResource = createOptimisticAction<{
+  connection: Connection
+  resource: ConnectionResource
+}>({
+  onMutate: ({ connection, resource }) => {
+    connectionsCollection.insert(connection)
+    connectionsResourcesCollection.insert(resource)
+  },
+  mutationFn: async ({ connection, resource }) => {
+    const { txid: connectionTxid } = await orpc.connections.create.call(await connectionToCloudInput(connection))
+    const { txid: resourceTxid } = await orpc.connectionsResources.create.call(resource)
+
+    await Promise.all([
+      connectionsCollection.utils.awaitTxId(connectionTxid),
+      connectionsResourcesCollection.utils.awaitTxId(resourceTxid),
+    ])
+  },
+})

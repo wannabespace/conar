@@ -43,7 +43,7 @@ export const connectionResourcesQuery = createQuery({
 export function connectionResourcesQueryOptions(connection: Connection) {
   return queryOptions({
     queryKey: ['connection', connection.id, 'resources'],
-    queryFn: () => connectionResourcesQuery.run(connectionToQueryParams(connection)),
+    queryFn: async () => connectionResourcesQuery.run(await connectionToQueryParams(connection)),
     throwOnError: false,
   })
 }

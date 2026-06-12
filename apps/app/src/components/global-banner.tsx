@@ -1,5 +1,5 @@
+import type { RouterOutputs } from '@conar/api/orpc/routers'
 import type { ReactNode } from 'react'
-import type { ORPCOutputs } from '~/lib/orpc'
 import { Button } from '@conar/ui/components/button'
 import { Spinner } from '@conar/ui/components/spinner'
 import { cn } from '@conar/ui/lib/utils'
@@ -15,7 +15,7 @@ import { MAX_RECONNECTION_ATTEMPTS, reconnectingPromises } from '~/entities/conn
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 
-type BannerItem = NonNullable<ORPCOutputs['banner']>[number]
+type BannerItem = NonNullable<RouterOutputs['banner']>[number]
 
 const typeConfig = {
   info: {

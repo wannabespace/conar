@@ -126,6 +126,6 @@ export const resourceIndexesQuery = createQuery({
 export function resourceIndexesQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'indexes'],
-    queryFn: () => resourceIndexesQuery.run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () => resourceIndexesQuery.run(await connectionResourceToQueryParams(connectionResource)),
   })
 }

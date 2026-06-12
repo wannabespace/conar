@@ -80,11 +80,23 @@ services:
     networks:
       - infisical
 
+  electric:
+    image: electricsql/electric:latest
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/conar?sslmode=disable
+      ELECTRIC_SECRET: devfe1e207b8cfb185b406438a42adev
+      ELECTRIC_FEATURE_FLAGS: allow_subqueries,tagged_subqueries
+    ports:
+      - '3100:3000'
+    volumes: ['electric_data:/var/lib/electric']
+    depends_on: [db]
+
 volumes:
   postgres_data:
   redis_data:
   infisical_postgres_data:
   infisical_redis_data:
+  electric_data:
 
 networks:
   infisical:

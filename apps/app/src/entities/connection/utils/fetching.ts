@@ -1,23 +1,24 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Connection, ConnectionResource } from '~/entities/connection/sync'
-import { isLocalhostConnectionString } from '@conar/connection/utils'
 import { SyncType } from '@conar/shared/enums/sync-type'
-import { tryCatch } from '@conar/shared/utils/helpers'
+import { useSubscription } from 'seitu/react'
+import { connectionStringStorage, useConnectionString } from '~/lib/connection-string-storage'
 import { queryClient } from '~/main'
-import { isLocalProxyAvailable } from '../proxy'
+import { isLocalProxyAvailable, useLocalProxyAvailable } from '../proxy'
 import { resourceRowsQueryInfiniteOptions } from '../queries'
 import { resourceTableColumnsQueryOptions } from '../queries/columns'
 import { resourceConstraintsQueryOptions } from '../queries/constraints'
 import { resourceEnumsQueryOptions } from '../queries/enums'
 import { resourceTablesAndSchemasQueryOptions } from '../queries/tables-and-schemas'
 import { resourceTableTotalQueryOptions } from '../queries/total'
-import { getConnectionResourceStore } from '../store'
+import { getConnectionResourceStore, getConnectionStore } from '../store'
 import { connectionsCollection } from '../sync'
 
 export async function prefetchConnectionResourceCore(connectionResource: ConnectionResource) {
   const connection = connectionsCollection.get(connectionResource.connectionId)!
+  const info = connectionStringStorage.get(connection.id)
 
-  if (connection.isPasswordExists && !connection.isPasswordPopulated) {
+  if (connection.passwordExists && !info?.metadata?.isPasswordPopulated) {
     return
   }
 
@@ -46,21 +47,25 @@ export async function prefetchConnectionResourceTableCore({ connectionResource, 
   ])
 }
 
-type FetchingConnection = Pick<Connection, 'syncType' | 'connectionString' | 'isPasswordExists' | 'isPasswordPopulated'>
+type FetchingConnection = Pick<Connection, 'syncType' | 'passwordExists'> & { id?: string }
 
 export function fetchingConfig(connection: FetchingConnection, options?: {
   isLocalProxyAvailable?: boolean
+  isPasswordPopulated?: boolean
+  isLocalhost?: boolean
   proxy?: { enabled: boolean, url: string | null }
 }): {
   type: 'cloud-proxy' | 'local' | 'proxy' | 'waiting-for-password'
   canSend: boolean
 } {
-  if (connection.isPasswordExists && !connection.isPasswordPopulated) {
+  const isPasswordPopulated = options?.isPasswordPopulated ?? false
+  const isLocalhost = options?.isLocalhost ?? false
+
+  if (connection.passwordExists && !isPasswordPopulated) {
     return { type: 'waiting-for-password', canSend: false }
   }
 
-  const isLocalhost = tryCatch(() => isLocalhostConnectionString(connection.connectionString)).data === true
-  const isPasswordFilled = (connection.syncType === SyncType.CloudWithoutPassword && connection.isPasswordPopulated)
+  const isPasswordFilled = (connection.syncType === SyncType.CloudWithoutPassword && isPasswordPopulated)
     || connection.syncType === SyncType.Cloud
   const proxyAvailable = options?.isLocalProxyAvailable ?? isLocalProxyAvailable()
   const proxyEnabled = options?.proxy?.enabled === true
@@ -80,4 +85,17 @@ export function fetchingConfig(connection: FetchingConnection, options?: {
   }
 
   return { type: 'cloud-proxy', canSend: true }
+}
+
+export function useFetchingConfig(connection: Pick<Connection, 'id' | 'syncType' | 'passwordExists'>) {
+  const isLocalProxyAvailable = useLocalProxyAvailable()
+  const connectionString = useConnectionString(connection.id)
+  const proxy = useSubscription(getConnectionStore(connection.id), { selector: s => s.proxy })
+
+  return fetchingConfig(connection, {
+    isLocalProxyAvailable,
+    isPasswordPopulated: connectionString?.metadata.isPasswordPopulated,
+    isLocalhost: connectionString?.metadata.isLocalhost,
+    proxy,
+  })
 }

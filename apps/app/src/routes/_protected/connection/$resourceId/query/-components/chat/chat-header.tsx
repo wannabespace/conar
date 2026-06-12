@@ -1,5 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { Chat, ChatMutationMetadata } from '~/entities/chat/sync'
+import type { Chat } from '~/entities/chat/sync'
 import { convertToAppUIMessage } from '@conar/ai/tools/helpers'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
@@ -95,17 +95,9 @@ export function ChatHeader({ chatId }: { chatId: string }) {
       return
     }
 
-    const title = await orpc.ai.generateTitle.call({
+    await orpc.ai.generateTitle.call({
       chatId: chat.id,
       messages: messages.map(convertToAppUIMessage),
-    })
-
-    chatsCollection.update(chat.id, {
-      metadata: {
-        cloudSync: false,
-      } satisfies ChatMutationMetadata,
-    }, (draft) => {
-      draft.title = title
     })
   })
 

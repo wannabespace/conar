@@ -3,7 +3,7 @@ import type { ComponentProps } from 'react'
 import { cn } from '@conar/ui/lib/utils'
 import { Link } from '@tanstack/react-router'
 
-const baseClasses = 'flex w-full items-center gap-2 rounded-md border px-2 py-1 text-sm'
+const baseClasses = 'flex w-full items-center gap-2 rounded-md border px-2 py-1 text-sm cursor-default'
 const activeClasses = 'border-primary/20 bg-primary/10 text-primary hover:bg-primary/20'
 const inactiveClasses = 'border-transparent text-foreground hover:bg-accent/30'
 

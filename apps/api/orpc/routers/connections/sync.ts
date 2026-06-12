@@ -1,6 +1,6 @@
 import { db } from '@conar/db'
 import { connections, connectionsSelectSchema } from '@conar/db/schema'
-import { decrypt } from '@conar/shared/utils/encryption'
+import { decrypt } from '@conar/shared/utils/crypto-node'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
 import { and, eq, gte, inArray, notInArray, or } from 'drizzle-orm'

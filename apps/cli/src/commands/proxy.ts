@@ -1,4 +1,4 @@
-import type { ORPCOutputs } from '~/orpc'
+import type { RouterOutputs } from '@conar/api/orpc/routers'
 import process from 'node:process'
 import { createQueryRouter } from '@conar/query-proxy'
 import { PORTS } from '@conar/shared/constants'
@@ -13,8 +13,8 @@ import { cors } from 'hono/cors'
 import { orpc as apiOrpc } from '~/orpc'
 import { requireSession } from '~/session'
 
-type Connection = ORPCOutputs['connections']['list'][number]
-type Resource = ORPCOutputs['connectionsResources']['list'][number]
+type Connection = RouterOutputs['connections']['list'][number]
+type Resource = RouterOutputs['connectionsResources']['list'][number]
 
 const REFRESH_INTERVAL_MS = 60_000
 

@@ -13,7 +13,7 @@ import { withPosthog } from '~/lib/posthog'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 const model = createRetryable({
-  model: anthropic('claude-opus-4-6'),
+  model: anthropic('claude-opus-4-8'),
   retries: [
     openai('gpt-5.3-codex'),
     google('gemini-pro-latest'),

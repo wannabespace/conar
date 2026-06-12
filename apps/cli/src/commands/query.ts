@@ -1,6 +1,6 @@
+import type { RouterOutputs } from '@conar/api/orpc/routers'
 import type { QueryExecutor } from '@conar/connection/queries'
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import type { ORPCOutputs } from '~/orpc'
 import fs from 'node:fs'
 import process from 'node:process'
 import * as clickhouse from '@conar/connection/queries/dialects/clickhouse'
@@ -13,7 +13,7 @@ import ora from 'ora'
 import { orpc } from '~/orpc'
 import { requireSession } from '~/session'
 
-type Connection = ORPCOutputs['connections']['list'][number]
+type Connection = RouterOutputs['connections']['list'][number]
 
 const queryMap = {
   postgres: pg.query,

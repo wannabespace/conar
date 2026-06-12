@@ -3,8 +3,8 @@ import { chats, chatsMessages, chatsMessagesUpdateSchema } from '@conar/db/schem
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
+import { generateTxId } from '~/lib/electric'
 import { orpc, subscriptionMiddleware } from '~/orpc'
-import { publisher } from './events'
 
 export const update = orpc
   .use(subscriptionMiddleware)
@@ -24,15 +24,12 @@ export const update = orpc
       })
     }
 
-    const [message] = await db
-      .update(chatsMessages)
-      .set(input)
-      .where(eq(chatsMessages.id, input.id))
-      .returning()
+    return db.transaction(async (tx) => {
+      await tx
+        .update(chatsMessages)
+        .set(input)
+        .where(eq(chatsMessages.id, input.id))
 
-    publisher.publish('event', {
-      type: 'update',
-      value: message!,
-      clientId: context.clientId,
+      return { txid: await generateTxId(tx) }
     })
   })

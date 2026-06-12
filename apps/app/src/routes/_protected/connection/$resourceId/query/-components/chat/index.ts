@@ -200,7 +200,7 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
           },
           select: input.select ?? undefined,
         })
-          .run(connectionResourceToQueryParams(connectionResource))
+          .run(await connectionResourceToQueryParams(connectionResource))
           .catch(error => ({
             error: error instanceof Error ? error.message : 'Error during the query execution',
           })) satisfies AITools['select']['output']

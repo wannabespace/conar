@@ -3,8 +3,8 @@ import { connectionsResources } from '@conar/db/schema'
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { inArray } from 'drizzle-orm'
+import { generateTxId } from '~/lib/electric'
 import { authMiddleware, orpc } from '~/orpc'
-import { publisher } from './events'
 
 const input = type({
   id: 'string.uuid',
@@ -15,7 +15,7 @@ export const remove = orpc
   .input(type.or(input, input.array()).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
     if (input.length === 0) {
-      return
+      throw new ORPCError('BAD_REQUEST', { message: 'No connection resources to remove' })
     }
 
     const resources = await db.query.connectionsResources.findMany({
@@ -38,15 +38,11 @@ export const remove = orpc
       throw new ORPCError('NOT_FOUND', { message: 'Some connection resources not found' })
     }
 
-    await db
-      .delete(connectionsResources)
-      .where(inArray(connectionsResources.id, input.map(item => item.id)))
+    return db.transaction(async (tx) => {
+      await tx
+        .delete(connectionsResources)
+        .where(inArray(connectionsResources.id, input.map(item => item.id)))
 
-    for (const item of input) {
-      publisher.publish('event', {
-        type: 'delete',
-        key: item.id,
-        clientId: context.clientId,
-      })
-    }
+      return { txid: await generateTxId(tx) }
+    })
   })

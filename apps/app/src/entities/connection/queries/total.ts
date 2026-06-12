@@ -137,7 +137,7 @@ export function resourceTableTotalQueryOptions({
   query: { filters: ActiveFilter[], exact: boolean }
 }) {
   return queryOptions({
-    queryFn: () => resourceTableTotalQuery({ table, schema, query: { filters, exact } }).run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () => resourceTableTotalQuery({ table, schema, query: { filters, exact } }).run(await connectionResourceToQueryParams(connectionResource)),
     queryKey: [
       'connection-resource',
       connectionResource.id,

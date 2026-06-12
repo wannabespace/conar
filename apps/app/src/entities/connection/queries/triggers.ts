@@ -98,7 +98,7 @@ export const resourceTriggersQuery = createQuery({
 
 export function resourceTriggersQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
   return queryOptions({
-    queryFn: () => resourceTriggersQuery.run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () => resourceTriggersQuery.run(await connectionResourceToQueryParams(connectionResource)),
     queryKey: ['connection-resource', connectionResource.id, 'triggers'],
   })
 }

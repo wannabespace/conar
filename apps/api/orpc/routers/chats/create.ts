@@ -1,21 +1,25 @@
 import { db } from '@conar/db'
 import { chats, chatsInsertSchema } from '@conar/db/schema'
+import { type } from 'arktype'
+import { generateTxId } from '~/lib/electric'
 import { orpc, subscriptionMiddleware } from '~/orpc'
-import { publisher } from './events'
+
+const schema = chatsInsertSchema.omit('userId', 'activeStreamId', 'title')
 
 export const create = orpc
   .use(subscriptionMiddleware)
-  .input(chatsInsertSchema.omit('userId', 'activeStreamId', 'title'))
+  .input(type.or(
+    schema,
+    schema.array(),
+  ).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
-    const [chat] = await db.insert(chats).values({
-      ...input,
-      activeStreamId: null,
-      userId: context.user.id,
-    }).returning()
+    return db.transaction(async (tx) => {
+      await tx.insert(chats).values(input.map(item => ({
+        ...item,
+        activeStreamId: null,
+        userId: context.user.id,
+      })))
 
-    publisher.publish('event', {
-      type: 'insert',
-      value: chat!,
-      clientId: context.clientId,
+      return { txid: await generateTxId(tx) }
     })
   })

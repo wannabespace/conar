@@ -1,6 +1,6 @@
 import { db } from '@conar/db'
 import { SyncType } from '@conar/shared/enums/sync-type'
-import { decrypt } from '@conar/shared/utils/encryption'
+import { decrypt } from '@conar/shared/utils/crypto-node'
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { env } from '~/env'
