@@ -13,7 +13,6 @@ import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/quer
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
-import { authClient } from '~/lib/auth'
 import { appStore, setIsActionCenterOpen } from '~/store'
 
 function ActionsResourceTables({ connection, connectionResource }: { connection: Connection, connectionResource: ConnectionResourceType }) {
@@ -102,30 +101,18 @@ function ConnectionResource({ connection, connectionResource }: { connection: Co
 
 export function ActionsCenter() {
   const { resourceId } = useParams({ strict: false })
-  const { data: session } = authClient.useSession()
-  const hasUser = !!session?.user
-  // Only open the Electric live query once signed in. Subscribing pre-auth would
-  // fetch the connections/resources shapes unauthenticated (401) and leave the
-  // collections in an error state. The command palette itself stays usable for
-  // actions that don't need auth.
-  const { data: rawData } = useLiveQuery(q => hasUser
-    ? q
-        .from({ connections: connectionsCollection })
-        .innerJoin(
-          { connectionResources: connectionsResourcesCollection },
-          ({ connectionResources, connections }) => eq(connectionResources.connectionId, connections.id),
-        )
-        .select(({ connections, connectionResources }) => ({
-          connection: connections,
-          connectionResource: connectionResources,
-        }))
-        .orderBy(({ connections }) => connections.createdAt, 'desc')
-    : undefined, [hasUser])
+  const { data } = useLiveQuery(q => q
+    .from({ connections: connectionsCollection })
+    .innerJoin(
+      { connectionResources: connectionsResourcesCollection },
+      ({ connectionResources, connections }) => eq(connectionResources.connectionId, connections.id),
+    )
+    .select(({ connections, connectionResources }) => ({
+      connection: connections,
+      connectionResource: connectionResources,
+    }))
+    .orderBy(({ connections }) => connections.createdAt, 'desc'))
 
-  const data = rawData?.map(row => ({
-    connection: row.connection,
-    connectionResource: row.connectionResource,
-  })) ?? []
   const isOpen = useSubscription(appStore, { selector: state => state.isActionCenterOpen })
   const router = useRouter()
 

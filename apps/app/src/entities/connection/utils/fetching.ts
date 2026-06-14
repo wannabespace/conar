@@ -16,9 +16,9 @@ import { connectionsCollection } from '../sync'
 
 export async function prefetchConnectionResourceCore(connectionResource: ConnectionResource) {
   const connection = connectionsCollection.get(connectionResource.connectionId)!
-  const info = connectionStringStorage.get(connection.id)
+  const connectionString = connectionStringStorage.get(connection.id)
 
-  if (connection.passwordExists && !info?.metadata?.isPasswordPopulated) {
+  if (connection.passwordExists && !connectionString?.metadata?.isPasswordPopulated) {
     return
   }
 

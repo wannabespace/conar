@@ -6,9 +6,8 @@ import { electricCollectionOptions } from '@tanstack/electric-db-collection'
 import { BasicIndex, createCollection, createOptimisticAction } from '@tanstack/react-db'
 import { type } from 'arktype'
 import { connectionStringStorage } from '~/lib/connection-string-storage'
-import { shapeOptions } from '~/lib/electric'
 import { orpc } from '~/lib/orpc'
-import { persistence } from '~/lib/sync'
+import { persistence, shapeOptions } from '~/lib/sync'
 
 export const connectionsSchema = type({
   id: 'string',

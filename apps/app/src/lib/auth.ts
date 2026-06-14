@@ -4,8 +4,9 @@ import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
+import { router } from '~/main'
 import { apiUrl } from '../utils/utils'
-import { clearDb } from './sync'
+import { connectionStringStorage } from './connection-string-storage'
 
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
 
@@ -61,6 +62,6 @@ export async function isSignedIn() {
 export async function fullSignOut() {
   await authClient.signOut()
   bearerToken.clear()
-  await clearDb()
-  window.location.reload()
+  router.navigate({ to: '/auth' })
+  await connectionStringStorage.clear()
 }

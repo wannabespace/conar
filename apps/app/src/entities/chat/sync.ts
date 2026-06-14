@@ -3,9 +3,8 @@ import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persiste
 import { electricCollectionOptions } from '@tanstack/electric-db-collection'
 import { BasicIndex, createCollection } from '@tanstack/react-db'
 import { type } from 'arktype'
-import { shapeOptions } from '~/lib/electric'
 import { orpc } from '~/lib/orpc'
-import { persistence } from '~/lib/sync'
+import { persistence, shapeOptions } from '~/lib/sync'
 
 export const chatsSchema = type({
   id: 'string',

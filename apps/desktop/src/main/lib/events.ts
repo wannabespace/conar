@@ -9,43 +9,33 @@ import { decrypt, encrypt } from '@conar/shared/utils/crypto-node'
 import { app, ipcMain, safeStorage } from 'electron'
 import { autoUpdater } from '../main'
 
-const queryMap = {
-  postgres: pg.query,
-  mysql: mysql.query,
-  clickhouse: clickhouse.query,
-  mssql: mssql.query,
-} satisfies Record<ConnectionType, QueryExecutor>
-
-const encryption = {
-  encrypt: async (arg: Parameters<typeof encrypt>[0]) => encrypt(arg),
-  decrypt: async (arg: Parameters<typeof decrypt>[0]) => decrypt(arg),
-}
-
-const safeStorageIpc = {
-  isEncryptionAvailable: async () => safeStorage.isEncryptionAvailable(),
-  encryptString: async (plain: string) => safeStorage.encryptString(plain).toString('base64'),
-  decryptString: async (b64: string) => safeStorage.decryptString(Buffer.from(b64, 'base64')),
-}
-
-const _app = {
-  checkForUpdates: () => {
-    return autoUpdater?.checkForUpdates()
-  },
-  quitAndInstall: () => {
-    autoUpdater?.restartAndInstall()
-  },
-}
-
-const versions = {
-  app: async () => app.getVersion(),
-}
-
 export const electron = {
-  query: queryMap,
-  encryption,
-  safeStorage: safeStorageIpc,
-  app: _app,
-  versions,
+  query: {
+    postgres: pg.query,
+    mysql: mysql.query,
+    clickhouse: clickhouse.query,
+    mssql: mssql.query,
+  } satisfies Record<ConnectionType, QueryExecutor>,
+  encryption: {
+    encrypt: async (arg: Parameters<typeof encrypt>[0]) => encrypt(arg),
+    decrypt: async (arg: Parameters<typeof decrypt>[0]) => decrypt(arg),
+  },
+  safeStorage: {
+    isEncryptionAvailable: async () => safeStorage.isEncryptionAvailable(),
+    encryptString: async (plain: string) => safeStorage.encryptString(plain).toString('base64'),
+    decryptString: async (b64: string) => safeStorage.decryptString(Buffer.from(b64, 'base64')),
+  },
+  app: {
+    checkForUpdates: () => {
+      return autoUpdater?.checkForUpdates()
+    },
+    quitAndInstall: () => {
+      autoUpdater?.restartAndInstall()
+    },
+  },
+  versions: {
+    app: async () => app.getVersion(),
+  },
 }
 
 function registerHandlers(prefix: string, value: unknown) {

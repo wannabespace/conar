@@ -7,13 +7,13 @@ import { memoize } from 'memoza'
 import { useSubscription } from 'seitu/react'
 import { createIndexedDbStorage } from 'seitu/web'
 
-const safeStorageAvailable = memoize(() => window.electron ? window.electron.safeStorage.isEncryptionAvailable() : false)
+const safeStorageAvailable = memoize(async () => window.electron ? window.electron.safeStorage.isEncryptionAvailable() : false)
 
 function importAesKey(raw: Uint8Array<ArrayBuffer>) {
   return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt'])
 }
 
-const connectionsStringsStorage = createIndexedDbStorage({
+const storage = createIndexedDbStorage({
   databaseName: 'secure-storage',
   storeName: 'connections-strings',
   schemas: {
@@ -38,13 +38,13 @@ const connectionsStringsStorage = createIndexedDbStorage({
 })
 
 function resetEncryptionKey() {
-  return connectionsStringsStorage.set({ encryptionKey: null, connectionStrings: {} })
+  return storage.set({ encryptionKey: null, connectionStrings: {} })
 }
 
 const getEncryptionKey = memoize(async (): Promise<CryptoKey> => {
-  await connectionsStringsStorage.ready
+  await storage.ready
 
-  const stored = connectionsStringsStorage.get().encryptionKey
+  const stored = storage.get().encryptionKey
 
   if (stored instanceof CryptoKey)
     return stored
@@ -62,7 +62,7 @@ const getEncryptionKey = memoize(async (): Promise<CryptoKey> => {
     }
 
     const raw = crypto.getRandomValues(new Uint8Array(32))
-    await connectionsStringsStorage.set({ encryptionKey: await safeStorage.encryptString(bytesToBase64(raw)) })
+    await storage.set({ encryptionKey: await safeStorage.encryptString(bytesToBase64(raw)) })
     return importAesKey(raw)
   }
 
@@ -72,7 +72,7 @@ const getEncryptionKey = memoize(async (): Promise<CryptoKey> => {
     await resetEncryptionKey()
 
   const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt'])
-  await connectionsStringsStorage.set({ encryptionKey: key })
+  await storage.set({ encryptionKey: key })
   return key
 })
 
@@ -85,11 +85,11 @@ async function decryptConnectionString(encryptedConnectionString: string) {
 }
 
 export const connectionStringStorage = {
-  ready: connectionsStringsStorage.ready,
-  has: (id: string) => id in connectionsStringsStorage.get().connectionStrings,
-  get: (id: string) => connectionsStringsStorage.get().connectionStrings[id],
+  ready: storage.ready,
+  has: (id: string) => id in storage.get().connectionStrings,
+  get: (id: string) => storage.get().connectionStrings[id],
   decrypt: (id: string): Promise<string> => {
-    const record = connectionsStringsStorage.get().connectionStrings[id]
+    const record = connectionStringStorage.get(id)
     if (!record)
       throw new Error(`No connection string found for connection "${id}"`)
     return decryptConnectionString(record.encrypted)
@@ -97,7 +97,7 @@ export const connectionStringStorage = {
   set: async (id: string, connectionString: string) => {
     const url = new SafeURL(connectionString)
     const encrypted = await encryptConnectionString(connectionString)
-    await connectionsStringsStorage.set(prev => ({
+    await storage.set(prev => ({
       connectionStrings: {
         ...prev.connectionStrings,
         [id]: {
@@ -113,15 +113,15 @@ export const connectionStringStorage = {
     }))
   },
   remove: async (id: string) => {
-    await connectionsStringsStorage.set((prev) => {
+    await storage.set((prev) => {
       const connectionStrings = { ...prev.connectionStrings }
       delete connectionStrings[id]
       return { connectionStrings }
     })
   },
-  clear: () => connectionsStringsStorage.set({ connectionStrings: {} }),
+  clear: () => storage.set({ connectionStrings: {} }),
 }
 
 export function useConnectionString(id: string) {
-  return useSubscription(connectionsStringsStorage, { selector: state => state.connectionStrings[id] })
+  return useSubscription(storage, { selector: state => state.connectionStrings[id] })
 }

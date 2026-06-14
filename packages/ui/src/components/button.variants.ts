@@ -2,9 +2,9 @@ import { cva } from 'class-variance-authority'
 
 export const buttonVariants = cva(
   `
-    relative inline-flex shrink-0 cursor-pointer items-center justify-center
-    gap-2 rounded-lg border text-base font-medium whitespace-nowrap
-    transition-shadow outline-none
+    relative inline-flex shrink-0 items-center justify-center gap-2 rounded-lg
+    border text-base font-medium whitespace-nowrap transition-shadow
+    outline-none
     before:pointer-events-none before:absolute before:inset-0
     before:rounded-[calc(var(--radius-lg)-1px)]
     focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
