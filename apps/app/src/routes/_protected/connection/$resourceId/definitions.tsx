@@ -16,10 +16,7 @@ export const Route = createFileRoute(
       })
     }
   },
-  loader: ({ context }) => ({
-    connection: context.connection,
-    connectionResource: context.connectionResource,
-  }),
+  loader: ({ context }) => context,
   head: ({ loaderData }) => ({
     meta: loaderData
       ? [{ title: title('Definitions', loaderData.connection.name, loaderData.connectionResource.name) }]

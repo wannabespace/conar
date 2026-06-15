@@ -57,11 +57,6 @@ export const subscriptionQueryClient = new QueryClient({
   },
 })
 
-// Native trigger don't work for some reason, so we need to use this workaround
-window.addEventListener('focus', () => {
-  subscriptionQueryClient.refetchQueries()
-})
-
 export const router = createRouter({
   history: import.meta.env.VITE_TEST || !window.electron ? createBrowserHistory() : createHashHistory(),
   routeTree,
