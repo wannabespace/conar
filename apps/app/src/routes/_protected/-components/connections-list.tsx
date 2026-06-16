@@ -246,7 +246,6 @@ function ConnectionCard({
 
   useEffect(() => {
     if (canOpenResource && !selectedResource && !isFetching && !error && !isWaitForSyncPending) {
-      console.log(canOpenResource, !selectedResource, !isFetching, !error, !isWaitForSyncPending)
       connectionsResourcesCollection.insert({
         id: v7(),
         connectionId: connection.id,
