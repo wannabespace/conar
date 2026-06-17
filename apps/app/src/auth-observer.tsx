@@ -1,17 +1,20 @@
-import { useMatches, useRouter } from '@tanstack/react-router'
+import { useMatches } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { authClient, bearerToken } from './lib/auth'
+import { router } from './main'
 import { appStore } from './store'
 
 export function AuthObserver() {
   const { data, error, isPending } = authClient.useSession()
-  const router = useRouter()
   const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const match = useMatches({
     select: matches => matches.map(match => match.routeId).at(-1),
   })
+
+  const hasUser = !!data?.user
+  const hasError = !!error
 
   useEffect(() => {
     if (isPending)
@@ -21,21 +24,23 @@ export function AuthObserver() {
      * An error can be only on the server side
      * To not block the app, we navigate to the home page to continue working
      */
-    if (!!bearerToken.get() && !!error) {
+    if (!!bearerToken.get() && hasError) {
       if (match === '/auth')
         router.navigate({ to: '/' })
 
       return
     }
 
-    if (data?.user && match === '/auth') {
+    console.log(isPending, hasUser, match, hasError)
+
+    if (hasUser && match === '/auth') {
       router.navigate({ to: '/' })
     }
 
-    if (!data?.user && match !== '/auth') {
+    if (!hasUser && match !== '/auth') {
       router.navigate({ to: '/auth' })
     }
-  }, [router, isPending, data?.user, match, error])
+  }, [isPending, hasUser, match, hasError])
 
   useEffect(() => {
     if (!!bearerToken.get() && !!error && isOnline) {

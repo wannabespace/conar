@@ -11,8 +11,8 @@ import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
+import { useCollections } from '~/lib/collections'
 import { appStore, setIsActionCenterOpen } from '~/store'
 
 function ActionsResourceTables({ connection, connectionResource }: { connection: Connection, connectionResource: ConnectionResourceType }) {
@@ -101,6 +101,7 @@ function ConnectionResource({ connection, connectionResource }: { connection: Co
 
 export function ActionsCenter() {
   const { resourceId } = useParams({ strict: false })
+  const { connectionsCollection, connectionsResourcesCollection } = useCollections()
   const { data } = useLiveQuery(q => q
     .from({ connections: connectionsCollection })
     .innerJoin(

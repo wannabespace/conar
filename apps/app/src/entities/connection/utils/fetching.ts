@@ -2,6 +2,7 @@ import type { ActiveFilter } from '@conar/shared/filters'
 import type { Connection, ConnectionResource } from '~/entities/connection/sync'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { useSubscription } from 'seitu/react'
+import { getCollections } from '~/lib/collections'
 import { connectionStringStorage, useConnectionString } from '~/lib/connection-string-storage'
 import { queryClient } from '~/main'
 import { isLocalProxyAvailable, useLocalProxyAvailable } from '../proxy'
@@ -12,9 +13,9 @@ import { resourceEnumsQueryOptions } from '../queries/enums'
 import { resourceTablesAndSchemasQueryOptions } from '../queries/tables-and-schemas'
 import { resourceTableTotalQueryOptions } from '../queries/total'
 import { getConnectionResourceStore, getConnectionStore } from '../store'
-import { connectionsCollection } from '../sync'
 
 export async function prefetchConnectionResourceCore(connectionResource: ConnectionResource) {
+  const { connectionsCollection } = await getCollections()
   const connection = connectionsCollection.get(connectionResource.connectionId)!
   const connectionString = connectionStringStorage.get(connection.id)
 

@@ -15,7 +15,7 @@ import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
 import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
-import { queriesCollection } from '~/entities/query/sync'
+import { useCollections } from '~/lib/collections'
 import { formatSql } from '~/utils/formatter'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
@@ -80,6 +80,7 @@ export function Runner() {
   const { connection, connectionResource } = Route.useRouteContext()
   const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
   const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
+  const { queriesCollection } = useCollections()
   const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(q => q
     .from({ queries: queriesCollection })
     .where(({ queries }) => eq(queries.connectionResourceId, connectionResource.id))

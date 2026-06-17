@@ -16,31 +16,6 @@ export const chatsSchema = type({
 
 export type Chat = typeof chatsSchema.infer
 
-// @ts-expect-error waiting for https://github.com/TanStack/db/pull/1453
-export const chatsCollection = createCollection(persistedCollectionOptions<Chat>({
-  ...electricCollectionOptions({
-    schema: chatsSchema,
-    id: 'chats',
-    shapeOptions: shapeOptions('chats'),
-    getKey: item => item.id,
-    onInsert: async ({ transaction }) => {
-      return orpc.chats.create.call(transaction.mutations.map(m => m.modified))
-    },
-    onUpdate: async ({ transaction }) => {
-      const result = await Promise.all(transaction.mutations
-        .map(m => orpc.chats.update.call({ id: m.key, ...m.changes })))
-      return { txid: result.map(r => r.txid) }
-    },
-    onDelete: async ({ transaction }) => {
-      return orpc.chats.remove.call(transaction.mutations.map(m => ({ id: m.key })))
-    },
-  }),
-  autoIndex: 'eager',
-  defaultIndexType: BasicIndex,
-  persistence,
-  schemaVersion: 1,
-}))
-
 export const chatsMessagesSchema = type({
   id: 'string',
   createdAt: 'Date',
@@ -53,27 +28,56 @@ export const chatsMessagesSchema = type({
 
 export type ChatMessage = typeof chatsMessagesSchema.infer
 
-// @ts-expect-error waiting for https://github.com/TanStack/db/pull/1453
-export const chatsMessagesCollection = createCollection(persistedCollectionOptions<ChatMessage>({
-  ...electricCollectionOptions({
-    schema: chatsMessagesSchema,
-    id: 'chats-messages',
-    shapeOptions: shapeOptions('chats-messages'),
-    getKey: item => item.id,
-    onInsert: async ({ transaction }) => {
-      return orpc.chatsMessages.create.call(transaction.mutations.map(m => m.modified))
-    },
-    onUpdate: async ({ transaction }) => {
-      const result = await Promise.all(transaction.mutations
-        .map(m => orpc.chatsMessages.update.call({ id: m.key, ...m.changes })))
-      return { txid: result.map(r => r.txid) }
-    },
-    onDelete: async ({ transaction }) => {
-      return orpc.chatsMessages.remove.call(transaction.mutations.map(m => ({ id: m.key, chatId: m.modified.chatId })))
-    },
-  }),
-  autoIndex: 'eager',
-  defaultIndexType: BasicIndex,
-  persistence,
-  schemaVersion: 1,
-}))
+export function createChatCollections() {
+  // @ts-expect-error waiting for https://github.com/TanStack/db/pull/1453
+  const chatsCollection = createCollection(persistedCollectionOptions<Chat>({
+    ...electricCollectionOptions({
+      schema: chatsSchema,
+      id: 'chats',
+      shapeOptions: shapeOptions('chats'),
+      getKey: item => item.id,
+      onInsert: async ({ transaction }) => {
+        return orpc.chats.create.call(transaction.mutations.map(m => m.modified))
+      },
+      onUpdate: async ({ transaction }) => {
+        const result = await Promise.all(transaction.mutations
+          .map(m => orpc.chats.update.call({ id: m.key, ...m.changes })))
+        return { txid: result.map(r => r.txid) }
+      },
+      onDelete: async ({ transaction }) => {
+        return orpc.chats.remove.call(transaction.mutations.map(m => ({ id: m.key })))
+      },
+    }),
+    autoIndex: 'eager',
+    defaultIndexType: BasicIndex,
+    persistence,
+    schemaVersion: 1,
+  }))
+
+  // @ts-expect-error waiting for https://github.com/TanStack/db/pull/1453
+  const chatsMessagesCollection = createCollection(persistedCollectionOptions<ChatMessage>({
+    ...electricCollectionOptions({
+      schema: chatsMessagesSchema,
+      id: 'chats-messages',
+      shapeOptions: shapeOptions('chats-messages'),
+      getKey: item => item.id,
+      onInsert: async ({ transaction }) => {
+        return orpc.chatsMessages.create.call(transaction.mutations.map(m => m.modified))
+      },
+      onUpdate: async ({ transaction }) => {
+        const result = await Promise.all(transaction.mutations
+          .map(m => orpc.chatsMessages.update.call({ id: m.key, ...m.changes })))
+        return { txid: result.map(r => r.txid) }
+      },
+      onDelete: async ({ transaction }) => {
+        return orpc.chatsMessages.remove.call(transaction.mutations.map(m => ({ id: m.key, chatId: m.modified.chatId })))
+      },
+    }),
+    autoIndex: 'eager',
+    defaultIndexType: BasicIndex,
+    persistence,
+    schemaVersion: 1,
+  }))
+
+  return { chatsCollection, chatsMessagesCollection }
+}

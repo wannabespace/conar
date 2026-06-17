@@ -1,8 +1,7 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
-import { authClient } from '~/lib/auth'
+import { clearCollectionsCache, getCollections } from '~/lib/collections'
 import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { subscriptionQueryClient } from '~/main'
 import { ActionsCenter } from './-components/actions-center'
@@ -10,25 +9,22 @@ import { ActionsCenter } from './-components/actions-center'
 export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
   beforeLoad: async () => {
-    await Promise.all([
-      connectionsCollection.toArrayWhenReady(),
-      connectionsResourcesCollection.toArrayWhenReady(),
-      connectionStringStorage.ready,
-    ])
+    const collections = getCollections()
+
+    await Promise.all(Object.values(collections)
+      .filter(collection => 'toArrayWhenReady' in collection)
+      .map(collection => collection.toArrayWhenReady()))
+
+    await connectionStringStorage.ready
+    await connectionStringStorage.resolved()
+
+    return { collections }
   },
 })
 
 // eslint-disable-next-line react-refresh/only-export-components
 function ProtectedLayout() {
-  const { data } = authClient.useSession()
-
-  const isSignedIn = !!data?.user
-
   useEffect(() => {
-    if (!isSignedIn) {
-      return
-    }
-
     const handleFocus = () => {
       subscriptionQueryClient.refetchQueries()
     }
@@ -37,9 +33,10 @@ function ProtectedLayout() {
     window.addEventListener('focus', handleFocus)
 
     return () => {
+      clearCollectionsCache()
       window.removeEventListener('focus', handleFocus)
     }
-  }, [isSignedIn])
+  }, [])
 
   return (
     <>

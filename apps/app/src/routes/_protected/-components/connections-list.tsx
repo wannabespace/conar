@@ -33,10 +33,10 @@ import { ConnectionResourceLink } from '~/entities/connection/components/connect
 import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
 import { getConnectionStore } from '~/entities/connection/store'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { authClient } from '~/lib/auth'
+import { useCollections } from '~/lib/collections'
 import { connectionStringStorage, useConnectionString } from '~/lib/connection-string-storage'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
@@ -200,6 +200,7 @@ function ConnectionCard({
   connection: Connection
   onRemove: VoidFunction
 }) {
+  const { connectionsResourcesCollection } = useCollections()
   const { data: storedResources } = useLiveQuery(q => q
     .from({ connectionsResources: connectionsResourcesCollection })
     .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
@@ -254,7 +255,7 @@ function ConnectionCard({
         updatedAt: new Date(),
       })
     }
-  }, [canOpenResource, resolvedSelectedResourceName, selectedResource, connection.id, isFetching, error, isWaitForSyncPending])
+  }, [canOpenResource, resolvedSelectedResourceName, selectedResource, connection.id, isFetching, error, isWaitForSyncPending, connectionsResourcesCollection])
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -479,6 +480,7 @@ export function ConnectionsList() {
   const hasUser = !!session?.user
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
   const sort = useSubscription(sortValue)
+  const { connectionsCollection } = useCollections()
   const { data } = useLiveQuery((q) => {
     let query = q.from({ connections: connectionsCollection })
 

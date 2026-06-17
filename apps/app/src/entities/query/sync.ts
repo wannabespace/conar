@@ -16,22 +16,26 @@ export const queriesSchema = type({
 
 export type Query = typeof queriesSchema.infer
 
-// @ts-expect-error waiting for https://github.com/TanStack/db/pull/1453
-export const queriesCollection = createCollection(persistedCollectionOptions<Query>({
-  ...electricCollectionOptions({
-    schema: queriesSchema,
-    id: 'queries',
-    shapeOptions: shapeOptions('queries'),
-    getKey: item => item.id,
-    onInsert: async ({ transaction }) => {
-      return orpc.queries.create.call(transaction.mutations.map(m => m.modified))
-    },
-    onDelete: async ({ transaction }) => {
-      return orpc.queries.remove.call(transaction.mutations.map(m => ({ id: m.key })))
-    },
-  }),
-  autoIndex: 'eager',
-  defaultIndexType: BasicIndex,
-  persistence,
-  schemaVersion: 1,
-}))
+export function createQueryCollections() {
+  // @ts-expect-error waiting for https://github.com/TanStack/db/pull/1453
+  const queriesCollection = createCollection(persistedCollectionOptions<Query>({
+    ...electricCollectionOptions({
+      schema: queriesSchema,
+      id: 'queries',
+      shapeOptions: shapeOptions('queries'),
+      getKey: item => item.id,
+      onInsert: async ({ transaction }) => {
+        return orpc.queries.create.call(transaction.mutations.map(m => m.modified))
+      },
+      onDelete: async ({ transaction }) => {
+        return orpc.queries.remove.call(transaction.mutations.map(m => ({ id: m.key })))
+      },
+    }),
+    autoIndex: 'eager',
+    defaultIndexType: BasicIndex,
+    persistence,
+    schemaVersion: 1,
+  }))
+
+  return { queriesCollection }
+}

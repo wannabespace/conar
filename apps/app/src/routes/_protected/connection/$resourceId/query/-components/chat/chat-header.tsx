@@ -20,11 +20,8 @@ import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { getMonth, getWeek, getYear, isToday, isYesterday } from 'date-fns'
 import { useEffect, useEffectEvent, useRef } from 'react'
-import {
-  chatsCollection,
-  chatsMessagesCollection,
-} from '~/entities/chat/sync'
 import { getConnectionResourceStore } from '~/entities/connection/store'
+import { useCollections } from '~/lib/collections'
 import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
 import { RemoveChatDialog } from './remove-chat-dialog'
@@ -83,6 +80,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
   const navigate = useNavigate()
   const store = getConnectionResourceStore(resourceId)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveChatDialog>>(null)
+  const { chatsCollection, chatsMessagesCollection } = useCollections()
   const { data: allChats } = useLiveQuery(q => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'))
   const chat = allChats.find(chat => chat.id === chatId)
   const { data: messages } = useLiveQuery(q => q

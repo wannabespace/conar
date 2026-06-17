@@ -1,6 +1,6 @@
 import type { ElectricCollectionConfig } from '@tanstack/electric-db-collection'
 import { GITHUB_REPO_NAME } from '@conar/shared/constants'
-import { FetchError, snakeCamelMapper } from '@electric-sql/client'
+import { snakeCamelMapper } from '@electric-sql/client'
 import { BrowserCollectionCoordinator, createBrowserWASQLitePersistence, openBrowserWASQLiteOPFSDatabase } from '@tanstack/browser-db-sqlite-persistence'
 import { apiUrl } from '~/utils/utils'
 import { bearerToken } from './auth'
@@ -39,13 +39,6 @@ export function shapeOptions(entity: string) {
       ...init,
       credentials: 'include',
     })) as typeof fetch,
-    onError(error) {
-      if (error instanceof FetchError && error.status === 401) {
-        return
-      }
-
-      throw error
-    },
   } satisfies ElectricCollectionConfig['shapeOptions']
 }
 

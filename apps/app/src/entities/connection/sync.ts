@@ -3,7 +3,7 @@ import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import { electricCollectionOptions } from '@tanstack/electric-db-collection'
-import { BasicIndex, createCollection, createOptimisticAction } from '@tanstack/react-db'
+import { BasicIndex, createCollection, createEffect, createOptimisticAction } from '@tanstack/react-db'
 import { type } from 'arktype'
 import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { orpc } from '~/lib/orpc'
@@ -31,33 +31,6 @@ function prepareConnectionStringToCloud(connectionString: string, syncType: Sync
   return url.toString()
 }
 
-// @ts-expect-error waiting for https://github.com/TanStack/db/pull/1453
-export const connectionsCollection = createCollection(persistedCollectionOptions<Connection>({
-  ...electricCollectionOptions({
-    schema: connectionsSchema,
-    id: 'connections',
-    shapeOptions: shapeOptions('connections'),
-    getKey: item => item.id,
-    onInsert: async ({ transaction }) => {
-      return orpc.connections.create.call(await Promise.all(transaction.mutations.map(m => connectionToCloudInput(m.modified))))
-    },
-    onUpdate: async ({ transaction }) => {
-      const result = await Promise.all(transaction.mutations.map(m => orpc.connections.update.call({
-        id: m.key,
-        ...m.changes,
-      })))
-      return { txid: result.map(r => r.txid) }
-    },
-    onDelete: async ({ transaction }) => {
-      return orpc.connections.remove.call(transaction.mutations.map(m => ({ id: m.key })))
-    },
-  }),
-  autoIndex: 'eager',
-  defaultIndexType: BasicIndex,
-  persistence,
-  schemaVersion: 1,
-}))
-
 async function connectionToCloudInput(connection: Connection) {
   const connectionString = await connectionStringStorage.decrypt(connection.id)
 
@@ -78,46 +51,92 @@ export const connectionsResourcesSchema = type({
 
 export type ConnectionResource = typeof connectionsResourcesSchema.infer
 
-// @ts-expect-error waiting for https://github.com/TanStack/db/pull/1453
-export const connectionsResourcesCollection = createCollection(persistedCollectionOptions<ConnectionResource>({
-  ...electricCollectionOptions({
-    schema: connectionsResourcesSchema,
-    id: 'connections-resources',
-    shapeOptions: shapeOptions('connections-resources'),
-    getKey: item => item.id,
-    onInsert: async ({ transaction }) => {
-      return orpc.connectionsResources.create.call(transaction.mutations.map(m => m.modified))
-    },
-    onUpdate: async ({ transaction }) => {
-      const result = await Promise.all(transaction.mutations
-        .map(m => orpc.connectionsResources.update.call({ id: m.key, ...m.changes })))
-      return { txid: result.map(r => r.txid) }
-    },
-    onDelete: async ({ transaction }) => {
-      return orpc.connectionsResources.remove.call(transaction.mutations.map(m => ({ id: m.key })))
-    },
-  }),
-  autoIndex: 'eager',
-  defaultIndexType: BasicIndex,
-  persistence,
-  schemaVersion: 1,
-}))
+export function createConnectionCollections() {
+  // @ts-expect-error waiting for https://github.com/TanStack/db/pull/1453
+  const connectionsCollection = createCollection(persistedCollectionOptions<Connection>({
+    ...electricCollectionOptions({
+      schema: connectionsSchema,
+      id: 'connections',
+      shapeOptions: shapeOptions('connections'),
+      getKey: item => item.id,
+      onInsert: async ({ transaction }) => {
+        return orpc.connections.create.call(await Promise.all(transaction.mutations.map(m => connectionToCloudInput(m.modified))))
+      },
+      onUpdate: async ({ transaction }) => {
+        const result = await Promise.all(transaction.mutations.map(m => orpc.connections.update.call({
+          id: m.key,
+          ...m.changes,
+        })))
+        return { txid: result.map(r => r.txid) }
+      },
+      onDelete: async ({ transaction }) => {
+        return orpc.connections.remove.call(transaction.mutations.map(m => ({ id: m.key })))
+      },
+    }),
+    autoIndex: 'eager',
+    defaultIndexType: BasicIndex,
+    persistence,
+    schemaVersion: 1,
+  }))
 
-export const createConnectionWithResource = createOptimisticAction<{
-  connection: Connection
-  resource: ConnectionResource
-}>({
-  onMutate: ({ connection, resource }) => {
-    connectionsCollection.insert(connection)
-    connectionsResourcesCollection.insert(resource)
-  },
-  mutationFn: async ({ connection, resource }) => {
-    const { txid: connectionTxid } = await orpc.connections.create.call(await connectionToCloudInput(connection))
-    const { txid: resourceTxid } = await orpc.connectionsResources.create.call(resource)
+  // @ts-expect-error waiting for https://github.com/TanStack/db/pull/1453
+  const connectionsResourcesCollection = createCollection(persistedCollectionOptions<ConnectionResource>({
+    ...electricCollectionOptions({
+      schema: connectionsResourcesSchema,
+      id: 'connections-resources',
+      shapeOptions: shapeOptions('connections-resources'),
+      getKey: item => item.id,
+      onInsert: async ({ transaction }) => {
+        return orpc.connectionsResources.create.call(transaction.mutations.map(m => m.modified))
+      },
+      onUpdate: async ({ transaction }) => {
+        const result = await Promise.all(transaction.mutations
+          .map(m => orpc.connectionsResources.update.call({ id: m.key, ...m.changes })))
+        return { txid: result.map(r => r.txid) }
+      },
+      onDelete: async ({ transaction }) => {
+        return orpc.connectionsResources.remove.call(transaction.mutations.map(m => ({ id: m.key })))
+      },
+    }),
+    autoIndex: 'eager',
+    defaultIndexType: BasicIndex,
+    persistence,
+    schemaVersion: 1,
+  }))
 
-    await Promise.all([
-      connectionsCollection.utils.awaitTxId(connectionTxid),
-      connectionsResourcesCollection.utils.awaitTxId(resourceTxid),
-    ])
-  },
-})
+  const createConnectionWithResource = createOptimisticAction<{
+    connection: Connection
+    resource: ConnectionResource
+  }>({
+    onMutate: ({ connection, resource }) => {
+      connectionsCollection.insert(connection)
+      connectionsResourcesCollection.insert(resource)
+    },
+    mutationFn: async ({ connection, resource }) => {
+      await orpc.connections.create.call(await connectionToCloudInput(connection))
+      await orpc.connectionsResources.create.call(resource)
+    },
+  })
+
+  const connectionsStringsEffect = createEffect<Connection>({
+    query: q => q.from({ connections: connectionsCollection }),
+    skipInitial: false,
+    onEnter: async ({ value }) => {
+      if (!navigator.onLine) {
+        return
+      }
+
+      await connectionStringStorage.resolve(value.id)
+    },
+    onExit: ({ value }) => {
+      connectionStringStorage.remove(value.id)
+    },
+  })
+
+  return {
+    connectionsCollection,
+    connectionsResourcesCollection,
+    createConnectionWithResource,
+    connectionsStringsSync: { cleanup: () => connectionsStringsEffect.dispose() },
+  }
+}

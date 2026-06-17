@@ -9,36 +9,37 @@ import { eq, queryOnce } from '@tanstack/react-db'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { memoize } from 'memoza'
 import { v7 as uuid } from 'uuid'
-import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
 import { resourceEnumsQueryOptions, resourceRowsQuery, resourceTableColumnsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { connectionsCollection } from '~/entities/connection/sync'
+import { getCollections } from '~/lib/collections'
 import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
 
 export * from './chat'
 
-async function ensureChat({ chatId, connectionResourceId }: { chatId: string, connectionResourceId: string }) {
-  const existingChat = chatsCollection.get(chatId)
-
-  if (existingChat) {
-    return existingChat
-  }
-
-  await chatsCollection.insert({
-    id: chatId,
-    connectionResourceId,
-    title: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }).isPersisted.promise
-
-  return chatsCollection.get(chatId)!
-}
-
 export const createChat = memoize(async ({ id, connectionResource }: { id: string, connectionResource: ConnectionResource }) => {
+  const collections = getCollections()
+  const { connectionsCollection, chatsCollection, chatsMessagesCollection } = collections
   const connection = connectionsCollection.get(connectionResource.connectionId)!
+
+  const ensureChat = async ({ chatId, connectionResourceId }: { chatId: string, connectionResourceId: string }) => {
+    const existingChat = chatsCollection.get(chatId)
+
+    if (existingChat) {
+      return existingChat
+    }
+
+    await chatsCollection.insert({
+      id: chatId,
+      connectionResourceId,
+      title: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }).isPersisted.promise
+
+    return chatsCollection.get(chatId)!
+  }
 
   const chat = new Chat<AppUIMessage>({
     id,
@@ -215,4 +216,6 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
   })
 
   return chat
+}, {
+  cacheKey: ({ id, connectionResource }) => `${id}-${connectionResource.id}`,
 })

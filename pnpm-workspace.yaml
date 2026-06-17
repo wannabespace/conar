@@ -2,6 +2,7 @@ catalogMode: prefer
 cleanupUnusedCatalogs: true
 minimumReleaseAgeExclude:
   - seitu@0.15.1
+  - memoza@1.1.0
 shellEmulator: true
 blockExoticSubdeps: false
 packages:
@@ -118,7 +119,7 @@ catalog:
   kysely: ^0.29.2
   lucide-react: ^1.17.0
   marked: ^18.0.5
-  memoza: ^1.0.2
+  memoza: ^1.1.0
   monaco-editor: ^0.54.0
   monaco-sql-languages: ^0.15.1
   monaco-themes: ^0.4.8

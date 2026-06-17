@@ -6,6 +6,7 @@ import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 import { router } from '~/main'
 import { apiUrl } from '../utils/utils'
+import { clearCollectionsCache } from './collections'
 import { connectionStringStorage } from './connection-string-storage'
 
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
@@ -64,4 +65,5 @@ export async function fullSignOut() {
   bearerToken.clear()
   router.navigate({ to: '/auth' })
   await connectionStringStorage.clear()
+  clearCollectionsCache()
 }

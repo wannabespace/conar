@@ -6,6 +6,7 @@ import { type } from 'arktype'
 import { memoize } from 'memoza'
 import { useSubscription } from 'seitu/react'
 import { createIndexedDbStorage } from 'seitu/web'
+import { orpc } from '~/lib/orpc'
 
 const safeStorageAvailable = memoize(async () => window.electron ? window.electron.safeStorage.isEncryptionAvailable() : false)
 
@@ -84,10 +85,31 @@ async function decryptConnectionString(encryptedConnectionString: string) {
   return decryptWithKey(await getEncryptionKey(), encryptedConnectionString)
 }
 
+const resolvePromises = new Map<string, Promise<void>>()
+
 export const connectionStringStorage = {
   ready: storage.ready,
+  resolved: () => Promise.allSettled(resolvePromises.values()).then(() => {}),
   has: (id: string) => id in storage.get().connectionStrings,
   get: (id: string) => storage.get().connectionStrings[id],
+  resolve: (id: string): Promise<void> => {
+    if (connectionStringStorage.has(id))
+      return Promise.resolve()
+
+    const existing = resolvePromises.get(id)
+    if (existing)
+      return existing
+
+    const promise = (async () => {
+      const { connectionString } = await orpc.connections.resolve.call({ id })
+      await connectionStringStorage.set(id, connectionString)
+    })().finally(() => {
+      resolvePromises.delete(id)
+    })
+
+    resolvePromises.set(id, promise)
+    return promise
+  },
   decrypt: (id: string): Promise<string> => {
     const record = connectionStringStorage.get(id)
     if (!record)

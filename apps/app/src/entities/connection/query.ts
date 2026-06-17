@@ -4,13 +4,12 @@ import type { Connection, ConnectionResource } from '~/entities/connection/sync'
 import { isConnectionError } from '@conar/shared/utils/connections'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Result } from 'better-result'
-import { memoize } from 'memoza'
 import { createStore } from 'seitu'
 import { toast } from 'sonner'
+import { getCollections } from '~/lib/collections'
 import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { dialects } from './dialects'
 import { logQuery } from './log'
-import { connectionsCollection } from './sync'
 import { getConnectionStringToShow } from './utils/helpers'
 
 export async function connectionToQueryParams(connection: Connection): Promise<QueryParams> {
@@ -21,7 +20,8 @@ export async function connectionToQueryParams(connection: Connection): Promise<Q
   }
 }
 
-export const connectionResourceToQueryParams = memoize(async (connectionResource: ConnectionResource): Promise<QueryParams> => {
+export async function connectionResourceToQueryParams(connectionResource: ConnectionResource): Promise<QueryParams> {
+  const { connectionsCollection } = getCollections()
   const connection = connectionsCollection.get(connectionResource.connectionId)!
   const connectionString = new SafeURL(await connectionStringStorage.decrypt(connection.id))
   connectionString.pathname = connectionResource.name || ''
@@ -32,7 +32,7 @@ export const connectionResourceToQueryParams = memoize(async (connectionResource
     resourceId: connectionResource.id,
     log: ({ promise, query, values }) => logQuery({ resourceId: connectionResource.id, promise, query, values }),
   }
-})
+}
 
 export interface QueryParams {
   connectionString: string

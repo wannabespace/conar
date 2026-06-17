@@ -20,9 +20,9 @@ import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/componen
 import { useLocalProxyAvailable } from '~/entities/connection/proxy'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 import { getConnectionStore } from '~/entities/connection/store'
-import { connectionsResourcesCollection, createConnectionWithResource } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching'
+import { useCollections } from '~/lib/collections'
 import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { generateRandomName } from '~/utils/utils'
 import { StepCredentials } from './-components/step-credentials'
@@ -52,6 +52,7 @@ function CreateConnectionPage() {
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
+  const { connectionsResourcesCollection, createConnectionWithResource } = useCollections()
 
   const { mutate: createConnection, isPending: isCreatingConnection } = useMutation({
     mutationFn: async (data: {
