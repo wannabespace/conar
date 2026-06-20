@@ -15,11 +15,11 @@ import { resourceTableTotalQueryOptions } from '../queries/total'
 import { getConnectionResourceStore, getConnectionStore } from '../store'
 
 export async function prefetchConnectionResourceCore(connectionResource: ConnectionResource) {
-  const { connectionsCollection } = await getCollections()
+  const { connectionsCollection } = getCollections()
   const connection = connectionsCollection.get(connectionResource.connectionId)!
   const connectionString = connectionStringStorage.get(connection.id)
 
-  if (connection.passwordExists && !connectionString?.metadata?.isPasswordPopulated) {
+  if (connection.isPasswordExists && !connectionString?.metadata?.isPasswordPopulated) {
     return
   }
 
@@ -48,9 +48,7 @@ export async function prefetchConnectionResourceTableCore({ connectionResource, 
   ])
 }
 
-type FetchingConnection = Pick<Connection, 'syncType' | 'passwordExists'> & { id?: string }
-
-export function fetchingConfig(connection: FetchingConnection, options?: {
+export function fetchingConfig(connection: Pick<Connection, 'syncType' | 'isPasswordExists'>, options?: {
   isLocalProxyAvailable?: boolean
   isPasswordPopulated?: boolean
   isLocalhost?: boolean
@@ -62,7 +60,7 @@ export function fetchingConfig(connection: FetchingConnection, options?: {
   const isPasswordPopulated = options?.isPasswordPopulated ?? false
   const isLocalhost = options?.isLocalhost ?? false
 
-  if (connection.passwordExists && !isPasswordPopulated) {
+  if (connection.isPasswordExists && !isPasswordPopulated) {
     return { type: 'waiting-for-password', canSend: false }
   }
 
@@ -85,10 +83,10 @@ export function fetchingConfig(connection: FetchingConnection, options?: {
     return { type: 'proxy', canSend: false }
   }
 
-  return { type: 'cloud-proxy', canSend: true }
+  return { type: 'cloud-proxy', canSend: connection.syncType !== SyncType.CloudWithoutPassword }
 }
 
-export function useFetchingConfig(connection: Pick<Connection, 'id' | 'syncType' | 'passwordExists'>) {
+export function useFetchingConfig(connection: Pick<Connection, 'id' | 'syncType' | 'isPasswordExists'>) {
   const isLocalProxyAvailable = useLocalProxyAvailable()
   const connectionString = useConnectionString(connection.id)
   const proxy = useSubscription(getConnectionStore(connection.id), { selector: s => s.proxy })

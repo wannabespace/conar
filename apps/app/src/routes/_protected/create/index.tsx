@@ -78,7 +78,7 @@ function CreateConnectionPage() {
           type: data.type,
           label: data.label || null,
           color: data.color || null,
-          passwordExists: !!url.password,
+          isPasswordExists: !!url.password,
           syncType: data.syncType,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -164,7 +164,7 @@ function CreateConnectionPage() {
   const isLocalhost = tryCatch(() => isLocalhostConnectionString(connectionString)).data === true
   const { canSend } = fetchingConfig({
     syncType,
-    passwordExists: hasPassword,
+    isPasswordExists: hasPassword,
   }, {
     isLocalProxyAvailable,
     isPasswordPopulated: hasPassword,

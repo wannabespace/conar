@@ -6,8 +6,8 @@ import { SafeURL } from '@conar/shared/utils/safe-url'
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
-import { generateTxId } from '~/lib/electric'
 import { authMiddleware, orpc } from '~/orpc'
+import { publisher } from './events'
 
 export const update = orpc
   .use(authMiddleware)
@@ -34,15 +34,17 @@ export const update = orpc
       newConnectionString.password = ''
     }
 
-    return db.transaction(async (tx) => {
-      await tx
-        .update(connections)
-        .set({
-          ...changes,
-          connectionString: encrypt({ text: newConnectionString.toString(), secret }),
-        })
-        .where(and(eq(connections.userId, context.user.id), eq(connections.id, id)))
+    const [connection] = await db
+      .update(connections)
+      .set({
+        ...changes,
+        connectionString: encrypt({ text: newConnectionString.toString(), secret }),
+      })
+      .where(and(eq(connections.userId, context.user.id), eq(connections.id, id)))
+      .returning()
 
-      return { txid: await generateTxId(tx) }
+    publisher.publish(context.user.id, {
+      type: 'update',
+      value: connection!,
     })
   })

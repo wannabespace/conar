@@ -3,16 +3,11 @@ import { base64ToBytes, bytesToBase64 } from '@conar/shared/utils/base64'
 import { decryptWithKey, encryptWithKey } from '@conar/shared/utils/crypto-web'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { type } from 'arktype'
-import { memoize } from 'memoza'
+import { clearMemoizeCache, memoize } from 'memoza'
 import { useSubscription } from 'seitu/react'
 import { createIndexedDbStorage } from 'seitu/web'
 import { orpc } from '~/lib/orpc'
-
-const safeStorageAvailable = memoize(async () => window.electron ? window.electron.safeStorage.isEncryptionAvailable() : false)
-
-function importAesKey(raw: Uint8Array<ArrayBuffer>) {
-  return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt'])
-}
+import { fullSignOut } from './auth'
 
 const storage = createIndexedDbStorage({
   databaseName: 'secure-storage',
@@ -38,44 +33,61 @@ const storage = createIndexedDbStorage({
   },
 })
 
-function resetEncryptionKey() {
-  return storage.set({ encryptionKey: null, connectionStrings: {} })
+type SafeStorage = NonNullable<typeof window.electron>['safeStorage']
+
+function importAesKey(raw: Uint8Array<ArrayBuffer>) {
+  return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt'])
 }
 
-const getEncryptionKey = memoize(async (): Promise<CryptoKey> => {
-  await storage.ready
+function generateAesKey() {
+  return crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt'])
+}
 
+async function getElectronEncryptionKey(safeStorage: SafeStorage): Promise<CryptoKey> {
+  if (!(await safeStorage.isEncryptionAvailable())) {
+    await fullSignOut()
+    throw new Error('Secure storage is not available on this device, so connection credentials cannot be protected. You have been signed out.')
+  }
+
+  const stored = storage.get().encryptionKey
+
+  if (typeof stored === 'string') {
+    try {
+      return await importAesKey(base64ToBytes(await safeStorage.decryptString(stored)))
+    }
+    catch {
+      await resetEncryptionKey()
+    }
+  }
+
+  const raw = crypto.getRandomValues(new Uint8Array(32))
+  await storage.set({ encryptionKey: await safeStorage.encryptString(bytesToBase64(raw)) })
+  return importAesKey(raw)
+}
+
+async function getWebEncryptionKey(): Promise<CryptoKey> {
   const stored = storage.get().encryptionKey
 
   if (stored instanceof CryptoKey)
     return stored
 
-  if (window.electron && (await safeStorageAvailable())) {
-    const { safeStorage } = window.electron
-
-    if (typeof stored === 'string') {
-      try {
-        return importAesKey(base64ToBytes(await safeStorage.decryptString(stored)))
-      }
-      catch {
-        await resetEncryptionKey()
-      }
-    }
-
-    const raw = crypto.getRandomValues(new Uint8Array(32))
-    await storage.set({ encryptionKey: await safeStorage.encryptString(bytesToBase64(raw)) })
-    return importAesKey(raw)
-  }
-
-  // String can be only in electron
-  // So we should clear the key because somehow safe storage is not available anymore
-  if (typeof stored === 'string')
-    await resetEncryptionKey()
-
-  const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt'])
+  const key = await generateAesKey()
   await storage.set({ encryptionKey: key })
   return key
+}
+
+const getEncryptionKey = memoize(async (): Promise<CryptoKey> => {
+  await storage.ready
+
+  return window.electron
+    ? getElectronEncryptionKey(window.electron.safeStorage)
+    : getWebEncryptionKey()
 })
+
+function resetEncryptionKey() {
+  clearMemoizeCache(getEncryptionKey)
+  return storage.set({ encryptionKey: null, connectionStrings: {} })
+}
 
 async function encryptConnectionString(connectionString: string) {
   return encryptWithKey(await getEncryptionKey(), connectionString)
@@ -88,14 +100,15 @@ async function decryptConnectionString(encryptedConnectionString: string) {
 const resolvePromises = new Map<string, Promise<void>>()
 
 export const connectionStringStorage = {
-  ready: storage.ready,
-  resolved: () => Promise.allSettled(resolvePromises.values()).then(() => {}),
+  get ready() {
+    return Promise.all([
+      storage.ready,
+      Promise.allSettled(resolvePromises.values()).then(() => {}),
+    ])
+  },
   has: (id: string) => id in storage.get().connectionStrings,
   get: (id: string) => storage.get().connectionStrings[id],
   resolve: (id: string): Promise<void> => {
-    if (connectionStringStorage.has(id))
-      return Promise.resolve()
-
     const existing = resolvePromises.get(id)
     if (existing)
       return existing
@@ -110,11 +123,17 @@ export const connectionStringStorage = {
     resolvePromises.set(id, promise)
     return promise
   },
-  decrypt: (id: string): Promise<string> => {
+  decrypt: async (id: string): Promise<string> => {
     const record = connectionStringStorage.get(id)
     if (!record)
       throw new Error(`No connection string found for connection "${id}"`)
-    return decryptConnectionString(record.encrypted)
+    try {
+      return await decryptConnectionString(record.encrypted)
+    }
+    catch (error) {
+      await resetEncryptionKey()
+      throw error
+    }
   },
   set: async (id: string, connectionString: string) => {
     const url = new SafeURL(connectionString)

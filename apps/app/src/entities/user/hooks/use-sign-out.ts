@@ -1,17 +1,14 @@
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { authClient, fullSignOut } from '~/lib/auth'
+import { fullSignOut } from '~/lib/auth'
 import { queryClient } from '~/main'
 import { handleError } from '~/utils/error'
 
 export function useSignOut() {
-  const { refetch } = authClient.useSession()
-
   const { mutate: signOut, isPending: isSigningOut } = useMutation({
     mutationKey: ['sign-out'],
     mutationFn: async () => {
       await fullSignOut()
-      refetch()
     },
     onSuccess: () => {
       toast.success('You have been signed out successfully.')

@@ -62,7 +62,7 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
         replace: true,
         to: '/connection/$resourceId/table',
         params: { resourceId: connectionResource.id },
-        search: { schema, table: newTableName as string },
+        search: { schema, table: newTableName },
       })
     },
     onError: (error) => {

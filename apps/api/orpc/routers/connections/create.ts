@@ -4,35 +4,35 @@ import { SyncType } from '@conar/shared/enums/sync-type'
 import { encrypt } from '@conar/shared/utils/crypto-node'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { type } from 'arktype'
-import { generateTxId } from '~/lib/electric'
 import { authMiddleware, orpc } from '~/orpc'
+import { publisher } from './events'
 
 const schema = connectionsInsertSchema.omit('userId')
 
 export const create = orpc
   .use(authMiddleware)
-  .input(type.or(
-    schema,
-    schema.array(),
-  ).pipe(data => Array.isArray(data) ? data : [data]))
+  .input(type.or(schema, schema.array()).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
     const userSecret = await context.getUserSecret()
 
-    return db.transaction(async (tx) => {
-      await tx.insert(connections).values(await Promise.all(input.map(async (item) => {
-        const newConnectionString = new SafeURL(item.connectionString)
+    const inserted = await db.insert(connections).values(await Promise.all(input.map(async (item) => {
+      const newConnectionString = new SafeURL(item.connectionString)
 
-        if (item.syncType !== SyncType.Cloud) {
-          newConnectionString.password = ''
-        }
+      if (item.syncType !== SyncType.Cloud) {
+        newConnectionString.password = ''
+      }
 
-        return {
-          ...item,
-          connectionString: encrypt({ text: newConnectionString.toString(), secret: userSecret }),
-          userId: context.user.id,
-        }
-      })))
+      return {
+        ...item,
+        connectionString: encrypt({ text: newConnectionString.toString(), secret: userSecret }),
+        userId: context.user.id,
+      }
+    }))).returning()
 
-      return { txid: await generateTxId(tx) }
-    })
+    for (const connection of inserted) {
+      publisher.publish(context.user.id, {
+        type: 'insert',
+        value: connection,
+      })
+    }
   })

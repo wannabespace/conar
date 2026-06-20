@@ -1,27 +1,14 @@
-import { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { Effect } from '@tanstack/react-db'
+import type { ORPCOutputs } from '~/lib/orpc'
+import type { BaseTable } from '~/lib/sync'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
-import { electricCollectionOptions } from '@tanstack/electric-db-collection'
 import { BasicIndex, createCollection, createEffect, createOptimisticAction } from '@tanstack/react-db'
-import { type } from 'arktype'
 import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { orpc } from '~/lib/orpc'
-import { persistence, shapeOptions } from '~/lib/sync'
-
-export const connectionsSchema = type({
-  id: 'string',
-  createdAt: 'Date',
-  updatedAt: 'Date',
-  type: type.valueOf(ConnectionType),
-  name: 'string',
-  label: 'string | null',
-  color: 'string | null',
-  passwordExists: 'boolean',
-  syncType: type.valueOf(SyncType),
-})
-
-export type Connection = typeof connectionsSchema.infer
+import { persistence } from '~/lib/sync'
 
 function prepareConnectionStringToCloud(connectionString: string, syncType: SyncType) {
   const url = new SafeURL(connectionString.trim())
@@ -31,77 +18,193 @@ function prepareConnectionStringToCloud(connectionString: string, syncType: Sync
   return url.toString()
 }
 
+export interface Connection extends BaseTable {
+  type: ConnectionType
+  name: string
+  label: string | null
+  color: string | null
+  isPasswordExists: boolean
+  syncType: SyncType
+}
+
 async function connectionToCloudInput(connection: Connection) {
   const connectionString = await connectionStringStorage.decrypt(connection.id)
 
   return {
     ...connection,
-    isPasswordExists: connection.passwordExists,
+    isPasswordExists: connection.isPasswordExists,
     connectionString: prepareConnectionStringToCloud(connectionString, connection.syncType),
   }
 }
 
-export const connectionsResourcesSchema = type({
-  id: 'string',
-  createdAt: 'Date',
-  updatedAt: 'Date',
-  connectionId: 'string',
-  name: 'string | null',
-})
-
-export type ConnectionResource = typeof connectionsResourcesSchema.infer
+export interface ConnectionResource extends BaseTable {
+  connectionId: string
+  name: string | null
+}
 
 export function createConnectionCollections() {
-  // @ts-expect-error waiting for https://github.com/TanStack/db/pull/1453
-  const connectionsCollection = createCollection(persistedCollectionOptions<Connection>({
-    ...electricCollectionOptions({
-      schema: connectionsSchema,
-      id: 'connections',
-      shapeOptions: shapeOptions('connections'),
-      getKey: item => item.id,
-      onInsert: async ({ transaction }) => {
-        return orpc.connections.create.call(await Promise.all(transaction.mutations.map(m => connectionToCloudInput(m.modified))))
-      },
-      onUpdate: async ({ transaction }) => {
-        const result = await Promise.all(transaction.mutations.map(m => orpc.connections.update.call({
-          id: m.key,
-          ...m.changes,
-        })))
-        return { txid: result.map(r => r.txid) }
-      },
-      onDelete: async ({ transaction }) => {
-        return orpc.connections.remove.call(transaction.mutations.map(m => ({ id: m.key })))
-      },
-    }),
-    autoIndex: 'eager',
-    defaultIndexType: BasicIndex,
+  const connectionsCollection = createCollection(persistedCollectionOptions<Connection, string>({
+    id: 'connections',
     persistence,
+    autoIndex: 'eager',
+    gcTime: 1,
+    defaultIndexType: BasicIndex,
     schemaVersion: 1,
+    getKey: item => item.id,
+    sync: {
+      sync: ({ begin, commit, write, collection, markReady }) => {
+        const abortController = new AbortController()
+
+        const writeItem = (item: ORPCOutputs['connections']['sync'][number]) => {
+          if (item.type === 'delete') {
+            write({
+              type: 'delete',
+              key: item.key,
+            })
+          }
+          else {
+            write({
+              type: item.type,
+              value: item.value,
+            })
+          }
+        }
+
+        orpc.connections.events.call({}, {
+          signal: abortController.signal,
+        })
+          .then(async (events) => {
+            if (abortController.signal.aborted)
+              return
+            markReady()
+            for await (const item of events) {
+              if (abortController.signal.aborted)
+                break
+              begin()
+              writeItem(item)
+              commit()
+            }
+          })
+          .catch(() => {
+            if (!abortController.signal.aborted)
+              markReady()
+          })
+
+        collection.toArrayWhenReady().then(async (rows) => {
+          const sync = await orpc.connections.sync.call(
+            rows,
+            { signal: abortController.signal },
+          )
+          if (abortController.signal.aborted)
+            return
+          begin()
+          for (const item of sync) {
+            writeItem(item)
+          }
+          commit()
+        })
+
+        return () => {
+          abortController.abort()
+        }
+      },
+    },
+    onInsert: async ({ transaction }) => {
+      await orpc.connections.create.call(
+        await Promise.all(transaction.mutations.map(m => connectionToCloudInput(m.modified))),
+      )
+    },
+    onUpdate: async ({ transaction }) => {
+      await Promise.all(transaction.mutations.map(m => orpc.connections.update.call({
+        id: m.key,
+        ...m.changes,
+      })))
+    },
+    onDelete: async ({ transaction }) => {
+      await orpc.connections.remove.call(transaction.mutations.map(m => ({ id: m.key })))
+    },
   }))
 
-  // @ts-expect-error waiting for https://github.com/TanStack/db/pull/1453
-  const connectionsResourcesCollection = createCollection(persistedCollectionOptions<ConnectionResource>({
-    ...electricCollectionOptions({
-      schema: connectionsResourcesSchema,
-      id: 'connections-resources',
-      shapeOptions: shapeOptions('connections-resources'),
-      getKey: item => item.id,
-      onInsert: async ({ transaction }) => {
-        return orpc.connectionsResources.create.call(transaction.mutations.map(m => m.modified))
-      },
-      onUpdate: async ({ transaction }) => {
-        const result = await Promise.all(transaction.mutations
-          .map(m => orpc.connectionsResources.update.call({ id: m.key, ...m.changes })))
-        return { txid: result.map(r => r.txid) }
-      },
-      onDelete: async ({ transaction }) => {
-        return orpc.connectionsResources.remove.call(transaction.mutations.map(m => ({ id: m.key })))
-      },
-    }),
-    autoIndex: 'eager',
-    defaultIndexType: BasicIndex,
+  let effect: Effect
+
+  const connectionsResourcesCollection = createCollection(persistedCollectionOptions<ConnectionResource, string>({
+    id: 'connections-resources',
     persistence,
+    autoIndex: 'eager',
+    gcTime: 1,
+    defaultIndexType: BasicIndex,
     schemaVersion: 1,
+    getKey: item => item.id,
+    sync: {
+      sync: ({ begin, commit, write, collection, markReady }) => {
+        const abortController = new AbortController()
+
+        const writeItem = (item: ORPCOutputs['connectionsResources']['sync'][number]) => {
+          if (item.type === 'delete') {
+            write({
+              type: 'delete',
+              key: item.key,
+            })
+          }
+          else {
+            write({
+              type: item.type,
+              value: item.value,
+            })
+          }
+        }
+
+        orpc.connectionsResources.events.call({}, {
+          signal: abortController.signal,
+        })
+          .then(async (events) => {
+            if (abortController.signal.aborted)
+              return
+            markReady()
+            for await (const item of events) {
+              if (abortController.signal.aborted)
+                break
+              begin()
+              writeItem(item)
+              commit()
+            }
+          })
+          .catch(() => {
+            if (!abortController.signal.aborted)
+              markReady()
+          })
+
+        collection.toArrayWhenReady().then(async (rows) => {
+          if (abortController.signal.aborted)
+            return
+          const sync = await orpc.connectionsResources.sync.call(
+            rows,
+            { signal: abortController.signal },
+          )
+          if (abortController.signal.aborted)
+            return
+          begin()
+          for (const item of sync) {
+            writeItem(item)
+          }
+          commit()
+        })
+
+        return () => {
+          effect.dispose()
+          abortController.abort()
+        }
+      },
+    },
+    onInsert: async ({ transaction }) => {
+      await orpc.connectionsResources.create.call(transaction.mutations.map(m => m.modified))
+    },
+    onUpdate: async ({ transaction }) => {
+      await Promise.all(transaction.mutations.map(m => orpc.connectionsResources.update.call({ id: m.key, ...m.changes })))
+    },
+    onDelete: async ({ transaction }) => {
+      await orpc.connectionsResources.remove.call(transaction.mutations.map(m => ({ id: m.key })))
+    },
   }))
 
   const createConnectionWithResource = createOptimisticAction<{
@@ -118,7 +221,7 @@ export function createConnectionCollections() {
     },
   })
 
-  const connectionsStringsEffect = createEffect<Connection>({
+  effect = createEffect<Connection>({
     query: q => q.from({ connections: connectionsCollection }),
     skipInitial: false,
     onEnter: async ({ value }) => {
@@ -137,6 +240,5 @@ export function createConnectionCollections() {
     connectionsCollection,
     connectionsResourcesCollection,
     createConnectionWithResource,
-    connectionsStringsSync: { cleanup: () => connectionsStringsEffect.dispose() },
   }
 }

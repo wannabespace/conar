@@ -33,8 +33,6 @@ const envType = type({
   GITHUB_TOKEN: 'string',
   TODESKTOP_WEBHOOK_SECRET: 'string',
   PROXY_SHARED_SECRET: 'string',
-  ELECTRIC_URL: 'string',
-  ELECTRIC_SECRET: 'string',
 })
 
 const devOptionalEnvs = [

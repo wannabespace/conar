@@ -344,7 +344,9 @@ function ConnectionCard({
                     <TooltipContent className="pointer-events-auto max-w-xs">
                       {type === 'waiting-for-password' && window.electron
                         ? 'Filled password is required to query this connection.'
-                        : 'You cannot reach this connection from the web app. Run `conar proxy` or open this connection in the desktop app.'}
+                        : type === 'cloud-proxy' && !window.electron
+                          ? 'This connection cannot be used from the web app because it was created without storing the password. Open this connection in the desktop app.'
+                          : 'You cannot reach this connection from the web app. Run `conar proxy` or open this connection in the desktop app.'}
                     </TooltipContent>
                   </Tooltip>
                 )}

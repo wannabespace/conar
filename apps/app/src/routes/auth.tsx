@@ -7,8 +7,10 @@ import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
+import { enterAppAnimation } from '~/global-hooks'
 import { authClient, bearerToken, successAuthToast } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
+import { router } from '~/main'
 
 export const Route = createFileRoute('/auth')({
   component: AuthPage,
@@ -42,12 +44,17 @@ function AuthPage() {
     throwOnError: false,
   }))
   const { mutate: exchange } = useMutation(orpc.account.challenge.exchange.mutationOptions({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       bearerToken.set(data.token)
-      refetch()
+      await refetch()
+      router.navigate({ to: '/' })
       successAuthToast(!!data.newUser)
     },
   }))
+
+  useEffect(() => {
+    enterAppAnimation()
+  }, [])
 
   useEffect(() => {
     if (!data?.ready || !codeChallenge || !verifier) {

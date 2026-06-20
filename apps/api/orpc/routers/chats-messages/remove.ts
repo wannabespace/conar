@@ -3,8 +3,8 @@ import { chats, chatsMessages } from '@conar/db/schema'
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq, inArray, or } from 'drizzle-orm'
-import { generateTxId } from '~/lib/electric'
 import { orpc, subscriptionMiddleware } from '~/orpc'
+import { publisher } from './events'
 
 const input = type({
   id: 'string.uuid.v7',
@@ -19,24 +19,27 @@ export const remove = orpc
       throw new ORPCError('BAD_REQUEST', { message: 'No chat messages to remove' })
     }
 
-    return db.transaction(async (tx) => {
-      const toRemove = await tx
-        .select({ id: chatsMessages.id })
-        .from(chatsMessages)
-        .innerJoin(chats, eq(chatsMessages.chatId, chats.id))
-        .where(and(
-          eq(chats.userId, context.user.id),
-          or(
-            ...input.map(item => and(
-              eq(chatsMessages.id, item.id),
-              eq(chatsMessages.chatId, item.chatId),
-            )),
-          ),
-        ))
+    const toRemove = await db
+      .select({ id: chatsMessages.id })
+      .from(chatsMessages)
+      .innerJoin(chats, eq(chatsMessages.chatId, chats.id))
+      .where(and(
+        eq(chats.userId, context.user.id),
+        or(
+          ...input.map(item => and(
+            eq(chatsMessages.id, item.id),
+            eq(chatsMessages.chatId, item.chatId),
+          )),
+        ),
+      ))
 
-      await tx.delete(chatsMessages)
-        .where(inArray(chatsMessages.id, toRemove.map(item => item.id)))
+    await db.delete(chatsMessages)
+      .where(inArray(chatsMessages.id, toRemove.map(item => item.id)))
 
-      return { txid: await generateTxId(tx) }
-    })
+    for (const item of toRemove) {
+      publisher.publish(context.user.id, {
+        type: 'delete',
+        key: item.id,
+      })
+    }
   })

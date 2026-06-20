@@ -9,7 +9,7 @@ export const list = orpc
     const result = await db
       .select()
       .from(queries)
-      .where(eq(queries.userId, context.session.userId))
+      .where(eq(queries.userId, context.user.id))
       .orderBy(desc(queries.createdAt))
 
     return result

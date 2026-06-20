@@ -3,17 +3,14 @@ import { chats, chatsMessages, chatsMessagesInsertSchema } from '@conar/db/schem
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq, inArray } from 'drizzle-orm'
-import { generateTxId } from '~/lib/electric'
 import { orpc, subscriptionMiddleware } from '~/orpc'
+import { publisher } from './events'
 
 const schema = chatsMessagesInsertSchema
 
 export const create = orpc
   .use(subscriptionMiddleware)
-  .input(type.or(
-    schema,
-    schema.array(),
-  ).pipe(data => Array.isArray(data) ? data : [data]))
+  .input(type.or(schema, schema.array()).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
     const chatIds = input.map(item => item.chatId)
     const foundChats = await db.select({ id: chats.id })
@@ -26,9 +23,12 @@ export const create = orpc
       })
     }
 
-    return db.transaction(async (tx) => {
-      await tx.insert(chatsMessages).values(input)
+    const inserted = await db.insert(chatsMessages).values(input).returning()
 
-      return { txid: await generateTxId(tx) }
-    })
+    for (const message of inserted) {
+      publisher.publish(context.user.id, {
+        type: 'insert',
+        value: message,
+      })
+    }
   })

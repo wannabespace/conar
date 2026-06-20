@@ -3,8 +3,8 @@ import { connectionsResources, connectionsResourcesUpdateSchema } from '@conar/d
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
-import { generateTxId } from '~/lib/electric'
 import { authMiddleware, orpc } from '~/orpc'
+import { publisher } from './events'
 
 export const update = orpc
   .use(authMiddleware)
@@ -35,12 +35,14 @@ export const update = orpc
       throw new ORPCError('NOT_FOUND', { message: 'Connection resource not found' })
     }
 
-    return db.transaction(async (tx) => {
-      await tx
-        .update(connectionsResources)
-        .set(changes)
-        .where(eq(connectionsResources.id, id))
+    const [resource] = await db
+      .update(connectionsResources)
+      .set(changes)
+      .where(eq(connectionsResources.id, id))
+      .returning()
 
-      return { txid: await generateTxId(tx) }
+    publisher.publish(context.user.id, {
+      type: 'update',
+      value: resource!,
     })
   })

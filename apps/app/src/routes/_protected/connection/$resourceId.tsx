@@ -11,13 +11,20 @@ import { QueryLogger } from '~/entities/connection/components'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { lastOpenedResourcesStorageValue, prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
+import { getCollections } from '~/lib/collections'
 import { ConnectionSidebar } from './-components/connection-sidebar'
 import { PasswordForm } from './-components/password-form'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId')({
   component: DatabasePage,
-  beforeLoad: async ({ params, context }) => {
-    const { connectionsCollection, connectionsResourcesCollection } = context.collections
+  beforeLoad: async ({ params }) => {
+    const { connectionsCollection, connectionsResourcesCollection } = getCollections()
+
+    await Promise.all([
+      connectionsCollection.toArrayWhenReady(),
+      connectionsResourcesCollection.toArrayWhenReady(),
+    ])
+
     const connectionResource = connectionsResourcesCollection.get(params.resourceId)
 
     if (!connectionResource) {

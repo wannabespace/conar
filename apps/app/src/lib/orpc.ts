@@ -1,6 +1,7 @@
 import type * as apiOrpc from '@conar/api/orpc/routers'
 import type * as proxyOrpc from '@conar/proxy/orpc/routers'
 import type * as queryProxy from '@conar/query-proxy'
+import type { InferRouterInputs, InferRouterOutputs } from '@orpc/server'
 import { isConnectionError } from '@conar/shared/utils/connections'
 import { createORPCClient, onError, ORPCError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
@@ -70,6 +71,9 @@ export const orpcProxy = createORPCClient(new RPCLink({
     })
   },
 })) satisfies proxyOrpc.ORPCRouter
+
+export type ORPCInputs = InferRouterInputs<typeof apiOrpc.router>
+export type ORPCOutputs = InferRouterOutputs<typeof apiOrpc.router>
 
 export const PROXY_ERROR_MESSAGE = 'We can\'t connect to the proxy, please check your connection and try again.'
 

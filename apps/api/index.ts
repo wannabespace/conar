@@ -11,9 +11,7 @@ import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
 import { sendEmail } from './lib/resend'
 import { sanitizeLogData } from '@conar/shared/utils/sanitize-log'
-import { ELECTRIC_EXPOSED_HEADERS } from './lib/electric'
 import { healthRouter } from './routers/health'
-import { shapesRouter } from './routers/shapes'
 
 const handler = new RPCHandler(router, {
   interceptors: [
@@ -71,7 +69,6 @@ const app = new Hono<{
       return origin.endsWith('.conar.app') || allowedOrigins.includes(origin) ? origin : null
     },
     credentials: true,
-    exposeHeaders: [...ELECTRIC_EXPOSED_HEADERS],
   }))
   .get('/', c => c.redirect(env.MAIN_URL))
   .use('*', async (c, next) => {
@@ -150,7 +147,6 @@ const app = new Hono<{
 
     return auth.handler(req)
   })
-  .route('/shapes', shapesRouter)
   .use('/rpc/*', async (c, next) => {
     const { matched, response } = await handler.handle(c.req.raw.clone(), {
       prefix: '/rpc',
@@ -168,11 +164,4 @@ const app = new Hono<{
 export default {
   fetch: app.fetch,
   port: Number(process.env.PORT || 3000),
-  // Electric live shape requests (`live=true`) long-poll: Electric holds the
-  // connection open (~20 s) until new data arrives or the poll window elapses.
-  // Bun's default 30 s idle timeout can close these mid-poll, so portless sees
-  // a reset and serves its 502 page. Raise the ceiling above the poll window
-  // (255 s is Bun's max) so legitimate polls survive while truly stuck sockets
-  // still time out.
-  idleTimeout: 255,
 }

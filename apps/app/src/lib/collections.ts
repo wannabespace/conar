@@ -4,26 +4,38 @@ import { createChatCollections } from '~/entities/chat/sync'
 import { createConnectionCollections } from '~/entities/connection/sync'
 import { createQueryCollections } from '~/entities/query/sync'
 
-export const getCollections = memoize(() => {
+type ActiveCollections = ReturnType<typeof createConnectionCollections>
+  & ReturnType<typeof createChatCollections>
+  & ReturnType<typeof createQueryCollections>
+
+let activeCollections: ActiveCollections | null = null
+
+function buildCollections(): ActiveCollections {
   const connectionColls = createConnectionCollections()
   const chatColls = createChatCollections()
   const queryColls = createQueryCollections()
 
-  const collections = { ...connectionColls, ...chatColls, ...queryColls }
+  return {
+    ...connectionColls,
+    ...chatColls,
+    ...queryColls,
+  }
+}
 
-  return collections
-}, {
-  cacheKey: 'collections',
+export const getCollections = memoize(() => {
+  activeCollections = buildCollections()
+  return activeCollections
 })
 
 export type Collections = ReturnType<typeof getCollections>
 
-export function clearCollectionsCache() {
+export function clearCollections() {
+  activeCollections = null
   clearMemoizeCache(getCollections)
 }
 
 const protectedApi = getRouteApi('/_protected')
 
 export function useCollections() {
-  return protectedApi.useRouteContext({ select: c => c.collections })
+  return protectedApi.useLoaderData({ select: c => c.collections })
 }

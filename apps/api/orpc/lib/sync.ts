@@ -1,5 +1,9 @@
 import type { Type } from 'arktype'
+import { IORedisPublisher } from '@orpc/experimental-publisher/ioredis'
+import { eventIterator } from '@orpc/server'
 import { type } from 'arktype'
+import { redis } from '~/lib/redis'
+import { authMiddleware, orpc } from '~/orpc'
 
 export function createSyncOutputSchema<const T>(
   schema: type.validate<T>,
@@ -14,6 +18,17 @@ export function createSyncOutputSchema(schema: Type) {
     type({ type: '"update"', value: schema }),
     type({ type: '"delete"', key: 'string.uuid.v7' }),
   )
+}
+
+export function createSyncPublisher<T extends Type<{ type: 'insert' | 'update' | 'delete' }>>(
+  output: T,
+  prefix: string,
+) {
+  return new IORedisPublisher<Record<string, typeof output.infer>>({
+    commander: redis.duplicate(),
+    listener: redis.duplicate(),
+    prefix,
+  })
 }
 
 export async function syncDiff<TItem>(opts: {
@@ -32,4 +47,16 @@ export async function syncDiff<TItem>(opts: {
   ])
   const missingIds = inputIds.filter(id => !existingIds.includes(id))
   return { updatedItems, newItems, missingIds }
+}
+
+// eslint-disable-next-line ts/no-explicit-any
+export function createEventsEndpoint<O extends Type<{ type: 'insert' | 'update' | 'delete' }>, P extends IORedisPublisher<any>>(output: O, publisher: P) {
+  return orpc
+    .use(authMiddleware)
+    .output(eventIterator(output))
+    .handler(async function* ({ context, signal, lastEventId }) {
+      for await (const payload of publisher.subscribe(context.user.id, { signal, lastEventId })) {
+        yield payload
+      }
+    })
 }

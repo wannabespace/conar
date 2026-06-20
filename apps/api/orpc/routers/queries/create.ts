@@ -2,26 +2,27 @@ import { db } from '@conar/db'
 import { queriesInsertSchema } from '@conar/db/schema'
 import { queries } from '@conar/db/schema/queries'
 import { type } from 'arktype'
-import { generateTxId } from '~/lib/electric'
 import { authMiddleware, orpc } from '~/orpc'
+import { publisher } from './events'
 
-const schema = queriesInsertSchema.omit('userId')
+const schema = queriesInsertSchema.omit('userId', 'connectionId')
 
 export const create = orpc
   .use(authMiddleware)
-  .input(type.or(
-    schema,
-    schema.array(),
-  ).pipe(data => Array.isArray(data) ? data : [data]))
+  .input(type.or(schema, schema.array()).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
-    return db.transaction(async (tx) => {
-      await tx
-        .insert(queries)
-        .values(input.map(item => ({
-          ...item,
-          userId: context.session.userId,
-        })))
+    const inserted = await db
+      .insert(queries)
+      .values(input.map(item => ({
+        ...item,
+        userId: context.user.id,
+      })))
+      .returning()
 
-      return { txid: await generateTxId(tx) }
-    })
+    for (const query of inserted) {
+      publisher.publish(context.user.id, {
+        type: 'insert',
+        value: query,
+      })
+    }
   })
