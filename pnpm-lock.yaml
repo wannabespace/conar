@@ -1950,7 +1950,7 @@ packages:
         optional: true
 
   '@better-auth/drizzle-adapter@https://pkg.pr.new/@better-auth/drizzle-adapter@9489':
-    resolution: {integrity: sha512-alVSGCpO4tyW/Tp9iFgqV4lXk3yB4Jhil5DjodGQpn+tfmkqt1Oe6gRTjOSCtWN+FMLBHZpwCrhJ/v+POmG/mQ==, tarball: https://pkg.pr.new/@better-auth/drizzle-adapter@9489}
+    resolution: {integrity: sha512-RnTqR7Yp+vfIvmmnc38c3K3ZqBBx5VVvNTFLdLqjfJezRgueqxnsWCUtG4c1poKD69il5aqMydNDyieeIoyDPg==, tarball: https://pkg.pr.new/@better-auth/drizzle-adapter@9489}
     version: 1.7.0-beta.9
     peerDependencies:
       '@better-auth/core': 1.7.0-beta.9
