@@ -12,6 +12,16 @@ All connection strings stored by Conar — regardless of sync type — are encry
 
 Encryption is applied automatically every time you save a connection. You don't need to configure anything to benefit from it.
 
+## Encryption in Transit
+
+When your device retrieves a connection string from Conar's cloud, the credentials are protected with an extra layer of encryption on top of the standard HTTPS transport.
+
+- Your device generates a one-time key pair for each request and sends only the **public key** to the server.
+- The server encrypts the connection string with that public key before returning it.
+- Only your device holds the matching **private key**, so only your device can decrypt the response. The private key never leaves your machine.
+
+This means the plaintext connection string is never exposed in the response body, even to Conar's own infrastructure.
+
 ## Cloud (with password) vs Cloud (without password)
 
 Conar gives you two sync modes, each offering a different trade-off between convenience and credential exposure. Both modes sync your connection across all your devices.
@@ -27,11 +37,12 @@ Conar gives you two sync modes, each offering a different trade-off between conv
     This option is convenient for development and staging databases where the priority is quick access across multiple machines.
   </Tab>
   <Tab title="Cloud (without password)">
-    **Cloud (without password)** stores only connection metadata — hostname, port, database name, and username — in Conar's cloud. Your password is **never stored**.
+    **Cloud (without password)** stores only connection metadata — hostname, port, database name, and username — in Conar's cloud. Your password is **never synced to the cloud**.
 
-    - Each time you open the connection, Conar prompts you to enter the password for that session.
-    - The password is used in memory for the duration of your session and then discarded.
-    - Even if your Conar account were compromised, an attacker would have no stored password to extract.
+    - The first time you use the connection, Conar prompts you to enter the password.
+    - The password is kept only on your current device, encrypted with your per-user secret key, so you don't have to re-enter it every time. It is never uploaded to Conar's cloud or synced to your other devices.
+    - You can remove the locally stored password at any time from the connection's menu (**⋯ → Clear password**). After clearing it, Conar prompts for the password again the next time you use the connection.
+    - Even if your Conar account were compromised, an attacker would have no stored password to extract from the cloud.
 
     This option is the right choice for production databases or any situation where your organization's security policy prohibits storing passwords in external systems.
   </Tab>

@@ -1,6 +1,7 @@
 import { isLocalhostConnectionString } from '@conar/connection/utils'
 import { base64ToBytes, bytesToBase64 } from '@conar/shared/utils/base64'
 import { decryptWithKey, encryptWithKey } from '@conar/shared/utils/crypto-web'
+import { decryptWithPrivateKey, generateEncryptionKeyPair } from '@conar/shared/utils/pair-keys'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { type } from 'arktype'
 import { clearMemoizeCache, memoize } from 'memoza'
@@ -18,6 +19,7 @@ const storage = createIndexedDbStorage({
     connectionStrings: type({
       '[string]': {
         encrypted: 'string',
+        updatedAt: 'Date',
         metadata: {
           isPasswordPopulated: 'boolean',
           isLocalhost: 'boolean',
@@ -103,19 +105,27 @@ export const connectionStringStorage = {
   get ready() {
     return Promise.all([
       storage.ready,
-      Promise.allSettled(resolvePromises.values()).then(() => {}),
+      Promise.allSettled(resolvePromises.values()),
     ])
   },
   has: (id: string) => id in storage.get().connectionStrings,
   get: (id: string) => storage.get().connectionStrings[id],
-  resolve: (id: string): Promise<void> => {
+  resolve: (id: string) => {
     const existing = resolvePromises.get(id)
     if (existing)
       return existing
 
+    const local = connectionStringStorage.get(id)
+
     const promise = (async () => {
-      const { connectionString } = await orpc.connections.resolve.call({ id })
-      await connectionStringStorage.set(id, connectionString)
+      const { publicKey, privateKey } = await generateEncryptionKeyPair()
+      const result = await orpc.connections.resolve.call({ id, publicKey, updatedAt: local?.updatedAt })
+
+      if (result.status === 'unchanged')
+        return
+
+      const connectionString = await decryptWithPrivateKey(privateKey, result.connectionString)
+      await connectionStringStorage.set(id, await preserveLocalPassword(id, connectionString), result.updatedAt)
     })().finally(() => {
       resolvePromises.delete(id)
     })
@@ -127,6 +137,7 @@ export const connectionStringStorage = {
     const record = connectionStringStorage.get(id)
     if (!record)
       throw new Error(`No connection string found for connection "${id}"`)
+
     try {
       return await decryptConnectionString(record.encrypted)
     }
@@ -135,7 +146,7 @@ export const connectionStringStorage = {
       throw error
     }
   },
-  set: async (id: string, connectionString: string) => {
+  set: async (id: string, connectionString: string, updatedAt: Date) => {
     const url = new SafeURL(connectionString)
     const encrypted = await encryptConnectionString(connectionString)
     await storage.set(prev => ({
@@ -143,6 +154,7 @@ export const connectionStringStorage = {
         ...prev.connectionStrings,
         [id]: {
           encrypted,
+          updatedAt,
           metadata: {
             isPasswordPopulated: !!url.password,
             isLocalhost: isLocalhostConnectionString(connectionString),
@@ -163,6 +175,17 @@ export const connectionStringStorage = {
   clear: () => storage.set({ connectionStrings: {} }),
 }
 
-export function useConnectionString(id: string) {
-  return useSubscription(storage, { selector: state => state.connectionStrings[id] })
+async function preserveLocalPassword(id: string, connectionString: string) {
+  const url = new SafeURL(connectionString)
+  const local = connectionStringStorage.get(id)
+
+  if (!url.password && local?.metadata.isPasswordPopulated) {
+    url.password = new SafeURL(await connectionStringStorage.decrypt(id)).password
+  }
+
+  return url.toString()
+}
+
+export function useConnectionStringMetadata(id: string) {
+  return useSubscription(storage, { selector: state => state.connectionStrings[id]?.metadata })
 }

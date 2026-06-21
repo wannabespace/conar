@@ -66,10 +66,12 @@ function CreateConnectionPage() {
       const id = v7()
       const url = new SafeURL(data.connectionString.trim())
 
-      await connectionStringStorage.set(id, data.connectionString.trim())
-
       const resource = url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
       const resourceId = v7()
+      const updatedAt = new Date()
+      const createdAt = new Date()
+
+      await connectionStringStorage.set(id, data.connectionString.trim(), updatedAt)
 
       const tx = createConnectionWithResource({
         connection: {
@@ -80,15 +82,15 @@ function CreateConnectionPage() {
           color: data.color || null,
           isPasswordExists: !!url.password,
           syncType: data.syncType,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt,
+          updatedAt,
         },
         resource: {
           id: resourceId,
           connectionId: id,
           name: resource,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt,
+          updatedAt,
         },
       })
 

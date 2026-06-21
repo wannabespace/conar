@@ -1,5 +1,6 @@
 import { GITHUB_REPO_NAME } from '@conar/shared/constants'
 import { BrowserCollectionCoordinator, createBrowserWASQLitePersistence, openBrowserWASQLiteOPFSDatabase } from '@tanstack/browser-db-sqlite-persistence'
+import { posthog } from './posthog'
 
 export interface BaseTable {
   id: string
@@ -30,14 +31,41 @@ export const persistence = createBrowserWASQLitePersistence({
 })
 
 export async function clearDb() {
-  // const root = await navigator.storage.getDirectory()
+  try {
+    await database.execute('PRAGMA foreign_keys = OFF;')
 
-  // const sqliteDir = await root.getDirectoryHandle('sqlite3-dir', { create: false })
-  // for await (const entry of sqliteDir.values()) {
-  //   if (entry.kind === 'file' && entry.name.startsWith(DATABASE_NAME)) {
-  //     await sqliteDir.removeEntry(entry.name)
-  //   }
-  // }
+    const tablesResult = await database.execute(`
+      SELECT name
+      FROM sqlite_master
+      WHERE type='table' AND name NOT LIKE 'sqlite_%';
+    `)
+
+    const systemTables = new Set([
+      'collection_registry',
+      'persisted_index_registry',
+      'applied_tx',
+      'collection_version',
+      'collection_metadata',
+      'leader_term',
+      'schema_version',
+      'collection_reset_epoch',
+    ])
+
+    for (const table of tablesResult as { name: string }[]) {
+      const tableName = table.name
+
+      if (tableName && !systemTables.has(tableName)) {
+        await database.execute(`DELETE FROM "${tableName}";`)
+      }
+    }
+
+    await database.execute('PRAGMA foreign_keys = ON;')
+    await database.execute('VACUUM;')
+  }
+  catch (error) {
+    posthog.captureException(error)
+    await database.execute('PRAGMA foreign_keys = ON;').catch(() => {})
+  }
 }
 
 if (import.meta.env.DEV) {

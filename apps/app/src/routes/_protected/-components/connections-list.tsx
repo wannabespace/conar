@@ -1,6 +1,7 @@
 import type { ComponentRef } from 'react'
 import type { Connection } from '~/entities/connection/sync'
 import { CONNECTION_RESOURCE_ROOT_LABEL, CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
+import { SyncType } from '@conar/shared/enums/sync-type'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
@@ -18,16 +19,16 @@ import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAlertLine, RiArrowDownSLine, RiDeleteBinLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiRefreshLine, RiSearchLine, RiSortAsc, RiSortDesc } from '@remixicon/react'
+import { RiAlertLine, RiArrowDownSLine, RiDeleteBinLine, RiLockUnlockLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiRefreshLine, RiSearchLine, RiSortAsc, RiSortDesc } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { AnimatePresence } from 'motion/react'
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
-import { v7 } from 'uuid'
+import { toast } from 'sonner'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
 import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
@@ -37,7 +38,7 @@ import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { authClient } from '~/lib/auth'
 import { useCollections } from '~/lib/collections'
-import { connectionStringStorage, useConnectionString } from '~/lib/connection-string-storage'
+import { connectionStringStorage, useConnectionStringMetadata } from '~/lib/connection-string-storage'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
@@ -206,7 +207,7 @@ function ConnectionCard({
     .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
     .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
   const storedResourcesNames = storedResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
-  const connectionString = useConnectionString(connection.id)
+  const metadata = useConnectionStringMetadata(connection.id)
   const { type, canSend } = useFetchingConfig(connection)
 
   const {
@@ -223,7 +224,7 @@ function ConnectionCard({
   const [isOpen, setIsOpen] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
 
-  const defaultResourceName = connectionString?.metadata.defaultResourceName ?? null
+  const defaultResourceName = metadata?.defaultResourceName ?? null
 
   const connectionStore = getConnectionStore(connection.id)
   const { selectedResourceName, pinnedResourcesNames } = useSubscription(connectionStore, {
@@ -234,28 +235,7 @@ function ConnectionCard({
   })
   const resolvedSelectedResourceName = selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? null : selectedResourceName
   const selectedResource = storedResources.find(r => r.name === resolvedSelectedResourceName)
-
-  const { isPending: isWaitForSyncPending } = useQuery({
-    queryKey: ['connections-resources-wait-for-sync', connection.id],
-    queryFn: async () => {
-      await connectionsResourcesCollection.stateWhenReady()
-      return null
-    },
-  })
-
-  const canOpenResource = canSend || (type === 'waiting-for-password' && window.electron)
-
-  useEffect(() => {
-    if (canOpenResource && !selectedResource && !isFetching && !error && !isWaitForSyncPending) {
-      connectionsResourcesCollection.insert({
-        id: v7(),
-        connectionId: connection.id,
-        name: resolvedSelectedResourceName,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-    }
-  }, [canOpenResource, resolvedSelectedResourceName, selectedResource, connection.id, isFetching, error, isWaitForSyncPending, connectionsResourcesCollection])
+  const canOpenResource = canSend || (type === 'waiting-for-password' && !!window.electron)
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -281,6 +261,17 @@ function ConnectionCard({
     }, 3000)
   }
 
+  const handleClearPassword = async () => {
+    const record = connectionStringStorage.get(connection.id)
+    if (!record)
+      return
+
+    const url = new SafeURL(await connectionStringStorage.decrypt(connection.id))
+    url.password = ''
+    await connectionStringStorage.set(connection.id, url.toString(), record.updatedAt)
+    toast.success('Password cleared from this device')
+  }
+
   const isResourcesShown = resources.length > 1 && (!canSend || !isPending)
 
   return (
@@ -299,16 +290,14 @@ function ConnectionCard({
           `has-[:where([data-resource-link]:hover)]:bg-accent`,
         )}
       >
-        {selectedResource && canOpenResource
-          ? (
-              <ConnectionResourceLink
-                resourceId={selectedResource.id}
-                className="absolute inset-0 cursor-default rounded-lg"
-                preload={false}
-                data-resource-link
-              />
-            )
-          : null}
+        {selectedResource && canOpenResource && (
+          <ConnectionResourceLink
+            resourceId={selectedResource.id}
+            className="absolute inset-0 cursor-default rounded-lg"
+            preload={false}
+            data-resource-link
+          />
+        )}
         <div className="
           pointer-events-none relative z-10 flex items-center justify-between
           gap-4 px-6 py-4
@@ -379,8 +368,8 @@ function ConnectionCard({
                     "
                     onClick={() => handleCopy()}
                   >
-                    {connectionString
-                      ? <span className="truncate">{connectionString.metadata.displayUrl}</span>
+                    {metadata?.displayUrl
+                      ? <span className="truncate">{metadata?.displayUrl}</span>
                       : <Skeleton className="h-3 w-40" />}
                   </TooltipTrigger>
                   <TooltipContent className="flex items-center gap-1" side="bottom">
@@ -420,7 +409,7 @@ function ConnectionCard({
             >
               <RiMoreLine className="size-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-auto">
               <DropdownMenuItem
                 disabled={!canSend}
                 onClick={() => refetch()}
@@ -428,6 +417,16 @@ function ConnectionCard({
                 <RiRefreshLine className="size-4" />
                 Refresh
               </DropdownMenuItem>
+              {connection.syncType === SyncType.CloudWithoutPassword && (
+                <DropdownMenuItem
+                  className="whitespace-nowrap"
+                  disabled={!metadata?.isPasswordPopulated}
+                  onClick={() => handleClearPassword()}
+                >
+                  <RiLockUnlockLine className="size-4 shrink-0" />
+                  Clear password
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 variant="destructive"
                 onClick={() => onRemove()}

@@ -30,7 +30,7 @@ export function PasswordForm({ connection, connectionResource }: { connection: C
         resourceId: connectionResource.id,
       })
 
-      await connectionStringStorage.set(connection.id, url.toString())
+      await connectionStringStorage.set(connection.id, url.toString(), connection.updatedAt)
     },
     onSuccess: () => {
       router.invalidate({ filter: r => r.routeId === '/_protected/connection/$resourceId' })

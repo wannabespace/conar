@@ -24,7 +24,7 @@ export function createQueryCollections() {
       sync: ({ begin, commit, write, collection, markReady }) => {
         const abortController = new AbortController()
 
-        const writeItem = async (item: ORPCOutputs['queries']['sync'][number]) => {
+        const writeItem = (item: ORPCOutputs['queries']['sync'][number]) => {
           if (item.type === 'delete') {
             write({
               type: item.type,
@@ -53,7 +53,7 @@ export function createQueryCollections() {
               if (abortController.signal.aborted)
                 break
               begin()
-              await writeItem(item)
+              writeItem(item)
               commit()
             }
           })
@@ -71,7 +71,7 @@ export function createQueryCollections() {
             return
           begin()
           for (const item of sync) {
-            await writeItem(item)
+            writeItem(item)
           }
           commit()
         })

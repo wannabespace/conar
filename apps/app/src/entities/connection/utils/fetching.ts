@@ -3,7 +3,7 @@ import type { Connection, ConnectionResource } from '~/entities/connection/sync'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { useSubscription } from 'seitu/react'
 import { getCollections } from '~/lib/collections'
-import { connectionStringStorage, useConnectionString } from '~/lib/connection-string-storage'
+import { connectionStringStorage, useConnectionStringMetadata } from '~/lib/connection-string-storage'
 import { queryClient } from '~/main'
 import { isLocalProxyAvailable, useLocalProxyAvailable } from '../proxy'
 import { resourceRowsQueryInfiniteOptions } from '../queries'
@@ -88,13 +88,13 @@ export function fetchingConfig(connection: Pick<Connection, 'syncType' | 'isPass
 
 export function useFetchingConfig(connection: Pick<Connection, 'id' | 'syncType' | 'isPasswordExists'>) {
   const isLocalProxyAvailable = useLocalProxyAvailable()
-  const connectionString = useConnectionString(connection.id)
+  const metadata = useConnectionStringMetadata(connection.id)
   const proxy = useSubscription(getConnectionStore(connection.id), { selector: s => s.proxy })
 
   return fetchingConfig(connection, {
     isLocalProxyAvailable,
-    isPasswordPopulated: connectionString?.metadata.isPasswordPopulated,
-    isLocalhost: connectionString?.metadata.isLocalhost,
+    isPasswordPopulated: metadata?.isPasswordPopulated,
+    isLocalhost: metadata?.isLocalhost,
     proxy,
   })
 }

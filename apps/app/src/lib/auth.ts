@@ -6,7 +6,6 @@ import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 import { router } from '~/main'
 import { apiUrl } from '../utils/utils'
-import { clearCollections } from './collections'
 import { connectionStringStorage } from './connection-string-storage'
 import { clearDb } from './sync'
 
@@ -61,23 +60,10 @@ export async function isSignedIn() {
   return !!data?.data?.user
 }
 
-let fullSignOutPromise: Promise<void> | null = null
-
 export async function fullSignOut() {
-  if (fullSignOutPromise) {
-    return fullSignOutPromise
-  }
-
-  fullSignOutPromise = (async () => {
-    await authClient.signOut()
-    await router.navigate({ to: '/auth' })
-    await connectionStringStorage.clear()
-    bearerToken.clear()
-    clearCollections()
-    clearDb()
-  })().finally(() => {
-    fullSignOutPromise = null
-  })
-
-  return fullSignOutPromise
+  await authClient.signOut()
+  await router.navigate({ to: '/auth' })
+  await connectionStringStorage.clear()
+  bearerToken.clear()
+  clearDb()
 }

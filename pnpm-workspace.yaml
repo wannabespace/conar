@@ -1,5 +1,7 @@
 catalogMode: prefer
 cleanupUnusedCatalogs: true
+minimumReleaseAgeExclude:
+  - '@better-auth/core@1.7.0-beta.9'
 shellEmulator: true
 blockExoticSubdeps: false
 packages:
@@ -7,11 +9,11 @@ packages:
   - apps/*
 overrides:
   '@better-auth/api-key': 'https://pkg.pr.new/@better-auth/api-key@9489'
-  '@better-auth/core': 1.7.0-beta.3
+  '@better-auth/core': 1.7.0-beta.9
   '@better-auth/drizzle-adapter': 'https://pkg.pr.new/@better-auth/drizzle-adapter@9489'
+  '@better-auth/kysely-adapter>kysely': ^0.28.17
   better-auth: 'https://pkg.pr.new/better-auth@9489'
 patchedDependencies:
-  '@better-auth/api-key': patches/@better-auth__api-key.patch
   '@better-auth/core': patches/@better-auth__core.patch
 catalog:
   '@ai-sdk/anthropic': ^3.0.85

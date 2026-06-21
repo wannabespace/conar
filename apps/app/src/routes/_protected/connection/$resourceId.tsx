@@ -21,8 +21,8 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
     const { connectionsCollection, connectionsResourcesCollection } = getCollections()
 
     await Promise.all([
-      connectionsCollection.toArrayWhenReady(),
-      connectionsResourcesCollection.toArrayWhenReady(),
+      connectionsCollection.stateWhenReady(),
+      connectionsResourcesCollection.stateWhenReady(),
     ])
 
     const connectionResource = connectionsResourcesCollection.get(params.resourceId)

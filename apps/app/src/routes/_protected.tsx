@@ -4,7 +4,7 @@ import { SubscriptionModal } from '~/components/subscriprion-modal'
 import { EventsProvider } from '~/events'
 import { enterAppAnimation } from '~/global-hooks'
 import { authClient } from '~/lib/auth'
-import { getCollections } from '~/lib/collections'
+import { clearCollections, getCollections } from '~/lib/collections'
 import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { subscriptionQueryClient } from '~/main'
 import { ActionsCenter } from './-components/actions-center'
@@ -48,6 +48,7 @@ function ProtectedLayout() {
     window.addEventListener('focus', handleFocus)
 
     return () => {
+      clearCollections()
       window.removeEventListener('focus', handleFocus)
     }
   }, [])

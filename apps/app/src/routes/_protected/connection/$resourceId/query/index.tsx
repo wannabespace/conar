@@ -24,8 +24,8 @@ export const Route = createFileRoute(
     const { chatsCollection, chatsMessagesCollection } = getCollections()
 
     await Promise.all([
-      chatsCollection.toArrayWhenReady(),
-      chatsMessagesCollection.toArrayWhenReady(),
+      chatsCollection.stateWhenReady(),
+      chatsMessagesCollection.stateWhenReady(),
     ])
 
     return {

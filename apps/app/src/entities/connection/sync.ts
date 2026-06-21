@@ -225,14 +225,10 @@ export function createConnectionCollections() {
     query: q => q.from({ connections: connectionsCollection }),
     skipInitial: false,
     onEnter: async ({ value }) => {
-      if (!navigator.onLine) {
-        return
-      }
-
       await connectionStringStorage.resolve(value.id)
     },
-    onExit: ({ value }) => {
-      connectionStringStorage.remove(value.id)
+    onExit: async ({ value }) => {
+      await connectionStringStorage.remove(value.id)
     },
   })
 
