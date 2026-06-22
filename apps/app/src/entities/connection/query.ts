@@ -7,23 +7,24 @@ import { Result } from 'better-result'
 import { createStore } from 'seitu'
 import { toast } from 'sonner'
 import { getCollections } from '~/lib/collections'
-import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { dialects } from './dialects'
 import { logQuery } from './log'
 import { getConnectionStringToShow } from './utils/helpers'
 
 export async function connectionToQueryParams(connection: Connection): Promise<QueryParams> {
+  const { connectionStringsCollection } = getCollections()
+
   return {
-    connectionString: await connectionStringStorage.decrypt(connection.id),
+    connectionString: await connectionStringsCollection.utils.decrypt(connection.id),
     type: connection.type,
     connectionId: connection.id,
   }
 }
 
 export async function connectionResourceToQueryParams(connectionResource: ConnectionResource): Promise<QueryParams> {
-  const { connectionsCollection } = getCollections()
+  const { connectionsCollection, connectionStringsCollection } = getCollections()
   const connection = connectionsCollection.get(connectionResource.connectionId)!
-  const connectionString = new SafeURL(await connectionStringStorage.decrypt(connection.id))
+  const connectionString = new SafeURL(await connectionStringsCollection.utils.decrypt(connection.id))
   connectionString.pathname = connectionResource.name || ''
 
   return {

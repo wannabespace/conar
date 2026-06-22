@@ -13,6 +13,7 @@ import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCommandLine, RiFileListLine, RiGlobalLine, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiShieldCheckLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useLocation, useMatches, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
@@ -20,7 +21,7 @@ import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { UserButton } from '~/entities/user/components'
-import { connectionStringStorage } from '~/lib/connection-string-storage'
+import { useCollections } from '~/lib/collections'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 import { Route } from '../$resourceId'
@@ -218,11 +219,13 @@ function MainLinks() {
 
 export function ConnectionSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const { connection, connectionResource } = Route.useRouteContext()
+  const { connectionStringsCollection } = useCollections()
+  const { data: connectionString } = useLiveQuery(q => q.from({ cs: connectionStringsCollection }).where(({ cs }) => eq(cs.id, connection.id)).findOne(), [connection.id])
   const store = getConnectionResourceStore(connectionResource.id)
   const location = useLocation()
 
   const canOpenWeb = window.electron
-    ? connection.syncType === SyncType.Cloud && !connectionStringStorage.get(connection.id)?.metadata.isLocalhost
+    ? connection.syncType === SyncType.Cloud && !connectionString?.metadata.isLocalhost
     : false
 
   return (

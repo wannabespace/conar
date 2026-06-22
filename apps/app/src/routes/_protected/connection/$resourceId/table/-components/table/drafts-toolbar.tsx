@@ -132,7 +132,7 @@ export function DraftsToolbar({
 
             await tx
               .withSchema(schema)
-              .$extendTables<{ [table]: Record<string, unknown> }>()
+              .withTables<{ [table]: Record<string, unknown> }>()
               .updateTable(table)
               .set(values)
               .where(eb => buildWhere(eb, sqlFilters))
@@ -196,7 +196,7 @@ export function DraftsToolbar({
         await Promise.all(commits.map(async ({ primaryKeys, values, modifiedColumns, updatedFilters }) => {
           const refreshed = await db
             .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
+            .withTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(modifiedColumns)
             .where(eb => buildWhere(eb, updatedFilters))

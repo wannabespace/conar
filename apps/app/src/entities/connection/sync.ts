@@ -1,12 +1,10 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import type { Effect } from '@tanstack/react-db'
 import type { ORPCOutputs } from '~/lib/orpc'
 import type { BaseTable } from '~/lib/sync'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
-import { BasicIndex, createCollection, createEffect, createOptimisticAction } from '@tanstack/react-db'
-import { connectionStringStorage } from '~/lib/connection-string-storage'
+import { BasicIndex, createCollection, createOptimisticAction } from '@tanstack/react-db'
 import { orpc } from '~/lib/orpc'
 import { persistence } from '~/lib/sync'
 
@@ -27,8 +25,8 @@ export interface Connection extends BaseTable {
   syncType: SyncType
 }
 
-async function connectionToCloudInput(connection: Connection) {
-  const connectionString = await connectionStringStorage.decrypt(connection.id)
+async function connectionToCloudInput(connection: Connection, decrypt: (id: string) => Promise<string>) {
+  const connectionString = await decrypt(connection.id)
 
   return {
     ...connection,
@@ -42,7 +40,7 @@ export interface ConnectionResource extends BaseTable {
   name: string | null
 }
 
-export function createConnectionCollections() {
+export function createConnectionCollections({ decrypt }: { decrypt: (id: string) => Promise<string> }) {
   const connectionsCollection = createCollection(persistedCollectionOptions<Connection, string>({
     id: 'connections',
     persistence,
@@ -111,7 +109,7 @@ export function createConnectionCollections() {
     },
     onInsert: async ({ transaction }) => {
       await orpc.connections.create.call(
-        await Promise.all(transaction.mutations.map(m => connectionToCloudInput(m.modified))),
+        await Promise.all(transaction.mutations.map(m => connectionToCloudInput(m.modified, decrypt))),
       )
     },
     onUpdate: async ({ transaction }) => {
@@ -124,8 +122,6 @@ export function createConnectionCollections() {
       await orpc.connections.remove.call(transaction.mutations.map(m => ({ id: m.key })))
     },
   }))
-
-  let effect: Effect
 
   const connectionsResourcesCollection = createCollection(persistedCollectionOptions<ConnectionResource, string>({
     id: 'connections-resources',
@@ -191,7 +187,6 @@ export function createConnectionCollections() {
         })
 
         return () => {
-          effect.dispose()
           abortController.abort()
         }
       },
@@ -216,19 +211,8 @@ export function createConnectionCollections() {
       connectionsResourcesCollection.insert(resource)
     },
     mutationFn: async ({ connection, resource }) => {
-      await orpc.connections.create.call(await connectionToCloudInput(connection))
+      await orpc.connections.create.call(await connectionToCloudInput(connection, decrypt))
       await orpc.connectionsResources.create.call(resource)
-    },
-  })
-
-  effect = createEffect<Connection>({
-    query: q => q.from({ connections: connectionsCollection }),
-    skipInitial: false,
-    onEnter: async ({ value }) => {
-      await connectionStringStorage.resolve(value.id)
-    },
-    onExit: async ({ value }) => {
-      await connectionStringStorage.remove(value.id)
     },
   })
 

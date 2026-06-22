@@ -23,7 +23,6 @@ import { getConnectionStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching'
 import { useCollections } from '~/lib/collections'
-import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { generateRandomName } from '~/utils/utils'
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
@@ -52,7 +51,7 @@ function CreateConnectionPage() {
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
-  const { connectionsResourcesCollection, createConnectionWithResource } = useCollections()
+  const { connectionsResourcesCollection, createConnectionWithResource, connectionStringsCollection } = useCollections()
 
   const { mutate: createConnection, isPending: isCreatingConnection } = useMutation({
     mutationFn: async (data: {
@@ -71,7 +70,7 @@ function CreateConnectionPage() {
       const updatedAt = new Date()
       const createdAt = new Date()
 
-      await connectionStringStorage.set(id, data.connectionString.trim(), updatedAt)
+      await connectionStringsCollection.utils.upsert(id, data.connectionString.trim(), updatedAt)
 
       const tx = createConnectionWithResource({
         connection: {

@@ -10,16 +10,17 @@ import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
-import { connectionStringStorage } from '~/lib/connection-string-storage'
+import { useCollections } from '~/lib/collections'
 
 export function PasswordForm({ connection, connectionResource }: { connection: Connection, connectionResource: ConnectionResource }) {
   const router = useRouter()
+  const { connectionStringsCollection } = useCollections()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
   const { mutate: savePassword, status } = useMutation({
     mutationFn: async (password: string) => {
-      const baseString = await connectionStringStorage.decrypt(connection.id)
+      const baseString = await connectionStringsCollection.utils.decrypt(connection.id)
       const url = new SafeURL(baseString)
       url.password = password
       url.pathname = connectionResource.name || ''
@@ -30,7 +31,7 @@ export function PasswordForm({ connection, connectionResource }: { connection: C
         resourceId: connectionResource.id,
       })
 
-      await connectionStringStorage.set(connection.id, url.toString(), connection.updatedAt)
+      await connectionStringsCollection.utils.upsert(connection.id, url.toString(), connection.updatedAt)
     },
     onSuccess: () => {
       router.invalidate({ filter: r => r.routeId === '/_protected/connection/$resourceId' })

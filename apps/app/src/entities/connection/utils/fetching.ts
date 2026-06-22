@@ -2,8 +2,8 @@ import type { ActiveFilter } from '@conar/shared/filters'
 import type { Connection, ConnectionResource } from '~/entities/connection/sync'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { useSubscription } from 'seitu/react'
+import { useConnectionStringMetadata } from '~/entities/connection/use-connection-string-metadata'
 import { getCollections } from '~/lib/collections'
-import { connectionStringStorage, useConnectionStringMetadata } from '~/lib/connection-string-storage'
 import { queryClient } from '~/main'
 import { isLocalProxyAvailable, useLocalProxyAvailable } from '../proxy'
 import { resourceRowsQueryInfiniteOptions } from '../queries'
@@ -15,9 +15,9 @@ import { resourceTableTotalQueryOptions } from '../queries/total'
 import { getConnectionResourceStore, getConnectionStore } from '../store'
 
 export async function prefetchConnectionResourceCore(connectionResource: ConnectionResource) {
-  const { connectionsCollection } = getCollections()
+  const { connectionsCollection, connectionStringsCollection } = getCollections()
   const connection = connectionsCollection.get(connectionResource.connectionId)!
-  const connectionString = connectionStringStorage.get(connection.id)
+  const connectionString = connectionStringsCollection.get(connection.id)
 
   if (connection.isPasswordExists && !connectionString?.metadata?.isPasswordPopulated) {
     return
@@ -56,12 +56,19 @@ export function fetchingConfig(connection: Pick<Connection, 'syncType' | 'isPass
 }): {
   type: 'cloud-proxy' | 'local' | 'proxy' | 'waiting-for-password'
   canSend: boolean
+  reason: string | null
 } {
   const isPasswordPopulated = options?.isPasswordPopulated ?? false
   const isLocalhost = options?.isLocalhost ?? false
 
   if (connection.isPasswordExists && !isPasswordPopulated) {
-    return { type: 'waiting-for-password', canSend: false }
+    return {
+      type: 'waiting-for-password',
+      canSend: false,
+      reason: window.electron
+        ? 'Filled password is required to query this connection.'
+        : 'This connection cannot be used from the web app because it was created without storing the password. Open this connection in the desktop app.',
+    }
   }
 
   const isPasswordFilled = (connection.syncType === SyncType.CloudWithoutPassword && isPasswordPopulated)
@@ -72,18 +79,30 @@ export function fetchingConfig(connection: Pick<Connection, 'syncType' | 'isPass
   const preferProxy = !window.electron || proxyEnabled
 
   if ((isLocalhost || isPasswordFilled) && (proxyAvailable || hasCustomUrl) && preferProxy) {
-    return { type: 'proxy', canSend: true }
+    return { type: 'proxy', canSend: true, reason: null }
   }
 
   if (window.electron) {
-    return { type: 'local', canSend: true }
+    return { type: 'local', canSend: true, reason: null }
   }
 
   if (isLocalhost) {
-    return { type: 'proxy', canSend: false }
+    return {
+      type: 'proxy',
+      canSend: false,
+      reason: 'You cannot reach this connection from the web app. Open this connection in the desktop app.',
+    }
   }
 
-  return { type: 'cloud-proxy', canSend: connection.syncType !== SyncType.CloudWithoutPassword }
+  const canSend = connection.syncType !== SyncType.CloudWithoutPassword
+
+  return {
+    type: 'cloud-proxy',
+    canSend,
+    reason: canSend
+      ? null
+      : 'You cannot reach this connection from the web app. Run `conar proxy` or open this connection in the desktop app.',
+  }
 }
 
 export function useFetchingConfig(connection: Pick<Connection, 'id' | 'syncType' | 'isPasswordExists'>) {

@@ -34,11 +34,11 @@ import { ConnectionResourceLink } from '~/entities/connection/components/connect
 import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
 import { getConnectionStore } from '~/entities/connection/store'
+import { useConnectionStringMetadata } from '~/entities/connection/use-connection-string-metadata'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { authClient } from '~/lib/auth'
 import { useCollections } from '~/lib/collections'
-import { connectionStringStorage, useConnectionStringMetadata } from '~/lib/connection-string-storage'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
@@ -201,14 +201,14 @@ function ConnectionCard({
   connection: Connection
   onRemove: VoidFunction
 }) {
-  const { connectionsResourcesCollection } = useCollections()
+  const { connectionsResourcesCollection, connectionStringsCollection } = useCollections()
   const { data: storedResources } = useLiveQuery(q => q
     .from({ connectionsResources: connectionsResourcesCollection })
     .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
     .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
   const storedResourcesNames = storedResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
   const metadata = useConnectionStringMetadata(connection.id)
-  const { type, canSend } = useFetchingConfig(connection)
+  const { type, canSend, reason } = useFetchingConfig(connection)
 
   const {
     data: resources = storedResourcesNames,
@@ -244,10 +244,10 @@ function ConnectionCard({
       clearTimeout(timeoutRef.current)
     }
 
-    if (!connectionStringStorage.has(connection.id))
+    if (!connectionStringsCollection.has(connection.id))
       return
 
-    const fullString = await connectionStringStorage.decrypt(connection.id)
+    const fullString = await connectionStringsCollection.utils.decrypt(connection.id)
 
     const connectionStringToCopy = new SafeURL(fullString)
     connectionStringToCopy.pathname = selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL || selectedResourceName === null ? '' : selectedResourceName
@@ -262,13 +262,13 @@ function ConnectionCard({
   }
 
   const handleClearPassword = async () => {
-    const record = connectionStringStorage.get(connection.id)
+    const record = connectionStringsCollection.get(connection.id)
     if (!record)
       return
 
-    const url = new SafeURL(await connectionStringStorage.decrypt(connection.id))
+    const url = new SafeURL(await connectionStringsCollection.utils.decrypt(connection.id))
     url.password = ''
-    await connectionStringStorage.set(connection.id, url.toString(), record.updatedAt)
+    await connectionStringsCollection.utils.upsert(connection.id, url.toString(), record.updatedAt)
     toast.success('Password cleared from this device')
   }
 
@@ -331,11 +331,7 @@ function ConnectionCard({
                       />
                     </TooltipTrigger>
                     <TooltipContent className="pointer-events-auto max-w-xs">
-                      {type === 'waiting-for-password' && window.electron
-                        ? 'Filled password is required to query this connection.'
-                        : type === 'cloud-proxy' && !window.electron
-                          ? 'This connection cannot be used from the web app because it was created without storing the password. Open this connection in the desktop app.'
-                          : 'You cannot reach this connection from the web app. Run `conar proxy` or open this connection in the desktop app.'}
+                      {reason}
                     </TooltipContent>
                   </Tooltip>
                 )}

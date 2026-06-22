@@ -8,6 +8,7 @@ import './monaco-worker'
 import './assets/styles.css'
 import '@conar/ui/globals.css'
 import { toast } from 'sonner'
+import { authClient } from './lib/auth'
 
 if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
   import('react-scan').then(({ scan }) => {
@@ -70,6 +71,15 @@ declare module '@tanstack/react-router' {
   }
 }
 
-const root = createRoot(document.getElementById('root')!)
+(async () => {
+  const isAuth = router.state.location.pathname.startsWith('/auth')
+  const isLoggedIn = isAuth ? !!(await authClient.getSession().catch(() => null))?.data?.user : false
 
-root.render(<RouterProvider router={router} />)
+  if (isAuth && isLoggedIn) {
+    router.navigate({ to: '/', replace: true })
+  }
+
+  const root = createRoot(document.getElementById('root')!)
+
+  root.render(<RouterProvider router={router} />)
+})()

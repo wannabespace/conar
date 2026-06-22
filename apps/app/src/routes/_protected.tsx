@@ -5,7 +5,6 @@ import { EventsProvider } from '~/events'
 import { enterAppAnimation } from '~/global-hooks'
 import { authClient } from '~/lib/auth'
 import { clearCollections, getCollections } from '~/lib/collections'
-import { connectionStringStorage } from '~/lib/connection-string-storage'
 import { subscriptionQueryClient } from '~/main'
 import { ActionsCenter } from './-components/actions-center'
 
@@ -21,7 +20,7 @@ export const Route = createFileRoute('/_protected')({
   loader: async () => {
     const collections = getCollections()
 
-    await connectionStringStorage.ready
+    await collections.connectionStringsCollection.utils.ready()
 
     return { collections }
   },

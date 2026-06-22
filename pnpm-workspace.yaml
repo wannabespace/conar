@@ -8,13 +8,11 @@ packages:
   - packages/*
   - apps/*
 overrides:
-  '@better-auth/api-key': 'https://pkg.pr.new/@better-auth/api-key@9489'
-  '@better-auth/core': 1.7.0-beta.9
-  '@better-auth/drizzle-adapter': 'https://pkg.pr.new/@better-auth/drizzle-adapter@9489'
-  '@better-auth/kysely-adapter>kysely': ^0.28.17
-  better-auth: 'https://pkg.pr.new/better-auth@9489'
-patchedDependencies:
-  '@better-auth/core': patches/@better-auth__core.patch
+  '@better-auth/api-key': 'https://pkg.pr.new/@better-auth/api-key@5a40d12'
+  '@better-auth/core': 'https://pkg.pr.new/better-auth/better-auth/@better-auth/core@5a40d12'
+  '@better-auth/drizzle-adapter': 'https://pkg.pr.new/@better-auth/drizzle-adapter@5a40d12'
+  better-auth: 'https://pkg.pr.new/better-auth@5a40d12'
+  kysely: ^0.28.17
 catalog:
   '@ai-sdk/anthropic': ^3.0.85
   '@ai-sdk/google': ^3.0.83
@@ -95,6 +93,7 @@ catalog:
   class-variance-authority: ^0.7.1
   clsx: ^2.1.1
   cmdk: ^1.1.1
+  cnfast: ^0.0.6
   consola: ^3.4.2
   cross-env: ^10.1.0
   date-fns: ^4.4.0
@@ -114,7 +113,7 @@ catalog:
   ioredis: ^5.11.1
   js-base64: ^3.7.8
   js-confetti: ^0.13.1
-  kysely: ^0.29.2
+  kysely: ^0.28.17
   lucide-react: ^1.21.0
   marked: ^18.0.5
   memoza: ^1.1.0
