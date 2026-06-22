@@ -1,7 +1,6 @@
 import { db } from '@conar/db'
 import { decrypt } from '@conar/shared/utils/crypto-node'
 import { encryptWithPublicKey } from '@conar/shared/utils/pair-keys'
-import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { authMiddleware, orpc } from '~/orpc'
 
@@ -21,7 +20,7 @@ export const resolve = orpc
     })
 
     if (!connection) {
-      throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
+      return { status: 'not-found' as const }
     }
 
     if (input.updatedAt && input.updatedAt.getTime() >= connection.updatedAt.getTime()) {

@@ -9,19 +9,15 @@ import { encryptionKeyStorage, getEncryptionKey, resetEncryptionKey } from '~/li
 import { orpc } from '~/lib/orpc'
 import { persistence } from '~/lib/sync'
 
-interface StoredConnectionString {
-  id: string
+export interface ConnectionString {
+  connectionId: string
   encrypted: string
   updatedAt: Date
-  metadata: {
-    isPasswordPopulated: boolean
-    isLocalhost: boolean
-    displayUrl: string
-    defaultResourceName: string | null
-  }
+  isPasswordPopulated: boolean
+  isLocalhost: boolean
+  displayUrl: string
+  defaultResourceName: string | null
 }
-
-const resolvePromises = new Map<string, Promise<void>>()
 
 async function encryptValue(connectionString: string) {
   return encryptWithKey(await getEncryptionKey(), connectionString)
@@ -31,41 +27,27 @@ async function decryptValue(encryptedConnectionString: string) {
   return decryptWithKey(await getEncryptionKey(), encryptedConnectionString)
 }
 
-function buildRecord(id: string, connectionString: string, encrypted: string, updatedAt: Date): StoredConnectionString {
-  const url = new SafeURL(connectionString)
-
-  return {
-    id,
-    encrypted,
-    updatedAt,
-    metadata: {
-      isPasswordPopulated: !!url.password,
-      isLocalhost: isLocalhostConnectionString(connectionString),
-      displayUrl: `${url.hostname}${url.port ? `:${url.port}` : ''}`,
-      defaultResourceName: url.pathname && url.pathname !== '/' ? url.pathname.slice(1) : null,
-    },
-  }
-}
-
 // eslint-disable-next-line ts/consistent-type-definitions
 type ConnectionStringsUtils = {
   decrypt: (id: string) => Promise<string>
-  upsert: (id: string, connectionString: string, updatedAt: Date) => Promise<void>
+  prepare: (data: Pick<ConnectionString, 'connectionId' | 'updatedAt'> & { connectionString: string }) => Promise<ConnectionString>
   ready: () => Promise<void>
-  resolve: (id: string) => Promise<void>
+  resolve: (id: string) => Promise<string | null>
 }
 
-type ConnectionStringsCollection = Collection<StoredConnectionString, string, ConnectionStringsUtils>
+const resolvePromises = new Map<string, Promise<string | null>>()
+
+type ConnectionStringsCollection = Collection<ConnectionString, string, ConnectionStringsUtils>
 
 export function createConnectionStringsCollection() {
-  const connectionStringsCollection: ConnectionStringsCollection = createCollection(persistedCollectionOptions<StoredConnectionString, string, never, ConnectionStringsUtils>({
+  const connectionStringsCollection: ConnectionStringsCollection = createCollection(persistedCollectionOptions<ConnectionString, string, never, ConnectionStringsUtils>({
     id: 'connection-strings',
     persistence,
     autoIndex: 'eager',
     gcTime: 1,
     defaultIndexType: BasicIndex,
     schemaVersion: 1,
-    getKey: item => item.id,
+    getKey: item => item.connectionId,
     utils: {
       async decrypt(id: string): Promise<string> {
         const record = connectionStringsCollection.get(id)
@@ -77,18 +59,25 @@ export function createConnectionStringsCollection() {
         }
         catch (error) {
           await resetEncryptionKey()
+
+          for (const item of connectionStringsCollection.toArray) {
+            connectionStringsCollection.delete(item.connectionId)
+          }
+
           throw error
         }
       },
-      async upsert(id: string, connectionString: string, updatedAt: Date): Promise<void> {
-        const encrypted = await encryptValue(connectionString)
-        const record = buildRecord(id, connectionString, encrypted, updatedAt)
-
-        if (connectionStringsCollection.has(id)) {
-          connectionStringsCollection.update(id, draft => Object.assign(draft, record))
-        }
-        else {
-          connectionStringsCollection.insert(record)
+      async prepare(data: { connectionId: string, connectionString: string, updatedAt: Date }) {
+        const encrypted = await encryptValue(data.connectionString)
+        const url = new SafeURL(data.connectionString)
+        return {
+          connectionId: data.connectionId,
+          encrypted,
+          updatedAt: data.updatedAt,
+          isPasswordPopulated: !!url.password,
+          isLocalhost: isLocalhostConnectionString(data.connectionString),
+          displayUrl: `${url.hostname}${url.port ? `:${url.port}` : ''}`,
+          defaultResourceName: url.pathname && url.pathname !== '/' ? url.pathname.slice(1) : null,
         }
       },
       async ready() {
@@ -99,7 +88,6 @@ export function createConnectionStringsCollection() {
         ])
       },
       async resolve(id: string) {
-        // await connectionStringsCollection.waitFor('index:added')
         const existing = resolvePromises.get(id)
         if (existing)
           return existing
@@ -111,10 +99,18 @@ export function createConnectionStringsCollection() {
           const result = await orpc.connections.resolve.call({ id, publicKey, updatedAt: local?.updatedAt })
 
           if (result.status === 'unchanged')
-            return
+            return null
+
+          // This case can be when the connection is just created and not yet synced to the cloud but the user is already added it
+          if (result.status === 'not-found') {
+            if (local)
+              return local.encrypted
+
+            throw new Error('Connection not found')
+          }
 
           const connectionString = await decryptWithPrivateKey(privateKey, result.connectionString)
-          await connectionStringsCollection.utils.upsert(id, await preserveLocalPassword(id, connectionString), result.updatedAt)
+          return preserveLocalPassword(id, connectionString)
         })().finally(() => {
           resolvePromises.delete(id)
         })
@@ -125,13 +121,14 @@ export function createConnectionStringsCollection() {
     },
   }))
 
-  async function preserveLocalPassword(id: string, connectionString: string) {
+  async function preserveLocalPassword(connectionId: string, connectionString: string) {
     const url = new SafeURL(connectionString)
-    const local = connectionStringsCollection.get(id)
+    const local = connectionStringsCollection.get(connectionId)
 
-    if (!url.password && local?.metadata.isPasswordPopulated) {
-      url.password = new SafeURL(await connectionStringsCollection.utils.decrypt(id)).password
-    }
+    if (url.password || !local?.isPasswordPopulated)
+      return connectionString
+
+    url.password = new SafeURL(await connectionStringsCollection.utils.decrypt(connectionId)).password
 
     return url.toString()
   }

@@ -31,7 +31,14 @@ export function PasswordForm({ connection, connectionResource }: { connection: C
         resourceId: connectionResource.id,
       })
 
-      await connectionStringsCollection.utils.upsert(connection.id, url.toString(), connection.updatedAt)
+      connectionStringsCollection.update(connection.id, async draft => Object.assign(
+        draft,
+        await connectionStringsCollection.utils.prepare({
+          connectionId: connection.id,
+          connectionString: url.toString(),
+          updatedAt: connection.updatedAt,
+        }),
+      ))
     },
     onSuccess: () => {
       router.invalidate({ filter: r => r.routeId === '/_protected/connection/$resourceId' })

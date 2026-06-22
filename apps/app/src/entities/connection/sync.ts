@@ -4,7 +4,7 @@ import type { BaseTable } from '~/lib/sync'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
-import { BasicIndex, createCollection, createOptimisticAction } from '@tanstack/react-db'
+import { BasicIndex, createCollection } from '@tanstack/react-db'
 import { orpc } from '~/lib/orpc'
 import { persistence } from '~/lib/sync'
 
@@ -25,7 +25,7 @@ export interface Connection extends BaseTable {
   syncType: SyncType
 }
 
-async function connectionToCloudInput(connection: Connection, decrypt: (id: string) => Promise<string>) {
+export async function prepareConnectionToCloud(connection: Connection, decrypt: (id: string) => Promise<string>) {
   const connectionString = await decrypt(connection.id)
 
   return {
@@ -109,7 +109,7 @@ export function createConnectionCollections({ decrypt }: { decrypt: (id: string)
     },
     onInsert: async ({ transaction }) => {
       await orpc.connections.create.call(
-        await Promise.all(transaction.mutations.map(m => connectionToCloudInput(m.modified, decrypt))),
+        await Promise.all(transaction.mutations.map(m => prepareConnectionToCloud(m.modified, decrypt))),
       )
     },
     onUpdate: async ({ transaction }) => {
@@ -202,23 +202,8 @@ export function createConnectionCollections({ decrypt }: { decrypt: (id: string)
     },
   }))
 
-  const createConnectionWithResource = createOptimisticAction<{
-    connection: Connection
-    resource: ConnectionResource
-  }>({
-    onMutate: ({ connection, resource }) => {
-      connectionsCollection.insert(connection)
-      connectionsResourcesCollection.insert(resource)
-    },
-    mutationFn: async ({ connection, resource }) => {
-      await orpc.connections.create.call(await connectionToCloudInput(connection, decrypt))
-      await orpc.connectionsResources.create.call(resource)
-    },
-  })
-
   return {
     connectionsCollection,
     connectionsResourcesCollection,
-    createConnectionWithResource,
   }
 }

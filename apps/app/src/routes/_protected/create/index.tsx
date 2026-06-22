@@ -51,9 +51,9 @@ function CreateConnectionPage() {
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
-  const { connectionsResourcesCollection, createConnectionWithResource, connectionStringsCollection } = useCollections()
+  const { connectionsResourcesCollection, createConnectionAction, connectionStringsCollection } = useCollections()
 
-  const { mutate: createConnection, isPending: isCreatingConnection } = useMutation({
+  const { mutate: createConnectionMutation, isPending: isCreatingConnection } = useMutation({
     mutationFn: async (data: {
       connectionString: string
       name: string
@@ -70,9 +70,12 @@ function CreateConnectionPage() {
       const updatedAt = new Date()
       const createdAt = new Date()
 
-      await connectionStringsCollection.utils.upsert(id, data.connectionString.trim(), updatedAt)
-
-      const tx = createConnectionWithResource({
+      const tx = createConnectionAction({
+        connectionString: await connectionStringsCollection.utils.prepare({
+          connectionId: id,
+          connectionString: url.toString(),
+          updatedAt,
+        }),
         connection: {
           id,
           name: data.name,
@@ -134,7 +137,7 @@ function CreateConnectionPage() {
         return
       }
 
-      createConnection({ type, connectionString, name, syncType, label, color })
+      createConnectionMutation({ type, connectionString, name, syncType, label, color })
     },
   })
 
@@ -271,7 +274,7 @@ function CreateConnectionPage() {
                         disabled={testingStatus === 'pending' || !connectionString || !canSend}
                         onClick={() => test({ type: typeValue!, connectionString })}
                       >
-                        <LoadingContent loading={status === 'pending'}>
+                        <LoadingContent loading={testingStatus === 'pending'}>
                           {testingStatus === 'error' ? 'Try again' : 'Test connection'}
                         </LoadingContent>
                       </Button>

@@ -1,8 +1,8 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Connection, ConnectionResource } from '~/entities/connection/sync'
 import { SyncType } from '@conar/shared/enums/sync-type'
+import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useSubscription } from 'seitu/react'
-import { useConnectionStringMetadata } from '~/entities/connection/use-connection-string-metadata'
 import { getCollections } from '~/lib/collections'
 import { queryClient } from '~/main'
 import { isLocalProxyAvailable, useLocalProxyAvailable } from '../proxy'
@@ -19,7 +19,7 @@ export async function prefetchConnectionResourceCore(connectionResource: Connect
   const connection = connectionsCollection.get(connectionResource.connectionId)!
   const connectionString = connectionStringsCollection.get(connection.id)
 
-  if (connection.isPasswordExists && !connectionString?.metadata?.isPasswordPopulated) {
+  if (connection.isPasswordExists && !connectionString?.isPasswordPopulated) {
     return
   }
 
@@ -107,13 +107,17 @@ export function fetchingConfig(connection: Pick<Connection, 'syncType' | 'isPass
 
 export function useFetchingConfig(connection: Pick<Connection, 'id' | 'syncType' | 'isPasswordExists'>) {
   const isLocalProxyAvailable = useLocalProxyAvailable()
-  const metadata = useConnectionStringMetadata(connection.id)
+  const { connectionStringsCollection } = getCollections()
+  const { data: connectionString } = useLiveQuery(q => q
+    .from({ cs: connectionStringsCollection })
+    .where(({ cs }) => eq(cs.connectionId, connection.id))
+    .findOne(), [connection.id])
   const proxy = useSubscription(getConnectionStore(connection.id), { selector: s => s.proxy })
 
   return fetchingConfig(connection, {
     isLocalProxyAvailable,
-    isPasswordPopulated: metadata?.isPasswordPopulated,
-    isLocalhost: metadata?.isLocalhost,
+    isPasswordPopulated: connectionString?.isPasswordPopulated,
+    isLocalhost: connectionString?.isLocalhost,
     proxy,
   })
 }

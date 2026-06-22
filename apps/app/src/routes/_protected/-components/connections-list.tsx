@@ -34,7 +34,6 @@ import { ConnectionResourceLink } from '~/entities/connection/components/connect
 import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
 import { getConnectionStore } from '~/entities/connection/store'
-import { useConnectionStringMetadata } from '~/entities/connection/use-connection-string-metadata'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { authClient } from '~/lib/auth'
@@ -207,7 +206,10 @@ function ConnectionCard({
     .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
     .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
   const storedResourcesNames = storedResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
-  const metadata = useConnectionStringMetadata(connection.id)
+  const { data: connectionString } = useLiveQuery(q => q
+    .from({ connectionStrings: connectionStringsCollection })
+    .where(({ connectionStrings }) => eq(connectionStrings.connectionId, connection.id))
+    .findOne(), [connection.id])
   const { type, canSend, reason } = useFetchingConfig(connection)
 
   const {
@@ -224,7 +226,7 @@ function ConnectionCard({
   const [isOpen, setIsOpen] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
 
-  const defaultResourceName = metadata?.defaultResourceName ?? null
+  const defaultResourceName = connectionString?.defaultResourceName ?? null
 
   const connectionStore = getConnectionStore(connection.id)
   const { selectedResourceName, pinnedResourcesNames } = useSubscription(connectionStore, {
@@ -268,7 +270,12 @@ function ConnectionCard({
 
     const url = new SafeURL(await connectionStringsCollection.utils.decrypt(connection.id))
     url.password = ''
-    await connectionStringsCollection.utils.upsert(connection.id, url.toString(), record.updatedAt)
+
+    connectionStringsCollection.update(connection.id, async draft => Object.assign(
+      draft,
+      await connectionStringsCollection.utils.prepare({ connectionId: connection.id, connectionString: url.toString(), updatedAt: record.updatedAt }),
+    ))
+
     toast.success('Password cleared from this device')
   }
 
@@ -364,8 +371,8 @@ function ConnectionCard({
                     "
                     onClick={() => handleCopy()}
                   >
-                    {metadata?.displayUrl
-                      ? <span className="truncate">{metadata?.displayUrl}</span>
+                    {connectionString?.displayUrl
+                      ? <span className="truncate">{connectionString?.displayUrl}</span>
                       : <Skeleton className="h-3 w-40" />}
                   </TooltipTrigger>
                   <TooltipContent className="flex items-center gap-1" side="bottom">
@@ -416,7 +423,7 @@ function ConnectionCard({
               {connection.syncType === SyncType.CloudWithoutPassword && (
                 <DropdownMenuItem
                   className="whitespace-nowrap"
-                  disabled={!metadata?.isPasswordPopulated}
+                  disabled={!connectionString?.isPasswordPopulated}
                   onClick={() => handleClearPassword()}
                 >
                   <RiLockUnlockLine className="size-4 shrink-0" />

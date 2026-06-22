@@ -220,12 +220,12 @@ function MainLinks() {
 export function ConnectionSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const { connection, connectionResource } = Route.useRouteContext()
   const { connectionStringsCollection } = useCollections()
-  const { data: connectionString } = useLiveQuery(q => q.from({ cs: connectionStringsCollection }).where(({ cs }) => eq(cs.id, connection.id)).findOne(), [connection.id])
+  const { data: connectionString } = useLiveQuery(q => q.from({ cs: connectionStringsCollection }).where(({ cs }) => eq(cs.connectionId, connection.id)).findOne(), [connection.id])
   const store = getConnectionResourceStore(connectionResource.id)
   const location = useLocation()
 
   const canOpenWeb = window.electron
-    ? connection.syncType === SyncType.Cloud && !connectionString?.metadata.isLocalhost
+    ? connection.syncType === SyncType.Cloud && !connectionString?.isLocalhost
     : false
 
   return (
