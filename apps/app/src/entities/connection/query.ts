@@ -6,14 +6,13 @@ import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Result } from 'better-result'
 import { createStore } from 'seitu'
 import { toast } from 'sonner'
-import { getCollections } from '~/lib/collections'
+import { connectionStringsCollection } from './connection-strings'
 import { dialects } from './dialects'
 import { logQuery } from './log'
+import { connectionsCollection } from './sync'
 import { getConnectionStringToShow } from './utils/helpers'
 
 export async function connectionToQueryParams(connection: Connection): Promise<QueryParams> {
-  const { connectionStringsCollection } = getCollections()
-
   return {
     connectionString: await connectionStringsCollection.utils.decrypt(connection.id),
     type: connection.type,
@@ -22,8 +21,11 @@ export async function connectionToQueryParams(connection: Connection): Promise<Q
 }
 
 export async function connectionResourceToQueryParams(connectionResource: ConnectionResource): Promise<QueryParams> {
-  const { connectionsCollection, connectionStringsCollection } = getCollections()
-  const connection = connectionsCollection.get(connectionResource.connectionId)!
+  const connection = connectionsCollection.get(connectionResource.connectionId)
+
+  if (!connection)
+    throw new Error(`Connection not found for connection resource "${connectionResource.id}"`)
+
   const connectionString = new SafeURL(await connectionStringsCollection.utils.decrypt(connection.id))
   connectionString.pathname = connectionResource.name || ''
 

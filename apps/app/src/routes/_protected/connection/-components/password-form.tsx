@@ -9,12 +9,11 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { connectionStringsCollection } from '~/entities/connection/connection-strings'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
-import { useCollections } from '~/lib/collections'
 
 export function PasswordForm({ connection, connectionResource }: { connection: Connection, connectionResource: ConnectionResource }) {
   const router = useRouter()
-  const { connectionStringsCollection } = useCollections()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 

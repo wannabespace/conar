@@ -31,13 +31,14 @@ import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
+import { connectionStringsCollection } from '~/entities/connection/connection-strings'
 import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
 import { getConnectionStore } from '~/entities/connection/store'
+import { collectionsJoinedCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { authClient } from '~/lib/auth'
-import { useCollections } from '~/lib/collections'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
@@ -200,7 +201,6 @@ function ConnectionCard({
   connection: Connection
   onRemove: VoidFunction
 }) {
-  const { connectionsResourcesCollection, connectionStringsCollection } = useCollections()
   const { data: storedResources } = useLiveQuery(q => q
     .from({ connectionsResources: connectionsResourcesCollection })
     .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
@@ -484,25 +484,24 @@ export function ConnectionsList() {
   const hasUser = !!session?.user
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
   const sort = useSubscription(sortValue)
-  const { connectionsCollection } = useCollections()
   const { data } = useLiveQuery((q) => {
-    let query = q.from({ connections: connectionsCollection })
+    let query = q.from({ collectionsJoined: collectionsJoinedCollection })
 
     if (sort === 'date-desc') {
-      query = query.orderBy(({ connections }) => connections.createdAt, 'desc')
+      query = query.orderBy(({ collectionsJoined }) => collectionsJoined.connection.createdAt, 'desc')
     }
     else if (sort === 'date-asc') {
-      query = query.orderBy(({ connections }) => connections.createdAt, 'asc')
+      query = query.orderBy(({ collectionsJoined }) => collectionsJoined.connection.createdAt, 'asc')
     }
     else if (sort === 'name-asc') {
-      query = query.orderBy(({ connections }) => connections.name, 'asc')
+      query = query.orderBy(({ collectionsJoined }) => collectionsJoined.connection.name, 'asc')
     }
     else {
-      query = query.orderBy(({ connections }) => connections.name, 'desc')
+      query = query.orderBy(({ collectionsJoined }) => collectionsJoined.connection.name, 'desc')
     }
 
     if (selectedLabel) {
-      query = query.where(({ connections }) => eq(connections.label, selectedLabel))
+      query = query.where(({ collectionsJoined }) => eq(collectionsJoined.connection.label, selectedLabel))
     }
 
     return query
@@ -511,7 +510,7 @@ export function ConnectionsList() {
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
 
-  const availableLabels = [...new Set(data.flatMap(connection => connection.label ? [connection.label] : []))].toSorted()
+  const availableLabels = [...new Set(data.flatMap(collectionJoined => collectionJoined.connection.label ? [collectionJoined.connection.label] : []))].toSorted()
   const showLastOpened = lastOpenedResources.length > 0 && data.length > 1
 
   return (
@@ -573,12 +572,12 @@ export function ConnectionsList() {
       <div className="flex flex-col gap-2">
         <AnimatePresence initial={false} mode="popLayout">
           {data.length > 0
-            ? data.map(connection => (
+            ? data.map(collectionJoined => (
                 <ConnectionCard
-                  key={connection.id}
-                  connection={connection}
+                  key={collectionJoined.connection.id}
+                  connection={collectionJoined.connection}
                   onRemove={() => {
-                    removeDialogRef.current?.remove(connection)
+                    removeDialogRef.current?.remove(collectionJoined.connection)
                   }}
                 />
               ))

@@ -13,7 +13,7 @@ import { RiLoopLeftLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useId } from 'react'
 import { ConnectionDetails } from '~/components/connection-details'
-import { useCollections } from '~/lib/collections'
+import { connectionsCollection } from '~/entities/connection/sync'
 
 export function StepSave({ type, name, connectionString, setName, onRandomName, syncType, setSyncType, label, setLabel, color, setColor }: {
   type: ConnectionType
@@ -28,7 +28,6 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
   color: string | null
   setColor: (color: string | null) => void
 }) {
-  const { connectionsCollection } = useCollections()
   const { data: connections } = useLiveQuery(q => q.from({ connections: connectionsCollection }).orderBy(({ connections }) => connections.createdAt, 'desc'))
   const existingLabels = connections.map(connection => connection.label).filter((label): label is string => label !== null)
   const labels = [...new Set([...LABEL_OPTIONS, ...existingLabels])].toSorted()

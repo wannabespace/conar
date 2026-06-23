@@ -9,17 +9,15 @@ import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 import { QueryLogger } from '~/entities/connection/components'
 import { getConnectionResourceStore } from '~/entities/connection/store'
+import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { lastOpenedResourcesStorageValue, prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
-import { getCollections } from '~/lib/collections'
 import { ConnectionSidebar } from './-components/connection-sidebar'
 import { PasswordForm } from './-components/password-form'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId')({
   component: DatabasePage,
   beforeLoad: async ({ params }) => {
-    const { connectionsCollection, connectionsResourcesCollection } = getCollections()
-
     await Promise.all([
       connectionsCollection.stateWhenReady(),
       connectionsResourcesCollection.stateWhenReady(),

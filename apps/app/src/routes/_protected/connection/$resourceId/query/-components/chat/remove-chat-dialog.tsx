@@ -3,7 +3,7 @@ import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescripti
 import { Button } from '@conar/ui/components/button'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { useCollections } from '~/lib/collections'
+import { chatsCollection } from '~/entities/chat/sync'
 
 interface RemoveChatDialogProps {
   ref?: React.RefObject<{
@@ -15,7 +15,6 @@ export function RemoveChatDialog({ ref }: RemoveChatDialogProps) {
   const [open, setOpen] = useState(false)
   const [chat, setChat] = useState<Chat | null>(null)
   const [onRemoveCallback, setOnRemoveCallback] = useState<(() => void) | null>(null)
-  const { chatsCollection } = useCollections()
 
   useImperativeHandle(ref, () => ({
     remove: (chat: Chat, onRemove?: () => void) => {

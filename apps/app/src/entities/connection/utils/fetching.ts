@@ -3,8 +3,9 @@ import type { Connection, ConnectionResource } from '~/entities/connection/sync'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useSubscription } from 'seitu/react'
-import { getCollections } from '~/lib/collections'
+import { connectionsCollection } from '~/entities/connection/sync'
 import { queryClient } from '~/main'
+import { connectionStringsCollection } from '../connection-strings'
 import { isLocalProxyAvailable, useLocalProxyAvailable } from '../proxy'
 import { resourceRowsQueryInfiniteOptions } from '../queries'
 import { resourceTableColumnsQueryOptions } from '../queries/columns'
@@ -15,7 +16,6 @@ import { resourceTableTotalQueryOptions } from '../queries/total'
 import { getConnectionResourceStore, getConnectionStore } from '../store'
 
 export async function prefetchConnectionResourceCore(connectionResource: ConnectionResource) {
-  const { connectionsCollection, connectionStringsCollection } = getCollections()
   const connection = connectionsCollection.get(connectionResource.connectionId)!
   const connectionString = connectionStringsCollection.get(connection.id)
 
@@ -107,7 +107,6 @@ export function fetchingConfig(connection: Pick<Connection, 'syncType' | 'isPass
 
 export function useFetchingConfig(connection: Pick<Connection, 'id' | 'syncType' | 'isPasswordExists'>) {
   const isLocalProxyAvailable = useLocalProxyAvailable()
-  const { connectionStringsCollection } = getCollections()
   const { data: connectionString } = useLiveQuery(q => q
     .from({ cs: connectionStringsCollection })
     .where(({ cs }) => eq(cs.connectionId, connection.id))

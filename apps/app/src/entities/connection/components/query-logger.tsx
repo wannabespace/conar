@@ -17,9 +17,9 @@ import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 import { Monaco } from '~/components/monaco'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { useCollections } from '~/lib/collections'
 import { formatSql } from '~/utils/formatter'
 import { queryLogsStore } from '../log'
+import { connectionsCollection } from '../sync'
 
 type QueryStatus = 'error' | 'success' | 'pending'
 
@@ -95,7 +95,6 @@ const monacoOptions = {
 function Log({ query, className, connectionResource }: { query: QueryLog, className?: string, connectionResource: ConnectionResource }) {
   const [isOpen, setIsOpen] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
-  const { connectionsCollection } = useCollections()
   const connection = connectionsCollection.get(connectionResource.connectionId)!
 
   if (!canInteract) {

@@ -6,8 +6,8 @@ import { Link } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
+import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
-import { useCollections } from '~/lib/collections'
 
 function LastOpenedResource({ connectionResource, connection, onClose }: { connectionResource: ConnectionResource, connection: Connection, onClose: VoidFunction }) {
   const params = useConnectionResourceLinkParams(connectionResource.id)
@@ -45,7 +45,6 @@ function LastOpenedResource({ connectionResource, connection, onClose }: { conne
 
 export function LastOpenedResources() {
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
-  const { connectionsCollection, connectionsResourcesCollection } = useCollections()
 
   const { data: rawData } = useLiveQuery(q => q
     .from({ connectionsResources: connectionsResourcesCollection })

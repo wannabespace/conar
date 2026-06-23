@@ -17,12 +17,13 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
+import { connectionStringsCollection } from '~/entities/connection/connection-strings'
 import { useLocalProxyAvailable } from '~/entities/connection/proxy'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 import { getConnectionStore } from '~/entities/connection/store'
+import { connectionsResourcesCollection, createConnectionAction } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching'
-import { useCollections } from '~/lib/collections'
 import { generateRandomName } from '~/utils/utils'
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
@@ -51,7 +52,6 @@ function CreateConnectionPage() {
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
-  const { connectionsResourcesCollection, createConnectionAction, connectionStringsCollection } = useCollections()
 
   const { mutate: createConnectionMutation, isPending: isCreatingConnection } = useMutation({
     mutationFn: async (data: {

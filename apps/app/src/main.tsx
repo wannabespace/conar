@@ -9,7 +9,6 @@ import './assets/styles.css'
 import '@conar/ui/globals.css'
 import { toast } from 'sonner'
 import { authClient } from './lib/auth'
-import { clearDb } from './lib/sync'
 
 if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
   import('react-scan').then(({ scan }) => {
@@ -71,8 +70,6 @@ declare module '@tanstack/react-router' {
     router: typeof router
   }
 }
-
-clearDb();
 
 (async () => {
   const isAuth = router.state.location.pathname.startsWith('/auth')

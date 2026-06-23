@@ -6,8 +6,8 @@ import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 import { v7 } from 'uuid'
+import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { getCollections } from '~/lib/collections'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
 
@@ -21,8 +21,6 @@ export const Route = createFileRoute(
   }),
   loaderDeps: ({ search }) => search,
   loader: async ({ context, deps }) => {
-    const { chatsCollection, chatsMessagesCollection } = getCollections()
-
     await Promise.all([
       chatsCollection.stateWhenReady(),
       chatsMessagesCollection.stateWhenReady(),

@@ -3,8 +3,8 @@ import { useEffect } from 'react'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
 import { EventsProvider } from '~/events'
 import { enterAppAnimation } from '~/global-hooks'
+import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
 import { authClient } from '~/lib/auth'
-import { clearCollections, getCollections } from '~/lib/collections'
 import { subscriptionQueryClient } from '~/main'
 import { ActionsCenter } from './-components/actions-center'
 
@@ -17,18 +17,13 @@ export const Route = createFileRoute('/_protected')({
       throw redirect({ to: '/auth' })
     }
   },
-  loader: async () => {
-    const collections = getCollections()
-
-    await collections.connectionStringsCollection.utils.ready()
-
-    return { collections }
-  },
 })
 
 // eslint-disable-next-line react-refresh/only-export-components
 function ProtectedLayout() {
   const { isPending } = authClient.useSession()
+
+  useConnectionStringsSync()
 
   useEffect(() => {
     if (isPending) {
@@ -47,7 +42,6 @@ function ProtectedLayout() {
     window.addEventListener('focus', handleFocus)
 
     return () => {
-      clearCollections()
       window.removeEventListener('focus', handleFocus)
     }
   }, [])

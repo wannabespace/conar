@@ -3,7 +3,7 @@ import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescripti
 import { Button } from '@conar/ui/components/button'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { useCollections } from '~/lib/collections'
+import { queriesCollection } from '~/entities/query/sync'
 
 interface RemoveQueryDialogProps {
   ref?: React.RefObject<{
@@ -14,7 +14,6 @@ interface RemoveQueryDialogProps {
 export function RemoveQueryDialog({ ref }: RemoveQueryDialogProps) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState<Query | null>(null)
-  const { queriesCollection } = useCollections()
 
   useImperativeHandle(ref, () => ({
     remove: (q: Query) => {
