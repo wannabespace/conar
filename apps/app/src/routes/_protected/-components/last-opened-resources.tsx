@@ -46,7 +46,7 @@ function LastOpenedResource({ connectionResource, connection, onClose }: { conne
 export function LastOpenedResources() {
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
 
-  const { data: rawData } = useLiveQuery(q => q
+  const { data } = useLiveQuery(q => q
     .from({ connectionsResources: connectionsResourcesCollection })
     .innerJoin(
       { connections: connectionsCollection },
@@ -57,7 +57,7 @@ export function LastOpenedResources() {
       connection: connections,
     }))
     .where(({ connectionsResources }) => inArray(connectionsResources.id, lastOpenedResources)), [lastOpenedResources])
-  const toShow = rawData
+  const toShow = data
     .toSorted((a, b) => lastOpenedResources.indexOf(a.connectionResource.id) - lastOpenedResources.indexOf(b.connectionResource.id))
 
   const close = (resource: ConnectionResource) => {
