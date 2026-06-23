@@ -96,8 +96,6 @@ function CreateConnectionPage() {
         },
       })
 
-      toast.success('Connection created successfully 🎉')
-
       if (resource) {
         getConnectionStore(id).set(state => ({
           ...state,
@@ -109,6 +107,8 @@ function CreateConnectionPage() {
       if (!window.electron) {
         await tx.isPersisted.promise
       }
+
+      toast.success('Connection created successfully 🎉')
 
       prefetchConnectionResourceCore(connectionsResourcesCollection.get(resourceId)!)
       router.navigate({ to: '/connection/$resourceId/table', params: { resourceId } })

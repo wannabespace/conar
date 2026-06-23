@@ -7,7 +7,7 @@ import { authMiddleware, orpc } from '~/orpc'
 import { publisher } from './events'
 
 const input = type({
-  id: 'string.uuid',
+  id: 'string.uuid.v7',
 })
 
 export const remove = orpc
