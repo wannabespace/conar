@@ -6,7 +6,7 @@ import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persiste
 import { BasicIndex, createCollection } from '@tanstack/react-db'
 import { toast } from 'sonner'
 import { fullSignOut } from '~/lib/auth'
-import { getEncryptionKey } from '~/lib/encryption-key-storage'
+import { encryptionKey } from '~/lib/encryption-key'
 import { orpc } from '~/lib/orpc'
 import { persistence } from '~/lib/sync'
 
@@ -21,11 +21,11 @@ export interface ConnectionString {
 }
 
 async function encryptValue(connectionString: string) {
-  return encryptWithKey(await getEncryptionKey(), connectionString)
+  return encryptWithKey(await encryptionKey.get(), connectionString)
 }
 
 async function decryptValue(encryptedConnectionString: string) {
-  return decryptWithKey(await getEncryptionKey(), encryptedConnectionString)
+  return decryptWithKey(await encryptionKey.get(), encryptedConnectionString)
 }
 
 // eslint-disable-next-line ts/consistent-type-definitions
