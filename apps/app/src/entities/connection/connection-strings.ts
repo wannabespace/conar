@@ -103,10 +103,7 @@ export function createConnectionStringsCollection() {
 
           // This case can be when the connection is just created and not yet synced to the cloud but the user is already added it
           if (result.status === 'not-found') {
-            if (local)
-              return local.encrypted
-
-            throw new Error('Connection not found')
+            return connectionStringsCollection.utils.decrypt(id)
           }
 
           const connectionString = await decryptWithPrivateKey(privateKey, result.connectionString)
