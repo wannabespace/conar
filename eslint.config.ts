@@ -45,12 +45,6 @@ export default antfu(
     ],
   },
   {
-    files: ['**/apps/docs/**/*'],
-    rules: {
-      'pnpm/json-enforce-catalog': 'off',
-    },
-  },
-  {
     files: ['apps/desktop/**/*'],
     rules: {
       'node/prefer-global/process': 'off',
