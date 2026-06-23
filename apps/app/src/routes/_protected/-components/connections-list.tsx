@@ -1,5 +1,4 @@
 import type { ComponentRef } from 'react'
-import type { ConnectionString } from '~/entities/connection/connection-strings'
 import type { Connection } from '~/entities/connection/sync'
 import { CONNECTION_RESOURCE_ROOT_LABEL, CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { SyncType } from '@conar/shared/enums/sync-type'
@@ -196,13 +195,15 @@ function ConnectionResourcesCombobox({
 
 function ConnectionCard({
   connection,
-  connectionString,
   onRemove,
 }: {
   connection: Connection
-  connectionString: ConnectionString
   onRemove: VoidFunction
 }) {
+  const { data: connectionString } = useLiveQuery(q => q
+    .from({ cs: connectionStringsCollection })
+    .where(({ cs }) => eq(cs.connectionId, connection.id))
+    .findOne(), [connection.id])
   const { data: connectionResources } = useLiveQuery(q => q
     .from({ cr: connectionsResourcesCollection })
     .where(({ cr }) => eq(cr.connectionId, connection.id))
@@ -484,16 +485,7 @@ export function ConnectionsList() {
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
   const sort = useSubscription(sortValue)
   const { data } = useLiveQuery((q) => {
-    let query = q
-      .from({ c: connectionsCollection })
-      .innerJoin(
-        { cs: connectionStringsCollection },
-        ({ c, cs }) => eq(c.id, cs.connectionId),
-      )
-      .select(({ c, cs }) => ({
-        connection: c,
-        connectionString: cs,
-      }))
+    let query = q.from({ c: connectionsCollection })
 
     if (sort === 'date-desc') {
       query = query.orderBy(({ c }) => c.createdAt, 'desc')
@@ -518,7 +510,7 @@ export function ConnectionsList() {
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
 
-  const availableLabels = [...new Set(data.flatMap(({ connection }) => connection.label ? [connection.label] : []))].toSorted()
+  const availableLabels = [...new Set(data.flatMap(connection => connection.label ? [connection.label] : []))].toSorted()
   const showLastOpened = lastOpenedResources.length > 0 && data.length > 1
 
   return (
@@ -580,11 +572,10 @@ export function ConnectionsList() {
       <div className="flex flex-col gap-2">
         <AnimatePresence initial={false} mode="popLayout">
           {data.length > 0
-            ? data.map(({ connection, connectionString }) => (
+            ? data.map(connection => (
                 <ConnectionCard
                   key={connection.id}
                   connection={connection}
-                  connectionString={connectionString}
                   onRemove={() => {
                     removeDialogRef.current?.remove(connection)
                   }}
