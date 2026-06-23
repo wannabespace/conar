@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
 import { EventsProvider } from '~/events'
@@ -10,13 +10,6 @@ import { ActionsCenter } from './-components/actions-center'
 
 export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
-  beforeLoad: async () => {
-    const response = await authClient.getSession().catch(() => null)
-
-    if (!response?.data?.user) {
-      throw redirect({ to: '/auth' })
-    }
-  },
 })
 
 // eslint-disable-next-line react-refresh/only-export-components

@@ -72,11 +72,14 @@ declare module '@tanstack/react-router' {
 }
 
 (async () => {
-  const isAuth = router.state.location.pathname.startsWith('/auth')
-  const isLoggedIn = isAuth ? !!(await authClient.getSession().catch(() => null))?.data?.user : false
+  const isAuthPage = router.state.location.pathname.startsWith('/auth')
+  const isSignedIn = !!(await authClient.getSession().catch(() => null))?.data?.user
 
-  if (isAuth && isLoggedIn) {
+  if (isAuthPage && isSignedIn) {
     router.navigate({ to: '/', replace: true })
+  }
+  else if (!isAuthPage && !isSignedIn && navigator.onLine) {
+    router.navigate({ to: '/auth', replace: true })
   }
 
   const root = createRoot(document.getElementById('root')!)
