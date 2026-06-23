@@ -76,7 +76,7 @@ export const queriesCollection = createCollection(persistedCollectionOptions<Que
       })
 
       return () => {
-        abortController.abort()
+        abortController.abort('queries sync aborted')
       }
     },
   },

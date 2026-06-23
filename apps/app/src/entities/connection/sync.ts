@@ -5,7 +5,7 @@ import type { BaseTable } from '~/lib/sync'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
-import { BasicIndex, createCollection, createLiveQueryCollection, createOptimisticAction, eq } from '@tanstack/react-db'
+import { BasicIndex, createCollection, createOptimisticAction } from '@tanstack/react-db'
 import { orpc } from '~/lib/orpc'
 import { persistence } from '~/lib/sync'
 import { connectionStringsCollection } from './connection-strings'
@@ -104,7 +104,7 @@ export const connectionsCollection = createCollection(persistedCollectionOptions
       })
 
       return () => {
-        abortController.abort()
+        abortController.abort('connections sync aborted')
       }
     },
   },
@@ -188,7 +188,7 @@ export const connectionsResourcesCollection = createCollection(persistedCollecti
       })
 
       return () => {
-        abortController.abort()
+        abortController.abort('connectionsResources sync aborted')
       }
     },
   },
@@ -202,22 +202,6 @@ export const connectionsResourcesCollection = createCollection(persistedCollecti
     await orpc.connectionsResources.remove.call(transaction.mutations.map(m => ({ id: m.key })))
   },
 }))
-
-export const collectionsJoinedCollection = createLiveQueryCollection({
-  id: 'collections-joined',
-  query: q => q
-    .from({ c: connectionsCollection })
-    .innerJoin(
-      { cs: connectionStringsCollection },
-      ({ c, cs }) => eq(c.id, cs.connectionId),
-    )
-    .select(({ c, cs }) => ({
-      connection: c,
-      connectionString: cs,
-    })),
-})
-
-export type CollectionsJoined = typeof collectionsJoinedCollection['toArray'][number]
 
 export const createConnectionAction = createOptimisticAction<{
   connection: Connection

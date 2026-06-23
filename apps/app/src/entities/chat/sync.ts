@@ -83,7 +83,7 @@ export const chatsCollection = createCollection(persistedCollectionOptions<Chat,
       })
 
       return () => {
-        abortController.abort()
+        abortController.abort('chats sync aborted')
       }
     },
   },
@@ -160,7 +160,7 @@ export const chatsMessagesCollection = createCollection(persistedCollectionOptio
       })
 
       return () => {
-        abortController.abort()
+        abortController.abort('chatsMessages sync aborted')
       }
     },
   },

@@ -106,7 +106,7 @@ export function GlobalBanner() {
           {typeConfig.warning.icon}
           <span className="flex flex-1 items-center gap-2 leading-none">
             <span>
-              Could not connect to the database. Reconnection attempt
+              Could not connect to the connection. Reconnection attempt
               {' '}
               <NumberFlow
                 value={reconnectingData.attempt}

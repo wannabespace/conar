@@ -16,7 +16,9 @@ export function useConnectionStringsSync() {
           const record = await connectionStringsCollection.utils.prepare({ connectionId: value.id, connectionString, updatedAt: value.updatedAt })
 
           if (connectionStringsCollection.has(value.id)) {
-            connectionStringsCollection.update(value.id, draft => Object.assign(draft, record))
+            connectionStringsCollection.update(value.id, (draft) => {
+              Object.assign(draft, record)
+            })
           }
           else {
             connectionStringsCollection.insert(record)

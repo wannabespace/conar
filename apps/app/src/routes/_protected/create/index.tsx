@@ -148,12 +148,17 @@ function CreateConnectionPage() {
     }),
     onSuccess: () => {
       setStep('save')
-      toast.success('Connection successful. You can save the database.')
+      toast.success('Connection successful. You can save the connection.')
     },
     onError: (error) => {
-      toast.error('We couldn\'t connect to the database', {
-        // eslint-disable-next-line react/dom-no-dangerously-set-innerhtml
-        description: <span dangerouslySetInnerHTML={{ __html: error.message.replaceAll('\n', '<br />') }} />,
+      toast.error('We couldn\'t connect to the connection', {
+        description: (
+          // eslint-disable-next-line react/dom-no-dangerously-set-innerhtml
+          <span dangerouslySetInnerHTML={{
+            __html: error.message.toLowerCase().includes('invalid url') ? 'Invalid URL, check your connection string and try again' : error.message.replaceAll('\n', '<br />'),
+          }}
+          />
+        ),
       })
     },
   })

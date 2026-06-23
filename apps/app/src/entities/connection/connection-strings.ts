@@ -30,9 +30,9 @@ async function decryptConnectionString(encryptedConnectionString: string) {
 
 // eslint-disable-next-line ts/consistent-type-definitions
 type ConnectionStringsUtils = {
-  decrypt: (id: string) => Promise<string>
+  decrypt: (connectionId: string) => Promise<string>
   prepare: (data: Pick<ConnectionString, 'connectionId' | 'updatedAt'> & { connectionString: string }) => Promise<ConnectionString>
-  resolve: (id: string) => Promise<string | null>
+  resolve: (connectionId: string) => Promise<string | null>
 }
 
 type ConnectionStringsCollection = Collection<ConnectionString, string, ConnectionStringsUtils>
@@ -76,20 +76,20 @@ export const connectionStringsCollection: ConnectionStringsCollection = createCo
         defaultResourceName: url.pathname && url.pathname !== '/' ? url.pathname.slice(1) : null,
       }
     },
-    async resolve(id: string) {
-      const local = connectionStringsCollection.get(id)
+    async resolve(connectionId: string) {
+      const local = connectionStringsCollection.get(connectionId)
 
-      const result = await orpc.connections.resolve.call({ id, updatedAt: local?.updatedAt })
+      const result = await orpc.connections.resolve.call({ id: connectionId, updatedAt: local?.updatedAt })
 
       if (result.status === 'unchanged')
         return null
 
       // This case can be when the connection is just created and not yet synced to the cloud but the user is already added it
       if (result.status === 'not-found') {
-        return connectionStringsCollection.utils.decrypt(id)
+        return connectionStringsCollection.utils.decrypt(connectionId)
       }
 
-      return preserveLocalPassword(id, result.connectionString)
+      return preserveLocalPassword(connectionId, result.connectionString)
     },
   },
 }))

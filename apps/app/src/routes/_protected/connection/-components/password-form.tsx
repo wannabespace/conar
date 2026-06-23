@@ -30,22 +30,22 @@ export function PasswordForm({ connection, connectionResource }: { connection: C
         resourceId: connectionResource.id,
       })
 
-      connectionStringsCollection.update(connection.id, async draft => Object.assign(
-        draft,
-        await connectionStringsCollection.utils.prepare({
-          connectionId: connection.id,
-          connectionString: url.toString(),
-          updatedAt: connection.updatedAt,
-        }),
-      ))
+      const record = await connectionStringsCollection.utils.prepare({
+        connectionId: connection.id,
+        connectionString: url.toString(),
+        updatedAt: connection.updatedAt,
+      })
+
+      connectionStringsCollection.update(connection.id, (draft) => {
+        Object.assign(draft, record)
+      })
     },
     onSuccess: () => {
-      router.invalidate({ filter: r => r.routeId === '/_protected/connection/$resourceId' })
       toast.success('Password successfully saved!')
       setPassword('')
     },
     onError: (error) => {
-      toast.error('We couldn\'t connect to the database', {
+      toast.error('We couldn\'t connect to the connection', {
         // eslint-disable-next-line react/dom-no-dangerously-set-innerhtml
         description: <span dangerouslySetInnerHTML={{ __html: error.message.replaceAll('\n', '<br />') }} />,
       })

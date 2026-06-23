@@ -156,7 +156,7 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
     }
 
     if (canShowToast() && isConnectionError(result.error)) {
-      toast.error('Could not connect to the database. Please check your network or database server and try again.', {
+      toast.error('Could not connect to the connection. Please check your network or connection server and try again.', {
         id: `reconnection-error-${connectionStringToShow}`,
         description: connectionStringToShow,
       })
