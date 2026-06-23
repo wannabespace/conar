@@ -18,11 +18,6 @@ import { PasswordForm } from './-components/password-form'
 export const Route = createFileRoute('/_protected/connection/$resourceId')({
   component: DatabasePage,
   beforeLoad: async ({ params }) => {
-    await Promise.all([
-      connectionsCollection.stateWhenReady(),
-      connectionsResourcesCollection.stateWhenReady(),
-    ])
-
     const connectionResource = connectionsResourcesCollection.get(params.resourceId)
 
     if (!connectionResource) {

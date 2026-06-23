@@ -5,7 +5,7 @@ import type { BaseTable } from '~/lib/sync'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
-import { BasicIndex, createCollection, createOptimisticAction, eq, liveQueryCollectionOptions, materialize, toArray } from '@tanstack/react-db'
+import { BasicIndex, createCollection, createLiveQueryCollection, createOptimisticAction, eq } from '@tanstack/react-db'
 import { orpc } from '~/lib/orpc'
 import { persistence } from '~/lib/sync'
 import { connectionStringsCollection } from './connection-strings'
@@ -203,27 +203,21 @@ export const connectionsResourcesCollection = createCollection(persistedCollecti
   },
 }))
 
-export const collectionsJoinedCollection = createCollection(liveQueryCollectionOptions({
+export const collectionsJoinedCollection = createLiveQueryCollection({
   id: 'collections-joined',
   query: q => q
-    .from({ connections: connectionsCollection })
-    .select(({ connections }) => ({
-      connection: connections,
-      connectionString: materialize(
-        q
-          .from({ connectionStrings: connectionStringsCollection })
-          .where(({ connectionStrings }) => eq(connectionStrings.connectionId, connections.id))
-          .select(({ connectionStrings }) => connectionStrings)
-          .findOne(),
-      ),
-      connectionResources: toArray(
-        q
-          .from({ connectionsResources: connectionsResourcesCollection })
-          .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connections.id))
-          .select(({ connectionsResources }) => connectionsResources),
-      ),
+    .from({ c: connectionsCollection })
+    .innerJoin(
+      { cs: connectionStringsCollection },
+      ({ c, cs }) => eq(c.id, cs.connectionId),
+    )
+    .select(({ c, cs }) => ({
+      connection: c,
+      connectionString: cs,
     })),
-}))
+})
+
+export type CollectionsJoined = typeof collectionsJoinedCollection['toArray'][number]
 
 export const createConnectionAction = createOptimisticAction<{
   connection: Connection

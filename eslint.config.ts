@@ -16,13 +16,13 @@ export default antfu(
       'react/rules-of-hooks': [
         'error',
         {
-          additionalHooks: '(useMountedEffect|useAsyncEffect)',
+          additionalHooks: '(useMountedEffect)',
         },
       ],
       'react/exhaustive-deps': [
         'warn',
         {
-          additionalHooks: '(useMountedEffect|useAsyncEffect)',
+          additionalHooks: '(useMountedEffect)',
         },
       ],
       'pnpm/yaml-enforce-settings': 'off',

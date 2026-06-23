@@ -12,15 +12,19 @@ import { router } from './orpc/routers'
 import { sendEmail } from './lib/resend'
 import { sanitizeLogData } from '@conar/shared/utils/sanitize-log'
 import { healthRouter } from './routers/health'
+import { sleep } from 'bun'
 
 const handler = new RPCHandler(router, {
   interceptors: [
-    async (options) => {
+    async ({ next, context }) => {
       try {
-        return await options.next()
+        if (nodeEnv !== 'production') {
+          await sleep(1000)
+        }
+        return await next()
       }
       catch (error) {
-        options.context.addLogData({
+        context.addLogData({
           error: {
             type: error instanceof Error ? error.constructor.name : typeof error,
             message: error instanceof Error ? error.message : String(error),

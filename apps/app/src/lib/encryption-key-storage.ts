@@ -4,7 +4,7 @@ import { clearMemoizeCache, memoize } from 'memoza'
 import { createIndexedDbStorage } from 'seitu/web'
 import { fullSignOut } from './auth'
 
-const storage = createIndexedDbStorage({
+export const encryptionStorage = createIndexedDbStorage({
   databaseName: 'secure-storage',
   storeName: 'encryption-key',
   schemas: {
@@ -32,7 +32,7 @@ async function getElectronEncryptionKey(safeStorage: SafeStorage): Promise<Crypt
     throw new Error('Secure storage is not available on this device, so connection credentials cannot be protected. You have been signed out.')
   }
 
-  const stored = storage.get().encryptionKey
+  const stored = encryptionStorage.get().encryptionKey
 
   if (typeof stored === 'string') {
     try {
@@ -44,23 +44,23 @@ async function getElectronEncryptionKey(safeStorage: SafeStorage): Promise<Crypt
   }
 
   const raw = crypto.getRandomValues(new Uint8Array(32))
-  await storage.set({ encryptionKey: await safeStorage.encryptString(bytesToBase64(raw)) })
+  await encryptionStorage.set({ encryptionKey: await safeStorage.encryptString(bytesToBase64(raw)) })
   return importAesKey(raw)
 }
 
 async function getWebEncryptionKey(): Promise<CryptoKey> {
-  const stored = storage.get().encryptionKey
+  const stored = encryptionStorage.get().encryptionKey
 
   if (stored instanceof CryptoKey)
     return stored
 
   const key = await generateAesKey()
-  await storage.set({ encryptionKey: key })
+  await encryptionStorage.set({ encryptionKey: key })
   return key
 }
 
 export const getEncryptionKey = memoize(async (): Promise<CryptoKey> => {
-  await storage.ready
+  await encryptionStorage.ready
 
   return window.electron
     ? getElectronEncryptionKey(window.electron.safeStorage)
@@ -69,11 +69,5 @@ export const getEncryptionKey = memoize(async (): Promise<CryptoKey> => {
 
 export function resetEncryptionKey() {
   clearMemoizeCache(getEncryptionKey)
-  return storage.set({ encryptionKey: null })
-}
-
-export const encryptionKeyStorage = {
-  get ready() {
-    return storage.ready
-  },
+  return encryptionStorage.set({ encryptionKey: null })
 }

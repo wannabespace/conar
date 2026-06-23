@@ -1,5 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { Connection } from '~/entities/connection/sync'
+import type { CollectionsJoined, Connection } from '~/entities/connection/sync'
 import { CONNECTION_RESOURCE_ROOT_LABEL, CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
@@ -195,22 +195,18 @@ function ConnectionResourcesCombobox({
 }
 
 function ConnectionCard({
-  connection,
+  collectionJoined,
   onRemove,
 }: {
-  connection: Connection
+  collectionJoined: CollectionsJoined
   onRemove: VoidFunction
 }) {
-  const { data: storedResources } = useLiveQuery(q => q
-    .from({ connectionsResources: connectionsResourcesCollection })
-    .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
-    .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
-  const storedResourcesNames = storedResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
-  const { data: connectionString } = useLiveQuery(q => q
-    .from({ connectionStrings: connectionStringsCollection })
-    .where(({ connectionStrings }) => eq(connectionStrings.connectionId, connection.id))
-    .findOne(), [connection.id])
-  const { type, canSend, reason } = useFetchingConfig(connection)
+  const { data: connectionResources } = useLiveQuery(q => q
+    .from({ cr: connectionsResourcesCollection })
+    .where(({ cr }) => eq(cr.connectionId, collectionJoined.connection.id))
+    .select(({ cr }) => cr), [collectionJoined.connection.id])
+  const storedResourcesNames = connectionResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
+  const { type, canSend, reason } = useFetchingConfig(collectionJoined.connection)
 
   const {
     data: resources = storedResourcesNames,
@@ -219,16 +215,16 @@ function ConnectionCard({
     error,
     refetch,
   } = useQuery({
-    ...connectionResourcesQueryOptions(connection),
+    ...connectionResourcesQueryOptions(collectionJoined.connection),
     enabled: canSend,
   })
 
   const [isOpen, setIsOpen] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
 
-  const defaultResourceName = connectionString?.defaultResourceName ?? null
+  const defaultResourceName = collectionJoined.connectionString?.defaultResourceName ?? null
 
-  const connectionStore = getConnectionStore(connection.id)
+  const connectionStore = getConnectionStore(collectionJoined.connection.id)
   const { selectedResourceName, pinnedResourcesNames } = useSubscription(connectionStore, {
     selector: state => ({
       selectedResourceName: (state.lastOpenedResourceName || defaultResourceName || resources[0] || null) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
@@ -236,7 +232,7 @@ function ConnectionCard({
     }),
   })
   const resolvedSelectedResourceName = selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? null : selectedResourceName
-  const selectedResource = storedResources.find(r => r.name === resolvedSelectedResourceName)
+  const selectedResource = connectionResources.find(r => r.name === resolvedSelectedResourceName)
   const canOpenResource = canSend || (type === 'waiting-for-password' && !!window.electron)
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -246,10 +242,10 @@ function ConnectionCard({
       clearTimeout(timeoutRef.current)
     }
 
-    if (!connectionStringsCollection.has(connection.id))
+    if (!connectionStringsCollection.has(collectionJoined.connection.id))
       return
 
-    const fullString = await connectionStringsCollection.utils.decrypt(connection.id)
+    const fullString = await connectionStringsCollection.utils.decrypt(collectionJoined.connection.id)
 
     const connectionStringToCopy = new SafeURL(fullString)
     connectionStringToCopy.pathname = selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL || selectedResourceName === null ? '' : selectedResourceName
@@ -264,16 +260,16 @@ function ConnectionCard({
   }
 
   const handleClearPassword = async () => {
-    const record = connectionStringsCollection.get(connection.id)
+    const record = connectionStringsCollection.get(collectionJoined.connection.id)
     if (!record)
       return
 
-    const url = new SafeURL(await connectionStringsCollection.utils.decrypt(connection.id))
+    const url = new SafeURL(await connectionStringsCollection.utils.decrypt(collectionJoined.connection.id))
     url.password = ''
 
-    connectionStringsCollection.update(connection.id, async draft => Object.assign(
+    connectionStringsCollection.update(collectionJoined.connection.id, async draft => Object.assign(
       draft,
-      await connectionStringsCollection.utils.prepare({ connectionId: connection.id, connectionString: url.toString(), updatedAt: record.updatedAt }),
+      await connectionStringsCollection.utils.prepare({ connectionId: collectionJoined.connection.id, connectionString: url.toString(), updatedAt: record.updatedAt }),
     ))
 
     toast.success('Password cleared from this device')
@@ -288,12 +284,12 @@ function ConnectionCard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.98 }}
       transition={{ duration: 0.15 }}
-      style={connection.color ? { '--color': connection.color } : {}}
+      style={collectionJoined.connection.color ? { '--color': collectionJoined.connection.color } : {}}
     >
       <Card
         className={cn(
           'relative',
-          connection.color && `border-(--color)`,
+          collectionJoined.connection.color && `border-(--color)`,
           `has-[:where([data-resource-link]:hover)]:bg-accent`,
         )}
       >
@@ -314,15 +310,15 @@ function ConnectionCard({
             animate-pulse
           `)}
           >
-            <ConnectionIconWithVersion connection={connection} />
+            <ConnectionIconWithVersion connection={collectionJoined.connection} />
             <div className="flex min-w-0 flex-col gap-1">
               <div className="flex items-center gap-2 leading-none font-medium">
-                <span title={connection.name}>
-                  {connection.name}
+                <span title={collectionJoined.connection.name}>
+                  {collectionJoined.connection.name}
                 </span>
-                {connection.label && (
+                {collectionJoined.connection.label && (
                   <Badge variant="secondary" className="max-w-36 truncate">
-                    {connection.label}
+                    {collectionJoined.connection.label}
                   </Badge>
                 )}
                 {isFetching && canSend && (
@@ -371,8 +367,8 @@ function ConnectionCard({
                     "
                     onClick={() => handleCopy()}
                   >
-                    {connectionString?.displayUrl
-                      ? <span className="truncate">{connectionString?.displayUrl}</span>
+                    {collectionJoined.connectionString?.displayUrl
+                      ? <span className="truncate">{collectionJoined.connectionString?.displayUrl}</span>
                       : <Skeleton className="h-3 w-40" />}
                   </TooltipTrigger>
                   <TooltipContent className="flex items-center gap-1" side="bottom">
@@ -420,10 +416,10 @@ function ConnectionCard({
                 <RiRefreshLine className="size-4" />
                 Refresh
               </DropdownMenuItem>
-              {connection.syncType === SyncType.CloudWithoutPassword && (
+              {collectionJoined.connection.syncType === SyncType.CloudWithoutPassword && (
                 <DropdownMenuItem
                   className="whitespace-nowrap"
-                  disabled={!connectionString?.isPasswordPopulated}
+                  disabled={!collectionJoined.connectionString?.isPasswordPopulated}
                   onClick={() => handleClearPassword()}
                 >
                   <RiLockUnlockLine className="size-4 shrink-0" />
@@ -575,7 +571,7 @@ export function ConnectionsList() {
             ? data.map(collectionJoined => (
                 <ConnectionCard
                   key={collectionJoined.connection.id}
-                  connection={collectionJoined.connection}
+                  collectionJoined={collectionJoined}
                   onRemove={() => {
                     removeDialogRef.current?.remove(collectionJoined.connection)
                   }}

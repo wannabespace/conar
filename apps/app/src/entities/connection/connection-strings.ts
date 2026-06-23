@@ -1,11 +1,10 @@
 import type { Collection } from '@tanstack/react-db'
 import { isLocalhostConnectionString } from '@conar/connection/utils'
 import { decryptWithKey, encryptWithKey } from '@conar/shared/utils/crypto-web'
-import { decryptWithPrivateKey, generateEncryptionKeyPair } from '@conar/shared/utils/pair-keys'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import { BasicIndex, createCollection } from '@tanstack/react-db'
-import { encryptionKeyStorage, getEncryptionKey, resetEncryptionKey } from '~/lib/encryption-key-storage'
+import { getEncryptionKey, resetEncryptionKey } from '~/lib/encryption-key-storage'
 import { orpc } from '~/lib/orpc'
 import { persistence } from '~/lib/sync'
 
@@ -31,7 +30,6 @@ async function decryptValue(encryptedConnectionString: string) {
 type ConnectionStringsUtils = {
   decrypt: (id: string) => Promise<string>
   prepare: (data: Pick<ConnectionString, 'connectionId' | 'updatedAt'> & { connectionString: string }) => Promise<ConnectionString>
-  ready: () => Promise<void>
   resolve: (id: string) => Promise<string | null>
 }
 
@@ -48,10 +46,11 @@ export const connectionStringsCollection: ConnectionStringsCollection = createCo
   schemaVersion: 1,
   getKey: item => item.connectionId,
   utils: {
-    async decrypt(id: string): Promise<string> {
-      const record = connectionStringsCollection.get(id)
+    async decrypt(connectionId: string): Promise<string> {
+      const record = connectionStringsCollection.get(connectionId)
+
       if (!record)
-        throw new Error(`No connection string found for connection "${id}"`)
+        throw new Error(`No connection string found for connection "${connectionId}"`)
 
       try {
         return await decryptValue(record.encrypted)
@@ -79,13 +78,6 @@ export const connectionStringsCollection: ConnectionStringsCollection = createCo
         defaultResourceName: url.pathname && url.pathname !== '/' ? url.pathname.slice(1) : null,
       }
     },
-    async ready() {
-      await Promise.all([
-        encryptionKeyStorage.ready,
-        connectionStringsCollection.stateWhenReady(),
-        Promise.allSettled(resolvePromises.values()),
-      ])
-    },
     async resolve(id: string) {
       const existing = resolvePromises.get(id)
       if (existing)
@@ -94,8 +86,7 @@ export const connectionStringsCollection: ConnectionStringsCollection = createCo
       const local = connectionStringsCollection.get(id)
 
       const promise = (async () => {
-        const { publicKey, privateKey } = await generateEncryptionKeyPair()
-        const result = await orpc.connections.resolve.call({ id, publicKey, updatedAt: local?.updatedAt })
+        const result = await orpc.connections.resolve.call({ id, updatedAt: local?.updatedAt })
 
         if (result.status === 'unchanged')
           return null
@@ -105,8 +96,7 @@ export const connectionStringsCollection: ConnectionStringsCollection = createCo
           return connectionStringsCollection.utils.decrypt(id)
         }
 
-        const connectionString = await decryptWithPrivateKey(privateKey, result.connectionString)
-        return preserveLocalPassword(id, connectionString)
+        return preserveLocalPassword(id, result.connectionString)
       })().finally(() => {
         resolvePromises.delete(id)
       })

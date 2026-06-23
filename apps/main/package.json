@@ -32,7 +32,6 @@
     "react-qr-code": "catalog:",
     "sonner": "catalog:",
     "streamdown": "catalog:",
-    "tailwind-merge": "catalog:",
     "ua-parser-js": "catalog:"
   },
   "devDependencies": {

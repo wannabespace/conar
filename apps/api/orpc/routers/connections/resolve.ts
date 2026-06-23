@@ -1,12 +1,11 @@
 import { db } from '@conar/db'
 import { decrypt } from '@conar/shared/utils/crypto-node'
-import { encryptWithPublicKey } from '@conar/shared/utils/pair-keys'
 import { type } from 'arktype'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const resolve = orpc
   .use(authMiddleware)
-  .input(type({ 'id': 'string.uuid.v7', 'publicKey': 'string', 'updatedAt?': 'Date' }))
+  .input(type({ 'id': 'string.uuid.v7', 'updatedAt?': 'Date' }))
   .handler(async ({ context, input }) => {
     const connection = await db.query.connections.findFirst({
       columns: {
@@ -34,7 +33,7 @@ export const resolve = orpc
 
     return {
       status: 'modified' as const,
-      connectionString: await encryptWithPublicKey({ text: connectionString, publicKey: input.publicKey }),
+      connectionString,
       updatedAt: connection.updatedAt,
     }
   })

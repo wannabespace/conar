@@ -210,6 +210,7 @@ export function Markdown({
       >
         {blocks.map((block, index) => (
           <MarkdownBase
+            // eslint-disable-next-line react/no-array-index-key
             key={id ? `${id}-block_${index}` : `block_${index}`}
             content={block}
           />
