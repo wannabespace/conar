@@ -20,11 +20,11 @@ export interface ConnectionString {
   defaultResourceName: string | null
 }
 
-async function encryptValue(connectionString: string) {
+async function encryptConnectionString(connectionString: string) {
   return encryptWithKey(await encryptionKey.get(), connectionString)
 }
 
-async function decryptValue(encryptedConnectionString: string) {
+async function decryptConnectionString(encryptedConnectionString: string) {
   return decryptWithKey(await encryptionKey.get(), encryptedConnectionString)
 }
 
@@ -34,8 +34,6 @@ type ConnectionStringsUtils = {
   prepare: (data: Pick<ConnectionString, 'connectionId' | 'updatedAt'> & { connectionString: string }) => Promise<ConnectionString>
   resolve: (id: string) => Promise<string | null>
 }
-
-const resolvePromises = new Map<string, Promise<string | null>>()
 
 type ConnectionStringsCollection = Collection<ConnectionString, string, ConnectionStringsUtils>
 
@@ -55,16 +53,18 @@ export const connectionStringsCollection: ConnectionStringsCollection = createCo
         throw new Error(`No connection string found for connection "${connectionId}"`)
 
       try {
-        return await decryptValue(record.encrypted)
+        return await decryptConnectionString(record.encrypted)
       }
       catch (error) {
         await fullSignOut()
-        toast.error('Your encryption key is invalid. Please, sign in again.')
+        toast.error('Your encryption key is invalid. Please, sign in again.', {
+          id: 'encryption-key-invalid',
+        })
         throw error
       }
     },
     async prepare(data: { connectionId: string, connectionString: string, updatedAt: Date }) {
-      const encrypted = await encryptValue(data.connectionString)
+      const encrypted = await encryptConnectionString(data.connectionString)
       const url = new SafeURL(data.connectionString)
       return {
         connectionId: data.connectionId,
@@ -77,30 +77,19 @@ export const connectionStringsCollection: ConnectionStringsCollection = createCo
       }
     },
     async resolve(id: string) {
-      const existing = resolvePromises.get(id)
-      if (existing)
-        return existing
-
       const local = connectionStringsCollection.get(id)
 
-      const promise = (async () => {
-        const result = await orpc.connections.resolve.call({ id, updatedAt: local?.updatedAt })
+      const result = await orpc.connections.resolve.call({ id, updatedAt: local?.updatedAt })
 
-        if (result.status === 'unchanged')
-          return null
+      if (result.status === 'unchanged')
+        return null
 
-        // This case can be when the connection is just created and not yet synced to the cloud but the user is already added it
-        if (result.status === 'not-found') {
-          return connectionStringsCollection.utils.decrypt(id)
-        }
+      // This case can be when the connection is just created and not yet synced to the cloud but the user is already added it
+      if (result.status === 'not-found') {
+        return connectionStringsCollection.utils.decrypt(id)
+      }
 
-        return preserveLocalPassword(id, result.connectionString)
-      })().finally(() => {
-        resolvePromises.delete(id)
-      })
-
-      resolvePromises.set(id, promise)
-      return promise
+      return preserveLocalPassword(id, result.connectionString)
     },
   },
 }))
