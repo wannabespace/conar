@@ -1950,7 +1950,7 @@ packages:
         optional: true
 
   '@better-auth/kysely-adapter@https://pkg.pr.new/@better-auth/kysely-adapter@5a40d12':
-    resolution: {tarball: https://pkg.pr.new/@better-auth/kysely-adapter@5a40d12}
+    resolution: {integrity: sha512-ImsxUT+JRzF7XcgZTWbyWQ3d0sGD6iCesmsGvy5DYZY2CwNAKUB+DBEY0unv5uelzp2aMvt596VVl5XBMQPcWg==, tarball: https://pkg.pr.new/@better-auth/kysely-adapter@5a40d12}
     version: 1.7.0-beta.9
     peerDependencies:
       '@better-auth/core': 1.7.0-beta.9
@@ -1968,7 +1968,7 @@ packages:
       '@better-auth/utils': 0.4.2
 
   '@better-auth/mongo-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/mongo-adapter@5a40d12':
-    resolution: {tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/mongo-adapter@5a40d12}
+    resolution: {integrity: sha512-P+hZ2M6kwepAa/AYG0tMP+WmaW9J6g1XTaBffi4OlApiZdcsEBCiPLHWQJj0yBWp7Nt0h8ilBcZcyrEPL9+Iiw==, tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/mongo-adapter@5a40d12}
     version: 1.7.0-beta.9
     peerDependencies:
       '@better-auth/core': 1.7.0-beta.9
@@ -1979,7 +1979,7 @@ packages:
         optional: true
 
   '@better-auth/prisma-adapter@https://pkg.pr.new/better-auth/better-auth/@better-auth/prisma-adapter@5a40d12':
-    resolution: {tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/prisma-adapter@5a40d12}
+    resolution: {integrity: sha512-FjmEQzqxB4jzphmg11n0Mrv7AHX9j32i5kCasXBM5vJ5in+XGaFpn4sXU1jVGy1jWV8hB2SIBufIvfaqNDn/jw==, tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/prisma-adapter@5a40d12}
     version: 1.7.0-beta.9
     peerDependencies:
       '@better-auth/core': 1.7.0-beta.9
@@ -1993,7 +1993,7 @@ packages:
         optional: true
 
   '@better-auth/telemetry@https://pkg.pr.new/better-auth/better-auth/@better-auth/telemetry@5a40d12':
-    resolution: {tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/telemetry@5a40d12}
+    resolution: {integrity: sha512-8Ksyahy5gpLOHBJNB5LV5U3cv+MBIGUZfqxkGeF+S+etp71/QOS66qpPdQ3FFjEaO7Ommi9ftFm9ERvXffjodQ==, tarball: https://pkg.pr.new/better-auth/better-auth/@better-auth/telemetry@5a40d12}
     version: 1.7.0-beta.9
     peerDependencies:
       '@better-auth/core': 1.7.0-beta.9
