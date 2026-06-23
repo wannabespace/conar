@@ -4,7 +4,9 @@ import { decryptWithKey, encryptWithKey } from '@conar/shared/utils/crypto-web'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import { BasicIndex, createCollection } from '@tanstack/react-db'
-import { getEncryptionKey, resetEncryptionKey } from '~/lib/encryption-key-storage'
+import { toast } from 'sonner'
+import { fullSignOut } from '~/lib/auth'
+import { getEncryptionKey } from '~/lib/encryption-key-storage'
 import { orpc } from '~/lib/orpc'
 import { persistence } from '~/lib/sync'
 
@@ -56,12 +58,8 @@ export const connectionStringsCollection: ConnectionStringsCollection = createCo
         return await decryptValue(record.encrypted)
       }
       catch (error) {
-        await resetEncryptionKey()
-
-        for (const item of connectionStringsCollection.toArray) {
-          connectionStringsCollection.delete(item.connectionId)
-        }
-
+        await fullSignOut()
+        toast.error('Your encryption key is invalid. Please, sign in again.')
         throw error
       }
     },
