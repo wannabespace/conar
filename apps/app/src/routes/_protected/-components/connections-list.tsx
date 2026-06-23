@@ -204,12 +204,12 @@ function ConnectionCard({
   const { data: connectionResources } = useLiveQuery(q => q
     .from({ cr: connectionsResourcesCollection })
     .where(({ cr }) => eq(cr.connectionId, collectionJoined.connection.id))
-    .select(({ cr }) => cr), [collectionJoined.connection.id])
-  const storedResourcesNames = connectionResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
+    .orderBy(({ cr }) => cr.name, 'asc'), [collectionJoined.connection.id])
+  const connectionResourcesNames = connectionResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
   const { type, canSend, reason } = useFetchingConfig(collectionJoined.connection)
 
   const {
-    data: resources = storedResourcesNames,
+    data: resources = connectionResourcesNames,
     isPending,
     isFetching,
     error,
@@ -234,6 +234,8 @@ function ConnectionCard({
   const resolvedSelectedResourceName = selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? null : selectedResourceName
   const selectedResource = connectionResources.find(r => r.name === resolvedSelectedResourceName)
   const canOpenResource = canSend || (type === 'waiting-for-password' && !!window.electron)
+
+  console.log(selectedResource, selectedResourceName, resolvedSelectedResourceName)
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
