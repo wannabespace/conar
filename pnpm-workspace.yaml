@@ -10,6 +10,7 @@ overrides:
   '@better-auth/core': 1.7.0-beta.9
   '@better-auth/drizzle-adapter': 'https://pkg.pr.new/@better-auth/drizzle-adapter@5a40d12'
   '@better-auth/kysely-adapter': 'https://pkg.pr.new/@better-auth/kysely-adapter@5a40d12'
+  '@better-auth/memory-adapter': 'https://pkg.pr.new/@better-auth/memory-adapter@5a40d12'
   better-auth: 'https://pkg.pr.new/better-auth@5a40d12'
 catalog:
   '@ai-sdk/anthropic': ^3.0.85
