@@ -39,13 +39,10 @@ export function createChatsCollection() {
               key: item.key,
             })
           }
-          else if (item.value?.connectionResourceId) {
+          else {
             write({
               type: item.type,
-              value: {
-                ...item.value,
-                connectionResourceId: item.value.connectionResourceId,
-              },
+              value: item.value,
             })
           }
         }
@@ -78,7 +75,6 @@ export function createChatsCollection() {
           if (abortController.signal.aborted)
             return
           begin()
-          console.log('chat sync', sync)
           for (const item of sync) {
             writeItem(item)
           }
