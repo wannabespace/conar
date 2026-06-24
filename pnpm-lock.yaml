@@ -176,7 +176,7 @@ catalogs:
       version: 3.27.1
     '@todesktop/cli':
       specifier: ^1.24.0
-      version: 1.25.2
+      version: 1.24.0
     '@todesktop/runtime':
       specifier: ^2.1.4
       version: 2.1.4
@@ -991,7 +991,7 @@ importers:
         version: link:../../packages/shared
       '@todesktop/cli':
         specifier: 'catalog:'
-        version: 1.25.2(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))(@types/react@19.2.17)
+        version: 1.24.0(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))(@types/react@19.2.17)
       '@types/mssql':
         specifier: 'catalog:'
         version: 12.3.0
@@ -4999,8 +4999,8 @@ packages:
   '@tiptap/starter-kit@3.27.1':
     resolution: {integrity: sha512-vfxRsqW8rCc0k4pzo0ilU3wobVi2wqVj88VZI2SlgZlNnUAkrDGDIAph7CTa9k9fshV+O1ivpEgPC5yC046jow==}
 
-  '@todesktop/cli@1.25.2':
-    resolution: {integrity: sha512-PfkPAFwK+cjiyZQDprlH0939MT4319m1gJESV+J5n4K2MmoZSXXNnUcSwjkr4fm97bWKeQ9GHN3Em5P4Z1sImA==}
+  '@todesktop/cli@1.24.0':
+    resolution: {integrity: sha512-tetn0r6U73bBv6dj0ojHwXIU2HbOnebya9gIAPozlKF+WXD+DrqhvE3/4l5bAt55BiDWhNGucXkSYDkEdMiVEw==}
     engines: {node: '>=16'}
     hasBin: true
 
@@ -14384,7 +14384,7 @@ snapshots:
       '@tiptap/extensions': 3.27.1(@tiptap/core@3.27.1(@tiptap/pm@3.27.1))(@tiptap/pm@3.27.1)
       '@tiptap/pm': 3.27.1
 
-  '@todesktop/cli@1.25.2(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))(@types/react@19.2.17)':
+  '@todesktop/cli@1.24.0(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))(@types/react@19.2.17)':
     dependencies:
       '@segment/analytics-node': 2.3.0
       '@sentry/node': 10.60.0(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))
@@ -14403,7 +14403,6 @@ snapshots:
       du: 1.0.0
       email-regex: 4.0.0
       fast-glob: 3.3.3
-      fast-uri: 3.1.2
       final-form: 5.0.1
       find-up: 5.0.0
       firebase: 12.15.0
