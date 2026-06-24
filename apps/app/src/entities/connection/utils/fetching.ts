@@ -1,23 +1,25 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Connection, ConnectionResource } from '~/entities/connection/sync'
-import { isLocalhostConnectionString } from '@conar/connection/utils'
 import { SyncType } from '@conar/shared/enums/sync-type'
-import { tryCatch } from '@conar/shared/utils/helpers'
+import { eq, useLiveQuery } from '@tanstack/react-db'
+import { useSubscription } from 'seitu/react'
+import { getCollections, useCollections } from '~/entities/connection/collections'
 import { queryClient } from '~/main'
-import { isLocalProxyAvailable } from '../proxy'
+import { isLocalProxyAvailable, useLocalProxyAvailable } from '../proxy'
 import { resourceRowsQueryInfiniteOptions } from '../queries'
 import { resourceTableColumnsQueryOptions } from '../queries/columns'
 import { resourceConstraintsQueryOptions } from '../queries/constraints'
 import { resourceEnumsQueryOptions } from '../queries/enums'
 import { resourceTablesAndSchemasQueryOptions } from '../queries/tables-and-schemas'
 import { resourceTableTotalQueryOptions } from '../queries/total'
-import { getConnectionResourceStore } from '../store'
-import { connectionsCollection } from '../sync'
+import { getConnectionResourceStore, getConnectionStore } from '../store'
 
 export async function prefetchConnectionResourceCore(connectionResource: ConnectionResource) {
+  const { connectionsCollection, connectionStringsCollection } = getCollections()
   const connection = connectionsCollection.get(connectionResource.connectionId)!
+  const connectionString = connectionStringsCollection.get(connection.id)
 
-  if (connection.isPasswordExists && !connection.isPasswordPopulated) {
+  if (connection.isPasswordExists && !connectionString?.isPasswordPopulated) {
     return
   }
 
@@ -46,21 +48,30 @@ export async function prefetchConnectionResourceTableCore({ connectionResource, 
   ])
 }
 
-type FetchingConnection = Pick<Connection, 'syncType' | 'connectionString' | 'isPasswordExists' | 'isPasswordPopulated'>
-
-export function fetchingConfig(connection: FetchingConnection, options?: {
+export function fetchingConfig(connection: Pick<Connection, 'syncType' | 'isPasswordExists'>, options?: {
   isLocalProxyAvailable?: boolean
+  isPasswordPopulated?: boolean
+  isLocalhost?: boolean
   proxy?: { enabled: boolean, url: string | null }
 }): {
   type: 'cloud-proxy' | 'local' | 'proxy' | 'waiting-for-password'
   canSend: boolean
+  reason: string | null
 } {
-  if (connection.isPasswordExists && !connection.isPasswordPopulated) {
-    return { type: 'waiting-for-password', canSend: false }
+  const isPasswordPopulated = options?.isPasswordPopulated ?? false
+  const isLocalhost = options?.isLocalhost ?? false
+
+  if (connection.isPasswordExists && !isPasswordPopulated) {
+    return {
+      type: 'waiting-for-password',
+      canSend: false,
+      reason: window.electron
+        ? 'Filled password is required to query this connection.'
+        : 'This connection cannot be used from the web app because it was created without storing the password. Open this connection in the desktop app.',
+    }
   }
 
-  const isLocalhost = tryCatch(() => isLocalhostConnectionString(connection.connectionString)).data === true
-  const isPasswordFilled = (connection.syncType === SyncType.CloudWithoutPassword && connection.isPasswordPopulated)
+  const isPasswordFilled = (connection.syncType === SyncType.CloudWithoutPassword && isPasswordPopulated)
     || connection.syncType === SyncType.Cloud
   const proxyAvailable = options?.isLocalProxyAvailable ?? isLocalProxyAvailable()
   const proxyEnabled = options?.proxy?.enabled === true
@@ -68,16 +79,45 @@ export function fetchingConfig(connection: FetchingConnection, options?: {
   const preferProxy = !window.electron || proxyEnabled
 
   if ((isLocalhost || isPasswordFilled) && (proxyAvailable || hasCustomUrl) && preferProxy) {
-    return { type: 'proxy', canSend: true }
+    return { type: 'proxy', canSend: true, reason: null }
   }
 
   if (window.electron) {
-    return { type: 'local', canSend: true }
+    return { type: 'local', canSend: true, reason: null }
   }
 
   if (isLocalhost) {
-    return { type: 'proxy', canSend: false }
+    return {
+      type: 'proxy',
+      canSend: false,
+      reason: 'You cannot reach this connection from the web app. Open this connection in the desktop app.',
+    }
   }
 
-  return { type: 'cloud-proxy', canSend: true }
+  const canSend = connection.syncType !== SyncType.CloudWithoutPassword
+
+  return {
+    type: 'cloud-proxy',
+    canSend,
+    reason: canSend
+      ? null
+      : 'You cannot reach this connection from the web app. Run `conar proxy` or open this connection in the desktop app.',
+  }
+}
+
+export function useFetchingConfig(connection: Pick<Connection, 'id' | 'syncType' | 'isPasswordExists'>) {
+  const isLocalProxyAvailable = useLocalProxyAvailable()
+  const { connectionStringsCollection } = useCollections()
+  const { data: connectionString } = useLiveQuery(q => q
+    .from({ cs: connectionStringsCollection })
+    .where(({ cs }) => eq(cs.connectionId, connection.id))
+    .findOne(), [connectionStringsCollection, connection.id])
+  const proxy = useSubscription(getConnectionStore(connection.id), { selector: s => s.proxy })
+
+  return fetchingConfig(connection, {
+    isLocalProxyAvailable,
+    isPasswordPopulated: connectionString?.isPasswordPopulated,
+    isLocalhost: connectionString?.isLocalhost,
+    proxy,
+  })
 }

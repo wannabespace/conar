@@ -2,113 +2,14 @@ import type { AppUIMessage } from '@conar/ai/tools/helpers'
 import type { ORPCOutputs } from '~/lib/orpc'
 import type { BaseTable } from '~/lib/sync'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
-import { BasicIndex, createCollection } from '@tanstack/react-db'
+import { BasicIndex, createCollection, createOptimisticAction } from '@tanstack/react-db'
+import { getCollections } from '~/entities/connection/collections'
 import { orpc } from '~/lib/orpc'
 import { persistence } from '~/lib/sync'
-
-export interface ChatMutationMetadata {
-  cloudSync?: false
-}
 
 export interface Chat extends BaseTable {
   connectionResourceId: string
   title: string | null
-}
-
-export const chatsCollection = createCollection(persistedCollectionOptions<Chat, string>({
-  id: 'chats',
-  persistence,
-  autoIndex: 'eager',
-  defaultIndexType: BasicIndex,
-  schemaVersion: 1,
-  getKey: item => item.id,
-  sync: {
-    sync: ({ begin, commit, write, collection, markReady }) => {
-      const abortController = new AbortController()
-
-      const writeItem = async (item: ORPCOutputs['chats']['sync'][number]) => {
-        if (item.type === 'delete') {
-          write({
-            type: item.type,
-            key: item.key,
-          })
-        }
-        else if (item.value?.connectionResourceId) {
-          write({
-            type: item.type,
-            value: {
-              ...item.value,
-              connectionResourceId: item.value.connectionResourceId!,
-            },
-          })
-        }
-      }
-
-      orpc.chats.events.call({}, {
-        signal: abortController.signal,
-      })
-        .then(async (events) => {
-          markReady()
-          for await (const item of events) {
-            begin()
-            writeItem(item)
-            commit()
-          }
-        })
-        .catch(() => {
-          markReady()
-        })
-
-      collection.toArrayWhenReady().then(async (rows) => {
-        orpc.chats.sync.call(
-          rows,
-          { signal: abortController.signal },
-        )
-          .then(async (sync) => {
-            begin()
-            for (const item of sync) {
-              writeItem(item)
-            }
-            commit()
-          })
-      })
-
-      return () => {
-        abortController.abort()
-      }
-    },
-  },
-  onInsert: async ({ transaction }) => {
-    const mutations = transaction.mutations.filter(m => (m.metadata as ChatMutationMetadata)?.cloudSync !== false)
-
-    if (mutations.length === 0) {
-      return
-    }
-
-    await Promise.all(mutations.map(m => orpc.chats.create.call(m.modified)))
-  },
-  onUpdate: async ({ transaction }) => {
-    const mutations = transaction.mutations.filter(m => (m.metadata as ChatMutationMetadata)?.cloudSync !== false)
-
-    if (mutations.length === 0) {
-      return
-    }
-
-    await Promise.all(mutations.map(m => orpc.chats.update.call({ id: m.key, ...m.changes })))
-  },
-  onDelete: async ({ transaction }) => {
-    const mutations = transaction.mutations.filter(m => (m.metadata as ChatMutationMetadata)?.cloudSync !== false)
-
-    if (mutations.length === 0) {
-      return
-    }
-
-    await orpc.chats.remove.call(mutations.map(m => ({ id: m.key })))
-  },
-}))
-
-export interface ChatMessagesMutationMetadata {
-  cloudSync?: false
 }
 
 export interface ChatMessage extends BaseTable {
@@ -118,91 +19,185 @@ export interface ChatMessage extends BaseTable {
   metadata: NonNullable<AppUIMessage['metadata']> | null
 }
 
-export const chatsMessagesCollection = createCollection(persistedCollectionOptions<ChatMessage, string>({
-  id: 'chatsMessages',
-  persistence,
-  autoIndex: 'eager',
-  defaultIndexType: BasicIndex,
-  schemaVersion: 1,
-  getKey: item => item.id,
-  sync: {
-    sync: ({ begin, commit, write, collection, markReady }) => {
-      const abortController = new AbortController()
+export function createChatsCollection() {
+  return createCollection(persistedCollectionOptions<Chat, string>({
+    id: 'chats',
+    persistence,
+    autoIndex: 'eager',
+    gcTime: 0,
+    defaultIndexType: BasicIndex,
+    schemaVersion: 1,
+    getKey: item => item.id,
+    sync: {
+      sync: ({ begin, commit, write, collection, markReady }) => {
+        const abortController = new AbortController()
 
-      const writeItem = (item: ORPCOutputs['chatsMessages']['sync'][number]) => {
-        if (item.type === 'delete') {
-          write({
-            type: 'delete',
-            key: item.key,
-          })
-        }
-        else {
-          write({
-            type: item.type,
-            value: item.value,
-          })
-        }
-      }
-
-      orpc.chatsMessages.events.call({}, {
-        signal: abortController.signal,
-      })
-        .then(async (events) => {
-          markReady()
-          for await (const item of events) {
-            begin()
-            writeItem(item)
-            commit()
+        const writeItem = (item: ORPCOutputs['chats']['sync'][number]) => {
+          if (item.type === 'delete') {
+            write({
+              type: item.type,
+              key: item.key,
+            })
           }
-        })
-        .catch(() => {
-          markReady()
-        })
+          else {
+            write({
+              type: item.type,
+              value: item.value,
+            })
+          }
+        }
 
-      collection.toArrayWhenReady().then(async (rows) => {
-        orpc.chatsMessages.sync.call(
-          rows,
-          { signal: abortController.signal },
-        )
-          .then(async (sync) => {
-            begin()
-            for (const item of sync) {
+        orpc.chats.events.call({}, {
+          signal: abortController.signal,
+        })
+          .then(async (events) => {
+            if (abortController.signal.aborted)
+              return
+            markReady()
+            for await (const item of events) {
+              if (abortController.signal.aborted)
+                break
+              begin()
               writeItem(item)
+              commit()
             }
-            commit()
           })
-      })
+          .catch(() => {
+            if (!abortController.signal.aborted)
+              markReady()
+          })
 
-      return () => {
-        abortController.abort()
-      }
+        collection.toArrayWhenReady().then(async (rows) => {
+          const sync = await orpc.chats.sync.call(
+            rows,
+            { signal: abortController.signal },
+          )
+          if (abortController.signal.aborted)
+            return
+          begin()
+          for (const item of sync) {
+            writeItem(item)
+          }
+          commit()
+        })
+
+        return () => {
+          abortController.abort('chats sync aborted')
+        }
+      },
     },
-  },
-  onInsert: async ({ transaction }) => {
-    const mutations = transaction.mutations.filter(m => (m.metadata as ChatMessagesMutationMetadata)?.cloudSync !== false)
+    onInsert: async ({ transaction }) => {
+      await orpc.chats.create.call(transaction.mutations.map(m => m.modified))
+    },
+    onUpdate: async ({ transaction }) => {
+      await Promise.all(transaction.mutations.map(m => orpc.chats.update.call({ id: m.key, ...m.changes })))
+    },
+    onDelete: async ({ transaction }) => {
+      await orpc.chats.remove.call(transaction.mutations.map(m => ({ id: m.key })))
+    },
+  }))
+}
 
-    if (mutations.length === 0) {
-      return
+export function createChatsMessagesCollection() {
+  return createCollection(persistedCollectionOptions<ChatMessage, string>({
+    id: 'chatsMessages',
+    persistence,
+    autoIndex: 'eager',
+    gcTime: 0,
+    defaultIndexType: BasicIndex,
+    schemaVersion: 1,
+    getKey: item => item.id,
+    sync: {
+      sync: ({ begin, commit, write, collection, markReady }) => {
+        const abortController = new AbortController()
+
+        const writeItem = (item: ORPCOutputs['chatsMessages']['sync'][number]) => {
+          if (item.type === 'delete') {
+            write({
+              type: 'delete',
+              key: item.key,
+            })
+          }
+          else {
+            write({
+              type: item.type,
+              value: item.value,
+            })
+          }
+        }
+
+        orpc.chatsMessages.events.call({}, {
+          signal: abortController.signal,
+        })
+          .then(async (events) => {
+            if (abortController.signal.aborted)
+              return
+            markReady()
+            for await (const item of events) {
+              if (abortController.signal.aborted)
+                break
+              begin()
+              writeItem(item)
+              commit()
+            }
+          })
+          .catch(() => {
+            if (!abortController.signal.aborted)
+              markReady()
+          })
+
+        collection.toArrayWhenReady().then(async (rows) => {
+          const sync = await orpc.chatsMessages.sync.call(
+            rows,
+            { signal: abortController.signal },
+          )
+          if (abortController.signal.aborted)
+            return
+          begin()
+          for (const item of sync) {
+            writeItem(item)
+          }
+          commit()
+        })
+
+        return () => {
+          abortController.abort('chatsMessages sync aborted')
+        }
+      },
+    },
+    onInsert: async ({ transaction }) => {
+      await orpc.chatsMessages.create.call(transaction.mutations.map(m => m.modified))
+    },
+    onUpdate: async ({ transaction }) => {
+      await Promise.all(transaction.mutations.map(m => orpc.chatsMessages.update.call({ id: m.key, ...m.changes })))
+    },
+    onDelete: async ({ transaction }) => {
+      await orpc.chatsMessages.remove.call(transaction.mutations.map(m => ({ id: m.key, chatId: m.modified.chatId })))
+    },
+  }))
+}
+
+export const createChatMessageAction = createOptimisticAction<{
+  chat: Chat
+  message: ChatMessage
+}>({
+  onMutate: ({ chat, message }) => {
+    const { chatsCollection, chatsMessagesCollection } = getCollections()
+
+    if (!chatsCollection.has(chat.id)) {
+      chatsCollection.insert(chat)
     }
 
-    await Promise.all(mutations.map(m => orpc.chatsMessages.create.call(m.modified)))
+    chatsMessagesCollection.insert(message)
   },
-  onUpdate: async ({ transaction }) => {
-    const mutations = transaction.mutations.filter(m => (m.metadata as ChatMessagesMutationMetadata)?.cloudSync !== false)
+  mutationFn: async ({ chat, message }, { transaction }) => {
+    const isChatCreated = transaction.mutations.some(m => m.collection.id === 'chats')
 
-    if (mutations.length === 0) {
-      return
+    if (isChatCreated) {
+      await orpc.chats.create.call(chat)
     }
 
-    await Promise.all(mutations.map(m => orpc.chatsMessages.update.call({ id: m.key, ...m.changes })))
+    await orpc.chatsMessages.create.call(message)
+    await orpc.ai.generateTitle.call({ chatId: chat.id })
   },
-  onDelete: async ({ transaction }) => {
-    const mutations = transaction.mutations.filter(m => (m.metadata as ChatMessagesMutationMetadata)?.cloudSync !== false)
-
-    if (mutations.length === 0) {
-      return
-    }
-
-    await orpc.chatsMessages.remove.call(mutations.map(m => ({ id: m.key, chatId: m.modified.chatId })))
-  },
-}))
+})

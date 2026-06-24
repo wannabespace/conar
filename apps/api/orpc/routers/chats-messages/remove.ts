@@ -1,5 +1,6 @@
 import { db } from '@conar/db'
 import { chats, chatsMessages } from '@conar/db/schema'
+import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq, inArray, or } from 'drizzle-orm'
 import { orpc, subscriptionMiddleware } from '~/orpc'
@@ -15,7 +16,7 @@ export const remove = orpc
   .input(type.or(input, input.array()).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
     if (input.length === 0) {
-      return
+      throw new ORPCError('BAD_REQUEST', { message: 'No chat messages to remove' })
     }
 
     const toRemove = await db
@@ -36,10 +37,9 @@ export const remove = orpc
       .where(inArray(chatsMessages.id, toRemove.map(item => item.id)))
 
     for (const item of toRemove) {
-      publisher.publish('event', {
+      publisher.publish(context.user.id, {
         type: 'delete',
         key: item.id,
-        clientId: context.clientId,
       })
     }
   })

@@ -1,0 +1,84 @@
+---
+title: "How Conar Secures Your Database Credentials"
+sidebarTitle: "Security"
+description: "Conar encrypts all connection strings at rest with a per-user secret key. Learn how the two sync modes protect your credentials differently."
+---
+
+Your database credentials are sensitive, and Conar is designed to handle them with care. Every connection string is encrypted before it ever leaves your device, and the sync mode you choose gives you direct control over whether your password is stored in the cloud at all. This page explains exactly how Conar protects your credentials and how to choose the right sync mode for each connection.
+
+## Encryption at Rest
+
+All connection strings stored by Conar — regardless of sync type — are encrypted at rest using a **per-user secret key**. This key is unique to your account and is never shared with other users. Even if Conar's storage were somehow accessed without authorization, your encrypted connection strings would be unreadable without your personal key.
+
+Encryption is applied automatically every time you save a connection. You don't need to configure anything to benefit from it.
+
+## Encryption in Transit
+
+When your device retrieves a connection string from Conar's cloud, all communication is protected by **HTTPS (TLS)**. The connection string is decrypted server-side using your per-user secret, then transmitted over the encrypted TLS channel to your device.
+
+Because the server decrypts before sending, the server does briefly hold the plaintext credential in memory during that request. The value is never persisted in plaintext — it is re-encrypted immediately when written back to storage — and the Conar backend is the only system that can access your Infisical-backed per-user secret.
+
+If you want to avoid the server ever handling your plaintext password, use **Cloud (without password)** mode. In that mode the server only stores and returns connection metadata (hostname, port, database name, username), so the password never leaves your device.
+
+## Cloud (with password) vs Cloud (without password)
+
+Conar gives you two sync modes, each offering a different trade-off between convenience and credential exposure. Both modes sync your connection across all your devices.
+
+<Tabs>
+  <Tab title="Cloud (with password)">
+    **Cloud (with password)** stores your full connection string — including the password — in Conar's cloud, encrypted with your per-user secret key.
+
+    - Your encrypted credentials are synced to every device where you sign in to Conar.
+    - You never need to re-enter your password when switching devices or reinstalling the app.
+    - The password is stored encrypted at rest. When syncing to a device, it is decrypted server-side and transmitted over HTTPS.
+
+    This option is convenient for development and staging databases where the priority is quick access across multiple machines.
+  </Tab>
+  <Tab title="Cloud (without password)">
+    **Cloud (without password)** stores only connection metadata — hostname, port, database name, and username — in Conar's cloud. Your password is **never synced to the cloud**.
+
+    - The first time you use the connection, Conar prompts you to enter the password.
+    - The password is kept only on your current device, encrypted with your per-user secret key, so you don't have to re-enter it every time. It is never uploaded to Conar's cloud or synced to your other devices.
+    - You can remove the locally stored password at any time from the connection's menu (**⋯ → Clear password**). After clearing it, Conar prompts for the password again the next time you use the connection.
+    - Even if your Conar account were compromised, an attacker would have no stored password to extract from the cloud.
+
+    This option is the right choice for production databases or any situation where your organization's security policy prohibits storing passwords in external systems.
+  </Tab>
+</Tabs>
+
+## Choosing the Right Sync Mode
+
+Not sure which sync mode to use? Here's a straightforward guide:
+
+| Situation | Recommended Sync Mode |
+|---|---|
+| Development or local databases | Cloud (with password) |
+| Staging environments | Cloud (with password) |
+| Production databases | Cloud (without password) |
+| Environments with external secret storage policies | Cloud (without password) |
+| Shared team machines | Cloud (without password) |
+| Personal machine, trusted environment | Cloud (with password) |
+
+A few rules of thumb:
+
+- **Use Cloud (with password)** when you regularly switch between devices and need frictionless access to non-production databases.
+- **Use Cloud (without password)** for any production database, or whenever your company's security policy requires that passwords not be stored outside your direct control.
+- You can use different sync modes for different connections — for example, **Cloud (with password)** for your local dev database and **Cloud (without password)** for your staging and production connections.
+
+## Open Source
+
+Conar is open source and released under the **AGPL-3.0 license**. This means the encryption implementation — and every other part of how Conar handles your credentials — is publicly auditable. You don't have to take our word for how your data is protected.
+
+You can review the source code at any time:
+
+[github.com/wannabespace/conar](https://github.com/wannabespace/conar)
+
+If you find a security concern in the codebase, please open an issue or contact the maintainers directly through the repository.
+
+<Warning>
+  Never share your connection strings with others — even colleagues. A connection string contains everything needed to access your database. If a connection string has been exposed, rotate your database password immediately and update the connection in Conar.
+</Warning>
+
+<Note>
+  When you run a query in Conar, your credentials and query results travel directly between your machine and your database. Conar's cloud infrastructure stores only encrypted connection metadata — it never handles your live query traffic.
+</Note>

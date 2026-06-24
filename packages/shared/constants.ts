@@ -59,6 +59,7 @@ export const RECONNECT_ERROR_PATTERNS = [
   'application failed to respond',
   'failed to fetch',
   'connection terminated unexpectedly',
+  'the database system is not yet accepting connections',
   'the database system is starting up',
 ]
 

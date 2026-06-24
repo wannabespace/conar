@@ -22,13 +22,20 @@ export async function handleError(error: unknown) {
     || error.message.includes(PROXY_ERROR_MESSAGE)
     : false
 
-  if (!shouldIgnoreError) {
-    const message = getErrorMessage(error)
-
-    toast.error(message, {
-      id: message.includes('session') ? 'session-expired' : `error-${message}`,
-    })
+  if (shouldIgnoreError) {
+    return
   }
+
+  const message = getErrorMessage(error)
+
+  toast.error(
+    typeof error === 'object' && 'status' in error && typeof error.status === 'number' && error.status >= 500
+      ? 'Something went wrong with our server. You can continue working, but some features may not work as expected.'
+      : message,
+    {
+      id: message.includes('session') ? 'session-expired' : `error-${message}`,
+    },
+  )
 
   if (
     (

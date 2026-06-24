@@ -1,3 +1,4 @@
+import { isLocalhostConnectionString } from '@conar/connection/utils'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { tryCatch } from '@conar/shared/utils/helpers'
@@ -16,10 +17,11 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
+import { useCollections } from '~/entities/connection/collections'
 import { useLocalProxyAvailable } from '~/entities/connection/proxy'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 import { getConnectionStore } from '~/entities/connection/store'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
+import { createConnectionAction } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching'
 import { generateRandomName } from '~/utils/utils'
@@ -47,11 +49,12 @@ const createConnectionType = type({
 
 // eslint-disable-next-line react-refresh/only-export-components
 function CreateConnectionPage() {
+  const collections = useCollections()
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const { mutate: createConnection, isPending: isCreatingConnection } = useMutation({
+  const { mutate: createConnectionMutation, isPending: isCreatingConnection } = useMutation({
     mutationFn: async (data: {
       connectionString: string
       name: string
@@ -63,27 +66,37 @@ function CreateConnectionPage() {
       const id = v7()
       const url = new SafeURL(data.connectionString.trim())
 
-      const connectionTx = connectionsCollection.insert({
-        id,
-        name: data.name,
-        type: data.type,
-        connectionString: data.connectionString,
-        label: data.label || null,
-        color: data.color || null,
-        isPasswordExists: !!url.password,
-        isPasswordPopulated: !!url.password,
-        syncType: data.syncType,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-
-      if (!window.electron) {
-        await connectionTx.isPersisted.promise
-      }
-
-      toast.success('Connection created successfully 🎉')
-
       const resource = url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
+      const resourceId = v7()
+      const updatedAt = new Date()
+      const createdAt = new Date()
+      const { connectionStringsCollection, connectionsResourcesCollection } = collections
+
+      const tx = createConnectionAction({
+        connectionString: await connectionStringsCollection.utils.prepare({
+          connectionId: id,
+          connectionString: url.toString(),
+          updatedAt,
+        }),
+        connection: {
+          id,
+          name: data.name,
+          type: data.type,
+          label: data.label || null,
+          color: data.color || null,
+          isPasswordExists: !!url.password,
+          syncType: data.syncType,
+          createdAt,
+          updatedAt,
+        },
+        resource: {
+          id: resourceId,
+          connectionId: id,
+          name: resource,
+          createdAt,
+          updatedAt,
+        },
+      })
 
       if (resource) {
         getConnectionStore(id).set(state => ({
@@ -93,19 +106,11 @@ function CreateConnectionPage() {
         }))
       }
 
-      const resourceId = v7()
-
-      const resourceTx = connectionsResourcesCollection.insert({
-        id: resourceId,
-        connectionId: id,
-        name: resource,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-
       if (!window.electron) {
-        await resourceTx.isPersisted.promise
+        await tx.isPersisted.promise
       }
+
+      toast.success('Connection created successfully 🎉')
 
       prefetchConnectionResourceCore(connectionsResourcesCollection.get(resourceId)!)
       router.navigate({ to: '/connection/$resourceId/table', params: { resourceId } })
@@ -134,7 +139,7 @@ function CreateConnectionPage() {
         return
       }
 
-      createConnection({ type, connectionString, name, syncType, label, color })
+      createConnectionMutation({ type, connectionString, name, syncType, label, color })
     },
   })
 
@@ -145,12 +150,17 @@ function CreateConnectionPage() {
     }),
     onSuccess: () => {
       setStep('save')
-      toast.success('Connection successful. You can save the database.')
+      toast.success('Connection successful. You can save the connection.')
     },
     onError: (error) => {
-      toast.error('We couldn\'t connect to the database', {
-        // eslint-disable-next-line react/dom-no-dangerously-set-innerhtml
-        description: <span dangerouslySetInnerHTML={{ __html: error.message.replaceAll('\n', '<br />') }} />,
+      toast.error('We couldn\'t connect to the connection', {
+        description: (
+          // eslint-disable-next-line react/dom-no-dangerously-set-innerhtml
+          <span dangerouslySetInnerHTML={{
+            __html: error.message.toLowerCase().includes('invalid url') ? 'Invalid URL, check your connection string and try again' : error.message.replaceAll('\n', '<br />'),
+          }}
+          />
+        ),
       })
     },
   })
@@ -162,12 +172,15 @@ function CreateConnectionPage() {
 
   const isLocalProxyAvailable = useLocalProxyAvailable()
   const hasPassword = !!url?.password
+  const isLocalhost = tryCatch(() => isLocalhostConnectionString(connectionString)).data === true
   const { canSend } = fetchingConfig({
     syncType,
-    connectionString,
     isPasswordExists: hasPassword,
+  }, {
+    isLocalProxyAvailable,
     isPasswordPopulated: hasPassword,
-  }, { isLocalProxyAvailable })
+    isLocalhost,
+  })
   const canSaveInCloud = !!url && canSend
 
   return (
@@ -268,7 +281,7 @@ function CreateConnectionPage() {
                         disabled={testingStatus === 'pending' || !connectionString || !canSend}
                         onClick={() => test({ type: typeValue!, connectionString })}
                       >
-                        <LoadingContent loading={status === 'pending'}>
+                        <LoadingContent loading={testingStatus === 'pending'}>
                           {testingStatus === 'error' ? 'Try again' : 'Test connection'}
                         </LoadingContent>
                       </Button>

@@ -1,0 +1,51 @@
+---
+title: "Quickstart: Connect a Database and Run Your First Query"
+sidebarTitle: "Quickstart"
+description: "Create a Conar account, add a database connection, run your first SQL query, and explore the AI assistant — all in under five minutes."
+---
+
+This guide walks you through everything you need to go from a brand-new account to running your first SQL query with Tamery. You'll create an account, connect a database, explore your data in the Table Browser, execute a query in the SQL Editor, and get a taste of the AI assistant — all in under five minutes.
+
+<Steps>
+  <Step title="Create your account">
+    Head to [tamery.app](https://tamery.app) and click **Sign in** in the top-right corner. You can create a new account using your email address or sign in with an existing OAuth provider. Once you're authenticated, you'll land on your Tamery dashboard and be ready to add your first connection.
+  </Step>
+  <Step title="Add a connection">
+    From the dashboard, click **Add new** to open the connection setup panel. Select the type of database you want to connect to — PostgreSQL, MySQL, MSSQL, or ClickHouse. Enter your connection string in the provided field. Use the **Test connection** button to verify that Tamery can reach your database before saving. Once the connection test passes, give your connection a recognisable name so you can find it easily later, then click **Save**.
+
+    Your connection is encrypted and stored securely. If you want it available across all your devices, leave the sync mode set to **Cloud sync**. If you'd prefer it to stay on this device only, switch to **Local sync**.
+  </Step>
+  <Step title="Browse your data">
+    With your connection saved, click on it in the sidebar to open it. Navigate to the **Table Browser** using the left-hand navigation. Select a schema from the schema picker, then choose a table from the list. Tamery loads your rows into a data grid where you can scroll, sort columns by clicking their headers, and apply filters to narrow down the rows you care about. You can also click into any cell to edit its value directly.
+  </Step>
+  <Step title="Run a SQL query">
+    Open the **Query editor** by clicking the SQL icon in the left-hand navigation or by selecting **Open in Query editor** from the Table Browser. Type your SQL query in the editor — for example:
+
+    ```sql
+    SELECT * FROM users ORDER BY created_at DESC LIMIT 10;
+    ```
+
+    Press **Cmd\+Enter** (macOS) or **Ctrl\+Enter** (Windows/Linux) to execute. Your results appear in the results panel below the editor, displayed in a sortable, scrollable data grid.
+  </Step>
+  <Step title="Try the AI assistant">
+    In the Query view, open the **AI chat panel** by clicking the chat icon in the toolbar. Type a question about your data or your schema in plain English — for example, _"Show me the top 5 customers by total order value"_ or _"Why is this query slow?"_. The AI assistant understands your database schema and will generate SQL, explain queries, suggest optimisations, or help you fix errors. You can insert any suggested SQL directly into your editor with a single click.
+  </Step>
+</Steps>
+
+## What's next?
+
+Now that you've got the basics down, dive deeper into the features that matter most to you.
+
+<CardGroup cols={3}>
+  <Card title="Connections Overview" icon="database" href="/connections/overview">
+    Learn how to manage multiple connections, switch sync modes, and organise your databases.
+  </Card>
+
+  <Card title="AI Assistant" icon="sparkles" href="/features/ai-assistant">
+    Get the most out of Tamery's AI — from natural-language queries to automated error fixes.
+  </Card>
+
+  <Card title="CLI Overview" icon="terminal" href="/cli/overview">
+    Use Tamery from the command line for scripting, local proxies, and headless workflows.
+  </Card>
+</CardGroup>

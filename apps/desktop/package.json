@@ -3,7 +3,6 @@
   "type": "module",
   "version": "0.32.0",
   "productName": "Conar",
-  "private": true,
   "description": "AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse.",
   "author": {
     "name": "Wannabe Space, LLC",

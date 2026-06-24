@@ -3,7 +3,7 @@ import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescripti
 import { Button } from '@conar/ui/components/button'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { queriesCollection } from '~/entities/query/sync'
+import { useCollections } from '~/entities/connection/collections'
 
 interface RemoveQueryDialogProps {
   ref?: React.RefObject<{
@@ -12,6 +12,7 @@ interface RemoveQueryDialogProps {
 }
 
 export function RemoveQueryDialog({ ref }: RemoveQueryDialogProps) {
+  const { queriesCollection } = useCollections()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState<Query | null>(null)
 
@@ -35,14 +36,20 @@ export function RemoveQueryDialog({ ref }: RemoveQueryDialogProps) {
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Remove query</AlertDialogTitle>
+          <AlertDialogTitle>Remove Query</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete this query.
+            Are you sure you want to remove
+            {' '}
+            <span className="font-semibold">{query?.name}</span>
+            ?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-          <AlertDialogClose render={<Button variant="destructive" />} onClick={removeQuery}>
+          <AlertDialogClose
+            render={<Button variant="destructive" />}
+            onClick={removeQuery}
+          >
             Remove
           </AlertDialogClose>
         </AlertDialogFooter>

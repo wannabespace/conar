@@ -4,9 +4,9 @@ import { RiCloseLine } from '@remixicon/react'
 import { eq, inArray, useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
+import { useCollections } from '~/entities/connection/collections'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 
 function LastOpenedResource({ connectionResource, connection, onClose }: { connectionResource: ConnectionResource, connection: Connection, onClose: VoidFunction }) {
@@ -44,6 +44,7 @@ function LastOpenedResource({ connectionResource, connection, onClose }: { conne
 }
 
 export function LastOpenedResources() {
+  const { connectionsCollection, connectionsResourcesCollection } = useCollections()
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
 
   const { data } = useLiveQuery(q => q
@@ -56,7 +57,7 @@ export function LastOpenedResources() {
       connectionResource: connectionsResources,
       connection: connections,
     }))
-    .where(({ connectionsResources }) => inArray(connectionsResources.id, lastOpenedResources)), [lastOpenedResources])
+    .where(({ connectionsResources }) => inArray(connectionsResources.id, lastOpenedResources)), [connectionsResourcesCollection, connectionsCollection, lastOpenedResources])
   const toShow = data
     .toSorted((a, b) => lastOpenedResources.indexOf(a.connectionResource.id) - lastOpenedResources.indexOf(b.connectionResource.id))
 

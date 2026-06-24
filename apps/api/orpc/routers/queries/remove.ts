@@ -21,17 +21,16 @@ export const remove = orpc
       .delete(queries)
       .where(
         and(
-          eq(queries.userId, context.session.userId),
+          eq(queries.userId, context.user.id),
           inArray(queries.id, input.map(item => item.id)),
         ),
       )
       .returning()
 
     for (const item of input) {
-      publisher.publish('event', {
+      publisher.publish(context.user.id, {
         type: 'delete',
         key: item.id,
-        clientId: context.clientId,
       })
     }
   })

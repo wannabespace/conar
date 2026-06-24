@@ -7,11 +7,11 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
+import { useCollections } from '~/entities/connection/collections'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { appStore, setIsActionCenterOpen } from '~/store'
 
@@ -100,6 +100,7 @@ function ConnectionResource({ connection, connectionResource }: { connection: Co
 }
 
 export function ActionsCenter() {
+  const { connectionsCollection, connectionsResourcesCollection } = useCollections()
   const { resourceId } = useParams({ strict: false })
   const { data } = useLiveQuery(q => q
     .from({ connections: connectionsCollection })
@@ -111,7 +112,8 @@ export function ActionsCenter() {
       connection: connections,
       connectionResource: connectionResources,
     }))
-    .orderBy(({ connections }) => connections.createdAt, 'desc'))
+    .orderBy(({ connections }) => connections.createdAt, 'desc'), [connectionsCollection, connectionsResourcesCollection])
+
   const isOpen = useSubscription(appStore, { selector: state => state.isActionCenterOpen })
   const router = useRouter()
 

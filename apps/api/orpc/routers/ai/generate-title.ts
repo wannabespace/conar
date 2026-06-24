@@ -1,21 +1,30 @@
-import type { AppUIMessage } from '@conar/ai/tools/helpers'
 import { google } from '@ai-sdk/google'
 import { db } from '@conar/db'
-import { chats } from '@conar/db/schema'
+import { chats, chatsMessages } from '@conar/db/schema'
 import { generateText } from 'ai'
 import { type } from 'arktype'
-import { eq } from 'drizzle-orm'
+import { asc, eq } from 'drizzle-orm'
 import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
+import { publisher } from '../chats/events'
+
+async function getMessages(chatId: string) {
+  return db
+    .select()
+    .from(chatsMessages)
+    .where(eq(chatsMessages.chatId, chatId))
+    .orderBy(asc(chatsMessages.createdAt))
+}
 
 export const generateTitle = orpc
   .use(authMiddleware)
   .input(type({
     chatId: 'string.uuid.v7',
-    messages: 'Array' as type.cast<AppUIMessage[]>,
+    messages: 'unknown?', // TODO: remove in future
   }))
   .handler(async ({ input, signal, context }) => {
-    const prompt = input.messages.map(message => message.parts.filter(part => part.type === 'text')
+    const messages = await getMessages(input.chatId)
+    const prompt = messages.map(message => message.parts.filter(part => part.type === 'text')
       .map(part => JSON.stringify(part, null, 2))
       .join('\n'),
     ).join('\n')
@@ -56,7 +65,13 @@ export const generateTitle = orpc
       generatedTitle: text,
     })
 
-    await db.update(chats).set({ title: text }).where(eq(chats.id, input.chatId))
+    const [chat] = await db.update(chats).set({ title: text }).where(eq(chats.id, input.chatId)).returning()
 
+    publisher.publish(context.user.id, {
+      type: 'update',
+      value: chat!,
+    })
+
+    // TODO: remove in future, left for backward compatibility
     return text
   })

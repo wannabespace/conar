@@ -1,0 +1,70 @@
+---
+title: "Connect Conar to ClickHouse Databases"
+sidebarTitle: "ClickHouse"
+description: "How to connect Conar to ClickHouse or ClickHouse Cloud. Covers the clickhouse:// and clickhouses:// schemes, ports, and authentication options."
+---
+
+Tamery supports ClickHouse — the fast open-source column-oriented database — via both its native HTTP interface and HTTPS. Whether you're using ClickHouse Cloud or running a self-hosted instance, you can connect by entering your connection string in the Tamery connection wizard.
+
+## Connection String Format
+
+Tamery accepts two connection string schemes for ClickHouse:
+
+**HTTP (default port 8123):**
+
+```bash
+clickhouse://username:password@hostname:8123/database
+```
+
+**HTTPS (default port 8443):**
+
+```bash
+clickhouses://username:password@hostname:8443/database
+```
+
+Replace each placeholder with your actual credentials:
+
+| Placeholder | Description |
+| --- | --- |
+| `username` | Your ClickHouse user (e.g. `default`) |
+| `password` | The password for that user |
+| `hostname` | The host where ClickHouse is running (e.g. `localhost` or a remote domain) |
+| `8123` / `8443` | The HTTP or HTTPS port — adjust if your instance uses non-default ports |
+| `database` | The name of the ClickHouse database you want to connect to |
+
+## ClickHouse Cloud
+
+ClickHouse Cloud provides a managed, fully hosted ClickHouse service. To get your connection string, open the [ClickHouse Cloud console](https://console.clickhouse.cloud), select your service, and navigate to **Connect**. Choose **HTTPS** or the native interface to copy the pre-filled connection URL.
+
+ClickHouse Cloud requires TLS, so use the `clickhouses://` scheme with port `8443`:
+
+```bash
+clickhouses://default:your-password@abc123xyz.us-east-1.aws.clickhouse.cloud:8443/default
+```
+
+Your service hostname and credentials are shown directly in the ClickHouse Cloud console — copy them from there to avoid transcription errors.
+
+## Self-Hosted ClickHouse
+
+For a self-hosted ClickHouse installation, the default ports are:
+
+| Interface | Default Port |
+| --- | --- |
+| HTTP | `8123` |
+| Native TCP | `9000` |
+
+Tamery connects over the **HTTP interface**, so use port `8123` (or `8443` with the `clickhouses://` scheme if you've configured TLS on your server):
+
+```bash
+clickhouse://default:password@localhost:8123/default
+```
+
+If you haven't changed the default user or set a password, you can often connect with:
+
+```bash
+clickhouse://default@localhost:8123/default
+```
+
+<Tip>
+  Click **Test Connection** in the Tamery wizard before saving your connection. If the test fails, confirm that your ClickHouse HTTP interface is enabled and reachable on the expected port, and that any firewall rules allow connections from your machine.
+</Tip>

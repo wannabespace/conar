@@ -20,6 +20,13 @@ export const Route = createFileRoute(
   }),
   loaderDeps: ({ search }) => search,
   loader: async ({ context, deps }) => {
+    const { chatsCollection, chatsMessagesCollection } = context.collections
+
+    await Promise.all([
+      chatsCollection.stateWhenReady(),
+      chatsMessagesCollection.stateWhenReady(),
+    ])
+
     return {
       connection: context.connection,
       connectionResource: context.connectionResource,

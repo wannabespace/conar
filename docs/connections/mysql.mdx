@@ -1,0 +1,83 @@
+---
+title: "Connect Conar to MySQL Databases"
+sidebarTitle: "MySQL"
+description: "How to connect Conar to MySQL or MariaDB. Connection string format, SSL options, and tips for connecting to PlanetScale and other MySQL providers."
+---
+
+Tamery supports MySQL and MariaDB databases using the standard MySQL URI format. Whether you're running a local MySQL server for development or using a managed provider like PlanetScale, you can connect by entering your connection string in the Tamery connection wizard.
+
+## Connection String Format
+
+MySQL connections use the `mysql://` URI scheme:
+
+```bash
+mysql://username:password@hostname:3306/database
+```
+
+Replace each placeholder with your actual credentials:
+
+| Placeholder | Description |
+| --- | --- |
+| `username` | Your MySQL user (e.g. `root`) |
+| `password` | The password for that user |
+| `hostname` | The host where MySQL is running (e.g. `localhost` or a remote domain) |
+| `3306` | The default MySQL port — change this if your instance uses a different port |
+| `database` | The name of the database you want to connect to |
+
+## SSL / TLS
+
+Many managed MySQL providers require encrypted connections. You can enable SSL by appending parameters to your connection string after a `?`.
+
+```bash
+mysql://username:password@hostname:3306/database?ssl=true
+```
+
+To enforce certificate verification (rejecting self-signed or untrusted certificates), add `sslrejectunauthorized=true`:
+
+```bash
+mysql://username:password@hostname:3306/database?ssl=true&sslrejectunauthorized=true
+```
+
+Check your provider's documentation for the exact SSL parameters they require — each managed service may specify slightly different options.
+
+## Common Providers
+
+<Tabs>
+  <Tab title="PlanetScale">
+    PlanetScale uses branches instead of traditional databases. Open your PlanetScale dashboard, select your database and branch, then click **Connect** to get your connection string. PlanetScale requires SSL by default.
+
+    ```bash
+    mysql://username:password@aws.connect.psdb.cloud/your-database?sslaccept=strict
+    ```
+
+    Copy the connection string directly from the PlanetScale dashboard — it includes all the SSL parameters you need.
+  </Tab>
+  <Tab title="Railway">
+    In your Railway project, select your MySQL service and go to the **Connect** tab. Copy the **Database URL** listed there.
+
+    ```bash
+    mysql://root:password@monorail.proxy.rlwy.net:12345/railway
+    ```
+  </Tab>
+  <Tab title="Local MySQL">
+    For a local MySQL installation using the default settings:
+
+    ```bash
+    mysql://root:password@localhost:3306/mydb
+    ```
+
+    If your local MySQL instance doesn't use a password for the `root` user, omit the password portion:
+
+    ```bash
+    mysql://root@localhost:3306/mydb
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+  MySQL `SET` columns are displayed as **Enums** in Tamery's Definitions view. This is a known display difference — your underlying data and schema are not affected.
+</Note>
+
+<Tip>
+  Click **Test Connection** in the Tamery wizard before saving your connection. If the test fails, double-check your hostname, port, and credentials — and confirm that SSL parameters match what your provider requires.
+</Tip>

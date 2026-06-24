@@ -1,0 +1,129 @@
+---
+title: "AI SQL Assistant: Chat, Generate, and Fix Queries"
+sidebarTitle: "AI Assistant"
+description: "Conar's AI assistant understands your schema and helps you write, explain, fix, and optimize SQL. Supports Claude, GPT, and Gemini models."
+---
+
+Conar's AI Assistant is a schema-aware conversational AI built directly into your database workflow. Unlike generic AI chatbots, the assistant has full context of your connected database — it knows your table names, column types, relationships, and more — so it can write accurate SQL, explain query behavior, and troubleshoot errors without you needing to paste schema definitions into every message. The assistant is available from the chat panel alongside the SQL Editor, and its capabilities extend throughout the app into the Table Browser and inline editor features.
+
+<Note>
+  The AI assistant only executes safe, read-only queries against your database when using its database tool. It will never run `INSERT`, `UPDATE`, `DELETE`, or `DROP` statements autonomously. Any data modifications go through the normal Table Browser or SQL Editor workflows, where you remain in full control.
+</Note>
+
+## Chat Interface
+
+The AI chat panel lives alongside the SQL Editor in the Query view. Open it by clicking the **AI Assistant** button in the connection toolbar. The panel is resizable, so you can expand it for a longer conversation or collapse it when you want more space for the editor.
+
+You can ask the assistant anything about your database in plain English:
+
+- *"Which tables store customer order data?"*
+- *"Explain what this query does and whether it could be optimized."*
+- *"Write a query to find users who signed up in the last 7 days but haven't placed an order."*
+
+The assistant remembers the context of your conversation within a session, so you can follow up with refinements like *"now filter that to only include users in the EU"* without repeating yourself.
+
+## AI Models
+
+Conar supports multiple leading AI models so you can choose the one that best fits your task and preference.
+
+<CardGroup cols={3}>
+  <Card title="Claude" icon="robot" href="/account/plans">
+    Anthropic's Claude models — including Opus and Sonnet — are well-suited for complex reasoning, nuanced SQL generation, and detailed explanations.
+  </Card>
+  <Card title="GPT" icon="robot" href="/account/plans">
+    OpenAI's GPT models offer fast, reliable query generation and are a strong all-round choice for most SQL tasks.
+  </Card>
+  <Card title="Gemini" icon="robot" href="/account/plans">
+    Google's Gemini models bring strong performance for analytical queries and multi-step reasoning over large schemas.
+  </Card>
+</CardGroup>
+
+Select your preferred model from the model picker at the top of the chat panel. Model selection is a subscription feature — see [Plans](/account/plans) for details on which models are available on each tier.
+
+## What the AI Can Do
+
+The assistant is more than a query generator. Here's a full picture of what it can help you with:
+
+<CardGroup cols={2}>
+  <Card title="Write SQL from Natural Language" icon="pen-nib" href="/features/sql-editor">
+    Describe what data you need in plain English and the AI will write a complete, accurate SQL query using your real table and column names.
+  </Card>
+  <Card title="Explain Existing Queries" icon="magnifying-glass" href="/features/sql-editor">
+    Paste any SQL into the chat and ask the AI to explain it step by step — useful for understanding legacy queries or code you didn't write.
+  </Card>
+  <Card title="Fix SQL Errors" icon="circle-exclamation" href="/features/sql-editor">
+    When a query fails, share the error with the assistant (or use the inline Fix button in the editor) and it will diagnose the problem and suggest a corrected version.
+  </Card>
+  <Card title="Modify and Optimize SQL" icon="sliders" href="/features/sql-editor">
+    Ask the AI to refactor, optimize, or extend an existing query — add a JOIN, introduce a CTE, or rewrite a subquery as a window function.
+  </Card>
+  <Card title="Query Your Database" icon="database" href="/features/sql-editor">
+    The assistant can run SELECT queries against your database as part of answering a question — for example, checking how many rows match a condition or sampling data to give you a more accurate response.
+  </Card>
+  <Card title="Help with Test Data" icon="seedling" href="/features/table-browser">
+    Ask the assistant for advice on seeding a table or understanding what data shapes are expected. Use the Seed button in the Table Browser to generate rows directly.
+  </Card>
+  <Card title="Create Table Filters" icon="filter" href="/features/table-browser">
+    In the Table Browser, describe the rows you're looking for in plain English and the AI will translate your description into structured filter conditions automatically.
+  </Card>
+  <Card title="Search the Web & Docs" icon="globe" href="/features/ai-assistant">
+    The assistant can search the web and fetch documentation pages as part of answering questions about SQL syntax, database features, or best practices.
+  </Card>
+</CardGroup>
+
+## Enhance Prompt
+
+Not sure how to phrase your question? The **Enhance Prompt** button in the chat panel rewrites your draft message to be clearer, more specific, and more likely to produce a great response from the AI.
+
+Type your question in the input box, then click **Enhance** before sending. Conar will reformulate your prompt — expanding vague requests into precise ones and adding relevant context from your schema — and place the improved version back in the input for you to review and send. You're always in control of what gets sent.
+
+Enhance Prompt is useful when:
+
+- You know what you want but aren't sure how to phrase a technical request.
+- Your initial question is broad and you'd like the AI to ask clarifying questions.
+- You want to add schema context to a question automatically.
+
+## Natural Language Filters
+
+Instead of manually building filter conditions in the Table Browser, you can describe what you want in plain English and let the AI create the filter rules for you.
+
+<Steps>
+  <Step title="Open the Filters panel">
+    In the Table Browser, click the **Filter** button in the toolbar to open the filter panel for the active table.
+  </Step>
+  <Step title="Describe your filter">
+    Click **Ask AI** in the filter panel and type a natural language description of the rows you want to see — for example, *"orders placed in the last 30 days with a total over $500 that haven't shipped yet"*.
+  </Step>
+  <Step title="Review and apply">
+    The AI translates your description into one or more structured filter conditions using the correct columns and operators. Review them in the panel, adjust any condition if needed, and click **Apply** to filter the table.
+  </Step>
+</Steps>
+
+<Note>
+  Free-tier accounts include a limited number of AI-generated filter uses per month. Upgrade to a paid plan for unlimited natural language filters. See [Plans](/account/plans) for details.
+</Note>
+
+## AI Data Seeding
+
+The **Seed** feature populates a table with realistic, schema-consistent test data. Open any table in the Table Browser, click the **Seed** button in the toolbar, and specify how many rows you'd like to generate.
+
+Conar intelligently inspects your column names and data types to automatically select appropriate generators for each column — producing proper names, plausible email addresses, realistic timestamps, and foreign key values that reference existing records in related tables. You can review and adjust the generator assigned to each column before inserting any rows.
+
+Seeded rows are previewed before insertion, so you can inspect and adjust them before committing to the database.
+
+## Usage & Plans
+
+Conar offers a free tier with access to core features and a subscription plan that unlocks the full AI experience.
+
+| Feature | Free Tier | Subscription |
+|---|---|---|
+| AI chat | — | ✓ |
+| AI SQL generation (inline) | — | ✓ |
+| Fix SQL with AI | — | ✓ |
+| Update SQL with AI | — | ✓ |
+| Enhance Prompt | — | ✓ |
+| Natural language filters | Limited (monthly allowance) | Unlimited |
+| Data seeding | Limited (free allowance) | Unlimited |
+| Model selection (Claude, GPT, Gemini) | — | ✓ |
+
+Visit [Plans](/account/plans) to see the full feature comparison and upgrade your account.

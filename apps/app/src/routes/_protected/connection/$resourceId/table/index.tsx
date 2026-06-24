@@ -31,7 +31,21 @@ export const Route = createFileRoute(
     prefetchConnectionResourceCore(context.connectionResource)
 
     if (deps.table && deps.schema) {
-      const state = tablePageStore({ id: context.connectionResource.id, schema: deps.schema, table: deps.table }).get()
+      const store = tablePageStore({ id: context.connectionResource.id, schema: deps.schema, table: deps.table })
+      const state = store.get()
+
+      if (deps.filters) {
+        store.set(state => ({
+          ...state,
+          filters: deps.filters!,
+        } satisfies typeof state))
+      }
+      if (deps.orderBy) {
+        store.set(state => ({
+          ...state,
+          orderBy: deps.orderBy!,
+        } satisfies typeof state))
+      }
 
       prefetchConnectionResourceTableCore({
         connectionResource: context.connectionResource,

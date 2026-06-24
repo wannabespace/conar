@@ -1,0 +1,66 @@
+---
+title: "Connect Conar to SQL Server (MSSQL)"
+sidebarTitle: "SQL Server"
+description: "How to connect Conar to Microsoft SQL Server or Azure SQL Database. Connection string formats, SSL/TLS options, and Azure SQL tips."
+---
+
+Tamery supports Microsoft SQL Server and Azure SQL Database using the `mssql://` and `sqlserver://` URI schemes. Whether you're connecting to a local SQL Server instance during development or a cloud-hosted Azure SQL Database in production, you can get up and running by entering your connection string in the Tamery connection wizard.
+
+## Connection String Format
+
+Tamery accepts both the `mssql://` and `sqlserver://` URI schemes — they behave identically:
+
+```bash
+mssql://username:password@hostname:1433/database
+```
+
+```bash
+sqlserver://username:password@hostname:1433/database
+```
+
+Replace each placeholder with your actual credentials:
+
+| Placeholder | Description |
+| --- | --- |
+| `username` | Your SQL Server login (e.g. `sa`) |
+| `password` | The password for that login |
+| `hostname` | The host where SQL Server is running (e.g. `localhost` or a remote domain) |
+| `1433` | The default SQL Server port — change this if your instance is configured differently |
+| `database` | The name of the database you want to connect to |
+
+## Azure SQL
+
+Azure SQL Database connections use your server's `.database.windows.net` hostname. You can find your full connection string in the Azure portal by navigating to your SQL Database resource and selecting **Connection strings**.
+
+```bash
+sqlserver://username:password@your-server.database.windows.net:1433/your-database?encrypt=true&trustServerCertificate=false
+```
+
+Azure SQL requires encrypted connections. Make sure `encrypt=true` is present in your connection string, and set `trustServerCertificate=false` so that the server's certificate is properly validated.
+
+## SSL / TLS
+
+SQL Server uses two key parameters to control connection encryption. Both default to `true` in Tamery when not explicitly set:
+
+| Parameter | Description |
+| --- | --- |
+| `encrypt=true` | Encrypts the connection (default). Required for Azure SQL and recommended for any remote server. |
+| `encrypt=false` | Disables encryption. Only use this for local development environments that don't support TLS. |
+| `trustServerCertificate=true` | Skips certificate validation (default). Useful for local development with self-signed certificates, but **not recommended for production**. |
+| `trustServerCertificate=false` | Validates the server certificate against a trusted CA. Use this in production and with Azure SQL. |
+
+**Local development with a self-signed certificate:**
+
+```bash
+mssql://sa:password@localhost:1433/mydb?encrypt=true&trustServerCertificate=true
+```
+
+**Production or Azure SQL:**
+
+```bash
+sqlserver://username:password@hostname:1433/database?encrypt=true&trustServerCertificate=false
+```
+
+<Tip>
+  When connecting to a local SQL Server instance on the same machine, use `localhost` as the hostname. If you've named your instance (e.g. `SQLEXPRESS`), you can often reference it as `localhost\SQLEXPRESS` — though URI encoding may require you to write this as `localhost%5CSQLEXPRESS` in a connection string. When in doubt, use the IP address `127.0.0.1` with the explicit port instead.
+</Tip>

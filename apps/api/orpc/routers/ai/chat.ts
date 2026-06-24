@@ -6,14 +6,14 @@ import { tools } from '@conar/ai/tools'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
-import { createRetryable } from 'ai-retry'
+import { createRetryableModel } from 'ai-retry/language-model'
 import { type } from 'arktype'
 import { v7 } from 'uuid'
 import { withPosthog } from '~/lib/posthog'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
-const model = createRetryable({
-  model: anthropic('claude-opus-4-6'),
+const model = createRetryableModel({
+  model: anthropic('claude-opus-4-8'),
   retries: [
     openai('gpt-5.3-codex'),
     google('gemini-pro-latest'),
@@ -114,6 +114,7 @@ export const chat = orpc
         },
         ...(await convertToModelMessages(input.messages)),
       ],
+      allowSystemInMessages: true,
       stopWhen: stepCountIs(Number.POSITIVE_INFINITY),
       abortSignal: signal,
       model: withPosthog(model, {

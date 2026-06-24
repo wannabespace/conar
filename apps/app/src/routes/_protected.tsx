@@ -1,62 +1,67 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { useSubscription } from 'seitu/react'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
-import { chatsCollection, chatsMessagesCollection } from '~/entities/chat/sync'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
-import { queriesCollection } from '~/entities/query/sync'
+import { cleanCollections, getCollections } from '~/entities/connection/collections'
+import { EventsProvider } from '~/events'
+import { enterAppAnimation } from '~/global-hooks'
+import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
 import { authClient } from '~/lib/auth'
-import { appStore } from '~/store'
+import { subscriptionQueryClient } from '~/main'
 import { ActionsCenter } from './-components/actions-center'
 
 export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
+  beforeLoad: async () => {
+    const c = getCollections()
+
+    await Promise.all([
+      c.connectionStringsCollection.stateWhenReady(),
+      c.connectionsCollection.stateWhenReady(),
+      c.connectionsResourcesCollection.stateWhenReady(),
+    ])
+
+    return { collections: c }
+  },
 })
-
-const allCollections = [
-  connectionsCollection,
-  connectionsResourcesCollection,
-  chatsCollection,
-  chatsMessagesCollection,
-  queriesCollection,
-]
-
-function preloadCollections() {
-  for (const collection of allCollections) {
-    collection.preload()
-  }
-}
-
-function cleanupCollections() {
-  for (const collection of allCollections) {
-    collection.cleanup()
-  }
-}
 
 // eslint-disable-next-line react-refresh/only-export-components
 function ProtectedLayout() {
-  const { data } = authClient.useSession()
-  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
+  const { isPending } = authClient.useSession()
 
-  const hasUser = !!data?.user
+  useConnectionStringsSync()
 
   useEffect(() => {
-    if (!hasUser || !isOnline) {
+    return () => {
+      cleanCollections()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isPending) {
       return
     }
 
-    preloadCollections()
+    enterAppAnimation()
+  }, [isPending])
+
+  useEffect(() => {
+    const handleFocus = () => {
+      subscriptionQueryClient.refetchQueries()
+    }
+
+    // Native trigger don't work for some reason, so we need to use this workaround
+    window.addEventListener('focus', handleFocus)
 
     return () => {
-      cleanupCollections()
+      window.removeEventListener('focus', handleFocus)
     }
-  }, [hasUser, isOnline])
+  }, [])
 
   return (
-    <>
+    <EventsProvider>
       <SubscriptionModal />
       <ActionsCenter />
       <Outlet />
-    </>
+    </EventsProvider>
   )
 }

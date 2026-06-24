@@ -5,13 +5,12 @@ import type { InferRouterInputs, InferRouterOutputs } from '@orpc/server'
 import { isConnectionError } from '@conar/shared/utils/connections'
 import { createORPCClient, onError, ORPCError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
+import { ClientRetryPlugin } from '@orpc/client/plugins'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import { memoize } from 'memoza'
 import { handleError } from '../utils/error'
 import { apiUrl, proxyUrl } from '../utils/utils'
 import { bearerToken } from './auth'
-
-const clientId = crypto.randomUUID()
 
 export const orpc = createTanstackQueryUtils(createORPCClient(new RPCLink({
   url: `${apiUrl}/rpc`,
@@ -19,8 +18,7 @@ export const orpc = createTanstackQueryUtils(createORPCClient(new RPCLink({
     const token = bearerToken.get()
 
     return {
-      'Authorization': token ? `Bearer ${token}` : undefined,
-      'x-client-id': clientId,
+      Authorization: token ? `Bearer ${token}` : undefined,
       ...(window.electron
         ? {
             'x-desktop': 'true',
@@ -37,6 +35,15 @@ export const orpc = createTanstackQueryUtils(createORPCClient(new RPCLink({
   },
   interceptors: [
     onError(handleError),
+  ],
+  plugins: [
+    new ClientRetryPlugin({
+      default: {
+        retry: 3,
+        retryDelay: 2000,
+        shouldRetry: ({ error }) => error instanceof TypeError && !navigator.onLine,
+      },
+    }),
   ],
 })) satisfies apiOrpc.ORPCRouter)
 
@@ -75,6 +82,9 @@ export const orpcProxy = createORPCClient(new RPCLink({
   },
 })) satisfies proxyOrpc.ORPCRouter
 
+export type ORPCInputs = InferRouterInputs<typeof apiOrpc.router>
+export type ORPCOutputs = InferRouterOutputs<typeof apiOrpc.router>
+
 export const PROXY_ERROR_MESSAGE = 'We can\'t connect to the proxy, please check your connection and try again.'
 
 export const createProxyClient = memoize((url: string): queryProxy.ORPCRouter => {
@@ -112,6 +122,3 @@ export const createProxyClient = memoize((url: string): queryProxy.ORPCRouter =>
     },
   }))
 })
-
-export type ORPCInputs = InferRouterInputs<typeof apiOrpc.router>
-export type ORPCOutputs = InferRouterOutputs<typeof apiOrpc.router>

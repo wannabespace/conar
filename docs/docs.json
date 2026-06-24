@@ -1,0 +1,96 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "almond",
+  "name": "Tamery",
+  "colors": {
+    "primary": "#497def",
+    "light": "#a4c4f8",
+    "dark": "#040404"
+  },
+  "favicon": "https://media.brand.dev/a2283c24-331f-4f45-8ab4-94ad4ab78ecb.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "App",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Connections",
+            "pages": [
+              "connections/overview",
+              "connections/postgresql",
+              "connections/mysql",
+              "connections/mssql",
+              "connections/clickhouse",
+              "connections/security"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/table-browser",
+              "features/sql-editor",
+              "features/ai-assistant",
+              "features/schema-visualizer",
+              "features/definitions"
+            ]
+          },
+          {
+            "group": "Account & Billing",
+            "pages": [
+              "account/plans",
+              "account/settings"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "CLI",
+        "groups": [
+          {
+            "group": "CLI",
+            "pages": [
+              "cli/overview",
+              "cli/commands"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "MCP",
+        "pages": [
+          "mcp/overview"
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Website",
+        "href": "https://tamery.app"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Download",
+      "href": "https://conar.app/download"
+    }
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/tamery_app",
+      "github": "https://github.com/wannabespace/tamery"
+    }
+  },
+  "fonts": {
+    "family": "Geist"
+  }
+}

@@ -77,12 +77,6 @@ export function TipTap({
     editor,
   }), [editor])
 
-  useEffect(() => {
-    if (editor && value !== editor.getText()) {
-      editor.commands.setContent(value)
-    }
-  }, [value, editor])
-
   const addImage = (e: React.ClipboardEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement>, data: DataTransfer) => {
     if (!onImageAdd)
       return

@@ -1,6 +1,8 @@
 import type { Connection } from '../sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { v7 } from 'uuid'
+import { getCollections } from '../collections'
 import { connectionToQueryParams, createQuery } from '../query'
 
 export const connectionResourcesQuery = createQuery({
@@ -43,7 +45,27 @@ export const connectionResourcesQuery = createQuery({
 export function connectionResourcesQueryOptions(connection: Connection) {
   return queryOptions({
     queryKey: ['connection', connection.id, 'resources'],
-    queryFn: () => connectionResourcesQuery.run(connectionToQueryParams(connection)),
+    queryFn: async () => {
+      const { connectionsResourcesCollection } = getCollections()
+      const resources = await connectionResourcesQuery.run(await connectionToQueryParams(connection))
+
+      const stored = await connectionsResourcesCollection.toArrayWhenReady()
+
+      for (const name of resources) {
+        const exists = stored.some(r => r.connectionId === connection.id && r.name === name)
+        if (!exists) {
+          connectionsResourcesCollection.insert({
+            id: v7(),
+            connectionId: connection.id,
+            name,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+        }
+      }
+
+      return resources
+    },
     throwOnError: false,
   })
 }

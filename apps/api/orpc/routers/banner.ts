@@ -33,7 +33,7 @@ export const banner = orpc
       })
     }
 
-    if (env.MIN_DESKTOP_VERSION && context.appVersion?.minor && context.appVersion.minor < env.MIN_DESKTOP_VERSION) {
+    if (context.isAppOutdated) {
       items.push({
         text: `You are using an outdated version of the desktop app. Please download the latest version from conar.app/download`,
         type: 'warning',
@@ -41,7 +41,7 @@ export const banner = orpc
       })
     }
 
-    if (context.appVersion?.minor && context.appVersion.minor === 25 && context.os === 'linux') {
+    if (context.parsedAppVersion?.minor && context.parsedAppVersion.minor === 25 && context.os === 'linux') {
       items.push({
         text: 'Linux updates broken in 0.25.0 due to provider change. Please download the latest version from conar.app/download',
         type: 'warning',
@@ -49,7 +49,7 @@ export const banner = orpc
       })
     }
 
-    if (context.appVersion?.minor && context.appVersion.minor === 28) {
+    if (context.parsedAppVersion?.minor && context.parsedAppVersion.minor >= 28) {
       items.push({
         text: 'Heads up! Conar is becoming Tamery. Our next big update will have the new name - thanks for being part of the journey!',
         type: 'info',

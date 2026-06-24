@@ -214,6 +214,6 @@ export const resourceEnumsQuery = createQuery({
 export function resourceEnumsQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'enums'],
-    queryFn: () => resourceEnumsQuery.run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () => resourceEnumsQuery.run(await connectionResourceToQueryParams(connectionResource)),
   })
 }

@@ -68,7 +68,7 @@ export function Header({ table, schema }: { table: string, schema: string }) {
           filters: exportFilters || filters,
           filtersConcatOperator: exportFilters ? 'OR' : 'AND',
         },
-      }).run(connectionResourceToQueryParams(connectionResource))
+      }).run(await connectionResourceToQueryParams(connectionResource))
 
       data.push(...batch)
 
@@ -92,7 +92,7 @@ export function Header({ table, schema }: { table: string, schema: string }) {
       filters: exportFilters || filters,
       filtersConcatOperator: exportFilters ? 'OR' : 'AND',
     },
-  }).run(connectionResourceToQueryParams(connectionResource))
+  }).run(await connectionResourceToQueryParams(connectionResource))
 
   const getData = async ({ limit, filters }: { limit?: number, filters?: ActiveFilter[] }) => {
     return limit ? getLimitedData({ limit, filters }) : getAllData({ filters })

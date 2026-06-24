@@ -1,6 +1,7 @@
 import type { ComponentRef } from 'react'
 import type { Connection } from '~/entities/connection/sync'
 import { CONNECTION_RESOURCE_ROOT_LABEL, CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
+import { SyncType } from '@conar/shared/enums/sync-type'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Badge } from '@conar/ui/components/badge'
@@ -12,36 +13,35 @@ import { FrameMotion } from '@conar/ui/components/frame.motion'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { Separator } from '@conar/ui/components/separator'
+import { Skeleton } from '@conar/ui/components/skeleton'
 import { Spinner } from '@conar/ui/components/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import { RiAlertLine, RiArrowDownSLine, RiDeleteBinLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiRefreshLine, RiSearchLine, RiSortAsc, RiSortDesc } from '@remixicon/react'
+import { RiAlertLine, RiArrowDownSLine, RiDeleteBinLine, RiLockUnlockLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiRefreshLine, RiSearchLine, RiSortAsc, RiSortDesc } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { AnimatePresence } from 'motion/react'
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
-import { v7 } from 'uuid'
+import { toast } from 'sonner'
+import { useCollections } from '~/entities/connection/collections'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
-import { useLocalProxyAvailable } from '~/entities/connection/proxy'
 import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
 import { getConnectionStore } from '~/entities/connection/store'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
-import { getConnectionStringToShow, lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
-import { fetchingConfig } from '~/entities/connection/utils/fetching'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
+import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
 function ConnectionIconWithVersion({ connection }: { connection: Connection }) {
-  const isLocalProxyAvailable = useLocalProxyAvailable()
-  const { canSend } = fetchingConfig(connection, { isLocalProxyAvailable })
+  const { canSend } = useFetchingConfig(connection)
   const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery({
     ...connectionVersionQueryOptions(connection),
     enabled: canSend,
@@ -199,16 +199,21 @@ function ConnectionCard({
   connection: Connection
   onRemove: VoidFunction
 }) {
-  const { data: storedResources } = useLiveQuery(q => q
-    .from({ connectionsResources: connectionsResourcesCollection })
-    .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id))
-    .orderBy(({ connectionsResources }) => connectionsResources.name, 'asc'), [connection.id])
-  const storedResourcesNames = storedResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
-  const isLocalProxyAvailable = useLocalProxyAvailable()
-  const { type, canSend } = fetchingConfig(connection, { isLocalProxyAvailable })
+  const { connectionStringsCollection, connectionsResourcesCollection } = useCollections()
+  const { data: connectionString } = useLiveQuery(q => q
+    .from({ cs: connectionStringsCollection })
+    .where(({ cs }) => eq(cs.connectionId, connection.id))
+    .findOne(), [connectionStringsCollection, connection.id])
+  const { data: connectionResources } = useLiveQuery(q => q
+    .from({ cr: connectionsResourcesCollection })
+    .where(({ cr }) => eq(cr.connectionId, connection.id))
+    .orderBy(({ cr }) => cr.name, 'asc'), [connectionsResourcesCollection, connection.id])
+
+  const connectionResourcesNames = connectionResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
+  const { type, canSend, reason } = useFetchingConfig(connection)
 
   const {
-    data: resources = storedResourcesNames,
+    data: resources = connectionResourcesNames,
     isPending,
     isFetching,
     error,
@@ -221,47 +226,29 @@ function ConnectionCard({
   const [isOpen, setIsOpen] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
 
-  const connectionString = new SafeURL(connection.connectionString)
+  const defaultResourceName = connectionString?.defaultResourceName ?? null
 
   const connectionStore = getConnectionStore(connection.id)
   const { selectedResourceName, pinnedResourcesNames } = useSubscription(connectionStore, {
     selector: state => ({
-      selectedResourceName: (state.lastOpenedResourceName || connectionString.pathname.slice(1) || resources[0] || null) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
+      selectedResourceName: (state.lastOpenedResourceName || defaultResourceName || resources[0] || null) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
       pinnedResourcesNames: state.pinnedResourcesNames,
     }),
   })
   const resolvedSelectedResourceName = selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? null : selectedResourceName
-  const selectedResource = storedResources.find(r => r.name === resolvedSelectedResourceName)
-
-  const { isPending: isWaitForSyncPending } = useQuery({
-    queryKey: ['connections-resources-wait-for-sync', connection.id],
-    queryFn: async () => {
-      await connectionsResourcesCollection.stateWhenReady()
-      return null
-    },
-  })
-
-  useEffect(() => {
-    if (canSend && !selectedResource && !isFetching && !error && !isWaitForSyncPending) {
-      connectionsResourcesCollection.insert({
-        id: v7(),
-        connectionId: connection.id,
-        name: resolvedSelectedResourceName,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-    }
-  }, [canSend, resolvedSelectedResourceName, selectedResource, connection.id, isFetching, error, isWaitForSyncPending])
+  const selectedResource = connectionResources.find(r => r.name === resolvedSelectedResourceName)
+  const canOpenResource = canSend || (type === 'waiting-for-password' && !!window.electron)
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
 
-    const connectionStringToCopy = new SafeURL(connectionString)
+    const connectionString = await connectionStringsCollection.utils.decrypt(connection.id)
 
+    const connectionStringToCopy = new SafeURL(connectionString)
     connectionStringToCopy.pathname = selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL || selectedResourceName === null ? '' : selectedResourceName
 
     copy(connectionStringToCopy.toString())
@@ -271,6 +258,27 @@ function ConnectionCard({
       setIsCopied(false)
       timeoutRef.current = null
     }, 3000)
+  }
+
+  const handleClearPassword = async () => {
+    const record = connectionStringsCollection.get(connection.id)
+    if (!record)
+      return
+
+    const url = new SafeURL(await connectionStringsCollection.utils.decrypt(connection.id))
+    url.password = ''
+
+    const connectionStringRecord = await connectionStringsCollection.utils.prepare({
+      connectionId: connection.id,
+      connectionString: url.toString(),
+      updatedAt: record.updatedAt,
+    })
+
+    connectionStringsCollection.update(connection.id, (draft) => {
+      Object.assign(draft, connectionStringRecord)
+    })
+
+    toast.success('Password cleared from this device')
   }
 
   const isResourcesShown = resources.length > 1 && (!canSend || !isPending)
@@ -291,16 +299,14 @@ function ConnectionCard({
           `has-[:where([data-resource-link]:hover)]:bg-accent`,
         )}
       >
-        {selectedResource && canSend
-          ? (
-              <ConnectionResourceLink
-                resourceId={selectedResource.id}
-                className="absolute inset-0 rounded-lg"
-                preload={false}
-                data-resource-link
-              />
-            )
-          : null}
+        {selectedResource && canOpenResource && (
+          <ConnectionResourceLink
+            resourceId={selectedResource.id}
+            className="absolute inset-0 cursor-default rounded-lg"
+            preload={false}
+            data-resource-link
+          />
+        )}
         <div className="
           pointer-events-none relative z-10 flex items-center justify-between
           gap-4 px-6 py-4
@@ -334,9 +340,7 @@ function ConnectionCard({
                       />
                     </TooltipTrigger>
                     <TooltipContent className="pointer-events-auto max-w-xs">
-                      {type === 'waiting-for-password'
-                        ? 'Filled password is required to query this connection.'
-                        : 'You cannot reach this connection from the web app. Run `conar proxy` or open this connection in the desktop app.'}
+                      {reason}
                     </TooltipContent>
                   </Tooltip>
                 )}
@@ -369,9 +373,9 @@ function ConnectionCard({
                     "
                     onClick={() => handleCopy()}
                   >
-                    <span className="truncate">
-                      {getConnectionStringToShow(connection.connectionString)}
-                    </span>
+                    {connectionString?.displayUrl
+                      ? <span className="truncate">{connectionString?.displayUrl}</span>
+                      : <Skeleton className="h-3 w-40" />}
                   </TooltipTrigger>
                   <TooltipContent className="flex items-center gap-1" side="bottom">
                     {isCopied ? 'Connection string copied!' : 'Copy connection string'}
@@ -410,7 +414,7 @@ function ConnectionCard({
             >
               <RiMoreLine className="size-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-auto">
               <DropdownMenuItem
                 disabled={!canSend}
                 onClick={() => refetch()}
@@ -418,6 +422,16 @@ function ConnectionCard({
                 <RiRefreshLine className="size-4" />
                 Refresh
               </DropdownMenuItem>
+              {connection.syncType === SyncType.CloudWithoutPassword && (
+                <DropdownMenuItem
+                  className="whitespace-nowrap"
+                  disabled={!connectionString?.isPasswordPopulated}
+                  onClick={() => handleClearPassword()}
+                >
+                  <RiLockUnlockLine className="size-4 shrink-0" />
+                  Clear password
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem
                 variant="destructive"
                 onClick={() => onRemove()}
@@ -468,30 +482,31 @@ const sortValue = createWebStorageValue({
 })
 
 export function ConnectionsList() {
+  const { connectionsCollection } = useCollections()
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
   const sort = useSubscription(sortValue)
   const { data } = useLiveQuery((q) => {
-    let query = q.from({ connections: connectionsCollection })
+    let query = q.from({ c: connectionsCollection })
 
     if (sort === 'date-desc') {
-      query = query.orderBy(({ connections }) => connections.createdAt, 'desc')
+      query = query.orderBy(({ c }) => c.createdAt, 'desc')
     }
     else if (sort === 'date-asc') {
-      query = query.orderBy(({ connections }) => connections.createdAt, 'asc')
+      query = query.orderBy(({ c }) => c.createdAt, 'asc')
     }
     else if (sort === 'name-asc') {
-      query = query.orderBy(({ connections }) => connections.name, 'asc')
+      query = query.orderBy(({ c }) => c.name, 'asc')
     }
     else {
-      query = query.orderBy(({ connections }) => connections.name, 'desc')
+      query = query.orderBy(({ c }) => c.name, 'desc')
     }
 
     if (selectedLabel) {
-      query = query.where(({ connections }) => eq(connections.label, selectedLabel))
+      query = query.where(({ c }) => eq(c.label, selectedLabel))
     }
 
     return query
-  }, [selectedLabel, sort])
+  }, [connectionsCollection, selectedLabel, sort])
 
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)

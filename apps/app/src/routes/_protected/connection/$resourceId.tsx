@@ -3,20 +3,23 @@ import type { FileRoutesById } from '~/routeTree.gen'
 import { title } from '@conar/shared/utils/title'
 import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { cn } from '@conar/ui/lib/utils'
+import { eq, useLiveQuery } from '@tanstack/react-db'
 import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
+import { getCollections, useCollections } from '~/entities/connection/collections'
 import { QueryLogger } from '~/entities/connection/components'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
-import { fetchingConfig, lastOpenedResourcesStorageValue, prefetchConnectionResourceCore } from '~/entities/connection/utils'
+import { lastOpenedResourcesStorageValue, prefetchConnectionResourceCore } from '~/entities/connection/utils'
+import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { ConnectionSidebar } from './-components/connection-sidebar'
 import { PasswordForm } from './-components/password-form'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId')({
-  component: DatabasePage,
+  component: ResourcePage,
   beforeLoad: async ({ params }) => {
+    const { connectionsCollection, connectionsResourcesCollection } = getCollections()
     const connectionResource = connectionsResourcesCollection.get(params.resourceId)
 
     if (!connectionResource) {
@@ -48,13 +51,19 @@ function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-function DatabasePage() {
+function ResourcePage() {
   const { connection, connectionResource } = Route.useRouteContext()
+  const { connectionStringsCollection } = useCollections()
   const currentPageId = useMatches({
     select: matches => getDatabasePageId(matches.map(match => match.routeId)),
   })
   const store = getConnectionResourceStore(connectionResource.id)
   const loggerOpened = useSubscription(store, { selector: state => state.loggerOpened })
+  const { data: connectionString } = useLiveQuery(q => q
+    .from({ cs: connectionStringsCollection })
+    .where(({ cs }) => eq(cs.connectionId, connection.id))
+    .findOne(), [connectionStringsCollection, connection.id])
+  const isPasswordPopulated = connectionString?.isPasswordPopulated
 
   useEffect(() => {
     if (currentPageId) {
@@ -76,9 +85,9 @@ function DatabasePage() {
     storage: localStorage,
   })
 
-  const { type } = fetchingConfig(connection)
+  const { type } = useFetchingConfig(connection)
 
-  if (type === 'waiting-for-password') {
+  if (type === 'waiting-for-password' && !isPasswordPopulated) {
     return <PasswordForm connection={connection} connectionResource={connectionResource} />
   }
 

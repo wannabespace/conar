@@ -152,7 +152,7 @@ export const resourceConstraintsQuery = createQuery({
 
 export function resourceConstraintsQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
   return queryOptions({
-    queryFn: () => resourceConstraintsQuery.run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () => resourceConstraintsQuery.run(await connectionResourceToQueryParams(connectionResource)),
     queryKey: ['connection-resource', connectionResource.id, 'constraints'],
   })
 }

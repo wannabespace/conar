@@ -9,8 +9,8 @@ import { PORTS } from '@conar/shared/ports'
 import { Kysely } from 'kysely'
 import { memoize } from 'memoza'
 import { createProxyClient, orpcProxy } from '~/lib/orpc'
+import { getCollections } from '../collections'
 import { getConnectionStore } from '../store'
-import { connectionsCollection, connectionsResourcesCollection } from '../sync'
 import { fetchingConfig } from '../utils'
 import { clickhouseColdDialect, clickhouseDialect } from './clickhouse'
 import { mssqlColdDialect, mssqlDialect } from './mssql'
@@ -49,6 +49,7 @@ interface TxQueryPayload extends QueryPayload {
 }
 
 export function createDialectProvider(type: ConnectionType, options: DialectOptions) {
+  const { connectionsCollection, connectionsResourcesCollection } = getCollections()
   const resource = options.resourceId ? connectionsResourcesCollection.get(options.resourceId) : null
   const connectionId = options.connectionId || resource?.connectionId
   const connection = connectionId ? connectionsCollection.get(connectionId) : null

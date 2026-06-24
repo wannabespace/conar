@@ -1,6 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { Chat, ChatMutationMetadata } from '~/entities/chat/sync'
-import { convertToAppUIMessage } from '@conar/ai/tools/helpers'
+import type { Chat } from '~/entities/chat/sync'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
@@ -16,16 +15,12 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAddLine, RiDeleteBin7Line, RiHistoryLine } from '@remixicon/react'
-import { eq, useLiveQuery } from '@tanstack/react-db'
+import { useLiveQuery } from '@tanstack/react-db'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { getMonth, getWeek, getYear, isToday, isYesterday } from 'date-fns'
-import { useEffect, useEffectEvent, useRef } from 'react'
-import {
-  chatsCollection,
-  chatsMessagesCollection,
-} from '~/entities/chat/sync'
+import { useRef } from 'react'
+import { useCollections } from '~/entities/connection/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
 import { RemoveChatDialog } from './remove-chat-dialog'
 
@@ -83,39 +78,9 @@ export function ChatHeader({ chatId }: { chatId: string }) {
   const navigate = useNavigate()
   const store = getConnectionResourceStore(resourceId)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveChatDialog>>(null)
-  const { data: allChats } = useLiveQuery(q => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'))
+  const { chatsCollection } = useCollections()
+  const { data: allChats } = useLiveQuery(q => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'), [chatsCollection])
   const chat = allChats.find(chat => chat.id === chatId)
-  const { data: messages } = useLiveQuery(q => q
-    .from({ chatsMessages: chatsMessagesCollection })
-    .where(({ chatsMessages }) => eq(chatsMessages.chatId, chatId)))
-  const shouldGenerateTitle = !!chat && chat.title === null && messages.length > 0
-
-  const generateTitleEvent = useEffectEvent(async () => {
-    if (!chat) {
-      return
-    }
-
-    const title = await orpc.ai.generateTitle.call({
-      chatId: chat.id,
-      messages: messages.map(convertToAppUIMessage),
-    })
-
-    chatsCollection.update(chat.id, {
-      metadata: {
-        cloudSync: false,
-      } satisfies ChatMutationMetadata,
-    }, (draft) => {
-      draft.title = title
-    })
-  })
-
-  useEffect(() => {
-    if (!shouldGenerateTitle) {
-      return
-    }
-
-    generateTitleEvent()
-  }, [shouldGenerateTitle])
 
   const grouped = groupChats(allChats)
 

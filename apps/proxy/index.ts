@@ -1,7 +1,6 @@
 /* eslint-disable perfectionist/sort-imports */
 import '@conar/shared/arktype-config'
 import process from 'node:process'
-import { PORTS } from '@conar/shared/constants'
 import { ORPCError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { Hono } from 'hono'
@@ -51,11 +50,9 @@ const app = new Hono<{
   .use(cors({
     origin(origin) {
       const allowedOrigins = [
-        env.MAIN_URL,
-        ...(nodeEnv === 'development' ? [`http://localhost:${PORTS.DEV.DESKTOP}`, `http://localhost:${PORTS.DEV.APP}`] : []),
-        ...(nodeEnv === 'test' ? [`http://localhost:${PORTS.TEST.DESKTOP}`, `http://localhost:${PORTS.TEST.APP}`] : []),
+        'https://conar.app',
       ]
-      return origin.endsWith(`.${new URL(env.MAIN_URL).host}`) || allowedOrigins.includes(origin) ? origin : null
+      return origin.endsWith('.conar.app') || allowedOrigins.includes(origin) ? origin : null
     },
     credentials: true,
   }))
@@ -115,7 +112,5 @@ const app = new Hono<{
 
 export default {
   fetch: app.fetch,
-  port: process.env.PORT
-    ? Number(process.env.PORT)
-    : nodeEnv === 'test' ? PORTS.TEST.PROXY : PORTS.DEV.PROXY,
+  port: Number(process.env.PORT || 3004),
 }

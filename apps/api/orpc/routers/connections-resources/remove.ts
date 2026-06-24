@@ -7,7 +7,7 @@ import { authMiddleware, orpc } from '~/orpc'
 import { publisher } from './events'
 
 const input = type({
-  id: 'string.uuid',
+  id: 'string.uuid.v7',
 })
 
 export const remove = orpc
@@ -15,7 +15,7 @@ export const remove = orpc
   .input(type.or(input, input.array()).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
     if (input.length === 0) {
-      return
+      throw new ORPCError('BAD_REQUEST', { message: 'No connection resources to remove' })
     }
 
     const resources = await db.query.connectionsResources.findMany({
@@ -43,10 +43,9 @@ export const remove = orpc
       .where(inArray(connectionsResources.id, input.map(item => item.id)))
 
     for (const item of input) {
-      publisher.publish('event', {
+      publisher.publish(context.user.id, {
         type: 'delete',
         key: item.id,
-        clientId: context.clientId,
       })
     }
   })

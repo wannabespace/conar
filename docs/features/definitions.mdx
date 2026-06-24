@@ -1,0 +1,59 @@
+---
+title: "Definitions: Browse Enums, Indexes, Functions & More"
+sidebarTitle: "Definitions"
+description: "Browse enums, indexes, constraints, functions, triggers, and security policies in Conar's Definitions view. Adapts to your database engine automatically."
+---
+
+The Definitions view is your central reference for schema objects that live beyond the table grid — the enums, indexes, constraints, functions, triggers, and security policies that shape how your database behaves. Instead of digging through raw `information_schema` queries or juggling a separate database client, Conar surfaces all of these objects in a clean, browsable interface organized by type and schema. The Definitions view is accessible from any active connection and adapts automatically to show only the object types supported by your database engine.
+
+## Available Definition Types
+
+Conar organizes schema objects into the following categories. Which categories appear in your sidebar depends on your database type — not every engine supports every object type, so the sidebar adapts automatically to show only what's available for your connection.
+
+<CardGroup cols={2}>
+  <Card title="Enums / Sets" icon="list-ul" href="/features/definitions">
+    Custom enumerated types defined in your schema. PostgreSQL surfaces these as `ENUM` types; MySQL surfaces them as column-level `SET` and `ENUM` definitions. Each entry shows the type name and all allowed values.
+  </Card>
+  <Card title="Indexes" icon="bolt" href="/features/definitions">
+    All indexes defined across your tables, including the indexed columns, index type (B-tree, Hash, GiST, etc.), and whether the index enforces uniqueness. Use this view to audit index coverage and spot redundant or missing indexes.
+  </Card>
+  <Card title="Constraints" icon="link" href="/features/definitions">
+    Foreign-key constraints and other table-level constraints such as `CHECK` and `UNIQUE`. Each entry shows the constraint name, the referencing table and column, and the referenced table and column for foreign keys.
+  </Card>
+  <Card title="Policies" icon="shield-halved" href="/features/definitions">
+    Security policies defined on your tables. For PostgreSQL, these are row-level security (RLS) policies that control which rows individual roles can read or write. MySQL surfaces table-level privileges, Microsoft SQL Server shows security predicates, and ClickHouse shows row policies. The view shows the policy name, target table, command type, and the policy expression.
+  </Card>
+  <Card title="Functions" icon="code" href="/features/definitions">
+    Stored functions and procedures defined in your database (PostgreSQL, MySQL, and Microsoft SQL Server). Each entry shows the function signature, return type, language, and the full function body so you can review logic without opening a separate SQL client.
+  </Card>
+  <Card title="Triggers" icon="bolt-lightning" href="/features/definitions">
+    Database triggers attached to your tables (PostgreSQL, MySQL, and Microsoft SQL Server). The view lists the trigger name, the table it watches, the event that fires it (`INSERT`, `UPDATE`, `DELETE`), the timing (`BEFORE` or `AFTER`), and the function it calls.
+  </Card>
+</CardGroup>
+
+<Note>
+  **Functions** and **Triggers** are available for PostgreSQL, MySQL, and Microsoft SQL Server connections — they are not supported for ClickHouse. **Policies** are available for all supported database engines, but represent different concepts depending on the engine: row-level security policies in PostgreSQL, table privileges in MySQL, security predicates in SQL Server, and row policies in ClickHouse.
+</Note>
+
+## Navigating Definitions
+
+The Definitions view uses a two-column layout: a sidebar on the left for navigation and a scrollable content area on the right for the selected object list.
+
+<Steps>
+  <Step title="Open the Definitions view">
+    From any active connection, click the **Definitions** tab in the connection navigation bar. The sidebar will populate with the definition categories available for your database type.
+  </Step>
+  <Step title="Choose a category">
+    Click a category in the left sidebar — for example, **Indexes** or **Functions** — to load the full list of that object type in the right panel. The list shows all objects across the currently selected schema.
+  </Step>
+  <Step title="Switch schemas">
+    Use the **Schema** dropdown at the top of the sidebar to switch between schemas in your database. The content panel refreshes to show objects in the newly selected schema.
+  </Step>
+  <Step title="Inspect an object">
+    Click any item in the list to expand its details — column lists for indexes, expression bodies for functions, policy rules for RLS policies, and so on. Details are shown inline so you can scan multiple objects without navigating away.
+  </Step>
+</Steps>
+
+<Tip>
+  Use the Definitions view as a quick audit tool before deploying schema changes. Reviewing your indexes and constraints here can surface coverage gaps or conflicting policies that are easy to miss when looking at individual tables.
+</Tip>

@@ -6,28 +6,32 @@ import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Result } from 'better-result'
 import { createStore } from 'seitu'
 import { toast } from 'sonner'
+import { getCollections } from './collections'
 import { dialects } from './dialects'
 import { logQuery } from './log'
-import { connectionsCollection } from './sync'
-import { getConnectionStringToShow } from './utils'
+import { getConnectionStringToShow } from './utils/helpers'
 
-export function connectionToQueryParams(connection: Connection): QueryParams {
-  const foundConnection = connectionsCollection.get(connection.id)!
-
+export async function connectionToQueryParams(connection: Connection): Promise<QueryParams> {
+  const { connectionStringsCollection } = getCollections()
   return {
-    connectionString: foundConnection.connectionString,
+    connectionString: await connectionStringsCollection.utils.decrypt(connection.id),
     type: connection.type,
-    connectionId: foundConnection.id,
+    connectionId: connection.id,
   }
 }
 
-export function connectionResourceToQueryParams(connectionResource: ConnectionResource): QueryParams {
-  const connection = connectionsCollection.get(connectionResource.connectionId)!
-  const newConnectionString = new SafeURL(connection.connectionString)
-  newConnectionString.pathname = connectionResource.name || ''
+export async function connectionResourceToQueryParams(connectionResource: ConnectionResource): Promise<QueryParams> {
+  const { connectionsCollection, connectionStringsCollection } = getCollections()
+  const connection = connectionsCollection.get(connectionResource.connectionId)
+
+  if (!connection)
+    throw new Error(`Connection not found for connection resource "${connectionResource.id}"`)
+
+  const connectionString = new SafeURL(await connectionStringsCollection.utils.decrypt(connection.id))
+  connectionString.pathname = connectionResource.name || ''
 
   return {
-    connectionString: newConnectionString.toString(),
+    connectionString: connectionString.toString(),
     type: connection.type,
     resourceId: connectionResource.id,
     log: ({ promise, query, values }) => logQuery({ resourceId: connectionResource.id, promise, query, values }),
@@ -153,7 +157,7 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
     }
 
     if (canShowToast() && isConnectionError(result.error)) {
-      toast.error('Could not connect to the database. Please check your network or database server and try again.', {
+      toast.error('Could not connect to the connection. Please check your network or connection server and try again.', {
         id: `reconnection-error-${connectionStringToShow}`,
         description: connectionStringToShow,
       })

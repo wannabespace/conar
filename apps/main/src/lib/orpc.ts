@@ -1,5 +1,4 @@
-import type { ORPCRouter, router } from '@conar/api/orpc/routers'
-import type { InferRouterInputs, InferRouterOutputs } from '@orpc/server'
+import type { ORPCRouter } from '@conar/api/orpc/routers'
 import { createORPCClient } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
@@ -27,7 +26,4 @@ const getClientLink = createIsomorphicFn()
     },
   }))
 
-export const orpc = createTanstackQueryUtils(createORPCClient(getClientLink()) satisfies ORPCRouter)
-
-export type RouterOutputs = InferRouterOutputs<typeof router>
-export type RouterInputs = InferRouterInputs<typeof router>
+export const orpc = createTanstackQueryUtils(createORPCClient<ORPCRouter>(getClientLink()))

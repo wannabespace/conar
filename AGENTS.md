@@ -1,0 +1,48 @@
+# Agent instructions
+
+Guidance for AI coding agents working in this repository.
+
+| Tool | How this file is loaded |
+|------|-------------------------|
+| **Cursor** | Auto-discovered from repo root; also referenced by `.cursor/rules/update-docs.mdc` (`alwaysApply: true`) |
+| **Claude Code** | Add to `CLAUDE.md` or point Claude at this file |
+| **Codex / others** | Auto-discovered as `AGENTS.md`; or paste into your tool's project-instructions config |
+
+Edit this file when changing the rules. Do not duplicate the content elsewhere—update here only.
+
+## Update documentation when relevant
+
+When you change behavior users rely on, update documentation in the same task—do not leave docs stale.
+
+### When to update
+
+- New or changed **features**, **UI flows**, **CLI commands**, or **MCP** behavior
+- **Connection** setup, drivers, security, or connection-string handling
+- **Public APIs**, auth, billing, plans, or account settings
+- Renamed or removed user-visible concepts (update terminology everywhere)
+- New MDX pages: register them in `docs/docs.json` navigation
+
+### When to skip
+
+- Internal refactors with no user-visible change
+- Tests, tooling, CI, or dev-only scripts (unless they affect how users install or run the app)
+- Typo fixes in code comments or private types
+
+### Where to edit
+
+| Area | Location |
+|------|----------|
+| Product docs (Mintlify) | `docs/**/*.mdx`, nav in `docs/docs.json` |
+| Doc authoring rules | `docs/AGENTS.md` |
+| Repo overview / setup | Root `README.md` when install or contribution steps change |
+
+Follow `docs/AGENTS.md` for Mintlify style (MDX frontmatter, active voice, sentence-case headings).
+
+### How to apply
+
+1. After implementing a change, search `docs/` (and `README.md` if needed) for pages that describe the affected area.
+2. Update existing pages or add a new page; wire new pages into `docs/docs.json`.
+3. Keep examples, screenshots references, and step lists accurate—remove obsolete steps.
+4. If unsure whether something is user-facing, prefer a small doc update over silence.
+
+Do not create or expand docs for changes the user explicitly scoped as code-only, unless they ask for documentation.

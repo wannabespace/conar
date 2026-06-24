@@ -67,7 +67,7 @@ export const resourceRowsQuery = memoize(({
 
         let query = db
           .withSchema(schema)
-          .$extendTables<{ [table]: Record<string, unknown> }>()
+          .withTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .$if(select !== undefined, qb => qb.select(select!))
           .$if(select === undefined, qb => qb.selectAll())
@@ -88,7 +88,7 @@ export const resourceRowsQuery = memoize(({
 
         let query = db
           .withSchema(schema)
-          .$extendTables<{ [table]: Record<string, unknown> }>()
+          .withTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .$if(select !== undefined, qb => qb.select(select!))
           .$if(select === undefined, qb => qb.selectAll())
@@ -109,7 +109,7 @@ export const resourceRowsQuery = memoize(({
 
         let query = db
           .withSchema(schema)
-          .$extendTables<{ [table]: Record<string, unknown> }>()
+          .withTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .$if(select !== undefined, qb => qb.select(select!))
           .$if(select === undefined, qb => qb.selectAll())
@@ -131,7 +131,7 @@ export const resourceRowsQuery = memoize(({
 
         let query = db
           .withSchema(schema)
-          .$extendTables<{ [table]: Record<string, unknown> }>()
+          .withTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .$if(select !== undefined, qb => qb.select(select!))
           .$if(select === undefined, qb => qb.selectAll())
@@ -190,7 +190,7 @@ export const resourceRowsQueryInfiniteOptions = memoize(({
           filtersConcatOperator,
         },
         ...props,
-      }).run(connectionResourceToQueryParams(connectionResource))
+      }).run(await connectionResourceToQueryParams(connectionResource))
 
       return {
         rows: result,
