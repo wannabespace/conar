@@ -5,6 +5,7 @@ import type { InferRouterInputs, InferRouterOutputs } from '@orpc/server'
 import { isConnectionError } from '@conar/shared/utils/connections'
 import { createORPCClient, onError, ORPCError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
+import { ClientRetryPlugin } from '@orpc/client/plugins'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import { memoize } from 'memoza'
 import { handleError } from '../utils/error'
@@ -34,6 +35,15 @@ export const orpc = createTanstackQueryUtils(createORPCClient(new RPCLink({
   },
   interceptors: [
     onError(handleError),
+  ],
+  plugins: [
+    new ClientRetryPlugin({
+      default: {
+        retry: 3,
+        retryDelay: 2000,
+        shouldRetry: ({ error }) => error instanceof TypeError && !navigator.onLine,
+      },
+    }),
   ],
 })) satisfies apiOrpc.ORPCRouter)
 

@@ -80,7 +80,7 @@ function setupDev() {
 
   const created = envExampleFiles.map(createEnvFile)
 
-  if (created.filter(Boolean).length > 0) {
+  if (created.some(Boolean)) {
     console.log(`Development environment setup complete!`)
   }
 }

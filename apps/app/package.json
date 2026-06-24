@@ -30,6 +30,7 @@
     "@remixicon/react": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/browser-db-sqlite-persistence": "catalog:",
+    "@tanstack/offline-transactions": "catalog:",
     "@tanstack/react-db": "catalog:",
     "@tanstack/react-form": "catalog:",
     "@tanstack/react-hotkeys": "catalog:",

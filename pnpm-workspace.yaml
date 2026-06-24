@@ -13,13 +13,13 @@ overrides:
   '@better-auth/memory-adapter': 'https://pkg.pr.new/@better-auth/memory-adapter@5a40d12'
   better-auth: 'https://pkg.pr.new/better-auth@5a40d12'
 catalog:
-  '@ai-sdk/anthropic': ^3.0.85
+  '@ai-sdk/anthropic': ^3.0.86
   '@ai-sdk/google': ^3.0.83
   '@ai-sdk/openai': ^3.0.74
   '@ai-sdk/provider': ^3.0.10
-  '@ai-sdk/react': ^3.0.210
-  '@ai-sdk/xai': ^3.0.96
-  '@antfu/eslint-config': ^9.0.0
+  '@ai-sdk/react': ^3.0.211
+  '@ai-sdk/xai': ^3.0.97
+  '@antfu/eslint-config': ^9.1.0
   '@base-ui/react': ^1.6.0
   '@better-auth/api-key': ^1.6.20
   '@better-auth/drizzle-adapter': ^1.6.20
@@ -30,7 +30,7 @@ catalog:
   '@eslint-react/eslint-plugin': ^5.9.2
   '@exalabs/ai-sdk': ^2.1.0
   '@faker-js/faker': ^10.5.0
-  '@fluentui/react-context-selector': ^9.2.17
+  '@fluentui/react-context-selector': ^9.2.18
   '@hackylabs/deep-redact': ^4.0.1
   '@hono/node-server': ^2.0.6
   '@infisical/sdk': ^5.0.2
@@ -42,7 +42,7 @@ catalog:
   '@orpc/experimental-publisher': ^1.14.6
   '@orpc/server': ^1.14.6
   '@orpc/tanstack-query': ^1.14.6
-  '@playwright/test': ^1.61.0
+  '@playwright/test': ^1.61.1
   '@posthog/ai': ^8.2.1
   '@radix-ui/react-accordion': ^1.2.14
   '@radix-ui/react-checkbox': ^1.3.5
@@ -55,9 +55,10 @@ catalog:
   '@standard-schema/spec': ^1.1.0
   '@tailwindcss/typography': ^0.5.20
   '@tailwindcss/vite': ^4.3.1
-  '@tanstack/browser-db-sqlite-persistence': ^0.2.1
-  '@tanstack/react-db': ^0.1.87
-  '@tanstack/react-devtools': ^0.10.7
+  '@tanstack/browser-db-sqlite-persistence': ^0.2.2
+  '@tanstack/offline-transactions': ^1.0.35
+  '@tanstack/react-db': ^0.1.88
+  '@tanstack/react-devtools': ^0.10.8
   '@tanstack/react-form': ^1.33.0
   '@tanstack/react-hotkeys': ^0.10.0
   '@tanstack/react-query': ^5.101.1
@@ -81,7 +82,7 @@ catalog:
   '@upstash/context7-tools-ai-sdk': ^0.2.3
   '@vitejs/plugin-react': ^6.0.3
   '@xyflow/react': ^12.11.1
-  ai: ^6.0.208
+  ai: ^6.0.209
   ai-retry: ^1.11.0
   arktype: ^2.2.1
   babel-plugin-react-compiler: ^1.0.0
@@ -118,7 +119,7 @@ catalog:
   monaco-editor: ^0.54.0
   monaco-sql-languages: ^0.15.1
   monaco-themes: ^0.4.8
-  motion: ^12.40.0
+  motion: ^12.41.0
   mssql: ^12.6.0
   mysql2: ^3.22.5
   nanoid: ^5.1.15
@@ -128,10 +129,10 @@ catalog:
   open: ^11.0.0
   ora: ^9.4.1
   pg: ^8.22.0
-  playwright: ^1.61.0
+  playwright: ^1.61.1
   portless: ^0.14.0
-  posthog-js: ^1.393.0
-  posthog-node: ^5.38.2
+  posthog-js: ^1.393.2
+  posthog-node: ^5.38.4
   react: ^19.2.7
   react-dom: ^19.2.7
   react-markdown: ^10.1.0
