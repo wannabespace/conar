@@ -12,13 +12,11 @@ import { router } from './orpc/routers'
 import { sendEmail } from './lib/resend'
 import { sanitizeLogData } from '@conar/shared/utils/sanitize-log'
 import { healthRouter } from './routers/health'
-import { sleep } from 'bun'
 
 const handler = new RPCHandler(router, {
   interceptors: [
     async ({ next, context }) => {
       try {
-        await sleep(1000)
         return await next()
       }
       catch (error) {
