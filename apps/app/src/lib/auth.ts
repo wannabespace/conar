@@ -47,7 +47,7 @@ export const authClient = createAuthClient({
       'x-desktop': JSON.stringify(!!window.electron),
     },
     async onError({ error }) {
-      if (error.status === 401) {
+      if (error.status === 401 && !router.state.location.pathname.startsWith('/auth')) {
         fullSignOut()
       }
     },
@@ -62,8 +62,12 @@ export async function isSignedIn() {
 
 export async function fullSignOut() {
   await authClient.signOut()
-  await router.navigate({ to: '/auth' })
+  bearerToken.clear()
+
+  if (!router.state.location.pathname.startsWith('/auth')) {
+    await router.navigate({ to: '/auth' })
+  }
+
   await clearDb()
   await encryptionKey.reset()
-  bearerToken.clear()
 }

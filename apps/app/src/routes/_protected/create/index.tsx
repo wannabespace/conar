@@ -17,11 +17,11 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
-import { connectionStringsCollection } from '~/entities/connection/connection-strings'
+import { useCollections } from '~/entities/connection/collections'
 import { useLocalProxyAvailable } from '~/entities/connection/proxy'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 import { getConnectionStore } from '~/entities/connection/store'
-import { connectionsResourcesCollection, createConnectionAction } from '~/entities/connection/sync'
+import { createConnectionAction } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching'
 import { generateRandomName } from '~/utils/utils'
@@ -49,6 +49,7 @@ const createConnectionType = type({
 
 // eslint-disable-next-line react-refresh/only-export-components
 function CreateConnectionPage() {
+  const collections = useCollections()
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -69,6 +70,7 @@ function CreateConnectionPage() {
       const resourceId = v7()
       const updatedAt = new Date()
       const createdAt = new Date()
+      const { connectionStringsCollection, connectionsResourcesCollection } = collections
 
       const tx = createConnectionAction({
         connectionString: await connectionStringsCollection.utils.prepare({

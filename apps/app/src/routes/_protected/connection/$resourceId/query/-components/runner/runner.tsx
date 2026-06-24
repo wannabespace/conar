@@ -13,9 +13,9 @@ import { useQuery } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
+import { useCollections } from '~/entities/connection/collections'
 import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
 import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
-import { queriesCollection } from '~/entities/query/sync'
 import { formatSql } from '~/utils/formatter'
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
@@ -80,12 +80,12 @@ export function Runner() {
   const { connection, connectionResource } = Route.useRouteContext()
   const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
   const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
+  const { queriesCollection } = useCollections()
   const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(q => q
     .from({ queries: queriesCollection })
     .where(({ queries }) => eq(queries.connectionResourceId, connectionResource.id))
     .select(({ queries }) => ({ queriesCount: count(queries.id) }))
-    .findOne(),
-  )
+    .findOne(), [queriesCollection, connectionResource.id])
   const [isFormatting, setIsFormatting] = useState(false)
   const store = getConnectionResourceStore(connectionResource.id)
   const resultsVisible = useSubscription(store, { selector: state => state.layout.resultsVisible })

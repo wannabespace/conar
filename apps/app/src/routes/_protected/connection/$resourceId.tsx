@@ -8,10 +8,9 @@ import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-r
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
+import { getCollections, useCollections } from '~/entities/connection/collections'
 import { QueryLogger } from '~/entities/connection/components'
-import { connectionStringsCollection } from '~/entities/connection/connection-strings'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { lastOpenedResourcesStorageValue, prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { ConnectionSidebar } from './-components/connection-sidebar'
@@ -20,6 +19,7 @@ import { PasswordForm } from './-components/password-form'
 export const Route = createFileRoute('/_protected/connection/$resourceId')({
   component: ResourcePage,
   beforeLoad: async ({ params }) => {
+    const { connectionsCollection, connectionsResourcesCollection } = getCollections()
     const connectionResource = connectionsResourcesCollection.get(params.resourceId)
 
     if (!connectionResource) {
@@ -53,6 +53,7 @@ function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
 // eslint-disable-next-line react-refresh/only-export-components
 function ResourcePage() {
   const { connection, connectionResource } = Route.useRouteContext()
+  const { connectionStringsCollection } = useCollections()
   const currentPageId = useMatches({
     select: matches => getDatabasePageId(matches.map(match => match.routeId)),
   })
@@ -61,7 +62,7 @@ function ResourcePage() {
   const { data: connectionString } = useLiveQuery(q => q
     .from({ cs: connectionStringsCollection })
     .where(({ cs }) => eq(cs.connectionId, connection.id))
-    .findOne(), [connection.id])
+    .findOne(), [connectionStringsCollection, connection.id])
   const isPasswordPopulated = connectionString?.isPasswordPopulated
 
   useEffect(() => {

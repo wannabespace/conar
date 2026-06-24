@@ -29,13 +29,12 @@ import { Fragment, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
+import { useCollections } from '~/entities/connection/collections'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
-import { connectionStringsCollection } from '~/entities/connection/connection-strings'
 import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
 import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
 import { getConnectionStore } from '~/entities/connection/store'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { LastOpenedResources } from './last-opened-resources'
@@ -200,14 +199,15 @@ function ConnectionCard({
   connection: Connection
   onRemove: VoidFunction
 }) {
+  const { connectionStringsCollection, connectionsResourcesCollection } = useCollections()
   const { data: connectionString } = useLiveQuery(q => q
     .from({ cs: connectionStringsCollection })
     .where(({ cs }) => eq(cs.connectionId, connection.id))
-    .findOne(), [connection.id])
+    .findOne(), [connectionStringsCollection, connection.id])
   const { data: connectionResources } = useLiveQuery(q => q
     .from({ cr: connectionsResourcesCollection })
     .where(({ cr }) => eq(cr.connectionId, connection.id))
-    .orderBy(({ cr }) => cr.name, 'asc'), [connection.id])
+    .orderBy(({ cr }) => cr.name, 'asc'), [connectionsResourcesCollection, connection.id])
 
   const connectionResourcesNames = connectionResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
   const { type, canSend, reason } = useFetchingConfig(connection)
@@ -482,6 +482,7 @@ const sortValue = createWebStorageValue({
 })
 
 export function ConnectionsList() {
+  const { connectionsCollection } = useCollections()
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
   const sort = useSubscription(sortValue)
   const { data } = useLiveQuery((q) => {
@@ -505,7 +506,7 @@ export function ConnectionsList() {
     }
 
     return query
-  }, [selectedLabel, sort])
+  }, [connectionsCollection, selectedLabel, sort])
 
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)

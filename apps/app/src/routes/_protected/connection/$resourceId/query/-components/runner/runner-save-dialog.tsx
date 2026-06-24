@@ -14,7 +14,7 @@ import { Label } from '@conar/ui/components/label'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
-import { queriesCollection } from '~/entities/query/sync'
+import { useCollections } from '~/entities/connection/collections'
 import { Route } from '../..'
 
 interface RunnerSaveDialogProps {
@@ -24,6 +24,7 @@ interface RunnerSaveDialogProps {
 }
 
 export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
+  const { queriesCollection } = useCollections()
   const { connectionResource } = Route.useRouteContext()
   const [name, setName] = useState('')
   const [query, setQuery] = useState('')

@@ -1,8 +1,7 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
-import { connectionStringsCollection } from '~/entities/connection/connection-strings'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
+import { cleanCollections, createCollections } from '~/entities/connection/collections'
 import { EventsProvider } from '~/events'
 import { enterAppAnimation } from '~/global-hooks'
 import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
@@ -13,11 +12,15 @@ import { ActionsCenter } from './-components/actions-center'
 export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
   beforeLoad: async () => {
+    const c = createCollections()
+
     await Promise.all([
-      connectionStringsCollection.stateWhenReady(),
-      connectionsCollection.stateWhenReady(),
-      connectionsResourcesCollection.stateWhenReady(),
+      c.connectionStringsCollection.stateWhenReady(),
+      c.connectionsCollection.stateWhenReady(),
+      c.connectionsResourcesCollection.stateWhenReady(),
     ])
+
+    return { collections: c }
   },
 })
 
@@ -26,6 +29,12 @@ function ProtectedLayout() {
   const { isPending } = authClient.useSession()
 
   useConnectionStringsSync()
+
+  useEffect(() => {
+    return () => {
+      cleanCollections()
+    }
+  }, [])
 
   useEffect(() => {
     if (isPending) {

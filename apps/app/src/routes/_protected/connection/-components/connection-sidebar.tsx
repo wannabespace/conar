@@ -19,7 +19,7 @@ import { Link, useLocation, useMatches, useSearch } from '@tanstack/react-router
 import { useEffect, useMemo, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
-import { connectionStringsCollection } from '~/entities/connection/connection-strings'
+import { useCollections } from '~/entities/connection/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { UserButton } from '~/entities/user/components'
 import { orpc } from '~/lib/orpc'
@@ -219,10 +219,11 @@ function MainLinks() {
 
 export function ConnectionSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const { connection, connectionResource } = Route.useRouteContext()
+  const { connectionStringsCollection } = useCollections()
   const { data: connectionString } = useLiveQuery(q => q
     .from({ cs: connectionStringsCollection })
     .where(({ cs }) => eq(cs.connectionId, connection.id))
-    .findOne(), [connection.id])
+    .findOne(), [connectionStringsCollection, connection.id])
   const store = getConnectionResourceStore(connectionResource.id)
   const location = useLocation()
 

@@ -35,12 +35,7 @@ async function getElectronEncryptionKey(safeStorage: SafeStorage): Promise<Crypt
   const stored = storage.get().encryptionKey
 
   if (typeof stored === 'string') {
-    try {
-      return await importAesKey(base64ToBytes(await safeStorage.decryptString(stored)))
-    }
-    catch {
-      await resetEncryptionKey()
-    }
+    return importAesKey(base64ToBytes(await safeStorage.decryptString(stored)))
   }
 
   const raw = crypto.getRandomValues(new Uint8Array(32))
@@ -56,6 +51,7 @@ async function getWebEncryptionKey(): Promise<CryptoKey> {
 
   const key = await generateAesKey()
   await storage.set({ encryptionKey: key })
+
   return key
 }
 

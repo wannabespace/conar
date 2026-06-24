@@ -1,10 +1,14 @@
-import { EventPublisher } from '@orpc/server'
+import { IORedisPublisher } from '@orpc/experimental-publisher/ioredis'
 import { redis } from '~/lib/redis'
 import { exchange } from './exchange'
 import { listen } from './listen'
 import { publish } from './publish'
 
-export const codeChallengePublisher = new EventPublisher<Record<string, { ready: boolean }>>()
+export const codeChallengePublisher = new IORedisPublisher<Record<string, { ready: boolean }>>({
+  commander: redis.duplicate(),
+  listener: redis.duplicate(),
+  prefix: 'orpc:publisher:code-challenge:',
+})
 
 export const codeChallengeRedis = {
   get: async (codeChallenge: string) => {

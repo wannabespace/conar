@@ -43,6 +43,7 @@ function AuthPage() {
     input: codeChallenge ? { codeChallenge } : skipToken,
     throwOnError: false,
   }))
+
   const { mutate: exchange } = useMutation(orpc.account.challenge.exchange.mutationOptions({
     onSuccess: async (data) => {
       bearerToken.set(data.token)

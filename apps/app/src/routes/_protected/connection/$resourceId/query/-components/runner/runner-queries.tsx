@@ -10,17 +10,18 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiDeleteBin7Line, RiFileCopyLine, RiPlayListAddLine, RiSaveLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useRef, useState } from 'react'
-import { queriesCollection } from '~/entities/query/sync'
+import { useCollections } from '~/entities/connection/collections'
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
 import { RemoveQueryDialog } from './remove-query-dialog'
 
 export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
   const { connectionResource } = Route.useRouteContext()
+  const { queriesCollection } = useCollections()
   const { data } = useLiveQuery(q => q
     .from({ queries: queriesCollection })
     .where(({ queries }) => eq(queries.connectionResourceId, connectionResource.id))
-    .orderBy(({ queries }) => queries.createdAt, 'desc'))
+    .orderBy(({ queries }) => queries.createdAt, 'desc'), [queriesCollection, connectionResource.id])
   const [movedId, setMovedId] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
