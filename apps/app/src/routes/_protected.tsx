@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
-import { cleanCollections, createCollections } from '~/entities/connection/collections'
+import { cleanCollections, getCollections } from '~/entities/connection/collections'
 import { EventsProvider } from '~/events'
 import { enterAppAnimation } from '~/global-hooks'
 import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
@@ -12,7 +12,7 @@ import { ActionsCenter } from './-components/actions-center'
 export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
   beforeLoad: async () => {
-    const c = createCollections()
+    const c = getCollections()
 
     await Promise.all([
       c.connectionStringsCollection.stateWhenReady(),

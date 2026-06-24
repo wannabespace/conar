@@ -20,7 +20,7 @@ function notify() {
   listeners.forEach(l => l())
 }
 
-export function createCollections(): Collections {
+export function getCollections(): Collections {
   if (current) {
     return current
   }
@@ -35,13 +35,6 @@ export function createCollections(): Collections {
   }
 
   notify()
-  return current
-}
-
-export function getCollections(): Collections {
-  if (!current) {
-    throw new Error('[collections] Not initialized. Call createCollections() first.')
-  }
   return current
 }
 
