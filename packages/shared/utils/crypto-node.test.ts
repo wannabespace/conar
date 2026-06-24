@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { nanoid } from 'nanoid'
-import { decrypt, encrypt } from './encryption'
+import { decrypt, encrypt } from './crypto-node'
 
 const secret = 'supersecret'
 

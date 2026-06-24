@@ -22,6 +22,10 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
     else {
       posthog.reset()
     }
+
+    return () => {
+      posthog.reset()
+    }
   }, [userId])
 
   return (

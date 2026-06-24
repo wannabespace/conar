@@ -30,9 +30,8 @@ export const update = orpc
       .where(eq(chatsMessages.id, input.id))
       .returning()
 
-    publisher.publish('event', {
+    publisher.publish(context.user.id, {
       type: 'update',
       value: message!,
-      clientId: context.clientId,
     })
   })

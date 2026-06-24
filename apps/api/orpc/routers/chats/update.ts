@@ -16,9 +16,8 @@ export const update = orpc
 
     const [chat] = await db.update(chats).set(changes).where(and(eq(chats.id, id), eq(chats.userId, context.user.id))).returning()
 
-    publisher.publish('event', {
+    publisher.publish(context.user.id, {
       type: 'update',
       value: chat!,
-      clientId: context.clientId,
     })
   })

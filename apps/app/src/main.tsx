@@ -8,6 +8,7 @@ import './monaco-worker'
 import './assets/styles.css'
 import '@conar/ui/globals.css'
 import { toast } from 'sonner'
+import { isSignedIn } from './lib/auth'
 
 if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
   import('react-scan').then(({ scan }) => {
@@ -57,11 +58,6 @@ export const subscriptionQueryClient = new QueryClient({
   },
 })
 
-// Native trigger don't work for some reason, so we need to use this workaround
-window.addEventListener('focus', () => {
-  subscriptionQueryClient.refetchQueries()
-})
-
 export const router = createRouter({
   history: import.meta.env.VITE_TEST || !window.electron ? createBrowserHistory() : createHashHistory(),
   routeTree,
@@ -75,6 +71,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
-const root = createRoot(document.getElementById('root')!)
+(async () => {
+  const isAuthPage = router.state.location.pathname.startsWith('/auth')
+  const isSigned = await isSignedIn()
 
-root.render(<RouterProvider router={router} />)
+  if (isAuthPage && isSigned) {
+    router.navigate({ to: '/', replace: true })
+  }
+  else if (!isAuthPage && !isSigned && navigator.onLine) {
+    router.navigate({ to: '/auth', replace: true })
+  }
+
+  const root = createRoot(document.getElementById('root')!)
+
+  root.render(<RouterProvider router={router} />)
+})()

@@ -6,7 +6,7 @@ export const dropTableQuery = memoize(({ table, schema, cascade }: { table: stri
     postgres: (db) => {
       let query = db
         .withSchema(schema)
-        .$extendTables<{ [table]: Record<string, unknown> }>()
+        .withTables<{ [table]: Record<string, unknown> }>()
         .schema
         .dropTable(table)
 
@@ -19,7 +19,7 @@ export const dropTableQuery = memoize(({ table, schema, cascade }: { table: stri
     mysql: (db) => {
       let query = db
         .withSchema(schema)
-        .$extendTables<{ [table]: Record<string, unknown> }>()
+        .withTables<{ [table]: Record<string, unknown> }>()
         .schema
         .dropTable(table)
 
@@ -32,7 +32,7 @@ export const dropTableQuery = memoize(({ table, schema, cascade }: { table: stri
     mssql: (db) => {
       let query = db
         .withSchema(schema)
-        .$extendTables<{ [table]: Record<string, unknown> }>()
+        .withTables<{ [table]: Record<string, unknown> }>()
         .schema
         .dropTable(table)
 
@@ -44,7 +44,7 @@ export const dropTableQuery = memoize(({ table, schema, cascade }: { table: stri
     },
     clickhouse: db => db
       .withSchema(schema)
-      .$extendTables<{ [table]: Record<string, unknown> }>()
+      .withTables<{ [table]: Record<string, unknown> }>()
       .schema
       .dropTable(table)
       .execute(),

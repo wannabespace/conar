@@ -24,9 +24,7 @@ export function createSyncPublisher<T extends Type<{ type: 'insert' | 'update' |
   output: T,
   prefix: string,
 ) {
-  return new IORedisPublisher<{
-    event: typeof output.infer & { clientId?: string }
-  }>({
+  return new IORedisPublisher<Record<string, typeof output.infer>>({
     commander: redis.duplicate(),
     listener: redis.duplicate(),
     prefix,
@@ -57,9 +55,7 @@ export function createEventsEndpoint<O extends Type<{ type: 'insert' | 'update' 
     .use(authMiddleware)
     .output(eventIterator(output))
     .handler(async function* ({ context, signal, lastEventId }) {
-      for await (const { clientId, ...payload } of publisher.subscribe('event', { signal, lastEventId })) {
-        if (clientId && clientId === context.clientId)
-          continue
+      for await (const payload of publisher.subscribe(context.user.id, { signal, lastEventId })) {
         yield payload
       }
     })

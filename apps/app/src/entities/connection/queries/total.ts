@@ -46,7 +46,7 @@ export const resourceTableTotalQuery = memoize(({
 
         const query = await db
           .withSchema(schema)
-          .$extendTables<{ [table]: Record<string, unknown> }>()
+          .withTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .select(db.fn.countAll().as('total'))
           .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
@@ -71,7 +71,7 @@ export const resourceTableTotalQuery = memoize(({
 
         const query = await db
           .withSchema(schema)
-          .$extendTables<{ [table]: Record<string, unknown> }>()
+          .withTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .select(db.fn.countAll().as('total'))
           .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
@@ -83,7 +83,7 @@ export const resourceTableTotalQuery = memoize(({
       mssql: async (db) => {
         const query = await db
           .withSchema(schema)
-          .$extendTables<{ [table]: Record<string, unknown> }>()
+          .withTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .select(db.fn.countAll().as('total'))
           .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
@@ -113,7 +113,7 @@ export const resourceTableTotalQuery = memoize(({
 
         const query = await db
           .withSchema(schema)
-          .$extendTables<{ [table]: Record<string, unknown> }>()
+          .withTables<{ [table]: Record<string, unknown> }>()
           .selectFrom(table)
           .select(db.fn.countAll().as('total'))
           .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
@@ -137,7 +137,7 @@ export function resourceTableTotalQueryOptions({
   query: { filters: ActiveFilter[], exact: boolean }
 }) {
   return queryOptions({
-    queryFn: () => resourceTableTotalQuery({ table, schema, query: { filters, exact } }).run(connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () => resourceTableTotalQuery({ table, schema, query: { filters, exact } }).run(await connectionResourceToQueryParams(connectionResource)),
     queryKey: [
       'connection-resource',
       connectionResource.id,

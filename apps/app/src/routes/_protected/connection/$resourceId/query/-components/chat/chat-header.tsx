@@ -1,5 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { Chat, ChatMutationMetadata } from '~/entities/chat/sync'
+import type { Chat } from '~/entities/chat/sync'
 import { convertToAppUIMessage } from '@conar/ai/tools/helpers'
 import { Button } from '@conar/ui/components/button'
 import { CardTitle } from '@conar/ui/components/card'
@@ -20,10 +20,7 @@ import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { getMonth, getWeek, getYear, isToday, isYesterday } from 'date-fns'
 import { useEffect, useEffectEvent, useRef } from 'react'
-import {
-  chatsCollection,
-  chatsMessagesCollection,
-} from '~/entities/chat/sync'
+import { useCollections } from '~/entities/connection/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { orpc } from '~/lib/orpc'
 import { Route } from '../..'
@@ -83,11 +80,12 @@ export function ChatHeader({ chatId }: { chatId: string }) {
   const navigate = useNavigate()
   const store = getConnectionResourceStore(resourceId)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveChatDialog>>(null)
-  const { data: allChats } = useLiveQuery(q => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'))
+  const { chatsCollection, chatsMessagesCollection } = useCollections()
+  const { data: allChats } = useLiveQuery(q => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'), [chatsCollection])
   const chat = allChats.find(chat => chat.id === chatId)
   const { data: messages } = useLiveQuery(q => q
     .from({ chatsMessages: chatsMessagesCollection })
-    .where(({ chatsMessages }) => eq(chatsMessages.chatId, chatId)))
+    .where(({ chatsMessages }) => eq(chatsMessages.chatId, chatId)), [chatsMessagesCollection, chatId])
   const shouldGenerateTitle = !!chat && chat.title === null && messages.length > 0
 
   const generateTitleEvent = useEffectEvent(async () => {
@@ -95,17 +93,9 @@ export function ChatHeader({ chatId }: { chatId: string }) {
       return
     }
 
-    const title = await orpc.ai.generateTitle.call({
+    await orpc.ai.generateTitle.call({
       chatId: chat.id,
       messages: messages.map(convertToAppUIMessage),
-    })
-
-    chatsCollection.update(chat.id, {
-      metadata: {
-        cloudSync: false,
-      } satisfies ChatMutationMetadata,
-    }, (draft) => {
-      draft.title = title
     })
   })
 

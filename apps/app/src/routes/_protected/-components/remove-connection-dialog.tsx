@@ -4,7 +4,7 @@ import { Button } from '@conar/ui/components/button'
 import { eq, queryOnce } from '@tanstack/react-db'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { connectionsCollection, connectionsResourcesCollection } from '~/entities/connection/sync'
+import { useCollections } from '~/entities/connection/collections'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 
 interface RemoveConnectionDialogProps {
@@ -14,6 +14,7 @@ interface RemoveConnectionDialogProps {
 }
 
 export function RemoveConnectionDialog({ ref }: RemoveConnectionDialogProps) {
+  const collections = useCollections()
   const [open, setOpen] = useState(false)
   const [connection, setConnection] = useState<Connection | null>(null)
 
@@ -30,6 +31,7 @@ export function RemoveConnectionDialog({ ref }: RemoveConnectionDialogProps) {
 
     e.preventDefault()
 
+    const { connectionsCollection, connectionsResourcesCollection } = collections
     const allConnectionsResources = await queryOnce(q => q
       .from({ connectionsResources: connectionsResourcesCollection })
       .select(({ connectionsResources }) => ({

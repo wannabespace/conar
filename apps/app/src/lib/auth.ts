@@ -4,7 +4,9 @@ import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
+import { router } from '~/main'
 import { apiUrl } from '../utils/utils'
+import { encryptionKey } from './encryption-key'
 import { clearDb } from './sync'
 
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
@@ -45,7 +47,7 @@ export const authClient = createAuthClient({
       'x-desktop': JSON.stringify(!!window.electron),
     },
     async onError({ error }) {
-      if (error.status === 401) {
+      if (error.status === 401 && !router.state.location.pathname.startsWith('/auth')) {
         fullSignOut()
       }
     },
@@ -61,6 +63,11 @@ export async function isSignedIn() {
 export async function fullSignOut() {
   await authClient.signOut()
   bearerToken.clear()
+
+  if (!router.state.location.pathname.startsWith('/auth')) {
+    await router.navigate({ to: '/auth' })
+  }
+
   await clearDb()
-  window.location.reload()
+  await encryptionKey.reset()
 }

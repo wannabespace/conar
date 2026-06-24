@@ -18,7 +18,7 @@ export function generateQuerySQL({
   dialect = ConnectionType.Postgres,
 }: QueryParams) {
   const db = coldDialects[dialect]()
-  const base = db.$extendTables<{ [table]: Record<string, unknown> }>().selectFrom(table).selectAll()
+  const base = db.withTables<{ [table]: Record<string, unknown> }>().selectFrom(table).selectAll()
   const query = filters.length > 0 ? base.where(eb => buildWhere(eb, filters)) : base
   const compiled = query.compile()
   return formatSql(inlineParameters(compiled.sql, compiled.parameters), dialect)

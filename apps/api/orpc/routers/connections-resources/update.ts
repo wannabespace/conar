@@ -41,9 +41,8 @@ export const update = orpc
       .where(eq(connectionsResources.id, id))
       .returning()
 
-    publisher.publish('event', {
+    publisher.publish(context.user.id, {
       type: 'update',
       value: resource!,
-      clientId: context.clientId,
     })
   })

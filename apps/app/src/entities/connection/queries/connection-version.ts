@@ -67,7 +67,7 @@ export const connectionVersionQuery = createQuery({
 export function connectionVersionQueryOptions(connection: Connection) {
   return queryOptions({
     queryKey: ['connection-resource', connection.id, 'version'],
-    queryFn: () => connectionVersionQuery.run(connectionToQueryParams(connection)),
+    queryFn: async () => connectionVersionQuery.run(await connectionToQueryParams(connection)),
     throwOnError: false,
   })
 }

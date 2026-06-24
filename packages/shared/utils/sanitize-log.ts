@@ -1,7 +1,7 @@
-import { DeepRedact } from '@hackylabs/deep-redact/index.ts'
+import { deepRedact } from '@hackylabs/deep-redact'
 
-const redactor = new DeepRedact({
-  blacklistedKeys: [
+const redactor = deepRedact({
+  keys: [
     /password/i,
     /passwd/i,
     /secret/i,
@@ -23,5 +23,5 @@ const redactor = new DeepRedact({
 })
 
 export function sanitizeLogData<T>(data: T): T {
-  return redactor.redact(data) as T
+  return redactor(data) as T
 }

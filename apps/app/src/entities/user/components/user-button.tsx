@@ -8,6 +8,13 @@ import { clearDb } from '~/lib/sync'
 import { useSignOut } from '../hooks/use-sign-out'
 
 async function clearLocalAppCache() {
+  const dbs = await indexedDB.databases()
+  for (const db of dbs) {
+    if (db.name) {
+      indexedDB.deleteDatabase(db.name)
+    }
+  }
+
   await clearDb()
   for (const key of Object.keys(localStorage)) {
     if (!key.includes('bearer_token')) {

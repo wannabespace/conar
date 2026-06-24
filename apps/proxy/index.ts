@@ -50,9 +50,9 @@ const app = new Hono<{
   .use(cors({
     origin(origin) {
       const allowedOrigins = [
-        env.MAIN_URL,
+        'https://conar.app',
       ]
-      return origin.endsWith(`.${new URL(env.MAIN_URL).host}`) || allowedOrigins.includes(origin) ? origin : null
+      return origin.endsWith('.conar.app') || allowedOrigins.includes(origin) ? origin : null
     },
     credentials: true,
   }))

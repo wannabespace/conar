@@ -57,6 +57,4 @@ export const generateTitle = orpc
     })
 
     await db.update(chats).set({ title: text }).where(eq(chats.id, input.chatId))
-
-    return text
   })

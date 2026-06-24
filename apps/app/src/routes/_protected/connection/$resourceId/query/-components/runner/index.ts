@@ -54,7 +54,7 @@ export function runnerQueryOptions(connectionResource: ConnectionResource) {
 
         const startTime = performance.now()
         try {
-          const rows = await customQuery({ query }).run(connectionResourceToQueryParams(connectionResource))
+          const rows = await customQuery({ query }).run(await connectionResourceToQueryParams(connectionResource))
           results.push(transformResult({ rows, query, startLineNumber, endLineNumber, duration: performance.now() - startTime }))
         }
         catch (error) {
