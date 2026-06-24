@@ -71,4 +71,7 @@ export const generateTitle = orpc
       type: 'update',
       value: chat!,
     })
+
+    // TODO: remove in future, left for backward compatibility
+    return text
   })
