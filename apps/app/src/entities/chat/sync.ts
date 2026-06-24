@@ -2,7 +2,8 @@ import type { AppUIMessage } from '@conar/ai/tools/helpers'
 import type { ORPCOutputs } from '~/lib/orpc'
 import type { BaseTable } from '~/lib/sync'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
-import { BasicIndex, createCollection } from '@tanstack/react-db'
+import { BasicIndex, createCollection, createOptimisticAction } from '@tanstack/react-db'
+import { getCollections } from '~/entities/connection/collections'
 import { orpc } from '~/lib/orpc'
 import { persistence } from '~/lib/sync'
 
@@ -77,6 +78,7 @@ export function createChatsCollection() {
           if (abortController.signal.aborted)
             return
           begin()
+          console.log('chat sync', sync)
           for (const item of sync) {
             writeItem(item)
           }
@@ -178,3 +180,28 @@ export function createChatsMessagesCollection() {
     },
   }))
 }
+
+export const createChatMessageAction = createOptimisticAction<{
+  chat: Chat
+  message: ChatMessage
+}>({
+  onMutate: ({ chat, message }) => {
+    const { chatsCollection, chatsMessagesCollection } = getCollections()
+
+    if (!chatsCollection.has(chat.id)) {
+      chatsCollection.insert(chat)
+    }
+
+    chatsMessagesCollection.insert(message)
+  },
+  mutationFn: async ({ chat, message }, { transaction }) => {
+    const isChatCreated = transaction.mutations.some(m => m.collection.id === 'chats')
+
+    if (isChatCreated) {
+      await orpc.chats.create.call(chat)
+    }
+
+    await orpc.chatsMessages.create.call(message)
+    await orpc.ai.generateTitle.call({ chatId: chat.id })
+  },
+})

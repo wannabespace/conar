@@ -29,12 +29,6 @@
       "dependsOn": ["build"],
       "cache": false
     },
-    "drizzle:migrate": {
-      "cache": false
-    },
-    "drizzle:generate": {
-      "cache": false
-    },
     "test": {
       "cache": false
     },

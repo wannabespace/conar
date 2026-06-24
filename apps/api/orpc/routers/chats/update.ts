@@ -8,7 +8,7 @@ import { publisher } from './events'
 export const update = orpc
   .use(subscriptionMiddleware)
   .input(type.and(
-    chatsUpdateSchema.omit('createdAt', 'updatedAt', 'id', 'userId', 'activeStreamId', 'connectionId'),
+    chatsUpdateSchema.omit('createdAt', 'updatedAt', 'id', 'userId', 'activeStreamId'),
     chatsUpdateSchema.pick('id').required(),
   ))
   .handler(async ({ context, input }) => {

@@ -9,6 +9,7 @@ import { eq, queryOnce } from '@tanstack/react-db'
 import { lastAssistantMessageIsCompleteWithToolCalls } from 'ai'
 import { memoize } from 'memoza'
 import { v7 as uuid } from 'uuid'
+import { createChatMessageAction } from '~/entities/chat/sync'
 import { getCollections } from '~/entities/connection/collections'
 import { resourceEnumsQueryOptions, resourceRowsQuery, resourceTableColumnsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/query'
@@ -22,24 +23,6 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
   const { connectionsCollection, chatsCollection, chatsMessagesCollection } = getCollections()
   const connection = connectionsCollection.get(connectionResource.connectionId)!
 
-  const ensureChat = async ({ chatId, connectionResourceId }: { chatId: string, connectionResourceId: string }) => {
-    const existingChat = chatsCollection.get(chatId)
-
-    if (existingChat) {
-      return existingChat
-    }
-
-    await chatsCollection.insert({
-      id: chatId,
-      connectionResourceId,
-      title: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }).isPersisted.promise
-
-    return chatsCollection.get(chatId)!
-  }
-
   const chat = new Chat<AppUIMessage>({
     id,
     generateId: uuid,
@@ -51,8 +34,6 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
         if (!lastMessage) {
           throw new Error('Last message not found')
         }
-
-        const chat = await ensureChat({ chatId: options.chatId, connectionResourceId: connectionResource.id })
 
         const existingMessage = chatsMessagesCollection.get(lastMessage.id)
 
@@ -69,16 +50,26 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
           }
         }
         else {
-          const updatedAt = new Date()
           const createdAt = new Date()
-          await chatsMessagesCollection.insert({
-            ...lastMessage,
-            chatId: options.chatId,
-            createdAt,
-            updatedAt,
-            metadata: {
+          const updatedAt = new Date()
+
+          await createChatMessageAction({
+            chat: {
+              id: options.chatId,
+              connectionResourceId: connectionResource.id,
+              title: null,
               createdAt,
               updatedAt,
+            },
+            message: {
+              ...lastMessage,
+              chatId: options.chatId,
+              createdAt,
+              updatedAt,
+              metadata: {
+                createdAt,
+                updatedAt,
+              },
             },
           }).isPersisted.promise
         }
@@ -87,6 +78,7 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
           await chatsMessagesCollection.delete(options.messageId).isPersisted.promise
         }
 
+        const chat = chatsCollection.get(options.chatId)!
         const store = getConnectionResourceStore(connectionResource.id)
 
         return eventIteratorToStream(await orpc.ai.chat.call({

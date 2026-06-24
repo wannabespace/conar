@@ -13,11 +13,11 @@ export const create = orpc
     schema.array(),
   ).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
-    const inserted = await db.insert(chats).values({
-      ...input,
-      activeStreamId: null,
+    const inserted = await db.insert(chats).values(input.map(item => ({
+      ...item,
       userId: context.user.id,
-    }).returning()
+      activeStreamId: null,
+    }))).returning()
 
     for (const chat of inserted) {
       publisher.publish(context.user.id, {
