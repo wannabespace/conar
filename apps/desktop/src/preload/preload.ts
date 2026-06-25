@@ -61,11 +61,6 @@ contextBridge.exposeInMainWorld('electron', {
     encrypt: handleElectronError((arg: unknown) => ipcRenderer.invoke('encryption.encrypt', arg)),
     decrypt: handleElectronError((arg: unknown) => ipcRenderer.invoke('encryption.decrypt', arg)),
   },
-  safeStorage: {
-    isEncryptionAvailable: handleElectronError(() => ipcRenderer.invoke('safeStorage.isEncryptionAvailable')),
-    encryptString: handleElectronError((plain: string) => ipcRenderer.invoke('safeStorage.encryptString', plain)),
-    decryptString: handleElectronError((b64: string) => ipcRenderer.invoke('safeStorage.decryptString', b64)),
-  },
   app: {
     onDeepLink: callback => onEvent('deep-link', callback),
     onUpdatesStatus: callback => onEvent('updates-status', callback),

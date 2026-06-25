@@ -1,12 +1,11 @@
 import type { QueryExecutor } from '@conar/connection/queries'
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import { Buffer } from 'node:buffer'
 import * as clickhouse from '@conar/connection/queries/dialects/clickhouse'
 import * as mssql from '@conar/connection/queries/dialects/mssql'
 import * as mysql from '@conar/connection/queries/dialects/mysql'
 import * as pg from '@conar/connection/queries/dialects/pg'
 import { decrypt, encrypt } from '@conar/shared/utils/crypto-node'
-import { app, ipcMain, safeStorage } from 'electron'
+import { app, ipcMain } from 'electron'
 import { autoUpdater } from '../main'
 
 export const electron = {
@@ -19,11 +18,6 @@ export const electron = {
   encryption: {
     encrypt: async (arg: Parameters<typeof encrypt>[0]) => encrypt(arg),
     decrypt: async (arg: Parameters<typeof decrypt>[0]) => decrypt(arg),
-  },
-  safeStorage: {
-    isEncryptionAvailable: async () => safeStorage.isEncryptionAvailable(),
-    encryptString: async (plain: string) => safeStorage.encryptString(plain).toString('base64'),
-    decryptString: async (b64: string) => safeStorage.decryptString(Buffer.from(b64, 'base64')),
   },
   app: {
     checkForUpdates: () => {
