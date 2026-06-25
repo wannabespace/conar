@@ -14,7 +14,8 @@
     "dev": "vite dev",
     "build": "vite build && bun ./scripts/copy-renderer.ts",
     "build:todesktop": "todesktop build",
-    "check-types": "tsgo"
+    "check-types": "tsgo",
+    "todesktop:beforeInstall": "./scripts/todesktop-before-install.cjs"
   },
   "dependencies": {
     "@clickhouse/client": "catalog:",
