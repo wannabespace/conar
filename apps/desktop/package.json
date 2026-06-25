@@ -34,7 +34,6 @@
     "@types/pg": "catalog:",
     "@typescript/native-preview": "catalog:",
     "electron": "catalog:",
-    "memoza": "catalog:",
     "vite": "catalog:",
     "vite-plugin-electron": "catalog:"
   }

@@ -1004,9 +1004,6 @@ importers:
       electron:
         specifier: 'catalog:'
         version: 38.7.2
-      memoza:
-        specifier: 'catalog:'
-        version: 1.1.0
       vite:
         specifier: 'catalog:'
         version: 8.1.0(@types/node@26.0.0)(jiti@2.7.0)(yaml@2.9.0)
