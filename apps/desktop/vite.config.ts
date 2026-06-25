@@ -6,6 +6,7 @@ import packageJson from './package.json'
 const rolldownOptions: NonNullable<NonNullable<InlineConfig['build']>['rolldownOptions']> = {
   output: {
     format: 'es',
+    keepNames: true,
   },
   external: [
     ...Object.keys(packageJson.dependencies),
@@ -23,6 +24,7 @@ export default defineConfig({
         entry: 'src/main/main.ts',
         vite: {
           build: {
+            minify: false,
             rolldownOptions,
           },
         },
@@ -31,6 +33,7 @@ export default defineConfig({
         input: 'src/preload/preload.ts',
         vite: {
           build: {
+            minify: false,
             rolldownOptions,
           },
         },
@@ -38,7 +41,6 @@ export default defineConfig({
     }),
   ],
   build: {
-    minify: false,
     rolldownOptions,
   },
 })

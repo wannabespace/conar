@@ -14,6 +14,11 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     outDir: mode === 'desktop' ? 'dist-desktop' : 'dist',
+    rolldownOptions: {
+      output: {
+        keepNames: true,
+      },
+    },
   },
   plugins: [
     tailwindcss(),

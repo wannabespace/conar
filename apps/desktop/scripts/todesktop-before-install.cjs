@@ -11,10 +11,17 @@ module.exports = async ({ pkgJsonPath, pkgJson, appDir }) => {
   // try to reach back into the monorepo root (which isn't uploaded). electron
   // is the only allowed build — its install script must run to fetch the binary.
   // Everything else is blocked by pnpm's default, so no need to list it.
+  //
+  // nodeLinker: hoisted forces a flat, npm-style node_modules. pnpm's default
+  // symlinked layout breaks once packed into app.asar: Node's ESM resolver
+  // can't follow the symlinks to find transitive deps (e.g. electron-store's
+  // `conf`), throwing ERR_MODULE_NOT_FOUND at runtime. A flat tree resolves
+  // every dependency by plain directory lookup, which asar handles correctly.
   await writeFile(
     join(appDir, 'pnpm-workspace.yaml'),
     `packages:
   - .
+nodeLinker: hoisted
 allowBuilds:
   electron: true
 `,
