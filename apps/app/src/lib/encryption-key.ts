@@ -2,7 +2,6 @@ import { base64ToBytes, bytesToBase64 } from '@conar/shared/utils/base64'
 import { type } from 'arktype'
 import { clearMemoizeCache, memoize } from 'memoza'
 import { createIndexedDbStorage } from 'seitu/web'
-import { fullSignOut } from './auth'
 
 export const storage = createIndexedDbStorage({
   databaseName: 'secure-storage',
@@ -28,14 +27,19 @@ function generateAesKey() {
 
 async function getElectronEncryptionKey(safeStorage: SafeStorage): Promise<CryptoKey> {
   if (!(await safeStorage.isEncryptionAvailable())) {
-    await fullSignOut()
-    throw new Error('Secure storage is not available on this device, so connection credentials cannot be protected. You have been signed out.')
+    return getWebEncryptionKey()
   }
 
   const stored = storage.get().encryptionKey
 
   if (typeof stored === 'string') {
-    return importAesKey(base64ToBytes(await safeStorage.decryptString(stored)))
+    try {
+      return importAesKey(base64ToBytes(await safeStorage.decryptString(stored)))
+    }
+    catch {
+      // The keychain changed
+      await storage.set({ encryptionKey: null })
+    }
   }
 
   const raw = crypto.getRandomValues(new Uint8Array(32))
