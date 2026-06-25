@@ -177,6 +177,9 @@ catalogs:
     '@todesktop/cli':
       specifier: ^1.24.0
       version: 1.24.0
+    '@todesktop/runtime':
+      specifier: ^2.1.4
+      version: 2.1.4
     '@types/bun':
       specifier: ^1.3.14
       version: 1.3.14
@@ -249,6 +252,12 @@ catalogs:
     drizzle-orm:
       specifier: 1.0.0-rc.3
       version: 1.0.0-rc.3
+    electron:
+      specifier: 38.7.2
+      version: 38.7.2
+    electron-store:
+      specifier: ^11.0.2
+      version: 11.0.2
     eslint:
       specifier: ^10.5.0
       version: 10.5.0
@@ -953,22 +962,22 @@ importers:
   apps/desktop:
     dependencies:
       '@clickhouse/client':
-        specifier: ^1.22.0
+        specifier: 'catalog:'
         version: 1.22.0
       '@todesktop/runtime':
-        specifier: ^2.1.4
+        specifier: 'catalog:'
         version: 2.1.4
       electron-store:
-        specifier: ^11.0.2
+        specifier: 'catalog:'
         version: 11.0.2
       mssql:
-        specifier: ^12.6.0
+        specifier: 'catalog:'
         version: 12.6.0
       mysql2:
-        specifier: ^3.22.5
+        specifier: 'catalog:'
         version: 3.22.5(@types/node@26.0.0)
       pg:
-        specifier: ^8.22.0
+        specifier: 'catalog:'
         version: 8.22.0
     devDependencies:
       '@conar/configs':
@@ -993,7 +1002,7 @@ importers:
         specifier: 'catalog:'
         version: 7.0.0-dev.20260507.1
       electron:
-        specifier: 38.7.2
+        specifier: 'catalog:'
         version: 38.7.2
       memoza:
         specifier: 'catalog:'
