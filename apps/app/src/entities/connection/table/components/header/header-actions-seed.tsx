@@ -43,6 +43,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import NumberFlow from '@number-flow/react'
 import { RiCodeSSlashLine, RiSearchLine, RiSeedlingLine, RiVipCrownLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
@@ -55,9 +56,10 @@ import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 import { queryClient } from '~/main'
 import { setIsSubscriptionDialogOpen } from '~/store'
 import { useTableColumns } from '../../columns'
-import { connectionResourceRouteApi } from '../../route-api'
 import { useTablePageStore } from '../../store'
 import { DefaultValueTooltipIcon, NullableTooltipIcon, PrimaryKeyTooltipIcon, ReadOnlyTooltipIcon, UniqueTooltipIcon } from '../table/table-header-cell'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 function getAvailableGeneratorGroups(column: Column, dialect: ConnectionType) {
   return getGeneratorGroups(dialect)
@@ -173,7 +175,7 @@ export function HeaderActionsSeed({
   schema: string
 }) {
   const columns = useTableColumns()
-  const { connection, connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connection, connectionResource } = useRouteContext()
   const allGenerators = getGenerators(connection.type)
   const [open, setOpen] = useState(false)
   const store = useTablePageStore()

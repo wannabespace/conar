@@ -31,6 +31,7 @@ import {
   RiTriangleLine,
 } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { Monaco } from '~/components/monaco'
@@ -39,8 +40,9 @@ import * as generators from '~/entities/connection/generators'
 import { GENERATOR_COMPATIBILITY } from '~/entities/connection/generators/compatibility'
 import { resourceEnumsQueryOptions, resourceIndexesQueryOptions } from '~/entities/connection/queries'
 import { useTableColumns } from '../../columns'
-import { connectionResourceRouteApi } from '../../route-api'
 import { useTablePageStore } from '../../store'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 type Format = {
   type: GeneratorFormat
@@ -153,7 +155,7 @@ function CopyDialogEditor({ activeFormat, activeCategory, codeContent }: {
 }
 
 export function HeaderActionsCopy({ table }: { table: string }) {
-  const { connection, connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connection, connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const filters = useSubscription(store, { selector: state => state.filters })
   const columns = useTableColumns()

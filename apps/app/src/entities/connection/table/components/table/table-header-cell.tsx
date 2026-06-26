@@ -8,11 +8,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiBookOpenLine, RiCharacterRecognitionLine, RiEraserLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiPencilLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
-import { connectionResourceRouteApi } from '../../route-api'
 import { useTablePageStore } from '../../store'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const CANNOT_SORT_TYPES = ['json']
 
@@ -192,7 +194,7 @@ export function TableHeaderCell({
   column: Column
   className?: string
 } & TableHeaderCellProps & ColumnHandlers) {
-  const { connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const [isResizing, setIsResizing] = useState(false)
   const ref = useRef<HTMLDivElement>(null)

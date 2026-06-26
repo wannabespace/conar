@@ -7,6 +7,7 @@ import { Table, TableBody, TableProvider } from '@conar/table'
 import { DEFAULT_COLUMN_WIDTH } from '@conar/table/constants'
 import { useShiftSelectionKeyDown, useTableContext } from '@conar/table/hooks'
 import { useInfiniteQuery } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { useCallback, useMemo, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 import { TableCell } from '~/entities/connection/components'
@@ -14,7 +15,6 @@ import { getColumnSize, INTERNAL_COLUMN_IDS } from '~/entities/connection/compon
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { useTableColumns } from '../../columns'
 import { useClearDraftsOnQueryChange, useSyncSelectionWithRows } from '../../hooks'
-import { connectionResourceRouteApi } from '../../route-api'
 import { columnsOrder, draftKey, draftsActions, getRowPrimaryKeysValues, useTablePageStore } from '../../store'
 import { DraftsToolbar } from './drafts-toolbar'
 import { RenameColumnDialog } from './rename-column-dialog'
@@ -24,6 +24,8 @@ import { TableHeaderCell } from './table-header-cell'
 import { TableInfiniteLoader } from './table-infinite-loader'
 import { SelectionCell, SelectionHeaderCell } from './table-selection'
 import { TableBodySkeleton } from './table-skeleton'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export function TableError({ error }: { error: Error }) {
   return (
@@ -95,7 +97,7 @@ function BodyCellRenderer({
 }
 
 function TableComponent({ table, schema }: { table: string, schema: string }) {
-  const { connection, connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connection, connectionResource } = useRouteContext()
   const columns = useTableColumns()
   const store = useTablePageStore()
   const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })

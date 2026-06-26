@@ -14,17 +14,18 @@ import { copy as copyToClipboard } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
 import { RiDeleteBin7Line, RiEditLine, RiEyeFill, RiEyeLine, RiFileCopyLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiStackLine, RiTableLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
-import { useSearch } from '@tanstack/react-router'
+import { getRouteApi, useSearch } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useMemo, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 import { SidebarLink } from '~/components/sidebar-link'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { addTab, cleanupPinnedTables, getConnectionResourceStore, togglePinTable } from '~/entities/connection/store'
-import { connectionResourceRouteApi } from '../route-api'
 import { tablePageStore } from '../store'
 import { DropTableDialog } from './drop-table-dialog'
 import { RenameTableDialog } from './rename-table-dialog'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const treeVariants = {
   visible: { opacity: 1, height: 'auto' },
@@ -76,7 +77,7 @@ function TableItem({ schema, table, type = 'table', pinned = false, search, onRe
   onRename: () => void
   onDrop: () => void
 }) {
-  const { connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const Icon = tableTypeIcon[type]
   const isReadOnly = type !== 'table'
   const store = tablePageStore({ id: connectionResource.id, schema, table })
@@ -200,7 +201,7 @@ function TableItem({ schema, table, type = 'table', pinned = false, search, onRe
 }
 
 export function TablesTree({ className, search }: { className?: string, search?: string }) {
-  const { connection, connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data: tablesAndSchemas, isPending } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))

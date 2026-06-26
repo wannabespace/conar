@@ -13,6 +13,7 @@ import {
 } from '@conar/ui/components/tooltip'
 import { RiAlertLine, RiEyeLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -24,9 +25,10 @@ import { dialects } from '~/entities/connection/runtime/dialects'
 import { useSaveHotkey } from '~/hooks/use-save-hotkey'
 import { queryClient } from '~/main'
 import { useTableColumns } from '../../columns'
-import { connectionResourceRouteApi } from '../../route-api'
 import { draftsActions, getRowKeyByPrimaryKeys, primaryKeysKey, useTablePageStore } from '../../store'
 import { DraftsReviewDrawer } from './drafts-review-drawer'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const motionVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -40,7 +42,7 @@ export function DraftsToolbar({
   table: string
   schema: string
 }) {
-  const { connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const columns = useTableColumns()
   const primaryColumns = columns.filter(c => c.primaryKey).map(c => c.id)

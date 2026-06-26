@@ -14,14 +14,15 @@ import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { RiInformationLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { useRouter } from '@tanstack/react-router'
+import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { renameTableQuery, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { getConnectionResourceStore, renameTab } from '~/entities/connection/store'
 import { queryClient } from '~/main'
-import { connectionResourceRouteApi } from '../route-api'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 interface RenameTableDialogProps {
   ref: React.RefObject<{
@@ -30,7 +31,7 @@ interface RenameTableDialogProps {
 }
 
 export function RenameTableDialog({ ref }: RenameTableDialogProps) {
-  const { connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const router = useRouter()
   const [newTableName, setNewTableName] = useState('')

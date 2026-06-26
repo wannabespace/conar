@@ -4,6 +4,7 @@ import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import NumberFlow from '@number-flow/react'
 import { RiDeleteBin7Line } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -11,11 +12,12 @@ import { toast } from 'sonner'
 import { deleteRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { queryClient } from '~/main'
-import { connectionResourceRouteApi } from '../../route-api'
 import { useTablePageStore } from '../../store'
 
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
 export function HeaderActionsDelete({ table, schema }: { table: string, schema: string }) {
-  const { connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const [isOpened, setIsOpened] = useState(false)
   const store = useTablePageStore()
   const selected = useSubscription(store, { selector: state => state.selected })

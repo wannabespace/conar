@@ -9,6 +9,7 @@ import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
 import { RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 import { ExportData } from '~/components/export-data'
 import { resourceConstraintsQueryOptions, resourceEnumsQueryOptions, resourceRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableColumnsQueryOptions, resourceTablesAndSchemasQueryOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
@@ -17,7 +18,6 @@ import { getConnectionResourceStore } from '~/entities/connection/store'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { queryClient } from '~/main'
 import { useTableColumns } from '../../columns'
-import { connectionResourceRouteApi } from '../../route-api'
 import { useTablePageStore } from '../../store'
 import { HeaderActionsColumns } from './header-actions-columns'
 import { HeaderActionsCopy } from './header-actions-copy'
@@ -27,8 +27,10 @@ import { HeaderActionsOrder } from './header-actions-order'
 import { HeaderActionsSeed } from './header-actions-seed'
 import { HeaderSearch } from './header-search'
 
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
 export function Header({ table, schema }: { table: string, schema: string }) {
-  const { connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const columns = useTableColumns()
   const store = useTablePageStore()
   const connectionStore = getConnectionResourceStore(connectionResource.id)

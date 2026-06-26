@@ -9,6 +9,7 @@ import { isDefinedError } from '@orpc/client'
 import { RiBardLine } from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -17,12 +18,13 @@ import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 import { useTableColumns } from '../../columns'
-import { connectionResourceRouteApi } from '../../route-api'
 import { useTablePageStore } from '../../store'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export function HeaderSearch({ table, schema }: { table: string, schema: string }) {
   const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
-  const { connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const inputRef = useRef<HTMLInputElement>(null)
   const store = useTablePageStore()
   const prompt = useSubscription(store, { selector: state => state.prompt })

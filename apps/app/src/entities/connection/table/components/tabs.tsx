@@ -18,15 +18,16 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
-import { useRouter, useSearch } from '@tanstack/react-router'
+import { getRouteApi, useRouter, useSearch } from '@tanstack/react-router'
 import { Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { addTab, getConnectionResourceStore, removeTab, updateTabs } from '~/entities/connection/store'
 import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
-import { connectionResourceRouteApi } from '../route-api'
 import { tablePageStore } from '../store'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const os = getOS(navigator.userAgent)
 
@@ -193,7 +194,7 @@ export function TablesTabs({
 }: {
   className?: string
 }) {
-  const { connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data: tablesAndSchemas } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))

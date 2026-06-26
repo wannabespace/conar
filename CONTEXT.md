@@ -37,3 +37,21 @@ _Avoid_: subscription guard, GC lock
 
 **`onEnter` effect**:
 The `createEffect` handler that fires when a `Connection` row enters `connectionsCollection`. It resolves the connection string from the cloud (or falls back to local decrypt) and inserts it into `connectionStringsCollection` if no row exists yet.
+
+## API layer
+
+**oRPC**:
+Type-safe RPC framework (`@orpc/server`) used instead of REST or tRPC. All API procedures are defined in `apps/api/orpc/routers/`. Clients call procedures via the generated `ORPCRouter` type — no manual fetch calls.
+
+**Proxy app** (`apps/proxy`):
+Separate Hono process that executes DB queries. Clients connect to the proxy rather than having the main API execute queries directly. This isolates query execution and allows the proxy to run closer to the user's databases (e.g. as a local desktop agent or self-hosted service).
+
+## SyncType values
+
+| Value | Behavior |
+|-------|----------|
+| `Cloud` | Connection metadata + encrypted password both synced to cloud |
+| `CloudWithoutPassword` | Metadata synced to cloud; password kept local-only |
+| `Local` | Nothing leaves the device |
+
+Use `CloudWithoutPassword` when the user wants cross-device access to the connection without trusting the cloud with credentials.

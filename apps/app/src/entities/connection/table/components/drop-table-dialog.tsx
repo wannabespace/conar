@@ -16,14 +16,16 @@ import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { RiAlertLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
-import { useRouter } from '@tanstack/react-router'
+import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { dropTableQuery, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { getConnectionResourceStore, removeTab } from '~/entities/connection/store'
 import { queryClient } from '~/main'
-import { connectionResourceRouteApi, tableRouteApi } from '../route-api'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+const { useSearch } = getRouteApi('/_protected/connection/$resourceId/table/')
 
 interface DropTableDialogProps {
   ref: React.RefObject<{
@@ -32,8 +34,8 @@ interface DropTableDialogProps {
 }
 
 export function DropTableDialog({ ref }: DropTableDialogProps) {
-  const { connection, connectionResource } = connectionResourceRouteApi.useRouteContext()
-  const { schema: schemaFromSearch, table: tableFromSearch } = tableRouteApi.useSearch()
+  const { connection, connectionResource } = useRouteContext()
+  const { schema: schemaFromSearch, table: tableFromSearch } = useSearch()
   const store = getConnectionResourceStore(connectionResource.id)
   const router = useRouter()
   const [confirmationText, setConfirmationText] = useState('')

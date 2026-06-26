@@ -22,12 +22,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/to
 import { cn } from '@conar/ui/lib/utils'
 import { RiAlertLine, RiArrowGoBackLine, RiArrowRightLine, RiSaveLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { createTransformer, getDisplayValue } from '~/entities/connection/transformers'
 import { useTableColumns } from '../../columns'
-import { connectionResourceRouteApi } from '../../route-api'
 import { draftsActions, getRowKeyByPrimaryKeys, primaryKeysKey, useTablePageStore } from '../../store'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 function ValueCell({
   value,
@@ -73,7 +75,7 @@ export function DraftsReviewDrawer({
   onSave: () => void
   onDiscardAll: () => void
 }) {
-  const { connection, connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connection, connectionResource } = useRouteContext()
   const columns = useTableColumns()
   const primaryColumns = columns.filter(c => c.primaryKey).map(c => c.id)
   const store = useTablePageStore()

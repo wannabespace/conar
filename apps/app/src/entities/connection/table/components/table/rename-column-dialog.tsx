@@ -14,12 +14,14 @@ import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { RiInformationLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { renameColumnQuery, resourceRowsQueryInfiniteOptions, resourceTableColumnsQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { queryClient } from '~/main'
-import { connectionResourceRouteApi } from '../../route-api'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 interface RenameColumnDialogProps {
   ref: React.RefObject<{
@@ -28,7 +30,7 @@ interface RenameColumnDialogProps {
 }
 
 export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
-  const { connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const [newColumnName, setNewColumnName] = useState('')
   const [schema, setSchema] = useState('')
   const [table, setTable] = useState('')

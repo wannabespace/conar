@@ -4,10 +4,12 @@ import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
 import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
 import { RiLoaderLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
-import { connectionResourceRouteApi } from '../../route-api'
 import { TableEmpty } from './table-empty'
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export function TableInfiniteLoader({
   table,
@@ -20,7 +22,7 @@ export function TableInfiniteLoader({
   filters: ActiveFilter[]
   orderBy: Record<string, 'ASC' | 'DESC'>
 }) {
-  const { connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const { fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery(
     resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }),
   )

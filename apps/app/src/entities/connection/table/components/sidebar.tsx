@@ -5,15 +5,17 @@ import { Switch } from '@conar/ui/components/switch'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiCloseLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
-import { connectionResourceRouteApi } from '../route-api'
 import { TablesTree } from './tables-tree'
 
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
 export function Sidebar() {
-  const { connection, connectionResource } = connectionResourceRouteApi.useRouteContext()
+  const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const search = useSubscription(store, { selector: state => state.tablesSearch })
