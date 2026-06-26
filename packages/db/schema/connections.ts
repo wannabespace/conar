@@ -1,6 +1,6 @@
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
-import { defineRelations } from 'drizzle-orm'
+import { defineRelationsPart } from 'drizzle-orm'
 import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-orm/arktype'
 import * as d from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
@@ -39,7 +39,7 @@ export const connectionsResourcesSelectSchema = createSelectSchema(connectionsRe
 export const connectionsResourcesUpdateSchema = createUpdateSchema(connectionsResources)
 export const connectionsResourcesInsertSchema = createInsertSchema(connectionsResources)
 
-export const connectionsRelations = defineRelations({ connections, connectionsResources, users }, r => ({
+export const connectionsRelations = defineRelationsPart({ connections, connectionsResources, users }, r => ({
   connections: {
     user: r.one.users({
       from: r.connections.userId,

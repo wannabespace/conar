@@ -17,8 +17,8 @@ export const create = orpc
       .from(connections)
       .where(and(inArray(connections.id, connectionIds), eq(connections.userId, context.user.id)))
 
-    if (foundConnections.length !== connectionIds.length) {
-      throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
+    if (foundConnections.length === 0) {
+      throw new ORPCError('NOT_FOUND', { message: 'Connections not found' })
     }
 
     const inserted = await db.insert(connectionsResources).values(input).onConflictDoNothing().returning()

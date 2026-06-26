@@ -1,11 +1,59 @@
+import type { SyncConfig } from '@tanstack/react-db'
 import { GITHUB_REPO_NAME } from '@conar/shared/constants'
 import { BrowserCollectionCoordinator, createBrowserWASQLitePersistence, openBrowserWASQLiteOPFSDatabase } from '@tanstack/browser-db-sqlite-persistence'
+import { BasicIndex } from '@tanstack/react-db'
 import { posthog } from './posthog'
 
 export interface BaseTable {
   id: string
   createdAt: Date
   updatedAt: Date
+}
+
+export interface SyncTracker {
+  markSynced: (key: string, updatedAt: Date) => void
+  awaitChange: (key: string, updatedAt: Date, timeout?: number) => Promise<void>
+}
+
+export type SyncUtils = Pick<SyncTracker, 'awaitChange'>
+
+function versionKey(key: string, updatedAt: Date) {
+  return `${key}:${updatedAt.getTime()}`
+}
+
+export function createSyncTracker(): SyncTracker {
+  const synced = new Set<string>()
+  const listeners = new Set<() => void>()
+
+  return {
+    markSynced(key, updatedAt) {
+      synced.add(versionKey(key, updatedAt))
+      listeners.forEach(listener => listener())
+    },
+    awaitChange(key, updatedAt, timeout = 10_000) {
+      const versioned = versionKey(key, updatedAt)
+
+      if (synced.has(versioned))
+        return Promise.resolve()
+
+      return new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => {
+          listeners.delete(listener)
+          reject(new Error('awaitChange timed out'))
+        }, timeout)
+
+        function listener() {
+          if (!synced.has(versioned))
+            return
+          clearTimeout(timer)
+          listeners.delete(listener)
+          resolve()
+        }
+
+        listeners.add(listener)
+      })
+    },
+  }
 }
 
 const DATABASE_NAME = `${GITHUB_REPO_NAME}.sqlite`
@@ -29,6 +77,89 @@ export const persistence = createBrowserWASQLitePersistence({
   coordinator,
   schemaMismatchPolicy: 'reset',
 })
+
+export type SyncMessage<T>
+  = | { type: 'insert', value: T }
+    | { type: 'update', value: T }
+    | { type: 'delete', key: string }
+
+type MutationFn<T> = (params: {
+  transaction: { mutations: { key: string, modified: T, changes: Partial<T> }[] }
+}) => Promise<void>
+
+export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
+  id: string
+  getKey: (item: T) => string
+  events: (params: { signal: AbortSignal }) => Promise<AsyncIterable<SyncMessage<T>>>
+  sync: (params: { rows: T[], signal: AbortSignal }) => Promise<SyncMessage<T>[]>
+  onInsert?: MutationFn<T>
+  onUpdate?: MutationFn<T>
+  onDelete?: MutationFn<T>
+}
+
+export function syncCollectionOptions<T extends { updatedAt: Date }>(config: SyncCollectionConfig<T>) {
+  const tracker = createSyncTracker()
+
+  const sync: SyncConfig<T, string> = {
+    sync: ({ begin, commit, write, collection, markReady }) => {
+      const abortController = new AbortController()
+
+      const writeItem = (item: SyncMessage<T>) => {
+        if (item.type === 'delete') {
+          write({ type: 'delete', key: item.key })
+          return
+        }
+        write({ type: item.type, value: item.value })
+        tracker.markSynced(config.getKey(item.value), item.value.updatedAt)
+      }
+
+      config.events({ signal: abortController.signal })
+        .then(async (events) => {
+          if (abortController.signal.aborted)
+            return
+          markReady()
+          for await (const item of events) {
+            if (abortController.signal.aborted)
+              break
+            begin()
+            writeItem(item)
+            commit()
+          }
+        })
+        .catch(() => {
+          if (!abortController.signal.aborted)
+            markReady()
+        })
+
+      collection.toArrayWhenReady().then(async (rows) => {
+        const items = await config.sync({ rows, signal: abortController.signal })
+        if (abortController.signal.aborted)
+          return
+        begin()
+        for (const item of items) {
+          writeItem(item)
+        }
+        commit()
+      })
+
+      return () => {
+        abortController.abort(`${config.id} sync aborted`)
+      }
+    },
+  }
+
+  return {
+    id: config.id,
+    getKey: config.getKey,
+    autoIndex: 'eager' as const,
+    defaultIndexType: BasicIndex,
+    utils: { awaitChange: tracker.awaitChange },
+    onInsert: config.onInsert,
+    onUpdate: config.onUpdate,
+    onDelete: config.onDelete,
+    sync,
+  }
+}
 
 export async function clearDb() {
   try {

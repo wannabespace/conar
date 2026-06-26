@@ -1,5 +1,5 @@
 import type { AppUIMessage } from '@conar/ai/tools/helpers'
-import { defineRelations } from 'drizzle-orm'
+import { defineRelationsPart } from 'drizzle-orm'
 import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-orm/arktype'
 import * as d from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
@@ -39,7 +39,7 @@ export const chatsMessagesSelectSchema = createSelectSchema(chatsMessages)
 export const chatsMessagesInsertSchema = createInsertSchema(chatsMessages)
 export const chatsMessagesUpdateSchema = createUpdateSchema(chatsMessages)
 
-export const chatsRelations = defineRelations({ chats, chatsMessages, users, connectionsResources }, r => ({
+export const chatsRelations = defineRelationsPart({ chats, chatsMessages, users, connectionsResources }, r => ({
   chats: {
     user: r.one.users({
       from: r.chats.userId,

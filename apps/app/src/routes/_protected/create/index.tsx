@@ -21,7 +21,7 @@ import { useCollections } from '~/entities/connection/collections'
 import { useLocalProxyAvailable } from '~/entities/connection/proxy'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 import { getConnectionStore } from '~/entities/connection/store'
-import { createConnectionAction } from '~/entities/connection/sync'
+import { createConnectionTransaction } from '~/entities/connection/sync'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching'
 import { generateRandomName } from '~/utils/utils'
@@ -72,7 +72,7 @@ function CreateConnectionPage() {
       const createdAt = new Date()
       const { connectionStringsCollection, connectionsResourcesCollection } = collections
 
-      const tx = createConnectionAction({
+      const tx = createConnectionTransaction({
         connectionString: await connectionStringsCollection.utils.prepare({
           connectionId: id,
           connectionString: url.toString(),
@@ -110,10 +110,9 @@ function CreateConnectionPage() {
         await tx.isPersisted.promise
       }
 
-      toast.success('Connection created successfully 🎉')
-
       prefetchConnectionResourceCore(connectionsResourcesCollection.get(resourceId)!)
       router.navigate({ to: '/connection/$resourceId/table', params: { resourceId } })
+      toast.success('Connection created successfully 🎉')
     },
   })
 
