@@ -1,4 +1,4 @@
-# https://conar.app
+# https://tamery.app
 User-agent: *
 Allow: /
 

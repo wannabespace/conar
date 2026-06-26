@@ -1,24 +1,24 @@
-# Conar
+# Tamery
 
-> Conar is an AI-powered, open-source database client for Postgres, MySQL, MSSQL, and ClickHouse. It lets developers write queries, explore and edit data, and manage databases with AI handling the complexity. Available as a native desktop app for macOS, Windows, and Linux.
+> Tamery is an AI-powered, open-source database client for Postgres, MySQL, MSSQL, and ClickHouse. It lets developers write queries, explore and edit data, and manage databases with AI handling the complexity. Available as a native desktop app for macOS, Windows, and Linux.
 
 ## Key facts
 
 - Supported databases: PostgreSQL, MySQL, Microsoft SQL Server (MSSQL), ClickHouse
 - Platforms: macOS (Apple Silicon & Intel), Windows, Linux (DEB, RPM, AppImage)
-- Open source: https://github.com/wannabespace/conar
-- Install via Homebrew: `brew install --cask conar`
+- Open source: https://github.com/wannabespace/tamery
+- Install via Homebrew: `brew install --cask tamery`
 
 ## Pages
 
-- [Home](https://conar.app): Product overview, features, and pricing
-- [Download](https://conar.app/download): Download links for macOS, Windows, and Linux
-- [Releases](https://conar.app/releases): Changelog and version history
-- [Privacy Policy](https://conar.app/privacy-policy): How Conar handles your data
-- [Terms of Service](https://conar.app/terms-of-service): Terms and conditions
+- [Home](https://tamery.app): Product overview, features, and pricing
+- [Download](https://tamery.app/download): Download links for macOS, Windows, and Linux
+- [Releases](https://tamery.app/releases): Changelog and version history
+- [Privacy Policy](https://tamery.app/privacy-policy): How Tamery handles your data
+- [Terms of Service](https://tamery.app/terms-of-service): Terms and conditions
 
 ## Links
 
-- GitHub: https://github.com/wannabespace/conar
-- X / Twitter: https://x.com/conar_app
+- GitHub: https://github.com/wannabespace/tamery
+- X / Twitter: https://x.com/tamery_app
 - Discord: https://discord.gg/XweDPUVadR
