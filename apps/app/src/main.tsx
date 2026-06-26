@@ -1,12 +1,12 @@
 /* eslint-disable perfectionist/sort-imports */
-import '@conar/shared/arktype-config'
+import '@tamery/shared/arktype-config'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { routeTree } from './routeTree.gen'
 import './monaco-worker'
 import './assets/styles.css'
-import '@conar/ui/globals.css'
+import '@tamery/ui/globals.css'
 import { toast } from 'sonner'
 import { isSignedIn } from './lib/auth'
 

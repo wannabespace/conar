@@ -1,7 +1,7 @@
-import type { Filter } from '@conar/shared/filters'
+import type { Filter } from '@tamery/shared/filters'
 import type { RefObject } from 'react'
-import { FILTER_GROUPS, SQL_FILTERS_GROUPED } from '@conar/shared/filters'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
+import { FILTER_GROUPS, SQL_FILTERS_GROUPED } from '@tamery/shared/filters'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@tamery/ui/components/command'
 
 export function FiltersSelector({
   ref,

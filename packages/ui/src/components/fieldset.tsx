@@ -1,6 +1,6 @@
 import type * as React from 'react'
 import { Fieldset as FieldsetPrimitive } from '@base-ui/react/fieldset'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 
 export function Fieldset({
   className,

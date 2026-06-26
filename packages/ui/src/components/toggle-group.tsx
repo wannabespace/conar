@@ -2,11 +2,11 @@ import type { Toggle as TogglePrimitive } from '@base-ui/react/toggle'
 import type { VariantProps } from 'class-variance-authority'
 import type { toggleVariants } from './toggle.variants'
 import { ToggleGroup as ToggleGroupPrimitive } from '@base-ui/react/toggle-group'
-import { Separator } from '@conar/ui/components/separator'
+import { Separator } from '@tamery/ui/components/separator'
 import {
   Toggle as ToggleComponent,
-} from '@conar/ui/components/toggle'
-import { cn } from '@conar/ui/lib/utils'
+} from '@tamery/ui/components/toggle'
+import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
 const ToggleGroupContext: React.Context<

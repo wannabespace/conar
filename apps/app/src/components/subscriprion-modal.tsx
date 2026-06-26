@@ -1,6 +1,6 @@
-import { Button } from '@conar/ui/components/button'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@conar/ui/components/dialog'
 import { RiExternalLinkLine, RiVipCrownLine } from '@remixicon/react'
+import { Button } from '@tamery/ui/components/button'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@tamery/ui/components/dialog'
 import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
@@ -14,7 +14,7 @@ export function SubscriptionModal() {
   useEffect(() => {
     if (isSubscriptionDialogOpen && subscription) {
       setIsSubscriptionDialogOpen(false)
-      toast.success('Subscription successful! Conar Pro features are now unlocked.')
+      toast.success('Subscription successful! Tamery Pro features are now unlocked.')
     }
   }, [isSubscriptionDialogOpen, subscription])
 
@@ -38,7 +38,7 @@ export function SubscriptionModal() {
             <DialogTitle className="font-semibold text-primary">Pro Feature</DialogTitle>
           </div>
           <DialogDescription className="text-foreground">
-            Subscribe to Pro to access this feature and unlock the full power of Conar.
+            Subscribe to Pro to access this feature and unlock the full power of Tamery.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
@@ -47,7 +47,7 @@ export function SubscriptionModal() {
           "
           >
             <div className="space-y-1">
-              <p className="text-sm font-medium">Conar is indie & user-supported</p>
+              <p className="text-sm font-medium">Tamery is indie & user-supported</p>
               <p className="text-sm text-muted-foreground">
                 Your subscription directly supports our work and future development.
               </p>

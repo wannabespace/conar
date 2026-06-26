@@ -1,7 +1,7 @@
 import type { editor } from 'monaco-editor'
 import type { RefObject } from 'react'
 import type { Root } from 'react-dom/client'
-import { renderWithRoot } from '@conar/ui/lib/render'
+import { renderWithRoot } from '@tamery/ui/lib/render'
 import { useEffect, useEffectEvent } from 'react'
 import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
 import { Route } from '../..'

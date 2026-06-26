@@ -1,5 +1,5 @@
-import { Switch } from '@conar/ui/components/switch'
-import { cn } from '@conar/ui/lib/utils'
+import { Switch } from '@tamery/ui/components/switch'
+import { cn } from '@tamery/ui/lib/utils'
 
 export function CellSwitch({
   checked,

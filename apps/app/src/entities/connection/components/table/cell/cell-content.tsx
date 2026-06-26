@@ -1,7 +1,7 @@
-import type { TableCellProps } from '@conar/table'
+import type { TableCellProps } from '@tamery/table'
 import type { ComponentProps } from 'react'
 import type { Column } from './utils'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 
 export function TableCellContent({
   className,

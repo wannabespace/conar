@@ -1,26 +1,6 @@
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { RemixiconComponentType } from '@remixicon/react'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { GeneratorFormat } from '~/entities/connection/generators/utils'
-import { Button } from '@conar/ui/components/button'
-import { CopyButton } from '@conar/ui/components/custom/copy-button'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@conar/ui/components/dialog'
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from '@conar/ui/components/tabs'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@conar/ui/components/tooltip'
-import { cn } from '@conar/ui/lib/utils'
 import {
   RiCodeSSlashLine,
   RiDatabase2Line,
@@ -30,6 +10,26 @@ import {
   RiTerminalBoxLine,
   RiTriangleLine,
 } from '@remixicon/react'
+import { Button } from '@tamery/ui/components/button'
+import { CopyButton } from '@tamery/ui/components/custom/copy-button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@tamery/ui/components/dialog'
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from '@tamery/ui/components/tabs'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
+import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'

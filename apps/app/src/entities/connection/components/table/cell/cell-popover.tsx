@@ -1,14 +1,14 @@
 import type { editor } from 'monaco-editor'
 import type { Dispatch, SetStateAction } from 'react'
-import { Button } from '@conar/ui/components/button'
-import { Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput, ComboboxEmpty, ComboboxItem, ComboboxList, ComboboxPopup, ComboboxValue } from '@conar/ui/components/combobox'
-import { CopyButton } from '@conar/ui/components/custom/copy-button'
-import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
-import { KbdCtrlEnter } from '@conar/ui/components/custom/shortcuts'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
+import { Button } from '@tamery/ui/components/button'
+import { Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput, ComboboxEmpty, ComboboxItem, ComboboxList, ComboboxPopup, ComboboxValue } from '@tamery/ui/components/combobox'
+import { CopyButton } from '@tamery/ui/components/custom/copy-button'
+import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
+import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@tamery/ui/components/select'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
@@ -186,7 +186,7 @@ export function CellPopoverContent({
     monacoRef.current.focus()
 
     const disposable = monacoRef.current.addAction({
-      id: 'conar.execute-on-enter',
+      id: 'tamery.execute-on-enter',
       label: 'Execute on Enter',
       keybindings: [KeyMod.CtrlCmd | KeyCode.Enter],
       run: () => {

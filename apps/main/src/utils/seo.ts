@@ -11,7 +11,7 @@ export function seo({
   keywords?: string
   url?: string
 }) {
-  const pageUrl = url ?? 'https://conar.app'
+  const pageUrl = url ?? 'https://tamery.app'
 
   const tags = [
     { title },
@@ -26,7 +26,7 @@ export function seo({
     ...(image ? [{ name: 'twitter:image', content: image }] : []),
     { property: 'og:type', content: 'website' },
     { property: 'og:locale', content: 'en_US' },
-    { property: 'og:site_name', content: 'Conar' },
+    { property: 'og:site_name', content: 'Tamery' },
     { property: 'og:url', content: pageUrl },
     { property: 'og:title', content: title },
     ...(description ? [{ property: 'og:description', content: description }] : []),

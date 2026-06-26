@@ -1,7 +1,7 @@
 import { Combobox as ComboboxPrimitive } from '@base-ui/react/combobox'
-import { Input } from '@conar/ui/components/input'
-import { ScrollArea } from '@conar/ui/components/scroll-area'
-import { cn } from '@conar/ui/lib/utils'
+import { Input } from '@tamery/ui/components/input'
+import { ScrollArea } from '@tamery/ui/components/scroll-area'
+import { cn } from '@tamery/ui/lib/utils'
 import { ChevronsUpDownIcon, XIcon } from 'lucide-react'
 import * as React from 'react'
 

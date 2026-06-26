@@ -1,4 +1,4 @@
-import { db } from '@conar/db'
+import { db } from '@tamery/db'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const list = orpc

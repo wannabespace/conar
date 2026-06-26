@@ -1,12 +1,12 @@
-import type { QueryExecutor } from '@conar/connection/queries'
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import type { AnyFunction, Prettify } from '@conar/shared/utils/helpers'
 import type { BuilderWithMiddlewares, RouterClient } from '@orpc/server'
-import * as clickhouse from '@conar/connection/queries/dialects/clickhouse'
-import * as mssql from '@conar/connection/queries/dialects/mssql'
-import * as mysql from '@conar/connection/queries/dialects/mysql'
-import * as pg from '@conar/connection/queries/dialects/pg'
+import type { QueryExecutor } from '@tamery/connection/queries'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { AnyFunction, Prettify } from '@tamery/shared/utils/helpers'
 import { type } from '@orpc/server'
+import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
+import * as mssql from '@tamery/connection/queries/dialects/mssql'
+import * as mysql from '@tamery/connection/queries/dialects/mysql'
+import * as pg from '@tamery/connection/queries/dialects/pg'
 
 // eslint-disable-next-line ts/no-explicit-any
 export type AnyBuilder = BuilderWithMiddlewares<any, any, any, any, any, any>

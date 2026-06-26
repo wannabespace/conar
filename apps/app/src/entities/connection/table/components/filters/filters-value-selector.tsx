@@ -1,8 +1,8 @@
 import type { RefObject } from 'react'
-import { Button } from '@conar/ui/components/button'
-import { Command, CommandInput } from '@conar/ui/components/command'
-import { Separator } from '@conar/ui/components/separator'
 import { RiCornerDownLeftLine } from '@remixicon/react'
+import { Button } from '@tamery/ui/components/button'
+import { Command, CommandInput } from '@tamery/ui/components/command'
+import { Separator } from '@tamery/ui/components/separator'
 
 export function FilterValueSelector({
   ref,

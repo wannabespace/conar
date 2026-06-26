@@ -1,5 +1,5 @@
 import type { MotionProps } from 'motion/react'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 import { motion, useScroll, useSpring, useTransform } from 'motion/react'
 
 function transitionProps(index: number) {
@@ -49,13 +49,13 @@ function Image({ className, image, index, type }: { className?: string, image: s
   )
 
   const altTexts = [
-    'Conar database management interface overview',
-    'Conar query editor and results view',
-    'Conar table data browsing and filtering',
-    'Conar AI-powered data management features',
+    'Tamery database management interface overview',
+    'Tamery query editor and results view',
+    'Tamery table data browsing and filtering',
+    'Tamery AI-powered data management features',
   ]
 
-  const alt = altTexts[index] ?? `Conar app screenshot ${index + 1}`
+  const alt = altTexts[index] ?? `Tamery app screenshot ${index + 1}`
 
   if (index === 0) {
     return (

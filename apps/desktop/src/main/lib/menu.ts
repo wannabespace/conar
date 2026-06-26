@@ -1,5 +1,5 @@
 import type { MenuItemConstructorOptions } from 'electron'
-import { SOCIAL_LINKS } from '@conar/shared/constants'
+import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import { app, BrowserWindow, Menu, shell } from 'electron'
 import { autoUpdater, createWindow } from '../main'
 
@@ -36,10 +36,10 @@ function buildTemplate(): MenuItemConstructorOptions[] {
   if (isMac) {
     const appMenu = {
       role: 'appMenu',
-      label: 'Conar',
+      label: 'Tamery',
       submenu: [
         {
-          label: 'About Conar',
+          label: 'About Tamery',
           selector: 'orderFrontStandardAboutPanel:',
         },
         {
@@ -50,7 +50,7 @@ function buildTemplate(): MenuItemConstructorOptions[] {
         },
         { type: 'separator' },
         {
-          label: 'Hide Conar',
+          label: 'Hide Tamery',
           accelerator: 'Command+H',
           selector: 'hide:',
         },
@@ -114,9 +114,9 @@ function buildTemplate(): MenuItemConstructorOptions[] {
     label: 'Help',
     submenu: [
       {
-        label: 'Conar Website',
+        label: 'Tamery Website',
         click() {
-          shell.openExternal('https://conar.app')
+          shell.openExternal('https://tamery.app')
         },
       },
       {

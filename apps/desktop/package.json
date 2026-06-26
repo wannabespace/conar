@@ -1,14 +1,14 @@
 {
-  "name": "@conar/desktop",
+  "name": "@tamery/desktop",
   "type": "module",
   "version": "0.32.0",
-  "productName": "Conar",
+  "productName": "Tamery",
   "description": "AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse.",
   "author": {
     "name": "Wannabe Space, LLC",
     "email": "wannabespace.llc@gmail.com"
   },
-  "homepage": "https://conar.app",
+  "homepage": "https://tamery.app",
   "main": "./dist-electron/main.js",
   "scripts": {
     "dev": "vite dev",
@@ -26,9 +26,9 @@
     "pg": "catalog:"
   },
   "devDependencies": {
-    "@conar/configs": "workspace:*",
-    "@conar/connection": "workspace:*",
-    "@conar/shared": "workspace:*",
+    "@tamery/configs": "workspace:*",
+    "@tamery/connection": "workspace:*",
+    "@tamery/shared": "workspace:*",
     "@todesktop/cli": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",

@@ -1,5 +1,5 @@
 import type { ComponentProps, CSSProperties } from 'react'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 
 function generateGradientLayers() {
   const baseBlur = 0.05

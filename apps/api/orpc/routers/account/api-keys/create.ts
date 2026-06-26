@@ -1,4 +1,4 @@
-import type { API_KEY_PERMISSIONS } from '@conar/shared/constants'
+import type { API_KEY_PERMISSIONS } from '@tamery/shared/constants'
 import { type } from 'arktype'
 import { auth } from '~/lib/auth'
 import { authMiddleware, orpc } from '~/orpc'

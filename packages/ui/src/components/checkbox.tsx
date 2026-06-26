@@ -1,7 +1,7 @@
 import type * as React from 'react'
-import { cn } from '@conar/ui/lib/utils'
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox'
 import { RiCheckLine } from '@remixicon/react'
+import { cn } from '@tamery/ui/lib/utils'
 
 function Checkbox({
   className,

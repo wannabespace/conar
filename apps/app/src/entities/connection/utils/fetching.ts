@@ -1,6 +1,6 @@
-import type { ActiveFilter } from '@conar/shared/filters'
+import type { ActiveFilter } from '@tamery/shared/filters'
 import type { Connection, ConnectionResource } from '~/entities/connection/core'
-import { SyncType } from '@conar/shared/enums/sync-type'
+import { SyncType } from '@tamery/shared/enums/sync-type'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useSubscription } from 'seitu/react'
 import { getCollections, useCollections } from '~/entities/collections'
@@ -101,7 +101,7 @@ export function fetchingConfig(connection: Pick<Connection, 'syncType' | 'isPass
     canSend,
     reason: canSend
       ? null
-      : 'You cannot reach this connection from the web app. Run `conar proxy` or open this connection in the desktop app.',
+      : 'You cannot reach this connection from the web app. Run `tamery proxy` or open this connection in the desktop app.',
   }
 }
 

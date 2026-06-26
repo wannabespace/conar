@@ -1,8 +1,8 @@
-pkgbase = conar-bin
+pkgbase = tamery
 	pkgdesc = AI-powered tool for working with Postgres, MySQL, MSSQL and ClickHouse.
 	pkgver = 0.31.1
 	pkgrel = 1
-	url = https://github.com/wannabespace/conar
+	url = https://github.com/wannabespace/tamery
 	arch = x86_64
 	license = AGPL-3.0-or-later
 	depends = alsa-lib
@@ -31,7 +31,7 @@ pkgbase = conar-bin
 	depends = systemd-libs
 	options = !strip
 	options = !emptydirs
-	source_x86_64 = conar-0.31.1.deb::https://download.conar.app/linux/deb/x64
+	source_x86_64 = tamery-0.31.1.deb::https://download.tamery.app/linux/deb/x64
 	sha256sums_x86_64 = 124d34abd240ab91c3578b7051e40df393fbb7cd3a6daeb2de7d04bfe37994de
 
-pkgname = conar-bin
+pkgname = tamery

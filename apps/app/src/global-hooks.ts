@@ -1,4 +1,4 @@
-import { sleep } from '@conar/shared/utils/helpers'
+import { sleep } from '@tamery/shared/utils/helpers'
 import { createHooks } from 'hookable'
 
 let isEntered = false

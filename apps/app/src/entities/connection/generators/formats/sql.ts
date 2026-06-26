@@ -1,6 +1,6 @@
 import type { QueryParams, SchemaParams } from '..'
 import type { Column } from '../../components/table/cell'
-import { ConnectionType } from '@conar/shared/enums/connection-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { formatSql } from '~/utils/formatter'
 import { buildWhere } from '../../queries/rows'
 import { coldDialects } from '../../runtime/dialects'

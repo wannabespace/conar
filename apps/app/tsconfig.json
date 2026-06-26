@@ -1,5 +1,5 @@
 {
-  "extends": "@conar/configs/ts/react.json",
+  "extends": "@tamery/configs/ts/react.json",
   "compilerOptions": {
     "paths": {
       "~/*": ["./src/*"]

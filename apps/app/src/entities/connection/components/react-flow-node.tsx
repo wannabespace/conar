@@ -1,8 +1,8 @@
 import type { Edge, Node, NodeProps } from '@xyflow/react'
 import type { Column } from './table/cell'
-import { Button } from '@conar/ui/components/button'
-import { cn } from '@conar/ui/lib/utils'
 import { RiBookOpenLine, RiEraserLine, RiExternalLinkLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiTableLine } from '@remixicon/react'
+import { Button } from '@tamery/ui/components/button'
+import { cn } from '@tamery/ui/lib/utils'
 import { Link } from '@tanstack/react-router'
 import { Handle, Position } from '@xyflow/react'
 

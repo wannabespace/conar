@@ -1,5 +1,5 @@
-import { db } from '@conar/db'
-import { chats, chatsSelectSchema } from '@conar/db/schema'
+import { db } from '@tamery/db'
+import { chats, chatsSelectSchema } from '@tamery/db/schema'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
 import { and, eq, gte, inArray, notInArray, or } from 'drizzle-orm'

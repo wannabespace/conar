@@ -13,11 +13,11 @@
   "iconLibrary": "remixicon",
   "rtl": false,
   "aliases": {
-    "components": "@conar/ui/components",
-    "utils": "@conar/ui/lib/utils",
-    "ui": "@conar/ui/components",
-    "lib": "@conar/ui/lib",
-    "hooks": "@conar/ui/hooks"
+    "components": "@tamery/ui/components",
+    "utils": "@tamery/ui/lib/utils",
+    "ui": "@tamery/ui/components",
+    "lib": "@tamery/ui/lib",
+    "hooks": "@tamery/ui/hooks"
   },
   "menuColor": "inverted-translucent",
   "menuAccent": "subtle",

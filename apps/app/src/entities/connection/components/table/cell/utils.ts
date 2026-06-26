@@ -1,6 +1,6 @@
-import type { ActiveFilter } from '@conar/shared/filters'
+import type { ActiveFilter } from '@tamery/shared/filters'
 import type { columnType } from '~/entities/connection/queries/columns'
-import { DEFAULT_COLUMN_WIDTH } from '@conar/table/constants'
+import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 
 export interface Column {
   id: string

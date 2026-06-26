@@ -1,5 +1,5 @@
 {
-  "name": "@conar/table",
+  "name": "@tamery/table",
   "type": "module",
   "private": true,
   "exports": {
@@ -12,15 +12,15 @@
     "check-types": "tsgo"
   },
   "dependencies": {
-    "@conar/shared": "workspace:*",
-    "@conar/ui": "workspace:*",
     "@fluentui/react-context-selector": "catalog:",
     "@remixicon/react": "catalog:",
+    "@tamery/shared": "workspace:*",
+    "@tamery/ui": "workspace:*",
     "@tanstack/react-virtual": "catalog:",
     "react": "catalog:"
   },
   "devDependencies": {
-    "@conar/configs": "workspace:*",
+    "@tamery/configs": "workspace:*",
     "@types/react": "catalog:"
   }
 }

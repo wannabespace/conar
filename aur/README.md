@@ -1,11 +1,11 @@
-Conar : https://github.com/wannabespace/conar
-AUR   : https://aur.archlinux.org/packages/conar-bin
+Tamery : https://github.com/wannabespace/tamery
+AUR   : https://aur.archlinux.org/packages/tamery
 
 If you want to help, feel free to fork & open a PR.
 
 ## Syncing versions with the repo
 
-The AUR package (`conar-bin`) is kept in sync with the app version from this repo.
+The AUR package (`tamery-bin`) is kept in sync with the app version from this repo.
 
 - **Source of truth:** `apps/desktop/package.json` → `version`
 - **Synced files:** `aur/PKGBUILD` (`pkgver`) and `aur/.SRCINFO`
@@ -22,7 +22,7 @@ pnpm run aur:sync:checksum
 
 After running, push the updated `aur/` files to the AUR package:
 
-- Clone: `git clone ssh://aur@aur.archlinux.org/conar-bin.git` (or use your AUR helper)
+- Clone: `git clone ssh://aur@aur.archlinux.org/tamery.git` (or use your AUR helper)
 - Copy `PKGBUILD`, `.SRCINFO`, and optionally `LICENSE` from this `aur/` folder
 - Commit and push to AUR
 

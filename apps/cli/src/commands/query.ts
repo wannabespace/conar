@@ -1,13 +1,13 @@
-import type { RouterOutputs } from '@conar/api/orpc/routers'
-import type { QueryExecutor } from '@conar/connection/queries'
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { RouterOutputs } from '@tamery/api/orpc/routers'
+import type { QueryExecutor } from '@tamery/connection/queries'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import fs from 'node:fs'
 import process from 'node:process'
-import * as clickhouse from '@conar/connection/queries/dialects/clickhouse'
-import * as mssql from '@conar/connection/queries/dialects/mssql'
-import * as mysql from '@conar/connection/queries/dialects/mysql'
-import * as pg from '@conar/connection/queries/dialects/pg'
 import { boolean, command, positional, string } from '@drizzle-team/brocli'
+import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
+import * as mssql from '@tamery/connection/queries/dialects/mssql'
+import * as mysql from '@tamery/connection/queries/dialects/mysql'
+import * as pg from '@tamery/connection/queries/dialects/pg'
 import { consola } from 'consola'
 import ora from 'ora'
 import { orpc } from '~/orpc'
@@ -29,7 +29,7 @@ function fail(message: string): never {
 
 function pickConnection(connections: Connection[], identifier: string | undefined): Connection {
   if (connections.length === 0) {
-    fail('No connections found. Create one in the Conar app first.')
+    fail('No connections found. Create one in the Tamery app first.')
   }
 
   if (!identifier) {

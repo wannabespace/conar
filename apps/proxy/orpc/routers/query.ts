@@ -1,4 +1,4 @@
-import { createQueryRouter } from '@conar/query-proxy'
+import { createQueryRouter } from '@tamery/query-proxy'
 import { memoize } from 'memoza'
 import { createApiClient } from '~/api-client'
 import { authMiddleware, orpc } from '~/orpc'

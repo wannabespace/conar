@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'
 import * as templates from '../templates'

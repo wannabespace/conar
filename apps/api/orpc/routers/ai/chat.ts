@@ -1,10 +1,10 @@
-import type { AppUIMessage } from '@conar/ai/tools/helpers'
+import type { AppUIMessage } from '@tamery/ai/tools/helpers'
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
-import { tools } from '@conar/ai/tools'
-import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { streamToEventIterator } from '@orpc/server'
+import { tools } from '@tamery/ai/tools'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { createRetryableModel } from 'ai-retry/language-model'
 import { type } from 'arktype'
@@ -63,7 +63,7 @@ export const chat = orpc
           role: 'system',
           content: [
             '<role>',
-            `You are Conar AI, an expert ${input.type} database assistant embedded in a production database editor. You help users write, understand, debug, and optimize SQL queries. You are concise, precise, and security-conscious.`,
+            `You are Tamery AI, an expert ${input.type} database assistant embedded in a production database editor. You help users write, understand, debug, and optimize SQL queries. You are concise, precise, and security-conscious.`,
             '</role>',
             '',
             '<rules>',

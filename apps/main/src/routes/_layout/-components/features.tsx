@@ -1,9 +1,9 @@
 import type { ComponentProps } from 'react'
-import { Button } from '@conar/ui/components/button'
-import { Input } from '@conar/ui/components/input'
-import { Separator } from '@conar/ui/components/separator'
-import { cn } from '@conar/ui/lib/utils'
 import { RiAddLine, RiBardLine, RiChatAiLine, RiCloseLine, RiCloudLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiEyeLine, RiFilterLine, RiSendPlaneLine, RiUserLine } from '@remixicon/react'
+import { Button } from '@tamery/ui/components/button'
+import { Input } from '@tamery/ui/components/input'
+import { Separator } from '@tamery/ui/components/separator'
+import { cn } from '@tamery/ui/lib/utils'
 
 interface FeatureCardProps extends ComponentProps<'article'> {
   featureId: string

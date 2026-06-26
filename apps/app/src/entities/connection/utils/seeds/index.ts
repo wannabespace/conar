@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { Column } from '../../components/table/cell'
 import { faker } from '@faker-js/faker'
 import { sql } from 'kysely'

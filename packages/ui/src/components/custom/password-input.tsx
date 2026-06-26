@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
-import { Button } from '@conar/ui/components/button'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
+import { Button } from '@tamery/ui/components/button'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@tamery/ui/components/input-group'
 import { useState } from 'react'
 
 export function PasswordInput(props: Omit<ComponentProps<typeof InputGroupInput>, 'type'>) {

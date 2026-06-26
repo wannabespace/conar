@@ -1,7 +1,8 @@
 import type { draftType } from '../../store'
-import { pick } from '@conar/shared/utils/helpers'
-import { Button } from '@conar/ui/components/button'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { RiAlertLine, RiArrowGoBackLine, RiArrowRightLine, RiSaveLine } from '@remixicon/react'
+import { pick } from '@tamery/shared/utils/helpers'
+import { Button } from '@tamery/ui/components/button'
+import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
   Drawer,
   DrawerClose,
@@ -11,16 +12,15 @@ import {
   DrawerPanel,
   DrawerPopup,
   DrawerTitle,
-} from '@conar/ui/components/drawer'
+} from '@tamery/ui/components/drawer'
 import {
   Frame,
   FrameHeader,
   FramePanel,
   FrameTitle,
-} from '@conar/ui/components/frame'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { cn } from '@conar/ui/lib/utils'
-import { RiAlertLine, RiArrowGoBackLine, RiArrowRightLine, RiSaveLine } from '@remixicon/react'
+} from '@tamery/ui/components/frame'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import { cn } from '@tamery/ui/lib/utils'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'

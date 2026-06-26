@@ -1,5 +1,5 @@
-import { AppLogo } from '@conar/ui/components/brand/app-logo'
-import { Button } from '@conar/ui/components/button'
+import { AppLogo } from '@tamery/ui/components/brand/app-logo'
+import { Button } from '@tamery/ui/components/button'
 import { createFileRoute, Link, Outlet, useMatches } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { SEO } from '~/constants'
@@ -36,7 +36,7 @@ function AuthLayout() {
             className="relative z-20 flex items-center text-lg font-medium"
           >
             <AppLogo className="mr-2 size-6" />
-            Conar
+            Tamery
           </Link>
           <div className="relative z-20 mt-auto">
             <blockquote className="leading-normal text-balance">

@@ -1,5 +1,5 @@
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
 function Popover({ ...props }: PopoverPrimitive.Root.Props) {

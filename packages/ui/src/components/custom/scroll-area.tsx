@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 
 export function ScrollArea({ className, ...props }: ComponentProps<'div'>) {
   return (

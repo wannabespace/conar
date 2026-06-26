@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
-import { getOS } from '@conar/shared/utils/os'
 import { RiArrowUpLine, RiCommandLine, RiCornerDownLeftLine } from '@remixicon/react'
+import { getOS } from '@tamery/shared/utils/os'
 import { Kbd } from '../kbd'
 
 export function Ctrl({ userAgent }: { userAgent: string }) {

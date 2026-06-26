@@ -1,4 +1,4 @@
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 import { motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 

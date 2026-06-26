@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@conar/ui/components/input-otp'
-import { Label } from '@conar/ui/components/label'
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@tamery/ui/components/input-otp'
+import { Label } from '@tamery/ui/components/label'
 import { useId } from 'react'
 
 const TOTP_LENGTH = 6

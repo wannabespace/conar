@@ -1,8 +1,8 @@
 import type { ComponentProps } from 'react'
-import { Button } from '@conar/ui/components/button'
-import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { RiCheckLine, RiLoopLeftLine } from '@remixicon/react'
+import { Button } from '@tamery/ui/components/button'
+import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
+import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 
 export function RefreshButton({ refreshing, ...props }: {
   refreshing: boolean

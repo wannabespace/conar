@@ -15,7 +15,7 @@ const AUR_DIR = path.join(ROOT, 'aur')
 const PKGBUILD_PATH = path.join(AUR_DIR, 'PKGBUILD')
 const SRCINFO_PATH = path.join(AUR_DIR, '.SRCINFO')
 
-const DEB_URL = 'https://download.conar.app/linux/deb/x64'
+const DEB_URL = 'https://download.tamery.app/linux/deb/x64'
 
 function getDesktopVersion(): string {
   const pkg = JSON.parse(fs.readFileSync(DESKTOP_PKG_JSON, 'utf-8'))
@@ -27,7 +27,7 @@ function getDesktopVersion(): string {
 }
 
 const pkgverRe = /^(\s*pkgver = ).*$/m
-const sourceRe = /^(\s*source_x86_64 = )conar-[^:]+(::https:\/\/download\.conar\.app\/linux\/deb\/x64)$/m
+const sourceRe = /^(\s*source_x86_64 = )tamery-[^:]+(::https:\/\/download\.tamery\.app\/linux\/deb\/x64)$/m
 const sha256Re = /^(\s*sha256sums_x86_64 = ).*$/m
 
 function updatePkgbuild(version: string, sha256: string | null): boolean {
@@ -52,7 +52,7 @@ function updateSrcinfo(version: string, sha256: string | null): boolean {
     content = content.replace(pkgverRe, newPkgver)
     changed = true
   }
-  const newSource = `$1conar-${version}.deb$2`
+  const newSource = `$1tamery-${version}.deb$2`
   if (content.replace(sourceRe, newSource) !== content) {
     content = content.replace(sourceRe, newSource)
     changed = true

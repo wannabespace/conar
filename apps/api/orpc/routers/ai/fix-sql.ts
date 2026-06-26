@@ -1,5 +1,5 @@
 import { anthropic } from '@ai-sdk/anthropic'
-import { ConnectionType } from '@conar/shared/enums/connection-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { withPosthog } from '~/lib/posthog'

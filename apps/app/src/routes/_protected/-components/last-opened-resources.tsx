@@ -1,6 +1,6 @@
 import type { Connection, ConnectionResource } from '~/entities/connection/core'
-import { Button } from '@conar/ui/components/button'
 import { RiCloseLine } from '@remixicon/react'
+import { Button } from '@tamery/ui/components/button'
 import { eq, inArray, useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'

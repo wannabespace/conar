@@ -6,7 +6,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=conar
+      - POSTGRES_DB=tamery
     command: [postgres, -c, wal_level=logical]
     volumes:
       - postgres_data:/var/lib/postgresql/data

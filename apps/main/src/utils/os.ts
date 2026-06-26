@@ -1,4 +1,4 @@
-import { getOS } from '@conar/shared/utils/os'
+import { getOS } from '@tamery/shared/utils/os'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequestHeader } from '@tanstack/react-start/server'
 

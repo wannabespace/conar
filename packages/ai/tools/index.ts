@@ -1,6 +1,6 @@
 import type { InferUITools } from 'ai'
-import { SQL_FILTERS_LIST } from '@conar/shared/filters'
 import { webSearch } from '@exalabs/ai-sdk'
+import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
 import { tool } from 'ai'
 import * as z from 'zod/mini'

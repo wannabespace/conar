@@ -1,8 +1,8 @@
-import { challenge } from '@conar/shared/utils/challenge'
-import { title } from '@conar/shared/utils/title'
-import { AppLogoSquareMotion } from '@conar/ui/components/brand/app-logo-square'
-import { ButtonMotion } from '@conar/ui/components/button.motion'
 import { RiErrorWarningLine } from '@remixicon/react'
+import { challenge } from '@tamery/shared/utils/challenge'
+import { title } from '@tamery/shared/utils/title'
+import { AppLogoSquareMotion } from '@tamery/ui/components/brand/app-logo-square'
+import { ButtonMotion } from '@tamery/ui/components/button.motion'
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
@@ -83,7 +83,7 @@ function AuthPage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.23 }}
         >
-          Conar
+          Tamery
         </motion.h1>
         <motion.p
           className="mb-8 text-muted-foreground"
@@ -110,7 +110,7 @@ function AuthPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.33 }}
         >
-          Conar requires authentication to use AI features and cloud sync.
+          Tamery requires authentication to use AI features and cloud sync.
         </motion.p>
         <AnimatePresence mode="popLayout">
           {!!error && (

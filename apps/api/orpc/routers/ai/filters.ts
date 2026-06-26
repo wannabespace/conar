@@ -1,6 +1,6 @@
 import { google } from '@ai-sdk/google'
-import { FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT } from '@conar/shared/constants'
-import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@conar/shared/filters'
+import { FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT } from '@tamery/shared/constants'
+import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@tamery/shared/filters'
 import { generateText, Output } from 'ai'
 import { type } from 'arktype'
 import { addDays, differenceInSeconds, endOfMonth, format } from 'date-fns'

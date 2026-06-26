@@ -1,6 +1,6 @@
-import { db } from '@conar/db'
-import { chats, chatsMessages, chatsMessagesUpdateSchema } from '@conar/db/schema'
 import { ORPCError } from '@orpc/server'
+import { db } from '@tamery/db'
+import { chats, chatsMessages, chatsMessagesUpdateSchema } from '@tamery/db/schema'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
 import { orpc, subscriptionMiddleware } from '~/orpc'

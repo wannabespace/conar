@@ -20,7 +20,7 @@ export const whoamiCommand = command({
 
     if (!session) {
       clearToken()
-      consola.warn('Saved session is no longer valid. Run `conar login` to sign in again.')
+      consola.warn('Saved session is no longer valid. Run `tamery login` to sign in again.')
       return
     }
 

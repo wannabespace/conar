@@ -1,5 +1,5 @@
 import { AlertDialog as AlertDialogPrimitive } from '@base-ui/react/alert-dialog'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 
 const AlertDialog = AlertDialogPrimitive.Root
 

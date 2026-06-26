@@ -1,6 +1,6 @@
 import type Stripe from 'stripe'
-import { db } from '@conar/db'
-import { subscriptions, users } from '@conar/db/schema'
+import { db } from '@tamery/db'
+import { subscriptions, users } from '@tamery/db/schema'
 import { eq } from 'drizzle-orm'
 import { v7 } from 'uuid'
 import { env } from '~/env'

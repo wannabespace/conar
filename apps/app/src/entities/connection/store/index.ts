@@ -1,5 +1,5 @@
 import type { FileRoutesById } from '~/routeTree.gen'
-import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
+import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@tamery/shared/constants'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
 import { createStore } from 'seitu'

@@ -1,9 +1,9 @@
 import type { ComponentProps } from 'react'
-import { SOCIAL_LINKS } from '@conar/shared/constants'
-import { Avatar, AvatarFallback, AvatarImage } from '@conar/ui/components/avatar'
-import { Button } from '@conar/ui/components/button'
-import { cn } from '@conar/ui/lib/utils'
 import { RiDoubleQuotesL, RiTwitterXLine } from '@remixicon/react'
+import { SOCIAL_LINKS } from '@tamery/shared/constants'
+import { Avatar, AvatarFallback, AvatarImage } from '@tamery/ui/components/avatar'
+import { Button } from '@tamery/ui/components/button'
+import { cn } from '@tamery/ui/lib/utils'
 
 interface TestimonialCardProps extends ComponentProps<'article'> {
   testimonialId: string
@@ -138,7 +138,7 @@ function JoinTestimonials() {
           variant="link"
         >
 
-          Tag @conar_app on
+          Tag @tamery_app on
           <RiTwitterXLine
             className={`
               size-3
@@ -164,7 +164,7 @@ const testimonials: {
     login: 'steipete',
     avatar: '/avatars/steipete.png',
     link: 'https://x.com/steipete/status/1961806791404130480',
-    children: () => 'Postgres + AI is amazing. @conar_app',
+    children: () => 'Postgres + AI is amazing. @tamery_app',
   },
   {
     name: 'Maze',
@@ -178,7 +178,7 @@ const testimonials: {
     login: 'itsnoahd',
     avatar: '/avatars/itsnoahd.jpg',
     link: 'https://x.com/itsnoahd/status/1936938123570925802',
-    children: () => 'HOLY CRAP WHAT??? @conar_app where have you been? This is so much easier then pgadmin. IT ALSO has some really nice micro animations and interactions wow.',
+    children: () => 'HOLY CRAP WHAT??? @tamery_app where have you been? This is so much easier then pgadmin. IT ALSO has some really nice micro animations and interactions wow.',
   },
   {
     name: 'Ansh Rathod',
@@ -199,49 +199,49 @@ const testimonials: {
     login: 'lassejlv',
     avatar: '/avatars/lassejlv.png',
     link: 'https://x.com/lassejlv/status/1940734263772828006',
-    children: () => '@conar_app is the best database viewer i ever used, no cap 🔥',
+    children: () => '@tamery_app is the best database viewer i ever used, no cap 🔥',
   },
   {
     name: 'Dominik',
     login: 'DominikDoesDev',
     avatar: '/avatars/dominikdoesdev.jpg',
     link: 'https://x.com/DominikDoesDev/status/1942986868758372850',
-    children: () => 'Not gonna lie I was looking for something like @conar_app a while ago but couldn\'t find it until now. I think I am in love with this 😍',
+    children: () => 'Not gonna lie I was looking for something like @tamery_app a while ago but couldn\'t find it until now. I think I am in love with this 😍',
   },
   {
     name: 'Sorin Curescu',
     login: 'en3sis',
     avatar: '/avatars/en3sis.jpg',
     link: 'https://x.com/en3sis/status/1945158382396010955',
-    children: () => 'If you’re reading this, go download @conar_app now and thank me later! ;)',
+    children: () => 'If you’re reading this, go download @tamery_app now and thank me later! ;)',
   },
   {
     name: 'Berke',
     login: 'chef_berke',
     avatar: '/avatars/chef_berke.jpg',
     link: 'https://x.com/chef_berke/status/1949880848246853733',
-    children: () => 'found my new favorite db tool if you work with postgresql, definitely check this out @conar_app',
+    children: () => 'found my new favorite db tool if you work with postgresql, definitely check this out @tamery_app',
   },
   {
     name: 'Alex Holovach',
     login: 'alex_holovach',
     avatar: '/avatars/alex_holovach.jpg',
     link: 'https://x.com/alex_holovach/status/1950707905440727087',
-    children: () => 'wow I can query data at the speed of thought with @conar_app',
+    children: () => 'wow I can query data at the speed of thought with @tamery_app',
   },
   {
     name: 'Iza',
     login: 'izadoesdev',
     avatar: '/avatars/izadoesdev.jpg',
     link: 'https://x.com/izadoesdev/status/1955604787585802722',
-    children: () => 'okay why did nobody tell me how sexy @conar_app is',
+    children: () => 'okay why did nobody tell me how sexy @tamery_app is',
   },
   {
     name: 'Thanaen',
     login: 'thanaen_dev',
     avatar: '/avatars/thanaen_dev.jpg',
     link: 'https://x.com/thanaen_dev/status/2029543137375314054',
-    children: () => 'I came for the funny name (I\'m French), I stayed for the app! Very practical and pleasant to use @conar_app',
+    children: () => 'I came for the funny name (I\'m French), I stayed for the app! Very practical and pleasant to use @tamery_app',
   },
 ]
 

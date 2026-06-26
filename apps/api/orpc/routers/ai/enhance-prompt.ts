@@ -1,6 +1,6 @@
 import { openai } from '@ai-sdk/openai'
-import { db } from '@conar/db'
-import { chatsMessages } from '@conar/db/schema'
+import { db } from '@tamery/db'
+import { chatsMessages } from '@tamery/db/schema'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { asc, eq } from 'drizzle-orm'

@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
-import { cn } from '@conar/ui/lib/utils'
 import * as AccordionPrimitive from '@radix-ui/react-accordion'
+import { cn } from '@tamery/ui/lib/utils'
 import { ChevronDownIcon } from 'lucide-react'
 
 export function SingleAccordionTrigger({ children, className, ...props }: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {

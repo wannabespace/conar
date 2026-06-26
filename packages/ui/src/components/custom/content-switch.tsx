@@ -1,5 +1,5 @@
-import { noop } from '@conar/shared/utils/helpers'
-import { useMountedEffect } from '@conar/ui/hookas/use-mounted-effect'
+import { noop } from '@tamery/shared/utils/helpers'
+import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffectEvent, useState } from 'react'
 

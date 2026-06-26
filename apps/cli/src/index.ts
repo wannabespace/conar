@@ -22,8 +22,8 @@ const commands = [
 const updateCheck = checkForUpdate(currentVersion)
 
 run(commands, {
-  name: 'conar',
-  description: 'Conar CLI – manage and query your connections from the terminal.',
+  name: 'tamery',
+  description: 'Tamery CLI – manage and query your connections from the terminal.',
   version: currentVersion,
 }).catch((error: unknown) => {
   consola.error(error instanceof Error ? error.message : String(error))
@@ -34,7 +34,7 @@ run(commands, {
   if (latestVersion) {
     consola.box({
       title: 'Update available',
-      message: `${currentVersion} → ${latestVersion}\nRun \`npm i -g conar\` to update`,
+      message: `${currentVersion} → ${latestVersion}\nRun \`npm i -g tamery\` to update`,
       style: {
         borderColor: 'yellow',
       },

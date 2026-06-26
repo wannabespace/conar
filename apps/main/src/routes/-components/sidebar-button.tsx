@@ -1,5 +1,5 @@
-import { Button } from '@conar/ui/components/button'
-import { cn } from '@conar/ui/lib/utils'
+import { Button } from '@tamery/ui/components/button'
+import { cn } from '@tamery/ui/lib/utils'
 
 export function SidebarButton({
   active = false,

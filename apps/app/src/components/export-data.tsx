@@ -1,6 +1,7 @@
-import type { ActiveFilter } from '@conar/shared/filters'
-import { SQL_FILTERS_LIST } from '@conar/shared/filters'
-import { downloadFile, recordsToMarkdownTable, toCSV } from '@conar/shared/utils/files'
+import type { ActiveFilter } from '@tamery/shared/filters'
+import { RiBracesLine, RiDownloadLine, RiFileCopyLine, RiMarkdownLine, RiTableLine } from '@remixicon/react'
+import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
+import { downloadFile, recordsToMarkdownTable, toCSV } from '@tamery/shared/utils/files'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,14 +11,13 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from '@conar/ui/components/dropdown-menu'
+} from '@tamery/ui/components/dropdown-menu'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@conar/ui/components/tooltip'
-import { copy } from '@conar/ui/lib/copy'
-import { RiBracesLine, RiDownloadLine, RiFileCopyLine, RiMarkdownLine, RiTableLine } from '@remixicon/react'
+} from '@tamery/ui/components/tooltip'
+import { copy } from '@tamery/ui/lib/copy'
 import { useMutation } from '@tanstack/react-query'
 import { formatDate } from 'date-fns'
 import { handleError } from '~/utils/error'

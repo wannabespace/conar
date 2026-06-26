@@ -1,6 +1,6 @@
 import type { Column } from './utils'
-import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
+import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@tamery/ui/components/tabs'
 import { TableCellTable } from './cell-table'
 
 export function TableCellReferences({

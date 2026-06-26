@@ -1,7 +1,7 @@
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
-import { Button } from '@conar/ui/components/button'
-import { ScrollArea } from '@conar/ui/components/scroll-area'
-import { cn } from '@conar/ui/lib/utils'
+import { Button } from '@tamery/ui/components/button'
+import { ScrollArea } from '@tamery/ui/components/scroll-area'
+import { cn } from '@tamery/ui/lib/utils'
 import { XIcon } from 'lucide-react'
 
 const DialogCreateHandle = DialogPrimitive.createHandle

@@ -1,8 +1,8 @@
 import { Buffer } from 'node:buffer'
 import crypto from 'node:crypto'
-import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from '@conar/shared/constants'
 import { Octokit } from '@octokit/rest'
 import { ORPCError } from '@orpc/server'
+import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from '@tamery/shared/constants'
 import { env } from '~/env'
 import { orpc } from '~/orpc'
 

@@ -5,4 +5,4 @@ Disallow: /reset-password
 Disallow: /open
 Disallow: /account
 
-Sitemap: https://conar.app/sitemap.xml
+Sitemap: https://tamery.app/sitemap.xml

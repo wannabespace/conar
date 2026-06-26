@@ -1,5 +1,5 @@
 /* eslint-disable perfectionist/sort-imports */
-import '@conar/shared/arktype-config'
+import '@tamery/shared/arktype-config'
 import process from 'node:process'
 import { ORPCError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
@@ -8,7 +8,7 @@ import { cors } from 'hono/cors'
 import { env, nodeEnv } from './env'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
-import { sanitizeLogData } from '@conar/shared/utils/sanitize-log'
+import { sanitizeLogData } from '@tamery/shared/utils/sanitize-log'
 
 const handler = new RPCHandler(router, {
   interceptors: [
@@ -50,9 +50,9 @@ const app = new Hono<{
   .use(cors({
     origin(origin) {
       const allowedOrigins = [
-        'https://conar.app',
+        'https://tamery.app',
       ]
-      return origin.endsWith('.conar.app') || allowedOrigins.includes(origin) ? origin : null
+      return origin.endsWith('.tamery.app') || allowedOrigins.includes(origin) ? origin : null
     },
     credentials: true,
   }))

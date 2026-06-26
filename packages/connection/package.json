@@ -1,5 +1,5 @@
 {
-  "name": "@conar/connection",
+  "name": "@tamery/connection",
   "type": "module",
   "private": true,
   "scripts": {
@@ -13,11 +13,11 @@
     "pg": "catalog:"
   },
   "dependencies": {
-    "@conar/shared": "workspace:*",
+    "@tamery/shared": "workspace:*",
     "memoza": "catalog:"
   },
   "devDependencies": {
-    "@conar/configs": "workspace:*",
+    "@tamery/configs": "workspace:*",
     "@types/bun": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",

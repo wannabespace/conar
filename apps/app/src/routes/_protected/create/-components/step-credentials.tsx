@@ -1,9 +1,9 @@
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { RefObject } from 'react'
-import { placeholderMap } from '@conar/shared/utils/connections'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
-import { Field, FieldDescription, FieldLabel } from '@conar/ui/components/field'
-import { Input } from '@conar/ui/components/input'
+import { placeholderMap } from '@tamery/shared/utils/connections'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tamery/ui/components/card'
+import { Field, FieldDescription, FieldLabel } from '@tamery/ui/components/field'
+import { Input } from '@tamery/ui/components/input'
 import { useId } from 'react'
 import { useLocalProxyAvailable } from '~/entities/connection/runtime'
 
@@ -51,8 +51,8 @@ export function StepCredentials({
           {!window.electron && (
             <FieldDescription>
               {localProxyAvailable
-                ? 'Local connections will be routed through your conar proxy.'
-                : 'Run `conar proxy` to query local connections from the web.'}
+                ? 'Local connections will be routed through your tamery proxy.'
+                : 'Run `tamery proxy` to query local connections from the web.'}
             </FieldDescription>
           )}
         </Field>

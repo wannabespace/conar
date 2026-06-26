@@ -33,7 +33,7 @@ export async function sendEmail<
 
   const Template = templates[template] as (props?: P) => React.ReactElement
   const options: CreateEmailOptions = {
-    from: `Conar <${env.RESEND_FROM_EMAIL}>`,
+    from: `Tamery <${env.RESEND_FROM_EMAIL}>`,
     to,
     subject,
     react: Template(props),

@@ -1,23 +1,23 @@
 {
-  "name": "conar",
+  "name": "tamery",
   "type": "module",
   "version": "0.0.1",
-  "description": "Conar CLI – manage and query your connections from the terminal.",
+  "description": "Tamery CLI – manage and query your connections from the terminal.",
   "author": {
     "name": "Wannabe Space, LLC",
     "email": "wannabespace.llc@gmail.com"
   },
-  "homepage": "https://conar.app",
+  "homepage": "https://tamery.app",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wannabespace/conar.git",
+    "url": "git+https://github.com/wannabespace/tamery.git",
     "directory": "apps/cli"
   },
   "bugs": {
-    "url": "https://github.com/wannabespace/conar/issues"
+    "url": "https://github.com/wannabespace/tamery/issues"
   },
   "keywords": [
-    "conar",
+    "tamery",
     "cli",
     "database",
     "postgres",
@@ -27,7 +27,7 @@
     "sql"
   ],
   "bin": {
-    "conar": "./dist/index.js"
+    "tamery": "./dist/index.js"
   },
   "files": [
     "LICENSE",
@@ -56,12 +56,12 @@
     "pg": "catalog:"
   },
   "devDependencies": {
-    "@conar/api": "workspace:*",
-    "@conar/configs": "workspace:*",
-    "@conar/connection": "workspace:*",
-    "@conar/query-proxy": "workspace:*",
-    "@conar/shared": "workspace:*",
     "@orpc/server": "catalog:",
+    "@tamery/api": "workspace:*",
+    "@tamery/configs": "workspace:*",
+    "@tamery/connection": "workspace:*",
+    "@tamery/query-proxy": "workspace:*",
+    "@tamery/shared": "workspace:*",
     "@types/bun": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",

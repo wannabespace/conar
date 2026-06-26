@@ -1,4 +1,4 @@
-import type { ActiveFilter } from '@conar/shared/filters'
+import type { ActiveFilter } from '@tamery/shared/filters'
 import type { ConnectionResource } from '../core/sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'

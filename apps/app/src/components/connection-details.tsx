@@ -1,7 +1,7 @@
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import { SafeURL } from '@conar/shared/utils/safe-url'
-import { cn } from '@conar/ui/lib/utils'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
+import { SafeURL } from '@tamery/shared/utils/safe-url'
+import { cn } from '@tamery/ui/lib/utils'
 import { useState } from 'react'
 
 export function ConnectionDetails({ className, connectionString, type }: { className?: string, connectionString: string, type: ConnectionType }) {

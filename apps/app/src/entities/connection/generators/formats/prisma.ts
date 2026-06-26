@@ -1,4 +1,4 @@
-import type { ActiveFilter } from '@conar/shared/filters'
+import type { ActiveFilter } from '@tamery/shared/filters'
 import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'
 import * as templates from '../templates'

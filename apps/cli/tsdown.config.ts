@@ -16,7 +16,7 @@ export default defineConfig(({ watch }) => ({
   clean: !watch,
   outExtensions: () => ({ js: '.js' }),
   deps: {
-    alwaysBundle: [/^@conar\//],
+    alwaysBundle: [/^@tamery\//],
   },
   env: {
     API_URL: process.env.API_URL,

@@ -1,4 +1,4 @@
-import type { MaybePromise } from '@conar/shared/utils/helpers'
+import type { MaybePromise } from '@tamery/shared/utils/helpers'
 import { Redis } from 'ioredis'
 import { env } from '~/env'
 

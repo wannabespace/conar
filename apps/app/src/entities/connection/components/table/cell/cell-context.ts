@@ -1,4 +1,4 @@
-import type { ActiveFilter } from '@conar/shared/filters'
+import type { ActiveFilter } from '@tamery/shared/filters'
 import type { Dispatch, SetStateAction } from 'react'
 import type { Column } from './utils'
 import type { ValueTransformer } from '~/entities/connection/transformers'

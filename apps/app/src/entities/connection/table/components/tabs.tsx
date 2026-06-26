@@ -1,7 +1,8 @@
 import type { ComponentProps } from 'react'
 import type { ConnectionResource } from '~/entities/connection/core'
 import type { connectionResourceType } from '~/entities/connection/store'
-import { getOS } from '@conar/shared/utils/os'
+import { RiCloseLine, RiTableLine } from '@remixicon/react'
+import { getOS } from '@tamery/shared/utils/os'
 import {
   ContextMenu,
   ContextMenuContent,
@@ -9,13 +10,12 @@ import {
   ContextMenuSeparator,
   ContextMenuShortcut,
   ContextMenuTrigger,
-} from '@conar/ui/components/context-menu'
-import { KbdCtrlLetter } from '@conar/ui/components/custom/shortcuts'
-import { ScrollArea } from '@conar/ui/components/scroll-area'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { useIsInViewport } from '@conar/ui/hookas/use-is-in-viewport'
-import { cn } from '@conar/ui/lib/utils'
-import { RiCloseLine, RiTableLine } from '@remixicon/react'
+} from '@tamery/ui/components/context-menu'
+import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
+import { ScrollArea } from '@tamery/ui/components/scroll-area'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import { useIsInViewport } from '@tamery/ui/hookas/use-is-in-viewport'
+import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, useRouter, useSearch } from '@tanstack/react-router'

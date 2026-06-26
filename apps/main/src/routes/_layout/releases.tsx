@@ -1,8 +1,8 @@
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
-import { Badge } from '@conar/ui/components/badge'
-import { Card, CardContent } from '@conar/ui/components/card'
-import { Separator } from '@conar/ui/components/separator'
-import { cn } from '@conar/ui/lib/utils'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@tamery/ui/components/accordion'
+import { Badge } from '@tamery/ui/components/badge'
+import { Card, CardContent } from '@tamery/ui/components/card'
+import { Separator } from '@tamery/ui/components/separator'
+import { cn } from '@tamery/ui/lib/utils'
 import { createFileRoute } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { useState } from 'react'
@@ -14,9 +14,9 @@ export const Route = createFileRoute('/_layout/releases')({
   component: RouteComponent,
   head: () => ({
     meta: seo({
-      title: 'Releases - Conar',
-      description: 'View the latest Conar releases, changelogs, and version history. Stay up to date with new features and improvements.',
-      url: 'https://conar.app/releases',
+      title: 'Releases - Tamery',
+      description: 'View the latest Tamery releases, changelogs, and version history. Stay up to date with new features and improvements.',
+      url: 'https://tamery.app/releases',
     }),
   }),
   loader: async () => {

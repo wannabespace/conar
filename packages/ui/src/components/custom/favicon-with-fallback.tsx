@@ -1,6 +1,6 @@
-import { tryCatch } from '@conar/shared/utils/helpers'
-import { cn } from '@conar/ui/lib/utils'
 import { RiEarthLine } from '@remixicon/react'
+import { tryCatch } from '@tamery/shared/utils/helpers'
+import { cn } from '@tamery/ui/lib/utils'
 import { useState } from 'react'
 
 export function FaviconWithFallback({ url, className }: { url: string, className?: string }) {

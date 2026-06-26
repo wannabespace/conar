@@ -5,7 +5,7 @@ export default defineConfig({
   fullyParallel: true,
   reporter: [['html', { open: 'never' }]],
   use: {
-    baseURL: 'https://app.conar.localhost',
+    baseURL: 'https://app.tamery.localhost',
     trace: 'on-first-retry',
   },
   projects: [

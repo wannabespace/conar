@@ -1,5 +1,5 @@
 import type { SqlLanguage } from 'sql-formatter'
-import { ConnectionType } from '@conar/shared/enums/connection-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { format } from 'sql-formatter'
 
 export function formatSql(

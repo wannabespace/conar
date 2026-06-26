@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { Column } from '../../components'
 import type { ValueTransformer } from '../create-transformer'
 import { createClickHouseListTransformer } from './clickhouse'

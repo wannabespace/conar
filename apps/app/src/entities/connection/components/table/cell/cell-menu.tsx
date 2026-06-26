@@ -1,12 +1,12 @@
-import type { Filter } from '@conar/shared/filters'
+import type { Filter } from '@tamery/shared/filters'
 import type { CSSProperties, ReactNode } from 'react'
-import { cellToFilterValues, FILTER_GROUPS, SQL_FILTERS_GROUPED } from '@conar/shared/filters'
+import { cellToFilterValues, FILTER_GROUPS, SQL_FILTERS_GROUPED } from '@tamery/shared/filters'
 import {
   formatValueForPlainCell,
   recordToMarkdownTable,
   toCSV,
-} from '@conar/shared/utils/files'
-import { useTableContext } from '@conar/table/hooks'
+} from '@tamery/shared/utils/files'
+import { useTableContext } from '@tamery/table/hooks'
 import {
   ContextMenu,
   ContextMenuContent,
@@ -20,8 +20,8 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
-} from '@conar/ui/components/context-menu'
-import { copy } from '@conar/ui/lib/copy'
+} from '@tamery/ui/components/context-menu'
+import { copy } from '@tamery/ui/lib/copy'
 import { Fragment, useMemo } from 'react'
 import { toast } from 'sonner'
 import { useCellContext } from './cell-context'

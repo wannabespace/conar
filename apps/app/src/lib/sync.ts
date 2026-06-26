@@ -1,5 +1,5 @@
 import type { SyncConfig } from '@tanstack/react-db'
-import { GITHUB_REPO_NAME } from '@conar/shared/constants'
+import { GITHUB_REPO_NAME } from '@tamery/shared/constants'
 import { BrowserCollectionCoordinator, createBrowserWASQLitePersistence, openBrowserWASQLiteOPFSDatabase } from '@tanstack/browser-db-sqlite-persistence'
 import { BasicIndex } from '@tanstack/react-db'
 import { posthog } from './posthog'

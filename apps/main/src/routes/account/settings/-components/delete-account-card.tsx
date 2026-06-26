@@ -1,6 +1,7 @@
-import { Button } from '@conar/ui/components/button'
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from '@conar/ui/components/card'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { RiDeleteBinLine } from '@remixicon/react'
+import { Button } from '@tamery/ui/components/button'
+import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from '@tamery/ui/components/card'
+import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
   Dialog,
   DialogContent,
@@ -9,10 +10,9 @@ import {
   DialogHeader,
   DialogPanel,
   DialogTitle,
-} from '@conar/ui/components/dialog'
-import { Input } from '@conar/ui/components/input'
-import { Label } from '@conar/ui/components/label'
-import { RiDeleteBinLine } from '@remixicon/react'
+} from '@tamery/ui/components/dialog'
+import { Input } from '@tamery/ui/components/input'
+import { Label } from '@tamery/ui/components/label'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'

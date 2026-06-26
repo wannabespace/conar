@@ -1,5 +1,5 @@
-import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { RiHeart3Fill } from '@remixicon/react'
+import { Alert, AlertDescription, AlertTitle } from '@tamery/ui/components/alert'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import JSConfetti from 'js-confetti'
@@ -28,7 +28,7 @@ function RouteComponent() {
         confetti?.addConfetti()
       }, 500)
       const timeout2 = setTimeout(() => {
-        location.assign('conar://')
+        location.assign('tamery://')
       }, 2000)
       router.navigate({ to: '/account', replace: true })
       return () => {

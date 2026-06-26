@@ -1,9 +1,9 @@
-import type { UpdatesStatus } from '@conar/shared/utils/updates'
+import type { UpdatesStatus } from '@tamery/shared/utils/updates'
 import type { Rectangle } from 'electron'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { isConnectionError } from '@conar/shared/utils/connections'
+import { isConnectionError } from '@tamery/shared/utils/connections'
 import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
 import { setupProtocolHandler } from './lib/deep-link'
@@ -118,7 +118,7 @@ export function createWindow() {
   }
   else {
     mainWindow.webContents.openDevTools()
-    mainWindow.loadURL('https://app.local.conar.app')
+    mainWindow.loadURL('https://app.local.tamery.app')
   }
 
   return mainWindow

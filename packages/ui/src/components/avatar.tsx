@@ -1,6 +1,6 @@
 import type * as React from 'react'
 import { Avatar as AvatarPrimitive } from '@base-ui/react/avatar'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 
 export function Avatar({
   className,

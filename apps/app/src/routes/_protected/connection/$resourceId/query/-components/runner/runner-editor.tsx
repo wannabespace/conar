@@ -1,4 +1,4 @@
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { editor, Position } from 'monaco-editor'
 import type { RefObject } from 'react'
 import { KeyCode, KeyMod } from 'monaco-editor'
@@ -173,7 +173,7 @@ export function RunnerEditor() {
       return
 
     const disposable = monacoRef.current?.addAction({
-      id: 'conar.execute-on-enter',
+      id: 'tamery.execute-on-enter',
       label: 'Execute on Enter',
       keybindings: [KeyMod.CtrlCmd | KeyCode.Enter],
       run: (e) => {

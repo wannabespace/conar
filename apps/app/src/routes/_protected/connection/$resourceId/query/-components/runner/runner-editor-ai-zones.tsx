@@ -1,6 +1,6 @@
 import type { editor, Position } from 'monaco-editor'
 import type { Dispatch, RefObject, SetStateAction } from 'react'
-import { render } from '@conar/ui/lib/render'
+import { render } from '@tamery/ui/lib/render'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -166,7 +166,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
       return
 
     const disposable = monacoRef.current.addAction({
-      id: 'conar.execute-on-k',
+      id: 'tamery.execute-on-k',
       label: 'Execute on K',
       keybindings: [KeyMod.CtrlCmd | KeyCode.KeyK],
       run: (e) => {

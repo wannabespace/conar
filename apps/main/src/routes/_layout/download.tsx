@@ -1,15 +1,15 @@
-import type { OS } from '@conar/shared/utils/os'
 import type { RemixiconComponentType } from '@remixicon/react'
-import { BREW_INSTALL_COMMAND } from '@conar/shared/constants'
-import { osMap } from '@conar/shared/utils/os'
-import { Badge } from '@conar/ui/components/badge'
-import { AppLogoSquare } from '@conar/ui/components/brand/app-logo-square'
-import { Button } from '@conar/ui/components/button'
-import { Card } from '@conar/ui/components/card'
-import { CopyButton } from '@conar/ui/components/custom/copy-button'
-import { Linux } from '@conar/ui/components/icons/linux'
-import { Tooltip, TooltipTrigger } from '@conar/ui/components/tooltip'
+import type { OS } from '@tamery/shared/utils/os'
 import { RiAppleFill, RiTerminalLine, RiWindowsFill } from '@remixicon/react'
+import { BREW_INSTALL_COMMAND } from '@tamery/shared/constants'
+import { osMap } from '@tamery/shared/utils/os'
+import { Badge } from '@tamery/ui/components/badge'
+import { AppLogoSquare } from '@tamery/ui/components/brand/app-logo-square'
+import { Button } from '@tamery/ui/components/button'
+import { Card } from '@tamery/ui/components/card'
+import { CopyButton } from '@tamery/ui/components/custom/copy-button'
+import { Linux } from '@tamery/ui/components/icons/linux'
+import { Tooltip, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { createFileRoute } from '@tanstack/react-router'
 import { DownloadButton } from '~/components/download-button'
 import { DOWNLOAD_LINKS } from '~/constants'
@@ -22,10 +22,10 @@ export const Route = createFileRoute('/_layout/download')({
   component: RouteComponent,
   head: () => ({
     meta: seo({
-      title: 'Download Conar - Available for macOS, Windows and Linux',
-      description: 'Download Conar for macOS (Apple Silicon & Intel), Windows, and Linux. Available as DMG, EXE, DEB, RPM, and AppImage.',
+      title: 'Download Tamery - Available for macOS, Windows and Linux',
+      description: 'Download Tamery for macOS (Apple Silicon & Intel), Windows, and Linux. Available as DMG, EXE, DEB, RPM, and AppImage.',
       image: '/og-image.png',
-      url: 'https://conar.app/download',
+      url: 'https://tamery.app/download',
     }),
   }),
 })
@@ -218,7 +218,7 @@ function RouteComponent() {
         >
           Download
           {' '}
-          <strong>Conar</strong>
+          <strong>Tamery</strong>
         </h1>
         <p className={`
           mb-6 px-2 text-base text-muted-foreground

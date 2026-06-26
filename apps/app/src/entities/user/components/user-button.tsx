@@ -1,6 +1,6 @@
-import { UserAvatar } from '@conar/ui/components/custom/user-avatar'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { RiBrushLine, RiGlobalLine, RiLogoutCircleRLine, RiUserLine } from '@remixicon/react'
+import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@tamery/ui/components/dropdown-menu'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'

@@ -1,5 +1,5 @@
-import { title } from '@conar/shared/utils/title'
-import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
+import { title } from '@tamery/shared/utils/title'
+import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@tamery/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'

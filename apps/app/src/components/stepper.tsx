@@ -1,4 +1,4 @@
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 import { createContext, use, useMemo } from 'react'
 
 const StepperContext = createContext<{

@@ -21,8 +21,8 @@
     "build:desktop": {
       "cache": false
     },
-    "@conar/desktop#build": {
-      "dependsOn": ["^@conar/app#build:desktop"],
+    "@tamery/desktop#build": {
+      "dependsOn": ["^@tamery/app#build:desktop"],
       "cache": false
     },
     "build:todesktop": {

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import { RefreshButton } from '@conar/ui/components/custom/refresh-button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 
 export function DefinitionsHeader({
   children,

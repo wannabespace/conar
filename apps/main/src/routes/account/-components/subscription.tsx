@@ -1,15 +1,15 @@
 import type { ReactNode } from 'react'
 import type { PricingPlan } from '~/utils/pricing'
-import { SUBSCRIPTION_PAST_DUE_MESSAGE } from '@conar/shared/constants'
-import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
-import { Badge } from '@conar/ui/components/badge'
-import { Button } from '@conar/ui/components/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Skeleton } from '@conar/ui/components/skeleton'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { cn } from '@conar/ui/lib/utils'
 import { RiErrorWarningLine, RiHeart3Fill, RiInformationLine, RiLoader4Fill, RiTimeLine, RiWalletLine } from '@remixicon/react'
+import { SUBSCRIPTION_PAST_DUE_MESSAGE } from '@tamery/shared/constants'
+import { Alert, AlertDescription, AlertTitle } from '@tamery/ui/components/alert'
+import { Badge } from '@tamery/ui/components/badge'
+import { Button } from '@tamery/ui/components/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tamery/ui/components/card'
+import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { Skeleton } from '@tamery/ui/components/skeleton'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import { cn } from '@tamery/ui/lib/utils'
 import { useRouter } from '@tanstack/react-router'
 import { format, formatDistanceToNow } from 'date-fns'
 import { useState } from 'react'
@@ -170,10 +170,10 @@ export function Subscription() {
                       >
                         <RiHeart3Fill className="size-4" />
                       </span>
-                      <span className="font-semibold text-primary">Conar is indie & user-supported</span>
+                      <span className="font-semibold text-primary">Tamery is indie & user-supported</span>
                     </div>
                     <p className="text-balance text-foreground">
-                      Our small team works every day to improve Conar without sponsors or VCs, and on our own terms.
+                      Our small team works every day to improve Tamery without sponsors or VCs, and on our own terms.
                     </p>
                     <p className="text-balance text-muted-foreground">
                       Your subscription directly supports our work and future development.

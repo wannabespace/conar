@@ -1,5 +1,5 @@
-import { db } from '@conar/db'
-import { queries } from '@conar/db/schema/queries'
+import { db } from '@tamery/db'
+import { queries } from '@tamery/db/schema/queries'
 import { type } from 'arktype'
 import { and, eq, inArray } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'

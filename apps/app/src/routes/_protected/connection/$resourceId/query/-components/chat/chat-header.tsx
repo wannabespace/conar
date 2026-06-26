@@ -1,8 +1,9 @@
 import type { ComponentRef } from 'react'
 import type { Chat } from '~/entities/chat/sync'
-import { Button } from '@conar/ui/components/button'
-import { CardTitle } from '@conar/ui/components/card'
-import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
+import { RiAddLine, RiDeleteBin7Line, RiHistoryLine } from '@remixicon/react'
+import { Button } from '@tamery/ui/components/button'
+import { CardTitle } from '@tamery/ui/components/card'
+import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,10 +12,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@conar/ui/components/dropdown-menu'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { cn } from '@conar/ui/lib/utils'
-import { RiAddLine, RiDeleteBin7Line, RiHistoryLine } from '@remixicon/react'
+} from '@tamery/ui/components/dropdown-menu'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import { cn } from '@tamery/ui/lib/utils'
 import { useLiveQuery } from '@tanstack/react-db'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { getMonth, getWeek, getYear, isToday, isYesterday } from 'date-fns'

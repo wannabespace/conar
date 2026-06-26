@@ -1,15 +1,5 @@
-import type { ToolUIPart } from '@conar/ai/tools/helpers'
+import type { ToolUIPart } from '@tamery/ai/tools/helpers'
 import type { editor } from 'monaco-editor'
-import { FaviconWithFallback } from '@conar/ui/components/custom/favicon-with-fallback'
-import {
-  SingleAccordion,
-  SingleAccordionContent,
-  SingleAccordionTrigger,
-  SingleAccordionTriggerArrow,
-} from '@conar/ui/components/custom/single-accordion'
-import { Spinner } from '@conar/ui/components/spinner'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import { cn } from '@conar/ui/lib/utils'
 import {
   RiBook2Line,
   RiEarthLine,
@@ -17,6 +7,16 @@ import {
   RiHammerLine,
   RiSearchLine,
 } from '@remixicon/react'
+import { FaviconWithFallback } from '@tamery/ui/components/custom/favicon-with-fallback'
+import {
+  SingleAccordion,
+  SingleAccordionContent,
+  SingleAccordionTrigger,
+  SingleAccordionTriggerArrow,
+} from '@tamery/ui/components/custom/single-accordion'
+import { Spinner } from '@tamery/ui/components/spinner'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import { cn } from '@tamery/ui/lib/utils'
 import { InfoTable } from '~/components/info-table'
 import { Monaco } from '~/components/monaco'
 

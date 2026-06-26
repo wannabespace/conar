@@ -1,7 +1,7 @@
 /* eslint-disable react/no-array-index-key */
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '@conar/table/constants'
-import { useTableContext } from '@conar/table/hooks'
-import { cn } from '@conar/ui/lib/utils'
+import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '@tamery/table/constants'
+import { useTableContext } from '@tamery/table/hooks'
+import { cn } from '@tamery/ui/lib/utils'
 import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components'
 
 const ROWS_COUNT = 20

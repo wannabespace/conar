@@ -1,6 +1,6 @@
 import type * as React from 'react'
 import { Field as FieldPrimitive } from '@base-ui/react/field'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 
 export function Field({
   className,

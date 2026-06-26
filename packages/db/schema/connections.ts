@@ -1,5 +1,5 @@
-import { ConnectionType } from '@conar/shared/enums/connection-type'
-import { SyncType } from '@conar/shared/enums/sync-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { SyncType } from '@tamery/shared/enums/sync-type'
 import { defineRelationsPart } from 'drizzle-orm'
 import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-orm/arktype'
 import * as d from 'drizzle-orm/pg-core'

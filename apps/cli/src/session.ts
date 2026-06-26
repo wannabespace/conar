@@ -42,7 +42,7 @@ export async function getSession(): Promise<Session | null> {
 
 export async function requireSession(): Promise<Session> {
   if (!getToken()) {
-    consola.error('You are not signed in. Run `conar login` first.')
+    consola.error('You are not signed in. Run `tamery login` first.')
     process.exit(1)
   }
 
@@ -52,7 +52,7 @@ export async function requireSession(): Promise<Session> {
 
   if (!session) {
     clearToken()
-    consola.fail('Your session has expired. Run `conar login` to sign in again.')
+    consola.fail('Your session has expired. Run `tamery login` to sign in again.')
     process.exit(1)
   }
 

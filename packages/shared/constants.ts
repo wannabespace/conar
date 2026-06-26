@@ -3,19 +3,19 @@ import { ConnectionType } from './enums/connection-type'
 export { PORTS } from './ports'
 
 export const SOCIAL_LINKS = {
-  GITHUB: 'https://github.com/wannabespace/conar',
-  TWITTER: 'https://x.com/conar_app',
+  GITHUB: 'https://github.com/wannabespace/tamery',
+  TWITTER: 'https://x.com/tamery_app',
   DISCORD: 'https://discord.gg/XweDPUVadR',
 } as const
 
 export const GITHUB_REPO_OWNER = 'wannabespace' as const
-export const GITHUB_REPO_NAME = 'conar' as const
+export const GITHUB_REPO_NAME = 'tamery' as const
 
 export const SUPPORT_EMAIL = 'valerii.strilets@gmail.com'
 
-export const BREW_INSTALL_COMMAND = 'brew install --cask conar'
+export const BREW_INSTALL_COMMAND = 'brew install --cask tamery'
 
-export const AUTH_COOKIE_PREFIX = 'conar' as const
+export const AUTH_COOKIE_PREFIX = 'tamery' as const
 
 export const LABEL_OPTIONS = ['Local', 'Test', 'Dev', 'Staging', 'Prod']
 

@@ -1,5 +1,5 @@
 import { useChat } from '@ai-sdk/react'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useRouter } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'

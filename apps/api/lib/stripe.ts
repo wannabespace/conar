@@ -5,7 +5,7 @@ export const stripe = env.STRIPE_SECRET_KEY
   ? new Stripe(env.STRIPE_SECRET_KEY, {
       apiVersion: '2026-05-27.dahlia',
       appInfo: {
-        name: 'Conar',
+        name: 'Tamery',
         url: env.MAIN_URL,
       },
     })

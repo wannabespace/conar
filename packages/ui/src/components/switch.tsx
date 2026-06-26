@@ -1,6 +1,6 @@
 import type * as React from 'react'
 import { Switch as SwitchPrimitive } from '@base-ui/react/switch'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 
 export function Switch({
   className,

@@ -1,12 +1,12 @@
-import type { RouterOutputs } from '@conar/api/orpc/routers'
+import type { RouterOutputs } from '@tamery/api/orpc/routers'
 import process from 'node:process'
-import { createQueryRouter } from '@conar/query-proxy'
-import { PORTS } from '@conar/shared/constants'
-import { SafeURL } from '@conar/shared/utils/safe-url'
 import { command } from '@drizzle-team/brocli'
 import { serve } from '@hono/node-server'
 import { ORPCError, os, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
+import { createQueryRouter } from '@tamery/query-proxy'
+import { PORTS } from '@tamery/shared/constants'
+import { SafeURL } from '@tamery/shared/utils/safe-url'
 import { consola } from 'consola'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
@@ -55,7 +55,7 @@ export const proxyCommand = command({
       if (input.resourceId) {
         const resource = resources.find(r => r.id === input.resourceId)
         if (!resource) {
-          throw new ORPCError('NOT_FOUND', { message: `Resource "${input.resourceId}" not found in local cache. Try restarting \`conar proxy\`.` })
+          throw new ORPCError('NOT_FOUND', { message: `Resource "${input.resourceId}" not found in local cache. Try restarting \`tamery proxy\`.` })
         }
 
         const conn = connections.find(c => c.id === resource.connectionId)
@@ -71,7 +71,7 @@ export const proxyCommand = command({
       if (input.connectionId) {
         const conn = connections.find(c => c.id === input.connectionId)
         if (!conn) {
-          throw new ORPCError('NOT_FOUND', { message: `Connection "${input.connectionId}" not found in local cache. Try restarting \`conar proxy\`.` })
+          throw new ORPCError('NOT_FOUND', { message: `Connection "${input.connectionId}" not found in local cache. Try restarting \`tamery proxy\`.` })
         }
         return conn.connectionString
       }
@@ -198,7 +198,7 @@ export const proxyCommand = command({
       hostname: '127.0.0.1',
     }, () => {
       consola.box({
-        title: 'Conar Local Proxy',
+        title: 'Tamery Local Proxy',
         message: [
           `Listening on http://127.0.0.1:${PORTS.LOCAL_PROXY}`,
           `Signed in as ${session.user.email}`,

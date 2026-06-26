@@ -1,5 +1,5 @@
-import { Button } from '@conar/ui/components/button'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+import { Button } from '@tamery/ui/components/button'
+import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
   Dialog,
   DialogContent,
@@ -9,9 +9,9 @@ import {
   DialogPanel,
   DialogTitle,
   DialogTrigger,
-} from '@conar/ui/components/dialog'
-import { Input } from '@conar/ui/components/input'
-import { Label } from '@conar/ui/components/label'
+} from '@tamery/ui/components/dialog'
+import { Input } from '@tamery/ui/components/input'
+import { Label } from '@tamery/ui/components/label'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { QRCode } from 'react-qr-code'

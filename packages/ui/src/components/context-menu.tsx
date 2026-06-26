@@ -1,5 +1,5 @@
 import { ContextMenu as ContextMenuPrimitive } from '@base-ui/react/context-menu'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 import { CheckIcon, ChevronRightIcon } from 'lucide-react'
 import * as React from 'react'
 

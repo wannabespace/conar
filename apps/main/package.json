@@ -1,7 +1,7 @@
 {
-  "name": "@conar/main",
+  "name": "@tamery/main",
   "type": "module",
-  "portless": "main.local.conar",
+  "portless": "main.local.tamery",
   "scripts": {
     "dev": "portless run vite dev",
     "build": "vite build",
@@ -35,14 +35,14 @@
     "ua-parser-js": "catalog:"
   },
   "devDependencies": {
-    "@conar/api": "workspace:*",
-    "@conar/configs": "workspace:*",
-    "@conar/shared": "workspace:*",
-    "@conar/ui": "workspace:*",
     "@orpc/server": "catalog:",
     "@remixicon/react": "catalog:",
     "@rolldown/plugin-babel": "catalog:",
     "@tailwindcss/vite": "catalog:",
+    "@tamery/api": "workspace:*",
+    "@tamery/configs": "workspace:*",
+    "@tamery/shared": "workspace:*",
+    "@tamery/ui": "workspace:*",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@typescript/native-preview": "catalog:",

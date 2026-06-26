@@ -1,6 +1,6 @@
-import { connectionLabels, ConnectionType } from '@conar/shared/enums/connection-type'
-import { Button } from '@conar/ui/components/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
+import { connectionLabels, ConnectionType } from '@tamery/shared/enums/connection-type'
+import { Button } from '@tamery/ui/components/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tamery/ui/components/card'
 import { ConnectionIcon } from '~/entities/connection/components'
 import { MongoIcon } from '~/icons/mongo'
 

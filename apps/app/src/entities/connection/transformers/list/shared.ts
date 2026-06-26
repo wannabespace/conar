@@ -1,4 +1,4 @@
-import { tryParseJson } from '@conar/shared/utils/helpers'
+import { tryParseJson } from '@tamery/shared/utils/helpers'
 
 export function parseToArray<T>(
   value: T,

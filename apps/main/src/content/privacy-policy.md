@@ -1,6 +1,6 @@
 ## 1. Introduction
 
-Conar ("we," "our," "us"), owned by Wannabe Space, LLC, is a database management application. This Privacy Policy describes what data we collect, how we store and protect it, and what we never touch.
+Tamery ("we," "our," "us"), owned by Wannabe Space, LLC, is a database management application. This Privacy Policy describes what data we collect, how we store and protect it, and what we never touch.
 
 ## 2. What We Store
 
@@ -54,7 +54,7 @@ Email/password, Google OAuth, GitHub OAuth, magic links, two-factor authenticati
 
 **You are solely responsible for maintaining your own backups of your databases and their contents.** We do not back up your database data.
 
-We implement reasonable security measures, but no system is fully secure. **We do not take responsibility for any data loss, corruption, or unauthorized access or leak** — whether on your side, your database provider's side, or our side. You use Conar at your own risk.
+We implement reasonable security measures, but no system is fully secure. **We do not take responsibility for any data loss, corruption, or unauthorized access or leak** — whether on your side, your database provider's side, or our side. You use Tamery at your own risk.
 
 ## 8. Your Rights
 
@@ -74,5 +74,5 @@ We implement reasonable security measures, but no system is fully secure. **We d
 
 ## 10. Contact
 
-- **X**: [@conar_app](https://x.com/conar_app)
-- **Website**: [https://conar.app](https://conar.app)
+- **X**: [@tamery_app](https://x.com/tamery_app)
+- **Website**: [https://tamery.app](https://tamery.app)

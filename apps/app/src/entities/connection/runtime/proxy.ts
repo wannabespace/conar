@@ -1,4 +1,4 @@
-import { PORTS } from '@conar/shared/constants'
+import { PORTS } from '@tamery/shared/constants'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { queryClient } from '~/main'
 

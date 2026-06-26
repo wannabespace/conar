@@ -1,4 +1,4 @@
-import type { UpdatesStatus } from '@conar/shared/utils/updates'
+import type { UpdatesStatus } from '@tamery/shared/utils/updates'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { createStore } from 'seitu'

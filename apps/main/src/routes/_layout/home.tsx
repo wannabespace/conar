@@ -7,10 +7,10 @@ export const Route = createFileRoute('/_layout/home')({
   component: HomePage,
   head: () => ({
     meta: seo({
-      title: `Conar - ${SEO.title}`,
+      title: `Tamery - ${SEO.title}`,
       description: SEO.description,
       image: '/og-image.png',
-      url: 'https://conar.app',
+      url: 'https://tamery.app',
     }),
   }),
 })

@@ -1,4 +1,4 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@tamery/ui/components/select'
 
 export function SchemaSelect({ schemas, selectedSchema, setSelectedSchema }: {
   schemas: string[]

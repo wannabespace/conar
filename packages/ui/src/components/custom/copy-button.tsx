@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react'
-import { copy } from '@conar/ui/lib/copy'
 import { RiCheckLine, RiFileCopyLine } from '@remixicon/react'
+import { copy } from '@tamery/ui/lib/copy'
 import { useState } from 'react'
 import { Button } from '../button'
 import { ContentSwitch } from './content-switch'

@@ -1,6 +1,6 @@
-import { db } from '@conar/db'
-import { connections } from '@conar/db/schema'
 import { ORPCError } from '@orpc/server'
+import { db } from '@tamery/db'
+import { connections } from '@tamery/db/schema'
 import { type } from 'arktype'
 import { and, eq, inArray } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'

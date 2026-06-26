@@ -1,8 +1,8 @@
 {
-  "extends": "@conar/configs/ts/react.json",
+  "extends": "@tamery/configs/ts/react.json",
   "compilerOptions": {
     "paths": {
-      "@conar/ui/*": ["./src/*"]
+      "@tamery/ui/*": ["./src/*"]
     },
     "noEmit": true
   },

@@ -1,6 +1,6 @@
-import { CardContent } from '@conar/ui/components/card'
-import { CardMotion } from '@conar/ui/components/card.motion'
 import { RiInformationLine } from '@remixicon/react'
+import { CardContent } from '@tamery/ui/components/card'
+import { CardMotion } from '@tamery/ui/components/card.motion'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 
 export function DefinitionsEmptyState({ title, description }: {

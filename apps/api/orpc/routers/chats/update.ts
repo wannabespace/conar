@@ -1,5 +1,5 @@
-import { db } from '@conar/db'
-import { chats, chatsUpdateSchema } from '@conar/db/schema'
+import { db } from '@tamery/db'
+import { chats, chatsUpdateSchema } from '@tamery/db/schema'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm/sql'
 import { orpc, subscriptionMiddleware } from '~/orpc'

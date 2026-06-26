@@ -1,4 +1,4 @@
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from 'facehash'
 
 export function UserAvatar({

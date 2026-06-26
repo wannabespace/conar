@@ -1,13 +1,13 @@
 {
-  "name": "@conar/infisical",
+  "name": "@tamery/infisical",
   "type": "module",
   "private": true,
   "scripts": {
     "check-types": "tsgo"
   },
   "dependencies": {
-    "@conar/configs": "workspace:*",
     "@infisical/sdk": "catalog:",
+    "@tamery/configs": "workspace:*",
     "arktype": "catalog:",
     "better-result": "catalog:",
     "memoza": "catalog:"

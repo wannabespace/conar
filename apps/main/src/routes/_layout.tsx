@@ -1,6 +1,6 @@
-import { TextHoverEffect } from '@conar/ui/components/aceternity/text-hover-effect'
-import { BlurGradient } from '@conar/ui/components/custom/blur-gradient'
-import { cn } from '@conar/ui/lib/utils'
+import { TextHoverEffect } from '@tamery/ui/components/aceternity/text-hover-effect'
+import { BlurGradient } from '@tamery/ui/components/custom/blur-gradient'
+import { cn } from '@tamery/ui/lib/utils'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
 import { Footer } from '~/components/footer'
@@ -85,7 +85,7 @@ function MainLayout() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}
       >
-        <TextHoverEffect className="tracking-tighter" text="Conar" />
+        <TextHoverEffect className="tracking-tighter" text="Tamery" />
       </motion.div>
     </motion.div>
   )

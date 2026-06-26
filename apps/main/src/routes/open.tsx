@@ -1,6 +1,6 @@
-import { Button } from '@conar/ui/components/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@conar/ui/components/card'
-import { copy } from '@conar/ui/lib/copy'
+import { Button } from '@tamery/ui/components/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@tamery/ui/components/card'
+import { copy } from '@tamery/ui/lib/copy'
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
@@ -32,7 +32,7 @@ function OpenPageContent() {
 
   useEffect(() => {
     if (type === 'desktop') {
-      location.assign('conar://')
+      location.assign('tamery://')
     }
   }, [type])
 
@@ -41,16 +41,16 @@ function OpenPageContent() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>
-            Opening Conar
+            Opening Tamery
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <p>
             {type === 'cli'
-              ? 'You can close this tab and return to the Conar CLI.'
+              ? 'You can close this tab and return to the Tamery CLI.'
               : type === 'desktop'
                 ? 'You can open the desktop app and leave this page.'
-                : 'You can continue in Conar or close this page.'}
+                : 'You can continue in Tamery or close this page.'}
           </p>
           <div className="flex">
             {data
@@ -82,7 +82,7 @@ function OpenPageContent() {
 }
 
 function getUrl(token: string, codeChallenge: string, newUser?: boolean) {
-  return `conar://session?code-challenge=${codeChallenge}&token=${token}${newUser ? '&new-user=true' : ''}`
+  return `tamery://session?code-challenge=${codeChallenge}&token=${token}${newUser ? '&new-user=true' : ''}`
 }
 
 function handleCopyUrl(token: string, codeChallenge: string, newUser?: boolean) {
@@ -134,7 +134,7 @@ function OpenPage() {
                   </CardHeader>
                   <CardContent className="flex flex-col gap-6">
                     <p>
-                      You have successfully signed in. You can now close this tab and return to the Conar desktop app.
+                      You have successfully signed in. You can now close this tab and return to the Tamery desktop app.
                     </p>
                     <div className="flex flex-col gap-4">
                       <p className="text-sm text-muted-foreground">

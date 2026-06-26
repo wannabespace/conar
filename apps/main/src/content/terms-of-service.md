@@ -1,10 +1,10 @@
 ## 1. Acceptance
 
-By using Conar you agree to these terms. If you disagree, do not use the service.
+By using Tamery you agree to these terms. If you disagree, do not use the service.
 
-## 2. What Conar Is
+## 2. What Tamery Is
 
-Conar is a database management tool that provides:
+Tamery is a database management tool that provides:
 - Database connection and management
 - AI-powered SQL generation and assistance
 - Optional encrypted sync of connection information across devices
@@ -47,7 +47,7 @@ Conar is a database management tool that provides:
 
 ### Data Loss and Leaks
 
-**We are not liable for any data loss, corruption, or unauthorized access or leak of data** — whether occurring on your side, your database provider's side, or ours. We implement reasonable security measures, but no system is fully secure. You use Conar at your own risk.
+**We are not liable for any data loss, corruption, or unauthorized access or leak of data** — whether occurring on your side, your database provider's side, or ours. We implement reasonable security measures, but no system is fully secure. You use Tamery at your own risk.
 
 ## 6. AI Features
 
@@ -60,7 +60,7 @@ Conar is a database management tool that provides:
 
 ## 7. Privacy
 
-We handle your data as described in our [Privacy Policy](https://conar.app/privacy-policy). Key points:
+We handle your data as described in our [Privacy Policy](https://tamery.app/privacy-policy). Key points:
 - We do not sell your personal information
 - We share data with service providers only as needed to operate the service
 - We may disclose information if required by law
@@ -108,7 +108,7 @@ You agree to indemnify Wannabe Space, LLC from claims arising from your use of t
 
 ## 15. Governing Law
 
-These terms are governed by the laws of Conar's operating jurisdiction. We encourage direct communication to resolve disputes before pursuing legal action. Class action lawsuits are not permitted.
+These terms are governed by the laws of Tamery's operating jurisdiction. We encourage direct communication to resolve disputes before pursuing legal action. Class action lawsuits are not permitted.
 
 ## 16. Changes
 
@@ -116,5 +116,5 @@ We may update these terms. Continued use after changes constitutes acceptance. W
 
 ## 17. Contact
 
-- **X**: [@conar_app](https://x.com/conar_app)
-- **Website**: [https://conar.app](https://conar.app)
+- **X**: [@tamery_app](https://x.com/tamery_app)
+- **Website**: [https://tamery.app](https://tamery.app)

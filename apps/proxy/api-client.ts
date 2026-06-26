@@ -1,4 +1,4 @@
-import type { ORPCRouter } from '@conar/api/orpc/routers'
+import type { ORPCRouter } from '@tamery/api/orpc/routers'
 import { createORPCClient } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { env } from './env'

@@ -1,5 +1,5 @@
 import type * as React from 'react'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 
 export function Frame({
   className,

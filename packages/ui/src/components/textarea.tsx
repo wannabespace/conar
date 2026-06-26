@@ -1,7 +1,7 @@
 import type * as React from 'react'
 import { Field as FieldPrimitive } from '@base-ui/react/field'
 import { mergeProps } from '@base-ui/react/merge-props'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 
 export type TextareaProps = React.ComponentPropsWithoutRef<'textarea'>
   & React.RefAttributes<HTMLElement> & {

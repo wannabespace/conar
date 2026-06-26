@@ -1,17 +1,17 @@
-import type { ActiveFilter } from '@conar/shared/filters'
+import type { ActiveFilter } from '@tamery/shared/filters'
 import type { Kysely } from 'kysely'
 import type { primaryKeysType } from '../../store'
-import { SQL_FILTERS_LIST } from '@conar/shared/filters'
-import { Button } from '@conar/ui/components/button'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { KbdCtrlLetter } from '@conar/ui/components/custom/shortcuts'
-import { Separator } from '@conar/ui/components/separator'
+import { RiAlertLine, RiEyeLine } from '@remixicon/react'
+import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
+import { Button } from '@tamery/ui/components/button'
+import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
+import { Separator } from '@tamery/ui/components/separator'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@conar/ui/components/tooltip'
-import { RiAlertLine, RiEyeLine } from '@remixicon/react'
+} from '@tamery/ui/components/tooltip'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { motion } from 'motion/react'

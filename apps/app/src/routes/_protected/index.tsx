@@ -1,12 +1,12 @@
-import { SOCIAL_LINKS } from '@conar/shared/constants'
-import { pick } from '@conar/shared/utils/helpers'
-import { title } from '@conar/shared/utils/title'
-import { Button } from '@conar/ui/components/button'
-import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
-import { Separator } from '@conar/ui/components/separator'
-import { Spinner } from '@conar/ui/components/spinner'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { RiAddLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiTwitterXLine } from '@remixicon/react'
+import { SOCIAL_LINKS } from '@tamery/shared/constants'
+import { pick } from '@tamery/shared/utils/helpers'
+import { title } from '@tamery/shared/utils/title'
+import { Button } from '@tamery/ui/components/button'
+import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
+import { Separator } from '@tamery/ui/components/separator'
+import { Spinner } from '@tamery/ui/components/spinner'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
@@ -55,7 +55,7 @@ function DashboardPage() {
           <Separator />
           <div className="mt-3 flex items-center gap-2">
             <a
-              href="https://conar.app"
+              href="https://tamery.app"
               target="_blank"
               rel="noopener noreferrer"
               className={`

@@ -1,12 +1,12 @@
 {
-  "name": "@conar/ai",
+  "name": "@tamery/ai",
   "type": "module",
   "scripts": {
     "check-types": "tsgo"
   },
   "dependencies": {
-    "@conar/shared": "workspace:*",
     "@exalabs/ai-sdk": "catalog:",
+    "@tamery/shared": "workspace:*",
     "@upstash/context7-tools-ai-sdk": "catalog:",
     "ai": "catalog:",
     "arktype": "catalog:",

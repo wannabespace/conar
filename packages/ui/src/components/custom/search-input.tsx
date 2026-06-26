@@ -1,7 +1,7 @@
-import type { InputProps } from '@conar/ui/components/input'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
-import { cn } from '@conar/ui/lib/utils'
+import type { InputProps } from '@tamery/ui/components/input'
 import { RiCloseLine } from '@remixicon/react'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@tamery/ui/components/input-group'
+import { cn } from '@tamery/ui/lib/utils'
 import { Button } from '../button'
 
 export function SearchInput({ className, value, onClear, ...props }: InputProps & {

@@ -1,4 +1,4 @@
-import type { AppUIMessage } from '@conar/ai/tools/helpers'
+import type { AppUIMessage } from '@tamery/ai/tools/helpers'
 import type { BaseTable, SyncUtils } from '~/lib/sync'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import { createCollection, createTransaction } from '@tanstack/react-db'

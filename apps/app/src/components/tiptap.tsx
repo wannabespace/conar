@@ -1,6 +1,6 @@
 import type { Editor } from '@tiptap/react'
 import type { ComponentProps, RefObject } from 'react'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 import Placeholder from '@tiptap/extension-placeholder'
 import { EditorContent, Extension, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'

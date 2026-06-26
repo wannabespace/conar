@@ -1,9 +1,9 @@
 ---
-description: Conar monorepo architecture map and stack constraints
+description: Tamery monorepo architecture map and stack constraints
 alwaysApply: true
 ---
 
-# Conar architecture
+# Tamery architecture
 
 ## Monorepo layout
 
@@ -13,7 +13,7 @@ apps/app       React SPA — main product UI (TanStack Router + TanStack DB)
 apps/main      Marketing + auth pages (TanStack Start / Nitro SSR)
 apps/desktop   Electron wrapper around apps/app
 apps/proxy     oRPC proxy — executes DB queries on behalf of clients
-apps/cli       CLI tool published as `conar` on npm
+apps/cli       CLI tool published as `tamery` on npm
 
 packages/db            Drizzle schema + migrations (cloud PostgreSQL)
 packages/connection    DB driver wrappers, connection-string parsers, SSL/SSH
@@ -32,7 +32,7 @@ packages/configs       Shared ESLint/TypeScript configs
 - **Client state**: TanStack DB collections — not Zustand, not React Context for data
 - **Cloud DB**: Drizzle ORM (`packages/db`) — not raw SQL, not Prisma
 - **Auth**: Better Auth (`apps/api/lib/auth.ts`) — not custom JWT
-- **Secrets**: `@conar/infisical` — not `.env` in production
+- **Secrets**: `@tamery/infisical` — not `.env` in production
 - **Runtime**: Bun for all server processes
 - **Styles**: TailwindCSS v4 — no inline `style=` for theme values
 

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { escapeSpecialCharacters } from '@conar/shared/utils/helpers'
+import { escapeSpecialCharacters } from '@tamery/shared/utils/helpers'
 
 function DefaultRender({ html }: { html: string }) {
   return (

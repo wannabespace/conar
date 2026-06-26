@@ -1,6 +1,6 @@
-import { SOCIAL_LINKS } from '@conar/shared/constants'
-import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { RiDiscordLine, RiGithubLine, RiTwitterXLine } from '@remixicon/react'
+import { SOCIAL_LINKS } from '@tamery/shared/constants'
+import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Link } from '@tanstack/react-router'
 
 export function Footer() {
@@ -12,7 +12,7 @@ export function Footer() {
     >
       <div className="flex flex-1 items-center gap-2 text-muted-foreground">
         <AppLogo className="size-4" />
-        <span className="text-sm font-medium">Conar</span>
+        <span className="text-sm font-medium">Tamery</span>
       </div>
       <div className="flex flex-1 items-center justify-center gap-4">
         <Link

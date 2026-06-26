@@ -1,8 +1,9 @@
-import { uppercaseFirst } from '@conar/shared/utils/helpers'
-import { Button } from '@conar/ui/components/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Skeleton } from '@conar/ui/components/skeleton'
+import { RiExternalLinkLine, RiWalletLine } from '@remixicon/react'
+import { uppercaseFirst } from '@tamery/shared/utils/helpers'
+import { Button } from '@tamery/ui/components/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tamery/ui/components/card'
+import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { Skeleton } from '@tamery/ui/components/skeleton'
 import {
   Table,
   TableBody,
@@ -10,8 +11,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@conar/ui/components/table'
-import { RiExternalLinkLine, RiWalletLine } from '@remixicon/react'
+} from '@tamery/ui/components/table'
 import { useQuery } from '@tanstack/react-query'
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
 import { format } from 'date-fns'

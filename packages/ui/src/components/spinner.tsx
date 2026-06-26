@@ -1,6 +1,6 @@
 import type * as React from 'react'
-import { cn } from '@conar/ui/lib/utils'
 import { RiLoader4Line } from '@remixicon/react'
+import { cn } from '@tamery/ui/lib/utils'
 
 export function Spinner({
   className,

@@ -1,10 +1,10 @@
 import { apiKey } from '@better-auth/api-key'
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
-import { db } from '@conar/db'
-import { users } from '@conar/db/schema'
-import * as schema from '@conar/db/schema'
-import { infisical } from '@conar/infisical'
-import { API_KEY_PERMISSIONS, AUTH_COOKIE_PREFIX } from '@conar/shared/constants'
+import { db } from '@tamery/db'
+import { users } from '@tamery/db/schema'
+import * as schema from '@tamery/db/schema'
+import { infisical } from '@tamery/infisical'
+import { API_KEY_PERMISSIONS, AUTH_COOKIE_PREFIX } from '@tamery/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { createAuthMiddleware } from 'better-auth/api'
@@ -17,7 +17,7 @@ import { resend, sendEmail } from '~/lib/resend'
 import { redisMemoize } from './redis'
 
 export const auth = betterAuth({
-  appName: 'Conar',
+  appName: 'Tamery',
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.API_URL,
   basePath: '/auth',
@@ -184,15 +184,15 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [
-    'https://conar.app',
-    'https://*.conar.app',
+    'https://tamery.app',
+    'https://*.tamery.app',
     'file://',
   ],
   advanced: {
     cookiePrefix: AUTH_COOKIE_PREFIX,
     crossSubDomainCookies: {
       enabled: true,
-      domain: 'conar.app',
+      domain: 'tamery.app',
     },
     database: {
       generateId: 'uuid',

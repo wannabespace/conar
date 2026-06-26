@@ -1,5 +1,5 @@
-import { db } from '@conar/db'
-import { chats, chatsInsertSchema } from '@conar/db/schema'
+import { db } from '@tamery/db'
+import { chats, chatsInsertSchema } from '@tamery/db/schema'
 import { type } from 'arktype'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 import { publisher } from './events'

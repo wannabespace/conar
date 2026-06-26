@@ -1,5 +1,5 @@
-import { SOCIAL_LINKS } from '@conar/shared/constants'
 import { Body, Container, Head, Heading, Html, Img, Link, pixelBasedPreset, Preview, Section, Tailwind, Text } from '@react-email/components'
+import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import { env } from '~/env'
 
 export function Base({
@@ -34,7 +34,7 @@ export function Base({
                 src={`${env.MAIN_URL}/logo.png`}
                 width="48"
                 height="48"
-                alt="Conar"
+                alt="Tamery"
               />
               <Heading className="mt-5 mb-0 text-2xl font-bold">{title}</Heading>
             </Section>

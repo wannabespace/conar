@@ -1,4 +1,4 @@
-# Conar — Claude Code context
+# Tamery — Claude Code context
 
 See [`CONTEXT.md`](CONTEXT.md) for domain terminology (Connection, SyncType, GC, etc.).
 
@@ -38,7 +38,7 @@ apps/
   main/      Marketing + auth pages (TanStack Start / Nitro SSR).
   desktop/   Electron wrapper around apps/app.
   proxy/     Hono + oRPC proxy. Executes DB queries on behalf of clients.
-  cli/       CLI tool published as `conar` on npm.
+  cli/       CLI tool published as `tamery` on npm.
 
 packages/
   db/           Drizzle schema + migrations for the cloud PostgreSQL DB.
@@ -48,7 +48,7 @@ packages/
   ui/           Shared shadcn/base-ui React components and theme.
   table/        TanStack Virtual table component and hooks.
   shared/       Cross-package utils, enums, constants, types.
-  infisical/    Secrets client wrapper (@conar/infisical).
+  infisical/    Secrets client wrapper (@tamery/infisical).
   configs/      Shared ESLint / TypeScript configs.
 ```
 
@@ -66,10 +66,10 @@ pnpm run lint               # ESLint
 ```
 
 Local URLs (via portless, requires `pnpm run dev`):
-- `https://api.local.conar.app`
-- `https://app.local.conar.app`
-- `https://main.local.conar.app`
-- `https://proxy.local.conar.app`
+- `https://api.local.tamery.app`
+- `https://app.local.tamery.app`
+- `https://main.local.tamery.app`
+- `https://proxy.local.tamery.app`
 
 ## Architecture constraints
 
@@ -79,7 +79,7 @@ Local URLs (via portless, requires `pnpm run dev`):
 | Client state | TanStack DB collections — not Zustand, not React Context for data. |
 | Cloud DB ORM | Drizzle (`packages/db`) — not raw SQL, not Prisma. |
 | Auth | Better Auth (`apps/api/lib/auth.ts`) — not custom JWT, not NextAuth. |
-| Secrets | Infisical via `@conar/infisical` — not `.env` files in production. |
+| Secrets | Infisical via `@tamery/infisical` — not `.env` files in production. |
 | Runtime | Bun — not Node for server processes. Node 22+ supported as fallback. |
 | Testing | Bun test for unit tests. Playwright for E2E. |
 | Styles | TailwindCSS v4 — no inline `style=` props for layout/theme values. |

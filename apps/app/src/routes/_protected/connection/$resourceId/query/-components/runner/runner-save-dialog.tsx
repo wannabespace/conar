@@ -1,5 +1,5 @@
-import { Alert, AlertDescription } from '@conar/ui/components/alert'
-import { Button } from '@conar/ui/components/button'
+import { Alert, AlertDescription } from '@tamery/ui/components/alert'
+import { Button } from '@tamery/ui/components/button'
 import {
   Dialog,
   DialogClose,
@@ -8,9 +8,9 @@ import {
   DialogHeader,
   DialogPanel,
   DialogTitle,
-} from '@conar/ui/components/dialog'
-import { Input } from '@conar/ui/components/input'
-import { Label } from '@conar/ui/components/label'
+} from '@tamery/ui/components/dialog'
+import { Input } from '@tamery/ui/components/input'
+import { Label } from '@tamery/ui/components/label'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'

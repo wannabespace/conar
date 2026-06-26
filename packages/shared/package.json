@@ -1,5 +1,5 @@
 {
-  "name": "@conar/shared",
+  "name": "@tamery/shared",
   "type": "module",
   "private": true,
   "scripts": {
@@ -7,9 +7,9 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@conar/configs": "workspace:*",
     "@hackylabs/deep-redact": "catalog:",
     "@noble/hashes": "catalog:",
+    "@tamery/configs": "workspace:*",
     "arktype": "catalog:",
     "drizzle-orm": "catalog:",
     "nanoid": "catalog:"

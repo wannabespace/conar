@@ -1,10 +1,9 @@
-# Maintainer: Bouteiller a2n Alan <hi@a2n.dev>
-pkgname=conar-bin
+pkgname=tamery
 pkgver=0.27.3
 pkgrel=1
 pkgdesc="AI-powered tool for working with Postgres, MySQL, MSSQL and ClickHouse."
 arch=('x86_64')
-url="https://github.com/wannabespace/conar"
+url="https://github.com/wannabespace/tamery"
 license=('AGPL-3.0-or-later')
 depends=(
   'alsa-lib'
@@ -33,22 +32,22 @@ depends=(
   'systemd-libs'
 )
 options=('!strip' '!emptydirs')
-source_x86_64=("conar-${pkgver}.deb::https://download.conar.app/linux/deb/x64")
+source_x86_64=("tamery-.deb::https://download.tamery.app/linux/deb/x64")
 sha256sums_x86_64=('b2a736572cf4fde0a3869c90a00dae1cfb500fd86d6ac20473a0d36d6bf0ba8c')
 
 package() {
   # Extract the .deb file
-  ar -x "${srcdir}/conar-${pkgver}.deb"
+  ar -x "${srcdir}/tamery-.deb"
 
   # Extract the data archive
   tar -xJ -f data.tar.xz -C "${pkgdir}"
 
   # Create symlink for command line usage
   install -dm755 "${pkgdir}/usr/bin"
-  ln -s "/opt/Conar/Conar" "${pkgdir}/usr/bin/conar"
+  ln -s "/opt/Tamery/Tamery" "${pkgdir}/usr/bin/tamery"
 
   # Fix desktop file path if it exists
-  if [ -f "${pkgdir}/usr/share/applications/conar.desktop" ]; then
-    sed -i 's|/opt/Conar/Conar|conar|g' "${pkgdir}/usr/share/applications/conar.desktop"
+  if [ -f "${pkgdir}/usr/share/applications/tamery.desktop" ]; then
+    sed -i 's|/opt/Tamery/Tamery|tamery|g' "${pkgdir}/usr/share/applications/tamery.desktop"
   fi
 }

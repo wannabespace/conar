@@ -1,4 +1,4 @@
-import { SUPPORT_EMAIL } from '@conar/shared/constants'
+import { SUPPORT_EMAIL } from '@tamery/shared/constants'
 import { type } from 'arktype'
 import { resend } from '~/lib/resend'
 import { authMiddleware, orpc } from '~/orpc'
@@ -16,15 +16,15 @@ export const contact = orpc
 
     const { data, error } = await resend.batch.send([
       {
-        from: 'Conar <conar@conar.app>',
+        from: 'Tamery <tamery@tamery.app>',
         to: SUPPORT_EMAIL,
         subject: `Contact request from ${context.user.email}`,
         html: `<p>From: ${context.user.email}</p><p>Message:<br>${input.message}</p>`,
       },
       {
-        from: 'Conar <conar@conar.app>',
+        from: 'Tamery <tamery@tamery.app>',
         to: context.user.email,
-        subject: 'Your contact request has been received by Conar',
+        subject: 'Your contact request has been received by Tamery',
         html: `<p>Hi ${context.user.name || context.user.email},</p><p>This is an automatic reply to let you know we received your message and will answer soon.</p>`,
       },
     ])

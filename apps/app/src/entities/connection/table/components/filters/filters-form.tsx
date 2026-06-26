@@ -1,4 +1,4 @@
-import type { ActiveFilter, Filter } from '@conar/shared/filters'
+import type { ActiveFilter, Filter } from '@tamery/shared/filters'
 import { useEffect, useRef, useState } from 'react'
 import { useTableColumns } from '../../columns'
 import { FiltersColumnSelector } from './filters-column-selector'

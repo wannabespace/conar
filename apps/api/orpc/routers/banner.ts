@@ -1,4 +1,4 @@
-import { SUBSCRIPTION_PAST_DUE_MESSAGE } from '@conar/shared/constants'
+import { SUBSCRIPTION_PAST_DUE_MESSAGE } from '@tamery/shared/constants'
 import { type } from 'arktype'
 import { env } from '~/env'
 import { getSubscription, optionalAuthMiddleware, orpc } from '~/orpc'
@@ -35,7 +35,7 @@ export const banner = orpc
 
     if (context.isAppOutdated) {
       items.push({
-        text: `You are using an outdated version of the desktop app. Please download the latest version from conar.app/download`,
+        text: `You are using an outdated version of the desktop app. Please download the latest version from tamery.app/download`,
         type: 'warning',
         dismissible: true,
       })
@@ -43,15 +43,15 @@ export const banner = orpc
 
     if (context.parsedAppVersion?.minor && context.parsedAppVersion.minor === 25 && context.os === 'linux') {
       items.push({
-        text: 'Linux updates broken in 0.25.0 due to provider change. Please download the latest version from conar.app/download',
+        text: 'Linux updates broken in 0.25.0 due to provider change. Please download the latest version from tamery.app/download',
         type: 'warning',
         dismissible: true,
       })
     }
 
-    if (context.parsedAppVersion?.minor && context.parsedAppVersion.minor >= 28) {
+    if (context.parsedAppVersion?.minor && context.parsedAppVersion.minor >= 28 && context.parsedAppVersion.minor < 33) {
       items.push({
-        text: 'Heads up! Conar is becoming Tamery. Our next big update will have the new name - thanks for being part of the journey!',
+        text: 'Conar is now Tamery! New name, even better app - thanks for being part of the journey!',
         type: 'info',
         dismissible: true,
       })

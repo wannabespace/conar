@@ -1,6 +1,6 @@
 import { NumberField as NumberFieldPrimitive } from '@base-ui/react/number-field'
-import { Label } from '@conar/ui/components/label'
-import { cn } from '@conar/ui/lib/utils'
+import { Label } from '@tamery/ui/components/label'
+import { cn } from '@tamery/ui/lib/utils'
 import { MinusIcon, PlusIcon } from 'lucide-react'
 import * as React from 'react'
 

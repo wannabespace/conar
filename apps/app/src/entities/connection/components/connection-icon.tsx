@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react'
-import { ConnectionType } from '@conar/shared/enums/connection-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { createElement } from 'react'
 import { ClickHouseIcon } from '~/icons/clickhouse'
 import { MSSQLIcon } from '~/icons/mssql'

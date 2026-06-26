@@ -6,7 +6,7 @@ import { serverSignOut } from '~/session'
 
 export const logoutCommand = command({
   name: 'logout',
-  desc: 'Sign out of your Conar account',
+  desc: 'Sign out of your Tamery account',
   options: {},
   handler: async () => {
     if (!getToken()) {

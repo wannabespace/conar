@@ -1,5 +1,5 @@
-import type { AnyFunction } from '@conar/shared/utils/helpers'
-import { handleAggregateError, uppercaseFirst } from '@conar/shared/utils/helpers'
+import type { AnyFunction } from '@tamery/shared/utils/helpers'
+import { handleAggregateError, uppercaseFirst } from '@tamery/shared/utils/helpers'
 
 export interface QueryExecuteResult {
   result: unknown

@@ -1,5 +1,5 @@
 import type { LinkProps } from '@tanstack/react-router'
-import { Badge } from '@conar/ui/components/badge'
+import { Badge } from '@tamery/ui/components/badge'
 import { Link } from '@tanstack/react-router'
 
 export function NavbarTextLogo({ to }: { to: LinkProps['to'] }) {
@@ -13,7 +13,7 @@ export function NavbarTextLogo({ to }: { to: LinkProps['to'] }) {
           lg:text-xl
         `}
       >
-        Conar
+        Tamery
       </Link>
       <Badge variant="default" className="bg-warning/20 text-warning">
         Beta

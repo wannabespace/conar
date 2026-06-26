@@ -1,4 +1,4 @@
-import type { ActiveFilter } from '@conar/shared/filters'
+import type { ActiveFilter } from '@tamery/shared/filters'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
 import { createQuery } from '../runtime/query'

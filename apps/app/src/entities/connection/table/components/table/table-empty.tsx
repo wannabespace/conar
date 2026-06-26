@@ -1,5 +1,5 @@
-import { cn } from '@conar/ui/lib/utils'
 import { RiMoreLine } from '@remixicon/react'
+import { cn } from '@tamery/ui/lib/utils'
 
 export function TableEmpty({ className, title, description }: { className?: string, title: string, description: string }) {
   return (

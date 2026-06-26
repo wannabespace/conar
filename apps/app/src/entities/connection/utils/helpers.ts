@@ -1,4 +1,4 @@
-import { SafeURL } from '@conar/shared/utils/safe-url'
+import { SafeURL } from '@tamery/shared/utils/safe-url'
 
 export const DEFAULT_PAGE_LIMIT = 100
 

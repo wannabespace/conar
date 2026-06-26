@@ -1,5 +1,5 @@
 import { Menu as MenuPrimitive } from '@base-ui/react/menu'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 import { CheckIcon, ChevronRightIcon } from 'lucide-react'
 import * as React from 'react'
 

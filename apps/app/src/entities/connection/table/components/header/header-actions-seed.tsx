@@ -1,9 +1,11 @@
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { Column } from '~/entities/connection/components'
 import type { GeneratorGroup, GeneratorId } from '~/entities/connection/utils/seeds'
-import { pick } from '@conar/shared/utils/helpers'
-import { Badge } from '@conar/ui/components/badge'
-import { Button } from '@conar/ui/components/button'
+import NumberFlow from '@number-flow/react'
+import { RiCodeSSlashLine, RiSearchLine, RiSeedlingLine, RiVipCrownLine } from '@remixicon/react'
+import { pick } from '@tamery/shared/utils/helpers'
+import { Badge } from '@tamery/ui/components/badge'
+import { Button } from '@tamery/ui/components/button'
 import {
   Combobox,
   ComboboxCollection,
@@ -15,9 +17,9 @@ import {
   ComboboxList,
   ComboboxPopup,
   ComboboxTrigger,
-} from '@conar/ui/components/combobox'
-import { Indicator } from '@conar/ui/components/custom/indicator'
-import { LoadingContent } from '@conar/ui/components/custom/loading-content'
+} from '@tamery/ui/components/combobox'
+import { Indicator } from '@tamery/ui/components/custom/indicator'
+import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
   Drawer,
   DrawerClose,
@@ -28,20 +30,18 @@ import {
   DrawerPopup,
   DrawerTitle,
   DrawerTrigger,
-} from '@conar/ui/components/drawer'
-import { Label } from '@conar/ui/components/label'
+} from '@tamery/ui/components/drawer'
+import { Label } from '@tamery/ui/components/label'
 import {
   NumberField,
   NumberFieldDecrement,
   NumberFieldGroup,
   NumberFieldIncrement,
   NumberFieldInput,
-} from '@conar/ui/components/number-field'
-import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '@conar/ui/components/popover'
-import { Switch } from '@conar/ui/components/switch'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import NumberFlow from '@number-flow/react'
-import { RiCodeSSlashLine, RiSearchLine, RiSeedlingLine, RiVipCrownLine } from '@remixicon/react'
+} from '@tamery/ui/components/number-field'
+import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '@tamery/ui/components/popover'
+import { Switch } from '@tamery/ui/components/switch'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'

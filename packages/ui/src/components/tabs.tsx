@@ -1,6 +1,6 @@
 import type * as React from 'react'
 import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 
 export type TabsVariant = 'default' | 'underline'
 

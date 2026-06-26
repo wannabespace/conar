@@ -2,8 +2,8 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-const PACKAGE_NAME = 'conar'
-const CACHE_DIR = path.join(os.homedir(), '.config', 'conar')
+const PACKAGE_NAME = 'tamery'
+const CACHE_DIR = path.join(os.homedir(), '.config', 'tamery')
 const CACHE_FILE = path.join(CACHE_DIR, 'update-check.json')
 const CHECK_INTERVAL_MS = 1000 * 60 * 60 * 24 // 24 hours
 

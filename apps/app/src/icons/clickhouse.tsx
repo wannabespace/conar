@@ -1,4 +1,4 @@
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 
 export function ClickHouseIcon({ className, ...props }: React.ComponentProps<'svg'>) {
   return (

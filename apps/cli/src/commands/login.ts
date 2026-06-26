@@ -1,6 +1,6 @@
 import process from 'node:process'
-import { challenge } from '@conar/shared/utils/challenge'
 import { boolean, command } from '@drizzle-team/brocli'
+import { challenge } from '@tamery/shared/utils/challenge'
 import { consola } from 'consola'
 import open from 'open'
 import ora from 'ora'
@@ -14,7 +14,7 @@ const AUTH_TIMEOUT_MS = 5 * 60 * 1000
 
 export const loginCommand = command({
   name: 'login',
-  desc: 'Sign in to your Conar account',
+  desc: 'Sign in to your Tamery account',
   options: {
     force: boolean().alias('f').desc('Sign in even if already authenticated'),
     noOpen: boolean('no-open').desc('Do not attempt to open the browser automatically'),

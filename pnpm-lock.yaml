@@ -457,12 +457,12 @@ importers:
       '@antfu/eslint-config':
         specifier: 'catalog:'
         version: 9.1.0(@eslint-react/eslint-plugin@5.9.2(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3))(@typescript-eslint/rule-tester@8.62.0(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3))(@typescript-eslint/typescript-estree@8.62.0(typescript@6.0.3))(@typescript-eslint/utils@8.62.0(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3))(@vue/compiler-sfc@3.5.38)(eslint-plugin-react-refresh@0.5.3(eslint@10.5.0(jiti@2.7.0)))(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3)
-      '@conar/configs':
-        specifier: workspace:*
-        version: link:packages/configs
       '@eslint-react/eslint-plugin':
         specifier: 'catalog:'
         version: 5.9.2(eslint@10.5.0(jiti@2.7.0))(typescript@6.0.3)
+      '@tamery/configs':
+        specifier: workspace:*
+        version: link:packages/configs
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.14
@@ -532,21 +532,6 @@ importers:
       '@better-auth/drizzle-adapter':
         specifier: https://pkg.pr.new/@better-auth/drizzle-adapter@5a40d12
         version: https://pkg.pr.new/@better-auth/drizzle-adapter@5a40d12(@better-auth/core@1.7.0-beta.9(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.3.6(zod@4.4.3))(jose@6.2.3)(kysely@0.29.2)(nanostores@1.3.0))(@better-auth/utils@0.4.2)(drizzle-orm@1.0.0-rc.3(@opentelemetry/api@1.9.1)(@types/pg@8.20.0)(arktype@2.2.1)(bun-types@1.3.14)(mysql2@3.22.5(@types/node@26.0.0))(pg@8.22.0)(valibot@1.4.1(typescript@6.0.3))(zod@4.4.3))
-      '@conar/ai':
-        specifier: workspace:*
-        version: link:../../packages/ai
-      '@conar/connection':
-        specifier: workspace:*
-        version: link:../../packages/connection
-      '@conar/db':
-        specifier: workspace:*
-        version: link:../../packages/db
-      '@conar/infisical':
-        specifier: workspace:*
-        version: link:../../packages/infisical
-      '@conar/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       '@exalabs/ai-sdk':
         specifier: 'catalog:'
         version: 2.1.0(ai@6.0.209(zod@4.4.3))
@@ -565,6 +550,21 @@ importers:
       '@react-email/components':
         specifier: 'catalog:'
         version: 1.0.12(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@tamery/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
+      '@tamery/connection':
+        specifier: workspace:*
+        version: link:../../packages/connection
+      '@tamery/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@tamery/infisical':
+        specifier: workspace:*
+        version: link:../../packages/infisical
+      '@tamery/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@upstash/context7-tools-ai-sdk':
         specifier: 'catalog:'
         version: 0.2.3(@upstash/context7-sdk@0.3.1)(ai@6.0.209(zod@4.4.3))(zod@4.4.3)
@@ -629,12 +629,12 @@ importers:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
-      '@conar/configs':
-        specifier: workspace:*
-        version: link:../../packages/configs
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.61.1
+      '@tamery/configs':
+        specifier: workspace:*
+        version: link:../../packages/configs
       '@types/pg':
         specifier: 'catalog:'
         version: 8.20.0
@@ -653,15 +653,6 @@ importers:
       '@base-ui/react':
         specifier: 'catalog:'
         version: 1.6.0(@date-fns/tz@1.5.0)(@types/react@19.2.17)(date-fns@4.4.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@conar/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      '@conar/table':
-        specifier: workspace:*
-        version: link:../../packages/table
-      '@conar/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       '@dagrejs/dagre':
         specifier: 'catalog:'
         version: 1.1.8
@@ -695,6 +686,15 @@ importers:
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.3.1(vite@8.1.0(@types/node@26.0.0)(jiti@2.7.0)(yaml@2.9.0))
+      '@tamery/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@tamery/table':
+        specifier: workspace:*
+        version: link:../../packages/table
+      '@tamery/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@tanstack/browser-db-sqlite-persistence':
         specifier: 'catalog:'
         version: 0.2.2(@journeyapps/wa-sqlite@1.7.0)(typescript@6.0.3)
@@ -822,24 +822,6 @@ importers:
         specifier: 'catalog:'
         version: 14.0.1
     devDependencies:
-      '@conar/ai':
-        specifier: workspace:*
-        version: link:../../packages/ai
-      '@conar/api':
-        specifier: workspace:*
-        version: link:../api
-      '@conar/configs':
-        specifier: workspace:*
-        version: link:../../packages/configs
-      '@conar/connection':
-        specifier: workspace:*
-        version: link:../../packages/connection
-      '@conar/proxy':
-        specifier: workspace:*
-        version: link:../proxy
-      '@conar/query-proxy':
-        specifier: workspace:*
-        version: link:../../packages/query-proxy
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.61.1
@@ -849,6 +831,24 @@ importers:
       '@standard-schema/spec':
         specifier: 'catalog:'
         version: 1.1.0
+      '@tamery/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
+      '@tamery/api':
+        specifier: workspace:*
+        version: link:../api
+      '@tamery/configs':
+        specifier: workspace:*
+        version: link:../../packages/configs
+      '@tamery/connection':
+        specifier: workspace:*
+        version: link:../../packages/connection
+      '@tamery/proxy':
+        specifier: workspace:*
+        version: link:../proxy
+      '@tamery/query-proxy':
+        specifier: workspace:*
+        version: link:../../packages/query-proxy
       '@tanstack/react-devtools':
         specifier: 'catalog:'
         version: 0.10.8(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(csstype@3.2.3)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(solid-js@1.9.13)
@@ -922,24 +922,24 @@ importers:
         specifier: 'catalog:'
         version: 8.22.0
     devDependencies:
-      '@conar/api':
-        specifier: workspace:*
-        version: link:../api
-      '@conar/configs':
-        specifier: workspace:*
-        version: link:../../packages/configs
-      '@conar/connection':
-        specifier: workspace:*
-        version: link:../../packages/connection
-      '@conar/query-proxy':
-        specifier: workspace:*
-        version: link:../../packages/query-proxy
-      '@conar/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       '@orpc/server':
         specifier: 'catalog:'
         version: 1.14.6(@opentelemetry/api@1.9.1)(crossws@0.4.6(srvx@0.11.17))(ws@8.21.0)
+      '@tamery/api':
+        specifier: workspace:*
+        version: link:../api
+      '@tamery/configs':
+        specifier: workspace:*
+        version: link:../../packages/configs
+      '@tamery/connection':
+        specifier: workspace:*
+        version: link:../../packages/connection
+      '@tamery/query-proxy':
+        specifier: workspace:*
+        version: link:../../packages/query-proxy
+      '@tamery/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.14
@@ -980,13 +980,13 @@ importers:
         specifier: 'catalog:'
         version: 8.22.0
     devDependencies:
-      '@conar/configs':
+      '@tamery/configs':
         specifier: workspace:*
         version: link:../../packages/configs
-      '@conar/connection':
+      '@tamery/connection':
         specifier: workspace:*
         version: link:../../packages/connection
-      '@conar/shared':
+      '@tamery/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@todesktop/cli':
@@ -1086,18 +1086,6 @@ importers:
         specifier: 'catalog:'
         version: 2.0.10
     devDependencies:
-      '@conar/api':
-        specifier: workspace:*
-        version: link:../api
-      '@conar/configs':
-        specifier: workspace:*
-        version: link:../../packages/configs
-      '@conar/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      '@conar/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
       '@orpc/server':
         specifier: 'catalog:'
         version: 1.14.6(@opentelemetry/api@1.9.1)(crossws@0.4.6(srvx@0.11.17))(ws@8.21.0)
@@ -1110,6 +1098,18 @@ importers:
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.3.1(vite@8.1.0(@types/node@26.0.0)(jiti@2.7.0)(yaml@2.9.0))
+      '@tamery/api':
+        specifier: workspace:*
+        version: link:../api
+      '@tamery/configs':
+        specifier: workspace:*
+        version: link:../../packages/configs
+      '@tamery/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@tamery/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@types/react':
         specifier: 'catalog:'
         version: 19.2.17
@@ -1140,24 +1140,24 @@ importers:
 
   apps/proxy:
     dependencies:
-      '@conar/api':
-        specifier: workspace:*
-        version: link:../api
-      '@conar/connection':
-        specifier: workspace:*
-        version: link:../../packages/connection
-      '@conar/query-proxy':
-        specifier: workspace:*
-        version: link:../../packages/query-proxy
-      '@conar/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       '@orpc/client':
         specifier: 'catalog:'
         version: 1.14.6(@opentelemetry/api@1.9.1)
       '@orpc/server':
         specifier: 'catalog:'
         version: 1.14.6(@opentelemetry/api@1.9.1)(crossws@0.4.6(srvx@0.11.17))(ws@8.21.0)
+      '@tamery/api':
+        specifier: workspace:*
+        version: link:../api
+      '@tamery/connection':
+        specifier: workspace:*
+        version: link:../../packages/connection
+      '@tamery/query-proxy':
+        specifier: workspace:*
+        version: link:../../packages/query-proxy
+      '@tamery/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       arktype:
         specifier: 'catalog:'
         version: 2.2.1
@@ -1171,7 +1171,7 @@ importers:
         specifier: 'catalog:'
         version: 2.0.10
     devDependencies:
-      '@conar/configs':
+      '@tamery/configs':
         specifier: workspace:*
         version: link:../../packages/configs
       better-auth:
@@ -1180,12 +1180,12 @@ importers:
 
   packages/ai:
     dependencies:
-      '@conar/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@exalabs/ai-sdk':
         specifier: 'catalog:'
         version: 2.1.0(ai@6.0.209(zod@4.4.3))
+      '@tamery/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@upstash/context7-tools-ai-sdk':
         specifier: 'catalog:'
         version: 0.2.3(@upstash/context7-sdk@0.3.1)(ai@6.0.209(zod@4.4.3))(zod@4.4.3)
@@ -1206,7 +1206,7 @@ importers:
       '@clickhouse/client':
         specifier: 'catalog:'
         version: 1.22.0
-      '@conar/shared':
+      '@tamery/shared':
         specifier: workspace:*
         version: link:../shared
       memoza:
@@ -1216,7 +1216,7 @@ importers:
         specifier: 'catalog:'
         version: 8.22.0
     devDependencies:
-      '@conar/configs':
+      '@tamery/configs':
         specifier: workspace:*
         version: link:../configs
       '@types/bun':
@@ -1240,7 +1240,7 @@ importers:
 
   packages/db:
     dependencies:
-      '@conar/shared':
+      '@tamery/shared':
         specifier: workspace:*
         version: link:../shared
       arktype:
@@ -1256,10 +1256,10 @@ importers:
         specifier: 'catalog:'
         version: 14.0.1
     devDependencies:
-      '@conar/ai':
+      '@tamery/ai':
         specifier: workspace:*
         version: link:../ai
-      '@conar/configs':
+      '@tamery/configs':
         specifier: workspace:*
         version: link:../configs
       '@types/pg':
@@ -1274,12 +1274,12 @@ importers:
 
   packages/infisical:
     dependencies:
-      '@conar/configs':
-        specifier: workspace:*
-        version: link:../configs
       '@infisical/sdk':
         specifier: 'catalog:'
         version: 5.0.2
+      '@tamery/configs':
+        specifier: workspace:*
+        version: link:../configs
       arktype:
         specifier: 'catalog:'
         version: 2.2.1
@@ -1292,17 +1292,17 @@ importers:
 
   packages/query-proxy:
     dependencies:
-      '@conar/connection':
-        specifier: workspace:*
-        version: link:../connection
-      '@conar/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@orpc/server':
         specifier: 'catalog:'
         version: 1.14.6(@opentelemetry/api@1.9.1)(crossws@0.4.6(srvx@0.11.17))(ws@8.21.0)
+      '@tamery/connection':
+        specifier: workspace:*
+        version: link:../connection
+      '@tamery/shared':
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
-      '@conar/configs':
+      '@tamery/configs':
         specifier: workspace:*
         version: link:../configs
       '@typescript/native-preview':
@@ -1311,15 +1311,15 @@ importers:
 
   packages/shared:
     dependencies:
-      '@conar/configs':
-        specifier: workspace:*
-        version: link:../configs
       '@hackylabs/deep-redact':
         specifier: 'catalog:'
         version: 4.0.1
       '@noble/hashes':
         specifier: 'catalog:'
         version: 2.2.0
+      '@tamery/configs':
+        specifier: workspace:*
+        version: link:../configs
       arktype:
         specifier: 'catalog:'
         version: 2.2.1
@@ -1332,18 +1332,18 @@ importers:
 
   packages/table:
     dependencies:
-      '@conar/shared':
-        specifier: workspace:*
-        version: link:../shared
-      '@conar/ui':
-        specifier: workspace:*
-        version: link:../ui
       '@fluentui/react-context-selector':
         specifier: 'catalog:'
         version: 9.2.18(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(scheduler@0.27.0)
       '@remixicon/react':
         specifier: 'catalog:'
         version: 4.9.0(react@19.2.7)
+      '@tamery/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@tamery/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@tanstack/react-virtual':
         specifier: 'catalog:'
         version: 3.14.3(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -1351,7 +1351,7 @@ importers:
         specifier: 'catalog:'
         version: 19.2.7
     devDependencies:
-      '@conar/configs':
+      '@tamery/configs':
         specifier: workspace:*
         version: link:../configs
       '@types/react':
@@ -1363,12 +1363,6 @@ importers:
       '@base-ui/react':
         specifier: 'catalog:'
         version: 1.6.0(@date-fns/tz@1.5.0)(@types/react@19.2.17)(date-fns@4.4.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@conar/configs':
-        specifier: workspace:*
-        version: link:../configs
-      '@conar/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@radix-ui/react-accordion':
         specifier: 'catalog:'
         version: 1.2.14(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -1390,6 +1384,12 @@ importers:
       '@tailwindcss/typography':
         specifier: 'catalog:'
         version: 0.5.20(tailwindcss@4.3.1)
+      '@tamery/configs':
+        specifier: workspace:*
+        version: link:../configs
+      '@tamery/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@tanstack/react-form':
         specifier: 'catalog:'
         version: 1.33.0(@tanstack/react-start@1.168.26(crossws@0.4.6(srvx@0.11.17))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(vite@8.1.0(@types/node@26.0.0)(jiti@2.7.0)(yaml@2.9.0)))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)

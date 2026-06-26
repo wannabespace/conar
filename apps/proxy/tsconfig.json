@@ -1,5 +1,5 @@
 {
-  "extends": "@conar/configs/ts/base.json",
+  "extends": "@tamery/configs/ts/base.json",
   "compilerOptions": {
     "composite": true,
     "paths": {

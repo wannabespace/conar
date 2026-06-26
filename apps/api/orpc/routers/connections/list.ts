@@ -1,7 +1,7 @@
-import { db } from '@conar/db'
-import { connections } from '@conar/db/schema'
-import { decrypt } from '@conar/shared/utils/crypto-node'
 import { ORPCError } from '@orpc/server'
+import { db } from '@tamery/db'
+import { connections } from '@tamery/db/schema'
+import { decrypt } from '@tamery/shared/utils/crypto-node'
 import { desc, eq } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'
 

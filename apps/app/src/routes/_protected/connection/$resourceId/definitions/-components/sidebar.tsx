@@ -1,10 +1,10 @@
 import type { RemixiconComponentType } from '@remixicon/react'
 import type { Connection } from '~/entities/connection/core'
 import type { FileRoutesByTo } from '~/routeTree.gen'
-import { CONNECTION_TYPES_WITH_FUNCTIONS, CONNECTION_TYPES_WITH_TRIGGERS } from '@conar/shared/constants'
-import { ConnectionType } from '@conar/shared/enums/connection-type'
-import { CardTitle } from '@conar/ui/components/card'
 import { RiCodeSSlashLine, RiFileList3Line, RiFlashlightLine, RiKey2Line, RiListUnordered, RiShieldCheckLine } from '@remixicon/react'
+import { CONNECTION_TYPES_WITH_FUNCTIONS, CONNECTION_TYPES_WITH_TRIGGERS } from '@tamery/shared/constants'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { CardTitle } from '@tamery/ui/components/card'
 import { SidebarLink } from '~/components/sidebar-link'
 import { Route } from '../../definitions'
 

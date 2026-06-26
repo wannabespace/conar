@@ -1,6 +1,9 @@
 import type { ContextSelector } from '@fluentui/react-context-selector'
 import type { ComponentProps, ReactElement, ReactNode } from 'react'
-import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@conar/ui/components/custom/single-accordion'
+import { createContext, useContextSelector } from '@fluentui/react-context-selector'
+import NumberFlow from '@number-flow/react'
+import { RiCodeLine, RiText } from '@remixicon/react'
+import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@tamery/ui/components/custom/single-accordion'
 import {
   Table,
   TableBody,
@@ -8,11 +11,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@conar/ui/components/table'
-import { cn } from '@conar/ui/lib/utils'
-import { createContext, useContextSelector } from '@fluentui/react-context-selector'
-import NumberFlow from '@number-flow/react'
-import { RiCodeLine, RiText } from '@remixicon/react'
+} from '@tamery/ui/components/table'
+import { cn } from '@tamery/ui/lib/utils'
 import { marked } from 'marked'
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'

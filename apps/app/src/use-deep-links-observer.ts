@@ -4,7 +4,7 @@ async function handleDeepLink(_url: string): Promise<{
   type:
     | 'unknown'
 }> {
-  // const { pathname, searchParams } = new URL(url.replace('conar://', 'https://conar.app/'))
+  // const { pathname, searchParams } = new URL(url.replace('tamery://', 'https://tamery.app/'))
   return {
     type: 'unknown',
   }

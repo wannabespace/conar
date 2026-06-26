@@ -1,4 +1,4 @@
-import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from '@conar/shared/constants'
+import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from '@tamery/shared/constants'
 import { octokit } from '~/lib/octokit'
 import { cacheMiddleware, orpc } from '~/orpc'
 

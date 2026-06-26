@@ -1,6 +1,6 @@
-# Conar — AI-powered connection manager
+# Tamery — AI-powered connection manager
 
-Conar is a desktop/web app for managing database connections. It stores connection metadata and encrypted connection strings locally (SQLite via OPFS) and optionally syncs metadata to the cloud.
+Tamery is a desktop/web app for managing database connections. It stores connection metadata and encrypted connection strings locally (SQLite via OPFS) and optionally syncs metadata to the cloud.
 
 ## Language
 

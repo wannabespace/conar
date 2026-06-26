@@ -1,5 +1,5 @@
 {
-  "name": "@conar/ui",
+  "name": "@tamery/ui",
   "type": "module",
   "private": true,
   "exports": {
@@ -18,8 +18,6 @@
   },
   "dependencies": {
     "@base-ui/react": "catalog:",
-    "@conar/configs": "workspace:*",
-    "@conar/shared": "workspace:*",
     "@radix-ui/react-accordion": "catalog:",
     "@radix-ui/react-checkbox": "catalog:",
     "@radix-ui/react-collapsible": "catalog:",
@@ -27,6 +25,8 @@
     "@radix-ui/react-tooltip": "catalog:",
     "@remixicon/react": "catalog:",
     "@tailwindcss/typography": "catalog:",
+    "@tamery/configs": "workspace:*",
+    "@tamery/shared": "workspace:*",
     "@tanstack/react-form": "catalog:",
     "@tanstack/react-hotkeys": "catalog:",
     "@tanstack/react-router": "catalog:",

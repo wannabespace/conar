@@ -3,7 +3,7 @@ import type * as React from 'react'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { Select as SelectPrimitive } from '@base-ui/react/select'
 import { useRender } from '@base-ui/react/use-render'
-import { cn } from '@conar/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 import {
   ChevronDownIcon,
   ChevronsUpDownIcon,

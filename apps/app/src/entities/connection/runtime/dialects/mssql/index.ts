@@ -6,7 +6,7 @@ import type {
   SelectQueryNode,
 } from 'kysely'
 import type { DialectOptions } from '..'
-import { ConnectionType } from '@conar/shared/enums/connection-type'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { MssqlQueryCompiler as DefaultMssqlQueryCompiler, DummyDriver, MssqlAdapter } from 'kysely'
 import { createDialectProvider, createKyselyDriver } from '..'
 

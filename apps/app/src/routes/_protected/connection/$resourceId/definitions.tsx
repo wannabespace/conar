@@ -1,5 +1,5 @@
-import { title } from '@conar/shared/utils/title'
-import { ScrollArea } from '@conar/ui/components/scroll-area'
+import { title } from '@tamery/shared/utils/title'
+import { ScrollArea } from '@tamery/ui/components/scroll-area'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { Sidebar } from './definitions/-components/sidebar'
 

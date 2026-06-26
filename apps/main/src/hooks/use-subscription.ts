@@ -1,4 +1,4 @@
-import { ACTIVE_SUBSCRIPTION_STATUSES } from '@conar/shared/constants'
+import { ACTIVE_SUBSCRIPTION_STATUSES } from '@tamery/shared/constants'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { authClient } from '~/lib/auth'

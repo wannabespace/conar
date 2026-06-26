@@ -1,5 +1,5 @@
 {
-  "name": "@conar/db",
+  "name": "@tamery/db",
   "type": "module",
   "scripts": {
     "check-types": "tsgo",
@@ -8,15 +8,15 @@
     "drizzle:migrate": "cross-env NODE_ENV=development drizzle-kit migrate"
   },
   "dependencies": {
-    "@conar/shared": "workspace:*",
+    "@tamery/shared": "workspace:*",
     "arktype": "catalog:",
     "drizzle-orm": "catalog:",
     "pg": "catalog:",
     "uuid": "catalog:"
   },
   "devDependencies": {
-    "@conar/ai": "workspace:*",
-    "@conar/configs": "workspace:*",
+    "@tamery/ai": "workspace:*",
+    "@tamery/configs": "workspace:*",
     "@types/pg": "catalog:",
     "drizzle-kit": "catalog:",
     "stripe": "catalog:"

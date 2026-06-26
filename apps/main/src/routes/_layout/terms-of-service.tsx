@@ -4,9 +4,9 @@ import { seo } from '~/utils/seo'
 export const Route = createFileRoute('/_layout/terms-of-service')({
   head: () => ({
     meta: seo({
-      title: 'Terms of Service - Conar',
-      description: 'Read the terms and conditions for using Conar. Our terms of service outline your rights and responsibilities.',
-      url: 'https://conar.app/terms-of-service',
+      title: 'Terms of Service - Tamery',
+      description: 'Read the terms and conditions for using Tamery. Our terms of service outline your rights and responsibilities.',
+      url: 'https://tamery.app/terms-of-service',
     }),
   }),
 })

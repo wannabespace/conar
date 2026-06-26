@@ -1,4 +1,4 @@
-import { queriesSelectSchema } from '@conar/db/schema'
+import { queriesSelectSchema } from '@tamery/db/schema'
 import { createEventsEndpoint, createSyncOutputSchema, createSyncPublisher } from '~/orpc/lib/sync'
 
 const output = createSyncOutputSchema(queriesSelectSchema)

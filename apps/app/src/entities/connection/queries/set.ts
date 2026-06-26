@@ -1,4 +1,4 @@
-import type { ActiveFilter } from '@conar/shared/filters'
+import type { ActiveFilter } from '@tamery/shared/filters'
 import { memoize } from 'memoza'
 import { createQuery } from '../runtime/query'
 import { buildWhere } from './rows'

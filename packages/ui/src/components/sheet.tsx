@@ -1,6 +1,6 @@
-import { cn } from '@conar/ui/lib/utils'
 import * as SheetPrimitive from '@radix-ui/react-dialog'
 import { RiCloseLine } from '@remixicon/react'
+import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {

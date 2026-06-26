@@ -1,6 +1,6 @@
 import { google } from '@ai-sdk/google'
-import { db } from '@conar/db'
-import { chats, chatsMessages } from '@conar/db/schema'
+import { db } from '@tamery/db'
+import { chats, chatsMessages } from '@tamery/db/schema'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { asc, eq } from 'drizzle-orm'

@@ -1,4 +1,4 @@
-import type { ActiveFilter } from '@conar/shared/filters'
+import type { ActiveFilter } from '@tamery/shared/filters'
 import type { ExpressionBuilder } from 'kysely'
 import type { ConnectionResource } from '~/entities/connection/core'
 import { infiniteQueryOptions } from '@tanstack/react-query'

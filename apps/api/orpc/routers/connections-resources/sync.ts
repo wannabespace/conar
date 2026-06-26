@@ -1,5 +1,5 @@
-import { db } from '@conar/db'
-import { connections, connectionsResources, connectionsResourcesSelectSchema } from '@conar/db/schema'
+import { db } from '@tamery/db'
+import { connections, connectionsResources, connectionsResourcesSelectSchema } from '@tamery/db/schema'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
 import { and, eq, getColumns, gte, inArray, notInArray, or } from 'drizzle-orm'

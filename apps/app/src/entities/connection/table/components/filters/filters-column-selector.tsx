@@ -1,6 +1,6 @@
 import type { RefObject } from 'react'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { RiDatabase2Line } from '@remixicon/react'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@tamery/ui/components/command'
 import { useTableColumns } from '../../columns'
 
 export function FiltersColumnSelector({ ref, onSelect }: { ref?: RefObject<HTMLInputElement | null>, onSelect: (column: string) => void }) {

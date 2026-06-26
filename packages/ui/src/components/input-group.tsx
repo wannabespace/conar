@@ -1,12 +1,12 @@
 'use client'
 
-import type { InputProps } from '@conar/ui/components/input'
-import type { TextareaProps } from '@conar/ui/components/textarea'
+import type { InputProps } from '@tamery/ui/components/input'
+import type { TextareaProps } from '@tamery/ui/components/textarea'
 import type { VariantProps } from 'class-variance-authority'
 import type * as React from 'react'
-import { Input } from '@conar/ui/components/input'
-import { Textarea } from '@conar/ui/components/textarea'
-import { cn } from '@conar/ui/lib/utils'
+import { Input } from '@tamery/ui/components/input'
+import { Textarea } from '@tamery/ui/components/textarea'
+import { cn } from '@tamery/ui/lib/utils'
 import { cva } from 'class-variance-authority'
 
 const inputGroupAddonVariants = cva(

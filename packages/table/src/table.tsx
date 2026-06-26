@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react'
-import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
-import { cn } from '@conar/ui/lib/utils'
+import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
+import { cn } from '@tamery/ui/lib/utils'
 import { useTableContext } from './table-context'
 
 export function Table({

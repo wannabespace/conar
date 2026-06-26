@@ -1,8 +1,8 @@
-import type { TableCellProps, TableHeaderCellProps } from '@conar/table'
+import type { TableCellProps, TableHeaderCellProps } from '@tamery/table'
 import type { ComponentProps } from 'react'
-import { useShiftSelectionClick, useTableContext } from '@conar/table/hooks'
-import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
+import { useShiftSelectionClick, useTableContext } from '@tamery/table/hooks'
+import { cn } from '@tamery/ui/lib/utils'
 import { useSubscription } from 'seitu/react'
 import { useTablePageStore } from '../../store'
 

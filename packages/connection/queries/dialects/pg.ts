@@ -1,7 +1,7 @@
 import type { PoolConfig } from 'pg'
 import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
-import { tries } from '@conar/shared/utils/tries'
+import { tries } from '@tamery/shared/utils/tries'
 import { memoize } from 'memoza'
 import { handleQueryError } from '..'
 import { parseConnectionString } from '../..'

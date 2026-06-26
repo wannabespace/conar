@@ -5,8 +5,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@conar/ui/components/dialog'
-import { cn } from '@conar/ui/lib/utils'
+} from '@tamery/ui/components/dialog'
+import { cn } from '@tamery/ui/lib/utils'
 import { Command as CommandPrimitive } from 'cmdk'
 import { SearchIcon } from 'lucide-react'
 

@@ -1,8 +1,8 @@
-import type { AnyFunction } from '@conar/shared/utils/helpers'
-import type { UpdatesStatus } from '@conar/shared/utils/updates'
+import type { AnyFunction } from '@tamery/shared/utils/helpers'
+import type { UpdatesStatus } from '@tamery/shared/utils/updates'
 import type { electron } from '../main/lib/events'
 import type { sendToast } from '../main/main'
-import { replaceErrorPrefix } from '@conar/connection/queries'
+import { replaceErrorPrefix } from '@tamery/connection/queries'
 import { contextBridge, ipcRenderer } from 'electron'
 
 export type ElectronPreload = typeof electron & {

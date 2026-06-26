@@ -1,9 +1,9 @@
 import type { QueryClient } from '@tanstack/react-query'
-import { Toaster } from '@conar/ui/components/sonner'
-import { TooltipProvider } from '@conar/ui/components/tooltip'
-import appCss from '@conar/ui/globals.css?url'
-import { cn } from '@conar/ui/lib/utils'
-import { ThemeObserver } from '@conar/ui/theme-observer'
+import { Toaster } from '@tamery/ui/components/sonner'
+import { TooltipProvider } from '@tamery/ui/components/tooltip'
+import appCss from '@tamery/ui/globals.css?url'
+import { cn } from '@tamery/ui/lib/utils'
+import { ThemeObserver } from '@tamery/ui/theme-observer'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
@@ -31,11 +31,11 @@ export const Route = createRootRouteWithContext<{
         content: 'width=device-width, initial-scale=1',
       },
       ...seo({
-        title: `Conar.app - ${SEO.title}`,
+        title: `Tamery.app - ${SEO.title}`,
         description: SEO.description,
         image: '/og-image.png',
       }),
-      { name: 'apple-mobile-web-app-title', content: 'Conar' },
+      { name: 'apple-mobile-web-app-title', content: 'Tamery' },
     ],
     links: [
       { rel: 'stylesheet', href: appCss },

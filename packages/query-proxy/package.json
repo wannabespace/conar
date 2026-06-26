@@ -1,17 +1,17 @@
 {
-  "name": "@conar/query-proxy",
+  "name": "@tamery/query-proxy",
   "type": "module",
   "private": true,
   "scripts": {
     "check-types": "tsgo"
   },
   "dependencies": {
-    "@conar/connection": "workspace:*",
-    "@conar/shared": "workspace:*",
-    "@orpc/server": "catalog:"
+    "@orpc/server": "catalog:",
+    "@tamery/connection": "workspace:*",
+    "@tamery/shared": "workspace:*"
   },
   "devDependencies": {
-    "@conar/configs": "workspace:*",
+    "@tamery/configs": "workspace:*",
     "@typescript/native-preview": "catalog:"
   }
 }
