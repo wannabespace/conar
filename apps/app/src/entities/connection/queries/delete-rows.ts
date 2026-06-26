@@ -1,5 +1,5 @@
 import { memoize } from 'memoza'
-import { createQuery } from '../query'
+import { createQuery } from '../runtime/query'
 
 export const deleteRowsQuery = memoize(({ table, schema, primaryKeys }: {
   table: string

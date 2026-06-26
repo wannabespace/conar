@@ -19,7 +19,7 @@ import { Link, useLocation, useMatches, useSearch } from '@tanstack/react-router
 import { useEffect, useMemo, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
-import { useCollections } from '~/entities/connection/collections'
+import { useCollections } from '~/entities/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { UserButton } from '~/entities/user/components'
 import { orpc } from '~/lib/orpc'

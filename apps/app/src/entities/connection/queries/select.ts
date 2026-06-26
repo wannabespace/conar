@@ -1,7 +1,7 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
-import { createQuery } from '../query'
+import { createQuery } from '../runtime/query'
 import { buildWhere } from './rows'
 
 export const selectQuery = memoize(({ schema, table, select, filters }: {

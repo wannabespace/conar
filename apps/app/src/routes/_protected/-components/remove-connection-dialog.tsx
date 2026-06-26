@@ -1,10 +1,10 @@
-import type { Connection } from '~/entities/connection/sync'
+import type { Connection } from '~/entities/connection/core'
 import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { eq, queryOnce } from '@tanstack/react-db'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { useCollections } from '~/entities/connection/collections'
+import { useCollections } from '~/entities/collections'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
 
 interface RemoveConnectionDialogProps {

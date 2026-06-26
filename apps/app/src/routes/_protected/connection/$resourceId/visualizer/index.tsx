@@ -18,8 +18,8 @@ import { ReactFlowNode } from '~/entities/connection/components'
 import { resourceConstraintsQueryOptions, resourceTableColumnsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
+import { applySearchHighlight, getVisualizerLayout } from '~/entities/connection/visualizer'
 import { globalHooks } from '~/global-hooks'
-import { applySearchHighlight, getVisualizerLayout } from './-lib'
 
 export const Route = createFileRoute(
   '/_protected/connection/$resourceId/visualizer/',

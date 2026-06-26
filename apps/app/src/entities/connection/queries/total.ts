@@ -1,10 +1,10 @@
 import type { ActiveFilter } from '@conar/shared/filters'
-import type { ConnectionResource } from '../sync'
+import type { ConnectionResource } from '../core/sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
-import { connectionResourceToQueryParams, createQuery } from '../query'
+import { connectionResourceToQueryParams, createQuery } from '../runtime/query'
 import { buildWhere } from './rows'
 
 export const resourceTableTotalQuery = memoize(({

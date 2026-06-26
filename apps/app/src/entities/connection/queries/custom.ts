@@ -1,6 +1,6 @@
 import { type } from 'arktype'
 import { CompiledQuery } from 'kysely'
-import { createQuery } from '../query'
+import { createQuery } from '../runtime/query'
 
 const customType = type({ rows: 'Record<string, unknown>[]' }).pipe(({ rows }) => rows)
 

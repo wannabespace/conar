@@ -13,7 +13,7 @@ import { RiLoopLeftLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useId } from 'react'
 import { ConnectionDetails } from '~/components/connection-details'
-import { useCollections } from '~/entities/connection/collections'
+import { useCollections } from '~/entities/collections'
 
 export function StepSave({ type, name, connectionString, setName, onRandomName, syncType, setSyncType, label, setLabel, color, setColor }: {
   type: ConnectionType

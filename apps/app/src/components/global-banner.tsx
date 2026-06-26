@@ -11,7 +11,7 @@ import { type } from 'arktype'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
-import { MAX_RECONNECTION_ATTEMPTS, reconnectingPromises } from '~/entities/connection/query'
+import { MAX_RECONNECTION_ATTEMPTS, reconnectingPromises } from '~/entities/connection/runtime'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 

@@ -9,13 +9,15 @@ import { RiCornerRightUpLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi, Link } from '@tanstack/react-router'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
+import {
+  TableBodySkeleton,
+  TableEmpty,
+  TableError,
+  TableHeaderCell,
+  TableInfiniteLoader,
+  useTableColumnsQuery,
+} from '~/entities/connection/table'
 import { createTransformer } from '~/entities/connection/transformers'
-import { useTableColumnsQuery } from '~/routes/_protected/connection/$resourceId/table/-columns'
-import { TableError } from '~/routes/_protected/connection/$resourceId/table/-components/table/table'
-import { TableEmpty } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-empty'
-import { TableHeaderCell } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-header-cell'
-import { TableInfiniteLoader } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-infinite-loader'
-import { TableBodySkeleton } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-skeleton'
 import { TableCellContent } from './cell-content'
 import { getColumnSize } from './utils'
 

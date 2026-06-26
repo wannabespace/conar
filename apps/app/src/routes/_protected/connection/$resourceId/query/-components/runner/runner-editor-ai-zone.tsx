@@ -1,4 +1,4 @@
-import type { Connection, ConnectionResource } from '~/entities/connection/sync'
+import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { EnterIcon } from '@conar/ui/components/custom/shortcuts'

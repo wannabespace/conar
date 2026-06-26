@@ -1,8 +1,8 @@
-import type { Connection } from '~/entities/connection/sync'
+import type { Connection } from '~/entities/connection/core'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
-import { connectionToQueryParams, createQuery } from '../query'
+import { connectionToQueryParams, createQuery } from '../runtime/query'
 
 export const connectionVersionType = type({
   version: 'string',
