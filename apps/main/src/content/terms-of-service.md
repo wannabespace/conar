@@ -1,156 +1,120 @@
-## 1. Acceptance of Terms
+## 1. Acceptance
 
-By accessing and using Conar ("the Service"), you accept and agree to be bound by these terms. If you do not agree, please do not use this service.
+By using Conar you agree to these terms. If you disagree, do not use the service.
 
-## 2. Service Description
+## 2. What Conar Is
 
-Conar is a database management application that provides:
-- Database connection and management tools
+Conar is a database management tool that provides:
+- Database connection and management
 - AI-powered SQL generation and assistance
-- Secure storage of database connection information
-- User authentication and account management
+- Optional encrypted sync of connection information across devices
+- User accounts and team collaboration
 
-## 3. User Accounts
+## 3. Accounts
 
-### Account Requirements
-- You must be at least 13 years old (18+ or parental consent required)
-- Provide accurate, current, and complete information during registration
-- Maintain confidentiality of your account credentials
-- Notify us immediately of any unauthorized account use
-
-### Account Responsibility
-- You are responsible for all activities under your account
-- You must have legal capacity to enter into this agreement
+- You must be 13+ (18+ or parental consent in some jurisdictions)
+- Provide accurate registration information
+- Keep your credentials confidential
+- Notify us immediately of unauthorized account use
+- You are responsible for all activity under your account
 
 ## 4. Acceptable Use
 
-### Permitted Uses
-- Legitimate database management purposes
-- Storing and managing your own database connections
-- Using AI features for SQL generation and assistance
-- Sharing with authorized team members
+**Permitted:**
+- Managing databases you are authorized to access
+- Using AI features for SQL generation and database assistance
+- Sharing connections with authorized team members
 
-### Prohibited Uses
-You agree not to:
-- Use the Service for illegal or unauthorized purposes
-- Violate applicable laws or regulations
-- Infringe upon others' rights
-- Attempt unauthorized access to the Service or other accounts
-- Interfere with or disrupt the Service
-- Store or transmit malicious code
-- Reverse engineer or decompile the Service
-- Use for commercial purposes without proper authorization
+**Prohibited:**
+- Illegal or unauthorized purposes
+- Attempting to access other accounts or systems without authorization
+- Interfering with or disrupting the service
+- Reverse engineering or decompiling the service
+- Transmitting malicious code
 
-## 5. Connections and Data
+## 5. Your Databases and Data
+
+### What We Do
+- Provide tools to connect to and query your databases
+- Encrypt and optionally sync connection details when you enable cloud sync
+- Never store the contents of your databases — rows, query results, and table data never pass through our servers
+- Never access or modify your database data without your explicit action
 
 ### Your Responsibilities
-- Ensure proper authorization to access databases
-- Maintain database security and backup your data
+- Ensure you have legal authorization to access the databases you connect
+- **Maintain your own backups of your databases and their data**
 - Comply with your database provider's terms of service
 
-### Our Role
-- Provide tools to connect to and manage your databases
-- Encrypt and store connection information when you choose to sync
-- Do not access or modify your database data without permission
-- Not responsible for your database security or data
+### Data Loss and Leaks
+
+**We are not liable for any data loss, corruption, or unauthorized access or leak of data** — whether occurring on your side, your database provider's side, or ours. We implement reasonable security measures, but no system is fully secure. You use Conar at your own risk.
 
 ## 6. AI Features
 
-### AI Services and Limitations
-- AI-powered SQL generation and database assistance provided
-- AI responses are for informational purposes only
-- Review and validate all AI-generated SQL before execution
+- AI generates SQL and provides database assistance — treat output as a suggestion, not authoritative advice
+- **Review and validate all AI-generated SQL before executing it**
 - We are not responsible for issues caused by AI-generated code
-- AI features may not always be accurate for your specific use case
-- We reserve the right to limit or modify AI features
+- Your database schema is sent to AI providers (Anthropic, OpenAI, Google) to generate accurate results — see our Privacy Policy for details
+- AI may occasionally query a small number of rows from your database as part of an explicit AI action
+- We reserve the right to modify or limit AI features
 
-## 7. Privacy and Data Protection
+## 7. Privacy
 
-### Data Handling
-- We collect and process data as described in our Privacy Policy
-- We implement appropriate security measures to protect your data
-- We do not sell your personal information to third parties
-- We may share data with service providers as necessary
+We handle your data as described in our [Privacy Policy](https://conar.app/privacy-policy). Key points:
+- We do not sell your personal information
+- We share data with service providers only as needed to operate the service
 - We may disclose information if required by law
 
-## 8. Service Availability
+## 8. Subscriptions and Payment
 
-### Service Modifications
-- We strive for high availability but do not guarantee uninterrupted service
-- We may perform maintenance affecting availability
-- We may modify, suspend, or discontinue the Service with reasonable notice
+- Core features available free with usage limits
+- Premium features require a paid subscription, billed in advance via Stripe
+- Cancel at any time — no refunds for partial billing periods
+- Payments governed by Stripe's terms
+
+## 9. Service Availability
+
+- We aim for high availability but do not guarantee uninterrupted service
+- We may perform maintenance that temporarily affects availability
+- We may modify, suspend, or discontinue the service with reasonable notice
 - We are not liable for damages caused by service interruptions
-
-## 9. Subscription and Payment
-
-### Plans and Billing
-- Basic features available free of charge with usage limitations
-- Premium features require paid subscription billed in advance
-- You may cancel subscription at any time (no refunds for partial months)
-- Payments processed by third-party processors (subject to their terms)
 
 ## 10. Intellectual Property
 
-### Rights and Licenses
-- Service and content owned by Wannabe Space, LLC by Valerii Strilets
+- Service and content owned by Wannabe Space, LLC
 - You retain ownership of your data and database connections
-- You grant us license to process your data to provide the Service
-- You may not use our intellectual property without permission
+- You grant us a limited license to process your data solely to provide the service
 
-## 11. Disclaimers and Liability
+## 11. Disclaimers
 
-### Service Disclaimer
-- Service provided "as is" without warranties
-- We disclaim all warranties, express or implied
-- We do not guarantee accuracy or completeness of information
+- Service provided "as is" without warranties of any kind
+- We do not guarantee accuracy or completeness of AI-generated content
 
-### Limitation of Liability
+## 12. Limitation of Liability
+
 - We are not liable for indirect, incidental, or consequential damages
-- Our total liability limited to amount paid for the Service
+- Our total liability is limited to the amount you paid for the service in the prior 12 months
 - We are not liable for damages caused by third-party services
 
-## 12. Indemnification
+## 13. Indemnification
 
-You agree to indemnify and hold harmless Wannabe Space, LLC from claims arising from:
-- Your use of the Service
-- Your violation of these terms
-- Your violation of third-party rights
-- Your database management activities
+You agree to indemnify Wannabe Space, LLC from claims arising from your use of the service, your violation of these terms, or your database management activities.
 
-## 13. Termination
+## 14. Termination
 
-### Account Termination
 - You may terminate your account at any time
-- We may terminate for violations of these terms
-- Termination results in data deletion (some data may be retained for legal purposes)
-- We are not liable for damages caused by termination
+- We may terminate accounts that violate these terms
+- Termination results in deletion of your data (some data may be retained for legal obligations)
 
-## 14. Governing Law and Disputes
+## 15. Governing Law
 
-### Legal Framework
-- Terms governed by laws of Conar's operating jurisdiction
-- Disputes resolved in appropriate courts
-- We encourage direct communication for dispute resolution
-- Class action lawsuits not permitted
+These terms are governed by the laws of Conar's operating jurisdiction. We encourage direct communication to resolve disputes before pursuing legal action. Class action lawsuits are not permitted.
 
-## 15. Changes to Terms
+## 16. Changes
 
-### Modifications
-- We may update these terms from time to time
-- Continued use after changes constitutes acceptance
-- Review terms periodically
+We may update these terms. Continued use after changes constitutes acceptance. We will notify you of material changes.
 
-## 16. Contact Information
-
-If you have questions about these Terms of Service, please contact us:
+## 17. Contact
 
 - **X**: [@conar_app](https://x.com/conar_app)
 - **Website**: [https://conar.app](https://conar.app)
-
-## 17. Legal Provisions
-
-### Severability
-If any provision is unenforceable, remaining provisions remain in full force.
-
-### Entire Agreement
-These terms constitute the entire agreement between you and Wannabe Space, LLC regarding the Service.
