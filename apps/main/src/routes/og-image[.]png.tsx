@@ -6,6 +6,7 @@ export const Route = createFileRoute('/og-image.png')({
     handlers: {
       async GET() {
         const { ImageResponse } = await import('takumi-js/response')
+        const { default: wasm } = await import('takumi-js/wasm')
 
         return new ImageResponse(
           (
@@ -36,6 +37,7 @@ export const Route = createFileRoute('/og-image.png')({
           {
             width: 1200,
             height: 630,
+            module: wasm,
             headers: {
               'Content-Type': 'image/png',
               'Cache-Control': 'public, immutable, no-transform, max-age=86400',
