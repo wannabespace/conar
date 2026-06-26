@@ -37,3 +37,14 @@ export const authClient = createAuthClient({
     apiKeyClient(),
   ],
 })
+
+const LAST_USED_LOGIN_METHOD_COOKIE = 'better-auth.last_used_login_method'
+
+export const getLastUsedLoginMethod = createIsomorphicFn()
+  .server(() => {
+    const cookie = getRequest().headers.get('cookie') ?? ''
+    const match = cookie.match(new RegExp(`(?:^|; )${LAST_USED_LOGIN_METHOD_COOKIE}=([^;]+)`))
+
+    return match ? decodeURIComponent(match[1]!) : null
+  })
+  .client(() => authClient.getLastUsedLoginMethod())

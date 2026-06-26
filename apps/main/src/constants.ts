@@ -16,8 +16,8 @@ export const DOWNLOAD_LINKS = {
 } satisfies Partial<Record<OS, Record<string, string>>>
 
 export const SEO = {
-  title: 'AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse (beta)',
-  description: 'Tamery is an AI-powered data management tool that lets you focus on working with your data while it handles the complexity.',
+  title: 'AI database client for Postgres, MySQL, MSSQL & ClickHouse',
+  description: 'Tamery is an AI-powered database client for Postgres, MySQL, MSSQL, and ClickHouse. Write queries, explore data, and manage your databases with AI doing the heavy lifting.',
 }
 
 export const NAVBAR_HEIGHT_BASE = 150

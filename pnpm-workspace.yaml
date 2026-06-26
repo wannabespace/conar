@@ -1,35 +1,5 @@
 catalogMode: prefer
 cleanupUnusedCatalogs: true
-minimumReleaseAgeExclude:
-  - '@ai-sdk/anthropic@3.0.86'
-  - '@ai-sdk/gateway@3.0.134'
-  - '@ai-sdk/react@3.0.211'
-  - '@ai-sdk/xai@3.0.97'
-  - '@antfu/eslint-config@9.1.0'
-  - '@fluentui/react-context-selector@9.2.18'
-  - '@fluentui/react-utilities@9.26.5'
-  - '@playwright/test@1.61.1'
-  - '@posthog/core@1.37.1'
-  - '@posthog/types@1.391.1'
-  - '@tanstack/browser-db-sqlite-persistence@0.2.2'
-  - '@tanstack/db-sqlite-persistence-core@0.2.2'
-  - '@tanstack/db@0.6.10'
-  - '@tanstack/devtools-client@0.0.8'
-  - '@tanstack/devtools-event-client@0.5.0'
-  - '@tanstack/devtools-ui@0.6.0'
-  - '@tanstack/devtools@0.12.5'
-  - '@tanstack/offline-transactions@1.0.35'
-  - '@tanstack/react-db@0.1.88'
-  - '@tanstack/react-devtools@0.10.8'
-  - ai@6.0.209
-  - eslint-plugin-yml@3.5.0
-  - framer-motion@12.41.0
-  - motion-dom@12.41.0
-  - motion@12.41.0
-  - playwright-core@1.61.1
-  - playwright@1.61.1
-  - posthog-js@1.393.2
-  - posthog-node@5.38.4
 shellEmulator: true
 blockExoticSubdeps: false
 packages:

@@ -5,12 +5,11 @@ import { HomePage } from './-home-page'
 
 export const Route = createFileRoute('/_layout/home')({
   component: HomePage,
-  head: () => ({
-    meta: seo({
-      title: `Tamery - ${SEO.title}`,
-      description: SEO.description,
-      image: '/og-image.png',
-      url: 'https://tamery.app',
-    }),
+  // `/home` mirrors the landing page; canonical points to `/` to avoid duplicate content.
+  head: () => seo({
+    title: `Tamery - ${SEO.title}`,
+    description: SEO.description,
+    image: '/og-image.png',
+    path: '/',
   }),
 })

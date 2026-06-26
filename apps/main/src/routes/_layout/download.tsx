@@ -20,13 +20,11 @@ const os = getOSIsomorphic()
 
 export const Route = createFileRoute('/_layout/download')({
   component: RouteComponent,
-  head: () => ({
-    meta: seo({
-      title: 'Download Tamery - Available for macOS, Windows and Linux',
-      description: 'Download Tamery for macOS (Apple Silicon & Intel), Windows, and Linux. Available as DMG, EXE, DEB, RPM, and AppImage.',
-      image: '/og-image.png',
-      url: 'https://tamery.app/download',
-    }),
+  head: () => seo({
+    title: 'Download Tamery - Available for macOS, Windows and Linux',
+    description: 'Download Tamery for macOS (Apple Silicon & Intel), Windows, and Linux. Available as DMG, EXE, DEB, RPM, and AppImage.',
+    image: '/og-image.png',
+    path: '/download',
   }),
 })
 
