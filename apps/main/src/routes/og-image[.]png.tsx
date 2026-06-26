@@ -1,7 +1,7 @@
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
+import wasm from '@takumi-rs/wasm/vite'
 import { createFileRoute } from '@tanstack/react-router'
 import { ImageResponse } from 'takumi-js/response'
-import wasm from 'takumi-js/wasm'
 
 export const Route = createFileRoute('/og-image.png')({
   server: {
