@@ -1,128 +1,102 @@
 ---
-title: "AI SQL Assistant: Chat, Generate, and Fix Queries"
-sidebarTitle: "AI Assistant"
-description: "Tamery's AI assistant understands your schema and helps you write, explain, fix, and optimize SQL. Supports Claude, GPT, and Gemini models."
+title: "AI assistant"
+sidebarTitle: "AI assistant"
+description: "Tamery's schema-aware AI assistant writes, explains, fixes, and optimizes SQL, and powers natural-language filters and data seeding."
 ---
 
-Tamery's AI Assistant is a schema-aware conversational AI built directly into your database workflow. Unlike generic AI chatbots, the assistant has full context of your connected database — it knows your table names, column types, relationships, and more — so it can write accurate SQL, explain query behavior, and troubleshoot errors without you needing to paste schema definitions into every message. The assistant is available from the chat panel alongside the SQL Editor, and its capabilities extend throughout the app into the Table Browser and inline editor features.
+The AI assistant has full context of your connected database — tables, column types, relationships — so it writes accurate SQL without you pasting schema into every message. It's available in the chat panel and powers inline editor and table-browser features.
 
 <Note>
-  The AI assistant only executes safe, read-only queries against your database when using its database tool. It will never run `INSERT`, `UPDATE`, `DELETE`, or `DROP` statements autonomously. Any data modifications go through the normal Table Browser or SQL Editor workflows, where you remain in full control.
+  The assistant only runs read-only queries through its database tool. It never runs `INSERT`, `UPDATE`, `DELETE`, or `DROP` on its own — data changes go through the table browser or SQL editor.
 </Note>
 
-## Chat Interface
+## Chat
 
-The AI chat panel lives alongside the SQL Editor in the Query view. Open it by clicking the **AI Assistant** button in the connection toolbar. The panel is resizable, so you can expand it for a longer conversation or collapse it when you want more space for the editor.
-
-You can ask the assistant anything about your database in plain English:
+Open the chat panel from the connection toolbar. Ask in plain English:
 
 - *"Which tables store customer order data?"*
-- *"Explain what this query does and whether it could be optimized."*
-- *"Write a query to find users who signed up in the last 7 days but haven't placed an order."*
+- *"Explain this query and whether it can be optimized."*
+- *"Find users who signed up in the last 7 days but haven't ordered."*
 
-The assistant remembers the context of your conversation within a session, so you can follow up with refinements like *"now filter that to only include users in the EU"* without repeating yourself.
+It keeps conversation context within a session, so follow-ups like *"now only EU users"* work.
 
-## AI Models
+## Models
 
-Tamery runs the assistant on a leading frontier model so you always get high-quality SQL and reasoning without having to pick or configure anything. If the primary model is temporarily unavailable or overloaded, Tamery automatically falls back to another top model so the assistant stays responsive.
+The assistant runs on a frontier model automatically — nothing to pick or configure. If the primary model is overloaded, Tamery falls back to another top model to stay responsive.
 
 <CardGroup cols={3}>
   <Card title="Claude" icon="robot" href="/account/plans">
-    Anthropic's Claude (Opus) powers the assistant by default — well-suited for complex reasoning, nuanced SQL generation, and detailed explanations.
+    Anthropic's Claude (Opus) is the default.
   </Card>
   <Card title="GPT" icon="robot" href="/account/plans">
-    OpenAI's GPT is used as an automatic fallback, offering fast, reliable query generation.
+    OpenAI's GPT is an automatic fallback.
   </Card>
   <Card title="Gemini" icon="robot" href="/account/plans">
-    Google's Gemini is also used as a fallback, with strong performance for analytical queries and multi-step reasoning.
+    Google's Gemini is also a fallback.
   </Card>
 </CardGroup>
 
-Model selection is automatic — there's nothing to configure. The AI assistant itself is a subscription feature; see [Plans](/account/plans) for what's included on each tier.
+The assistant is a subscription feature. See [Plans](/account/plans).
 
-## What the AI Can Do
-
-The assistant is more than a query generator. Here's a full picture of what it can help you with:
+## What it can do
 
 <CardGroup cols={2}>
-  <Card title="Write SQL from Natural Language" icon="pen-nib" href="/features/sql-editor">
-    Describe what data you need in plain English and the AI will write a complete, accurate SQL query using your real table and column names.
+  <Card title="Write SQL from English" icon="pen-nib" href="/features/sql-editor">
+    Describe the data; get a complete query using your real schema.
   </Card>
-  <Card title="Explain Existing Queries" icon="magnifying-glass" href="/features/sql-editor">
-    Paste any SQL into the chat and ask the AI to explain it step by step — useful for understanding legacy queries or code you didn't write.
+  <Card title="Explain queries" icon="magnifying-glass" href="/features/sql-editor">
+    Paste SQL and ask for a step-by-step explanation.
   </Card>
-  <Card title="Fix SQL Errors" icon="circle-exclamation" href="/features/sql-editor">
-    When a query fails, share the error with the assistant (or use the inline Fix button in the editor) and it will diagnose the problem and suggest a corrected version.
+  <Card title="Fix errors" icon="circle-exclamation" href="/features/sql-editor">
+    Share an error (or use the inline Fix button) for a corrected query.
   </Card>
-  <Card title="Modify and Optimize SQL" icon="sliders" href="/features/sql-editor">
-    Ask the AI to refactor, optimize, or extend an existing query — add a JOIN, introduce a CTE, or rewrite a subquery as a window function.
+  <Card title="Optimize / refactor" icon="sliders" href="/features/sql-editor">
+    Add a JOIN, introduce a CTE, rewrite a subquery as a window function.
   </Card>
-  <Card title="Query Your Database" icon="database" href="/features/sql-editor">
-    The assistant can run SELECT queries against your database as part of answering a question — for example, checking how many rows match a condition or sampling data to give you a more accurate response.
+  <Card title="Query your database" icon="database" href="/features/sql-editor">
+    Runs SELECTs to check counts or sample data when answering.
   </Card>
-  <Card title="Help with Test Data" icon="seedling" href="/features/table-browser">
-    Ask the assistant for advice on seeding a table or understanding what data shapes are expected. Use the Seed button in the Table Browser to generate rows directly.
-  </Card>
-  <Card title="Create Table Filters" icon="filter" href="/features/table-browser">
-    In the Table Browser, describe the rows you're looking for in plain English and the AI will translate your description into structured filter conditions automatically.
-  </Card>
-  <Card title="Search the Web & Docs" icon="globe" href="/features/ai-assistant">
-    The assistant can search the web and fetch documentation pages as part of answering questions about SQL syntax, database features, or best practices.
+  <Card title="Filters from English" icon="filter" href="/features/table-browser">
+    Describe the rows you want; get structured filter conditions.
   </Card>
 </CardGroup>
 
-## Enhance Prompt
+## Enhance prompt
 
-Not sure how to phrase your question? The **Enhance Prompt** button in the chat panel rewrites your draft message to be clearer, more specific, and more likely to produce a great response from the AI.
+Click **Enhance** before sending to rewrite a vague message into a clearer one, with schema context added. You review the result before it's sent.
 
-Type your question in the input box, then click **Enhance** before sending. Tamery will reformulate your prompt — expanding vague requests into precise ones and adding relevant context from your schema — and place the improved version back in the input for you to review and send. You're always in control of what gets sent.
-
-Enhance Prompt is useful when:
-
-- You know what you want but aren't sure how to phrase a technical request.
-- Your initial question is broad and you'd like the AI to ask clarifying questions.
-- You want to add schema context to a question automatically.
-
-## Natural Language Filters
-
-Instead of manually building filter conditions in the Table Browser, you can describe what you want in plain English and let the AI create the filter rules for you.
+## Natural-language filters
 
 <Steps>
-  <Step title="Open the Filters panel">
-    In the Table Browser, click the **Filter** button in the toolbar to open the filter panel for the active table.
+  <Step title="Open the filter panel">
+    In the table browser, click **Filter**.
   </Step>
-  <Step title="Describe your filter">
-    Click **Ask AI** in the filter panel and type a natural language description of the rows you want to see — for example, *"orders placed in the last 30 days with a total over $500 that haven't shipped yet"*.
+  <Step title="Describe the filter">
+    Click **Ask AI** and type, e.g. *"orders in the last 30 days over $500 that haven't shipped"*.
   </Step>
   <Step title="Review and apply">
-    The AI translates your description into one or more structured filter conditions using the correct columns and operators. Review them in the panel, adjust any condition if needed, and click **Apply** to filter the table.
+    The AI builds structured conditions. Adjust, then **Apply**.
   </Step>
 </Steps>
 
 <Note>
-  Free-tier accounts include a limited number of AI-generated filter uses per month. Upgrade to a paid plan for unlimited natural language filters. See [Plans](/account/plans) for details.
+  Free accounts get a limited number of AI filter uses per month. Paid plans are unlimited. See [Plans](/account/plans).
 </Note>
 
-## AI Data Seeding
+## AI data seeding
 
-The **Seed** feature populates a table with realistic, schema-consistent test data. Open any table in the Table Browser, click the **Seed** button in the toolbar, and specify how many rows you'd like to generate.
+Open a table, click **Seed**, set a row count. Tamery picks generators from column names and types — names, emails, timestamps, and foreign keys referencing existing rows. Rows are previewed before insertion.
 
-Tamery intelligently inspects your column names and data types to automatically select appropriate generators for each column — producing proper names, plausible email addresses, realistic timestamps, and foreign key values that reference existing records in related tables. You can review and adjust the generator assigned to each column before inserting any rows.
+## Plans
 
-Seeded rows are previewed before insertion, so you can inspect and adjust them before committing to the database.
-
-## Usage & Plans
-
-Tamery offers a free tier with access to core features and a subscription plan that unlocks the full AI experience.
-
-| Feature | Free Tier | Subscription |
+| Feature | Free | Subscription |
 |---|---|---|
 | AI chat | — | ✓ |
-| AI SQL generation (inline) | — | ✓ |
-| Fix SQL with AI | — | ✓ |
-| Update SQL with AI | — | ✓ |
-| Enhance Prompt | — | ✓ |
-| Natural language filters | Limited (monthly allowance) | Unlimited |
-| Data seeding | Limited (free allowance) | Unlimited |
+| Inline SQL generation | — | ✓ |
+| Fix SQL | — | ✓ |
+| Modify SQL | — | ✓ |
+| Enhance prompt | — | ✓ |
+| Natural-language filters | Limited | Unlimited |
+| Data seeding | Limited | Unlimited |
 
-Visit [Plans](/account/plans) to see the full feature comparison and upgrade your account.
+See [Plans](/account/plans).

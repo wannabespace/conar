@@ -1,61 +1,52 @@
 ---
-title: "Tamery Overview: AI-Powered Database Client and Features"
+title: "Tamery overview"
 sidebarTitle: "Introduction"
-description: "Tamery is an AI-powered database client for PostgreSQL, MySQL, MSSQL, and ClickHouse. Manage connections, browse data, and get AI SQL assistance."
+description: "Tamery is an AI-powered database client for PostgreSQL, MySQL, MSSQL, and ClickHouse. Manage connections, browse data, and get AI SQL help."
 ---
 
-Tamery is an AI-powered database client designed to make working with relational and analytical databases faster, smarter, and less frustrating. Whether you're a backend engineer inspecting production data, a data analyst running ad-hoc queries, or a team lead reviewing a schema with colleagues, Tamery gives you a unified interface to connect, explore, and query your databases — with an AI assistant that understands your schema and helps you get things done without leaving the app.
+Tamery is a database client for relational and analytical databases. Connect, browse, query, and edit data, with an AI assistant that knows your schema.
 
 <Note>
-  Tamery is currently in beta. Features and interfaces may change as the product evolves. Your feedback helps shape what comes next.
+  Tamery is in beta. Features and interfaces may change.
 </Note>
 
-## Supported Databases
+## Supported databases
 
-Tamery currently supports the following database engines:
-
-- **PostgreSQL** — full support for queries, browsing, schema inspection, and AI assistance
-- **MySQL** — full support for queries, browsing, schema inspection, and AI assistance
-- **MSSQL** (Microsoft SQL Server) — full support for queries, browsing, schema inspection, and AI assistance
-- **ClickHouse** — full support for queries, browsing, schema inspection, and AI assistance
+- **PostgreSQL** — full support
+- **MySQL** — full support
+- **MSSQL** (SQL Server) — full support
+- **ClickHouse** — full support
 - **SQLite** — coming soon
 - **MongoDB** — coming soon
 
-## Key Features
+## Key features
 
 <CardGroup cols={2}>
-  <Card title="AI SQL Assistant" icon="sparkles" href="/features/ai-assistant">
-    Ask questions about your data in plain English, generate SQL from natural language, get explanations for complex queries, and let the AI fix errors automatically.
+  <Card title="AI SQL assistant" icon="sparkles" href="/features/ai-assistant">
+    Generate SQL from plain English, explain queries, and fix errors — with schema context.
   </Card>
-
-  <Card title="Table Browser" icon="table" href="/features/table-browser">
-    Navigate your schemas and tables visually. Filter rows, sort columns, and edit cell values inline without writing a single line of SQL.
+  <Card title="Table browser" icon="table" href="/features/table-browser">
+    Filter, sort, and edit rows inline. No SQL required.
   </Card>
-
-  <Card title="SQL Editor" icon="code" href="/features/sql-editor">
-    Write and execute SQL in a Monaco-based editor with full syntax highlighting, keyboard shortcuts, and results displayed in a rich data grid.
+  <Card title="SQL editor" icon="code" href="/features/sql-editor">
+    Monaco editor with autocomplete and a results grid.
   </Card>
-
-  <Card title="Schema Visualizer" icon="diagram-project" href="/features/schema-visualizer">
-    Understand your database structure at a glance with an interactive ER diagram. Browse enums, indexes, constraints, functions, triggers, and policies in the definitions panel.
+  <Card title="Schema visualizer" icon="diagram-project" href="/features/schema-visualizer">
+    Interactive ER diagram, plus a definitions browser for enums, indexes, functions, triggers, and policies.
   </Card>
 </CardGroup>
 
-## Available Platforms
+## Platforms
 
-Tamery is available in three forms so you can use it in whatever environment suits your workflow best.
-
-**Web App** — Access Tamery directly at [tamery.app](https://tamery.app) from any modern browser. No installation required. Sign in with your email or OAuth provider and connect to your databases right away.
-
-**Desktop App** — Download the native desktop application for macOS, Windows, or Linux from [tamery.app/download](https://tamery.app/download). The desktop app runs a local proxy on your machine, making it easy to connect to databases on localhost or within a private network.
-
-**CLI** — Install the `tamery` command-line tool via npm for terminal-based access, scripting, and integration with your development workflow. The CLI requires Node.js version 20 or higher. Run `tamery login` to authenticate and `tamery proxy` to start a local proxy session.
+- **Web** — [tamery.app](https://tamery.app). No install; sign in and connect.
+- **Desktop** — [download](https://tamery.app/download) for macOS, Windows, Linux. Runs a local proxy for localhost and private-network databases.
+- **CLI** — `tamery` via npm (Node.js 20+). `tamery login` to authenticate, `tamery proxy` for a local proxy.
 
 ## Security
 
-Your database credentials are treated with care. Tamery encrypts all connection strings at rest, so your passwords and hostnames are never stored in plain text. When you save a connection, you choose how its password is handled:
+Tamery encrypts every connection string at rest with a per-user key. When you save a connection, you choose how its password is handled:
 
-- **Cloud (with password)** — your full connection string, including the password, is encrypted and synced to Tamery's cloud, so the connection is ready to use on every device where you sign in.
-- **Cloud (without password)** — only connection metadata (host, port, database, username) is synced. Your password is never uploaded; you enter it on each device and it stays encrypted on that device.
+- **Cloud (with password)** — full connection string, including the password, is encrypted and synced to every device.
+- **Cloud (without password)** — only metadata (host, port, database, username) syncs; the password stays on the device where you enter it.
 
-In both modes, your connection syncs across devices and sensitive values are encrypted before storage. You are always in control of what gets saved and where — see [Security](/connections/security) for the full details.
+Both modes sync the connection across devices. See [Security](/connections/security) for details.

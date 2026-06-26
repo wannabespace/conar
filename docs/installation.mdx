@@ -1,120 +1,96 @@
 ---
-title: "How to Install Tamery: Desktop App and CLI Setup Guide"
+title: "Install Tamery"
 sidebarTitle: "Installation"
-description: "Download the Tamery desktop app for macOS, Windows, or Linux, or install the CLI via npm. Covers all supported installation methods."
+description: "Download the Tamery desktop app for macOS, Windows, or Linux, or install the CLI via npm."
 ---
 
-Tamery is available in three forms: a web app you can use instantly in your browser, a native desktop app for macOS, Windows, and Linux, and a command-line interface installable via npm. Choose the option that best fits your workflow — or use several together, since all three share the same account and cloud-synced connections.
+Tamery comes in three forms — web, desktop, and CLI. All share the same account and cloud-synced connections.
 
 <Note>
-  The desktop app is the recommended option for most users. It runs a local proxy on your machine, which makes it straightforward to connect to databases on localhost or within a private network without any extra configuration.
+  The desktop app is recommended for most users. It runs a local proxy, so localhost and private-network databases work without extra setup.
 </Note>
 
-## Web App
+## Web
 
-No installation is needed to use Tamery on the web. Open [tamery.app](https://tamery.app) in any modern browser, sign in with your email or OAuth provider, and you're ready to go. The web app gives you access to every feature — Table Browser, SQL Editor, Schema Visualizer, and AI assistant — from wherever you have internet access.
+No install. Open [tamery.app](https://tamery.app), sign in, and connect.
 
 <Tip>
-  You can use the web app to connect to local databases by pairing it with the CLI's `tamery proxy` command. Start the proxy locally with `tamery proxy`, then add a connection in the web app pointing to the proxy address. See the [CLI overview](/cli/overview) for details.
+  To reach local databases from the web app, run `tamery proxy` (see the [CLI](/cli/overview)) and point a connection at it.
 </Tip>
 
-## Desktop App
+## Desktop
 
-The Tamery desktop app runs a local proxy automatically, making local and private-network database connections seamless. Download it from [tamery.app/download](https://tamery.app/download) for your platform.
+Download from [tamery.app/download](https://tamery.app/download).
 
 <Tabs>
   <Tab title="macOS">
-    **Option 1 — Homebrew (recommended)**
-
-    If you have [Homebrew](https://brew.sh) installed, you can install Tamery with a single command:
+    **Homebrew (recommended)**
 
     ```bash
     brew install --cask tamery
     ```
 
-    Homebrew will handle downloading, installing, and keeping Tamery up to date.
+    **Direct download**
 
-    **Option 2 — Direct download**
+    1. Download the `.dmg` (Apple Silicon or Intel) from [tamery.app/download](https://tamery.app/download).
+    2. Open it and drag **Tamery** to **Applications**.
+    3. Launch and sign in.
 
-    1. Go to [tamery.app/download](https://tamery.app/download).
-    2. Download the macOS installer (`.dmg`) for Apple Silicon or Intel.
-    3. Open the downloaded file and drag **Tamery** into your **Applications** folder.
-    4. Launch Tamery from Applications or Spotlight.
-    5. Sign in with your Tamery account to get started.
-
-    Tamery runs on macOS 12 Monterey and later, on both Apple Silicon and Intel.
+    Requires macOS 12 Monterey or later.
   </Tab>
   <Tab title="Windows">
-    1. Go to [tamery.app/download](https://tamery.app/download).
-    2. Download the Windows installer (`.exe`).
-    3. Run the installer and follow the on-screen prompts.
-    4. Once installation completes, launch Tamery from the Start menu or your desktop shortcut.
-    5. Sign in with your Tamery account to get started.
+    1. Download the `.exe` from [tamery.app/download](https://tamery.app/download).
+    2. Run the installer.
+    3. Launch and sign in.
 
-    Tamery runs on Windows 10 and Windows 11 (64-bit).
+    Requires Windows 10 or 11 (64-bit).
   </Tab>
   <Tab title="Linux">
-    **Arch Linux (AUR)**
-
-    If you're on Arch Linux or an Arch-based distribution, you can install Tamery from the Arch User Repository using your preferred AUR helper:
+    **Arch (AUR)**
 
     ```bash
-    # Using yay
     yay -S tamery-bin
-    
-    # Using paru
+    # or
     paru -S tamery-bin
     ```
 
-    After installation, launch Tamery from your application menu or by running `tamery-app` in your terminal.
+    Then run `tamery-app`.
 
-    **Debian / Ubuntu and derivatives**
-
-    A `.deb` package is available for Debian-based distributions. Download it from [tamery.app/download](https://tamery.app/download) and install it with:
+    **Debian / Ubuntu**
 
     ```bash
     sudo dpkg -i tamery_*.deb
     ```
 
-    **RPM-based distributions (Fedora, RHEL, openSUSE)**
-
-    An `.rpm` package is available for RPM-based distributions. Download it from [tamery.app/download](https://tamery.app/download) and install it with:
+    **Fedora / RHEL / openSUSE**
 
     ```bash
-    sudo rpm -i tamery_*.rpm
-    # or using dnf
     sudo dnf install ./tamery_*.rpm
     ```
 
-    **AppImage (universal Linux)**
-
-    An AppImage is available for any Linux distribution. Download it from [tamery.app/download](https://tamery.app/download), make it executable, and run it:
+    **AppImage**
 
     ```bash
     chmod +x Tamery-*.AppImage
     ./Tamery-*.AppImage
     ```
+
+    Download packages from [tamery.app/download](https://tamery.app/download).
   </Tab>
 </Tabs>
 
 ## CLI
 
-The Tamery CLI lets you interact with Tamery from your terminal, run a local proxy for web app connections, and integrate Tamery into scripts and automated workflows.
-
-**Requirements:** Node.js version 20 or higher. Check your version with `node --version`.
-
-Install the CLI globally via npm:
+Requires Node.js 20+.
 
 ```bash
 npm install -g tamery
 ```
 
-Once installed, authenticate by running:
+Authenticate:
 
 ```bash
 tamery login
 ```
 
-This opens your default browser and takes you through the Tamery sign-in flow. Once you've signed in, your credentials are saved locally and the CLI is ready to use.
-
-For a full list of available commands and options, see the [CLI overview](/cli/overview).
+This opens the browser sign-in flow and saves your session locally. See the [CLI reference](/cli/commands) for all commands.

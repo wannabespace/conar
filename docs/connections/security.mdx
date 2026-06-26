@@ -1,84 +1,67 @@
 ---
-title: "How Tamery Secures Your Database Credentials"
+title: "Security"
 sidebarTitle: "Security"
-description: "Tamery encrypts all connection strings at rest with a per-user secret key. Learn how the two sync modes protect your credentials differently."
+description: "How Tamery encrypts connection strings and how the two sync modes handle your password."
 ---
 
-Your database credentials are sensitive, and Tamery is designed to handle them with care. Every connection string is encrypted before it ever leaves your device, and the sync mode you choose gives you direct control over whether your password is stored in the cloud at all. This page explains exactly how Tamery protects your credentials and how to choose the right sync mode for each connection.
+Every connection string is encrypted before it leaves your device. The sync type controls whether your password is stored in the cloud at all.
 
-## Encryption at Rest
+## Encryption at rest
 
-All connection strings stored by Tamery — regardless of sync type — are encrypted at rest using a **per-user secret key**. This key is unique to your account and is never shared with other users. Even if Tamery's storage were somehow accessed without authorization, your encrypted connection strings would be unreadable without your personal key.
+All connection strings are encrypted with a **per-user secret key**, unique to your account. Without that key, stored strings are unreadable. Encryption is automatic — nothing to configure.
 
-Encryption is applied automatically every time you save a connection. You don't need to configure anything to benefit from it.
+## Encryption in transit
 
-## Encryption in Transit
+When your device fetches a connection string, it's decrypted server-side and sent over HTTPS (TLS). The plaintext exists only briefly in server memory during the request; it's never persisted unencrypted, and the per-user secret is held in Infisical, accessible only to the Tamery backend.
 
-When your device retrieves a connection string from Tamery's cloud, all communication is protected by **HTTPS (TLS)**. The connection string is decrypted server-side using your per-user secret, then transmitted over the encrypted TLS channel to your device.
-
-Because the server decrypts before sending, the server does briefly hold the plaintext credential in memory during that request. The value is never persisted in plaintext — it is re-encrypted immediately when written back to storage — and the Tamery backend is the only system that can access your Infisical-backed per-user secret.
-
-If you want to avoid the server ever handling your plaintext password, use **Cloud (without password)** mode. In that mode the server only stores and returns connection metadata (hostname, port, database name, username), so the password never leaves your device.
+To keep the server from ever handling your plaintext password, use **Cloud (without password)** — then only metadata is stored and returned.
 
 ## Cloud (with password) vs Cloud (without password)
 
-Tamery gives you two sync modes, each offering a different trade-off between convenience and credential exposure. Both modes sync your connection across all your devices.
+Both modes sync the connection across your devices.
 
 <Tabs>
   <Tab title="Cloud (with password)">
-    **Cloud (with password)** stores your full connection string — including the password — in Tamery's cloud, encrypted with your per-user secret key.
+    Stores the full connection string, including the password, encrypted with your per-user key.
 
-    - Your encrypted credentials are synced to every device where you sign in to Tamery.
-    - You never need to re-enter your password when switching devices or reinstalling the app.
-    - The password is stored encrypted at rest. When syncing to a device, it is decrypted server-side and transmitted over HTTPS.
+    - Synced to every device you sign in on.
+    - No password re-entry when switching devices.
+    - Decrypted server-side and sent over HTTPS on sync.
 
-    This option is convenient for development and staging databases where the priority is quick access across multiple machines.
+    Best for dev and staging.
   </Tab>
   <Tab title="Cloud (without password)">
-    **Cloud (without password)** stores only connection metadata — hostname, port, database name, and username — in Tamery's cloud. Your password is **never synced to the cloud**.
+    Stores only metadata (host, port, database, username). The password is **never** uploaded.
 
-    - The first time you use the connection, Tamery prompts you to enter the password.
-    - The password is kept only on your current device, encrypted with your per-user secret key, so you don't have to re-enter it every time. It is never uploaded to Tamery's cloud or synced to your other devices.
-    - You can remove the locally stored password at any time from the connection's menu (**⋯ → Clear password**). After clearing it, Tamery prompts for the password again the next time you use the connection.
-    - Even if your Tamery account were compromised, an attacker would have no stored password to extract from the cloud.
+    - You enter the password the first time you use the connection.
+    - It's kept on that device only, encrypted with your per-user key.
+    - Clear it anytime via the connection menu (**⋯ → Clear password**).
+    - A compromised account exposes no stored password.
 
-    This option is the right choice for production databases or any situation where your organization's security policy prohibits storing passwords in external systems.
+    Best for production or strict-policy environments.
   </Tab>
 </Tabs>
 
-## Choosing the Right Sync Mode
+## Choosing a mode
 
-Not sure which sync mode to use? Here's a straightforward guide:
-
-| Situation | Recommended Sync Mode |
+| Situation | Mode |
 |---|---|
-| Development or local databases | Cloud (with password) |
-| Staging environments | Cloud (with password) |
-| Production databases | Cloud (without password) |
-| Environments with external secret storage policies | Cloud (without password) |
-| Shared team machines | Cloud (without password) |
-| Personal machine, trusted environment | Cloud (with password) |
+| Local / dev databases | Cloud (with password) |
+| Staging | Cloud (with password) |
+| Production | Cloud (without password) |
+| External secret-storage policy | Cloud (without password) |
+| Shared machines | Cloud (without password) |
 
-A few rules of thumb:
+You can mix modes per connection.
 
-- **Use Cloud (with password)** when you regularly switch between devices and need frictionless access to non-production databases.
-- **Use Cloud (without password)** for any production database, or whenever your company's security policy requires that passwords not be stored outside your direct control.
-- You can use different sync modes for different connections — for example, **Cloud (with password)** for your local dev database and **Cloud (without password)** for your staging and production connections.
+## Open source
 
-## Open Source
-
-Tamery is open source and released under the **AGPL-3.0 license**. This means the encryption implementation — and every other part of how Tamery handles your credentials — is publicly auditable. You don't have to take our word for how your data is protected.
-
-You can review the source code at any time:
-
-[github.com/wannabespace/tamery](https://github.com/wannabespace/tamery)
-
-If you find a security concern in the codebase, please open an issue or contact the maintainers directly through the repository.
+Tamery is open source under **AGPL-3.0**, so the encryption implementation is auditable: [github.com/wannabespace/tamery](https://github.com/wannabespace/tamery). Report security issues via the repository.
 
 <Warning>
-  Never share your connection strings with others — even colleagues. A connection string contains everything needed to access your database. If a connection string has been exposed, rotate your database password immediately and update the connection in Tamery.
+  Never share connection strings — they contain everything needed to access your database. If one leaks, rotate the password and update the connection.
 </Warning>
 
 <Note>
-  When you run a query in Tamery, your credentials and query results travel directly between your machine and your database. Tamery's cloud infrastructure stores only encrypted connection metadata — it never handles your live query traffic.
+  Query traffic goes directly between your machine and your database. Tamery's cloud stores only encrypted connection metadata — it never handles live query data.
 </Note>

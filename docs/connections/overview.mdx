@@ -1,76 +1,67 @@
 ---
-title: "Managing Database Connections in Tamery"
+title: "Managing connections"
 sidebarTitle: "Overview"
-description: "Learn how to add, organize, and manage your database connections in Tamery. Covers sync modes, labels, colors, and all four supported database engines."
+description: "Add and manage database connections in Tamery, including sync types, labels, and colors."
 ---
 
-Tamery keeps all your database connections in one place, making it easy to switch between environments, share connection setups across devices, and stay organized as your project grows. Whether you're connecting to a local development database or a production cloud instance, the setup process takes just a few steps.
+Connections live in one place so you can switch between databases and devices.
 
-## Adding a Connection
-
-To add a new database connection, click **Add new** on the Tamery dashboard and follow the three-step wizard.
+## Add a connection
 
 <Steps>
-  <Step title="Choose your database type">
-    Select the database engine you want to connect to. Tamery supports PostgreSQL, MySQL, SQL Server (MSSQL), and ClickHouse.
+  <Step title="Choose a database type">
+    PostgreSQL, MySQL, MSSQL, or ClickHouse.
   </Step>
-  <Step title="Enter your connection string">
-    Paste or type your connection string into the provided field. Once you've entered it, click **Test Connection** to verify that Tamery can reach your database before you save anything.
+  <Step title="Enter a connection string">
+    Paste your string and click **Test connection** to verify it before saving.
   </Step>
-  <Step title="Name and configure your connection">
-    Give your connection a memorable name, choose a sync type (see below), and optionally assign a label and color to help you stay organized. Click **Save** to finish.
+  <Step title="Name and configure">
+    Set a name, a sync type (see below), and optionally a label and color. Click **Save**.
   </Step>
 </Steps>
 
 <Note>
-  Tamery tests your connection live before saving it. If the test fails, double-check your connection string — including the hostname, port, credentials, and database name — before proceeding.
+  Tamery tests the connection before saving. If it fails, check the host, port, credentials, and database name.
 </Note>
 
-## Sync Types
+## Sync types
 
-Sync type controls whether Tamery stores your password alongside the rest of your connection details. Both options keep your connection available across all your devices.
+Sync type controls whether Tamery stores your password. Both options sync the connection across your devices.
 
 <Tabs>
   <Tab title="Cloud (with password)">
-    With **Cloud (with password)**, your full connection string — including the password — is encrypted with your personal secret key and stored in Tamery's cloud. The connection is automatically available on every device where you sign in to Tamery, with no need to re-enter your password.
+    The full connection string, including the password, is encrypted with your per-user key and stored in the cloud. Available on every device with no re-entry.
 
-    This option is the most convenient and is well-suited for development and staging databases where frictionless cross-device access is valuable.
+    Good for dev and staging.
   </Tab>
   <Tab title="Cloud (without password)">
-    With **Cloud (without password)**, Tamery stores your connection metadata (host, port, database name, and username) in the cloud, but your password is **never stored**. You'll be prompted to enter the password each time you open the connection.
+    Only metadata (host, port, database, username) is stored; the password is never uploaded. You enter it on each device.
 
-    This option is the right choice for production databases or any environment where your organization's security policy prohibits storing passwords in external systems.
+    Good for production or when policy forbids storing passwords externally.
   </Tab>
 </Tabs>
 
-## Organizing Connections
+## Organizing
 
-As your list of connections grows, Tamery gives you a few tools to keep things tidy:
+- **Labels** — tag connections (e.g. `production`, `staging`) to group and filter them.
+- **Colors** — color-code environments.
+- **Pinning** — pin frequently used connections to the top.
 
-- **Labels** — attach a text label to a connection (for example, `production`, `staging`, or `personal`) to group and filter connections at a glance.
-- **Colors** — assign a color to each connection so you can visually distinguish environments without reading the name.
-- **Pinning** — pin your most-used connections to the top of the list for quick access.
+Change a connection's name, label, color, or sync type anytime from its settings.
 
-You can update a connection's name, label, color, or sync type at any time from the connection settings.
-
-## Supported Databases
-
-Tamery currently supports four database engines. Follow the links below for engine-specific connection string formats, SSL options, and provider-specific tips.
+## Supported databases
 
 <CardGroup cols={2}>
   <Card title="PostgreSQL" icon="elephant" href="/connections/postgresql">
-    Connect to PostgreSQL databases, including Supabase, Neon, Railway, and self-hosted instances.
+    Supabase, Neon, Railway, self-hosted.
   </Card>
-
   <Card title="MySQL" icon="dolphin" href="/connections/mysql">
-    Connect to MySQL and MariaDB databases, including PlanetScale and Railway.
+    MySQL and MariaDB, including PlanetScale and Railway.
   </Card>
-
   <Card title="SQL Server" icon="microsoft" href="/connections/mssql">
-    Connect to Microsoft SQL Server and Azure SQL Database.
+    SQL Server and Azure SQL.
   </Card>
-
   <Card title="ClickHouse" icon="database" href="/connections/clickhouse">
-    Connect to ClickHouse Cloud or self-hosted ClickHouse instances.
+    ClickHouse Cloud and self-hosted.
   </Card>
 </CardGroup>

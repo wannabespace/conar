@@ -1,80 +1,55 @@
 ---
-title: "Tamery Account Settings: Profile, Billing, and Sign-Out"
+title: "Account settings"
 sidebarTitle: "Settings"
-description: "Update your Tamery profile, manage your Pro subscription and billing, configure sign-in options, and learn how to sign out or delete your account."
+description: "Manage your Tamery profile, subscription, billing, sign-out, and account deletion."
 ---
 
-Your Tamery account settings — including your profile, subscription, and billing — are all managed from the Tamery website at [tamery.app/account](https://tamery.app/account). This is separate from the database viewer app itself, which is focused entirely on working with your data. Any time you need to update personal details, check your plan, or manage billing, head to the account page on the web.
+Account settings — profile, subscription, billing — are managed on the web at [tamery.app/account](https://tamery.app/account), separate from the database app.
 
 <Note>
-  Account settings are managed at [tamery.app/account](https://tamery.app/account), not within the Tamery database viewer app. Open a browser and sign in to access your settings.
+  Settings live at [tamery.app/account](https://tamery.app/account), not in the desktop app.
 </Note>
 
 ## Profile
 
-You can update your display name and email address from the **Profile** section of your account page.
-
-1. Go to [tamery.app/account](https://tamery.app/account)
-2. Navigate to the **Profile** section
-3. Edit your **name** or **email address** as needed
-4. Save your changes
-
-If you change your email address, you may be asked to verify the new address before the update takes effect. Make sure you have access to the inbox before completing the change.
+Update your name and email in the **Profile** section. Changing your email may require verifying the new address before it takes effect.
 
 ## Subscription
 
-The **Subscription** section of your account page shows your current plan and gives you access to all billing management options through the Stripe customer portal.
+The **Subscription** section shows your plan and links to the Stripe portal. From there you can:
 
-**From this section you can:**
+- View your plan and renewal date
+- Upgrade to Pro (activates immediately after payment)
+- Open the Stripe portal to update payment details and download invoices
+- Cancel (Pro stays active until the end of the billing period)
 
-- **View your current plan** — see whether you're on the Free tier or a Pro subscription, along with your renewal date
-- **Upgrade to Pro** — click **Upgrade** and complete checkout via Stripe to unlock unlimited AI features; your access is activated immediately after payment
-- **Manage billing** — click **Manage Billing** to open the Stripe customer portal, where you can update your payment method, download past invoices, and change billing details
-- **Cancel your subscription** — cancellation is handled through the Stripe portal; your Pro access continues until the end of your current billing period
+## Signing out
 
-<Tip>
-  For a full breakdown of what's included in each plan, see the [Plans](/account/plans) page.
-</Tip>
+**Web** — click your avatar → **Sign out**.
 
-## Signing Out
-
-You can sign out of Tamery from any surface where you're signed in.
-
-**Web app (tamery.app)**
-
-1. Click your account avatar or name in the top-right corner of the page
-2. Select **Sign out** from the dropdown menu
-
-**Desktop app**
-
-Open the account or profile menu within the desktop app and choose **Sign out**. Your connection configurations remain saved locally — signing back in will restore your account-synced connections.
+**Desktop** — open the account menu → **Sign out**. Local connections stay; signing back in restores synced connections.
 
 **CLI**
-
-If you're using the Tamery CLI, run the following command to sign out:
 
 ```bash
 tamery logout
 ```
 
-This clears your local credentials. You'll need to run `tamery login` the next time you want to use authenticated CLI features.
+Clears local credentials. Run `tamery login` to sign back in.
 
-## Deleting Your Account
+## Deleting your account
 
-If you'd like to permanently delete your Tamery account and all associated data, please reach out to the Tamery support team directly. Account deletion cannot be undone, so the team will confirm the request with you before proceeding.
+Contact support to delete your account. Deletion is permanent and confirmed before it proceeds.
 
 <Warning>
-  Deleting your account is permanent and cannot be reversed. All your saved connections, settings, and account data will be removed. If you have an active Pro subscription, cancel it through the billing portal before requesting deletion to avoid further charges.
+  Deletion is irreversible — all connections, settings, and account data are removed. Cancel any active Pro subscription first to avoid further charges.
 </Warning>
 
-To request account deletion, contact support from the [Tamery website](https://tamery.app) or use the help option in your account page.
-
 <CardGroup cols={2}>
-  <Card title="Plans & Pricing" icon="credit-card" href="/account/plans">
-    Learn what's included in the Free tier and Pro subscription, and how to upgrade.
+  <Card title="Plans" icon="credit-card" href="/account/plans">
+    Free vs Pro and how to upgrade.
   </Card>
-
-  <Card title="Account Page" icon="circle-user" href="https://tamery.app/account">
-    Go directly to your Tamery account to update your profile or manage billing.
+  <Card title="Account page" icon="circle-user" href="https://tamery.app/account">
+    Manage your profile and billing.
   </Card>
 </CardGroup>

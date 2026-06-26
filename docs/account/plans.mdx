@@ -1,78 +1,66 @@
 ---
-title: "Tamery Plans: Compare Free and Pro Subscription Features"
+title: "Plans"
 sidebarTitle: "Plans"
-description: "Compare Tamery's free tier and paid subscription. The paid plan unlocks unlimited AI chat, SQL generation, data seeding, and model selection."
+description: "Compare Tamery's free tier and Pro subscription. Pro unlocks the full AI assistant, data seeding, and unlimited filters."
 ---
 
-Tamery offers two plans designed to fit different needs. The **Free tier** gives you full access to Tamery's core database tooling — everything you need to browse, query, and visualize your data. When you're ready to bring AI deeper into your workflow, upgrading to the **Pro subscription** unlocks unlimited AI chat, SQL generation and editing, data seeding, and the ability to choose your preferred AI model.
+Two plans. **Free** covers core database tooling. **Pro** unlocks the full AI feature set.
 
 <Note>
-  Tamery is currently in beta. Pricing and plan features are subject to change as the product evolves. Check [tamery.app](https://tamery.app) for the most up-to-date pricing information.
+  Tamery is in beta. Pricing and features may change. See [tamery.app](https://tamery.app) for current pricing.
 </Note>
 
-## Free Tier
+## Free
 
-The Free tier gives you immediate access to every core database feature in Tamery — no credit card required. You can connect to as many databases as you need and start working right away.
+- **Table browser** — browse, filter, sort, edit
+- **SQL editor** — write and run queries
+- **Schema visualizer** — ER diagram
+- **Definitions** — enums, indexes, constraints, functions, triggers, policies
+- **Unlimited connections**
+- **Cloud sync** — across devices, with or without storing the password
+- **AI natural-language filters** — limited monthly quota
 
-**What's included:**
+The filter quota resets monthly.
 
-- **Table Browser** — explore your tables, rows, and columns with a clean, intuitive interface
-- **SQL Editor** — write and run queries directly against your database
-- **Schema Visualizer** — understand the structure of your database and the relationships between tables at a glance
-- **Definitions** — inspect table definitions, column types, indexes, and constraints
-- **Unlimited connections** — connect to as many local or remote databases as you like
-- **Cloud sync** — your connections sync across devices, with or without storing the password, so they're available wherever you use Tamery
-- **AI natural language filters** — filter table data using plain English queries, up to your monthly quota
+## Pro
 
-The AI filter quota resets each month. If you find yourself hitting the limit, upgrading to Pro gives you unrestricted access.
+Everything in Free, plus:
 
-## Subscription (Pro)
+- **AI chat assistant** — schema-aware Q&A, query help, debugging
+- **AI SQL generation and editing** — write or modify SQL from plain English
+- **Fix SQL with AI** — diagnose and correct failing queries
+- **Enhance prompt** — refine your prompts before sending
+- **AI data seeding** — generate realistic test data
+- **Unlimited natural-language filters**
 
-The Pro subscription builds on everything in the Free tier and adds the full suite of AI-powered features. If you work with databases regularly, these tools can dramatically speed up your workflow — from writing and fixing queries to seeding realistic test data.
-
-**Everything in Free, plus:**
-
-- **Unlimited AI chat assistant** — ask questions about your data, get query suggestions, debug problems, and explore your schema through a conversational interface in the Query view
-- **AI SQL generation and editing** — describe what you want in plain language and let Tamery write or modify the SQL for you
-- **Fix SQL with AI** — when a query returns an error, ask AI to diagnose and correct it automatically
-- **Enhance Prompt** — refine and improve your natural language prompts so the AI produces better, more precise results
-- **AI Data Seeding** — generate realistic, contextually appropriate seed data for your tables without writing fixtures by hand
-- **Top AI models, automatically** — the assistant runs on Claude Opus by default and falls back to GPT or Gemini when needed, with no configuration on your part
-- **Unlimited AI natural language filters** — use plain English to filter table data as often as you need, with no monthly cap
+The assistant runs on a top model automatically (Claude Opus, with GPT/Gemini fallback) — nothing to configure.
 
 ## Upgrading
 
-Upgrading to Pro takes just a moment and is handled through a secure Stripe checkout.
+Handled via Stripe checkout.
 
-1. Go to your account page at [tamery.app/account](https://tamery.app/account)
-2. Click **Upgrade** under your current plan
-3. Complete the checkout flow via Stripe
+1. Go to [tamery.app/account](https://tamery.app/account)
+2. Click **Upgrade**
+3. Complete checkout
 
-Your Pro features are activated immediately after your payment is confirmed. You'll receive a receipt from Stripe at the email address associated with your Tamery account.
+Pro activates immediately after payment. Stripe emails a receipt.
 
-<Tip>
-  Visit [tamery.app](https://tamery.app) to see current pricing before you upgrade.
-</Tip>
+## Managing your subscription
 
-## Managing Your Subscription
+From [tamery.app/account](https://tamery.app/account) you can:
 
-All billing management is handled through the Stripe customer portal, accessible directly from your Tamery account page.
+- View your plan and renewal date
+- Open the Stripe billing portal to update payment details
+- Download invoices
+- Cancel — Pro stays active until the end of the billing period, then reverts to Free
 
-**From [tamery.app/account](https://tamery.app/account) you can:**
-
-- **View your current plan** and renewal date
-- **Access the billing portal** to update your payment method or billing details
-- **Download invoices** for any past payments
-- **Cancel your subscription** — your Pro access remains active through the end of your current billing period, after which your account reverts to the Free tier
-
-To open the billing portal, go to [tamery.app/account](https://tamery.app/account) and click **Manage Billing**. You'll be taken to a Stripe-hosted page where all payment and subscription options are available.
+Click **Manage billing** to open the Stripe portal.
 
 <CardGroup cols={2}>
-  <Card title="Account Settings" icon="gear" href="/account/settings">
-    View your plan, update your profile, and manage billing from your Tamery account page.
+  <Card title="Account settings" icon="gear" href="/account/settings">
+    Profile, plan, and billing.
   </Card>
-
-  <Card title="Current Pricing" icon="tag" href="https://tamery.app">
-    See the latest plan pricing and feature details on the Tamery website.
+  <Card title="Current pricing" icon="tag" href="https://tamery.app">
+    Latest plan pricing on the website.
   </Card>
 </CardGroup>

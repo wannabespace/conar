@@ -1,56 +1,34 @@
 ---
-title: "Tamery CLI Reference: All Commands, Flags, and Usage"
+title: "CLI commands"
 sidebarTitle: "Commands"
-description: "Complete reference for all Tamery CLI commands — login, logout, whoami, query, and proxy — with flags, usage examples, and expected output."
+description: "Reference for the Tamery CLI: login, logout, whoami, query, and proxy, with flags and examples."
 ---
 
-This page covers every command available in the Tamery CLI. Run `tamery --help` to see a summary at any time, or append `--help` to any individual command — for example `tamery query --help` — to see its options inline.
+Run `tamery --help` for a summary, or `tamery <command> --help` for one command.
 
 ---
 
 ## tamery login
 
-Signs you in to your Tamery account. The CLI opens a browser window and guides you through a secure sign-in flow. Once complete, your session is saved locally so you don't need to sign in again for subsequent commands.
-
-The sign-in flow times out after **5 minutes** if not completed. If that happens, simply run `tamery login` again.
-
-**Syntax**
+Sign in. Opens the browser sign-in flow and saves the session locally. Times out after 5 minutes.
 
 ```bash
 tamery login [options]
 ```
 
-**Flags**
-
 <ParamField query="--force" type="boolean">
-  Sign in even if you are already authenticated. Use this to switch accounts or refresh a session without manually logging out first. Shorthand: `-f`.
+  Sign in even if already authenticated (switch accounts). Alias: `-f`.
 </ParamField>
 
 <ParamField query="--no-open" type="boolean">
-  Do not open the browser automatically. Instead, the CLI prints the sign-in URL to your terminal so you can copy and open it yourself. Useful when working over SSH or in environments without a desktop browser.
+  Don't open the browser; print the URL instead. Useful over SSH.
 </ParamField>
-
-**Examples**
-
-Sign in normally — a browser window opens automatically:
 
 ```bash
 tamery login
-```
-
-Sign in without opening the browser — copy the printed URL instead:
-
-```bash
 tamery login --no-open
-```
-
-Force a new sign-in even if you're already authenticated:
-
-```bash
 tamery login --force
 ```
-
-**Expected output**
 
 ```text
 ✓ Signed in as user@example.com.
@@ -60,21 +38,11 @@ tamery login --force
 
 ## tamery logout
 
-Signs you out of your Tamery account and clears the locally stored session. After running this command, any further commands that require authentication will prompt you to sign in again.
-
-**Syntax**
+Sign out and clear the local session.
 
 ```bash
 tamery logout
 ```
-
-**Example**
-
-```bash
-tamery logout
-```
-
-**Expected output**
 
 ```text
 ✓ Signed out.
@@ -84,23 +52,11 @@ tamery logout
 
 ## tamery whoami
 
-Displays the email address of the currently signed-in user. Run this to confirm which account the CLI is using before executing queries or other operations.
-
-If you are not signed in, the command prints `Not signed in.` If your session has expired, Tamery warns you and automatically clears the stale token — run `tamery login` to re-authenticate.
-
-**Syntax**
+Show the signed-in user. Prints `Not signed in.` if there's no session; an expired session is cleared automatically.
 
 ```bash
 tamery whoami
 ```
-
-**Example**
-
-```bash
-tamery whoami
-```
-
-**Expected output**
 
 ```text
 user@example.com
@@ -110,90 +66,51 @@ user@example.com
 
 ## tamery query
 
-Runs a SQL query against one of your saved Tamery connections. You can provide SQL directly as a positional argument, or point to a `.sql` file on disk. Results are displayed as a formatted ASCII table by default, or as raw JSON when you need machine-readable output.
+Run SQL against a saved connection. Provide SQL inline or via `--file`. Output is a formatted table, or JSON with `--json`.
 
-Supported databases: **PostgreSQL**, **MySQL**, **MSSQL**, and **ClickHouse**.
-
-**Syntax**
+Supports PostgreSQL, MySQL, MSSQL, and ClickHouse.
 
 ```bash
 tamery query [options] [sql]
 ```
 
-**Flags**
-
 <ParamField query="--connection" type="string">
-  The ID or name of the saved connection to run the query against. Required when you have more than one connection; optional if only one exists. You can find connection names in the Tamery web app or by running `tamery query --list-connections`. Shorthand: `-c`.
+  Connection ID or name. Required if you have more than one. Alias: `-c`.
 </ParamField>
 
 <ParamField query="--file" type="string">
-  Path to a `.sql` file to execute instead of providing inline SQL. Useful for longer queries, stored reports, or scripting. Shorthand: `-f`.
+  Path to a `.sql` file to run instead of inline SQL. Alias: `-f`.
 </ParamField>
 
 <ParamField query="--json" type="boolean">
-  Output results as raw JSON instead of a formatted table. Use this when piping output to another tool or parsing results programmatically.
+  Output JSON instead of a table.
 </ParamField>
 
 <ParamField query="--list-connections" type="boolean">
-  Print all of your saved connections and exit immediately. No SQL is executed. Use this to look up connection names or IDs before running a query.
+  Print saved connections and exit.
 </ParamField>
-
-**Examples**
-
-Run an inline SQL query against a named connection:
 
 ```bash
 tamery query -c my-db "SELECT * FROM users LIMIT 10"
-```
-
-Execute a SQL file:
-
-```bash
 tamery query -c my-db --file ./queries/report.sql
-```
-
-Get results as JSON:
-
-```bash
 tamery query -c my-db --json "SELECT id, name FROM products"
-```
-
-List all your saved connections:
-
-```bash
 tamery query --list-connections
 ```
 
 <Note>
-  Query results include the execution duration in milliseconds at the bottom of the output, so you can quickly gauge performance without reaching for a separate profiling tool.
+  Output includes execution time in milliseconds.
 </Note>
 
 ---
 
 ## tamery proxy
 
-Starts a local proxy server on your machine so the Tamery web app at [tamery.app](https://tamery.app) can execute queries against databases that are not publicly accessible — such as a database running on `localhost`, on your home network, or inside a private VPC.
-
-When the proxy is running, the web app routes its database traffic through your local machine rather than reaching out to the database directly. Your connection credentials stay on your machine and your data doesn't transit Tamery's servers. The proxy keeps your saved connections in sync with the web app, so any changes you make are picked up automatically.
-
-**Syntax**
+Start a local proxy so the web app can reach databases that aren't publicly accessible (localhost, private network, VPC). Credentials and traffic stay on your machine. Stop with <kbd>Ctrl</kbd>+<kbd>C</kbd>.
 
 ```bash
 tamery proxy
 ```
-
-**Example**
-
-```bash
-tamery proxy
-```
-
-Stop the proxy at any time by pressing **Ctrl\+C** in the terminal where it's running. The proxy shuts down gracefully, finishing any in-flight requests before exiting.
-
-<Note>
-  Keep the proxy running in a dedicated terminal tab for as long as you need to use the web app with your local databases. If you close the terminal or stop the process, the web app will no longer be able to reach those databases until you start the proxy again.
-</Note>
 
 <Tip>
-  You only need the proxy for databases that aren't reachable from the internet. If your database is hosted on a cloud provider with a public endpoint, the Tamery web app can connect to it directly without running the proxy.
+  You only need the proxy for databases not reachable from the internet. Public cloud endpoints work without it.
 </Tip>

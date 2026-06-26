@@ -1,85 +1,59 @@
 ---
-title: "Table Browser: View, Filter, and Edit Database Data"
-sidebarTitle: "Table Browser"
-description: "Use Tamery's Table Browser to view, filter, sort, and edit database tables. Includes inline editing with draft review, data seeding, and tabbed navigation."
+title: "Table browser"
+sidebarTitle: "Table browser"
+description: "View, filter, sort, and edit table data in Tamery, with draft review before commit and data seeding."
 ---
 
-The Table Browser is your primary workspace for exploring and editing database content in Tamery. It gives you a resizable two-panel layout — a schema and table tree on the left, and a live data grid on the right — so you can move quickly between tables without losing your place. Every filter, sort order, and column configuration you apply is saved per table, so your workspace is exactly where you left it the next time you open a connection.
+The table browser is a two-panel view: a schema/table tree on the left, a data grid on the right. Filters, sort order, and column config are saved per table.
 
-## Navigating Tables
+## Navigating
 
-The left sidebar displays your database as a collapsible tree of schemas and tables. Expand a schema to see its tables, then click any table name to open it in the right panel.
+Expand a schema in the tree, then click a table to open it. Each open table is a **tab** at the top of the grid — switch between them without re-running queries. Close a tab with the × on its label.
 
-Each table you open appears as its own **tab** at the top of the data panel, much like browser tabs. You can have multiple tables open at the same time and switch between them instantly without re-running any queries. To close a tab, click the × on the tab label.
+## Filtering
 
-- **Expanding schemas** — click the chevron next to a schema name to reveal its tables and views.
-- **Switching tabs** — click any open tab to bring that table into focus; your scroll position, filters, and sort order are preserved.
-- **Closing tabs** — close a tab when you're done with a table to keep your workspace tidy.
+Click **Filter** to open the panel. Each condition has three parts:
 
-## Filtering Data
+1. **Column**
+2. **Operator** — `equals`, `contains`, `is null`, `greater than`, etc.
+3. **Value**
 
-The **Filters** panel lets you compose precise, multi-condition filters without writing any SQL. Click the **Filter** button in the toolbar to open the filter panel, then add one or more conditions.
+Conditions combine with `AND`. Filters are saved per table in local storage.
 
-Each condition consists of three parts:
+## Sorting
 
-1. **Column** — choose the column to filter on from the dropdown.
-2. **Operator** — select a comparison operator such as `equals`, `contains`, `is null`, `greater than`, and more.
-3. **Value** — type the value to compare against.
+Click **Sort** to pick a column and direction. Add multiple levels to break ties (e.g. `created_at` desc, then `id` asc). Stored alongside filters.
 
-You can add as many conditions as you need. All active conditions are combined with `AND` logic, so only rows matching every condition are shown. To remove a condition, click the trash icon next to it. Filters are saved automatically in your browser for each table, so they persist between sessions.
-
-## Sorting Data
-
-To sort the table by a column, click the **Sort** button in the toolbar and select the column and direction (ascending or descending). You can add multiple sort levels to break ties — for example, sort by `created_at` descending, then by `id` ascending.
-
-Sort configuration is stored alongside your filters in local storage, so the same ordering is applied automatically the next time you open the table.
-
-## Editing Data
-
-Tamery's inline editing workflow keeps you in full control of every change before it reaches your database.
+## Editing
 
 <Steps>
-  <Step title="Click a cell to edit">
-    Single-click any cell in the data grid to enter edit mode. Type the new value directly in the cell. Edited cells are highlighted so you can track all pending changes at a glance.
+  <Step title="Edit a cell">
+    Click a cell, type a new value. Edited cells are highlighted.
   </Step>
-  <Step title="Review your drafts">
-    When you're ready to apply changes, click the **Review Changes** button. A drawer slides open showing a summary of every staged edit — the table name, column, old value, and new value — so you can confirm exactly what will be written.
+  <Step title="Review drafts">
+    Click **Review changes** to see every staged edit — table, column, old value, new value.
   </Step>
   <Step title="Commit or discard">
-    Click **Commit** to write all staged changes to the database in a single transaction, or **Discard** to throw away all pending edits and revert the cells to their original values. You can also discard individual changes from the review drawer before committing.
+    **Commit** writes all changes in one transaction. **Discard** reverts. You can also discard individual changes in the review drawer.
   </Step>
 </Steps>
 
-**Deleting rows** — select one or more rows using the checkboxes on the left of the grid, then click the **Delete** button in the toolbar. Tamery will ask you to confirm before the rows are permanently removed.
+**Delete rows** — select rows via the checkboxes, click **Delete**, confirm.
 
-## Data Seeding
+## Data seeding
 
-When you need realistic sample data for testing or development, the **Seed** action generates it for you automatically.
-
-Click the **Seed** button in the toolbar while a table is open. Tamery inspects your table's column names and data types and automatically selects appropriate data generators for each column — producing realistic names, email addresses, timestamps, and foreign key values that reference existing records in related tables. You can review and adjust the generator for each column before inserting, and choose how many rows to create.
-
-Seed data is especially useful for:
-
-- Populating a freshly migrated table with believable test records.
-- Generating varied data for UI screenshots or demos.
-- Filling foreign-key relationships with consistent, referentially valid values.
+Click **Seed** while a table is open. Tamery picks generators from your column names and types — names, emails, timestamps, and foreign keys referencing existing rows. Review and adjust per column, then choose how many rows to insert.
 
 <Note>
-  Data Seeding is a subscription feature. Free-tier accounts include a limited number of seed runs to try it out. Once you reach the free allowance, a subscription is required to continue seeding. Visit [Plans](/account/plans) to unlock unlimited seeding.
+  Seeding is a subscription feature. Free accounts get a limited number of runs. See [Plans](/account/plans).
 </Note>
 
-## Other Actions
-
-The toolbar provides several additional utilities to help you work efficiently:
+## Other actions
 
 | Action | Description |
 |---|---|
-| **Column Visibility** | Toggle individual columns on or off to focus on the data that matters. Hidden columns are not deleted — they're just hidden from the grid view. |
-| **Copy Data** | Copy selected rows or the entire result set to your clipboard in a tab-separated format ready to paste into a spreadsheet. |
-| **Full-Text Search** | Type in the search box to instantly filter rows across all visible columns. Useful for quickly locating a specific record without building a formal filter. |
-| **Rename Column** | Right-click a column header to rename it directly from the grid. |
-| **Rename / Drop Table** | Access table-level operations from the toolbar menu to rename the table or drop it entirely (with a confirmation prompt). |
-
-<Tip>
-  Your filter and sort state is automatically saved to your browser's local storage for each table. If you close Tamery and come back later, your last-used configuration will be restored — no need to re-apply filters every session.
-</Tip>
+| **Column visibility** | Hide/show columns (hidden, not deleted). |
+| **Copy data** | Copy selected rows or the whole result as TSV. |
+| **Full-text search** | Filter rows across visible columns. |
+| **Rename column** | Right-click a column header. |
+| **Rename / drop table** | From the toolbar menu (with confirmation). |
