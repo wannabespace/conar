@@ -1,5 +1,4 @@
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
-import wasm from '@takumi-rs/wasm/vite'
 import { createFileRoute } from '@tanstack/react-router'
 import { ImageResponse } from 'takumi-js/response'
 
@@ -36,7 +35,6 @@ export const Route = createFileRoute('/og-image.png')({
           {
             width: 1200,
             height: 630,
-            module: wasm,
             headers: {
               'Content-Type': 'image/png',
               'Cache-Control': 'public, immutable, no-transform, max-age=86400',

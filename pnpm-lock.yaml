@@ -126,9 +126,6 @@ catalogs:
     '@tailwindcss/vite':
       specifier: ^4.3.1
       version: 4.3.1
-    '@takumi-rs/wasm':
-      specifier: 2.0.0-beta.13
-      version: 2.0.0-beta.13
     '@tanstack/browser-db-sqlite-persistence':
       specifier: ^0.2.2
       version: 0.2.2
@@ -412,8 +409,8 @@ catalogs:
       specifier: ^4.3.1
       version: 4.3.1
     takumi-js:
-      specifier: ^2.0.0-beta.13
-      version: 2.0.0-beta.13
+      specifier: ^2.0.0-beta.14
+      version: 2.0.0-beta.14
     taze:
       specifier: ^19.14.1
       version: 19.14.1
@@ -1031,9 +1028,6 @@ importers:
       '@orpc/tanstack-query':
         specifier: 'catalog:'
         version: 1.14.6(@opentelemetry/api@1.9.1)(@orpc/client@1.14.6(@opentelemetry/api@1.9.1))(@tanstack/query-core@5.101.1)
-      '@takumi-rs/wasm':
-        specifier: 'catalog:'
-        version: 2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@tanstack/react-form':
         specifier: 'catalog:'
         version: 1.33.0(@tanstack/react-start@1.168.26(crossws@0.4.6(srvx@0.11.17))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(vite@8.1.0(@types/node@26.0.0)(jiti@2.7.0)(yaml@2.9.0)))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -1142,7 +1136,7 @@ importers:
         version: 4.3.1
       takumi-js:
         specifier: 'catalog:'
-        version: 2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        version: 2.0.0-beta.14(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       tw-animate-css:
         specifier: 'catalog:'
         version: 1.4.0
@@ -4553,12 +4547,64 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
 
-  '@takumi-rs/core@2.0.0-beta.13':
-    resolution: {integrity: sha512-1FVGaNBf/LM3eKm9pTTIvdW77/MBWWeai+k3Y/hugyIGKH8zMiXzJEwaXMoCm2zPmXbaDU4Vu2BJ5ZkCBDulpA==}
+  '@takumi-rs/core-darwin-arm64@2.0.0-beta.14':
+    resolution: {integrity: sha512-RFnw6WqBl7ec6DAqe2uUjmPMRXhz3Pe+uu0uMQexGTA2JX6zfJsj+HEl1Y+hjnKk5piPA3hDt8fbusGwkkLVyw==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@takumi-rs/core-darwin-x64@2.0.0-beta.14':
+    resolution: {integrity: sha512-h5uxEKHbgssj+rt1ir7uGNn+OUhjvm7aOKblh1BDCw+KrzFLgJd69xQh3din1kcXJm2M0WEuf6ryvxeowvBWpA==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@takumi-rs/core-linux-arm64-gnu@2.0.0-beta.14':
+    resolution: {integrity: sha512-XodnNERSfoxTH5Sretb+woOMWXOUff27jBIuvPBaSEdb8wphTAOZH4gdH6WAEIojXhepluja4xeACz9vWbQmcA==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@takumi-rs/core-linux-arm64-musl@2.0.0-beta.14':
+    resolution: {integrity: sha512-te31hr9VwhxjochpfwSQrcBbIRZBQ4P+jWKr3peraq9VW4gfW2aR48jfxufa2CcXqcqE+E/7AiUTwg2vtqAocg==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [linux]
+    libc: [musl]
+
+  '@takumi-rs/core-linux-x64-gnu@2.0.0-beta.14':
+    resolution: {integrity: sha512-L+llt6IEXLuPqKyQZufMHQPCpQHaxTSmUsSQK0JfeF9yzeGoHlttU3gDzy2dUePn5bKkU2CO5/U59oGghg09Og==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@takumi-rs/core-linux-x64-musl@2.0.0-beta.14':
+    resolution: {integrity: sha512-YP3BbPmSka2g+HLW1Jcy+b9cq3r/mHmOT6SO/t/eFAdh4CC5GcAzp0qhHwy7Lxt/UoPEZyizEPl66iDh6FQyIw==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [linux]
+    libc: [musl]
+
+  '@takumi-rs/core-win32-arm64-msvc@2.0.0-beta.14':
+    resolution: {integrity: sha512-EPSDxv6pEFb8uu4unowybLUm9QK1tdrMA12spagr4KKTifRXi1jZbB0pA1QCv/KHZqnaadXUFNK3MuOoSXyE9A==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@takumi-rs/core-win32-x64-msvc@2.0.0-beta.14':
+    resolution: {integrity: sha512-XA83vd4nSg5sWrLDvNP/Z/64LrauqRQ1S7B57dmvyKmH+CI2h8BT+02FAwb24BbOLQn+mBqD+v/qMpRtdvZI4Q==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [win32]
+
+  '@takumi-rs/core@2.0.0-beta.14':
+    resolution: {integrity: sha512-0IzsA/kBl73FNYtvBnWvDxzxC1h7nuKlX3n7/48vBIGLOENk5mLWcxYoINP6CUXXSVcDAAx95JRKo1OlD9ABGg==}
     engines: {node: '>=18'}
 
-  '@takumi-rs/helpers@2.0.0-beta.13':
-    resolution: {integrity: sha512-IIFtsfT+AbiXLjvtb8I41tHUf/Usmaq1lQLhlvsZuSMeVMDX9V2hzxoirxvL7GQuduHtcm0CxKPGkwj7euZIDA==}
+  '@takumi-rs/helpers@2.0.0-beta.14':
+    resolution: {integrity: sha512-Vlwn0C+sWMXKuleBZgAIy9a35LCi/ikylxKuSUhJbd1ea7V+wiAth8uVI/fGj3XDchB55W+aC5OA/IFMgDOrIA==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
@@ -4569,8 +4615,8 @@ packages:
       react-dom:
         optional: true
 
-  '@takumi-rs/wasm@2.0.0-beta.13':
-    resolution: {integrity: sha512-1m+ua/047/Ah2aGq/VeAkGpt71KpTeleni2jsb1gYO8BZY4WVz64owSxF9SerFaeAvprz8Hdntu0TtuBmWb9HA==}
+  '@takumi-rs/wasm@2.0.0-beta.14':
+    resolution: {integrity: sha512-Ky+cz+kdVy2JxhtT9kY5MHHrE1YAV9lNk2wjENlPkb+/GBPwAeffHtQ/ZN4VI/kOKQXUEyvTExlvQvxtbFTnpw==}
     engines: {node: '>=18'}
 
   '@tanstack/browser-db-sqlite-persistence@0.2.2':
@@ -9961,8 +10007,8 @@ packages:
   tailwindcss@4.3.1:
     resolution: {integrity: sha512-hk+TB1m+K8CYNrP6rjQaq/Y+4Zylwpa87mLYBKCunwnnQ9p+fHb7kmSfGqyEJoxF/O6CDyABWVFEafNSYKll+Q==}
 
-  takumi-js@2.0.0-beta.13:
-    resolution: {integrity: sha512-cMdu5RRFPlKSqEQ6Ta4ItdI/RcayjYeekEhHT+73NrPE7EmqFgXEku+fKPAWsjMDDc65U+4dB9+qlRN2DZogfw==}
+  takumi-js@2.0.0-beta.14:
+    resolution: {integrity: sha512-+MiFoD2Irr3/oAaG27FBhGANktGXpwMQFGvQ5DZiGYN/Dv0NozsViGgN1ICOYCscm6AW8VtRKmZBCJJaSJb9UA==}
     engines: {node: '>=18'}
 
   tapable@2.3.3:
@@ -13875,21 +13921,56 @@ snapshots:
       tailwindcss: 4.3.1
       vite: 8.1.0(@types/node@26.0.0)(jiti@2.7.0)(yaml@2.9.0)
 
-  '@takumi-rs/core@2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+  '@takumi-rs/core-darwin-arm64@2.0.0-beta.14':
+    optional: true
+
+  '@takumi-rs/core-darwin-x64@2.0.0-beta.14':
+    optional: true
+
+  '@takumi-rs/core-linux-arm64-gnu@2.0.0-beta.14':
+    optional: true
+
+  '@takumi-rs/core-linux-arm64-musl@2.0.0-beta.14':
+    optional: true
+
+  '@takumi-rs/core-linux-x64-gnu@2.0.0-beta.14':
+    optional: true
+
+  '@takumi-rs/core-linux-x64-musl@2.0.0-beta.14':
+    optional: true
+
+  '@takumi-rs/core-win32-arm64-msvc@2.0.0-beta.14':
+    optional: true
+
+  '@takumi-rs/core-win32-x64-msvc@2.0.0-beta.14':
+    optional: true
+
+  '@takumi-rs/core@2.0.0-beta.14(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
-      '@takumi-rs/helpers': 2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@takumi-rs/helpers': 2.0.0-beta.14(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      csstype: 3.2.3
+    optionalDependencies:
+      '@takumi-rs/core-darwin-arm64': 2.0.0-beta.14
+      '@takumi-rs/core-darwin-x64': 2.0.0-beta.14
+      '@takumi-rs/core-linux-arm64-gnu': 2.0.0-beta.14
+      '@takumi-rs/core-linux-arm64-musl': 2.0.0-beta.14
+      '@takumi-rs/core-linux-x64-gnu': 2.0.0-beta.14
+      '@takumi-rs/core-linux-x64-musl': 2.0.0-beta.14
+      '@takumi-rs/core-win32-arm64-msvc': 2.0.0-beta.14
+      '@takumi-rs/core-win32-x64-msvc': 2.0.0-beta.14
     transitivePeerDependencies:
       - react
       - react-dom
 
-  '@takumi-rs/helpers@2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+  '@takumi-rs/helpers@2.0.0-beta.14(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     optionalDependencies:
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
 
-  '@takumi-rs/wasm@2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+  '@takumi-rs/wasm@2.0.0-beta.14(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
-      '@takumi-rs/helpers': 2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@takumi-rs/helpers': 2.0.0-beta.14(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      csstype: 3.2.3
     transitivePeerDependencies:
       - react
       - react-dom
@@ -19961,11 +20042,11 @@ snapshots:
 
   tailwindcss@4.3.1: {}
 
-  takumi-js@2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+  takumi-js@2.0.0-beta.14(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:
-      '@takumi-rs/core': 2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@takumi-rs/helpers': 2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
-      '@takumi-rs/wasm': 2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@takumi-rs/core': 2.0.0-beta.14(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@takumi-rs/helpers': 2.0.0-beta.14(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@takumi-rs/wasm': 2.0.0-beta.14(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
     transitivePeerDependencies:
       - react
       - react-dom
