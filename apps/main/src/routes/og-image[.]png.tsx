@@ -1,11 +1,12 @@
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { createFileRoute } from '@tanstack/react-router'
-import { ImageResponse } from 'takumi-js/response'
 
 export const Route = createFileRoute('/og-image.png')({
   server: {
     handlers: {
       async GET() {
+        const { ImageResponse } = await import('takumi-js/response')
+
         return new ImageResponse(
           (
             <div
