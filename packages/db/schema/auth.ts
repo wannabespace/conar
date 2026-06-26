@@ -1,4 +1,4 @@
-import { defineRelations } from 'drizzle-orm'
+import { defineRelationsPart } from 'drizzle-orm'
 import * as d from 'drizzle-orm/pg-core'
 import { baseTable } from '../base-table'
 
@@ -147,7 +147,7 @@ export const apiKeys = d.snakeCase.table(
   ],
 )
 
-export const authRelations = defineRelations(
+export const authRelations = defineRelationsPart(
   {
     users,
     sessions,

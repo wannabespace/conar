@@ -5,7 +5,7 @@ import { type } from 'arktype'
 import { authMiddleware, orpc } from '~/orpc'
 import { publisher } from './events'
 
-const schema = queriesInsertSchema.omit('userId', 'connectionId')
+const schema = queriesInsertSchema.omit('userId')
 
 export const create = orpc
   .use(authMiddleware)
