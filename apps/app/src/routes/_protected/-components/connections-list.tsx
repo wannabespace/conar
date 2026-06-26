@@ -1,5 +1,5 @@
 import type { ComponentRef } from 'react'
-import type { Connection } from '~/entities/connection/sync'
+import type { Connection } from '~/entities/connection'
 import { CONNECTION_RESOURCE_ROOT_LABEL, CONNECTION_RESOURCE_ROOT_SYMBOL } from '@conar/shared/constants'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
@@ -29,14 +29,16 @@ import { Fragment, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
-import { useCollections } from '~/entities/connection/collections'
-import { ConnectionIcon } from '~/entities/connection/components'
-import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
-import { connectionResourcesQueryOptions } from '~/entities/connection/queries'
-import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
-import { getConnectionStore } from '~/entities/connection/store'
-import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
-import { useFetchingConfig } from '~/entities/connection/utils/fetching'
+import { useCollections } from '~/entities/collections'
+import {
+  ConnectionIcon,
+  ConnectionResourceLink,
+  connectionResourcesQueryOptions,
+  connectionVersionQueryOptions,
+  getConnectionStore,
+  lastOpenedResourcesStorageValue,
+  useFetchingConfig,
+} from '~/entities/connection'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 

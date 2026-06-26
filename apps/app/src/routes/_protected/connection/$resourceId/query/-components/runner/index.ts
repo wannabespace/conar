@@ -1,9 +1,9 @@
+import type { ConnectionResource } from '~/entities/connection/core'
 import type { connectionResourceType } from '~/entities/connection/store'
-import type { ConnectionResource } from '~/entities/connection/sync'
 import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { customQuery } from '~/entities/connection/queries/custom'
-import { connectionResourceToQueryParams } from '~/entities/connection/query'
+import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
 

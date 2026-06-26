@@ -1,6 +1,6 @@
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
-import { createQuery } from '../query'
+import { createQuery } from '../runtime/query'
 
 export const renameTableQuery = memoize(({ schema, oldTable, newTable }: { schema: string, oldTable: string, newTable: string }) => createQuery({
   query: {

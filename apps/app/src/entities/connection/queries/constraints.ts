@@ -1,8 +1,8 @@
-import type { ConnectionResource } from '~/entities/connection/sync'
+import type { ConnectionResource } from '~/entities/connection/core'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
-import { connectionResourceToQueryParams, createQuery } from '../query'
+import { connectionResourceToQueryParams, createQuery } from '../runtime/query'
 
 const constraintType = type('"PRIMARY KEY" | "UNIQUE" | "FOREIGN KEY" | "CHECK" | "EXCLUSION"')
 

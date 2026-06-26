@@ -1,5 +1,5 @@
 import type { RemixiconComponentType } from '@remixicon/react'
-import type { Connection } from '~/entities/connection/sync'
+import type { Connection } from '~/entities/connection/core'
 import type { FileRoutesByTo } from '~/routeTree.gen'
 import { CONNECTION_TYPES_WITH_FUNCTIONS, CONNECTION_TYPES_WITH_TRIGGERS } from '@conar/shared/constants'
 import { ConnectionType } from '@conar/shared/enums/connection-type'

@@ -8,7 +8,7 @@ import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-r
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
-import { getCollections, useCollections } from '~/entities/connection/collections'
+import { getCollections, useCollections } from '~/entities/collections'
 import { QueryLogger } from '~/entities/connection/components'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { lastOpenedResourcesStorageValue, prefetchConnectionResourceCore } from '~/entities/connection/utils'

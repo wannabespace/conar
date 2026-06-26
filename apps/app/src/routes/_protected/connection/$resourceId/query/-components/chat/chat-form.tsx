@@ -1,5 +1,5 @@
 import type { ChangeEvent, ComponentRef } from 'react'
-import type { ConnectionResource } from '~/entities/connection/sync'
+import type { ConnectionResource } from '~/entities/connection/core'
 import { useChat } from '@ai-sdk/react'
 import { getBase64FromFiles } from '@conar/shared/utils/base64'
 import { Button } from '@conar/ui/components/button'

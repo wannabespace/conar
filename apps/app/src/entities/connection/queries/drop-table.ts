@@ -1,5 +1,5 @@
 import { memoize } from 'memoza'
-import { createQuery } from '../query'
+import { createQuery } from '../runtime/query'
 
 export const dropTableQuery = memoize(({ table, schema, cascade }: { table: string, schema: string, cascade: boolean }) => createQuery({
   query: {

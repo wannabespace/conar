@@ -1,11 +1,11 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { ExpressionBuilder } from 'kysely'
-import type { ConnectionResource } from '~/entities/connection/sync'
+import type { ConnectionResource } from '~/entities/connection/core'
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
-import { connectionResourceToQueryParams, createQuery } from '../query'
+import { connectionResourceToQueryParams, createQuery } from '../runtime/query'
 import { DEFAULT_PAGE_LIMIT } from '../utils/helpers'
 
 const rowType = type('Record<string, unknown>')

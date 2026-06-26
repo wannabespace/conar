@@ -7,14 +7,18 @@ import { useEffect, useEffectEvent } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 import { addTab, getConnectionResourceStore } from '~/entities/connection/store'
+import {
+  ColumnsContext,
+  Filters,
+  Header,
+  Sidebar,
+  Table,
+  tablePageStore,
+  TablePageStoreContext,
+  TablesTabs,
+  useTableColumnsQuery,
+} from '~/entities/connection/table'
 import { prefetchConnectionResourceCore, prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
-import { ColumnsContext, useTableColumnsQuery } from './-columns'
-import { Filters } from './-components/filters/filters'
-import { Header } from './-components/header/header'
-import { Sidebar } from './-components/sidebar'
-import { Table } from './-components/table/table'
-import { TablesTabs } from './-components/tabs'
-import { tablePageStore, TablePageStoreContext } from './-store'
 
 export const Route = createFileRoute(
   '/_protected/connection/$resourceId/table/',
