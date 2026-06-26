@@ -30,6 +30,10 @@ minimumReleaseAgeExclude:
   - playwright@1.61.1
   - posthog-js@1.393.2
   - posthog-node@5.38.4
+  - '@takumi-rs/core@2.0.0-beta.13'
+  - '@takumi-rs/helpers@2.0.0-beta.13'
+  - '@takumi-rs/wasm@2.0.0-beta.13'
+  - takumi-js@2.0.0-beta.13
 shellEmulator: true
 blockExoticSubdeps: false
 packages:
@@ -182,6 +186,7 @@ catalog:
   stripe: ^22.2.3
   tailwind-scrollbar: ^4.0.2
   tailwindcss: ^4.3.1
+  takumi-js: ^2.0.0-beta.13
   taze: ^19.14.1
   tsdown: ^0.22.3
   turbo: ^2.9.18

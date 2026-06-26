@@ -12,6 +12,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OpenRouteImport } from './routes/open'
+import { Route as OgImageDotpngRouteImport } from './routes/og-image[.]png'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as AuthRouteImport } from './routes/_auth'
@@ -39,6 +40,11 @@ const AccountSettingsIndexLazyRouteImport =
 const OpenRoute = OpenRouteImport.update({
   id: '/open',
   path: '/open',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OgImageDotpngRoute = OgImageDotpngRouteImport.update({
+  id: '/og-image.png',
+  path: '/og-image.png',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountRoute = AccountRouteImport.update({
@@ -151,6 +157,7 @@ const AccountSettingsIndexLazyRoute =
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
   '/account': typeof AccountRouteWithChildren
+  '/og-image.png': typeof OgImageDotpngRoute
   '/open': typeof OpenRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof LayoutIndexRoute
+  '/og-image.png': typeof OgImageDotpngRoute
   '/open': typeof OpenRoute
   '/reset-password': typeof AuthResetPasswordRoute
   '/sign-in': typeof AuthSignInRoute
@@ -192,6 +200,7 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteWithChildren
   '/_layout': typeof LayoutRouteWithChildren
   '/account': typeof AccountRouteWithChildren
+  '/og-image.png': typeof OgImageDotpngRoute
   '/open': typeof OpenRoute
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_auth/sign-in': typeof AuthSignInRoute
@@ -215,6 +224,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account'
+    | '/og-image.png'
     | '/open'
     | '/reset-password'
     | '/sign-in'
@@ -234,6 +244,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/og-image.png'
     | '/open'
     | '/reset-password'
     | '/sign-in'
@@ -255,6 +266,7 @@ export interface FileRouteTypes {
     | '/_auth'
     | '/_layout'
     | '/account'
+    | '/og-image.png'
     | '/open'
     | '/_auth/reset-password'
     | '/_auth/sign-in'
@@ -278,6 +290,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   LayoutRoute: typeof LayoutRouteWithChildren
   AccountRoute: typeof AccountRouteWithChildren
+  OgImageDotpngRoute: typeof OgImageDotpngRoute
   OpenRoute: typeof OpenRoute
   DeepSignInRoute: typeof DeepSignInRoute
 }
@@ -289,6 +302,13 @@ declare module '@tanstack/react-router' {
       path: '/open'
       fullPath: '/open'
       preLoaderRoute: typeof OpenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/og-image.png': {
+      id: '/og-image.png'
+      path: '/og-image.png'
+      fullPath: '/og-image.png'
+      preLoaderRoute: typeof OgImageDotpngRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account': {
@@ -487,6 +507,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   LayoutRoute: LayoutRouteWithChildren,
   AccountRoute: AccountRouteWithChildren,
+  OgImageDotpngRoute: OgImageDotpngRoute,
   OpenRoute: OpenRoute,
   DeepSignInRoute: DeepSignInRoute,
 }

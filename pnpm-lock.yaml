@@ -408,6 +408,9 @@ catalogs:
     tailwindcss:
       specifier: ^4.3.1
       version: 4.3.1
+    takumi-js:
+      specifier: ^2.0.0-beta.13
+      version: 2.0.0-beta.13
     taze:
       specifier: ^19.14.1
       version: 19.14.1
@@ -1131,6 +1134,9 @@ importers:
       tailwindcss:
         specifier: 'catalog:'
         version: 4.3.1
+      takumi-js:
+        specifier: 'catalog:'
+        version: 2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       tw-animate-css:
         specifier: 'catalog:'
         version: 1.4.0
@@ -4540,6 +4546,26 @@ packages:
     resolution: {integrity: sha512-hItDHuIIlEV61R+faXu66s1K36aTurO/Qw0e45Vskz57gXl9pWOT6eg3zmcEui6CZXddbN7zd41bwmvag4JGwQ==}
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
+
+  '@takumi-rs/core@2.0.0-beta.13':
+    resolution: {integrity: sha512-1FVGaNBf/LM3eKm9pTTIvdW77/MBWWeai+k3Y/hugyIGKH8zMiXzJEwaXMoCm2zPmXbaDU4Vu2BJ5ZkCBDulpA==}
+    engines: {node: '>=18'}
+
+  '@takumi-rs/helpers@2.0.0-beta.13':
+    resolution: {integrity: sha512-IIFtsfT+AbiXLjvtb8I41tHUf/Usmaq1lQLhlvsZuSMeVMDX9V2hzxoirxvL7GQuduHtcm0CxKPGkwj7euZIDA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
+  '@takumi-rs/wasm@2.0.0-beta.13':
+    resolution: {integrity: sha512-1m+ua/047/Ah2aGq/VeAkGpt71KpTeleni2jsb1gYO8BZY4WVz64owSxF9SerFaeAvprz8Hdntu0TtuBmWb9HA==}
+    engines: {node: '>=18'}
 
   '@tanstack/browser-db-sqlite-persistence@0.2.2':
     resolution: {integrity: sha512-2iueaHs8sAEDKoKM21Gn9JMjoEuN+9EE04SBApUl15ClIyB0cN3GIk2XS5+vw5lwy58n0Gvjs19U7u8pvZ4b6Q==}
@@ -9929,6 +9955,10 @@ packages:
   tailwindcss@4.3.1:
     resolution: {integrity: sha512-hk+TB1m+K8CYNrP6rjQaq/Y+4Zylwpa87mLYBKCunwnnQ9p+fHb7kmSfGqyEJoxF/O6CDyABWVFEafNSYKll+Q==}
 
+  takumi-js@2.0.0-beta.13:
+    resolution: {integrity: sha512-cMdu5RRFPlKSqEQ6Ta4ItdI/RcayjYeekEhHT+73NrPE7EmqFgXEku+fKPAWsjMDDc65U+4dB9+qlRN2DZogfw==}
+    engines: {node: '>=18'}
+
   tapable@2.3.3:
     resolution: {integrity: sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A==}
     engines: {node: '>=6'}
@@ -13838,6 +13868,25 @@ snapshots:
       '@tailwindcss/oxide': 4.3.1
       tailwindcss: 4.3.1
       vite: 8.1.0(@types/node@26.0.0)(jiti@2.7.0)(yaml@2.9.0)
+
+  '@takumi-rs/core@2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+    dependencies:
+      '@takumi-rs/helpers': 2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+    transitivePeerDependencies:
+      - react
+      - react-dom
+
+  '@takumi-rs/helpers@2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+    optionalDependencies:
+      react: 19.2.7
+      react-dom: 19.2.7(react@19.2.7)
+
+  '@takumi-rs/wasm@2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+    dependencies:
+      '@takumi-rs/helpers': 2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+    transitivePeerDependencies:
+      - react
+      - react-dom
 
   '@tanstack/browser-db-sqlite-persistence@0.2.2(@journeyapps/wa-sqlite@1.7.0)(typescript@6.0.3)':
     dependencies:
@@ -19905,6 +19954,15 @@ snapshots:
       - react
 
   tailwindcss@4.3.1: {}
+
+  takumi-js@2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+    dependencies:
+      '@takumi-rs/core': 2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@takumi-rs/helpers': 2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@takumi-rs/wasm': 2.0.0-beta.13(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+    transitivePeerDependencies:
+      - react
+      - react-dom
 
   tapable@2.3.3: {}
 

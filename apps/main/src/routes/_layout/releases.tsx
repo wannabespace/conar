@@ -12,12 +12,11 @@ import { seo } from '~/utils/seo'
 
 export const Route = createFileRoute('/_layout/releases')({
   component: RouteComponent,
-  head: () => ({
-    meta: seo({
-      title: 'Releases - Conar',
-      description: 'View the latest Conar releases, changelogs, and version history. Stay up to date with new features and improvements.',
-      url: 'https://conar.app/releases',
-    }),
+  head: () => seo({
+    title: 'Releases - Conar',
+    description: 'View the latest Conar releases, changelogs, and version history. Stay up to date with new features and improvements.',
+    image: '/og-image.png',
+    path: '/releases',
   }),
   loader: async () => {
     const releases = await orpc.releases.call()
