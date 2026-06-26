@@ -1,7 +1,3 @@
-/**
- * Connection domain (client). Server-side connection parsing/SSL lives in @conar/connection.
- * Start here; drill into core/ (sync), runtime/ (query execution), table/ (table browser UI).
- */
 export * from './components'
 export * from './core'
 export * from './hooks'
