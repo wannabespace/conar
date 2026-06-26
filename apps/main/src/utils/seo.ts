@@ -18,7 +18,6 @@ export function seo({
   description?: string
   image?: string
   keywords?: string
-  /** Absolute path of the page, e.g. `/download`. Used for canonical and og:url. */
   path?: string
 }) {
   const pageUrl = absoluteUrl(path)
