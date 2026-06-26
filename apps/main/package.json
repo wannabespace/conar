@@ -50,7 +50,6 @@
     "babel-plugin-react-compiler": "catalog:",
     "react-scan": "catalog:",
     "tailwindcss": "catalog:",
-    "takumi-js": "catalog:",
     "tw-animate-css": "catalog:",
     "vite": "catalog:"
   }
