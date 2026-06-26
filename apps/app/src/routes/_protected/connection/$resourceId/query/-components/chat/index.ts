@@ -43,9 +43,11 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
               || JSON.stringify(lastMessage.parts) !== JSON.stringify(existingMessage.parts)
 
           if (hasChanges) {
+            const updatedAt = lastMessage.metadata?.updatedAt || new Date()
             await chatsMessagesCollection.update(lastMessage.id, (draft) => {
               draft.parts = lastMessage.parts
               draft.role = lastMessage.role
+              draft.updatedAt = updatedAt
             }).isPersisted.promise
           }
         }
@@ -53,7 +55,7 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
           const createdAt = new Date()
           const updatedAt = new Date()
 
-          await createChatMessageAction({
+          const tx = createChatMessageAction({
             chat: {
               id: options.chatId,
               connectionResourceId: connectionResource.id,
@@ -71,7 +73,9 @@ export const createChat = memoize(async ({ id, connectionResource }: { id: strin
                 updatedAt,
               },
             },
-          }).isPersisted.promise
+          })
+
+          await tx.isPersisted.promise
         }
 
         if (options.trigger === 'regenerate-message' && options.messageId && chatsMessagesCollection.has(options.messageId)) {

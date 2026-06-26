@@ -77,6 +77,10 @@ export function createChatMessageAction(data: {
 
       await orpc.chatsMessages.create.call(data.message)
       await orpc.ai.generateTitle.call({ chatId: data.chat.id })
+      await Promise.all([
+        chatsCollection.utils.awaitChange(data.chat.id, data.chat.updatedAt),
+        chatsMessagesCollection.utils.awaitChange(data.message.id, data.message.updatedAt),
+      ])
     },
   })
 
