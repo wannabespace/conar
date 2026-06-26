@@ -1,4 +1,4 @@
-import type { Connection, ConnectionResource as ConnectionResourceType } from '~/entities/connection/sync'
+import type { Connection, ConnectionResource as ConnectionResourceType } from '~/entities/connection'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@conar/shared/constants'
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { RiAddLine, RiDashboardLine, RiEyeFill, RiEyeLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
@@ -7,12 +7,14 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
-import { useCollections } from '~/entities/connection/collections'
-import { ConnectionIcon } from '~/entities/connection/components'
-import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
-import { getConnectionResourceStore } from '~/entities/connection/store'
-import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
+import { useCollections } from '~/entities/collections'
+import {
+  ConnectionIcon,
+  getConnectionResourceStore,
+  prefetchConnectionResourceCore,
+  resourceTablesAndSchemasQueryOptions,
+  useConnectionResourceLinkParams,
+} from '~/entities/connection'
 import { appStore, setIsActionCenterOpen } from '~/store'
 
 function ActionsResourceTables({ connection, connectionResource }: { connection: Connection, connectionResource: ConnectionResourceType }) {

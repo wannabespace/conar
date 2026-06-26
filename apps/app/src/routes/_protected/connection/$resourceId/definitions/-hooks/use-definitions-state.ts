@@ -1,4 +1,4 @@
-import type { ConnectionResource } from '~/entities/connection/sync'
+import type { ConnectionResource } from '~/entities/connection/core'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'

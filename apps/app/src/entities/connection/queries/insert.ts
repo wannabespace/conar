@@ -1,4 +1,4 @@
-import { createQuery } from '../query'
+import { createQuery } from '../runtime/query'
 
 export function insertQuery({ schema, table, rows }: {
   schema: string

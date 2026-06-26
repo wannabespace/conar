@@ -14,7 +14,7 @@ import { Label } from '@conar/ui/components/label'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
-import { useCollections } from '~/entities/connection/collections'
+import { useCollections } from '~/entities/collections'
 import { Route } from '../..'
 
 interface RunnerSaveDialogProps {

@@ -1,9 +1,9 @@
-import type { Connection } from '../sync'
+import type { Connection } from '../core/sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { v7 } from 'uuid'
-import { getCollections } from '../collections'
-import { connectionToQueryParams, createQuery } from '../query'
+import { getCollections } from '~/entities/collections'
+import { connectionToQueryParams, createQuery } from '../runtime/query'
 
 export const connectionResourcesQuery = createQuery({
   type: type('string[]'),

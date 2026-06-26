@@ -1,5 +1,5 @@
 import { type } from 'arktype'
-import { createQuery } from '../query'
+import { createQuery } from '../runtime/query'
 
 const distinctType = type('Record<string, unknown>[]')
 

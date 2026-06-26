@@ -1,7 +1,7 @@
-import type { ConnectionResource } from '../sync'
+import type { ConnectionResource } from '../core/sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
-import { connectionResourceToQueryParams, createQuery } from '../query'
+import { connectionResourceToQueryParams, createQuery } from '../runtime/query'
 
 export const enumType = type({
   schema: 'string',

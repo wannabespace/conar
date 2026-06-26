@@ -1,4 +1,4 @@
-import type { Connection, ConnectionResource } from '~/entities/connection/sync'
+import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Button } from '@conar/ui/components/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
@@ -9,7 +9,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { useCollections } from '~/entities/connection/collections'
+import { useCollections } from '~/entities/collections'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 
 export function PasswordForm({ connection, connectionResource }: { connection: Connection, connectionResource: ConnectionResource }) {

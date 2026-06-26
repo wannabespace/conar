@@ -3,7 +3,7 @@ import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescripti
 import { Button } from '@conar/ui/components/button'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { useCollections } from '~/entities/connection/collections'
+import { useCollections } from '~/entities/collections'
 
 interface RemoveChatDialogProps {
   ref?: React.RefObject<{

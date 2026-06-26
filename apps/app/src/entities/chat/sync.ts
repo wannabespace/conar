@@ -2,7 +2,7 @@ import type { AppUIMessage } from '@conar/ai/tools/helpers'
 import type { BaseTable, SyncUtils } from '~/lib/sync'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import { createCollection, createTransaction } from '@tanstack/react-db'
-import { getCollections } from '~/entities/connection/collections'
+import { getCollections } from '~/entities/collections'
 import { orpc } from '~/lib/orpc'
 import { persistence, syncCollectionOptions } from '~/lib/sync'
 

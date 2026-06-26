@@ -1,5 +1,5 @@
 import type { CompletionService, ICompletionItem } from 'monaco-sql-languages'
-import type { ConnectionResource } from '~/entities/connection/sync'
+import type { ConnectionResource } from '~/entities/connection/core'
 import { languages } from 'monaco-editor'
 import { EntityContextType } from 'monaco-sql-languages'
 import { queryClient } from '~/main'
