@@ -1,8 +1,36 @@
+# https://conar.app
 User-agent: *
 Allow: /
 
-Disallow: /reset-password
-Disallow: /open
 Disallow: /account
+Disallow: /open
+Disallow: /deep
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /two-factor
+
+# AI assistants and crawlers are welcome
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
 
 Sitemap: https://conar.app/sitemap.xml

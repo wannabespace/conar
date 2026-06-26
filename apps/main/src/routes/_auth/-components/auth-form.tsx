@@ -12,7 +12,7 @@ import { Link, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { BASE_ERROR_CODES } from 'better-auth'
 import { toast } from 'sonner'
-import { authClient } from '~/lib/auth'
+import { authClient, getLastUsedLoginMethod } from '~/lib/auth'
 import { Route } from '~/routes/_auth'
 import { handleError } from '~/utils/error'
 
@@ -71,7 +71,7 @@ function Last() {
 }
 
 function SocialAuthForm() {
-  const lastMethod = authClient.getLastUsedLoginMethod()
+  const lastMethod = getLastUsedLoginMethod()
   const { mutate: googleSignIn, isPending: isGoogleSignInPending } = useSocialMutation('google')
   const { mutate: githubSignIn, isPending: isGithubSignInPending } = useSocialMutation('github')
 
@@ -109,7 +109,7 @@ function SocialAuthForm() {
 
 export function AuthForm({ type }: { type: Type }) {
   const search = Route.useSearch()
-  const lastMethod = authClient.getLastUsedLoginMethod()
+  const lastMethod = getLastUsedLoginMethod()
   const router = useRouter()
 
   const form = useAppForm({
