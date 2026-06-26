@@ -1,10 +1,10 @@
 ---
-title: "How to Install Conar: Desktop App and CLI Setup Guide"
+title: "How to Install Tamery: Desktop App and CLI Setup Guide"
 sidebarTitle: "Installation"
-description: "Download the Conar desktop app for macOS, Windows, or Linux, or install the CLI via npm. Covers all supported installation methods."
+description: "Download the Tamery desktop app for macOS, Windows, or Linux, or install the CLI via npm. Covers all supported installation methods."
 ---
 
-Conar is available in three forms: a web app you can use instantly in your browser, a native desktop app for macOS, Windows, and Linux, and a command-line interface installable via npm. Choose the option that best fits your workflow — or use several together, since all three share the same account and cloud-synced connections.
+Tamery is available in three forms: a web app you can use instantly in your browser, a native desktop app for macOS, Windows, and Linux, and a command-line interface installable via npm. Choose the option that best fits your workflow — or use several together, since all three share the same account and cloud-synced connections.
 
 <Note>
   The desktop app is the recommended option for most users. It runs a local proxy on your machine, which makes it straightforward to connect to databases on localhost or within a private network without any extra configuration.
@@ -12,51 +12,51 @@ Conar is available in three forms: a web app you can use instantly in your brows
 
 ## Web App
 
-No installation is needed to use Conar on the web. Open [conar.app](https://conar.app) in any modern browser, sign in with your email or OAuth provider, and you're ready to go. The web app gives you access to every feature — Table Browser, SQL Editor, Schema Visualizer, and AI assistant — from wherever you have internet access.
+No installation is needed to use Tamery on the web. Open [tamery.app](https://tamery.app) in any modern browser, sign in with your email or OAuth provider, and you're ready to go. The web app gives you access to every feature — Table Browser, SQL Editor, Schema Visualizer, and AI assistant — from wherever you have internet access.
 
 <Tip>
-  You can use the web app to connect to local databases by pairing it with the CLI's `conar proxy` command. Start the proxy locally with `conar proxy`, then add a connection in the web app pointing to the proxy address. See the [CLI overview](/cli/overview) for details.
+  You can use the web app to connect to local databases by pairing it with the CLI's `tamery proxy` command. Start the proxy locally with `tamery proxy`, then add a connection in the web app pointing to the proxy address. See the [CLI overview](/cli/overview) for details.
 </Tip>
 
 ## Desktop App
 
-The Conar desktop app runs a local proxy automatically, making local and private-network database connections seamless. Download it from [conar.app/download](https://conar.app/download) for your platform.
+The Tamery desktop app runs a local proxy automatically, making local and private-network database connections seamless. Download it from [tamery.app/download](https://tamery.app/download) for your platform.
 
 <Tabs>
   <Tab title="macOS">
     **Option 1 — Homebrew (recommended)**
 
-    If you have [Homebrew](https://brew.sh) installed, you can install Conar with a single command:
+    If you have [Homebrew](https://brew.sh) installed, you can install Tamery with a single command:
 
     ```bash
     brew install --cask tamery
     ```
 
-    Homebrew will handle downloading, installing, and keeping Conar up to date.
+    Homebrew will handle downloading, installing, and keeping Tamery up to date.
 
     **Option 2 — Direct download**
 
-    1. Go to [conar.app/download](https://conar.app/download).
+    1. Go to [tamery.app/download](https://tamery.app/download).
     2. Download the macOS installer (`.dmg`) for Apple Silicon or Intel.
-    3. Open the downloaded file and drag **Conar** into your **Applications** folder.
-    4. Launch Conar from Applications or Spotlight.
-    5. Sign in with your Conar account to get started.
+    3. Open the downloaded file and drag **Tamery** into your **Applications** folder.
+    4. Launch Tamery from Applications or Spotlight.
+    5. Sign in with your Tamery account to get started.
 
-    Conar runs on macOS 12 Monterey and later, on both Apple Silicon and Intel.
+    Tamery runs on macOS 12 Monterey and later, on both Apple Silicon and Intel.
   </Tab>
   <Tab title="Windows">
-    1. Go to [conar.app/download](https://conar.app/download).
+    1. Go to [tamery.app/download](https://tamery.app/download).
     2. Download the Windows installer (`.exe`).
     3. Run the installer and follow the on-screen prompts.
-    4. Once installation completes, launch Conar from the Start menu or your desktop shortcut.
-    5. Sign in with your Conar account to get started.
+    4. Once installation completes, launch Tamery from the Start menu or your desktop shortcut.
+    5. Sign in with your Tamery account to get started.
 
-    Conar runs on Windows 10 and Windows 11 (64-bit).
+    Tamery runs on Windows 10 and Windows 11 (64-bit).
   </Tab>
   <Tab title="Linux">
     **Arch Linux (AUR)**
 
-    If you're on Arch Linux or an Arch-based distribution, you can install Conar from the Arch User Repository using your preferred AUR helper:
+    If you're on Arch Linux or an Arch-based distribution, you can install Tamery from the Arch User Repository using your preferred AUR helper:
 
     ```bash
     # Using yay
@@ -66,11 +66,11 @@ The Conar desktop app runs a local proxy automatically, making local and private
     paru -S tamery-bin
     ```
 
-    After installation, launch Conar from your application menu or by running `tamery-app` in your terminal.
+    After installation, launch Tamery from your application menu or by running `tamery-app` in your terminal.
 
     **Debian / Ubuntu and derivatives**
 
-    A `.deb` package is available for Debian-based distributions. Download it from [conar.app/download](https://conar.app/download) and install it with:
+    A `.deb` package is available for Debian-based distributions. Download it from [tamery.app/download](https://tamery.app/download) and install it with:
 
     ```bash
     sudo dpkg -i tamery_*.deb
@@ -78,7 +78,7 @@ The Conar desktop app runs a local proxy automatically, making local and private
 
     **RPM-based distributions (Fedora, RHEL, openSUSE)**
 
-    An `.rpm` package is available for RPM-based distributions. Download it from [conar.app/download](https://conar.app/download) and install it with:
+    An `.rpm` package is available for RPM-based distributions. Download it from [tamery.app/download](https://tamery.app/download) and install it with:
 
     ```bash
     sudo rpm -i tamery_*.rpm
@@ -88,7 +88,7 @@ The Conar desktop app runs a local proxy automatically, making local and private
 
     **AppImage (universal Linux)**
 
-    An AppImage is available for any Linux distribution. Download it from [conar.app/download](https://conar.app/download), make it executable, and run it:
+    An AppImage is available for any Linux distribution. Download it from [tamery.app/download](https://tamery.app/download), make it executable, and run it:
 
     ```bash
     chmod +x Tamery-*.AppImage
@@ -99,7 +99,7 @@ The Conar desktop app runs a local proxy automatically, making local and private
 
 ## CLI
 
-The Conar CLI lets you interact with Conar from your terminal, run a local proxy for web app connections, and integrate Conar into scripts and automated workflows.
+The Tamery CLI lets you interact with Tamery from your terminal, run a local proxy for web app connections, and integrate Tamery into scripts and automated workflows.
 
 **Requirements:** Node.js version 20 or higher. Check your version with `node --version`.
 
@@ -115,6 +115,6 @@ Once installed, authenticate by running:
 tamery login
 ```
 
-This opens your default browser and takes you through the Conar sign-in flow. Once you've signed in, your credentials are saved locally and the CLI is ready to use.
+This opens your default browser and takes you through the Tamery sign-in flow. Once you've signed in, your credentials are saved locally and the CLI is ready to use.
 
 For a full list of available commands and options, see the [CLI overview](/cli/overview).

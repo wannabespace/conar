@@ -1,10 +1,10 @@
 ---
 title: "Table Browser: View, Filter, and Edit Database Data"
 sidebarTitle: "Table Browser"
-description: "Use Conar's Table Browser to view, filter, sort, and edit database tables. Includes inline editing with draft review, data seeding, and tabbed navigation."
+description: "Use Tamery's Table Browser to view, filter, sort, and edit database tables. Includes inline editing with draft review, data seeding, and tabbed navigation."
 ---
 
-The Table Browser is your primary workspace for exploring and editing database content in Conar. It gives you a resizable two-panel layout — a schema and table tree on the left, and a live data grid on the right — so you can move quickly between tables without losing your place. Every filter, sort order, and column configuration you apply is saved per table, so your workspace is exactly where you left it the next time you open a connection.
+The Table Browser is your primary workspace for exploring and editing database content in Tamery. It gives you a resizable two-panel layout — a schema and table tree on the left, and a live data grid on the right — so you can move quickly between tables without losing your place. Every filter, sort order, and column configuration you apply is saved per table, so your workspace is exactly where you left it the next time you open a connection.
 
 ## Navigating Tables
 
@@ -36,7 +36,7 @@ Sort configuration is stored alongside your filters in local storage, so the sam
 
 ## Editing Data
 
-Conar's inline editing workflow keeps you in full control of every change before it reaches your database.
+Tamery's inline editing workflow keeps you in full control of every change before it reaches your database.
 
 <Steps>
   <Step title="Click a cell to edit">
@@ -50,13 +50,13 @@ Conar's inline editing workflow keeps you in full control of every change before
   </Step>
 </Steps>
 
-**Deleting rows** — select one or more rows using the checkboxes on the left of the grid, then click the **Delete** button in the toolbar. Conar will ask you to confirm before the rows are permanently removed.
+**Deleting rows** — select one or more rows using the checkboxes on the left of the grid, then click the **Delete** button in the toolbar. Tamery will ask you to confirm before the rows are permanently removed.
 
 ## Data Seeding
 
 When you need realistic sample data for testing or development, the **Seed** action generates it for you automatically.
 
-Click the **Seed** button in the toolbar while a table is open. Conar inspects your table's column names and data types and automatically selects appropriate data generators for each column — producing realistic names, email addresses, timestamps, and foreign key values that reference existing records in related tables. You can review and adjust the generator for each column before inserting, and choose how many rows to create.
+Click the **Seed** button in the toolbar while a table is open. Tamery inspects your table's column names and data types and automatically selects appropriate data generators for each column — producing realistic names, email addresses, timestamps, and foreign key values that reference existing records in related tables. You can review and adjust the generator for each column before inserting, and choose how many rows to create.
 
 Seed data is especially useful for:
 
@@ -81,5 +81,5 @@ The toolbar provides several additional utilities to help you work efficiently:
 | **Rename / Drop Table** | Access table-level operations from the toolbar menu to rename the table or drop it entirely (with a confirmation prompt). |
 
 <Tip>
-  Your filter and sort state is automatically saved to your browser's local storage for each table. If you close Conar and come back later, your last-used configuration will be restored — no need to re-apply filters every session.
+  Your filter and sort state is automatically saved to your browser's local storage for each table. If you close Tamery and come back later, your last-used configuration will be restored — no need to re-apply filters every session.
 </Tip>

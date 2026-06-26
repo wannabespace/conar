@@ -1,10 +1,10 @@
 ---
 title: "AI SQL Assistant: Chat, Generate, and Fix Queries"
 sidebarTitle: "AI Assistant"
-description: "Conar's AI assistant understands your schema and helps you write, explain, fix, and optimize SQL. Supports Claude, GPT, and Gemini models."
+description: "Tamery's AI assistant understands your schema and helps you write, explain, fix, and optimize SQL. Supports Claude, GPT, and Gemini models."
 ---
 
-Conar's AI Assistant is a schema-aware conversational AI built directly into your database workflow. Unlike generic AI chatbots, the assistant has full context of your connected database — it knows your table names, column types, relationships, and more — so it can write accurate SQL, explain query behavior, and troubleshoot errors without you needing to paste schema definitions into every message. The assistant is available from the chat panel alongside the SQL Editor, and its capabilities extend throughout the app into the Table Browser and inline editor features.
+Tamery's AI Assistant is a schema-aware conversational AI built directly into your database workflow. Unlike generic AI chatbots, the assistant has full context of your connected database — it knows your table names, column types, relationships, and more — so it can write accurate SQL, explain query behavior, and troubleshoot errors without you needing to paste schema definitions into every message. The assistant is available from the chat panel alongside the SQL Editor, and its capabilities extend throughout the app into the Table Browser and inline editor features.
 
 <Note>
   The AI assistant only executes safe, read-only queries against your database when using its database tool. It will never run `INSERT`, `UPDATE`, `DELETE`, or `DROP` statements autonomously. Any data modifications go through the normal Table Browser or SQL Editor workflows, where you remain in full control.
@@ -24,21 +24,21 @@ The assistant remembers the context of your conversation within a session, so yo
 
 ## AI Models
 
-Conar supports multiple leading AI models so you can choose the one that best fits your task and preference.
+Tamery runs the assistant on a leading frontier model so you always get high-quality SQL and reasoning without having to pick or configure anything. If the primary model is temporarily unavailable or overloaded, Tamery automatically falls back to another top model so the assistant stays responsive.
 
 <CardGroup cols={3}>
   <Card title="Claude" icon="robot" href="/account/plans">
-    Anthropic's Claude models — including Opus and Sonnet — are well-suited for complex reasoning, nuanced SQL generation, and detailed explanations.
+    Anthropic's Claude (Opus) powers the assistant by default — well-suited for complex reasoning, nuanced SQL generation, and detailed explanations.
   </Card>
   <Card title="GPT" icon="robot" href="/account/plans">
-    OpenAI's GPT models offer fast, reliable query generation and are a strong all-round choice for most SQL tasks.
+    OpenAI's GPT is used as an automatic fallback, offering fast, reliable query generation.
   </Card>
   <Card title="Gemini" icon="robot" href="/account/plans">
-    Google's Gemini models bring strong performance for analytical queries and multi-step reasoning over large schemas.
+    Google's Gemini is also used as a fallback, with strong performance for analytical queries and multi-step reasoning.
   </Card>
 </CardGroup>
 
-Select your preferred model from the model picker at the top of the chat panel. Model selection is a subscription feature — see [Plans](/account/plans) for details on which models are available on each tier.
+Model selection is automatic — there's nothing to configure. The AI assistant itself is a subscription feature; see [Plans](/account/plans) for what's included on each tier.
 
 ## What the AI Can Do
 
@@ -75,7 +75,7 @@ The assistant is more than a query generator. Here's a full picture of what it c
 
 Not sure how to phrase your question? The **Enhance Prompt** button in the chat panel rewrites your draft message to be clearer, more specific, and more likely to produce a great response from the AI.
 
-Type your question in the input box, then click **Enhance** before sending. Conar will reformulate your prompt — expanding vague requests into precise ones and adding relevant context from your schema — and place the improved version back in the input for you to review and send. You're always in control of what gets sent.
+Type your question in the input box, then click **Enhance** before sending. Tamery will reformulate your prompt — expanding vague requests into precise ones and adding relevant context from your schema — and place the improved version back in the input for you to review and send. You're always in control of what gets sent.
 
 Enhance Prompt is useful when:
 
@@ -107,13 +107,13 @@ Instead of manually building filter conditions in the Table Browser, you can des
 
 The **Seed** feature populates a table with realistic, schema-consistent test data. Open any table in the Table Browser, click the **Seed** button in the toolbar, and specify how many rows you'd like to generate.
 
-Conar intelligently inspects your column names and data types to automatically select appropriate generators for each column — producing proper names, plausible email addresses, realistic timestamps, and foreign key values that reference existing records in related tables. You can review and adjust the generator assigned to each column before inserting any rows.
+Tamery intelligently inspects your column names and data types to automatically select appropriate generators for each column — producing proper names, plausible email addresses, realistic timestamps, and foreign key values that reference existing records in related tables. You can review and adjust the generator assigned to each column before inserting any rows.
 
 Seeded rows are previewed before insertion, so you can inspect and adjust them before committing to the database.
 
 ## Usage & Plans
 
-Conar offers a free tier with access to core features and a subscription plan that unlocks the full AI experience.
+Tamery offers a free tier with access to core features and a subscription plan that unlocks the full AI experience.
 
 | Feature | Free Tier | Subscription |
 |---|---|---|
@@ -124,6 +124,5 @@ Conar offers a free tier with access to core features and a subscription plan th
 | Enhance Prompt | — | ✓ |
 | Natural language filters | Limited (monthly allowance) | Unlimited |
 | Data seeding | Limited (free allowance) | Unlimited |
-| Model selection (Claude, GPT, Gemini) | — | ✓ |
 
 Visit [Plans](/account/plans) to see the full feature comparison and upgrade your account.

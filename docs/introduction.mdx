@@ -1,7 +1,7 @@
 ---
-title: "Conar Overview: AI-Powered Database Client and Features"
+title: "Tamery Overview: AI-Powered Database Client and Features"
 sidebarTitle: "Introduction"
-description: "Conar is an AI-powered database client for PostgreSQL, MySQL, MSSQL, and ClickHouse. Manage connections, browse data, and get AI SQL assistance."
+description: "Tamery is an AI-powered database client for PostgreSQL, MySQL, MSSQL, and ClickHouse. Manage connections, browse data, and get AI SQL assistance."
 ---
 
 Tamery is an AI-powered database client designed to make working with relational and analytical databases faster, smarter, and less frustrating. Whether you're a backend engineer inspecting production data, a data analyst running ad-hoc queries, or a team lead reviewing a schema with colleagues, Tamery gives you a unified interface to connect, explore, and query your databases — with an AI assistant that understands your schema and helps you get things done without leaving the app.
@@ -45,17 +45,17 @@ Tamery currently supports the following database engines:
 
 Tamery is available in three forms so you can use it in whatever environment suits your workflow best.
 
-**Web App** — Access Tamery directly at [tamery](https://tamery.app)[.app](https://conar.app) from any modern browser. No installation required. Sign in with your email or OAuth provider and connect to your databases right away.
+**Web App** — Access Tamery directly at [tamery.app](https://tamery.app) from any modern browser. No installation required. Sign in with your email or OAuth provider and connect to your databases right away.
 
-**Desktop App** — Download the native desktop application for macOS, Windows, or Linux from [tamery](https://tamery.app/download)[.app/download](https://conar.app/download). The desktop app runs a local proxy on your machine, making it easy to connect to databases on localhost or within a private network.
+**Desktop App** — Download the native desktop application for macOS, Windows, or Linux from [tamery.app/download](https://tamery.app/download). The desktop app runs a local proxy on your machine, making it easy to connect to databases on localhost or within a private network.
 
 **CLI** — Install the `tamery` command-line tool via npm for terminal-based access, scripting, and integration with your development workflow. The CLI requires Node.js version 20 or higher. Run `tamery login` to authenticate and `tamery proxy` to start a local proxy session.
 
 ## Security
 
-Your database credentials are treated with care. Tamery encrypts all connection strings at rest, so your passwords and hostnames are never stored in plain text. You can choose how your connections are synced:
+Your database credentials are treated with care. Tamery encrypts all connection strings at rest, so your passwords and hostnames are never stored in plain text. When you save a connection, you choose how its password is handled:
 
-- **Cloud sync** — your encrypted connection details are stored in Tamery's cloud, making them available across all your devices when you sign in.
-- **Local sync** — your connection details stay on your current device only, never leaving your machine.
+- **Cloud (with password)** — your full connection string, including the password, is encrypted and synced to Tamery's cloud, so the connection is ready to use on every device where you sign in.
+- **Cloud (without password)** — only connection metadata (host, port, database, username) is synced. Your password is never uploaded; you enter it on each device and it stays encrypted on that device.
 
-In both modes, sensitive values like passwords are encrypted before storage. You are always in control of what gets saved and where.
+In both modes, your connection syncs across devices and sensitive values are encrypted before storage. You are always in control of what gets saved and where — see [Security](/connections/security) for the full details.
