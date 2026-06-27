@@ -7,8 +7,13 @@ import { routeTree } from './routeTree.gen'
 import './monaco-worker'
 import './assets/styles.css'
 import '@tamery/ui/globals.css'
+import { getOS } from '@tamery/shared/utils/os'
 import { toast } from 'sonner'
 import { isSignedIn } from './lib/auth'
+
+if (window.electron) {
+  document.documentElement.classList.add('electron', `os-${getOS(navigator.userAgent).type}`)
+}
 
 if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
   import('react-scan').then(({ scan }) => {

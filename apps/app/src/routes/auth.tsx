@@ -66,7 +66,7 @@ function AuthPage() {
   }, [data, exchange, codeChallenge, verifier])
 
   return (
-    <div className="flex flex-col bg-background px-4 py-6">
+    <div className="flex flex-col px-4 py-6">
       <div className={`
         m-auto flex w-full max-w-md flex-1 flex-col justify-center
       `}

@@ -141,6 +141,16 @@
 
     -electron-corner-smoothing: system-ui;
     -webkit-user-drag: none;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  label,
+  [role="button"],
+  [contenteditable] {
     -webkit-app-region: no-drag;
   }
 
@@ -153,7 +163,28 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-background text-foreground select-none;
+  }
+
+  input,
+  textarea,
+  select,
+  code,
+  pre,
+  [contenteditable] {
+    @apply select-text;
+  }
+
+  html.electron {
+    @apply bg-transparent;
+  }
+
+  html.electron body {
+    @apply bg-background;
+  }
+
+  html.electron.dark body {
+    @apply bg-background/80;
   }
 }
 

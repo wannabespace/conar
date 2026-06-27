@@ -44,16 +44,33 @@ let mainWindow: BrowserWindow | null = null
 export function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
+  const isMac = process.platform === 'darwin'
+
   mainWindow = new BrowserWindow({
     width,
     height,
     minWidth: 500,
     minHeight: 500,
     focusable: true,
-    // titleBarStyle: 'default',
-    // vibrancy: 'fullscreen-ui', // on MacOS
-    // backgroundMaterial: 'acrylic', // on Windows 11
-    // visualEffectState: 'active',
+    // Custom topbar: hide the native title bar background on every OS.
+    titleBarStyle: 'hidden',
+    // macOS: keep native traffic lights, inset into the 40px topbar.
+    trafficLightPosition: { x: 16, y: 14 },
+    // Windows/Linux: native min/max/close via Window Controls Overlay.
+    ...(!isMac && {
+      titleBarOverlay: {
+        color: '#00000000',
+        symbolColor: '#a1a1aa',
+        height: 40,
+      },
+    }),
+    // macOS under-window blur. Keep `transparent` false (it disables vibrancy);
+    // the alpha-00 backgroundColor lets the vibrant material show through.
+    ...(isMac && {
+      vibrancy: 'under-window',
+      visualEffectState: 'active',
+      backgroundColor: '#00000000',
+    }),
     webPreferences: {
       sandbox: false,
       preload: path.join(path.dirname(fileURLToPath(import.meta.url)), './preload.mjs'),

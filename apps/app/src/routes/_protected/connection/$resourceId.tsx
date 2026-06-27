@@ -92,11 +92,7 @@ function ResourcePage() {
   }
 
   return (
-    <div className={`
-      flex bg-gray-100
-      dark:bg-neutral-950/60
-    `}
-    >
+    <div className="flex">
       <ConnectionSidebar className="w-16" />
       <div
         className={cn(
