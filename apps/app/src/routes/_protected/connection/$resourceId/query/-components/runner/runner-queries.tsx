@@ -44,7 +44,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                     className="flex w-full items-center gap-2 px-4 py-1"
                   >
                     <Tooltip>
-                      <TooltipTrigger asChild>
+                      <TooltipTrigger render={(
                         <Button
                           size="icon-sm"
                           variant="ghost"
@@ -52,19 +52,20 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                             runnerHooks.callHook('appendToBottomAndFocus', `-- ${query.name}\n${query.query}`)
                             setMovedId(query.id)
                           }}
+                        />
+                      )}
+                      >
+                        <ContentSwitch
+                          active={movedId === query.id}
+                          activeContent={(
+                            <RiCheckLine className="size-4 text-success" />
+                          )}
+                          onSwitchEnd={() => {
+                            setMovedId(null)
+                          }}
                         >
-                          <ContentSwitch
-                            active={movedId === query.id}
-                            activeContent={(
-                              <RiCheckLine className="size-4 text-success" />
-                            )}
-                            onSwitchEnd={() => {
-                              setMovedId(null)
-                            }}
-                          >
-                            <RiPlayListAddLine className="size-4" />
-                          </ContentSwitch>
-                        </Button>
+                          <RiPlayListAddLine className="size-4" />
+                        </ContentSwitch>
                       </TooltipTrigger>
                       <TooltipContent side="left">
                         Append to bottom of runner
@@ -83,7 +84,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                       </div>
                     </div>
                     <Tooltip>
-                      <TooltipTrigger asChild>
+                      <TooltipTrigger render={(
                         <Button
                           variant="ghost"
                           size="icon-sm"
@@ -91,22 +92,23 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                             copy(query.query)
                             setCopiedId(copiedId === query.id ? null : query.id)
                           }}
+                        />
+                      )}
+                      >
+                        <ContentSwitch
+                          active={copiedId === query.id}
+                          activeContent={(
+                            <RiCheckLine className="size-4 text-success" />
+                          )}
+                          onSwitchEnd={() => setCopiedId(null)}
                         >
-                          <ContentSwitch
-                            active={copiedId === query.id}
-                            activeContent={(
-                              <RiCheckLine className="size-4 text-success" />
-                            )}
-                            onSwitchEnd={() => setCopiedId(null)}
-                          >
-                            <RiFileCopyLine className="size-4" />
-                          </ContentSwitch>
-                        </Button>
+                          <RiFileCopyLine className="size-4" />
+                        </ContentSwitch>
                       </TooltipTrigger>
                       <TooltipContent>Copy Query</TooltipContent>
                     </Tooltip>
                     <Tooltip>
-                      <TooltipTrigger asChild>
+                      <TooltipTrigger render={(
                         <Button
                           variant="ghost"
                           className={`
@@ -119,9 +121,10 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                             removeQueryDialogRef.current?.remove(query)
                           }}
                           data-variant="destructive"
-                        >
-                          <RiDeleteBin7Line className="size-4" />
-                        </Button>
+                        />
+                      )}
+                      >
+                        <RiDeleteBin7Line className="size-4" />
                       </TooltipTrigger>
                       <TooltipContent>Delete Query</TooltipContent>
                     </Tooltip>

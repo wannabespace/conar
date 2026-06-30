@@ -9,13 +9,12 @@ import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
 import { Group, GroupSeparator } from '@tamery/ui/components/group'
 import { Label } from '@tamery/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
-import { ScrollArea } from '@tamery/ui/components/scroll-area'
 import { cn } from '@tamery/ui/lib/utils'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useMemo, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
-import { Monaco } from '~/components/monaco'
+import { Monaco } from '~/components/monaco-lazy'
 import { useCollections } from '~/entities/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { formatSql } from '~/utils/formatter'
@@ -309,10 +308,9 @@ export function QueryLogger({ connectionResource, className }: {
           </Button>
         </div>
       </div>
-      <ScrollArea
-        viewportRef={scrollRef}
-        scrollFade
-        className="relative min-h-0"
+      <div
+        ref={scrollRef}
+        className="relative min-h-0 scroll-fade overflow-auto"
       >
         {filteredQueries.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12">
@@ -345,7 +343,7 @@ export function QueryLogger({ connectionResource, className }: {
             <RiArrowDownLine className="size-4" />
           </Button>
         </div>
-      </ScrollArea>
+      </div>
     </div>
   )
 }

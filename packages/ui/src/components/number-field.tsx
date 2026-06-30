@@ -1,7 +1,7 @@
 import { NumberField as NumberFieldPrimitive } from '@base-ui/react/number-field'
+import { RiAddLine, RiSubtractLine } from '@remixicon/react'
 import { Label } from '@tamery/ui/components/label'
 import { cn } from '@tamery/ui/lib/utils'
-import { MinusIcon, PlusIcon } from 'lucide-react'
 import * as React from 'react'
 
 const NumberFieldContext: React.Context<{
@@ -54,12 +54,12 @@ export function NumberFieldGroup({
           has-aria-invalid:border-destructive/36
           focus-within:has-aria-invalid:border-destructive/64
           focus-within:has-aria-invalid:ring-destructive/48
-          data-disabled:pointer-events-none data-disabled:opacity-64
           sm:text-sm
           dark:bg-input/32
           dark:not-data-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_-1px_--theme(--color-white/6%)]
           dark:has-autofill:bg-foreground/8
           dark:has-aria-invalid:ring-destructive/24
+          data-disabled:pointer-events-none data-disabled:opacity-64
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4.5
           sm:[&_svg:not([class*='size-'])]:size-4
@@ -94,7 +94,7 @@ export function NumberFieldDecrement({
       data-slot="number-field-decrement"
       {...props}
     >
-      <MinusIcon />
+      <RiSubtractLine />
     </NumberFieldPrimitive.Decrement>
   )
 }
@@ -120,7 +120,7 @@ export function NumberFieldIncrement({
       data-slot="number-field-increment"
       {...props}
     >
-      <PlusIcon />
+      <RiAddLine />
     </NumberFieldPrimitive.Increment>
   )
 }

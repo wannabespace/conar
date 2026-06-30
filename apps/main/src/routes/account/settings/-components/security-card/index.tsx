@@ -1,5 +1,5 @@
 import { RiInformationLine } from '@remixicon/react'
-import { Card, CardHeader, CardPanel, CardTitle } from '@tamery/ui/components/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@tamery/ui/components/card'
 import { Label } from '@tamery/ui/components/label'
 import { Switch } from '@tamery/ui/components/switch'
 import { useQuery } from '@tanstack/react-query'
@@ -29,7 +29,7 @@ export function SecurityCard() {
         <CardHeader>
           <CardTitle>Security</CardTitle>
         </CardHeader>
-        <CardPanel>
+        <CardContent>
           <Label className="flex items-center justify-between">
             <div>
               <span className="text-base font-medium">Two-factor authentication</span>
@@ -52,7 +52,7 @@ export function SecurityCard() {
               disabled={!hasCredentialAccount}
             />
           </Label>
-        </CardPanel>
+        </CardContent>
       </Card>
     </>
   )

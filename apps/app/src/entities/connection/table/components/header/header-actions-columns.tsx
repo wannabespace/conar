@@ -16,7 +16,7 @@ export function HeaderActionsColumns() {
   return (
     <Popover>
       <Tooltip>
-        <TooltipTrigger asChild>
+        <TooltipTrigger render={(
           <PopoverTrigger render={(
             <Button
               size="icon"
@@ -24,10 +24,11 @@ export function HeaderActionsColumns() {
               className="overflow-visible"
             />
           )}
-          >
-            <RiLayoutColumnLine />
-            {hiddenColumns.length > 0 && <Indicator />}
-          </PopoverTrigger>
+          />
+        )}
+        >
+          <RiLayoutColumnLine />
+          {hiddenColumns.length > 0 && <Indicator />}
         </TooltipTrigger>
         <TooltipContent side="top">
           Columns visibility

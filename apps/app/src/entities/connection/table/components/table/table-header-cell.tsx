@@ -21,19 +21,20 @@ const CANNOT_SORT_TYPES = ['json']
 function SortButton({ order, onClick }: { order: 'ASC' | 'DESC' | null, onClick: () => void }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
+      <TooltipTrigger render={(
         <Button
           variant="ghost"
           size="icon-xs"
           onClick={onClick}
           className={cn(order !== null && 'text-primary')}
-        >
-          {order === 'ASC'
-            ? <RiArrowUpLine className="size-3 shrink-0" />
-            : order === 'DESC'
-              ? <RiArrowDownLine className="size-3 shrink-0" />
-              : <RiArrowUpDownLine className="size-3 shrink-0 opacity-30" />}
-        </Button>
+        />
+      )}
+      >
+        {order === 'ASC'
+          ? <RiArrowUpLine className="size-3 shrink-0" />
+          : order === 'DESC'
+            ? <RiArrowDownLine className="size-3 shrink-0" />
+            : <RiArrowUpDownLine className="size-3 shrink-0 opacity-30" />}
       </TooltipTrigger>
       <TooltipContent>
         {order === null ? 'Sort' : order === 'ASC' ? 'Sort ascending' : 'Sort descending'}
@@ -64,8 +65,10 @@ export function PrimaryKeyTooltipIcon({ primaryKey }: { primaryKey: string }) {
 export function NullableTooltipIcon() {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
+      <TooltipTrigger render={(
         <RiEraserLine className="size-3 shrink-0 opacity-70" />
+      )}
+      >
       </TooltipTrigger>
       <TooltipContent>
         <div className="flex items-center gap-1">
@@ -135,8 +138,10 @@ export function DefaultValueTooltipIcon({ defaultValue }: { defaultValue: string
 function ForeignTooltipIcon({ name, table, column }: { name: string, table: string, column: string }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
+      <TooltipTrigger render={(
         <RiLinksLine className="size-3 shrink-0 opacity-70" />
+      )}
+      >
       </TooltipTrigger>
       <TooltipContent className="max-w-none">
         <div className="flex items-center gap-1">

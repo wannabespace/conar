@@ -2,8 +2,7 @@ import { RiGithubFill, RiGoogleFill } from '@remixicon/react'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { Field, FieldLabel } from '@tamery/ui/components/field'
-import { Fieldset } from '@tamery/ui/components/fieldset'
+import { Field, FieldLabel, FieldSet } from '@tamery/ui/components/field'
 import { Separator } from '@tamery/ui/components/separator'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
@@ -200,7 +199,7 @@ export function AuthForm({ type }: { type: Type }) {
           form.handleSubmit()
         }}
       >
-        <Fieldset className="flex w-full flex-col gap-6">
+        <FieldSet className="flex w-full flex-col gap-6">
           <form.AppField name="email">
             {field => (
               <Field>
@@ -272,7 +271,7 @@ export function AuthForm({ type }: { type: Type }) {
             </LoadingContent>
             {type === 'sign-in' && lastMethod === 'email' && <Last />}
           </Button>
-        </Fieldset>
+        </FieldSet>
       </form>
       <div className="relative">
         <Separator />

@@ -31,17 +31,18 @@ export function HeaderActionsOrder() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <Tooltip>
-        <TooltipTrigger asChild>
+        <TooltipTrigger render={(
           <PopoverTrigger render={(
             <Button
               variant="outline"
               size="icon"
             />
           )}
-          >
-            <RiArrowUpDownLine />
-            {hasOrders && <Indicator />}
-          </PopoverTrigger>
+          />
+        )}
+        >
+          <RiArrowUpDownLine />
+          {hasOrders && <Indicator />}
         </TooltipTrigger>
         <TooltipContent side="top">
           Sort order
@@ -112,7 +113,7 @@ export function HeaderActionsOrder() {
                               value={[order]}
                               onValueChange={(value) => {
                                 if (value[0])
-                                  setOrder(columnId, value[0])
+                                  setOrder(columnId, value[0] as 'ASC' | 'DESC')
                               }}
                             >
                               <ToggleGroupItem

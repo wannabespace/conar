@@ -2,7 +2,6 @@ import { anthropic } from '@ai-sdk/anthropic'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { generateText } from 'ai'
 import { type } from 'arktype'
-import { withPosthog } from '~/lib/posthog'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const fixSQL = orpc
@@ -12,11 +11,9 @@ export const fixSQL = orpc
     error: 'string',
     type: type.valueOf(ConnectionType),
   }))
-  .handler(async ({ input, signal, context }) => {
+  .handler(async ({ input, signal }) => {
     const { text } = await generateText({
-      model: withPosthog(anthropic('claude-sonnet-4-5'), {
-        userId: context.user.id,
-      }),
+      model: anthropic('claude-sonnet-4-5'),
       abortSignal: signal,
       messages: [
         {

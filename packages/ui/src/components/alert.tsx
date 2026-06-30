@@ -1,44 +1,8 @@
 import type { VariantProps } from 'class-variance-authority'
-import type * as React from 'react'
+import { alertVariants } from '@tamery/ui/components/alert.utils'
 import { cn } from '@tamery/ui/lib/utils'
-import { cva } from 'class-variance-authority'
 
-const alertVariants = cva(
-  `
-    relative grid w-full grid-cols-[0_1fr] items-start gap-y-0.5 rounded-lg
-    border px-4 py-3 text-sm
-    has-[>svg]:grid-cols-[--spacing(4)_1fr] has-[>svg]:gap-x-3
-    [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current
-  `,
-  {
-    variants: {
-      variant: {
-        default: 'bg-card text-card-foreground',
-        destructive:
-          `
-            bg-destructive/10 text-destructive
-            *:data-[slot=alert-description]:text-destructive/90
-            [&>svg]:text-current
-          `,
-        warning:
-          `
-            bg-warning/10 text-warning
-            *:data-[slot=alert-description]:text-warning/90
-            [&>svg]:text-current
-          `,
-        success:
-          `
-            bg-success/10 text-success
-            *:data-[slot=alert-description]:text-success/90
-            [&>svg]:text-current
-          `,
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-    },
-  },
-)
+import * as React from 'react'
 
 function Alert({
   className,
@@ -60,7 +24,12 @@ function AlertTitle({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="alert-title"
       className={cn(
-        'col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight',
+        `
+          font-medium
+          group-has-[>svg]/alert:col-start-2
+          [&_a]:underline [&_a]:underline-offset-3
+          [&_a]:hover:text-foreground
+        `,
         className,
       )}
       {...props}
@@ -77,9 +46,11 @@ function AlertDescription({
       data-slot="alert-description"
       className={cn(
         `
-          col-start-2 grid justify-items-start gap-1 text-sm
-          text-muted-foreground
-          [&_p]:leading-relaxed
+          text-sm text-balance text-muted-foreground
+          md:text-pretty
+          [&_a]:underline [&_a]:underline-offset-3
+          [&_a]:hover:text-foreground
+          [&_p:not(:last-child)]:mb-4
         `,
         className,
       )}
@@ -88,4 +59,14 @@ function AlertDescription({
   )
 }
 
-export { Alert, AlertDescription, AlertTitle }
+function AlertAction({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="alert-action"
+      className={cn('absolute top-2.5 right-3', className)}
+      {...props}
+    />
+  )
+}
+
+export { Alert, AlertAction, AlertDescription, AlertTitle }

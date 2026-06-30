@@ -1,6 +1,6 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { title } from '@tamery/shared/utils/title'
-import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@tamery/ui/components/resizable'
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@tamery/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
@@ -157,7 +157,7 @@ function DatabaseTablesPage() {
       >
         <Sidebar key={connectionResource.id} />
       </ResizablePanel>
-      <ResizableSeparator className="w-1 bg-transparent" />
+      <ResizableHandle className="w-1 bg-transparent" />
       <ResizablePanel
         defaultSize="80%"
         className="flex-1 overflow-hidden rounded-lg bg-background"

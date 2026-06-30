@@ -149,22 +149,23 @@ export function Header({ table, schema }: { table: string, schema: string }) {
       <Separator orientation="vertical" className="mx-2 h-6!" />
       <HeaderSearch table={table} schema={schema} />
       <Tooltip>
-        <TooltipTrigger asChild>
+        <TooltipTrigger render={(
           <Button
             variant="outline"
             size="icon"
             onClick={handleRefresh}
             disabled={isFetching}
-          >
-            <LoadingContent loading={isFetching}>
-              <ContentSwitch
-                activeContent={<RiCheckLine className="text-success" />}
-                active={isFetching}
-              >
-                <RiLoopLeftLine />
-              </ContentSwitch>
-            </LoadingContent>
-          </Button>
+          />
+        )}
+        >
+          <LoadingContent loading={isFetching}>
+            <ContentSwitch
+              activeContent={<RiCheckLine className="text-success" />}
+              active={isFetching}
+            >
+              <RiLoopLeftLine />
+            </ContentSwitch>
+          </LoadingContent>
         </TooltipTrigger>
         <TooltipContent>
           Refresh rows

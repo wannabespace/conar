@@ -2,20 +2,20 @@ import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { Column } from '~/entities/connection/components'
 import type { GeneratorGroup, GeneratorId } from '~/entities/connection/utils/seeds'
 import NumberFlow from '@number-flow/react'
-import { RiCodeSSlashLine, RiSearchLine, RiSeedlingLine, RiVipCrownLine } from '@remixicon/react'
+import { RiCodeSSlashLine, RiSeedlingLine, RiVipCrownLine } from '@remixicon/react'
 import { pick } from '@tamery/shared/utils/helpers'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
 import {
   Combobox,
   ComboboxCollection,
+  ComboboxContent,
   ComboboxEmpty,
   ComboboxGroup,
-  ComboboxGroupLabel,
   ComboboxInput,
   ComboboxItem,
+  ComboboxLabel,
   ComboboxList,
-  ComboboxPopup,
   ComboboxTrigger,
 } from '@tamery/ui/components/combobox'
 import { Indicator } from '@tamery/ui/components/custom/indicator'
@@ -23,11 +23,10 @@ import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
   Drawer,
   DrawerClose,
+  DrawerContent,
   DrawerDescription,
   DrawerFooter,
   DrawerHeader,
-  DrawerPanel,
-  DrawerPopup,
   DrawerTitle,
   DrawerTrigger,
 } from '@tamery/ui/components/drawer'
@@ -47,7 +46,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
-import { Monaco } from '~/components/monaco'
+import { Monaco } from '~/components/monaco-lazy'
 import { distinctQuery, insertQuery, resourceRowsQueryInfiniteOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { autoDetectGenerator, CUSTOM_GENERATOR, ENUM_GENERATOR, generateRows, getGeneratorGroups, getGenerators, REFERENCE_GENERATOR, SKIP_GENERATOR } from '~/entities/connection/utils/seeds'
@@ -108,7 +107,7 @@ function CustomExpressionPopover({
       }}
     >
       <Tooltip>
-        <TooltipTrigger asChild>
+        <TooltipTrigger render={(
           <PopoverTrigger
             render={(
               <Button
@@ -116,10 +115,11 @@ function CustomExpressionPopover({
                 size="icon-sm"
               />
             )}
-          >
-            {customExpression && <Indicator />}
-            <RiCodeSSlashLine />
-          </PopoverTrigger>
+          />
+        )}
+        >
+          {customExpression && <Indicator />}
+          <RiCodeSSlashLine />
         </TooltipTrigger>
         <TooltipContent>Edit SQL expression</TooltipContent>
       </Tooltip>
@@ -153,13 +153,13 @@ function CustomExpressionPopover({
           Enter a raw SQL expression, for example:
           <br />
           {' '}
-          <Badge variant="secondary" size="sm">NOW()</Badge>
+          <Badge variant="secondary">NOW()</Badge>
           ,
           {' '}
-          <Badge variant="secondary" size="sm">gen_random_uuid()</Badge>
+          <Badge variant="secondary">gen_random_uuid()</Badge>
           ,
           {' '}
-          <Badge variant="secondary" size="sm">SELECT id FROM users LIMIT 1</Badge>
+          <Badge variant="secondary">SELECT id FROM users LIMIT 1</Badge>
           or any other valid SQL expression.
         </div>
       </PopoverContent>
@@ -278,29 +278,23 @@ export function HeaderActionsSeed({
   const activeCount = columns.filter(c => generators[c.id]?.generatorId && generators[c.id]?.generatorId !== SKIP_GENERATOR).length
 
   return (
-    <Drawer open={open} onOpenChange={handleOpenChange} position="right">
+    <Drawer open={open} onOpenChange={handleOpenChange} direction="right">
       <Tooltip>
-        <TooltipTrigger asChild>
-          <DrawerTrigger
-            render={(
-              <Button
-                variant="secondary"
-                size="icon"
-                disabled={isPending}
-              />
-            )}
-          >
-            <RiSeedlingLine />
+        <TooltipTrigger render={(
+          <DrawerTrigger asChild>
+            <Button
+              variant="secondary"
+              size="icon"
+              disabled={isPending}
+            >
+              <RiSeedlingLine />
+            </Button>
           </DrawerTrigger>
-        </TooltipTrigger>
+        )}
+        />
         <TooltipContent>Seed data</TooltipContent>
       </Tooltip>
-      <DrawerPopup
-        showCloseButton
-        variant="inset"
-        position="right"
-        className="max-w-xl"
-      >
+      <DrawerContent className="max-w-xl">
         <DrawerHeader>
           <DrawerTitle>Seed Data</DrawerTitle>
           <DrawerDescription>
@@ -311,7 +305,7 @@ export function HeaderActionsSeed({
             {table}
           </DrawerDescription>
         </DrawerHeader>
-        <DrawerPanel>
+        <div className="flex-1 overflow-auto px-4">
           {!subscription && (
             <div
               className="
@@ -357,7 +351,6 @@ export function HeaderActionsSeed({
                       {column.defaultValue && <DefaultValueTooltipIcon defaultValue={column.defaultValue} />}
                       <Badge
                         variant="secondary"
-                        size="sm"
                         className="text-muted-foreground"
                       >
                         {column.typeLabel}
@@ -367,11 +360,13 @@ export function HeaderActionsSeed({
                   <div className="flex shrink-0 items-center gap-2">
                     {column.isNullable && (
                       <Tooltip>
-                        <TooltipTrigger asChild>
+                        <TooltipTrigger render={(
                           <Switch
                             checked={generators[column.id]?.isNullable ?? false}
                             onCheckedChange={() => toggleNullableGeneration(column.id)}
                           />
+                        )}
+                        >
                         </TooltipTrigger>
                         <TooltipContent>Allow random NULL values</TooltipContent>
                       </Tooltip>
@@ -421,19 +416,18 @@ export function HeaderActionsSeed({
                               >
                                 {allGenerators[generators[column.id]?.generatorId ?? SKIP_GENERATOR]?.label ?? 'Select a generator'}
                               </ComboboxTrigger>
-                              <ComboboxPopup className="min-w-48">
+                              <ComboboxContent className="min-w-48">
                                 <div className="border-b p-2">
                                   <ComboboxInput
                                     placeholder="Search generators..."
                                     showTrigger={false}
-                                    startAddon={<RiSearchLine />}
                                   />
                                 </div>
                                 <ComboboxEmpty>No generators found.</ComboboxEmpty>
                                 <ComboboxList>
                                   {(group: GeneratorGroup) => (
                                     <ComboboxGroup key={group.value} items={group.items}>
-                                      <ComboboxGroupLabel>{group.value}</ComboboxGroupLabel>
+                                      <ComboboxLabel>{group.value}</ComboboxLabel>
                                       <ComboboxCollection>
                                         {(id: GeneratorId) => (
                                           <ComboboxItem key={id} value={id}>
@@ -444,7 +438,7 @@ export function HeaderActionsSeed({
                                     </ComboboxGroup>
                                   )}
                                 </ComboboxList>
-                              </ComboboxPopup>
+                              </ComboboxContent>
                             </Combobox>
                             {generators[column.id]?.generatorId === CUSTOM_GENERATOR && (
                               <CustomExpressionPopover columnId={column.id} />
@@ -456,7 +450,7 @@ export function HeaderActionsSeed({
               ))}
             </div>
           </div>
-        </DrawerPanel>
+        </div>
         <DrawerFooter>
           <NumberField
             min={1}
@@ -474,9 +468,7 @@ export function HeaderActionsSeed({
               <NumberFieldIncrement />
             </NumberFieldGroup>
           </NumberField>
-          <DrawerClose render={<Button variant="outline" />}>
-            Cancel
-          </DrawerClose>
+          <DrawerClose asChild><Button variant="outline">Cancel</Button></DrawerClose>
           <Button
             onClick={() => {
               if (hasReachedFreeLimit) {
@@ -509,7 +501,7 @@ export function HeaderActionsSeed({
             </LoadingContent>
           </Button>
         </DrawerFooter>
-      </DrawerPopup>
+      </DrawerContent>
     </Drawer>
   )
 }

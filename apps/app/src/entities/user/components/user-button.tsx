@@ -23,7 +23,13 @@ async function clearLocalAppCache() {
   }
 }
 
-export function UserButton() {
+export function UserButton({
+  side = 'right',
+  align = 'end',
+}: {
+  side?: 'top' | 'right' | 'bottom' | 'left'
+  align?: 'start' | 'center' | 'end'
+} = {}) {
   const { signOut, isSigningOut } = useSignOut()
   const { data } = authClient.useSession()
 
@@ -44,7 +50,7 @@ export function UserButton() {
       <DropdownMenuTrigger className="size-8 cursor-pointer rounded-md">
         <UserAvatar className="size-full" user={data?.user} />
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="min-w-56" side="right" align="end">
+      <DropdownMenuContent className="min-w-56" side={side} align={align}>
         <div className="mt-1 mb-2 flex h-10 items-center gap-2 px-2">
           <UserAvatar className="size-8" user={data?.user} />
           <div className="flex flex-col leading-0">

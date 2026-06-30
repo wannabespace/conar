@@ -1,5 +1,5 @@
 import { title } from '@tamery/shared/utils/title'
-import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@tamery/ui/components/resizable'
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@tamery/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'
@@ -109,14 +109,14 @@ function DatabaseSqlPage() {
                 ? (
                     <>
                       <ChatPanel key="chat" />
-                      <ResizableSeparator className="w-1" />
+                      <ResizableHandle className="w-1" />
                       <RunnerPanel key="runner" />
                     </>
                   )
                 : (
                     <>
                       <RunnerPanel key="runner" />
-                      <ResizableSeparator className="w-1" />
+                      <ResizableHandle className="w-1" />
                       <ChatPanel key="chat" />
                     </>
                   )}

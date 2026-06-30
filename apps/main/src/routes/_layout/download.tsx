@@ -171,7 +171,7 @@ function DownloadOption({ Icon, type, arch, link }: {
         </div>
       </div>
       <Tooltip>
-        <TooltipTrigger asChild>
+        <TooltipTrigger render={(
           <Button
             render={(
               <a
@@ -182,9 +182,10 @@ function DownloadOption({ Icon, type, arch, link }: {
             size="sm"
             disabled={!link}
             variant="secondary"
-          >
-            Download
-          </Button>
+          />
+        )}
+        >
+          Download
         </TooltipTrigger>
       </Tooltip>
     </Card>

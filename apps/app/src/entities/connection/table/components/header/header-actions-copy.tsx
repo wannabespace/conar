@@ -34,7 +34,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { Monaco } from '~/components/monaco'
+import { Monaco } from '~/components/monaco-lazy'
 import { SidebarButton } from '~/components/sidebar-link'
 import * as generators from '~/entities/connection/generators'
 import { GENERATOR_COMPATIBILITY } from '~/entities/connection/generators/compatibility'
@@ -186,10 +186,8 @@ export function HeaderActionsCopy({ table }: { table: string }) {
   return (
     <Dialog>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <DialogTrigger render={<Button variant="secondary" size="icon" />}>
-            <RiCodeSSlashLine />
-          </DialogTrigger>
+        <TooltipTrigger render={<DialogTrigger render={<Button variant="secondary" size="icon" />} />}>
+          <RiCodeSSlashLine />
         </TooltipTrigger>
         <TooltipContent side="top">
           Copy schema / query

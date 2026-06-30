@@ -1,10 +1,10 @@
-import { RiAlertLine, RiCheckLine, RiErrorWarningLine, RiInformationLine, RiLoader4Line } from '@remixicon/react'
+import { RiCheckboxCircleLine, RiCloseCircleLine, RiErrorWarningLine, RiInformationLine, RiLoaderLine } from '@remixicon/react'
 import { createPortal } from 'react-dom'
 import { Toaster as Sonner } from 'sonner'
 import { useIsMounted } from '../hookas/use-is-mounted'
 import { useTheme } from '../theme-store'
 
-export function Toaster() {
+function Toaster() {
   const theme = useTheme()
   const isMounted = useIsMounted()
 
@@ -29,19 +29,19 @@ export function Toaster() {
       }}
       icons={{
         success: (
-          <RiCheckLine className="size-4 text-success" />
+          <RiCheckboxCircleLine className="size-4" />
         ),
         info: (
-          <RiInformationLine className="size-4 text-info" />
+          <RiInformationLine className="size-4" />
         ),
         warning: (
-          <RiAlertLine className="size-4 text-warning" />
+          <RiErrorWarningLine className="size-4" />
         ),
         error: (
-          <RiErrorWarningLine className="size-4 text-destructive" />
+          <RiCloseCircleLine className="size-4" />
         ),
         loading: (
-          <RiLoader4Line className="size-4 animate-spin" />
+          <RiLoaderLine className="size-4 animate-spin" />
         ),
       }}
       style={{
@@ -54,3 +54,5 @@ export function Toaster() {
     document.body,
   )
 }
+
+export { Toaster }

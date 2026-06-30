@@ -8,7 +8,6 @@ import { Button } from '@tamery/ui/components/button'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { Indicator } from '@tamery/ui/components/custom/indicator'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@tamery/ui/components/dropdown-menu'
-import { ScrollArea } from '@tamery/ui/components/scroll-area'
 import { SeparatorMotion } from '@tamery/ui/components/separator.motion'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
@@ -95,16 +94,14 @@ function TableItem({ schema, table, type = 'table', pinned = false, search, onRe
       {({ isActive }) => (
         <>
           <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="relative shrink-0">
-                <Icon
-                  className={cn(
-                    'size-4 text-muted-foreground opacity-50',
-                    isActive && 'text-primary opacity-100',
-                  )}
-                />
-                {hasDrafts && <Indicator />}
-              </span>
+            <TooltipTrigger render={<span className="relative shrink-0" />}>
+              <Icon
+                className={cn(
+                  'size-4 text-muted-foreground opacity-50',
+                  isActive && 'text-primary opacity-100',
+                )}
+              />
+              {hasDrafts && <Indicator />}
             </TooltipTrigger>
             <TooltipContent>
               {tableTypeLabel[type]}
@@ -261,7 +258,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
     : tablesTreeOpenedSchemas, [search, filteredTablesAndSchemas, tablesTreeOpenedSchemas])
 
   return (
-    <ScrollArea className={cn('h-full p-2', className)} scrollFade>
+    <div className={cn('h-full scroll-fade overflow-auto p-2', className)}>
       <DropTableDialog ref={dropTableDialogRef} />
       <RenameTableDialog ref={renameTableDialogRef} />
       <Accordion
@@ -275,7 +272,6 @@ export function TablesTree({ className, search }: { className?: string, search?:
           }
         }}
         data-mask
-        type="multiple"
         className="w-full space-y-2"
       >
         {isPending
@@ -321,7 +317,7 @@ export function TablesTree({ className, search }: { className?: string, search?:
                           >
                             <span className="flex items-center gap-2">
                               <Tooltip>
-                                <TooltipTrigger asChild>
+                                <TooltipTrigger render={(
                                   <RiStackLine
                                     className={cn(
                                       `
@@ -333,6 +329,8 @@ export function TablesTree({ className, search }: { className?: string, search?:
                                       `,
                                     )}
                                   />
+                                )}
+                                >
                                 </TooltipTrigger>
                                 <TooltipContent side="left">
                                   Schema
@@ -404,6 +402,6 @@ export function TablesTree({ className, search }: { className?: string, search?:
                 </AnimatePresence>
               )}
       </Accordion>
-    </ScrollArea>
+    </div>
   )
 }

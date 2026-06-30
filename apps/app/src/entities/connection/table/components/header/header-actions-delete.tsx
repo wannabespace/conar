@@ -1,6 +1,6 @@
 import NumberFlow from '@number-flow/react'
 import { RiDeleteBin7Line } from '@remixicon/react'
-import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@tamery/ui/components/alert-dialog'
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@tamery/ui/components/alert-dialog'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { useMutation } from '@tanstack/react-query'
@@ -64,8 +64,8 @@ export function HeaderActionsDelete({ table, schema }: { table: string, schema: 
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-            <AlertDialogClose render={<Button variant="destructive" />} onClick={() => deleteRows()}>
+            <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
+            <AlertDialogCancel variant="destructive" onClick={() => deleteRows()}>
               <LoadingContent loading={isDeleting}>
                 Delete
                 {' '}
@@ -74,7 +74,7 @@ export function HeaderActionsDelete({ table, schema }: { table: string, schema: 
                 selected row
                 {selected.length === 1 ? '' : 's'}
               </LoadingContent>
-            </AlertDialogClose>
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

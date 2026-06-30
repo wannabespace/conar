@@ -83,12 +83,10 @@ export function Subscription() {
                     : subscription.status === 'trialing' && hasUpcomingTrialEnd && subscription.trialEnd
                       ? (
                           <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span>
-                                Free trial ends
-                                {' '}
-                                {formatDistanceToNow(subscription.trialEnd, { addSuffix: true })}
-                              </span>
+                            <TooltipTrigger render={<span />}>
+                              Free trial ends
+                              {' '}
+                              {formatDistanceToNow(subscription.trialEnd, { addSuffix: true })}
                             </TooltipTrigger>
                             <TooltipContent>
                               <span>
@@ -152,10 +150,14 @@ export function Subscription() {
             <CardDescription className="flex items-center gap-2">
               Manage your subscription
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <span tabIndex={0} className="focus:outline-none">
-                    <RiInformationLine className="size-4" />
-                  </span>
+                <TooltipTrigger render={(
+                  <span
+                    tabIndex={0}
+                    className="focus:outline-none"
+                  />
+                )}
+                >
+                  <RiInformationLine className="size-4" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs bg-background p-0">
                   <div className={`

@@ -116,21 +116,22 @@ export function HeaderSearch({ table, schema }: { table: string, schema: string 
         <InputGroupAddon align="inline-end">
           {freeAiUsage && (
             <Tooltip>
-              <TooltipTrigger asChild>
+              <TooltipTrigger render={(
                 <div
                   className="
                     cursor-help text-xs whitespace-nowrap text-muted-foreground
                   "
                   tabIndex={0}
                   aria-label={`You have ${freeAiUsage.remaining} out of ${freeAiUsage.max} free AI filter uses left this month.`}
-                >
-                  <NumberFlow
-                    value={freeAiUsage.remaining}
-                    className="tabular-nums"
-                  />
-                  /
-                  {freeAiUsage.max}
-                </div>
+                />
+              )}
+              >
+                <NumberFlow
+                  value={freeAiUsage.remaining}
+                  className="tabular-nums"
+                />
+                /
+                {freeAiUsage.max}
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 You have

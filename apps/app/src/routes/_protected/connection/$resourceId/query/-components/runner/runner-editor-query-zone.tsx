@@ -113,22 +113,23 @@ export function RunnerEditorQueryZone({
           </div>
           <div className="flex items-center gap-1">
             <Tooltip>
-              <TooltipTrigger asChild>
+              <TooltipTrigger render={(
                 <Button
                   variant="ghost"
                   size="icon-xs"
                   className="focus:outline-none!"
                   onClick={() => onSave()}
-                >
-                  <RiSaveLine className="size-3.5" />
-                </Button>
+                />
+              )}
+              >
+                <RiSaveLine className="size-3.5" />
               </TooltipTrigger>
               <TooltipContent>
                 Save
               </TooltipContent>
             </Tooltip>
             <Tooltip>
-              <TooltipTrigger asChild>
+              <TooltipTrigger render={(
                 <CopyButton
                   variant="ghost"
                   size="icon-xs"
@@ -137,6 +138,8 @@ export function RunnerEditorQueryZone({
                   successIcon={<RiCheckLine className="text-success" />}
                   copyIcon={<RiFileCopyLine className="size-3.5" />}
                 />
+              )}
+              >
               </TooltipTrigger>
               <TooltipContent>
                 Copy
@@ -150,7 +153,7 @@ export function RunnerEditorQueryZone({
                   {CONNECTION_TYPES_WITH_EXPLAIN.includes(connectionType) && (
                     <Popover open={explainOpen} onOpenChange={setExplainOpen}>
                       <Tooltip>
-                        <TooltipTrigger asChild>
+                        <TooltipTrigger render={(
                           <PopoverTrigger
                             render={(
                               <Button
@@ -161,18 +164,19 @@ export function RunnerEditorQueryZone({
                                 onClick={() => handleExplain(idx)}
                               />
                             )}
-                          >
-                            <LoadingContent loading={isExplaining}>
-                              <ContentSwitch
-                                active={isExplaining}
-                                activeContent={(
-                                  <RiCheckLine className="text-success" />
-                                )}
-                              >
-                                <RiQuestionLine />
-                              </ContentSwitch>
-                            </LoadingContent>
-                          </PopoverTrigger>
+                          />
+                        )}
+                        >
+                          <LoadingContent loading={isExplaining}>
+                            <ContentSwitch
+                              active={isExplaining}
+                              activeContent={(
+                                <RiCheckLine className="text-success" />
+                              )}
+                            >
+                              <RiQuestionLine />
+                            </ContentSwitch>
+                          </LoadingContent>
                         </TooltipTrigger>
                         <TooltipContent>
                           Explain

@@ -1,18 +1,16 @@
 /* eslint-disable perfectionist/sort-imports */
 import '@tamery/shared/arktype-config'
+import '@tamery/ui/globals.css'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { routeTree } from './routeTree.gen'
 import './monaco-worker'
-import './assets/styles.css'
-import '@tamery/ui/globals.css'
-import { getOS } from '@tamery/shared/utils/os'
 import { toast } from 'sonner'
 import { isSignedIn } from './lib/auth'
 
 if (window.electron) {
-  document.documentElement.classList.add('electron', `os-${getOS(navigator.userAgent).type}`)
+  document.documentElement.classList.add('electron')
 }
 
 if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {

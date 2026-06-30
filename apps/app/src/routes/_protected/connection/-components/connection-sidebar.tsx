@@ -1,32 +1,18 @@
 import type { LinkProps } from '@tanstack/react-router'
-import { RiCommandLine, RiFileListLine, RiGlobalLine, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiShieldCheckLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import { RiFileListLine, RiGlobalLine, RiNodeTree, RiPlayLargeLine, RiShieldCheckLine, RiTableLine } from '@remixicon/react'
 import { SyncType } from '@tamery/shared/enums/sync-type'
-import { getOS } from '@tamery/shared/utils/os'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
-import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { ThemeToggle } from '@tamery/ui/components/custom/theme-toggle'
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogTitle, DialogTrigger } from '@tamery/ui/components/dialog'
-import { Field, FieldLabel } from '@tamery/ui/components/field'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
-import { Separator } from '@tamery/ui/components/separator'
-import { Textarea } from '@tamery/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
-import { useMutation } from '@tanstack/react-query'
 import { Link, useLocation, useMatches, useSearch } from '@tanstack/react-router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useSubscription } from 'seitu/react'
-import { toast } from 'sonner'
 import { useCollections } from '~/entities/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { UserButton } from '~/entities/user/components'
-import { orpc } from '~/lib/orpc'
-import { appStore } from '~/store'
 import { Route } from '../$resourceId'
-
-const os = getOS(navigator.userAgent)
 
 function baseClasses(isActive = false) {
   return cn(
@@ -38,75 +24,6 @@ function baseClasses(isActive = false) {
       border-primary/20 bg-primary/10 text-primary
       hover:bg-primary/20
     `,
-  )
-}
-
-function SupportButton() {
-  const [open, setOpen] = useState(false)
-  const [message, setMessage] = useState('')
-
-  const { mutate: sendSupport, isPending: loading } = useMutation(orpc.contact.mutationOptions({
-    onSuccess: () => {
-      toast.success('Support message sent successfully! We will get back to you as soon as possible.')
-      setOpen(false)
-      setMessage('')
-    },
-    onError: (err) => {
-      console.error(err)
-      toast.error('Failed to send message. Please try again later.')
-    },
-  }))
-
-  function handleSubmit(e: React.SubmitEvent) {
-    e.preventDefault()
-    sendSupport({ message })
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <DialogTrigger render={<Button size="icon" variant="ghost" />}>
-            <RiMessageLine className="size-4" />
-          </DialogTrigger>
-        </TooltipTrigger>
-        <TooltipContent side="right">Support</TooltipContent>
-      </Tooltip>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Contact Support</DialogTitle>
-          <DialogDescription>
-            Have a question, suggestion, or need assistance?
-            We're here to listen!
-          </DialogDescription>
-        </DialogHeader>
-        <DialogPanel>
-          <form onSubmit={handleSubmit}>
-            <Field>
-              <FieldLabel htmlFor="support-message">Message</FieldLabel>
-              <Textarea
-                id="support-message"
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                required
-                placeholder="Type any message you'd like to send us"
-                className="min-h-48"
-              />
-            </Field>
-          </form>
-        </DialogPanel>
-        <DialogFooter>
-          <DialogClose render={<Button type="button" variant="outline" />}>
-            Cancel
-          </DialogClose>
-          <Button type="submit" disabled={loading || !message}>
-            <LoadingContent loading={loading}>
-              Send
-            </LoadingContent>
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   )
 }
 
@@ -161,7 +78,7 @@ function MainLinks() {
   return (
     <>
       <Tooltip>
-        <TooltipTrigger asChild>
+        <TooltipTrigger render={(
           <Link
             to="/connection/$resourceId/query"
             params={{ resourceId: connectionResource.id }}
@@ -169,47 +86,51 @@ function MainLinks() {
               ...(lastOpenedChatId ? { chatId: lastOpenedChatId } : {}),
             }}
             className={baseClasses(isActiveSql)}
-          >
-            <RiPlayLargeLine className="size-4" />
-          </Link>
+          />
+        )}
+        >
+          <RiPlayLargeLine className="size-4" />
         </TooltipTrigger>
         <TooltipContent side="right">SQL Runner</TooltipContent>
       </Tooltip>
       <Tooltip>
-        <TooltipTrigger asChild>
+        <TooltipTrigger render={(
           <Link
             className={baseClasses(isActiveTables)}
             {...route}
             onClick={() => {
               onTablesClick()
             }}
-          >
-            <RiTableLine className="size-4" />
-          </Link>
+          />
+        )}
+        >
+          <RiTableLine className="size-4" />
         </TooltipTrigger>
         <TooltipContent side="right">Tables</TooltipContent>
       </Tooltip>
       <Tooltip>
-        <TooltipTrigger asChild>
+        <TooltipTrigger render={(
           <Link
             to="/connection/$resourceId/definitions"
             params={{ resourceId: connectionResource.id }}
             className={baseClasses(isActiveDefinitions)}
-          >
-            <RiShieldCheckLine className="size-4" />
-          </Link>
+          />
+        )}
+        >
+          <RiShieldCheckLine className="size-4" />
         </TooltipTrigger>
         <TooltipContent side="right">Definitions</TooltipContent>
       </Tooltip>
       <Tooltip>
-        <TooltipTrigger asChild>
+        <TooltipTrigger render={(
           <Link
             to="/connection/$resourceId/visualizer"
             params={{ resourceId: connectionResource.id }}
             className={baseClasses(isActiveVisualizer)}
-          >
-            <RiNodeTree className="size-4" />
-          </Link>
+          />
+        )}
+        >
+          <RiNodeTree className="size-4" />
         </TooltipTrigger>
         <TooltipContent side="right">Visualizer</TooltipContent>
       </Tooltip>
@@ -235,15 +156,16 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
     <div className={cn('flex flex-col items-center', className)} {...props}>
       <div className="flex flex-col p-4 pb-0">
         <Tooltip>
-          <TooltipTrigger asChild>
+          <TooltipTrigger render={(
             <Link
               to="/"
               className="p-2"
-            >
-              <AppLogo className="size-6 text-primary" />
-            </Link>
+            />
+          )}
+          >
+            <AppLogo className="size-6 text-primary" />
           </TooltipTrigger>
-          <TooltipContent side="right">Dashboard</TooltipContent>
+          <TooltipContent side="right">Home</TooltipContent>
         </Tooltip>
       </div>
       <ScrollArea className="relative flex flex-1 flex-col items-center gap-2">
@@ -256,62 +178,32 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
       <div className="flex flex-col items-center p-4 pt-0">
         {canOpenWeb && (
           <Tooltip>
-            <TooltipTrigger asChild>
+            <TooltipTrigger render={(
               <Button
                 size="icon"
                 variant="ghost"
                 onClick={() => window.open(import.meta.env.VITE_PUBLIC_WEB_URL + location.href)}
-              >
-                <RiGlobalLine className="size-4" />
-              </Button>
+              />
+            )}
+            >
+              <RiGlobalLine className="size-4" />
             </TooltipTrigger>
             <TooltipContent side="right">Open this connection in the web app</TooltipContent>
           </Tooltip>
         )}
         <Tooltip>
-          <TooltipTrigger asChild>
+          <TooltipTrigger render={(
             <Button
               size="icon"
               variant="ghost"
               onClick={() => store.set(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
-            >
-              <RiFileListLine className="size-4" />
-            </Button>
+            />
+          )}
+          >
+            <RiFileListLine className="size-4" />
           </TooltipTrigger>
           <TooltipContent side="right">Query Logger</TooltipContent>
         </Tooltip>
-        <Separator className="my-4" />
-        <SupportButton />
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => appStore.set(state => ({ ...state, isActionCenterOpen: true } satisfies typeof state))}
-            >
-              <RiCommandLine className="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="right">
-            {os?.type === 'macos' ? '⌘' : 'Ctrl'}
-            P
-          </TooltipContent>
-        </Tooltip>
-        <ThemeToggle render={<Button size="icon" variant="ghost" />}>
-          <RiSunLine className={`
-            size-4
-            dark:hidden
-          `}
-          />
-          <RiMoonLine className={`
-            hidden size-4
-            dark:block
-          `}
-          />
-        </ThemeToggle>
-        <div className="mt-2">
-          <UserButton />
-        </div>
       </div>
     </div>
   )

@@ -6,11 +6,10 @@ import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
   Drawer,
   DrawerClose,
+  DrawerContent,
   DrawerDescription,
   DrawerFooter,
   DrawerHeader,
-  DrawerPanel,
-  DrawerPopup,
   DrawerTitle,
 } from '@tamery/ui/components/drawer'
 import {
@@ -108,13 +107,8 @@ export function DraftsReviewDrawer({
   }
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange} position="right">
-      <DrawerPopup
-        showCloseButton
-        variant="inset"
-        position="right"
-        className="max-w-2xl"
-      >
+    <Drawer open={open} onOpenChange={onOpenChange} direction="right">
+      <DrawerContent className="max-w-2xl">
         <DrawerHeader>
           <DrawerTitle>Review changes</DrawerTitle>
           <DrawerDescription>
@@ -132,7 +126,7 @@ export function DraftsReviewDrawer({
             </span>
           </DrawerDescription>
         </DrawerHeader>
-        <DrawerPanel>
+        <div className="flex-1 overflow-auto px-4">
           {rowsEntries.length === 0
             ? (
                 <div className="
@@ -161,11 +155,13 @@ export function DraftsReviewDrawer({
                           <FrameTitle className="flex gap-1">
                             {!!errors.length && (
                               <Tooltip>
-                                <TooltipTrigger asChild>
+                                <TooltipTrigger render={(
                                   <RiAlertLine className="
                                     mt-1 size-3 text-destructive
                                   "
                                   />
+                                )}
+                                >
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-lg">
                                   {errors.map(error => (
@@ -201,15 +197,16 @@ export function DraftsReviewDrawer({
                             ))}
                           </div>
                           <Tooltip>
-                            <TooltipTrigger asChild>
+                            <TooltipTrigger render={(
                               <Button
                                 variant="ghost"
                                 size="icon-xs"
                                 onClick={() => removeRow(primaryKeys)}
                                 disabled={isSaving}
-                              >
-                                <RiArrowGoBackLine />
-                              </Button>
+                              />
+                            )}
+                            >
+                              <RiArrowGoBackLine />
                             </TooltipTrigger>
                             <TooltipContent>Discard row</TooltipContent>
                           </Tooltip>
@@ -259,16 +256,17 @@ export function DraftsReviewDrawer({
                                     </ValueCell>
                                   </div>
                                   <Tooltip>
-                                    <TooltipTrigger asChild>
+                                    <TooltipTrigger render={(
                                       <Button
                                         variant="ghost"
-                                        size="icon-2xs"
+                                        size="icon-xs"
                                         onClick={() => removeDraft(primaryKeys, draft.columnId)}
                                         disabled={isSaving}
                                         className="mt-6 shrink-0"
-                                      >
-                                        <RiArrowGoBackLine />
-                                      </Button>
+                                      />
+                                    )}
+                                    >
+                                      <RiArrowGoBackLine />
                                     </TooltipTrigger>
                                     <TooltipContent>Discard change</TooltipContent>
                                   </Tooltip>
@@ -282,7 +280,7 @@ export function DraftsReviewDrawer({
                   })}
                 </div>
               )}
-        </DrawerPanel>
+        </div>
         <DrawerFooter>
           <Button
             variant="outline"
@@ -293,9 +291,7 @@ export function DraftsReviewDrawer({
             <RiArrowGoBackLine />
             Discard all
           </Button>
-          <DrawerClose render={<Button variant="outline" />}>
-            Close
-          </DrawerClose>
+          <DrawerClose asChild><Button variant="outline">Close</Button></DrawerClose>
           <Button
             onClick={onSave}
             disabled={isSaving || drafts.length === 0}
@@ -306,7 +302,7 @@ export function DraftsReviewDrawer({
             </LoadingContent>
           </Button>
         </DrawerFooter>
-      </DrawerPopup>
+      </DrawerContent>
     </Drawer>
   )
 }

@@ -31,11 +31,13 @@ export function Sidebar() {
           <div className="flex items-center gap-4">
             {!CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES.includes(connection.type) && (
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger render={(
                   <Switch
                     checked={showSystem}
                     onCheckedChange={value => store.set(state => ({ ...state, showSystem: value } satisfies typeof state))}
                   />
+                )}
+                >
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
                   Show system tables
@@ -43,13 +45,15 @@ export function Sidebar() {
               </Tooltip>
             )}
             <Tooltip>
-              <TooltipTrigger asChild>
+              <TooltipTrigger render={(
                 <RefreshButton
                   variant="outline"
                   size="icon"
                   onClick={() => refetchTablesAndSchemas()}
                   refreshing={isRefreshingTablesAndSchemas}
                 />
+              )}
+              >
               </TooltipTrigger>
               <TooltipContent side="right">
                 Refresh tables and schemas list

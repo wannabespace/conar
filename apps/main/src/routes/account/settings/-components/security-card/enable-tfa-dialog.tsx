@@ -6,7 +6,6 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogPanel,
   DialogTitle,
   DialogTrigger,
 } from '@tamery/ui/components/dialog'
@@ -90,7 +89,7 @@ export function EnableTfaDialog({ open, onOpenChange }: {
             Enter your password to continue.
           </DialogDescription>
         </DialogHeader>
-        <DialogPanel className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="enable-password">
             Password
           </Label>
@@ -103,7 +102,7 @@ export function EnableTfaDialog({ open, onOpenChange }: {
             autoComplete="current-password"
             autoFocus
           />
-        </DialogPanel>
+        </div>
         <DialogFooter>
           <Dialog open={setupOpen} onOpenChange={open => !open && handleClose()}>
             <DialogTrigger
@@ -134,7 +133,7 @@ export function EnableTfaDialog({ open, onOpenChange }: {
                   Scan this QR Code with your authenticator app.
                 </DialogDescription>
               </DialogHeader>
-              <DialogPanel className="flex flex-col items-center gap-4">
+              <div className="flex flex-col items-center gap-4">
                 <div className="rounded-lg bg-white p-4">
                   {!!totpURI && <QRCode value={totpURI} size={176} />}
                 </div>
@@ -145,7 +144,7 @@ export function EnableTfaDialog({ open, onOpenChange }: {
                   onComplete={value => verifyTotp(value)}
                   disabled={isVerifyTotpPending}
                 />
-              </DialogPanel>
+              </div>
             </DialogContent>
           </Dialog>
         </DialogFooter>

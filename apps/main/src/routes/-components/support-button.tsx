@@ -1,7 +1,7 @@
 import { RiMessageLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogTitle, DialogTrigger } from '@tamery/ui/components/dialog'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@tamery/ui/components/dialog'
 import { Field, FieldLabel } from '@tamery/ui/components/field'
 import { Textarea } from '@tamery/ui/components/textarea'
 import { useMutation } from '@tanstack/react-query'
@@ -45,7 +45,7 @@ export function SupportButton() {
             We're here to listen!
           </DialogDescription>
         </DialogHeader>
-        <DialogPanel>
+        <div>
           <form onSubmit={handleSubmit} className="space-y-2">
             <Field>
               <FieldLabel htmlFor="support-message">Message</FieldLabel>
@@ -59,7 +59,7 @@ export function SupportButton() {
               />
             </Field>
           </form>
-        </DialogPanel>
+        </div>
         <DialogFooter>
           <DialogClose render={<Button type="button" variant="outline" />}>
             Cancel

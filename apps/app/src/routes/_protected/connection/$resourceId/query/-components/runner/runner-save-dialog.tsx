@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
-  DialogPanel,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
 import { Input } from '@tamery/ui/components/input'
@@ -61,7 +60,7 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
             Save Query
           </DialogTitle>
         </DialogHeader>
-        <DialogPanel className="space-y-4">
+        <div className="space-y-4">
           <Alert>
             <AlertDescription>
               Saved queries are stored for this database and can be quickly accessed and run from the "Saved queries" panel.
@@ -83,7 +82,7 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
               }
             }}
           />
-        </DialogPanel>
+        </div>
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>
             Cancel

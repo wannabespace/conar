@@ -13,10 +13,8 @@ export function HeaderActionsFilters() {
   return (
     <Popover open={isFiltersOpened} onOpenChange={setIsFiltersOpened}>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <PopoverTrigger render={<Button size="icon" variant="outline" />}>
-            <RiFilterLine />
-          </PopoverTrigger>
+        <TooltipTrigger render={<PopoverTrigger render={<Button size="icon" variant="outline" />} />}>
+          <RiFilterLine />
         </TooltipTrigger>
         <TooltipContent side="top">
           Add new filter

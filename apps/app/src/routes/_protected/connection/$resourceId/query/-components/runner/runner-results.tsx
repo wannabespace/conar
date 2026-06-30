@@ -1,6 +1,5 @@
 import { RiChatAiLine, RiStopLine, RiVipCrownLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
-import { ScrollArea } from '@tamery/ui/components/scroll-area'
 import { Spinner } from '@tamery/ui/components/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@tamery/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
@@ -47,7 +46,10 @@ export function RunnerResults() {
   if (results && results.length > 0) {
     return (
       <Tabs defaultValue="table-0" className="size-full gap-0">
-        <ScrollArea className="h-8 w-full min-w-0 shrink-0" scrollFade>
+        <div className="
+          h-8 w-full min-w-0 shrink-0 scroll-fade-x overflow-x-auto
+        "
+        >
           <TabsList className="w-max max-w-none rounded-none bg-muted/50">
             {results.map(({ query, error }, index) => (
               <TabsTrigger
@@ -57,15 +59,16 @@ export function RunnerResults() {
                 className="h-8"
               >
                 <Tooltip>
-                  <TooltipTrigger asChild>
+                  <TooltipTrigger render={(
                     <span className={cn(`
                       flex w-full items-center justify-center gap-1
                     `, error && `text-destructive`)}
-                    >
-                      Result
-                      {' '}
-                      {results.length > 1 ? index + 1 : ''}
-                    </span>
+                    />
+                  )}
+                  >
+                    Result
+                    {' '}
+                    {results.length > 1 ? index + 1 : ''}
                   </TooltipTrigger>
                   <TooltipContent sideOffset={8} className="w-lg p-0 pl-2">
                     <Monaco
@@ -85,7 +88,7 @@ export function RunnerResults() {
               </TabsTrigger>
             ))}
           </TabsList>
-        </ScrollArea>
+        </div>
         {results.map(({ data, error, startLineNumber, endLineNumber, duration }, index) => (
           <TabsContent
             key={`result-${data?.length ?? 'error'}-${startLineNumber}`}

@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
-  DialogPanel,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
 import { Input } from '@tamery/ui/components/input'
@@ -80,7 +79,7 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
             Rename Column
           </DialogTitle>
         </DialogHeader>
-        <DialogPanel className="space-y-4">
+        <div className="space-y-4">
           <Alert>
             <RiInformationLine className="size-5 text-blue-500" />
             <AlertTitle>
@@ -112,7 +111,7 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
               }}
             />
           </div>
-        </DialogPanel>
+        </div>
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>
             Cancel

@@ -39,7 +39,6 @@ function RouteComponent() {
         Releases
       </h1>
       <Accordion
-        type="multiple"
         value={expandedReleases}
         onValueChange={setExpandedReleases}
         className="space-y-6"

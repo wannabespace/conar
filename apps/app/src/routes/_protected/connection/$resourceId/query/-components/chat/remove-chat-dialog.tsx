@@ -1,6 +1,5 @@
 import type { Chat } from '~/entities/chat/sync'
-import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@tamery/ui/components/alert-dialog'
-import { Button } from '@tamery/ui/components/button'
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@tamery/ui/components/alert-dialog'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { useCollections } from '~/entities/collections'
@@ -65,10 +64,10 @@ export function RemoveChatDialog({ ref }: RemoveChatDialogProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-          <AlertDialogClose render={<Button variant="destructive" />} onClick={remove}>
+          <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
+          <AlertDialogCancel variant="destructive" onClick={remove}>
             Delete
-          </AlertDialogClose>
+          </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

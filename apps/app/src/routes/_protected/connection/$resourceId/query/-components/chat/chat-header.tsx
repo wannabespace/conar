@@ -184,7 +184,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                                   )}
                                 </span>
                                 <Tooltip>
-                                  <TooltipTrigger asChild>
+                                  <TooltipTrigger render={(
                                     <Button
                                       variant="ghost"
                                       size="icon-xs"
@@ -198,9 +198,10 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                                         e.stopPropagation()
                                         removeChat(chat)
                                       }}
-                                    >
-                                      <RiDeleteBin7Line className="size-3.5" />
-                                    </Button>
+                                    />
+                                  )}
+                                  >
+                                    <RiDeleteBin7Line className="size-3.5" />
                                   </TooltipTrigger>
                                   <TooltipContent>Delete Chat</TooltipContent>
                                 </Tooltip>

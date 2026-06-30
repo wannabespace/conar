@@ -160,7 +160,7 @@ export function ExportData({
 }: {
   filename: string
   getData: ({ limit, filters }: { limit?: (typeof EXPORT_LIMITS)[number], filters?: ActiveFilter[] }) => Promise<Record<string, unknown>[]>
-  trigger: (props: { isExporting: boolean }) => React.ReactNode
+  trigger: (props: { isExporting: boolean }) => React.ReactElement
   selected?: Record<string, unknown>[]
 }) {
   const { mutate: startExport, isPending } = useMutation({
@@ -180,9 +180,9 @@ export function ExportData({
   return (
     <Tooltip>
       <DropdownMenu>
-        <DropdownMenuTrigger render={<TooltipTrigger asChild />}>
-          {trigger({ isExporting: isPending })}
-        </DropdownMenuTrigger>
+        <DropdownMenuTrigger
+          render={<TooltipTrigger render={trigger({ isExporting: isPending })} />}
+        />
         <DropdownMenuContent align="end">
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>

@@ -1,7 +1,7 @@
 import type { connectionResourceType } from '~/entities/connection/store'
 import type { FileRoutesById } from '~/routeTree.gen'
 import { title } from '@tamery/shared/utils/title'
-import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@tamery/ui/components/resizable'
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@tamery/ui/components/resizable'
 import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
@@ -113,7 +113,7 @@ function ResourcePage() {
           </ResizablePanel>
           {loggerOpened && (
             <>
-              <ResizableSeparator className="h-1" />
+              <ResizableHandle className="h-1" />
               <ResizablePanel
                 defaultSize="30%"
                 minSize="10%"

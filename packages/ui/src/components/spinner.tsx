@@ -1,17 +1,17 @@
-import type * as React from 'react'
-import { RiLoader4Line } from '@remixicon/react'
+import type { ComponentProps } from 'react'
+import { RiLoaderLine } from '@remixicon/react'
 import { cn } from '@tamery/ui/lib/utils'
 
-export function Spinner({
-  className,
-  ...props
-}: React.ComponentProps<typeof RiLoader4Line>): React.ReactElement {
+function Spinner({ className, ...props }: ComponentProps<typeof RiLoaderLine>) {
   return (
-    <RiLoader4Line
-      aria-label="Loading"
-      className={cn('animate-spin', className)}
+    <RiLoaderLine
+      data-slot="spinner"
       role="status"
+      aria-label="Loading"
+      className={cn(`size-4 animate-spin`, className)}
       {...props}
     />
   )
 }
+
+export { Spinner }

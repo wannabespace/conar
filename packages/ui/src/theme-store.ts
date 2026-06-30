@@ -32,13 +32,13 @@ export function useResolvedTheme() {
   return useSubscription(resolvedThemeComputed)
 }
 
-function toggleTheme() {
+function applyTheme(resolved: ResolvedTheme) {
   const root = window.document.documentElement
-  const resolved = resolvedThemeComputed.get()
 
   root.classList.toggle('dark', resolved === 'dark')
   root.classList.toggle('light', resolved === 'light')
 }
 
-mediaQuery.subscribe(toggleTheme)
-themeStore.subscribe(toggleTheme)
+// Subscribe to the computed directly so it stays hot (its cache invalidates
+// only while it has subscribers). Fires immediately to sync on load.
+resolvedThemeComputed.subscribe(applyTheme, { immediate: true })

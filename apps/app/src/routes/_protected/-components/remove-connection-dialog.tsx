@@ -1,6 +1,5 @@
 import type { Connection } from '~/entities/connection/core'
-import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@tamery/ui/components/alert-dialog'
-import { Button } from '@tamery/ui/components/button'
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@tamery/ui/components/alert-dialog'
 import { eq, queryOnce } from '@tanstack/react-db'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
@@ -67,13 +66,13 @@ export function RemoveConnectionDialog({ ref }: RemoveConnectionDialogProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-          <AlertDialogClose
-            render={<Button variant="destructive" />}
+          <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
+          <AlertDialogCancel
+            variant="destructive"
             onClick={remove}
           >
             Remove
-          </AlertDialogClose>
+          </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

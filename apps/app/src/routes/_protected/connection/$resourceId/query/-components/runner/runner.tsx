@@ -7,7 +7,7 @@ import { CardHeader, CardTitle } from '@tamery/ui/components/card'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
 import { KbdCtrlEnter, KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
-import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@tamery/ui/components/resizable'
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@tamery/ui/components/resizable'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { useRef, useState } from 'react'
@@ -228,7 +228,7 @@ export function Runner() {
         </ResizablePanel>
         {resultsVisible && (
           <>
-            <ResizableSeparator withHandle className="bg-border" />
+            <ResizableHandle withHandle className="bg-border" />
             <ResizablePanel
               minSize="20%"
               defaultSize="30%"

@@ -1,8 +1,8 @@
 import { RiDeviceLine, RiLogoutCircleLine } from '@remixicon/react'
-import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@tamery/ui/components/alert-dialog'
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@tamery/ui/components/alert-dialog'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from '@tamery/ui/components/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tamery/ui/components/card'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -97,9 +97,9 @@ function SessionItem({ userAgent, ipAddress, token, currentToken, refetchSession
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogClose render={<Button variant="outline" />}>
+              <AlertDialogCancel variant="outline" size="default">
                 Cancel
-              </AlertDialogClose>
+              </AlertDialogCancel>
               <Button
                 variant="destructive"
                 disabled={revokingSession}
@@ -159,7 +159,7 @@ export function SessionsCard() {
           Manage devices where you're signed in. Revoking a session signs that device out.
         </CardDescription>
       </CardHeader>
-      <CardPanel className="space-y-2">
+      <CardContent className="space-y-2">
         {sessionsPending
           ? (
               <>
@@ -200,9 +200,9 @@ export function SessionsCard() {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogClose render={<Button variant="outline" />}>
+                <AlertDialogCancel variant="outline" size="default">
                   Cancel
-                </AlertDialogClose>
+                </AlertDialogCancel>
                 <Button
                   variant="destructive"
                   disabled={revokingOthers}
@@ -216,7 +216,7 @@ export function SessionsCard() {
             </AlertDialogContent>
           </AlertDialog>
         )}
-      </CardPanel>
+      </CardContent>
     </Card>
   )
 }

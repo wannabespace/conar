@@ -4,9 +4,8 @@ import { Button } from '@tamery/ui/components/button'
 import { Checkbox } from '@tamery/ui/components/checkbox'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogTitle } from '@tamery/ui/components/dialog'
-import { Field, FieldLabel } from '@tamery/ui/components/field'
-import { Fieldset } from '@tamery/ui/components/fieldset'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@tamery/ui/components/dialog'
+import { Field, FieldLabel, FieldSet } from '@tamery/ui/components/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@tamery/ui/components/input-group'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
@@ -93,7 +92,7 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
               Name it so you can tell keys apart later, and choose what this key is allowed to do.
             </DialogDescription>
           </DialogHeader>
-          <DialogPanel>
+          <div>
             <form
               id="create-api-key-form"
               className="space-y-4"
@@ -102,7 +101,7 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
                 form.handleSubmit()
               }}
             >
-              <Fieldset className="flex w-full flex-col gap-6">
+              <FieldSet className="flex w-full flex-col gap-6">
                 <form.AppField
                   name="name"
                   validators={{
@@ -172,9 +171,9 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
                     </Field>
                   )}
                 </form.AppField>
-              </Fieldset>
+              </FieldSet>
             </form>
-          </DialogPanel>
+          </div>
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>
               Cancel
@@ -206,7 +205,7 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
               This key is shown only once. Copy and store it safely.
             </DialogDescription>
           </DialogHeader>
-          <DialogPanel>
+          <div>
             {createdKey && (
               <InputGroup className="font-mono text-xs shadow-none">
                 <InputGroupInput
@@ -225,7 +224,7 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
                 </InputGroupAddon>
               </InputGroup>
             )}
-          </DialogPanel>
+          </div>
           <DialogFooter>
             <Button type="button" onClick={() => setRevealKeyDialogOpen(false)}>
               Done

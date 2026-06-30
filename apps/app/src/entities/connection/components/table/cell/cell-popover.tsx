@@ -2,7 +2,7 @@ import type { editor } from 'monaco-editor'
 import type { Dispatch, SetStateAction } from 'react'
 import { RiCheckLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
-import { Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput, ComboboxEmpty, ComboboxItem, ComboboxList, ComboboxPopup, ComboboxValue } from '@tamery/ui/components/combobox'
+import { Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput, ComboboxContent, ComboboxEmpty, ComboboxItem, ComboboxList, ComboboxValue } from '@tamery/ui/components/combobox'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
@@ -100,7 +100,7 @@ export function CellPopoverContent({
                 placeholder={selectedValues.length > 0 ? undefined : 'Select values...'}
               />
             </ComboboxChips>
-            <ComboboxPopup side="top">
+            <ComboboxContent side="top">
               <ComboboxEmpty>No values found.</ComboboxEmpty>
               <ComboboxList>
                 {item => (
@@ -109,7 +109,7 @@ export function CellPopoverContent({
                   </ComboboxItem>
                 )}
               </ComboboxList>
-            </ComboboxPopup>
+            </ComboboxContent>
           </Combobox>
         </div>
       )
@@ -224,22 +224,23 @@ export function CellPopoverContent({
         <div className="flex items-center gap-1">
           {isRaw && (
             <Tooltip>
-              <TooltipTrigger asChild>
+              <TooltipTrigger render={(
                 <Button
                   variant="outline"
                   size="icon-xs"
                   onClick={() => setIsBig(prev => !prev)}
-                >
-                  {isBig
-                    ? <RiCollapseDiagonal2Line className="size-3" />
-                    : <RiExpandDiagonal2Line className="size-3" />}
-                </Button>
+                />
+              )}
+              >
+                {isBig
+                  ? <RiCollapseDiagonal2Line className="size-3" />
+                  : <RiExpandDiagonal2Line className="size-3" />}
               </TooltipTrigger>
               <TooltipContent side="bottom">Toggle size</TooltipContent>
             </Tooltip>
           )}
           <Tooltip>
-            <TooltipTrigger asChild>
+            <TooltipTrigger render={(
               <CopyButton
                 size="icon-xs"
                 variant="outline"
@@ -251,19 +252,22 @@ export function CellPopoverContent({
                 copyIcon={<RiFileCopyLine className="size-3" />}
                 successIcon={<RiCheckLine className="size-3 text-success" />}
               />
+            )}
+            >
             </TooltipTrigger>
             <TooltipContent side="bottom">Copy value</TooltipContent>
           </Tooltip>
           {!!uiRender && (
             <Tooltip>
-              <TooltipTrigger asChild>
+              <TooltipTrigger render={(
                 <Button
                   variant="outline"
                   size="xs"
                   onClick={() => setIsRaw(prev => !prev)}
-                >
-                  Raw
-                </Button>
+                />
+              )}
+              >
+                Raw
               </TooltipTrigger>
               <TooltipContent side="bottom">{isRaw ? 'Edit value' : 'Edit raw value'}</TooltipContent>
             </Tooltip>

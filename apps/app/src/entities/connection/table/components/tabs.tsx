@@ -34,7 +34,7 @@ const os = getOS(navigator.userAgent)
 function CloseButton({ onClick }: { onClick: ComponentProps<'svg'>['onClick'] }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
+      <TooltipTrigger render={(
         <RiCloseLine
           className={`
             size-3.5 opacity-0
@@ -43,6 +43,8 @@ function CloseButton({ onClick }: { onClick: ComponentProps<'svg'>['onClick'] })
           `}
           onClick={onClick}
         />
+      )}
+      >
       </TooltipTrigger>
       <TooltipContent side="bottom" sideOffset={12}>
         Close tab (

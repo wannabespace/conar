@@ -5,7 +5,7 @@ import type { SaveStatus } from './cell-context'
 import type { Column, ColumnHandlers } from './utils'
 import { RiArrowLeftDownLine, RiArrowRightUpLine } from '@remixicon/react'
 import { sleep } from '@tamery/shared/utils/helpers'
-import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@tamery/ui/components/alert-dialog'
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@tamery/ui/components/alert-dialog'
 import { Button } from '@tamery/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
@@ -51,8 +51,8 @@ function SetNullAlertDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-          <AlertDialogClose render={<Button variant="warning" />} onClick={setNull} disabled={value === null}>Set to null</AlertDialogClose>
+          <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
+          <AlertDialogCancel variant="warning" onClick={setNull} disabled={value === null}>Set to null</AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -232,7 +232,7 @@ export function TableCell({
                 onOpenChange={setIsForeignOpen}
               >
                 <Tooltip>
-                  <TooltipTrigger asChild>
+                  <TooltipTrigger render={(
                     <PopoverTrigger render={(
                       <ForeignButton
                         onDoubleClick={e => e.stopPropagation()}
@@ -246,6 +246,8 @@ export function TableCell({
                       />
                     )}
                     />
+                  )}
+                  >
                   </TooltipTrigger>
                   <TooltipContent side="right">
                     See foreign record
@@ -274,7 +276,7 @@ export function TableCell({
                 onOpenChange={setIsReferencesOpen}
               >
                 <Tooltip>
-                  <TooltipTrigger asChild>
+                  <TooltipTrigger render={(
                     <PopoverTrigger
                       render={(
                         <ReferenceButton
@@ -288,9 +290,10 @@ export function TableCell({
                           }}
                         />
                       )}
-                    >
-                      {column.references.length}
-                    </PopoverTrigger>
+                    />
+                  )}
+                  >
+                    {column.references.length}
                   </TooltipTrigger>
                   <TooltipContent side="right">
                     See referenced records from

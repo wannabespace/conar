@@ -141,7 +141,7 @@ export function ActionsCenter() {
             }}
           >
             <RiDashboardLine className="size-4 shrink-0 text-muted-foreground" />
-            Dashboard
+            Home
           </CommandItem>
           <CommandItem
             onSelect={() => {

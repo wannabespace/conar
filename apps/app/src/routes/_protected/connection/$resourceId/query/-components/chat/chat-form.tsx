@@ -15,7 +15,7 @@ import { useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
-import { TipTap } from '~/components/tiptap'
+import { TipTap } from '~/components/tiptap-lazy'
 import { getFilesStore } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 import { orpc } from '~/lib/orpc'
@@ -225,7 +225,7 @@ export function ChatForm() {
         >
           <div className="pointer-events-auto">
             <Button
-              type="button"
+              nativeButton={false}
               size="icon-xs"
               variant="outline"
               render={<label htmlFor="chat-file-upload" aria-label="Attach files" />}
@@ -245,7 +245,7 @@ export function ChatForm() {
           </div>
           <div className="pointer-events-auto flex gap-2">
             <Tooltip>
-              <TooltipTrigger asChild>
+              <TooltipTrigger render={(
                 <Button
                   size="icon-xs"
                   variant="outline"
@@ -255,21 +255,22 @@ export function ChatForm() {
                     prompt: input,
                     chatId: chat.id,
                   })}
+                />
+              )}
+              >
+                <LoadingContent
+                  loading={isEnhancingPrompt}
+                  spinner={<Spinner className="size-3" />}
                 >
-                  <LoadingContent
-                    loading={isEnhancingPrompt}
-                    spinner={<Spinner className="size-3" />}
+                  <ContentSwitch
+                    active={isEnhancingPrompt}
+                    activeContent={(
+                      <RiCheckLine className="size-3 text-success" />
+                    )}
                   >
-                    <ContentSwitch
-                      active={isEnhancingPrompt}
-                      activeContent={(
-                        <RiCheckLine className="size-3 text-success" />
-                      )}
-                    >
-                      <RiMagicLine className="size-3" />
-                    </ContentSwitch>
-                  </LoadingContent>
-                </Button>
+                    <RiMagicLine className="size-3" />
+                  </ContentSwitch>
+                </LoadingContent>
               </TooltipTrigger>
               <TooltipContent side="top">
                 {input.length < 10 ? 'Prompt is too short to enhance' : 'Enhance prompt'}

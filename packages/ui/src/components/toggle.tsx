@@ -1,21 +1,21 @@
 import type { VariantProps } from 'class-variance-authority'
 import { Toggle as TogglePrimitive } from '@base-ui/react/toggle'
+import { toggleVariants } from '@tamery/ui/components/toggle.utils'
 import { cn } from '@tamery/ui/lib/utils'
-import * as React from 'react'
-import { toggleVariants } from './toggle.variants'
 
-export function Toggle<T extends string>({
+function Toggle({
   className,
-  variant,
-  size,
+  variant = 'default',
+  size = 'default',
   ...props
-}: TogglePrimitive.Props<T>
-  & VariantProps<typeof toggleVariants>): React.ReactElement {
+}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>) {
   return (
     <TogglePrimitive
-      className={cn(toggleVariants({ className, size, variant }))}
       data-slot="toggle"
+      className={cn(toggleVariants({ variant, size, className }))}
       {...props}
     />
   )
 }
+
+export { Toggle }

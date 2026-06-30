@@ -145,10 +145,11 @@ function RouteComponent() {
                             {key.createdAt
                               ? (
                                   <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <span className="cursor-default">
-                                        {formatDistanceToNow(new Date(key.createdAt), { addSuffix: true })}
-                                      </span>
+                                    <TooltipTrigger render={(
+                                      <span className="cursor-default" />
+                                    )}
+                                    >
+                                      {formatDistanceToNow(new Date(key.createdAt), { addSuffix: true })}
                                     </TooltipTrigger>
                                     <TooltipContent>
                                       {format(new Date(key.createdAt), 'MMM d, yyyy h:mm a')}

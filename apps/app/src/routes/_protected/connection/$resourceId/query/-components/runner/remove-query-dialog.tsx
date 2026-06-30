@@ -1,6 +1,5 @@
 import type { Query } from '~/entities/query/sync'
-import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@tamery/ui/components/alert-dialog'
-import { Button } from '@tamery/ui/components/button'
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@tamery/ui/components/alert-dialog'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { useCollections } from '~/entities/collections'
@@ -45,13 +44,13 @@ export function RemoveQueryDialog({ ref }: RemoveQueryDialogProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-          <AlertDialogClose
-            render={<Button variant="destructive" />}
+          <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
+          <AlertDialogCancel
+            variant="destructive"
             onClick={removeQuery}
           >
             Remove
-          </AlertDialogClose>
+          </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

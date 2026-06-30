@@ -307,34 +307,36 @@ export function DraftsToolbar({
         </div>
         <Separator orientation="vertical" className="mx-1 h-4" />
         <Tooltip>
-          <TooltipTrigger asChild>
+          <TooltipTrigger render={(
             <Button
               variant="outline"
               size="icon-xs"
               onClick={() => setIsReviewOpen(true)}
               disabled={isSaving || drafts.length === 0}
-            >
-              <RiEyeLine className="size-3.5" />
-            </Button>
+            />
+          )}
+          >
+            <RiEyeLine className="size-3.5" />
           </TooltipTrigger>
           <TooltipContent side="top">Review changes before saving</TooltipContent>
         </Tooltip>
         <Tooltip>
-          <TooltipTrigger asChild>
+          <TooltipTrigger render={(
             <Button
               size="xs"
               onClick={handleSave}
               disabled={isSaving || drafts.length === 0}
-            >
-              <LoadingContent loading={isSaving}>
-                Save
-                <KbdCtrlLetter
-                  userAgent={navigator.userAgent}
-                  letter="S"
-                  className="text-white"
-                />
-              </LoadingContent>
-            </Button>
+            />
+          )}
+          >
+            <LoadingContent loading={isSaving}>
+              Save
+              <KbdCtrlLetter
+                userAgent={navigator.userAgent}
+                letter="S"
+                className="text-white"
+              />
+            </LoadingContent>
           </TooltipTrigger>
           <TooltipContent side="top">Save all unsaved changes atomically in a transaction</TooltipContent>
         </Tooltip>

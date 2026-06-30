@@ -5,6 +5,9 @@
   "exports": {
     "./globals.css": "./src/styles/globals.css",
     "./lib/*": "./src/lib/*.ts",
+    "./components/*.utils": "./src/components/*.utils.ts",
+    "./components/brand/*.utils": "./src/components/brand/*.utils.ts",
+    "./components/*.variants": "./src/components/*.variants.ts",
     "./components/*": "./src/components/*.tsx",
     "./components/tanstack-form": "./src/components/tanstack-form/index.ts",
     "./components/tanstack-form/*": "./src/components/tanstack-form/*",
@@ -18,12 +21,10 @@
   },
   "dependencies": {
     "@base-ui/react": "catalog:",
-    "@radix-ui/react-accordion": "catalog:",
-    "@radix-ui/react-checkbox": "catalog:",
-    "@radix-ui/react-collapsible": "catalog:",
-    "@radix-ui/react-dialog": "catalog:",
-    "@radix-ui/react-tooltip": "catalog:",
+    "@fontsource-variable/geist": "catalog:",
+    "@fontsource-variable/geist-mono": "catalog:",
     "@remixicon/react": "catalog:",
+    "@shadcn/react": "catalog:",
     "@tailwindcss/typography": "catalog:",
     "@tamery/configs": "workspace:*",
     "@tamery/shared": "workspace:*",
@@ -38,18 +39,24 @@
     "class-variance-authority": "catalog:",
     "cmdk": "catalog:",
     "cnfast": "catalog:",
+    "date-fns": "catalog:",
     "facehash": "catalog:",
     "input-otp": "catalog:",
-    "lucide-react": "catalog:",
     "motion": "catalog:",
     "react": "catalog:",
+    "react-day-picker": "catalog:",
     "react-dom": "catalog:",
     "react-resizable-panels": "catalog:",
+    "recharts": "catalog:",
     "seitu": "catalog:",
     "sonner": "catalog:",
     "tailwind-scrollbar": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
-    "uuid": "catalog:"
+    "uuid": "catalog:",
+    "vaul": "catalog:"
+  },
+  "devDependencies": {
+    "shadcn": "catalog:"
   }
 }

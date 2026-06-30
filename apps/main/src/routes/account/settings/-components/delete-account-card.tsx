@@ -1,6 +1,6 @@
 import { RiDeleteBinLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from '@tamery/ui/components/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tamery/ui/components/card'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
   Dialog,
@@ -8,7 +8,6 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogPanel,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
 import { Input } from '@tamery/ui/components/input'
@@ -83,7 +82,7 @@ function DeleteAccountDialog({
             including your subscription, settings, and sessions will be permanently removed.
           </DialogDescription>
         </DialogHeader>
-        <DialogPanel className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
           {hasCredentialAccount && (
             <div className="space-y-2">
               <Label htmlFor="delete-password">Password</Label>
@@ -119,7 +118,7 @@ function DeleteAccountDialog({
               autoFocus={!hasCredentialAccount}
             />
           </div>
-        </DialogPanel>
+        </div>
         <DialogFooter>
           <Button
             variant="outline"
@@ -169,12 +168,12 @@ export function DeleteAccountCard() {
             Permanently remove your account and all associated data.
           </CardDescription>
         </CardHeader>
-        <CardPanel className="space-y-4">
+        <CardContent className="space-y-4">
           <Button variant="destructive" onClick={() => setOpen(true)}>
             <RiDeleteBinLine className="size-4" />
             Delete account
           </Button>
-        </CardPanel>
+        </CardContent>
       </Card>
     </>
   )

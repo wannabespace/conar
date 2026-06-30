@@ -10,7 +10,6 @@ import {
   DialogContent,
   DialogFooter,
   DialogHeader,
-  DialogPanel,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
 import { Input } from '@tamery/ui/components/input'
@@ -98,7 +97,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
             Drop Table
           </DialogTitle>
         </DialogHeader>
-        <DialogPanel className="space-y-4">
+        <div className="space-y-4">
           <Alert variant="destructive">
             <RiAlertLine className="size-5 text-destructive" />
             <AlertTitle>This action cannot be undone.</AlertTitle>
@@ -139,7 +138,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
               </Label>
             </div>
           )}
-        </DialogPanel>
+        </div>
         <DialogFooter>
           <DialogClose
             render={<Button variant="outline" />}

@@ -18,7 +18,7 @@ import { Spinner } from '@tamery/ui/components/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { InfoTable } from '~/components/info-table'
-import { Monaco } from '~/components/monaco'
+import { Monaco } from '~/components/monaco-lazy'
 
 const monacoOptions = {
   readOnly: true,
@@ -187,7 +187,7 @@ const CONTENT: { [K in Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[num
             <div className="flex flex-wrap gap-2">
               {part.output.results.slice(0, 5).map((result: { title: string, url: string, description?: string }) => (
                 <Tooltip key={`${part.toolCallId}-${result.url}`}>
-                  <TooltipTrigger asChild>
+                  <TooltipTrigger render={(
                     <a
                       href={result.url}
                       target="_blank"
@@ -198,19 +198,20 @@ const CONTENT: { [K in Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[num
                         py-0.5 text-xs transition-colors
                         hover:bg-accent/40
                       `}
+                    />
+                  )}
+                  >
+                    <FaviconWithFallback
+                      url={result.url}
+                      className="size-3 shrink-0"
+                    />
+                    <span className={`
+                      truncate font-medium
+                      group-hover:text-primary
+                    `}
                     >
-                      <FaviconWithFallback
-                        url={result.url}
-                        className="size-3 shrink-0"
-                      />
-                      <span className={`
-                        truncate font-medium
-                        group-hover:text-primary
-                      `}
-                      >
-                        {result.title}
-                      </span>
-                    </a>
+                      {result.title}
+                    </span>
                   </TooltipTrigger>
                   <TooltipContent>
                     <div className="max-w-xs">

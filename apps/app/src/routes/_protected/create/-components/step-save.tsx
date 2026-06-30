@@ -58,15 +58,16 @@ export function StepSave({ type, name, connectionString, setName, onRandomName, 
                 onChange={e => setName(e.target.value)}
               />
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger render={(
                   <Button
                     type="button"
                     variant="outline"
                     size="icon"
                     onClick={onRandomName}
-                  >
-                    <RiLoopLeftLine />
-                  </Button>
+                  />
+                )}
+                >
+                  <RiLoopLeftLine />
                 </TooltipTrigger>
                 <TooltipContent sideOffset={8}>
                   Generate a random connection name

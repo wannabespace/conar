@@ -6,7 +6,6 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogPanel,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
 import { Input } from '@tamery/ui/components/input'
@@ -54,7 +53,7 @@ export function DisableTfaDialog({ open, onOpenChange }: {
             Enter your password to turn off two-factor authentication.
           </DialogDescription>
         </DialogHeader>
-        <DialogPanel className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="disable-password">Password</Label>
           <Input
             id="disable-password"
@@ -65,7 +64,7 @@ export function DisableTfaDialog({ open, onOpenChange }: {
             autoComplete="current-password"
             autoFocus
           />
-        </DialogPanel>
+        </div>
         <DialogFooter>
           <Button
             variant="outline"

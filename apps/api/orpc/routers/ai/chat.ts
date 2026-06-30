@@ -9,7 +9,6 @@ import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'a
 import { createRetryableModel } from 'ai-retry/language-model'
 import { type } from 'arktype'
 import { v7 } from 'uuid'
-import { withPosthog } from '~/lib/posthog'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 const model = createRetryableModel({
@@ -117,10 +116,7 @@ export const chat = orpc
       allowSystemInMessages: true,
       stopWhen: stepCountIs(Number.POSITIVE_INFINITY),
       abortSignal: signal,
-      model: withPosthog(model, {
-        chatId: input.id,
-        userId: context.user.id,
-      }),
+      model,
       experimental_transform: smoothStream(),
       tools,
     })

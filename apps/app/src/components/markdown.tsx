@@ -17,7 +17,7 @@ import { marked } from 'marked'
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { Monaco } from './monaco'
+import { Monaco } from './monaco-lazy'
 
 const langsMap = {
   text: 'Text',

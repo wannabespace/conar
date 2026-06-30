@@ -1,4 +1,4 @@
-import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@tamery/ui/components/alert-dialog'
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@tamery/ui/components/alert-dialog'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { useMutation } from '@tanstack/react-query'
@@ -56,9 +56,9 @@ export function RevokeApiKeyDialog({ ref, onRefetch }: RevokeApiKeyDialogProps) 
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogClose render={<Button variant="outline" />}>
+          <AlertDialogCancel variant="outline" size="default">
             Cancel
-          </AlertDialogClose>
+          </AlertDialogCancel>
           <Button
             variant="destructive"
             disabled={isDeleting || !keyId}

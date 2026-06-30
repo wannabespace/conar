@@ -20,13 +20,15 @@ export function DefinitionsHeader({
       </h2>
       <div className="flex items-center gap-2">
         <Tooltip>
-          <TooltipTrigger asChild>
+          <TooltipTrigger render={(
             <RefreshButton
               variant="outline"
               size="icon"
               onClick={onRefresh}
               refreshing={isRefreshing}
             />
+          )}
+          >
           </TooltipTrigger>
           <TooltipContent side="left">
             Refresh
