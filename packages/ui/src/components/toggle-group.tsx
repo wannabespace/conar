@@ -37,7 +37,7 @@ function ToggleGroup({
       data-size={size}
       data-spacing={spacing}
       data-orientation={orientation}
-      style={{ '--gap': spacing } as React.CSSProperties}
+      style={{ '--gap': spacing }}
       className={cn(
         `
           group/toggle-group flex w-fit flex-row items-center

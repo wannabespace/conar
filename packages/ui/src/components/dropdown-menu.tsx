@@ -1,6 +1,5 @@
 import { Menu as MenuPrimitive } from '@base-ui/react/menu'
 import { RiArrowRightSLine, RiCheckLine } from '@remixicon/react'
-
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 

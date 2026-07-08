@@ -1,11 +1,10 @@
 import type { VariantProps } from 'class-variance-authority'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
-import { attachmentMediaVariants, attachmentVariants } from '@tamery/ui/components/attachment.utils'
 import { Button } from '@tamery/ui/components/button'
-
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
+import { attachmentMediaVariants, attachmentVariants } from './attachment.utils'
 
 function Attachment({
   className,
@@ -17,14 +16,12 @@ function Attachment({
   & VariantProps<typeof attachmentVariants> & {
     state?: 'idle' | 'uploading' | 'processing' | 'error' | 'done'
   }) {
-  const resolvedOrientation = orientation ?? 'horizontal'
-
   return (
     <div
       data-slot="attachment"
       data-state={state}
       data-size={size}
-      data-orientation={resolvedOrientation}
+      data-orientation={orientation}
       className={cn(attachmentVariants({ size, orientation }), className)}
       {...props}
     />

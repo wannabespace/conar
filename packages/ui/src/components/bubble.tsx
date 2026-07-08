@@ -1,10 +1,9 @@
 import type { VariantProps } from 'class-variance-authority'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
-import { bubbleReactionsVariants, bubbleVariants } from '@tamery/ui/components/bubble.utils'
 import { cn } from '@tamery/ui/lib/utils'
-
 import * as React from 'react'
+import { bubbleReactionsVariants, bubbleVariants } from './bubble.utils'
 
 function BubbleGroup({ className, ...props }: React.ComponentProps<'div'>) {
   return (

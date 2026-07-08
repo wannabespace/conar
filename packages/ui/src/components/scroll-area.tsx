@@ -1,5 +1,4 @@
 import { ScrollArea as ScrollAreaPrimitive } from '@base-ui/react/scroll-area'
-
 import { cn } from '@tamery/ui/lib/utils'
 
 function ScrollArea({

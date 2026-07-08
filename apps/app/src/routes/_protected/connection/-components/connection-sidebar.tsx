@@ -1,7 +1,6 @@
 import type { LinkProps } from '@tanstack/react-router'
 import { RiFileListLine, RiGlobalLine, RiNodeTree, RiPlayLargeLine, RiShieldCheckLine, RiTableLine } from '@remixicon/react'
 import { SyncType } from '@tamery/shared/enums/sync-type'
-import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
@@ -154,20 +153,6 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
 
   return (
     <div className={cn('flex flex-col items-center', className)} {...props}>
-      <div className="flex flex-col p-4 pb-0">
-        <Tooltip>
-          <TooltipTrigger render={(
-            <Link
-              to="/"
-              className="p-2"
-            />
-          )}
-          >
-            <AppLogo className="size-6 text-primary" />
-          </TooltipTrigger>
-          <TooltipContent side="right">Home</TooltipContent>
-        </Tooltip>
-      </div>
       <ScrollArea className="relative flex flex-1 flex-col items-center gap-2">
         <div className="w-full p-4">
           <div className="flex w-full flex-col">

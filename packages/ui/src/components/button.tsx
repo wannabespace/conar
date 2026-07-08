@@ -1,7 +1,7 @@
 import type { VariantProps } from 'class-variance-authority'
 import { Button as ButtonPrimitive } from '@base-ui/react/button'
-import { buttonVariants } from '@tamery/ui/components/button.utils'
 import { cn } from '@tamery/ui/lib/utils'
+import { buttonVariants } from './button.utils'
 
 function Button({
   className,

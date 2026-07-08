@@ -9,10 +9,6 @@ import './monaco-worker'
 import { toast } from 'sonner'
 import { isSignedIn } from './lib/auth'
 
-if (window.electron) {
-  document.documentElement.classList.add('electron')
-}
-
 if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
   import('react-scan').then(({ scan }) => {
     scan()

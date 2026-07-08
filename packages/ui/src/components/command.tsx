@@ -6,7 +6,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
-
 import {
   InputGroup,
   InputGroupAddon,
@@ -61,9 +60,7 @@ function CommandDialog({
         )}
         showCloseButton={showCloseButton}
       >
-        <Command>
-          {children}
-        </Command>
+        {children}
       </DialogContent>
     </Dialog>
   )

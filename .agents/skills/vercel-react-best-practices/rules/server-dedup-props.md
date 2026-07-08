@@ -25,7 +25,6 @@ RSC→client serialization deduplicates by object reference, not value. Same ref
 <ClientList usernames={usernames} />
 
 // Client: transform there
-'use client'
 const sorted = useMemo(() => [...usernames].sort(), [usernames])
 ```
 

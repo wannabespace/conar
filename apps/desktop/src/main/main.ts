@@ -64,13 +64,6 @@ export function createWindow() {
         height: 40,
       },
     }),
-    // macOS under-window blur. Keep `transparent` false (it disables vibrancy);
-    // the alpha-00 backgroundColor lets the vibrant material show through.
-    ...(isMac && {
-      vibrancy: 'under-window',
-      visualEffectState: 'active',
-      backgroundColor: '#00000000',
-    }),
     webPreferences: {
       sandbox: false,
       preload: path.join(path.dirname(fileURLToPath(import.meta.url)), './preload.mjs'),

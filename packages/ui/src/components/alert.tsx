@@ -1,8 +1,7 @@
 import type { VariantProps } from 'class-variance-authority'
-import { alertVariants } from '@tamery/ui/components/alert.utils'
 import { cn } from '@tamery/ui/lib/utils'
-
 import * as React from 'react'
+import { alertVariants } from './alert.utils'
 
 function Alert({
   className,

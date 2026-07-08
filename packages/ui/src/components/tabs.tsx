@@ -1,7 +1,7 @@
 import type { VariantProps } from 'class-variance-authority'
 import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
-import { tabsListVariants } from '@tamery/ui/components/tabs.utils'
 import { cn } from '@tamery/ui/lib/utils'
+import { tabsListVariants } from './tabs.utils'
 
 function Tabs({
   className,
@@ -101,4 +101,4 @@ function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
   )
 }
 
-export { Tabs, TabsContent, TabsList, TabsTrigger }
+export { Tabs, TabsContent, TabsList, tabsListVariants, TabsTrigger }

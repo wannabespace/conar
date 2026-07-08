@@ -1,13 +1,13 @@
 import type { DayButton, Locale } from 'react-day-picker'
 import { RiArrowDownSLine, RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
-import { buttonVariants } from '@tamery/ui/components/button.utils'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 import {
   DayPicker,
   getDefaultClassNames,
 } from 'react-day-picker'
+import { buttonVariants } from './button.utils'
 
 function Calendar({
   className,

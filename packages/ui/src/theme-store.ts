@@ -17,7 +17,7 @@ export const themeStore = createWebStorageValue({
 
 const mediaQuery = createMediaQuery({ query: '(prefers-color-scheme: dark)' })
 
-export const resolvedThemeComputed = createComputed([themeStore, mediaQuery], ([theme, isDark]) => {
+export const resolvedTheme = createComputed([themeStore, mediaQuery], ([theme, isDark]) => {
   if (theme === 'system') {
     return isDark ? 'dark' : 'light'
   }
@@ -29,16 +29,15 @@ export function useTheme() {
 }
 
 export function useResolvedTheme() {
-  return useSubscription(resolvedThemeComputed)
+  return useSubscription(resolvedTheme)
 }
 
-function applyTheme(resolved: ResolvedTheme) {
+function toggleTheme() {
   const root = window.document.documentElement
+  const resolved = resolvedTheme.get()
 
   root.classList.toggle('dark', resolved === 'dark')
   root.classList.toggle('light', resolved === 'light')
 }
 
-// Subscribe to the computed directly so it stays hot (its cache invalidates
-// only while it has subscribers). Fires immediately to sync on load.
-resolvedThemeComputed.subscribe(applyTheme, { immediate: true })
+resolvedTheme.subscribe(toggleTheme)

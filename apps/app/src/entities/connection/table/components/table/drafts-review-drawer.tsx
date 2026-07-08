@@ -107,7 +107,7 @@ export function DraftsReviewDrawer({
   }
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange} direction="right">
+    <Drawer open={open} onOpenChange={onOpenChange} swipeDirection="right">
       <DrawerContent className="max-w-2xl">
         <DrawerHeader>
           <DrawerTitle>Review changes</DrawerTitle>
@@ -291,7 +291,7 @@ export function DraftsReviewDrawer({
             <RiArrowGoBackLine />
             Discard all
           </Button>
-          <DrawerClose asChild><Button variant="outline">Close</Button></DrawerClose>
+          <DrawerClose render={<Button variant="outline">Close</Button>} />
           <Button
             onClick={onSave}
             disabled={isSaving || drafts.length === 0}

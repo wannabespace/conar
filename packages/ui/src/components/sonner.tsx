@@ -1,32 +1,14 @@
 import { RiCheckboxCircleLine, RiCloseCircleLine, RiErrorWarningLine, RiInformationLine, RiLoaderLine } from '@remixicon/react'
-import { createPortal } from 'react-dom'
 import { Toaster as Sonner } from 'sonner'
-import { useIsMounted } from '../hookas/use-is-mounted'
 import { useTheme } from '../theme-store'
 
 function Toaster() {
   const theme = useTheme()
-  const isMounted = useIsMounted()
 
-  if (!isMounted) {
-    return null
-  }
-
-  return createPortal(
+  return (
     <Sonner
       theme={theme}
       className="toaster group"
-      position="bottom-center"
-      closeButton
-      toastOptions={{
-        classNames: {
-          toast: 'cn-toast',
-        },
-        style: {
-          '--z-index': '100',
-          'zIndex': 'calc(var(--z-index) - var(--index))',
-        },
-      }}
       icons={{
         success: (
           <RiCheckboxCircleLine className="size-4" />
@@ -44,14 +26,20 @@ function Toaster() {
           <RiLoaderLine className="size-4 animate-spin" />
         ),
       }}
-      style={{
-        '--normal-bg': 'var(--popover)',
-        '--normal-text': 'var(--popover-foreground)',
-        '--normal-border': 'var(--border)',
-        '--border-radius': 'var(--radius)',
+      style={
+        {
+          '--normal-bg': 'var(--popover)',
+          '--normal-text': 'var(--popover-foreground)',
+          '--normal-border': 'var(--border)',
+          '--border-radius': 'var(--radius)',
+        }
+      }
+      toastOptions={{
+        classNames: {
+          toast: 'cn-toast',
+        },
       }}
-    />,
-    document.body,
+    />
   )
 }
 

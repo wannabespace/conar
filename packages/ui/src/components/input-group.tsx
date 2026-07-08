@@ -1,11 +1,10 @@
 import type { VariantProps } from 'class-variance-authority'
 import { Button } from '@tamery/ui/components/button'
-
 import { Input } from '@tamery/ui/components/input'
-import { inputGroupAddonVariants, inputGroupButtonVariants } from '@tamery/ui/components/input-group.utils'
 import { Textarea } from '@tamery/ui/components/textarea'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
+import { inputGroupAddonVariants, inputGroupButtonVariants } from './input-group.utils'
 
 function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
   return (

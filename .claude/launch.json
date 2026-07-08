@@ -1,0 +1,52 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "app",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@tamery/app", "exec", "--", "vite", "dev", "--port", "5981"],
+      "port": 5981,
+      "env": {
+        "VITE_PUBLIC_API_URL": "http://localhost:5982",
+        "VITE_PUBLIC_WEB_URL": "http://localhost:5981",
+        "VITE_PUBLIC_MAIN_URL": "http://localhost:5983",
+        "VITE_PUBLIC_PROXY_URL": "http://localhost:5984"
+      }
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@tamery/api", "exec", "--", "bun", "--watch", "run", "./index.ts"],
+      "port": 5982,
+      "env": {
+        "NODE_ENV": "development",
+        "PORT": "5982",
+        "API_URL": "http://localhost:5982",
+        "MAIN_URL": "http://localhost:5983"
+      }
+    },
+    {
+      "name": "main",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@tamery/main", "exec", "--", "vite", "dev", "--port", "5983"],
+      "port": 5983,
+      "env": {
+        "VITE_PUBLIC_API_URL": "http://localhost:5982",
+        "VITE_PUBLIC_WEB_URL": "http://localhost:5981"
+      }
+    },
+    {
+      "name": "proxy",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@tamery/proxy", "exec", "--", "bun", "--watch", "run", "./index.ts"],
+      "port": 5984,
+      "env": {
+        "NODE_ENV": "development",
+        "PORT": "5984",
+        "API_URL": "http://localhost:5982",
+        "MAIN_URL": "http://localhost:5983"
+      }
+    }
+  ],
+  "autoVerify": false
+}

@@ -2,7 +2,7 @@ import type { RefObject } from 'react'
 import { noop } from '@tamery/shared/utils/helpers'
 import { formatXml } from '@tamery/shared/utils/xml'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
-import { resolvedThemeComputed } from '@tamery/ui/theme-store'
+import { resolvedTheme } from '@tamery/ui/theme-store'
 import * as monaco from 'monaco-editor'
 import { vsPlusTheme } from 'monaco-sql-languages'
 import { useEffect, useEffectEvent, useRef } from 'react'
@@ -16,7 +16,7 @@ vsPlusTheme.darkThemeData.colors['editor.background'] = '#1b1b1c'
 monaco.editor.defineTheme('sql-dark', vsPlusTheme.darkThemeData)
 monaco.editor.defineTheme('sql-light', vsPlusTheme.lightThemeData)
 
-resolvedThemeComputed.subscribe((resolvedTheme) => {
+resolvedTheme.subscribe((resolvedTheme) => {
   monaco.editor.setTheme(resolvedTheme === 'dark' ? 'sql-dark' : 'sql-light')
 }, { immediate: true })
 

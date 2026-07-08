@@ -24,6 +24,7 @@
     "@orpc/client": "catalog:",
     "@orpc/server": "catalog:",
     "@orpc/tanstack-query": "catalog:",
+    "@paper-design/shaders-react": "catalog:",
     "@remixicon/react": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@tamery/shared": "workspace:*",

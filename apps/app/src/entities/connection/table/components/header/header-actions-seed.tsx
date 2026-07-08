@@ -278,10 +278,10 @@ export function HeaderActionsSeed({
   const activeCount = columns.filter(c => generators[c.id]?.generatorId && generators[c.id]?.generatorId !== SKIP_GENERATOR).length
 
   return (
-    <Drawer open={open} onOpenChange={handleOpenChange} direction="right">
+    <Drawer open={open} onOpenChange={handleOpenChange} swipeDirection="right">
       <Tooltip>
         <TooltipTrigger render={(
-          <DrawerTrigger asChild>
+          <DrawerTrigger render={(
             <Button
               variant="secondary"
               size="icon"
@@ -289,7 +289,8 @@ export function HeaderActionsSeed({
             >
               <RiSeedlingLine />
             </Button>
-          </DrawerTrigger>
+          )}
+          />
         )}
         />
         <TooltipContent>Seed data</TooltipContent>
@@ -468,7 +469,7 @@ export function HeaderActionsSeed({
               <NumberFieldIncrement />
             </NumberFieldGroup>
           </NumberField>
-          <DrawerClose asChild><Button variant="outline">Cancel</Button></DrawerClose>
+          <DrawerClose render={<Button variant="outline">Cancel</Button>} />
           <Button
             onClick={() => {
               if (hasReachedFreeLimit) {

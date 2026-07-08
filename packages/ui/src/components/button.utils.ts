@@ -20,11 +20,11 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        'default': `
+        default: `
           bg-primary text-primary-foreground
           hover:bg-primary/80
         `,
-        'outline':
+        outline:
           `
             border-border bg-background
             hover:bg-muted hover:text-foreground
@@ -32,19 +32,19 @@ export const buttonVariants = cva(
             dark:bg-transparent
             dark:hover:bg-input/30
           `,
-        'secondary':
+        secondary:
           `
             bg-secondary text-secondary-foreground
             hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)]
             aria-expanded:bg-secondary aria-expanded:text-secondary-foreground
           `,
-        'ghost':
+        ghost:
           `
             hover:bg-muted hover:text-foreground
             aria-expanded:bg-muted aria-expanded:text-foreground
             dark:hover:bg-muted/50
           `,
-        'destructive':
+        destructive:
           `
             bg-destructive/10 text-destructive
             hover:bg-destructive/20
@@ -54,24 +54,7 @@ export const buttonVariants = cva(
             dark:hover:bg-destructive/30
             dark:focus-visible:ring-destructive/40
           `,
-        'destructive-outline':
-          `
-            border-border text-destructive
-            hover:border-destructive/40 hover:bg-destructive/10
-            focus-visible:border-destructive/40
-            focus-visible:ring-destructive/20
-            dark:focus-visible:ring-destructive/40
-          `,
-        'warning':
-          `
-            bg-warning/10 text-warning
-            hover:bg-warning/20
-            focus-visible:border-warning/40 focus-visible:ring-warning/20
-            dark:bg-warning/20
-            dark:hover:bg-warning/30
-            dark:focus-visible:ring-warning/40
-          `,
-        'link': `
+        link: `
           text-primary underline-offset-4
           hover:underline
         `,

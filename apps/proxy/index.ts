@@ -52,6 +52,8 @@ const app = new Hono<{
       const allowedOrigins = [
         'https://tamery.app',
       ]
+      if (nodeEnv === 'development' && origin.startsWith('http://localhost:'))
+        return origin
       return origin.endsWith('.tamery.app') || allowedOrigins.includes(origin) ? origin : null
     },
     credentials: true,

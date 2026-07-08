@@ -57,6 +57,13 @@ export default antfu(
     },
   },
   {
+    // shadcn/base-ui components co-locate variant/hook exports with components
+    files: ['packages/ui/src/components/**/*'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
     plugins: {
       'better-tailwindcss': eslintPluginBetterTailwindcss,
     },
@@ -73,6 +80,7 @@ export default antfu(
             'typography',
             'typography-disabled',
             'cn-input-otp',
+            'dark',
           ],
         },
       ],

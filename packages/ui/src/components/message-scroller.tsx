@@ -149,10 +149,7 @@ export {
   MessageScrollerItem,
   MessageScrollerProvider,
   MessageScrollerViewport,
-  // eslint-disable-next-line react-refresh/only-export-components
   useMessageScroller,
-  // eslint-disable-next-line react-refresh/only-export-components
   useMessageScrollerScrollable,
-  // eslint-disable-next-line react-refresh/only-export-components
   useMessageScrollerVisibility,
 }

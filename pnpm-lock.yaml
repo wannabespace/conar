@@ -90,6 +90,9 @@ catalogs:
     '@orpc/tanstack-query':
       specifier: ^1.14.6
       version: 1.14.6
+    '@paper-design/shaders-react':
+      specifier: ^0.0.76
+      version: 0.0.76
     '@playwright/test':
       specifier: ^1.61.1
       version: 1.61.1
@@ -379,8 +382,8 @@ catalogs:
       specifier: ^14.2.6
       version: 14.2.6
     shadcn:
-      specifier: ^4.12.0
-      version: 4.12.0
+      specifier: ^4.13.0
+      version: 4.13.0
     sonner:
       specifier: ^2.0.7
       version: 2.0.7
@@ -665,6 +668,9 @@ importers:
       '@orpc/tanstack-query':
         specifier: 'catalog:'
         version: 1.14.6(@opentelemetry/api@1.9.1)(@orpc/client@1.14.6(@opentelemetry/api@1.9.1))(@tanstack/query-core@5.101.2)
+      '@paper-design/shaders-react':
+        specifier: 'catalog:'
+        version: 0.0.76(@types/react@19.2.17)(react@19.2.7)
       '@remixicon/react':
         specifier: 'catalog:'
         version: 4.9.0(react@19.2.7)
@@ -1453,7 +1459,7 @@ importers:
     devDependencies:
       shadcn:
         specifier: 'catalog:'
-        version: 4.12.0(typescript@6.0.3)
+        version: 4.13.0(typescript@6.0.3)
 
 packages:
 
@@ -2711,6 +2717,7 @@ packages:
   '@hackylabs/deep-redact@4.0.1':
     resolution: {integrity: sha512-1qn6tQwHqsQ41M/x+hoqiqYfeS6ws7sSlFEqihrMPbJpOCGFfNS4BXpsfmtDXy7xB4RhDm7isDasGKL/dwMTeg==}
     engines: {node: '>=22.18.0'}
+    deprecated: 4.0.1 skips redaction of class instances and Map/Set value types (only plain objects are traversed). Upgrade to 4.0.2, which restores full v3-compatible redaction.
 
   '@henrygd/queue@1.2.0':
     resolution: {integrity: sha512-jW/BLSTpcvExDhqJGxtIPgGr2O0IFF8XUNDwEbfCfhrXT8a4xztQ9Lv6U/vbYzYC0xVWn+3zv6YnLUh3bEFUKA==}
@@ -3521,6 +3528,18 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@paper-design/shaders-react@0.0.76':
+    resolution: {integrity: sha512-uPJWrYRf6cJdO2H+fuXlahaqz0QjYglNAyUTaRfIInpzCa/d6guxBIK003soAZQFuQ035yg9FhtfFzKNWm+a5A==}
+    peerDependencies:
+      '@types/react': ^18 || ^19
+      react: ^18 || ^19
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
+  '@paper-design/shaders@0.0.76':
+    resolution: {integrity: sha512-AcNDY4J66YQHUfQYFInkCP7M9VOje0od7wLpOR7LtCmc532opJy6ll+h1W9zBovz8tt9U7OADUmJ/qKEXyOX/A==}
+
   '@paralleldrive/cuid2@2.3.1':
     resolution: {integrity: sha512-XO7cAxhnTZl0Yggq6jOgjiOHhbgcO4NqFqwSmQpjK3b6TEE6Uj/jfSk6wzYyemh3+I0sHirKSetjQwn5cZktFw==}
 
@@ -3935,8 +3954,8 @@ packages:
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
 
-  '@react-grab/cli@0.1.47':
-    resolution: {integrity: sha512-Cc7d8mSwvoV8gpeTQbE8dMPdeXIyO6w+yIhzgi3jY06i03WLNhb/6jIxNBNF1cVRI7ujnFQXZA66BbnBNTpBSw==}
+  '@react-grab/cli@0.1.48':
+    resolution: {integrity: sha512-KXRZFN0b78BeVa4Tq1FC9kiXPpC5lS4pQp/mvQ1azy9dZUJ3zfc7Ei84+yvGh+WoYdceMCFxXfBp6qhU/G056g==}
     hasBin: true
 
   '@redis/bloom@6.0.1':
@@ -5125,9 +5144,6 @@ packages:
   '@types/node@22.20.0':
     resolution: {integrity: sha512-QWlFW2wf3nTjC13/DqRnBpR4ZO36VJH/JVBkA/vcnmbTBNQIlnObqyqZE1tUR7+Ni23Lda8R1BxMfbXRpCUx5g==}
 
-  '@types/node@24.13.2':
-    resolution: {integrity: sha512-fRa09kZTgu8o71KFcDjUFuc7F+dEbZYZmkI0mg5YBTRs0yMKjYHsq/c0urDKeDb+D5qVgXOdFcuu+DZPKOITwA==}
-
   '@types/node@26.0.0':
     resolution: {integrity: sha512-vf2YFi1iY9lHGwNJMs01biZFbKJkrZR1T6/MlzjhJLPdntOHLhTrDSnSVcdtvjihi4VQNlrFRIxLsDBlQpAipA==}
 
@@ -5774,6 +5790,11 @@ packages:
 
   bippy@0.5.41:
     resolution: {integrity: sha512-jCP2pXXLhXqPrAN+iSEFZmLI4uUM4fjSqajh0K+TmM062VehfDT3ZJNkrTGyN701Z5XMejs9qAudSqkMGhSMKg==}
+    peerDependencies:
+      react: '>=17.0.1'
+
+  bippy@0.5.43:
+    resolution: {integrity: sha512-Tvu7b1M7+d8b9/YHaCeODEsi2CgbuoBql+dWSBrNnCuqJ1gMUeY3i0r+319hvjjl5GVBP6FFWxrKnq3fhZER0w==}
     peerDependencies:
       react: '>=17.0.1'
 
@@ -6527,8 +6548,8 @@ packages:
     resolution: {integrity: sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==}
     engines: {node: '>=6'}
 
-  deslop-js@0.5.8:
-    resolution: {integrity: sha512-Vq9D2x4dAIW24zcH55DTrl3/vi13UNKfXgw0yj7ULTssZ6KOdw/oyBHtlvE94KFC9yYEhgFTrGjaqqZKvV9pwA==}
+  deslop-js@0.7.2:
+    resolution: {integrity: sha512-mLqCC+L0bnTOK8m7Adw5IR+xVrXey9zJsyUiwrPyTAc4m9fhNChoW1tZ0LPljTNUG2YSC8wJt6+WaMlx/Fb9GQ==}
 
   destr@2.0.5:
     resolution: {integrity: sha512-ugFTXCtDZunbzasqBxrK93Ik/DRYsO6S/fedkWEMKqt04xZ4csmnmwGDBAb07QWNaGMAmnTIemsYZCksjATwsA==}
@@ -9053,8 +9074,8 @@ packages:
   oxc-resolver@11.21.3:
     resolution: {integrity: sha512-2Mx3fKQz7+xgrBONjsxOgCGtMHOn38/HxMzW1I5efwXB5a4lRN0Vp40gYUJFBWJslcrvwoofTrqoTnLbwTd3pA==}
 
-  oxlint-plugin-react-doctor@0.5.8:
-    resolution: {integrity: sha512-L0jveKAMbqF1qAqA2Ksu8aH0/Q8FDQxLwXmHYgALa2XlsxEUuamJ+1Da2MhPWJ2ahn+ekFbnWK20qixxD+fw6A==}
+  oxlint-plugin-react-doctor@0.7.2:
+    resolution: {integrity: sha512-5euEAWYWwA/q9DIfazvFCmuu7x3N075P0AiRyXCvsuInRzFL6xswF91s12NWQEmSuPRiA+ofmz8ZC5Xxd3we6Q==}
     engines: {node: ^20.19.0 || >=22.13.0}
 
   oxlint@1.66.0:
@@ -9528,8 +9549,8 @@ packages:
   react-devtools-core@4.28.5:
     resolution: {integrity: sha512-cq/o30z9W2Wb4rzBefjv5fBalHU0rJGZCHAkf/RHSBWSSYwh8PlQTqqOJmgIIbBtpj27T6FIPXeomIjZtCNVqA==}
 
-  react-doctor@0.5.8:
-    resolution: {integrity: sha512-gDXDQ+48KeFq2jkVgsUhQ67oQ+kUMdnIaA+YeS9VXXZFXSg9wxY5dDxurEpILSh8RwO06W8p6uCnTR+wn5B/GA==}
+  react-doctor@0.7.2:
+    resolution: {integrity: sha512-SdZFSBOGJXOPbbW5lAMGM98DdjEyQarKR/UYLPKjdQsroCWFbb7ctqXspnFGVtLM0m8UnXNEM31R/LkimF1gtQ==}
     engines: {node: ^20.19.0 || >=22.13.0}
     hasBin: true
 
@@ -9544,8 +9565,8 @@ packages:
       final-form: ^5.0.0
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  react-grab@0.1.47:
-    resolution: {integrity: sha512-1GNy24KMJ4CY1IxorYO9mydItGi0L1HkQB19uYU3t0BMsJB0K+D/QYiaBz+rugRynyY8LzmXIuOcon1TykLlCg==}
+  react-grab@0.1.48:
+    resolution: {integrity: sha512-p3WnmK9LLvXE/c4ITPLlXcP1fkXo2VFEQqK94tIfcHIWKNdqdhYYFyNVioO50HR+uyHIwT63Z4txZDqJlVcD/Q==}
     hasBin: true
     peerDependencies:
       react: '>=17.0.0'
@@ -9990,8 +10011,8 @@ packages:
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
 
-  shadcn@4.12.0:
-    resolution: {integrity: sha512-o781ieQziCnXH2FKsEqxp1fnbHdbgAPO9inTSPeZ59hQfsZXuMGp3ul8oFSV5KQS4nbUK9b+DrDE6C7OvfKKQQ==}
+  shadcn@4.13.0:
+    resolution: {integrity: sha512-5fuJ4jI/GcPeA/iTL4cJivCZuYQGXz/N3bIzyd+Gd/FM6xUCy2MxGG+LaDQuw2cjNy9zGPSFPTEmI048UwPTZA==}
     engines: {node: '>=20.18.1'}
     hasBin: true
 
@@ -10517,9 +10538,6 @@ packages:
 
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
-
-  undici-types@7.18.2:
-    resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
 
   undici-types@8.3.0:
     resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
@@ -13474,6 +13492,15 @@ snapshots:
   '@oxlint/binding-win32-x64-msvc@1.66.0':
     optional: true
 
+  '@paper-design/shaders-react@0.0.76(@types/react@19.2.17)(react@19.2.7)':
+    dependencies:
+      '@paper-design/shaders': 0.0.76
+      react: 19.2.7
+    optionalDependencies:
+      '@types/react': 19.2.17
+
+  '@paper-design/shaders@0.0.76': {}
+
   '@paralleldrive/cuid2@2.3.1':
     dependencies:
       '@noble/hashes': 1.8.0
@@ -13794,7 +13821,7 @@ snapshots:
     dependencies:
       react: 19.2.7
 
-  '@react-grab/cli@0.1.47':
+  '@react-grab/cli@0.1.48':
     dependencies:
       agent-install: 0.0.6
       commander: 14.0.3
@@ -15117,17 +15144,13 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
-  '@types/node@24.13.2':
-    dependencies:
-      undici-types: 7.18.2
-
   '@types/node@26.0.0':
     dependencies:
       undici-types: 8.3.0
 
   '@types/pg@8.20.0':
     dependencies:
-      '@types/node': 24.13.2
+      '@types/node': 26.0.0
       pg-protocol: 1.15.0
       pg-types: 2.2.0
 
@@ -15767,6 +15790,10 @@ snapshots:
   better-result@2.9.2: {}
 
   bippy@0.5.41(react@19.2.7):
+    dependencies:
+      react: 19.2.7
+
+  bippy@0.5.43(react@19.2.7):
     dependencies:
       react: 19.2.7
 
@@ -16492,14 +16519,14 @@ snapshots:
 
   dequal@2.0.3: {}
 
-  deslop-js@0.5.8:
+  deslop-js@0.7.2:
     dependencies:
       '@oxc-project/types': 0.132.0
       fast-glob: 3.3.3
       minimatch: 10.2.5
       oxc-parser: 0.132.0
       oxc-resolver: 11.21.3
-      typescript: 6.0.3
+      typescript: 5.9.3
 
   destr@2.0.5: {}
 
@@ -19409,7 +19436,7 @@ snapshots:
       '@oxc-resolver/binding-win32-arm64-msvc': 11.21.3
       '@oxc-resolver/binding-win32-x64-msvc': 11.21.3
 
-  oxlint-plugin-react-doctor@0.5.8:
+  oxlint-plugin-react-doctor@0.7.2:
     dependencies:
       '@typescript-eslint/types': 8.62.0
       eslint-scope: 9.1.2
@@ -19900,24 +19927,25 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  react-doctor@0.5.8(eslint@10.6.0(jiti@2.7.0)):
+  react-doctor@0.7.2(eslint@10.6.0(jiti@2.7.0)):
     dependencies:
       '@babel/code-frame': 7.29.7
       '@sentry/node': 10.60.0(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))
       agent-install: 0.0.5
       conf: 15.1.0
       confbox: 0.2.4
-      deslop-js: 0.5.8
+      deslop-js: 0.7.2
       eslint-plugin-react-hooks: 7.1.1(eslint@10.6.0(jiti@2.7.0))
       jiti: 2.7.0
       magicast: 0.5.3
       oxlint: 1.66.0
-      oxlint-plugin-react-doctor: 0.5.8
+      oxlint-plugin-react-doctor: 0.7.2
       prompts: 2.4.2
-      typescript: 6.0.3
+      typescript: 5.9.3
       vscode-languageserver: 9.0.1
       vscode-languageserver-textdocument: 1.0.12
       vscode-uri: 3.1.0
+      yaml: 2.9.0
     transitivePeerDependencies:
       - '@opentelemetry/core'
       - '@opentelemetry/exporter-trace-otlp-http'
@@ -19936,10 +19964,10 @@ snapshots:
       final-form: 5.0.1
       react: 17.0.2
 
-  react-grab@0.1.47(react@19.2.7):
+  react-grab@0.1.48(react@19.2.7):
     dependencies:
-      '@react-grab/cli': 0.1.47
-      bippy: 0.5.41(react@19.2.7)
+      '@react-grab/cli': 0.1.48
+      bippy: 0.5.43(react@19.2.7)
     optionalDependencies:
       react: 19.2.7
 
@@ -20021,9 +20049,9 @@ snapshots:
       preact: 10.29.2
       prompts: 2.4.2
       react: 19.2.7
-      react-doctor: 0.5.8(eslint@10.6.0(jiti@2.7.0))
+      react-doctor: 0.7.2(eslint@10.6.0(jiti@2.7.0))
       react-dom: 19.2.7(react@19.2.7)
-      react-grab: 0.1.47(react@19.2.7)
+      react-grab: 0.1.48(react@19.2.7)
     optionalDependencies:
       unplugin: 3.0.0
     transitivePeerDependencies:
@@ -20480,7 +20508,7 @@ snapshots:
 
   setprototypeof@1.2.0: {}
 
-  shadcn@4.12.0(typescript@6.0.3):
+  shadcn@4.13.0(typescript@6.0.3):
     dependencies:
       '@babel/core': 7.29.7
       '@babel/parser': 7.29.7
@@ -21057,8 +21085,6 @@ snapshots:
   uncrypto@0.1.3: {}
 
   undici-types@6.21.0: {}
-
-  undici-types@7.18.2: {}
 
   undici-types@8.3.0: {}
 

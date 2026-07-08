@@ -187,6 +187,7 @@ export const auth = betterAuth({
     'https://tamery.app',
     'https://*.tamery.app',
     'file://',
+    ...(nodeEnv === 'development' ? ['http://localhost:*'] : []),
   ],
   advanced: {
     cookiePrefix: AUTH_COOKIE_PREFIX,

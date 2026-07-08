@@ -53,7 +53,7 @@ function ConnectionsGrid() {
         <ConnectionResourceLink
           key={connection.id}
           resourceId={resource.id}
-          style={{ '--color': connection.color ?? 'var(--primary)' } as React.CSSProperties}
+          style={{ '--color': connection.color ?? 'var(--primary)' }}
           className={cn(`
             group relative flex flex-col gap-3 overflow-hidden rounded-lg border
             bg-card p-4 pl-5 transition-all

@@ -17,7 +17,6 @@ async function Page() {
   return <Profile user={user} />
 }
 
-'use client'
 function Profile({ user }: { user: User }) {
   return <div>{user.name}</div>  // uses 1 field
 }
@@ -31,7 +30,6 @@ async function Page() {
   return <Profile name={user.name} />
 }
 
-'use client'
 function Profile({ name }: { name: string }) {
   return <div>{name}</div>
 }

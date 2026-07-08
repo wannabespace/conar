@@ -1,5 +1,6 @@
 catalogMode: prefer
 cleanupUnusedCatalogs: true
+minimumReleaseAge: 0
 shellEmulator: true
 blockExoticSubdeps: false
 packages:
@@ -45,6 +46,7 @@ catalog:
   '@orpc/experimental-publisher': ^1.14.6
   '@orpc/server': ^1.14.6
   '@orpc/tanstack-query': ^1.14.6
+  '@paper-design/shaders-react': ^0.0.76
   '@playwright/test': ^1.61.1
   '@react-email/components': ^1.0.10
   '@remixicon/react': ^4.9.0
@@ -142,7 +144,7 @@ catalog:
   resend: ^6.16.0
   seitu: ^0.16.0
   serve: ^14.2.6
-  shadcn: ^4.12.0
+  shadcn: ^4.13.0
   sonner: ^2.0.7
   sql-formatter: ^15.8.2
   streamdown: ^2.5.0
