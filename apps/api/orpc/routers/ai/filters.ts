@@ -74,7 +74,7 @@ export const filters = orpc
     }
 
     const { output: result } = await generateText({
-      model: google('gemini-2.5-flash'),
+      model: google('gemini-flash-latest'),
       system: [
         'You are a filters and ordering generator that converts natural language queries into database filters and ordering instructions.',
         'You should understand the sense of the prompt as much as possible.',
