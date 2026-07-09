@@ -47,7 +47,7 @@ export function UserButton({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="size-8 cursor-pointer rounded-md">
+      <DropdownMenuTrigger className="size-5 cursor-pointer rounded-sm">
         <UserAvatar className="size-full" user={data?.user} />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-56" side={side} align={align}>

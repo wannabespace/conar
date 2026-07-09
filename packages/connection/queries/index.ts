@@ -12,10 +12,10 @@ export interface QueryExecutor {
     query: string
     values?: unknown[]
   }) => Promise<QueryExecuteResult>
-  beginTransaction: (args: { connectionString: string }) => Promise<{ txId: string }>
-  executeTransaction: (args: { txId: string, query: string, values: unknown[] }) => Promise<QueryExecuteResult>
-  commitTransaction: (args: { txId: string }) => Promise<void>
-  rollbackTransaction: (args: { txId: string }) => Promise<void>
+  beginTransaction: (args: { connectionString: string, ownerId?: string }) => Promise<{ txId: string }>
+  executeTransaction: (args: { txId: string, query: string, values: unknown[], ownerId?: string }) => Promise<QueryExecuteResult>
+  commitTransaction: (args: { txId: string, ownerId?: string }) => Promise<void>
+  rollbackTransaction: (args: { txId: string, ownerId?: string }) => Promise<void>
 }
 
 export function replaceErrorPrefix(message: string) {

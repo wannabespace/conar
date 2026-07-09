@@ -11,8 +11,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/t
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
+import { GlobalBanner } from '~/components/global-banner'
 import { SupportButton } from '~/components/support-button'
 import { TitleBar } from '~/components/title-bar'
+import { UpdateButton } from '~/components/update-button'
 import { useCollections } from '~/entities/collections'
 import { ConnectionIcon, ConnectionResourceLink, useConnectionResourceLinkParams } from '~/entities/connection'
 import { UserButton } from '~/entities/user/components'
@@ -220,48 +222,58 @@ export function AppTitleBar() {
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
 
   return (
-    <TitleBar className="gap-2 border-b pr-2">
-      <RemoveConnectionDialog ref={removeDialogRef} />
-      <Link
-        to="/"
-        className="shrink-0 p-1.5"
-      >
-        <AppLogo className="size-4 text-primary" />
-      </Link>
-      <span className="truncate text-muted-foreground/50">/</span>
-      <ConnectionsBreadcrumb onRemove={connection => removeDialogRef.current?.remove(connection)} />
-      <div className="ml-auto flex shrink-0 items-center gap-1">
-        <SupportButton side="bottom" />
-        <Tooltip>
-          <TooltipTrigger render={(
-            <Button
-              size="icon-sm"
-              variant="ghost"
-              onClick={() => setIsActionCenterOpen(true)}
+    <div className="flex shrink-0 flex-col">
+      <TitleBar className="gap-1.5 border-b-border bg-card px-2">
+        <RemoveConnectionDialog ref={removeDialogRef} />
+        <Link
+          to="/"
+          aria-label="Home"
+          className={`
+            shrink-0 rounded-md p-1.5 transition-colors
+            hover:bg-muted
+          `}
+        >
+          <AppLogo className="size-4 text-primary" />
+        </Link>
+        <span className="truncate text-muted-foreground/40">/</span>
+        <ConnectionsBreadcrumb onRemove={connection => removeDialogRef.current?.remove(connection)} />
+        <div className="ml-auto flex h-full shrink-0 items-center gap-1">
+          <UpdateButton />
+          <SupportButton side="bottom" />
+          <Tooltip>
+            <TooltipTrigger render={(
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                aria-label="Command palette"
+                onClick={() => setIsActionCenterOpen(true)}
+              />
+            )}
+            >
+              <RiCommandLine className="size-4" />
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              {os?.type === 'macos' ? '⌘' : 'Ctrl'}
+              P
+            </TooltipContent>
+          </Tooltip>
+          <span className="mx-1 h-4 w-px shrink-0 self-center bg-border" />
+          <ThemeToggle render={<Button size="icon-sm" variant="ghost" />}>
+            <RiSunLine className={`
+              size-4
+              dark:hidden
+            `}
             />
-          )}
-          >
-            <RiCommandLine className="size-4" />
-          </TooltipTrigger>
-          <TooltipContent side="bottom">
-            {os?.type === 'macos' ? '⌘' : 'Ctrl'}
-            P
-          </TooltipContent>
-        </Tooltip>
-        <ThemeToggle render={<Button size="icon-sm" variant="ghost" />}>
-          <RiSunLine className={`
-            size-4
-            dark:hidden
-          `}
-          />
-          <RiMoonLine className={`
-            hidden size-4
-            dark:block
-          `}
-          />
-        </ThemeToggle>
-        <UserButton side="bottom" align="end" />
-      </div>
-    </TitleBar>
+            <RiMoonLine className={`
+              hidden size-4
+              dark:block
+            `}
+            />
+          </ThemeToggle>
+          <UserButton side="bottom" align="end" />
+        </div>
+      </TitleBar>
+      <GlobalBanner />
+    </div>
   )
 }

@@ -107,7 +107,7 @@ function FilterItem({
       <GroupSeparator />
       <Button
         size="icon-xs"
-        variant="destructive-outline"
+        variant="destructive"
         onClick={onRemove}
         aria-label="Remove filter"
       >
@@ -201,7 +201,7 @@ export function Filters() {
         </Popover>
       </div>
       <Button
-        variant="destructive-outline"
+        variant="destructive"
         size="xs"
         onClick={() => store.set(state => ({
           ...state,

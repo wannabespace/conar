@@ -1,6 +1,5 @@
 import { getOS } from '@tamery/shared/utils/os'
 import { cn } from '@tamery/ui/lib/utils'
-import { useMatches } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 
 const os = getOS(navigator.userAgent)
@@ -20,17 +19,16 @@ function useIsFullscreen() {
 
 export function TitleBar({ className, children, ...props }: React.ComponentProps<'div'>) {
   const isFullscreen = useIsFullscreen()
-  const isAuth = useMatches({
-    select: matches => matches.some(match => match.routeId === '/auth'),
-  })
 
   return (
     <div
       className={cn(
-        'flex h-10 shrink-0 items-center',
+        `
+          flex h-[calc(--spacing(10)+1px)] shrink-0 items-center border-b
+          border-transparent
+        `,
         isElectron && '[-webkit-app-region:drag]',
-        isElectron && !isFullscreen && (isMac ? 'pl-22' : 'pr-34'),
-        isAuth && '-mb-10',
+        isElectron && !isFullscreen && (isMac ? 'pl-20' : 'pr-34'),
         className,
       )}
       {...props}

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DevRouteImport } from './routes/dev'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
@@ -25,6 +26,11 @@ import { Route as ProtectedConnectionResourceIdDefinitionsFunctionsIndexRouteImp
 import { Route as ProtectedConnectionResourceIdDefinitionsEnumsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/enums/index'
 import { Route as ProtectedConnectionResourceIdDefinitionsConstraintsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/constraints/index'
 
+const DevRoute = DevRouteImport.update({
+  id: '/dev',
+  path: '/dev',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -114,6 +120,7 @@ const ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof ProtectedIndexRoute
   '/auth': typeof AuthRoute
+  '/dev': typeof DevRoute
   '/connection/$resourceId': typeof ProtectedConnectionResourceIdRouteWithChildren
   '/create/': typeof ProtectedCreateIndexRoute
   '/connection/$resourceId/definitions': typeof ProtectedConnectionResourceIdDefinitionsRouteWithChildren
@@ -129,6 +136,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/dev': typeof DevRoute
   '/': typeof ProtectedIndexRoute
   '/connection/$resourceId': typeof ProtectedConnectionResourceIdRouteWithChildren
   '/create': typeof ProtectedCreateIndexRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_protected': typeof ProtectedRouteWithChildren
   '/auth': typeof AuthRoute
+  '/dev': typeof DevRoute
   '/_protected/': typeof ProtectedIndexRoute
   '/_protected/connection/$resourceId': typeof ProtectedConnectionResourceIdRouteWithChildren
   '/_protected/create/': typeof ProtectedCreateIndexRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/dev'
     | '/connection/$resourceId'
     | '/create/'
     | '/connection/$resourceId/definitions'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/dev'
     | '/'
     | '/connection/$resourceId'
     | '/create'
@@ -198,6 +209,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_protected'
     | '/auth'
+    | '/dev'
     | '/_protected/'
     | '/_protected/connection/$resourceId'
     | '/_protected/create/'
@@ -216,10 +228,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   ProtectedRoute: typeof ProtectedRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DevRoute: typeof DevRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/dev': {
+      id: '/dev'
+      path: '/dev'
+      fullPath: '/dev'
+      preLoaderRoute: typeof DevRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -402,6 +422,7 @@ const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   ProtectedRoute: ProtectedRouteWithChildren,
   AuthRoute: AuthRoute,
+  DevRoute: DevRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -69,7 +69,7 @@ function AuthPage() {
 
   return (
     <>
-      {window.electron && <TitleBar />}
+      {window.electron && <TitleBar className="-mb-10" />}
       <div className="relative flex flex-col overflow-hidden px-4 py-6">
         <div className="
           m-auto flex w-full max-w-md flex-1 flex-col justify-center

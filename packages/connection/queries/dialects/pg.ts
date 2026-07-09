@@ -57,7 +57,7 @@ export const query = {
 
     return { result: result.rows as unknown, duration: performance.now() - start }
   }),
-  beginTransaction: handleQueryError(async ({ connectionString }: { connectionString: string }) => {
+  beginTransaction: handleQueryError(async ({ connectionString, ownerId }: { connectionString: string, ownerId?: string }) => {
     const pool = await getPool(connectionString)
     const client = await pool.connect()
 
@@ -84,21 +84,21 @@ export const query = {
       release: async () => {
         client.release()
       },
-    })
+    }, ownerId)
 
     return { txId }
   }),
 
-  executeTransaction: handleQueryError(async ({ txId, query, values }: { txId: string, query: string, values: unknown[] }) => {
-    const handle = getTransaction(txId)
+  executeTransaction: handleQueryError(async ({ txId, query, values, ownerId }: { txId: string, query: string, values: unknown[], ownerId?: string }) => {
+    const handle = getTransaction(txId, ownerId)
     if (!handle)
       throw new Error(`No active transaction found for id: ${txId}`)
 
     return handle.execute(query, values)
   }),
 
-  commitTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
-    const handle = disposeTransaction(txId)
+  commitTransaction: handleQueryError(async ({ txId, ownerId }: { txId: string, ownerId?: string }) => {
+    const handle = disposeTransaction(txId, ownerId)
     if (!handle)
       return
 
@@ -110,8 +110,8 @@ export const query = {
     }
   }),
 
-  rollbackTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
-    const handle = disposeTransaction(txId)
+  rollbackTransaction: handleQueryError(async ({ txId, ownerId }: { txId: string, ownerId?: string }) => {
+    const handle = disposeTransaction(txId, ownerId)
     if (!handle)
       return
 
