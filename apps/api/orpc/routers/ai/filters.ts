@@ -75,7 +75,7 @@ export const filters = orpc
     }
 
     const { output: result } = await generateText({
-      model: withPosthog(google('gemini-2.5-flash'), {
+      model: withPosthog(google('gemini-flash-latest'), {
         prompt: input.prompt,
         context: input.context,
         userId: context.user.id,
