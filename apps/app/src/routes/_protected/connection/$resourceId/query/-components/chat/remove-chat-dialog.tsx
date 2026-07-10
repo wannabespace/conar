@@ -1,8 +1,17 @@
-import type { Chat } from '~/entities/chat/sync'
-import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
+import {
+  AlertDialog,
+  AlertDialogClose,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
+
+import type { Chat } from '~/entities/chat/sync'
 import { useCollections } from '~/entities/collections'
 
 interface RemoveChatDialogProps {
@@ -17,26 +26,25 @@ export function RemoveChatDialog({ ref }: RemoveChatDialogProps) {
   const [chat, setChat] = useState<Chat | null>(null)
   const [onRemoveCallback, setOnRemoveCallback] = useState<(() => void) | null>(null)
 
-  useImperativeHandle(ref, () => ({
-    remove: (chat: Chat, onRemove?: () => void) => {
-      setChat(chat)
-      setOnRemoveCallback(() => onRemove ?? null)
-      setOpen(true)
-    },
-  }), [])
+  useImperativeHandle(
+    ref,
+    () => ({
+      remove: (chat: Chat, onRemove?: () => void) => {
+        setChat(chat)
+        setOnRemoveCallback(() => onRemove ?? null)
+        setOpen(true)
+      },
+    }),
+    [],
+  )
 
   function remove(e: React.MouseEvent<HTMLButtonElement>) {
-    if (!chat)
-      return
+    if (!chat) return
 
     e.preventDefault()
     const chatTitle = chat.title?.trim()
     chatsCollection.delete(chat.id)
-    toast.success(
-      chatTitle
-        ? `Chat "${chatTitle}" deleted`
-        : 'Chat deleted',
-    )
+    toast.success(chatTitle ? `Chat "${chatTitle}" deleted` : 'Chat deleted')
     onRemoveCallback?.()
     setOpen(false)
   }
@@ -48,19 +56,11 @@ export function RemoveChatDialog({ ref }: RemoveChatDialogProps) {
           <AlertDialogTitle>Delete Chat</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete
-            {chat?.title
-              ? (
-                  <span className="font-semibold">
-                    {' '}
-                    "
-                    {chat.title}
-                    "
-                  </span>
-                )
-              : (
-                  ' this chat'
-                )}
-            {' '}
+            {chat?.title ? (
+              <span className="font-semibold"> "{chat.title}"</span>
+            ) : (
+              ' this chat'
+            )}{' '}
             and all its messages.
           </AlertDialogDescription>
         </AlertDialogHeader>

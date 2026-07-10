@@ -48,10 +48,10 @@ Separate Hono process that executes DB queries. Clients connect to the proxy rat
 
 ## SyncType values
 
-| Value | Behavior |
-|-------|----------|
-| `Cloud` | Connection metadata + encrypted password both synced to cloud |
-| `CloudWithoutPassword` | Metadata synced to cloud; password kept local-only |
-| `Local` | Nothing leaves the device |
+| Value                  | Behavior                                                      |
+| ---------------------- | ------------------------------------------------------------- |
+| `Cloud`                | Connection metadata + encrypted password both synced to cloud |
+| `CloudWithoutPassword` | Metadata synced to cloud; password kept local-only            |
+| `Local`                | Nothing leaves the device                                     |
 
 Use `CloudWithoutPassword` when the user wants cross-device access to the connection without trusting the cloud with credentials.

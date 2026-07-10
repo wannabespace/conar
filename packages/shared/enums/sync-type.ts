@@ -12,6 +12,7 @@ export const syncTypeLabels: Record<SyncType, string> = {
 
 export const syncTypeDescriptions: Record<SyncType, string> = {
   [SyncType.Cloud]: 'Sync your connection string across all devices with password encryption',
-  [SyncType.CloudWithoutPassword]: 'Sync your connection string across devices without storing the password',
+  [SyncType.CloudWithoutPassword]:
+    'Sync your connection string across devices without storing the password',
   // [SyncType.Local]: 'Keep your connection string only on this device',
 }

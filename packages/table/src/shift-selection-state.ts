@@ -14,7 +14,7 @@ export const INITIAL_SHIFT_SELECTION_STATE: ShiftSelectionState = {
 
 export interface ShiftSelectionUpdate {
   state: ShiftSelectionState
-  range: { start: number, end: number }
+  range: { start: number; end: number }
 }
 
 export function reduceShiftArrowKey(
@@ -22,8 +22,7 @@ export function reduceShiftArrowKey(
   rowCount: number,
   state: ShiftSelectionState,
 ): ShiftSelectionUpdate | null {
-  if (rowCount === 0)
-    return null
+  if (rowCount === 0) return null
 
   const { anchorIndex, focusIndex, lastExpandDirection } = state
   const step = direction === 'down' ? 1 : -1
@@ -39,8 +38,7 @@ export function reduceShiftArrowKey(
 
   const newFocus = Math.max(0, Math.min(focusIndex + step, rowCount - 1))
 
-  if (newFocus === focusIndex)
-    return null
+  if (newFocus === focusIndex) return null
 
   const isShrinking = (focusIndex - anchorIndex) * step < 0
 

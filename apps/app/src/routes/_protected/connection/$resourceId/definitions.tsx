@@ -1,11 +1,10 @@
 import { title } from '@conar/shared/utils/title'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+
 import { Sidebar } from './definitions/-components/sidebar'
 
-export const Route = createFileRoute(
-  '/_protected/connection/$resourceId/definitions',
-)({
+export const Route = createFileRoute('/_protected/connection/$resourceId/definitions')({
   component: DefinitionsLayout,
   beforeLoad: ({ location, params }) => {
     if (location.pathname.endsWith('/definitions') || location.pathname.endsWith('/definitions/')) {
@@ -19,12 +18,19 @@ export const Route = createFileRoute(
   loader: ({ context }) => context,
   head: ({ loaderData }) => ({
     meta: loaderData
-      ? [{ title: title('Definitions', loaderData.connection.name, loaderData.connectionResource.name) }]
+      ? [
+          {
+            title: title(
+              'Definitions',
+              loaderData.connection.name,
+              loaderData.connectionResource.name,
+            ),
+          },
+        ]
       : [],
   }),
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
 function DefinitionsLayout() {
   return (
     <div className="flex size-full gap-1">

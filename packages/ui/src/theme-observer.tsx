@@ -10,11 +10,9 @@ export function ThemeObserver() {
         const theme: string | null = localStorage.getItem(key)
 
         if (
-          theme === 'dark'
-          || (
-            (theme === null || theme === 'system')
-            && window.matchMedia('(prefers-color-scheme: dark)').matches
-          )
+          theme === 'dark' ||
+          ((theme === null || theme === 'system') &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches)
         ) {
           document.documentElement.classList.add('dark')
         }

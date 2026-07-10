@@ -1,7 +1,7 @@
 {
   "name": "@conar/query-proxy",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "check-types": "tsc"
   },

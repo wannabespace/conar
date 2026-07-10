@@ -1,16 +1,20 @@
-import type { UpdatesStatus } from '@conar/shared/utils/updates'
-import type { Rectangle } from 'electron'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+
 import { isConnectionError } from '@conar/shared/utils/connections'
+import type { UpdatesStatus } from '@conar/shared/utils/updates'
+import type { Rectangle } from 'electron'
 import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
+
 import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { buildMenu } from './lib/menu'
 
-const todesktop = createRequire(import.meta.url)('@todesktop/runtime') as typeof import('@todesktop/runtime')
+const todesktop = createRequire(import.meta.url)(
+  '@todesktop/runtime',
+) as typeof import('@todesktop/runtime')
 
 todesktop.init()
 
@@ -28,7 +32,10 @@ process.on('uncaughtException', (error) => {
 
 process.on('unhandledRejection', (reason) => {
   if (isConnectionError(reason)) {
-    console.error('[Suppressed Connection Rejection]', reason instanceof Error ? reason.message : reason)
+    console.error(
+      '[Suppressed Connection Rejection]',
+      reason instanceof Error ? reason.message : reason,
+    )
     return
   }
   throw reason
@@ -62,8 +69,7 @@ export function createWindow() {
 
   const bounds = store.get('bounds')
 
-  if (bounds)
-    mainWindow.setBounds(bounds)
+  if (bounds) mainWindow.setBounds(bounds)
 
   const isFullscreen = store.get('fullscreen', false)
   if (isFullscreen) {
@@ -72,12 +78,10 @@ export function createWindow() {
 
   let saveBoundsTimeout: NodeJS.Timeout | null = null
   const saveBounds = () => {
-    if (saveBoundsTimeout)
-      clearTimeout(saveBoundsTimeout)
+    if (saveBoundsTimeout) clearTimeout(saveBoundsTimeout)
 
     saveBoundsTimeout = setTimeout(() => {
-      if (!mainWindow || mainWindow.isDestroyed())
-        return
+      if (!mainWindow || mainWindow.isDestroyed()) return
 
       if (!mainWindow.isFullScreen() && !mainWindow.isMinimized()) {
         store.set('bounds', mainWindow.getNormalBounds())
@@ -92,11 +96,9 @@ export function createWindow() {
   mainWindow.on('leave-full-screen', saveBounds)
 
   mainWindow.on('close', () => {
-    if (!mainWindow)
-      return
+    if (!mainWindow) return
 
-    if (saveBoundsTimeout)
-      clearTimeout(saveBoundsTimeout)
+    if (saveBoundsTimeout) clearTimeout(saveBoundsTimeout)
 
     if (!mainWindow.isFullScreen() && !mainWindow.isMinimized()) {
       store.set('bounds', mainWindow.getNormalBounds())
@@ -114,9 +116,10 @@ export function createWindow() {
   })
 
   if (app.isPackaged) {
-    mainWindow.loadFile(path.join(path.dirname(fileURLToPath(import.meta.url)), './renderer/index.html'))
-  }
-  else {
+    mainWindow.loadFile(
+      path.join(path.dirname(fileURLToPath(import.meta.url)), './renderer/index.html'),
+    )
+  } else {
     mainWindow.webContents.openDevTools()
     mainWindow.loadURL('https://app.local.conar.app')
   }

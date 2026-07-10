@@ -1,16 +1,17 @@
-import type { Type } from 'arktype'
 import { IORedisPublisher } from '@orpc/experimental-publisher/ioredis'
 import { eventIterator } from '@orpc/server'
+import type { Type } from 'arktype'
 import { type } from 'arktype'
+
 import { redis } from '~/lib/redis'
 import { authMiddleware, orpc } from '~/orpc'
 
 export function createSyncOutputSchema<const T>(
   schema: type.validate<T>,
 ): type.instantiate<
-  | { type: '"insert"', value: T }
-  | { type: '"update"', value: T }
-  | { type: '"delete"', key: 'string.uuid.v7' }
+  | { type: '"insert"'; value: T }
+  | { type: '"update"'; value: T }
+  | { type: '"delete"'; key: 'string.uuid.v7' }
 >
 export function createSyncOutputSchema(schema: Type) {
   return type.or(
@@ -32,25 +33,28 @@ export function createSyncPublisher<T extends Type<{ type: 'insert' | 'update' |
 }
 
 export async function syncDiff<TItem>(opts: {
-  input: { id: string, updatedAt: Date }[]
+  input: { id: string; updatedAt: Date }[]
   queries: {
-    updated: (inputItems: { id: string, updatedAt: Date }[]) => Promise<TItem[]>
+    updated: (inputItems: { id: string; updatedAt: Date }[]) => Promise<TItem[]>
     new: (excludeIds: string[]) => Promise<TItem[]>
     existing: (includeIds: string[]) => Promise<string[]>
   }
 }) {
-  const inputIds = opts.input.map(i => i.id)
+  const inputIds = opts.input.map((i) => i.id)
   const [updatedItems, newItems, existingIds] = await Promise.all([
-    inputIds.length > 0 ? opts.queries.updated(opts.input) : [] as TItem[],
+    inputIds.length > 0 ? opts.queries.updated(opts.input) : ([] as TItem[]),
     opts.queries.new(inputIds),
     opts.queries.existing(inputIds),
   ])
-  const missingIds = inputIds.filter(id => !existingIds.includes(id))
+  const missingIds = inputIds.filter((id) => !existingIds.includes(id))
   return { updatedItems, newItems, missingIds }
 }
 
-// eslint-disable-next-line ts/no-explicit-any
-export function createEventsEndpoint<O extends Type<{ type: 'insert' | 'update' | 'delete' }>, P extends IORedisPublisher<any>>(output: O, publisher: P) {
+export function createEventsEndpoint<
+  O extends Type<{ type: 'insert' | 'update' | 'delete' }>,
+  // eslint-disable-next-line typescript/no-explicit-any
+  P extends IORedisPublisher<any>,
+>(output: O, publisher: P) {
   return orpc
     .use(authMiddleware)
     .output(eventIterator(output))

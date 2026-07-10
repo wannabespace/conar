@@ -1,5 +1,4 @@
 import type { ActiveFilter, Filter } from '@conar/shared/filters'
-import type { GeneratorId } from '~/entities/connection/utils/seeds'
 import { omit } from '@conar/shared/utils/helpers'
 import { INITIAL_SHIFT_SELECTION_STATE } from '@conar/table/hooks'
 import { type } from 'arktype'
@@ -7,12 +6,14 @@ import { memoize } from 'memoza'
 import { createContext, use } from 'react'
 import { createWebStorageValue } from 'seitu/web'
 
+import type { GeneratorId } from '~/entities/connection/utils/seeds'
+
 export const primaryKeysType = type('Record<string, unknown>')
 
 export const draftType = type({
-  'primaryKeys': primaryKeysType,
-  'columnId': 'string',
-  'value': 'unknown',
+  primaryKeys: primaryKeysType,
+  columnId: 'string',
+  value: 'unknown',
   'error?': 'string',
   'isCommitting?': 'boolean',
 })
@@ -33,8 +34,8 @@ export const tablePageType = type({
   columnSizes: 'Record<string, number>',
   generators: {
     '[string]': {
-      'generatorId': 'string' as type.cast<GeneratorId>,
-      'isNullable': 'boolean',
+      generatorId: 'string' as type.cast<GeneratorId>,
+      isNullable: 'boolean',
       'customExpression?': 'string',
     },
   },
@@ -63,12 +64,15 @@ const defaultState: typeof tablePageType.infer = {
   drafts: [],
 }
 
-export const tablePageStore = memoize(({ id, schema, table }: { id: string, schema: string, table: string }) => createWebStorageValue({
-  type: 'localStorage',
-  key: `${id}.${schema}-${table}.store`,
-  defaultValue: defaultState,
-  schema: tablePageType,
-}))
+export const tablePageStore = memoize(
+  ({ id, schema, table }: { id: string; schema: string; table: string }) =>
+    createWebStorageValue({
+      type: 'localStorage',
+      key: `${id}.${schema}-${table}.store`,
+      defaultValue: defaultState,
+      schema: tablePageType,
+    }),
+)
 
 type TablePageStore = ReturnType<typeof tablePageStore>
 
@@ -80,20 +84,26 @@ export function useTablePageStore() {
 
 export function columnsOrder(store: TablePageStore) {
   const setOrder = (columnId: string, order: 'ASC' | 'DESC') => {
-    store.set(state => ({
-      ...state,
-      orderBy: {
-        ...state.orderBy,
-        [columnId]: order,
-      },
-    } satisfies typeof state))
+    store.set(
+      (state) =>
+        ({
+          ...state,
+          orderBy: {
+            ...state.orderBy,
+            [columnId]: order,
+          },
+        }) satisfies typeof state,
+    )
   }
 
   const removeOrder = (columnId: string) => {
-    store.set(state => ({
-      ...state,
-      orderBy: omit(state.orderBy, [columnId]),
-    } satisfies typeof state))
+    store.set(
+      (state) =>
+        ({
+          ...state,
+          orderBy: omit(state.orderBy, [columnId]),
+        }) satisfies typeof state,
+    )
   }
 
   const toggleOrder = (columnId: string) => {
@@ -101,11 +111,9 @@ export function columnsOrder(store: TablePageStore) {
 
     if (currentOrder === 'ASC') {
       setOrder(columnId, 'DESC')
-    }
-    else if (currentOrder === 'DESC') {
+    } else if (currentOrder === 'DESC') {
       removeOrder(columnId)
-    }
-    else {
+    } else {
       setOrder(columnId, 'ASC')
     }
   }
@@ -124,7 +132,10 @@ export function primaryKeysKey(primaryKeys: typeof primaryKeysType.infer) {
     .join('|')
 }
 
-export function getRowPrimaryKeysValues(row: Record<string, unknown>, primaryKeys: string[]): typeof primaryKeysType.infer {
+export function getRowPrimaryKeysValues(
+  row: Record<string, unknown>,
+  primaryKeys: string[],
+): typeof primaryKeysType.infer {
   return primaryKeys.reduce<typeof primaryKeysType.infer>((acc, key) => {
     acc[key] = row[key]
     return acc
@@ -140,10 +151,12 @@ export function draftKey(primaryKeys: typeof primaryKeysType.infer, columnId: st
 }
 
 export function draftsActions(store: TablePageStore) {
-  const upsert = (draft: typeof tablePageType.infer['drafts'][number]) => {
+  const upsert = (draft: (typeof tablePageType.infer)['drafts'][number]) => {
     store.set((state) => {
       const key = draftKey(draft.primaryKeys, draft.columnId)
-      const existingIndex = state.drafts.findIndex(d => draftKey(d.primaryKeys, d.columnId) === key)
+      const existingIndex = state.drafts.findIndex(
+        (d) => draftKey(d.primaryKeys, d.columnId) === key,
+      )
 
       if (existingIndex === -1) {
         return { ...state, drafts: [...state.drafts, draft] } satisfies typeof state
@@ -156,28 +169,46 @@ export function draftsActions(store: TablePageStore) {
   }
 
   const remove = (primaryKeys: typeof primaryKeysType.infer, columnId: string) => {
-    store.set(state => ({
-      ...state,
-      drafts: state.drafts.filter(d => draftKey(d.primaryKeys, d.columnId) !== draftKey(primaryKeys, columnId)),
-    } satisfies typeof state))
+    store.set(
+      (state) =>
+        ({
+          ...state,
+          drafts: state.drafts.filter(
+            (d) => draftKey(d.primaryKeys, d.columnId) !== draftKey(primaryKeys, columnId),
+          ),
+        }) satisfies typeof state,
+    )
   }
 
   const clear = () => {
-    store.set(state => ({ ...state, drafts: [] } satisfies typeof state))
+    store.set((state) => ({ ...state, drafts: [] }) satisfies typeof state)
   }
 
-  const setRowStatus = (primaryKeys: typeof primaryKeysType.infer, patch: Partial<Pick<typeof tablePageType.infer['drafts'][number], 'error' | 'isCommitting'>>) => {
-    store.set(state => ({
-      ...state,
-      drafts: state.drafts.map(d => primaryKeysKey(d.primaryKeys) === primaryKeysKey(primaryKeys) ? { ...d, ...patch } : d),
-    } satisfies typeof state))
+  const setRowStatus = (
+    primaryKeys: typeof primaryKeysType.infer,
+    patch: Partial<Pick<(typeof tablePageType.infer)['drafts'][number], 'error' | 'isCommitting'>>,
+  ) => {
+    store.set(
+      (state) =>
+        ({
+          ...state,
+          drafts: state.drafts.map((d) =>
+            primaryKeysKey(d.primaryKeys) === primaryKeysKey(primaryKeys) ? { ...d, ...patch } : d,
+          ),
+        }) satisfies typeof state,
+    )
   }
 
   const removeRow = (primaryKeys: typeof primaryKeysType.infer) => {
-    store.set(state => ({
-      ...state,
-      drafts: state.drafts.filter(d => primaryKeysKey(d.primaryKeys) !== primaryKeysKey(primaryKeys)),
-    } satisfies typeof state))
+    store.set(
+      (state) =>
+        ({
+          ...state,
+          drafts: state.drafts.filter(
+            (d) => primaryKeysKey(d.primaryKeys) !== primaryKeysKey(primaryKeys),
+          ),
+        }) satisfies typeof state,
+    )
   }
 
   return {

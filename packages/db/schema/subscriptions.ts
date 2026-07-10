@@ -1,5 +1,6 @@
-import type Stripe from 'stripe'
 import * as d from 'drizzle-orm/pg-core'
+import type Stripe from 'stripe'
+
 import { baseTable } from '../base-table'
 import { users } from './auth'
 
@@ -11,7 +12,10 @@ export const subscriptionPeriod = d.pgEnum('subscription_period', ['monthly', 'y
 export const subscriptions = d.snakeCase.table('subscriptions', {
   ...baseTable,
   plan: d.text().notNull().$type<'pro'>(),
-  userId: d.uuid().notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: d
+    .uuid()
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
   stripeSubscriptionId: d.text(),
   status: d.text().$type<SubscriptionStatus>().default('incomplete'),
   period: subscriptionPeriod().notNull(),

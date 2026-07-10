@@ -1,18 +1,19 @@
-/* eslint-disable perfectionist/sort-imports */
 import '@conar/shared/arktype-config'
 import process from 'node:process'
+
+import { sanitizeLogData } from '@conar/shared/utils/sanitize-log'
 import { ORPCError, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
+import { sleep } from 'bun'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+
 import { env, nodeEnv } from './env'
 import { auth } from './lib/auth'
+import { sendEmail } from './lib/resend'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
-import { sendEmail } from './lib/resend'
-import { sanitizeLogData } from '@conar/shared/utils/sanitize-log'
 import { healthRouter } from './routers/health'
-import { sleep } from 'bun'
 
 const handler = new RPCHandler(router, {
   interceptors: [
@@ -20,8 +21,7 @@ const handler = new RPCHandler(router, {
       try {
         await sleep(500)
         return await next()
-      }
-      catch (error) {
+      } catch (error) {
         context.addLogData({
           error: {
             type: error instanceof Error ? error.constructor.name : typeof error,
@@ -33,10 +33,13 @@ const handler = new RPCHandler(router, {
 
         if (error instanceof ORPCError) {
           if (error.cause instanceof ValidationError) {
-            const message = error.cause.issues.map(issue => issue.path
-              ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
-              : issue.message,
-            ).join(', ')
+            const message = error.cause.issues
+              .map((issue) =>
+                issue.path
+                  ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
+                  : issue.message,
+              )
+              .join(', ')
 
             throw new ORPCError('BAD_REQUEST', { message })
           }
@@ -63,19 +66,20 @@ export interface AppVariables {
 const app = new Hono<{
   Variables: AppVariables
 }>()
-  .use(cors({
-    origin(origin) {
-      const allowedOrigins = [
-        'https://conar.app',
-      ]
-      return origin.endsWith('.conar.app') || allowedOrigins.includes(origin) ? origin : null
-    },
-    credentials: true,
-  }))
-  .get('/', c => c.redirect(env.MAIN_URL))
+  .use(
+    cors({
+      origin(origin) {
+        const allowedOrigins = ['https://conar.app']
+        return origin.endsWith('.conar.app') || allowedOrigins.includes(origin) ? origin : null
+      },
+      credentials: true,
+    }),
+  )
+  .get('/', (c) => c.redirect(env.MAIN_URL))
   .use('*', async (c, next) => {
     const startTime = Date.now()
-    const xAppVersion = (c.req.header('x-app-version') || c.req.header('x-desktop-version'))?.split('.') || null
+    const xAppVersion =
+      (c.req.header('x-app-version') || c.req.header('x-desktop-version'))?.split('.') || null
     c.set('logEvent', {})
     const parsedAppVersion = xAppVersion
       ? {
@@ -85,7 +89,12 @@ const app = new Hono<{
         }
       : null
     c.set('parsedAppVersion', parsedAppVersion)
-    c.set('isAppOutdated', !!env.MIN_DESKTOP_VERSION && !!parsedAppVersion?.minor && parsedAppVersion.minor < env.MIN_DESKTOP_VERSION)
+    c.set(
+      'isAppOutdated',
+      !!env.MIN_DESKTOP_VERSION &&
+        !!parsedAppVersion?.minor &&
+        parsedAppVersion.minor < env.MIN_DESKTOP_VERSION,
+    )
 
     await next()
 
@@ -111,11 +120,11 @@ const app = new Hono<{
     }
 
     if (
-      status >= 400
-      && status !== 401
-      && status !== 404
-      && env.ALERTS_EMAIL
-      && !c.req.url.includes('healthcheck.railway.app')
+      status >= 400 &&
+      status !== 401 &&
+      status !== 404 &&
+      env.ALERTS_EMAIL &&
+      !c.req.url.includes('healthcheck.railway.app')
     ) {
       sendEmail({
         to: env.ALERTS_EMAIL,
@@ -132,8 +141,7 @@ const app = new Hono<{
 
     if (status >= 400) {
       console.error(log)
-    }
-    else {
+    } else {
       // eslint-disable-next-line no-console
       console.info(log)
     }

@@ -1,6 +1,9 @@
 import * as React from 'react'
 
-export function useIsWindowScrolled({ threshold = 10, initial = false }: { threshold?: number, initial?: boolean } = {}) {
+export function useIsWindowScrolled({
+  threshold = 10,
+  initial = false,
+}: { threshold?: number; initial?: boolean } = {}) {
   const [isScrolled, setIsScrolled] = React.useState(initial)
 
   React.useLayoutEffect(() => {
@@ -8,7 +11,6 @@ export function useIsWindowScrolled({ threshold = 10, initial = false }: { thres
       const scrollTop = window.scrollY
       const scrollLeft = window.scrollX
 
-      // eslint-disable-next-line react/set-state-in-effect
       setIsScrolled(scrollTop > threshold || scrollLeft > threshold)
     }
 

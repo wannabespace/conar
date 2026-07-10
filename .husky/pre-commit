@@ -1,1 +1,1 @@
-run-p lint check-types test
+run-p lint format:check check-types test

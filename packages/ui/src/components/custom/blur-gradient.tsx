@@ -1,5 +1,5 @@
-import type { ComponentProps, CSSProperties } from 'react'
 import { cn } from '@conar/ui/lib/utils'
+import type { ComponentProps, CSSProperties } from 'react'
 
 function generateGradientLayers() {
   const baseBlur = 0.05
@@ -23,12 +23,8 @@ const gradientLayers = generateGradientLayers()
 export function BlurGradient({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div className={cn('pointer-events-none overflow-hidden', className)} {...props}>
-      {gradientLayers.map(style => (
-        <div
-          key={style.zIndex}
-          style={style}
-          className="absolute inset-0"
-        />
+      {gradientLayers.map((style) => (
+        <div key={style.zIndex} style={style} className="absolute inset-0" />
       ))}
     </div>
   )

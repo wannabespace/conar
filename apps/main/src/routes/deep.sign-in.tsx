@@ -1,13 +1,14 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
+
 import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
 export const Route = createFileRoute('/deep/sign-in')({
   validateSearch: type({
-    'codeChallenge': 'string',
+    codeChallenge: 'string',
     'newUser?': 'boolean',
-    'type': '"web" | "desktop" | "cli" = "desktop"',
+    type: '"web" | "desktop" | "cli" = "desktop"',
   }),
   loaderDeps: ({ search }) => search,
   loader: async ({ deps }) => {

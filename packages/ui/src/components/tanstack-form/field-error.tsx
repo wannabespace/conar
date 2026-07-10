@@ -7,7 +7,9 @@ export function FieldError() {
   return (
     <FieldErrorPrimitive match={field.state.meta.isTouched && !field.state.meta.isValid}>
       {field.state.meta.errors
-        .map(error => typeof error === 'string' ? error : typeof error === 'object' ? error?.message : error)
+        .map((error) =>
+          typeof error === 'string' ? error : typeof error === 'object' ? error?.message : error,
+        )
         .filter(Boolean)
         .join(', ')}
     </FieldErrorPrimitive>

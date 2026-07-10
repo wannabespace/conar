@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+
 import { tries } from './tries'
 
 describe('tries', () => {
@@ -46,7 +47,7 @@ describe('tries', () => {
         throw new Error('first failed')
       },
       async () => {
-        await new Promise(resolve => setTimeout(resolve, 10))
+        await new Promise((resolve) => setTimeout(resolve, 10))
         return 'async success'
       },
     )
@@ -104,19 +105,13 @@ describe('tries', () => {
 
   describe('when try is optional', () => {
     it('should skip undefined functions', async () => {
-      const result = await tries(
-        undefined,
-        () => 'success',
-      )
+      const result = await tries(undefined, () => 'success')
 
       expect(result).toBe('success')
     })
 
     it('should skip false functions', async () => {
-      const result = await tries(
-        false,
-        () => 'success',
-      )
+      const result = await tries(false, () => 'success')
 
       expect(result).toBe('success')
     })
@@ -135,19 +130,13 @@ describe('tries', () => {
     })
 
     it('should work when the first function is undefined and second succeeds', async () => {
-      const result = await tries(
-        undefined,
-        () => 'success',
-      )
+      const result = await tries(undefined, () => 'success')
 
       expect(result).toBe('success')
     })
 
     it('should work when the first function is false and second succeeds', async () => {
-      const result = await tries(
-        false,
-        () => 'success',
-      )
+      const result = await tries(false, () => 'success')
 
       expect(result).toBe('success')
     })
@@ -166,13 +155,7 @@ describe('tries', () => {
     })
 
     it('should throw error when all functions are optional (undefined/false)', async () => {
-      expect(
-        tries(
-          undefined,
-          false,
-          undefined,
-        ),
-      ).rejects.toThrow('No functions to try')
+      expect(tries(undefined, false, undefined)).rejects.toThrow('No functions to try')
     })
 
     it('should handle mixed optional and valid functions with errors', async () => {

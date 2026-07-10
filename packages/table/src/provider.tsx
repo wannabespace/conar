@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react'
-import type { ColumnRenderer } from './'
 import { useDebouncedCallback } from '@conar/ui/hookas/use-debounced-callback'
 import { useScrollDirection } from '@conar/ui/hookas/use-scroll-direction'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useEffect, useRef } from 'react'
+import type { ReactNode } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
+
+import type { ColumnRenderer } from './'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from './constants'
 import { TableContext } from './table-context'
 import { prepareColumnId } from './utils'
@@ -35,15 +36,20 @@ export function TableProvider({
     count: rows.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => estimatedRowSize,
-    overscan: (verticalScroll || scrollDirection === null) ? 10 : 0,
+    overscan: verticalScroll || scrollDirection === null ? 10 : 0,
   })
 
-  const { getVirtualItems: getVirtualColumns, getTotalSize: getTableWidth, measure } = useVirtualizer({
+  const {
+    getVirtualItems: getVirtualColumns,
+    getTotalSize: getTableWidth,
+    measure,
+  } = useVirtualizer({
     horizontal: true,
     count: columns.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: index => customColumnSizes?.[columns[index]!.id] ?? columns[index]!.size ?? estimatedColumnSize,
-    overscan: (horizontalScroll || scrollDirection === null) ? 3 : 0,
+    estimateSize: (index) =>
+      customColumnSizes?.[columns[index]!.id] ?? columns[index]!.size ?? estimatedColumnSize,
+    overscan: horizontalScroll || scrollDirection === null ? 3 : 0,
   })
 
   const virtualRows = getVirtualRows()
@@ -56,20 +62,31 @@ export function TableProvider({
       return
     }
 
-    scrollRef.current.style.setProperty('--table-scroll-left-offset', `${virtualColumns[0]?.start ?? 0}px`)
-    scrollRef.current.style.setProperty('--table-scroll-right-offset', `${tableWidth - (virtualColumns.at(-1)?.end ?? 0)}px`)
-    scrollRef.current.style.setProperty('--table-scroll-top-offset', `${virtualRows[0]?.start ?? 0}px`)
-    scrollRef.current.style.setProperty('--table-scroll-bottom-offset', `${tableHeight - (virtualRows.at(-1)?.end ?? 0)}px`)
+    scrollRef.current.style.setProperty(
+      '--table-scroll-left-offset',
+      `${virtualColumns[0]?.start ?? 0}px`,
+    )
+    scrollRef.current.style.setProperty(
+      '--table-scroll-right-offset',
+      `${tableWidth - (virtualColumns.at(-1)?.end ?? 0)}px`,
+    )
+    scrollRef.current.style.setProperty(
+      '--table-scroll-top-offset',
+      `${virtualRows[0]?.start ?? 0}px`,
+    )
+    scrollRef.current.style.setProperty(
+      '--table-scroll-bottom-offset',
+      `${tableHeight - (virtualRows.at(-1)?.end ?? 0)}px`,
+    )
   }, [scrollRef, virtualColumns, virtualRows, tableWidth, tableHeight])
 
   const measureDebounced = useDebouncedCallback(measure, [], 250)
 
   useEffect(() => {
-    if (!scrollRef.current || !customColumnSizes)
-      return
+    if (!scrollRef.current || !customColumnSizes) return
 
     const customColumnsSizesMap = new Map(Object.entries(customColumnSizes))
-    const columnsToRemove = columns.filter(column => !customColumnsSizesMap.has(column.id))
+    const columnsToRemove = columns.filter((column) => !customColumnsSizesMap.has(column.id))
 
     const rafId = requestAnimationFrame(() => {
       columnsToRemove.forEach((column) => {
@@ -80,7 +97,10 @@ export function TableProvider({
         }
       })
       customColumnsSizesMap.forEach((size, id) => {
-        scrollRef.current!.style.setProperty(`--table-column-width-${prepareColumnId(id)}`, `${size}px`)
+        scrollRef.current!.style.setProperty(
+          `--table-column-width-${prepareColumnId(id)}`,
+          `${size}px`,
+        )
       })
       measureDebounced()
     })
@@ -90,16 +110,28 @@ export function TableProvider({
 
   return (
     <TableContext.Provider
-      value={{
-        scrollRef,
-        scrollDirection,
-        rows,
-        columns,
-        virtualRows,
-        virtualColumns,
-        tableHeight,
-        tableWidth,
-      }}
+      value={useMemo(
+        () => ({
+          scrollRef,
+          scrollDirection,
+          rows,
+          columns,
+          virtualRows,
+          virtualColumns,
+          tableHeight,
+          tableWidth,
+        }),
+        [
+          scrollRef,
+          scrollDirection,
+          rows,
+          columns,
+          virtualRows,
+          virtualColumns,
+          tableHeight,
+          tableWidth,
+        ],
+      )}
     >
       {children}
     </TableContext.Provider>

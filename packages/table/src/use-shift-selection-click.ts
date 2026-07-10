@@ -1,6 +1,7 @@
 import type { KeyboardEvent, MouseEvent } from 'react'
-import type { ShiftSelectionState } from './shift-selection-state'
 import { useRef } from 'react'
+
+import type { ShiftSelectionState } from './shift-selection-state'
 import { INITIAL_SHIFT_SELECTION_STATE } from './shift-selection-state'
 
 export interface UseShiftSelectionClickOptions<TItem> {
@@ -26,8 +27,8 @@ export function useShiftSelectionClick<TItem extends Record<string, unknown>>({
 }: UseShiftSelectionClickOptions<TItem>) {
   const shiftKeyRef = useRef(false)
 
-  const isSelected = currentSelected.some(row =>
-    Object.keys(rowKey).every(key => row[key] === rowKey[key]),
+  const isSelected = currentSelected.some((row) =>
+    Object.keys(rowKey).every((key) => row[key] === rowKey[key]),
   )
 
   const handleMouseDown = (event: MouseEvent<HTMLInputElement>) => {
@@ -35,8 +36,7 @@ export function useShiftSelectionClick<TItem extends Record<string, unknown>>({
   }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === ' ' || event.key === 'Enter')
-      shiftKeyRef.current = event.shiftKey
+    if (event.key === ' ' || event.key === 'Enter') shiftKeyRef.current = event.shiftKey
   }
 
   const handleChange = () => {
@@ -47,23 +47,23 @@ export function useShiftSelectionClick<TItem extends Record<string, unknown>>({
       const start = Math.min(lastClickedIndex, rowIndex)
       const end = Math.max(lastClickedIndex, rowIndex)
 
-      onSelectionChange(getItemsInRange(start, end), {
-        anchorIndex: lastClickedIndex,
-        focusIndex: rowIndex,
-        lastExpandDirection: rowIndex > lastClickedIndex ? 'down' : 'up',
-      }, rowIndex)
+      onSelectionChange(
+        getItemsInRange(start, end),
+        {
+          anchorIndex: lastClickedIndex,
+          focusIndex: rowIndex,
+          lastExpandDirection: rowIndex > lastClickedIndex ? 'down' : 'up',
+        },
+        rowIndex,
+      )
       return
     }
 
     if (isSelected) {
-      const newSelected = currentSelected.filter(row =>
-        !Object.keys(rowKey).every(key => row[key] === rowKey[key]),
+      const newSelected = currentSelected.filter(
+        (row) => !Object.keys(rowKey).every((key) => row[key] === rowKey[key]),
       )
-      onSelectionChange(
-        newSelected,
-        INITIAL_SHIFT_SELECTION_STATE,
-        rowIndex,
-      )
+      onSelectionChange(newSelected, INITIAL_SHIFT_SELECTION_STATE, rowIndex)
       return
     }
 

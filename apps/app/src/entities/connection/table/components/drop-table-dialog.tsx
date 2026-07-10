@@ -19,6 +19,7 @@ import { useMutation } from '@tanstack/react-query'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
+
 import { dropTableQuery, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { getConnectionResourceStore, removeTab } from '~/entities/connection/store'
@@ -55,17 +56,22 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
       const lastOpenedTable = store.get().lastOpenedTable
 
       if (lastOpenedTable?.schema === schema && lastOpenedTable?.table === table) {
-        store.set(state => ({
-          ...state,
-          lastOpenedTable: null,
-        } satisfies typeof state))
+        store.set(
+          (state) =>
+            ({
+              ...state,
+              lastOpenedTable: null,
+            }) satisfies typeof state,
+        )
       }
     },
   }))
 
   const { mutate: dropTable, isPending } = useMutation({
     mutationFn: async () => {
-      await dropTableQuery({ table, schema, cascade }).run(await connectionResourceToQueryParams(connectionResource))
+      await dropTableQuery({ table, schema, cascade }).run(
+        await connectionResourceToQueryParams(connectionResource),
+      )
     },
     onSuccess: async () => {
       toast.success(`Table "${table}" successfully dropped`)
@@ -73,7 +79,12 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
       setConfirmationText('')
       setCascade(false)
 
-      queryClient.invalidateQueries(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem: store.get().showSystem }))
+      queryClient.invalidateQueries(
+        resourceTablesAndSchemasQueryOptions({
+          connectionResource,
+          showSystem: store.get().showSystem,
+        }),
+      )
 
       if (isCurrentTable) {
         await router.navigate({
@@ -94,9 +105,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            Drop Table
-          </DialogTitle>
+          <DialogTitle>Drop Table</DialogTitle>
         </DialogHeader>
         <DialogPanel className="space-y-4">
           <Alert variant="destructive">
@@ -109,19 +118,13 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
           <div className="space-y-2">
             <Label htmlFor="confirmation">
               <span>
-                Type
-                {' '}
-                <span className="font-semibold">
-                  {table}
-                </span>
-                {' '}
-                to confirm
+                Type <span className="font-semibold">{table}</span> to confirm
               </span>
             </Label>
             <Input
               id="confirmation"
               value={confirmationText}
-              onChange={e => setConfirmationText(e.target.value)}
+              onChange={(e) => setConfirmationText(e.target.value)}
               placeholder={table}
               spellCheck={false}
               autoComplete="off"
@@ -155,9 +158,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
             onClick={() => dropTable()}
             disabled={!canConfirm || isPending}
           >
-            <LoadingContent loading={isPending}>
-              Drop Table
-            </LoadingContent>
+            <LoadingContent loading={isPending}>Drop Table</LoadingContent>
           </Button>
         </DialogFooter>
       </DialogContent>

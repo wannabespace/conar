@@ -1,12 +1,19 @@
-import type { ReactElement } from 'react'
 import { pick } from '@conar/shared/utils/helpers'
 import { Label } from '@conar/ui/components/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Switch } from '@conar/ui/components/switch'
 import { ToggleGroup, ToggleGroupItem } from '@conar/ui/components/toggle-group'
+import type { ReactElement } from 'react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { getConnectionResourceStore, setChatPosition, toggleChat, toggleResults } from '~/entities/connection/store'
+
+import {
+  getConnectionResourceStore,
+  setChatPosition,
+  toggleChat,
+  toggleResults,
+} from '~/entities/connection/store'
+
 import { Route } from '../..'
 
 function ToggleRow({
@@ -20,14 +27,8 @@ function ToggleRow({
 }) {
   return (
     <div className="flex items-center justify-between py-0.5">
-      <Label htmlFor={label}>
-        {label}
-      </Label>
-      <Switch
-        id={label}
-        checked={checked}
-        onCheckedChange={onCheckedChange}
-      />
+      <Label htmlFor={label}>{label}</Label>
+      <Switch id={label} checked={checked} onCheckedChange={onCheckedChange} />
     </div>
   )
 }
@@ -40,7 +41,7 @@ function PositionSelector<T extends string>({
 }: {
   label: string
   value: T
-  options: { value: T, label: string }[]
+  options: { value: T; label: string }[]
   onChange: (value: T) => void
 }) {
   return (
@@ -56,12 +57,8 @@ function PositionSelector<T extends string>({
           }
         }}
       >
-        {options.map(option => (
-          <ToggleGroupItem
-            key={option.value}
-            value={option.value}
-            className="text-xs"
-          >
+        {options.map((option) => (
+          <ToggleGroupItem key={option.value} value={option.value} className="text-xs">
             {option.label}
           </ToggleGroupItem>
         ))}
@@ -75,11 +72,9 @@ export function RunnerSettings({ children }: { children: ReactElement }) {
   const { resourceId } = Route.useParams()
 
   const store = getConnectionResourceStore(resourceId)
-  const {
-    chatVisible,
-    resultsVisible,
-    chatPosition,
-  } = useSubscription(store, { selector: s => pick(s.layout, ['chatVisible', 'resultsVisible', 'chatPosition']) })
+  const { chatVisible, resultsVisible, chatPosition } = useSubscription(store, {
+    selector: (s) => pick(s.layout, ['chatVisible', 'resultsVisible', 'chatPosition']),
+  })
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -103,7 +98,7 @@ export function RunnerSettings({ children }: { children: ReactElement }) {
               { value: 'left' as const, label: 'Left' },
               { value: 'right' as const, label: 'Right' },
             ]}
-            onChange={v => setChatPosition(resourceId, v)}
+            onChange={(v) => setChatPosition(resourceId, v)}
           />
         </div>
       </PopoverContent>

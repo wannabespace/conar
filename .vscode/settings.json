@@ -1,52 +1,17 @@
 {
-  // Disable the default formatter, use eslint instead
+  "oxc.configPath": "oxlint.config.ts",
+  "oxc.fmt.configPath": "oxfmt.config.ts",
+  "oxc.typeAware": true,
+  "oxc.unusedDisableDirectives": "deny",
+  "oxc.enable": true,
   "prettier.enable": false,
-  "editor.formatOnSave": false,
-
-  // Auto fix
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file", // oxfmt can only format whole files
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "never"
+    "source.fixAll.oxc": "explicit",
+    "source.organizeImports": "never" // let oxfmt handle import organization
   },
-
-  // Silent the stylistic rules in you IDE, but still auto fix them
-  "eslint.rules.customizations": [
-    { "rule": "style/*", "severity": "off", "fixable": true },
-    { "rule": "format/*", "severity": "off", "fixable": true },
-    { "rule": "*-indent", "severity": "off", "fixable": true },
-    { "rule": "*-spacing", "severity": "off", "fixable": true },
-    { "rule": "*-spaces", "severity": "off", "fixable": true },
-    { "rule": "*-order", "severity": "off", "fixable": true },
-    { "rule": "*-dangle", "severity": "off", "fixable": true },
-    { "rule": "*-newline", "severity": "off", "fixable": true },
-    { "rule": "*quotes", "severity": "off", "fixable": true },
-    { "rule": "*semi", "severity": "off", "fixable": true }
-  ],
-
-  // Enable eslint for all supported languages
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact",
-    "vue",
-    "html",
-    "markdown",
-    "json",
-    "json5",
-    "jsonc",
-    "yaml",
-    "toml",
-    "xml",
-    "gql",
-    "graphql",
-    "astro",
-    "css",
-    "less",
-    "scss",
-    "pcss",
-    "postcss"
-  ],
   "files.watcherExclude": {
     "**/routeTree.gen.ts": true
   },

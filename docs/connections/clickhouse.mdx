@@ -1,7 +1,7 @@
 ---
-title: "Connect to ClickHouse"
-sidebarTitle: "ClickHouse"
-description: "Connect Tamery to ClickHouse or ClickHouse Cloud over HTTP or HTTPS."
+title: 'Connect to ClickHouse'
+sidebarTitle: 'ClickHouse'
+description: 'Connect Tamery to ClickHouse or ClickHouse Cloud over HTTP or HTTPS.'
 ---
 
 Tamery connects to ClickHouse over its HTTP interface. Two schemes:
@@ -18,13 +18,13 @@ clickhouse://username:password@hostname:8123/database
 clickhouses://username:password@hostname:8443/database
 ```
 
-| Part | Description |
-| --- | --- |
-| `username` | ClickHouse user (e.g. `default`) |
-| `password` | Password for that user |
-| `hostname` | Host (e.g. `localhost` or a remote address) |
-| `8123` / `8443` | HTTP / HTTPS port |
-| `database` | Database name |
+| Part            | Description                                 |
+| --------------- | ------------------------------------------- |
+| `username`      | ClickHouse user (e.g. `default`)            |
+| `password`      | Password for that user                      |
+| `hostname`      | Host (e.g. `localhost` or a remote address) |
+| `8123` / `8443` | HTTP / HTTPS port                           |
+| `database`      | Database name                               |
 
 ## ClickHouse Cloud
 
@@ -49,5 +49,6 @@ clickhouse://default@localhost:8123/default
 ```
 
 <Tip>
-  **Test connection** before saving. If it fails, confirm the HTTP interface is enabled and reachable on the expected port.
+  **Test connection** before saving. If it fails, confirm the HTTP interface is enabled and
+  reachable on the expected port.
 </Tip>

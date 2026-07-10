@@ -1,5 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
+
 import { authClient } from '~/lib/auth'
+
 import { HomePage } from './-home-page'
 
 export const Route = createFileRoute('/_layout/')({

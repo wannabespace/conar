@@ -13,23 +13,19 @@ const BACKSLASH_RE = /\\/g
 const DOUBLE_QUOTE_RE = /"/g
 
 export function parsePgArrayLiteral(value: string): string[] | undefined {
-  if (!PG_ARRAY_LITERAL_RE.test(value))
-    return undefined
+  if (!PG_ARRAY_LITERAL_RE.test(value)) return undefined
 
   const inner = value.slice(1, -1)
-  if (inner === '')
-    return []
+  if (inner === '') return []
 
   return Array.from(inner.matchAll(PG_ARRAY_ELEMENT_RE), ([m]) =>
-    m[0] === '"'
-      ? m.slice(1, -1).replace(PG_UNESCAPE_RE, '$1')
-      : m.trim())
+    m[0] === '"' ? m.slice(1, -1).replace(PG_UNESCAPE_RE, '$1') : m.trim(),
+  )
 }
 
 export function toPgArrayLiteral(items: string[], separator = ','): string {
   const escaped = items.map((item) => {
-    if (item === '')
-      return '""'
+    if (item === '') return '""'
 
     if (PG_NEEDS_QUOTING_RE.test(item) || item.toUpperCase() === 'NULL') {
       const quoted = item.replace(BACKSLASH_RE, '\\\\').replace(DOUBLE_QUOTE_RE, '\\"')
@@ -47,33 +43,26 @@ export function createPostgresListTransformer(column: Column): ValueTransformer<
   const isEnum = !!column.enumName && !!column.availableValues
   return {
     toDisplay: getDisplayValue,
-    fromConnection: value => ({
+    fromConnection: (value) => ({
       toUI: () => {
-        if (isEnum && typeof value === 'string')
-          return parseToArray(value, parsePgArrayLiteral)
+        if (isEnum && typeof value === 'string') return parseToArray(value, parsePgArrayLiteral)
 
         return []
       },
-      toRaw: () => isEnum && typeof value === 'string'
-        ? value
-        : value === null
-          ? ''
-          : JSON.stringify(value),
+      toRaw: () =>
+        isEnum && typeof value === 'string' ? value : value === null ? '' : JSON.stringify(value),
     }),
     toConnection: {
       fromUI: (value) => {
-        if (isEnum)
-          return toPgArrayLiteral(value)
+        if (isEnum) return toPgArrayLiteral(value)
 
         // Only enums can have a UI
         throw new Error('Invalid array value')
       },
       fromRaw: (value) => {
-        if (isEnum)
-          return value
+        if (isEnum) return value
 
-        if (Array.isArray(value))
-          return value.map(String)
+        if (Array.isArray(value)) return value.map(String)
 
         if (value === 'null') {
           throw new Error('Press set null button to clear the value')
@@ -82,8 +71,7 @@ export function createPostgresListTransformer(column: Column): ValueTransformer<
         if (typeof value === 'string') {
           try {
             return JSON.parse(value)
-          }
-          catch {
+          } catch {
             throw new Error('Invalid JSON array format')
           }
         }

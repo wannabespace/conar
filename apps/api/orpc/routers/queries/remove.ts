@@ -2,7 +2,9 @@ import { db } from '@conar/db'
 import { queries } from '@conar/db/schema/queries'
 import { type } from 'arktype'
 import { and, eq, inArray } from 'drizzle-orm'
+
 import { authMiddleware, orpc } from '~/orpc'
+
 import { publisher } from './events'
 
 const input = type({
@@ -11,7 +13,7 @@ const input = type({
 
 export const remove = orpc
   .use(authMiddleware)
-  .input(type.or(input, input.array()).pipe(data => Array.isArray(data) ? data : [data]))
+  .input(type.or(input, input.array()).pipe((data) => (Array.isArray(data) ? data : [data])))
   .handler(async ({ context, input }) => {
     if (input.length === 0) {
       return
@@ -22,7 +24,10 @@ export const remove = orpc
       .where(
         and(
           eq(queries.userId, context.user.id),
-          inArray(queries.id, input.map(item => item.id)),
+          inArray(
+            queries.id,
+            input.map((item) => item.id),
+          ),
         ),
       )
       .returning()

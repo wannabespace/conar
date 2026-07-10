@@ -23,9 +23,11 @@ interface ParserState {
 }
 
 function hasWordAt(word: string, text: string, pos: number): boolean {
-  return (pos === 0 || WORD_BOUNDARY_RE.test(text[pos - 1]!))
-    && text.substring(pos, pos + word.length).toUpperCase() === word
-    && (pos + word.length === text.length || WORD_BOUNDARY_RE.test(text[pos + word.length]!))
+  return (
+    (pos === 0 || WORD_BOUNDARY_RE.test(text[pos - 1]!)) &&
+    text.substring(pos, pos + word.length).toUpperCase() === word &&
+    (pos + word.length === text.length || WORD_BOUNDARY_RE.test(text[pos + word.length]!))
+  )
 }
 
 const TRANSACTION_KEYWORDS: Record<string, 'begin' | 'commit' | 'rollback'> = {
@@ -47,16 +49,13 @@ function trackDollarQuotes(line: string, activeTag: string | null): string | nul
     if (tag === null) {
       const rest = line.substring(pos)
       const match = rest.match(/\$\$|\$[a-z_]\w*\$/i)
-      if (!match || match.index === undefined)
-        break
+      if (!match || match.index === undefined) break
       pos += match.index
       tag = match[0]
       pos += tag.length
-    }
-    else {
+    } else {
       const closePos = line.indexOf(tag, pos)
-      if (closePos === -1)
-        return tag
+      if (closePos === -1) return tag
       pos = closePos + tag.length
       tag = null
     }
@@ -71,13 +70,10 @@ function updateBeginDepth(line: string, depth: number): number {
     if (hasWordAt('BEGIN', upper, i)) {
       depth++
       i += 'BEGIN'.length
-    }
-    else if (hasWordAt('END', upper, i)) {
-      if (depth > 0)
-        depth--
+    } else if (hasWordAt('END', upper, i)) {
+      if (depth > 0) depth--
       i += 'END'.length
-    }
-    else {
+    } else {
       i++
     }
   }
@@ -87,8 +83,7 @@ function updateBeginDepth(line: string, depth: number): number {
 function splitStatements(query: string): string[] {
   const trimmed = query.trim()
 
-  if (STARTS_WITH_BEGIN_RE.test(trimmed) && HAS_COMMIT_ROLLBACK_RE.test(trimmed))
-    return [trimmed]
+  if (STARTS_WITH_BEGIN_RE.test(trimmed) && HAS_COMMIT_ROLLBACK_RE.test(trimmed)) return [trimmed]
 
   const statements: string[] = []
   let current = ''
@@ -103,8 +98,7 @@ function splitStatements(query: string): string[] {
         current += query.substring(i, closeIdx + dollarTag.length)
         i = closeIdx + dollarTag.length
         dollarTag = null
-      }
-      else {
+      } else {
         current += query.substring(i)
         break
       }
@@ -118,32 +112,26 @@ function splitStatements(query: string): string[] {
       dollarTag = dollarMatch[0]
       current += dollarTag
       i += dollarTag.length
-    }
-    else if (!insideBeginEnd && STARTS_WITH_BEGIN_RE.test(rest)) {
+    } else if (!insideBeginEnd && STARTS_WITH_BEGIN_RE.test(rest)) {
       insideBeginEnd = true
       current += rest.slice(0, 'BEGIN'.length)
       i += 'BEGIN'.length
-    }
-    else if (insideBeginEnd && STARTS_WITH_END_RE.test(rest)) {
+    } else if (insideBeginEnd && STARTS_WITH_END_RE.test(rest)) {
       insideBeginEnd = false
       current += rest.slice(0, 'END'.length)
       i += 'END'.length
-    }
-    else if (query[i] === ';' && !insideBeginEnd) {
+    } else if (query[i] === ';' && !insideBeginEnd) {
       const statement = current.trim()
-      if (statement)
-        statements.push(statement)
+      if (statement) statements.push(statement)
       current = ''
       i++
-    }
-    else {
+    } else {
       current += query[i++]
     }
   }
 
   const remaining = current.trim()
-  if (remaining)
-    statements.push(remaining)
+  if (remaining) statements.push(remaining)
   return statements
 }
 
@@ -182,11 +170,9 @@ export function getEditorQueries(sql: string): EditorQuery[] {
     const lineNum = i + 1
     let line = lines[i]!
 
-    if (line.includes('/*'))
-      state.inBlockComment = true
+    if (line.includes('/*')) state.inBlockComment = true
     if (state.inBlockComment) {
-      if (line.includes('*/'))
-        state.inBlockComment = false
+      if (line.includes('*/')) state.inBlockComment = false
       continue
     }
 
@@ -196,21 +182,18 @@ export function getEditorQueries(sql: string): EditorQuery[] {
 
     if (!lineStartsInDollarQuote) {
       const commentIdx = line.indexOf('--')
-      if (commentIdx !== -1)
-        line = line.substring(0, commentIdx)
+      if (commentIdx !== -1) line = line.substring(0, commentIdx)
     }
 
     line = line.trim()
-    if (!line)
-      continue
+    if (!line) continue
 
     if (!inDollarQuote) {
       const txn = getTransactionKeyword(line)
       if (txn === 'begin') {
         state.inTransaction = true
         state.transactionStartLine ??= lineNum
-      }
-      else if (txn === 'commit' || txn === 'rollback') {
+      } else if (txn === 'commit' || txn === 'rollback') {
         state.buffer += (state.buffer ? ' ' : '') + line
         flushTransaction(results, state, lineNum)
         continue
@@ -218,8 +201,7 @@ export function getEditorQueries(sql: string): EditorQuery[] {
 
       const prevDepth = state.beginDepth
       state.beginDepth = updateBeginDepth(line, state.beginDepth)
-      if (prevDepth === 0 && state.beginDepth > 0 && !state.buffer)
-        state.beginStartLine = lineNum
+      if (prevDepth === 0 && state.beginDepth > 0 && !state.buffer) state.beginStartLine = lineNum
     }
 
     if (!state.buffer)

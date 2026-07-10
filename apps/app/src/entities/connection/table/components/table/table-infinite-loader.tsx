@@ -6,7 +6,9 @@ import { RiLoaderLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
+
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
+
 import { TableEmpty } from './table-empty'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -24,7 +26,12 @@ export function TableInfiniteLoader({
 }) {
   const { connectionResource } = useRouteContext()
   const { fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery(
-    resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }),
+    resourceRowsQueryInfiniteOptions({
+      connectionResource,
+      table,
+      schema,
+      query: { filters, orderBy },
+    }),
   )
   const loaderRef = useRef<HTMLDivElement>(null)
   const isVisible = useIsInViewport(loaderRef)
@@ -35,7 +42,7 @@ export function TableInfiniteLoader({
     }
   }, [isVisible, hasNextPage, isFetching, fetchNextPage])
 
-  const scrollRef = useTableContext(state => state.scrollRef)
+  const scrollRef = useTableContext((state) => state.scrollRef)
   useMountedEffect(() => {
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }, [scrollRef, filters, orderBy])
@@ -45,20 +52,17 @@ export function TableInfiniteLoader({
 
   return (
     <div className="pointer-events-none sticky left-0 h-80">
-      <div
-        ref={loaderRef}
-        className="absolute inset-x-0 bottom-0 h-[calc(50vh+50rem)]"
-      />
+      <div ref={loaderRef} className="absolute inset-x-0 bottom-0 h-[calc(50vh+50rem)]" />
       <div className="flex h-[inherit] items-center justify-center">
-        {hasNextPage
-          ? <RiLoaderLine className="size-10 animate-spin opacity-50" />
-          : (
-              <TableEmpty
-                className="bottom-0 h-full"
-                title="No more data"
-                description="This table has no more rows"
-              />
-            )}
+        {hasNextPage ? (
+          <RiLoaderLine className="size-10 animate-spin opacity-50" />
+        ) : (
+          <TableEmpty
+            className="bottom-0 h-full"
+            title="No more data"
+            description="This table has no more rows"
+          />
+        )}
       </div>
     </div>
   )

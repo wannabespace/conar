@@ -11,5 +11,5 @@ export const seedUsageValue = createWebStorageValue({
 })
 
 export function incrementSeedUsage() {
-  seedUsageValue.set(state => state + 1)
+  seedUsageValue.set((state) => state + 1)
 }
