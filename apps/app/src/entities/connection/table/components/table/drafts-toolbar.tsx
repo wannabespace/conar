@@ -23,7 +23,12 @@ import { queryClient } from '~/main'
 
 import { useTableColumns } from '../../columns'
 import type { primaryKeysType } from '../../store'
-import { draftsActions, getRowKeyByPrimaryKeys, primaryKeysKey, useTablePageStore } from '../../store'
+import {
+  draftsActions,
+  getRowKeyByPrimaryKeys,
+  primaryKeysKey,
+  useTablePageStore,
+} from '../../store'
 import { DraftsReviewDrawer } from './drafts-review-drawer'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -63,7 +68,8 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
 
   const { mutate: saveDrafts, isPending: isSaving } = useMutation({
     mutationFn: async () => {
-      if (primaryColumns.length === 0) throw new Error('No primary keys found. Please use SQL Runner to update rows.')
+      if (primaryColumns.length === 0)
+        throw new Error('No primary keys found. Please use SQL Runner to update rows.')
 
       const { filters, orderBy } = store.get()
       const rowsQueryOpts = resourceRowsQueryInfiniteOptions({
@@ -90,7 +96,9 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
 
       try {
         const commits = await db.transaction().execute(async (tx) => {
-          const allRowsByPrimaryKey = new Map(allRows.map((row) => [getRowKeyByPrimaryKeys(row, primaryColumns), row] as const))
+          const allRowsByPrimaryKey = new Map(
+            allRows.map((row) => [getRowKeyByPrimaryKeys(row, primaryColumns), row] as const),
+          )
           const commits: {
             primaryKeys: typeof primaryKeysType.infer
             values: Record<string, unknown>
@@ -131,7 +139,9 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
 
             const modifiedColumns = Object.keys(values)
             const updatedFilters = sqlFilters.map((filter) =>
-              modifiedColumns.includes(filter.column) ? Object.assign(filter, { values: [values[filter.column]] }) : filter,
+              modifiedColumns.includes(filter.column)
+                ? Object.assign(filter, { values: [values[filter.column]] })
+                : filter,
             )
 
             commits.push({ primaryKeys, values, modifiedColumns, updatedFilters })
@@ -199,7 +209,10 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
                 return null
               })
 
-            return [primaryKeysKey(primaryKeys), { primaryKeys, values: refreshed ?? values }] as const
+            return [
+              primaryKeysKey(primaryKeys),
+              { primaryKeys, values: refreshed ?? values },
+            ] as const
           }),
         ),
       )
@@ -226,7 +239,8 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
 
       const { filters, orderBy } = store.get()
 
-      if (filters.length > 0 || Object.keys(orderBy).length > 0) queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
+      if (filters.length > 0 || Object.keys(orderBy).length > 0)
+        queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
 
       const count = savedValuesByRow.size
       toast.success(`Saved ${count} row${count === 1 ? '' : 's'}`)
@@ -272,7 +286,12 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
         <Separator orientation="vertical" className="mx-1 h-4" />
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline" size="icon-xs" onClick={() => setIsReviewOpen(true)} disabled={isSaving || drafts.length === 0}>
+            <Button
+              variant="outline"
+              size="icon-xs"
+              onClick={() => setIsReviewOpen(true)}
+              disabled={isSaving || drafts.length === 0}
+            >
               <RiEyeLine className="size-3.5" />
             </Button>
           </TooltipTrigger>
@@ -287,7 +306,9 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
               </LoadingContent>
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="top">Save all unsaved changes atomically in a transaction</TooltipContent>
+          <TooltipContent side="top">
+            Save all unsaved changes atomically in a transaction
+          </TooltipContent>
         </Tooltip>
       </motion.div>
       <DraftsReviewDrawer

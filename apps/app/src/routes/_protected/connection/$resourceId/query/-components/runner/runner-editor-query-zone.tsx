@@ -7,7 +7,12 @@ import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Separator } from '@conar/ui/components/separator'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@conar/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiCheckLine, RiFileCopyLine, RiQuestionLine, RiSaveLine } from '@remixicon/react'
 import { useIsFetching, useMutation } from '@tanstack/react-query'
@@ -52,7 +57,9 @@ export function RunnerEditorQueryZone({
     {
       mutationFn: async (query: string) => {
         const startTime = performance.now()
-        const rows = await customQuery({ query: wrapExplainQuery(query) }).run(await connectionResourceToQueryParams(connectionResource))
+        const rows = await customQuery({ query: wrapExplainQuery(query) }).run(
+          await connectionResourceToQueryParams(connectionResource),
+        )
         const duration = performance.now() - startTime
         return { rows, duration, query }
       },
@@ -72,12 +79,16 @@ export function RunnerEditorQueryZone({
   const { queriesLength, queryNumber } = useSubscription(editorQueriesStore, {
     selector: (state) => {
       const index = state.findIndex((query) => query.startLineNumber === lineNumber)
-      const queriesBefore = state.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
+      const queriesBefore =
+        state.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
       const queriesLength = state[index]?.queries.length ?? 0
 
       return {
         queriesLength,
-        queryNumber: queriesLength === 1 ? queriesBefore : `${queriesBefore} - ${queriesBefore + queriesLength - 1}`,
+        queryNumber:
+          queriesLength === 1
+            ? queriesBefore
+            : `${queriesBefore} - ${queriesBefore + queriesLength - 1}`,
       }
     },
   })
@@ -87,7 +98,9 @@ export function RunnerEditorQueryZone({
       (state) =>
         ({
           ...state,
-          selectedLines: isChecked ? state.selectedLines.filter((l) => l !== lineNumber) : [...state.selectedLines, lineNumber].toSorted((a, b) => a - b),
+          selectedLines: isChecked
+            ? state.selectedLines.filter((l) => l !== lineNumber)
+            : [...state.selectedLines, lineNumber].toSorted((a, b) => a - b),
         }) satisfies typeof state,
     )
   }
@@ -111,14 +124,23 @@ export function RunnerEditorQueryZone({
         <div className="flex flex-1 items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <label className="flex items-center gap-2 text-xs">
-              <Checkbox className="focus:outline-none!" checked={isChecked} onCheckedChange={() => onCheckedChange()} />
+              <Checkbox
+                className="focus:outline-none!"
+                checked={isChecked}
+                onCheckedChange={() => onCheckedChange()}
+              />
               Query {queryNumber}
             </label>
           </div>
           <div className="flex items-center gap-1">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon-xs" className="focus:outline-none!" onClick={() => onSave()}>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="focus:outline-none!"
+                  onClick={() => onSave()}
+                >
                   <RiSaveLine className="size-3.5" />
                 </Button>
               </TooltipTrigger>
@@ -158,7 +180,10 @@ export function RunnerEditorQueryZone({
                             }
                           >
                             <LoadingContent loading={isExplaining}>
-                              <ContentSwitch active={isExplaining} activeContent={<RiCheckLine className="text-success" />}>
+                              <ContentSwitch
+                                active={isExplaining}
+                                activeContent={<RiCheckLine className="text-success" />}
+                              >
                                 <RiQuestionLine />
                               </ContentSwitch>
                             </LoadingContent>
@@ -166,9 +191,16 @@ export function RunnerEditorQueryZone({
                         </TooltipTrigger>
                         <TooltipContent>Explain</TooltipContent>
                       </Tooltip>
-                      <PopoverContent className="max-h-100 w-auto max-w-150 overflow-auto" side="top">
+                      <PopoverContent
+                        className="max-h-100 w-auto max-w-150 overflow-auto"
+                        side="top"
+                      >
                         {isExplainError && (
-                          <div className="text-xs text-destructive">{explainError instanceof Error ? explainError.message : String(explainError)}</div>
+                          <div className="text-xs text-destructive">
+                            {explainError instanceof Error
+                              ? explainError.message
+                              : String(explainError)}
+                          </div>
                         )}
                         {isExplainSuccess && (
                           <div className="flex flex-col">
@@ -176,7 +208,8 @@ export function RunnerEditorQueryZone({
                               <span className="text-xs font-medium">EXPLAIN</span>
                               <Separator orientation="vertical" className="h-3!" />
                               <span className="text-xs text-muted-foreground">
-                                {explainData.rows.length} {explainData.rows.length === 1 ? 'row' : 'rows'}
+                                {explainData.rows.length}{' '}
+                                {explainData.rows.length === 1 ? 'row' : 'rows'}
                               </span>
                               <Separator orientation="vertical" className="h-3!" />
                               <span className="text-xs text-muted-foreground">
@@ -186,14 +219,21 @@ export function RunnerEditorQueryZone({
                             </div>
                             <Separator className="my-2" />
                             <div className="overflow-auto font-mono text-xs whitespace-pre">
-                              {explainData.rows.map((row) => Object.values(row).join('\t')).join('\n')}
+                              {explainData.rows
+                                .map((row) => Object.values(row).join('\t'))
+                                .join('\n')}
                             </div>
                           </div>
                         )}
                       </PopoverContent>
                     </Popover>
                   )}
-                  <Button size="xs" className="focus:outline-none!" disabled={isFetching} onClick={() => onRun(idx)}>
+                  <Button
+                    size="xs"
+                    className="focus:outline-none!"
+                    disabled={isFetching}
+                    onClick={() => onRun(idx)}
+                  >
                     Run {queriesLength === 1 ? '' : idx + 1}
                   </Button>
                 </Fragment>

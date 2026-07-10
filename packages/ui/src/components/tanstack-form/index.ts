@@ -17,7 +17,8 @@ export function formInputProps(field: AnyFieldApi) {
 
 export type FormInputProps = ReturnType<typeof formInputProps>
 
-export const { fieldContext, formContext, useFieldContext, useFormContext } = createFormHookContexts()
+export const { fieldContext, formContext, useFieldContext, useFormContext } =
+  createFormHookContexts()
 
 export const { useAppForm } = createFormHook({
   fieldComponents: {

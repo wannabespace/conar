@@ -130,7 +130,10 @@ function CardDescription({ className, render, ...props }: useRender.ComponentPro
 
 function CardAction({ className, render, ...props }: useRender.ComponentProps<'div'>) {
   const defaultProps = {
-    'className': cn(`col-start-2 row-span-2 row-start-1 inline-flex self-start justify-self-end`, className),
+    'className': cn(
+      `col-start-2 row-span-2 row-start-1 inline-flex self-start justify-self-end`,
+      className,
+    ),
     'data-slot': 'card-action',
   }
 
@@ -159,7 +162,10 @@ function CardPanel({ className, render, ...props }: useRender.ComponentProps<'di
 
 function CardFooter({ className, render, ...props }: useRender.ComponentProps<'div'>) {
   const defaultProps = {
-    'className': cn(`flex items-center p-6 in-[[data-slot=card]:has(>[data-slot=card-panel])]:pt-4`, className),
+    'className': cn(
+      `flex items-center p-6 in-[[data-slot=card]:has(>[data-slot=card-panel])]:pt-4`,
+      className,
+    ),
     'data-slot': 'card-footer',
   }
 

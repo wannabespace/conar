@@ -1,6 +1,12 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { placeholderMap } from '@conar/shared/utils/connections'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@conar/ui/components/card'
 import { Field, FieldDescription, FieldLabel } from '@conar/ui/components/field'
 import { Input } from '@conar/ui/components/input'
 import type { RefObject } from 'react'

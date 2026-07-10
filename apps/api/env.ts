@@ -62,4 +62,6 @@ const devOptionalEnvs = [
 export const env =
   nodeEnv === 'production' || nodeEnv === 'test'
     ? envType.assert(process.env)
-    : type.and(envType.omit(...devOptionalEnvs), envType.pick(...devOptionalEnvs).partial()).assert(process.env)
+    : type
+        .and(envType.omit(...devOptionalEnvs), envType.pick(...devOptionalEnvs).partial())
+        .assert(process.env)

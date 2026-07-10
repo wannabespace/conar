@@ -1,5 +1,9 @@
 import { db } from '@conar/db'
-import { connections, connectionsResources, connectionsResourcesInsertSchema } from '@conar/db/schema'
+import {
+  connections,
+  connectionsResources,
+  connectionsResourcesInsertSchema,
+} from '@conar/db/schema'
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq, inArray } from 'drizzle-orm'
@@ -24,7 +28,11 @@ export const create = orpc
       throw new ORPCError('NOT_FOUND', { message: 'Connections not found' })
     }
 
-    const inserted = await db.insert(connectionsResources).values(input).onConflictDoNothing().returning()
+    const inserted = await db
+      .insert(connectionsResources)
+      .values(input)
+      .onConflictDoNothing()
+      .returning()
 
     for (const resource of inserted) {
       publisher.publish(context.user.id, {

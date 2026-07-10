@@ -1,7 +1,12 @@
 import { apiKeyClient } from '@better-auth/api-key/client'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
-import { lastLoginMethodClient, magicLinkClient, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
+import {
+  lastLoginMethodClient,
+  magicLinkClient,
+  organizationClient,
+  twoFactorClient,
+} from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 
 const getAuthHeadersIsomorphic = createIsomorphicFn()
@@ -29,7 +34,13 @@ export const authClient = createAuthClient({
       return request
     },
   },
-  plugins: [organizationClient(), twoFactorClient(), magicLinkClient(), lastLoginMethodClient(), apiKeyClient()],
+  plugins: [
+    organizationClient(),
+    twoFactorClient(),
+    magicLinkClient(),
+    lastLoginMethodClient(),
+    apiKeyClient(),
+  ],
 })
 
 const LAST_USED_LOGIN_METHOD_COOKIE = 'better-auth.last_used_login_method'

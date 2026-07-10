@@ -4,8 +4,20 @@ import { CardContent, CardTitle } from '@conar/ui/components/card'
 import { CardMotion } from '@conar/ui/components/card.motion'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
-import { RiDatabase2Line, RiKey2Line, RiLayoutColumnLine, RiLinksLine, RiTable2 } from '@remixicon/react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@conar/ui/components/select'
+import {
+  RiDatabase2Line,
+  RiKey2Line,
+  RiLayoutColumnLine,
+  RiLinksLine,
+  RiTable2,
+} from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -21,22 +33,28 @@ import { SchemaSelect } from '../-components/schema-select'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
-export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/constraints/')({
-  component: DatabaseConstraintsPage,
-  loader: ({ context }) => ({
-    connection: context.connection,
-    connectionResource: context.connectionResource,
-  }),
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          {
-            title: title('Constraints', loaderData.connection.name, loaderData.connectionResource.name),
-          },
-        ]
-      : [],
-  }),
-})
+export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/constraints/')(
+  {
+    component: DatabaseConstraintsPage,
+    loader: ({ context }) => ({
+      connection: context.connection,
+      connectionResource: context.connectionResource,
+    }),
+    head: ({ loaderData }) => ({
+      meta: loaderData
+        ? [
+            {
+              title: title(
+                'Constraints',
+                loaderData.connection.name,
+                loaderData.connectionResource.name,
+              ),
+            },
+          ]
+        : [],
+    }),
+  },
+)
 
 type ConstraintType = (typeof constraintsType.infer)['type']
 
@@ -61,7 +79,13 @@ function getIcon(type: ConstraintType) {
 
 function DatabaseConstraintsPage() {
   const { connectionResource } = Route.useRouteContext()
-  const { data: constraints, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceConstraintsQueryOptions({ connectionResource }))
+  const {
+    data: constraints,
+    refetch,
+    isFetching,
+    isPending,
+    dataUpdatedAt,
+  } = useQuery(resourceConstraintsQueryOptions({ connectionResource }))
   const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({
     connectionResource,
   })
@@ -83,11 +107,21 @@ function DatabaseConstraintsPage() {
 
   return (
     <>
-      <DefinitionsHeader onRefresh={() => refetch()} isRefreshing={isFetching} dataUpdatedAt={dataUpdatedAt}>
+      <DefinitionsHeader
+        onRefresh={() => refetch()}
+        isRefreshing={isFetching}
+        dataUpdatedAt={dataUpdatedAt}
+      >
         Constraints
       </DefinitionsHeader>
       <div className="mb-4 flex items-center gap-2">
-        <SearchInput placeholder="Search constraints" autoFocus value={search} onChange={(e) => setSearch(e.target.value)} onClear={() => setSearch('')} />
+        <SearchInput
+          placeholder="Search constraints"
+          autoFocus
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onClear={() => setSearch('')}
+        />
         <Select
           value={filterType}
           onValueChange={(v) => {
@@ -98,7 +132,11 @@ function DatabaseConstraintsPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Type">
-              {(value) => (value ? filterOptions.find((option) => option.value === value)?.label : 'Filter Type')}
+              {(value) =>
+                value
+                  ? filterOptions.find((option) => option.value === value)?.label
+                  : 'Filter Type'
+              }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -109,22 +147,35 @@ function DatabaseConstraintsPage() {
             ))}
           </SelectContent>
         </Select>
-        <SchemaSelect schemas={schemas} selectedSchema={selectedSchema} setSelectedSchema={setSelectedSchema} />
+        <SchemaSelect
+          schemas={schemas}
+          selectedSchema={selectedSchema}
+          setSelectedSchema={setSelectedSchema}
+        />
       </div>
       <DefinitionsGrid loading={isPending}>
         {filteredConstraints.length === 0 && (
-          <DefinitionsEmptyState title="No constraints found" description="This schema doesn't have any constraints matching your filter." />
+          <DefinitionsEmptyState
+            title="No constraints found"
+            description="This schema doesn't have any constraints matching your filter."
+          />
         )}
 
         {filteredConstraints.map((item) => (
-          <CardMotion key={`${item.schema}-${item.table}-${item.name}-${item.column}`} layout {...MOTION_BLOCK_PROPS}>
+          <CardMotion
+            key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
+            layout
+            {...MOTION_BLOCK_PROPS}
+          >
             <CardContent className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="mb-2 flex items-center gap-2 text-base">
                     {getIcon(item.type)}
                     <HighlightText text={item.name} match={search} />
-                    <Badge variant="secondary">{filterOptions.find((option) => option.value === item.type)?.label}</Badge>
+                    <Badge variant="secondary">
+                      {filterOptions.find((option) => option.value === item.type)?.label}
+                    </Badge>
                   </CardTitle>
                   <div className={`flex items-center gap-1.5 text-sm text-muted-foreground`}>
                     <Badge variant="outline">

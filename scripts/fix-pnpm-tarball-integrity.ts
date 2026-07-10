@@ -38,7 +38,10 @@ export async function fixPnpmTarballIntegrity() {
     const url = match[1]!
     // oxlint-disable-next-line no-await-in-loop
     const integrity = await tarballIntegrity(url)
-    updated = updated.replace(`resolution: {tarball: ${url}}`, `resolution: {integrity: ${integrity}, tarball: ${url}}`)
+    updated = updated.replace(
+      `resolution: {tarball: ${url}}`,
+      `resolution: {integrity: ${integrity}, tarball: ${url}}`,
+    )
     console.log(`✓ ${url}`)
     console.log(`  ${integrity}`)
   }

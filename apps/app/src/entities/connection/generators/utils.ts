@@ -59,7 +59,10 @@ function prismaScalarMapper(t: string) {
   return 'String'
 }
 
-export const TYPE_MAPPINGS: Record<GeneratorFormat, Record<ConnectionType, (type: string) => string>> = {
+export const TYPE_MAPPINGS: Record<
+  GeneratorFormat,
+  Record<ConnectionType, (type: string) => string>
+> = {
   ts: {
     postgres: tsMapper,
     mysql: tsMapper,
@@ -204,11 +207,18 @@ export function groupIndexes(indexes: Index[] = [], table: string): GroupedIndex
   return [...grouped.values()]
 }
 
-export function filterExplicitIndexes(grouped: GroupedIndex[], columns: Column[], dialect?: ConnectionType): GroupedIndex[] {
+export function filterExplicitIndexes(
+  grouped: GroupedIndex[],
+  columns: Column[],
+  dialect?: ConnectionType,
+): GroupedIndex[] {
   return grouped.filter((idx) => {
     if (idx.isPrimary) return false
     if (dialect === 'clickhouse') return false
-    const isRedundantUnique = idx.isUnique && idx.columns.length === 1 && columns.some((c) => c.id === idx.columns[0] && c.unique)
+    const isRedundantUnique =
+      idx.isUnique &&
+      idx.columns.length === 1 &&
+      columns.some((c) => c.id === idx.columns[0] && c.unique)
     if (isRedundantUnique) return false
     return true
   })

@@ -28,7 +28,13 @@ import {
   DrawerTrigger,
 } from '@conar/ui/components/drawer'
 import { Label } from '@conar/ui/components/label'
-import { NumberField, NumberFieldDecrement, NumberFieldGroup, NumberFieldIncrement, NumberFieldInput } from '@conar/ui/components/number-field'
+import {
+  NumberField,
+  NumberFieldDecrement,
+  NumberFieldGroup,
+  NumberFieldIncrement,
+  NumberFieldInput,
+} from '@conar/ui/components/number-field'
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '@conar/ui/components/popover'
 import { Switch } from '@conar/ui/components/switch'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -42,7 +48,12 @@ import { toast } from 'sonner'
 
 import { Monaco } from '~/components/monaco'
 import type { Column } from '~/entities/connection/components'
-import { distinctQuery, insertQuery, resourceRowsQueryInfiniteOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
+import {
+  distinctQuery,
+  insertQuery,
+  resourceRowsQueryInfiniteOptions,
+  resourceTableTotalQueryOptions,
+} from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import type { GeneratorGroup, GeneratorId } from '~/entities/connection/utils/seeds'
 import {
@@ -55,14 +66,24 @@ import {
   REFERENCE_GENERATOR,
   SKIP_GENERATOR,
 } from '~/entities/connection/utils/seeds'
-import { FREE_SEED_LIMIT, incrementSeedUsage, seedUsageValue } from '~/entities/connection/utils/seeds/usage'
+import {
+  FREE_SEED_LIMIT,
+  incrementSeedUsage,
+  seedUsageValue,
+} from '~/entities/connection/utils/seeds/usage'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 import { queryClient } from '~/main'
 import { setIsSubscriptionDialogOpen } from '~/store'
 
 import { useTableColumns } from '../../columns'
 import { useTablePageStore } from '../../store'
-import { DefaultValueTooltipIcon, NullableTooltipIcon, PrimaryKeyTooltipIcon, ReadOnlyTooltipIcon, UniqueTooltipIcon } from '../table/table-header-cell'
+import {
+  DefaultValueTooltipIcon,
+  NullableTooltipIcon,
+  PrimaryKeyTooltipIcon,
+  ReadOnlyTooltipIcon,
+  UniqueTooltipIcon,
+} from '../table/table-header-cell'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -268,7 +289,9 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
       if (!subscription) {
         incrementSeedUsage()
       }
-      toast.success(`Seeded ${seedsCount} row${seedsCount === 1 ? '' : 's'} into ${schema}.${table}`)
+      toast.success(
+        `Seeded ${seedsCount} row${seedsCount === 1 ? '' : 's'} into ${schema}.${table}`,
+      )
       queryClient.invalidateQueries(
         resourceRowsQueryInfiniteOptions({
           connectionResource,
@@ -292,7 +315,9 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
     },
   })
 
-  const activeCount = columns.filter((c) => generators[c.id]?.generatorId && generators[c.id]?.generatorId !== SKIP_GENERATOR).length
+  const activeCount = columns.filter(
+    (c) => generators[c.id]?.generatorId && generators[c.id]?.generatorId !== SKIP_GENERATOR,
+  ).length
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange} position="right">
@@ -329,17 +354,24 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
             <div className="flex flex-col gap-1.5">
               <Label className="mb-1">Columns</Label>
               {columns?.map((column) => (
-                <div key={column.id} className="flex items-center gap-2 rounded-xl border bg-muted/30 px-3 py-2">
+                <div
+                  key={column.id}
+                  className="flex items-center gap-2 rounded-xl border bg-muted/30 px-3 py-2"
+                >
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <div className="flex items-center gap-1.5">
                       <span className="truncate text-sm font-medium">{column.id}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      {column.primaryKey && <PrimaryKeyTooltipIcon primaryKey={column.primaryKey} />}
+                      {column.primaryKey && (
+                        <PrimaryKeyTooltipIcon primaryKey={column.primaryKey} />
+                      )}
                       {column.isNullable && <NullableTooltipIcon />}
                       {column.unique && <UniqueTooltipIcon unique={column.unique} />}
                       {column.isEditable === false && <ReadOnlyTooltipIcon />}
-                      {column.defaultValue && <DefaultValueTooltipIcon defaultValue={column.defaultValue} />}
+                      {column.defaultValue && (
+                        <DefaultValueTooltipIcon defaultValue={column.defaultValue} />
+                      )}
                       <Badge variant="secondary" size="sm" className="text-muted-foreground">
                         {column.typeLabel}
                       </Badge>
@@ -349,14 +381,22 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
                     {column.isNullable && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Switch checked={generators[column.id]?.isNullable ?? false} onCheckedChange={() => toggleNullableGeneration(column.id)} />
+                          <Switch
+                            checked={generators[column.id]?.isNullable ?? false}
+                            onCheckedChange={() => toggleNullableGeneration(column.id)}
+                          />
                         </TooltipTrigger>
                         <TooltipContent>Allow random NULL values</TooltipContent>
                       </Tooltip>
                     )}
-                    {column.foreign || (column.enumName && column.availableValues && column.availableValues.length > 0) ? (
+                    {column.foreign ||
+                    (column.enumName &&
+                      column.availableValues &&
+                      column.availableValues.length > 0) ? (
                       <Button variant="outline" size="sm" disabled className="w-56 justify-start">
-                        {column.foreign ? `${column.foreign.schema}.${column.foreign.table}` : `Random enum value${column.isArray ? 's' : ''}`}
+                        {column.foreign
+                          ? `${column.foreign.schema}.${column.foreign.table}`
+                          : `Random enum value${column.isArray ? 's' : ''}`}
                       </Button>
                     ) : (
                       <div className="flex w-56 gap-1">
@@ -376,8 +416,12 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
                                       [column.id]: {
                                         ...state.generators[column.id],
                                         generatorId: value,
-                                        isNullable: state.generators[column.id]?.isNullable ?? false,
-                                        customExpression: value === CUSTOM_GENERATOR ? state.generators[column.id]?.customExpression : undefined,
+                                        isNullable:
+                                          state.generators[column.id]?.isNullable ?? false,
+                                        customExpression:
+                                          value === CUSTOM_GENERATOR
+                                            ? state.generators[column.id]?.customExpression
+                                            : undefined,
                                       },
                                     },
                                   }) satisfies typeof state,
@@ -385,12 +429,20 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
                             }
                           }}
                         >
-                          <ComboboxTrigger className="flex-1 justify-start" render={<Button variant="outline" size="sm" />}>
-                            {allGenerators[generators[column.id]?.generatorId ?? SKIP_GENERATOR]?.label ?? 'Select a generator'}
+                          <ComboboxTrigger
+                            className="flex-1 justify-start"
+                            render={<Button variant="outline" size="sm" />}
+                          >
+                            {allGenerators[generators[column.id]?.generatorId ?? SKIP_GENERATOR]
+                              ?.label ?? 'Select a generator'}
                           </ComboboxTrigger>
                           <ComboboxPopup className="min-w-48">
                             <div className="border-b p-2">
-                              <ComboboxInput placeholder="Search generators..." showTrigger={false} startAddon={<RiSearchLine />} />
+                              <ComboboxInput
+                                placeholder="Search generators..."
+                                showTrigger={false}
+                                startAddon={<RiSearchLine />}
+                              />
                             </div>
                             <ComboboxEmpty>No generators found.</ComboboxEmpty>
                             <ComboboxList>
@@ -409,7 +461,9 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
                             </ComboboxList>
                           </ComboboxPopup>
                         </Combobox>
-                        {generators[column.id]?.generatorId === CUSTOM_GENERATOR && <CustomExpressionPopover columnId={column.id} />}
+                        {generators[column.id]?.generatorId === CUSTOM_GENERATOR && (
+                          <CustomExpressionPopover columnId={column.id} />
+                        )}
                       </div>
                     )}
                   </div>
@@ -460,7 +514,12 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
               ) : (
                 <>
                   <RiSeedlingLine className="size-4" />
-                  <NumberFlow value={seedsCount} className="tabular-nums" prefix="Seed " suffix={seedsCount === 1 ? ' row' : ' rows'} />
+                  <NumberFlow
+                    value={seedsCount}
+                    className="tabular-nums"
+                    prefix="Seed "
+                    suffix={seedsCount === 1 ? ' row' : ' rows'}
+                  />
                 </>
               )}
             </LoadingContent>

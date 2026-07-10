@@ -77,7 +77,10 @@ export const twoFactors = d.snakeCase.table(
       .references(() => users.id, { onDelete: 'cascade' }),
     verified: d.boolean().default(true),
   },
-  (table) => [d.index('twoFactors_secret_idx').on(table.secret), d.index('twoFactors_userId_idx').on(table.userId)],
+  (table) => [
+    d.index('twoFactors_secret_idx').on(table.secret),
+    d.index('twoFactors_userId_idx').on(table.userId),
+  ],
 )
 
 export const workspaces = d.snakeCase.table(
@@ -106,7 +109,10 @@ export const members = d.snakeCase.table(
       .references(() => users.id, { onDelete: 'cascade' }),
     role: d.text().default('member').notNull(),
   },
-  (table) => [d.index('members_workspaceId_idx').on(table.workspaceId), d.index('members_userId_idx').on(table.userId)],
+  (table) => [
+    d.index('members_workspaceId_idx').on(table.workspaceId),
+    d.index('members_userId_idx').on(table.userId),
+  ],
 )
 
 export const invitations = d.snakeCase.table(
@@ -126,7 +132,10 @@ export const invitations = d.snakeCase.table(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
   },
-  (table) => [d.index('invitations_workspaceId_idx').on(table.workspaceId), d.index('invitations_email_idx').on(table.email)],
+  (table) => [
+    d.index('invitations_workspaceId_idx').on(table.workspaceId),
+    d.index('invitations_email_idx').on(table.email),
+  ],
 )
 
 export const apiKeys = d.snakeCase.table(

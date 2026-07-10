@@ -34,7 +34,9 @@ export function useConnectionResourceLinkParams(resourceId: string) {
     return {
       to: '/connection/$resourceId/table',
       params: { resourceId },
-      search: lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined,
+      search: lastOpenedTable
+        ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table }
+        : undefined,
     }
   }, [resourceId, lastOpenedPage, lastOpenedTable, lastChatId])
 }

@@ -9,7 +9,10 @@ const rolldownOptions: NonNullable<NonNullable<InlineConfig['build']>['rolldownO
     format: 'es',
     keepNames: true,
   },
-  external: [...Object.keys(packageJson.dependencies), ...Object.keys(packageJson.devDependencies)].filter((dep) => !dep.startsWith('@conar/')),
+  external: [
+    ...Object.keys(packageJson.dependencies),
+    ...Object.keys(packageJson.devDependencies),
+  ].filter((dep) => !dep.startsWith('@conar/')),
 }
 
 export default defineConfig({

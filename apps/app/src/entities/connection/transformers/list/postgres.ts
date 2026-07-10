@@ -18,7 +18,9 @@ export function parsePgArrayLiteral(value: string): string[] | undefined {
   const inner = value.slice(1, -1)
   if (inner === '') return []
 
-  return Array.from(inner.matchAll(PG_ARRAY_ELEMENT_RE), ([m]) => (m[0] === '"' ? m.slice(1, -1).replace(PG_UNESCAPE_RE, '$1') : m.trim()))
+  return Array.from(inner.matchAll(PG_ARRAY_ELEMENT_RE), ([m]) =>
+    m[0] === '"' ? m.slice(1, -1).replace(PG_UNESCAPE_RE, '$1') : m.trim(),
+  )
 }
 
 export function toPgArrayLiteral(items: string[], separator = ','): string {
@@ -47,7 +49,8 @@ export function createPostgresListTransformer(column: Column): ValueTransformer<
 
         return []
       },
-      toRaw: () => (isEnum && typeof value === 'string' ? value : value === null ? '' : JSON.stringify(value)),
+      toRaw: () =>
+        isEnum && typeof value === 'string' ? value : value === null ? '' : JSON.stringify(value),
     }),
     toConnection: {
       fromUI: (value) => {

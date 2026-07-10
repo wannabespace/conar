@@ -20,28 +20,52 @@ export const deleteRowsQuery = memoize(
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
-            .where(({ or, and, eb }) => or(primaryKeys.map((pk) => and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))))))
+            .where(({ or, and, eb }) =>
+              or(
+                primaryKeys.map((pk) =>
+                  and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))),
+                ),
+              ),
+            )
             .execute(),
         mysql: (db) =>
           db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
-            .where(({ or, and, eb }) => or(primaryKeys.map((pk) => and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))))))
+            .where(({ or, and, eb }) =>
+              or(
+                primaryKeys.map((pk) =>
+                  and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))),
+                ),
+              ),
+            )
             .execute(),
         mssql: (db) =>
           db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
-            .where(({ or, and, eb }) => or(primaryKeys.map((pk) => and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))))))
+            .where(({ or, and, eb }) =>
+              or(
+                primaryKeys.map((pk) =>
+                  and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))),
+                ),
+              ),
+            )
             .execute(),
         clickhouse: (db) =>
           db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
-            .where(({ or, and, eb }) => or(primaryKeys.map((pk) => and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))))))
+            .where(({ or, and, eb }) =>
+              or(
+                primaryKeys.map((pk) =>
+                  and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))),
+                ),
+              ),
+            )
             .execute(),
       },
     }),

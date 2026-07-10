@@ -5,7 +5,17 @@ import { createQuery } from '../runtime/query'
 import { buildWhere } from './rows'
 
 export const setQuery = memoize(
-  ({ schema, table, values, filters }: { schema: string; table: string; values: Record<string, unknown>; filters: ActiveFilter[] }) =>
+  ({
+    schema,
+    table,
+    values,
+    filters,
+  }: {
+    schema: string
+    table: string
+    values: Record<string, unknown>
+    filters: ActiveFilter[]
+  }) =>
     createQuery({
       query: {
         postgres: (db) =>

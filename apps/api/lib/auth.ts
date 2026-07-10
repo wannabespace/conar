@@ -144,12 +144,14 @@ export const auth = betterAuth({
       },
       delete: {
         after: async (user) => {
-          await infisical.secrets.delete({ path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME }).catch(async (error) => {
-            console.error(
-              `Failed to delete user secret in Infisical: ${error instanceof Error ? error.message : error}`,
-              error instanceof Error && error.cause ? error.cause : undefined,
-            )
-          })
+          await infisical.secrets
+            .delete({ path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME })
+            .catch(async (error) => {
+              console.error(
+                `Failed to delete user secret in Infisical: ${error instanceof Error ? error.message : error}`,
+                error instanceof Error && error.cause ? error.cause : undefined,
+              )
+            })
         },
       },
       update: {
@@ -174,7 +176,10 @@ export const auth = betterAuth({
   },
   onAPIError: {
     onError: async (error) => {
-      const text = typeof error === 'object' && error !== null ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2) : String(error)
+      const text =
+        typeof error === 'object' && error !== null
+          ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
+          : String(error)
 
       if (text.includes('Invalid email')) {
         return

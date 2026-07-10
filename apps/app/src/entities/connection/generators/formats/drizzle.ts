@@ -3,9 +3,18 @@ import { camelCase, pascalCase } from 'change-case'
 
 import type { QueryParams, SchemaParams } from '..'
 import * as templates from '../templates'
-import { filterExplicitIndexes, getColumnType, groupIndexes, isValidIdentifier, toLiteralKey } from '../utils'
+import {
+  filterExplicitIndexes,
+  getColumnType,
+  groupIndexes,
+  isValidIdentifier,
+  toLiteralKey,
+} from '../utils'
 
-const dialectConfig: Record<ConnectionType, { tableFunc: string; dialectImportPath: string; enumFunc?: string }> = {
+const dialectConfig: Record<
+  ConnectionType,
+  { tableFunc: string; dialectImportPath: string; enumFunc?: string }
+> = {
   postgres: { tableFunc: 'pgTable', dialectImportPath: 'drizzle-orm/pg-core', enumFunc: 'pgEnum' },
   mysql: {
     tableFunc: 'mysqlTable',
@@ -106,14 +115,20 @@ export function generateSchemaDrizzle({ table, columns, dialect, indexes = [] }:
 
       let options = ''
       if (!isEnum) {
-        if (c.maxLength && c.maxLength !== -1 && ['varchar', 'char', 'nvarchar'].includes(typeFunc)) {
+        if (
+          c.maxLength &&
+          c.maxLength !== -1 &&
+          ['varchar', 'char', 'nvarchar'].includes(typeFunc)
+        ) {
           options = `, { length: ${c.maxLength} }`
         } else if (typeFunc === 'decimal' && c.precision) {
           options = `, { precision: ${c.precision}${c.scale ? `, scale: ${c.scale}` : ''} }`
         }
       }
 
-      let chain = sameCase ? `${typeFunc}(${options ? options.slice(2).trim() : ''})` : `${typeFunc}('${c.id}'${options})`
+      let chain = sameCase
+        ? `${typeFunc}(${options ? options.slice(2).trim() : ''})`
+        : `${typeFunc}('${c.id}'${options})`
 
       if (!c.isNullable) chain += '.notNull()'
       if (c.primaryKey) chain += '.primaryKey()'
@@ -157,7 +172,9 @@ export function generateSchemaDrizzle({ table, columns, dialect, indexes = [] }:
           fieldName = camelCase(`${ref.table}_${ref.column}`)
         }
         acc.usedNames.add(fieldName)
-        const rel = ref.isUnique ? `  ${fieldName}: one(${refTable}),` : `  ${fieldName}: many(${refTable}),`
+        const rel = ref.isUnique
+          ? `  ${fieldName}: one(${refTable}),`
+          : `  ${fieldName}: many(${refTable}),`
         const fkImport = `import { ${refTable} } from './${ref.table}';`
         return { rel, fkImport }
       })
@@ -218,7 +235,9 @@ export function generateSchemaDrizzle({ table, columns, dialect, indexes = [] }:
 
   if (relationships.length > 0) {
     const relName = `${varName}Relations`
-    definitions.push(`export const ${relName} = relations(${varName}, ({ one, many }) => ({\n${relationships.join('\n')}\n}));`)
+    definitions.push(
+      `export const ${relName} = relations(${varName}, ({ one, many }) => ({\n${relationships.join('\n')}\n}));`,
+    )
   }
 
   return `${allImports}\n\n${definitions.filter(Boolean).join('\n\n')}`

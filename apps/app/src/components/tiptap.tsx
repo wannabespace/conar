@@ -85,7 +85,10 @@ export function TipTap({
     [editor],
   )
 
-  const addImage = (e: React.ClipboardEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement>, data: DataTransfer) => {
+  const addImage = (
+    e: React.ClipboardEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement>,
+    data: DataTransfer,
+  ) => {
     if (!onImageAdd) return
 
     const { files } = data

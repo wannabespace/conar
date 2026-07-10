@@ -13,7 +13,11 @@ export function encrypt({ text, secret }: { text: string; secret: string }) {
   const key = crypto.pbkdf2Sync(secret, salt, 1, KEY_LENGTH, 'sha256')
 
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv)
-  const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final(), cipher.getAuthTag()])
+  const encrypted = Buffer.concat([
+    cipher.update(text, 'utf8'),
+    cipher.final(),
+    cipher.getAuthTag(),
+  ])
 
   return `${iv.toString('hex')}.${encrypted.toString('hex')}.${salt.toString('hex')}`
 }

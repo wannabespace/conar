@@ -5,7 +5,13 @@ import { createApiClient } from '~/api-client'
 import { authMiddleware, orpc } from '~/orpc'
 
 const resolveQueryConnectionString = memoize(
-  async ({ input, headers }: { input: { connectionString?: string; resourceId?: string; connectionId?: string }; headers: Headers }) => {
+  async ({
+    input,
+    headers,
+  }: {
+    input: { connectionString?: string; resourceId?: string; connectionId?: string }
+    headers: Headers
+  }) => {
     if (input.connectionString) {
       return input.connectionString
     }
@@ -22,4 +28,6 @@ const resolveQueryConnectionString = memoize(
   },
 )
 
-export const query = createQueryRouter(orpc.use(authMiddleware), (input, context) => resolveQueryConnectionString({ input, headers: context.headers }))
+export const query = createQueryRouter(orpc.use(authMiddleware), (input, context) =>
+  resolveQueryConnectionString({ input, headers: context.headers }),
+)

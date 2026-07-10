@@ -30,7 +30,13 @@ import { TableCellReferences } from './cell-references'
 import { TableCellTable } from './cell-table'
 import type { Column, ColumnHandlers } from './utils'
 
-function SetNullAlertDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+function SetNullAlertDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
   const { value, onQueueValue } = useCellContext()
 
   const setNull = async () => {
@@ -46,12 +52,17 @@ function SetNullAlertDialog({ open, onOpenChange }: { open: boolean; onOpenChang
         <AlertDialogHeader>
           <AlertDialogTitle>Set value to null?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will set the cell value to <code className="font-mono">null</code>. This action can be undone by editing the cell again.
+            This will set the cell value to <code className="font-mono">null</code>. This action can
+            be undone by editing the cell again.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-          <AlertDialogClose render={<Button variant="warning" />} onClick={setNull} disabled={value === null}>
+          <AlertDialogClose
+            render={<Button variant="warning" />}
+            onClick={setNull}
+            disabled={value === null}
+          >
             Set to null
           </AlertDialogClose>
         </AlertDialogFooter>
@@ -116,7 +127,13 @@ export function TableCell({
   const [isSetNullDialogOpen, setIsSetNullDialogOpen] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
 
-  const status: SaveStatus = draft?.error ? 'error' : draft?.isCommitting ? 'pending' : hasDraft ? 'draft' : 'idle'
+  const status: SaveStatus = draft?.error
+    ? 'error'
+    : draft?.isCommitting
+      ? 'pending'
+      : hasDraft
+        ? 'draft'
+        : 'idle'
 
   const cellClassName = cn(
     isPopoverOpen && 'bg-primary/10 ring-primary/30',
@@ -128,7 +145,13 @@ export function TableCell({
   )
 
   function disableInteractIfPossible() {
-    if (!isPopoverOpen && !isForeignOpen && !isReferencesOpen && !isContextMenuOpen && !isSetNullDialogOpen) {
+    if (
+      !isPopoverOpen &&
+      !isForeignOpen &&
+      !isReferencesOpen &&
+      !isContextMenuOpen &&
+      !isSetNullDialogOpen
+    ) {
       sleep(200).then(() => setCanInteract(false))
     }
   }
@@ -147,7 +170,9 @@ export function TableCell({
       >
         <span className="truncate">{displayValue}</span>
         {!!effectiveValue && column.foreign && <ForeignButton />}
-        {!!effectiveValue && column.references && column.references.length > 0 && <ReferenceButton>{column.references.length}</ReferenceButton>}
+        {!!effectiveValue && column.references && column.references.length > 0 && (
+          <ReferenceButton>{column.references.length}</ReferenceButton>
+        )}
       </TableCellContent>
     )
   }
@@ -182,7 +207,9 @@ export function TableCell({
           }
         }}
         style={style}
-        onSetNull={onQueueValue && column.isNullable ? () => setIsSetNullDialogOpen(true) : undefined}
+        onSetNull={
+          onQueueValue && column.isNullable ? () => setIsSetNullDialogOpen(true) : undefined
+        }
       >
         <Popover
           open={isPopoverOpen}
@@ -198,7 +225,14 @@ export function TableCell({
             onDoubleClick={() => setIsPopoverOpen(true)}
             onMouseLeave={disableInteractIfPossible}
             render={
-              <TableCellContent style={style} value={effectiveValue} position={position} className={cellClassName} column={column} title={draft?.error} />
+              <TableCellContent
+                style={style}
+                value={effectiveValue}
+                position={position}
+                className={cellClassName}
+                column={column}
+                title={draft?.error}
+              />
             }
           >
             <span className="truncate">{displayValue}</span>
@@ -228,7 +262,12 @@ export function TableCell({
                   onDoubleClick={(e) => e.stopPropagation()}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <TableCellTable schema={column.foreign.schema} table={column.foreign.table} column={column.foreign.column} value={effectiveValue} />
+                  <TableCellTable
+                    schema={column.foreign.schema}
+                    table={column.foreign.table}
+                    column={column.foreign.column}
+                    value={effectiveValue}
+                  />
                 </PopoverContent>
               </Popover>
             )}

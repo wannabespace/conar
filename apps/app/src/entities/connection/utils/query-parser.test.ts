@@ -4,8 +4,12 @@ import { getEditorQueries } from './query-parser'
 
 describe('getEditorQueries', () => {
   it('should parse single and multiple queries', () => {
-    expect(getEditorQueries('SELECT * FROM users;')).toEqual([{ startLineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users'] }])
-    expect(getEditorQueries('SELECT * FROM users')).toEqual([{ startLineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users'] }])
+    expect(getEditorQueries('SELECT * FROM users;')).toEqual([
+      { startLineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users'] },
+    ])
+    expect(getEditorQueries('SELECT * FROM users')).toEqual([
+      { startLineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users'] },
+    ])
     expect(getEditorQueries('SELECT * FROM users;\nSELECT * FROM posts;')).toEqual([
       { startLineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users'] },
       { startLineNumber: 2, endLineNumber: 2, queries: ['SELECT * FROM posts'] },
@@ -17,12 +21,16 @@ describe('getEditorQueries', () => {
       getEditorQueries(`SELECT *
 FROM users
 WHERE id = 1;`),
-    ).toEqual([{ startLineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1'] }])
+    ).toEqual([
+      { startLineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1'] },
+    ])
     expect(
       getEditorQueries(`SELECT *
 FROM users
 WHERE id = 1`),
-    ).toEqual([{ startLineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1'] }])
+    ).toEqual([
+      { startLineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1'] },
+    ])
   })
 
   it('should ignore comments', () => {
@@ -38,7 +46,9 @@ SELECT * FROM posts;`),
     expect(
       getEditorQueries(`SELECT * FROM users -- get all users
 WHERE id = 1;`),
-    ).toEqual([{ startLineNumber: 1, endLineNumber: 2, queries: ['SELECT * FROM users WHERE id = 1'] }])
+    ).toEqual([
+      { startLineNumber: 1, endLineNumber: 2, queries: ['SELECT * FROM users WHERE id = 1'] },
+    ])
     expect(
       getEditorQueries(`/* This is a
 multi-line comment */
@@ -130,7 +140,9 @@ WHERE id = 1; SELECT * FROM posts;`),
       {
         startLineNumber: 1,
         endLineNumber: 4,
-        queries: [`BEGIN UPDATE users SET active = false WHERE id = 1; INSERT INTO audit_log (user_id, action) VALUES (1, 'deactivate'); END`],
+        queries: [
+          `BEGIN UPDATE users SET active = false WHERE id = 1; INSERT INTO audit_log (user_id, action) VALUES (1, 'deactivate'); END`,
+        ],
       },
     ])
   })

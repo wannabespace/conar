@@ -16,10 +16,12 @@ The Definitions view lists schema objects beyond tables — enums, indexes, cons
     Indexed columns, index type (B-tree, Hash, GiST, …), and uniqueness.
   </Card>
   <Card title="Constraints" icon="link" href="/features/definitions">
-    Foreign keys and table constraints (`CHECK`, `UNIQUE`), including referencing/referenced columns.
+    Foreign keys and table constraints (`CHECK`, `UNIQUE`), including referencing/referenced
+    columns.
   </Card>
   <Card title="Policies" icon="shield-halved" href="/features/definitions">
-    PostgreSQL RLS policies, MySQL table privileges, SQL Server security predicates, ClickHouse row policies.
+    PostgreSQL RLS policies, MySQL table privileges, SQL Server security predicates, ClickHouse row
+    policies.
   </Card>
   <Card title="Functions" icon="code" href="/features/definitions">
     Functions/procedures (PostgreSQL, MySQL, SQL Server): signature, return type, language, body.
@@ -30,14 +32,21 @@ The Definitions view lists schema objects beyond tables — enums, indexes, cons
 </CardGroup>
 
 <Note>
-  **Functions** and **Triggers** are not available for ClickHouse. **Policies** exist for all engines but mean different things per engine (see above).
+  **Functions** and **Triggers** are not available for ClickHouse. **Policies** exist for all
+  engines but mean different things per engine (see above).
 </Note>
 
 ## Navigating
 
 <Steps>
-  <Step title="Open the Definitions tab">The sidebar shows the categories available for your database type.</Step>
-  <Step title="Choose a category">Click a category (e.g. **Indexes**) to list that object type for the selected schema.</Step>
+  <Step title="Open the Definitions tab">
+    The sidebar shows the categories available for your database type.
+  </Step>
+  <Step title="Choose a category">
+    Click a category (e.g. **Indexes**) to list that object type for the selected schema.
+  </Step>
   <Step title="Switch schemas">Use the **Schema** dropdown at the top of the sidebar.</Step>
-  <Step title="Inspect an object">Click an item to expand its details inline — index columns, function bodies, policy rules, etc.</Step>
+  <Step title="Inspect an object">
+    Click an item to expand its details inline — index columns, function bodies, policy rules, etc.
+  </Step>
 </Steps>

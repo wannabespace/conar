@@ -12,7 +12,9 @@ import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { buildMenu } from './lib/menu'
 
-const todesktop = createRequire(import.meta.url)('@todesktop/runtime') as typeof import('@todesktop/runtime')
+const todesktop = createRequire(import.meta.url)(
+  '@todesktop/runtime',
+) as typeof import('@todesktop/runtime')
 
 todesktop.init()
 
@@ -30,7 +32,10 @@ process.on('uncaughtException', (error) => {
 
 process.on('unhandledRejection', (reason) => {
   if (isConnectionError(reason)) {
-    console.error('[Suppressed Connection Rejection]', reason instanceof Error ? reason.message : reason)
+    console.error(
+      '[Suppressed Connection Rejection]',
+      reason instanceof Error ? reason.message : reason,
+    )
     return
   }
   throw reason
@@ -111,7 +116,9 @@ export function createWindow() {
   })
 
   if (app.isPackaged) {
-    mainWindow.loadFile(path.join(path.dirname(fileURLToPath(import.meta.url)), './renderer/index.html'))
+    mainWindow.loadFile(
+      path.join(path.dirname(fileURLToPath(import.meta.url)), './renderer/index.html'),
+    )
   } else {
     mainWindow.webContents.openDevTools()
     mainWindow.loadURL('https://app.local.conar.app')

@@ -4,7 +4,10 @@ import { Base } from '../components/base'
 
 export function OnPasswordReset({ name }: { name: string }) {
   return (
-    <Base preview={`${name}, your password has been reset`} title="Your password was reset successfully">
+    <Base
+      preview={`${name}, your password has been reset`}
+      title="Your password was reset successfully"
+    >
       <Section>
         <Text>
           Hello, <strong>{name}</strong>!

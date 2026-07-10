@@ -31,7 +31,13 @@ export const healthRouter = new Hono().get('/', async (c) => {
     db
       .execute(sql`select 1`)
       .then(() => createAnswer('ok', 'database', 'Database connection ok'))
-      .catch((e) => createAnswer('error', 'database', e instanceof Error ? e.message : 'Database connection failed')),
+      .catch((e) =>
+        createAnswer(
+          'error',
+          'database',
+          e instanceof Error ? e.message : 'Database connection failed',
+        ),
+      ),
     generateText({
       model: openai('gpt-5-nano'),
       prompt: 'Hello, how are you?',
@@ -43,7 +49,13 @@ export const healthRouter = new Hono().get('/', async (c) => {
 
         return createAnswer('ok', 'openai', result.text)
       })
-      .catch((e) => createAnswer('error', 'openai', e instanceof Error ? e.message : 'OpenAI connection failed')),
+      .catch((e) =>
+        createAnswer(
+          'error',
+          'openai',
+          e instanceof Error ? e.message : 'OpenAI connection failed',
+        ),
+      ),
     generateText({
       model: google('gemini-flash-latest'),
       prompt: 'Hello, how are you?',
@@ -55,7 +67,13 @@ export const healthRouter = new Hono().get('/', async (c) => {
 
         return createAnswer('ok', 'google', result.text)
       })
-      .catch((e) => createAnswer('error', 'google', e instanceof Error ? e.message : 'Google connection failed')),
+      .catch((e) =>
+        createAnswer(
+          'error',
+          'google',
+          e instanceof Error ? e.message : 'Google connection failed',
+        ),
+      ),
     generateText({
       model: anthropic('claude-opus-4-6'),
       prompt: 'Hello, how are you?',
@@ -67,7 +85,13 @@ export const healthRouter = new Hono().get('/', async (c) => {
 
         return createAnswer('ok', 'anthropic', result.text)
       })
-      .catch((e) => createAnswer('error', 'anthropic', e instanceof Error ? e.message : 'Anthropic connection failed')),
+      .catch((e) =>
+        createAnswer(
+          'error',
+          'anthropic',
+          e instanceof Error ? e.message : 'Anthropic connection failed',
+        ),
+      ),
     generateText({
       model: xai('grok-4-latest'),
       prompt: 'Hello, how are you?',
@@ -79,7 +103,9 @@ export const healthRouter = new Hono().get('/', async (c) => {
 
         return createAnswer('ok', 'xai', result.text)
       })
-      .catch((e) => createAnswer('error', 'xai', e instanceof Error ? e.message : 'XAI connection failed')),
+      .catch((e) =>
+        createAnswer('error', 'xai', e instanceof Error ? e.message : 'XAI connection failed'),
+      ),
   ])
 
   const error = promises.find((promise) => promise.status === 'error')

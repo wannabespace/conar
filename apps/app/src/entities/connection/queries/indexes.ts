@@ -31,7 +31,9 @@ export const resourceIndexesQuery = createQuery({
         .innerJoin('pg_catalog.pg_index as ix', 't.oid', 'ix.indrelid')
         .innerJoin('pg_catalog.pg_class as i', 'i.oid', 'ix.indexrelid')
         .innerJoin('pg_catalog.pg_am as am', 'i.relam', 'am.oid')
-        .leftJoin('pg_catalog.pg_attribute as a', (join) => join.onRef('a.attrelid', '=', 't.oid').on(sql<boolean>`a.attnum = ANY(ix.indkey)`))
+        .leftJoin('pg_catalog.pg_attribute as a', (join) =>
+          join.onRef('a.attrelid', '=', 't.oid').on(sql<boolean>`a.attnum = ANY(ix.indkey)`),
+        )
         .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 't.relnamespace')
         .select([
           'n.nspname as schema',
@@ -49,7 +51,12 @@ export const resourceIndexesQuery = createQuery({
 
       return query.map(({ index_definition, ...row }) => {
         // To handle custom indexes like JSONB indexes, vector indexes, etc.
-        let customExpression = !row.column ? index_definition.toLowerCase().split(` using ${row.index_type.toLowerCase()}`)[1]!.trim() : undefined
+        let customExpression = !row.column
+          ? index_definition
+              .toLowerCase()
+              .split(` using ${row.index_type.toLowerCase()}`)[1]!
+              .trim()
+          : undefined
 
         if (customExpression?.startsWith('((')) {
           customExpression = customExpression.slice(1, -1)
@@ -73,7 +80,12 @@ export const resourceIndexesQuery = createQuery({
           (eb) => eb('NON_UNIQUE', '=', 0).as('is_unique'),
           (eb) => eb('INDEX_NAME', '=', 'PRIMARY').as('is_primary'),
         ])
-        .where('TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
+        .where('TABLE_SCHEMA', 'not in', [
+          'mysql',
+          'information_schema',
+          'performance_schema',
+          'sys',
+        ])
         .execute(),
 
     mssql: (db) =>
@@ -81,9 +93,20 @@ export const resourceIndexesQuery = createQuery({
         .selectFrom('sys.indexes as i')
         .innerJoin('sys.tables as t', 't.object_id', 'i.object_id')
         .innerJoin('sys.schemas as s', 's.schema_id', 't.schema_id')
-        .innerJoin('sys.index_columns as ic', (join) => join.onRef('ic.object_id', '=', 'i.object_id').onRef('ic.index_id', '=', 'i.index_id'))
-        .innerJoin('sys.columns as c', (join) => join.onRef('c.object_id', '=', 'ic.object_id').onRef('c.column_id', '=', 'ic.column_id'))
-        .select(['s.name as schema', 't.name as table', 'i.name as name', 'c.name as column', 'i.is_unique as is_unique', 'i.is_primary_key as is_primary'])
+        .innerJoin('sys.index_columns as ic', (join) =>
+          join.onRef('ic.object_id', '=', 'i.object_id').onRef('ic.index_id', '=', 'i.index_id'),
+        )
+        .innerJoin('sys.columns as c', (join) =>
+          join.onRef('c.object_id', '=', 'ic.object_id').onRef('c.column_id', '=', 'ic.column_id'),
+        )
+        .select([
+          's.name as schema',
+          't.name as table',
+          'i.name as name',
+          'c.name as column',
+          'i.is_unique as is_unique',
+          'i.is_primary_key as is_primary',
+        ])
         .execute(),
 
     clickhouse: async (db) => {
@@ -105,9 +128,14 @@ export const resourceIndexesQuery = createQuery({
   },
 })
 
-export function resourceIndexesQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
+export function resourceIndexesQueryOptions({
+  connectionResource,
+}: {
+  connectionResource: ConnectionResource
+}) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'indexes'],
-    queryFn: async () => resourceIndexesQuery.run(await connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () =>
+      resourceIndexesQuery.run(await connectionResourceToQueryParams(connectionResource)),
   })
 }

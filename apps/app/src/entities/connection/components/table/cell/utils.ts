@@ -65,7 +65,11 @@ const columnsSizeMap: Record<string, number> = {
 }
 
 export function getColumnSize(type: string): number {
-  return Object.entries(columnsSizeMap).find(([key]) => type.toLowerCase().includes(key.toLowerCase()))?.[1] ?? DEFAULT_COLUMN_WIDTH
+  return (
+    Object.entries(columnsSizeMap).find(([key]) =>
+      type.toLowerCase().includes(key.toLowerCase()),
+    )?.[1] ?? DEFAULT_COLUMN_WIDTH
+  )
 }
 
 export function getColumnUiType(column: typeof columnType.infer): Column['uiType'] {
@@ -75,7 +79,11 @@ export function getColumnUiType(column: typeof columnType.infer): Column['uiType
 
   if (column.type === 'boolean') return 'boolean'
 
-  if (column.type.toLowerCase().includes('datetime') || column.type.toLowerCase().includes('timestamp')) return 'datetime'
+  if (
+    column.type.toLowerCase().includes('datetime') ||
+    column.type.toLowerCase().includes('timestamp')
+  )
+    return 'datetime'
 
   if (column.type.toLowerCase().includes('date')) return 'date'
 

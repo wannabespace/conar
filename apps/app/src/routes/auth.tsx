@@ -71,7 +71,12 @@ function AuthPage() {
   return (
     <div className="flex flex-col bg-background px-4 py-6">
       <div className={`m-auto flex w-full max-w-md flex-1 flex-col justify-center`}>
-        <AppLogoSquareMotion className="mb-8 size-12" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }} />
+        <AppLogoSquareMotion
+          className="mb-8 size-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        />
         <motion.h1
           className="text-2xl font-medium tracking-tighter text-foreground"
           initial={{ opacity: 0 }}
@@ -80,7 +85,12 @@ function AuthPage() {
         >
           Conar
         </motion.h1>
-        <motion.p className="mb-8 text-muted-foreground" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.26 }}>
+        <motion.p
+          className="mb-8 text-muted-foreground"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.26 }}
+        >
           Start managing your data
         </motion.p>
         <ButtonMotion
@@ -90,7 +100,11 @@ function AuthPage() {
           transition={{ duration: 0.5, delay: 0.29 }}
           onClick={() => signInWithChallenge()}
         >
-          {!!codeChallenge && isPending ? <span className="animate-pulse">Waiting for sign in...</span> : 'Sign In'}
+          {!!codeChallenge && isPending ? (
+            <span className="animate-pulse">Waiting for sign in...</span>
+          ) : (
+            'Sign In'
+          )}
         </ButtonMotion>
         <motion.p
           className="mb-4 text-center text-xs text-muted-foreground"

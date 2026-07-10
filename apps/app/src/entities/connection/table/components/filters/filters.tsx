@@ -14,7 +14,15 @@ import { FilterForm } from './filters-form'
 import { FiltersSelector } from './filters-selector'
 import { FilterValueSelector } from './filters-value-selector'
 
-function FilterItem({ filter, onRemove, onEdit }: { filter: ActiveFilter; onRemove: () => void; onEdit: (filter: ActiveFilter) => void }) {
+function FilterItem({
+  filter,
+  onRemove,
+  onEdit,
+}: {
+  filter: ActiveFilter
+  onRemove: () => void
+  onEdit: (filter: ActiveFilter) => void
+}) {
   const [isColumnOpen, setIsColumnOpen] = useState(false)
   const [isOperatorOpen, setIsOperatorOpen] = useState(false)
   const [isValueOpen, setIsValueOpen] = useState(false)
@@ -38,7 +46,9 @@ function FilterItem({ filter, onRemove, onEdit }: { filter: ActiveFilter; onRemo
       </Popover>
       <GroupSeparator />
       <Popover open={isOperatorOpen} onOpenChange={setIsOperatorOpen}>
-        <PopoverTrigger render={<Button size="xs" variant="outline" />}>{filter.ref.operator}</PopoverTrigger>
+        <PopoverTrigger render={<Button size="xs" variant="outline" />}>
+          {filter.ref.operator}
+        </PopoverTrigger>
         <PopoverContent className="p-0 **:data-[slot=popover-viewport]:p-0">
           <FiltersSelector
             onSelect={(operator) => {
@@ -78,7 +88,12 @@ function FilterItem({ filter, onRemove, onEdit }: { filter: ActiveFilter; onRemo
         </>
       )}
       <GroupSeparator />
-      <Button size="icon-xs" variant="destructive-outline" onClick={onRemove} aria-label="Remove filter">
+      <Button
+        size="icon-xs"
+        variant="destructive-outline"
+        onClick={onRemove}
+        aria-label="Remove filter"
+      >
         <RiCloseLine className="size-3.5" />
       </Button>
     </Group>
@@ -99,7 +114,9 @@ export function Filters() {
 
     if (invalidOrderByKeys.length === 0) return
 
-    const newOrderBy = Object.fromEntries(Object.entries(store.get().orderBy).filter(([key]) => !invalidOrderByKeys.includes(key)))
+    const newOrderBy = Object.fromEntries(
+      Object.entries(store.get().orderBy).filter(([key]) => !invalidOrderByKeys.includes(key)),
+    )
 
     store.set(
       (state) =>
@@ -140,14 +157,18 @@ export function Filters() {
                 (state) =>
                   ({
                     ...state,
-                    filters: state.filters.map((f, i) => (i === index ? { column, ref, values } : f)),
+                    filters: state.filters.map((f, i) =>
+                      i === index ? { column, ref, values } : f,
+                    ),
                   }) satisfies typeof state,
               )
             }
           />
         ))}
         <Popover open={isOpened} onOpenChange={toggleForm}>
-          <PopoverTrigger render={<Button variant="outline" size="icon-xs" onClick={() => toggleForm()} />}>
+          <PopoverTrigger
+            render={<Button variant="outline" size="icon-xs" onClick={() => toggleForm()} />}
+          >
             <RiAddLine className="size-4" />
           </PopoverTrigger>
           <PopoverContent className="p-0 **:data-[slot=popover-viewport]:p-0">

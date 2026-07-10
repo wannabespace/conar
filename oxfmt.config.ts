@@ -5,6 +5,5 @@ export default defineConfig({
   semi: false,
   arrowParens: 'always',
   quoteProps: 'consistent',
-  printWidth: 160,
   ignorePatterns: ['**/routeTree.gen.ts', '**/*.gen.ts', '**/migrations/**'],
 })

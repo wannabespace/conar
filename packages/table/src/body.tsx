@@ -21,7 +21,11 @@ const VirtualColumn = memo(function VirtualColumn({
   const columnsLength = useTableContext((context) => context.columns.length)
 
   if (!column.cell) {
-    return <div style={getBaseColumnStyle({ id: column.id, defaultSize: column.size })}>{String(value)}</div>
+    return (
+      <div style={getBaseColumnStyle({ id: column.id, defaultSize: column.size })}>
+        {String(value)}
+      </div>
+    )
   }
 
   return (
@@ -31,7 +35,13 @@ const VirtualColumn = memo(function VirtualColumn({
       size={virtualColumn.size}
       rowIndex={rowIndex}
       columnIndex={virtualColumn.index}
-      position={virtualColumn.index === 0 ? 'first' : virtualColumn.index === columnsLength - 1 ? 'last' : 'middle'}
+      position={
+        virtualColumn.index === 0
+          ? 'first'
+          : virtualColumn.index === columnsLength - 1
+            ? 'last'
+            : 'middle'
+      }
       style={getBaseColumnStyle({ id: column.id, defaultSize: column.size })}
     />
   )
@@ -50,17 +60,36 @@ const Row = memo(function Row({ size, rowIndex }: { size: number; rowIndex: numb
 
   return (
     <div
-      className={cn(`flex w-fit min-w-full border-b hover:bg-accent/30`, rowIndex === lastIndex && `border-b-0`)}
+      className={cn(
+        `flex w-fit min-w-full border-b hover:bg-accent/30`,
+        rowIndex === lastIndex && `border-b-0`,
+      )}
       style={{ height: `${size}px`, contain: 'layout style' }}
     >
-      <div aria-hidden="true" className="w-(--table-scroll-left-offset) shrink-0 will-change-[height]" style={spacerStyle} />
+      <div
+        aria-hidden="true"
+        className="w-(--table-scroll-left-offset) shrink-0 will-change-[height]"
+        style={spacerStyle}
+      />
       {virtualColumns.map((virtualColumn) => {
         const column = columns[virtualColumn.index]!
         const value = row?.[column?.id]
 
-        return <VirtualColumn key={virtualColumn.key} virtualColumn={virtualColumn} column={column} value={value} rowIndex={rowIndex} />
+        return (
+          <VirtualColumn
+            key={virtualColumn.key}
+            virtualColumn={virtualColumn}
+            column={column}
+            value={value}
+            rowIndex={rowIndex}
+          />
+        )
       })}
-      <div aria-hidden="true" className="w-(--table-scroll-right-offset) shrink-0 will-change-[height]" style={spacerStyle} />
+      <div
+        aria-hidden="true"
+        className="w-(--table-scroll-right-offset) shrink-0 will-change-[height]"
+        style={spacerStyle}
+      />
     </div>
   )
 })
@@ -70,12 +99,24 @@ export function TableBody({ className, style, ...props }: ComponentProps<'div'>)
   const tableWidth = useTableContext((context) => context.tableWidth)
 
   return (
-    <div className={cn('relative min-w-full', className)} style={{ width: `${tableWidth}px`, ...style }} {...props}>
-      <div aria-hidden="true" className="h-(--table-scroll-top-offset) shrink-0 will-change-[height]" style={spacerStyle} />
+    <div
+      className={cn('relative min-w-full', className)}
+      style={{ width: `${tableWidth}px`, ...style }}
+      {...props}
+    >
+      <div
+        aria-hidden="true"
+        className="h-(--table-scroll-top-offset) shrink-0 will-change-[height]"
+        style={spacerStyle}
+      />
       {virtualRows.map((virtualRow) => (
         <Row key={virtualRow.key} rowIndex={virtualRow.index} size={virtualRow.size} />
       ))}
-      <div aria-hidden="true" className="h-(--table-scroll-bottom-offset) shrink-0 will-change-[height]" style={spacerStyle} />
+      <div
+        aria-hidden="true"
+        className="h-(--table-scroll-bottom-offset) shrink-0 will-change-[height]"
+        style={spacerStyle}
+      />
     </div>
   )
 }

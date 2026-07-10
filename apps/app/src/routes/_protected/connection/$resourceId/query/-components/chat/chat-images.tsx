@@ -27,9 +27,18 @@ export function ChatImages({
               />
               <div className="absolute inset-0 rounded-md bg-black/5 opacity-0 transition-opacity group-hover:opacity-100" />
             </TooltipTrigger>
-            <TooltipContent side="top" align="center" sideOffset={15} className="w-auto p-1 shadow-lg">
+            <TooltipContent
+              side="top"
+              align="center"
+              sideOffset={15}
+              className="w-auto p-1 shadow-lg"
+            >
               <div className="flex flex-col gap-2">
-                <img src={image.url} alt={image.name} className="max-h-100 max-w-100 rounded-md object-contain" />
+                <img
+                  src={image.url}
+                  alt={image.name}
+                  className="max-h-100 max-w-100 rounded-md object-contain"
+                />
               </div>
             </TooltipContent>
           </Tooltip>

@@ -7,7 +7,11 @@ import { fullSignOut } from '~/lib/auth'
 import { PROXY_ERROR_MESSAGE } from '../lib/orpc'
 
 function getErrorMessage(error: unknown) {
-  return (error instanceof ORPCError && error.message) || (error as Error)?.message || 'Our server is practicing its meditation. Please, try again later.'
+  return (
+    (error instanceof ORPCError && error.message) ||
+    (error as Error)?.message ||
+    'Our server is practicing its meditation. Please, try again later.'
+  )
 }
 
 export async function handleError(error: unknown) {
@@ -29,7 +33,10 @@ export async function handleError(error: unknown) {
   const message = getErrorMessage(error)
 
   toast.error(
-    typeof error === 'object' && 'status' in error && typeof error.status === 'number' && error.status >= 500
+    typeof error === 'object' &&
+      'status' in error &&
+      typeof error.status === 'number' &&
+      error.status >= 500
       ? 'Something went wrong with our server. You can continue working, but some features may not work as expected.'
       : message,
     {

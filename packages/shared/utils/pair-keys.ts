@@ -5,12 +5,21 @@ const EC_PARAMS = { name: 'ECDH', namedCurve: 'P-256' } as const
 const AES_PARAMS = { name: 'AES-GCM', length: 256 } as const
 
 function deriveAesKey(privateKey: CryptoKey, publicKey: CryptoKey, usage: 'encrypt' | 'decrypt') {
-  return crypto.subtle.deriveKey({ name: 'ECDH', public: publicKey }, privateKey, AES_PARAMS, false, [usage])
+  return crypto.subtle.deriveKey(
+    { name: 'ECDH', public: publicKey },
+    privateKey,
+    AES_PARAMS,
+    false,
+    [usage],
+  )
 }
 
 export async function generateEncryptionKeyPair() {
   const keyPair = await crypto.subtle.generateKey(EC_PARAMS, true, ['deriveKey'])
-  const [publicKey, privateKey] = await Promise.all([crypto.subtle.exportKey('raw', keyPair.publicKey), crypto.subtle.exportKey('pkcs8', keyPair.privateKey)])
+  const [publicKey, privateKey] = await Promise.all([
+    crypto.subtle.exportKey('raw', keyPair.publicKey),
+    crypto.subtle.exportKey('pkcs8', keyPair.privateKey),
+  ])
 
   return {
     publicKey: bytesToBase64(new Uint8Array(publicKey)),
@@ -18,8 +27,20 @@ export async function generateEncryptionKeyPair() {
   }
 }
 
-export async function encryptWithPublicKey({ text, publicKey }: { text: string; publicKey: string }) {
-  const recipientPublicKey = await crypto.subtle.importKey('raw', base64ToBytes(publicKey), EC_PARAMS, false, [])
+export async function encryptWithPublicKey({
+  text,
+  publicKey,
+}: {
+  text: string
+  publicKey: string
+}) {
+  const recipientPublicKey = await crypto.subtle.importKey(
+    'raw',
+    base64ToBytes(publicKey),
+    EC_PARAMS,
+    false,
+    [],
+  )
   const ephemeralKeyPair = await crypto.subtle.generateKey(EC_PARAMS, true, ['deriveKey'])
 
   const aesKey = await deriveAesKey(ephemeralKeyPair.privateKey, recipientPublicKey, 'encrypt')
@@ -36,8 +57,20 @@ export async function decryptWithPrivateKey(privateKey: string, encryptedText: s
     throw new Error('Failed to decrypt text')
   }
 
-  const importedPrivateKey = await crypto.subtle.importKey('pkcs8', base64ToBytes(privateKey), EC_PARAMS, false, ['deriveKey'])
-  const importedEphemeralPublicKey = await crypto.subtle.importKey('raw', base64ToBytes(ephemeralPublicKey), EC_PARAMS, false, [])
+  const importedPrivateKey = await crypto.subtle.importKey(
+    'pkcs8',
+    base64ToBytes(privateKey),
+    EC_PARAMS,
+    false,
+    ['deriveKey'],
+  )
+  const importedEphemeralPublicKey = await crypto.subtle.importKey(
+    'raw',
+    base64ToBytes(ephemeralPublicKey),
+    EC_PARAMS,
+    false,
+    [],
+  )
 
   const aesKey = await deriveAesKey(importedPrivateKey, importedEphemeralPublicKey, 'decrypt')
 

@@ -12,7 +12,9 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (userId) {
       if (window.electron) {
-        window.electron.versions.app().then((appVersion) => posthog.identify(userId, { appVersion }))
+        window.electron.versions
+          .app()
+          .then((appVersion) => posthog.identify(userId, { appVersion }))
       } else {
         posthog.identify(userId)
       }

@@ -1,6 +1,14 @@
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogTitle } from '@conar/ui/components/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogPanel,
+  DialogTitle,
+} from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { useMutation } from '@tanstack/react-query'
@@ -10,7 +18,13 @@ import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-export function DisableTfaDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function DisableTfaDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
   const [password, setPassword] = useState('')
   const { mutate, isPending } = useMutation({
     mutationFn: async (password: string) => {
@@ -39,7 +53,9 @@ export function DisableTfaDialog({ open, onOpenChange }: { open: boolean; onOpen
       >
         <DialogHeader>
           <DialogTitle>Disable 2FA</DialogTitle>
-          <DialogDescription>Enter your password to turn off two-factor authentication.</DialogDescription>
+          <DialogDescription>
+            Enter your password to turn off two-factor authentication.
+          </DialogDescription>
         </DialogHeader>
         <DialogPanel className="flex flex-col gap-2">
           <Label htmlFor="disable-password">Password</Label>
@@ -54,10 +70,20 @@ export function DisableTfaDialog({ open, onOpenChange }: { open: boolean; onOpen
           />
         </DialogPanel>
         <DialogFooter>
-          <Button variant="outline" type="button" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
+          <Button
+            variant="outline"
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="w-full sm:w-auto"
+          >
             Cancel
           </Button>
-          <Button type="submit" variant="destructive" className="w-full sm:w-auto" disabled={isPending || password.length === 0}>
+          <Button
+            type="submit"
+            variant="destructive"
+            className="w-full sm:w-auto"
+            disabled={isPending || password.length === 0}
+          >
             <LoadingContent loading={isPending}>Disable</LoadingContent>
           </Button>
         </DialogFooter>

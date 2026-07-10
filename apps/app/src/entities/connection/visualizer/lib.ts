@@ -8,9 +8,15 @@ import { getColumnUiType } from '~/entities/connection/components/table/cell'
 import type { constraintsType } from '~/entities/connection/queries'
 import type { columnType } from '~/entities/connection/queries/columns'
 
-export function getEdges({ constraints }: { constraints: (typeof constraintsType.infer)[] }): Edge[] {
+export function getEdges({
+  constraints,
+}: {
+  constraints: (typeof constraintsType.infer)[]
+}): Edge[] {
   return constraints
-    .filter((c) => c.type === 'foreignKey' && c.foreignTable && c.foreignColumn && c.table && c.column)
+    .filter(
+      (c) => c.type === 'foreignKey' && c.foreignTable && c.foreignColumn && c.table && c.column,
+    )
     .map((c) => ({
       id: `${c.table}_${c.column}_${c.foreignTable}_${c.foreignColumn}`,
       type: 'custom',
@@ -32,8 +38,18 @@ export function applySearchHighlight<TNode extends NodeType>({
   tables: string[]
   columns: (typeof columnType.infer)[]
 }): TNode[] {
-  const matchedTables = searchQuery ? [...new Set(tables.filter((table) => table.toLowerCase().includes(searchQuery)))] : []
-  const matchedColumns = searchQuery ? [...new Set(columns.filter((column) => column.id.toLowerCase().includes(searchQuery)).map((column) => column.id))] : []
+  const matchedTables = searchQuery
+    ? [...new Set(tables.filter((table) => table.toLowerCase().includes(searchQuery)))]
+    : []
+  const matchedColumns = searchQuery
+    ? [
+        ...new Set(
+          columns
+            .filter((column) => column.id.toLowerCase().includes(searchQuery))
+            .map((column) => column.id),
+        ),
+      ]
+    : []
 
   return nodes.map((node) => ({
     ...node,
@@ -67,7 +83,9 @@ export function getNodes({
   return tables.map((table) => {
     const tableColumns = columns.filter((c) => c.table === table && c.schema === schema)
     const tableConstraints = constraints.filter((c) => c.table === table && c.schema === schema)
-    const tableForeignKeys = tableConstraints.filter((c) => c.type === 'foreignKey' && c.table === table && c.schema === schema)
+    const tableForeignKeys = tableConstraints.filter(
+      (c) => c.type === 'foreignKey' && c.table === table && c.schema === schema,
+    )
 
     return {
       id: table,
@@ -80,8 +98,15 @@ export function getNodes({
         edges,
         // oxlint-disable-next-line oxc/no-map-spread -- `columns` originates from react-query cached data; must not mutate the original items
         columns: tableColumns.map((c) => {
-          const columnConstraints = tableConstraints.filter((constraint) => constraint.column === c.id)
-          const foreign = tableForeignKeys.find((foreignKey) => foreignKey.column === c.id && foreignKey.schema === schema && foreignKey.table === table)
+          const columnConstraints = tableConstraints.filter(
+            (constraint) => constraint.column === c.id,
+          )
+          const foreign = tableForeignKeys.find(
+            (foreignKey) =>
+              foreignKey.column === c.id &&
+              foreignKey.schema === schema &&
+              foreignKey.table === table,
+          )
 
           return {
             ...c,
@@ -95,7 +120,8 @@ export function getNodes({
                     column: foreign.foreignColumn,
                   }
                 : undefined,
-            primaryKey: columnConstraints.find((constraint) => constraint.type === 'primaryKey')?.name,
+            primaryKey: columnConstraints.find((constraint) => constraint.type === 'primaryKey')
+              ?.name,
             unique: columnConstraints.find((constraint) => constraint.type === 'unique')?.name,
           } satisfies Column
         }),
@@ -117,7 +143,9 @@ export function getVisualizerLayout({
   columns: (typeof columnType.infer)[]
   constraints: (typeof constraintsType.infer)[]
 }) {
-  const edges = getEdges({ constraints }).filter((edge) => tables.includes(edge.source) && tables.includes(edge.target))
+  const edges = getEdges({ constraints }).filter(
+    (edge) => tables.includes(edge.source) && tables.includes(edge.target),
+  )
   return getLayoutElements(
     getNodes({
       resourceId,

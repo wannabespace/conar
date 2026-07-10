@@ -1,5 +1,12 @@
 import { Button } from '@conar/ui/components/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@conar/ui/components/card'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { Toaster } from '@conar/ui/components/sonner'
 import { ThemeObserver } from '@conar/ui/theme-observer'
@@ -50,7 +57,9 @@ export function ErrorPage({ error }: ErrorComponentProps) {
         <div className="relative z-20 w-full max-w-lg">
           <Card>
             <CardHeader className="text-center">
-              <div className={`mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-destructive/10`}>
+              <div
+                className={`mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-destructive/10`}
+              >
                 <RiAlertLine className="size-8 text-destructive" />
               </div>
               <CardTitle className="text-xl">Something went wrong</CardTitle>
@@ -70,14 +79,18 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                   {error.stack && (
                     <div className="mt-4">
                       <div className="text-xs text-muted-foreground">
-                        {error.stack.startsWith(`Error: ${error.message}`) ? error.stack.split('\n').slice(1).join('\n') : error.stack}
+                        {error.stack.startsWith(`Error: ${error.message}`)
+                          ? error.stack.split('\n').slice(1).join('\n')
+                          : error.stack}
                       </div>
                     </div>
                   )}
                 </ScrollArea>
               )}
               {error instanceof TraversalError && (
-                <ScrollArea className={`h-75 rounded-md bg-muted p-4 font-mono text-xs text-muted-foreground`}>
+                <ScrollArea
+                  className={`h-75 rounded-md bg-muted p-4 font-mono text-xs text-muted-foreground`}
+                >
                   {error.arkErrors.map((err, index) => (
                     <div key={err.message} className={`mb-4 last:mb-0`}>
                       <div className="font-semibold text-destructive">Error {index + 1}:</div>
@@ -92,7 +105,11 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                 <RiArrowGoBackLine />
                 Go back
               </Button>
-              <Button className="flex-1" variant="outline" onClick={() => router.navigate({ to: '/' })}>
+              <Button
+                className="flex-1"
+                variant="outline"
+                onClick={() => router.navigate({ to: '/' })}
+              >
                 <RiHomeLine />
                 Home
               </Button>

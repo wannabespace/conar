@@ -17,7 +17,11 @@ import {
 } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent, ReactNode } from 'react'
+import type {
+  KeyboardEvent as ReactKeyboardEvent,
+  MouseEvent as ReactMouseEvent,
+  ReactNode,
+} from 'react'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
@@ -35,7 +39,12 @@ function SortButton({ order, onClick }: { order: 'ASC' | 'DESC' | null; onClick:
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button variant="ghost" size="icon-xs" onClick={onClick} className={cn(order !== null && 'text-primary')}>
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={onClick}
+          className={cn(order !== null && 'text-primary')}
+        >
           {order === 'ASC' ? (
             <RiArrowUpLine className="size-3 shrink-0" />
           ) : order === 'DESC' ? (
@@ -45,7 +54,9 @@ function SortButton({ order, onClick }: { order: 'ASC' | 'DESC' | null; onClick:
           )}
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{order === null ? 'Sort' : order === 'ASC' ? 'Sort ascending' : 'Sort descending'}</TooltipContent>
+      <TooltipContent>
+        {order === null ? 'Sort' : order === 'ASC' ? 'Sort ascending' : 'Sort descending'}
+      </TooltipContent>
     </Tooltip>
   )
 }
@@ -133,7 +144,15 @@ export function DefaultValueTooltipIcon({ defaultValue }: { defaultValue: string
   )
 }
 
-function ForeignTooltipIcon({ name, table, column }: { name: string; table: string; column: string }) {
+function ForeignTooltipIcon({
+  name,
+  table,
+  column,
+}: {
+  name: string
+  table: string
+  column: string
+}) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -158,7 +177,9 @@ function EnumTooltipIcon({ values, children }: { values: string[]; children: Rea
       <TooltipTrigger>{children}</TooltipTrigger>
       <TooltipContent>
         <div className="mb-1 text-xs opacity-70">Available values:</div>
-        <div className="flex max-w-sm flex-wrap gap-1 font-mono text-xs font-medium">{values.join(', ')}</div>
+        <div className="flex max-w-sm flex-wrap gap-1 font-mono text-xs font-medium">
+          {values.join(', ')}
+        </div>
       </TooltipContent>
     </Tooltip>
   )
@@ -262,7 +283,12 @@ export function TableHeaderCell({
         <div data-mask className="flex items-center gap-1 truncate font-medium" title={column.id}>
           {column.id}
           {onRename && (
-            <Button variant="ghost" size="icon-xs" onClick={onRename} className={`size-5! opacity-0 transition-opacity group-hover/header-cell:opacity-100`}>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={onRename}
+              className={`size-5! opacity-0 transition-opacity group-hover/header-cell:opacity-100`}
+            >
               <RiPencilLine className="size-3 text-muted-foreground" />
             </Button>
           )}
@@ -273,11 +299,21 @@ export function TableHeaderCell({
             {column.isNullable && <NullableTooltipIcon />}
             {column.unique && <UniqueTooltipIcon unique={column.unique} />}
             {column.isEditable === false && <ReadOnlyTooltipIcon />}
-            {column.foreign && <ForeignTooltipIcon name={column.foreign.name} table={column.foreign.table} column={column.foreign.column} />}
+            {column.foreign && (
+              <ForeignTooltipIcon
+                name={column.foreign.name}
+                table={column.foreign.table}
+                column={column.foreign.column}
+              />
+            )}
             {column.defaultValue && <DefaultValueTooltipIcon defaultValue={column.defaultValue} />}
             {enumsData ? (
               <EnumTooltipIcon values={enumsData.values}>
-                <span className={`truncate font-mono text-muted-foreground underline decoration-dotted`}>{column.typeLabel}</span>
+                <span
+                  className={`truncate font-mono text-muted-foreground underline decoration-dotted`}
+                >
+                  {column.typeLabel}
+                </span>
               </EnumTooltipIcon>
             ) : (
               <span className="truncate font-mono text-muted-foreground">{column.typeLabel}</span>
@@ -286,7 +322,9 @@ export function TableHeaderCell({
         )}
       </div>
       <div className="flex h-full items-center gap-1">
-        {onOrder && column.typeLabel && !CANNOT_SORT_TYPES.has(column.typeLabel) && <SortButton order={order} onClick={() => onOrder()} />}
+        {onOrder && column.typeLabel && !CANNOT_SORT_TYPES.has(column.typeLabel) && (
+          <SortButton order={order} onClick={() => onOrder()} />
+        )}
         {onResize && (
           <div
             // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- `separator` is used here as an interactive, keyboard-resizable column splitter (a valid ARIA pattern), not a static `<hr>`

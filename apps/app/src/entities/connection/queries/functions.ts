@@ -59,9 +59,20 @@ export const resourceFunctionsQuery = createQuery({
           'r.ROUTINE_SCHEMA as schema',
           'r.ROUTINE_NAME as name',
           sql<string>`LOWER(r.ROUTINE_TYPE)`.as('type'),
-          eb.case().when('r.ROUTINE_TYPE', '=', 'FUNCTION').then(eb.ref('r.DATA_TYPE')).else(null).end().as('return_type'),
+          eb
+            .case()
+            .when('r.ROUTINE_TYPE', '=', 'FUNCTION')
+            .then(eb.ref('r.DATA_TYPE'))
+            .else(null)
+            .end()
+            .as('return_type'),
         ])
-        .where('r.ROUTINE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
+        .where('r.ROUTINE_SCHEMA', 'not in', [
+          'mysql',
+          'information_schema',
+          'performance_schema',
+          'sys',
+        ])
         .execute(),
     mssql: (db) =>
       db
@@ -72,7 +83,15 @@ export const resourceFunctionsQuery = createQuery({
           'o.name as name',
           eb
             .case()
-            .when(or([eb('o.type', '=', 'FN'), eb('o.type', '=', 'IF'), eb('o.type', '=', 'TF'), eb('o.type', '=', 'FS'), eb('o.type', '=', 'FT')]))
+            .when(
+              or([
+                eb('o.type', '=', 'FN'),
+                eb('o.type', '=', 'IF'),
+                eb('o.type', '=', 'TF'),
+                eb('o.type', '=', 'FS'),
+                eb('o.type', '=', 'FT'),
+              ]),
+            )
             .then('function')
             .when(or([eb('o.type', '=', 'P'), eb('o.type', '=', 'PC')]))
             .then('procedure')
@@ -110,9 +129,14 @@ export const resourceFunctionsQuery = createQuery({
   },
 })
 
-export function resourceFunctionsQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
+export function resourceFunctionsQueryOptions({
+  connectionResource,
+}: {
+  connectionResource: ConnectionResource
+}) {
   return queryOptions({
-    queryFn: async () => resourceFunctionsQuery.run(await connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () =>
+      resourceFunctionsQuery.run(await connectionResourceToQueryParams(connectionResource)),
     queryKey: ['connection-resource', connectionResource.id, 'functions'],
   })
 }

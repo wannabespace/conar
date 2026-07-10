@@ -29,7 +29,9 @@ export function SupportButton() {
   const { mutate: sendSupport, isPending: loading } = useMutation(
     orpc.contact.mutationOptions({
       onSuccess: () => {
-        toast.success('Support message sent successfully! We will get back to you as soon as possible.')
+        toast.success(
+          'Support message sent successfully! We will get back to you as soon as possible.',
+        )
         setOpen(false)
         setMessage('')
       },
@@ -54,7 +56,9 @@ export function SupportButton() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Contact Support</DialogTitle>
-          <DialogDescription>Have a question, suggestion, or need assistance? We're here to listen!</DialogDescription>
+          <DialogDescription>
+            Have a question, suggestion, or need assistance? We're here to listen!
+          </DialogDescription>
         </DialogHeader>
         <DialogPanel>
           <form onSubmit={handleSubmit} className="space-y-2">

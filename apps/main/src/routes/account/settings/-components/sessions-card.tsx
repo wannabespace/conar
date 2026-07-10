@@ -86,15 +86,23 @@ function SessionItem({
       </div>
       {token !== currentToken && (
         <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-          <AlertDialogTrigger render={<Button variant="ghost" size="xs" />}>Revoke</AlertDialogTrigger>
+          <AlertDialogTrigger render={<Button variant="ghost" size="xs" />}>
+            Revoke
+          </AlertDialogTrigger>
           <AlertDialogContent className="sm:max-w-sm">
             <AlertDialogHeader>
               <AlertDialogTitle>Revoke this session?</AlertDialogTitle>
-              <AlertDialogDescription>This will sign out this device. Are you sure you want to continue?</AlertDialogDescription>
+              <AlertDialogDescription>
+                This will sign out this device. Are you sure you want to continue?
+              </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-              <Button variant="destructive" disabled={revokingSession} onClick={() => revokeSession(token)}>
+              <Button
+                variant="destructive"
+                disabled={revokingSession}
+                onClick={() => revokeSession(token)}
+              >
                 <LoadingContent loading={revokingSession}>Revoke</LoadingContent>
               </Button>
             </AlertDialogFooter>
@@ -145,7 +153,9 @@ export function SessionsCard() {
     <Card>
       <CardHeader>
         <CardTitle>Active sessions</CardTitle>
-        <CardDescription>Manage devices where you're signed in. Revoking a session signs that device out.</CardDescription>
+        <CardDescription>
+          Manage devices where you're signed in. Revoking a session signs that device out.
+        </CardDescription>
       </CardHeader>
       <CardPanel className="space-y-2">
         {sessionsPending ? (
@@ -179,11 +189,17 @@ export function SessionsCard() {
             <AlertDialogContent className="sm:max-w-sm">
               <AlertDialogHeader>
                 <AlertDialogTitle>Revoke all other sessions?</AlertDialogTitle>
-                <AlertDialogDescription>This will sign out all devices except this one. Are you sure you want to continue?</AlertDialogDescription>
+                <AlertDialogDescription>
+                  This will sign out all devices except this one. Are you sure you want to continue?
+                </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-                <Button variant="destructive" disabled={revokingOthers} onClick={() => revokeOtherSessions()}>
+                <Button
+                  variant="destructive"
+                  disabled={revokingOthers}
+                  onClick={() => revokeOtherSessions()}
+                >
                   <LoadingContent loading={revokingOthers}>Revoke other</LoadingContent>
                 </Button>
               </AlertDialogFooter>

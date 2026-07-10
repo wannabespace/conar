@@ -1,7 +1,16 @@
 import { pick } from '@conar/shared/utils/helpers'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Drawer, DrawerClose, DrawerDescription, DrawerFooter, DrawerHeader, DrawerPanel, DrawerPopup, DrawerTitle } from '@conar/ui/components/drawer'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerPanel,
+  DrawerPopup,
+  DrawerTitle,
+} from '@conar/ui/components/drawer'
 import { Frame, FrameHeader, FramePanel, FrameTitle } from '@conar/ui/components/frame'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
@@ -15,11 +24,24 @@ import { createTransformer, getDisplayValue } from '~/entities/connection/transf
 
 import { useTableColumns } from '../../columns'
 import type { draftType } from '../../store'
-import { draftsActions, getRowKeyByPrimaryKeys, primaryKeysKey, useTablePageStore } from '../../store'
+import {
+  draftsActions,
+  getRowKeyByPrimaryKeys,
+  primaryKeysKey,
+  useTablePageStore,
+} from '../../store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-function ValueCell({ value, children, className }: { value: unknown; children: string; className?: string }) {
+function ValueCell({
+  value,
+  children,
+  className,
+}: {
+  value: unknown
+  children: string
+  className?: string
+}) {
   return (
     <div
       className={cn(
@@ -69,10 +91,17 @@ export function DraftsReviewDrawer({
     }),
   )
 
-  const rowsByPrimaryKey = new Map(rows.map((row, index) => [getRowKeyByPrimaryKeys(row, primaryColumns), { row, index }] as const))
+  const rowsByPrimaryKey = new Map(
+    rows.map(
+      (row, index) => [getRowKeyByPrimaryKeys(row, primaryColumns), { row, index }] as const,
+    ),
+  )
   const draftIndex = (rowDrafts: (typeof draftType.infer)[]) =>
-    rowsByPrimaryKey.get(primaryKeysKey(rowDrafts[0]!.primaryKeys))?.index ?? Number.MAX_SAFE_INTEGER
-  const rowsEntries = Array.from(Map.groupBy(drafts, (d) => primaryKeysKey(d.primaryKeys)).values()).toSorted((a, b) => draftIndex(a) - draftIndex(b))
+    rowsByPrimaryKey.get(primaryKeysKey(rowDrafts[0]!.primaryKeys))?.index ??
+    Number.MAX_SAFE_INTEGER
+  const rowsEntries = Array.from(
+    Map.groupBy(drafts, (d) => primaryKeysKey(d.primaryKeys)).values(),
+  ).toSorted((a, b) => draftIndex(a) - draftIndex(b))
 
   const columnDisplay = (columnId: string, value: unknown) => {
     const column = columns.find((c) => c.id === columnId)
@@ -107,9 +136,13 @@ export function DraftsReviewDrawer({
                 const row = rowsByPrimaryKey.get(primaryKeysKey(primaryKeys))?.row
                 const primaryLabel =
                   Object.entries(primaryKeys).length > 0
-                    ? Object.entries(primaryKeys).map(([columnId, value]) => `${columnId} = ${columnDisplay(columnId, value)}`)
+                    ? Object.entries(primaryKeys).map(
+                        ([columnId, value]) => `${columnId} = ${columnDisplay(columnId, value)}`,
+                      )
                     : ['Unknown row']
-                const errors = [...new Set(rowDrafts.flatMap((draft) => (draft.error ? [draft.error] : [])))]
+                const errors = [
+                  ...new Set(rowDrafts.flatMap((draft) => (draft.error ? [draft.error] : []))),
+                ]
 
                 return (
                   <Frame key={primaryKeysKey(primaryKeys)}>
@@ -141,7 +174,12 @@ export function DraftsReviewDrawer({
                       </div>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon-xs" onClick={() => removeRow(primaryKeys)} disabled={isSaving}>
+                          <Button
+                            variant="ghost"
+                            size="icon-xs"
+                            onClick={() => removeRow(primaryKeys)}
+                            disabled={isSaving}
+                          >
                             <RiArrowGoBackLine />
                           </Button>
                         </TooltipTrigger>
@@ -151,19 +189,26 @@ export function DraftsReviewDrawer({
                     <FramePanel className="p-3">
                       <div className="flex flex-col gap-2.5">
                         {rowDrafts.map((draft) => {
-                          const before = row ? columnDisplay(draft.columnId, row[draft.columnId]) : ''
+                          const before = row
+                            ? columnDisplay(draft.columnId, row[draft.columnId])
+                            : ''
                           const after = columnDisplay(draft.columnId, draft.value)
 
                           return (
                             <div key={draft.columnId} className="flex items-start gap-2">
                               <div className="grid flex-1 grid-cols-2 gap-x-2 gap-y-1">
-                                <div className="truncate font-mono text-[0.7rem] font-medium text-muted-foreground">{draft.columnId}</div>
+                                <div className="truncate font-mono text-[0.7rem] font-medium text-muted-foreground">
+                                  {draft.columnId}
+                                </div>
                                 <div className="flex items-center gap-1 text-[0.7rem] font-medium text-muted-foreground">
                                   <RiArrowRightLine className="size-3 shrink-0" />
                                   Modified
                                 </div>
                                 <ValueCell value={row?.[draft.columnId]}>{before}</ValueCell>
-                                <ValueCell value={draft.value} className="border-warning/30 bg-warning/10 text-warning-foreground">
+                                <ValueCell
+                                  value={draft.value}
+                                  className="border-warning/30 bg-warning/10 text-warning-foreground"
+                                >
                                   {after}
                                 </ValueCell>
                               </div>
@@ -193,7 +238,12 @@ export function DraftsReviewDrawer({
           )}
         </DrawerPanel>
         <DrawerFooter>
-          <Button variant="outline" onClick={onDiscardAll} disabled={isSaving || drafts.length === 0} className="mr-auto">
+          <Button
+            variant="outline"
+            onClick={onDiscardAll}
+            disabled={isSaving || drafts.length === 0}
+            className="mr-auto"
+          >
             <RiArrowGoBackLine />
             Discard all
           </Button>

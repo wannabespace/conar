@@ -65,7 +65,9 @@ function SupportButton() {
   const { mutate: sendSupport, isPending: loading } = useMutation(
     orpc.contact.mutationOptions({
       onSuccess: () => {
-        toast.success('Support message sent successfully! We will get back to you as soon as possible.')
+        toast.success(
+          'Support message sent successfully! We will get back to you as soon as possible.',
+        )
         setOpen(false)
         setMessage('')
       },
@@ -94,7 +96,9 @@ function SupportButton() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Contact Support</DialogTitle>
-          <DialogDescription>Have a question, suggestion, or need assistance? We're here to listen!</DialogDescription>
+          <DialogDescription>
+            Have a question, suggestion, or need assistance? We're here to listen!
+          </DialogDescription>
         </DialogHeader>
         <DialogPanel>
           <form onSubmit={handleSubmit}>
@@ -132,7 +136,12 @@ function MainLinks() {
   const lastOpenedTable = useSubscription(store, { selector: (state) => state.lastOpenedTable })
 
   useEffect(() => {
-    if (tableParam && schemaParam && tableParam !== lastOpenedTable?.table && schemaParam !== lastOpenedTable?.schema) {
+    if (
+      tableParam &&
+      schemaParam &&
+      tableParam !== lastOpenedTable?.table &&
+      schemaParam !== lastOpenedTable?.schema
+    ) {
       store.set(
         (state) =>
           ({
@@ -148,7 +157,8 @@ function MainLinks() {
   const isActiveDefinitions = match?.includes('/_protected/connection/$resourceId/definitions')
   const isActiveVisualizer = match === '/_protected/connection/$resourceId/visualizer/'
 
-  const isCurrentTableAsLastOpened = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
+  const isCurrentTableAsLastOpened =
+    lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
 
   const route = useMemo(() => {
     if (!isCurrentTableAsLastOpened && lastOpenedTable) {
@@ -210,7 +220,11 @@ function MainLinks() {
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Link to="/connection/$resourceId/definitions" params={{ resourceId: connectionResource.id }} className={baseClasses(isActiveDefinitions)}>
+          <Link
+            to="/connection/$resourceId/definitions"
+            params={{ resourceId: connectionResource.id }}
+            className={baseClasses(isActiveDefinitions)}
+          >
             <RiShieldCheckLine className="size-4" />
           </Link>
         </TooltipTrigger>
@@ -218,7 +232,11 @@ function MainLinks() {
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Link to="/connection/$resourceId/visualizer" params={{ resourceId: connectionResource.id }} className={baseClasses(isActiveVisualizer)}>
+          <Link
+            to="/connection/$resourceId/visualizer"
+            params={{ resourceId: connectionResource.id }}
+            className={baseClasses(isActiveVisualizer)}
+          >
             <RiNodeTree className="size-4" />
           </Link>
         </TooltipTrigger>
@@ -242,7 +260,9 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
   const store = getConnectionResourceStore(connectionResource.id)
   const location = useLocation()
 
-  const canOpenWeb = window.electron ? connection.syncType === SyncType.Cloud && !connectionString?.isLocalhost : false
+  const canOpenWeb = window.electron
+    ? connection.syncType === SyncType.Cloud && !connectionString?.isLocalhost
+    : false
 
   return (
     <div className={cn('flex flex-col items-center', className)} {...props}>
@@ -267,7 +287,11 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
         {canOpenWeb && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="icon" variant="ghost" onClick={() => window.open(import.meta.env.VITE_PUBLIC_WEB_URL + location.href)}>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => window.open(import.meta.env.VITE_PUBLIC_WEB_URL + location.href)}
+              >
                 <RiGlobalLine className="size-4" />
               </Button>
             </TooltipTrigger>
@@ -276,7 +300,16 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
         )}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button size="icon" variant="ghost" onClick={() => store.set((state) => ({ ...state, loggerOpened: !state.loggerOpened }) satisfies typeof state)}>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() =>
+                store.set(
+                  (state) =>
+                    ({ ...state, loggerOpened: !state.loggerOpened }) satisfies typeof state,
+                )
+              }
+            >
               <RiFileListLine className="size-4" />
             </Button>
           </TooltipTrigger>
@@ -286,7 +319,15 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
         <SupportButton />
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button size="icon" variant="ghost" onClick={() => appStore.set((state) => ({ ...state, isActionCenterOpen: true }) satisfies typeof state)}>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() =>
+                appStore.set(
+                  (state) => ({ ...state, isActionCenterOpen: true }) satisfies typeof state,
+                )
+              }
+            >
               <RiCommandLine className="size-4" />
             </Button>
           </TooltipTrigger>

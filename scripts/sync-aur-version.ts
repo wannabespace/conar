@@ -27,7 +27,8 @@ function getDesktopVersion(): string {
 }
 
 const pkgverRe = /^(\s*pkgver = ).*$/m
-const sourceRe = /^(\s*source_x86_64 = )conar-[^:]+(::https:\/\/download\.conar\.app\/linux\/deb\/x64)$/m
+const sourceRe =
+  /^(\s*source_x86_64 = )conar-[^:]+(::https:\/\/download\.conar\.app\/linux\/deb\/x64)$/m
 const sha256Re = /^(\s*sha256sums_x86_64 = ).*$/m
 
 function updatePkgbuild(version: string, sha256: string | null): boolean {

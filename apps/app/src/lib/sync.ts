@@ -1,5 +1,9 @@
 import { GITHUB_REPO_NAME } from '@conar/shared/constants'
-import { BrowserCollectionCoordinator, createBrowserWASQLitePersistence, openBrowserWASQLiteOPFSDatabase } from '@tanstack/browser-db-sqlite-persistence'
+import {
+  BrowserCollectionCoordinator,
+  createBrowserWASQLitePersistence,
+  openBrowserWASQLiteOPFSDatabase,
+} from '@tanstack/browser-db-sqlite-persistence'
 import type { SyncConfig } from '@tanstack/react-db'
 import { BasicIndex } from '@tanstack/react-db'
 
@@ -76,9 +80,14 @@ export const persistence = createBrowserWASQLitePersistence({
   schemaMismatchPolicy: 'reset',
 })
 
-export type SyncMessage<T> = { type: 'insert'; value: T } | { type: 'update'; value: T } | { type: 'delete'; key: string }
+export type SyncMessage<T> =
+  | { type: 'insert'; value: T }
+  | { type: 'update'; value: T }
+  | { type: 'delete'; key: string }
 
-type MutationFn<T> = (params: { transaction: { mutations: { key: string; modified: T; changes: Partial<T> }[] } }) => Promise<void>
+type MutationFn<T> = (params: {
+  transaction: { mutations: { key: string; modified: T; changes: Partial<T> }[] }
+}) => Promise<void>
 
 export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
   id: string
@@ -90,7 +99,9 @@ export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
   onDelete?: MutationFn<T>
 }
 
-export function syncCollectionOptions<T extends { updatedAt: Date }>(config: SyncCollectionConfig<T>) {
+export function syncCollectionOptions<T extends { updatedAt: Date }>(
+  config: SyncCollectionConfig<T>,
+) {
   const tracker = createSyncTracker()
 
   const sync: SyncConfig<T, string> = {

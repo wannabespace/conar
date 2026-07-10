@@ -1,5 +1,9 @@
 import { title } from '@conar/shared/utils/title'
-import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
+import {
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizableSeparator,
+} from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'
@@ -37,7 +41,11 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/query/'
     meta: loaderData
       ? [
           {
-            title: title('SQL Runner', loaderData.connection.name, loaderData.connectionResource.name),
+            title: title(
+              'SQL Runner',
+              loaderData.connection.name,
+              loaderData.connectionResource.name,
+            ),
           },
         ]
       : [],
@@ -48,7 +56,12 @@ const MIN_CHAT_SIZE = '200px'
 
 function ChatPanel() {
   return (
-    <ResizablePanel defaultSize="300px" minSize={MIN_CHAT_SIZE} maxSize="50%" className="rounded-lg bg-background">
+    <ResizablePanel
+      defaultSize="300px"
+      minSize={MIN_CHAT_SIZE}
+      maxSize="50%"
+      className="rounded-lg bg-background"
+    >
       <Chat className="h-full" />
     </ResizablePanel>
   )
@@ -56,7 +69,11 @@ function ChatPanel() {
 
 function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
   return (
-    <ResizablePanel defaultSize={chatVisible ? '70%' : '100%'} minSize="30%" className="rounded-lg bg-background">
+    <ResizablePanel
+      defaultSize={chatVisible ? '70%' : '100%'}
+      minSize="30%"
+      className="rounded-lg bg-background"
+    >
       <Runner />
     </ResizablePanel>
   )
@@ -90,7 +107,12 @@ function DatabaseSqlPage() {
   })
 
   return (
-    <ResizablePanelGroup defaultLayout={defaultLayout} onLayoutChanged={onLayoutChanged} orientation="horizontal" className="flex h-full">
+    <ResizablePanelGroup
+      defaultLayout={defaultLayout}
+      onLayoutChanged={onLayoutChanged}
+      orientation="horizontal"
+      className="flex h-full"
+    >
       {chatVisible ? (
         <>
           {chatPosition === 'left' ? (

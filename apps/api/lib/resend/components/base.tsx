@@ -1,9 +1,30 @@
 import { SOCIAL_LINKS } from '@conar/shared/constants'
-import { Body, Container, Head, Heading, Html, Img, Link, pixelBasedPreset, Preview, Section, Tailwind, Text } from '@react-email/components'
+import {
+  Body,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Img,
+  Link,
+  pixelBasedPreset,
+  Preview,
+  Section,
+  Tailwind,
+  Text,
+} from '@react-email/components'
 
 import { env } from '~/env'
 
-export function Base({ children, preview, title }: { children: React.ReactNode; preview: string; title: string }) {
+export function Base({
+  children,
+  preview,
+  title,
+}: {
+  children: React.ReactNode
+  preview: string
+  title: string
+}) {
   return (
     <Tailwind
       config={{

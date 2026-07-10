@@ -2,7 +2,10 @@ import type { SchemaParams } from '..'
 import * as templates from '../templates'
 import { getColumnType, toLiteralKey } from '../utils'
 
-function buildZodType(column: SchemaParams['columns'][number], dialect: SchemaParams['dialect']): string | null {
+function buildZodType(
+  column: SchemaParams['columns'][number],
+  dialect: SchemaParams['dialect'],
+): string | null {
   let zodType = column.type ? getColumnType(column.type, 'zod', dialect) : null
 
   if (!zodType) return null

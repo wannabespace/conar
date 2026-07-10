@@ -26,7 +26,16 @@ export const sync = orpc
           db
             .select()
             .from(chats)
-            .where(and(eq(chats.userId, context.user.id), or(...items.map((c) => and(eq(chats.id, c.id), gte(chats.updatedAt, addSeconds(c.updatedAt, 1))))))),
+            .where(
+              and(
+                eq(chats.userId, context.user.id),
+                or(
+                  ...items.map((c) =>
+                    and(eq(chats.id, c.id), gte(chats.updatedAt, addSeconds(c.updatedAt, 1))),
+                  ),
+                ),
+              ),
+            ),
         new: (excludeIds) =>
           db
             .select()

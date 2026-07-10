@@ -54,9 +54,15 @@ export async function prefetchConnectionResourceTableCore({
   }
 }) {
   await Promise.all([
-    queryClient.prefetchInfiniteQuery(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query })),
-    queryClient.prefetchQuery(resourceTableTotalQueryOptions({ connectionResource, table, schema, query })),
-    queryClient.prefetchQuery(resourceTableColumnsQueryOptions({ connectionResource, table, schema })),
+    queryClient.prefetchInfiniteQuery(
+      resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query }),
+    ),
+    queryClient.prefetchQuery(
+      resourceTableTotalQueryOptions({ connectionResource, table, schema, query }),
+    ),
+    queryClient.prefetchQuery(
+      resourceTableColumnsQueryOptions({ connectionResource, table, schema }),
+    ),
   ])
 }
 
@@ -86,7 +92,9 @@ export function fetchingConfig(
     }
   }
 
-  const isPasswordFilled = (connection.syncType === SyncType.CloudWithoutPassword && isPasswordPopulated) || connection.syncType === SyncType.Cloud
+  const isPasswordFilled =
+    (connection.syncType === SyncType.CloudWithoutPassword && isPasswordPopulated) ||
+    connection.syncType === SyncType.Cloud
   const proxyAvailable = options?.isLocalProxyAvailable ?? isLocalProxyAvailable()
   const proxyEnabled = options?.proxy?.enabled === true
   const hasCustomUrl = !!options?.proxy?.url
@@ -104,7 +112,8 @@ export function fetchingConfig(
     return {
       type: 'proxy',
       canSend: false,
-      reason: 'You cannot reach this connection from the web app. Open this connection in the desktop app.',
+      reason:
+        'You cannot reach this connection from the web app. Open this connection in the desktop app.',
     }
   }
 
@@ -113,11 +122,15 @@ export function fetchingConfig(
   return {
     type: 'cloud-proxy',
     canSend,
-    reason: canSend ? null : 'You cannot reach this connection from the web app. Run `conar proxy` or open this connection in the desktop app.',
+    reason: canSend
+      ? null
+      : 'You cannot reach this connection from the web app. Run `conar proxy` or open this connection in the desktop app.',
   }
 }
 
-export function useFetchingConfig(connection: Pick<Connection, 'id' | 'syncType' | 'isPasswordExists'>) {
+export function useFetchingConfig(
+  connection: Pick<Connection, 'id' | 'syncType' | 'isPasswordExists'>,
+) {
   const isLocalProxyAvailable = useLocalProxyAvailable()
   const { connectionStringsCollection } = useCollections()
   const { data: connectionString } = useLiveQuery(

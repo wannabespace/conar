@@ -3,9 +3,19 @@ import { CardHeader, CardTitle } from '@conar/ui/components/card'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { KbdCtrlEnter, KbdCtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
-import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
+import {
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizableSeparator,
+} from '@conar/ui/components/resizable'
 import NumberFlow from '@number-flow/react'
-import { RiBrush2Line, RiCheckLine, RiPlayFill, RiSettings3Line, RiStarLine } from '@remixicon/react'
+import {
+  RiBrush2Line,
+  RiCheckLine,
+  RiPlayFill,
+  RiSettings3Line,
+  RiStarLine,
+} from '@remixicon/react'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import type { ComponentRef } from 'react'
@@ -36,7 +46,10 @@ function useQueriesToRun(): QueryToRun[] {
   const editorQueries = useSubscription(editorQueriesStore)
   const selectedLines = useSubscription(store, { selector: (state) => state.selectedLines })
 
-  const queries = selectedLines.length > 0 ? editorQueries.filter((query) => selectedLines.includes(query.startLineNumber)) : editorQueries
+  const queries =
+    selectedLines.length > 0
+      ? editorQueries.filter((query) => selectedLines.includes(query.startLineNumber))
+      : editorQueries
 
   return queries.flatMap(({ startLineNumber, endLineNumber, queries }) =>
     queries.map((query) => ({
@@ -61,7 +74,15 @@ function RunnerRunButton({ onRun }: { onRun: (queries: QueryToRun[]) => void }) 
     <Button disabled={isDisabled} size="sm" onClick={() => onRun(queriesToRun)}>
       <RiPlayFill />
       Run {selectedLinesLength > 0 ? 'selected' : 'all'}
-      {selectedLinesLength > 0 && <NumberFlow value={queriesToRun.length} prefix="(" suffix=")" className="tabular-nums" spinTiming={{ duration: 200 }} />}
+      {selectedLinesLength > 0 && (
+        <NumberFlow
+          value={queriesToRun.length}
+          prefix="("
+          suffix=")"
+          className="tabular-nums"
+          spinTiming={{ duration: 200 }}
+        />
+      )}
     </Button>
   )
 }
@@ -145,7 +166,12 @@ export function Runner() {
 
   return (
     <RunnerContext.Provider value={runnerContextValue}>
-      <ResizablePanelGroup defaultLayout={defaultLayout} onLayoutChanged={onLayoutChanged} orientation="vertical" className="h-full">
+      <ResizablePanelGroup
+        defaultLayout={defaultLayout}
+        onLayoutChanged={onLayoutChanged}
+        orientation="vertical"
+        className="h-full"
+      >
         <ResizablePanel minSize="20%" defaultSize={resultsVisible ? '70%' : '100%'}>
           <CardHeader className="h-14 py-3">
             <CardTitle className="flex items-center justify-between gap-2">
@@ -159,10 +185,16 @@ export function Runner() {
               </div>
               <div className="flex gap-2">
                 <Popover>
-                  <PopoverTrigger render={<Button className="relative" variant="secondary" size="sm" />}>
+                  <PopoverTrigger
+                    render={<Button className="relative" variant="secondary" size="sm" />}
+                  >
                     <RiStarLine />
                     Saved
-                    <span className={`flex h-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs`}>{queriesCount}</span>
+                    <span
+                      className={`flex h-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs`}
+                    >
+                      {queriesCount}
+                    </span>
                   </PopoverTrigger>
                   <PopoverContent className="min-w-md p-0 **:data-[slot=popover-viewport]:p-0">
                     <RunnerQueries />
@@ -176,7 +208,11 @@ export function Runner() {
                     setIsFormatting(true)
                   }}
                 >
-                  <ContentSwitch active={isFormatting} activeContent={<RiCheckLine className="text-success" />} onSwitchEnd={() => setIsFormatting(false)}>
+                  <ContentSwitch
+                    active={isFormatting}
+                    activeContent={<RiCheckLine className="text-success" />}
+                    onSwitchEnd={() => setIsFormatting(false)}
+                  >
                     <RiBrush2Line />
                   </ContentSwitch>
                   Format
@@ -187,7 +223,9 @@ export function Runner() {
           </CardHeader>
           <div className="relative h-[calc(100%-(--spacing(14)))] flex-1">
             <RunnerEditor />
-            <span className={`pointer-events-none absolute right-6 bottom-2 flex flex-col items-end text-xs text-muted-foreground`}>
+            <span
+              className={`pointer-events-none absolute right-6 bottom-2 flex flex-col items-end text-xs text-muted-foreground`}
+            >
               <span className="flex items-center gap-1">
                 <KbdCtrlLetter letter="K" userAgent={navigator.userAgent} /> to call the AI
               </span>

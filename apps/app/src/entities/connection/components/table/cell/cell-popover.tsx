@@ -13,10 +13,21 @@ import {
 import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
 import { KbdCtrlEnter } from '@conar/ui/components/custom/shortcuts'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@conar/ui/components/select'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCheckLine, RiCollapseDiagonal2Line, RiExpandDiagonal2Line, RiFileCopyLine } from '@remixicon/react'
+import {
+  RiCheckLine,
+  RiCollapseDiagonal2Line,
+  RiExpandDiagonal2Line,
+  RiFileCopyLine,
+} from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import type { editor } from 'monaco-editor'
 import { KeyCode, KeyMod } from 'monaco-editor'
@@ -43,7 +54,8 @@ export function CellPopoverContent({
   hasUpdateFn: boolean
   onSetNull: () => void
 }) {
-  const { newValue, setNewValue, rawValue, setRawValue, value, column, onQueueValue, transformer } = useCellContext()
+  const { newValue, setNewValue, rawValue, setRawValue, value, column, onQueueValue, transformer } =
+    useCellContext()
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
   const { scrollRef, contentRef } = useStickToBottom({ initial: 'instant' })
 
@@ -51,7 +63,13 @@ export function CellPopoverContent({
 
   const uiRender = useMemo(() => {
     if (column.uiType === 'boolean') {
-      return <CellSwitch className="w-full justify-center py-6" checked={newValue === true} onChange={(checked) => setNewValue(checked)} />
+      return (
+        <CellSwitch
+          className="w-full justify-center py-6"
+          checked={newValue === true}
+          onChange={(checked) => setNewValue(checked)}
+        />
+      )
     }
 
     if (column.uiType === 'list' && column.isArray && !!column.availableValues) {
@@ -72,7 +90,10 @@ export function CellPopoverContent({
           >
             <ComboboxChips>
               <ScrollArea ref={scrollRef} className="max-h-32 overflow-y-auto">
-                <div ref={contentRef} className="flex flex-wrap gap-1.5 *:data-[slot=combobox-chip]:min-h-7 sm:*:data-[slot=combobox-chip]:min-h-6">
+                <div
+                  ref={contentRef}
+                  className="flex flex-wrap gap-1.5 *:data-[slot=combobox-chip]:min-h-7 sm:*:data-[slot=combobox-chip]:min-h-6"
+                >
                   <ComboboxValue>
                     {(value: typeof comboboxItems) =>
                       value?.map((item) => (
@@ -84,7 +105,10 @@ export function CellPopoverContent({
                   </ComboboxValue>
                 </div>
               </ScrollArea>
-              <ComboboxChipsInput aria-label="Select values" placeholder={selectedValues.length > 0 ? undefined : 'Select values...'} />
+              <ComboboxChipsInput
+                aria-label="Select values"
+                placeholder={selectedValues.length > 0 ? undefined : 'Select values...'}
+              />
             </ComboboxChips>
             <ComboboxPopup side="top">
               <ComboboxEmpty>No values found.</ComboboxEmpty>
@@ -138,7 +162,9 @@ export function CellPopoverContent({
 
     let value: unknown
     try {
-      value = isRaw ? transformer.toConnection.fromRaw(rawValue) : transformer.toConnection.fromUI(newValue)
+      value = isRaw
+        ? transformer.toConnection.fromRaw(rawValue)
+        : transformer.toConnection.fromUI(newValue)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Invalid value')
       return
@@ -189,8 +215,17 @@ export function CellPopoverContent({
           ref={monacoRef}
           data-mask
           value={isRaw ? rawValue : String(newValue ?? '')}
-          language={column?.type?.includes('json') ? 'json' : column?.type?.includes('xml') ? 'xml' : undefined}
-          className={cn('h-40 w-full transition-[height] duration-300', isBig && `h-[min(45vh,40rem)]`)}
+          language={
+            column?.type?.includes('json')
+              ? 'json'
+              : column?.type?.includes('xml')
+                ? 'xml'
+                : undefined
+          }
+          className={cn(
+            'h-40 w-full transition-[height] duration-300',
+            isBig && `h-[min(45vh,40rem)]`,
+          )}
           onChange={isRaw ? setRawValue : setNewValue}
           options={monacoOptions}
         />
@@ -201,7 +236,11 @@ export function CellPopoverContent({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" size="icon-xs" onClick={() => setIsBig((prev) => !prev)}>
-                  {isBig ? <RiCollapseDiagonal2Line className="size-3" /> : <RiExpandDiagonal2Line className="size-3" />}
+                  {isBig ? (
+                    <RiCollapseDiagonal2Line className="size-3" />
+                  ) : (
+                    <RiExpandDiagonal2Line className="size-3" />
+                  )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">Toggle size</TooltipContent>
@@ -212,7 +251,13 @@ export function CellPopoverContent({
               <CopyButton
                 size="icon-xs"
                 variant="outline"
-                text={isRaw ? rawValue : typeof newValue === 'string' ? newValue : JSON.stringify(newValue)}
+                text={
+                  isRaw
+                    ? rawValue
+                    : typeof newValue === 'string'
+                      ? newValue
+                      : JSON.stringify(newValue)
+                }
                 copyIcon={<RiFileCopyLine className="size-3" />}
                 successIcon={<RiCheckLine className="size-3 text-success" />}
               />
@@ -226,7 +271,9 @@ export function CellPopoverContent({
                   Raw
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">{isRaw ? 'Edit value' : 'Edit raw value'}</TooltipContent>
+              <TooltipContent side="bottom">
+                {isRaw ? 'Edit value' : 'Edit raw value'}
+              </TooltipContent>
             </Tooltip>
           )}
         </div>

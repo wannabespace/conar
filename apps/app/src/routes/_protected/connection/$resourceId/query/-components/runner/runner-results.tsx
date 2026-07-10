@@ -23,7 +23,9 @@ export function RunnerResults() {
   const { chatId } = Route.useSearch()
   const { subscription } = useSubscription()
   const { connection, connectionResource } = Route.useRouteContext()
-  const { data: results, fetchStatus: queryStatus } = useQuery(runnerQueryOptions(connectionResource))
+  const { data: results, fetchStatus: queryStatus } = useQuery(
+    runnerQueryOptions(connectionResource),
+  )
 
   function handleStop() {
     queryClient.cancelQueries(runnerQueryOptions(connectionResource))
@@ -56,7 +58,12 @@ export function RunnerResults() {
               >
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className={cn(`flex w-full items-center justify-center gap-1`, error && `text-destructive`)}>
+                    <span
+                      className={cn(
+                        `flex w-full items-center justify-center gap-1`,
+                        error && `text-destructive`,
+                      )}
+                    >
                       Result {results.length > 1 ? index + 1 : ''}
                     </span>
                   </TooltipTrigger>
@@ -80,9 +87,15 @@ export function RunnerResults() {
           </TabsList>
         </ScrollArea>
         {results.map(({ data, error, startLineNumber, endLineNumber, duration }, index) => (
-          <TabsContent key={`result-${data?.length ?? 'error'}-${startLineNumber}`} value={`table-${index}`} className="h-[calc(100%-(--spacing(8)))]">
+          <TabsContent
+            key={`result-${data?.length ?? 'error'}-${startLineNumber}`}
+            value={`table-${index}`}
+            className="h-[calc(100%-(--spacing(8)))]"
+          >
             {error ? (
-              <div className={`mx-auto flex h-full max-w-2/3 flex-col items-center justify-center gap-2`}>
+              <div
+                className={`mx-auto flex h-full max-w-2/3 flex-col items-center justify-center gap-2`}
+              >
                 Error executing query
                 <div
                   className={`mb-2 max-h-1/2 max-w-full overflow-auto rounded-sm bg-red-50 px-2 py-1 font-mono text-xs text-balance text-red-700 dark:bg-red-950 dark:text-red-300`}
@@ -100,9 +113,10 @@ export function RunnerResults() {
                         params={{ resourceId: connectionResource.id }}
                         search={{
                           chatId,
-                          error: [`Fix the following SQL error by correcting the SQL query on the lines ${startLineNumber} - ${endLineNumber}:`, error].join(
-                            '\n',
-                          ),
+                          error: [
+                            `Fix the following SQL error by correcting the SQL query on the lines ${startLineNumber} - ${endLineNumber}:`,
+                            error,
+                          ].join('\n'),
                         }}
                       />
                     }
@@ -111,7 +125,11 @@ export function RunnerResults() {
                     Fix in chat
                   </Button>
                 ) : (
-                  <Button size="sm" variant="outline" onClick={() => setIsSubscriptionDialogOpen(true)}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setIsSubscriptionDialogOpen(true)}
+                  >
                     Fix in chat
                     <RiVipCrownLine className="size-4" />
                   </Button>

@@ -1,6 +1,11 @@
 import '@conar/shared/arktype-config'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
-import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
+import {
+  createBrowserHistory,
+  createHashHistory,
+  createRouter,
+  RouterProvider,
+} from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { toast } from 'sonner'
 
@@ -58,7 +63,8 @@ export const subscriptionQueryClient = new QueryClient({
 })
 
 export const router = createRouter({
-  history: import.meta.env.VITE_TEST || !window.electron ? createBrowserHistory() : createHashHistory(),
+  history:
+    import.meta.env.VITE_TEST || !window.electron ? createBrowserHistory() : createHashHistory(),
   routeTree,
   defaultPreload: 'intent',
   defaultPendingMinMs: 0,

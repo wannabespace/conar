@@ -52,11 +52,21 @@ function OpenPageContent() {
           </p>
           <div className="flex">
             {data ? (
-              <Button variant="outline" size="sm" className="w-full" render={<Link to="/account" />}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                render={<Link to="/account" />}
+              >
                 Go to Account
               </Button>
             ) : (
-              <Button variant="outline" size="sm" className="w-full" render={<Link to="/sign-in" />}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                render={<Link to="/sign-in" />}
+              >
                 Sign in
               </Button>
             )}
@@ -110,15 +120,28 @@ function OpenPage() {
               <CardTitle>Authentication successful</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-6">
-              <p>You have successfully signed in. You can now close this tab and return to the Conar desktop app.</p>
+              <p>
+                You have successfully signed in. You can now close this tab and return to the Conar
+                desktop app.
+              </p>
               <div className="flex flex-col gap-4">
-                <p className="text-sm text-muted-foreground">If the app didn't open automatically, use the button below to copy the connection URL.</p>
+                <p className="text-sm text-muted-foreground">
+                  If the app didn't open automatically, use the button below to copy the connection
+                  URL.
+                </p>
                 <div className="flex">
-                  <Button variant="outline" size="sm" onClick={() => handleCopyUrl(data.session.token, codeChallenge, newUser)} className="w-full">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCopyUrl(data.session.token, codeChallenge, newUser)}
+                    className="w-full"
+                  >
                     Copy auth URL
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">Paste this URL in the desktop app to continue.</p>
+                <p className="text-xs text-muted-foreground">
+                  Paste this URL in the desktop app to continue.
+                </p>
               </div>
             </CardContent>
           </>
@@ -127,7 +150,9 @@ function OpenPage() {
             <CardHeader>
               <CardTitle>Authentication failed</CardTitle>
             </CardHeader>
-            <CardContent>Your session has expired or is invalid. Please sign in again to continue.</CardContent>
+            <CardContent>
+              Your session has expired or is invalid. Please sign in again to continue.
+            </CardContent>
           </>
         )}
       </Card>

@@ -1,6 +1,13 @@
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Button } from '@conar/ui/components/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Input } from '@conar/ui/components/input'
 import { RiArrowLeftSLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react'
@@ -23,7 +30,13 @@ function handleConnectionTestError(error: Error) {
   })
 }
 
-export function PasswordForm({ connection, connectionResource }: { connection: Connection; connectionResource: ConnectionResource }) {
+export function PasswordForm({
+  connection,
+  connectionResource,
+}: {
+  connection: Connection
+  connectionResource: ConnectionResource
+}) {
   const { connectionStringsCollection } = useCollections()
   const router = useRouter()
   const [password, setPassword] = useState('')
@@ -63,7 +76,12 @@ export function PasswordForm({ connection, connectionResource }: { connection: C
     <div className="flex h-screen min-h-[inherit] flex-col justify-center">
       <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-6 py-10">
         <div className="flex w-full items-center gap-2">
-          <Button type="button" variant="link" className="px-0! text-muted-foreground" onClick={() => router.history.back()}>
+          <Button
+            type="button"
+            variant="link"
+            className="px-0! text-muted-foreground"
+            onClick={() => router.history.back()}
+          >
             <RiArrowLeftSLine className="size-3" />
             Back
           </Button>
@@ -78,7 +96,9 @@ export function PasswordForm({ connection, connectionResource }: { connection: C
           <Card className="w-full">
             <CardHeader>
               <CardTitle>Password Required</CardTitle>
-              <CardDescription>To use this connection, you need to enter the password.</CardDescription>
+              <CardDescription>
+                To use this connection, you need to enter the password.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-2">
@@ -104,14 +124,20 @@ export function PasswordForm({ connection, connectionResource }: { connection: C
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                   >
-                    {showPassword ? <RiEyeOffLine className="size-4" /> : <RiEyeLine className="size-4" />}
+                    {showPassword ? (
+                      <RiEyeOffLine className="size-4" />
+                    ) : (
+                      <RiEyeLine className="size-4" />
+                    )}
                   </Button>
                 </div>
               </div>
             </CardContent>
             <CardFooter>
               <Button type="submit" className="w-full" disabled={status === 'pending'}>
-                <LoadingContent loading={status === 'pending'}>{status === 'error' ? 'Retry Saving Password' : 'Save Password'}</LoadingContent>
+                <LoadingContent loading={status === 'pending'}>
+                  {status === 'error' ? 'Retry Saving Password' : 'Save Password'}
+                </LoadingContent>
               </Button>
             </CardFooter>
           </Card>

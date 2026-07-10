@@ -34,7 +34,11 @@ export function CopyButton({
         handleCopy()
       }}
     >
-      <ContentSwitch active={copied} onSwitchEnd={() => setCopied(false)} activeContent={successIcon}>
+      <ContentSwitch
+        active={copied}
+        onSwitchEnd={() => setCopied(false)}
+        activeContent={successIcon}
+      >
         {copyIcon}
       </ContentSwitch>
     </Button>

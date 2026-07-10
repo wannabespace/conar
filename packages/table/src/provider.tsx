@@ -47,7 +47,8 @@ export function TableProvider({
     horizontal: true,
     count: columns.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: (index) => customColumnSizes?.[columns[index]!.id] ?? columns[index]!.size ?? estimatedColumnSize,
+    estimateSize: (index) =>
+      customColumnSizes?.[columns[index]!.id] ?? columns[index]!.size ?? estimatedColumnSize,
     overscan: horizontalScroll || scrollDirection === null ? 3 : 0,
   })
 
@@ -61,10 +62,22 @@ export function TableProvider({
       return
     }
 
-    scrollRef.current.style.setProperty('--table-scroll-left-offset', `${virtualColumns[0]?.start ?? 0}px`)
-    scrollRef.current.style.setProperty('--table-scroll-right-offset', `${tableWidth - (virtualColumns.at(-1)?.end ?? 0)}px`)
-    scrollRef.current.style.setProperty('--table-scroll-top-offset', `${virtualRows[0]?.start ?? 0}px`)
-    scrollRef.current.style.setProperty('--table-scroll-bottom-offset', `${tableHeight - (virtualRows.at(-1)?.end ?? 0)}px`)
+    scrollRef.current.style.setProperty(
+      '--table-scroll-left-offset',
+      `${virtualColumns[0]?.start ?? 0}px`,
+    )
+    scrollRef.current.style.setProperty(
+      '--table-scroll-right-offset',
+      `${tableWidth - (virtualColumns.at(-1)?.end ?? 0)}px`,
+    )
+    scrollRef.current.style.setProperty(
+      '--table-scroll-top-offset',
+      `${virtualRows[0]?.start ?? 0}px`,
+    )
+    scrollRef.current.style.setProperty(
+      '--table-scroll-bottom-offset',
+      `${tableHeight - (virtualRows.at(-1)?.end ?? 0)}px`,
+    )
   }, [scrollRef, virtualColumns, virtualRows, tableWidth, tableHeight])
 
   const measureDebounced = useDebouncedCallback(measure, [], 250)
@@ -84,7 +97,10 @@ export function TableProvider({
         }
       })
       customColumnsSizesMap.forEach((size, id) => {
-        scrollRef.current!.style.setProperty(`--table-column-width-${prepareColumnId(id)}`, `${size}px`)
+        scrollRef.current!.style.setProperty(
+          `--table-column-width-${prepareColumnId(id)}`,
+          `${size}px`,
+        )
       })
       measureDebounced()
     })
@@ -105,7 +121,16 @@ export function TableProvider({
           tableHeight,
           tableWidth,
         }),
-        [scrollRef, scrollDirection, rows, columns, virtualRows, virtualColumns, tableHeight, tableWidth],
+        [
+          scrollRef,
+          scrollDirection,
+          rows,
+          columns,
+          virtualRows,
+          virtualColumns,
+          tableHeight,
+          tableWidth,
+        ],
       )}
     >
       {children}

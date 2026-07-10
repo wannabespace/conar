@@ -12,5 +12,12 @@ export function FaviconWithFallback({ url, className }: { url: string; className
     return <RiEarthLine className={cn(className, 'text-muted-foreground')} />
   }
 
-  return <img src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`} alt={hostname} className={className} onError={() => setIsError(true)} />
+  return (
+    <img
+      src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=32`}
+      alt={hostname}
+      className={className}
+      onError={() => setIsError(true)}
+    />
+  )
 }

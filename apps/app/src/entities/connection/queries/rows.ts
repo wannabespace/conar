@@ -13,7 +13,11 @@ import { DEFAULT_PAGE_LIMIT } from '../utils/helpers'
 const rowType = type('Record<string, unknown>')
 
 // eslint-disable-next-line typescript/no-explicit-any
-export function buildWhere<E extends ExpressionBuilder<any, any>>(eb: E, filters: ActiveFilter[], concatOperator: 'AND' | 'OR' = 'AND') {
+export function buildWhere<E extends ExpressionBuilder<any, any>>(
+  eb: E,
+  filters: ActiveFilter[],
+  concatOperator: 'AND' | 'OR' = 'AND',
+) {
   const concat = concatOperator === 'AND' ? eb.and : eb.or
 
   return concat(
@@ -25,7 +29,14 @@ export function buildWhere<E extends ExpressionBuilder<any, any>>(eb: E, filters
           filter.ref.hasValue === false
             ? undefined
             : filter.ref.isArray
-              ? sql.join([sql.raw('('), sql.join(filter.values.map((value) => sql.val(String(value).trim()))), sql.raw(')')], sql.raw(''))
+              ? sql.join(
+                  [
+                    sql.raw('('),
+                    sql.join(filter.values.map((value) => sql.val(String(value).trim()))),
+                    sql.raw(')'),
+                  ],
+                  sql.raw(''),
+                )
               : sql.val(filter.values[0]),
         ].filter(Boolean),
         sql.raw(' '),
@@ -51,7 +62,14 @@ export interface RowsQueryProps {
 }
 
 export const resourceRowsQuery = memoize(
-  ({ limit = DEFAULT_PAGE_LIMIT, select, offset, table, schema, query: { orderBy, filters, filtersConcatOperator } }: RowsQueryProps & { offset: number }) => {
+  ({
+    limit = DEFAULT_PAGE_LIMIT,
+    select,
+    offset,
+    table,
+    schema,
+    query: { orderBy, filters, filtersConcatOperator },
+  }: RowsQueryProps & { offset: number }) => {
     return createQuery({
       type: rowType.array(),
       query: {
@@ -64,7 +82,9 @@ export const resourceRowsQuery = memoize(
             .selectFrom(table)
             .$if(select !== undefined, (qb) => qb.select(select!))
             .$if(select === undefined, (qb) => qb.selectAll())
-            .$if(filters !== undefined, (qb) => qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator)))
+            .$if(filters !== undefined, (qb) =>
+              qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator)),
+            )
             .limit(limit)
             .offset(offset)
 
@@ -85,7 +105,9 @@ export const resourceRowsQuery = memoize(
             .selectFrom(table)
             .$if(select !== undefined, (qb) => qb.select(select!))
             .$if(select === undefined, (qb) => qb.selectAll())
-            .$if(filters !== undefined, (qb) => qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator)))
+            .$if(filters !== undefined, (qb) =>
+              qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator)),
+            )
             .limit(limit)
             .offset(offset)
 
@@ -106,7 +128,9 @@ export const resourceRowsQuery = memoize(
             .selectFrom(table)
             .$if(select !== undefined, (qb) => qb.select(select!))
             .$if(select === undefined, (qb) => qb.selectAll())
-            .$if(filters !== undefined, (qb) => qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator)))
+            .$if(filters !== undefined, (qb) =>
+              qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator)),
+            )
             .$if(order.length === 0, (qb) => qb.orderBy(sql<string>`(select null)`))
             .limit(limit)
             .offset(offset)
@@ -128,7 +152,9 @@ export const resourceRowsQuery = memoize(
             .selectFrom(table)
             .$if(select !== undefined, (qb) => qb.select(select!))
             .$if(select === undefined, (qb) => qb.selectAll())
-            .$if(filters !== undefined, (qb) => qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator)))
+            .$if(filters !== undefined, (qb) =>
+              qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator)),
+            )
             .limit(limit)
             .offset(offset)
 
@@ -158,7 +184,9 @@ export const resourceRowsQueryInfiniteOptions = memoize(
     return infiniteQueryOptions({
       initialPageParam: 0,
       getNextPageParam: (lastPage: PageResult, _allPages: PageResult[], lastPageParam: number) => {
-        return lastPage.rows.length === 0 || lastPage.rows.length < DEFAULT_PAGE_LIMIT ? null : lastPageParam + DEFAULT_PAGE_LIMIT
+        return lastPage.rows.length === 0 || lastPage.rows.length < DEFAULT_PAGE_LIMIT
+          ? null
+          : lastPageParam + DEFAULT_PAGE_LIMIT
       },
       queryKey: [
         'connection-resource',

@@ -4,7 +4,13 @@ import { CardContent, CardTitle } from '@conar/ui/components/card'
 import { CardMotion } from '@conar/ui/components/card.motion'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@conar/ui/components/select'
 import { RiCodeSSlashLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
@@ -31,7 +37,11 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/definit
     meta: loaderData
       ? [
           {
-            title: title('Functions', loaderData.connection.name, loaderData.connectionResource.name),
+            title: title(
+              'Functions',
+              loaderData.connection.name,
+              loaderData.connectionResource.name,
+            ),
           },
         ]
       : [],
@@ -48,7 +58,13 @@ const typeFilterOptions: { label: string; value: FunctionType | 'all' }[] = [
 
 function DatabaseFunctionsPage() {
   const { connectionResource } = Route.useRouteContext()
-  const { data: functions, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceFunctionsQueryOptions({ connectionResource }))
+  const {
+    data: functions,
+    refetch,
+    isFetching,
+    isPending,
+    dataUpdatedAt,
+  } = useQuery(resourceFunctionsQueryOptions({ connectionResource }))
   const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({
     connectionResource,
   })
@@ -69,11 +85,21 @@ function DatabaseFunctionsPage() {
 
   return (
     <>
-      <DefinitionsHeader onRefresh={() => refetch()} isRefreshing={isFetching} dataUpdatedAt={dataUpdatedAt}>
+      <DefinitionsHeader
+        onRefresh={() => refetch()}
+        isRefreshing={isFetching}
+        dataUpdatedAt={dataUpdatedAt}
+      >
         Functions
       </DefinitionsHeader>
       <div className="mb-4 flex items-center gap-2">
-        <SearchInput placeholder="Search functions" autoFocus value={search} onChange={(e) => setSearch(e.target.value)} onClear={() => setSearch('')} />
+        <SearchInput
+          placeholder="Search functions"
+          autoFocus
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onClear={() => setSearch('')}
+        />
         <Select
           value={filterType}
           onValueChange={(v) => {
@@ -84,7 +110,11 @@ function DatabaseFunctionsPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Type">
-              {(value) => (value ? typeFilterOptions.find((option) => option.value === value)?.label : 'Filter Type')}
+              {(value) =>
+                value
+                  ? typeFilterOptions.find((option) => option.value === value)?.label
+                  : 'Filter Type'
+              }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -95,22 +125,35 @@ function DatabaseFunctionsPage() {
             ))}
           </SelectContent>
         </Select>
-        <SchemaSelect schemas={schemas} selectedSchema={selectedSchema} setSelectedSchema={setSelectedSchema} />
+        <SchemaSelect
+          schemas={schemas}
+          selectedSchema={selectedSchema}
+          setSelectedSchema={setSelectedSchema}
+        />
       </div>
       <DefinitionsGrid loading={isPending}>
         {filteredFunctions.length === 0 && (
-          <DefinitionsEmptyState title="No functions found" description="This schema doesn't have any functions matching your filter." />
+          <DefinitionsEmptyState
+            title="No functions found"
+            description="This schema doesn't have any functions matching your filter."
+          />
         )}
 
         {filteredFunctions.map((item) => (
-          <CardMotion key={`${item.schema}-${item.name}-${item.type}`} layout {...MOTION_BLOCK_PROPS}>
+          <CardMotion
+            key={`${item.schema}-${item.name}-${item.type}`}
+            layout
+            {...MOTION_BLOCK_PROPS}
+          >
             <CardContent className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="mb-2 flex items-center gap-2 text-base">
                     <RiCodeSSlashLine className="size-4 text-primary" />
                     <HighlightText text={item.name} match={search} />
-                    <Badge variant="secondary">{item.type === 'function' ? 'Function' : 'Procedure'}</Badge>
+                    <Badge variant="secondary">
+                      {item.type === 'function' ? 'Function' : 'Procedure'}
+                    </Badge>
                   </CardTitle>
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     {item.language && (

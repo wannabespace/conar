@@ -8,12 +8,23 @@ import { authMiddleware, orpc } from '~/orpc'
 
 export function createSyncOutputSchema<const T>(
   schema: type.validate<T>,
-): type.instantiate<{ type: '"insert"'; value: T } | { type: '"update"'; value: T } | { type: '"delete"'; key: 'string.uuid.v7' }>
+): type.instantiate<
+  | { type: '"insert"'; value: T }
+  | { type: '"update"'; value: T }
+  | { type: '"delete"'; key: 'string.uuid.v7' }
+>
 export function createSyncOutputSchema(schema: Type) {
-  return type.or(type({ type: '"insert"', value: schema }), type({ type: '"update"', value: schema }), type({ type: '"delete"', key: 'string.uuid.v7' }))
+  return type.or(
+    type({ type: '"insert"', value: schema }),
+    type({ type: '"update"', value: schema }),
+    type({ type: '"delete"', key: 'string.uuid.v7' }),
+  )
 }
 
-export function createSyncPublisher<T extends Type<{ type: 'insert' | 'update' | 'delete' }>>(output: T, prefix: string) {
+export function createSyncPublisher<T extends Type<{ type: 'insert' | 'update' | 'delete' }>>(
+  output: T,
+  prefix: string,
+) {
   return new IORedisPublisher<Record<string, typeof output.infer>>({
     commander: redis.duplicate(),
     listener: redis.duplicate(),

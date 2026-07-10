@@ -69,159 +69,197 @@ function getPgColumnType(type: string, udtName: string) {
   return type
 }
 
-const resourceTableColumnsQuery = memoize(({ table, schema }: { table: string; schema: string }) => {
-  return createQuery({
-    type: columnType.array(),
-    query: {
-      postgres: async (db) => {
-        const query = await db
-          .selectFrom('information_schema.columns')
-          .select((eb) => [
-            'table_schema as schema',
-            'table_name as table',
-            'column_name as id',
-            'column_default as default',
-            'data_type',
-            'udt_name',
-            'character_maximum_length as max_length',
-            'numeric_precision as precision',
-            'numeric_scale as scale',
-            eb.case('is_nullable').when('YES').then(true).else(false).end().as('nullable'),
-            eb.case('is_updatable').when('YES').then(true).else(false).end().as('editable'),
-          ])
-          .where(({ and, eb }) => and([eb('table_schema', '=', schema), eb('table_name', '=', table)]))
-          .execute()
-
-        // Materialized views do not have columns, fallback to pg_attribute
-        if (query.length === 0) {
-          const fallback = await db
-            .selectFrom('pg_catalog.pg_attribute as a')
-            .innerJoin('pg_catalog.pg_class as c', 'c.oid', 'a.attrelid')
-            .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 'c.relnamespace')
-            .leftJoin('pg_catalog.pg_attrdef as ad', (join) => join.onRef('ad.adrelid', '=', 'a.attrelid').onRef('ad.adnum', '=', 'a.attnum'))
+const resourceTableColumnsQuery = memoize(
+  ({ table, schema }: { table: string; schema: string }) => {
+    return createQuery({
+      type: columnType.array(),
+      query: {
+        postgres: async (db) => {
+          const query = await db
+            .selectFrom('information_schema.columns')
             .select((eb) => [
-              'n.nspname as schema',
-              'c.relname as table',
-              'a.attname as id',
-              eb.fn<string | null>('pg_get_expr', [eb.ref('ad.adbin'), eb.ref('ad.adrelid')]).as('default'),
-              eb.fn<string>('format_type', [eb.ref('a.atttypid'), eb.ref('a.atttypmod')]).as('type'),
-              sql<boolean>`not a.attnotnull`.as('nullable'),
+              'table_schema as schema',
+              'table_name as table',
+              'column_name as id',
+              'column_default as default',
+              'data_type',
+              'udt_name',
+              'character_maximum_length as max_length',
+              'numeric_precision as precision',
+              'numeric_scale as scale',
+              eb.case('is_nullable').when('YES').then(true).else(false).end().as('nullable'),
+              eb.case('is_updatable').when('YES').then(true).else(false).end().as('editable'),
             ])
             .where(({ and, eb }) =>
-              and([
-                eb('n.nspname', '=', schema),
-                eb('c.relname', '=', table),
-                eb('a.attnum', '>', 0),
-                eb('a.attisdropped', '=', false),
-                eb('c.relkind', 'in', ['r', 'p', 'v', 'm']),
-              ]),
+              and([eb('table_schema', '=', schema), eb('table_name', '=', table)]),
             )
-            .orderBy('a.attnum', 'asc')
             .execute()
 
-          return fallback.map((row) =>
+          // Materialized views do not have columns, fallback to pg_attribute
+          if (query.length === 0) {
+            const fallback = await db
+              .selectFrom('pg_catalog.pg_attribute as a')
+              .innerJoin('pg_catalog.pg_class as c', 'c.oid', 'a.attrelid')
+              .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 'c.relnamespace')
+              .leftJoin('pg_catalog.pg_attrdef as ad', (join) =>
+                join.onRef('ad.adrelid', '=', 'a.attrelid').onRef('ad.adnum', '=', 'a.attnum'),
+              )
+              .select((eb) => [
+                'n.nspname as schema',
+                'c.relname as table',
+                'a.attname as id',
+                eb
+                  .fn<string | null>('pg_get_expr', [eb.ref('ad.adbin'), eb.ref('ad.adrelid')])
+                  .as('default'),
+                eb
+                  .fn<string>('format_type', [eb.ref('a.atttypid'), eb.ref('a.atttypmod')])
+                  .as('type'),
+                sql<boolean>`not a.attnotnull`.as('nullable'),
+              ])
+              .where(({ and, eb }) =>
+                and([
+                  eb('n.nspname', '=', schema),
+                  eb('c.relname', '=', table),
+                  eb('a.attnum', '>', 0),
+                  eb('a.attisdropped', '=', false),
+                  eb('c.relkind', 'in', ['r', 'p', 'v', 'm']),
+                ]),
+              )
+              .orderBy('a.attnum', 'asc')
+              .execute()
+
+            return fallback.map((row) =>
+              Object.assign(row, {
+                type: row.type.endsWith('[]') ? row.type.slice(0, -2) : row.type,
+                isArray: row.type.endsWith('[]'),
+                editable: false,
+              } satisfies Partial<typeof columnType.inferIn>),
+            )
+          }
+
+          return query.map(({ data_type, udt_name, ...row }) =>
             Object.assign(row, {
-              type: row.type.endsWith('[]') ? row.type.slice(0, -2) : row.type,
-              isArray: row.type.endsWith('[]'),
-              editable: false,
+              type: data_type === 'ARRAY' ? `${udt_name.slice(1)}[]` : data_type,
+              typeLabel:
+                data_type === 'ARRAY'
+                  ? `${getPgColumnType(data_type, udt_name)}[]`
+                  : getPgColumnType(data_type, udt_name),
+              enumName:
+                data_type === 'USER-DEFINED'
+                  ? udt_name
+                  : data_type === 'ARRAY'
+                    ? udt_name.slice(1)
+                    : undefined,
+              isArray: data_type === 'ARRAY',
+              maxLength: row.max_length,
             } satisfies Partial<typeof columnType.inferIn>),
           )
-        }
+        },
+        mysql: async (db) => {
+          const query = await db
+            .selectFrom('information_schema.COLUMNS')
+            .select((eb) => [
+              'TABLE_SCHEMA as schema',
+              'TABLE_NAME as table',
+              'COLUMN_NAME as id',
+              'COLUMN_DEFAULT as default',
+              'CHARACTER_MAXIMUM_LENGTH as max_length',
+              'NUMERIC_PRECISION as precision',
+              'NUMERIC_SCALE as scale',
+              eb.fn.coalesce('DATA_TYPE', 'COLUMN_TYPE').as('type'),
+              eb
+                .case('IS_NULLABLE')
+                .when('YES')
+                .then(1)
+                .else(0)
+                .end()
+                .$castTo<1 | 0>()
+                .as('nullable'),
+            ])
+            .where(({ and, eb }) =>
+              and([eb('TABLE_SCHEMA', '=', schema), eb('TABLE_NAME', '=', table)]),
+            )
+            .execute()
 
-        return query.map(({ data_type, udt_name, ...row }) =>
-          Object.assign(row, {
-            type: data_type === 'ARRAY' ? `${udt_name.slice(1)}[]` : data_type,
-            typeLabel: data_type === 'ARRAY' ? `${getPgColumnType(data_type, udt_name)}[]` : getPgColumnType(data_type, udt_name),
-            enumName: data_type === 'USER-DEFINED' ? udt_name : data_type === 'ARRAY' ? udt_name.slice(1) : undefined,
-            isArray: data_type === 'ARRAY',
-            maxLength: row.max_length,
-          } satisfies Partial<typeof columnType.inferIn>),
-        )
-      },
-      mysql: async (db) => {
-        const query = await db
-          .selectFrom('information_schema.COLUMNS')
-          .select((eb) => [
-            'TABLE_SCHEMA as schema',
-            'TABLE_NAME as table',
-            'COLUMN_NAME as id',
-            'COLUMN_DEFAULT as default',
-            'CHARACTER_MAXIMUM_LENGTH as max_length',
-            'NUMERIC_PRECISION as precision',
-            'NUMERIC_SCALE as scale',
-            eb.fn.coalesce('DATA_TYPE', 'COLUMN_TYPE').as('type'),
-            eb.case('IS_NULLABLE').when('YES').then(1).else(0).end().$castTo<1 | 0>().as('nullable'),
-          ])
-          .where(({ and, eb }) => and([eb('TABLE_SCHEMA', '=', schema), eb('TABLE_NAME', '=', table)]))
-          .execute()
-
-        return query.map((column) =>
-          Object.assign(column, {
-            enumName: column.type === 'set' || column.type === 'enum' ? column.id : undefined,
-            isArray: column.type === 'set',
-            maxLength: column.max_length,
-          } satisfies Partial<typeof columnType.inferIn>),
-        )
-      },
-      mssql: async (db) => {
-        const query = await db
-          .selectFrom('information_schema.COLUMNS')
-          .select((eb) => [
-            'TABLE_SCHEMA as schema',
-            'TABLE_NAME as table',
-            'COLUMN_NAME as name',
-            'COLUMN_DEFAULT as default',
-            'CHARACTER_MAXIMUM_LENGTH as max_length',
-            'NUMERIC_PRECISION as precision',
-            'NUMERIC_SCALE as scale',
-            'DATA_TYPE as type',
-            sql<boolean>`
+          return query.map((column) =>
+            Object.assign(column, {
+              enumName: column.type === 'set' || column.type === 'enum' ? column.id : undefined,
+              isArray: column.type === 'set',
+              maxLength: column.max_length,
+            } satisfies Partial<typeof columnType.inferIn>),
+          )
+        },
+        mssql: async (db) => {
+          const query = await db
+            .selectFrom('information_schema.COLUMNS')
+            .select((eb) => [
+              'TABLE_SCHEMA as schema',
+              'TABLE_NAME as table',
+              'COLUMN_NAME as name',
+              'COLUMN_DEFAULT as default',
+              'CHARACTER_MAXIMUM_LENGTH as max_length',
+              'NUMERIC_PRECISION as precision',
+              'NUMERIC_SCALE as scale',
+              'DATA_TYPE as type',
+              sql<boolean>`
               COLUMNPROPERTY(
                 OBJECT_ID(TABLE_SCHEMA + '.' + TABLE_NAME),
                 COLUMN_NAME,
                 'IsIdentity'
               )
             `.as('isIdentity'),
-            eb.case('IS_NULLABLE').when('YES').then(1).else(0).end().$castTo<1 | 0>().as('nullable'),
-          ])
-          .where(({ and, eb }) => and([eb('TABLE_SCHEMA', '=', schema), eb('TABLE_NAME', '=', table)]))
-          .execute()
+              eb
+                .case('IS_NULLABLE')
+                .when('YES')
+                .then(1)
+                .else(0)
+                .end()
+                .$castTo<1 | 0>()
+                .as('nullable'),
+            ])
+            .where(({ and, eb }) =>
+              and([eb('TABLE_SCHEMA', '=', schema), eb('TABLE_NAME', '=', table)]),
+            )
+            .execute()
 
-        return query.map(({ name, ...column }) =>
-          Object.assign(column, {
-            id: name,
-            enumName: column.type === 'set' || column.type === 'enum' ? name : undefined,
-            isArray: column.type === 'set',
-            maxLength: column.max_length,
-          } satisfies Partial<typeof columnType.inferIn>),
-        )
-      },
-      clickhouse: async (db) => {
-        const query = await db
-          .selectFrom('information_schema.columns')
-          .select((eb) => [
-            'table_schema as schema',
-            'table_name as table',
-            'column_name as id',
-            'column_default as default',
-            'data_type as type',
-            eb.case('is_nullable').when(1).then(true).else(false).end().as('nullable'),
-          ])
-          .where(({ and, eb }) => and([eb('table_schema', '=', schema), eb('table_name', '=', table)]))
-          .execute()
+          return query.map(({ name, ...column }) =>
+            Object.assign(column, {
+              id: name,
+              enumName: column.type === 'set' || column.type === 'enum' ? name : undefined,
+              isArray: column.type === 'set',
+              maxLength: column.max_length,
+            } satisfies Partial<typeof columnType.inferIn>),
+          )
+        },
+        clickhouse: async (db) => {
+          const query = await db
+            .selectFrom('information_schema.columns')
+            .select((eb) => [
+              'table_schema as schema',
+              'table_name as table',
+              'column_name as id',
+              'column_default as default',
+              'data_type as type',
+              eb.case('is_nullable').when(1).then(true).else(false).end().as('nullable'),
+            ])
+            .where(({ and, eb }) =>
+              and([eb('table_schema', '=', schema), eb('table_name', '=', table)]),
+            )
+            .execute()
 
-        return query.map((row) =>
-          Object.assign(row, {
-            enumName: row.type.includes('Enum') ? row.id : undefined,
-            isArray: row.type.includes('Array('),
-            label: getClickhouseColumnType(row.type),
-            editable: true,
-          }),
-        )
+          return query.map((row) =>
+            Object.assign(row, {
+              enumName: row.type.includes('Enum') ? row.id : undefined,
+              isArray: row.type.includes('Array('),
+              label: getClickhouseColumnType(row.type),
+              editable: true,
+            }),
+          )
+        },
       },
-    },
-  })
-})
+    })
+  },
+)
 
 export function resourceTableColumnsQueryOptions({
   connectionResource,
@@ -234,6 +272,9 @@ export function resourceTableColumnsQueryOptions({
 }) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'columns', schema, table],
-    queryFn: async () => resourceTableColumnsQuery({ table, schema }).run(await connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () =>
+      resourceTableColumnsQuery({ table, schema }).run(
+        await connectionResourceToQueryParams(connectionResource),
+      ),
   })
 }

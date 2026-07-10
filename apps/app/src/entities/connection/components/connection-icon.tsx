@@ -14,6 +14,9 @@ const iconMap: Record<ConnectionType, (props: ComponentProps<'svg'>) => ReactNod
   [ConnectionType.MSSQL]: MSSQLIcon,
 }
 
-export function ConnectionIcon({ type, ...props }: { type: ConnectionType } & ComponentProps<'svg'>) {
+export function ConnectionIcon({
+  type,
+  ...props
+}: { type: ConnectionType } & ComponentProps<'svg'>) {
   return createElement(iconMap[type], props)
 }

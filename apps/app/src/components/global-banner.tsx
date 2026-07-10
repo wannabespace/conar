@@ -3,7 +3,13 @@ import { Button } from '@conar/ui/components/button'
 import { Spinner } from '@conar/ui/components/spinner'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import { RiAlertLine, RiCheckboxCircleLine, RiCloseLine, RiErrorWarningLine, RiInformationLine } from '@remixicon/react'
+import {
+  RiAlertLine,
+  RiCheckboxCircleLine,
+  RiCloseLine,
+  RiErrorWarningLine,
+  RiInformationLine,
+} from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { type } from 'arktype'
@@ -60,7 +66,8 @@ function Banner({ className, children }: { className?: string; children: ReactNo
 export function GlobalBanner() {
   const { resourceId } = useParams({ strict: false })
   const reconnectingData = useSubscription(reconnectingPromises, {
-    selector: (state) => (resourceId && Object.values(state).find((p) => p.resourceId === resourceId)) || null,
+    selector: (state) =>
+      (resourceId && Object.values(state).find((p) => p.resourceId === resourceId)) || null,
   })
   const isOnline = useSubscription(appStore, { selector: (state) => state.isOnline })
   const dismissed = useSubscription(bannerDismissedValue)
@@ -95,7 +102,12 @@ export function GlobalBanner() {
           {typeConfig[item.type].icon}
           <span className="flex-1 leading-none">{item.text}</span>
           {item.dismissible && (
-            <Button variant="ghost" size="icon-xs" aria-label="Dismiss banner" onClick={() => bannerDismissedValue.set((state) => [...state, item.text])}>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              aria-label="Dismiss banner"
+              onClick={() => bannerDismissedValue.set((state) => [...state, item.text])}
+            >
               <RiCloseLine className="size-3.5" />
             </Button>
           )}
@@ -106,7 +118,11 @@ export function GlobalBanner() {
           {typeConfig.warning.icon}
           <span className="flex flex-1 items-center gap-2 leading-none">
             <span>
-              Could not connect to the connection. Reconnection attempt <NumberFlow value={reconnectingData.attempt} suffix={`/${MAX_RECONNECTION_ATTEMPTS}`} />
+              Could not connect to the connection. Reconnection attempt{' '}
+              <NumberFlow
+                value={reconnectingData.attempt}
+                suffix={`/${MAX_RECONNECTION_ATTEMPTS}`}
+              />
             </span>
             <Spinner className="size-3.5" />
           </span>

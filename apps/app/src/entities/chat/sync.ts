@@ -31,7 +31,9 @@ export function createChatsCollection() {
           await orpc.chats.create.call(transaction.mutations.map((m) => m.modified))
         },
         onUpdate: async ({ transaction }) => {
-          await Promise.all(transaction.mutations.map((m) => orpc.chats.update.call({ id: m.key, ...m.changes })))
+          await Promise.all(
+            transaction.mutations.map((m) => orpc.chats.update.call({ id: m.key, ...m.changes })),
+          )
         },
         onDelete: async ({ transaction }) => {
           await orpc.chats.remove.call(transaction.mutations.map((m) => ({ id: m.key })))
@@ -55,10 +57,16 @@ export function createChatsMessagesCollection() {
           await orpc.chatsMessages.create.call(transaction.mutations.map((m) => m.modified))
         },
         onUpdate: async ({ transaction }) => {
-          await Promise.all(transaction.mutations.map((m) => orpc.chatsMessages.update.call({ id: m.key, ...m.changes })))
+          await Promise.all(
+            transaction.mutations.map((m) =>
+              orpc.chatsMessages.update.call({ id: m.key, ...m.changes }),
+            ),
+          )
         },
         onDelete: async ({ transaction }) => {
-          await orpc.chatsMessages.remove.call(transaction.mutations.map((m) => ({ id: m.key, chatId: m.modified.chatId })))
+          await orpc.chatsMessages.remove.call(
+            transaction.mutations.map((m) => ({ id: m.key, chatId: m.modified.chatId })),
+          )
         },
       }),
       persistence,

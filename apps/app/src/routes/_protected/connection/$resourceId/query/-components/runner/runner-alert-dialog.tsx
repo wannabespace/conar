@@ -15,12 +15,20 @@ import { useImperativeHandle, useRef, useState } from 'react'
 
 import { DANGEROUS_SQL_KEYWORDS } from '~/entities/connection/utils'
 
-const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map((keyword) => `\\b${keyword}\\b`).join('|')
+const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map((keyword) => `\\b${keyword}\\b`).join(
+  '|',
+)
 
-export function RunnerAlertDialog({ ref }: { ref: React.RefObject<{ confirm: (queries: string[], callback: () => void) => void } | null> }) {
+export function RunnerAlertDialog({
+  ref,
+}: {
+  ref: React.RefObject<{ confirm: (queries: string[], callback: () => void) => void } | null>
+}) {
   const [open, setOpen] = useState(false)
   const [queries, setQueries] = useState<string[]>([])
-  const dangerousKeywords = queries.flatMap((query) => query.match(new RegExp(dangerousKeywordsPattern, 'gi')) || [])
+  const dangerousKeywords = queries.flatMap(
+    (query) => query.match(new RegExp(dangerousKeywordsPattern, 'gi')) || [],
+  )
   const uniqueDangerousKeywords = [...new Set(dangerousKeywords.map((k) => k.toUpperCase()))]
   const callbackRef = useRef<() => void>(null)
 
@@ -58,9 +66,15 @@ export function RunnerAlertDialog({ ref }: { ref: React.RefObject<{ confirm: (qu
           <AlertDialogDescription>
             <span className="mb-3 block rounded-md border border-warning/20 bg-warning/10 p-3">
               Your query contains potentially dangerous SQL keywords:
-              <span className="font-semibold text-warning"> {uniqueDangerousKeywords.join(', ')}</span>
+              <span className="font-semibold text-warning">
+                {' '}
+                {uniqueDangerousKeywords.join(', ')}
+              </span>
             </span>
-            <span className="mt-2">These operations could modify or delete data in your database. Proceed if you understand the impact of these changes.</span>
+            <span className="mt-2">
+              These operations could modify or delete data in your database. Proceed if you
+              understand the impact of these changes.
+            </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="gap-2">

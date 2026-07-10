@@ -2,7 +2,10 @@ export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(func: F, waitFor: number) {
+export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
+  func: F,
+  waitFor: number,
+) {
   let timeout: ReturnType<typeof setTimeout>
 
   const debounced = (...args: Parameters<F>) => {
@@ -30,7 +33,9 @@ export function pick<T extends object, K extends keyof T>(obj: T, keys: K[]): Pi
 }
 
 export function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
-  return Object.fromEntries(Object.entries(obj).filter(([key]) => !keys.includes(key as K))) as Omit<T, K>
+  return Object.fromEntries(
+    Object.entries(obj).filter(([key]) => !keys.includes(key as K)),
+  ) as Omit<T, K>
 }
 
 export function noop() {}
@@ -58,7 +63,9 @@ export function tryCatch<T>(fn: () => T): { data: T; error: null } | { data: nul
   }
 }
 
-export async function tryCatchAsync<T>(fn: () => Promise<T>): Promise<{ data: T; error: null } | { data: null; error: Error }> {
+export async function tryCatchAsync<T>(
+  fn: () => Promise<T>,
+): Promise<{ data: T; error: null } | { data: null; error: Error }> {
   try {
     return { data: await fn(), error: null }
   } catch (error) {

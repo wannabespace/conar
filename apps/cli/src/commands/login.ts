@@ -64,7 +64,10 @@ export const loginCommand = command({
     const spinner = ora('Waiting for sign in...').start()
 
     try {
-      const events = await orpc.account.challenge.listen({ codeChallenge }, { signal: controller.signal })
+      const events = await orpc.account.challenge.listen(
+        { codeChallenge },
+        { signal: controller.signal },
+      )
 
       let ready = false
       for await (const event of events) {
@@ -80,7 +83,10 @@ export const loginCommand = command({
 
       spinner.text = 'Exchanging credentials...'
 
-      const { token } = await orpc.account.challenge.exchange({ codeChallenge, verifier }, { signal: controller.signal })
+      const { token } = await orpc.account.challenge.exchange(
+        { codeChallenge, verifier },
+        { signal: controller.signal },
+      )
 
       saveToken(token)
 
@@ -90,7 +96,9 @@ export const loginCommand = command({
     } catch (error) {
       spinner.stop()
 
-      const reason = controller.signal.aborted ? (controller.signal.reason as Error | undefined)?.message : undefined
+      const reason = controller.signal.aborted
+        ? (controller.signal.reason as Error | undefined)?.message
+        : undefined
 
       if (reason === 'Timeout') {
         consola.fail('Sign in timed out. No response within 5 minutes.')

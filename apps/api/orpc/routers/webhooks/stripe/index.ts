@@ -33,7 +33,10 @@ export const stripe = orpc.handler(async ({ context }) => {
           subject: `Alert from Stripe: ${event.type}`,
           template: 'Alert',
           props: {
-            text: typeof error === 'object' && error !== null ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2) : String(error),
+            text:
+              typeof error === 'object' && error !== null
+                ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
+                : String(error),
             service: 'Stripe',
           },
         })

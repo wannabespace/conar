@@ -177,7 +177,10 @@ export function MonacoDiff({
   useEffect(() => {
     if (!elementRef.current) return
 
-    diffEditorInstanceRef.current = monaco.editor.createDiffEditor(elementRef.current, getOptionsEvent())
+    diffEditorInstanceRef.current = monaco.editor.createDiffEditor(
+      elementRef.current,
+      getOptionsEvent(),
+    )
 
     const { originalValue, modifiedValue } = getValuesEvent()
     diffEditorInstanceRef.current.setModel({

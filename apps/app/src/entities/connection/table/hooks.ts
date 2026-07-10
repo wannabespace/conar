@@ -21,7 +21,10 @@ export function useClearDraftsOnQueryChange() {
   }, [store, filters, orderBy])
 }
 
-export function useSyncSelectionWithRows(rows: Record<string, unknown>[], primaryColumns: string[]) {
+export function useSyncSelectionWithRows(
+  rows: Record<string, unknown>[],
+  primaryColumns: string[],
+) {
   const store = useTablePageStore()
 
   useEffect(() => {
@@ -29,7 +32,9 @@ export function useSyncSelectionWithRows(rows: Record<string, unknown>[], primar
       (state) =>
         ({
           ...state,
-          selected: state.selected.filter((selectedRow) => rows.some((row) => primaryColumns.every((key) => row[key] === selectedRow[key]))),
+          selected: state.selected.filter((selectedRow) =>
+            rows.some((row) => primaryColumns.every((key) => row[key] === selectedRow[key])),
+          ),
         }) satisfies typeof state,
     )
   }, [store, rows, primaryColumns])

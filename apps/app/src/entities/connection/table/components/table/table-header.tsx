@@ -100,7 +100,10 @@ function Header() {
     if (!scrollEl) return
 
     const extraSpace = direction === 'left' ? -40 : 40
-    const targetScrollLeft = (direction === 'left' ? column.scrollLeft : column.scrollLeft + column.size - scrollEl.clientWidth) + extraSpace
+    const targetScrollLeft =
+      (direction === 'left'
+        ? column.scrollLeft
+        : column.scrollLeft + column.size - scrollEl.clientWidth) + extraSpace
 
     animate(scrollEl.scrollLeft, targetScrollLeft, {
       onUpdate: (latest) => {
@@ -143,7 +146,10 @@ function Header() {
 
   return (
     <TableHeader
-      className={cn('flex transition-shadow duration-300', isScrolled && `shadow-lg shadow-black/3`)}
+      className={cn(
+        'flex transition-shadow duration-300',
+        isScrolled && `shadow-lg shadow-black/3`,
+      )}
       before={
         <div className="sticky inset-y-0 left-0 z-20 flex w-0 items-center">
           <DropdownMenu>
@@ -154,7 +160,9 @@ function Header() {
                   size="icon-sm"
                   className={cn(
                     `group absolute top-1/2 left-2 -translate-y-1/2 transition-opacity duration-150`,
-                    notVisibleColumns.left.length > 0 ? 'opacity-100' : 'pointer-events-none opacity-0',
+                    notVisibleColumns.left.length > 0
+                      ? 'opacity-100'
+                      : 'pointer-events-none opacity-0',
                   )}
                 />
               }
@@ -191,7 +199,9 @@ function Header() {
                   size="icon-sm"
                   className={cn(
                     `group absolute top-1/2 right-2 -translate-y-1/2 shadow-none transition-opacity duration-150`,
-                    notVisibleColumns.right.length > 0 ? 'opacity-100' : `pointer-events-none opacity-0`,
+                    notVisibleColumns.right.length > 0
+                      ? 'opacity-100'
+                      : `pointer-events-none opacity-0`,
                   )}
                 />
               }

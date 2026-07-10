@@ -24,7 +24,8 @@ export const Route = createFileRoute('/_layout/download')({
   head: () =>
     seo({
       title: 'Download Conar - Available for macOS, Windows and Linux',
-      description: 'Download Conar for macOS (Apple Silicon & Intel), Windows, and Linux. Available as DMG, EXE, DEB, RPM, and AppImage.',
+      description:
+        'Download Conar for macOS (Apple Silicon & Intel), Windows, and Linux. Available as DMG, EXE, DEB, RPM, and AppImage.',
       image: '/og-image.png',
       path: '/download',
     }),
@@ -38,7 +39,9 @@ function HomebrewInstall() {
   return (
     <div className={`mb-8 w-full max-w-xl px-4 sm:mb-12`}>
       <h2 className={`mb-4 text-center text-xl font-semibold sm:text-2xl`}>Install via Homebrew</h2>
-      <Card className={`flex w-full flex-row items-center justify-between gap-4 p-3 sm:gap-8 sm:p-2`}>
+      <Card
+        className={`flex w-full flex-row items-center justify-between gap-4 p-3 sm:gap-8 sm:p-2`}
+      >
         <div className={`flex min-w-0 flex-1 items-center gap-3 sm:gap-4`}>
           <div className={`flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted`}>
             <RiTerminalLine className="size-4 text-muted-foreground" />
@@ -59,17 +62,47 @@ function HomebrewInstall() {
 function AllPlatforms() {
   return (
     <>
-      <DownloadOption Icon={RiAppleFill} type="macos" arch="Apple Silicon" link={DOWNLOAD_LINKS.macos.arm64} />
-      <DownloadOption Icon={RiAppleFill} type="macos" arch="Intel" link={DOWNLOAD_LINKS.macos.intel} />
-      <DownloadOption Icon={RiWindowsFill} type="windows" arch="exe" link={DOWNLOAD_LINKS.windows.exe} />
+      <DownloadOption
+        Icon={RiAppleFill}
+        type="macos"
+        arch="Apple Silicon"
+        link={DOWNLOAD_LINKS.macos.arm64}
+      />
+      <DownloadOption
+        Icon={RiAppleFill}
+        type="macos"
+        arch="Intel"
+        link={DOWNLOAD_LINKS.macos.intel}
+      />
+      <DownloadOption
+        Icon={RiWindowsFill}
+        type="windows"
+        arch="exe"
+        link={DOWNLOAD_LINKS.windows.exe}
+      />
       <DownloadOption Icon={Linux} type="linux" arch="deb" link={DOWNLOAD_LINKS.linux.deb} />
-      <DownloadOption Icon={Linux} type="linux" arch="AppImage" link={DOWNLOAD_LINKS.linux.appImage} />
+      <DownloadOption
+        Icon={Linux}
+        type="linux"
+        arch="AppImage"
+        link={DOWNLOAD_LINKS.linux.appImage}
+      />
       <DownloadOption Icon={Linux} type="linux" arch="rpm" link={DOWNLOAD_LINKS.linux.rpm} />
     </>
   )
 }
 
-function DownloadOption({ Icon, type, arch, link }: { Icon: RemixiconComponentType; type: OS; arch?: string; link: string }) {
+function DownloadOption({
+  Icon,
+  type,
+  arch,
+  link,
+}: {
+  Icon: RemixiconComponentType
+  type: OS
+  arch?: string
+  link: string
+}) {
   return (
     <Card className={`flex w-full flex-row items-center justify-between gap-4 p-3 sm:gap-8 sm:p-2`}>
       <div className={`flex min-w-0 flex-1 items-center gap-3 sm:gap-4`}>
@@ -89,7 +122,12 @@ function DownloadOption({ Icon, type, arch, link }: { Icon: RemixiconComponentTy
       </div>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button render={<a href={link} download aria-label="Download" />} size="sm" disabled={!link} variant="secondary">
+          <Button
+            render={<a href={link} download aria-label="Download" />}
+            size="sm"
+            disabled={!link}
+            variant="secondary"
+          >
             Download
           </Button>
         </TooltipTrigger>
@@ -103,10 +141,14 @@ function RouteComponent() {
     <div className={`flex flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-[10vh]`}>
       <div className={`mx-auto flex w-full max-w-2xl flex-col items-center text-center`}>
         <AppLogoSquare className={`mb-4 size-24 sm:mb-6 sm:size-32`} />
-        <h1 className={`mb-2 px-2 text-2xl font-medium tracking-tight sm:mb-3 sm:text-3xl md:text-4xl`}>
+        <h1
+          className={`mb-2 px-2 text-2xl font-medium tracking-tight sm:mb-3 sm:text-3xl md:text-4xl`}
+        >
           Download <strong>Conar</strong>
         </h1>
-        <p className={`mb-6 px-2 text-base text-muted-foreground sm:mb-10 sm:text-lg`}>Available for macOS, Windows and Linux</p>
+        <p className={`mb-6 px-2 text-base text-muted-foreground sm:mb-10 sm:text-lg`}>
+          Available for macOS, Windows and Linux
+        </p>
         <div className={`mb-8 space-y-2 px-4 text-center sm:mb-12`}>
           <DownloadButton />
         </div>

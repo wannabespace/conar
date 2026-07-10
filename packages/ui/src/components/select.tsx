@@ -14,13 +14,23 @@ export interface SelectButtonProps extends useRender.ComponentProps<'button'> {
   size?: VariantProps<typeof selectTriggerVariants>['size']
 }
 
-export function SelectButton({ className, size, render, children, ...props }: SelectButtonProps): React.ReactElement {
-  const typeValue: React.ButtonHTMLAttributes<HTMLButtonElement>['type'] = render ? undefined : 'button'
+export function SelectButton({
+  className,
+  size,
+  render,
+  children,
+  ...props
+}: SelectButtonProps): React.ReactElement {
+  const typeValue: React.ButtonHTMLAttributes<HTMLButtonElement>['type'] = render
+    ? undefined
+    : 'button'
 
   const defaultProps = {
     'children': (
       <>
-        <span className="flex-1 truncate in-data-placeholder:text-muted-foreground/72">{children}</span>
+        <span className="flex-1 truncate in-data-placeholder:text-muted-foreground/72">
+          {children}
+        </span>
         <ChevronsUpDownIcon className={selectTriggerIconClassName} />
       </>
     ),
@@ -43,7 +53,11 @@ export function SelectTrigger({
   ...props
 }: SelectPrimitive.Trigger.Props & VariantProps<typeof selectTriggerVariants>): React.ReactElement {
   return (
-    <SelectPrimitive.Trigger className={cn(selectTriggerVariants({ size }), className)} data-slot="select-trigger" {...props}>
+    <SelectPrimitive.Trigger
+      className={cn(selectTriggerVariants({ size }), className)}
+      data-slot="select-trigger"
+      {...props}
+    >
       {children}
       <SelectPrimitive.Icon data-slot="select-icon">
         <ChevronsUpDownIcon className={selectTriggerIconClassName} />
@@ -52,8 +66,17 @@ export function SelectTrigger({
   )
 }
 
-export function SelectValue({ className, ...props }: SelectPrimitive.Value.Props): React.ReactElement {
-  return <SelectPrimitive.Value className={cn(`flex-1 truncate data-placeholder:text-muted-foreground`, className)} data-slot="select-value" {...props} />
+export function SelectValue({
+  className,
+  ...props
+}: SelectPrimitive.Value.Props): React.ReactElement {
+  return (
+    <SelectPrimitive.Value
+      className={cn(`flex-1 truncate data-placeholder:text-muted-foreground`, className)}
+      data-slot="select-value"
+      {...props}
+    />
+  )
 }
 
 export function SelectPopup({
@@ -86,7 +109,11 @@ export function SelectPopup({
         side={side}
         sideOffset={sideOffset}
       >
-        <SelectPrimitive.Popup className="origin-(--transform-origin) text-foreground outline-none" data-slot="select-popup" {...props}>
+        <SelectPrimitive.Popup
+          className="origin-(--transform-origin) text-foreground outline-none"
+          data-slot="select-popup"
+          {...props}
+        >
           <SelectPrimitive.ScrollUpArrow
             className="top-0 z-50 flex h-6 w-full cursor-default items-center justify-center before:pointer-events-none before:absolute before:inset-x-px before:top-px before:h-[200%] before:rounded-t-[calc(var(--radius-lg)-1px)] before:bg-linear-to-b before:from-popover before:from-50%"
             data-slot="select-scroll-up-arrow"
@@ -94,7 +121,10 @@ export function SelectPopup({
             <ChevronUpIcon className="relative size-4.5 sm:size-4" />
           </SelectPrimitive.ScrollUpArrow>
           <div className="relative h-full min-w-(--anchor-width) rounded-lg border bg-popover shadow-lg/5 not-dark:bg-clip-padding before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]">
-            <SelectPrimitive.List className={cn('max-h-(--available-height) overflow-y-auto p-1', className)} data-slot="select-list">
+            <SelectPrimitive.List
+              className={cn('max-h-(--available-height) overflow-y-auto p-1', className)}
+              data-slot="select-list"
+            >
               {children}
             </SelectPrimitive.List>
           </div>
@@ -110,7 +140,11 @@ export function SelectPopup({
   )
 }
 
-export function SelectItem({ className, children, ...props }: SelectPrimitive.Item.Props): React.ReactElement {
+export function SelectItem({
+  className,
+  children,
+  ...props
+}: SelectPrimitive.Item.Props): React.ReactElement {
   return (
     <SelectPrimitive.Item
       className={cn(
@@ -136,20 +170,34 @@ export function SelectItem({ className, children, ...props }: SelectPrimitive.It
           <path d="M5.252 12.7 10.2 18.63 18.748 5.37" />
         </svg>
       </SelectPrimitive.ItemIndicator>
-      <SelectPrimitive.ItemText className="col-start-2 min-w-0">{children}</SelectPrimitive.ItemText>
+      <SelectPrimitive.ItemText className="col-start-2 min-w-0">
+        {children}
+      </SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   )
 }
 
-export function SelectSeparator({ className, ...props }: SelectPrimitive.Separator.Props): React.ReactElement {
-  return <SelectPrimitive.Separator className={cn('mx-2 my-1 h-px bg-border', className)} data-slot="select-separator" {...props} />
+export function SelectSeparator({
+  className,
+  ...props
+}: SelectPrimitive.Separator.Props): React.ReactElement {
+  return (
+    <SelectPrimitive.Separator
+      className={cn('mx-2 my-1 h-px bg-border', className)}
+      data-slot="select-separator"
+      {...props}
+    />
+  )
 }
 
 export function SelectGroup(props: SelectPrimitive.Group.Props): React.ReactElement {
   return <SelectPrimitive.Group data-slot="select-group" {...props} />
 }
 
-export function SelectLabel({ className, ...props }: SelectPrimitive.Label.Props): React.ReactElement {
+export function SelectLabel({
+  className,
+  ...props
+}: SelectPrimitive.Label.Props): React.ReactElement {
   return (
     <SelectPrimitive.Label
       className={cn(
@@ -163,7 +211,13 @@ export function SelectLabel({ className, ...props }: SelectPrimitive.Label.Props
 }
 
 export function SelectGroupLabel(props: SelectPrimitive.GroupLabel.Props): React.ReactElement {
-  return <SelectPrimitive.GroupLabel className="px-2 py-1.5 text-xs font-medium text-muted-foreground" data-slot="select-group-label" {...props} />
+  return (
+    <SelectPrimitive.GroupLabel
+      className="px-2 py-1.5 text-xs font-medium text-muted-foreground"
+      data-slot="select-group-label"
+      {...props}
+    />
+  )
 }
 
 export { SelectPopup as SelectContent }

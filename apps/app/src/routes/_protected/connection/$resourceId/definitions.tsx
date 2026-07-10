@@ -20,7 +20,11 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/definit
     meta: loaderData
       ? [
           {
-            title: title('Definitions', loaderData.connection.name, loaderData.connectionResource.name),
+            title: title(
+              'Definitions',
+              loaderData.connection.name,
+              loaderData.connectionResource.name,
+            ),
           },
         ]
       : [],

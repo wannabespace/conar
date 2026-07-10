@@ -1,7 +1,15 @@
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogPanel, DialogTitle } from '@conar/ui/components/dialog'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogPanel,
+  DialogTitle,
+} from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { RiInformationLine } from '@remixicon/react'
@@ -10,7 +18,10 @@ import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
-import { renameTableQuery, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
+import {
+  renameTableQuery,
+  resourceTablesAndSchemasQueryOptions,
+} from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { getConnectionResourceStore, renameTab } from '~/entities/connection/store'
 import { queryClient } from '~/main'
@@ -43,7 +54,9 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
 
   const { mutate: renameTable, isPending } = useMutation({
     mutationFn: async () => {
-      await renameTableQuery({ schema, oldTable: table, newTable: newTableName }).run(await connectionResourceToQueryParams(connectionResource))
+      await renameTableQuery({ schema, oldTable: table, newTable: newTableName }).run(
+        await connectionResourceToQueryParams(connectionResource),
+      )
     },
     onSuccess: async () => {
       toast.success(`Table "${table}" successfully renamed to "${newTableName}"`)
@@ -81,7 +94,10 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
           <Alert>
             <RiInformationLine className="size-5" />
             <AlertTitle>Rename table "{table}"</AlertTitle>
-            <AlertDescription>This will rename the table from "{table}" to the new name you specify. This action cannot be undone.</AlertDescription>
+            <AlertDescription>
+              This will rename the table from "{table}" to the new name you specify. This action
+              cannot be undone.
+            </AlertDescription>
           </Alert>
           <div className="space-y-2">
             <Label htmlFor="newTableName">Table name</Label>

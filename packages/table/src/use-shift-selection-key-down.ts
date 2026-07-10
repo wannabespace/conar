@@ -32,7 +32,8 @@ export function useShiftSelectionKeyDown<TItem, TElement extends HTMLElement = H
 
       const update = reduceShiftArrowKey(direction, rowCount, getSelectionState())
 
-      if (update) onSelectionChange(getItemsInRange(update.range.start, update.range.end), update.state)
+      if (update)
+        onSelectionChange(getItemsInRange(update.range.start, update.range.end), update.state)
     },
     [rowCount, getItemsInRange, getSelectionState, onSelectionChange],
   )

@@ -60,9 +60,13 @@ export const proxy = {
           throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
         }
 
-        if (connection.connection.syncType === SyncType.CloudWithoutPassword && connection.connection.isPasswordExists) {
+        if (
+          connection.connection.syncType === SyncType.CloudWithoutPassword &&
+          connection.connection.isPasswordExists
+        ) {
           throw new ORPCError('FORBIDDEN', {
-            message: 'This connection is not allowed to be used because it was created as a cloud connection without a password.',
+            message:
+              'This connection is not allowed to be used because it was created as a cloud connection without a password.',
           })
         }
 
@@ -91,7 +95,8 @@ export const proxy = {
 
         if (connection.syncType === SyncType.CloudWithoutPassword && connection.isPasswordExists) {
           throw new ORPCError('FORBIDDEN', {
-            message: 'This connection is not allowed to be used because it was created as a cloud connection without a password.',
+            message:
+              'This connection is not allowed to be used because it was created as a cloud connection without a password.',
           })
         }
 

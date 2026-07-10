@@ -70,7 +70,12 @@ const query = createQuery({
       const rows = await db
         .selectFrom('information_schema.TABLE_PRIVILEGES')
         .select(['TABLE_SCHEMA', 'TABLE_NAME', 'GRANTEE', 'PRIVILEGE_TYPE', 'IS_GRANTABLE'])
-        .where('TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
+        .where('TABLE_SCHEMA', 'not in', [
+          'mysql',
+          'information_schema',
+          'performance_schema',
+          'sys',
+        ])
         .execute()
       return rows.map((row) => ({
         schema: row.TABLE_SCHEMA,
@@ -90,7 +95,14 @@ const query = createQuery({
         .leftJoin('sys.security_predicates as pr', 'sp.object_id', 'pr.object_id')
         .leftJoin('sys.tables as t', 'pr.target_object_id', 't.object_id')
         .leftJoin('sys.schemas as table_schema', 't.schema_id', 'table_schema.schema_id')
-        .select(['table_schema.name as schema', 't.name as table', 'sp.name', 'sp.is_enabled', 'pr.operation', 'pr.predicate_definition'])
+        .select([
+          'table_schema.name as schema',
+          't.name as table',
+          'sp.name',
+          'sp.is_enabled',
+          'pr.operation',
+          'pr.predicate_definition',
+        ])
         .where('t.name', 'is not', null)
         .execute()
       return rows.map((row) => ({
@@ -126,9 +138,11 @@ const query = createQuery({
   },
 })
 
-export const resourcePoliciesQuery = memoize(({ connectionResource }: { connectionResource: ConnectionResource }) => {
-  return queryOptions({
-    queryKey: ['connection-resource', connectionResource.id, 'policies'],
-    queryFn: async () => query.run(await connectionResourceToQueryParams(connectionResource)),
-  })
-})
+export const resourcePoliciesQuery = memoize(
+  ({ connectionResource }: { connectionResource: ConnectionResource }) => {
+    return queryOptions({
+      queryKey: ['connection-resource', connectionResource.id, 'policies'],
+      queryFn: async () => query.run(await connectionResourceToQueryParams(connectionResource)),
+    })
+  },
+)

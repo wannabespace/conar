@@ -11,7 +11,10 @@ import { publisher } from './events'
 export const update = orpc
   .use(authMiddleware)
   .input(
-    type.and(connectionsResourcesUpdateSchema.omit('createdAt', 'updatedAt', 'id', 'connectionId'), connectionsResourcesUpdateSchema.pick('id').required()),
+    type.and(
+      connectionsResourcesUpdateSchema.omit('createdAt', 'updatedAt', 'id', 'connectionId'),
+      connectionsResourcesUpdateSchema.pick('id').required(),
+    ),
   )
   .handler(async ({ context, input }) => {
     const { id, ...changes } = input
@@ -36,7 +39,11 @@ export const update = orpc
       throw new ORPCError('NOT_FOUND', { message: 'Connection resource not found' })
     }
 
-    const [resource] = await db.update(connectionsResources).set(changes).where(eq(connectionsResources.id, id)).returning()
+    const [resource] = await db
+      .update(connectionsResources)
+      .set(changes)
+      .where(eq(connectionsResources.id, id))
+      .returning()
 
     publisher.publish(context.user.id, {
       type: 'update',

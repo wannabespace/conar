@@ -1,7 +1,16 @@
 import type { EdgeProps } from '@xyflow/react'
 import { BaseEdge, getSmoothStepPath, Position } from '@xyflow/react'
 
-export function ReactFlowEdge({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd }: EdgeProps) {
+export function ReactFlowEdge({
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  style,
+  markerEnd,
+}: EdgeProps) {
   const [edgePath] = getSmoothStepPath({
     sourceX,
     sourceY,

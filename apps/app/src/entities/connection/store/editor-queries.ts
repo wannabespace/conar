@@ -14,7 +14,10 @@ export const getEditorQueriesComputed = memoize((id: string) => {
     const currentLineNumbers = new Set(editorQueries.map((query) => query.startLineNumber))
     const newSelectedLines = state.selectedLines.filter((line) => currentLineNumbers.has(line))
 
-    if (newSelectedLines.length !== state.selectedLines.length || newSelectedLines.some((line, i) => line !== state.selectedLines[i])) {
+    if (
+      newSelectedLines.length !== state.selectedLines.length ||
+      newSelectedLines.some((line, i) => line !== state.selectedLines[i])
+    ) {
       store.set(
         (state) =>
           ({

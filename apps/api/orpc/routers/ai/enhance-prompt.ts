@@ -9,7 +9,11 @@ import { withPosthog } from '~/lib/posthog'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 async function getMessages(chatId: string) {
-  return db.select().from(chatsMessages).where(eq(chatsMessages.chatId, chatId)).orderBy(asc(chatsMessages.createdAt))
+  return db
+    .select()
+    .from(chatsMessages)
+    .where(eq(chatsMessages.chatId, chatId))
+    .orderBy(asc(chatsMessages.createdAt))
 }
 
 export const enhancePrompt = orpc

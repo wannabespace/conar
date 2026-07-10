@@ -8,5 +8,11 @@ export function SidebarButton({
 }: {
   active?: boolean
 } & React.ComponentProps<typeof Button>) {
-  return <Button variant="ghost" className={cn(`w-full justify-start`, active && `bg-accent/50`, className)} {...props} />
+  return (
+    <Button
+      variant="ghost"
+      className={cn(`w-full justify-start`, active && `bg-accent/50`, className)}
+      {...props}
+    />
+  )
 }

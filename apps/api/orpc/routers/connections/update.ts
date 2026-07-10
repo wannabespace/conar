@@ -13,7 +13,12 @@ import { publisher } from './events'
 
 export const update = orpc
   .use(authMiddleware)
-  .input(type.and(connectionsUpdateSchema.omit('createdAt', 'updatedAt', 'userId', 'id'), connectionsUpdateSchema.pick('id').required()))
+  .input(
+    type.and(
+      connectionsUpdateSchema.omit('createdAt', 'updatedAt', 'userId', 'id'),
+      connectionsUpdateSchema.pick('id').required(),
+    ),
+  )
   .handler(async ({ context, input }) => {
     const { id, ...changes } = input
     const [found] = await db
@@ -28,7 +33,9 @@ export const update = orpc
 
     const secret = await context.getUserSecret()
 
-    const newConnectionString = new SafeURL(changes.connectionString ?? decrypt({ encryptedText: found.connectionString, secret }))
+    const newConnectionString = new SafeURL(
+      changes.connectionString ?? decrypt({ encryptedText: found.connectionString, secret }),
+    )
 
     if ((changes.syncType ?? found.syncType) !== SyncType.Cloud) {
       newConnectionString.password = ''

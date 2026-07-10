@@ -8,7 +8,11 @@ import { connectionResourceToQueryParams, createQuery } from '../runtime/query'
 
 const constraintType = type('"PRIMARY KEY" | "UNIQUE" | "FOREIGN KEY" | "CHECK" | "EXCLUSION"')
 
-const neededConstraintTypes = ['PRIMARY KEY', 'UNIQUE', 'FOREIGN KEY'] as const satisfies (typeof constraintType.infer)[]
+const neededConstraintTypes = [
+  'PRIMARY KEY',
+  'UNIQUE',
+  'FOREIGN KEY',
+] as const satisfies (typeof constraintType.infer)[]
 
 const constraintTypeLabelMap = {
   'PRIMARY KEY': 'primaryKey',
@@ -45,17 +49,29 @@ export const resourceConstraintsQuery = createQuery({
         .selectFrom('pg_catalog.pg_constraint as con')
         .innerJoin('pg_catalog.pg_class as c', 'con.conrelid', 'c.oid')
         .innerJoin('pg_catalog.pg_namespace as n', 'c.relnamespace', 'n.oid')
-        .innerJoin('pg_catalog.pg_attribute as a', (join) => join.onRef('a.attrelid', '=', 'con.conrelid').on(sql<boolean>`a.attnum = ANY(con.conkey)`))
+        .innerJoin('pg_catalog.pg_attribute as a', (join) =>
+          join
+            .onRef('a.attrelid', '=', 'con.conrelid')
+            .on(sql<boolean>`a.attnum = ANY(con.conkey)`),
+        )
         .leftJoin('pg_catalog.pg_class as fc', 'con.confrelid', 'fc.oid')
-        .leftJoin('pg_catalog.pg_namespace as fn', (join) => join.onRef('fn.oid', '=', 'fc.relnamespace'))
+        .leftJoin('pg_catalog.pg_namespace as fn', (join) =>
+          join.onRef('fn.oid', '=', 'fc.relnamespace'),
+        )
         .leftJoin('pg_catalog.pg_attribute as fa', (join) =>
-          join.onRef('fa.attrelid', '=', 'con.confrelid').on(sql<boolean>`fa.attnum = (con.confkey)[array_position(con.conkey, a.attnum)]`),
+          join
+            .onRef('fa.attrelid', '=', 'con.confrelid')
+            .on(sql<boolean>`fa.attnum = (con.confkey)[array_position(con.conkey, a.attnum)]`),
         )
         .select([
           'n.nspname as schema',
           'c.relname as table',
           'con.conname as name',
-          sql<typeof constraintType.infer>`CASE con.contype WHEN 'p' THEN 'PRIMARY KEY' WHEN 'u' THEN 'UNIQUE' WHEN 'f' THEN 'FOREIGN KEY' END`.as('type'),
+          sql<
+            typeof constraintType.infer
+          >`CASE con.contype WHEN 'p' THEN 'PRIMARY KEY' WHEN 'u' THEN 'UNIQUE' WHEN 'f' THEN 'FOREIGN KEY' END`.as(
+            'type',
+          ),
           sql<string | null>`a.attname`.as('column'),
           'fn.nspname as foreign_schema',
           'fc.relname as foreign_table',
@@ -104,7 +120,12 @@ export const resourceConstraintsQuery = createQuery({
           'rc.UPDATE_RULE as onUpdate',
         ])
         .where('tc.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
-        .where('tc.TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
+        .where('tc.TABLE_SCHEMA', 'not in', [
+          'mysql',
+          'information_schema',
+          'performance_schema',
+          'sys',
+        ])
         .execute(),
     mssql: (db) =>
       db
@@ -117,7 +138,9 @@ export const resourceConstraintsQuery = createQuery({
             .onRef('tc.TABLE_NAME', '=', 'kcu.TABLE_NAME'),
         )
         .leftJoin('information_schema.REFERENTIAL_CONSTRAINTS as rc', (join) =>
-          join.onRef('tc.CONSTRAINT_NAME', '=', 'rc.CONSTRAINT_NAME').onRef('tc.CONSTRAINT_SCHEMA', '=', 'rc.CONSTRAINT_SCHEMA'),
+          join
+            .onRef('tc.CONSTRAINT_NAME', '=', 'rc.CONSTRAINT_NAME')
+            .onRef('tc.CONSTRAINT_SCHEMA', '=', 'rc.CONSTRAINT_SCHEMA'),
         )
         .leftJoin('information_schema.KEY_COLUMN_USAGE as referenced_kcu', (join) =>
           join
@@ -164,9 +187,14 @@ export const resourceConstraintsQuery = createQuery({
   },
 })
 
-export function resourceConstraintsQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
+export function resourceConstraintsQueryOptions({
+  connectionResource,
+}: {
+  connectionResource: ConnectionResource
+}) {
   return queryOptions({
-    queryFn: async () => resourceConstraintsQuery.run(await connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () =>
+      resourceConstraintsQuery.run(await connectionResourceToQueryParams(connectionResource)),
     queryKey: ['connection-resource', connectionResource.id, 'constraints'],
   })
 }

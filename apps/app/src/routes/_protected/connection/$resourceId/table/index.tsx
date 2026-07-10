@@ -1,6 +1,10 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import { title } from '@conar/shared/utils/title'
-import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
+import {
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizableSeparator,
+} from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
@@ -19,7 +23,10 @@ import {
   TablesTabs,
   useTableColumnsQuery,
 } from '~/entities/connection/table'
-import { prefetchConnectionResourceCore, prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
+import {
+  prefetchConnectionResourceCore,
+  prefetchConnectionResourceTableCore,
+} from '~/entities/connection/utils'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId/table/')({
   validateSearch: type({
@@ -84,7 +91,9 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/table/'
       ? [
           {
             title: title(
-              loaderData.schema && loaderData.table ? `${loaderData.schema}.${loaderData.table}` : 'Tables',
+              loaderData.schema && loaderData.table
+                ? `${loaderData.schema}.${loaderData.table}`
+                : 'Tables',
               loaderData.connection.name,
               loaderData.connectionResource.name,
             ),
@@ -167,14 +176,26 @@ function DatabaseTablesPage() {
   })
 
   return (
-    <ResizablePanelGroup defaultLayout={defaultLayout} onLayoutChanged={onLayoutChanged} orientation="horizontal" className="flex">
-      <ResizablePanel defaultSize="20%" minSize={200} maxSize="50%" className="h-full overflow-hidden rounded-lg bg-background">
+    <ResizablePanelGroup
+      defaultLayout={defaultLayout}
+      onLayoutChanged={onLayoutChanged}
+      orientation="horizontal"
+      className="flex"
+    >
+      <ResizablePanel
+        defaultSize="20%"
+        minSize={200}
+        maxSize="50%"
+        className="h-full overflow-hidden rounded-lg bg-background"
+      >
         <Sidebar key={connectionResource.id} />
       </ResizablePanel>
       <ResizableSeparator className="w-1 bg-transparent" />
       <ResizablePanel defaultSize="80%" className="flex-1 overflow-hidden rounded-lg bg-background">
         {schema && table ? (
-          <TablePageStoreContext value={tablePageStore({ id: connectionResource.id, schema, table })}>
+          <TablePageStoreContext
+            value={tablePageStore({ id: connectionResource.id, schema, table })}
+          >
             <TableContent table={table} schema={schema} />
           </TablePageStoreContext>
         ) : (
@@ -182,7 +203,8 @@ function DatabaseTablesPage() {
             <div className="space-y-4 text-center">
               <div className="text-lg font-medium">No table selected</div>
               <p className="mx-auto max-w-md text-sm text-muted-foreground">
-                Select a schema from the dropdown and choose a table from the sidebar to view and manage your data.
+                Select a schema from the dropdown and choose a table from the sidebar to view and
+                manage your data.
               </p>
             </div>
           </div>

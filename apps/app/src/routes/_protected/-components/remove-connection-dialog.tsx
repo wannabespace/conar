@@ -54,7 +54,9 @@ export function RemoveConnectionDialog({ ref }: RemoveConnectionDialogProps) {
     )
     const resourcesIds = allConnectionsResources.map(({ id }) => id)
 
-    lastOpenedResourcesStorageValue.set((prev) => prev.filter((resource) => !resourcesIds.includes(resource)))
+    lastOpenedResourcesStorageValue.set((prev) =>
+      prev.filter((resource) => !resourcesIds.includes(resource)),
+    )
 
     connectionsCollection.delete(connection.id)
 
@@ -76,7 +78,8 @@ export function RemoveConnectionDialog({ ref }: RemoveConnectionDialogProps) {
         <AlertDialogHeader>
           <AlertDialogTitle>Remove Connection</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete this connection and remove all associated data.
+            This action cannot be undone. This will permanently delete this connection and remove
+            all associated data.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

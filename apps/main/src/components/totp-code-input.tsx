@@ -6,7 +6,13 @@ import { useId } from 'react'
 const TOTP_LENGTH = 6
 const TOTP_SLOTS = Array.from({ length: TOTP_LENGTH }, (_, i) => ({ key: `slot-${i}`, index: i }))
 
-export function TotpCodeInput({ label, ...props }: { label?: string } & Omit<ComponentProps<typeof InputOTP>, 'maxLength' | 'id' | 'children' | 'render'>) {
+export function TotpCodeInput({
+  label,
+  ...props
+}: { label?: string } & Omit<
+  ComponentProps<typeof InputOTP>,
+  'maxLength' | 'id' | 'children' | 'render'
+>) {
   const id = useId()
 
   return (

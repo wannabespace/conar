@@ -72,7 +72,9 @@ function ResetPasswordPage() {
   return (
     <>
       <div className="space-y-2">
-        <h1 className={`flex items-center gap-2 text-2xl font-semibold tracking-tight`}>Reset your password</h1>
+        <h1 className={`flex items-center gap-2 text-2xl font-semibold tracking-tight`}>
+          Reset your password
+        </h1>
         <p className="text-sm text-muted-foreground">Enter your new password below.</p>
       </div>
       <form
@@ -103,7 +105,10 @@ function ResetPasswordPage() {
           <form.AppField
             name="confirmPassword"
             validators={{
-              onSubmit: ({ value, fieldApi }) => (value !== fieldApi.form.getFieldValue('password') ? { message: 'Passwords do not match' } : undefined),
+              onSubmit: ({ value, fieldApi }) =>
+                value !== fieldApi.form.getFieldValue('password')
+                  ? { message: 'Passwords do not match' }
+                  : undefined,
             }}
           >
             {(field) => (

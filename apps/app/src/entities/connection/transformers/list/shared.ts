@@ -1,6 +1,9 @@
 import { tryParseJson } from '@conar/shared/utils/helpers'
 
-export function parseToArray<T>(value: T, engineParser?: (str: T) => string[] | undefined): string[] {
+export function parseToArray<T>(
+  value: T,
+  engineParser?: (str: T) => string[] | undefined,
+): string[] {
   if (value === null || value === undefined || value === '') return []
 
   if (Array.isArray(value)) return value.map(String)

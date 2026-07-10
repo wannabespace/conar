@@ -79,7 +79,10 @@ export function DrawerSwipeArea({
   )
 }
 
-export function DrawerBackdrop({ className, ...props }: DrawerPrimitive.Backdrop.Props): React.ReactElement {
+export function DrawerBackdrop({
+  className,
+  ...props
+}: DrawerPrimitive.Backdrop.Props): React.ReactElement {
   return (
     <DrawerPrimitive.Backdrop
       className={cn(
@@ -157,9 +160,12 @@ export function DrawerPopup({
             variant !== 'straight' &&
               cn(
                 position === 'bottom' && 'rounded-t-2xl',
-                position === 'top' && `rounded-b-2xl **:data-[slot=drawer-footer]:rounded-b-[calc(var(--radius-2xl)-1px)]`,
-                position === 'left' && `rounded-e-2xl **:data-[slot=drawer-footer]:rounded-ee-[calc(var(--radius-2xl)-1px)]`,
-                position === 'right' && `rounded-s-2xl **:data-[slot=drawer-footer]:rounded-es-[calc(var(--radius-2xl)-1px)]`,
+                position === 'top' &&
+                  `rounded-b-2xl **:data-[slot=drawer-footer]:rounded-b-[calc(var(--radius-2xl)-1px)]`,
+                position === 'left' &&
+                  `rounded-e-2xl **:data-[slot=drawer-footer]:rounded-ee-[calc(var(--radius-2xl)-1px)]`,
+                position === 'right' &&
+                  `rounded-s-2xl **:data-[slot=drawer-footer]:rounded-es-[calc(var(--radius-2xl)-1px)]`,
               ),
             variant === 'default' &&
               cn(
@@ -188,7 +194,11 @@ export function DrawerPopup({
         >
           {children}
           {showCloseButton && (
-            <DrawerPrimitive.Close aria-label="Close" className="absolute inset-e-2 top-2" render={<Button size="icon" variant="ghost" />}>
+            <DrawerPrimitive.Close
+              aria-label="Close"
+              className="absolute inset-e-2 top-2"
+              render={<Button size="icon" variant="ghost" />}
+            >
               <XIcon />
             </DrawerPrimitive.Close>
           )}
@@ -237,8 +247,10 @@ export function DrawerFooter({
     'className': cn(
       `flex flex-col-reverse gap-2 px-6 pb-(--safe-area-inset-bottom,0px) sm:flex-row sm:justify-end`,
       !allowSelection && 'cursor-default',
-      variant === 'default' && `border-t bg-muted/72 pt-4 pb-[calc(env(safe-area-inset-bottom,0)+(--spacing(4)))]`,
-      variant === 'bare' && `pt-4 pb-[calc(env(safe-area-inset-bottom,0)+(--spacing(6)))] in-[[data-slot=drawer-popup]:has([data-slot=drawer-panel])]:pt-3`,
+      variant === 'default' &&
+        `border-t bg-muted/72 pt-4 pb-[calc(env(safe-area-inset-bottom,0)+(--spacing(4)))]`,
+      variant === 'bare' &&
+        `pt-4 pb-[calc(env(safe-area-inset-bottom,0)+(--spacing(6)))] in-[[data-slot=drawer-popup]:has([data-slot=drawer-panel])]:pt-3`,
       className,
     ),
     'data-slot': 'drawer-footer',
@@ -251,12 +263,30 @@ export function DrawerFooter({
   })
 }
 
-export function DrawerTitle({ className, ...props }: DrawerPrimitive.Title.Props): React.ReactElement {
-  return <DrawerPrimitive.Title className={cn('font-heading text-xl leading-none font-semibold', className)} data-slot="drawer-title" {...props} />
+export function DrawerTitle({
+  className,
+  ...props
+}: DrawerPrimitive.Title.Props): React.ReactElement {
+  return (
+    <DrawerPrimitive.Title
+      className={cn('font-heading text-xl leading-none font-semibold', className)}
+      data-slot="drawer-title"
+      {...props}
+    />
+  )
 }
 
-export function DrawerDescription({ className, ...props }: DrawerPrimitive.Description.Props): React.ReactElement {
-  return <DrawerPrimitive.Description className={cn('text-sm text-muted-foreground', className)} data-slot="drawer-description" {...props} />
+export function DrawerDescription({
+  className,
+  ...props
+}: DrawerPrimitive.Description.Props): React.ReactElement {
+  return (
+    <DrawerPrimitive.Description
+      className={cn('text-sm text-muted-foreground', className)}
+      data-slot="drawer-description"
+      {...props}
+    />
+  )
 }
 
 export function DrawerPanel({
@@ -329,7 +359,11 @@ export function DrawerBar({
   })
 }
 
-export function DrawerMenu({ className, render, ...props }: useRender.ComponentProps<'nav'>): React.ReactElement {
+export function DrawerMenu({
+  className,
+  render,
+  ...props
+}: useRender.ComponentProps<'nav'>): React.ReactElement {
   const defaultProps = {
     'className': cn('-m-2 flex flex-col', className),
     'data-slot': 'drawer-menu',
@@ -369,7 +403,11 @@ export function DrawerMenuItem({
   })
 }
 
-export function DrawerMenuSeparator({ className, render, ...props }: useRender.ComponentProps<'div'>): React.ReactElement {
+export function DrawerMenuSeparator({
+  className,
+  render,
+  ...props
+}: useRender.ComponentProps<'div'>): React.ReactElement {
   const defaultProps = {
     'className': cn('mx-2 my-1 h-px bg-border', className),
     'data-slot': 'drawer-menu-separator',
@@ -382,7 +420,11 @@ export function DrawerMenuSeparator({ className, render, ...props }: useRender.C
   })
 }
 
-export function DrawerMenuGroup({ className, render, ...props }: useRender.ComponentProps<'div'>): React.ReactElement {
+export function DrawerMenuGroup({
+  className,
+  render,
+  ...props
+}: useRender.ComponentProps<'div'>): React.ReactElement {
   const defaultProps = {
     'className': cn('flex flex-col', className),
     'data-slot': 'drawer-menu-group',
@@ -395,7 +437,11 @@ export function DrawerMenuGroup({ className, render, ...props }: useRender.Compo
   })
 }
 
-export function DrawerMenuGroupLabel({ className, render, ...props }: useRender.ComponentProps<'div'>): React.ReactElement {
+export function DrawerMenuGroupLabel({
+  className,
+  render,
+  ...props
+}: useRender.ComponentProps<'div'>): React.ReactElement {
   const defaultProps = {
     'className': cn('px-2 py-1.5 text-xs font-medium text-muted-foreground', className),
     'data-slot': 'drawer-menu-group-label',
@@ -408,7 +454,11 @@ export function DrawerMenuGroupLabel({ className, render, ...props }: useRender.
   })
 }
 
-export function DrawerMenuTrigger({ className, children, ...props }: DrawerPrimitive.Trigger.Props): React.ReactElement {
+export function DrawerMenuTrigger({
+  className,
+  children,
+  ...props
+}: DrawerPrimitive.Trigger.Props): React.ReactElement {
   return (
     <DrawerTrigger
       className={cn(
@@ -487,8 +537,17 @@ export function DrawerMenuCheckboxItem({
   )
 }
 
-export function DrawerMenuRadioGroup({ className, ...props }: RadioGroupPrimitive.Props): React.ReactElement {
-  return <RadioGroupPrimitive className={cn('flex flex-col', className)} data-slot="drawer-menu-radio-group" {...props} />
+export function DrawerMenuRadioGroup({
+  className,
+  ...props
+}: RadioGroupPrimitive.Props): React.ReactElement {
+  return (
+    <RadioGroupPrimitive
+      className={cn('flex flex-col', className)}
+      data-slot="drawer-menu-radio-group"
+      {...props}
+    />
+  )
 }
 
 export function DrawerMenuRadioItem({

@@ -109,11 +109,19 @@ export function RunnerEditorAIZone({
     <TooltipProvider>
       <div className="flex h-full flex-col py-1 pr-6">
         <Popover open={!!aiSuggestion}>
-          <PopoverTrigger nativeButton={false} render={<div className="relative flex h-full w-lg flex-col rounded-md border" />}>
+          <PopoverTrigger
+            nativeButton={false}
+            render={<div className="relative flex h-full w-lg flex-col rounded-md border" />}
+          >
             {!subscription && (
               <div className="w-full bg-muted px-2 py-1 text-sm text-muted-foreground">
                 Please{' '}
-                <Button variant="outline" className="px-1 py-0.5" size="xs" onClick={() => setIsSubscriptionDialogOpen(true)}>
+                <Button
+                  variant="outline"
+                  className="px-1 py-0.5"
+                  size="xs"
+                  onClick={() => setIsSubscriptionDialogOpen(true)}
+                >
                   upgrade
                 </Button>{' '}
                 your subscription to generate SQL queries.
@@ -132,7 +140,11 @@ export function RunnerEditorAIZone({
                 // Disable monaco default styles
                 `focus:border-border! focus-visible:border-border! focus-visible:ring-0! focus-visible:outline-none!`,
               )}
-              placeholder={isOnline ? 'Update selected SQL with AI' : 'Check your internet connection to update selected SQL'}
+              placeholder={
+                isOnline
+                  ? 'Update selected SQL with AI'
+                  : 'Check your internet connection to update selected SQL'
+              }
               onKeyDown={(e) => {
                 e.stopPropagation()
 
@@ -144,7 +156,12 @@ export function RunnerEditorAIZone({
                 }
               }}
             />
-            <Button size="xs" className="absolute right-2 bottom-2" disabled={isPending || !prompt.trim() || !isOnline} onClick={handleSubmit}>
+            <Button
+              size="xs"
+              className="absolute right-2 bottom-2"
+              disabled={isPending || !prompt.trim() || !isOnline}
+              onClick={handleSubmit}
+            >
               <LoadingContent loading={isPending}>
                 {aiSuggestion ? 'Apply' : 'Send'}
                 <EnterIcon />

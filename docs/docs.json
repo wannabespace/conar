@@ -30,7 +30,13 @@
           },
           {
             "group": "Features",
-            "pages": ["features/table-browser", "features/sql-editor", "features/ai-assistant", "features/schema-visualizer", "features/definitions"]
+            "pages": [
+              "features/table-browser",
+              "features/sql-editor",
+              "features/ai-assistant",
+              "features/schema-visualizer",
+              "features/definitions"
+            ]
           },
           {
             "group": "Account & Billing",

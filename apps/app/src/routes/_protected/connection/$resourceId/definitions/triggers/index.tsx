@@ -4,7 +4,13 @@ import { CardContent, CardTitle } from '@conar/ui/components/card'
 import { CardMotion } from '@conar/ui/components/card.motion'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@conar/ui/components/select'
 import { RiFlashlightLine, RiTable2 } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
@@ -30,7 +36,11 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/definit
     meta: loaderData
       ? [
           {
-            title: title('Triggers', loaderData.connection.name, loaderData.connectionResource.name),
+            title: title(
+              'Triggers',
+              loaderData.connection.name,
+              loaderData.connectionResource.name,
+            ),
           },
         ]
       : [],
@@ -54,7 +64,13 @@ const timingFilterOptions = [
 
 function DatabaseTriggersPage() {
   const { connectionResource } = Route.useRouteContext()
-  const { data: triggers, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceTriggersQueryOptions({ connectionResource }))
+  const {
+    data: triggers,
+    refetch,
+    isFetching,
+    isPending,
+    dataUpdatedAt,
+  } = useQuery(resourceTriggersQueryOptions({ connectionResource }))
   const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({
     connectionResource,
   })
@@ -77,11 +93,21 @@ function DatabaseTriggersPage() {
 
   return (
     <>
-      <DefinitionsHeader onRefresh={() => refetch()} isRefreshing={isFetching} dataUpdatedAt={dataUpdatedAt}>
+      <DefinitionsHeader
+        onRefresh={() => refetch()}
+        isRefreshing={isFetching}
+        dataUpdatedAt={dataUpdatedAt}
+      >
         Triggers
       </DefinitionsHeader>
       <div className="mb-4 flex items-center gap-2">
-        <SearchInput placeholder="Search triggers" autoFocus value={search} onChange={(e) => setSearch(e.target.value)} onClear={() => setSearch('')} />
+        <SearchInput
+          placeholder="Search triggers"
+          autoFocus
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onClear={() => setSearch('')}
+        />
         <Select
           value={filterEvent}
           onValueChange={(v) => {
@@ -92,7 +118,11 @@ function DatabaseTriggersPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Event">
-              {(value) => (value ? eventFilterOptions.find((option) => option.value === value)?.label : 'Filter Event')}
+              {(value) =>
+                value
+                  ? eventFilterOptions.find((option) => option.value === value)?.label
+                  : 'Filter Event'
+              }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -113,7 +143,11 @@ function DatabaseTriggersPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Timing">
-              {(value) => (value ? timingFilterOptions.find((option) => option.value === value)?.label : 'Filter Timing')}
+              {(value) =>
+                value
+                  ? timingFilterOptions.find((option) => option.value === value)?.label
+                  : 'Filter Timing'
+              }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -124,15 +158,26 @@ function DatabaseTriggersPage() {
             ))}
           </SelectContent>
         </Select>
-        <SchemaSelect schemas={schemas} selectedSchema={selectedSchema} setSelectedSchema={setSelectedSchema} />
+        <SchemaSelect
+          schemas={schemas}
+          selectedSchema={selectedSchema}
+          setSelectedSchema={setSelectedSchema}
+        />
       </div>
       <DefinitionsGrid loading={isPending}>
         {filteredTriggers.length === 0 && (
-          <DefinitionsEmptyState title="No triggers found" description="This schema doesn't have any triggers matching your filter." />
+          <DefinitionsEmptyState
+            title="No triggers found"
+            description="This schema doesn't have any triggers matching your filter."
+          />
         )}
 
         {filteredTriggers.map((item) => (
-          <CardMotion key={`${item.schema}-${item.table}-${item.name}-${item.event}`} layout {...MOTION_BLOCK_PROPS}>
+          <CardMotion
+            key={`${item.schema}-${item.table}-${item.name}-${item.event}`}
+            layout
+            {...MOTION_BLOCK_PROPS}
+          >
             <CardContent className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>

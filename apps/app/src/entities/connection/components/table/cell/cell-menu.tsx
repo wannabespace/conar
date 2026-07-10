@@ -46,7 +46,10 @@ export function TableCellContextMenu({
   const { value, column, rowIndex, onAddFilter, onOrder, order, onRename } = useCellContext()
   const row = useTableContext(({ rows }) => rows[rowIndex]!)
   const columns = useTableContext(({ columns }) => columns)
-  const columnKeys = useMemo(() => columns.map((c) => c.id).filter((id) => !internalColumnIds.includes(id)), [columns])
+  const columnKeys = useMemo(
+    () => columns.map((c) => c.id).filter((id) => !internalColumnIds.includes(id)),
+    [columns],
+  )
   const rowCopyDisabled = columnKeys.length === 0
 
   return (
@@ -98,7 +101,9 @@ export function TableCellContextMenu({
                             }}
                           >
                             {filter.label}
-                            <span className="ml-auto pl-2 text-xs text-muted-foreground">{filter.operator}</span>
+                            <span className="ml-auto pl-2 text-xs text-muted-foreground">
+                              {filter.operator}
+                            </span>
                           </ContextMenuItem>
                         ))}
                       </Fragment>

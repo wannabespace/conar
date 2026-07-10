@@ -32,7 +32,11 @@ export const resourceTableTotalQuery = memoize(
             const estimate = await db
               .withSchema('pg_catalog')
               .selectFrom('pg_catalog.pg_class')
-              .innerJoin('pg_catalog.pg_namespace', 'pg_catalog.pg_namespace.oid', 'pg_catalog.pg_class.relnamespace')
+              .innerJoin(
+                'pg_catalog.pg_namespace',
+                'pg_catalog.pg_namespace.oid',
+                'pg_catalog.pg_class.relnamespace',
+              )
               .select('pg_catalog.pg_class.reltuples as count')
               .where('pg_catalog.pg_namespace.nspname', '=', schema)
               .where('pg_catalog.pg_class.relname', '=', table)
@@ -140,7 +144,10 @@ export function resourceTableTotalQueryOptions({
   query: { filters: ActiveFilter[]; exact: boolean }
 }) {
   return queryOptions({
-    queryFn: async () => resourceTableTotalQuery({ table, schema, query: { filters, exact } }).run(await connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () =>
+      resourceTableTotalQuery({ table, schema, query: { filters, exact } }).run(
+        await connectionResourceToQueryParams(connectionResource),
+      ),
     queryKey: [
       'connection-resource',
       connectionResource.id,

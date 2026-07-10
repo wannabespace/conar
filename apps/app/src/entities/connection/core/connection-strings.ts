@@ -33,7 +33,9 @@ async function decryptConnectionString(encryptedConnectionString: string) {
 // eslint-disable-next-line typescript/consistent-type-definitions
 type ConnectionStringsUtils = {
   decrypt: (connectionId: string) => Promise<string>
-  prepare: (data: Pick<ConnectionString, 'connectionId' | 'updatedAt'> & { connectionString: string }) => Promise<ConnectionString>
+  prepare: (
+    data: Pick<ConnectionString, 'connectionId' | 'updatedAt'> & { connectionString: string },
+  ) => Promise<ConnectionString>
   resolve: (connectionId: string) => Promise<string | null>
 }
 
@@ -65,7 +67,8 @@ export function createConnectionStringsCollection(): ConnectionStringsCollection
         async decrypt(connectionId: string) {
           const record = getCollections().connectionStringsCollection.get(connectionId)
 
-          if (!record) throw new Error(`No connection string found for connection "${connectionId}"`)
+          if (!record)
+            throw new Error(`No connection string found for connection "${connectionId}"`)
 
           try {
             return await decryptConnectionString(record.encrypted)
@@ -87,7 +90,8 @@ export function createConnectionStringsCollection(): ConnectionStringsCollection
             isPasswordPopulated: !!url.password,
             isLocalhost: isLocalhostConnectionString(data.connectionString),
             displayUrl: `${url.hostname}${url.port ? `:${url.port}` : ''}`,
-            defaultResourceName: url.pathname && url.pathname !== '/' ? url.pathname.slice(1) : null,
+            defaultResourceName:
+              url.pathname && url.pathname !== '/' ? url.pathname.slice(1) : null,
           }
         },
         async resolve(connectionId: string) {

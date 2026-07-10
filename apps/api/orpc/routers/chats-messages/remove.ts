@@ -25,7 +25,16 @@ export const remove = orpc
       .select({ id: chatsMessages.id })
       .from(chatsMessages)
       .innerJoin(chats, eq(chatsMessages.chatId, chats.id))
-      .where(and(eq(chats.userId, context.user.id), or(...input.map((item) => and(eq(chatsMessages.id, item.id), eq(chatsMessages.chatId, item.chatId))))))
+      .where(
+        and(
+          eq(chats.userId, context.user.id),
+          or(
+            ...input.map((item) =>
+              and(eq(chatsMessages.id, item.id), eq(chatsMessages.chatId, item.chatId)),
+            ),
+          ),
+        ),
+      )
 
     await db.delete(chatsMessages).where(
       inArray(

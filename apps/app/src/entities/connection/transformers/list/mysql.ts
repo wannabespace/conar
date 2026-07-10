@@ -10,8 +10,18 @@ export function createMysqlListTransformer(): ValueTransformer<string[]> {
   return {
     toDisplay: getDisplayValue,
     fromConnection: (value) => ({
-      toUI: () => (Array.isArray(value) ? value.map(String) : typeof value === 'string' ? parseToArray(value, parseMysqlSet) : []),
-      toRaw: () => (Array.isArray(value) ? value.map(String).join(',') : typeof value === 'string' ? parseToArray(value, parseMysqlSet).join(',') : '[]'),
+      toUI: () =>
+        Array.isArray(value)
+          ? value.map(String)
+          : typeof value === 'string'
+            ? parseToArray(value, parseMysqlSet)
+            : [],
+      toRaw: () =>
+        Array.isArray(value)
+          ? value.map(String).join(',')
+          : typeof value === 'string'
+            ? parseToArray(value, parseMysqlSet).join(',')
+            : '[]',
     }),
     toConnection: {
       fromUI: (value) => value.join(','),

@@ -15,7 +15,10 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
         (state) =>
           ({
             ...state,
-            tabs: state.tabs.map((tab, index) => (index === existingPreviewTabIndex ? { table, schema, preview: true } : tab)) ?? [],
+            tabs:
+              state.tabs.map((tab, index) =>
+                index === existingPreviewTabIndex ? { table, schema, preview: true } : tab,
+              ) ?? [],
           }) satisfies typeof state,
       )
       return
@@ -36,7 +39,12 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
       (state) =>
         ({
           ...state,
-          tabs: state.tabs.map((tab) => (tab.table === table && tab.schema === schema ? { table, schema, preview: false } : tab)) ?? [],
+          tabs:
+            state.tabs.map((tab) =>
+              tab.table === table && tab.schema === schema
+                ? { table, schema, preview: false }
+                : tab,
+            ) ?? [],
         }) satisfies typeof state,
     )
   }
@@ -45,7 +53,8 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
 export function renameTab(id: string, schema: string, table: string, newTableName: string) {
   const store = getConnectionResourceStore(id)
 
-  const rename = <T extends { table: string; schema: string }>(tab: T) => (tab.table === table && tab.schema === schema ? { ...tab, table: newTableName } : tab)
+  const rename = <T extends { table: string; schema: string }>(tab: T) =>
+    tab.table === table && tab.schema === schema ? { ...tab, table: newTableName } : tab
 
   store.set(
     (state) =>
@@ -60,7 +69,8 @@ export function renameTab(id: string, schema: string, table: string, newTableNam
 export function removeTab(id: string, schema: string, table: string) {
   const store = getConnectionResourceStore(id)
 
-  const remove = <T extends { table: string; schema: string }>(tab: T) => tab.table !== table || tab.schema !== schema
+  const remove = <T extends { table: string; schema: string }>(tab: T) =>
+    tab.table !== table || tab.schema !== schema
 
   store.set(
     (state) =>
@@ -157,7 +167,10 @@ export function toggleResults(id: string) {
   )
 }
 
-export function setChatPosition(id: string, position: (typeof connectionResourceType.infer)['layout']['chatPosition']) {
+export function setChatPosition(
+  id: string,
+  position: (typeof connectionResourceType.infer)['layout']['chatPosition'],
+) {
   const store = getConnectionResourceStore(id)
   store.set(
     (state) =>

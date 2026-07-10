@@ -34,7 +34,10 @@ function DialogBackdrop({ className, ...props }: DialogPrimitive.Backdrop.Props)
 function DialogViewport({ className, ...props }: DialogPrimitive.Viewport.Props) {
   return (
     <DialogPrimitive.Viewport
-      className={cn(`fixed inset-0 z-50 grid grid-rows-[1fr_auto_3fr] justify-items-center p-4`, className)}
+      className={cn(
+        `fixed inset-0 z-50 grid grid-rows-[1fr_auto_3fr] justify-items-center p-4`,
+        className,
+      )}
       data-slot="dialog-viewport"
       {...props}
     />
@@ -54,7 +57,9 @@ function DialogPopup({
   return (
     <DialogPortal>
       <DialogBackdrop />
-      <DialogViewport className={cn(bottomStickOnMobile && 'max-sm:grid-rows-[1fr_auto] max-sm:p-0 max-sm:pt-12')}>
+      <DialogViewport
+        className={cn(bottomStickOnMobile && 'max-sm:grid-rows-[1fr_auto] max-sm:p-0 max-sm:pt-12')}
+      >
         <DialogPrimitive.Popup
           className={cn(
             `relative row-start-2 flex max-h-full min-h-0 w-full max-w-lg min-w-0 translate-y-[calc(-1.25rem*var(--nested-dialogs))] scale-[calc(1-0.1*var(--nested-dialogs))] flex-col rounded-2xl border bg-popover text-popover-foreground opacity-[calc(1-0.1*var(--nested-dialogs))] shadow-lg/5 transition-[scale,opacity,translate] duration-200 ease-in-out will-change-transform not-dark:bg-clip-padding before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-2xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] data-ending-style:scale-98 data-ending-style:opacity-0 data-nested:data-ending-style:translate-y-8 data-nested-dialog-open:origin-top data-starting-style:scale-98 data-starting-style:opacity-0 data-nested:data-starting-style:translate-y-8 dark:before:shadow-[0_-1px_--theme(--color-white/6%)]`,
@@ -67,7 +72,11 @@ function DialogPopup({
         >
           {children}
           {showCloseButton && (
-            <DialogPrimitive.Close aria-label="Close" className="absolute inset-e-2 top-2" render={<Button size="icon" variant="ghost" />}>
+            <DialogPrimitive.Close
+              aria-label="Close"
+              className="absolute inset-e-2 top-2"
+              render={<Button size="icon" variant="ghost" />}
+            >
               <XIcon />
             </DialogPrimitive.Close>
           )}
@@ -80,7 +89,10 @@ function DialogPopup({
 function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
-      className={cn(`flex flex-col gap-2 p-6 in-[[data-slot=dialog-popup]:has([data-slot=dialog-panel])]:pb-3 max-sm:pb-4`, className)}
+      className={cn(
+        `flex flex-col gap-2 p-6 in-[[data-slot=dialog-popup]:has([data-slot=dialog-panel])]:pb-3 max-sm:pb-4`,
+        className,
+      )}
       data-slot="dialog-header"
       {...props}
     />
@@ -99,7 +111,8 @@ function DialogFooter({
       className={cn(
         `flex flex-col-reverse gap-2 px-6 sm:flex-row sm:justify-end sm:rounded-b-[calc(var(--radius-2xl)-1px)]`,
         variant === 'default' && 'border-t bg-muted/72 py-4',
-        variant === 'bare' && `pt-4 pb-6 in-[[data-slot=dialog-popup]:has([data-slot=dialog-panel])]:pt-3`,
+        variant === 'bare' &&
+          `pt-4 pb-6 in-[[data-slot=dialog-popup]:has([data-slot=dialog-panel])]:pt-3`,
         className,
       )}
       data-slot="dialog-footer"
@@ -109,11 +122,23 @@ function DialogFooter({
 }
 
 function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
-  return <DialogPrimitive.Title className={cn('text-xl leading-none font-semibold', className)} data-slot="dialog-title" {...props} />
+  return (
+    <DialogPrimitive.Title
+      className={cn('text-xl leading-none font-semibold', className)}
+      data-slot="dialog-title"
+      {...props}
+    />
+  )
 }
 
 function DialogDescription({ className, ...props }: DialogPrimitive.Description.Props) {
-  return <DialogPrimitive.Description className={cn('text-sm text-muted-foreground', className)} data-slot="dialog-description" {...props} />
+  return (
+    <DialogPrimitive.Description
+      className={cn('text-sm text-muted-foreground', className)}
+      data-slot="dialog-description"
+      {...props}
+    />
+  )
 }
 
 function DialogPanel({ className, ...props }: React.ComponentProps<'div'>) {

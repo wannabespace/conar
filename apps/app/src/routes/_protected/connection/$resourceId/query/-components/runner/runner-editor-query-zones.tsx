@@ -10,12 +10,16 @@ import { Route } from '../..'
 import { useRunnerContext } from './runner-context'
 import { RunnerEditorQueryZone } from './runner-editor-query-zone'
 
-export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
+export function useRunnerEditorQueryZones(
+  monacoRef: RefObject<editor.IStandaloneCodeEditor | null>,
+) {
   const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
 
-  const getQueriesEvent = useEffectEvent((lineNumber: number) => editorQueriesStore.get().find((query) => query.startLineNumber === lineNumber))
+  const getQueriesEvent = useEffectEvent((lineNumber: number) =>
+    editorQueriesStore.get().find((query) => query.startLineNumber === lineNumber),
+  )
 
   const run = useRunnerContext(({ run }) => run)
   const runEvent = useEffectEvent(run)

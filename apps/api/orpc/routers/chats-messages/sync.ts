@@ -30,7 +30,14 @@ export const sync = orpc
             .where(
               and(
                 eq(chats.userId, context.user.id),
-                or(...items.map((m) => and(eq(chatsMessages.id, m.id), gte(chatsMessages.updatedAt, addSeconds(m.updatedAt, 1))))),
+                or(
+                  ...items.map((m) =>
+                    and(
+                      eq(chatsMessages.id, m.id),
+                      gte(chatsMessages.updatedAt, addSeconds(m.updatedAt, 1)),
+                    ),
+                  ),
+                ),
               ),
             ),
         new: (excludeIds) =>
@@ -38,7 +45,9 @@ export const sync = orpc
             .select(getColumns(chatsMessages))
             .from(chatsMessages)
             .innerJoin(chats, eq(chatsMessages.chatId, chats.id))
-            .where(and(eq(chats.userId, context.user.id), notInArray(chatsMessages.id, excludeIds))),
+            .where(
+              and(eq(chats.userId, context.user.id), notInArray(chatsMessages.id, excludeIds)),
+            ),
         existing: (includeIds) =>
           db
             .select({ id: chatsMessages.id })

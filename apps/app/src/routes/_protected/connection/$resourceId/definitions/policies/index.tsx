@@ -5,7 +5,13 @@ import { CardContent, CardTitle } from '@conar/ui/components/card'
 import { CardMotion } from '@conar/ui/components/card.motion'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@conar/ui/components/select'
 import { RiEyeLine, RiEyeOffLine, RiShieldCheckLine, RiTable2 } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
@@ -51,7 +57,13 @@ function getIcon(type: PolicyType) {
 
 function DatabasePoliciesPage() {
   const { connectionResource } = Route.useLoaderData()
-  const { data: policies, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourcePoliciesQuery({ connectionResource }))
+  const {
+    data: policies,
+    refetch,
+    isFetching,
+    isPending,
+    dataUpdatedAt,
+  } = useQuery(resourcePoliciesQuery({ connectionResource }))
   const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({
     connectionResource,
   })
@@ -72,11 +84,21 @@ function DatabasePoliciesPage() {
 
   return (
     <>
-      <DefinitionsHeader onRefresh={() => refetch()} isRefreshing={isFetching} dataUpdatedAt={dataUpdatedAt}>
+      <DefinitionsHeader
+        onRefresh={() => refetch()}
+        isRefreshing={isFetching}
+        dataUpdatedAt={dataUpdatedAt}
+      >
         Policies
       </DefinitionsHeader>
       <div className="mb-4 flex items-center gap-2">
-        <SearchInput placeholder="Search policies" autoFocus value={search} onChange={(e) => setSearch(e.target.value)} onClear={() => setSearch('')} />
+        <SearchInput
+          placeholder="Search policies"
+          autoFocus
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onClear={() => setSearch('')}
+        />
         <Select value={filterType} onValueChange={(v) => setFilterType(v as PolicyType | 'all')}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter Type" />
@@ -114,11 +136,18 @@ function DatabasePoliciesPage() {
       </div>
       <DefinitionsGrid loading={isPending}>
         {filteredPolicies.length === 0 && (
-          <DefinitionsEmptyState title="No policies found" description="This schema doesn't have any policies matching your filter." />
+          <DefinitionsEmptyState
+            title="No policies found"
+            description="This schema doesn't have any policies matching your filter."
+          />
         )}
 
         {filteredPolicies.map((item) => (
-          <CardMotion key={`${item.schema}-${item.table}-${item.name}`} layout {...MOTION_BLOCK_PROPS}>
+          <CardMotion
+            key={`${item.schema}-${item.table}-${item.name}`}
+            layout
+            {...MOTION_BLOCK_PROPS}
+          >
             <CardContent className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>

@@ -21,7 +21,11 @@ export function HeaderActionsFilters() {
         </TooltipTrigger>
         <TooltipContent side="top">Add new filter</TooltipContent>
       </Tooltip>
-      <PopoverContent className="w-2xs p-0 **:data-[slot=popover-viewport]:p-0" side="bottom" align="end">
+      <PopoverContent
+        className="w-2xs p-0 **:data-[slot=popover-viewport]:p-0"
+        side="bottom"
+        align="end"
+      >
         <FilterForm
           onAdd={(filter) => {
             setIsFiltersOpened(false)

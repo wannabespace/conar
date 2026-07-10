@@ -64,13 +64,14 @@ const defaultState: typeof tablePageType.infer = {
   drafts: [],
 }
 
-export const tablePageStore = memoize(({ id, schema, table }: { id: string; schema: string; table: string }) =>
-  createWebStorageValue({
-    type: 'localStorage',
-    key: `${id}.${schema}-${table}.store`,
-    defaultValue: defaultState,
-    schema: tablePageType,
-  }),
+export const tablePageStore = memoize(
+  ({ id, schema, table }: { id: string; schema: string; table: string }) =>
+    createWebStorageValue({
+      type: 'localStorage',
+      key: `${id}.${schema}-${table}.store`,
+      defaultValue: defaultState,
+      schema: tablePageType,
+    }),
 )
 
 type TablePageStore = ReturnType<typeof tablePageStore>
@@ -131,7 +132,10 @@ export function primaryKeysKey(primaryKeys: typeof primaryKeysType.infer) {
     .join('|')
 }
 
-export function getRowPrimaryKeysValues(row: Record<string, unknown>, primaryKeys: string[]): typeof primaryKeysType.infer {
+export function getRowPrimaryKeysValues(
+  row: Record<string, unknown>,
+  primaryKeys: string[],
+): typeof primaryKeysType.infer {
   return primaryKeys.reduce<typeof primaryKeysType.infer>((acc, key) => {
     acc[key] = row[key]
     return acc
@@ -150,7 +154,9 @@ export function draftsActions(store: TablePageStore) {
   const upsert = (draft: (typeof tablePageType.infer)['drafts'][number]) => {
     store.set((state) => {
       const key = draftKey(draft.primaryKeys, draft.columnId)
-      const existingIndex = state.drafts.findIndex((d) => draftKey(d.primaryKeys, d.columnId) === key)
+      const existingIndex = state.drafts.findIndex(
+        (d) => draftKey(d.primaryKeys, d.columnId) === key,
+      )
 
       if (existingIndex === -1) {
         return { ...state, drafts: [...state.drafts, draft] } satisfies typeof state
@@ -167,7 +173,9 @@ export function draftsActions(store: TablePageStore) {
       (state) =>
         ({
           ...state,
-          drafts: state.drafts.filter((d) => draftKey(d.primaryKeys, d.columnId) !== draftKey(primaryKeys, columnId)),
+          drafts: state.drafts.filter(
+            (d) => draftKey(d.primaryKeys, d.columnId) !== draftKey(primaryKeys, columnId),
+          ),
         }) satisfies typeof state,
     )
   }
@@ -184,7 +192,9 @@ export function draftsActions(store: TablePageStore) {
       (state) =>
         ({
           ...state,
-          drafts: state.drafts.map((d) => (primaryKeysKey(d.primaryKeys) === primaryKeysKey(primaryKeys) ? { ...d, ...patch } : d)),
+          drafts: state.drafts.map((d) =>
+            primaryKeysKey(d.primaryKeys) === primaryKeysKey(primaryKeys) ? { ...d, ...patch } : d,
+          ),
         }) satisfies typeof state,
     )
   }
@@ -194,7 +204,9 @@ export function draftsActions(store: TablePageStore) {
       (state) =>
         ({
           ...state,
-          drafts: state.drafts.filter((d) => primaryKeysKey(d.primaryKeys) !== primaryKeysKey(primaryKeys)),
+          drafts: state.drafts.filter(
+            (d) => primaryKeysKey(d.primaryKeys) !== primaryKeysKey(primaryKeys),
+          ),
         }) satisfies typeof state,
     )
   }

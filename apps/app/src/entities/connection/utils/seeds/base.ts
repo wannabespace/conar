@@ -523,27 +523,62 @@ export function baseAutoDetectGenerator(name: string, type: string): keyof typeo
   if (name === 'firstname') return 'person.firstName'
   if (name === 'lastname' || name === 'surname') return 'person.lastName'
   if (name === 'fullname' || name === 'name') return 'person.fullName'
-  if (name.includes('phone') || name.includes('mobile') || name.includes('tel')) return 'phone.number'
-  if (name.includes('url') || name.includes('website') || name.includes('link') || name.includes('href')) return 'internet.url'
-  if (name.includes('avatar') || name.includes('image') || name.includes('photo') || name.includes('picture') || name.includes('thumbnail')) return 'image.url'
+  if (name.includes('phone') || name.includes('mobile') || name.includes('tel'))
+    return 'phone.number'
+  if (
+    name.includes('url') ||
+    name.includes('website') ||
+    name.includes('link') ||
+    name.includes('href')
+  )
+    return 'internet.url'
+  if (
+    name.includes('avatar') ||
+    name.includes('image') ||
+    name.includes('photo') ||
+    name.includes('picture') ||
+    name.includes('thumbnail')
+  )
+    return 'image.url'
   if (name.includes('username') || name === 'login') return 'internet.username'
   if (name.includes('title') || name.includes('subject')) return 'lorem.sentence'
-  if (name.includes('description') || name.includes('content') || name.includes('bio') || name.includes('summary')) return 'lorem.paragraph'
+  if (
+    name.includes('description') ||
+    name.includes('content') ||
+    name.includes('bio') ||
+    name.includes('summary')
+  )
+    return 'lorem.paragraph'
   if (name.includes('city')) return 'location.city'
   if (name.includes('country')) return 'location.country'
   if (name.includes('address') || name.includes('street')) return 'location.streetAddress'
   if (name.includes('zip') || name.includes('postal')) return 'location.zipCode'
   if (name === 'lat') return 'location.latitude'
   if (name === 'lng' || name === 'lon') return 'location.longitude'
-  if (name.includes('company') || name.includes('organization') || name.includes('org')) return 'company.name'
-  if (name.includes('price') || name.includes('amount') || name.includes('cost') || name.includes('total') || name.includes('fee')) return 'commerce.price'
+  if (name.includes('company') || name.includes('organization') || name.includes('org'))
+    return 'company.name'
+  if (
+    name.includes('price') ||
+    name.includes('amount') ||
+    name.includes('cost') ||
+    name.includes('total') ||
+    name.includes('fee')
+  )
+    return 'commerce.price'
   if (name.includes('product')) return 'commerce.productName'
   if (name.includes('color') || name.includes('colour')) return 'color.human'
   if (name.includes('ipaddress') || name === 'ip') return 'internet.ip'
   if (name.includes('slug')) return 'lorem.slug'
-  if (name.includes('jobtitle') || name.includes('jobrole') || name.includes('position') || name.includes('role')) return 'person.jobTitle'
+  if (
+    name.includes('jobtitle') ||
+    name.includes('jobrole') ||
+    name.includes('position') ||
+    name.includes('role')
+  )
+    return 'person.jobTitle'
   if (name.includes('gender')) return 'person.gender'
-  if (name.includes('password') || name.includes('secret') || name.includes('hash')) return 'internet.password'
+  if (name.includes('password') || name.includes('secret') || name.includes('hash'))
+    return 'internet.password'
   if (name.includes('domain')) return 'internet.domainName'
   if (name.includes('useragent')) return 'internet.userAgent'
   if (name.includes('currency') && name.includes('code')) return 'finance.currencyCode'
@@ -552,7 +587,8 @@ export function baseAutoDetectGenerator(name: string, type: string): keyof typeo
   if (name.includes('creditcard') || name.includes('cardnumber')) return 'finance.creditCardNumber'
   if (name.includes('cvv')) return 'finance.creditCardCVV'
   if (name.includes('accountnumber') || name.includes('accountno')) return 'finance.accountNumber'
-  if (name.includes('state') || name.includes('province') || name.includes('region')) return 'location.state'
+  if (name.includes('state') || name.includes('province') || name.includes('region'))
+    return 'location.state'
   if (name.includes('countrycode')) return 'location.countryCode'
   if (name.includes('timezone')) return 'date.timeZone'
   if (name.includes('mimetype') || name.includes('contenttype')) return 'system.mimeType'
@@ -562,20 +598,47 @@ export function baseAutoDetectGenerator(name: string, type: string): keyof typeo
   if (name.includes('version')) return 'system.semver'
   if (name.includes('isbn')) return 'commerce.isbn'
   if (name.includes('department')) return 'commerce.department'
-  if (name.includes('birthdate') || name.includes('birthday') || name.includes('dob') || name.includes('dateofbirth')) return 'date.birthdate'
+  if (
+    name.includes('birthdate') ||
+    name.includes('birthday') ||
+    name.includes('dob') ||
+    name.includes('dateofbirth')
+  )
+    return 'date.birthdate'
   if (name.includes('displayname') || name.includes('nickname')) return 'internet.displayName'
   if (name.includes('port')) return 'internet.port'
 
   if (type === 'uuid') return 'string.uuidV4'
   if (type === 'bool' || type === 'boolean') return 'datatype.boolean'
   if (type === 'date') return 'date.recent'
-  if (type.includes('int') || type === 'serial' || type === 'bigserial' || type === 'smallserial') return 'number.int'
-  if (type.includes('float') || type.includes('double') || type.includes('decimal') || type.includes('numeric') || type === 'real' || type === 'money')
+  if (type.includes('int') || type === 'serial' || type === 'bigserial' || type === 'smallserial')
+    return 'number.int'
+  if (
+    type.includes('float') ||
+    type.includes('double') ||
+    type.includes('decimal') ||
+    type.includes('numeric') ||
+    type === 'real' ||
+    type === 'money'
+  )
     return 'number.float'
-  if (type.includes('timestamp') || type === 'datetime' || type === 'datetime2' || type === 'datetimeoffset') return 'date.recent'
+  if (
+    type.includes('timestamp') ||
+    type === 'datetime' ||
+    type === 'datetime2' ||
+    type === 'datetimeoffset'
+  )
+    return 'date.recent'
   if (type.includes('time') || type === 'timetz') return 'date.time'
   if (type.includes('json')) return 'json.object'
-  if (type.includes('char') || type.includes('text') || type === 'string' || type.includes('varchar') || type.includes('nchar')) return 'lorem.sentence'
+  if (
+    type.includes('char') ||
+    type.includes('text') ||
+    type === 'string' ||
+    type.includes('varchar') ||
+    type.includes('nchar')
+  )
+    return 'lorem.sentence'
 
   return 'lorem.word'
 }

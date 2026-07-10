@@ -13,7 +13,13 @@ import {
 } from '@conar/ui/components/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
-import { RiBracesLine, RiDownloadLine, RiFileCopyLine, RiMarkdownLine, RiTableLine } from '@remixicon/react'
+import {
+  RiBracesLine,
+  RiDownloadLine,
+  RiFileCopyLine,
+  RiMarkdownLine,
+  RiTableLine,
+} from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { formatDate } from 'date-fns'
 
@@ -121,8 +127,15 @@ function ExportDataDropdownMenuSubContent({
     <DropdownMenuSubContent>
       {!!selected && (
         <>
-          <DropdownMenuItem disabled={selected.length === 0} onClick={() => onExport({ type, format, filters })}>
-            {selected.length === 0 ? 'Selected rows' : selected.length === 1 ? '1 selected row' : `${selected.length} selected rows`}
+          <DropdownMenuItem
+            disabled={selected.length === 0}
+            onClick={() => onExport({ type, format, filters })}
+          >
+            {selected.length === 0
+              ? 'Selected rows'
+              : selected.length === 1
+                ? '1 selected row'
+                : `${selected.length} selected rows`}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
         </>
@@ -145,7 +158,13 @@ export function ExportData({
   selected,
 }: {
   filename: string
-  getData: ({ limit, filters }: { limit?: (typeof EXPORT_LIMITS)[number]; filters?: ActiveFilter[] }) => Promise<Record<string, unknown>[]>
+  getData: ({
+    limit,
+    filters,
+  }: {
+    limit?: (typeof EXPORT_LIMITS)[number]
+    filters?: ActiveFilter[]
+  }) => Promise<Record<string, unknown>[]>
   trigger: (props: { isExporting: boolean }) => React.ReactNode
   selected?: Record<string, unknown>[]
 }) {
@@ -166,7 +185,9 @@ export function ExportData({
   return (
     <Tooltip>
       <DropdownMenu>
-        <DropdownMenuTrigger render={<TooltipTrigger asChild />}>{trigger({ isExporting: isPending })}</DropdownMenuTrigger>
+        <DropdownMenuTrigger render={<TooltipTrigger asChild />}>
+          {trigger({ isExporting: isPending })}
+        </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
@@ -179,21 +200,36 @@ export function ExportData({
                   <RiTableLine />
                   Export as CSV
                 </DropdownMenuSubTrigger>
-                <ExportDataDropdownMenuSubContent type="download" format="csv" onExport={startExport} selected={selected} />
+                <ExportDataDropdownMenuSubContent
+                  type="download"
+                  format="csv"
+                  onExport={startExport}
+                  selected={selected}
+                />
               </DropdownMenuSub>
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
                   <RiBracesLine />
                   Export as JSON
                 </DropdownMenuSubTrigger>
-                <ExportDataDropdownMenuSubContent type="download" format="json" onExport={startExport} selected={selected} />
+                <ExportDataDropdownMenuSubContent
+                  type="download"
+                  format="json"
+                  onExport={startExport}
+                  selected={selected}
+                />
               </DropdownMenuSub>
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
                   <RiMarkdownLine />
                   Export as Markdown
                 </DropdownMenuSubTrigger>
-                <ExportDataDropdownMenuSubContent type="download" format="markdown" onExport={startExport} selected={selected} />
+                <ExportDataDropdownMenuSubContent
+                  type="download"
+                  format="markdown"
+                  onExport={startExport}
+                  selected={selected}
+                />
               </DropdownMenuSub>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
@@ -208,21 +244,36 @@ export function ExportData({
                   <RiTableLine />
                   Copy as CSV
                 </DropdownMenuSubTrigger>
-                <ExportDataDropdownMenuSubContent type="copy" format="csv" onExport={startExport} selected={selected} />
+                <ExportDataDropdownMenuSubContent
+                  type="copy"
+                  format="csv"
+                  onExport={startExport}
+                  selected={selected}
+                />
               </DropdownMenuSub>
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
                   <RiBracesLine />
                   Copy as JSON
                 </DropdownMenuSubTrigger>
-                <ExportDataDropdownMenuSubContent type="copy" format="json" onExport={startExport} selected={selected} />
+                <ExportDataDropdownMenuSubContent
+                  type="copy"
+                  format="json"
+                  onExport={startExport}
+                  selected={selected}
+                />
               </DropdownMenuSub>
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
                   <RiMarkdownLine />
                   Copy as Markdown
                 </DropdownMenuSubTrigger>
-                <ExportDataDropdownMenuSubContent type="copy" format="markdown" onExport={startExport} selected={selected} />
+                <ExportDataDropdownMenuSubContent
+                  type="copy"
+                  format="markdown"
+                  onExport={startExport}
+                  selected={selected}
+                />
               </DropdownMenuSub>
             </DropdownMenuSubContent>
           </DropdownMenuSub>

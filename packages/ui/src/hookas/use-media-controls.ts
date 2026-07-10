@@ -15,7 +15,9 @@ interface MediaControls {
   duration: number
 }
 
-export function useMediaControls(mediaRef: React.RefObject<HTMLMediaElement | null>): MediaControls {
+export function useMediaControls(
+  mediaRef: React.RefObject<HTMLMediaElement | null>,
+): MediaControls {
   const [state, setState] = React.useState({
     isPlaying: false,
     isMuted: false,
@@ -47,8 +49,16 @@ export function useMediaControls(mediaRef: React.RefObject<HTMLMediaElement | nu
         })),
       { signal: abortController.signal },
     )
-    media.addEventListener('timeupdate', () => setState((s) => ({ ...s, currentTime: media.currentTime })), { signal: abortController.signal })
-    media.addEventListener('durationchange', () => setState((s) => ({ ...s, duration: media.duration })), { signal: abortController.signal })
+    media.addEventListener(
+      'timeupdate',
+      () => setState((s) => ({ ...s, currentTime: media.currentTime })),
+      { signal: abortController.signal },
+    )
+    media.addEventListener(
+      'durationchange',
+      () => setState((s) => ({ ...s, duration: media.duration })),
+      { signal: abortController.signal },
+    )
     media.addEventListener('ended', () => setState((s) => ({ ...s, isPlaying: false })), {
       signal: abortController.signal,
     })

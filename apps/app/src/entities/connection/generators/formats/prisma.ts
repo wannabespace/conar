@@ -5,7 +5,14 @@ import type { QueryParams, SchemaParams } from '..'
 import * as templates from '../templates'
 import { filterExplicitIndexes, getColumnType, groupIndexes } from '../utils'
 
-type PrismaFilterValue = string | number | boolean | Date | null | { [key: string]: PrismaFilterValue } | PrismaFilterValue[]
+type PrismaFilterValue =
+  | string
+  | number
+  | boolean
+  | Date
+  | null
+  | { [key: string]: PrismaFilterValue }
+  | PrismaFilterValue[]
 
 function isPrismaFilterValue(v: unknown): v is PrismaFilterValue {
   return v !== undefined && typeof v !== 'symbol' && typeof v !== 'function'
@@ -43,8 +50,16 @@ function singleFilterToPrisma(filter: ActiveFilter): PrismaFilterValue | null {
   return prismaOp === 'equals' ? value : { [prismaOp]: value }
 }
 
-function mergeWhereField(existing: PrismaFilterValue | undefined, next: PrismaFilterValue): PrismaFilterValue {
-  if (existing == null || typeof existing !== 'object' || typeof next !== 'object' || next === null) {
+function mergeWhereField(
+  existing: PrismaFilterValue | undefined,
+  next: PrismaFilterValue,
+): PrismaFilterValue {
+  if (
+    existing == null ||
+    typeof existing !== 'object' ||
+    typeof next !== 'object' ||
+    next === null
+  ) {
     return next
   }
   return { ...existing, ...next }
@@ -60,7 +75,10 @@ export function generateQueryPrisma({ table, filters }: QueryParams) {
     return acc
   }, {})
 
-  const jsonWhere = Object.keys(where).length > 0 ? JSON.stringify(where, null, 2).replace(/"([^"]+)":/g, '$1:') : '{}'
+  const jsonWhere =
+    Object.keys(where).length > 0
+      ? JSON.stringify(where, null, 2).replace(/"([^"]+)":/g, '$1:')
+      : '{}'
 
   return templates.prismaQueryTemplate(tableName, jsonWhere)
 }
@@ -136,7 +154,8 @@ export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: 
 
         if (c.foreign) {
           let relName = camelCase(c.foreign.table)
-          if (acc.usedNames.has(relName)) relName = camelCase(`${c.foreign.table}_${c.foreign.column}`)
+          if (acc.usedNames.has(relName))
+            relName = camelCase(`${c.foreign.table}_${c.foreign.column}`)
           acc.usedNames.add(relName)
 
           const relType = pascalCase(c.foreign.table)
@@ -146,7 +165,9 @@ export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: 
           acc.fields.push({
             name: relName,
             type: relType,
-            attributes: [`@relation(fields: [${fieldName}], references: [${camelCase(c.foreign.column)}]${onDelete}${onUpdate})`],
+            attributes: [
+              `@relation(fields: [${fieldName}], references: [${camelCase(c.foreign.column)}]${onDelete}${onUpdate})`,
+            ],
             isRelation: true,
           })
         }
@@ -155,7 +176,8 @@ export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: 
           const isValidRef = /^[a-z]\w*$/i.test(ref.table)
           const refType = isValidRef ? ref.table : pascalCase(ref.table)
           let refFieldName = camelCase(ref.table)
-          if (acc.usedNames.has(refFieldName)) refFieldName = camelCase(`${ref.table}_${ref.column}`)
+          if (acc.usedNames.has(refFieldName))
+            refFieldName = camelCase(`${ref.table}_${ref.column}`)
           acc.usedNames.add(refFieldName)
           return {
             name: refFieldName,
@@ -194,5 +216,8 @@ export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: 
 
   const uniqueExtras = [...new Set(extraBlocks)]
 
-  return templates.prismaSchemaTemplate(table, body) + (uniqueExtras.length ? `\n\n${uniqueExtras.join('\n\n')}` : '')
+  return (
+    templates.prismaSchemaTemplate(table, body) +
+    (uniqueExtras.length ? `\n\n${uniqueExtras.join('\n\n')}` : '')
+  )
 }

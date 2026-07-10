@@ -63,7 +63,10 @@ export function RevokeApiKeyDialog({ ref, onRefetch }: RevokeApiKeyDialogProps) 
       <AlertDialogContent className="sm:max-w-sm">
         <AlertDialogHeader>
           <AlertDialogTitle>Revoke this API key?</AlertDialogTitle>
-          <AlertDialogDescription>This action cannot be undone. Any integration using this key will stop working immediately.</AlertDialogDescription>
+          <AlertDialogDescription>
+            This action cannot be undone. Any integration using this key will stop working
+            immediately.
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>

@@ -1,7 +1,10 @@
 import { db } from '@conar/db'
 import { subscriptions } from '@conar/db/schema'
 import { infisical } from '@conar/infisical'
-import { ACTIVE_SUBSCRIPTION_STATUSES, LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@conar/shared/constants'
+import {
+  ACTIVE_SUBSCRIPTION_STATUSES,
+  LATEST_VERSION_BEFORE_SUBSCRIPTION,
+} from '@conar/shared/constants'
 import { ORPCError, os } from '@orpc/server'
 import { eq } from 'drizzle-orm'
 import { memoize } from 'memoza'
@@ -39,13 +42,21 @@ async function getSession(headers: Headers) {
 export const logMiddleware = orpc.middleware(async ({ context, next }, input) => {
   const result = await next()
 
-  if (!context.request.url.endsWith('/sync') && !context.request.url.endsWith('/resolveConnectionString')) {
+  if (
+    !context.request.url.endsWith('/sync') &&
+    !context.request.url.endsWith('/resolveConnectionString')
+  ) {
     context.addLogData({
       input,
       output:
         (Array.isArray(result.output) && result.output.length > 0) ||
-        (typeof result.output === 'object' && result.output !== null && Object.keys(result.output).length > 0) ||
-        (!Array.isArray(result.output) && typeof result.output !== 'object' && result.output !== null && !!result.output)
+        (typeof result.output === 'object' &&
+          result.output !== null &&
+          Object.keys(result.output).length > 0) ||
+        (!Array.isArray(result.output) &&
+          typeof result.output !== 'object' &&
+          result.output !== null &&
+          !!result.output)
           ? result.output
           : undefined,
     })
@@ -87,9 +98,18 @@ export const optionalAuthMiddleware = logMiddleware.concat(
 )
 
 export async function getSubscription(userId: string) {
-  const userSubscriptions = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId))
+  const userSubscriptions = await db
+    .select()
+    .from(subscriptions)
+    .where(eq(subscriptions.userId, userId))
 
-  return userSubscriptions.find((s) => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number])) ?? null
+  return (
+    userSubscriptions.find((s) =>
+      ACTIVE_SUBSCRIPTION_STATUSES.includes(
+        s.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number],
+      ),
+    ) ?? null
+  )
 }
 
 export const subscriptionMiddleware = logMiddleware.concat(

@@ -11,7 +11,12 @@ function isSelectQueryNode(node: OperationNode): node is SelectQueryNode {
 
 class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
   protected override visitOffset(node: OffsetNode) {
-    if (this.parentNode != null && isSelectQueryNode(this.parentNode) && this.parentNode.limit != null) return // will be handle when visitLimit
+    if (
+      this.parentNode != null &&
+      isSelectQueryNode(this.parentNode) &&
+      this.parentNode.limit != null
+    )
+      return // will be handle when visitLimit
 
     this.append(' OFFSET ')
     this.visitNode(node.offset)

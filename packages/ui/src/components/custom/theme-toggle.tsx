@@ -1,9 +1,17 @@
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@conar/ui/components/dropdown-menu'
 import { themeStore } from '@conar/ui/theme-store'
 import { RiComputerLine, RiMoonLine, RiSunLine } from '@remixicon/react'
 import type { ComponentProps } from 'react'
 
-export function ThemeToggle({ side = 'right', ...props }: ComponentProps<typeof DropdownMenuTrigger> & { side?: 'top' | 'right' | 'bottom' | 'left' }) {
+export function ThemeToggle({
+  side = 'right',
+  ...props
+}: ComponentProps<typeof DropdownMenuTrigger> & { side?: 'top' | 'right' | 'bottom' | 'left' }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger {...props} />

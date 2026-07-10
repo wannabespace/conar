@@ -16,7 +16,11 @@ export const connectionVersionQuery = createQuery({
   query: {
     postgres: async (db) => {
       try {
-        return await db.selectFrom('pg_catalog.pg_settings').select('setting as version').where('name', '=', 'server_version').executeTakeFirstOrThrow()
+        return await db
+          .selectFrom('pg_catalog.pg_settings')
+          .select('setting as version')
+          .where('name', '=', 'server_version')
+          .executeTakeFirstOrThrow()
       } catch {
         return (
           await sql<{

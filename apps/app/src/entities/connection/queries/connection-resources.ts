@@ -23,7 +23,12 @@ export const connectionResourcesQuery = createQuery({
       db
         .selectFrom('information_schema.SCHEMATA')
         .select('SCHEMA_NAME')
-        .where('SCHEMA_NAME', 'not in', ['information_schema', 'mysql', 'performance_schema', 'sys'])
+        .where('SCHEMA_NAME', 'not in', [
+          'information_schema',
+          'mysql',
+          'performance_schema',
+          'sys',
+        ])
         .orderBy('SCHEMA_NAME')
         .execute()
         .then((rows) => rows.map((r) => r.SCHEMA_NAME)),
@@ -53,7 +58,9 @@ export function connectionResourcesQueryOptions(connection: Connection) {
     queryKey: ['connection', connection.id, 'resources'],
     queryFn: async () => {
       const { connectionsResourcesCollection } = getCollections()
-      const resources = await connectionResourcesQuery.run(await connectionToQueryParams(connection))
+      const resources = await connectionResourcesQuery.run(
+        await connectionToQueryParams(connection),
+      )
 
       const stored = await connectionsResourcesCollection.toArrayWhenReady()
 

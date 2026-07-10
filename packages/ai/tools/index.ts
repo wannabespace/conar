@@ -53,7 +53,9 @@ export const tools = {
       whereFilters: z.array(
         z.object({
           column: z.string(),
-          operator: z.enum(SQL_FILTERS_LIST.map((filter) => filter.operator) as [string, ...string[]]),
+          operator: z.enum(
+            SQL_FILTERS_LIST.map((filter) => filter.operator) as [string, ...string[]],
+          ),
           values: z.array(z.string()),
         }),
       ),

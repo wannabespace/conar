@@ -53,7 +53,11 @@ export function createConnectionsCollection() {
         events: ({ signal }) => orpc.connections.events.call({}, { signal }),
         sync: ({ rows, signal }) => orpc.connections.sync.call(rows, { signal }),
         onInsert: async ({ transaction }) => {
-          await orpc.connections.create.call(await Promise.all(transaction.mutations.map((m) => prepareConnectionToCloud(m.modified))))
+          await orpc.connections.create.call(
+            await Promise.all(
+              transaction.mutations.map((m) => prepareConnectionToCloud(m.modified)),
+            ),
+          )
         },
         onUpdate: async ({ transaction }) => {
           await Promise.all(
@@ -87,10 +91,16 @@ export function createConnectionsResourcesCollection() {
           await orpc.connectionsResources.create.call(transaction.mutations.map((m) => m.modified))
         },
         onUpdate: async ({ transaction }) => {
-          await Promise.all(transaction.mutations.map((m) => orpc.connectionsResources.update.call({ id: m.key, ...m.changes })))
+          await Promise.all(
+            transaction.mutations.map((m) =>
+              orpc.connectionsResources.update.call({ id: m.key, ...m.changes }),
+            ),
+          )
         },
         onDelete: async ({ transaction }) => {
-          await orpc.connectionsResources.remove.call(transaction.mutations.map((m) => ({ id: m.key })))
+          await orpc.connectionsResources.remove.call(
+            transaction.mutations.map((m) => ({ id: m.key })),
+          )
         },
       }),
       persistence,
@@ -99,8 +109,13 @@ export function createConnectionsResourcesCollection() {
   )
 }
 
-export function createConnectionTransaction(data: { connection: Connection; resource: ConnectionResource; connectionString: ConnectionString }) {
-  const { connectionsCollection, connectionsResourcesCollection, connectionStringsCollection } = getCollections()
+export function createConnectionTransaction(data: {
+  connection: Connection
+  resource: ConnectionResource
+  connectionString: ConnectionString
+}) {
+  const { connectionsCollection, connectionsResourcesCollection, connectionStringsCollection } =
+    getCollections()
 
   const tx = createTransaction({
     mutationFn: async () => {
@@ -110,7 +125,10 @@ export function createConnectionTransaction(data: { connection: Connection; reso
       if (!window.electron) {
         await Promise.all([
           connectionsCollection.utils.awaitChange(data.connection.id, data.connection.updatedAt),
-          connectionsResourcesCollection.utils.awaitChange(data.resource.id, data.resource.updatedAt),
+          connectionsResourcesCollection.utils.awaitChange(
+            data.resource.id,
+            data.resource.updatedAt,
+          ),
         ])
       }
     },

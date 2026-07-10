@@ -1,7 +1,11 @@
 import { getRouteApi } from '@tanstack/react-router'
 
 import { createChatsCollection, createChatsMessagesCollection } from '~/entities/chat/sync'
-import { createConnectionsCollection, createConnectionsResourcesCollection, createConnectionStringsCollection } from '~/entities/connection/core'
+import {
+  createConnectionsCollection,
+  createConnectionsResourcesCollection,
+  createConnectionStringsCollection,
+} from '~/entities/connection/core'
 import { createQueriesCollection } from '~/entities/query/sync'
 
 export interface Collections {

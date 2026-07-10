@@ -4,7 +4,10 @@ import { RPCLink } from '@orpc/client/fetch'
 
 import { env } from './env'
 
-export function createApiClient(options: { authorization?: string | null; cookie?: string | null }): ORPCRouter {
+export function createApiClient(options: {
+  authorization?: string | null
+  cookie?: string | null
+}): ORPCRouter {
   return createORPCClient(
     new RPCLink({
       url: `${env.API_URL}/rpc`,

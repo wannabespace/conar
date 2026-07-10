@@ -1,6 +1,15 @@
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogTitle, DialogTrigger } from '@conar/ui/components/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogPanel,
+  DialogTitle,
+  DialogTrigger,
+} from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { useMutation } from '@tanstack/react-query'
@@ -12,7 +21,13 @@ import { TotpCodeInput } from '~/components/totp-code-input'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-export function EnableTfaDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function EnableTfaDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
   const [setupOpen, setSetupOpen] = useState(false)
@@ -113,10 +128,14 @@ export function EnableTfaDialog({ open, onOpenChange }: { open: boolean; onOpenC
             >
               <DialogHeader>
                 <DialogTitle>Scan QR Code</DialogTitle>
-                <DialogDescription>Scan this QR Code with your authenticator app.</DialogDescription>
+                <DialogDescription>
+                  Scan this QR Code with your authenticator app.
+                </DialogDescription>
               </DialogHeader>
               <DialogPanel className="flex flex-col items-center gap-4">
-                <div className="rounded-lg bg-white p-4">{!!totpURI && <QRCode value={totpURI} size={176} />}</div>
+                <div className="rounded-lg bg-white p-4">
+                  {!!totpURI && <QRCode value={totpURI} size={176} />}
+                </div>
                 <TotpCodeInput
                   label="Verification code"
                   value={code}

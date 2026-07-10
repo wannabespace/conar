@@ -4,7 +4,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@conar/ui/components/t
 import { TableCellTable } from './cell-table'
 import type { Column } from './utils'
 
-export function TableCellReferences({ references, value }: { references: NonNullable<Column['references']>; value: unknown }) {
+export function TableCellReferences({
+  references,
+  value,
+}: {
+  references: NonNullable<Column['references']>
+  value: unknown
+}) {
   const showSchemas = references.some((reference) => reference.schema !== references[0]!.schema)
 
   return (
@@ -20,8 +26,17 @@ export function TableCellReferences({ references, value }: { references: NonNull
         </TabsList>
       </ScrollArea>
       {references.map((reference) => (
-        <TabsContent key={reference.name} value={reference.name} className="h-[calc(100%-(--spacing(8)))] w-full">
-          <TableCellTable schema={reference.schema} table={reference.table} column={reference.column} value={value} />
+        <TabsContent
+          key={reference.name}
+          value={reference.name}
+          className="h-[calc(100%-(--spacing(8)))] w-full"
+        >
+          <TableCellTable
+            schema={reference.schema}
+            table={reference.table}
+            column={reference.column}
+            value={value}
+          />
         </TabsContent>
       ))}
     </Tabs>

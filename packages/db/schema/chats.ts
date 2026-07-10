@@ -49,22 +49,25 @@ export const chatsMessagesSelectSchema = createSelectSchema(chatsMessages)
 export const chatsMessagesInsertSchema = createInsertSchema(chatsMessages)
 export const chatsMessagesUpdateSchema = createUpdateSchema(chatsMessages)
 
-export const chatsRelations = defineRelationsPart({ chats, chatsMessages, users, connectionsResources }, (r) => ({
-  chats: {
-    user: r.one.users({
-      from: r.chats.userId,
-      to: r.users.id,
-    }),
-    connectionResource: r.one.connectionsResources({
-      from: r.chats.connectionResourceId,
-      to: r.connectionsResources.id,
-    }),
-    messages: r.many.chatsMessages(),
-  },
-  chatsMessages: {
-    chat: r.one.chats({
-      from: r.chatsMessages.chatId,
-      to: r.chats.id,
-    }),
-  },
-}))
+export const chatsRelations = defineRelationsPart(
+  { chats, chatsMessages, users, connectionsResources },
+  (r) => ({
+    chats: {
+      user: r.one.users({
+        from: r.chats.userId,
+        to: r.users.id,
+      }),
+      connectionResource: r.one.connectionsResources({
+        from: r.chats.connectionResourceId,
+        to: r.connectionsResources.id,
+      }),
+      messages: r.many.chatsMessages(),
+    },
+    chatsMessages: {
+      chat: r.one.chats({
+        from: r.chatsMessages.chatId,
+        to: r.chats.id,
+      }),
+    },
+  }),
+)

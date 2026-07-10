@@ -31,7 +31,10 @@ export const proxyCommand = command({
 
     async function fetchConnections() {
       const prevIds = new Set(connections.map((c) => c.id))
-      const [fetchedConnections, fetchedResources] = await Promise.all([apiOrpc.connections.list(), apiOrpc.connectionsResources.list()])
+      const [fetchedConnections, fetchedResources] = await Promise.all([
+        apiOrpc.connections.list(),
+        apiOrpc.connectionsResources.list(),
+      ])
       connections = fetchedConnections
       resources = fetchedResources
       for (const conn of connections) {
@@ -46,7 +49,11 @@ export const proxyCommand = command({
       return connections.length
     }
 
-    function resolveConnectionString(input: { connectionString?: string; resourceId?: string; connectionId?: string }): string {
+    function resolveConnectionString(input: {
+      connectionString?: string
+      resourceId?: string
+      connectionId?: string
+    }): string {
       if (input.connectionString) {
         return input.connectionString
       }
@@ -124,7 +131,9 @@ export const proxyCommand = command({
       try {
         await fetchConnections()
       } catch (error) {
-        consola.warn(`Failed to refresh connections: ${error instanceof Error ? error.message : String(error)}`)
+        consola.warn(
+          `Failed to refresh connections: ${error instanceof Error ? error.message : String(error)}`,
+        )
       }
     }, REFRESH_INTERVAL_MS)
 
@@ -144,7 +153,11 @@ export const proxyCommand = command({
             if (error instanceof ORPCError) {
               if (error.cause instanceof ValidationError) {
                 const message = error.cause.issues
-                  .map((issue) => (issue.path ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}` : issue.message))
+                  .map((issue) =>
+                    issue.path
+                      ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
+                      : issue.message,
+                  )
                   .join(', ')
 
                 throw new ORPCError('BAD_REQUEST', { message })
@@ -168,7 +181,10 @@ export const proxyCommand = command({
         cors({
           origin(origin) {
             const allowedOrigins = [import.meta.env.MAIN_URL]
-            return origin.endsWith(`.${new URL(import.meta.env.MAIN_URL).host}`) || allowedOrigins.includes(origin) ? origin : null
+            return origin.endsWith(`.${new URL(import.meta.env.MAIN_URL).host}`) ||
+              allowedOrigins.includes(origin)
+              ? origin
+              : null
           },
           credentials: true,
         }),

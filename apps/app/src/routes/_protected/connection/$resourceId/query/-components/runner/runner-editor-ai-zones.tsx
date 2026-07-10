@@ -61,7 +61,13 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
   const currentAIZoneQuery = useMemo(() => {
     if (currentAIZoneLineNumber === null) return null
 
-    return editorQueries.find((query) => currentAIZoneLineNumber >= query.startLineNumber && currentAIZoneLineNumber <= query.endLineNumber) ?? null
+    return (
+      editorQueries.find(
+        (query) =>
+          currentAIZoneLineNumber >= query.startLineNumber &&
+          currentAIZoneLineNumber <= query.endLineNumber,
+      ) ?? null
+    )
   }, [currentAIZoneLineNumber, editorQueries])
 
   if (currentAIZoneLineNumber && !currentAIZoneQuery) {
@@ -159,7 +165,13 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
   }, [monacoRef, connection, connectionResource, currentAIZoneQuery, store, subscription])
 
   const getInlineQueryEvent = useEffectEvent((position: Position) => {
-    return editorQueries.find((query) => position.lineNumber >= query.startLineNumber && position.lineNumber <= query.endLineNumber) ?? null
+    return (
+      editorQueries.find(
+        (query) =>
+          position.lineNumber >= query.startLineNumber &&
+          position.lineNumber <= query.endLineNumber,
+      ) ?? null
+    )
   })
 
   useEffect(() => {
@@ -178,7 +190,9 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
 
         if (inlineQuery === null) return
 
-        setCurrentAIZoneLineNumber((lineNumber) => (lineNumber === position.lineNumber ? null : position.lineNumber))
+        setCurrentAIZoneLineNumber((lineNumber) =>
+          lineNumber === position.lineNumber ? null : position.lineNumber,
+        )
       },
     })
 

@@ -59,9 +59,12 @@ export function HeaderSearch({ table, schema }: { table: string; schema: string 
         )
 
         if (data.filters.length === 0 && !hasOrderBy) {
-          toast.info('No filters or ordering were generated, please try again with a different prompt', {
-            id: 'no-filters-or-ordering',
-          })
+          toast.info(
+            'No filters or ordering were generated, please try again with a different prompt',
+            {
+              id: 'no-filters-or-ordering',
+            },
+          )
         }
 
         setFreeAiUsage(data.freeAiUsage || null)
@@ -118,13 +121,20 @@ export function HeaderSearch({ table, schema }: { table: string; schema: string 
       <InputGroup>
         <InputGroupInput
           ref={inputRef}
-          placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
+          placeholder={
+            isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'
+          }
           disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
           value={prompt}
-          onChange={(e) => store.set((state) => ({ ...state, prompt: e.target.value }) satisfies typeof state)}
+          onChange={(e) =>
+            store.set((state) => ({ ...state, prompt: e.target.value }) satisfies typeof state)
+          }
         />
         <InputGroupAddon>
-          <LoadingContent className="pointer-events-none size-4 text-muted-foreground" loading={isPending}>
+          <LoadingContent
+            className="pointer-events-none size-4 text-muted-foreground"
+            loading={isPending}
+          >
             <RiBardLine />
           </LoadingContent>
         </InputGroupAddon>
@@ -138,11 +148,13 @@ export function HeaderSearch({ table, schema }: { table: string; schema: string 
                   tabIndex={0}
                   aria-label={`You have ${freeAiUsage.remaining} out of ${freeAiUsage.max} free AI filter uses left this month.`}
                 >
-                  <NumberFlow value={freeAiUsage.remaining} className="tabular-nums" />/{freeAiUsage.max}
+                  <NumberFlow value={freeAiUsage.remaining} className="tabular-nums" />/
+                  {freeAiUsage.max}
                 </div>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                You have {freeAiUsage.remaining}/{freeAiUsage.max} free AI filter uses left this month. Reset at {format(freeAiUsage.resetAt, 'MMM d, yyyy')}.
+                You have {freeAiUsage.remaining}/{freeAiUsage.max} free AI filter uses left this
+                month. Reset at {format(freeAiUsage.resetAt, 'MMM d, yyyy')}.
               </TooltipContent>
             </Tooltip>
           )}

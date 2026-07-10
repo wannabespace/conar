@@ -45,7 +45,9 @@ export const createChat = memoize(
           const existingMessage = chatsMessagesCollection.get(lastMessage.id)
 
           if (existingMessage) {
-            const hasChanges = lastMessage.role !== existingMessage.role || JSON.stringify(lastMessage.parts) !== JSON.stringify(existingMessage.parts)
+            const hasChanges =
+              lastMessage.role !== existingMessage.role ||
+              JSON.stringify(lastMessage.parts) !== JSON.stringify(existingMessage.parts)
 
             if (hasChanges) {
               const updatedAt = lastMessage.metadata?.updatedAt || new Date()
@@ -82,7 +84,11 @@ export const createChat = memoize(
             await tx.isPersisted.promise
           }
 
-          if (options.trigger === 'regenerate-message' && options.messageId && chatsMessagesCollection.has(options.messageId)) {
+          if (
+            options.trigger === 'regenerate-message' &&
+            options.messageId &&
+            chatsMessagesCollection.has(options.messageId)
+          ) {
             await chatsMessagesCollection.delete(options.messageId).isPersisted.promise
           }
 
@@ -134,7 +140,9 @@ export const createChat = memoize(
         const existingMessage = chatsMessagesCollection.get(message.id)
 
         if (existingMessage) {
-          const hasChanges = message.role !== existingMessage.role || JSON.stringify(message.parts) !== JSON.stringify(existingMessage.parts)
+          const hasChanges =
+            message.role !== existingMessage.role ||
+            JSON.stringify(message.parts) !== JSON.stringify(existingMessage.parts)
 
           if (hasChanges) {
             chatsMessagesCollection.update(message.id, (draft) => {
@@ -177,15 +185,17 @@ export const createChat = memoize(
             output,
           })
         } else if (toolCall.toolName === 'enums') {
-          const output = (await queryClient.ensureQueryData(resourceEnumsQueryOptions({ connectionResource })).then((results) =>
-            results.flatMap((r) =>
-              r.values.map((v) => ({
-                schema: r.schema,
-                name: r.name,
-                value: v,
-              })),
-            ),
-          )) satisfies AITools['enums']['output']
+          const output = (await queryClient
+            .ensureQueryData(resourceEnumsQueryOptions({ connectionResource }))
+            .then((results) =>
+              results.flatMap((r) =>
+                r.values.map((v) => ({
+                  schema: r.schema,
+                  name: r.name,
+                  value: v,
+                })),
+              ),
+            )) satisfies AITools['enums']['output']
 
           chat.addToolOutput({
             tool: 'enums',

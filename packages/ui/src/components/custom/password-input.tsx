@@ -11,8 +11,17 @@ export function PasswordInput(props: Omit<ComponentProps<typeof InputGroupInput>
     <InputGroup className="relative">
       <InputGroupInput type={showPassword ? 'text' : 'password'} {...props} />
       <InputGroupAddon align="inline-end">
-        <Button type="button" variant="ghost" size="icon-sm" onClick={() => setShowPassword(!showPassword)}>
-          {showPassword ? <RiEyeOffLine className="size-4" aria-hidden="true" /> : <RiEyeLine className="size-4" aria-hidden="true" />}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => setShowPassword(!showPassword)}
+        >
+          {showPassword ? (
+            <RiEyeOffLine className="size-4" aria-hidden="true" />
+          ) : (
+            <RiEyeLine className="size-4" aria-hidden="true" />
+          )}
           <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
         </Button>
       </InputGroupAddon>

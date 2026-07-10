@@ -22,7 +22,12 @@ export function Chat({ className }: { className?: string }) {
   const [isFocused, setIsFocused] = useState(false)
 
   useEffect(() => {
-    if (subscription && chat.messages.at(-1)?.role === 'user' && chat.status !== 'streaming' && chat.status !== 'submitted') {
+    if (
+      subscription &&
+      chat.messages.at(-1)?.role === 'user' &&
+      chat.status !== 'streaming' &&
+      chat.status !== 'submitted'
+    ) {
       chat.regenerate()
     }
   }, [chat, subscription])

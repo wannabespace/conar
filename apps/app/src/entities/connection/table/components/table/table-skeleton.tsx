@@ -7,9 +7,19 @@ import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components'
 
 const ROWS_COUNT = 20
 
-export function TableBodySkeleton({ className, selectable, columnsCount = 6 }: { className?: string; selectable?: boolean; columnsCount?: number }) {
+export function TableBodySkeleton({
+  className,
+  selectable,
+  columnsCount = 6,
+}: {
+  className?: string
+  selectable?: boolean
+  columnsCount?: number
+}) {
   const columns = useTableContext((state) => state.columns)
-  const columnsWithoutInternal = columns.filter((column) => !Object.values(INTERNAL_COLUMN_IDS).includes(column.id))
+  const columnsWithoutInternal = columns.filter(
+    (column) => !Object.values(INTERNAL_COLUMN_IDS).includes(column.id),
+  )
 
   const cols =
     columnsWithoutInternal.length === 0

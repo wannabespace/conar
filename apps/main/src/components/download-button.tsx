@@ -1,6 +1,11 @@
 import type { OS } from '@conar/shared/utils/os'
 import { Button } from '@conar/ui/components/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@conar/ui/components/dropdown-menu'
 import { Linux } from '@conar/ui/components/icons/linux'
 import { cn } from '@conar/ui/lib/utils'
 import { RiAppleFill, RiWindowsFill } from '@remixicon/react'
@@ -49,7 +54,11 @@ export function DownloadButton({ className }: { className?: string }) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button size="lg" className={cn(`flex items-center justify-center gap-2`, className)} />}>
+      <DropdownMenuTrigger
+        render={
+          <Button size="lg" className={cn(`flex items-center justify-center gap-2`, className)} />
+        }
+      >
         {Icon && <Icon className="size-4" />}
         Download for {os.label}
       </DropdownMenuTrigger>
@@ -58,7 +67,14 @@ export function DownloadButton({ className }: { className?: string }) {
           {assets.map((asset) => (
             <DropdownMenuItem
               key={asset.link}
-              render={<a href={asset.link} download aria-label={`Download for ${os.label} (${asset.arch})`} className="flex gap-2 text-foreground" />}
+              render={
+                <a
+                  href={asset.link}
+                  download
+                  aria-label={`Download for ${os.label} (${asset.arch})`}
+                  className="flex gap-2 text-foreground"
+                />
+              }
             >
               {asset.arch}
             </DropdownMenuItem>

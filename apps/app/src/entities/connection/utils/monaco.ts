@@ -40,7 +40,9 @@ const keywordPriority = [
 
 const dotMatchesRegex = /(\w+(?:\.\w+)*)\.\s*$/g
 
-export function connectionCompletionService(connectionResource: ConnectionResource): CompletionService {
+export function connectionCompletionService(
+  connectionResource: ConnectionResource,
+): CompletionService {
   const store = getConnectionResourceStore(connectionResource.id)
   queryClient.prefetchQuery(
     resourceTablesAndSchemasQueryOptions({
@@ -87,7 +89,9 @@ export function connectionCompletionService(connectionResource: ConnectionResour
 
     const dotMatches = [...textBeforeCursor.matchAll(dotMatchesRegex)]
     const isTableContext = syntax.some((item) => item.syntaxContextType === EntityContextType.TABLE)
-    const isColumnContext = syntax.some((item) => item.syntaxContextType === EntityContextType.COLUMN)
+    const isColumnContext = syntax.some(
+      (item) => item.syntaxContextType === EntityContextType.COLUMN,
+    )
 
     if (dotMatches.length > 0) {
       const tableRef = dotMatches.at(-1)?.[1]
@@ -148,7 +152,9 @@ export function connectionCompletionService(connectionResource: ConnectionResour
       )
       const allColumns = (await Promise.all(columnPromises)).flat()
 
-      items.push(...allColumns.filter((item, i, arr) => arr.findIndex((x) => x.label === item.label) === i))
+      items.push(
+        ...allColumns.filter((item, i, arr) => arr.findIndex((x) => x.label === item.label) === i),
+      )
     }
 
     if (tablesAndSchemas) {

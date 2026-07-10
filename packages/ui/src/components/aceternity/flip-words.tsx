@@ -2,7 +2,15 @@ import { cn } from '@conar/ui/lib/utils'
 import { AnimatePresence, motion } from 'motion/react'
 import { useCallback, useEffect, useState } from 'react'
 
-export function FlipWords({ words, duration = 3000, className }: { words: string[]; duration?: number; className?: string }) {
+export function FlipWords({
+  words,
+  duration = 3000,
+  className,
+}: {
+  words: string[]
+  duration?: number
+  className?: string
+}) {
   const [currentWord, setCurrentWord] = useState(words[0]!)
   const [isAnimating, setIsAnimating] = useState(false)
 
@@ -38,7 +46,10 @@ export function FlipWords({ words, duration = 3000, className }: { words: string
           position: 'absolute',
         }}
         transition={{ duration: 0.5 }}
-        className={cn(`relative z-10 inline-block px-2 text-left text-neutral-900 dark:text-neutral-100`, className)}
+        className={cn(
+          `relative z-10 inline-block px-2 text-left text-neutral-900 dark:text-neutral-100`,
+          className,
+        )}
         key={currentWord}
       >
         {currentWord.split(' ').map((word, wordIndex) => (

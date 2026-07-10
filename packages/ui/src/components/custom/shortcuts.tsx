@@ -14,7 +14,10 @@ export function EnterIcon() {
   return <RiCornerDownLeftLine className="size-3" />
 }
 
-export function KbdCtrlEnter({ userAgent, ...props }: ComponentProps<typeof Kbd> & { userAgent: string }) {
+export function KbdCtrlEnter({
+  userAgent,
+  ...props
+}: ComponentProps<typeof Kbd> & { userAgent: string }) {
   return (
     <Kbd {...props}>
       <Ctrl userAgent={userAgent} />
@@ -23,7 +26,11 @@ export function KbdCtrlEnter({ userAgent, ...props }: ComponentProps<typeof Kbd>
   )
 }
 
-export function KbdCtrlLetter({ userAgent, letter, ...props }: ComponentProps<typeof Kbd> & { userAgent: string; letter: string }) {
+export function KbdCtrlLetter({
+  userAgent,
+  letter,
+  ...props
+}: ComponentProps<typeof Kbd> & { userAgent: string; letter: string }) {
   return (
     <Kbd {...props}>
       <Ctrl userAgent={userAgent} />
@@ -32,7 +39,10 @@ export function KbdCtrlLetter({ userAgent, letter, ...props }: ComponentProps<ty
   )
 }
 
-export function KbdShiftCtrlEnter({ userAgent, ...props }: ComponentProps<typeof Kbd> & { userAgent: string }) {
+export function KbdShiftCtrlEnter({
+  userAgent,
+  ...props
+}: ComponentProps<typeof Kbd> & { userAgent: string }) {
   return (
     <Kbd {...props}>
       <Ctrl userAgent={userAgent} />
@@ -42,7 +52,11 @@ export function KbdShiftCtrlEnter({ userAgent, ...props }: ComponentProps<typeof
   )
 }
 
-export function KbdShiftCtrlLetter({ userAgent, letter, ...props }: ComponentProps<typeof Kbd> & { userAgent: string; letter: string }) {
+export function KbdShiftCtrlLetter({
+  userAgent,
+  letter,
+  ...props
+}: ComponentProps<typeof Kbd> & { userAgent: string; letter: string }) {
   return (
     <Kbd {...props}>
       <Ctrl userAgent={userAgent} />

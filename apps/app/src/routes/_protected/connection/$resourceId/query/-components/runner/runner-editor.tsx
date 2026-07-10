@@ -28,10 +28,22 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
   const { connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
 
-  const replace = ({ query, startLineNumber, endLineNumber }: { query: string; startLineNumber: number; endLineNumber: number }) => {
+  const replace = ({
+    query,
+    startLineNumber,
+    endLineNumber,
+  }: {
+    query: string
+    startLineNumber: number
+    endLineNumber: number
+  }) => {
     const lines = store.get().query.split('\n')
     const newSqlLines = query.split('\n')
-    const updatedLines = [...lines.slice(0, startLineNumber - 1), ...newSqlLines, ...lines.slice(endLineNumber)]
+    const updatedLines = [
+      ...lines.slice(0, startLineNumber - 1),
+      ...newSqlLines,
+      ...lines.slice(endLineNumber),
+    ]
 
     store.set(
       (state) =>
@@ -90,9 +102,12 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
         editor.revealLineInCenter(lineCount)
       }
     })
-    const replaceQueryHook = runnerHooks.hook('replaceQuery', ({ query, startLineNumber, endLineNumber }) => {
-      replaceEvent({ query, startLineNumber, endLineNumber })
-    })
+    const replaceQueryHook = runnerHooks.hook(
+      'replaceQuery',
+      ({ query, startLineNumber, endLineNumber }) => {
+        replaceEvent({ query, startLineNumber, endLineNumber })
+      },
+    )
 
     return () => {
       appendToBottomHook()
@@ -152,7 +167,15 @@ export function RunnerEditor() {
   }, [connection, connectionResource])
 
   const getEditorQueriesEvent = useEffectEvent((position: Position) => {
-    return editorQueriesStore.get().find((query) => position.lineNumber >= query.startLineNumber && position.lineNumber <= query.endLineNumber) ?? null
+    return (
+      editorQueriesStore
+        .get()
+        .find(
+          (query) =>
+            position.lineNumber >= query.startLineNumber &&
+            position.lineNumber <= query.endLineNumber,
+        ) ?? null
+    )
   })
 
   useEffect(() => {

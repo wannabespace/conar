@@ -1,6 +1,13 @@
 export function PostgresIcon(props: React.ComponentProps<'svg'>) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="432.071pt" height="445.383pt" viewBox="0 0 432.071 445.383" xmlSpace="preserve" {...props}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="432.071pt"
+      height="445.383pt"
+      viewBox="0 0 432.071 445.383"
+      xmlSpace="preserve"
+      {...props}
+    >
       <g
         id="orginal"
         style={{

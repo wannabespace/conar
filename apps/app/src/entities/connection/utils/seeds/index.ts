@@ -22,7 +22,10 @@ export interface GeneratorDef {
   generate: () => unknown
 }
 
-export type GeneratorMap<D extends ConnectionType | '' = ''> = Record<D extends '' ? string : `${D}.${string}`, GeneratorDef>
+export type GeneratorMap<D extends ConnectionType | '' = ''> = Record<
+  D extends '' ? string : `${D}.${string}`,
+  GeneratorDef
+>
 
 export interface Generator {
   generatorId: GeneratorId
@@ -50,7 +53,9 @@ export const GENERATORS = {
   ...MSSQL_GENERATORS,
 } satisfies GeneratorMap
 
-export type GeneratorId<D extends ConnectionType | '' = ''> = D extends '' ? keyof typeof GENERATORS : Extract<keyof typeof GENERATORS, `${D}.${string}`>
+export type GeneratorId<D extends ConnectionType | '' = ''> = D extends ''
+  ? keyof typeof GENERATORS
+  : Extract<keyof typeof GENERATORS, `${D}.${string}`>
 
 const DIALECT_CONFIGS: Partial<Record<ConnectionType, DialectSeedConfig>> = {
   postgres: pgSeedConfig,
@@ -81,7 +86,8 @@ export function autoDetectGenerator(column: Column, dialect: ConnectionType): Ge
 
   if (column.foreign) return REFERENCE_GENERATOR
 
-  if (column.enumName && column.availableValues && column.availableValues.length > 0) return ENUM_GENERATOR
+  if (column.enumName && column.availableValues && column.availableValues.length > 0)
+    return ENUM_GENERATOR
 
   const config = DIALECT_CONFIGS[dialect]
 
@@ -121,7 +127,9 @@ function generateValue({
 
   if (generatorId === REFERENCE_GENERATOR) {
     if (!referenceValues || referenceValues.length === 0) {
-      throw new Error(`Cannot generate seed data: no reference values available for column "${column.id}".`)
+      throw new Error(
+        `Cannot generate seed data: no reference values available for column "${column.id}".`,
+      )
     }
 
     if (column.isArray) {
@@ -134,7 +142,9 @@ function generateValue({
 
   if (generatorId === ENUM_GENERATOR) {
     if (!column.availableValues || column.availableValues.length === 0) {
-      throw new Error(`Cannot generate seed data: no enum values available for column "${column.id}".`)
+      throw new Error(
+        `Cannot generate seed data: no enum values available for column "${column.id}".`,
+      )
     }
 
     if (column.isArray) {
@@ -186,11 +196,18 @@ export function generateRows({
 
       if (value === undefined) continue
 
-      if (column.isArray && Array.isArray(value) && config?.transformArray) value = config.transformArray(value, column)
+      if (column.isArray && Array.isArray(value) && config?.transformArray)
+        value = config.transformArray(value, column)
 
       if (config?.transformValue) value = config.transformValue(value, column)
 
-      if (typeof value === 'string' && column.maxLength && column.maxLength > 0 && value.length > column.maxLength) value = value.slice(0, column.maxLength)
+      if (
+        typeof value === 'string' &&
+        column.maxLength &&
+        column.maxLength > 0 &&
+        value.length > column.maxLength
+      )
+        value = value.slice(0, column.maxLength)
 
       row[column.id] = value
     }

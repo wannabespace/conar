@@ -1,7 +1,18 @@
 import { defineConfig } from 'oxlint'
 
 export default defineConfig({
-  plugins: ['import', 'typescript', 'react', 'unicorn', 'jsdoc', 'node', 'promise', 'jsx-a11y', 'oxc', 'vitest'],
+  plugins: [
+    'import',
+    'typescript',
+    'react',
+    'unicorn',
+    'jsdoc',
+    'node',
+    'promise',
+    'jsx-a11y',
+    'oxc',
+    'vitest',
+  ],
   jsPlugins: ['eslint-plugin-better-tailwindcss'],
   categories: {
     correctness: 'error',

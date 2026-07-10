@@ -7,5 +7,11 @@ export {
 } from './shift-selection-state'
 export { useTableContext } from './table-context'
 export type { TableContextType } from './table-context'
-export { useShiftSelectionClick, type UseShiftSelectionClickOptions } from './use-shift-selection-click'
-export { useShiftSelectionKeyDown, type UseShiftSelectionKeyDownOptions } from './use-shift-selection-key-down'
+export {
+  useShiftSelectionClick,
+  type UseShiftSelectionClickOptions,
+} from './use-shift-selection-click'
+export {
+  useShiftSelectionKeyDown,
+  type UseShiftSelectionKeyDownOptions,
+} from './use-shift-selection-key-down'

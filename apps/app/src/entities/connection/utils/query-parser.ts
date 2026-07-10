@@ -204,7 +204,8 @@ export function getEditorQueries(sql: string): EditorQuery[] {
       if (prevDepth === 0 && state.beginDepth > 0 && !state.buffer) state.beginStartLine = lineNum
     }
 
-    if (!state.buffer) state.startLine = state.transactionStartLine ?? state.beginStartLine ?? lineNum
+    if (!state.buffer)
+      state.startLine = state.transactionStartLine ?? state.beginStartLine ?? lineNum
 
     state.buffer += (state.buffer ? ' ' : '') + line
 

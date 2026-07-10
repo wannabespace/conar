@@ -36,7 +36,9 @@ allowBuilds:
     .map(([name]) => name)
 
   if (unresolved.length > 0) {
-    throw new Error(`Expected the ToDesktop CLI to resolve catalog: versions before this hook, but these are still unresolved: ${unresolved.join(', ')}`)
+    throw new Error(
+      `Expected the ToDesktop CLI to resolve catalog: versions before this hook, but these are still unresolved: ${unresolved.join(', ')}`,
+    )
   }
 
   // Only electron is required at package time. Drop the rest of devDependencies

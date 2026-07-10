@@ -74,7 +74,8 @@ export const MSSQL_GENERATORS = {
   'mssql.binary': {
     label: 'Binary',
     category: 'MSSQL',
-    generate: () => sql`CONVERT(varbinary(max), ${faker.string.hexadecimal({ length: 32, prefix: '' })}, 2)`,
+    generate: () =>
+      sql`CONVERT(varbinary(max), ${faker.string.hexadecimal({ length: 32, prefix: '' })}, 2)`,
   },
   'mssql.geography': {
     label: 'Geography Point',

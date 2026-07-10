@@ -34,7 +34,12 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
         </Link>
       </div>
       <div className={`flex flex-1 items-center justify-end gap-1 sm:gap-2`}>
-        <Button variant="ghost" size="sm" className={`hidden gap-1 sm:flex sm:gap-2`} render={<Link to="/releases" />}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`hidden gap-1 sm:flex sm:gap-2`}
+          render={<Link to="/releases" />}
+        >
           <RiGitBranchLine className={`size-3 sm:size-4`} />
           Releases
         </Button>
@@ -42,22 +47,41 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
           variant="ghost"
           size="sm"
           className={`hidden gap-1 sm:flex sm:gap-2`}
-          render={<a href={SOCIAL_LINKS.GITHUB} target="_blank" aria-label="GitHub" rel="noopener noreferrer" />}
+          render={
+            <a
+              href={SOCIAL_LINKS.GITHUB}
+              target="_blank"
+              aria-label="GitHub"
+              rel="noopener noreferrer"
+            />
+          }
         >
           <RiGithubFill className={`size-3 sm:size-4`} />
           <NumberFlow
             value={data?.stargazers_count || 0}
-            className={cn(`text-xs tabular-nums duration-200 sm:text-sm`, !data && `animate-pulse text-muted-foreground`)}
+            className={cn(
+              `text-xs tabular-nums duration-200 sm:text-sm`,
+              !data && `animate-pulse text-muted-foreground`,
+            )}
           />
         </Button>
         <ThemeToggle side="bottom" render={<Button size="icon-sm" variant="ghost" />}>
           <RiSunLine className={`size-4 dark:hidden`} />
           <RiMoonLine className={`hidden size-4 dark:block`} />
         </ThemeToggle>
-        <Button variant="outline" size="sm" className={`hidden gap-1 sm:flex sm:gap-2`} render={isSignedIn ? <Link to="/account" /> : <Link to="/sign-in" />}>
+        <Button
+          variant="outline"
+          size="sm"
+          className={`hidden gap-1 sm:flex sm:gap-2`}
+          render={isSignedIn ? <Link to="/account" /> : <Link to="/sign-in" />}
+        >
           {isSignedIn ? 'Account' : 'Sign in'}
         </Button>
-        <Button size="sm" className={`gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm`} render={<Link to="/download" />}>
+        <Button
+          size="sm"
+          className={`gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm`}
+          render={<Link to="/download" />}
+        >
           <span className={`hidden sm:inline`}>Get Started</span>
           <span className="sm:hidden">Download</span>
         </Button>

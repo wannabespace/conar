@@ -26,7 +26,10 @@ const inputGroupAddonVariants = cva(
   },
 )
 
-export function InputGroup({ className, ...props }: React.ComponentProps<'div'>): React.ReactElement {
+export function InputGroup({
+  className,
+  ...props
+}: React.ComponentProps<'div'>): React.ReactElement {
   return (
     <div
       className={cn(
@@ -60,7 +63,9 @@ export function InputGroupAddon({
         if (isInteractive) return
         e.preventDefault()
         const parent = e.currentTarget.parentElement
-        const input = parent?.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea')
+        const input = parent?.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+          'input, textarea',
+        )
         if (input && !parent?.querySelector('input:focus, textarea:focus')) {
           input.focus()
         }
@@ -70,7 +75,10 @@ export function InputGroupAddon({
   )
 }
 
-export function InputGroupText({ className, ...props }: React.ComponentProps<'span'>): React.ReactElement {
+export function InputGroupText({
+  className,
+  ...props
+}: React.ComponentProps<'span'>): React.ReactElement {
   return (
     <span
       className={cn(

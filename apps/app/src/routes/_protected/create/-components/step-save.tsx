@@ -2,7 +2,13 @@ import { COLOR_OPTIONS, LABEL_OPTIONS } from '@conar/shared/constants'
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { Button } from '@conar/ui/components/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@conar/ui/components/card'
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { Group } from '@conar/ui/components/group'
 import { Input } from '@conar/ui/components/input'
@@ -43,10 +49,15 @@ export function StepSave({
 }) {
   const { connectionsCollection } = useCollections()
   const { data: connections } = useLiveQuery(
-    (q) => q.from({ connections: connectionsCollection }).orderBy(({ connections }) => connections.createdAt, 'desc'),
+    (q) =>
+      q
+        .from({ connections: connectionsCollection })
+        .orderBy(({ connections }) => connections.createdAt, 'desc'),
     [connectionsCollection],
   )
-  const existingLabels = connections.map((connection) => connection.label).filter((label): label is string => label !== null)
+  const existingLabels = connections
+    .map((connection) => connection.label)
+    .filter((label): label is string => label !== null)
   const labels = [...new Set([...LABEL_OPTIONS, ...existingLabels])].toSorted()
   const nameId = useId()
   const labelId = useId()
@@ -89,10 +100,21 @@ export function StepSave({
               Label <span className="text-xs text-muted-foreground/50">(optional)</span>
             </Label>
             <div className="flex flex-col gap-2">
-              <Input id={labelId} placeholder="Development, Production, Staging, etc." value={label ?? ''} onChange={(e) => setLabel(e.target.value)} />
+              <Input
+                id={labelId}
+                placeholder="Development, Production, Staging, etc."
+                value={label ?? ''}
+                onChange={(e) => setLabel(e.target.value)}
+              />
               <Group>
                 {labels.map((option) => (
-                  <Button key={option} variant={label === option ? 'default' : 'outline'} size="xs" onClick={() => setLabel(option)} className="border!">
+                  <Button
+                    key={option}
+                    variant={label === option ? 'default' : 'outline'}
+                    size="xs"
+                    onClick={() => setLabel(option)}
+                    className="border!"
+                  >
                     {option}
                   </Button>
                 ))}
@@ -113,7 +135,8 @@ export function StepSave({
                     aria-label={`Set color to ${colorOption}`}
                     className={cn(
                       `size-6 cursor-pointer rounded-full bg-(--color) transition-all`,
-                      color === colorOption && `ring-2 ring-(--color) ring-offset-2 ring-offset-background`,
+                      color === colorOption &&
+                        `ring-2 ring-(--color) ring-offset-2 ring-offset-background`,
                     )}
                     style={{
                       '--color': colorOption,
@@ -128,12 +151,17 @@ export function StepSave({
             <Label className="flex items-center gap-2 text-sm font-normal">
               <Checkbox
                 checked={syncType === SyncType.Cloud}
-                onCheckedChange={() => setSyncType(syncType === SyncType.Cloud ? SyncType.CloudWithoutPassword : SyncType.Cloud)}
+                onCheckedChange={() =>
+                  setSyncType(
+                    syncType === SyncType.Cloud ? SyncType.CloudWithoutPassword : SyncType.Cloud,
+                  )
+                }
               />
               Do you want to sync the password in our cloud?
             </Label>
             <div className="text-xs text-balance text-muted-foreground/50">
-              Syncing passwords in our cloud allows access from any device without re-entering the password.
+              Syncing passwords in our cloud allows access from any device without re-entering the
+              password.
               <br />
               If not synced, we will store the connection string without the password.
             </div>

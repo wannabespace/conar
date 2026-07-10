@@ -1,7 +1,15 @@
 import { Button } from '@conar/ui/components/button'
 import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogTitle } from '@conar/ui/components/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogPanel,
+  DialogTitle,
+} from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { RiDeleteBinLine } from '@remixicon/react'
@@ -13,7 +21,13 @@ import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+function DeleteAccountDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
@@ -66,7 +80,8 @@ function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         <DialogHeader>
           <DialogTitle>Delete account</DialogTitle>
           <DialogDescription>
-            This action is permanent and cannot be undone. All your data, including your subscription, settings, and sessions will be permanently removed.
+            This action is permanent and cannot be undone. All your data, including your
+            subscription, settings, and sessions will be permanently removed.
           </DialogDescription>
         </DialogHeader>
         <DialogPanel className="flex flex-col gap-4">
@@ -105,10 +120,21 @@ function DeleteAccountDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           </div>
         </DialogPanel>
         <DialogFooter>
-          <Button variant="outline" type="button" onClick={() => handleOpenChange(false)} className="w-full sm:w-auto" disabled={isPending}>
+          <Button
+            variant="outline"
+            type="button"
+            onClick={() => handleOpenChange(false)}
+            className="w-full sm:w-auto"
+            disabled={isPending}
+          >
             Cancel
           </Button>
-          <Button type="submit" variant="destructive" className="w-full sm:w-auto" disabled={!canSubmit || isPending}>
+          <Button
+            type="submit"
+            variant="destructive"
+            className="w-full sm:w-auto"
+            disabled={!canSubmit || isPending}
+          >
             <LoadingContent loading={isPending}>
               <RiDeleteBinLine className="size-4" />
               Delete account
@@ -129,7 +155,9 @@ export function DeleteAccountCard() {
       <Card>
         <CardHeader>
           <CardTitle>Delete account</CardTitle>
-          <CardDescription>Permanently remove your account and all associated data.</CardDescription>
+          <CardDescription>
+            Permanently remove your account and all associated data.
+          </CardDescription>
         </CardHeader>
         <CardPanel className="space-y-4">
           <Button variant="destructive" onClick={() => setOpen(true)}>
