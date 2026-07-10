@@ -7,16 +7,16 @@ export const appStore = createStore({
 })
 
 function updateOnline() {
-  appStore.set((state) => ({ ...state, isOnline: window.navigator.onLine }) satisfies typeof state)
+  appStore.set(state => ({ ...state, isOnline: window.navigator.onLine }) satisfies typeof state)
 }
 
 window.addEventListener('online', () => updateOnline())
 window.addEventListener('offline', () => updateOnline())
 
 export function setIsActionCenterOpen(isOpen: boolean) {
-  appStore.set((state) => ({ ...state, isActionCenterOpen: isOpen }) satisfies typeof state)
+  appStore.set(state => ({ ...state, isActionCenterOpen: isOpen }) satisfies typeof state)
 }
 
 export function setIsSubscriptionDialogOpen(isOpen: boolean) {
-  appStore.set((state) => ({ ...state, isSubscriptionDialogOpen: isOpen }) satisfies typeof state)
+  appStore.set(state => ({ ...state, isSubscriptionDialogOpen: isOpen }) satisfies typeof state)
 }

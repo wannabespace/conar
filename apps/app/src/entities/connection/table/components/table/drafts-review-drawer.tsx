@@ -74,11 +74,11 @@ export function DraftsReviewDrawer({
 }) {
   const { connection, connectionResource } = useRouteContext()
   const columns = useTableColumns()
-  const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
+  const primaryColumns = columns.filter(c => c.primaryKey).map(c => c.id)
   const store = useTablePageStore()
-  const drafts = useSubscription(store, { selector: (state) => state.drafts })
+  const drafts = useSubscription(store, { selector: state => state.drafts })
   const { filters, orderBy } = useSubscription(store, {
-    selector: (state) => pick(state, ['filters', 'orderBy']),
+    selector: state => pick(state, ['filters', 'orderBy']),
   })
   const { remove: removeDraft, removeRow } = draftsActions(store)
 
@@ -100,11 +100,11 @@ export function DraftsReviewDrawer({
     rowsByPrimaryKey.get(primaryKeysKey(rowDrafts[0]!.primaryKeys))?.index ??
     Number.MAX_SAFE_INTEGER
   const rowsEntries = Array.from(
-    Map.groupBy(drafts, (d) => primaryKeysKey(d.primaryKeys)).values(),
+    Map.groupBy(drafts, d => primaryKeysKey(d.primaryKeys)).values(),
   ).toSorted((a, b) => draftIndex(a) - draftIndex(b))
 
   const columnDisplay = (columnId: string, value: unknown) => {
-    const column = columns.find((c) => c.id === columnId)
+    const column = columns.find(c => c.id === columnId)
 
     if (!column) return getDisplayValue(value, Number.POSITIVE_INFINITY)
 
@@ -131,7 +131,7 @@ export function DraftsReviewDrawer({
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              {rowsEntries.map((rowDrafts) => {
+              {rowsEntries.map(rowDrafts => {
                 const { primaryKeys } = rowDrafts[0]!
                 const row = rowsByPrimaryKey.get(primaryKeysKey(primaryKeys))?.row
                 const primaryLabel =
@@ -141,7 +141,7 @@ export function DraftsReviewDrawer({
                       )
                     : ['Unknown row']
                 const errors = [
-                  ...new Set(rowDrafts.flatMap((draft) => (draft.error ? [draft.error] : []))),
+                  ...new Set(rowDrafts.flatMap(draft => (draft.error ? [draft.error] : []))),
                 ]
 
                 return (
@@ -154,7 +154,7 @@ export function DraftsReviewDrawer({
                               <RiAlertLine className="mt-1 size-3 text-destructive" />
                             </TooltipTrigger>
                             <TooltipContent className="max-w-lg">
-                              {errors.map((error) => (
+                              {errors.map(error => (
                                 <div key={error} className="flex items-start gap-2">
                                   <RiAlertLine className="mt-0.5 size-3 shrink-0 text-destructive" />
                                   {error}
@@ -166,7 +166,7 @@ export function DraftsReviewDrawer({
                         Row
                       </FrameTitle>
                       <div className="mt-1 ml-2 flex flex-1 flex-col gap-0.5 pt-px text-[0.7rem] text-muted-foreground">
-                        {primaryLabel.map((label) => (
+                        {primaryLabel.map(label => (
                           <span key={label} className="truncate leading-none" title={label}>
                             {label}
                           </span>
@@ -188,7 +188,7 @@ export function DraftsReviewDrawer({
                     </FrameHeader>
                     <FramePanel className="p-3">
                       <div className="flex flex-col gap-2.5">
-                        {rowDrafts.map((draft) => {
+                        {rowDrafts.map(draft => {
                           const before = row
                             ? columnDisplay(draft.columnId, row[draft.columnId])
                             : ''

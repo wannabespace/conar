@@ -56,15 +56,15 @@ export function Header({ table, schema }: { table: string; schema: string }) {
   const columns = useTableColumns()
   const store = useTablePageStore()
   const connectionStore = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(connectionStore, { selector: (state) => state.showSystem })
+  const showSystem = useSubscription(connectionStore, { selector: state => state.showSystem })
   const { data: tablesAndSchemas } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
   )
   const tableType =
-    tablesAndSchemas?.schemas.find((s) => s.name === schema)?.tables?.find((t) => t.name === table)
+    tablesAndSchemas?.schemas.find(s => s.name === schema)?.tables?.find(t => t.name === table)
       ?.type ?? 'table'
   const { filters, exact, orderBy, selected } = useSubscription(store, {
-    selector: (state) => pick(state, ['filters', 'orderBy', 'exact', 'selected']),
+    selector: state => pick(state, ['filters', 'orderBy', 'exact', 'selected']),
   })
   const { data: total, isLoading } = useQuery(
     resourceTableTotalQueryOptions({
@@ -189,7 +189,7 @@ export function Header({ table, schema }: { table: string; schema: string }) {
                   !exact && total.isEstimated && `cursor-pointer`,
                 )}
                 onClick={() =>
-                  store.set((state) => ({ ...state, exact: true }) satisfies typeof state)
+                  store.set(state => ({ ...state, exact: true }) satisfies typeof state)
                 }
               >
                 <NumberFlow

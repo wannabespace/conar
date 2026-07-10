@@ -25,13 +25,13 @@ export const indexesType = type({
 export const resourceIndexesQuery = createQuery({
   type: indexesType.array(),
   query: {
-    postgres: async (db) => {
+    postgres: async db => {
       const query = await db
         .selectFrom('pg_catalog.pg_class as t')
         .innerJoin('pg_catalog.pg_index as ix', 't.oid', 'ix.indrelid')
         .innerJoin('pg_catalog.pg_class as i', 'i.oid', 'ix.indexrelid')
         .innerJoin('pg_catalog.pg_am as am', 'i.relam', 'am.oid')
-        .leftJoin('pg_catalog.pg_attribute as a', (join) =>
+        .leftJoin('pg_catalog.pg_attribute as a', join =>
           join.onRef('a.attrelid', '=', 't.oid').on(sql<boolean>`a.attnum = ANY(ix.indkey)`),
         )
         .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 't.relnamespace')
@@ -69,7 +69,7 @@ export const resourceIndexesQuery = createQuery({
       })
     },
 
-    mysql: (db) =>
+    mysql: db =>
       db
         .selectFrom('information_schema.STATISTICS')
         .select([
@@ -77,8 +77,8 @@ export const resourceIndexesQuery = createQuery({
           'TABLE_NAME as table',
           'INDEX_NAME as name',
           'COLUMN_NAME as column',
-          (eb) => eb('NON_UNIQUE', '=', 0).as('is_unique'),
-          (eb) => eb('INDEX_NAME', '=', 'PRIMARY').as('is_primary'),
+          eb => eb('NON_UNIQUE', '=', 0).as('is_unique'),
+          eb => eb('INDEX_NAME', '=', 'PRIMARY').as('is_primary'),
         ])
         .where('TABLE_SCHEMA', 'not in', [
           'mysql',
@@ -88,15 +88,15 @@ export const resourceIndexesQuery = createQuery({
         ])
         .execute(),
 
-    mssql: (db) =>
+    mssql: db =>
       db
         .selectFrom('sys.indexes as i')
         .innerJoin('sys.tables as t', 't.object_id', 'i.object_id')
         .innerJoin('sys.schemas as s', 's.schema_id', 't.schema_id')
-        .innerJoin('sys.index_columns as ic', (join) =>
+        .innerJoin('sys.index_columns as ic', join =>
           join.onRef('ic.object_id', '=', 'i.object_id').onRef('ic.index_id', '=', 'i.index_id'),
         )
-        .innerJoin('sys.columns as c', (join) =>
+        .innerJoin('sys.columns as c', join =>
           join.onRef('c.object_id', '=', 'ic.object_id').onRef('c.column_id', '=', 'ic.column_id'),
         )
         .select([
@@ -109,7 +109,7 @@ export const resourceIndexesQuery = createQuery({
         ])
         .execute(),
 
-    clickhouse: async (db) => {
+    clickhouse: async db => {
       const query = await db
         .selectFrom('system.columns')
         .select(['database as schema', 'table', 'name as column'])
@@ -117,7 +117,7 @@ export const resourceIndexesQuery = createQuery({
         .where('database', 'not in', ['system', 'information_schema'])
         .execute()
 
-      return query.map((row) =>
+      return query.map(row =>
         Object.assign(row, {
           name: 'primary_key',
           is_unique: true,

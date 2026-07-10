@@ -41,7 +41,7 @@ function ForgotPasswordPage() {
     },
   })
 
-  const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
+  const isSubmitting = useStore(form.store, state => state.isSubmitting)
 
   if (isSubmitting) {
     return (
@@ -69,13 +69,13 @@ function ForgotPasswordPage() {
       </div>
       <form
         className="space-y-4"
-        onSubmit={(e) => {
+        onSubmit={e => {
           e.preventDefault()
           form.handleSubmit()
         }}
       >
         <form.AppField name="email">
-          {(field) => (
+          {field => (
             <Field>
               <FieldLabel>Email</FieldLabel>
               <field.Input

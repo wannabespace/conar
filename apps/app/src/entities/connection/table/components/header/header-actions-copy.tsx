@@ -166,7 +166,7 @@ function DialogSidebar({
     <div className={`flex w-40 flex-col gap-1 overflow-y-auto border-r bg-muted/30 p-2`}>
       <Tabs
         value={activeCategory}
-        onValueChange={(value) => onCategoryChange(value as keyof typeof FORMATS)}
+        onValueChange={value => onCategoryChange(value as keyof typeof FORMATS)}
         className="mb-2"
       >
         <TabsList className="w-full">
@@ -178,7 +178,7 @@ function DialogSidebar({
           </TabsTrigger>
         </TabsList>
       </Tabs>
-      {formats.map((fmt) => (
+      {formats.map(fmt => (
         <SidebarButton
           key={fmt.type}
           onClick={() => onFormatChange(fmt.type)}
@@ -236,7 +236,7 @@ function CopyDialogEditor({
 export function HeaderActionsCopy({ table }: { table: string }) {
   const { connection, connectionResource } = useRouteContext()
   const store = useTablePageStore()
-  const filters = useSubscription(store, { selector: (state) => state.filters })
+  const filters = useSubscription(store, { selector: state => state.filters })
   const columns = useTableColumns()
   const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const { data: indexes } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
@@ -244,12 +244,12 @@ export function HeaderActionsCopy({ table }: { table: string }) {
   const [activeFormatType, setActiveFormatType] = useState<GeneratorFormat>('sql')
 
   const compatibleFormats = useMemo(
-    () => FORMATS[activeCategory].filter((f) => isFormatCompatible(f, connection.type)),
+    () => FORMATS[activeCategory].filter(f => isFormatCompatible(f, connection.type)),
     [activeCategory, connection.type],
   )
 
   const activeFormat =
-    compatibleFormats.find((f) => f.type === activeFormatType) ?? compatibleFormats[0]!
+    compatibleFormats.find(f => f.type === activeFormatType) ?? compatibleFormats[0]!
 
   const codeContent = useMemo(() => {
     if (activeFormat.kind === 'schema') {

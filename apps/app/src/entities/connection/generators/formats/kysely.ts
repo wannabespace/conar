@@ -4,7 +4,7 @@ import { formatEnumAsUnionType, formatValue, getColumnType, toLiteralKey } from 
 
 export function generateQueryKysely({ table, filters }: QueryParams) {
   const conditions = filters
-    .map((f) => {
+    .map(f => {
       const col = f.column
       if (f.ref.hasValue === false) {
         return `'${col}', '${f.ref.operator.toLowerCase()}'`
@@ -22,8 +22,8 @@ export function generateQueryKysely({ table, filters }: QueryParams) {
 
 export function generateSchemaKysely({ table, columns, dialect }: SchemaParams) {
   const body = columns
-    .filter((c) => c.type)
-    .map((c) => {
+    .filter(c => c.type)
+    .map(c => {
       let tsType = getColumnType(c.type!, 'ts', dialect)
       if (c.enumName && c.availableValues?.length) {
         tsType = formatEnumAsUnionType(c.availableValues, c.type)

@@ -8,11 +8,11 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
   const state = store.get()
 
   if (preview) {
-    const existingPreviewTabIndex = state.tabs.findIndex((tab) => tab.preview)
+    const existingPreviewTabIndex = state.tabs.findIndex(tab => tab.preview)
 
     if (existingPreviewTabIndex !== -1) {
       store.set(
-        (state) =>
+        state =>
           ({
             ...state,
             tabs:
@@ -25,7 +25,7 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
     }
 
     store.set(
-      (state) =>
+      state =>
         ({
           ...state,
           tabs: [...state.tabs, { table, schema, preview: true }],
@@ -34,13 +34,13 @@ export function addTab(id: string, schema: string, table: string, preview?: bool
     return
   }
 
-  if (!state.tabs.some((tab) => tab.table === table && tab.schema === schema && !tab.preview)) {
+  if (!state.tabs.some(tab => tab.table === table && tab.schema === schema && !tab.preview)) {
     store.set(
-      (state) =>
+      state =>
         ({
           ...state,
           tabs:
-            state.tabs.map((tab) =>
+            state.tabs.map(tab =>
               tab.table === table && tab.schema === schema
                 ? { table, schema, preview: false }
                 : tab,
@@ -57,7 +57,7 @@ export function renameTab(id: string, schema: string, table: string, newTableNam
     tab.table === table && tab.schema === schema ? { ...tab, table: newTableName } : tab
 
   store.set(
-    (state) =>
+    state =>
       ({
         ...state,
         tabs: state.tabs.map(rename),
@@ -73,7 +73,7 @@ export function removeTab(id: string, schema: string, table: string) {
     tab.table !== table || tab.schema !== schema
 
   store.set(
-    (state) =>
+    state =>
       ({
         ...state,
         tabs: state.tabs.filter(remove) ?? [],
@@ -86,7 +86,7 @@ export function updateTabs(id: string, newTabs: (typeof connectionResourceType.i
   const store = getConnectionResourceStore(id)
 
   store.set(
-    (state) =>
+    state =>
       ({
         ...state,
         tabs: newTabs,
@@ -99,13 +99,13 @@ const MAX_PINNED_TABLES = 10
 export function togglePinTable(id: string, schema: string, table: string) {
   const store = getConnectionResourceStore(id)
 
-  store.set((state) => {
-    const isPinned = state.pinnedTables.some((t) => t.schema === schema && t.table === table)
+  store.set(state => {
+    const isPinned = state.pinnedTables.some(t => t.schema === schema && t.table === table)
 
     if (isPinned) {
       return {
         ...state,
-        pinnedTables: state.pinnedTables.filter((t) => !(t.schema === schema && t.table === table)),
+        pinnedTables: state.pinnedTables.filter(t => !(t.schema === schema && t.table === table)),
       } satisfies typeof state
     }
 
@@ -123,10 +123,10 @@ export function togglePinTable(id: string, schema: string, table: string) {
 export function cleanupPinnedTables(id: string, tables: { schema: string; table: string }[]) {
   const store = getConnectionResourceStore(id)
 
-  store.set((state) => {
-    const tablesSet = new Set(tables.map((t) => `${t.schema}:${t.table}`))
+  store.set(state => {
+    const tablesSet = new Set(tables.map(t => `${t.schema}:${t.table}`))
 
-    const pinnedTables = state.pinnedTables.filter((t) => tablesSet.has(`${t.schema}:${t.table}`))
+    const pinnedTables = state.pinnedTables.filter(t => tablesSet.has(`${t.schema}:${t.table}`))
 
     if (pinnedTables.length !== state.pinnedTables.length) {
       return {
@@ -142,7 +142,7 @@ export function cleanupPinnedTables(id: string, tables: { schema: string; table:
 export function toggleChat(id: string, isVisible?: boolean) {
   const store = getConnectionResourceStore(id)
   store.set(
-    (state) =>
+    state =>
       ({
         ...state,
         layout: {
@@ -156,7 +156,7 @@ export function toggleChat(id: string, isVisible?: boolean) {
 export function toggleResults(id: string) {
   const store = getConnectionResourceStore(id)
   store.set(
-    (state) =>
+    state =>
       ({
         ...state,
         layout: {
@@ -173,7 +173,7 @@ export function setChatPosition(
 ) {
   const store = getConnectionResourceStore(id)
   store.set(
-    (state) =>
+    state =>
       ({
         ...state,
         layout: {

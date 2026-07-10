@@ -27,7 +27,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
   const { connectionResource } = Route.useRouteContext()
   const { queriesCollection } = useCollections()
   const { data } = useLiveQuery(
-    (q) =>
+    q =>
       q
         .from({ queries: queriesCollection })
         .where(({ queries }) => eq(queries.connectionResourceId, connectionResource.id))
@@ -47,7 +47,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
       <ScrollArea className="flex-1 py-2">
         {data.length > 0 ? (
           <div className="space-y-1">
-            {data.map((query) => (
+            {data.map(query => (
               <div key={query.id} className="flex w-full items-center gap-2 px-4 py-1">
                 <Tooltip>
                   <TooltipTrigger asChild>

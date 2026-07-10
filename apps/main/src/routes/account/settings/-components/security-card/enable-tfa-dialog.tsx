@@ -69,7 +69,7 @@ export function EnableTfaDialog({
       onOpenChange(false)
       setSetupOpen(false)
     },
-    onError: (e) => {
+    onError: e => {
       handleError(e)
       setCode('')
     },
@@ -86,7 +86,7 @@ export function EnableTfaDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="sm:max-w-sm"
-        onSubmit={(e) => {
+        onSubmit={e => {
           e.preventDefault()
           enableTotp(password)
         }}
@@ -102,14 +102,14 @@ export function EnableTfaDialog({
             id="enable-password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
             disabled={isEnableTotpPending}
             autoComplete="current-password"
             autoFocus
           />
         </DialogPanel>
         <DialogFooter>
-          <Dialog open={setupOpen} onOpenChange={(open) => !open && handleClose()}>
+          <Dialog open={setupOpen} onOpenChange={open => !open && handleClose()}>
             <DialogTrigger
               className="w-full sm:w-auto"
               disabled={isEnableTotpPending || password.length === 0}
@@ -120,7 +120,7 @@ export function EnableTfaDialog({
             <DialogContent
               className="flex flex-col gap-6 sm:max-w-xs"
               showCloseButton={false}
-              onSubmit={(e) => {
+              onSubmit={e => {
                 e.preventDefault()
                 verifyTotp(code)
               }}
@@ -139,8 +139,8 @@ export function EnableTfaDialog({
                 <TotpCodeInput
                   label="Verification code"
                   value={code}
-                  onChange={(value) => setCode(value)}
-                  onComplete={(value) => verifyTotp(value)}
+                  onChange={value => setCode(value)}
+                  onComplete={value => verifyTotp(value)}
                   disabled={isVerifyTotpPending}
                 />
               </DialogPanel>

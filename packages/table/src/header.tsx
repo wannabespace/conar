@@ -14,7 +14,7 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
   virtualColumn: VirtualItem
   column: ColumnRenderer
 }) {
-  const columns = useTableContext((context) => context.columns)
+  const columns = useTableContext(context => context.columns)
 
   if (!column.header) {
     return (
@@ -54,9 +54,9 @@ export function TableHeader({
   before?: ReactNode
   after?: ReactNode
 }) {
-  const virtualColumns = useTableContext((context) => context.virtualColumns)
-  const tableWidth = useTableContext((context) => context.tableWidth)
-  const columns = useTableContext((context) => context.columns)
+  const virtualColumns = useTableContext(context => context.virtualColumns)
+  const tableWidth = useTableContext(context => context.tableWidth)
+  const columns = useTableContext(context => context.columns)
 
   return (
     <div
@@ -74,7 +74,7 @@ export function TableHeader({
           className="w-(--table-scroll-left-offset) shrink-0 will-change-[height]"
           style={spacerStyle}
         />
-        {virtualColumns.map((virtualColumn) => (
+        {virtualColumns.map(virtualColumn => (
           <VirtualHeaderColumn
             key={virtualColumn.key}
             virtualColumn={virtualColumn}

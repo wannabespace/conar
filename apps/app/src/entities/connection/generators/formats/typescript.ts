@@ -4,8 +4,8 @@ import { formatEnumAsUnionType, getColumnType, toLiteralKey } from '../utils'
 
 export function generateSchemaTypeScript({ table, columns, dialect }: SchemaParams) {
   const cols = columns
-    .filter((c) => c.type)
-    .map((c) => {
+    .filter(c => c.type)
+    .map(c => {
       const literalKey = toLiteralKey(c.id)
       let typeScriptType = getColumnType(c.type!, 'ts', dialect)
 

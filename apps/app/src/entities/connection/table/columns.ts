@@ -43,11 +43,11 @@ export function useTableColumnsQuery({
       const data = columns.data
         ?.map((column): Column => {
           const columnConstraints = constraintsData.filter(
-            (c) => c.column === column.id && c.schema === schema && c.table === table,
+            c => c.column === column.id && c.schema === schema && c.table === table,
           )
-          const foreignConstraint = columnConstraints.find((c) => c.type === 'foreignKey')
-          const uniqueConstraint = columnConstraints.find((c) => c.type === 'unique')
-          const primaryConstraint = columnConstraints.find((c) => c.type === 'primaryKey')
+          const foreignConstraint = columnConstraints.find(c => c.type === 'foreignKey')
+          const uniqueConstraint = columnConstraints.find(c => c.type === 'unique')
+          const primaryConstraint = columnConstraints.find(c => c.type === 'primaryKey')
 
           return {
             ...column,
@@ -79,16 +79,16 @@ export function useTableColumnsQuery({
                 : undefined,
             references: constraintsData
               .filter(
-                (c) =>
+                c =>
                   c.type === 'foreignKey' &&
                   c.foreignColumn === column.id &&
                   c.foreignSchema === schema &&
                   c.foreignTable === table &&
                   !!c.column,
               )
-              .map((c) => {
+              .map(c => {
                 const isUnique = constraintsData.some(
-                  (u) =>
+                  u =>
                     (u.type === 'unique' || u.type === 'primaryKey') &&
                     u.schema === c.schema &&
                     u.table === c.table &&

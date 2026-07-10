@@ -192,7 +192,7 @@ export function QueryLogger({
     initial: 'instant',
   })
   const queries = useSubscription(queryLogsStore, {
-    selector: (state) =>
+    selector: state =>
       Object.values(state[connectionResource.id] || {}).toSorted(
         (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
       ),
@@ -203,7 +203,7 @@ export function QueryLogger({
 
   const filteredQueries = useMemo(() => {
     if (statusGroup) {
-      return queries.filter((query) => getQueryStatus(query) === statusGroup)
+      return queries.filter(query => getQueryStatus(query) === statusGroup)
     }
     return queries
   }, [queries, statusGroup])
@@ -225,7 +225,7 @@ export function QueryLogger({
   const clearQueries = () => {
     setIsClearing(true)
     queryLogsStore.set(
-      (state) =>
+      state =>
         ({
           ...state,
           [connectionResource.id]: {},
@@ -234,7 +234,7 @@ export function QueryLogger({
   }
 
   const toggleGroup = (status: QueryStatus) => {
-    setStatusGroup((prev) => (prev === status ? undefined : status))
+    setStatusGroup(prev => (prev === status ? undefined : status))
   }
 
   const { getVirtualItems, getTotalSize } = useVirtualizer({
@@ -309,7 +309,7 @@ export function QueryLogger({
             variant="outline"
             size="icon-sm"
             onClick={() =>
-              store.set((state) => ({ ...state, loggerOpened: false }) satisfies typeof state)
+              store.set(state => ({ ...state, loggerOpened: false }) satisfies typeof state)
             }
           >
             <RiCloseLine className="size-4" />
@@ -327,7 +327,7 @@ export function QueryLogger({
         )}
         <div ref={contentRef} style={{ height: `${totalSize}px` }}>
           <div className="h-(--scroll-top-offset)" />
-          {virtualItems.map((virtualItem) => (
+          {virtualItems.map(virtualItem => (
             <Log
               key={virtualItem.key}
               query={filteredQueries[virtualItem.index]!}

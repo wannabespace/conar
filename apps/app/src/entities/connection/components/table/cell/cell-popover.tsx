@@ -67,24 +67,24 @@ export function CellPopoverContent({
         <CellSwitch
           className="w-full justify-center py-6"
           checked={newValue === true}
-          onChange={(checked) => setNewValue(checked)}
+          onChange={checked => setNewValue(checked)}
         />
       )
     }
 
     if (column.uiType === 'list' && column.isArray && !!column.availableValues) {
       const selectedValues = Array.isArray(newValue) ? newValue : []
-      const comboboxItems = column.availableValues.map((v) => ({ value: v, label: v }))
+      const comboboxItems = column.availableValues.map(v => ({ value: v, label: v }))
       return (
         <div className="p-2">
           <Combobox
-            value={comboboxItems.filter((item) => selectedValues.includes(item.value))}
+            value={comboboxItems.filter(item => selectedValues.includes(item.value))}
             items={comboboxItems}
             multiple
             autoHighlight
             disabled={!canEdit}
-            onValueChange={(items) => {
-              const values = items.map((item) => item.value)
+            onValueChange={items => {
+              const values = items.map(item => item.value)
               setNewValue(values)
             }}
           >
@@ -96,7 +96,7 @@ export function CellPopoverContent({
                 >
                   <ComboboxValue>
                     {(value: typeof comboboxItems) =>
-                      value?.map((item) => (
+                      value?.map(item => (
                         <ComboboxChip aria-label={item.label} key={item.value}>
                           {item.label}
                         </ComboboxChip>
@@ -113,7 +113,7 @@ export function CellPopoverContent({
             <ComboboxPopup side="top">
               <ComboboxEmpty>No values found.</ComboboxEmpty>
               <ComboboxList>
-                {(item) => (
+                {item => (
                   <ComboboxItem key={item.value} value={item}>
                     {item.label}
                   </ComboboxItem>
@@ -131,7 +131,7 @@ export function CellPopoverContent({
           <Select
             value={!newValue || newValue === 'null' ? null : newValue}
             disabled={!canEdit}
-            onValueChange={(value) => {
+            onValueChange={value => {
               if (value) {
                 setNewValue(value)
               }
@@ -141,7 +141,7 @@ export function CellPopoverContent({
               <SelectValue placeholder="Select value" />
             </SelectTrigger>
             <SelectContent>
-              {column.availableValues?.map((val) => (
+              {column.availableValues?.map(val => (
                 <SelectItem key={val} value={val}>
                   {val}
                 </SelectItem>
@@ -235,7 +235,7 @@ export function CellPopoverContent({
           {isRaw && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" size="icon-xs" onClick={() => setIsBig((prev) => !prev)}>
+                <Button variant="outline" size="icon-xs" onClick={() => setIsBig(prev => !prev)}>
                   {isBig ? (
                     <RiCollapseDiagonal2Line className="size-3" />
                   ) : (
@@ -267,7 +267,7 @@ export function CellPopoverContent({
           {!!uiRender && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" size="xs" onClick={() => setIsRaw((prev) => !prev)}>
+                <Button variant="outline" size="xs" onClick={() => setIsRaw(prev => !prev)}>
                   Raw
                 </Button>
               </TooltipTrigger>

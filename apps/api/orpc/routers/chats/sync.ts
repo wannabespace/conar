@@ -22,7 +22,7 @@ export const sync = orpc
     const { updatedItems, newItems, missingIds } = await syncDiff({
       input,
       queries: {
-        updated: (items) =>
+        updated: items =>
           db
             .select()
             .from(chats)
@@ -30,43 +30,43 @@ export const sync = orpc
               and(
                 eq(chats.userId, context.user.id),
                 or(
-                  ...items.map((c) =>
+                  ...items.map(c =>
                     and(eq(chats.id, c.id), gte(chats.updatedAt, addSeconds(c.updatedAt, 1))),
                   ),
                 ),
               ),
             ),
-        new: (excludeIds) =>
+        new: excludeIds =>
           db
             .select()
             .from(chats)
             .where(and(eq(chats.userId, context.user.id), notInArray(chats.id, excludeIds))),
-        existing: (includeIds) =>
+        existing: includeIds =>
           db
             .select({ id: chats.id })
             .from(chats)
             .where(and(eq(chats.userId, context.user.id), inArray(chats.id, includeIds)))
-            .then((r) => r.map((i) => i.id)),
+            .then(r => r.map(i => i.id)),
       },
     })
 
     const sync: typeof output.infer = []
 
-    updatedItems.forEach((item) => {
+    updatedItems.forEach(item => {
       sync.push({
         type: 'update',
         value: item,
       })
     })
 
-    newItems.forEach((item) => {
+    newItems.forEach(item => {
       sync.push({
         type: 'insert',
         value: item,
       })
     })
 
-    missingIds.forEach((item) => {
+    missingIds.forEach(item => {
       sync.push({
         type: 'delete',
         key: item,

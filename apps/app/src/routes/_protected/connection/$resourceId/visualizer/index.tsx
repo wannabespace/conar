@@ -64,12 +64,12 @@ function VisualizerPage() {
   const { connection } = Route.useLoaderData()
   const { connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, { selector: (state) => state.showSystem })
+  const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data: tablesAndSchemas } = useQuery({
     ...resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
-    select: (data) =>
+    select: data =>
       data.schemas.flatMap(({ name, tables }) =>
-        tables.map((table) => ({ schema: name, table: table.name })),
+        tables.map(table => ({ schema: name, table: table.name })),
       ),
   })
   const columnsQueries = useQueries({
@@ -80,7 +80,7 @@ function VisualizerPage() {
   })
   const { data: constraints } = useQuery(resourceConstraintsQueryOptions({ connectionResource }))
 
-  if (!tablesAndSchemas || !constraints || columnsQueries.some((q) => q.isPending)) {
+  if (!tablesAndSchemas || !constraints || columnsQueries.some(q => q.isPending)) {
     return (
       <div className="flex size-full items-center justify-center rounded-lg border bg-background">
         <AppLogo className="size-40 animate-pulse text-muted-foreground" />
@@ -89,7 +89,7 @@ function VisualizerPage() {
   }
 
   const columns = columnsQueries
-    .flatMap((item) => item.data)
+    .flatMap(item => item.data)
     .filter((item): item is typeof columnType.infer => !!item)
 
   if (columns.length === 0 || tablesAndSchemas.length === 0) {
@@ -132,9 +132,9 @@ function Visualizer({
 
   const trimmedSearchQuery = searchQuery.trim().toLowerCase()
   const schemaConstraints = constraints.filter(
-    (c) => c.schema === schema && (!c.foreignSchema || c.foreignSchema === schema),
+    c => c.schema === schema && (!c.foreignSchema || c.foreignSchema === schema),
   )
-  const tables = tablesAndSchemas.filter((t) => t.schema === schema).map(({ table }) => table)
+  const tables = tablesAndSchemas.filter(t => t.schema === schema).map(({ table }) => table)
 
   const { nodes: layoutNodes, edges: layoutEdges } = useMemo(() => {
     return getVisualizerLayout({
@@ -197,9 +197,9 @@ function Visualizer({
               placeholder="Search tables"
               value={searchQuery}
               autoFocus
-              onChange={(e) => {
+              onChange={e => {
                 setSearchQuery(e.target.value)
-                setNodes((nodes) =>
+                setNodes(nodes =>
                   applySearchHighlight({
                     nodes,
                     searchQuery: e.target.value.trim(),
@@ -233,7 +233,7 @@ function Visualizer({
         </div>
         <Select
           value={schema}
-          onValueChange={(v) => {
+          onValueChange={v => {
             if (v) {
               setSchema(v)
               setSearchQuery('')
@@ -249,7 +249,7 @@ function Visualizer({
             </div>
           </SelectTrigger>
           <SelectContent>
-            {schemas.map((schema) => (
+            {schemas.map(schema => (
               <SelectItem key={schema} value={schema}>
                 {schema}
               </SelectItem>

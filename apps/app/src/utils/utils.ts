@@ -24,7 +24,7 @@ export function generateRandomName() {
   const main = faker.helpers.arrayElement(categories)()
 
   return [color, main]
-    .map((str) => uppercaseFirst(str))
+    .map(str => uppercaseFirst(str))
     .filter(Boolean)
     .join(' ')
 }

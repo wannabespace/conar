@@ -191,7 +191,7 @@ export function TableCell({
     >
       <SetNullAlertDialog
         open={isSetNullDialogOpen}
-        onOpenChange={(open) => {
+        onOpenChange={open => {
           setIsSetNullDialogOpen(open)
           if (!open) {
             disableInteractIfPossible()
@@ -200,7 +200,7 @@ export function TableCell({
       />
       <TableCellContextMenu
         open={isContextMenuOpen}
-        onOpenChange={(open) => {
+        onOpenChange={open => {
           setIsContextMenuOpen(open)
           if (!open) {
             disableInteractIfPossible()
@@ -213,7 +213,7 @@ export function TableCell({
       >
         <Popover
           open={isPopoverOpen}
-          onOpenChange={(isOpen) => {
+          onOpenChange={isOpen => {
             if (!isOpen) {
               setIsPopoverOpen(isOpen)
               setIsBig(false)
@@ -243,8 +243,8 @@ export function TableCell({
                     <PopoverTrigger
                       render={
                         <ForeignButton
-                          onDoubleClick={(e) => e.stopPropagation()}
-                          onClick={(e) => {
+                          onDoubleClick={e => e.stopPropagation()}
+                          onClick={e => {
                             e.stopPropagation()
 
                             setIsForeignOpen(true)
@@ -259,8 +259,8 @@ export function TableCell({
                 </Tooltip>
                 <PopoverContent
                   className="h-[45vh] w-[80vw] overflow-hidden p-0 **:data-[slot=popover-viewport]:p-0"
-                  onDoubleClick={(e) => e.stopPropagation()}
-                  onClick={(e) => e.stopPropagation()}
+                  onDoubleClick={e => e.stopPropagation()}
+                  onClick={e => e.stopPropagation()}
                 >
                   <TableCellTable
                     schema={column.foreign.schema}
@@ -278,8 +278,8 @@ export function TableCell({
                     <PopoverTrigger
                       render={
                         <ReferenceButton
-                          onDoubleClick={(e) => e.stopPropagation()}
-                          onClick={(e) => {
+                          onDoubleClick={e => e.stopPropagation()}
+                          onClick={e => {
                             e.stopPropagation()
 
                             setIsReferencesOpen(true)
@@ -299,8 +299,8 @@ export function TableCell({
                 </Tooltip>
                 <PopoverContent
                   className="h-[45vh] w-[80vw] overflow-hidden p-0 **:data-[slot=popover-viewport]:p-0"
-                  onDoubleClick={(e) => e.stopPropagation()}
-                  onClick={(e) => e.stopPropagation()}
+                  onDoubleClick={e => e.stopPropagation()}
+                  onClick={e => e.stopPropagation()}
                 >
                   <TableCellReferences references={column.references} value={effectiveValue} />
                 </PopoverContent>

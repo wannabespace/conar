@@ -23,7 +23,7 @@ export const chats = d.snakeCase.table(
     title: d.text(),
     activeStreamId: d.uuid(),
   },
-  (t) => [d.index().on(t.userId), d.index().on(t.connectionResourceId)],
+  t => [d.index().on(t.userId), d.index().on(t.connectionResourceId)],
 )
 
 export const chatsSelectSchema = createSelectSchema(chats)
@@ -42,7 +42,7 @@ export const chatsMessages = d.snakeCase.table(
     role: d.text().$type<AppUIMessage['role']>().notNull(),
     metadata: encryptedJson().$type<NonNullable<AppUIMessage['metadata']>>(),
   },
-  (t) => [d.index().on(t.chatId), d.index().on(t.role)],
+  t => [d.index().on(t.chatId), d.index().on(t.role)],
 )
 
 export const chatsMessagesSelectSchema = createSelectSchema(chatsMessages)
@@ -51,7 +51,7 @@ export const chatsMessagesUpdateSchema = createUpdateSchema(chatsMessages)
 
 export const chatsRelations = defineRelationsPart(
   { chats, chatsMessages, users, connectionsResources },
-  (r) => ({
+  r => ({
     chats: {
       user: r.one.users({
         from: r.chats.userId,

@@ -39,7 +39,7 @@ function LastOpenedResource({
 }
 
 function close(resource: ConnectionResource) {
-  lastOpenedResourcesStorageValue.set((prev) => prev.filter((id) => id !== resource.id))
+  lastOpenedResourcesStorageValue.set(prev => prev.filter(id => id !== resource.id))
 }
 
 export function LastOpenedResources() {
@@ -47,7 +47,7 @@ export function LastOpenedResources() {
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
 
   const { data } = useLiveQuery(
-    (q) =>
+    q =>
       q
         .from({ connectionsResources: connectionsResourcesCollection })
         .innerJoin(

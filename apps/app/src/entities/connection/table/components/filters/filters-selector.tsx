@@ -24,7 +24,7 @@ export function FiltersSelector({
       <CommandInput
         ref={ref}
         placeholder="Select operator..."
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           if (e.key === 'Backspace') {
             onBackspace?.()
           }
@@ -34,7 +34,7 @@ export function FiltersSelector({
         <CommandEmpty>No operators found.</CommandEmpty>
         {SQL_FILTERS_GROUPED.map(({ group, filters }) => (
           <CommandGroup key={group} heading={FILTER_GROUPS[group]}>
-            {filters.map((filter) => (
+            {filters.map(filter => (
               <CommandItem
                 key={filter.operator}
                 value={filter.operator}

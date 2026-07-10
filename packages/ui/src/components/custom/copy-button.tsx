@@ -29,7 +29,7 @@ export function CopyButton({
   return (
     <Button
       {...props}
-      onClick={(e) => {
+      onClick={e => {
         props.onClick?.(e)
         handleCopy()
       }}

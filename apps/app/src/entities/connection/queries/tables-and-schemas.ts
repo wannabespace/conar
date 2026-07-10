@@ -14,7 +14,7 @@ export const tablesAndSchemasType = type({
   type: type.or(
     type.enumerated(...tableTypes),
     type.enumerated(
-      ...(tableTypes.map((t) => t.toUpperCase()) as Uppercase<(typeof tableTypes)[number]>[]),
+      ...(tableTypes.map(t => t.toUpperCase()) as Uppercase<(typeof tableTypes)[number]>[]),
     ),
   ),
 }).pipe(({ type, ...props }) => {
@@ -36,11 +36,11 @@ export const resourceTablesAndSchemasQuery = memoize(
     return createQuery({
       type: tablesAndSchemasType.array(),
       query: {
-        postgres: (db) =>
+        postgres: db =>
           db
             .selectFrom('pg_catalog.pg_class as c')
             .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 'c.relnamespace')
-            .select((eb) => [
+            .select(eb => [
               'n.nspname as schema',
               'c.relname as table',
               eb
@@ -60,18 +60,18 @@ export const resourceTablesAndSchemasQuery = memoize(
                 not(eb('n.nspname', 'like', 'pg_temp%')),
               ]),
             )
-            .$if(!showSystem, (qb) =>
+            .$if(!showSystem, qb =>
               qb.where('n.nspname', 'not in', ['pg_catalog', 'information_schema']),
             )
             .execute(),
-        mysql: (db) =>
+        mysql: db =>
           db
             .selectFrom('information_schema.TABLES')
             .select(['TABLE_SCHEMA as schema', 'TABLE_NAME as table', 'TABLE_TYPE as type'])
             .where('TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
             .$narrowType<{ type: 'BASE TABLE' | 'VIEW' }>()
-            .$if(!showSystem, (qb) =>
-              qb.where((eb) =>
+            .$if(!showSystem, qb =>
+              qb.where(eb =>
                 eb('TABLE_SCHEMA', 'not in', [
                   'mysql',
                   'information_schema',
@@ -81,16 +81,16 @@ export const resourceTablesAndSchemasQuery = memoize(
               ),
             )
             .execute(),
-        mssql: (db) =>
+        mssql: db =>
           db
             .selectFrom('information_schema.TABLES')
             .select(['TABLE_SCHEMA as schema', 'TABLE_NAME as table', 'TABLE_TYPE as type'])
             .where('TABLE_TYPE', 'in', ['BASE TABLE', 'VIEW'])
             .execute(),
-        clickhouse: (db) =>
+        clickhouse: db =>
           db
             .selectFrom('system.tables')
-            .select((eb) => [
+            .select(eb => [
               'database as schema',
               'name as table',
               eb
@@ -124,10 +124,10 @@ export function resourceTablesAndSchemasQueryOptions({
       const results = await resourceTablesAndSchemasQuery({ connectionResource, showSystem }).run(
         await connectionResourceToQueryParams(connectionResource),
       )
-      const schemas = Object.entries(Object.groupBy(results, (table) => table.schema)).map(
+      const schemas = Object.entries(Object.groupBy(results, table => table.schema)).map(
         ([schema, tables]) => ({
           name: schema,
-          tables: tables!.map((table) => ({ name: table.table, type: table.type })),
+          tables: tables!.map(table => ({ name: table.table, type: table.type })),
         }),
       )
 

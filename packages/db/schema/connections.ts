@@ -41,7 +41,7 @@ export const connectionsResources = d.snakeCase.table(
       .notNull(),
     name: d.text(),
   },
-  (t) => [d.unique().on(t.connectionId, t.name)],
+  t => [d.unique().on(t.connectionId, t.name)],
 )
 
 export const connectionsResourcesSelectSchema = createSelectSchema(connectionsResources)
@@ -50,7 +50,7 @@ export const connectionsResourcesInsertSchema = createInsertSchema(connectionsRe
 
 export const connectionsRelations = defineRelationsPart(
   { connections, connectionsResources, users },
-  (r) => ({
+  r => ({
     connections: {
       user: r.one.users({
         from: r.connections.userId,

@@ -7,7 +7,7 @@ import { getConnectionResourceStore } from '~/entities/connection/store'
 export function useConnectionResourceLinkParams(resourceId: string) {
   const store = getConnectionResourceStore(resourceId)
   const [lastOpenedTable, lastOpenedPage, lastChatId] = useSubscription(store, {
-    selector: (state) => [state.lastOpenedTable, state.lastOpenedPage, state.lastOpenedChatId],
+    selector: state => [state.lastOpenedTable, state.lastOpenedPage, state.lastOpenedChatId],
   })
 
   return useMemo((): LinkProps => {

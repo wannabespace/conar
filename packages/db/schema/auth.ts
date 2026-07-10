@@ -30,7 +30,7 @@ export const sessions = d.snakeCase.table(
       .references(() => users.id, { onDelete: 'cascade' }),
     activeWorkspaceId: d.text(),
   },
-  (table) => [d.index('sessions_userId_idx').on(table.userId)],
+  table => [d.index('sessions_userId_idx').on(table.userId)],
 )
 
 export const accounts = d.snakeCase.table(
@@ -51,7 +51,7 @@ export const accounts = d.snakeCase.table(
     scope: d.text(),
     password: d.text(),
   },
-  (table) => [d.index('accounts_userId_idx').on(table.userId)],
+  table => [d.index('accounts_userId_idx').on(table.userId)],
 )
 
 export const verifications = d.snakeCase.table(
@@ -62,7 +62,7 @@ export const verifications = d.snakeCase.table(
     value: d.text().notNull(),
     expiresAt: d.timestamp({ withTimezone: true }).notNull(),
   },
-  (table) => [d.index('verifications_identifier_idx').on(table.identifier)],
+  table => [d.index('verifications_identifier_idx').on(table.identifier)],
 )
 
 export const twoFactors = d.snakeCase.table(
@@ -77,7 +77,7 @@ export const twoFactors = d.snakeCase.table(
       .references(() => users.id, { onDelete: 'cascade' }),
     verified: d.boolean().default(true),
   },
-  (table) => [
+  table => [
     d.index('twoFactors_secret_idx').on(table.secret),
     d.index('twoFactors_userId_idx').on(table.userId),
   ],
@@ -92,7 +92,7 @@ export const workspaces = d.snakeCase.table(
     logo: d.text(),
     metadata: d.text(),
   },
-  (table) => [d.uniqueIndex('workspaces_slug_uidx').on(table.slug)],
+  table => [d.uniqueIndex('workspaces_slug_uidx').on(table.slug)],
 )
 
 export const members = d.snakeCase.table(
@@ -109,7 +109,7 @@ export const members = d.snakeCase.table(
       .references(() => users.id, { onDelete: 'cascade' }),
     role: d.text().default('member').notNull(),
   },
-  (table) => [
+  table => [
     d.index('members_workspaceId_idx').on(table.workspaceId),
     d.index('members_userId_idx').on(table.userId),
   ],
@@ -132,7 +132,7 @@ export const invitations = d.snakeCase.table(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
   },
-  (table) => [
+  table => [
     d.index('invitations_workspaceId_idx').on(table.workspaceId),
     d.index('invitations_email_idx').on(table.email),
   ],
@@ -162,7 +162,7 @@ export const apiKeys = d.snakeCase.table(
     permissions: d.jsonb(),
     metadata: d.text(),
   },
-  (table) => [
+  table => [
     d.index('api_keys_configId_idx').on(table.configId),
     d.index('api_keys_referenceId_idx').on(table.referenceId),
     d.index('api_keys_key_idx').on(table.key),
@@ -181,7 +181,7 @@ export const authRelations = defineRelationsPart(
     invitations,
     apiKeys,
   },
-  (r) => ({
+  r => ({
     users: {
       sessions: r.many.sessions({
         from: r.users.id,

@@ -85,7 +85,7 @@ function DatabaseSqlPage() {
   const store = getConnectionResourceStore(connectionResource.id)
 
   const { chatVisible, chatPosition } = useSubscription(store, {
-    selector: (s) => ({
+    selector: s => ({
       chatVisible: s.layout.chatVisible,
       chatPosition: s.layout.chatPosition,
     }),
@@ -93,7 +93,7 @@ function DatabaseSqlPage() {
 
   useEffect(() => {
     store.set(
-      (state) =>
+      state =>
         ({
           ...state,
           lastOpenedChatId: chatId ?? null,

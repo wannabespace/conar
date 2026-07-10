@@ -112,7 +112,7 @@ export function createDialectProvider(type: ConnectionType, options: DialectOpti
 export function createKyselyDriver({
   provider,
   logger,
-  transformQuery = (compiledQuery) => ({
+  transformQuery = compiledQuery => ({
     query: compiledQuery.sql,
     values: compiledQuery.parameters as unknown[],
   }),

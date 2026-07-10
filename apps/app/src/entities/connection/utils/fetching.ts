@@ -134,14 +134,14 @@ export function useFetchingConfig(
   const isLocalProxyAvailable = useLocalProxyAvailable()
   const { connectionStringsCollection } = useCollections()
   const { data: connectionString } = useLiveQuery(
-    (q) =>
+    q =>
       q
         .from({ cs: connectionStringsCollection })
         .where(({ cs }) => eq(cs.connectionId, connection.id))
         .findOne(),
     [connectionStringsCollection, connection.id],
   )
-  const proxy = useSubscription(getConnectionStore(connection.id), { selector: (s) => s.proxy })
+  const proxy = useSubscription(getConnectionStore(connection.id), { selector: s => s.proxy })
 
   return fetchingConfig(connection, {
     isLocalProxyAvailable,

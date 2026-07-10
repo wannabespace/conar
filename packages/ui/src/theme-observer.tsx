@@ -6,7 +6,7 @@ export type { ResolvedTheme, Theme } from './theme-store'
 export function ThemeObserver() {
   return (
     <FunctionOnce param={THEME_STORAGE_KEY}>
-      {(key) => {
+      {key => {
         const theme: string | null = localStorage.getItem(key)
 
         if (

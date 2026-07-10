@@ -85,7 +85,7 @@ export function useTablePageStore() {
 export function columnsOrder(store: TablePageStore) {
   const setOrder = (columnId: string, order: 'ASC' | 'DESC') => {
     store.set(
-      (state) =>
+      state =>
         ({
           ...state,
           orderBy: {
@@ -98,7 +98,7 @@ export function columnsOrder(store: TablePageStore) {
 
   const removeOrder = (columnId: string) => {
     store.set(
-      (state) =>
+      state =>
         ({
           ...state,
           orderBy: omit(state.orderBy, [columnId]),
@@ -152,11 +152,9 @@ export function draftKey(primaryKeys: typeof primaryKeysType.infer, columnId: st
 
 export function draftsActions(store: TablePageStore) {
   const upsert = (draft: (typeof tablePageType.infer)['drafts'][number]) => {
-    store.set((state) => {
+    store.set(state => {
       const key = draftKey(draft.primaryKeys, draft.columnId)
-      const existingIndex = state.drafts.findIndex(
-        (d) => draftKey(d.primaryKeys, d.columnId) === key,
-      )
+      const existingIndex = state.drafts.findIndex(d => draftKey(d.primaryKeys, d.columnId) === key)
 
       if (existingIndex === -1) {
         return { ...state, drafts: [...state.drafts, draft] } satisfies typeof state
@@ -170,18 +168,18 @@ export function draftsActions(store: TablePageStore) {
 
   const remove = (primaryKeys: typeof primaryKeysType.infer, columnId: string) => {
     store.set(
-      (state) =>
+      state =>
         ({
           ...state,
           drafts: state.drafts.filter(
-            (d) => draftKey(d.primaryKeys, d.columnId) !== draftKey(primaryKeys, columnId),
+            d => draftKey(d.primaryKeys, d.columnId) !== draftKey(primaryKeys, columnId),
           ),
         }) satisfies typeof state,
     )
   }
 
   const clear = () => {
-    store.set((state) => ({ ...state, drafts: [] }) satisfies typeof state)
+    store.set(state => ({ ...state, drafts: [] }) satisfies typeof state)
   }
 
   const setRowStatus = (
@@ -189,10 +187,10 @@ export function draftsActions(store: TablePageStore) {
     patch: Partial<Pick<(typeof tablePageType.infer)['drafts'][number], 'error' | 'isCommitting'>>,
   ) => {
     store.set(
-      (state) =>
+      state =>
         ({
           ...state,
-          drafts: state.drafts.map((d) =>
+          drafts: state.drafts.map(d =>
             primaryKeysKey(d.primaryKeys) === primaryKeysKey(primaryKeys) ? { ...d, ...patch } : d,
           ),
         }) satisfies typeof state,
@@ -201,11 +199,11 @@ export function draftsActions(store: TablePageStore) {
 
   const removeRow = (primaryKeys: typeof primaryKeysType.infer) => {
     store.set(
-      (state) =>
+      state =>
         ({
           ...state,
           drafts: state.drafts.filter(
-            (d) => primaryKeysKey(d.primaryKeys) !== primaryKeysKey(primaryKeys),
+            d => primaryKeysKey(d.primaryKeys) !== primaryKeysKey(primaryKeys),
           ),
         }) satisfies typeof state,
     )

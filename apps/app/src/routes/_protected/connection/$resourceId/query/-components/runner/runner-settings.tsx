@@ -51,13 +51,13 @@ function PositionSelector<T extends string>({
         variant="outline"
         size="sm"
         value={[value]}
-        onValueChange={(newValue) => {
+        onValueChange={newValue => {
           if (newValue[0]) {
             onChange(newValue[0])
           }
         }}
       >
-        {options.map((option) => (
+        {options.map(option => (
           <ToggleGroupItem key={option.value} value={option.value} className="text-xs">
             {option.label}
           </ToggleGroupItem>
@@ -73,7 +73,7 @@ export function RunnerSettings({ children }: { children: ReactElement }) {
 
   const store = getConnectionResourceStore(resourceId)
   const { chatVisible, resultsVisible, chatPosition } = useSubscription(store, {
-    selector: (s) => pick(s.layout, ['chatVisible', 'resultsVisible', 'chatPosition']),
+    selector: s => pick(s.layout, ['chatVisible', 'resultsVisible', 'chatPosition']),
   })
 
   return (
@@ -98,7 +98,7 @@ export function RunnerSettings({ children }: { children: ReactElement }) {
               { value: 'left' as const, label: 'Left' },
               { value: 'right' as const, label: 'Right' },
             ]}
-            onChange={(v) => setChatPosition(resourceId, v)}
+            onChange={v => setChatPosition(resourceId, v)}
           />
         </div>
       </PopoverContent>

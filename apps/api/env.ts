@@ -7,7 +7,7 @@ export const nodeEnv = type('"production" | "development" | "test"').assert(proc
 const envType = type({
   API_URL: 'string',
   MAIN_URL: 'string',
-  MIN_DESKTOP_VERSION: type('string').pipe((s) => Number(s)),
+  MIN_DESKTOP_VERSION: type('string').pipe(s => Number(s)),
   DATABASE_URL: 'string',
   ALERTS_EMAIL: 'string',
   ENCRYPTION_SECRET: 'string',

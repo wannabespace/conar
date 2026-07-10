@@ -113,10 +113,10 @@ export function TipTap({
     <EditorContent
       editor={editor}
       className="w-full"
-      onPaste={(e) => {
+      onPaste={e => {
         addImage(e, e.clipboardData)
       }}
-      onDrop={(e) => {
+      onDrop={e => {
         addImage(e, e.dataTransfer)
       }}
       {...props}

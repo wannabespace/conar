@@ -26,7 +26,7 @@ export function StepType({
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-2">
-          {Object.values(ConnectionType).map((connectionType) => (
+          {Object.values(ConnectionType).map(connectionType => (
             <Button
               key={connectionType}
               variant={type === connectionType ? 'default' : 'outline'}

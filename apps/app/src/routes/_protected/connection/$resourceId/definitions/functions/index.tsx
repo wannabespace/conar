@@ -74,7 +74,7 @@ function DatabaseFunctionsPage() {
 
   const filteredFunctions =
     functions?.filter(
-      (item) =>
+      item =>
         item.schema === selectedSchema &&
         (filterType === 'all' || filterType === item.type) &&
         (!search ||
@@ -97,12 +97,12 @@ function DatabaseFunctionsPage() {
           placeholder="Search functions"
           autoFocus
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={e => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
         <Select
           value={filterType}
-          onValueChange={(v) => {
+          onValueChange={v => {
             if (v) {
               setFilterType(v)
             }
@@ -110,15 +110,15 @@ function DatabaseFunctionsPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Type">
-              {(value) =>
+              {value =>
                 value
-                  ? typeFilterOptions.find((option) => option.value === value)?.label
+                  ? typeFilterOptions.find(option => option.value === value)?.label
                   : 'Filter Type'
               }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {typeFilterOptions.map((option) => (
+            {typeFilterOptions.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -139,7 +139,7 @@ function DatabaseFunctionsPage() {
           />
         )}
 
-        {filteredFunctions.map((item) => (
+        {filteredFunctions.map(item => (
           <CardMotion
             key={`${item.schema}-${item.name}-${item.type}`}
             layout

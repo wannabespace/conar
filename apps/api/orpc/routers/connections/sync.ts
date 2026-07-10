@@ -23,7 +23,7 @@ export const sync = orpc
     const { updatedItems, newItems, missingIds } = await syncDiff({
       input,
       queries: {
-        updated: (items) =>
+        updated: items =>
           db
             .select()
             .from(connections)
@@ -31,7 +31,7 @@ export const sync = orpc
               and(
                 eq(connections.userId, context.user.id),
                 or(
-                  ...items.map((c) =>
+                  ...items.map(c =>
                     and(
                       eq(connections.id, c.id),
                       gte(connections.updatedAt, addSeconds(c.updatedAt, 1)),
@@ -40,27 +40,27 @@ export const sync = orpc
                 ),
               ),
             ),
-        new: (excludeIds) =>
+        new: excludeIds =>
           db
             .select()
             .from(connections)
             .where(
               and(eq(connections.userId, context.user.id), notInArray(connections.id, excludeIds)),
             ),
-        existing: (includeIds) =>
+        existing: includeIds =>
           db
             .select({ id: connections.id })
             .from(connections)
             .where(
               and(eq(connections.userId, context.user.id), inArray(connections.id, includeIds)),
             )
-            .then((r) => r.map((i) => i.id)),
+            .then(r => r.map(i => i.id)),
       },
     })
     const secret = await context.getUserSecret()
     const sync: typeof output.infer = []
 
-    updatedItems.forEach((item) => {
+    updatedItems.forEach(item => {
       sync.push({
         type: 'update',
         value: {
@@ -70,7 +70,7 @@ export const sync = orpc
       })
     })
 
-    newItems.forEach((item) => {
+    newItems.forEach(item => {
       sync.push({
         type: 'insert',
         value: {
@@ -80,7 +80,7 @@ export const sync = orpc
       })
     })
 
-    missingIds.forEach((item) => {
+    missingIds.forEach(item => {
       sync.push({
         type: 'delete',
         key: item,

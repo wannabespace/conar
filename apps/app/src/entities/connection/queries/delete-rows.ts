@@ -15,53 +15,53 @@ export const deleteRowsQuery = memoize(
   }) =>
     createQuery({
       query: {
-        postgres: (db) =>
+        postgres: db =>
           db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
             .where(({ or, and, eb }) =>
               or(
-                primaryKeys.map((pk) =>
+                primaryKeys.map(pk =>
                   and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))),
                 ),
               ),
             )
             .execute(),
-        mysql: (db) =>
+        mysql: db =>
           db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
             .where(({ or, and, eb }) =>
               or(
-                primaryKeys.map((pk) =>
+                primaryKeys.map(pk =>
                   and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))),
                 ),
               ),
             )
             .execute(),
-        mssql: (db) =>
+        mssql: db =>
           db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
             .where(({ or, and, eb }) =>
               or(
-                primaryKeys.map((pk) =>
+                primaryKeys.map(pk =>
                   and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))),
                 ),
               ),
             )
             .execute(),
-        clickhouse: (db) =>
+        clickhouse: db =>
           db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
             .where(({ or, and, eb }) =>
               or(
-                primaryKeys.map((pk) =>
+                primaryKeys.map(pk =>
                   and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))),
                 ),
               ),

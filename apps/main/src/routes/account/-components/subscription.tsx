@@ -180,7 +180,7 @@ export function Subscription() {
           {!subscription && !isPending && (
             <div className="flex items-center">
               <div className={`inline-flex items-center rounded-full border bg-card p-1 shadow-sm`}>
-                {['Monthly', 'Yearly'].map((period) => (
+                {['Monthly', 'Yearly'].map(period => (
                   <button
                     type="button"
                     key={period}

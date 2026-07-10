@@ -53,7 +53,7 @@ export async function fixPnpmTarballIntegrity() {
 if (__filename === process.argv[1]) {
   fixPnpmTarballIntegrity()
     // oxlint-disable-next-line always-return
-    .then((count) => {
+    .then(count => {
       if (count === 0) {
         console.log('No tarball entries missing integrity.')
         return
@@ -61,7 +61,7 @@ if (__filename === process.argv[1]) {
 
       console.log(`Updated ${count} lockfile ${count === 1 ? 'entry' : 'entries'}.`)
     })
-    .catch((error) => {
+    .catch(error => {
       console.error(error instanceof Error ? error.message : error)
       process.exit(1)
     })

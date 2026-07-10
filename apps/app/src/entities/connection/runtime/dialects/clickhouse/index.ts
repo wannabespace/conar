@@ -28,7 +28,7 @@ function prepareQuery(compiledQuery: CompiledQuery) {
 
     if (Array.isArray(param)) {
       return `[${param
-        .map((v) =>
+        .map(v =>
           v === null || v === undefined
             ? 'NULL'
             : typeof v === 'number'
@@ -77,7 +77,7 @@ export function clickhouseDialect(options: DialectOptions) {
       createKyselyDriver({
         provider: createDialectProvider(ConnectionType.ClickHouse, options),
         logger: options.log,
-        transformQuery: (compiledQuery) => ({ query: prepareQuery(compiledQuery), values: [] }),
+        transformQuery: compiledQuery => ({ query: prepareQuery(compiledQuery), values: [] }),
       }),
     createQueryCompiler: () => new MysqlQueryCompiler(),
     createIntrospector: () => {

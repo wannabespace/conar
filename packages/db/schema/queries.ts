@@ -26,7 +26,7 @@ export const queriesInsertSchema = createInsertSchema(queries)
 
 export const queriesRelations = defineRelationsPart(
   { queries, users, connectionsResources },
-  (r) => ({
+  r => ({
     queries: {
       user: r.one.users({
         from: r.queries.userId,

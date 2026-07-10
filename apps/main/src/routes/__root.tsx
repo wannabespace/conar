@@ -94,7 +94,7 @@ export const Route = createRootRouteWithContext<{
     }
   },
   component: RootComponent,
-  errorComponent: (props) => <ErrorPage {...props} />,
+  errorComponent: props => <ErrorPage {...props} />,
 })
 
 function RootComponent() {

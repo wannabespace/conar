@@ -56,7 +56,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
 })
 
 function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
-  return routesIds.findLast((route) =>
+  return routesIds.findLast(route =>
     route.includes('/_protected/connection/$resourceId'),
   ) as (typeof connectionResourceType.infer)['lastOpenedPage']
 }
@@ -65,12 +65,12 @@ function ResourcePage() {
   const { connection, connectionResource } = Route.useRouteContext()
   const { connectionStringsCollection } = useCollections()
   const currentPageId = useMatches({
-    select: (matches) => getDatabasePageId(matches.map((match) => match.routeId)),
+    select: matches => getDatabasePageId(matches.map(match => match.routeId)),
   })
   const store = getConnectionResourceStore(connectionResource.id)
-  const loggerOpened = useSubscription(store, { selector: (state) => state.loggerOpened })
+  const loggerOpened = useSubscription(store, { selector: state => state.loggerOpened })
   const { data: connectionString } = useLiveQuery(
-    (q) =>
+    q =>
       q
         .from({ cs: connectionStringsCollection })
         .where(({ cs }) => eq(cs.connectionId, connection.id))
@@ -82,7 +82,7 @@ function ResourcePage() {
   useEffect(() => {
     if (currentPageId) {
       store.set(
-        (state) =>
+        state =>
           ({
             ...state,
             lastOpenedPage: currentPageId,
@@ -97,7 +97,7 @@ function ResourcePage() {
       lastOpenedResourcesStorageValue.set(
         [
           connectionResource.id,
-          ...last.filter((resourceId) => resourceId !== connectionResource.id),
+          ...last.filter(resourceId => resourceId !== connectionResource.id),
         ].slice(0, 3),
       )
   }, [connectionResource.id])

@@ -51,7 +51,7 @@ function TwoFactorPage() {
       <TotpCodeInput
         label="Verification code"
         value={code}
-        onChange={(value) => setCode(value)}
+        onChange={value => setCode(value)}
         onComplete={() => verifyTotp(code)}
         disabled={isPending}
         // oxlint-disable-next-line no-autofocus

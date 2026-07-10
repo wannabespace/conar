@@ -47,7 +47,7 @@ function exportData({
         return
       }
 
-      const columns = Object.keys(data[0]).map((key) => ({ key }))
+      const columns = Object.keys(data[0]).map(key => ({ key }))
       const content = toCSV(columns, data)
 
       if (type === 'download') {
@@ -74,7 +74,7 @@ function exportData({
         return
       }
 
-      const columns = Object.keys(data[0]).map((key) => ({ key }))
+      const columns = Object.keys(data[0]).map(key => ({ key }))
       const content = recordsToMarkdownTable(columns, data)
 
       if (type === 'download') {
@@ -108,18 +108,18 @@ function ExportDataDropdownMenuSubContent({
   onExport: (props: ExportProps) => void
   selected?: Record<string, unknown>[]
 }) {
-  const filters = selected?.flatMap((row) =>
+  const filters = selected?.flatMap(row =>
     Object.entries(row).map(
       ([column, value]) =>
         ({
           column,
-          ref: SQL_FILTERS_LIST.find((filter) => filter.operator === '=')!,
+          ref: SQL_FILTERS_LIST.find(filter => filter.operator === '=')!,
           values: [value],
         }) satisfies ActiveFilter,
     ),
   )
 
-  const limits = EXPORT_LIMITS.map((limit) => ({
+  const limits = EXPORT_LIMITS.map(limit => ({
     limit,
   }))
 

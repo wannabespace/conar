@@ -51,7 +51,7 @@ export const createChat = memoize(
 
             if (hasChanges) {
               const updatedAt = lastMessage.metadata?.updatedAt || new Date()
-              await chatsMessagesCollection.update(lastMessage.id, (draft) => {
+              await chatsMessagesCollection.update(lastMessage.id, draft => {
                 draft.parts = lastMessage.parts
                 draft.role = lastMessage.role
                 draft.updatedAt = updatedAt
@@ -130,12 +130,12 @@ export const createChat = memoize(
           throw new Error('Unsupported')
         },
       },
-      messages: await queryOnce((q) =>
+      messages: await queryOnce(q =>
         q
           .from({ chatsMessages: chatsMessagesCollection })
           .where(({ chatsMessages }) => eq(chatsMessages.chatId, id))
           .orderBy(({ chatsMessages }) => chatsMessages.createdAt, 'asc'),
-      ).then((results) => results.map(convertToAppUIMessage)),
+      ).then(results => results.map(convertToAppUIMessage)),
       onFinish: ({ message }) => {
         const existingMessage = chatsMessagesCollection.get(message.id)
 
@@ -145,7 +145,7 @@ export const createChat = memoize(
             JSON.stringify(message.parts) !== JSON.stringify(existingMessage.parts)
 
           if (hasChanges) {
-            chatsMessagesCollection.update(message.id, (draft) => {
+            chatsMessagesCollection.update(message.id, draft => {
               draft.parts = message.parts
               draft.role = message.role
               if (message.metadata?.createdAt) {
@@ -187,9 +187,9 @@ export const createChat = memoize(
         } else if (toolCall.toolName === 'enums') {
           const output = (await queryClient
             .ensureQueryData(resourceEnumsQueryOptions({ connectionResource }))
-            .then((results) =>
-              results.flatMap((r) =>
-                r.values.map((v) => ({
+            .then(results =>
+              results.flatMap(r =>
+                r.values.map(v => ({
                   schema: r.schema,
                   name: r.name,
                   value: v,
@@ -211,8 +211,8 @@ export const createChat = memoize(
             offset: input.offset,
             query: {
               orderBy: input.orderBy ?? undefined,
-              filters: input.whereFilters.map((filter) => {
-                const ref = SQL_FILTERS_LIST.find((f) => f.operator === filter.operator)
+              filters: input.whereFilters.map(filter => {
+                const ref = SQL_FILTERS_LIST.find(f => f.operator === filter.operator)
 
                 if (!ref) {
                   throw new Error(`Invalid operator: ${filter.operator}`)
@@ -229,7 +229,7 @@ export const createChat = memoize(
             select: input.select ?? undefined,
           })
             .run(await connectionResourceToQueryParams(connectionResource))
-            .catch((error) => ({
+            .catch(error => ({
               error: error instanceof Error ? error.message : 'Error during the query execution',
             }))) satisfies AITools['select']['output']
 

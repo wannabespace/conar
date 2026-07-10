@@ -70,8 +70,8 @@ const monacoOptions = {
 }
 
 function Pre({ children }: { children?: ReactNode }) {
-  const codeActions = useMarkdownContext((c) => c.codeActions)
-  const generating = useMarkdownContext((c) => c.generating)
+  const codeActions = useMarkdownContext(c => c.codeActions)
+  const generating = useMarkdownContext(c => c.generating)
   const childrenProps =
     (typeof children === 'object' &&
       (children as ReactElement<{ children?: ReactNode; className?: string }>)?.props) ||
@@ -141,7 +141,7 @@ function MarkdownTable({ children, className, ...props }: ComponentProps<'div'>)
 }
 
 function P({ children, className }: { children?: ReactNode; className?: string }) {
-  const generating = useMarkdownContext((c) => c.generating)
+  const generating = useMarkdownContext(c => c.generating)
 
   if (typeof children === 'string') {
     const chars = children.split('').map((char, i) => ({ char, key: `${char}-${i}` }))
@@ -184,7 +184,7 @@ function MarkdownBase({ content }: { content: string }) {
 
 function parseMarkdownIntoBlocks(markdown: string) {
   const tokens = marked.lexer(markdown)
-  return tokens.map((token) => token.raw)
+  return tokens.map(token => token.raw)
 }
 
 export function Markdown({

@@ -216,7 +216,7 @@ function ConnectionResourcesCombobox({
                           variant="ghost"
                           size="icon-xs"
                           className="-mr-3 shrink-0 opacity-0 group-hover:opacity-100"
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation()
                             onPinnedResourceNameChange(resource)
                           }}
@@ -249,7 +249,7 @@ function ConnectionCard({
 }) {
   const { connectionStringsCollection, connectionsResourcesCollection } = useCollections()
   const { data: connectionString } = useLiveQuery(
-    (q) =>
+    q =>
       q
         .from({ cs: connectionStringsCollection })
         .where(({ cs }) => eq(cs.connectionId, connection.id))
@@ -257,7 +257,7 @@ function ConnectionCard({
     [connectionStringsCollection, connection.id],
   )
   const { data: connectionResources } = useLiveQuery(
-    (q) =>
+    q =>
       q
         .from({ cr: connectionsResourcesCollection })
         .where(({ cr }) => eq(cr.connectionId, connection.id))
@@ -266,7 +266,7 @@ function ConnectionCard({
   )
 
   const connectionResourcesNames = connectionResources.map(
-    (r) => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL,
+    r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL,
   )
   const { type, canSend, reason } = useFetchingConfig(connection)
 
@@ -288,7 +288,7 @@ function ConnectionCard({
 
   const connectionStore = getConnectionStore(connection.id)
   const { selectedResourceName, pinnedResourcesNames } = useSubscription(connectionStore, {
-    selector: (state) => ({
+    selector: state => ({
       selectedResourceName: (state.lastOpenedResourceName ||
         defaultResourceName ||
         resources[0] ||
@@ -298,7 +298,7 @@ function ConnectionCard({
   })
   const resolvedSelectedResourceName =
     selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? null : selectedResourceName
-  const selectedResource = connectionResources.find((r) => r.name === resolvedSelectedResourceName)
+  const selectedResource = connectionResources.find(r => r.name === resolvedSelectedResourceName)
   const canOpenResource = canSend || (type === 'waiting-for-password' && !!window.electron)
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -338,7 +338,7 @@ function ConnectionCard({
       updatedAt: record.updatedAt,
     })
 
-    connectionStringsCollection.update(connection.id, (draft) => {
+    connectionStringsCollection.update(connection.id, draft => {
       Object.assign(draft, connectionStringRecord)
     })
 
@@ -434,19 +434,19 @@ function ConnectionCard({
                     resources={resources}
                     pinnedResourcesNames={pinnedResourcesNames}
                     selectedResourceName={selectedResourceName}
-                    onSelectedResourceNameChange={(value) =>
+                    onSelectedResourceNameChange={value =>
                       connectionStore.set(
-                        (state) =>
+                        state =>
                           ({ ...state, lastOpenedResourceName: value }) satisfies typeof state,
                       )
                     }
-                    onPinnedResourceNameChange={(value) =>
+                    onPinnedResourceNameChange={value =>
                       connectionStore.set(
-                        (state) =>
+                        state =>
                           ({
                             ...state,
                             pinnedResourcesNames: state.pinnedResourcesNames.includes(value)
-                              ? state.pinnedResourcesNames.filter((name) => name !== value)
+                              ? state.pinnedResourcesNames.filter(name => name !== value)
                               : [...state.pinnedResourcesNames, value],
                           }) satisfies typeof state,
                       )
@@ -524,7 +524,7 @@ export function ConnectionsList() {
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
   const sort = useSubscription(sortValue)
   const { data } = useLiveQuery(
-    (q) => {
+    q => {
       let query = q.from({ c: connectionsCollection })
 
       if (sort === 'date-desc') {
@@ -550,7 +550,7 @@ export function ConnectionsList() {
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
 
   const availableLabels = [
-    ...new Set(data.flatMap((connection) => (connection.label ? [connection.label] : []))),
+    ...new Set(data.flatMap(connection => (connection.label ? [connection.label] : []))),
   ].toSorted()
   const showLastOpened = lastOpenedResources.length > 0 && data.length > 1
 
@@ -574,12 +574,12 @@ export function ConnectionsList() {
             <ScrollArea className="min-w-0 flex-1" scrollFade>
               <Tabs
                 value={selectedLabel === null ? 'all' : selectedLabel}
-                onValueChange={(value) => setSelectedLabel(value === 'all' ? null : value)}
+                onValueChange={value => setSelectedLabel(value === 'all' ? null : value)}
                 className="w-max max-w-none"
               >
                 <TabsList>
                   <TabsTrigger value="all">All</TabsTrigger>
-                  {availableLabels.map((label) => (
+                  {availableLabels.map(label => (
                     <TabsTrigger key={label} value={label}>
                       {label}
                     </TabsTrigger>
@@ -588,15 +588,13 @@ export function ConnectionsList() {
               </Tabs>
             </ScrollArea>
           )}
-          <Select value={sort} onValueChange={(value) => sortValue.set(value!)}>
+          <Select value={sort} onValueChange={value => sortValue.set(value!)}>
             <SelectTrigger className="w-50 shrink-0">
               {sort.includes('asc') ? <RiSortAsc /> : <RiSortDesc />}
-              <SelectValue>
-                {sortOptions.find((option) => option.value === sort)!.label}
-              </SelectValue>
+              <SelectValue>{sortOptions.find(option => option.value === sort)!.label}</SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {sortOptions.map((option) => (
+              {sortOptions.map(option => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -608,7 +606,7 @@ export function ConnectionsList() {
       <div className="flex flex-col gap-2">
         <AnimatePresence initial={false} mode="popLayout">
           {data.length > 0 ? (
-            data.map((connection) => (
+            data.map(connection => (
               <ConnectionCard
                 key={connection.id}
                 connection={connection}

@@ -77,7 +77,7 @@ export function RunnerResultsTable({
     () => {
       if (!search.trim()) return data
 
-      return data.filter((row) =>
+      return data.filter(row =>
         JSON.stringify(Object.values(row)).toLowerCase().includes(search.toLowerCase()),
       )
     },
@@ -87,7 +87,7 @@ export function RunnerResultsTable({
 
   const tableColumns = useMemo(() => {
     return columns.map(
-      (column) =>
+      column =>
         ({
           id: column.id,
           header: createResultsHeaderCellRenderer(column.id),
@@ -122,7 +122,7 @@ export function RunnerResultsTable({
             <Input
               placeholder="Search results..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={e => setSearch(e.target.value)}
               className="h-8 w-full pr-8 pl-7 text-sm"
             />
             <RiSearchLine

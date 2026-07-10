@@ -21,7 +21,7 @@ let current: Collections | null = null
 const listeners = new Set<() => void>()
 
 function notify() {
-  listeners.forEach((l) => l())
+  listeners.forEach(l => l())
 }
 
 export function getCollections(): Collections {

@@ -72,13 +72,13 @@ export function RunnerEditorQueryZone({
 
   const store = getConnectionResourceStore(connectionResource.id)
   const isChecked = useSubscription(store, {
-    selector: (state) => state.selectedLines.includes(lineNumber),
+    selector: state => state.selectedLines.includes(lineNumber),
   })
 
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
   const { queriesLength, queryNumber } = useSubscription(editorQueriesStore, {
-    selector: (state) => {
-      const index = state.findIndex((query) => query.startLineNumber === lineNumber)
+    selector: state => {
+      const index = state.findIndex(query => query.startLineNumber === lineNumber)
       const queriesBefore =
         state.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
       const queriesLength = state[index]?.queries.length ?? 0
@@ -95,11 +95,11 @@ export function RunnerEditorQueryZone({
 
   const onCheckedChange = () => {
     store.set(
-      (state) =>
+      state =>
         ({
           ...state,
           selectedLines: isChecked
-            ? state.selectedLines.filter((l) => l !== lineNumber)
+            ? state.selectedLines.filter(l => l !== lineNumber)
             : [...state.selectedLines, lineNumber].toSorted((a, b) => a - b),
         }) satisfies typeof state,
     )
@@ -107,7 +107,7 @@ export function RunnerEditorQueryZone({
 
   const handleExplain = (index: number) => {
     const editorQueries = editorQueriesStore.get()
-    const editorQuery = editorQueries.find((query) => query.startLineNumber === lineNumber)
+    const editorQuery = editorQueries.find(query => query.startLineNumber === lineNumber)
 
     if (!editorQuery) return
 
@@ -220,7 +220,7 @@ export function RunnerEditorQueryZone({
                             <Separator className="my-2" />
                             <div className="overflow-auto font-mono text-xs whitespace-pre">
                               {explainData.rows
-                                .map((row) => Object.values(row).join('\t'))
+                                .map(row => Object.values(row).join('\t'))
                                 .join('\n')}
                             </div>
                           </div>

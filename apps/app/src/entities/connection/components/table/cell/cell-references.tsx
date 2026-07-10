@@ -11,13 +11,13 @@ export function TableCellReferences({
   references: NonNullable<Column['references']>
   value: unknown
 }) {
-  const showSchemas = references.some((reference) => reference.schema !== references[0]!.schema)
+  const showSchemas = references.some(reference => reference.schema !== references[0]!.schema)
 
   return (
     <Tabs defaultValue={references?.[0]?.name} className="size-full gap-0">
       <ScrollArea className="bg-muted/50">
         <TabsList className="h-8 w-full justify-start bg-transparent">
-          {references.map((reference) => (
+          {references.map(reference => (
             <TabsTrigger key={reference.name} value={reference.name} className="flex-1" data-mask>
               {showSchemas && `${reference.schema}.`}
               {reference.table}
@@ -25,7 +25,7 @@ export function TableCellReferences({
           ))}
         </TabsList>
       </ScrollArea>
-      {references.map((reference) => (
+      {references.map(reference => (
         <TabsContent
           key={reference.name}
           value={reference.name}

@@ -63,7 +63,7 @@ function getNotVisibleColumns(
 
   let accumulatedLeft = 0
   for (const column of allColumns) {
-    const isVisible = visibleColumns.find((v) => v.id === column.id)
+    const isVisible = visibleColumns.find(v => v.id === column.id)
     const scrollLeft = accumulatedLeft
     const size = store.columnSizes[column.id] || column.size
 
@@ -85,9 +85,9 @@ function getNotVisibleColumns(
 
 function Header() {
   const store = useTablePageStore()
-  const scrollRef = useTableContext((state) => state.scrollRef)
-  const direction = useTableContext((state) => state.scrollDirection)
-  const columns = useTableContext((state) => state.columns)
+  const scrollRef = useTableContext(state => state.scrollRef)
+  const direction = useTableContext(state => state.scrollDirection)
+  const columns = useTableContext(state => state.columns)
   const isScrolled = useIsScrolled(scrollRef, { direction: 'vertical' })
   const [notVisibleColumns, setNotVisibleColumns] = useState<{
     left: HeaderColumn[]
@@ -106,7 +106,7 @@ function Header() {
         : column.scrollLeft + column.size - scrollEl.clientWidth) + extraSpace
 
     animate(scrollEl.scrollLeft, targetScrollLeft, {
-      onUpdate: (latest) => {
+      onUpdate: latest => {
         scrollEl.scrollLeft = latest
       },
       duration: 0.5,
@@ -173,7 +173,7 @@ function Header() {
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {notVisibleColumns.left.map((column) => (
+                {notVisibleColumns.left.map(column => (
                   <DropdownMenuItem key={column.id} onClick={() => scrollToColumn(column, 'left')}>
                     <RiDatabase2Line className="size-4 text-muted-foreground" />
                     {column.id}
@@ -212,7 +212,7 @@ function Header() {
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {notVisibleColumns.right.map((column) => (
+                {notVisibleColumns.right.map(column => (
                   <DropdownMenuItem key={column.id} onClick={() => scrollToColumn(column, 'right')}>
                     <RiDatabase2Line className="size-4 text-muted-foreground" />
                     {column.id}

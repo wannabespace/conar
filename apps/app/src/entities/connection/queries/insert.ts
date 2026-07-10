@@ -11,28 +11,28 @@ export function insertQuery({
 }) {
   return createQuery({
     query: {
-      postgres: (db) =>
+      postgres: db =>
         db
           .withSchema(schema)
           .withTables<{ [table: string]: Record<string, unknown> }>()
           .insertInto(table)
           .values(rows)
           .execute(),
-      mysql: (db) =>
+      mysql: db =>
         db
           .withSchema(schema)
           .withTables<{ [table: string]: Record<string, unknown> }>()
           .insertInto(table)
           .values(rows)
           .execute(),
-      mssql: (db) =>
+      mssql: db =>
         db
           .withSchema(schema)
           .withTables<{ [table: string]: Record<string, unknown> }>()
           .insertInto(table)
           .values(rows)
           .execute(),
-      clickhouse: (db) =>
+      clickhouse: db =>
         db
           .withSchema(schema)
           .withTables<{ [table: string]: Record<string, unknown> }>()

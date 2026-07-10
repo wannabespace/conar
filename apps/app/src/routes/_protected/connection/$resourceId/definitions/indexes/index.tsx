@@ -84,7 +84,7 @@ function DatabaseIndexesPage() {
 
     const matchesFilter =
       filterType === 'all' ||
-      filterOptions.find((option) => option.value === filterType)?.value === indexItem.type
+      filterOptions.find(option => option.value === filterType)?.value === indexItem.type
 
     if (!matchesFilter) return acc
 
@@ -135,12 +135,12 @@ function DatabaseIndexesPage() {
           placeholder="Search indexes"
           autoFocus
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={e => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
         <Select
           value={filterType}
-          onValueChange={(v) => {
+          onValueChange={v => {
             if (v) {
               setFilterType(v)
             }
@@ -148,15 +148,13 @@ function DatabaseIndexesPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Type">
-              {(value) =>
-                value
-                  ? filterOptions.find((option) => option.value === value)?.label
-                  : 'Filter Type'
+              {value =>
+                value ? filterOptions.find(option => option.value === value)?.label : 'Filter Type'
               }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {filterOptions.map((option) => (
+            {filterOptions.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -177,7 +175,7 @@ function DatabaseIndexesPage() {
           />
         )}
 
-        {indexList.map((item) => (
+        {indexList.map(item => (
           <CardMotion
             key={`${item.schema}-${item.table}-${item.name}`}
             layout
@@ -204,7 +202,7 @@ function DatabaseIndexesPage() {
                     {(item.columns.length > 0 || item.customExpressions.length > 0) && (
                       <>
                         <span>on</span>
-                        {[...item.columns, ...item.customExpressions].map((col) => (
+                        {[...item.columns, ...item.customExpressions].map(col => (
                           <Badge key={col} variant="outline">
                             <RiLayoutColumnLine className="size-3" />
                             <HighlightText text={col} match={search} />

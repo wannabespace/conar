@@ -42,7 +42,7 @@ export function useElementSize<T extends Element = Element>(
         if (entry && entry.borderBoxSize) {
           const { inlineSize: width, blockSize: height } = entry.borderBoxSize[0]!
 
-          setSize((prev) =>
+          setSize(prev =>
             width !== prev.width || height !== prev.height ? { width, height } : prev,
           )
         }

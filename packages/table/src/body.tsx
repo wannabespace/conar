@@ -18,7 +18,7 @@ const VirtualColumn = memo(function VirtualColumn({
   value: unknown
   rowIndex: number
 }) {
-  const columnsLength = useTableContext((context) => context.columns.length)
+  const columnsLength = useTableContext(context => context.columns.length)
 
   if (!column.cell) {
     return (
@@ -52,9 +52,9 @@ const spacerStyle: CSSProperties = {
 }
 
 const Row = memo(function Row({ size, rowIndex }: { size: number; rowIndex: number }) {
-  const columns = useTableContext((context) => context.columns)
-  const virtualColumns = useTableContext((context) => context.virtualColumns)
-  const rows = useTableContext((context) => context.rows)
+  const columns = useTableContext(context => context.columns)
+  const virtualColumns = useTableContext(context => context.virtualColumns)
+  const rows = useTableContext(context => context.rows)
   const row = rows[rowIndex]
   const lastIndex = rows.length - 1
 
@@ -71,7 +71,7 @@ const Row = memo(function Row({ size, rowIndex }: { size: number; rowIndex: numb
         className="w-(--table-scroll-left-offset) shrink-0 will-change-[height]"
         style={spacerStyle}
       />
-      {virtualColumns.map((virtualColumn) => {
+      {virtualColumns.map(virtualColumn => {
         const column = columns[virtualColumn.index]!
         const value = row?.[column?.id]
 
@@ -95,8 +95,8 @@ const Row = memo(function Row({ size, rowIndex }: { size: number; rowIndex: numb
 })
 
 export function TableBody({ className, style, ...props }: ComponentProps<'div'>) {
-  const virtualRows = useTableContext((context) => context.virtualRows)
-  const tableWidth = useTableContext((context) => context.tableWidth)
+  const virtualRows = useTableContext(context => context.virtualRows)
+  const tableWidth = useTableContext(context => context.tableWidth)
 
   return (
     <div
@@ -109,7 +109,7 @@ export function TableBody({ className, style, ...props }: ComponentProps<'div'>)
         className="h-(--table-scroll-top-offset) shrink-0 will-change-[height]"
         style={spacerStyle}
       />
-      {virtualRows.map((virtualRow) => (
+      {virtualRows.map(virtualRow => (
         <Row key={virtualRow.key} rowIndex={virtualRow.index} size={virtualRow.size} />
       ))}
       <div

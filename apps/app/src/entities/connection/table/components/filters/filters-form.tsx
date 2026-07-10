@@ -28,7 +28,7 @@ export function FilterForm({ onAdd }: { onAdd: (filter: ActiveFilter) => void })
     }
   }, [valueRef, selectedFilter])
 
-  const column = columns.find((column) => column.id === selectedColumn)
+  const column = columns.find(column => column.id === selectedColumn)
 
   const handleFilterSelect = (filter: Filter) => {
     if (filter.hasValue === false) {

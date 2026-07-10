@@ -67,7 +67,7 @@ function ResetPasswordPage() {
     },
   })
 
-  const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
+  const isSubmitting = useStore(form.store, state => state.isSubmitting)
 
   return (
     <>
@@ -79,14 +79,14 @@ function ResetPasswordPage() {
       </div>
       <form
         className="space-y-4"
-        onSubmit={(e) => {
+        onSubmit={e => {
           e.preventDefault()
           form.handleSubmit()
         }}
       >
         <Fieldset className="flex w-full flex-col gap-6">
           <form.AppField name="password">
-            {(field) => (
+            {field => (
               <Field>
                 <FieldLabel>New Password</FieldLabel>
                 <field.PasswordInput
@@ -111,7 +111,7 @@ function ResetPasswordPage() {
                   : undefined,
             }}
           >
-            {(field) => (
+            {field => (
               <Field>
                 <FieldLabel>Confirm Password</FieldLabel>
                 <field.PasswordInput

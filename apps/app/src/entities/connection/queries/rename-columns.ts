@@ -17,26 +17,26 @@ export const renameColumnQuery = memoize(
   }) =>
     createQuery({
       query: {
-        postgres: (db) =>
+        postgres: db =>
           db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .schema.alterTable(table)
             .renameColumn(oldColumn, newColumn)
             .execute(),
-        mysql: (db) =>
+        mysql: db =>
           db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .schema.alterTable(table)
             .renameColumn(oldColumn, newColumn)
             .execute(),
-        mssql: async (db) => {
+        mssql: async db => {
           await sql`EXEC sp_rename ${sql.val(`${schema}.${table}.${oldColumn}`)}, ${sql.val(newColumn)}, 'COLUMN'`.execute(
             db,
           )
         },
-        clickhouse: (db) =>
+        clickhouse: db =>
           db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()

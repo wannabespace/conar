@@ -13,7 +13,7 @@ const input = type({
 
 export const remove = orpc
   .use(authMiddleware)
-  .input(type.or(input, input.array()).pipe((data) => (Array.isArray(data) ? data : [data])))
+  .input(type.or(input, input.array()).pipe(data => (Array.isArray(data) ? data : [data])))
   .handler(async ({ context, input }) => {
     if (input.length === 0) {
       return
@@ -26,7 +26,7 @@ export const remove = orpc
           eq(queries.userId, context.user.id),
           inArray(
             queries.id,
-            input.map((item) => item.id),
+            input.map(item => item.id),
           ),
         ),
       )

@@ -78,10 +78,10 @@ export function ChatHeader({ chatId }: { chatId: string }) {
   const removeDialogRef = useRef<ComponentRef<typeof RemoveChatDialog>>(null)
   const { chatsCollection } = useCollections()
   const { data: allChats } = useLiveQuery(
-    (q) => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'),
+    q => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'),
     [chatsCollection],
   )
-  const chat = allChats.find((chat) => chat.id === chatId)
+  const chat = allChats.find(chat => chat.id === chatId)
 
   const grouped = groupChats(allChats)
 
@@ -89,7 +89,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
     removeDialogRef.current?.remove(chat, () => {
       if (chat.id === chatId) {
         store.set(
-          (state) =>
+          state =>
             ({
               ...state,
               lastOpenedChatId: null,
@@ -127,7 +127,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
               size="icon-sm"
               onClick={() =>
                 store.set(
-                  (state) =>
+                  state =>
                     ({
                       ...state,
                       lastOpenedChatId: null,
@@ -156,7 +156,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                         <DropdownMenuLabel className="text-xs opacity-70">
                           {groupLabelMap[group as Group]}
                         </DropdownMenuLabel>
-                        {chats.map((chat) => (
+                        {chats.map(chat => (
                           <DropdownMenuItem
                             key={chat.id}
                             className="group"
@@ -183,7 +183,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                                   variant="ghost"
                                   size="icon-xs"
                                   className={`-mr-1 opacity-0 transition-none group-hover:opacity-100 hover:text-destructive`}
-                                  onClick={(e) => {
+                                  onClick={e => {
                                     e.preventDefault()
                                     e.stopPropagation()
                                     removeChat(chat)

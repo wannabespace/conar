@@ -64,7 +64,7 @@ export function DownloadButton({ className }: { className?: string }) {
       </DropdownMenuTrigger>
       {assets.length > 1 && (
         <DropdownMenuContent>
-          {assets.map((asset) => (
+          {assets.map(asset => (
             <DropdownMenuItem
               key={asset.link}
               render={

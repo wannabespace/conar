@@ -70,7 +70,7 @@ export function getGenerators(dialect: ConnectionType): Partial<Record<Generator
 
 export function getGeneratorGroups(dialect: ConnectionType): GeneratorGroup[] {
   return Object.entries(getGenerators(dialect)).reduce<GeneratorGroup[]>((groups, [id, gen]) => {
-    const group = groups.find((g) => g.value === gen.category)
+    const group = groups.find(g => g.value === gen.category)
     if (group) {
       group.items.push(id)
       return groups

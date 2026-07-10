@@ -44,15 +44,15 @@ function useQueriesToRun(): QueryToRun[] {
   const store = getConnectionResourceStore(connectionResource.id)
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
   const editorQueries = useSubscription(editorQueriesStore)
-  const selectedLines = useSubscription(store, { selector: (state) => state.selectedLines })
+  const selectedLines = useSubscription(store, { selector: state => state.selectedLines })
 
   const queries =
     selectedLines.length > 0
-      ? editorQueries.filter((query) => selectedLines.includes(query.startLineNumber))
+      ? editorQueries.filter(query => selectedLines.includes(query.startLineNumber))
       : editorQueries
 
   return queries.flatMap(({ startLineNumber, endLineNumber, queries }) =>
-    queries.map((query) => ({
+    queries.map(query => ({
       startLineNumber,
       endLineNumber,
       query,
@@ -64,7 +64,7 @@ function RunnerRunButton({ onRun }: { onRun: (queries: QueryToRun[]) => void }) 
   const { connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const selectedLinesLength = useSubscription(store, {
-    selector: (state) => state.selectedLines.length,
+    selector: state => state.selectedLines.length,
   })
   const queriesToRun = useQueriesToRun()
   const { fetchStatus } = useQuery(runnerQueryOptions(connectionResource))
@@ -93,7 +93,7 @@ export function Runner() {
   const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
   const { queriesCollection } = useCollections()
   const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(
-    (q) =>
+    q =>
       q
         .from({ queries: queriesCollection })
         .where(({ queries }) => eq(queries.connectionResourceId, connectionResource.id))
@@ -104,14 +104,14 @@ export function Runner() {
   const [isFormatting, setIsFormatting] = useState(false)
   const store = getConnectionResourceStore(connectionResource.id)
   const resultsVisible = useSubscription(store, {
-    selector: (state) => state.layout.resultsVisible,
+    selector: state => state.layout.resultsVisible,
   })
 
   function format() {
     const formatted = formatSql(store.get().query, connection.type)
 
     store.set(
-      (state) =>
+      state =>
         ({
           ...state,
           query: formatted,
@@ -124,7 +124,7 @@ export function Runner() {
   const runQueries = useCallback(
     (queries: QueryToRun[]) => {
       store.set(
-        (state) =>
+        state =>
           ({
             ...state,
             queriesToRun: queries,

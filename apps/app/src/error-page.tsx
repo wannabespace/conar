@@ -42,7 +42,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
   }, [])
 
   useEffect(() => {
-    if (CONNECTION_ERRORS.some((e) => error.message.includes(e))) {
+    if (CONNECTION_ERRORS.some(e => error.message.includes(e))) {
       return
     }
 
@@ -64,7 +64,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
               </div>
               <CardTitle className="text-xl">Something went wrong</CardTitle>
               <CardDescription>
-                {CONNECTION_ERRORS.some((e) => error.message.includes(e))
+                {CONNECTION_ERRORS.some(e => error.message.includes(e))
                   ? 'Check your database connection settings and network.'
                   : 'An error occurred while rendering this page'}
               </CardDescription>

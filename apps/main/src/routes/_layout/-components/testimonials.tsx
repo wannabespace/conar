@@ -44,7 +44,7 @@ function Testimonial({ name, login, avatar, link, children, className }: Testimo
           <AvatarFallback className="bg-primary/10 font-semibold text-primary">
             {name
               .split(' ')
-              .map((n) => n[0])
+              .map(n => n[0])
               .join('')
               .toUpperCase()}
           </AvatarFallback>
@@ -214,7 +214,7 @@ export function Testimonials() {
       <div
         className={`mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3`}
       >
-        {testimonials.map((testimonial) => (
+        {testimonials.map(testimonial => (
           <TestimonialCard key={testimonial.login} testimonialId={testimonial.login}>
             <Testimonial
               name={testimonial.name}

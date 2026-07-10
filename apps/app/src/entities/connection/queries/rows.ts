@@ -21,7 +21,7 @@ export function buildWhere<E extends ExpressionBuilder<any, any>>(
   const concat = concatOperator === 'AND' ? eb.and : eb.or
 
   return concat(
-    filters.map((filter) =>
+    filters.map(filter =>
       sql.join(
         [
           sql.ref(filter.column),
@@ -32,7 +32,7 @@ export function buildWhere<E extends ExpressionBuilder<any, any>>(
               ? sql.join(
                   [
                     sql.raw('('),
-                    sql.join(filter.values.map((value) => sql.val(String(value).trim()))),
+                    sql.join(filter.values.map(value => sql.val(String(value).trim()))),
                     sql.raw(')'),
                   ],
                   sql.raw(''),
@@ -73,17 +73,17 @@ export const resourceRowsQuery = memoize(
     return createQuery({
       type: rowType.array(),
       query: {
-        postgres: (db) => {
+        postgres: db => {
           const order = Object.entries(orderBy ?? {})
 
           let query = db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
-            .$if(select !== undefined, (qb) => qb.select(select!))
-            .$if(select === undefined, (qb) => qb.selectAll())
-            .$if(filters !== undefined, (qb) =>
-              qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator)),
+            .$if(select !== undefined, qb => qb.select(select!))
+            .$if(select === undefined, qb => qb.selectAll())
+            .$if(filters !== undefined, qb =>
+              qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)),
             )
             .limit(limit)
             .offset(offset)
@@ -96,17 +96,17 @@ export const resourceRowsQuery = memoize(
 
           return query.execute()
         },
-        mysql: (db) => {
+        mysql: db => {
           const order = Object.entries(orderBy ?? {})
 
           let query = db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
-            .$if(select !== undefined, (qb) => qb.select(select!))
-            .$if(select === undefined, (qb) => qb.selectAll())
-            .$if(filters !== undefined, (qb) =>
-              qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator)),
+            .$if(select !== undefined, qb => qb.select(select!))
+            .$if(select === undefined, qb => qb.selectAll())
+            .$if(filters !== undefined, qb =>
+              qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)),
             )
             .limit(limit)
             .offset(offset)
@@ -119,19 +119,19 @@ export const resourceRowsQuery = memoize(
 
           return query.execute()
         },
-        mssql: (db) => {
+        mssql: db => {
           const order = Object.entries(orderBy ?? {})
 
           let query = db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
-            .$if(select !== undefined, (qb) => qb.select(select!))
-            .$if(select === undefined, (qb) => qb.selectAll())
-            .$if(filters !== undefined, (qb) =>
-              qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator)),
+            .$if(select !== undefined, qb => qb.select(select!))
+            .$if(select === undefined, qb => qb.selectAll())
+            .$if(filters !== undefined, qb =>
+              qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)),
             )
-            .$if(order.length === 0, (qb) => qb.orderBy(sql<string>`(select null)`))
+            .$if(order.length === 0, qb => qb.orderBy(sql<string>`(select null)`))
             .limit(limit)
             .offset(offset)
 
@@ -143,17 +143,17 @@ export const resourceRowsQuery = memoize(
 
           return query.execute()
         },
-        clickhouse: (db) => {
+        clickhouse: db => {
           const order = Object.entries(orderBy ?? {})
 
           let query = db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
-            .$if(select !== undefined, (qb) => qb.select(select!))
-            .$if(select === undefined, (qb) => qb.selectAll())
-            .$if(filters !== undefined, (qb) =>
-              qb.where((eb) => buildWhere(eb, filters!, filtersConcatOperator)),
+            .$if(select !== undefined, qb => qb.select(select!))
+            .$if(select === undefined, qb => qb.selectAll())
+            .$if(filters !== undefined, qb =>
+              qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)),
             )
             .limit(limit)
             .offset(offset)
@@ -219,7 +219,7 @@ export const resourceRowsQueryInfiniteOptions = memoize(
           rows: result,
         } satisfies PageResult
       },
-      select: (data) => data.pages.flatMap((page) => page.rows),
+      select: data => data.pages.flatMap(page => page.rows),
       throwOnError: false,
     })
   },

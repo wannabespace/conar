@@ -54,7 +54,7 @@ export const tools = {
         z.object({
           column: z.string(),
           operator: z.enum(
-            SQL_FILTERS_LIST.map((filter) => filter.operator) as [string, ...string[]],
+            SQL_FILTERS_LIST.map(filter => filter.operator) as [string, ...string[]],
           ),
           values: z.array(z.string()),
         }),

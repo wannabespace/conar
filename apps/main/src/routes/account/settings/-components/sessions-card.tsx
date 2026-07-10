@@ -147,7 +147,7 @@ export function SessionsCard() {
     onError: handleError,
   })
 
-  const otherSessions = sessions?.filter((s) => s.token !== currentToken) ?? []
+  const otherSessions = sessions?.filter(s => s.token !== currentToken) ?? []
 
   return (
     <Card>
@@ -165,7 +165,7 @@ export function SessionsCard() {
           </>
         ) : (
           <ul className="space-y-2">
-            {sessions?.map((session) => (
+            {sessions?.map(session => (
               <SessionItem
                 key={session.id}
                 userAgent={session.userAgent}

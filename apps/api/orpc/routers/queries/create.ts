@@ -11,12 +11,12 @@ const schema = queriesInsertSchema.omit('userId')
 
 export const create = orpc
   .use(authMiddleware)
-  .input(type.or(schema, schema.array()).pipe((data) => (Array.isArray(data) ? data : [data])))
+  .input(type.or(schema, schema.array()).pipe(data => (Array.isArray(data) ? data : [data])))
   .handler(async ({ context, input }) => {
     const inserted = await db
       .insert(queries)
       .values(
-        input.map((item) => ({
+        input.map(item => ({
           ...item,
           userId: context.user.id,
         })),

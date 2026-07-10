@@ -50,7 +50,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/table/'
 
       if (deps.filters) {
         store.set(
-          (state) =>
+          state =>
             ({
               ...state,
               filters: deps.filters!,
@@ -59,7 +59,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/table/'
       }
       if (deps.orderBy) {
         store.set(
-          (state) =>
+          state =>
             ({
               ...state,
               orderBy: deps.orderBy!,
@@ -117,7 +117,7 @@ function TableContent({ table, schema }: { table: string; schema: string }) {
         aria-label={`Add ${schema}.${table} tab`}
         className="h-[calc(100%-(--spacing(9)))]"
         onClick={() => addTab(connectionResource.id, schema, table)}
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
             addTab(connectionResource.id, schema, table)
@@ -142,13 +142,13 @@ function DatabaseTablesPage() {
   const { connectionResource } = Route.useRouteContext()
   const { schema, table } = Route.useSearch()
   const store = getConnectionResourceStore(connectionResource.id)
-  const lastOpenedTable = useSubscription(store, { selector: (state) => state.lastOpenedTable })
+  const lastOpenedTable = useSubscription(store, { selector: state => state.lastOpenedTable })
 
   const handleLastOpenedTableEvent = useEffectEvent(() => {
     if (schema && table) {
       if (schema !== lastOpenedTable?.schema || table !== lastOpenedTable?.table) {
         store.set(
-          (state) =>
+          state =>
             ({
               ...state,
               lastOpenedTable: { schema, table },
@@ -157,7 +157,7 @@ function DatabaseTablesPage() {
       }
     } else if (lastOpenedTable !== null) {
       store.set(
-        (state) =>
+        state =>
           ({
             ...state,
             lastOpenedTable: null,

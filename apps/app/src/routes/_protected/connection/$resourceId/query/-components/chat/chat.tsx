@@ -52,7 +52,7 @@ export function Chat({ className }: { className?: string }) {
       // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- intentionally focusable to track focus state for the Mod+N hotkey scope, not a decorative container
       tabIndex={0}
       onFocusCapture={() => setIsFocused(true)}
-      onBlurCapture={(event) => {
+      onBlurCapture={event => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
           setIsFocused(false)
         }

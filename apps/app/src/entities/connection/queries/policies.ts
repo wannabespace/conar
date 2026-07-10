@@ -38,7 +38,7 @@ const mssqlOperationMap = {
 const query = createQuery({
   type: policyType.array(),
   query: {
-    postgres: async (db) => {
+    postgres: async db => {
       const rows = await db
         .selectFrom('pg_catalog.pg_policy as p')
         .innerJoin('pg_catalog.pg_class as c', 'p.polrelid', 'c.oid')
@@ -53,7 +53,7 @@ const query = createQuery({
           fn('pg_get_expr', ['p.polwithcheck', 'p.polrelid']).as('check'),
         ])
         .execute()
-      return rows.map((row) => ({
+      return rows.map(row => ({
         schema: row.schema,
         table: row.table,
         name: row.name,
@@ -65,7 +65,7 @@ const query = createQuery({
         enabled: true,
       }))
     },
-    mysql: async (db) => {
+    mysql: async db => {
       // MySQL doesn't support regular RLS, but we can show table privileges
       const rows = await db
         .selectFrom('information_schema.TABLE_PRIVILEGES')
@@ -77,7 +77,7 @@ const query = createQuery({
           'sys',
         ])
         .execute()
-      return rows.map((row) => ({
+      return rows.map(row => ({
         schema: row.TABLE_SCHEMA,
         table: row.TABLE_NAME,
         name: `${row.GRANTEE} - ${row.PRIVILEGE_TYPE}`,
@@ -89,7 +89,7 @@ const query = createQuery({
         enabled: true,
       }))
     },
-    mssql: async (db) => {
+    mssql: async db => {
       const rows = await db
         .selectFrom('sys.security_policies as sp')
         .leftJoin('sys.security_predicates as pr', 'sp.object_id', 'pr.object_id')
@@ -105,7 +105,7 @@ const query = createQuery({
         ])
         .where('t.name', 'is not', null)
         .execute()
-      return rows.map((row) => ({
+      return rows.map(row => ({
         schema: row.schema || 'dbo',
         table: row.table!,
         name: row.name,
@@ -117,13 +117,13 @@ const query = createQuery({
         enabled: row.is_enabled,
       }))
     },
-    clickhouse: async (db) => {
+    clickhouse: async db => {
       const rows = await db
         .selectFrom('system.row_policies')
         .select(['database', 'table', 'name', 'is_restrictive', 'select_filter'])
         .where('database', 'not in', ['system', 'information_schema'])
         .execute()
-      return rows.map((row) => ({
+      return rows.map(row => ({
         schema: row.database,
         table: row.table,
         name: row.name,

@@ -41,7 +41,7 @@ export function UserButton() {
       toast.success('Local cache cleared. Reloading...')
       window.location.reload()
     },
-    onError: (err) => {
+    onError: err => {
       console.error(err)
       toast.error('Failed to clear cache')
     },

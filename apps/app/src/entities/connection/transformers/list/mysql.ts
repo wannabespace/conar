@@ -3,13 +3,13 @@ import { getDisplayValue } from '../create-transformer'
 import { parseToArray } from './shared'
 
 function parseMysqlSet(value: string): string[] | undefined {
-  if (value.includes(',')) return value.split(',').map((v) => v.trim())
+  if (value.includes(',')) return value.split(',').map(v => v.trim())
 }
 
 export function createMysqlListTransformer(): ValueTransformer<string[]> {
   return {
     toDisplay: getDisplayValue,
-    fromConnection: (value) => ({
+    fromConnection: value => ({
       toUI: () =>
         Array.isArray(value)
           ? value.map(String)
@@ -24,8 +24,8 @@ export function createMysqlListTransformer(): ValueTransformer<string[]> {
             : '[]',
     }),
     toConnection: {
-      fromUI: (value) => value.join(','),
-      fromRaw: (raw) => raw,
+      fromUI: value => value.join(','),
+      fromRaw: raw => raw,
     },
   }
 }

@@ -53,7 +53,7 @@ export function RevokeApiKeyDialog({ ref, onRefetch }: RevokeApiKeyDialogProps) 
   return (
     <AlertDialog
       open={open}
-      onOpenChange={(nextOpen) => {
+      onOpenChange={nextOpen => {
         setOpen(nextOpen)
         if (!nextOpen) {
           setKeyId(null)

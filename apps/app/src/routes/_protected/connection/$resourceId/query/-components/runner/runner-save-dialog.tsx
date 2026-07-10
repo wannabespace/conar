@@ -33,7 +33,7 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
   const [open, setOpen] = useState(false)
 
   useImperativeHandle(ref, () => ({
-    open: (query) => {
+    open: query => {
       setName('')
       setOpen(true)
       setQuery(query)
@@ -75,8 +75,8 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
             placeholder="Enter query name"
             spellCheck={false}
             autoComplete="off"
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => {
+            onChange={e => setName(e.target.value)}
+            onKeyDown={e => {
               if (e.key === 'Enter' && canConfirm) {
                 createQuery()
               }

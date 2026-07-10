@@ -34,7 +34,7 @@ export function HeaderActionsDelete({ table, schema }: { table: string; schema: 
   const { connectionResource } = useRouteContext()
   const [isOpened, setIsOpened] = useState(false)
   const store = useTablePageStore()
-  const selected = useSubscription(store, { selector: (state) => state.selected })
+  const selected = useSubscription(store, { selector: state => state.selected })
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
@@ -63,14 +63,14 @@ export function HeaderActionsDelete({ table, schema }: { table: string; schema: 
         }),
       )
       store.set(
-        (state) =>
+        state =>
           ({
             ...state,
             selected: [],
           }) satisfies typeof state,
       )
     },
-    onError: (error) => {
+    onError: error => {
       toast.error('Failed to delete rows', {
         description: error.message,
       })

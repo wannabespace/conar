@@ -37,7 +37,7 @@ function FilterItem({
         </PopoverTrigger>
         <PopoverContent className="p-0 **:data-[slot=popover-viewport]:p-0">
           <FiltersColumnSelector
-            onSelect={(column) => {
+            onSelect={column => {
               onEdit({ column, ref: filter.ref, values })
               setIsColumnOpen(false)
             }}
@@ -51,7 +51,7 @@ function FilterItem({
         </PopoverTrigger>
         <PopoverContent className="p-0 **:data-[slot=popover-viewport]:p-0">
           <FiltersSelector
-            onSelect={(operator) => {
+            onSelect={operator => {
               onEdit({ column: filter.column, ref: operator, values })
               setIsOperatorOpen(false)
             }}
@@ -64,7 +64,7 @@ function FilterItem({
           <Popover open={isValueOpen} onOpenChange={setIsValueOpen}>
             <PopoverTrigger render={<Button size="xs" variant="outline" />} className="max-w-72">
               <span className="truncate">
-                {filter.values?.length === 0 || filter.values?.every((value) => value === '') ? (
+                {filter.values?.length === 0 || filter.values?.every(value => value === '') ? (
                   <span className="opacity-30">Empty</span>
                 ) : (
                   filter.values?.join(', ')
@@ -102,15 +102,15 @@ function FilterItem({
 
 export function Filters() {
   const store = useTablePageStore()
-  const filters = useSubscription(store, { selector: (state) => state.filters })
+  const filters = useSubscription(store, { selector: state => state.filters })
   const [isOpened, toggleForm] = useToggle()
   const columns = useTableColumns()
 
   const removeUnusedOrdersEvent = useEffectEvent(() => {
     if (!columns || columns.length === 0) return
 
-    const columnIds = new Set(columns.map((col) => col.id))
-    const invalidOrderByKeys = Object.keys(store.get().orderBy).filter((key) => !columnIds.has(key))
+    const columnIds = new Set(columns.map(col => col.id))
+    const invalidOrderByKeys = Object.keys(store.get().orderBy).filter(key => !columnIds.has(key))
 
     if (invalidOrderByKeys.length === 0) return
 
@@ -119,7 +119,7 @@ export function Filters() {
     )
 
     store.set(
-      (state) =>
+      state =>
         ({
           ...state,
           orderBy: newOrderBy,
@@ -145,7 +145,7 @@ export function Filters() {
             filter={filter}
             onRemove={() =>
               store.set(
-                (state) =>
+                state =>
                   ({
                     ...state,
                     filters: state.filters.filter((_, i) => i !== index),
@@ -154,7 +154,7 @@ export function Filters() {
             }
             onEdit={({ column, ref, values }) =>
               store.set(
-                (state) =>
+                state =>
                   ({
                     ...state,
                     filters: state.filters.map((f, i) =>
@@ -173,10 +173,10 @@ export function Filters() {
           </PopoverTrigger>
           <PopoverContent className="p-0 **:data-[slot=popover-viewport]:p-0">
             <FilterForm
-              onAdd={(filter) => {
+              onAdd={filter => {
                 toggleForm(false)
                 store.set(
-                  (state) =>
+                  state =>
                     ({
                       ...state,
                       filters: [...state.filters, filter],
@@ -192,7 +192,7 @@ export function Filters() {
         size="xs"
         onClick={() =>
           store.set(
-            (state) =>
+            state =>
               ({
                 ...state,
                 filters: [],

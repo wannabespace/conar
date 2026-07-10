@@ -14,7 +14,7 @@ const input = type({
 
 export const remove = orpc
   .use(authMiddleware)
-  .input(type.or(input, input.array()).pipe((data) => (Array.isArray(data) ? data : [data])))
+  .input(type.or(input, input.array()).pipe(data => (Array.isArray(data) ? data : [data])))
   .handler(async ({ context, input }) => {
     if (input.length === 0) {
       throw new ORPCError('BAD_REQUEST', { message: 'No connection resources to remove' })
@@ -26,7 +26,7 @@ export const remove = orpc
       },
       where: {
         id: {
-          in: input.map((item) => item.id),
+          in: input.map(item => item.id),
         },
         connection: {
           userId: {
@@ -43,7 +43,7 @@ export const remove = orpc
     await db.delete(connectionsResources).where(
       inArray(
         connectionsResources.id,
-        input.map((item) => item.id),
+        input.map(item => item.id),
       ),
     )
 

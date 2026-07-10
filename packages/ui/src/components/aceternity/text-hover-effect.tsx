@@ -33,7 +33,7 @@ export function TextHoverEffect({
 
   return (
     <svg
-      ref={(e) => {
+      ref={e => {
         svgRef.current = e
         if (ref) ref.current = e
       }}
@@ -43,7 +43,7 @@ export function TextHoverEffect({
       xmlns="http://www.w3.org/2000/svg"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onMouseMove={(e) => setCursor({ x: e.clientX, y: e.clientY })}
+      onMouseMove={e => setCursor({ x: e.clientX, y: e.clientY })}
       className={cn('select-none', className)}
     >
       <defs>

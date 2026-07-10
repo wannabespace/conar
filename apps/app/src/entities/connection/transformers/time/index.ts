@@ -34,7 +34,7 @@ export function createTimeTransformer(column: Column): ValueTransformer<string> 
 
       return getDisplayValue(value, size)
     },
-    fromConnection: (value) => ({
+    fromConnection: value => ({
       toUI: () => {
         if (value instanceof Date && isValid(value)) {
           return formatTime(value)
@@ -61,12 +61,12 @@ export function createTimeTransformer(column: Column): ValueTransformer<string> 
       },
     }),
     toConnection: {
-      fromUI: (value) => {
+      fromUI: value => {
         if (value === '' && column.isNullable) return null
 
         return value
       },
-      fromRaw: (value) => {
+      fromRaw: value => {
         if (value === '' && column.isNullable) return null
 
         return value.trim()

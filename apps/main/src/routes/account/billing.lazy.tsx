@@ -97,7 +97,7 @@ function RouteComponent() {
                         </TableCell>
                       </TableRow>
                     ))
-                  : invoices.map((invoice) => (
+                  : invoices.map(invoice => (
                       <TableRow key={invoice.id}>
                         <TableCell style={{ width: '35%' }}>
                           {format(invoice.createdAt, 'MMMM d, yyyy')}

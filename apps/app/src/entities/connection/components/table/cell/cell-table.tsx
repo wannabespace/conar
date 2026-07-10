@@ -64,7 +64,7 @@ export function TableCellTable({
   const filters = [
     {
       column,
-      ref: SQL_FILTERS_LIST.find((filter) => filter.operator === '=')!,
+      ref: SQL_FILTERS_LIST.find(filter => filter.operator === '=')!,
       values: [value],
     } satisfies ActiveFilter,
   ]
@@ -86,7 +86,7 @@ export function TableCellTable({
   )
   const { data = [] } = useTableColumnsQuery({ connectionResource, table, schema })
   const columns = data.map(
-    (column) =>
+    column =>
       ({
         id: column.id,
         size: column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH,

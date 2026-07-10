@@ -25,7 +25,7 @@ export const invoices = orpc.use(authMiddleware).handler(async ({ context }) => 
   })
 
   return (
-    invoices?.data.map((invoice) => ({
+    invoices?.data.map(invoice => ({
       id: invoice.id,
       amount: invoice.amount_paid,
       status: invoice.status as InvoiceStatus | null,

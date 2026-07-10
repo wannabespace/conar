@@ -16,9 +16,9 @@ export function TableBodySkeleton({
   selectable?: boolean
   columnsCount?: number
 }) {
-  const columns = useTableContext((state) => state.columns)
+  const columns = useTableContext(state => state.columns)
   const columnsWithoutInternal = columns.filter(
-    (column) => !Object.values(INTERNAL_COLUMN_IDS).includes(column.id),
+    column => !Object.values(INTERNAL_COLUMN_IDS).includes(column.id),
   )
 
   const cols =
@@ -27,7 +27,7 @@ export function TableBodySkeleton({
           id: `column-${index + 1}`,
           size: DEFAULT_COLUMN_WIDTH,
         }))
-      : columns.map((column) => ({
+      : columns.map(column => ({
           id: column.id,
           size: column.size ?? DEFAULT_COLUMN_WIDTH,
         }))
