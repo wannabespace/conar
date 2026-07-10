@@ -50,9 +50,9 @@ export const enhancePrompt = orpc
             '',
             'Context from current chat conversation:',
             JSON.stringify(
-              messages.map((m) => ({
+              messages.map(m => ({
                 role: m.role,
-                parts: m.parts.filter((p) => p.type === 'text'),
+                parts: m.parts.filter(p => p.type === 'text'),
               })),
               null,
               2,

@@ -21,7 +21,7 @@ const schema = z.object({
   filters: z.array(
     z.object({
       column: z.string(),
-      operator: z.enum(SQL_FILTERS_LIST.map((filter) => filter.operator)),
+      operator: z.enum(SQL_FILTERS_LIST.map(filter => filter.operator)),
       values: z.array(z.string()),
     }),
   ),

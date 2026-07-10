@@ -42,7 +42,7 @@ export function TableInfiniteLoader({
     }
   }, [isVisible, hasNextPage, isFetching, fetchNextPage])
 
-  const scrollRef = useTableContext((state) => state.scrollRef)
+  const scrollRef = useTableContext(state => state.scrollRef)
   useMountedEffect(() => {
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }, [scrollRef, filters, orderBy])

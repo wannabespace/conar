@@ -40,13 +40,13 @@ export async function syncDiff<TItem>(opts: {
     existing: (includeIds: string[]) => Promise<string[]>
   }
 }) {
-  const inputIds = opts.input.map((i) => i.id)
+  const inputIds = opts.input.map(i => i.id)
   const [updatedItems, newItems, existingIds] = await Promise.all([
     inputIds.length > 0 ? opts.queries.updated(opts.input) : ([] as TItem[]),
     opts.queries.new(inputIds),
     opts.queries.existing(inputIds),
   ])
-  const missingIds = inputIds.filter((id) => !existingIds.includes(id))
+  const missingIds = inputIds.filter(id => !existingIds.includes(id))
   return { updatedItems, newItems, missingIds }
 }
 

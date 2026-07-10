@@ -98,7 +98,7 @@ function foreignActionToPrisma(action: string, kind: 'onDelete' | 'onUpdate'): s
 
 export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: SchemaParams) {
   const { fields, extraBlocks } = columns
-    .filter((c) => c.type)
+    .filter(c => c.type)
     .reduce<{
       fields: { name: string; type: string; attributes: string[]; isRelation: boolean }[]
       extraBlocks: string[]
@@ -112,7 +112,7 @@ export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: 
           prismaType = enumName
 
           const availableValues = c.availableValues
-            .map((v) => {
+            .map(v => {
               if (/^[a-z]\w*$/i.test(v)) return `  ${v}`
               return `  ${v.replace(/\W/g, '_')} @map("${v}")`
             })
@@ -172,7 +172,7 @@ export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: 
           })
         }
 
-        const refFields = (c.references ?? []).map((ref) => {
+        const refFields = (c.references ?? []).map(ref => {
           const isValidRef = /^[a-z]\w*$/i.test(ref.table)
           const refType = isValidRef ? ref.table : pascalCase(ref.table)
           let refFieldName = camelCase(ref.table)
@@ -192,11 +192,11 @@ export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: 
       { fields: [], extraBlocks: [], usedNames: new Set<string>() },
     )
 
-  const allFields = [...fields.filter((f) => !f.isRelation), ...fields.filter((f) => f.isRelation)]
-  const maxNameLen = Math.max(...allFields.map((f) => f.name.length), 0)
-  const maxTypeLen = Math.max(...allFields.map((f) => f.type.length), 0)
+  const allFields = [...fields.filter(f => !f.isRelation), ...fields.filter(f => f.isRelation)]
+  const maxNameLen = Math.max(...allFields.map(f => f.name.length), 0)
+  const maxTypeLen = Math.max(...allFields.map(f => f.type.length), 0)
 
-  const cols = allFields.map((f) => {
+  const cols = allFields.map(f => {
     const parts = [f.name.padEnd(maxNameLen), f.type.padEnd(maxTypeLen), ...f.attributes]
     return `  ${parts.join(' ').trimEnd()}`
   })
@@ -205,9 +205,9 @@ export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: 
   const explicitIndexes = filterExplicitIndexes(groupedIndexes, columns)
 
   const indexBlocks = explicitIndexes
-    .filter((idx) => idx.columns.length > 0)
-    .map((idx) => {
-      const fieldNames = idx.columns.map((col) => camelCase(col))
+    .filter(idx => idx.columns.length > 0)
+    .map(idx => {
+      const fieldNames = idx.columns.map(col => camelCase(col))
       const type = idx.isUnique ? '@@unique' : '@@index'
       return `  ${type}([${fieldNames.join(', ')}], map: "${idx.name}")`
     })

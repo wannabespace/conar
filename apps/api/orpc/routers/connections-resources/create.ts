@@ -16,9 +16,9 @@ const schema = connectionsResourcesInsertSchema
 
 export const create = orpc
   .use(authMiddleware)
-  .input(type.or(schema, schema.array()).pipe((data) => (Array.isArray(data) ? data : [data])))
+  .input(type.or(schema, schema.array()).pipe(data => (Array.isArray(data) ? data : [data])))
   .handler(async ({ context, input }) => {
-    const connectionIds = input.map((item) => item.connectionId)
+    const connectionIds = input.map(item => item.connectionId)
     const foundConnections = await db
       .select({ id: connections.id })
       .from(connections)

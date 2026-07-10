@@ -17,9 +17,7 @@ export function SecurityCard() {
     queryFn: () => authClient.listAccounts(),
   })
 
-  const hasCredentialAccount = accounts?.data?.some(
-    (account) => account.providerId === 'credential',
-  )
+  const hasCredentialAccount = accounts?.data?.some(account => account.providerId === 'credential')
   const twoFactorEnabled = data?.user?.twoFactorEnabled ?? false
 
   const [enableOpen, setEnableOpen] = useState(false)

@@ -27,7 +27,7 @@ export function generateQuerySQL({
 }: QueryParams) {
   const db = coldDialects[dialect]()
   const base = db.withTables<{ [table]: Record<string, unknown> }>().selectFrom(table).selectAll()
-  const query = filters.length > 0 ? base.where((eb) => buildWhere(eb, filters)) : base
+  const query = filters.length > 0 ? base.where(eb => buildWhere(eb, filters)) : base
   const compiled = query.compile()
   return formatSql(inlineParameters(compiled.sql, compiled.parameters), dialect)
 }
@@ -43,7 +43,7 @@ function formatEnumType(values: string[], name: string, dialect: ConnectionType)
     return `${prefix}(${pairs})`
   }
   if (dialect === ConnectionType.MySQL) {
-    const valuesList = values.map((v) => `'${escapeSqlString(v)}'`).join(', ')
+    const valuesList = values.map(v => `'${escapeSqlString(v)}'`).join(', ')
     return `ENUM(${valuesList})`
   }
   if (dialect === ConnectionType.MSSQL) {
@@ -140,7 +140,7 @@ function buildColumnParts(
 
 function buildPostgresEnumStatements(usedEnums: Map<string, string[]>): string[] {
   return Array.from(usedEnums.entries(), ([name, values]) => {
-    const vals = values.map((v) => `'${escapeSqlString(v)}'`).join(', ')
+    const vals = values.map(v => `'${escapeSqlString(v)}'`).join(', ')
     return `CREATE TYPE "${name}" AS ENUM (${vals});`
   })
 }
@@ -155,7 +155,7 @@ function appendIndexStatements(
   const explicit = filterExplicitIndexes(groupedIndexes, columns, dialect)
   if (explicit.length === 0) return schema
 
-  const lines = explicit.map((idx) => {
+  const lines = explicit.map(idx => {
     return [
       'CREATE',
       idx.isUnique ? 'UNIQUE' : '',
@@ -164,7 +164,7 @@ function appendIndexStatements(
       'ON',
       quoteIdentifier(table, dialect),
       dialect === ConnectionType.Postgres && idx.type ? `USING ${idx.type}` : '',
-      `(${[...idx.columns.map((c) => quoteIdentifier(c, dialect)), ...idx.customExpressions].join(', ')})`,
+      `(${[...idx.columns.map(c => quoteIdentifier(c, dialect)), ...idx.customExpressions].join(', ')})`,
     ]
       .filter(Boolean)
       .join(' ')

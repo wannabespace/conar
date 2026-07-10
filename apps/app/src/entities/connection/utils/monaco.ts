@@ -57,7 +57,7 @@ export function connectionCompletionService(
 
     const { keywords, syntax } = suggestions
 
-    const keywordItems = keywords.map((kw) => {
+    const keywordItems = keywords.map(kw => {
       const index = keywordPriority.indexOf(kw.toUpperCase())
       const priority = index === -1 ? 100 : index
       return {
@@ -88,10 +88,8 @@ export function connectionCompletionService(
     })
 
     const dotMatches = [...textBeforeCursor.matchAll(dotMatchesRegex)]
-    const isTableContext = syntax.some((item) => item.syntaxContextType === EntityContextType.TABLE)
-    const isColumnContext = syntax.some(
-      (item) => item.syntaxContextType === EntityContextType.COLUMN,
-    )
+    const isTableContext = syntax.some(item => item.syntaxContextType === EntityContextType.TABLE)
+    const isColumnContext = syntax.some(item => item.syntaxContextType === EntityContextType.COLUMN)
 
     if (dotMatches.length > 0) {
       const tableRef = dotMatches.at(-1)?.[1]
@@ -101,8 +99,8 @@ export function connectionCompletionService(
         const schemaName = parts.length === 2 ? parts[0]! : 'public'
         const tableName = parts.length === 2 ? parts[1]! : parts[0]!
 
-        const schema = tablesAndSchemas?.schemas.find((s) => s.name === schemaName)
-        const table = schema?.tables.find((t) => t.name === tableName)
+        const schema = tablesAndSchemas?.schemas.find(s => s.name === schemaName)
+        const table = schema?.tables.find(t => t.name === tableName)
 
         if (table) {
           const columns = await queryClient.ensureQueryData(
@@ -113,7 +111,7 @@ export function connectionCompletionService(
             }),
           )
           const columnItems = columns.map(
-            (col) =>
+            col =>
               ({
                 label: col.id,
                 kind: languages.CompletionItemKind.Field,
@@ -129,8 +127,8 @@ export function connectionCompletionService(
     }
 
     if (tablesAndSchemas && isColumnContext && !isTableContext) {
-      const columnPromises = tablesAndSchemas.schemas.flatMap((schema) =>
-        schema.tables.map(async (tableEntry) => {
+      const columnPromises = tablesAndSchemas.schemas.flatMap(schema =>
+        schema.tables.map(async tableEntry => {
           const columns = await queryClient.ensureQueryData(
             resourceTableColumnsQueryOptions({
               connectionResource,
@@ -139,7 +137,7 @@ export function connectionCompletionService(
             }),
           )
           return columns.map(
-            (col) =>
+            col =>
               ({
                 label: col.id,
                 kind: languages.CompletionItemKind.Field,
@@ -153,13 +151,13 @@ export function connectionCompletionService(
       const allColumns = (await Promise.all(columnPromises)).flat()
 
       items.push(
-        ...allColumns.filter((item, i, arr) => arr.findIndex((x) => x.label === item.label) === i),
+        ...allColumns.filter((item, i, arr) => arr.findIndex(x => x.label === item.label) === i),
       )
     }
 
     if (tablesAndSchemas) {
-      const tableItems = tablesAndSchemas.schemas.flatMap((schema) =>
-        schema.tables.flatMap((tableEntry) => [
+      const tableItems = tablesAndSchemas.schemas.flatMap(schema =>
+        schema.tables.flatMap(tableEntry => [
           {
             label: tableEntry.name,
             kind: languages.CompletionItemKind.Class,
@@ -181,9 +179,9 @@ export function connectionCompletionService(
     }
 
     if (enums) {
-      const enumItems = enums.flatMap((enumItem) =>
+      const enumItems = enums.flatMap(enumItem =>
         enumItem.values.map(
-          (value) =>
+          value =>
             ({
               label: value,
               kind: languages.CompletionItemKind.EnumMember,

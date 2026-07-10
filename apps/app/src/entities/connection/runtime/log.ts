@@ -26,7 +26,7 @@ export async function logQuery({
   const id = crypto.randomUUID()
 
   queryLogsStore.set(
-    (state) =>
+    state =>
       ({
         ...state,
         [resourceId]: {
@@ -48,7 +48,7 @@ export async function logQuery({
     const { result, duration } = await promise
 
     queryLogsStore.set(
-      (state) =>
+      state =>
         ({
           ...state,
           [resourceId]: {
@@ -63,7 +63,7 @@ export async function logQuery({
     )
   } catch (error) {
     queryLogsStore.set(
-      (state) =>
+      state =>
         ({
           ...state,
           [resourceId]: {

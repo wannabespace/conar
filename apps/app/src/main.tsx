@@ -20,7 +20,7 @@ if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
   import('react-scan').then(({ scan }) => scan())
 }
 
-window.electron?.app.onDeepLink(async (url) => {
+window.electron?.app.onDeepLink(async url => {
   window.initialDeepLink = url
 })
 
@@ -34,7 +34,7 @@ window.electron?.app.onSendToast(({ message, type, description, duration }) => {
 })
 
 if (window.electron) {
-  window.addEventListener('keydown', (event) => {
+  window.addEventListener('keydown', event => {
     if (((event.ctrlKey || event.metaKey) && event.key === 'r') || event.key === 'F5') {
       event.preventDefault()
     }

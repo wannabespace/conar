@@ -14,7 +14,7 @@ export const Route = createFileRoute('/_auth')({
 
 function AuthLayout() {
   const match = useMatches({
-    select: (matches) => matches.map((match) => match.routeId).at(-1),
+    select: matches => matches.map(match => match.routeId).at(-1),
   })
   const isSignIn = match === '/_auth/sign-in'
 

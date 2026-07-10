@@ -49,14 +49,14 @@ export function StepSave({
 }) {
   const { connectionsCollection } = useCollections()
   const { data: connections } = useLiveQuery(
-    (q) =>
+    q =>
       q
         .from({ connections: connectionsCollection })
         .orderBy(({ connections }) => connections.createdAt, 'desc'),
     [connectionsCollection],
   )
   const existingLabels = connections
-    .map((connection) => connection.label)
+    .map(connection => connection.label)
     .filter((label): label is string => label !== null)
   const labels = [...new Set([...LABEL_OPTIONS, ...existingLabels])].toSorted()
   const nameId = useId()
@@ -82,7 +82,7 @@ export function StepSave({
                 placeholder="My connection"
                 autoFocus
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={e => setName(e.target.value)}
               />
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -104,10 +104,10 @@ export function StepSave({
                 id={labelId}
                 placeholder="Development, Production, Staging, etc."
                 value={label ?? ''}
-                onChange={(e) => setLabel(e.target.value)}
+                onChange={e => setLabel(e.target.value)}
               />
               <Group>
-                {labels.map((option) => (
+                {labels.map(option => (
                   <Button
                     key={option}
                     variant={label === option ? 'default' : 'outline'}
@@ -128,7 +128,7 @@ export function StepSave({
             </Label>
             <div className="flex flex-col gap-2">
               <div className="mt-1 flex flex-wrap gap-2">
-                {COLOR_OPTIONS.map((colorOption) => (
+                {COLOR_OPTIONS.map(colorOption => (
                   <button
                     key={colorOption}
                     type="button"

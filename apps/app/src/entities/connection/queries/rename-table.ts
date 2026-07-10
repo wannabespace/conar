@@ -7,28 +7,28 @@ export const renameTableQuery = memoize(
   ({ schema, oldTable, newTable }: { schema: string; oldTable: string; newTable: string }) =>
     createQuery({
       query: {
-        postgres: (db) =>
+        postgres: db =>
           db
             .withSchema(schema)
             .withTables<{ [oldTable]: Record<string, unknown> }>()
             .schema.alterTable(oldTable)
             .renameTo(newTable)
             .execute(),
-        mysql: (db) =>
+        mysql: db =>
           db
             .withSchema(schema)
             .withTables<{ [oldTable]: Record<string, unknown> }>()
             .schema.alterTable(oldTable)
             .renameTo(newTable)
             .execute(),
-        mssql: (db) =>
+        mssql: db =>
           db
             .withSchema(schema)
             .withTables<{ [oldTable]: Record<string, unknown> }>()
             .schema.alterTable(oldTable)
             .renameTo(newTable)
             .execute(),
-        clickhouse: (db) =>
+        clickhouse: db =>
           sql`RENAME TABLE ${sql.id(schema, oldTable)} TO ${sql.id(schema, newTable)}`.execute(db),
       },
     }),

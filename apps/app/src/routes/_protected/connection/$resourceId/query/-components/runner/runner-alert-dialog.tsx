@@ -15,9 +15,7 @@ import { useImperativeHandle, useRef, useState } from 'react'
 
 import { DANGEROUS_SQL_KEYWORDS } from '~/entities/connection/utils'
 
-const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map((keyword) => `\\b${keyword}\\b`).join(
-  '|',
-)
+const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(keyword => `\\b${keyword}\\b`).join('|')
 
 export function RunnerAlertDialog({
   ref,
@@ -27,9 +25,9 @@ export function RunnerAlertDialog({
   const [open, setOpen] = useState(false)
   const [queries, setQueries] = useState<string[]>([])
   const dangerousKeywords = queries.flatMap(
-    (query) => query.match(new RegExp(dangerousKeywordsPattern, 'gi')) || [],
+    query => query.match(new RegExp(dangerousKeywordsPattern, 'gi')) || [],
   )
-  const uniqueDangerousKeywords = [...new Set(dangerousKeywords.map((k) => k.toUpperCase()))]
+  const uniqueDangerousKeywords = [...new Set(dangerousKeywords.map(k => k.toUpperCase()))]
   const callbackRef = useRef<() => void>(null)
 
   useImperativeHandle(ref, () => ({
@@ -50,7 +48,7 @@ export function RunnerAlertDialog({
   return (
     <AlertDialog
       open={open}
-      onOpenChange={(open) => {
+      onOpenChange={open => {
         setOpen(open)
         if (!open) {
           callbackRef.current = null

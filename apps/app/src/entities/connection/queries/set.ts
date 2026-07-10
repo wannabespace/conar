@@ -18,37 +18,37 @@ export const setQuery = memoize(
   }) =>
     createQuery({
       query: {
-        postgres: (db) =>
+        postgres: db =>
           db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .updateTable(table)
             .set(values)
-            .where((eb) => buildWhere(eb, filters))
+            .where(eb => buildWhere(eb, filters))
             .execute(),
-        mysql: (db) =>
+        mysql: db =>
           db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .updateTable(table)
             .set(values)
-            .where((eb) => buildWhere(eb, filters))
+            .where(eb => buildWhere(eb, filters))
             .execute(),
-        mssql: (db) =>
+        mssql: db =>
           db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .updateTable(table)
             .set(values)
-            .where((eb) => buildWhere(eb, filters))
+            .where(eb => buildWhere(eb, filters))
             .execute(),
-        clickhouse: (db) =>
+        clickhouse: db =>
           db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .updateTable(table)
             .set(values)
-            .where((eb) => buildWhere(eb, filters))
+            .where(eb => buildWhere(eb, filters))
             .execute(),
       },
     }),

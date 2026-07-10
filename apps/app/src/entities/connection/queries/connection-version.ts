@@ -8,13 +8,13 @@ import { connectionToQueryParams, createQuery } from '../runtime/query'
 
 export const connectionVersionType = type({
   version: 'string',
-}).pipe((data) => data.version)
+}).pipe(data => data.version)
 
 export const connectionVersionQuery = createQuery({
   type: connectionVersionType,
   // Each query has a fallback to get a version in older versions
   query: {
-    postgres: async (db) => {
+    postgres: async db => {
       try {
         return await db
           .selectFrom('pg_catalog.pg_settings')
@@ -29,7 +29,7 @@ export const connectionVersionQuery = createQuery({
         ).rows[0]!
       }
     },
-    mysql: async (db) => {
+    mysql: async db => {
       try {
         // for mysql >= v8.0
         return await db
@@ -41,11 +41,11 @@ export const connectionVersionQuery = createQuery({
         return (await sql<{ version: string }>`SELECT VERSION() as version`.execute(db)).rows[0]!
       }
     },
-    mssql: async (db) => {
+    mssql: async db => {
       try {
         return await db
           .selectFrom('sys.databases')
-          .select((eb) => eb.fn<string>('SERVERPROPERTY', [eb.val('ProductVersion')]).as('version'))
+          .select(eb => eb.fn<string>('SERVERPROPERTY', [eb.val('ProductVersion')]).as('version'))
           .orderBy('name')
           .limit(1)
           .executeTakeFirstOrThrow()
@@ -57,11 +57,11 @@ export const connectionVersionQuery = createQuery({
         ).rows[0]!
       }
     },
-    clickhouse: async (db) => {
+    clickhouse: async db => {
       try {
         return await db
           .selectFrom('system.one')
-          .select((eb) => eb.fn<string>('version', []).as('version'))
+          .select(eb => eb.fn<string>('version', []).as('version'))
           .executeTakeFirstOrThrow()
       } catch {
         return (await sql<{ version: string }>`SELECT version() as version`.execute(db)).rows[0]!

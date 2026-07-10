@@ -57,7 +57,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
 
       if (lastOpenedTable?.schema === schema && lastOpenedTable?.table === table) {
         store.set(
-          (state) =>
+          state =>
             ({
               ...state,
               lastOpenedTable: null,
@@ -94,7 +94,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
       }
       removeTab(connectionResource.id, schema, table)
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Failed to drop table "${error.message}".`)
     },
   })
@@ -124,7 +124,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
             <Input
               id="confirmation"
               value={confirmationText}
-              onChange={(e) => setConfirmationText(e.target.value)}
+              onChange={e => setConfirmationText(e.target.value)}
               placeholder={table}
               spellCheck={false}
               autoComplete="off"

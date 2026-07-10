@@ -24,7 +24,7 @@ export const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_PUBLIC_API_URL,
   basePath: '/auth',
   fetchOptions: {
-    onRequest: (request) => {
+    onRequest: request => {
       const headers = getAuthHeadersIsomorphic()
 
       for (const [key, value] of Object.entries(headers)) {

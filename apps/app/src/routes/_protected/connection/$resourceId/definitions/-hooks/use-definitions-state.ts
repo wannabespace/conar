@@ -12,7 +12,7 @@ export function useDefinitionsState({
   connectionResource: ConnectionResource
 }) {
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, { selector: (state) => state.showSystem })
+  const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
   )

@@ -74,10 +74,10 @@ const resourceTableColumnsQuery = memoize(
     return createQuery({
       type: columnType.array(),
       query: {
-        postgres: async (db) => {
+        postgres: async db => {
           const query = await db
             .selectFrom('information_schema.columns')
-            .select((eb) => [
+            .select(eb => [
               'table_schema as schema',
               'table_name as table',
               'column_name as id',
@@ -101,10 +101,10 @@ const resourceTableColumnsQuery = memoize(
               .selectFrom('pg_catalog.pg_attribute as a')
               .innerJoin('pg_catalog.pg_class as c', 'c.oid', 'a.attrelid')
               .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 'c.relnamespace')
-              .leftJoin('pg_catalog.pg_attrdef as ad', (join) =>
+              .leftJoin('pg_catalog.pg_attrdef as ad', join =>
                 join.onRef('ad.adrelid', '=', 'a.attrelid').onRef('ad.adnum', '=', 'a.attnum'),
               )
-              .select((eb) => [
+              .select(eb => [
                 'n.nspname as schema',
                 'c.relname as table',
                 'a.attname as id',
@@ -128,7 +128,7 @@ const resourceTableColumnsQuery = memoize(
               .orderBy('a.attnum', 'asc')
               .execute()
 
-            return fallback.map((row) =>
+            return fallback.map(row =>
               Object.assign(row, {
                 type: row.type.endsWith('[]') ? row.type.slice(0, -2) : row.type,
                 isArray: row.type.endsWith('[]'),
@@ -155,10 +155,10 @@ const resourceTableColumnsQuery = memoize(
             } satisfies Partial<typeof columnType.inferIn>),
           )
         },
-        mysql: async (db) => {
+        mysql: async db => {
           const query = await db
             .selectFrom('information_schema.COLUMNS')
-            .select((eb) => [
+            .select(eb => [
               'TABLE_SCHEMA as schema',
               'TABLE_NAME as table',
               'COLUMN_NAME as id',
@@ -181,7 +181,7 @@ const resourceTableColumnsQuery = memoize(
             )
             .execute()
 
-          return query.map((column) =>
+          return query.map(column =>
             Object.assign(column, {
               enumName: column.type === 'set' || column.type === 'enum' ? column.id : undefined,
               isArray: column.type === 'set',
@@ -189,10 +189,10 @@ const resourceTableColumnsQuery = memoize(
             } satisfies Partial<typeof columnType.inferIn>),
           )
         },
-        mssql: async (db) => {
+        mssql: async db => {
           const query = await db
             .selectFrom('information_schema.COLUMNS')
-            .select((eb) => [
+            .select(eb => [
               'TABLE_SCHEMA as schema',
               'TABLE_NAME as table',
               'COLUMN_NAME as name',
@@ -231,10 +231,10 @@ const resourceTableColumnsQuery = memoize(
             } satisfies Partial<typeof columnType.inferIn>),
           )
         },
-        clickhouse: async (db) => {
+        clickhouse: async db => {
           const query = await db
             .selectFrom('information_schema.columns')
-            .select((eb) => [
+            .select(eb => [
               'table_schema as schema',
               'table_name as table',
               'column_name as id',
@@ -247,7 +247,7 @@ const resourceTableColumnsQuery = memoize(
             )
             .execute()
 
-          return query.map((row) =>
+          return query.map(row =>
             Object.assign(row, {
               enumName: row.type.includes('Enum') ? row.id : undefined,
               isArray: row.type.includes('Array('),

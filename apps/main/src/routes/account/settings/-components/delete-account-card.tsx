@@ -35,7 +35,7 @@ function DeleteAccountDialog({
   const { data: hasCredentialAccount = false } = useQuery({
     queryKey: ['accounts'],
     queryFn: () => authClient.listAccounts(),
-    select: (data) => data.data?.some((account) => account.providerId === 'credential') ?? false,
+    select: data => data.data?.some(account => account.providerId === 'credential') ?? false,
   })
 
   const { mutate, isPending } = useMutation({
@@ -71,7 +71,7 @@ function DeleteAccountDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className="sm:max-w-sm"
-        onSubmit={(e) => {
+        onSubmit={e => {
           e.preventDefault()
           mutate()
         }}
@@ -93,7 +93,7 @@ function DeleteAccountDialog({
                 type="password"
                 placeholder="Enter your password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
                 disabled={isPending}
                 autoComplete="current-password"
                 // oxlint-disable-next-line no-autofocus
@@ -111,7 +111,7 @@ function DeleteAccountDialog({
               type="text"
               placeholder="delete"
               value={confirmation}
-              onChange={(e) => setConfirmation(e.target.value)}
+              onChange={e => setConfirmation(e.target.value)}
               disabled={isPending}
               autoComplete="off"
               // oxlint-disable-next-line no-autofocus

@@ -19,8 +19,8 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 export function Sidebar() {
   const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, { selector: (state) => state.showSystem })
-  const search = useSubscription(store, { selector: (state) => state.tablesSearch })
+  const showSystem = useSubscription(store, { selector: state => state.showSystem })
+  const search = useSubscription(store, { selector: state => state.tablesSearch })
   const {
     data: tablesAndSchemas,
     refetch: refetchTablesAndSchemas,
@@ -41,8 +41,8 @@ export function Sidebar() {
                 <TooltipTrigger asChild>
                   <Switch
                     checked={showSystem}
-                    onCheckedChange={(value) =>
-                      store.set((state) => ({ ...state, showSystem: value }) satisfies typeof state)
+                    onCheckedChange={value =>
+                      store.set(state => ({ ...state, showSystem: value }) satisfies typeof state)
                     }
                   />
                 </TooltipTrigger>
@@ -74,9 +74,9 @@ export function Sidebar() {
               placeholder="Search tables"
               className="pr-8"
               value={search}
-              onChange={(e) =>
+              onChange={e =>
                 store.set(
-                  (state) => ({ ...state, tablesSearch: e.target.value }) satisfies typeof state,
+                  state => ({ ...state, tablesSearch: e.target.value }) satisfies typeof state,
                 )
               }
             />
@@ -85,7 +85,7 @@ export function Sidebar() {
                 type="button"
                 className={`absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1`}
                 onClick={() =>
-                  store.set((state) => ({ ...state, tablesSearch: '' }) satisfies typeof state)
+                  store.set(state => ({ ...state, tablesSearch: '' }) satisfies typeof state)
                 }
               >
                 <RiCloseLine className="size-4 text-muted-foreground" />

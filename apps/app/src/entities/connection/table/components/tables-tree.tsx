@@ -71,7 +71,7 @@ const skeletonWidths = Array.from({ length: 10 }).map(() => `${Math.random() * 4
 function Skeleton() {
   return (
     <div className="w-full space-y-3">
-      {skeletonWidths.map((width) => (
+      {skeletonWidths.map(width => (
         <div key={width} className="flex h-5 items-center gap-2 px-2">
           <div className="h-full w-5 shrink-0 animate-pulse rounded-md bg-muted" />
           <div className="h-full animate-pulse rounded-md bg-muted" style={{ width }} />
@@ -114,7 +114,7 @@ function TableItem({
   const Icon = tableTypeIcon[type]
   const isReadOnly = type !== 'table'
   const store = tablePageStore({ id: connectionResource.id, schema, table })
-  const hasDrafts = useSubscription(store, { selector: (state) => state.drafts.length > 0 })
+  const hasDrafts = useSubscription(store, { selector: state => state.drafts.length > 0 })
 
   return (
     <SidebarLink
@@ -154,7 +154,7 @@ function TableItem({
               `-mr-1 ml-auto opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100`,
               isActive && 'hover:bg-primary/10',
             )}
-            onClick={(e) => {
+            onClick={e => {
               e.preventDefault()
               e.stopPropagation()
               togglePinTable(connectionResource.id, schema, table)
@@ -168,7 +168,7 @@ function TableItem({
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation()
                 e.preventDefault()
               }}
@@ -187,7 +187,7 @@ function TableItem({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-48">
               <DropdownMenuItem
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation()
                   copyToClipboard(table, 'Table name copied')
                 }}
@@ -197,7 +197,7 @@ function TableItem({
               </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={isReadOnly}
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation()
                   onRename()
                 }}
@@ -208,7 +208,7 @@ function TableItem({
               <DropdownMenuItem
                 disabled={isReadOnly}
                 variant="destructive"
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation()
                   onDrop()
                 }}
@@ -227,16 +227,16 @@ function TableItem({
 export function TablesTree({ className, search }: { className?: string; search?: string }) {
   const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, { selector: (state) => state.showSystem })
+  const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data: tablesAndSchemas, isPending } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
   )
   const { schema: schemaParam } = useSearch({ from: '/_protected/connection/$resourceId/table/' })
   const tablesTreeOpenedSchemas = useSubscription(store, {
-    selector: (state) =>
+    selector: state =>
       state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'],
   })
-  const pinnedTables = useSubscription(store, { selector: (state) => state.pinnedTables })
+  const pinnedTables = useSubscription(store, { selector: state => state.pinnedTables })
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
 
@@ -245,8 +245,8 @@ export function TablesTree({ className, search }: { className?: string; search?:
 
     cleanupPinnedTables(
       connectionResource.id,
-      tablesAndSchemas.schemas.flatMap((schema) =>
-        schema.tables.map((table) => ({ schema: schema.name, table: table.name })),
+      tablesAndSchemas.schemas.flatMap(schema =>
+        schema.tables.map(table => ({ schema: schema.name, table: table.name })),
       ),
     )
   }, [connectionResource, tablesAndSchemas])
@@ -255,21 +255,21 @@ export function TablesTree({ className, search }: { className?: string; search?:
     if (!tablesAndSchemas) return []
 
     const schemas = tablesAndSchemas.schemas
-      .map((schema) => ({
+      .map(schema => ({
         ...schema,
         tables: schema.tables
-          .filter((table) => !search || table.name.toLowerCase().includes(search.toLowerCase()))
+          .filter(table => !search || table.name.toLowerCase().includes(search.toLowerCase()))
           .toSorted((a, b) => a.name.localeCompare(b.name)),
       }))
-      .filter((schema) => schema.tables.length)
+      .filter(schema => schema.tables.length)
 
-    const pinnedSet = new Set(pinnedTables.map((t) => `${t.schema}:${t.table}`))
+    const pinnedSet = new Set(pinnedTables.map(t => `${t.schema}:${t.table}`))
 
-    return schemas.map((schema) => {
+    return schemas.map(schema => {
       const pinned: (typeof schemas)[number]['tables'] = []
       const unpinned: (typeof schemas)[number]['tables'] = []
 
-      schema.tables.forEach((table) => {
+      schema.tables.forEach(table => {
         const isPinned = pinnedSet.has(`${schema.name}:${table.name}`)
         if (isPinned) {
           pinned.push(table)
@@ -286,8 +286,7 @@ export function TablesTree({ className, search }: { className?: string; search?:
   }, [search, tablesAndSchemas, pinnedTables])
 
   const searchAccordionValue = useMemo(
-    () =>
-      search ? filteredTablesAndSchemas.map((schema) => schema.name) : tablesTreeOpenedSchemas,
+    () => (search ? filteredTablesAndSchemas.map(schema => schema.name) : tablesTreeOpenedSchemas),
     [search, filteredTablesAndSchemas, tablesTreeOpenedSchemas],
   )
 
@@ -297,10 +296,10 @@ export function TablesTree({ className, search }: { className?: string; search?:
       <RenameTableDialog ref={renameTableDialogRef} />
       <Accordion
         value={searchAccordionValue}
-        onValueChange={(v) => {
+        onValueChange={v => {
           if (!search) {
             store.set(
-              (state) =>
+              state =>
                 ({
                   ...state,
                   tablesTreeOpenedSchemas: v,
@@ -325,7 +324,7 @@ export function TablesTree({ className, search }: { className?: string; search?:
           </div>
         ) : (
           <AnimatePresence>
-            {filteredTablesAndSchemas.map((schema) => (
+            {filteredTablesAndSchemas.map(schema => (
               <motion.div
                 key={schema.name}
                 initial={search ? { opacity: 0, height: 0 } : false}
@@ -356,7 +355,7 @@ export function TablesTree({ className, search }: { className?: string; search?:
                   )}
                   <AccordionContent className="pb-0">
                     <AnimatePresence mode="popLayout">
-                      {schema.pinnedTables.map((table) => (
+                      {schema.pinnedTables.map(table => (
                         <motion.div
                           key={`${schema.name}:${table.name}`}
                           layout
@@ -390,7 +389,7 @@ export function TablesTree({ className, search }: { className?: string; search?:
                           transition={treeTransition}
                         />
                       )}
-                      {schema.unpinnedTables.map((table) => (
+                      {schema.unpinnedTables.map(table => (
                         <motion.div
                           key={`${schema.name}:${table.name}`}
                           layout

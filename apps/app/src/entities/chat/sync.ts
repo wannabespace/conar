@@ -24,19 +24,19 @@ export function createChatsCollection() {
     persistedCollectionOptions<Chat, string, never, SyncUtils>({
       ...syncCollectionOptions<Chat>({
         id: 'chats',
-        getKey: (item) => item.id,
+        getKey: item => item.id,
         events: ({ signal }) => orpc.chats.events.call({}, { signal }),
         sync: ({ rows, signal }) => orpc.chats.sync.call(rows, { signal }),
         onInsert: async ({ transaction }) => {
-          await orpc.chats.create.call(transaction.mutations.map((m) => m.modified))
+          await orpc.chats.create.call(transaction.mutations.map(m => m.modified))
         },
         onUpdate: async ({ transaction }) => {
           await Promise.all(
-            transaction.mutations.map((m) => orpc.chats.update.call({ id: m.key, ...m.changes })),
+            transaction.mutations.map(m => orpc.chats.update.call({ id: m.key, ...m.changes })),
           )
         },
         onDelete: async ({ transaction }) => {
-          await orpc.chats.remove.call(transaction.mutations.map((m) => ({ id: m.key })))
+          await orpc.chats.remove.call(transaction.mutations.map(m => ({ id: m.key })))
         },
       }),
       persistence,
@@ -50,22 +50,22 @@ export function createChatsMessagesCollection() {
     persistedCollectionOptions<ChatMessage, string, never, SyncUtils>({
       ...syncCollectionOptions<ChatMessage>({
         id: 'chatsMessages',
-        getKey: (item) => item.id,
+        getKey: item => item.id,
         events: ({ signal }) => orpc.chatsMessages.events.call({}, { signal }),
         sync: ({ rows, signal }) => orpc.chatsMessages.sync.call(rows, { signal }),
         onInsert: async ({ transaction }) => {
-          await orpc.chatsMessages.create.call(transaction.mutations.map((m) => m.modified))
+          await orpc.chatsMessages.create.call(transaction.mutations.map(m => m.modified))
         },
         onUpdate: async ({ transaction }) => {
           await Promise.all(
-            transaction.mutations.map((m) =>
+            transaction.mutations.map(m =>
               orpc.chatsMessages.update.call({ id: m.key, ...m.changes }),
             ),
           )
         },
         onDelete: async ({ transaction }) => {
           await orpc.chatsMessages.remove.call(
-            transaction.mutations.map((m) => ({ id: m.key, chatId: m.modified.chatId })),
+            transaction.mutations.map(m => ({ id: m.key, chatId: m.modified.chatId })),
           )
         },
       }),

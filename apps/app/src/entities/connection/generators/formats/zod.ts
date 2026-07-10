@@ -11,7 +11,7 @@ function buildZodType(
   if (!zodType) return null
 
   if (column.enumName && column.availableValues?.length) {
-    zodType = `z.enum([${column.availableValues.map((v) => `'${v}'`).join(', ')}])`
+    zodType = `z.enum([${column.availableValues.map(v => `'${v}'`).join(', ')}])`
     if (column.type === 'set') {
       zodType = `${zodType}.array()`
     }
@@ -30,7 +30,7 @@ function buildZodType(
 
 export function generateSchemaZod({ table, columns, dialect }: SchemaParams) {
   const lines = columns
-    .map((column) => {
+    .map(column => {
       const key = toLiteralKey(column.id)
       const zodType = buildZodType(column, dialect)
 

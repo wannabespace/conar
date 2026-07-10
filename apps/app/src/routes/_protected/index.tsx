@@ -31,7 +31,7 @@ export const Route = createFileRoute('/_protected/')({
 
 function DashboardPage() {
   const { version, status } = useSubscription(updatesStore, {
-    selector: (state) => pick(state, ['version', 'status']),
+    selector: state => pick(state, ['version', 'status']),
   })
 
   return (

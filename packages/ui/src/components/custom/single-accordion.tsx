@@ -66,7 +66,7 @@ export function SingleAccordion({
       collapsible
       className={cn('w-full rounded-lg border bg-card text-card-foreground', className)}
       value={open ? 'accordion-item' : onOpenChange ? '' : undefined}
-      onValueChange={(value) => {
+      onValueChange={value => {
         onOpenChange?.(value === 'accordion-item')
       }}
       {...props}

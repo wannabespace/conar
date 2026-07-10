@@ -33,16 +33,16 @@ export function useMediaControls(
 
     const abortController = new AbortController()
 
-    media.addEventListener('play', () => setState((s) => ({ ...s, isPlaying: true })), {
+    media.addEventListener('play', () => setState(s => ({ ...s, isPlaying: true })), {
       signal: abortController.signal,
     })
-    media.addEventListener('pause', () => setState((s) => ({ ...s, isPlaying: false })), {
+    media.addEventListener('pause', () => setState(s => ({ ...s, isPlaying: false })), {
       signal: abortController.signal,
     })
     media.addEventListener(
       'volumechange',
       () =>
-        setState((s) => ({
+        setState(s => ({
           ...s,
           volume: media.volume,
           isMuted: media.muted,
@@ -51,15 +51,15 @@ export function useMediaControls(
     )
     media.addEventListener(
       'timeupdate',
-      () => setState((s) => ({ ...s, currentTime: media.currentTime })),
+      () => setState(s => ({ ...s, currentTime: media.currentTime })),
       { signal: abortController.signal },
     )
     media.addEventListener(
       'durationchange',
-      () => setState((s) => ({ ...s, duration: media.duration })),
+      () => setState(s => ({ ...s, duration: media.duration })),
       { signal: abortController.signal },
     )
-    media.addEventListener('ended', () => setState((s) => ({ ...s, isPlaying: false })), {
+    media.addEventListener('ended', () => setState(s => ({ ...s, isPlaying: false })), {
       signal: abortController.signal,
     })
 

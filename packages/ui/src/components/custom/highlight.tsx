@@ -20,7 +20,7 @@ export function HighlightText({
 
   const html = text.replace(
     regex,
-    (match) => `<mark class="text-white bg-primary/50">${match}</mark>`,
+    match => `<mark class="text-white bg-primary/50">${match}</mark>`,
   )
 
   return render({ html, matched: regex.test(text) })

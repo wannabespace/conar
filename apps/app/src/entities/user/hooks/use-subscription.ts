@@ -15,7 +15,7 @@ export function useSubscription() {
   )
 
   const subscription =
-    list?.find((s) =>
+    list?.find(s =>
       ACTIVE_SUBSCRIPTION_STATUSES.includes(
         s.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number],
       ),

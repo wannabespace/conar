@@ -78,9 +78,9 @@ contextBridge.exposeInMainWorld('electron', {
     decrypt: handleElectronError((arg: unknown) => ipcRenderer.invoke('encryption.decrypt', arg)),
   },
   app: {
-    onDeepLink: (callback) => onEvent('deep-link', callback),
-    onUpdatesStatus: (callback) => onEvent('updates-status', callback),
-    onSendToast: (callback) => onEvent('toast', callback),
+    onDeepLink: callback => onEvent('deep-link', callback),
+    onUpdatesStatus: callback => onEvent('updates-status', callback),
+    onSendToast: callback => onEvent('toast', callback),
     checkForUpdates: handleElectronError(() => ipcRenderer.invoke('app.checkForUpdates')),
     quitAndInstall: handleElectronError(() => ipcRenderer.invoke('app.quitAndInstall')),
   },

@@ -40,7 +40,7 @@ export const SQL_FILTERS_GROUPED = [
 }[]
 
 export const SQL_FILTERS_LIST: readonly Filter[] = SQL_FILTERS_GROUPED.flatMap(
-  (group) => group.filters as readonly Filter[],
+  group => group.filters as readonly Filter[],
 )
 
 export interface QueryParams {

@@ -73,7 +73,7 @@ function DatabasePoliciesPage() {
 
   const filteredPolicies =
     policies?.filter(
-      (item) =>
+      item =>
         item.schema === selectedSchema &&
         (filterType === 'all' || filterType === item.type) &&
         (!search ||
@@ -96,10 +96,10 @@ function DatabasePoliciesPage() {
           placeholder="Search policies"
           autoFocus
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={e => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
-        <Select value={filterType} onValueChange={(v) => setFilterType(v as PolicyType | 'all')}>
+        <Select value={filterType} onValueChange={v => setFilterType(v as PolicyType | 'all')}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter Type" />
           </SelectTrigger>
@@ -112,7 +112,7 @@ function DatabasePoliciesPage() {
         {schemas.length > 1 && (
           <Select
             value={selectedSchema ?? ''}
-            onValueChange={(v) => {
+            onValueChange={v => {
               if (v) {
                 setSelectedSchema(v)
               }
@@ -125,7 +125,7 @@ function DatabasePoliciesPage() {
               </div>
             </SelectTrigger>
             <SelectContent>
-              {schemas.map((schema) => (
+              {schemas.map(schema => (
                 <SelectItem key={schema} value={schema}>
                   {schema}
                 </SelectItem>
@@ -142,7 +142,7 @@ function DatabasePoliciesPage() {
           />
         )}
 
-        {filteredPolicies.map((item) => (
+        {filteredPolicies.map(item => (
           <CardMotion
             key={`${item.schema}-${item.table}-${item.name}`}
             layout
@@ -166,7 +166,7 @@ function DatabasePoliciesPage() {
                     {item.roles.length > 0 && (
                       <>
                         <span>to</span>
-                        {item.roles.map((role) => (
+                        {item.roles.map(role => (
                           <Badge key={role} variant="outline">
                             {role}
                           </Badge>

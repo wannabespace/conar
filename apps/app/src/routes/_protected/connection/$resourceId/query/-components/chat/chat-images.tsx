@@ -47,7 +47,7 @@ export function ChatImages({
               type="button"
               aria-label={`Remove ${image.name}`}
               className="absolute -top-2 -right-2 z-10 flex size-4 cursor-pointer items-center justify-center rounded-full border bg-background opacity-0 transition-opacity group-hover:opacity-100"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation()
                 onRemove(index)
               }}

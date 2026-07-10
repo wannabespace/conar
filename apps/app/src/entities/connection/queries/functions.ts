@@ -22,7 +22,7 @@ export const functionsType = type({
 export const resourceFunctionsQuery = createQuery({
   type: functionsType.array(),
   query: {
-    postgres: (db) =>
+    postgres: db =>
       db
         .selectFrom('pg_catalog.pg_proc as p')
         .innerJoin('pg_catalog.pg_namespace as n', 'p.pronamespace', 'n.oid')
@@ -52,7 +52,7 @@ export const resourceFunctionsQuery = createQuery({
         .where('n.nspname', '!=', 'information_schema')
         .where('p.prokind', '!=', 'a')
         .execute(),
-    mysql: (db) =>
+    mysql: db =>
       db
         .selectFrom('information_schema.ROUTINES as r')
         .select(({ eb }) => [
@@ -74,7 +74,7 @@ export const resourceFunctionsQuery = createQuery({
           'sys',
         ])
         .execute(),
-    mssql: (db) =>
+    mssql: db =>
       db
         .selectFrom('sys.objects as o')
         .innerJoin('sys.schemas as s', 'o.schema_id', 's.schema_id')

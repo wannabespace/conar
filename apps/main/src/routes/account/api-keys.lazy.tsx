@@ -144,7 +144,7 @@ function RouteComponent() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {apiKeys.map((key) => (
+                {apiKeys.map(key => (
                   <TableRow key={key.id}>
                     <TableCell className="font-medium">{key.name || 'Untitled key'}</TableCell>
                     <TableCell>

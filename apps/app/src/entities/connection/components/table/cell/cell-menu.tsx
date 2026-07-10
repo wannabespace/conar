@@ -47,7 +47,7 @@ export function TableCellContextMenu({
   const row = useTableContext(({ rows }) => rows[rowIndex]!)
   const columns = useTableContext(({ columns }) => columns)
   const columnKeys = useMemo(
-    () => columns.map((c) => c.id).filter((id) => !internalColumnIds.includes(id)),
+    () => columns.map(c => c.id).filter(id => !internalColumnIds.includes(id)),
     [columns],
   )
   const rowCopyDisabled = columnKeys.length === 0
@@ -87,7 +87,7 @@ export function TableCellContextMenu({
                       <Fragment key={group}>
                         {index > 0 && <ContextMenuSeparator />}
                         <ContextMenuLabel>{FILTER_GROUPS[group]}</ContextMenuLabel>
-                        {filters.map((filter) => (
+                        {filters.map(filter => (
                           <ContextMenuItem
                             key={filter.operator}
                             disabled={isDisabledFilter(filter, value)}
@@ -117,7 +117,7 @@ export function TableCellContextMenu({
                   <ContextMenuSubContent>
                     <ContextMenuRadioGroup
                       value={order ?? 'default'}
-                      onValueChange={(value) => {
+                      onValueChange={value => {
                         onOrder(value === 'default' ? null : (value as 'ASC' | 'DESC'))
                       }}
                     >
@@ -150,7 +150,7 @@ export function TableCellContextMenu({
                 onClick={() => {
                   copy(
                     toCSV(
-                      columnKeys.map((key) => ({ key })),
+                      columnKeys.map(key => ({ key })),
                       [row],
                     ),
                     'Row copied as CSV',
@@ -165,7 +165,7 @@ export function TableCellContextMenu({
                   copy(
                     recordToMarkdownTable(
                       row,
-                      columnKeys.map((key) => ({ key })),
+                      columnKeys.map(key => ({ key })),
                     ),
                     'Row copied as Markdown table',
                   )

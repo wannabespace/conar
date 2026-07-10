@@ -12,9 +12,9 @@ const schema = chatsMessagesInsertSchema
 
 export const create = orpc
   .use(subscriptionMiddleware)
-  .input(type.or(schema, schema.array()).pipe((data) => (Array.isArray(data) ? data : [data])))
+  .input(type.or(schema, schema.array()).pipe(data => (Array.isArray(data) ? data : [data])))
   .handler(async ({ context, input }) => {
-    const chatIds = input.map((item) => item.chatId)
+    const chatIds = input.map(item => item.chatId)
     const foundChats = await db
       .select({ id: chats.id })
       .from(chats)

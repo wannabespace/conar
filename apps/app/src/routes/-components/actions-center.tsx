@@ -68,8 +68,8 @@ function ActionsResourceTables({
       heading={`${connection.name}${connectionResource.name ? ` - ${connectionResource.name}` : ''} Tables`}
       value={connectionResource.name || CONNECTION_RESOURCE_ROOT_LABEL}
     >
-      {tablesAndSchemas.schemas.map((schema) =>
-        schema.tables.map((table) => (
+      {tablesAndSchemas.schemas.map(schema =>
+        schema.tables.map(table => (
           <CommandItem
             key={table.name}
             keywords={[schema.name, table.name]}
@@ -129,7 +129,7 @@ export function ActionsCenter() {
   const { connectionsCollection, connectionsResourcesCollection } = useCollections()
   const { resourceId } = useParams({ strict: false })
   const { data } = useLiveQuery(
-    (q) =>
+    q =>
       q
         .from({ connections: connectionsCollection })
         .innerJoin(
@@ -145,7 +145,7 @@ export function ActionsCenter() {
     [connectionsCollection, connectionsResourcesCollection],
   )
 
-  const isOpen = useSubscription(appStore, { selector: (state) => state.isActionCenterOpen })
+  const isOpen = useSubscription(appStore, { selector: state => state.isActionCenterOpen })
   const router = useRouter()
 
   useHotkey('Mod+P', () => {

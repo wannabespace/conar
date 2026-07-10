@@ -95,7 +95,7 @@ function DatabaseConstraintsPage() {
 
   const filteredConstraints =
     constraints?.filter(
-      (item) =>
+      item =>
         item.schema === selectedSchema &&
         (filterType === 'all' || filterType === item.type) &&
         (!search ||
@@ -119,12 +119,12 @@ function DatabaseConstraintsPage() {
           placeholder="Search constraints"
           autoFocus
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={e => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
         <Select
           value={filterType}
-          onValueChange={(v) => {
+          onValueChange={v => {
             if (v) {
               setFilterType(v)
             }
@@ -132,15 +132,13 @@ function DatabaseConstraintsPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Type">
-              {(value) =>
-                value
-                  ? filterOptions.find((option) => option.value === value)?.label
-                  : 'Filter Type'
+              {value =>
+                value ? filterOptions.find(option => option.value === value)?.label : 'Filter Type'
               }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {filterOptions.map((option) => (
+            {filterOptions.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -161,7 +159,7 @@ function DatabaseConstraintsPage() {
           />
         )}
 
-        {filteredConstraints.map((item) => (
+        {filteredConstraints.map(item => (
           <CardMotion
             key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
             layout
@@ -174,7 +172,7 @@ function DatabaseConstraintsPage() {
                     {getIcon(item.type)}
                     <HighlightText text={item.name} match={search} />
                     <Badge variant="secondary">
-                      {filterOptions.find((option) => option.value === item.type)?.label}
+                      {filterOptions.find(option => option.value === item.type)?.label}
                     </Badge>
                   </CardTitle>
                   <div className={`flex items-center gap-1.5 text-sm text-muted-foreground`}>

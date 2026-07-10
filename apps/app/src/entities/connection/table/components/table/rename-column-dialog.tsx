@@ -77,7 +77,7 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
         }).queryKey.slice(0, -1),
       })
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Failed to rename column "${error.message}".`)
     },
   })
@@ -106,8 +106,8 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
               placeholder="Enter new column name"
               spellCheck={false}
               autoComplete="off"
-              onChange={(e) => setNewColumnName(e.target.value)}
-              onKeyDown={(e) => {
+              onChange={e => setNewColumnName(e.target.value)}
+              onKeyDown={e => {
                 if (e.key === 'Enter' && canConfirm) {
                   renameColumn()
                 }

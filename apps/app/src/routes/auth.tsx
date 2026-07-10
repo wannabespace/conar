@@ -47,7 +47,7 @@ function AuthPage() {
 
   const { mutate: exchange } = useMutation(
     orpc.account.challenge.exchange.mutationOptions({
-      onSuccess: async (data) => {
+      onSuccess: async data => {
         bearerToken.set(data.token)
         await refetch()
         router.navigate({ to: '/' })

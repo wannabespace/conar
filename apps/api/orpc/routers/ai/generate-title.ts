@@ -29,10 +29,10 @@ export const generateTitle = orpc
   .handler(async ({ input, signal, context }) => {
     const messages = await getMessages(input.chatId)
     const prompt = messages
-      .map((message) =>
+      .map(message =>
         message.parts
-          .filter((part) => part.type === 'text')
-          .map((part) => JSON.stringify(part, null, 2))
+          .filter(part => part.type === 'text')
+          .map(part => JSON.stringify(part, null, 2))
           .join('\n'),
       )
       .join('\n')

@@ -193,8 +193,8 @@ const CONTENT: {
                 part.input.whereFilters?.length
                   ? part.input.whereFilters
                       .map(
-                        (filter) =>
-                          `"${filter.column}" ${filter.operator} ${filter.values.length > 0 ? filter.values.map((value) => `"${value}"`).join(', ') : ''}`,
+                        filter =>
+                          `"${filter.column}" ${filter.operator} ${filter.values.length > 0 ? filter.values.map(value => `"${value}"`).join(', ') : ''}`,
                       )
                       .join(` ${part.input.whereConcatOperator} `)
                   : null,

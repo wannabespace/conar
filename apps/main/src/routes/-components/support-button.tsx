@@ -35,7 +35,7 @@ export function SupportButton() {
         setOpen(false)
         setMessage('')
       },
-      onError: (err) => {
+      onError: err => {
         console.error(err)
         toast.error('Failed to send message. Please try again later.')
       },
@@ -67,7 +67,7 @@ export function SupportButton() {
               <Textarea
                 id="support-message"
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={e => setMessage(e.target.value)}
                 required
                 placeholder="Type any message you'd like to send us"
                 className="min-h-48"

@@ -19,7 +19,7 @@ import { useTablePageStore } from '../../store'
 
 export function HeaderActionsColumns() {
   const store = useTablePageStore()
-  const hiddenColumns = useSubscription(store, { selector: (state) => state.hiddenColumns })
+  const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
   const columns = useTableColumns()
 
   return (
@@ -49,11 +49,11 @@ export function HeaderActionsColumns() {
                 value="toggle-columns"
                 onSelect={() =>
                   store.set(
-                    (state) =>
+                    state =>
                       ({
                         ...state,
                         hiddenColumns:
-                          (hiddenColumns.length === 0 && columns?.map((col) => col.id)) || [],
+                          (hiddenColumns.length === 0 && columns?.map(col => col.id)) || [],
                       }) satisfies typeof state,
                   )
                 }
@@ -67,18 +67,18 @@ export function HeaderActionsColumns() {
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup>
-              {columns?.map((column) => (
+              {columns?.map(column => (
                 <CommandItem
                   key={column.id}
                   value={column.id}
                   keywords={[column.id, column.type ?? '', column.typeLabel ?? '']}
                   onSelect={() =>
                     store.set(
-                      (state) =>
+                      state =>
                         ({
                           ...state,
                           hiddenColumns: hiddenColumns.includes(column.id)
-                            ? hiddenColumns.filter((id) => id !== column.id)
+                            ? hiddenColumns.filter(id => id !== column.id)
                             : [...hiddenColumns, column.id],
                         }) satisfies typeof state,
                     )

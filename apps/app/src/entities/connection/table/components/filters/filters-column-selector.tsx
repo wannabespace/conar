@@ -26,7 +26,7 @@ export function FiltersColumnSelector({
       <CommandList className="h-fit max-h-[45vh]">
         <CommandEmpty>No columns found.</CommandEmpty>
         <CommandGroup>
-          {columns.map((column) => (
+          {columns.map(column => (
             <CommandItem
               key={column.id}
               value={column.id}

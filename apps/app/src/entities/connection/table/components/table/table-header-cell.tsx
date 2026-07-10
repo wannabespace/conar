@@ -206,12 +206,12 @@ export function TableHeaderCell({
   const store = useTablePageStore()
   const [isResizing, setIsResizing] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const order = useSubscription(store, { selector: (state) => state.orderBy?.[column.id] ?? null })
+  const order = useSubscription(store, { selector: state => state.orderBy?.[column.id] ?? null })
   const { data: enumsData } = useQuery({
     ...resourceEnumsQueryOptions({ connectionResource }),
-    select: (data) => data?.find((e) => e.name === column.enumName),
+    select: data => data?.find(e => e.name === column.enumName),
   })
-  const scrollRef = useTableContext((state) => state.scrollRef)
+  const scrollRef = useTableContext(state => state.scrollRef)
 
   const handleResize = (e: ReactMouseEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -255,7 +255,7 @@ export function TableHeaderCell({
   }
 
   const removeSize = () => {
-    store.set((state) => {
+    store.set(state => {
       const newColumnSizes = { ...state.columnSizes }
       delete newColumnSizes[column.id]
       return {

@@ -20,7 +20,7 @@ const schema = type({
   lastOpenedResourceName: (lastOpenedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL.description
     ? CONNECTION_RESOURCE_ROOT_SYMBOL
     : lastOpenedResourceName) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
-  pinnedResourcesNames: pinnedResourcesNames.map((name) =>
+  pinnedResourcesNames: pinnedResourcesNames.map(name =>
     name === CONNECTION_RESOURCE_ROOT_SYMBOL.description ? CONNECTION_RESOURCE_ROOT_SYMBOL : name,
   ),
   proxy,

@@ -29,9 +29,9 @@ export function FilterValueSelector({
         <CommandInput
           ref={ref}
           value={isArray ? values.join(',') : (values[0] as string)}
-          onValueChange={(value) => onChange(isArray ? value.split(',') : [value])}
+          onValueChange={value => onChange(isArray ? value.split(',') : [value])}
           placeholder={`Enter value for ${column}...`}
-          onKeyDown={(e) => {
+          onKeyDown={e => {
             if (e.key === 'Enter') {
               onApply()
             }

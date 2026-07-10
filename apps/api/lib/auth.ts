@@ -88,7 +88,7 @@ export const auth = betterAuth({
     },
   },
   hooks: {
-    after: createAuthMiddleware(async (ctx) => {
+    after: createAuthMiddleware(async ctx => {
       const desktopVersion = ctx.headers?.get('x-desktop-version')
 
       if (!ctx.context.session) {
@@ -112,14 +112,14 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        after: async (user) => {
+        after: async user => {
           await infisical.secrets
             .set({
               path: ['users', user.id],
               name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
               value: nanoid(),
             })
-            .catch(async (error) => {
+            .catch(async error => {
               console.error(
                 `Failed to set user secret in Infisical: ${error instanceof Error ? error.message : error}`,
                 error instanceof Error && error.cause ? error.cause : undefined,
@@ -143,10 +143,10 @@ export const auth = betterAuth({
         },
       },
       delete: {
-        after: async (user) => {
+        after: async user => {
           await infisical.secrets
             .delete({ path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME })
-            .catch(async (error) => {
+            .catch(async error => {
               console.error(
                 `Failed to delete user secret in Infisical: ${error instanceof Error ? error.message : error}`,
                 error instanceof Error && error.cause ? error.cause : undefined,
@@ -155,7 +155,7 @@ export const auth = betterAuth({
         },
       },
       update: {
-        after: async (user) => {
+        after: async user => {
           if (nodeEnv !== 'production' || !resend) {
             return
           }
@@ -175,7 +175,7 @@ export const auth = betterAuth({
     },
   },
   onAPIError: {
-    onError: async (error) => {
+    onError: async error => {
       const text =
         typeof error === 'object' && error !== null
           ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2)

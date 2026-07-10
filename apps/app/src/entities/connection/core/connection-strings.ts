@@ -62,7 +62,7 @@ export function createConnectionStringsCollection(): ConnectionStringsCollection
       gcTime: 0,
       defaultIndexType: BasicIndex,
       schemaVersion: 1,
-      getKey: (item) => item.connectionId,
+      getKey: item => item.connectionId,
       utils: {
         async decrypt(connectionId: string) {
           const record = getCollections().connectionStringsCollection.get(connectionId)

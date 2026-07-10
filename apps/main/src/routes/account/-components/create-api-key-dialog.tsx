@@ -96,7 +96,7 @@ export function CreateApiKeyDialog({
     },
   })
 
-  const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
+  const isSubmitting = useStore(form.store, state => state.isSubmitting)
 
   return (
     <>
@@ -112,7 +112,7 @@ export function CreateApiKeyDialog({
             <form
               id="create-api-key-form"
               className="space-y-4"
-              onSubmit={(e) => {
+              onSubmit={e => {
                 e.preventDefault()
                 form.handleSubmit()
               }}
@@ -128,7 +128,7 @@ export function CreateApiKeyDialog({
                     },
                   }}
                 >
-                  {(field) => (
+                  {field => (
                     <Field>
                       <FieldLabel>Name</FieldLabel>
                       <field.Input placeholder="e.g. local-mcp, ci-bot" maxLength={100} />
@@ -140,7 +140,7 @@ export function CreateApiKeyDialog({
                   name="permissions"
                   validators={{
                     onSubmit: ({ value }) => {
-                      const atLeastOne = Object.values(value).some((actions) =>
+                      const atLeastOne = Object.values(value).some(actions =>
                         Object.values(actions).some(Boolean),
                       )
                       if (!atLeastOne) {
@@ -149,19 +149,19 @@ export function CreateApiKeyDialog({
                     },
                   }}
                 >
-                  {(field) => (
+                  {field => (
                     <Field>
                       <FieldLabel>Permissions</FieldLabel>
                       {objectEntries(API_KEY_PERMISSIONS).map(([resource, actions]) => (
                         <Field key={resource} className="gap-1">
-                          {actions.map((action) => (
+                          {actions.map(action => (
                             <label
                               key={action}
                               className={`flex cursor-pointer items-center gap-2 text-sm`}
                             >
                               <Checkbox
                                 checked={field.state.value[resource][action]}
-                                onCheckedChange={(checked) => {
+                                onCheckedChange={checked => {
                                   field.handleChange({
                                     ...field.state.value,
                                     [resource]: {
@@ -194,7 +194,7 @@ export function CreateApiKeyDialog({
       <Dialog
         open={revealKeyDialogOpen}
         onOpenChange={setRevealKeyDialogOpen}
-        onOpenChangeComplete={(isOpen) => {
+        onOpenChangeComplete={isOpen => {
           if (!isOpen) {
             setCreatedKey(null)
           }

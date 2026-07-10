@@ -83,19 +83,19 @@ function BodyCellRenderer({
     primaryColumns: string[]
   }) {
   const store = useTablePageStore()
-  const row = useTableContext((ctx) => ctx.rows[props.rowIndex])
+  const row = useTableContext(ctx => ctx.rows[props.rowIndex])
   const rowDraftKey =
     row && primaryColumns.length > 0
       ? draftKey(getRowPrimaryKeysValues(row, primaryColumns), column.id)
       : null
 
   const draft = useSubscription(store, {
-    selector: (state) =>
+    selector: state =>
       rowDraftKey
-        ? state.drafts.find((d) => draftKey(d.primaryKeys, d.columnId) === rowDraftKey)
+        ? state.drafts.find(d => draftKey(d.primaryKeys, d.columnId) === rowDraftKey)
         : undefined,
   })
-  const order = useSubscription(store, { selector: (state) => state.orderBy[column.id] ?? null })
+  const order = useSubscription(store, { selector: state => state.orderBy[column.id] ?? null })
 
   return (
     <TableCell
@@ -141,10 +141,10 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
   const { connection, connectionResource } = useRouteContext()
   const columns = useTableColumns()
   const store = useTablePageStore()
-  const hiddenColumns = useSubscription(store, { selector: (state) => state.hiddenColumns })
-  const columnSizes = useSubscription(store, { selector: (state) => state.columnSizes })
-  const filters = useSubscription(store, { selector: (state) => state.filters })
-  const orderBy = useSubscription(store, { selector: (state) => state.orderBy })
+  const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
+  const columnSizes = useSubscription(store, { selector: state => state.columnSizes })
+  const filters = useSubscription(store, { selector: state => state.filters })
+  const orderBy = useSubscription(store, { selector: state => state.orderBy })
   const {
     data: rows = [],
     error,
@@ -157,10 +157,7 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
       query: { filters, orderBy },
     }),
   )
-  const primaryColumns = useMemo(
-    () => columns.filter((c) => c.primaryKey).map((c) => c.id),
-    [columns],
-  )
+  const primaryColumns = useMemo(() => columns.filter(c => c.primaryKey).map(c => c.id), [columns])
   const renameColumnRef = useRef<ComponentRef<typeof RenameColumnDialog>>(null)
 
   useSyncSelectionWithRows(rows, primaryColumns)
@@ -183,24 +180,24 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
           isCommitting: false,
         })
       },
-      onAddFilter: (filter) => {
+      onAddFilter: filter => {
         store.set(
-          (state) =>
+          state =>
             ({
               ...state,
               filters: [...state.filters, filter],
             }) satisfies typeof state,
         )
       },
-      onOrder: (order) => {
+      onOrder: order => {
         const actions = columnsOrder(store)
         if (order === undefined) return actions.toggleOrder(column.id)
         if (order) return actions.setOrder(column.id, order)
         return actions.removeOrder(column.id)
       },
-      onResize: (newWidth) => {
+      onResize: newWidth => {
         store.set(
-          (state) =>
+          state =>
             ({
               ...state,
               columnSizes: {
@@ -222,8 +219,8 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
 
   const tableColumns = useMemo<ColumnRenderer[]>(() => {
     return columns
-      .filter((c) => !hiddenColumns.includes(c.id))
-      .map((column) => {
+      .filter(c => !hiddenColumns.includes(c.id))
+      .map(column => {
         const handlers = getHandlers(column)
         return {
           id: column.id,
@@ -256,10 +253,10 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
   const handleShiftSelectionKeyDown = useShiftSelectionKeyDown({
     rowCount: rows.length,
     getItemsInRange: (start, end) =>
-      rows.slice(start, end + 1).map((row) => getRowPrimaryKeysValues(row, primaryColumns)),
+      rows.slice(start, end + 1).map(row => getRowPrimaryKeysValues(row, primaryColumns)),
     getSelectionState: () => store.get().selectionState,
     onSelectionChange: (selected, selectionState) => {
-      store.set((state) => ({ ...state, selected, selectionState }) satisfies typeof state)
+      store.set(state => ({ ...state, selected, selectionState }) satisfies typeof state)
     },
   })
 

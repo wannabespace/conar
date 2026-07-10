@@ -20,7 +20,7 @@ export function SchemaSelect({
   return (
     <Select
       value={selectedSchema}
-      onValueChange={(v) => {
+      onValueChange={v => {
         if (v) {
           setSelectedSchema(v)
         }
@@ -35,7 +35,7 @@ export function SchemaSelect({
         </div>
       </SelectTrigger>
       <SelectContent>
-        {schemas.map((schema) => (
+        {schemas.map(schema => (
           <SelectItem key={schema} value={schema}>
             {schema}
           </SelectItem>

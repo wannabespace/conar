@@ -36,7 +36,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
         data.searchActive && data.tableSearchMatched && `ring-1 ring-primary/60`,
         data.searchActive &&
           !data.tableSearchMatched &&
-          !data.columns.some((c) => c.searchMatched) &&
+          !data.columns.some(c => c.searchMatched) &&
           `opacity-50`,
       )}
     >
@@ -67,7 +67,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
         </Button>
       </div>
       <div className="py-2 text-xs">
-        {data.columns.map((column) => (
+        {data.columns.map(column => (
           <div
             key={column.id}
             className={cn(
@@ -76,7 +76,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
                 column.searchMatched &&
                 `rounded-sm text-primary ring-1 ring-primary/60`,
               data.searchActive &&
-                data.columns.some((c) => c.searchMatched) &&
+                data.columns.some(c => c.searchMatched) &&
                 !column.searchMatched &&
                 `opacity-50`,
             )}

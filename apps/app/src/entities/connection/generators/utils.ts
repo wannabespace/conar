@@ -29,7 +29,7 @@ export function toLiteralKey(name: string) {
 }
 
 export function formatEnumAsUnionType(values: string[], columnType?: string): string {
-  const union = values.map((v) => `'${v}'`).join(' | ')
+  const union = values.map(v => `'${v}'`).join(' | ')
   return columnType === 'set' ? `(${union})[]` : union
 }
 
@@ -78,11 +78,11 @@ export const TYPE_MAPPINGS: Record<
   prisma: {
     postgres: prismaScalarMapper,
     mysql: prismaScalarMapper,
-    mssql: (t) => (/^date$/i.test(t) ? 'DateTime @db.Date' : prismaScalarMapper(t)),
+    mssql: t => (/^date$/i.test(t) ? 'DateTime @db.Date' : prismaScalarMapper(t)),
     clickhouse: () => '',
   },
   drizzle: {
-    postgres: (t) => {
+    postgres: t => {
       if (/serial/i.test(t)) return 'serial'
       if (/int/i.test(t)) return 'integer'
       if (/text/i.test(t)) return 'text'
@@ -95,7 +95,7 @@ export const TYPE_MAPPINGS: Record<
       if (/json/i.test(t)) return 'json'
       return 'text'
     },
-    mysql: (t) => {
+    mysql: t => {
       if (/serial/i.test(t)) return 'serial'
       if (/tinyint/i.test(t)) return 'tinyint'
       if (/int/i.test(t)) return 'int'
@@ -110,7 +110,7 @@ export const TYPE_MAPPINGS: Record<
       if (/json/i.test(t)) return 'json'
       return 'text'
     },
-    mssql: (t) => {
+    mssql: t => {
       if (/datetime2/i.test(t)) return 'datetime2'
       if (/datetime/i.test(t)) return 'datetime'
       if (/date/i.test(t)) return 'date'
@@ -124,7 +124,7 @@ export const TYPE_MAPPINGS: Record<
       if (/float|real/i.test(t)) return 'float'
       return 'text'
     },
-    clickhouse: (t) => {
+    clickhouse: t => {
       if (/int/i.test(t)) return 'integer'
       if (/text/i.test(t)) return 'text'
       if (/bool/i.test(t)) return 'boolean'
@@ -136,21 +136,21 @@ export const TYPE_MAPPINGS: Record<
     },
   },
   sql: {
-    postgres: (t) => {
+    postgres: t => {
       if (/datetime2/i.test(t)) return 'timestamp'
       if (/nvarchar/i.test(t)) return 'varchar'
       if (/int32/i.test(t)) return 'integer'
       return t
     },
-    mysql: (t) => t,
-    mssql: (t) => t,
-    clickhouse: (t) => t,
+    mysql: t => t,
+    mssql: t => t,
+    clickhouse: t => t,
   },
   kysely: {
-    postgres: (t) => t,
-    mysql: (t) => t,
-    mssql: (t) => t,
-    clickhouse: (t) => t,
+    postgres: t => t,
+    mysql: t => t,
+    mssql: t => t,
+    clickhouse: t => t,
   },
 }
 
@@ -212,13 +212,13 @@ export function filterExplicitIndexes(
   columns: Column[],
   dialect?: ConnectionType,
 ): GroupedIndex[] {
-  return grouped.filter((idx) => {
+  return grouped.filter(idx => {
     if (idx.isPrimary) return false
     if (dialect === 'clickhouse') return false
     const isRedundantUnique =
       idx.isUnique &&
       idx.columns.length === 1 &&
-      columns.some((c) => c.id === idx.columns[0] && c.unique)
+      columns.some(c => c.id === idx.columns[0] && c.unique)
     if (isRedundantUnique) return false
     return true
   })

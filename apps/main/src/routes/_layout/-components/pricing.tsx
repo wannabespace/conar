@@ -53,7 +53,7 @@ export function Pricing({ className }: PricingSectionProps) {
       </div>
       <div className={`mb-3 flex flex-col items-center gap-6 sm:mb-6`}>
         <div className={`inline-flex items-center rounded-full border bg-card p-1.5 shadow-sm`}>
-          {['Monthly', 'Yearly'].map((period) => (
+          {['Monthly', 'Yearly'].map(period => (
             <button
               type="button"
               key={period}
@@ -71,7 +71,7 @@ export function Pricing({ className }: PricingSectionProps) {
         </div>
       </div>
       <div className={`mx-auto grid max-w-5xl grid-cols-1 gap-4 px-4 sm:gap-6 lg:grid-cols-2`}>
-        {plans.map((plan) => (
+        {plans.map(plan => (
           <Card key={plan.name} className="relative flex flex-col p-0">
             <div className={`flex-1 p-6 sm:p-8`}>
               <div className={`mb-6 flex items-center justify-between sm:mb-8`}>
@@ -104,7 +104,7 @@ export function Pricing({ className }: PricingSectionProps) {
                 </p>
               </div>
               <div className={`space-y-4 sm:space-y-5`}>
-                {plan.features.map((feature) => (
+                {plan.features.map(feature => (
                   <div key={feature.name} className={`flex gap-3 sm:gap-4`}>
                     <div className="mt-1 shrink-0 rounded-full p-0.5">
                       <RiCheckLine className="size-4" />

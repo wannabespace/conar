@@ -54,7 +54,7 @@ export const orpcProxy = createORPCClient(
   new RPCLink({
     url: `${proxyUrl}/rpc`,
     interceptors: [
-      async (options) => {
+      async options => {
         try {
           return await options.next()
         } catch (error) {
@@ -100,7 +100,7 @@ export const createProxyClient = memoize((url: string): queryProxy.ORPCRouter =>
     new RPCLink({
       url,
       interceptors: [
-        async (options) => {
+        async options => {
           try {
             return await options.next()
           } catch (error) {

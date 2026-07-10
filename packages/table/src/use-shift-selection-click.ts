@@ -27,8 +27,8 @@ export function useShiftSelectionClick<TItem extends Record<string, unknown>>({
 }: UseShiftSelectionClickOptions<TItem>) {
   const shiftKeyRef = useRef(false)
 
-  const isSelected = currentSelected.some((row) =>
-    Object.keys(rowKey).every((key) => row[key] === rowKey[key]),
+  const isSelected = currentSelected.some(row =>
+    Object.keys(rowKey).every(key => row[key] === rowKey[key]),
   )
 
   const handleMouseDown = (event: MouseEvent<HTMLInputElement>) => {
@@ -61,7 +61,7 @@ export function useShiftSelectionClick<TItem extends Record<string, unknown>>({
 
     if (isSelected) {
       const newSelected = currentSelected.filter(
-        (row) => !Object.keys(rowKey).every((key) => row[key] === rowKey[key]),
+        row => !Object.keys(rowKey).every(key => row[key] === rowKey[key]),
       )
       onSelectionChange(newSelected, INITIAL_SHIFT_SELECTION_STATE, rowIndex)
       return

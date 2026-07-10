@@ -52,22 +52,20 @@ function DatabaseEnumsPage() {
   const filteredEnums =
     enums
       ?.filter(
-        (enumItem) =>
+        enumItem =>
           enumItem.schema === selectedSchema &&
           (!search ||
             enumItem.name.toLowerCase().includes(search.toLowerCase()) ||
-            enumItem.values.some((value) => value.toLowerCase().includes(search.toLowerCase())) ||
+            enumItem.values.some(value => value.toLowerCase().includes(search.toLowerCase())) ||
             (!!enumItem.metadata?.table &&
               enumItem.metadata.table.toLowerCase().includes(search.toLowerCase())) ||
             (!!enumItem.metadata?.column &&
               enumItem.metadata.column.toLowerCase().includes(search.toLowerCase()))),
       )
       // oxlint-disable-next-line oxc/no-map-spread -- `enums` is react-query cached data; must not mutate the original items
-      .map((enumItem) => ({
+      .map(enumItem => ({
         ...enumItem,
-        values: enumItem.values.filter((value) =>
-          value.toLowerCase().includes(search.toLowerCase()),
-        ),
+        values: enumItem.values.filter(value => value.toLowerCase().includes(search.toLowerCase())),
       })) ?? []
 
   return (
@@ -85,7 +83,7 @@ function DatabaseEnumsPage() {
           placeholder="Search enums"
           autoFocus
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={e => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
         <SchemaSelect
@@ -102,7 +100,7 @@ function DatabaseEnumsPage() {
           />
         )}
 
-        {filteredEnums.map((enumItem) => (
+        {filteredEnums.map(enumItem => (
           <CardMotion
             key={`${enumItem.schema}-${enumItem.name}-${enumItem.metadata?.table ?? ''}-${enumItem.metadata?.column ?? ''}`}
             layout
@@ -143,7 +141,7 @@ function DatabaseEnumsPage() {
                       </>
                     )}
                     <AnimatePresence initial={false} mode="popLayout">
-                      {enumItem.values.map((value) => (
+                      {enumItem.values.map(value => (
                         <HighlightText
                           key={value}
                           text={value}

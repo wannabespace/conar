@@ -117,11 +117,11 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
           // eslint-disable-next-line typescript/no-explicit-any
           return queryFn(instance as any)
         },
-        catch: (error) => {
+        catch: error => {
           if (isConnectionError(error)) {
             attempt += 1
 
-            reconnectingPromises.set((state) => {
+            reconnectingPromises.set(state => {
               const existing = state[queryParams.connectionString]
 
               return {
@@ -155,7 +155,7 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
 
     if (Result.isOk(result)) {
       resolvers.resolve()
-      reconnectingPromises.set((state) => {
+      reconnectingPromises.set(state => {
         const newState = { ...state }
         delete newState[queryParams.connectionString]
         return newState
@@ -186,7 +186,7 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
     }
 
     resolvers.reject(result.error)
-    reconnectingPromises.set((state) => {
+    reconnectingPromises.set(state => {
       const newState = { ...state }
       delete newState[queryParams.connectionString]
       return newState

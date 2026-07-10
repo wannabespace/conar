@@ -13,13 +13,13 @@ function toBooleanUiString(value: unknown): boolean {
 export function createBooleanTransformer(): ValueTransformer<boolean> {
   return {
     toDisplay: getDisplayValue,
-    fromConnection: (value) => ({
+    fromConnection: value => ({
       toUI: () => toBooleanUiString(value),
       toRaw: () => getValueForEditor(value),
     }),
     toConnection: {
-      fromUI: (value) => value,
-      fromRaw: (raw) => raw,
+      fromUI: value => value,
+      fromRaw: raw => raw,
     },
   }
 }

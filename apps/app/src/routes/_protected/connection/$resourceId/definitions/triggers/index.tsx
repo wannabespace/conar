@@ -81,7 +81,7 @@ function DatabaseTriggersPage() {
 
   const filteredTriggers =
     triggers?.filter(
-      (item) =>
+      item =>
         item.schema === selectedSchema &&
         (filterEvent === 'all' || item.event.includes(filterEvent)) &&
         (filterTiming === 'all' || filterTiming === item.timing) &&
@@ -105,12 +105,12 @@ function DatabaseTriggersPage() {
           placeholder="Search triggers"
           autoFocus
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={e => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
         <Select
           value={filterEvent}
-          onValueChange={(v) => {
+          onValueChange={v => {
             if (v) {
               setFilterEvent(v)
             }
@@ -118,15 +118,15 @@ function DatabaseTriggersPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Event">
-              {(value) =>
+              {value =>
                 value
-                  ? eventFilterOptions.find((option) => option.value === value)?.label
+                  ? eventFilterOptions.find(option => option.value === value)?.label
                   : 'Filter Event'
               }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {eventFilterOptions.map((option) => (
+            {eventFilterOptions.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -135,7 +135,7 @@ function DatabaseTriggersPage() {
         </Select>
         <Select
           value={filterTiming}
-          onValueChange={(v) => {
+          onValueChange={v => {
             if (v) {
               setFilterTiming(v)
             }
@@ -143,15 +143,15 @@ function DatabaseTriggersPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Timing">
-              {(value) =>
+              {value =>
                 value
-                  ? timingFilterOptions.find((option) => option.value === value)?.label
+                  ? timingFilterOptions.find(option => option.value === value)?.label
                   : 'Filter Timing'
               }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {timingFilterOptions.map((option) => (
+            {timingFilterOptions.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -172,7 +172,7 @@ function DatabaseTriggersPage() {
           />
         )}
 
-        {filteredTriggers.map((item) => (
+        {filteredTriggers.map(item => (
           <CardMotion
             key={`${item.schema}-${item.table}-${item.name}-${item.event}`}
             layout

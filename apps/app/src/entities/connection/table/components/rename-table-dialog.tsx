@@ -77,7 +77,7 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
         search: { schema, table: newTableName },
       })
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Failed to rename table "${error.message}".`)
     },
   })
@@ -107,8 +107,8 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
               placeholder="Enter new table name"
               spellCheck={false}
               autoComplete="off"
-              onChange={(e) => setNewTableName(e.target.value)}
-              onKeyDown={(e) => {
+              onChange={e => setNewTableName(e.target.value)}
+              onKeyDown={e => {
                 if (e.key === 'Enter' && canConfirm) {
                   renameTable()
                 }

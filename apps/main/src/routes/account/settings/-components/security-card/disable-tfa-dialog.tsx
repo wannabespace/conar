@@ -45,7 +45,7 @@ export function DisableTfaDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="sm:max-w-sm"
-        onSubmit={(e) => {
+        onSubmit={e => {
           e.preventDefault()
           mutate(password)
         }}
@@ -63,7 +63,7 @@ export function DisableTfaDialog({
             id="disable-password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
             disabled={isPending}
             autoComplete="current-password"
             autoFocus

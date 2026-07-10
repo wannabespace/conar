@@ -33,7 +33,7 @@ export function createSyncTracker(): SyncTracker {
   return {
     markSynced(key, updatedAt) {
       synced.add(versionKey(key, updatedAt))
-      listeners.forEach((listener) => listener())
+      listeners.forEach(listener => listener())
     },
     awaitChange(key, updatedAt, timeout = 10_000) {
       const versioned = versionKey(key, updatedAt)
@@ -119,7 +119,7 @@ export function syncCollectionOptions<T extends { updatedAt: Date }>(
 
       config
         .events({ signal: abortController.signal })
-        .then(async (events) => {
+        .then(async events => {
           if (abortController.signal.aborted) return
           markReady()
           for await (const item of events) {
@@ -135,7 +135,7 @@ export function syncCollectionOptions<T extends { updatedAt: Date }>(
           if (!abortController.signal.aborted) markReady()
         })
 
-      collection.toArrayWhenReady().then(async (rows) => {
+      collection.toArrayWhenReady().then(async rows => {
         const items = await config.sync({ rows, signal: abortController.signal })
         if (abortController.signal.aborted) return
         begin()
@@ -211,7 +211,7 @@ if (import.meta.env.DEV) {
       table_name: string
       schema_version: number
     }[]
-    const matching = collections.filter((c) => c.collection_id === name)
+    const matching = collections.filter(c => c.collection_id === name)
     if (matching.length === 0) return undefined
 
     return matching.toSorted((a, b) => b.schema_version - a.schema_version)[0]!.table_name
@@ -231,7 +231,7 @@ if (import.meta.env.DEV) {
     }[]
 
     // eslint-disable-next-line no-console
-    console.log(collection.map((c) => JSON.parse(c.value)))
+    console.log(collection.map(c => JSON.parse(c.value)))
   }
 
   // @ts-expect-error window is not typed

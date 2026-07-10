@@ -116,7 +116,7 @@ function CreateConnectionPage() {
       })
 
       if (resource) {
-        getConnectionStore(id).set((state) => ({
+        getConnectionStore(id).set(state => ({
           ...state,
           lastOpenedResourceName: resource,
           pinnedResourcesNames: [resource],
@@ -176,7 +176,7 @@ function CreateConnectionPage() {
     onError: handleConnectionTestError,
   })
 
-  const connectionString = useStore(form.store, (state) => state.values.connectionString)
+  const connectionString = useStore(form.store, state => state.values.connectionString)
   const url = tryCatch(() => new SafeURL(connectionString.trim())).data
   const {
     name,
@@ -184,8 +184,8 @@ function CreateConnectionPage() {
     label,
     color,
     type: typeValue,
-  } = useStore(form.store, (state) => state.values)
-  const isValid = useStore(form.store, (state) => state.isValid)
+  } = useStore(form.store, state => state.values)
+  const isValid = useStore(form.store, state => state.isValid)
 
   const isLocalProxyAvailable = useLocalProxyAvailable()
   const hasPassword = !!url?.password
@@ -206,7 +206,7 @@ function CreateConnectionPage() {
   return (
     <ScrollArea className="py-[10vh]">
       <form
-        onSubmit={(e) => {
+        onSubmit={e => {
           e.preventDefault()
           form.handleSubmit()
         }}
@@ -244,7 +244,7 @@ function CreateConnectionPage() {
           <StepperContent value="type">
             <StepType
               type={typeValue}
-              setType={(type) => {
+              setType={type => {
                 form.setFieldValue('type', type)
                 setStep('credentials')
               }}
@@ -255,7 +255,7 @@ function CreateConnectionPage() {
               ref={inputRef}
               type={typeValue!}
               connectionString={connectionString}
-              setConnectionString={(connectionString) => {
+              setConnectionString={connectionString => {
                 reset()
                 form.setFieldValue('connectionString', connectionString)
               }}
@@ -298,14 +298,14 @@ function CreateConnectionPage() {
               type={typeValue!}
               name={name}
               connectionString={connectionString}
-              setName={(name) => form.setFieldValue('name', name)}
+              setName={name => form.setFieldValue('name', name)}
               onRandomName={() => form.setFieldValue('name', generateRandomName())}
               syncType={syncType}
-              setSyncType={(syncType) => form.setFieldValue('syncType', syncType)}
+              setSyncType={syncType => form.setFieldValue('syncType', syncType)}
               label={label}
-              setLabel={(label) => form.setFieldValue('label', label)}
+              setLabel={label => form.setFieldValue('label', label)}
               color={color}
-              setColor={(color) => form.setFieldValue('color', color)}
+              setColor={color => form.setFieldValue('color', color)}
             />
             <div className="mt-auto flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={() => setStep('credentials')}>

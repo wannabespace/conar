@@ -30,7 +30,7 @@ export function RunnerEditorAIZone({
   onUpdate: (sql: string) => void
   onClose: () => void
 }) {
-  const isOnline = useSubscription(appStore, { selector: (state) => state.isOnline })
+  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const store = getConnectionResourceStore(connectionResource.id)
   const { subscription } = useUserSubscription()
   const [prompt, setPrompt] = useState('')
@@ -63,7 +63,7 @@ export function RunnerEditorAIZone({
 
   const { mutate: updateSQL, isPending } = useMutation(
     orpc.ai.updateSQL.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         setAiSuggestion(data)
         timeoutFocus()
       },
@@ -131,7 +131,7 @@ export function RunnerEditorAIZone({
               ref={ref}
               value={prompt}
               disabled={isPending || !subscription || !isOnline}
-              onChange={(e) => {
+              onChange={e => {
                 setPrompt(e.target.value)
                 setAiSuggestion(null)
               }}
@@ -145,7 +145,7 @@ export function RunnerEditorAIZone({
                   ? 'Update selected SQL with AI'
                   : 'Check your internet connection to update selected SQL'
               }
-              onKeyDown={(e) => {
+              onKeyDown={e => {
                 e.stopPropagation()
 
                 if (e.key === 'Enter' && !e.shiftKey) {

@@ -40,7 +40,7 @@ function Images({ connectionResource }: { connectionResource: ConnectionResource
     return null
   }
 
-  const images = files.map((file) => ({
+  const images = files.map(file => ({
     name: file.name,
     url: URL.createObjectURL(file),
   }))
@@ -48,15 +48,15 @@ function Images({ connectionResource }: { connectionResource: ConnectionResource
   return (
     <ChatImages
       images={images}
-      onRemove={(index) => {
-        store.set((state) => state.filter((_, i) => i !== index))
+      onRemove={index => {
+        store.set(state => state.filter((_, i) => i !== index))
       }}
     />
   )
 }
 
 export function ChatForm() {
-  const isOnline = useSubscription(appStore, { selector: (state) => state.isOnline })
+  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const { chat } = Route.useLoaderData()
   const { error } = Route.useSearch()
   const router = useRouter()
@@ -117,7 +117,7 @@ export function ChatForm() {
             type: 'text',
             text: cachedValue,
           },
-          ...filesBase64.map((base64) => ({
+          ...filesBase64.map(base64 => ({
             type: 'file' as const,
             url: base64,
             mediaType: 'image/png',
@@ -153,7 +153,7 @@ export function ChatForm() {
 
   const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation(
     orpc.ai.enhancePrompt.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         if (input.length < 10) {
           return
         }
@@ -200,7 +200,7 @@ export function ChatForm() {
           ref={ref}
           data-mask
           value={input}
-          setValue={(value) => {
+          setValue={value => {
             inputValue.set(value)
           }}
           placeholder={
@@ -211,7 +211,7 @@ export function ChatForm() {
           className={`max-h-62.5 min-h-12.5 overflow-y-auto p-2 text-sm outline-none`}
           disabled={!subscription || !isOnline}
           onEnter={handleSend}
-          onImageAdd={(file) => {
+          onImageAdd={file => {
             filesStore.set([...files, file])
           }}
         />

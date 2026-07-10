@@ -104,7 +104,7 @@ export async function getSubscription(userId: string) {
     .where(eq(subscriptions.userId, userId))
 
   return (
-    userSubscriptions.find((s) =>
+    userSubscriptions.find(s =>
       ACTIVE_SUBSCRIPTION_STATUSES.includes(
         s.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number],
       ),

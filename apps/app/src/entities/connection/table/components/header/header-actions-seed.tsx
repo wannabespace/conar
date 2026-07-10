@@ -89,9 +89,9 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 function getAvailableGeneratorGroups(column: Column, dialect: ConnectionType) {
   return getGeneratorGroups(dialect)
-    .map((group) =>
+    .map(group =>
       Object.assign(group, {
-        items: group.items.filter((id) => {
+        items: group.items.filter(id => {
           if (id === REFERENCE_GENERATOR) return !!column.foreign
           if (id === ENUM_GENERATOR) return !!column.enumName
           if (id === 'null') return !!column.isNullable
@@ -99,18 +99,18 @@ function getAvailableGeneratorGroups(column: Column, dialect: ConnectionType) {
         }),
       }),
     )
-    .filter((group) => group.items.length > 0)
+    .filter(group => group.items.length > 0)
 }
 
 function CustomExpressionPopover({ columnId }: { columnId: string }) {
   const store = useTablePageStore()
   const customExpression = useSubscription(store, {
-    selector: (state) => state.generators[columnId]?.customExpression,
+    selector: state => state.generators[columnId]?.customExpression,
   })
 
   const updateCustomExpression = (expression?: string) => {
     store.set(
-      (state) =>
+      state =>
         ({
           ...state,
           generators: {
@@ -126,7 +126,7 @@ function CustomExpressionPopover({ columnId }: { columnId: string }) {
 
   return (
     <Popover
-      onOpenChangeComplete={(open) => {
+      onOpenChangeComplete={open => {
         if (!open && !customExpression?.trim()) {
           updateCustomExpression()
         }
@@ -146,7 +146,7 @@ function CustomExpressionPopover({ columnId }: { columnId: string }) {
         <Monaco
           value={customExpression ?? 'SELECT 1'}
           language="sql"
-          onChange={(value) => updateCustomExpression(value)}
+          onChange={value => updateCustomExpression(value)}
           className="h-32"
           options={{
             lineNumbers: 'off',
@@ -188,10 +188,10 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
   const allGenerators = getGenerators(connection.type)
   const [open, setOpen] = useState(false)
   const store = useTablePageStore()
-  const seedsCount = useSubscription(store, { selector: (state) => state.seedsCount })
-  const generators = useSubscription(store, { selector: (state) => state.generators })
+  const seedsCount = useSubscription(store, { selector: state => state.seedsCount })
+  const generators = useSubscription(store, { selector: state => state.generators })
   const { filters, orderBy, exact } = useSubscription(store, {
-    selector: (state) => pick(state, ['filters', 'orderBy', 'exact']),
+    selector: state => pick(state, ['filters', 'orderBy', 'exact']),
   })
 
   const { subscription } = useUserSubscription()
@@ -206,7 +206,7 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
       return
     }
 
-    store.set((state) => {
+    store.set(state => {
       const newGenerators: typeof state.generators = {}
 
       for (const column of columns) {
@@ -235,7 +235,7 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
 
   const toggleNullableGeneration = (columnId: string) => {
     store.set(
-      (state) =>
+      state =>
         ({
           ...state,
           generators: {
@@ -257,15 +257,15 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
       const referenceData = Object.fromEntries(
         await Promise.all(
           columns
-            .filter((c) => c.foreign)
-            .map(async (column) => {
+            .filter(c => c.foreign)
+            .map(async column => {
               const fk = column.foreign!
               const rows = await distinctQuery({
                 schema: fk.schema,
                 table: fk.table,
                 column: fk.column,
               }).run(queryParams)
-              return [column.id, rows.map((r) => r[fk.column])]
+              return [column.id, rows.map(r => r[fk.column])]
             }),
         ),
       )
@@ -310,13 +310,13 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
       )
       setOpen(false)
     },
-    onError: (error) => {
+    onError: error => {
       toast.error('Failed to seed data', { description: error.message })
     },
   })
 
   const activeCount = columns.filter(
-    (c) => generators[c.id]?.generatorId && generators[c.id]?.generatorId !== SKIP_GENERATOR,
+    c => generators[c.id]?.generatorId && generators[c.id]?.generatorId !== SKIP_GENERATOR,
   ).length
 
   return (
@@ -353,7 +353,7 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <Label className="mb-1">Columns</Label>
-              {columns?.map((column) => (
+              {columns?.map(column => (
                 <div
                   key={column.id}
                   className="flex items-center gap-2 rounded-xl border bg-muted/30 px-3 py-2"
@@ -402,13 +402,13 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
                       <div className="flex w-56 gap-1">
                         <Combobox
                           items={getAvailableGeneratorGroups(column, connection.type)}
-                          itemToStringLabel={(id) => allGenerators[id]?.label ?? id}
+                          itemToStringLabel={id => allGenerators[id]?.label ?? id}
                           autoHighlight
                           value={generators[column.id]?.generatorId ?? SKIP_GENERATOR}
-                          onValueChange={(value) => {
+                          onValueChange={value => {
                             if (value && value in allGenerators) {
                               store.set(
-                                (state) =>
+                                state =>
                                   ({
                                     ...state,
                                     generators: {
@@ -477,9 +477,9 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
             min={1}
             max={10000}
             value={seedsCount}
-            onValueChange={(value) =>
+            onValueChange={value =>
               store.set(
-                (state) =>
+                state =>
                   ({
                     ...state,
                     seedsCount: Math.max(1, Math.min(10000, value ?? 1)),

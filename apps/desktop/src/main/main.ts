@@ -22,7 +22,7 @@ export const { autoUpdater } = todesktop
 
 initElectronEvents()
 
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', error => {
   if (isConnectionError(error)) {
     console.error('[Suppressed Connection Error]', error.message)
     return
@@ -30,7 +30,7 @@ process.on('uncaughtException', (error) => {
   throw error
 })
 
-process.on('unhandledRejection', (reason) => {
+process.on('unhandledRejection', reason => {
   if (isConnectionError(reason)) {
     console.error(
       '[Suppressed Connection Rejection]',
@@ -188,7 +188,7 @@ autoUpdater?.on('update-available', () => {
 autoUpdater?.on('update-not-available', () => {
   sendUpdatesStatus('no-updates')
 })
-autoUpdater?.on('error', (e) => {
+autoUpdater?.on('error', e => {
   sendUpdatesStatus('error', e.message.split('\n')[0])
 })
 autoUpdater?.on('download-progress', () => {

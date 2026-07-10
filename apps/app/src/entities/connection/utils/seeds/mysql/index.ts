@@ -14,7 +14,7 @@ const DATE_FORMATS: Record<string, string> = {
 
 function mysqlTransformArray(items: unknown[]): unknown {
   return items
-    .map((v) => (typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)))
+    .map(v => (typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)))
     .join(',')
 }
 

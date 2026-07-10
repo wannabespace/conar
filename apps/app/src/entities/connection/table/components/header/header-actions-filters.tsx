@@ -27,10 +27,10 @@ export function HeaderActionsFilters() {
         align="end"
       >
         <FilterForm
-          onAdd={(filter) => {
+          onAdd={filter => {
             setIsFiltersOpened(false)
             store.set(
-              (state) =>
+              state =>
                 ({
                   ...state,
                   filters: [...state.filters, filter],

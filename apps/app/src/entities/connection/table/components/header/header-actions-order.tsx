@@ -29,7 +29,7 @@ import { columnsOrder, useTablePageStore } from '../../store'
 export function HeaderActionsOrder() {
   const store = useTablePageStore()
   const orderEntries = useSubscription(store, {
-    selector: (state) => Object.entries(state.orderBy || {}),
+    selector: state => Object.entries(state.orderBy || {}),
   })
   const columns = useTableColumns()
   const [open, setOpen] = useState(false)
@@ -42,8 +42,7 @@ export function HeaderActionsOrder() {
   }
 
   const hasOrders = orderEntries.length > 0
-  const availableColumns =
-    columns?.filter((col) => !orderEntries.some(([id]) => id === col.id)) || []
+  const availableColumns = columns?.filter(col => !orderEntries.some(([id]) => id === col.id)) || []
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -102,7 +101,7 @@ export function HeaderActionsOrder() {
                           variant="outline"
                           size="sm"
                           value={[order]}
-                          onValueChange={(value) => {
+                          onValueChange={value => {
                             if (value[0]) setOrder(columnId, value[0])
                           }}
                         >
@@ -154,7 +153,7 @@ export function HeaderActionsOrder() {
                       <CommandList>
                         <CommandEmpty>No columns found.</CommandEmpty>
                         <CommandGroup>
-                          {availableColumns.map((column) => (
+                          {availableColumns.map(column => (
                             <CommandItem
                               key={column.id}
                               value={column.id}

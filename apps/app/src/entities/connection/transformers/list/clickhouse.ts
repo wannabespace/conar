@@ -5,13 +5,13 @@ import { parseToArray } from './shared'
 export function createClickHouseListTransformer(): ValueTransformer<string[]> {
   return {
     toDisplay: getDisplayValue,
-    fromConnection: (value) => ({
+    fromConnection: value => ({
       toUI: () => parseToArray(value),
       toRaw: () => (typeof value === 'string' ? value : JSON.stringify(value)),
     }),
     toConnection: {
-      fromUI: (value) => value,
-      fromRaw: (raw) => parseToArray(raw),
+      fromUI: value => value,
+      fromRaw: raw => parseToArray(raw),
     },
   }
 }

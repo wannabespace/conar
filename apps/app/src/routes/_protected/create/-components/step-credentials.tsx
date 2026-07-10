@@ -45,8 +45,8 @@ export function StepCredentials({
             ref={ref}
             autoFocus
             value={connectionString}
-            onChange={(e) => setConnectionString(e.target.value)}
-            onKeyDown={(e) => {
+            onChange={e => setConnectionString(e.target.value)}
+            onKeyDown={e => {
               if (e.key === 'Enter') {
                 e.preventDefault()
                 onEnter()

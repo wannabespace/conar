@@ -47,7 +47,7 @@ describe('tries', () => {
         throw new Error('first failed')
       },
       async () => {
-        await new Promise((resolve) => setTimeout(resolve, 10))
+        await new Promise(resolve => setTimeout(resolve, 10))
         return 'async success'
       },
     )

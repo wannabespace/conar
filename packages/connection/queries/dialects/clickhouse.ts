@@ -44,7 +44,7 @@ export function wrapClickhouseError<T extends AnyFunction>(fn: T): T {
 }
 
 function isSelectLikeQuery(query: string) {
-  return ['SELECT', 'SHOW', 'DESCRIBE', 'EXPLAIN', 'WITH', 'CHECK'].some((keyword) =>
+  return ['SELECT', 'SHOW', 'DESCRIBE', 'EXPLAIN', 'WITH', 'CHECK'].some(keyword =>
     query.trim().toUpperCase().startsWith(keyword),
   )
 }
@@ -57,7 +57,7 @@ export const query = {
       const start = performance.now()
       const result = await client
         .query({ query, format: 'JSONEachRow' })
-        .then((result) => result.json())
+        .then(result => result.json())
       return { result, duration: performance.now() - start }
     }
 

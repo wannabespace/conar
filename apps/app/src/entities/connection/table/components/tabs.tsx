@@ -153,7 +153,7 @@ function SortableTab({
             {showSchema && <span className="text-muted-foreground">{item.tab.schema}.</span>}
             {item.tab.table}
             <CloseButton
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation()
                 onClose()
               }}
@@ -187,7 +187,7 @@ function SortableTab({
 export function TablesTabs({ className }: { className?: string }) {
   const { connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, { selector: (state) => state.showSystem })
+  const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data: tablesAndSchemas } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
   )
@@ -195,10 +195,10 @@ export function TablesTabs({ className }: { className?: string }) {
     from: '/_protected/connection/$resourceId/table/',
   })
   const router = useRouter()
-  const tabs = useSubscription(store, { selector: (state) => state.tabs })
+  const tabs = useSubscription(store, { selector: state => state.tabs })
 
   const addNewTab = useEffectEvent((schema: string, table: string) => {
-    const tab = tabs.find((tab) => tab.table === table && tab.schema === schema)
+    const tab = tabs.find(tab => tab.table === table && tab.schema === schema)
 
     if (tab) {
       return
@@ -219,13 +219,13 @@ export function TablesTabs({ className }: { className?: string }) {
       })
     }
 
-    tabs.forEach((tab) => {
+    tabs.forEach(tab => {
       removeTab(connectionResource.id, tab.schema, tab.table)
     })
   }
 
   async function closeTabsToTheRight(schema: string, table: string) {
-    const currentIndex = tabs.findIndex((tab) => tab.schema === schema && tab.table === table)
+    const currentIndex = tabs.findIndex(tab => tab.schema === schema && tab.table === table)
 
     if (currentIndex === -1 || currentIndex >= tabs.length - 1) {
       return
@@ -233,7 +233,7 @@ export function TablesTabs({ className }: { className?: string }) {
 
     const tabsToClose = tabs.slice(currentIndex + 1)
     const isActiveTabOnTheRight = tabsToClose.some(
-      (tab) => tab.schema === schemaParam && tab.table === tableParam,
+      tab => tab.schema === schemaParam && tab.table === tableParam,
     )
 
     if (isActiveTabOnTheRight) {
@@ -252,7 +252,7 @@ export function TablesTabs({ className }: { className?: string }) {
   }
 
   async function closeOtherTabs(schema: string, table: string) {
-    const tabsToClose = tabs.filter((tab) => tab.schema !== schema || tab.table !== table)
+    const tabsToClose = tabs.filter(tab => tab.schema !== schema || tab.table !== table)
 
     if (tabsToClose.length === 0) {
       return
@@ -268,7 +268,7 @@ export function TablesTabs({ className }: { className?: string }) {
       })
     }
 
-    tabsToClose.forEach((tab) => {
+    tabsToClose.forEach(tab => {
       removeTab(connectionResource.id, tab.schema, tab.table)
     })
   }
@@ -287,7 +287,7 @@ export function TablesTabs({ className }: { className?: string }) {
       return
     }
 
-    const currentTabIndex = tabs.findIndex((tab) => tab.schema === schema && tab.table === table)
+    const currentTabIndex = tabs.findIndex(tab => tab.schema === schema && tab.table === table)
     const nextTabIndex = currentTabIndex === tabs.length - 1 ? null : currentTabIndex + 1
     const prevTabIndex = currentTabIndex === 0 ? null : currentTabIndex - 1
 
@@ -313,7 +313,7 @@ export function TablesTabs({ className }: { className?: string }) {
     removeTab(connectionResource.id, schema, table)
   }
 
-  useHotkey('Mod+W', (e) => {
+  useHotkey('Mod+W', e => {
     e.preventDefault()
 
     if (schemaParam && tableParam) {
@@ -323,7 +323,7 @@ export function TablesTabs({ className }: { className?: string }) {
 
   const cleanupTabsEvent = useEffectEvent(async (tables: { schema: string; table: string }[]) => {
     const tabsToRemove = tabs.filter(
-      (tab) => !tables.some((t) => t.schema === tab.schema && t.table === tab.table),
+      tab => !tables.some(t => t.schema === tab.schema && t.table === tab.table),
     )
 
     for (const { schema, table } of tabsToRemove) {
@@ -335,17 +335,17 @@ export function TablesTabs({ className }: { className?: string }) {
     if (!tablesAndSchemas) return
 
     cleanupTabsEvent(
-      tablesAndSchemas.schemas.flatMap((schema) =>
-        schema.tables.map((table) => ({ schema: schema.name, table: table.name })),
+      tablesAndSchemas.schemas.flatMap(schema =>
+        schema.tables.map(table => ({ schema: schema.name, table: table.name })),
       ),
     )
   }, [tablesAndSchemas])
 
   const isOneSchema = tabs.length
-    ? tabs.every((tab) => tab.schema === tabs[0]?.schema) && schemaParam === tabs[0]?.schema
+    ? tabs.every(tab => tab.schema === tabs[0]?.schema) && schemaParam === tabs[0]?.schema
     : true
 
-  const tabItems = tabs.map((tab) => ({
+  const tabItems = tabs.map(tab => ({
     id: `${tab.schema}:${tab.table}`,
     tab,
   }))
@@ -355,10 +355,10 @@ export function TablesTabs({ className }: { className?: string }) {
       <Reorder.Group
         axis="x"
         values={tabItems}
-        onReorder={(newItems) => {
+        onReorder={newItems => {
           updateTabs(
             connectionResource.id,
-            newItems.map((item) => item.tab),
+            newItems.map(item => item.tab),
           )
         }}
         className="flex h-full gap-1 p-1"

@@ -39,7 +39,7 @@ export function generateQueryDrizzle({ table, filters }: QueryParams) {
   const varName = camelCase(table)
 
   const conditions = filters
-    .map((f) => {
+    .map(f => {
       const op = f.ref.operator.toUpperCase()
       const col = `${varName}.${camelCase(f.column)}`
       const val = JSON.stringify(f.values[0])
@@ -91,8 +91,8 @@ export function generateSchemaDrizzle({ table, columns, dialect, indexes = [] }:
   const varName = camelCase(table)
 
   const cols = columns
-    .filter((c) => c.type)
-    .map((c) => {
+    .filter(c => c.type)
+    .map(c => {
       let typeFunc = getColumnType(c.type!, 'drizzle', dialect)
 
       dialectImports.add(typeFunc)
@@ -101,7 +101,7 @@ export function generateSchemaDrizzle({ table, columns, dialect, indexes = [] }:
       if (isEnum) {
         const eName = c.enumName || `${table}_${c.id}`
         const enumTypeName = `${camelCase(eName)}Enum`
-        const valuesList = c.availableValues!.map((v) => `'${v}'`).join(', ')
+        const valuesList = c.availableValues!.map(v => `'${v}'`).join(', ')
 
         dialectImports.add(enumFunc)
         extras.push(`export const ${enumTypeName} = ${enumFunc}('${eName}', [${valuesList}]);`)
@@ -165,7 +165,7 @@ export function generateSchemaDrizzle({ table, columns, dialect, indexes = [] }:
         )
       }
 
-      const refEntries = (c.references ?? []).map((ref) => {
+      const refEntries = (c.references ?? []).map(ref => {
         const refTable = resolveRefTable(ref.table)
         let fieldName = camelCase(ref.table)
         if (acc.usedNames.has(fieldName)) {
@@ -178,8 +178,8 @@ export function generateSchemaDrizzle({ table, columns, dialect, indexes = [] }:
         const fkImport = `import { ${refTable} } from './${ref.table}';`
         return { rel, fkImport }
       })
-      acc.relationships.push(...refEntries.map((e) => e.rel))
-      refEntries.forEach((e) => acc.relationshipFkImports.add(e.fkImport))
+      acc.relationships.push(...refEntries.map(e => e.rel))
+      refEntries.forEach(e => acc.relationshipFkImports.add(e.fkImport))
       return acc
     },
     { relationships: [], usedNames: new Set<string>(), relationshipFkImports: new Set<string>() },
@@ -194,22 +194,22 @@ export function generateSchemaDrizzle({ table, columns, dialect, indexes = [] }:
     coreImports.add('relations')
   }
 
-  if (explicitIndexes.some((idx) => idx.customExpressions.length > 0)) {
+  if (explicitIndexes.some(idx => idx.customExpressions.length > 0)) {
     coreImports.add('sql')
   }
 
   let extraConfig = ''
   if (explicitIndexes.length > 0) {
-    const idxDecls = explicitIndexes.map((idx) => {
+    const idxDecls = explicitIndexes.map(idx => {
       const func = idx.isUnique ? 'uniqueIndex' : 'index'
       if (idx.isUnique) dialectImports.add('uniqueIndex')
       else dialectImports.add('index')
 
-      const onCols = idx.columns.map((col) => {
+      const onCols = idx.columns.map(col => {
         const key = camelCase(col)
         return isValidIdentifier(key) ? `t.${key}` : `t['${key}']`
       })
-      return `  ${func}('${idx.name}').on(${[...onCols, ...idx.customExpressions.map((c) => `sql\`${c}\``)].join(', ')}),`
+      return `  ${func}('${idx.name}').on(${[...onCols, ...idx.customExpressions.map(c => `sql\`${c}\``)].join(', ')}),`
     })
     extraConfig = idxDecls.join('\n')
   }

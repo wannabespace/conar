@@ -47,7 +47,7 @@ export function TableProvider({
     horizontal: true,
     count: columns.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: (index) =>
+    estimateSize: index =>
       customColumnSizes?.[columns[index]!.id] ?? columns[index]!.size ?? estimatedColumnSize,
     overscan: horizontalScroll || scrollDirection === null ? 3 : 0,
   })
@@ -86,10 +86,10 @@ export function TableProvider({
     if (!scrollRef.current || !customColumnSizes) return
 
     const customColumnsSizesMap = new Map(Object.entries(customColumnSizes))
-    const columnsToRemove = columns.filter((column) => !customColumnsSizesMap.has(column.id))
+    const columnsToRemove = columns.filter(column => !customColumnsSizesMap.has(column.id))
 
     const rafId = requestAnimationFrame(() => {
-      columnsToRemove.forEach((column) => {
+      columnsToRemove.forEach(column => {
         const id = `--table-column-width-${prepareColumnId(column.id)}`
 
         if (scrollRef.current!.style.getPropertyValue(id)) {

@@ -61,7 +61,7 @@ export function PasswordForm({
         updatedAt: connection.updatedAt,
       })
 
-      connectionStringsCollection.update(connection.id, (draft) => {
+      connectionStringsCollection.update(connection.id, draft => {
         Object.assign(draft, record)
       })
     },
@@ -88,7 +88,7 @@ export function PasswordForm({
         </div>
         <form
           className="flex w-full items-center justify-center"
-          onSubmit={(e) => {
+          onSubmit={e => {
             e.preventDefault()
             savePassword(password)
           }}
@@ -107,7 +107,7 @@ export function PasswordForm({
                     placeholder="••••••••"
                     value={password}
                     disabled={status === 'pending'}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={e => setPassword(e.target.value)}
                     type={showPassword ? 'text' : 'password'}
                     autoCapitalize="none"
                     autoFocus

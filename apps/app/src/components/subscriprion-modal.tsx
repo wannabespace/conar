@@ -17,7 +17,7 @@ import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 
 export function SubscriptionModal() {
   const isSubscriptionDialogOpen = useSubscription(appStore, {
-    selector: (state) => state.isSubscriptionDialogOpen,
+    selector: state => state.isSubscriptionDialogOpen,
   })
   const { subscription } = useUserSubscription()
 

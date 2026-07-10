@@ -50,7 +50,7 @@ export const Route = createFileRoute('/account')({
 function AccountLayout() {
   const router = useRouter()
   const match = useMatches({
-    select: (matches) => matches.map((match) => match.routeId).at(-1),
+    select: matches => matches.map(match => match.routeId).at(-1),
   })
   const { data } = useQuery(orpc.repo.queryOptions())
   const { user } = Route.useLoaderData()

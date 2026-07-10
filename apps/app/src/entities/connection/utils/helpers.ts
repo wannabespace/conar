@@ -39,9 +39,9 @@ export const DANGEROUS_SQL_KEYWORDS = [
 export function hasDangerousSqlKeywords(sql: string) {
   const uncommentedLines = sql
     .split('\n')
-    .filter((line) => !line.trim().startsWith('--'))
+    .filter(line => !line.trim().startsWith('--'))
     .join('\n')
-  const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map((keyword) => `\\b${keyword}\\b`).join(
+  const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(keyword => `\\b${keyword}\\b`).join(
     '|',
   )
   return new RegExp(dangerousKeywordsPattern, 'gi').test(uncommentedLines)

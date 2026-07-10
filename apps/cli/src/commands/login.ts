@@ -21,7 +21,7 @@ export const loginCommand = command({
     force: boolean().alias('f').desc('Sign in even if already authenticated'),
     noOpen: boolean('no-open').desc('Do not attempt to open the browser automatically'),
   },
-  handler: async (opts) => {
+  handler: async opts => {
     const existing = await getSession()
 
     if (existing && !opts.force) {

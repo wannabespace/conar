@@ -174,7 +174,7 @@ export function AuthForm({ type }: { type: Type }) {
     },
   })
 
-  const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
+  const isSubmitting = useStore(form.store, state => state.isSubmitting)
 
   return (
     <>
@@ -191,14 +191,14 @@ export function AuthForm({ type }: { type: Type }) {
       </div>
       <form
         className="space-y-4"
-        onSubmit={(e) => {
+        onSubmit={e => {
           e.preventDefault()
           form.handleSubmit()
         }}
       >
         <Fieldset className="flex w-full flex-col gap-6">
           <form.AppField name="email">
-            {(field) => (
+            {field => (
               <Field>
                 <FieldLabel>Email</FieldLabel>
                 <field.Input
@@ -216,7 +216,7 @@ export function AuthForm({ type }: { type: Type }) {
           </form.AppField>
           {type === 'sign-up' && (
             <form.AppField name="name">
-              {(field) => (
+              {field => (
                 <Field>
                   <FieldLabel>Name</FieldLabel>
                   <field.Input
@@ -231,7 +231,7 @@ export function AuthForm({ type }: { type: Type }) {
             </form.AppField>
           )}
           <form.AppField name="password">
-            {(field) => (
+            {field => (
               <Field>
                 <div className="flex w-full items-center justify-between">
                   <FieldLabel>Password</FieldLabel>

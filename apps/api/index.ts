@@ -34,7 +34,7 @@ const handler = new RPCHandler(router, {
         if (error instanceof ORPCError) {
           if (error.cause instanceof ValidationError) {
             const message = error.cause.issues
-              .map((issue) =>
+              .map(issue =>
                 issue.path
                   ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
                   : issue.message,
@@ -75,7 +75,7 @@ const app = new Hono<{
       credentials: true,
     }),
   )
-  .get('/', (c) => c.redirect(env.MAIN_URL))
+  .get('/', c => c.redirect(env.MAIN_URL))
   .use('*', async (c, next) => {
     const startTime = Date.now()
     const xAppVersion =
@@ -146,7 +146,7 @@ const app = new Hono<{
       console.info(log)
     }
   })
-  .on(['GET', 'POST'], '/auth/*', (c) => {
+  .on(['GET', 'POST'], '/auth/*', c => {
     const req = c.req.raw
 
     const origin = req.headers.get('origin')

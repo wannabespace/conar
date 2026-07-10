@@ -18,7 +18,7 @@ export function distinctQuery({
   return createQuery({
     type: distinctType,
     query: {
-      postgres: (db) =>
+      postgres: db =>
         db
           .withSchema(schema)
           .withTables<{ [table: string]: Record<string, unknown> }>()
@@ -27,7 +27,7 @@ export function distinctQuery({
           .distinct()
           .limit(limit)
           .execute(),
-      mysql: (db) =>
+      mysql: db =>
         db
           .withSchema(schema)
           .withTables<{ [table: string]: Record<string, unknown> }>()
@@ -36,7 +36,7 @@ export function distinctQuery({
           .distinct()
           .limit(limit)
           .execute(),
-      mssql: (db) =>
+      mssql: db =>
         db
           .withSchema(schema)
           .withTables<{ [table: string]: Record<string, unknown> }>()
@@ -45,7 +45,7 @@ export function distinctQuery({
           .distinct()
           .limit(limit)
           .execute(),
-      clickhouse: (db) =>
+      clickhouse: db =>
         db
           .withSchema(schema)
           .withTables<{ [table: string]: Record<string, unknown> }>()

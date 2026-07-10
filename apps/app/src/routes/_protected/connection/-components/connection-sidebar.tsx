@@ -71,7 +71,7 @@ function SupportButton() {
         setOpen(false)
         setMessage('')
       },
-      onError: (err) => {
+      onError: err => {
         console.error(err)
         toast.error('Failed to send message. Please try again later.')
       },
@@ -107,7 +107,7 @@ function SupportButton() {
               <Textarea
                 id="support-message"
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={e => setMessage(e.target.value)}
                 required
                 placeholder="Type any message you'd like to send us"
                 className="min-h-48"
@@ -130,10 +130,10 @@ function MainLinks() {
   const { connectionResource } = Route.useRouteContext()
   const { schema: schemaParam, table: tableParam } = useSearch({ strict: false })
   const match = useMatches({
-    select: (matches) => matches.map((match) => match.routeId).at(-1),
+    select: matches => matches.map(match => match.routeId).at(-1),
   })
   const store = getConnectionResourceStore(connectionResource.id)
-  const lastOpenedTable = useSubscription(store, { selector: (state) => state.lastOpenedTable })
+  const lastOpenedTable = useSubscription(store, { selector: state => state.lastOpenedTable })
 
   useEffect(() => {
     if (
@@ -143,7 +143,7 @@ function MainLinks() {
       schemaParam !== lastOpenedTable?.schema
     ) {
       store.set(
-        (state) =>
+        state =>
           ({
             ...state,
             lastOpenedTable: { schema: schemaParam, table: tableParam },
@@ -178,7 +178,7 @@ function MainLinks() {
   function onTablesClick() {
     if (isCurrentTableAsLastOpened && lastOpenedTable) {
       store.set(
-        (state) =>
+        state =>
           ({
             ...state,
             lastOpenedTable: null,
@@ -187,7 +187,7 @@ function MainLinks() {
     }
   }
 
-  const lastOpenedChatId = useSubscription(store, { selector: (state) => state.lastOpenedChatId })
+  const lastOpenedChatId = useSubscription(store, { selector: state => state.lastOpenedChatId })
 
   return (
     <>
@@ -250,7 +250,7 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
   const { connection, connectionResource } = Route.useRouteContext()
   const { connectionStringsCollection } = useCollections()
   const { data: connectionString } = useLiveQuery(
-    (q) =>
+    q =>
       q
         .from({ cs: connectionStringsCollection })
         .where(({ cs }) => eq(cs.connectionId, connection.id))
@@ -305,8 +305,7 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
               variant="ghost"
               onClick={() =>
                 store.set(
-                  (state) =>
-                    ({ ...state, loggerOpened: !state.loggerOpened }) satisfies typeof state,
+                  state => ({ ...state, loggerOpened: !state.loggerOpened }) satisfies typeof state,
                 )
               }
             >
@@ -324,7 +323,7 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
               variant="ghost"
               onClick={() =>
                 appStore.set(
-                  (state) => ({ ...state, isActionCenterOpen: true }) satisfies typeof state,
+                  state => ({ ...state, isActionCenterOpen: true }) satisfies typeof state,
                 )
               }
             >

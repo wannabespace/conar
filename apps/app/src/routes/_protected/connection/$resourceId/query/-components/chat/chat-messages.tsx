@@ -118,7 +118,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
             text={content}
             successIcon={<RiCheckLine className="text-success" />}
             copyIcon={<RiFileCopyLine className="size-3.5" />}
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation()
             }}
           />
@@ -132,7 +132,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
               <Button
                 size="icon-xs"
                 variant="ghost"
-                onClick={(e) => {
+                onClick={e => {
                   e.stopPropagation()
                   runnerHooks.callHook('appendToBottomAndFocus', content)
                   setIsAppending(true)
@@ -152,7 +152,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
           <DropdownMenu>
             <Tooltip>
               <DropdownMenuTrigger render={<TooltipTrigger asChild />}>
-                <Button size="icon-xs" variant="ghost" onClick={(e) => e.stopPropagation()}>
+                <Button size="icon-xs" variant="ghost" onClick={e => e.stopPropagation()}>
                   <ContentSwitch
                     active={isReplacing}
                     activeContent={<RiCheckLine className="text-success" />}
@@ -167,7 +167,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
             <DropdownMenuContent
               align="end"
               className="max-h-64 min-w-55 overflow-auto"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               <div className="p-2 text-xs font-medium text-muted-foreground">
                 Replace existing query
@@ -181,7 +181,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
                 <DropdownMenuItem
                   key={`${q.startLineNumber}-${q.endLineNumber}`}
                   className="flex w-full items-center justify-between gap-2"
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation()
                     replaceQuery(q)
                   }}
@@ -212,7 +212,7 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts']; loadi
           key={key}
           content={part.text}
           generating={loading}
-          codeActions={(props) => <ChatMessageCodeActions {...props} />}
+          codeActions={props => <ChatMessageCodeActions {...props} />}
         />
       )
     }
@@ -251,7 +251,7 @@ function UserMessage({
     width: 0,
     height: 0,
   })
-  const images = message.parts.filter((part) => part.type === 'file').map((part) => part.url)
+  const images = message.parts.filter(part => part.type === 'file').map(part => part.url)
   const canHide = height > 200
 
   return (
@@ -363,8 +363,8 @@ function AssistantMessage({
             onClick={() =>
               copy(
                 message.parts
-                  .filter((part) => part.type === 'text')
-                  .map((part) => part.text)
+                  .filter(part => part.type === 'text')
+                  .map(part => part.text)
                   .join('\n'),
                 'Message copied to clipboard',
               )

@@ -22,7 +22,7 @@ export function TotpCodeInput({
       </Label>
       <InputOTP id={id} maxLength={TOTP_LENGTH} {...props}>
         <InputOTPGroup>
-          {TOTP_SLOTS.map((slot) => (
+          {TOTP_SLOTS.map(slot => (
             <InputOTPSlot key={slot.key} index={slot.index} />
           ))}
         </InputOTPGroup>

@@ -24,7 +24,7 @@ export function parsePgArrayLiteral(value: string): string[] | undefined {
 }
 
 export function toPgArrayLiteral(items: string[], separator = ','): string {
-  const escaped = items.map((item) => {
+  const escaped = items.map(item => {
     if (item === '') return '""'
 
     if (PG_NEEDS_QUOTING_RE.test(item) || item.toUpperCase() === 'NULL') {
@@ -43,7 +43,7 @@ export function createPostgresListTransformer(column: Column): ValueTransformer<
   const isEnum = !!column.enumName && !!column.availableValues
   return {
     toDisplay: getDisplayValue,
-    fromConnection: (value) => ({
+    fromConnection: value => ({
       toUI: () => {
         if (isEnum && typeof value === 'string') return parseToArray(value, parsePgArrayLiteral)
 
@@ -53,13 +53,13 @@ export function createPostgresListTransformer(column: Column): ValueTransformer<
         isEnum && typeof value === 'string' ? value : value === null ? '' : JSON.stringify(value),
     }),
     toConnection: {
-      fromUI: (value) => {
+      fromUI: value => {
         if (isEnum) return toPgArrayLiteral(value)
 
         // Only enums can have a UI
         throw new Error('Invalid array value')
       },
-      fromRaw: (value) => {
+      fromRaw: value => {
         if (isEnum) return value
 
         if (Array.isArray(value)) return value.map(String)

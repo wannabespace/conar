@@ -23,7 +23,7 @@ export const triggersType = type({
 export const resourceTriggersQuery = createQuery({
   type: triggersType.array(),
   query: {
-    postgres: (db) =>
+    postgres: db =>
       db
         .selectFrom('pg_catalog.pg_trigger as t')
         .innerJoin('pg_catalog.pg_class as c', 't.tgrelid', 'c.oid')
@@ -55,7 +55,7 @@ export const resourceTriggersQuery = createQuery({
         .where('n.nspname', 'not like', 'pg_%')
         .where('n.nspname', '!=', 'information_schema')
         .execute(),
-    mysql: (db) =>
+    mysql: db =>
       db
         .selectFrom('information_schema.TRIGGERS as t')
         .select([
@@ -72,7 +72,7 @@ export const resourceTriggersQuery = createQuery({
           'sys',
         ])
         .execute(),
-    mssql: (db) =>
+    mssql: db =>
       db
         .selectFrom('sys.triggers as t')
         .innerJoin('sys.objects as o', 't.parent_id', 'o.object_id')

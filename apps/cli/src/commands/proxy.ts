@@ -30,7 +30,7 @@ export const proxyCommand = command({
     let resources: Resource[] = []
 
     async function fetchConnections() {
-      const prevIds = new Set(connections.map((c) => c.id))
+      const prevIds = new Set(connections.map(c => c.id))
       const [fetchedConnections, fetchedResources] = await Promise.all([
         apiOrpc.connections.list(),
         apiOrpc.connectionsResources.list(),
@@ -59,14 +59,14 @@ export const proxyCommand = command({
       }
 
       if (input.resourceId) {
-        const resource = resources.find((r) => r.id === input.resourceId)
+        const resource = resources.find(r => r.id === input.resourceId)
         if (!resource) {
           throw new ORPCError('NOT_FOUND', {
             message: `Resource "${input.resourceId}" not found in local cache. Try restarting \`conar proxy\`.`,
           })
         }
 
-        const conn = connections.find((c) => c.id === resource.connectionId)
+        const conn = connections.find(c => c.id === resource.connectionId)
         if (!conn) {
           throw new ORPCError('NOT_FOUND', {
             message: `Connection for resource "${input.resourceId}" not found in local cache.`,
@@ -79,7 +79,7 @@ export const proxyCommand = command({
       }
 
       if (input.connectionId) {
-        const conn = connections.find((c) => c.id === input.connectionId)
+        const conn = connections.find(c => c.id === input.connectionId)
         if (!conn) {
           throw new ORPCError('NOT_FOUND', {
             message: `Connection "${input.connectionId}" not found in local cache. Try restarting \`conar proxy\`.`,
@@ -121,7 +121,7 @@ export const proxyCommand = command({
       }),
     )
 
-    const router = createQueryRouter(authed, (input) => resolveConnectionString(input))
+    const router = createQueryRouter(authed, input => resolveConnectionString(input))
 
     consola.start('Fetching connections...')
     const count = await fetchConnections()
@@ -139,7 +139,7 @@ export const proxyCommand = command({
 
     const handler = new RPCHandler(router, {
       interceptors: [
-        async (options) => {
+        async options => {
           try {
             return await options.next()
           } catch (error) {
@@ -153,7 +153,7 @@ export const proxyCommand = command({
             if (error instanceof ORPCError) {
               if (error.cause instanceof ValidationError) {
                 const message = error.cause.issues
-                  .map((issue) =>
+                  .map(issue =>
                     issue.path
                       ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
                       : issue.message,
@@ -189,7 +189,7 @@ export const proxyCommand = command({
           credentials: true,
         }),
       )
-      .get('/health', (c) =>
+      .get('/health', c =>
         c.json({
           ok: true,
           version: import.meta.env.VERSION,

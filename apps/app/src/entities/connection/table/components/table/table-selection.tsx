@@ -45,10 +45,10 @@ export function SelectionHeaderCell({
   keys: string[]
   className?: string
 }) {
-  const rows = useTableContext((state) => state.rows)
+  const rows = useTableContext(state => state.rows)
   const store = useTablePageStore()
   const [checked, indeterminate] = useSubscription(store, {
-    selector: (state) => [
+    selector: state => [
       !!rows && rows.length > 0 && state.selected.length === rows.length,
       state.selected.length > 0,
     ],
@@ -66,7 +66,7 @@ export function SelectionHeaderCell({
         onChange={() => {
           if (checked) {
             store.set(
-              (state) =>
+              state =>
                 ({
                   ...state,
                   selected: [],
@@ -74,11 +74,11 @@ export function SelectionHeaderCell({
             )
           } else {
             store.set(
-              (state) =>
+              state =>
                 ({
                   ...state,
                   selected:
-                    rows?.map((row) =>
+                    rows?.map(row =>
                       keys.reduce(
                         (acc, key) => {
                           acc[key] = row[key]
@@ -107,12 +107,10 @@ export function SelectionCell({
   className?: string
 }) {
   const store = useTablePageStore()
-  const rows = useTableContext((state) => state.rows)
+  const rows = useTableContext(state => state.rows)
   const { isSelected, currentSelected, lastClickedIndex } = useSubscription(store, {
-    selector: (state) => ({
-      isSelected: state.selected.some((row) =>
-        keys.every((key) => row[key] === rows[rowIndex]![key]),
-      ),
+    selector: state => ({
+      isSelected: state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])),
       currentSelected: state.selected,
       lastClickedIndex: state.lastClickedIndex,
     }),
@@ -129,7 +127,7 @@ export function SelectionCell({
     currentSelected,
     lastClickedIndex,
     getItemsInRange: (start, end) =>
-      rows.slice(start, end + 1).map((row) =>
+      rows.slice(start, end + 1).map(row =>
         keys.reduce<Record<string, string>>((acc, key) => {
           acc[key] = row[key] as string
           return acc
@@ -137,7 +135,7 @@ export function SelectionCell({
       ),
     onSelectionChange: (selected, selectionState, newLastClickedIndex) => {
       store.set(
-        (state) =>
+        state =>
           ({
             ...state,
             selected,
