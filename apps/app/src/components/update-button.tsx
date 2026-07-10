@@ -1,13 +1,12 @@
 import { RiDownloadLine, RiRefreshLine } from '@remixicon/react'
-import { pick } from '@tamery/shared/utils/helpers'
 import { Button } from '@tamery/ui/components/button'
 import { Spinner } from '@tamery/ui/components/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useSubscription } from 'seitu/react'
-import { checkForUpdates, updatesStore } from '~/use-updates-observer'
+import { updatesStore } from '~/use-updates-observer'
 
 export function UpdateButton() {
-  const { version, status } = useSubscription(updatesStore, { selector: state => pick(state, ['version', 'status']) })
+  const status = useSubscription(updatesStore, { selector: state => state.status })
 
   if (!window.electron) {
     return null
@@ -25,15 +24,17 @@ export function UpdateButton() {
     )
   }
 
+  if (status !== 'checking' && status !== 'downloading') {
+    return null
+  }
+
   return (
     <Tooltip>
       <TooltipTrigger render={(
         <Button
           size="icon-sm"
           variant="ghost"
-          aria-label="Check for updates"
-          disabled={status === 'checking' || status === 'downloading'}
-          onClick={() => checkForUpdates()}
+          disabled
         />
       )}
       >
@@ -46,21 +47,10 @@ export function UpdateButton() {
           "
           />
         )}
-        {(status === 'no-updates' || status === 'error') && (
-          <RiRefreshLine className="size-4" />
-        )}
       </TooltipTrigger>
       <TooltipContent side="bottom">
         {status === 'checking' && 'Checking for updates…'}
         {status === 'downloading' && 'Downloading update…'}
-        {status === 'error' && 'Update failed — click to retry'}
-        {status === 'no-updates' && (
-          <>
-            v
-            {version}
-            {' · check for updates'}
-          </>
-        )}
       </TooltipContent>
     </Tooltip>
   )
