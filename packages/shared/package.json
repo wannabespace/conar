@@ -3,7 +3,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "check-types": "tsgo",
+    "check-types": "tsc",
     "test": "bun test"
   },
   "dependencies": {

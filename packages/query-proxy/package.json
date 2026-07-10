@@ -3,7 +3,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "check-types": "tsgo"
+    "check-types": "tsc"
   },
   "dependencies": {
     "@conar/connection": "workspace:*",
@@ -12,6 +12,6 @@
   },
   "devDependencies": {
     "@conar/configs": "workspace:*",
-    "@typescript/native-preview": "catalog:"
+    "typescript": "catalog:"
   }
 }

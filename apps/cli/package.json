@@ -39,7 +39,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "check-types": "tsgo",
+    "check-types": "tsc",
     "prepublishOnly": "tsdown"
   },
   "dependencies": {
@@ -65,8 +65,8 @@
     "@types/bun": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
-    "@typescript/native-preview": "catalog:",
     "memoza": "catalog:",
-    "tsdown": "catalog:"
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
   }
 }

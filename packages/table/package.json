@@ -9,7 +9,7 @@
     "./constants": "./src/constants.ts"
   },
   "scripts": {
-    "check-types": "tsgo"
+    "check-types": "tsc"
   },
   "dependencies": {
     "@conar/shared": "workspace:*",

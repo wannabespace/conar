@@ -61,7 +61,7 @@ pnpm run drizzle:generate   # Generate migration from schema changes
 pnpm run dev                # Start all apps via Turbo
 pnpm run test               # Bun unit tests
 pnpm run test:e2e           # Playwright E2E
-pnpm run check-types        # tsgo type-check across workspace
+pnpm run check-types        # tsc type-check across workspace
 pnpm run lint               # ESLint
 ```
 
