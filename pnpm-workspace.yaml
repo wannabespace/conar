@@ -173,3 +173,9 @@ allowBuilds:
   esbuild: false
   msgpackr-extract: false
   protobufjs: false
+catalogs:
+  # typescript-eslint (via @antfu/eslint-config) has no release supporting TS 7's
+  # native compiler (peer caps typescript <6.1.0), so eslint must run against TS 5.x.
+  # Root workspace uses this; apps/packages keep the default catalog's ^7.0.2 for tsc/build.
+  eslintTs:
+    typescript: 5.9.3

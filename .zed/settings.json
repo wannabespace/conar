@@ -4,6 +4,15 @@
   },
   "formatter": [],
   "languages": {
+    "JavaScript": {
+      "language_servers": ["tsgo", "!vtsls", "!typescript-language-server", "...", "eslint"]
+    },
+    "TypeScript": {
+      "language_servers": ["tsgo", "!vtsls", "!typescript-language-server", "...", "eslint"]
+    },
+    "TSX": {
+      "language_servers": ["tsgo", "!vtsls", "!typescript-language-server", "...", "eslint"]
+    },
     "HTML": {
       "language_servers": ["...", "eslint"]
     },

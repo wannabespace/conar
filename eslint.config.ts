@@ -26,6 +26,9 @@ export default antfu(
         },
       ],
       'pnpm/yaml-enforce-settings': 'off',
+      // Root pins typescript 5.9.3 (eslintTs catalog) so typescript-eslint can run;
+      // apps keep default catalog TS 7. Two typescript catalog entries is intentional.
+      'pnpm/yaml-no-duplicate-catalog-item': 'off',
     },
     ignores: [
       '**/*.md',
