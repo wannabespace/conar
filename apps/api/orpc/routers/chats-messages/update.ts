@@ -3,17 +3,19 @@ import { chats, chatsMessages, chatsMessagesUpdateSchema } from '@conar/db/schem
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
+
 import { orpc, subscriptionMiddleware } from '~/orpc'
+
 import { publisher } from './events'
 
 export const update = orpc
   .use(subscriptionMiddleware)
-  .input(type.and(
-    chatsMessagesUpdateSchema.omit('id'),
-    chatsMessagesUpdateSchema.pick('id').required(),
-  ))
+  .input(
+    type.and(chatsMessagesUpdateSchema.omit('id'), chatsMessagesUpdateSchema.pick('id').required()),
+  )
   .handler(async ({ context, input }) => {
-    const [found] = await db.select({ userId: chats.userId, chatId: chatsMessages.chatId })
+    const [found] = await db
+      .select({ userId: chats.userId, chatId: chatsMessages.chatId })
       .from(chatsMessages)
       .innerJoin(chats, eq(chatsMessages.chatId, chats.id))
       .where(and(eq(chatsMessages.id, input.id), eq(chats.userId, context.user.id)))

@@ -1,7 +1,9 @@
 import { existsSync } from 'node:fs'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
+
 import { defineConfig } from 'tsdown'
+
 import pkg from './package.json' with { type: 'json' }
 
 const envPath = fileURLToPath(new URL('./.env', import.meta.url))

@@ -3,6 +3,7 @@ import { SyncType } from '@conar/shared/enums/sync-type'
 import { decrypt } from '@conar/shared/utils/crypto-node'
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
+
 import { env } from '~/env'
 import { authMiddleware, orpc } from '~/orpc'
 
@@ -20,11 +21,13 @@ export const proxy = {
   resolveConnectionString: orpc
     .use(proxySecretMiddleware)
     .use(authMiddleware)
-    .input(type({
-      'connectionString?': 'string',
-      'resourceId?': 'string',
-      'connectionId?': 'string',
-    }))
+    .input(
+      type({
+        'connectionString?': 'string',
+        'resourceId?': 'string',
+        'connectionId?': 'string',
+      }),
+    )
     .handler(async ({ input, context }) => {
       if (input.connectionString) {
         return input.connectionString
@@ -57,8 +60,14 @@ export const proxy = {
           throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
         }
 
-        if (connection.connection.syncType === SyncType.CloudWithoutPassword && connection.connection.isPasswordExists) {
-          throw new ORPCError('FORBIDDEN', { message: 'This connection is not allowed to be used because it was created as a cloud connection without a password.' })
+        if (
+          connection.connection.syncType === SyncType.CloudWithoutPassword &&
+          connection.connection.isPasswordExists
+        ) {
+          throw new ORPCError('FORBIDDEN', {
+            message:
+              'This connection is not allowed to be used because it was created as a cloud connection without a password.',
+          })
         }
 
         return decrypt({ encryptedText: connection.connection.connectionString, secret })
@@ -85,12 +94,17 @@ export const proxy = {
         }
 
         if (connection.syncType === SyncType.CloudWithoutPassword && connection.isPasswordExists) {
-          throw new ORPCError('FORBIDDEN', { message: 'This connection is not allowed to be used because it was created as a cloud connection without a password.' })
+          throw new ORPCError('FORBIDDEN', {
+            message:
+              'This connection is not allowed to be used because it was created as a cloud connection without a password.',
+          })
         }
 
         return decrypt({ encryptedText: connection.connectionString, secret })
       }
 
-      throw new ORPCError('BAD_REQUEST', { message: 'One of connectionString, resourceId, or connectionId is required' })
+      throw new ORPCError('BAD_REQUEST', {
+        message: 'One of connectionString, resourceId, or connectionId is required',
+      })
     }),
 }

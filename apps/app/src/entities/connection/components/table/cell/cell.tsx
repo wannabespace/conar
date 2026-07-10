@@ -1,24 +1,34 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import type { TableCellProps } from '@conar/table'
-import type { ComponentProps } from 'react'
-import type { SaveStatus } from './cell-context'
-import type { Column, ColumnHandlers } from './utils'
 import { sleep } from '@conar/shared/utils/helpers'
-import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@conar/ui/components/alert-dialog'
+import type { TableCellProps } from '@conar/table'
+import {
+  AlertDialog,
+  AlertDialogClose,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@conar/ui/components/alert-dialog'
 import { Button } from '@conar/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
 import { RiArrowLeftDownLine, RiArrowRightUpLine } from '@remixicon/react'
+import type { ComponentProps } from 'react'
 import { useState } from 'react'
+
 import { createTransformer } from '~/entities/connection/transformers'
+
 import { TableCellContent } from './cell-content'
+import type { SaveStatus } from './cell-context'
 import { useCellContext } from './cell-context'
 import { TableCellContextMenu } from './cell-menu'
 import { CellPopoverContent } from './cell-popover'
 import { TableCellProvider } from './cell-provider'
 import { TableCellReferences } from './cell-references'
 import { TableCellTable } from './cell-table'
+import type { Column, ColumnHandlers } from './utils'
 
 function SetNullAlertDialog({
   open,
@@ -30,8 +40,7 @@ function SetNullAlertDialog({
   const { value, onQueueValue } = useCellContext()
 
   const setNull = async () => {
-    if (!onQueueValue)
-      return
+    if (!onQueueValue) return
 
     onQueueValue(null)
     onOpenChange(false)
@@ -43,16 +52,19 @@ function SetNullAlertDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Set value to null?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will set the cell value to
-            {' '}
-            <code className="font-mono">null</code>
-            .
-            This action can be undone by editing the cell again.
+            This will set the cell value to <code className="font-mono">null</code>. This action can
+            be undone by editing the cell again.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-          <AlertDialogClose render={<Button variant="warning" />} onClick={setNull} disabled={value === null}>Set to null</AlertDialogClose>
+          <AlertDialogClose
+            render={<Button variant="warning" />}
+            onClick={setNull}
+            disabled={value === null}
+          >
+            Set to null
+          </AlertDialogClose>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -61,11 +73,7 @@ function SetNullAlertDialog({
 
 function ForeignButton(props: ComponentProps<'button'>) {
   return (
-    <Button
-      variant="outline"
-      size="icon-xs"
-      {...props}
-    >
+    <Button variant="outline" size="icon-xs" {...props}>
       <RiArrowRightUpLine className="size-3 text-muted-foreground" />
     </Button>
   )
@@ -73,16 +81,9 @@ function ForeignButton(props: ComponentProps<'button'>) {
 
 function ReferenceButton({ children, className, ...props }: ComponentProps<typeof Button>) {
   return (
-    <Button
-      variant="outline"
-      size="xs"
-      className={cn('px-1.5!', className)}
-      {...props}
-    >
+    <Button variant="outline" size="xs" className={cn('px-1.5!', className)} {...props}>
       <RiArrowLeftDownLine className="size-3 text-muted-foreground" />
-      <span className="text-xs text-muted-foreground">
-        {children}
-      </span>
+      <span className="text-xs text-muted-foreground">{children}</span>
     </Button>
   )
 }
@@ -112,7 +113,8 @@ export function TableCell({
   order?: 'ASC' | 'DESC' | null
   connectionType: ConnectionType
   draft?: TableCellDraft
-} & TableCellProps & ColumnHandlers) {
+} & TableCellProps &
+  ColumnHandlers) {
   const transformer = createTransformer(connectionType, column)
   const hasDraft = !!draft
   const effectiveValue = hasDraft ? draft.value : value
@@ -143,7 +145,13 @@ export function TableCell({
   )
 
   function disableInteractIfPossible() {
-    if (!isPopoverOpen && !isForeignOpen && !isReferencesOpen && !isContextMenuOpen && !isSetNullDialogOpen) {
+    if (
+      !isPopoverOpen &&
+      !isForeignOpen &&
+      !isReferencesOpen &&
+      !isContextMenuOpen &&
+      !isSetNullDialogOpen
+    ) {
       sleep(200).then(() => setCanInteract(false))
     }
   }
@@ -162,7 +170,9 @@ export function TableCell({
       >
         <span className="truncate">{displayValue}</span>
         {!!effectiveValue && column.foreign && <ForeignButton />}
-        {!!effectiveValue && column.references && column.references.length > 0 && <ReferenceButton>{column.references.length}</ReferenceButton>}
+        {!!effectiveValue && column.references && column.references.length > 0 && (
+          <ReferenceButton>{column.references.length}</ReferenceButton>
+        )}
       </TableCellContent>
     )
   }
@@ -197,9 +207,9 @@ export function TableCell({
           }
         }}
         style={style}
-        onSetNull={onQueueValue && column.isNullable
-          ? () => setIsSetNullDialogOpen(true)
-          : undefined}
+        onSetNull={
+          onQueueValue && column.isNullable ? () => setIsSetNullDialogOpen(true) : undefined
+        }
       >
         <Popover
           open={isPopoverOpen}
@@ -214,7 +224,7 @@ export function TableCell({
             nativeButton={false}
             onDoubleClick={() => setIsPopoverOpen(true)}
             onMouseLeave={disableInteractIfPossible}
-            render={(
+            render={
               <TableCellContent
                 style={style}
                 value={effectiveValue}
@@ -223,41 +233,34 @@ export function TableCell({
                 column={column}
                 title={draft?.error}
               />
-            )}
+            }
           >
             <span className="truncate">{displayValue}</span>
             {!!effectiveValue && column.foreign && (
-              <Popover
-                open={isForeignOpen}
-                onOpenChange={setIsForeignOpen}
-              >
+              <Popover open={isForeignOpen} onOpenChange={setIsForeignOpen}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <PopoverTrigger render={(
-                      <ForeignButton
-                        onDoubleClick={e => e.stopPropagation()}
-                        onClick={(e) => {
-                          e.stopPropagation()
+                    <PopoverTrigger
+                      render={
+                        <ForeignButton
+                          onDoubleClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation()
 
-                          setIsForeignOpen(true)
-                          setIsPopoverOpen(false)
-                          setIsReferencesOpen(false)
-                        }}
-                      />
-                    )}
+                            setIsForeignOpen(true)
+                            setIsPopoverOpen(false)
+                            setIsReferencesOpen(false)
+                          }}
+                        />
+                      }
                     />
                   </TooltipTrigger>
-                  <TooltipContent side="right">
-                    See foreign record
-                  </TooltipContent>
+                  <TooltipContent side="right">See foreign record</TooltipContent>
                 </Tooltip>
                 <PopoverContent
-                  className="
-                    h-[45vh] w-[80vw] overflow-hidden p-0
-                    **:data-[slot=popover-viewport]:p-0
-                  "
-                  onDoubleClick={e => e.stopPropagation()}
-                  onClick={e => e.stopPropagation()}
+                  className="h-[45vh] w-[80vw] overflow-hidden p-0 **:data-[slot=popover-viewport]:p-0"
+                  onDoubleClick={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <TableCellTable
                     schema={column.foreign.schema}
@@ -269,16 +272,13 @@ export function TableCell({
               </Popover>
             )}
             {!!effectiveValue && column.references && column.references.length > 0 && (
-              <Popover
-                open={isReferencesOpen}
-                onOpenChange={setIsReferencesOpen}
-              >
+              <Popover open={isReferencesOpen} onOpenChange={setIsReferencesOpen}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <PopoverTrigger
-                      render={(
+                      render={
                         <ReferenceButton
-                          onDoubleClick={e => e.stopPropagation()}
+                          onDoubleClick={(e) => e.stopPropagation()}
                           onClick={(e) => {
                             e.stopPropagation()
 
@@ -287,42 +287,31 @@ export function TableCell({
                             setIsForeignOpen(false)
                           }}
                         />
-                      )}
+                      }
                     >
                       {column.references.length}
                     </PopoverTrigger>
                   </TooltipTrigger>
                   <TooltipContent side="right">
-                    See referenced records from
-                    {' '}
-                    {column.references.length}
-                    {' '}
-                    table
+                    See referenced records from {column.references.length} table
                     {column.references.length === 1 ? '' : 's'}
                   </TooltipContent>
                 </Tooltip>
                 <PopoverContent
-                  className="
-                    h-[45vh] w-[80vw] overflow-hidden p-0
-                    **:data-[slot=popover-viewport]:p-0
-                  "
-                  onDoubleClick={e => e.stopPropagation()}
-                  onClick={e => e.stopPropagation()}
+                  className="h-[45vh] w-[80vw] overflow-hidden p-0 **:data-[slot=popover-viewport]:p-0"
+                  onDoubleClick={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <TableCellReferences
-                    references={column.references}
-                    value={effectiveValue}
-                  />
+                  <TableCellReferences references={column.references} value={effectiveValue} />
                 </PopoverContent>
               </Popover>
             )}
           </PopoverTrigger>
           <PopoverContent
-            className={cn(`
-              w-80 gap-0 overflow-auto p-0 duration-100
-              [transition:opacity_0.15s,transform_0.15s,width_0.3s]
-              **:data-[slot=popover-viewport]:p-0
-            `, isBig && `w-[min(50vw,60rem)]`)}
+            className={cn(
+              `w-80 gap-0 overflow-auto p-0 duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s] **:data-[slot=popover-viewport]:p-0`,
+              isBig && `w-[min(50vw,60rem)]`,
+            )}
             onAnimationEnd={disableInteractIfPossible}
           >
             <CellPopoverContent

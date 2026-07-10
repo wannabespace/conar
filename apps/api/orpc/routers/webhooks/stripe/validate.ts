@@ -1,12 +1,12 @@
 import type Stripe from 'stripe'
+
 import { env } from '~/env'
 import { stripe } from '~/lib/stripe'
 
 export async function validateRequest(request: Request): Promise<Stripe.Event> {
   const signature = request.headers.get('stripe-signature')
 
-  if (!signature || !stripe)
-    throw new Error('No signature found in request')
+  if (!signature || !stripe) throw new Error('No signature found in request')
 
   let event: Stripe.Event
 
@@ -16,8 +16,7 @@ export async function validateRequest(request: Request): Promise<Stripe.Event> {
       signature,
       env.STRIPE_WEBHOOK_SECRET!,
     )
-  }
-  catch {
+  } catch {
     throw new Error('Failed to validate request')
   }
 

@@ -1,13 +1,15 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import type { ConnectionString } from './connection-strings'
-import type { BaseTable, SyncUtils } from '~/lib/sync'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import { createCollection, createTransaction } from '@tanstack/react-db'
+
 import { getCollections } from '~/entities/collections'
 import { orpc } from '~/lib/orpc'
+import type { BaseTable, SyncUtils } from '~/lib/sync'
 import { persistence, syncCollectionOptions } from '~/lib/sync'
+
+import type { ConnectionString } from './connection-strings'
 
 function prepareConnectionStringToCloud(connectionString: string, syncType: SyncType) {
   const url = new SafeURL(connectionString.trim())
@@ -43,52 +45,68 @@ export interface ConnectionResource extends BaseTable {
 }
 
 export function createConnectionsCollection() {
-  return createCollection(persistedCollectionOptions<Connection, string, never, SyncUtils>({
-    ...syncCollectionOptions<Connection>({
-      id: 'connections',
-      getKey: item => item.id,
-      events: ({ signal }) => orpc.connections.events.call({}, { signal }),
-      sync: ({ rows, signal }) => orpc.connections.sync.call(rows, { signal }),
-      onInsert: async ({ transaction }) => {
-        await orpc.connections.create.call(
-          await Promise.all(transaction.mutations.map(m => prepareConnectionToCloud(m.modified))),
-        )
-      },
-      onUpdate: async ({ transaction }) => {
-        await Promise.all(transaction.mutations.map(m => orpc.connections.update.call({
-          id: m.key,
-          ...m.changes,
-        })))
-      },
-      onDelete: async ({ transaction }) => {
-        await orpc.connections.remove.call(transaction.mutations.map(m => ({ id: m.key })))
-      },
+  return createCollection(
+    persistedCollectionOptions<Connection, string, never, SyncUtils>({
+      ...syncCollectionOptions<Connection>({
+        id: 'connections',
+        getKey: (item) => item.id,
+        events: ({ signal }) => orpc.connections.events.call({}, { signal }),
+        sync: ({ rows, signal }) => orpc.connections.sync.call(rows, { signal }),
+        onInsert: async ({ transaction }) => {
+          await orpc.connections.create.call(
+            await Promise.all(
+              transaction.mutations.map((m) => prepareConnectionToCloud(m.modified)),
+            ),
+          )
+        },
+        onUpdate: async ({ transaction }) => {
+          await Promise.all(
+            transaction.mutations.map((m) =>
+              orpc.connections.update.call({
+                id: m.key,
+                ...m.changes,
+              }),
+            ),
+          )
+        },
+        onDelete: async ({ transaction }) => {
+          await orpc.connections.remove.call(transaction.mutations.map((m) => ({ id: m.key })))
+        },
+      }),
+      persistence,
+      schemaVersion: 1,
     }),
-    persistence,
-    schemaVersion: 1,
-  }))
+  )
 }
 
 export function createConnectionsResourcesCollection() {
-  return createCollection(persistedCollectionOptions<ConnectionResource, string, never, SyncUtils>({
-    ...syncCollectionOptions<ConnectionResource>({
-      id: 'connections-resources',
-      getKey: item => item.id,
-      events: ({ signal }) => orpc.connectionsResources.events.call({}, { signal }),
-      sync: ({ rows, signal }) => orpc.connectionsResources.sync.call(rows, { signal }),
-      onInsert: async ({ transaction }) => {
-        await orpc.connectionsResources.create.call(transaction.mutations.map(m => m.modified))
-      },
-      onUpdate: async ({ transaction }) => {
-        await Promise.all(transaction.mutations.map(m => orpc.connectionsResources.update.call({ id: m.key, ...m.changes })))
-      },
-      onDelete: async ({ transaction }) => {
-        await orpc.connectionsResources.remove.call(transaction.mutations.map(m => ({ id: m.key })))
-      },
+  return createCollection(
+    persistedCollectionOptions<ConnectionResource, string, never, SyncUtils>({
+      ...syncCollectionOptions<ConnectionResource>({
+        id: 'connections-resources',
+        getKey: (item) => item.id,
+        events: ({ signal }) => orpc.connectionsResources.events.call({}, { signal }),
+        sync: ({ rows, signal }) => orpc.connectionsResources.sync.call(rows, { signal }),
+        onInsert: async ({ transaction }) => {
+          await orpc.connectionsResources.create.call(transaction.mutations.map((m) => m.modified))
+        },
+        onUpdate: async ({ transaction }) => {
+          await Promise.all(
+            transaction.mutations.map((m) =>
+              orpc.connectionsResources.update.call({ id: m.key, ...m.changes }),
+            ),
+          )
+        },
+        onDelete: async ({ transaction }) => {
+          await orpc.connectionsResources.remove.call(
+            transaction.mutations.map((m) => ({ id: m.key })),
+          )
+        },
+      }),
+      persistence,
+      schemaVersion: 1,
     }),
-    persistence,
-    schemaVersion: 1,
-  }))
+  )
 }
 
 export function createConnectionTransaction(data: {
@@ -96,7 +114,8 @@ export function createConnectionTransaction(data: {
   resource: ConnectionResource
   connectionString: ConnectionString
 }) {
-  const { connectionsCollection, connectionsResourcesCollection, connectionStringsCollection } = getCollections()
+  const { connectionsCollection, connectionsResourcesCollection, connectionStringsCollection } =
+    getCollections()
 
   const tx = createTransaction({
     mutationFn: async () => {
@@ -106,7 +125,10 @@ export function createConnectionTransaction(data: {
       if (!window.electron) {
         await Promise.all([
           connectionsCollection.utils.awaitChange(data.connection.id, data.connection.updatedAt),
-          connectionsResourcesCollection.utils.awaitChange(data.resource.id, data.resource.updatedAt),
+          connectionsResourcesCollection.utils.awaitChange(
+            data.resource.id,
+            data.resource.updatedAt,
+          ),
         ])
       }
     },

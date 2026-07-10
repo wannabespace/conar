@@ -1,5 +1,6 @@
 import type { ActiveFilter, Filter } from '@conar/shared/filters'
 import { useEffect, useRef, useState } from 'react'
+
 import { useTableColumns } from '../../columns'
 import { FiltersColumnSelector } from './filters-column-selector'
 import { FiltersSelector } from './filters-selector'
@@ -27,22 +28,19 @@ export function FilterForm({ onAdd }: { onAdd: (filter: ActiveFilter) => void })
     }
   }, [valueRef, selectedFilter])
 
-  const column = columns.find(column => column.id === selectedColumn)
+  const column = columns.find((column) => column.id === selectedColumn)
 
   const handleFilterSelect = (filter: Filter) => {
     if (filter.hasValue === false) {
       onAdd({ column: column!.id, ref: filter, values: [''] })
-    }
-    else {
+    } else {
       setSelectedFilter(filter)
     }
   }
 
   return (
     <div>
-      {!column && (
-        <FiltersColumnSelector onSelect={setSelectedColumn} />
-      )}
+      {!column && <FiltersColumnSelector onSelect={setSelectedColumn} />}
       {column && !selectedFilter && (
         <FiltersSelector
           ref={operatorRef}

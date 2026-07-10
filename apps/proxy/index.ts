@@ -1,22 +1,22 @@
-/* eslint-disable perfectionist/sort-imports */
 import '@conar/shared/arktype-config'
 import process from 'node:process'
+
+import { sanitizeLogData } from '@conar/shared/utils/sanitize-log'
 import { ORPCError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+
 import { env, nodeEnv } from './env'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
-import { sanitizeLogData } from '@conar/shared/utils/sanitize-log'
 
 const handler = new RPCHandler(router, {
   interceptors: [
     async (options) => {
       try {
         return await options.next()
-      }
-      catch (error) {
+      } catch (error) {
         options.context.addLogData({
           error: {
             type: error instanceof Error ? error.constructor.name : typeof error,
@@ -47,16 +47,16 @@ export interface AppVariables {
 const app = new Hono<{
   Variables: AppVariables
 }>()
-  .use(cors({
-    origin(origin) {
-      const allowedOrigins = [
-        'https://conar.app',
-      ]
-      return origin.endsWith('.conar.app') || allowedOrigins.includes(origin) ? origin : null
-    },
-    credentials: true,
-  }))
-  .get('/', c => c.redirect(env.MAIN_URL))
+  .use(
+    cors({
+      origin(origin) {
+        const allowedOrigins = ['https://conar.app']
+        return origin.endsWith('.conar.app') || allowedOrigins.includes(origin) ? origin : null
+      },
+      credentials: true,
+    }),
+  )
+  .get('/', (c) => c.redirect(env.MAIN_URL))
   .use('*', async (c, next) => {
     const startTime = Date.now()
     c.set('logEvent', {})
@@ -91,8 +91,7 @@ const app = new Hono<{
 
     if (status >= 400) {
       console.error(log)
-    }
-    else {
+    } else {
       // eslint-disable-next-line no-console
       console.info(log)
     }

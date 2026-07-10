@@ -3,15 +3,19 @@ import { connectionsResources, connectionsResourcesUpdateSchema } from '@conar/d
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
+
 import { authMiddleware, orpc } from '~/orpc'
+
 import { publisher } from './events'
 
 export const update = orpc
   .use(authMiddleware)
-  .input(type.and(
-    connectionsResourcesUpdateSchema.omit('createdAt', 'updatedAt', 'id', 'connectionId'),
-    connectionsResourcesUpdateSchema.pick('id').required(),
-  ))
+  .input(
+    type.and(
+      connectionsResourcesUpdateSchema.omit('createdAt', 'updatedAt', 'id', 'connectionId'),
+      connectionsResourcesUpdateSchema.pick('id').required(),
+    ),
+  )
   .handler(async ({ context, input }) => {
     const { id, ...changes } = input
 

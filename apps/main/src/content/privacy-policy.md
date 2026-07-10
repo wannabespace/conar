@@ -5,17 +5,21 @@ Conar ("we," "our," "us"), owned by Wannabe Space, LLC, is a database management
 ## 2. What We Store
 
 ### Account and Session Data
+
 - Name, email address, optional profile photo
 - Authentication data: session tokens, login method, IP address, user agent
 - Subscription and billing status (processed via Stripe)
 
 ### Connection Information
+
 Database connection details (host, port, type, username) are **always encrypted locally** using AES-256-GCM with a user-specific key. Passwords are **never sent to our servers by default** — they stay on your device. If you explicitly enable cloud sync for a connection, an encrypted version (password included) is stored in our cloud infrastructure. You can disable this at any time.
 
 ### Chat History
+
 AI conversation history is stored both locally on your device and synced to our cloud servers to enable access across devices.
 
 ### Analytics
+
 Anonymized usage events collected via PostHog (EU servers). Session recording is enabled with all database inputs and data masked.
 
 ## 3. What We Never Store
@@ -26,6 +30,7 @@ Anonymized usage events collected via PostHog (EU servers). Session recording is
 ## 4. What We Send to AI Providers
 
 When you use AI features, we send:
+
 - Your database **schema** (table names, column names, types, enums) — never raw row data
 - Your chat messages and query context
 
@@ -35,16 +40,16 @@ AI requests are routed to **Anthropic** (primary), **OpenAI**, and **Google** as
 
 ## 5. Third-Party Services
 
-| Service | Purpose |
-|---|---|
-| Anthropic, OpenAI, Google | AI-powered SQL generation and assistance |
-| Stripe | Subscription billing and payment processing |
-| PostHog (EU) | Usage analytics (inputs masked) |
-| Resend | Transactional email delivery |
-| Infisical | Secure per-user encryption key management |
-| Exa | Web search for AI features |
-| Upstash / Context7 | Documentation lookup for AI features |
-| Google OAuth, GitHub OAuth | Social login |
+| Service                    | Purpose                                     |
+| -------------------------- | ------------------------------------------- |
+| Anthropic, OpenAI, Google  | AI-powered SQL generation and assistance    |
+| Stripe                     | Subscription billing and payment processing |
+| PostHog (EU)               | Usage analytics (inputs masked)             |
+| Resend                     | Transactional email delivery                |
+| Infisical                  | Secure per-user encryption key management   |
+| Exa                        | Web search for AI features                  |
+| Upstash / Context7         | Documentation lookup for AI features        |
+| Google OAuth, GitHub OAuth | Social login                                |
 
 ## 6. Authentication Methods
 

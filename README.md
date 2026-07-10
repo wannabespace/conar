@@ -53,6 +53,7 @@ Conar is an AI-powered open-source project that simplifies database interactions
 ## Development Setup
 
 - **📦 Package Installation**
+
   ```bash
   pnpm install
   ```
@@ -70,6 +71,7 @@ Conar is an AI-powered open-source project that simplifies database interactions
 - **🗄️ Prepare Database**
 
   This will run database migrations to set up the required tables and schema.
+
   ```bash
   pnpm run drizzle:migrate
   ```
@@ -78,12 +80,12 @@ Conar is an AI-powered open-source project that simplifies database interactions
 
   This starts all development servers through [portless](https://portless.sh) (HTTPS on `.local.conar.app` domains):
 
-  | Service | URL |
-  | --- | --- |
-  | API | https://api.local.conar.app |
-  | App | https://app.local.conar.app |
-  | Main | https://main.local.conar.app |
-  | Proxy | https://proxy.local.conar.app |
+  | Service | URL                           |
+  | ------- | ----------------------------- |
+  | API     | https://api.local.conar.app   |
+  | App     | https://app.local.conar.app   |
+  | Main    | https://main.local.conar.app  |
+  | Proxy   | https://proxy.local.conar.app |
 
   ```bash
   pnpm run dev

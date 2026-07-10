@@ -6,7 +6,7 @@ const IV_LENGTH = 12
 const KEY_LENGTH = 32
 const SALT_LENGTH = 16
 
-export function encrypt({ text, secret }: { text: string, secret: string }) {
+export function encrypt({ text, secret }: { text: string; secret: string }) {
   const iv = crypto.randomBytes(IV_LENGTH)
   const salt = crypto.randomBytes(SALT_LENGTH)
 
@@ -22,7 +22,7 @@ export function encrypt({ text, secret }: { text: string, secret: string }) {
   return `${iv.toString('hex')}.${encrypted.toString('hex')}.${salt.toString('hex')}`
 }
 
-export function decrypt({ encryptedText, secret }: { encryptedText: string, secret: string }) {
+export function decrypt({ encryptedText, secret }: { encryptedText: string; secret: string }) {
   try {
     const [ivBase64, encryptedBase64, saltBase64] = encryptedText.split('.')
 
@@ -41,12 +41,8 @@ export function decrypt({ encryptedText, secret }: { encryptedText: string, secr
     const decipher = crypto.createDecipheriv(ALGORITHM, key, iv)
     decipher.setAuthTag(authTag)
 
-    return Buffer.concat([
-      decipher.update(ciphertext),
-      decipher.final(),
-    ]).toString('utf8')
-  }
-  catch {
+    return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8')
+  } catch {
     throw new Error('Failed to decrypt text')
   }
 }

@@ -47,10 +47,7 @@ export function FlipWords({
         }}
         transition={{ duration: 0.5 }}
         className={cn(
-          `
-            relative z-10 inline-block px-2 text-left text-neutral-900
-            dark:text-neutral-100
-          `,
+          `relative z-10 inline-block px-2 text-left text-neutral-900 dark:text-neutral-100`,
           className,
         )}
         key={currentWord}

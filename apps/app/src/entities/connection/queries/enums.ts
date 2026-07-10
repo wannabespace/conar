@@ -1,6 +1,7 @@
-import type { ConnectionResource } from '../core/sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+
+import type { ConnectionResource } from '../core/sync'
 import { connectionResourceToQueryParams, createQuery } from '../runtime/query'
 
 export const enumType = type({
@@ -19,7 +20,7 @@ export function findEnum({
   column,
   table,
 }: {
-  enums: typeof enumType.infer[]
+  enums: (typeof enumType.infer)[]
   column: {
     id: string
     enumName?: string
@@ -27,9 +28,13 @@ export function findEnum({
   }
   table: string
 }) {
-  return enums.find(e => e.metadata?.table === table && e.metadata?.column === column.id)
-    ?? enums.find(e => (column.enumName && e.name === column.enumName)
-      || (column.type && e.name === column.type))
+  return (
+    enums.find((e) => e.metadata?.table === table && e.metadata?.column === column.id) ??
+    enums.find(
+      (e) =>
+        (column.enumName && e.name === column.enumName) || (column.type && e.name === column.type),
+    )
+  )
 }
 
 const clickhouseEnumRegex = /^Enum\d+\((.*)\)$/
@@ -58,15 +63,16 @@ function parseClickhouseEnum(type: string): string[] {
 
   const match = inner.match(clickhouseEnumRegex)
 
-  if (!match || !match[1])
-    return []
+  if (!match || !match[1]) return []
 
   const pairs = match[1].split(clickhouseEnumValueRegex)
 
-  return pairs.map((pair) => {
-    const valMatch = pair.match(clickhouseEnumValuePairRegex)
-    return valMatch && valMatch[1] ? valMatch[1] : ''
-  }).filter(Boolean)
+  return pairs
+    .map((pair) => {
+      const valMatch = pair.match(clickhouseEnumValuePairRegex)
+      return valMatch && valMatch[1] ? valMatch[1] : ''
+    })
+    .filter(Boolean)
 }
 
 const mysqlEnumOrSetRegex = /^(enum|set)\(/i
@@ -80,7 +86,9 @@ function parseMysqlEnumOrSet(typeString: string): string[] {
   // This splits on commas only outside of single quotes
   return valuesString.length === 0
     ? []
-    : valuesString.split(/,(?=(?:[^']*'[^']*')*[^']*$)/).map(v => v.trim().replace(/^'/, '').replace(/'$/, '').replace(/''/g, '\''))
+    : valuesString
+        .split(/,(?=(?:[^']*'[^']*')*[^']*$)/)
+        .map((v) => v.trim().replace(/^'/, '').replace(/'$/, '').replace(/''/g, "'"))
 }
 
 export const resourceEnumsQuery = createQuery({
@@ -105,8 +113,7 @@ export const resourceEnumsQuery = createQuery({
         const key = `${row.schema}.${row.name}`
         if (grouped.has(key)) {
           grouped.get(key)!.values.push(row.value)
-        }
-        else {
+        } else {
           grouped.set(key, { schema: row.schema, name: row.name, values: [row.value] })
         }
       }
@@ -125,27 +132,31 @@ export const resourceEnumsQuery = createQuery({
         ])
         .where(({ or, and, eb }) =>
           and([
-            eb('TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys']),
-            or([
-              eb('DATA_TYPE', '=', 'enum'),
-              eb('DATA_TYPE', '=', 'set'),
+            eb('TABLE_SCHEMA', 'not in', [
+              'mysql',
+              'information_schema',
+              'performance_schema',
+              'sys',
             ]),
+            or([eb('DATA_TYPE', '=', 'enum'), eb('DATA_TYPE', '=', 'set')]),
           ]),
         )
         .groupBy(['TABLE_SCHEMA', 'TABLE_NAME', 'COLUMN_NAME', 'COLUMN_TYPE', 'DATA_TYPE'])
         .execute()
 
-      return query
-        .map(row => ({
-          name: row.name,
-          schema: row.schema,
-          metadata: {
-            table: row.table,
-            column: row.name,
-            isSet: row.data_type === 'set',
-          },
-          values: parseMysqlEnumOrSet(row.value),
-        } satisfies typeof enumType.infer))
+      return query.map(
+        (row) =>
+          ({
+            name: row.name,
+            schema: row.schema,
+            metadata: {
+              table: row.table,
+              column: row.name,
+              isSet: row.data_type === 'set',
+            },
+            values: parseMysqlEnumOrSet(row.value),
+          }) satisfies typeof enumType.infer,
+      )
     },
     mssql: async (db) => {
       const query = await db
@@ -160,26 +171,25 @@ export const resourceEnumsQuery = createQuery({
         .where(({ or, and, eb }) =>
           and([
             eb('TABLE_SCHEMA', 'not in', ['INFORMATION_SCHEMA', 'information_schema', 'system']),
-            or([
-              eb('DATA_TYPE', '=', 'enum'),
-              eb('DATA_TYPE', '=', 'set'),
-            ]),
+            or([eb('DATA_TYPE', '=', 'enum'), eb('DATA_TYPE', '=', 'set')]),
           ]),
         )
         .groupBy(['TABLE_SCHEMA', 'TABLE_NAME', 'COLUMN_NAME', 'DATA_TYPE'])
         .execute()
 
-      return query
-        .map(row => ({
-          name: row.name,
-          schema: row.schema,
-          metadata: {
-            table: row.table,
-            column: row.name,
-            isSet: row.data_type === 'set',
-          },
-          values: parseMysqlEnumOrSet(row.value),
-        } satisfies typeof enumType.infer))
+      return query.map(
+        (row) =>
+          ({
+            name: row.name,
+            schema: row.schema,
+            metadata: {
+              table: row.table,
+              column: row.name,
+              isSet: row.data_type === 'set',
+            },
+            values: parseMysqlEnumOrSet(row.value),
+          }) satisfies typeof enumType.infer,
+      )
     },
     clickhouse: async (db) => {
       const query = await db
@@ -190,30 +200,40 @@ export const resourceEnumsQuery = createQuery({
           'column_name as name',
           'data_type as type',
         ])
-        .where(({ and, eb }) => and([
-          eb('table_schema', 'not in', ['INFORMATION_SCHEMA', 'information_schema', 'system']),
-          eb('data_type', 'ilike', '%Enum%'),
-        ]))
+        .where(({ and, eb }) =>
+          and([
+            eb('table_schema', 'not in', ['INFORMATION_SCHEMA', 'information_schema', 'system']),
+            eb('data_type', 'ilike', '%Enum%'),
+          ]),
+        )
         .execute()
 
       return query
-        .map(row => ({
-          name: row.name,
-          schema: row.schema,
-          metadata: {
-            table: row.table,
-            column: row.name,
-          },
-          values: parseClickhouseEnum(row.type),
-        } satisfies typeof enumType.infer))
-        .filter(res => res.values.length > 0)
+        .map(
+          (row) =>
+            ({
+              name: row.name,
+              schema: row.schema,
+              metadata: {
+                table: row.table,
+                column: row.name,
+              },
+              values: parseClickhouseEnum(row.type),
+            }) satisfies typeof enumType.infer,
+        )
+        .filter((res) => res.values.length > 0)
     },
   },
 })
 
-export function resourceEnumsQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
+export function resourceEnumsQueryOptions({
+  connectionResource,
+}: {
+  connectionResource: ConnectionResource
+}) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'enums'],
-    queryFn: async () => resourceEnumsQuery.run(await connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () =>
+      resourceEnumsQuery.run(await connectionResourceToQueryParams(connectionResource)),
   })
 }

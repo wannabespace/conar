@@ -1,21 +1,24 @@
 import type { LanguageModelV3 } from '@ai-sdk/provider'
 import { withTracing } from '@posthog/ai'
 import { PostHog } from 'posthog-node'
+
 import { env } from '~/env'
 
 export const posthog = env.POSTHOG_TOKEN
   ? new PostHog(env.POSTHOG_TOKEN, { host: 'https://eu.i.posthog.com' })
   : null
 
-export function withPosthog(model: LanguageModelV3, {
-  userId,
-  ...properties
-}: {
-  userId: string
-  [key: string]: string | number | boolean
-}): LanguageModelV3 {
-  if (!posthog)
-    return model
+export function withPosthog(
+  model: LanguageModelV3,
+  {
+    userId,
+    ...properties
+  }: {
+    userId: string
+    [key: string]: string | number | boolean
+  },
+): LanguageModelV3 {
+  if (!posthog) return model
 
   return withTracing(model, posthog, {
     posthogProperties: properties,

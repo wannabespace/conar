@@ -2,11 +2,11 @@
 
 Guidance for AI coding agents working in this repository.
 
-| Tool | How this file is loaded |
-|------|-------------------------|
-| **Cursor** | Auto-discovered from repo root; also referenced by `.cursor/rules/update-docs.mdc` (`alwaysApply: true`) |
-| **Claude Code** | Add to `CLAUDE.md` or point Claude at this file |
-| **Codex / others** | Auto-discovered as `AGENTS.md`; or paste into your tool's project-instructions config |
+| Tool               | How this file is loaded                                                                                  |
+| ------------------ | -------------------------------------------------------------------------------------------------------- |
+| **Cursor**         | Auto-discovered from repo root; also referenced by `.cursor/rules/update-docs.mdc` (`alwaysApply: true`) |
+| **Claude Code**    | Add to `CLAUDE.md` or point Claude at this file                                                          |
+| **Codex / others** | Auto-discovered as `AGENTS.md`; or paste into your tool's project-instructions config                    |
 
 Edit this file when changing the rules. Do not duplicate the content elsewhere—update here only.
 
@@ -30,11 +30,11 @@ When you change behavior users rely on, update documentation in the same task—
 
 ### Where to edit
 
-| Area | Location |
-|------|----------|
-| Product docs (Mintlify) | `docs/**/*.mdx`, nav in `docs/docs.json` |
-| Doc authoring rules | `docs/AGENTS.md` |
-| Repo overview / setup | Root `README.md` when install or contribution steps change |
+| Area                    | Location                                                   |
+| ----------------------- | ---------------------------------------------------------- |
+| Product docs (Mintlify) | `docs/**/*.mdx`, nav in `docs/docs.json`                   |
+| Doc authoring rules     | `docs/AGENTS.md`                                           |
+| Repo overview / setup   | Root `README.md` when install or contribution steps change |
 
 Follow `docs/AGENTS.md` for Mintlify style (MDX frontmatter, active voice, sentence-case headings).
 

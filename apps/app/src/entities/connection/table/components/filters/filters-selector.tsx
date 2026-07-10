@@ -1,7 +1,14 @@
 import type { Filter } from '@conar/shared/filters'
-import type { RefObject } from 'react'
 import { FILTER_GROUPS, SQL_FILTERS_GROUPED } from '@conar/shared/filters'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@conar/ui/components/command'
+import type { RefObject } from 'react'
 
 export function FiltersSelector({
   ref,
@@ -27,7 +34,7 @@ export function FiltersSelector({
         <CommandEmpty>No operators found.</CommandEmpty>
         {SQL_FILTERS_GROUPED.map(({ group, filters }) => (
           <CommandGroup key={group} heading={FILTER_GROUPS[group]}>
-            {filters.map(filter => (
+            {filters.map((filter) => (
               <CommandItem
                 key={filter.operator}
                 value={filter.operator}
@@ -35,9 +42,7 @@ export function FiltersSelector({
                 onSelect={() => onSelect(filter)}
               >
                 <span>{filter.label}</span>
-                <span className="ml-auto text-xs text-muted-foreground">
-                  {filter.operator}
-                </span>
+                <span className="ml-auto text-xs text-muted-foreground">{filter.operator}</span>
               </CommandItem>
             ))}
           </CommandGroup>

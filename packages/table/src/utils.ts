@@ -5,7 +5,13 @@ export function prepareColumnId(id: string) {
   return id.trim().replace(SPACE_DOT_REGEX, '_')
 }
 
-export function getBaseColumnStyle({ id, defaultSize }: { id: string, defaultSize: number }): CSSProperties {
+export function getBaseColumnStyle({
+  id,
+  defaultSize,
+}: {
+  id: string
+  defaultSize: number
+}): CSSProperties {
   return {
     width: `var(--table-column-width-${prepareColumnId(id)}, ${defaultSize}px)`,
     height: '100%',

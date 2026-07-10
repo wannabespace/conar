@@ -7,6 +7,7 @@ See [`CONTEXT.md`](CONTEXT.md) for domain terminology (Connection, SyncType, GC,
 When you change behavior users rely on, update docs in the same task — do not leave them stale.
 
 **Update when:**
+
 - New or changed features, UI flows, CLI commands, or MCP behavior
 - Connection setup, drivers, security, or connection-string handling
 - Public APIs, auth, billing, plans, or account settings
@@ -14,18 +15,19 @@ When you change behavior users rely on, update docs in the same task — do not 
 - New MDX pages: register them in `docs/docs.json`
 
 **Skip when:**
+
 - Internal refactors with no user-visible change
 - Tests, tooling, CI, or dev-only scripts
 - Typo fixes in code comments or private types
 
 **Where docs live:**
 
-| Area | Location |
-|------|----------|
-| Product docs (Mintlify MDX) | `docs/**/*.mdx` |
-| Doc nav | `docs/docs.json` |
-| Doc authoring style | `docs/AGENTS.md` |
-| Repo setup / contribution | `README.md` |
+| Area                        | Location         |
+| --------------------------- | ---------------- |
+| Product docs (Mintlify MDX) | `docs/**/*.mdx`  |
+| Doc nav                     | `docs/docs.json` |
+| Doc authoring style         | `docs/AGENTS.md` |
+| Repo setup / contribution   | `README.md`      |
 
 After implementing a change: search `docs/` for pages covering the affected area, update them, and wire any new pages into `docs/docs.json`. Follow `docs/AGENTS.md` for Mintlify style (MDX frontmatter, active voice, sentence-case headings).
 
@@ -49,7 +51,7 @@ packages/
   table/        TanStack Virtual table component and hooks.
   shared/       Cross-package utils, enums, constants, types.
   infisical/    Secrets client wrapper (@conar/infisical).
-  configs/      Shared ESLint / TypeScript configs.
+  configs/      Shared TypeScript configs.
 ```
 
 ## Dev commands
@@ -62,10 +64,11 @@ pnpm run dev                # Start all apps via Turbo
 pnpm run test               # Bun unit tests
 pnpm run test:e2e           # Playwright E2E
 pnpm run check-types        # tsc type-check across workspace
-pnpm run lint               # ESLint
+pnpm run lint               # Oxlint
 ```
 
 Local URLs (via portless, requires `pnpm run dev`):
+
 - `https://api.local.conar.app`
 - `https://app.local.conar.app`
 - `https://main.local.conar.app`
@@ -73,16 +76,16 @@ Local URLs (via portless, requires `pnpm run dev`):
 
 ## Architecture constraints
 
-| Topic | Rule |
-|-------|------|
-| API layer | oRPC (`@orpc/server`) — not REST, not tRPC. Routers live in `apps/api/orpc/routers/`. |
-| Client state | TanStack DB collections — not Zustand, not React Context for data. |
-| Cloud DB ORM | Drizzle (`packages/db`) — not raw SQL, not Prisma. |
-| Auth | Better Auth (`apps/api/lib/auth.ts`) — not custom JWT, not NextAuth. |
-| Secrets | Infisical via `@conar/infisical` — not `.env` files in production. |
-| Runtime | Bun — not Node for server processes. Node 22+ supported as fallback. |
-| Testing | Bun test for unit tests. Playwright for E2E. |
-| Styles | TailwindCSS v4 — no inline `style=` props for layout/theme values. |
+| Topic        | Rule                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------- |
+| API layer    | oRPC (`@orpc/server`) — not REST, not tRPC. Routers live in `apps/api/orpc/routers/`. |
+| Client state | TanStack DB collections — not Zustand, not React Context for data.                    |
+| Cloud DB ORM | Drizzle (`packages/db`) — not raw SQL, not Prisma.                                    |
+| Auth         | Better Auth (`apps/api/lib/auth.ts`) — not custom JWT, not NextAuth.                  |
+| Secrets      | Infisical via `@conar/infisical` — not `.env` files in production.                    |
+| Runtime      | Bun — not Node for server processes. Node 22+ supported as fallback.                  |
+| Testing      | Bun test for unit tests. Playwright for E2E.                                          |
+| Styles       | TailwindCSS v4 — no inline `style=` props for layout/theme values.                    |
 
 ## oRPC router pattern
 
@@ -94,7 +97,7 @@ import { authMiddleware, orpc } from '~/orpc'
 import { type } from '@orpc/server'
 
 export const myProcedure = orpc
-  .use(authMiddleware)        // or subscriptionMiddleware, logMiddleware
+  .use(authMiddleware) // or subscriptionMiddleware, logMiddleware
   .input(type<{ id: string }>())
   .handler(async ({ input, context }) => {
     // context.user, context.session available after authMiddleware

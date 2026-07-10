@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-// eslint-disable-next-line ts/no-explicit-any
+// eslint-disable-next-line typescript/no-explicit-any
 export function useDebouncedCallback<T extends (...args: any[]) => any>(
   fn: T,
   deps: React.DependencyList,
@@ -26,11 +26,14 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
     ],
   )
 
-  React.useEffect(() => () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current)
-    }
-  }, [])
+  React.useEffect(
+    () => () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+      }
+    },
+    [],
+  )
 
   return debouncedFn
 }

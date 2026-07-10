@@ -1,31 +1,30 @@
 {
   "name": "conar",
-  "type": "module",
   "version": "0.0.1",
   "description": "Conar CLI – manage and query your connections from the terminal.",
+  "keywords": [
+    "cli",
+    "clickhouse",
+    "conar",
+    "database",
+    "mssql",
+    "mysql",
+    "postgres",
+    "sql"
+  ],
+  "homepage": "https://conar.app",
+  "bugs": {
+    "url": "https://github.com/wannabespace/conar/issues"
+  },
   "author": {
     "name": "Wannabe Space, LLC",
     "email": "wannabespace.llc@gmail.com"
   },
-  "homepage": "https://conar.app",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wannabespace/conar.git",
     "directory": "apps/cli"
   },
-  "bugs": {
-    "url": "https://github.com/wannabespace/conar/issues"
-  },
-  "keywords": [
-    "conar",
-    "cli",
-    "database",
-    "postgres",
-    "mysql",
-    "mssql",
-    "clickhouse",
-    "sql"
-  ],
   "bin": {
     "conar": "./dist/index.js"
   },
@@ -34,9 +33,7 @@
     "README.md",
     "dist"
   ],
-  "engines": {
-    "node": ">=22"
-  },
+  "type": "module",
   "scripts": {
     "build": "tsdown",
     "check-types": "tsc",
@@ -68,5 +65,8 @@
     "memoza": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

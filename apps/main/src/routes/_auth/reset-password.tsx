@@ -7,6 +7,7 @@ import { useStore } from '@tanstack/react-form'
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { toast } from 'sonner'
+
 import { authClient } from '~/lib/auth'
 
 export const Route = createFileRoute('/_auth/reset-password')({
@@ -20,11 +21,14 @@ export const Route = createFileRoute('/_auth/reset-password')({
 })
 
 const passwordSchema = type({
-  password: type('string >= 8').configure({ message: 'Password must be at least 8 characters long' }),
-  confirmPassword: type('string >= 8').configure({ message: 'Password must be at least 8 characters long' }),
+  password: type('string >= 8').configure({
+    message: 'Password must be at least 8 characters long',
+  }),
+  confirmPassword: type('string >= 8').configure({
+    message: 'Password must be at least 8 characters long',
+  }),
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
 function ResetPasswordPage() {
   const navigate = useNavigate()
   const { token } = Route.useSearch()
@@ -55,8 +59,7 @@ function ResetPasswordPage() {
           description: 'You can now sign in with your new password.',
         })
         navigate({ to: '/sign-in' })
-      }
-      else {
+      } else {
         toast.error('Password reset failed', {
           description: 'Please try again or request a new reset link.',
         })
@@ -64,20 +67,15 @@ function ResetPasswordPage() {
     },
   })
 
-  const isSubmitting = useStore(form.store, state => state.isSubmitting)
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
 
   return (
     <>
       <div className="space-y-2">
-        <h1 className={`
-          flex items-center gap-2 text-2xl font-semibold tracking-tight
-        `}
-        >
+        <h1 className={`flex items-center gap-2 text-2xl font-semibold tracking-tight`}>
           Reset your password
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Enter your new password below.
-        </p>
+        <p className="text-sm text-muted-foreground">Enter your new password below.</p>
       </div>
       <form
         className="space-y-4"
@@ -88,11 +86,9 @@ function ResetPasswordPage() {
       >
         <Fieldset className="flex w-full flex-col gap-6">
           <form.AppField name="password">
-            {field => (
+            {(field) => (
               <Field>
-                <FieldLabel>
-                  New Password
-                </FieldLabel>
+                <FieldLabel>New Password</FieldLabel>
                 <field.PasswordInput
                   autoFocus
                   autoComplete="new-password"
@@ -115,11 +111,9 @@ function ResetPasswordPage() {
                   : undefined,
             }}
           >
-            {field => (
+            {(field) => (
               <Field>
-                <FieldLabel>
-                  Confirm Password
-                </FieldLabel>
+                <FieldLabel>Confirm Password</FieldLabel>
                 <field.PasswordInput
                   autoComplete="confirm-password"
                   required
@@ -131,14 +125,8 @@ function ResetPasswordPage() {
               </Field>
             )}
           </form.AppField>
-          <Button
-            className="w-full"
-            type="submit"
-            disabled={isSubmitting}
-          >
-            <LoadingContent loading={isSubmitting}>
-              Reset password
-            </LoadingContent>
+          <Button className="w-full" type="submit" disabled={isSubmitting}>
+            <LoadingContent loading={isSubmitting}>Reset password</LoadingContent>
           </Button>
         </Fieldset>
       </form>

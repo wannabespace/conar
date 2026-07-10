@@ -9,7 +9,7 @@ export const testWithSignUp = test.extend({
   page: async ({ page }, use) => {
     await page.goto('/')
 
-    await page.waitForRequest(r => r.url().includes('/auth/get-session'))
+    await page.waitForRequest((r) => r.url().includes('/auth/get-session'))
     await page.waitForTimeout(300) // Loader animation
 
     await page.getByText('Sign up').click()
@@ -35,7 +35,7 @@ export const testWithSignUp = test.extend({
 
     const submitButton = page.locator('button[type="submit"]')
     expect(submitButton).toContainText('Get started')
-    const requestPromise = page.waitForRequest(r => r.url().includes('/auth/sign-up'))
+    const requestPromise = page.waitForRequest((r) => r.url().includes('/auth/sign-up'))
     submitButton.click()
     await requestPromise
 

@@ -1,5 +1,6 @@
 import { SUBSCRIPTION_PAST_DUE_MESSAGE } from '@conar/shared/constants'
 import { type } from 'arktype'
+
 import { env } from '~/env'
 import { getSubscription, optionalAuthMiddleware, orpc } from '~/orpc'
 
@@ -41,7 +42,11 @@ export const banner = orpc
       })
     }
 
-    if (context.parsedAppVersion?.minor && context.parsedAppVersion.minor === 25 && context.os === 'linux') {
+    if (
+      context.parsedAppVersion?.minor &&
+      context.parsedAppVersion.minor === 25 &&
+      context.os === 'linux'
+    ) {
       items.push({
         text: 'Linux updates broken in 0.25.0 due to provider change. Please download the latest version from conar.app/download',
         type: 'warning',

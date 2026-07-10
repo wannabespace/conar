@@ -12,6 +12,7 @@ import { Link, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { BASE_ERROR_CODES } from 'better-auth'
 import { toast } from 'sonner'
+
 import { authClient, getLastUsedLoginMethod } from '~/lib/auth'
 import { Route } from '~/routes/_auth'
 import { handleError } from '~/utils/error'
@@ -20,7 +21,9 @@ type Type = 'sign-up' | 'sign-in'
 
 const baseAuthSchema = type({
   email: type('string.email').configure({ message: 'Invalid email address' }),
-  password: type('string >= 8').configure({ message: 'Password must be at least 8 characters long' }),
+  password: type('string >= 8').configure({
+    message: 'Password must be at least 8 characters long',
+  }),
 })
 
 const twoFactorRedirectSchema = type({
@@ -61,10 +64,7 @@ function useSocialMutation(provider: 'google' | 'github') {
 
 function Last() {
   return (
-    <Badge
-      variant="secondary"
-      className="pointer-events-none absolute -top-2 -right-2"
-    >
+    <Badge variant="secondary" className="pointer-events-none absolute -top-2 -right-2">
       Last
     </Badge>
   )
@@ -113,23 +113,23 @@ export function AuthForm({ type }: { type: Type }) {
   const router = useRouter()
 
   const form = useAppForm({
-    defaultValues: type === 'sign-up'
-      ? { email: '', password: '', name: '' }
-      : { email: '', password: '' },
+    defaultValues:
+      type === 'sign-up' ? { email: '', password: '', name: '' } : { email: '', password: '' },
     validators: {
       onSubmit: type === 'sign-up' ? signUpSchema : signInSchema,
     },
     onSubmit: async ({ value }) => {
-      const { error, data } = type === 'sign-up'
-        ? await authClient.signUp.email({
-            email: value.email,
-            password: value.password,
-            name: (value as typeof signUpSchema.infer).name,
-          })
-        : await authClient.signIn.email({
-            email: value.email,
-            password: value.password,
-          })
+      const { error, data } =
+        type === 'sign-up'
+          ? await authClient.signUp.email({
+              email: value.email,
+              password: value.password,
+              name: (value as typeof signUpSchema.infer).name,
+            })
+          : await authClient.signIn.email({
+              email: value.email,
+              password: value.password,
+            })
 
       if (type === 'sign-in' && twoFactorRedirectSchema.allows(data)) {
         await router.navigate({ to: '/two-factor', search })
@@ -142,7 +142,11 @@ export function AuthForm({ type }: { type: Type }) {
           return
         }
 
-        if (type === 'sign-up' && (error!.code === BASE_ERROR_CODES.USER_ALREADY_EXISTS.code || error!.code === BASE_ERROR_CODES.USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL.code)) {
+        if (
+          type === 'sign-up' &&
+          (error!.code === BASE_ERROR_CODES.USER_ALREADY_EXISTS.code ||
+            error!.code === BASE_ERROR_CODES.USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL.code)
+        ) {
           toast.error('User already exists. Please sign in or use a different email address.', {
             action: {
               label: 'Sign in',
@@ -151,8 +155,7 @@ export function AuthForm({ type }: { type: Type }) {
               },
             },
           })
-        }
-        else {
+        } else {
           handleError(error)
         }
       }
@@ -165,14 +168,13 @@ export function AuthForm({ type }: { type: Type }) {
         }
 
         await router.navigate({ to: url.pathname + url.search })
-      }
-      else {
+      } else {
         await router.invalidate()
       }
     },
   })
 
-  const isSubmitting = useStore(form.store, state => state.isSubmitting)
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
 
   return (
     <>
@@ -181,14 +183,8 @@ export function AuthForm({ type }: { type: Type }) {
           {type === 'sign-up' ? 'Create an account' : 'Sign in to your account'}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {type === 'sign-up'
-            ? 'Already have an account?'
-            : 'Don\'t have an account?'}
-          {' '}
-          <Link
-            to={type === 'sign-up' ? '/sign-in' : '/sign-up'}
-            search={search}
-          >
+          {type === 'sign-up' ? 'Already have an account?' : "Don't have an account?"}{' '}
+          <Link to={type === 'sign-up' ? '/sign-in' : '/sign-up'} search={search}>
             {type === 'sign-up' ? 'Sign in' : 'Sign up'}
           </Link>
         </p>
@@ -202,11 +198,9 @@ export function AuthForm({ type }: { type: Type }) {
       >
         <Fieldset className="flex w-full flex-col gap-6">
           <form.AppField name="email">
-            {field => (
+            {(field) => (
               <Field>
-                <FieldLabel>
-                  Email
-                </FieldLabel>
+                <FieldLabel>Email</FieldLabel>
                 <field.Input
                   placeholder="example@gmail.com"
                   type="email"
@@ -222,11 +216,9 @@ export function AuthForm({ type }: { type: Type }) {
           </form.AppField>
           {type === 'sign-up' && (
             <form.AppField name="name">
-              {field => (
+              {(field) => (
                 <Field>
-                  <FieldLabel>
-                    Name
-                  </FieldLabel>
+                  <FieldLabel>Name</FieldLabel>
                   <field.Input
                     placeholder="John Doe"
                     autoComplete="name"
@@ -239,7 +231,7 @@ export function AuthForm({ type }: { type: Type }) {
             </form.AppField>
           )}
           <form.AppField name="password">
-            {field => (
+            {(field) => (
               <Field>
                 <div className="flex w-full items-center justify-between">
                   <FieldLabel>Password</FieldLabel>
@@ -254,19 +246,12 @@ export function AuthForm({ type }: { type: Type }) {
                     </Button>
                   )}
                 </div>
-                <field.PasswordInput
-                  autoComplete="password"
-                  placeholder="••••••••"
-                />
+                <field.PasswordInput autoComplete="password" placeholder="••••••••" />
                 <field.Error />
               </Field>
             )}
           </form.AppField>
-          <Button
-            className="w-full"
-            type="submit"
-            disabled={isSubmitting}
-          >
+          <Button className="w-full" type="submit" disabled={isSubmitting}>
             <LoadingContent loading={isSubmitting}>
               {type === 'sign-up' ? 'Get started' : 'Sign in'}
             </LoadingContent>
@@ -276,10 +261,8 @@ export function AuthForm({ type }: { type: Type }) {
       </form>
       <div className="relative">
         <Separator />
-        <span className={`
-          absolute top-1/2 left-1/2 -translate-1/2 bg-background px-4 text-sm
-          text-muted-foreground
-        `}
+        <span
+          className={`absolute top-1/2 left-1/2 -translate-1/2 bg-background px-4 text-sm text-muted-foreground`}
         >
           Or continue with
         </span>

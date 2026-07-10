@@ -7,12 +7,14 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiChatAiLine, RiStopLine, RiVipCrownLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
+
 import { Monaco } from '~/components/monaco'
 import { toggleChat } from '~/entities/connection/store'
 import { useSubscription } from '~/entities/user/hooks/use-subscription'
 import { queryClient } from '~/main'
 import { setIsSubscriptionDialogOpen } from '~/store'
 import { formatSql } from '~/utils/formatter'
+
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
 import { RunnerResultsTable } from './runner-results-table'
@@ -21,7 +23,9 @@ export function RunnerResults() {
   const { chatId } = Route.useSearch()
   const { subscription } = useSubscription()
   const { connection, connectionResource } = Route.useRouteContext()
-  const { data: results, fetchStatus: queryStatus } = useQuery(runnerQueryOptions(connectionResource))
+  const { data: results, fetchStatus: queryStatus } = useQuery(
+    runnerQueryOptions(connectionResource),
+  )
 
   function handleStop() {
     queryClient.cancelQueries(runnerQueryOptions(connectionResource))
@@ -32,11 +36,7 @@ export function RunnerResults() {
       <div className="flex h-full flex-col items-center justify-center gap-2">
         <Spinner className="size-6 text-primary" />
         <p className="text-center text-foreground">Running...</p>
-        <Button
-          size="xs"
-          variant="secondary"
-          onClick={handleStop}
-        >
+        <Button size="xs" variant="secondary" onClick={handleStop}>
           <RiStopLine className="size-3" />
           Stop
         </Button>
@@ -58,13 +58,13 @@ export function RunnerResults() {
               >
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className={cn(`
-                      flex w-full items-center justify-center gap-1
-                    `, error && `text-destructive`)}
+                    <span
+                      className={cn(
+                        `flex w-full items-center justify-center gap-1`,
+                        error && `text-destructive`,
+                      )}
                     >
-                      Result
-                      {' '}
-                      {results.length > 1 ? index + 1 : ''}
+                      Result {results.length > 1 ? index + 1 : ''}
                     </span>
                   </TooltipTrigger>
                   <TooltipContent sideOffset={8} className="w-lg p-0 pl-2">
@@ -92,82 +92,65 @@ export function RunnerResults() {
             value={`table-${index}`}
             className="h-[calc(100%-(--spacing(8)))]"
           >
-            {error
-              ? (
-                  <div className={`
-                    mx-auto flex h-full max-w-2/3 flex-col items-center
-                    justify-center gap-2
-                  `}
-                  >
-                    Error executing query
-                    <div className={`
-                      mb-2 max-h-1/2 max-w-full overflow-auto rounded-sm
-                      bg-red-50 px-2 py-1 font-mono text-xs text-balance
-                      text-red-700
-                      dark:bg-red-950 dark:text-red-300
-                    `}
-                    >
-                      {error}
-                    </div>
-                    {subscription
-                      ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => toggleChat(connection.id, true)}
-                            render={(
-                              <Link
-                                to="/connection/$resourceId/query"
-                                params={{ resourceId: connectionResource.id }}
-                                search={{
-                                  chatId,
-                                  error: [
-                                    `Fix the following SQL error by correcting the SQL query on the lines ${startLineNumber} - ${endLineNumber}:`,
-                                    error,
-                                  ].join('\n'),
-                                }}
-                              />
-                            )}
-                          >
-                            <RiChatAiLine />
-                            Fix in chat
-                          </Button>
-                        )
-                      : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setIsSubscriptionDialogOpen(true)}
-                          >
-                            Fix in chat
-                            <RiVipCrownLine className="size-4" />
-                          </Button>
-                        )}
-                  </div>
-                )
-              : !data || !data[0] || data.length === 0
-                  ? (
-                      <div className={`
-                        flex h-full flex-col items-center justify-center gap-2
-                      `}
-                      >
-                        No data returned
-                        {' '}
-                        <span className="text-muted-foreground">
-                          (
-                          {duration.toFixed()}
-                          ms)
-                        </span>
-                      </div>
-                    )
-                  : (
-                      <RunnerResultsTable
-                        data={data}
-                        columns={Object.keys(data[0]!).map(key => ({ id: key }))}
-                        duration={duration}
-                        connectionType={connection.type}
+            {error ? (
+              <div
+                className={`mx-auto flex h-full max-w-2/3 flex-col items-center justify-center gap-2`}
+              >
+                Error executing query
+                <div
+                  className={`mb-2 max-h-1/2 max-w-full overflow-auto rounded-sm bg-red-50 px-2 py-1 font-mono text-xs text-balance text-red-700 dark:bg-red-950 dark:text-red-300`}
+                >
+                  {error}
+                </div>
+                {subscription ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => toggleChat(connection.id, true)}
+                    render={
+                      <Link
+                        to="/connection/$resourceId/query"
+                        params={{ resourceId: connectionResource.id }}
+                        search={{
+                          chatId,
+                          error: [
+                            `Fix the following SQL error by correcting the SQL query on the lines ${startLineNumber} - ${endLineNumber}:`,
+                            error,
+                          ].join('\n'),
+                        }}
                       />
-                    )}
+                    }
+                  >
+                    <RiChatAiLine />
+                    Fix in chat
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setIsSubscriptionDialogOpen(true)}
+                  >
+                    Fix in chat
+                    <RiVipCrownLine className="size-4" />
+                  </Button>
+                )}
+              </div>
+            ) : !data || !data[0] || data.length === 0 ? (
+              <div className={`flex h-full flex-col items-center justify-center gap-2`}>
+                No data returned{' '}
+                <span className="text-muted-foreground">
+                  ({duration.toFixed()}
+                  ms)
+                </span>
+              </div>
+            ) : (
+              <RunnerResultsTable
+                data={data}
+                columns={Object.keys(data[0]!).map((key) => ({ id: key }))}
+                duration={duration}
+                connectionType={connection.type}
+              />
+            )}
           </TabsContent>
         ))}
       </Tabs>
@@ -178,11 +161,7 @@ export function RunnerResults() {
     <div className="flex h-full flex-col items-center justify-center">
       <p className="text-center">No results to display</p>
       <p className="mt-1 text-center text-xs text-muted-foreground">
-        Write and run a
-        {' '}
-        <span className="font-mono">SELECT</span>
-        {' '}
-        query above to see results here
+        Write and run a <span className="font-mono">SELECT</span> query above to see results here
       </p>
     </div>
   )

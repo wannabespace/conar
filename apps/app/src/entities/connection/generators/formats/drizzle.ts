@@ -1,14 +1,32 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
-import type { QueryParams, SchemaParams } from '..'
 import { camelCase, pascalCase } from 'change-case'
-import * as templates from '../templates'
-import { filterExplicitIndexes, getColumnType, groupIndexes, isValidIdentifier, toLiteralKey } from '../utils'
 
-const dialectConfig: Record<ConnectionType, { tableFunc: string, dialectImportPath: string, enumFunc?: string }> = {
+import type { QueryParams, SchemaParams } from '..'
+import * as templates from '../templates'
+import {
+  filterExplicitIndexes,
+  getColumnType,
+  groupIndexes,
+  isValidIdentifier,
+  toLiteralKey,
+} from '../utils'
+
+const dialectConfig: Record<
+  ConnectionType,
+  { tableFunc: string; dialectImportPath: string; enumFunc?: string }
+> = {
   postgres: { tableFunc: 'pgTable', dialectImportPath: 'drizzle-orm/pg-core', enumFunc: 'pgEnum' },
-  mysql: { tableFunc: 'mysqlTable', dialectImportPath: 'drizzle-orm/mysql-core', enumFunc: 'mysqlEnum' },
+  mysql: {
+    tableFunc: 'mysqlTable',
+    dialectImportPath: 'drizzle-orm/mysql-core',
+    enumFunc: 'mysqlEnum',
+  },
   mssql: { tableFunc: 'mssqlTable', dialectImportPath: 'drizzle-orm/mssql-core' },
-  clickhouse: { tableFunc: 'clickhouseTable', dialectImportPath: 'drizzle-orm/clickhouse-core', enumFunc: 'enum' },
+  clickhouse: {
+    tableFunc: 'clickhouseTable',
+    dialectImportPath: 'drizzle-orm/clickhouse-core',
+    enumFunc: 'enum',
+  },
 }
 
 const FK_SUFFIX_RE = /(_id|Id)$/
@@ -17,44 +35,52 @@ function resolveRefTable(table: string): string {
   return isValidIdentifier(table) ? table : pascalCase(table)
 }
 
-export function generateQueryDrizzle({
-  table,
-  filters,
-}: QueryParams) {
+export function generateQueryDrizzle({ table, filters }: QueryParams) {
   const varName = camelCase(table)
 
-  const conditions = filters.map((f) => {
-    const op = f.ref.operator.toUpperCase()
-    const col = `${varName}.${camelCase(f.column)}`
-    const val = JSON.stringify(f.values[0])
-    const arrVal = JSON.stringify(f.values)
+  const conditions = filters
+    .map((f) => {
+      const op = f.ref.operator.toUpperCase()
+      const col = `${varName}.${camelCase(f.column)}`
+      const val = JSON.stringify(f.values[0])
+      const arrVal = JSON.stringify(f.values)
 
-    switch (op) {
-      case '=': return `eq(${col}, ${val})`
-      case '!=': return `ne(${col}, ${val})`
-      case '>': return `gt(${col}, ${val})`
-      case '>=': return `gte(${col}, ${val})`
-      case '<': return `lt(${col}, ${val})`
-      case '<=': return `lte(${col}, ${val})`
-      case 'IS NULL': return `isNull(${col})`
-      case 'IS NOT NULL': return `isNotNull(${col})`
-      case 'IN': return `inArray(${col}, ${arrVal})`
-      case 'NOT IN': return `notInArray(${col}, ${arrVal})`
-      case 'LIKE': return `like(${col}, ${val})`
-      case 'ILIKE': return `ilike(${col}, ${val})`
-      default: return undefined
-    }
-  }).filter(Boolean).join(',\n    ')
+      switch (op) {
+        case '=':
+          return `eq(${col}, ${val})`
+        case '!=':
+          return `ne(${col}, ${val})`
+        case '>':
+          return `gt(${col}, ${val})`
+        case '>=':
+          return `gte(${col}, ${val})`
+        case '<':
+          return `lt(${col}, ${val})`
+        case '<=':
+          return `lte(${col}, ${val})`
+        case 'IS NULL':
+          return `isNull(${col})`
+        case 'IS NOT NULL':
+          return `isNotNull(${col})`
+        case 'IN':
+          return `inArray(${col}, ${arrVal})`
+        case 'NOT IN':
+          return `notInArray(${col}, ${arrVal})`
+        case 'LIKE':
+          return `like(${col}, ${val})`
+        case 'ILIKE':
+          return `ilike(${col}, ${val})`
+        default:
+          return undefined
+      }
+    })
+    .filter(Boolean)
+    .join(',\n    ')
 
   return templates.drizzleQueryTemplate(varName, conditions)
 }
 
-export function generateSchemaDrizzle({
-  table,
-  columns,
-  dialect,
-  indexes = [],
-}: SchemaParams) {
+export function generateSchemaDrizzle({ table, columns, dialect, indexes = [] }: SchemaParams) {
   const { tableFunc, dialectImportPath, enumFunc } = dialectConfig[dialect]
 
   const coreImports = new Set<string>()
@@ -64,92 +90,100 @@ export function generateSchemaDrizzle({
 
   const varName = camelCase(table)
 
-  const cols = columns.filter(c => c.type).map((c) => {
-    let typeFunc = getColumnType(c.type!, 'drizzle', dialect)
+  const cols = columns
+    .filter((c) => c.type)
+    .map((c) => {
+      let typeFunc = getColumnType(c.type!, 'drizzle', dialect)
 
-    dialectImports.add(typeFunc)
+      dialectImports.add(typeFunc)
 
-    const isEnum = enumFunc && c.enumName && c.availableValues?.length
-    if (isEnum) {
-      const eName = c.enumName || `${table}_${c.id}`
-      const enumTypeName = `${camelCase(eName)}Enum`
-      const valuesList = c.availableValues!.map(v => `'${v}'`).join(', ')
+      const isEnum = enumFunc && c.enumName && c.availableValues?.length
+      if (isEnum) {
+        const eName = c.enumName || `${table}_${c.id}`
+        const enumTypeName = `${camelCase(eName)}Enum`
+        const valuesList = c.availableValues!.map((v) => `'${v}'`).join(', ')
 
-      dialectImports.add(enumFunc)
-      extras.push(`export const ${enumTypeName} = ${enumFunc}('${eName}', [${valuesList}]);`)
+        dialectImports.add(enumFunc)
+        extras.push(`export const ${enumTypeName} = ${enumFunc}('${eName}', [${valuesList}]);`)
 
-      typeFunc = enumTypeName
-    }
-
-    const key = camelCase(c.id)
-    const safeKey = toLiteralKey(key)
-    const sameCase = key === c.id
-
-    let options = ''
-    if (!isEnum) {
-      if (c.maxLength && c.maxLength !== -1 && ['varchar', 'char', 'nvarchar'].includes(typeFunc)) {
-        options = `, { length: ${c.maxLength} }`
+        typeFunc = enumTypeName
       }
-      else if (typeFunc === 'decimal' && c.precision) {
-        options = `, { precision: ${c.precision}${c.scale ? `, scale: ${c.scale}` : ''} }`
+
+      const key = camelCase(c.id)
+      const safeKey = toLiteralKey(key)
+      const sameCase = key === c.id
+
+      let options = ''
+      if (!isEnum) {
+        if (
+          c.maxLength &&
+          c.maxLength !== -1 &&
+          ['varchar', 'char', 'nvarchar'].includes(typeFunc)
+        ) {
+          options = `, { length: ${c.maxLength} }`
+        } else if (typeFunc === 'decimal' && c.precision) {
+          options = `, { precision: ${c.precision}${c.scale ? `, scale: ${c.scale}` : ''} }`
+        }
       }
-    }
 
-    let chain = sameCase ? `${typeFunc}(${options ? options.slice(2).trim() : ''})` : `${typeFunc}('${c.id}'${options})`
+      let chain = sameCase
+        ? `${typeFunc}(${options ? options.slice(2).trim() : ''})`
+        : `${typeFunc}('${c.id}'${options})`
 
-    if (!c.isNullable)
-      chain += '.notNull()'
-    if (c.primaryKey)
-      chain += '.primaryKey()'
-    if (c.unique && !c.primaryKey)
-      chain += '.unique()'
+      if (!c.isNullable) chain += '.notNull()'
+      if (c.primaryKey) chain += '.primaryKey()'
+      if (c.unique && !c.primaryKey) chain += '.unique()'
 
-    if (c.foreign && dialect !== 'clickhouse') {
-      const refTable = resolveRefTable(c.foreign.table)
-      const fkOptions = []
-      if (c.foreign.onDelete)
-        fkOptions.push(`onDelete: '${c.foreign.onDelete.toLowerCase()}'`)
-      if (c.foreign.onUpdate)
-        fkOptions.push(`onUpdate: '${c.foreign.onUpdate.toLowerCase()}'`)
+      if (c.foreign && dialect !== 'clickhouse') {
+        const refTable = resolveRefTable(c.foreign.table)
+        const fkOptions = []
+        if (c.foreign.onDelete) fkOptions.push(`onDelete: '${c.foreign.onDelete.toLowerCase()}'`)
+        if (c.foreign.onUpdate) fkOptions.push(`onUpdate: '${c.foreign.onUpdate.toLowerCase()}'`)
 
-      const optionStr = fkOptions.length ? `, { ${fkOptions.join(', ')} }` : ''
-      chain += `.references(() => ${refTable}.${camelCase(c.foreign.column)}${optionStr})`
+        const optionStr = fkOptions.length ? `, { ${fkOptions.join(', ')} }` : ''
+        chain += `.references(() => ${refTable}.${camelCase(c.foreign.column)}${optionStr})`
 
-      foreignKeyImports.add(`import { ${refTable} } from './${c.foreign.table}';`)
-    }
+        foreignKeyImports.add(`import { ${refTable} } from './${c.foreign.table}';`)
+      }
 
-    return `  ${safeKey}: ${chain},`
-  }).join('\n')
+      return `  ${safeKey}: ${chain},`
+    })
+    .join('\n')
 
   const { relationships, relationshipFkImports } = columns.reduce<{
     relationships: string[]
     usedNames: Set<string>
     relationshipFkImports: Set<string>
-  }>((acc, c) => {
-    if (c.foreign && dialect !== 'clickhouse') {
-      const refTable = resolveRefTable(c.foreign.table)
-      const fieldName = camelCase(c.id.replace(FK_SUFFIX_RE, ''))
-      acc.usedNames.add(fieldName)
-      acc.relationships.push(`  ${fieldName}: one(${refTable}, {\n    fields: [${varName}.${camelCase(c.id)}],\n    references: [${refTable}.${camelCase(c.foreign.column)}],\n  }),`)
-    }
-
-    const refEntries = (c.references ?? []).map((ref) => {
-      const refTable = resolveRefTable(ref.table)
-      let fieldName = camelCase(ref.table)
-      if (acc.usedNames.has(fieldName)) {
-        fieldName = camelCase(`${ref.table}_${ref.column}`)
+  }>(
+    (acc, c) => {
+      if (c.foreign && dialect !== 'clickhouse') {
+        const refTable = resolveRefTable(c.foreign.table)
+        const fieldName = camelCase(c.id.replace(FK_SUFFIX_RE, ''))
+        acc.usedNames.add(fieldName)
+        acc.relationships.push(
+          `  ${fieldName}: one(${refTable}, {\n    fields: [${varName}.${camelCase(c.id)}],\n    references: [${refTable}.${camelCase(c.foreign.column)}],\n  }),`,
+        )
       }
-      acc.usedNames.add(fieldName)
-      const rel = ref.isUnique
-        ? `  ${fieldName}: one(${refTable}),`
-        : `  ${fieldName}: many(${refTable}),`
-      const fkImport = `import { ${refTable} } from './${ref.table}';`
-      return { rel, fkImport }
-    })
-    acc.relationships.push(...refEntries.map(e => e.rel))
-    refEntries.forEach(e => acc.relationshipFkImports.add(e.fkImport))
-    return acc
-  }, { relationships: [], usedNames: new Set<string>(), relationshipFkImports: new Set<string>() })
+
+      const refEntries = (c.references ?? []).map((ref) => {
+        const refTable = resolveRefTable(ref.table)
+        let fieldName = camelCase(ref.table)
+        if (acc.usedNames.has(fieldName)) {
+          fieldName = camelCase(`${ref.table}_${ref.column}`)
+        }
+        acc.usedNames.add(fieldName)
+        const rel = ref.isUnique
+          ? `  ${fieldName}: one(${refTable}),`
+          : `  ${fieldName}: many(${refTable}),`
+        const fkImport = `import { ${refTable} } from './${ref.table}';`
+        return { rel, fkImport }
+      })
+      acc.relationships.push(...refEntries.map((e) => e.rel))
+      refEntries.forEach((e) => acc.relationshipFkImports.add(e.fkImport))
+      return acc
+    },
+    { relationships: [], usedNames: new Set<string>(), relationshipFkImports: new Set<string>() },
+  )
 
   const allFkImports = new Set([...foreignKeyImports, ...relationshipFkImports])
 
@@ -160,7 +194,7 @@ export function generateSchemaDrizzle({
     coreImports.add('relations')
   }
 
-  if (explicitIndexes.some(idx => idx.customExpressions.length > 0)) {
+  if (explicitIndexes.some((idx) => idx.customExpressions.length > 0)) {
     coreImports.add('sql')
   }
 
@@ -168,15 +202,14 @@ export function generateSchemaDrizzle({
   if (explicitIndexes.length > 0) {
     const idxDecls = explicitIndexes.map((idx) => {
       const func = idx.isUnique ? 'uniqueIndex' : 'index'
-      if (idx.isUnique)
-        dialectImports.add('uniqueIndex')
+      if (idx.isUnique) dialectImports.add('uniqueIndex')
       else dialectImports.add('index')
 
       const onCols = idx.columns.map((col) => {
         const key = camelCase(col)
         return isValidIdentifier(key) ? `t.${key}` : `t['${key}']`
       })
-      return `  ${func}('${idx.name}').on(${[...onCols, ...idx.customExpressions.map(c => `sql\`${c}\``)].join(', ')}),`
+      return `  ${func}('${idx.name}').on(${[...onCols, ...idx.customExpressions.map((c) => `sql\`${c}\``)].join(', ')}),`
     })
     extraConfig = idxDecls.join('\n')
   }
@@ -196,19 +229,15 @@ export function generateSchemaDrizzle({
   const baseImports = exportStart >= 0 ? base.slice(0, exportStart) : ''
   const baseBody = exportStart >= 0 ? base.slice(exportStart).trim() : base
 
-  const allImports = [
-    ...allFkImports,
-    baseImports,
-  ].filter(Boolean).join('\n')
+  const allImports = [...allFkImports, baseImports].filter(Boolean).join('\n')
 
-  const definitions = [
-    extras.join('\n\n'),
-    baseBody,
-  ]
+  const definitions = [extras.join('\n\n'), baseBody]
 
   if (relationships.length > 0) {
     const relName = `${varName}Relations`
-    definitions.push(`export const ${relName} = relations(${varName}, ({ one, many }) => ({\n${relationships.join('\n')}\n}));`)
+    definitions.push(
+      `export const ${relName} = relations(${varName}, ({ one, many }) => ({\n${relationships.join('\n')}\n}));`,
+    )
   }
 
   return `${allImports}\n\n${definitions.filter(Boolean).join('\n\n')}`

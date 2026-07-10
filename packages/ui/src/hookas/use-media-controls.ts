@@ -29,23 +29,40 @@ export function useMediaControls(
   React.useEffect(() => {
     const media = mediaRef.current
 
-    if (!media)
-      return
+    if (!media) return
 
     const abortController = new AbortController()
 
-    media.addEventListener('play', () => setState(s => ({ ...s, isPlaying: true })), { signal: abortController.signal })
-    media.addEventListener('pause', () => setState(s => ({ ...s, isPlaying: false })), { signal: abortController.signal })
-    media.addEventListener('volumechange', () => setState(s => ({
-      ...s,
-      volume: media.volume,
-      isMuted: media.muted,
-    })), { signal: abortController.signal })
-    media.addEventListener('timeupdate', () => setState(s => ({ ...s, currentTime: media.currentTime })), { signal: abortController.signal })
-    media.addEventListener('durationchange', () => setState(s => ({ ...s, duration: media.duration })), { signal: abortController.signal })
-    media.addEventListener('ended', () => setState(s => ({ ...s, isPlaying: false })), { signal: abortController.signal })
+    media.addEventListener('play', () => setState((s) => ({ ...s, isPlaying: true })), {
+      signal: abortController.signal,
+    })
+    media.addEventListener('pause', () => setState((s) => ({ ...s, isPlaying: false })), {
+      signal: abortController.signal,
+    })
+    media.addEventListener(
+      'volumechange',
+      () =>
+        setState((s) => ({
+          ...s,
+          volume: media.volume,
+          isMuted: media.muted,
+        })),
+      { signal: abortController.signal },
+    )
+    media.addEventListener(
+      'timeupdate',
+      () => setState((s) => ({ ...s, currentTime: media.currentTime })),
+      { signal: abortController.signal },
+    )
+    media.addEventListener(
+      'durationchange',
+      () => setState((s) => ({ ...s, duration: media.duration })),
+      { signal: abortController.signal },
+    )
+    media.addEventListener('ended', () => setState((s) => ({ ...s, isPlaying: false })), {
+      signal: abortController.signal,
+    })
 
-    // eslint-disable-next-line react/set-state-in-effect
     setState({
       isPlaying: !media.paused,
       isMuted: media.muted,
@@ -75,8 +92,7 @@ export function useMediaControls(
     if (mediaRef.current) {
       if (state.isPlaying) {
         mediaRef.current.pause()
-      }
-      else {
+      } else {
         await mediaRef.current.play()
       }
     }
@@ -89,23 +105,32 @@ export function useMediaControls(
     }
   }, [mediaRef])
 
-  const toggleMute = React.useCallback((isMuted?: boolean) => {
-    if (mediaRef.current) {
-      mediaRef.current.muted = isMuted ?? !mediaRef.current.muted
-    }
-  }, [mediaRef])
+  const toggleMute = React.useCallback(
+    (isMuted?: boolean) => {
+      if (mediaRef.current) {
+        mediaRef.current.muted = isMuted ?? !mediaRef.current.muted
+      }
+    },
+    [mediaRef],
+  )
 
-  const setVolumeValue = React.useCallback((value: number) => {
-    if (mediaRef.current) {
-      mediaRef.current.volume = Math.max(0, Math.min(1, value))
-    }
-  }, [mediaRef])
+  const setVolumeValue = React.useCallback(
+    (value: number) => {
+      if (mediaRef.current) {
+        mediaRef.current.volume = Math.max(0, Math.min(1, value))
+      }
+    },
+    [mediaRef],
+  )
 
-  const setCurrentTimeValue = React.useCallback((time: number) => {
-    if (mediaRef.current) {
-      mediaRef.current.currentTime = Math.max(0, Math.min(state.duration, time))
-    }
-  }, [mediaRef, state.duration])
+  const setCurrentTimeValue = React.useCallback(
+    (time: number) => {
+      if (mediaRef.current) {
+        mediaRef.current.currentTime = Math.max(0, Math.min(state.duration, time))
+      }
+    },
+    [mediaRef, state.duration],
+  )
 
   return {
     play,
