@@ -62,7 +62,7 @@ function InputOTPSlot({
       className={cn(
         `
           relative flex size-8 items-center justify-center border-y border-r
-          border-input bg-input/50 text-sm transition-[color,box-shadow]
+          border-input bg-input text-sm transition-[color,box-shadow]
           duration-200 outline-none
           first:rounded-l-2xl first:border-l
           last:rounded-r-2xl

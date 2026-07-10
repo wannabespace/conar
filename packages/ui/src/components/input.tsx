@@ -10,7 +10,7 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
       data-slot="input"
       className={cn(
         `
-          h-8 w-full min-w-0 rounded-2xl border border-transparent bg-input/50
+          h-8 w-full min-w-0 rounded-2xl border border-transparent bg-input
           px-2.5 py-1 text-base transition-[color,box-shadow] duration-200
           outline-none
           file:inline-flex file:h-6 file:border-0 file:bg-transparent

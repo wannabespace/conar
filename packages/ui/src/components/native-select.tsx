@@ -29,7 +29,7 @@ function NativeSelect({
         data-size={size}
         className="
           h-8 w-full min-w-0 appearance-none rounded-2xl border
-          border-transparent bg-input/50 py-1 pr-8 pl-2.5 text-sm
+          border-transparent bg-input py-1 pr-8 pl-2.5 text-sm
           transition-[color,box-shadow] duration-200 outline-none select-none
           selection:bg-primary selection:text-primary-foreground
           placeholder:text-muted-foreground

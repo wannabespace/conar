@@ -138,7 +138,7 @@ function ComboboxContent({
             *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0
             *:data-[slot=input-group]:h-8
             *:data-[slot=input-group]:border-input/30
-            *:data-[slot=input-group]:bg-input/50
+            *:data-[slot=input-group]:bg-input
             *:data-[slot=input-group]:shadow-none
             **:data-[variant=destructive]:**:text-accent-foreground!
             **:data-[variant=destructive]:text-accent-foreground!
@@ -281,7 +281,7 @@ function ComboboxChips({
       className={cn(
         `
           flex min-h-8 flex-wrap items-center gap-1 rounded-2xl border
-          border-transparent bg-input/50 bg-clip-padding px-2.5 py-1 text-sm
+          border-transparent bg-input bg-clip-padding px-2.5 py-1 text-sm
           transition-[color,box-shadow] duration-200
           focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/30
           has-aria-invalid:border-destructive has-aria-invalid:ring-3

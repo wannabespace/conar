@@ -1,15 +1,12 @@
 import type { ComponentRef } from 'react'
 import type { Connection } from '~/entities/connection'
-import { RiAlertLine, RiArrowDownSLine, RiCheckLine, RiDeleteBinLine, RiLockUnlockLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiRefreshLine, RiSortAsc, RiSortDesc } from '@remixicon/react'
+import { RiAddLine, RiAlertLine, RiArrowDownSLine, RiCheckLine, RiDatabase2Line, RiDeleteBinLine, RiLockUnlockLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiRefreshLine, RiSortAsc, RiSortDesc } from '@remixicon/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL, CONNECTION_RESOURCE_ROOT_SYMBOL } from '@tamery/shared/constants'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
-import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
-import { Card } from '@tamery/ui/components/card'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@tamery/ui/components/command'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@tamery/ui/components/dropdown-menu'
-import { FrameMotion } from '@tamery/ui/components/frame.motion'
 import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@tamery/ui/components/select'
@@ -24,7 +21,7 @@ import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { AnimatePresence } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
@@ -296,135 +293,135 @@ function ConnectionCard({
   const isResourcesShown = resources.length > 1 && (!canSend || !isPending)
 
   return (
-    <FrameMotion
+    <motion.div
       layout="position"
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      transition={{ duration: 0.15 }}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
       style={connection.color ? { '--color': connection.color } : {}}
+      className="relative flex flex-col rounded-2xl bg-card p-1"
     >
-      <Card
-        className={cn(
-          'relative',
-          connection.color && `border-(--color)`,
-          `has-[:where([data-resource-link]:hover)]:bg-accent`,
-        )}
+      <div
+        className={cn(`
+          group relative flex h-11 items-center gap-3 px-3 transition-colors
+          duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]
+          hover:bg-accent
+          has-[[data-resource-link]:hover]:bg-accent
+        `)}
       >
         {selectedResource && canOpenResource && (
           <ConnectionResourceLink
             resourceId={selectedResource.id}
-            className="absolute inset-0 cursor-default rounded-lg"
+            className="absolute inset-0 cursor-default"
             preload={false}
             data-resource-link
           />
         )}
-        <div className="
-          pointer-events-none relative z-10 flex items-center justify-between
-          gap-4 px-6 py-4
-        "
+        {connection.color && (
+          <span
+            className="
+              pointer-events-none absolute top-1/2 left-0 h-5 w-0.5
+              -translate-y-1/2 rounded-full bg-(--color)
+            "
+          />
+        )}
+        <div className={cn(`
+          pointer-events-none relative z-10 flex min-w-0 flex-1 items-center
+          gap-3
+        `, isFetching && `animate-pulse`)}
         >
-          <div className={cn(`flex min-w-0 items-center gap-4`, isFetching && `
-            animate-pulse
-          `)}
-          >
-            <ConnectionIconWithVersion connection={connection} />
-            <div className="flex min-w-0 flex-col gap-1">
-              <div className="flex items-center gap-2 leading-none font-medium">
-                <span title={connection.name}>
-                  {connection.name}
-                </span>
-                {connection.label && (
-                  <Badge variant="secondary" className="max-w-36 truncate">
-                    {connection.label}
-                  </Badge>
-                )}
-                {isFetching && canSend && (
-                  <Spinner className="size-3" />
-                )}
-                {!canSend && (
-                  <Tooltip>
-                    <TooltipTrigger render={(
-                      <RiAlertLine
-                        className="
-                          pointer-events-auto size-3 text-muted-foreground
-                        "
-                      />
-                    )}
-                    />
-                    <TooltipContent className="pointer-events-auto max-w-xs">
-                      {reason}
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-                {error && canSend && (
-                  <Tooltip>
-                    <TooltipTrigger render={(
-                      <RiAlertLine className="
-                        pointer-events-auto size-3 text-warning
-                      "
-                      />
-                    )}
-                    />
-
-                    <TooltipContent className="pointer-events-auto">
-                      Failed to get resources:
-                      {' '}
-                      <p className="text-xs text-warning">{error.message}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
-              <div className="
-                flex h-4 min-w-0 items-center gap-1 text-xs
-                text-muted-foreground
-              "
-              >
-                <Tooltip open={isOpen || isCopied} onOpenChange={setIsOpen}>
-                  <TooltipTrigger
+          <ConnectionIconWithVersion connection={connection} />
+          <div className="flex min-w-0 items-center gap-2">
+            <span
+              title={connection.name}
+              className="truncate text-sm leading-none font-medium"
+            >
+              {connection.name}
+            </span>
+            {connection.label && (
+              <span className="shrink-0 truncate text-xs text-muted-foreground">
+                ·
+                {' '}
+                {connection.label}
+              </span>
+            )}
+            {isFetching && canSend && (
+              <Spinner className="size-3 shrink-0" />
+            )}
+            {!canSend && (
+              <Tooltip>
+                <TooltipTrigger render={(
+                  <RiAlertLine
                     className="
-                      pointer-events-auto flex min-w-0 cursor-pointer
-                      items-center
+                      pointer-events-auto size-3 shrink-0 text-muted-foreground
                     "
-                    onClick={() => handleCopy()}
-                  >
-                    {connectionString?.displayUrl
-                      ? <span className="truncate">{connectionString?.displayUrl}</span>
-                      : <Skeleton className="h-3 w-40" />}
-                  </TooltipTrigger>
-                  <TooltipContent className="flex items-center gap-1" side="bottom">
-                    {isCopied ? 'Connection string copied!' : 'Copy connection string'}
-                  </TooltipContent>
-                </Tooltip>
-                {(isResourcesShown || selectedResourceName !== CONNECTION_RESOURCE_ROOT_SYMBOL) && (
-                  <span className="shrink-0">
-                    /
-                    {!isResourcesShown && selectedResourceName !== CONNECTION_RESOURCE_ROOT_SYMBOL
-                      ? selectedResourceName
-                      : null}
-                  </span>
-                )}
-                {isResourcesShown && (
-                  <ConnectionResourcesCombobox
-                    resources={resources}
-                    pinnedResourcesNames={pinnedResourcesNames}
-                    selectedResourceName={selectedResourceName}
-                    onSelectedResourceNameChange={value => connectionStore.set(state => ({ ...state, lastOpenedResourceName: value } satisfies typeof state))}
-                    onPinnedResourceNameChange={value => connectionStore.set(state => ({
-                      ...state,
-                      pinnedResourcesNames: state.pinnedResourcesNames.includes(value)
-                        ? state.pinnedResourcesNames.filter(name => name !== value)
-                        : [...state.pinnedResourcesNames, value],
-                    } satisfies typeof state))}
-                    disabled={!canSend}
                   />
                 )}
-              </div>
-            </div>
+                />
+                <TooltipContent className="pointer-events-auto max-w-xs">
+                  {reason}
+                </TooltipContent>
+              </Tooltip>
+            )}
+            {error && canSend && (
+              <Tooltip>
+                <TooltipTrigger render={(
+                  <RiAlertLine className="
+                    pointer-events-auto size-3 shrink-0 text-warning
+                  "
+                  />
+                )}
+                />
+                <TooltipContent className="pointer-events-auto">
+                  Failed to get resources:
+                  {' '}
+                  <p className="text-xs text-warning">{error.message}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
+        </div>
+        <div className="
+          pointer-events-none relative z-10 flex min-w-0 shrink-0 items-center
+          gap-2 text-xs text-muted-foreground
+        "
+        >
+          <Tooltip open={isOpen || isCopied} onOpenChange={setIsOpen}>
+            <TooltipTrigger
+              className="
+                pointer-events-auto hidden max-w-52 min-w-0 cursor-pointer
+                items-center font-mono
+                md:flex
+              "
+              onClick={() => handleCopy()}
+            >
+              {connectionString?.displayUrl
+                ? <span className="truncate">{connectionString?.displayUrl}</span>
+                : <Skeleton className="h-3 w-40" />}
+            </TooltipTrigger>
+            <TooltipContent className="flex items-center gap-1" side="bottom">
+              {isCopied ? 'Connection string copied!' : 'Copy connection string'}
+            </TooltipContent>
+          </Tooltip>
+          {isResourcesShown && (
+            <ConnectionResourcesCombobox
+              resources={resources}
+              pinnedResourcesNames={pinnedResourcesNames}
+              selectedResourceName={selectedResourceName}
+              onSelectedResourceNameChange={value => connectionStore.set(state => ({ ...state, lastOpenedResourceName: value } satisfies typeof state))}
+              onPinnedResourceNameChange={value => connectionStore.set(state => ({
+                ...state,
+                pinnedResourcesNames: state.pinnedResourcesNames.includes(value)
+                  ? state.pinnedResourcesNames.filter(name => name !== value)
+                  : [...state.pinnedResourcesNames, value],
+              } satisfies typeof state))}
+              disabled={!canSend}
+            />
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger
-              className="pointer-events-auto"
+              className="pointer-events-auto shrink-0 text-muted-foreground"
               render={<Button variant="ghost" size="icon-sm" />}
             >
               <RiMoreLine className="size-4" />
@@ -457,26 +454,70 @@ function ConnectionCard({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </Card>
-    </FrameMotion>
+      </div>
+    </motion.div>
+  )
+}
+
+function GhostRow({ nameWidth, urlWidth, lit = false, className }: { nameWidth: string, urlWidth: string, lit?: boolean, className?: string }) {
+  return (
+    <div className={cn(`
+      flex h-11 items-center gap-3 border-b border-border/40 px-3
+      last:border-b-0
+    `, className)}
+    >
+      <span
+        className={cn(
+          'h-5 w-0.5 shrink-0 rounded-full',
+          lit ? 'bg-primary' : 'bg-muted-foreground/20',
+        )}
+      />
+      <span className="size-5 shrink-0 rounded-md bg-muted-foreground/15" />
+      <span className={cn('h-2.5 rounded-full bg-muted-foreground/15', nameWidth)} />
+      <span className="flex-1" />
+      <span className={cn(`
+        hidden h-2 rounded-full bg-muted-foreground/10
+        md:block
+      `, urlWidth)}
+      />
+    </div>
   )
 }
 
 export function Empty() {
   return (
-    <div className={`
-      group m-auto w-full rounded-xl border-2 border-dashed border-border/50
-      bg-card p-14 text-center
-    `}
-    >
-      <h2 className="mt-6 font-medium text-foreground">
-        No connections found
+    <div className="flex flex-col items-center py-10 text-center">
+      <div
+        className="
+          pointer-events-none w-full max-w-md overflow-hidden rounded-xl border
+          border-border/50 bg-card/40
+          mask-[linear-gradient(to_bottom,black,transparent)]
+        "
+        aria-hidden
+      >
+        <GhostRow nameWidth="w-32" urlWidth="w-28" lit />
+        <GhostRow nameWidth="w-24" urlWidth="w-36" className="opacity-70" />
+        <GhostRow nameWidth="w-36" urlWidth="w-24" className="opacity-40" />
+      </div>
+
+      <div className="
+        -mt-6 flex size-12 items-center justify-center rounded-xl border
+        border-border/50 bg-card shadow-xs
+      "
+      >
+        <RiDatabase2Line className="size-5 text-muted-foreground" />
+      </div>
+
+      <h2 className="mt-5 text-base font-medium text-foreground">
+        No connections yet
       </h2>
-      <p className="mt-1 mb-4 text-sm whitespace-pre-line text-muted-foreground">
-        Create a new connection to get started.
+      <p className="mt-1 max-w-xs text-sm text-muted-foreground">
+        Add a database and it shows up here — open it in one click.
       </p>
-      <Button render={<Link to="/create" />}>
-        Create a new connection
+
+      <Button className="mt-5" render={<Link to="/create" />}>
+        <RiAddLine className="size-4" />
+        New connection
       </Button>
     </div>
   )
@@ -585,21 +626,23 @@ export function ConnectionsList() {
           </Select>
         </div>
       )}
-      <div className="flex flex-col gap-2">
-        <AnimatePresence initial={false} mode="popLayout">
-          {data.length > 0
-            ? data.map(connection => (
-                <ConnectionCard
-                  key={connection.id}
-                  connection={connection}
-                  onRemove={() => {
-                    removeDialogRef.current?.remove(connection)
-                  }}
-                />
-              ))
-            : <Empty />}
-        </AnimatePresence>
-      </div>
+      {data.length > 0
+        ? (
+            <div className="flex flex-col gap-2">
+              <AnimatePresence initial={false} mode="popLayout">
+                {data.map(connection => (
+                  <ConnectionCard
+                    key={connection.id}
+                    connection={connection}
+                    onRemove={() => {
+                      removeDialogRef.current?.remove(connection)
+                    }}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
+          )
+        : <Empty />}
     </div>
   )
 }

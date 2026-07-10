@@ -12,12 +12,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@tamery/ui/components/drawer'
-import {
-  Frame,
-  FrameHeader,
-  FramePanel,
-  FrameTitle,
-} from '@tamery/ui/components/frame'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { useInfiniteQuery } from '@tanstack/react-query'
@@ -150,9 +144,14 @@ export function DraftsReviewDrawer({
                     const errors = [...new Set(rowDrafts.flatMap(draft => draft.error ? [draft.error] : []))]
 
                     return (
-                      <Frame key={primaryKeysKey(primaryKeys)}>
-                        <FrameHeader className="flex-row px-3 py-2">
-                          <FrameTitle className="flex gap-1">
+                      <div
+                        key={primaryKeysKey(primaryKeys)}
+                        className="
+                          relative flex flex-col rounded-2xl bg-muted/72 p-1
+                        "
+                      >
+                        <header className="flex flex-row px-3 py-2">
+                          <div className="flex gap-1 text-sm font-semibold">
                             {!!errors.length && (
                               <Tooltip>
                                 <TooltipTrigger render={(
@@ -180,7 +179,7 @@ export function DraftsReviewDrawer({
                               </Tooltip>
                             )}
                             Row
-                          </FrameTitle>
+                          </div>
                           <div className="
                             mt-1 ml-2 flex flex-1 flex-col gap-0.5 pt-px
                             text-[0.7rem] text-muted-foreground
@@ -210,8 +209,18 @@ export function DraftsReviewDrawer({
                             </TooltipTrigger>
                             <TooltipContent>Discard row</TooltipContent>
                           </Tooltip>
-                        </FrameHeader>
-                        <FramePanel className="p-3">
+                        </header>
+                        <div
+                          className="
+                            relative rounded-xl border bg-background
+                            bg-clip-padding p-3 shadow-xs/5
+                            before:pointer-events-none before:absolute
+                            before:inset-0
+                            before:rounded-[calc(var(--radius-xl)-1px)]
+                            before:shadow-[0_1px_--theme(--color-black/4%)]
+                            dark:before:shadow-[0_-1px_--theme(--color-white/6%)]
+                          "
+                        >
                           <div className="flex flex-col gap-2.5">
                             {rowDrafts.map((draft) => {
                               const before = row ? columnDisplay(draft.columnId, row[draft.columnId]) : ''
@@ -274,8 +283,8 @@ export function DraftsReviewDrawer({
                               )
                             })}
                           </div>
-                        </FramePanel>
-                      </Frame>
+                        </div>
+                      </div>
                     )
                   })}
                 </div>

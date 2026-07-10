@@ -26,27 +26,11 @@ function DashboardPage() {
   return (
     <ScrollArea className="overflow-auto">
       <div className="mx-auto flex size-full max-w-2xl flex-col px-6 py-10">
-        <h1 className={`
-          mb-6 scroll-m-20 text-4xl font-extrabold tracking-tight
-          lg:text-5xl
-        `}
-        >
-          Dashboard
-        </h1>
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className={`
-            text-3xl font-bold
-            lg:text-4xl
-          `}
-          >
-            Connections
-          </h2>
-          <div className="flex items-center gap-2">
-            <Button render={<Link to="/create" />}>
-              <RiAddLine className="size-4" />
-              Add new
-            </Button>
-          </div>
+        <div className="mb-6 flex items-center justify-end">
+          <Button render={<Link to="/create" />}>
+            <RiAddLine className="size-4" />
+            Add new
+          </Button>
         </div>
         <ConnectionsList />
         <div className="mt-auto py-6">

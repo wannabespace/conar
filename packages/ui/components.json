@@ -19,7 +19,7 @@
     "lib": "@tamery/ui/lib",
     "hooks": "@tamery/ui/hooks"
   },
-  "menuColor": "default-translucent",
+  "menuColor": "default",
   "menuAccent": "subtle",
   "registries": {}
 }
