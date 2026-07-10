@@ -3,41 +3,15 @@
     "source.fixAll.oxc": true
   },
   "formatter": [],
-  "lsp": {
-    "oxlint": {
-      "initialization_options": {
-        "settings": {
-          "run": "onType",
-          "fixKind": "safe_fix",
-          "typeAware": true,
-          "unusedDisableDirectives": "deny"
-        }
-      }
-    },
-    "oxfmt": {
-      "initialization_options": {
-        "settings": {
-          "fmt.configPath": "./vite.config.ts",
-          "run": "onSave"
-        }
-      }
-    }
-  },
   "languages": {
+    "JavaScript": {
+      "language_servers": ["tsgo", "!vtsls", "!typescript-language-server", "...", "oxc"]
+    },
     "TSX": {
       "language_servers": ["tsgo", "!vtsls", "!typescript-language-server", "...", "oxc"]
     },
-    "JavaScript": {
-      "language_servers": ["tsgo", "!vtsls", "!typescript-language-server", "...", "oxc"],
-      "format_on_save": "on",
-      "prettier": { "allowed": false },
-      "formatter": [{ "language_server": { "name": "oxfmt" } }]
-    },
     "TypeScript": {
-      "language_servers": ["tsgo", "!vtsls", "!typescript-language-server", "...", "oxc"],
-      "format_on_save": "on",
-      "prettier": { "allowed": false },
-      "formatter": [{ "language_server": { "name": "oxfmt" } }]
+      "language_servers": ["tsgo", "!vtsls", "!typescript-language-server", "...", "oxc"]
     }
   }
 }
