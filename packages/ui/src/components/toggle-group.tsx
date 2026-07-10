@@ -9,9 +9,7 @@ import { useMemo } from 'react'
 
 import type { toggleVariants } from './toggle.variants'
 
-const ToggleGroupContext: React.Context<VariantProps<typeof toggleVariants>> = React.createContext<
-  VariantProps<typeof toggleVariants>
->({
+const ToggleGroupContext: React.Context<VariantProps<typeof toggleVariants>> = React.createContext<VariantProps<typeof toggleVariants>>({
   size: 'default',
   variant: 'default',
 })
@@ -28,9 +26,7 @@ export function ToggleGroup<T extends string>({
     <ToggleGroupPrimitive
       className={cn(
         `flex w-fit *:focus-visible:z-10 dark:*:[[data-slot=separator]:has(+[data-slot=toggle]:hover)]:before:bg-input/64 dark:*:[[data-slot=separator]:has(+[data-slot=toggle][data-pressed])]:before:bg-input dark:*:[[data-slot=toggle]:hover+[data-slot=separator]]:before:bg-input/64 dark:*:[[data-slot=toggle][data-pressed]+[data-slot=separator]]:before:bg-input`,
-        orientation === 'horizontal'
-          ? '*:pointer-coarse:after:min-w-auto'
-          : '*:pointer-coarse:after:min-h-auto',
+        orientation === 'horizontal' ? '*:pointer-coarse:after:min-w-auto' : '*:pointer-coarse:after:min-h-auto',
         variant === 'default'
           ? 'gap-0.5'
           : orientation === 'horizontal'
@@ -44,9 +40,7 @@ export function ToggleGroup<T extends string>({
       orientation={orientation}
       {...props}
     >
-      <ToggleGroupContext value={useMemo(() => ({ size, variant }), [size, variant])}>
-        {children}
-      </ToggleGroupContext>
+      <ToggleGroupContext value={useMemo(() => ({ size, variant }), [size, variant])}>{children}</ToggleGroupContext>
     </ToggleGroupPrimitive>
   )
 }
@@ -64,14 +58,7 @@ export function Toggle<T extends string>({
   const resolvedSize = context.size || size
 
   return (
-    <ToggleComponent
-      className={className}
-      data-size={resolvedSize}
-      data-variant={resolvedVariant}
-      size={resolvedSize}
-      variant={resolvedVariant}
-      {...props}
-    >
+    <ToggleComponent className={className} data-size={resolvedSize} data-variant={resolvedVariant} size={resolvedSize} variant={resolvedVariant} {...props}>
       {children}
     </ToggleComponent>
   )
@@ -86,10 +73,7 @@ export function ToggleGroupSeparator({
 } & React.ComponentProps<typeof Separator>): React.ReactElement {
   return (
     <Separator
-      className={cn(
-        `pointer-events-none relative bg-input before:absolute before:inset-0 dark:before:bg-input/32`,
-        className,
-      )}
+      className={cn(`pointer-events-none relative bg-input before:absolute before:inset-0 dark:before:bg-input/32`, className)}
       orientation={orientation}
       {...props}
     />

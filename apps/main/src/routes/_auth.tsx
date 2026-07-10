@@ -14,16 +14,14 @@ export const Route = createFileRoute('/_auth')({
 
 function AuthLayout() {
   const match = useMatches({
-    select: matches => matches.map(match => match.routeId).at(-1),
+    select: (matches) => matches.map((match) => match.routeId).at(-1),
   })
   const isSignIn = match === '/_auth/sign-in'
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <div className={`relative grid flex-1 shrink-0 items-center justify-center lg:grid-cols-2`}>
-        <div
-          className={`relative hidden h-full flex-col border-r bg-primary/5 p-10 text-primary lg:flex`}
-        >
+        <div className={`relative hidden h-full flex-col border-r bg-primary/5 p-10 text-primary lg:flex`}>
           <Link to="/" className="relative z-20 flex items-center text-lg font-medium">
             <AppLogo className="mr-2 size-6" />
             Conar
@@ -49,17 +47,11 @@ function AuthLayout() {
             {isSignIn && (
               <p className="px-6 text-center text-xs text-muted-foreground">
                 By clicking continue, you agree to our{' '}
-                <Link
-                  to="/terms-of-service"
-                  className={`underline underline-offset-4 hover:text-primary`}
-                >
+                <Link to="/terms-of-service" className={`underline underline-offset-4 hover:text-primary`}>
                   Terms of Service
                 </Link>{' '}
                 and{' '}
-                <Link
-                  to="/privacy-policy"
-                  className={`underline underline-offset-4 hover:text-primary`}
-                >
+                <Link to="/privacy-policy" className={`underline underline-offset-4 hover:text-primary`}>
                   Privacy Policy
                 </Link>
                 .

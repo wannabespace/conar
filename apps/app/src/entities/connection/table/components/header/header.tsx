@@ -56,15 +56,11 @@ export function Header({ table, schema }: { table: string; schema: string }) {
   const columns = useTableColumns()
   const store = useTablePageStore()
   const connectionStore = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(connectionStore, { selector: state => state.showSystem })
-  const { data: tablesAndSchemas } = useQuery(
-    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
-  )
-  const tableType =
-    tablesAndSchemas?.schemas.find(s => s.name === schema)?.tables?.find(t => t.name === table)
-      ?.type ?? 'table'
+  const showSystem = useSubscription(connectionStore, { selector: (state) => state.showSystem })
+  const { data: tablesAndSchemas } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))
+  const tableType = tablesAndSchemas?.schemas.find((s) => s.name === schema)?.tables?.find((t) => t.name === table)?.type ?? 'table'
   const { filters, exact, orderBy, selected } = useSubscription(store, {
-    selector: state => pick(state, ['filters', 'orderBy', 'exact', 'selected']),
+    selector: (state) => pick(state, ['filters', 'orderBy', 'exact', 'selected']),
   })
   const { data: total, isLoading } = useQuery(
     resourceTableTotalQueryOptions({
@@ -92,9 +88,7 @@ export function Header({ table, schema }: { table: string; schema: string }) {
 
   async function handleRefresh() {
     refetch()
-    queryClient.invalidateQueries(
-      resourceTableColumnsQueryOptions({ connectionResource, table, schema }),
-    )
+    queryClient.invalidateQueries(resourceTableColumnsQueryOptions({ connectionResource, table, schema }))
     queryClient.invalidateQueries(
       resourceTableTotalQueryOptions({
         connectionResource,
@@ -141,13 +135,7 @@ export function Header({ table, schema }: { table: string; schema: string }) {
     return data
   }
 
-  const getLimitedData = async ({
-    limit,
-    filters: exportFilters,
-  }: {
-    limit: number
-    filters?: ActiveFilter[]
-  }) =>
+  const getLimitedData = async ({ limit, filters: exportFilters }: { limit: number; filters?: ActiveFilter[] }) =>
     resourceRowsQuery({
       schema,
       table,
@@ -184,27 +172,17 @@ export function Header({ table, schema }: { table: string; schema: string }) {
           ) : (
             <Tooltip>
               <TooltipTrigger
-                className={cn(
-                  'inline-flex items-center gap-1',
-                  !exact && total.isEstimated && `cursor-pointer`,
-                )}
-                onClick={() =>
-                  store.set(state => ({ ...state, exact: true }) satisfies typeof state)
-                }
+                className={cn('inline-flex items-center gap-1', !exact && total.isEstimated && `cursor-pointer`)}
+                onClick={() => store.set((state) => ({ ...state, exact: true }) satisfies typeof state)}
               >
                 <NumberFlow
                   value={total.count}
-                  className={cn(
-                    'text-muted-foreground tabular-nums',
-                    isLoading && `animate-pulse text-muted-foreground/50`,
-                  )}
+                  className={cn('text-muted-foreground tabular-nums', isLoading && `animate-pulse text-muted-foreground/50`)}
                   prefix={total.isEstimated ? '~' : ''}
                   suffix={total.count === 1 ? ' row' : ' rows'}
                 />
               </TooltipTrigger>
-              {!exact && total.isEstimated && (
-                <TooltipContent side="bottom">Click to get the exact count.</TooltipContent>
-              )}
+              {!exact && total.isEstimated && <TooltipContent side="bottom">Click to get the exact count.</TooltipContent>}
             </Tooltip>
           )}
         </div>
@@ -215,10 +193,7 @@ export function Header({ table, schema }: { table: string; schema: string }) {
         <TooltipTrigger asChild>
           <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isFetching}>
             <LoadingContent loading={isFetching}>
-              <ContentSwitch
-                activeContent={<RiCheckLine className="text-success" />}
-                active={isFetching}
-              >
+              <ContentSwitch activeContent={<RiCheckLine className="text-success" />} active={isFetching}>
                 <RiLoopLeftLine />
               </ContentSwitch>
             </LoadingContent>
@@ -226,9 +201,7 @@ export function Header({ table, schema }: { table: string; schema: string }) {
         </TooltipTrigger>
         <TooltipContent>
           Refresh rows
-          <p className="text-xs opacity-70">
-            Last updated: {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
-          </p>
+          <p className="text-xs opacity-70">Last updated: {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}</p>
         </TooltipContent>
       </Tooltip>
       {tableType === 'table' && <HeaderActionsDelete table={table} schema={schema} />}
@@ -239,12 +212,7 @@ export function Header({ table, schema }: { table: string; schema: string }) {
       <Separator orientation="vertical" className="mx-2 h-6!" />
       {tableType === 'table' && <HeaderActionsCopy table={table} />}
       {tableType === 'table' && <HeaderActionsSeed table={table} schema={schema} />}
-      <ExportData
-        selected={selected}
-        filename={`${schema}_${table}`}
-        getData={getData}
-        trigger={createExportTrigger(rows?.length === 0 || isPending)}
-      />
+      <ExportData selected={selected} filename={`${schema}_${table}`} getData={getData} trigger={createExportTrigger(rows?.length === 0 || isPending)} />
     </div>
   )
 }

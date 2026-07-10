@@ -22,10 +22,7 @@ function handleError(error: unknown) {
   if (typeof error === 'object' && (error as { type?: string }).type === 'overloaded_error') {
     return 'Sorry, I was unable to generate a response due to high load. Please try again later.'
   }
-  if (
-    typeof error === 'object' &&
-    (error as { message?: string }).message?.includes('prompt is too long')
-  ) {
+  if (typeof error === 'object' && (error as { message?: string }).message?.includes('prompt is too long')) {
     return 'Sorry, I was unable to generate a response. Currently I cannot handle larger chats like yours. Please create a new chat.'
   }
   return 'Sorry, I was unable to generate a response due to an error. Please try again.'
@@ -53,7 +50,7 @@ export const chat = orpc
     context.addLogData({
       chatId: input.id,
       connectionType: input.type,
-      inputMessages: input.messages.map(message => ({
+      inputMessages: input.messages.map((message) => ({
         id: message.id,
         role: message.role,
         partsCount: message.parts.length,
@@ -134,15 +131,15 @@ export const chat = orpc
       originalMessages: input.messages,
       generateMessageId: () => v7(),
       sendSources: true,
-      onFinish: async result => {
+      onFinish: async (result) => {
         context.addLogData({
           response: {
             ...result.responseMessage,
-            parts: result.responseMessage.parts.map(part => part.type),
+            parts: result.responseMessage.parts.map((part) => part.type),
           },
         })
       },
-      onError: error => {
+      onError: (error) => {
         context.addLogData({
           streamError: error,
         })

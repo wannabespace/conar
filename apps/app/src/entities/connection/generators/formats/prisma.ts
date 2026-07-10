@@ -5,14 +5,7 @@ import type { QueryParams, SchemaParams } from '..'
 import * as templates from '../templates'
 import { filterExplicitIndexes, getColumnType, groupIndexes } from '../utils'
 
-type PrismaFilterValue =
-  | string
-  | number
-  | boolean
-  | Date
-  | null
-  | { [key: string]: PrismaFilterValue }
-  | PrismaFilterValue[]
+type PrismaFilterValue = string | number | boolean | Date | null | { [key: string]: PrismaFilterValue } | PrismaFilterValue[]
 
 function isPrismaFilterValue(v: unknown): v is PrismaFilterValue {
   return v !== undefined && typeof v !== 'symbol' && typeof v !== 'function'
@@ -25,8 +18,8 @@ const PRISMA_OP_MAP: Record<string, string> = {
   '>=': 'gte',
   '<': 'lt',
   '<=': 'lte',
-  LIKE: 'contains',
-  ILIKE: 'contains',
+  'LIKE': 'contains',
+  'ILIKE': 'contains',
 }
 
 function singleFilterToPrisma(filter: ActiveFilter): PrismaFilterValue | null {
@@ -50,16 +43,8 @@ function singleFilterToPrisma(filter: ActiveFilter): PrismaFilterValue | null {
   return prismaOp === 'equals' ? value : { [prismaOp]: value }
 }
 
-function mergeWhereField(
-  existing: PrismaFilterValue | undefined,
-  next: PrismaFilterValue,
-): PrismaFilterValue {
-  if (
-    existing == null ||
-    typeof existing !== 'object' ||
-    typeof next !== 'object' ||
-    next === null
-  ) {
+function mergeWhereField(existing: PrismaFilterValue | undefined, next: PrismaFilterValue): PrismaFilterValue {
+  if (existing == null || typeof existing !== 'object' || typeof next !== 'object' || next === null) {
     return next
   }
   return { ...existing, ...next }
@@ -75,19 +60,16 @@ export function generateQueryPrisma({ table, filters }: QueryParams) {
     return acc
   }, {})
 
-  const jsonWhere =
-    Object.keys(where).length > 0
-      ? JSON.stringify(where, null, 2).replace(/"([^"]+)":/g, '$1:')
-      : '{}'
+  const jsonWhere = Object.keys(where).length > 0 ? JSON.stringify(where, null, 2).replace(/"([^"]+)":/g, '$1:') : '{}'
 
   return templates.prismaQueryTemplate(tableName, jsonWhere)
 }
 
 const FK_ACTION_MAP: Record<string, string> = {
-  CASCADE: 'Cascade',
+  'CASCADE': 'Cascade',
   'SET NULL': 'SetNull',
   'SET DEFAULT': 'SetDefault',
-  RESTRICT: 'Restrict',
+  'RESTRICT': 'Restrict',
   'NO ACTION': 'NoAction',
 }
 
@@ -98,7 +80,7 @@ function foreignActionToPrisma(action: string, kind: 'onDelete' | 'onUpdate'): s
 
 export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: SchemaParams) {
   const { fields, extraBlocks } = columns
-    .filter(c => c.type)
+    .filter((c) => c.type)
     .reduce<{
       fields: { name: string; type: string; attributes: string[]; isRelation: boolean }[]
       extraBlocks: string[]
@@ -112,7 +94,7 @@ export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: 
           prismaType = enumName
 
           const availableValues = c.availableValues
-            .map(v => {
+            .map((v) => {
               if (/^[a-z]\w*$/i.test(v)) return `  ${v}`
               return `  ${v.replace(/\W/g, '_')} @map("${v}")`
             })
@@ -154,8 +136,7 @@ export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: 
 
         if (c.foreign) {
           let relName = camelCase(c.foreign.table)
-          if (acc.usedNames.has(relName))
-            relName = camelCase(`${c.foreign.table}_${c.foreign.column}`)
+          if (acc.usedNames.has(relName)) relName = camelCase(`${c.foreign.table}_${c.foreign.column}`)
           acc.usedNames.add(relName)
 
           const relType = pascalCase(c.foreign.table)
@@ -165,19 +146,16 @@ export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: 
           acc.fields.push({
             name: relName,
             type: relType,
-            attributes: [
-              `@relation(fields: [${fieldName}], references: [${camelCase(c.foreign.column)}]${onDelete}${onUpdate})`,
-            ],
+            attributes: [`@relation(fields: [${fieldName}], references: [${camelCase(c.foreign.column)}]${onDelete}${onUpdate})`],
             isRelation: true,
           })
         }
 
-        const refFields = (c.references ?? []).map(ref => {
+        const refFields = (c.references ?? []).map((ref) => {
           const isValidRef = /^[a-z]\w*$/i.test(ref.table)
           const refType = isValidRef ? ref.table : pascalCase(ref.table)
           let refFieldName = camelCase(ref.table)
-          if (acc.usedNames.has(refFieldName))
-            refFieldName = camelCase(`${ref.table}_${ref.column}`)
+          if (acc.usedNames.has(refFieldName)) refFieldName = camelCase(`${ref.table}_${ref.column}`)
           acc.usedNames.add(refFieldName)
           return {
             name: refFieldName,
@@ -192,11 +170,11 @@ export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: 
       { fields: [], extraBlocks: [], usedNames: new Set<string>() },
     )
 
-  const allFields = [...fields.filter(f => !f.isRelation), ...fields.filter(f => f.isRelation)]
-  const maxNameLen = Math.max(...allFields.map(f => f.name.length), 0)
-  const maxTypeLen = Math.max(...allFields.map(f => f.type.length), 0)
+  const allFields = [...fields.filter((f) => !f.isRelation), ...fields.filter((f) => f.isRelation)]
+  const maxNameLen = Math.max(...allFields.map((f) => f.name.length), 0)
+  const maxTypeLen = Math.max(...allFields.map((f) => f.type.length), 0)
 
-  const cols = allFields.map(f => {
+  const cols = allFields.map((f) => {
     const parts = [f.name.padEnd(maxNameLen), f.type.padEnd(maxTypeLen), ...f.attributes]
     return `  ${parts.join(' ').trimEnd()}`
   })
@@ -205,9 +183,9 @@ export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: 
   const explicitIndexes = filterExplicitIndexes(groupedIndexes, columns)
 
   const indexBlocks = explicitIndexes
-    .filter(idx => idx.columns.length > 0)
-    .map(idx => {
-      const fieldNames = idx.columns.map(col => camelCase(col))
+    .filter((idx) => idx.columns.length > 0)
+    .map((idx) => {
+      const fieldNames = idx.columns.map((col) => camelCase(col))
       const type = idx.isUnique ? '@@unique' : '@@index'
       return `  ${type}([${fieldNames.join(', ')}], map: "${idx.name}")`
     })
@@ -216,8 +194,5 @@ export function generateSchemaPrisma({ table, columns, dialect, indexes = [] }: 
 
   const uniqueExtras = [...new Set(extraBlocks)]
 
-  return (
-    templates.prismaSchemaTemplate(table, body) +
-    (uniqueExtras.length ? `\n\n${uniqueExtras.join('\n\n')}` : '')
-  )
+  return templates.prismaSchemaTemplate(table, body) + (uniqueExtras.length ? `\n\n${uniqueExtras.join('\n\n')}` : '')
 }

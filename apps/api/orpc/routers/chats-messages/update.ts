@@ -10,9 +10,7 @@ import { publisher } from './events'
 
 export const update = orpc
   .use(subscriptionMiddleware)
-  .input(
-    type.and(chatsMessagesUpdateSchema.omit('id'), chatsMessagesUpdateSchema.pick('id').required()),
-  )
+  .input(type.and(chatsMessagesUpdateSchema.omit('id'), chatsMessagesUpdateSchema.pick('id').required()))
   .handler(async ({ context, input }) => {
     const [found] = await db
       .select({ userId: chats.userId, chatId: chatsMessages.chatId })
@@ -26,11 +24,7 @@ export const update = orpc
       })
     }
 
-    const [message] = await db
-      .update(chatsMessages)
-      .set(input)
-      .where(eq(chatsMessages.id, input.id))
-      .returning()
+    const [message] = await db.update(chatsMessages).set(input).where(eq(chatsMessages.id, input.id)).returning()
 
     publisher.publish(context.user.id, {
       type: 'update',

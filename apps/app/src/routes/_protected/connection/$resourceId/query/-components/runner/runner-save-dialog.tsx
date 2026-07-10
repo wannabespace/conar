@@ -1,14 +1,6 @@
 import { Alert, AlertDescription } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogPanel,
-  DialogTitle,
-} from '@conar/ui/components/dialog'
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogPanel, DialogTitle } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { useImperativeHandle, useState } from 'react'
@@ -33,7 +25,7 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
   const [open, setOpen] = useState(false)
 
   useImperativeHandle(ref, () => ({
-    open: query => {
+    open: (query) => {
       setName('')
       setOpen(true)
       setQuery(query)
@@ -63,10 +55,7 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
         </DialogHeader>
         <DialogPanel className="space-y-4">
           <Alert>
-            <AlertDescription>
-              Saved queries are stored for this database and can be quickly accessed and run from
-              the "Saved queries" panel.
-            </AlertDescription>
+            <AlertDescription>Saved queries are stored for this database and can be quickly accessed and run from the "Saved queries" panel.</AlertDescription>
           </Alert>
           <Label htmlFor="name">Query name</Label>
           <Input
@@ -75,8 +64,8 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
             placeholder="Enter query name"
             spellCheck={false}
             autoComplete="off"
-            onChange={e => setName(e.target.value)}
-            onKeyDown={e => {
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => {
               if (e.key === 'Enter' && canConfirm) {
                 createQuery()
               }

@@ -1,13 +1,5 @@
 import { Button } from '@conar/ui/components/button'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from '@conar/ui/components/command'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@conar/ui/components/command'
 import { Indicator } from '@conar/ui/components/custom/indicator'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -19,27 +11,21 @@ import { useTablePageStore } from '../../store'
 
 export function HeaderActionsColumns() {
   const store = useTablePageStore()
-  const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
+  const hiddenColumns = useSubscription(store, { selector: (state) => state.hiddenColumns })
   const columns = useTableColumns()
 
   return (
     <Popover>
       <Tooltip>
         <TooltipTrigger asChild>
-          <PopoverTrigger
-            render={<Button size="icon" variant="outline" className="overflow-visible" />}
-          >
+          <PopoverTrigger render={<Button size="icon" variant="outline" className="overflow-visible" />}>
             <RiLayoutColumnLine />
             {hiddenColumns.length > 0 && <Indicator />}
           </PopoverTrigger>
         </TooltipTrigger>
         <TooltipContent side="top">Columns visibility</TooltipContent>
       </Tooltip>
-      <PopoverContent
-        className="w-2xs p-0 **:data-[slot=popover-viewport]:p-0"
-        side="bottom"
-        align="end"
-      >
+      <PopoverContent className="w-2xs p-0 **:data-[slot=popover-viewport]:p-0" side="bottom" align="end">
         <Command>
           <CommandInput placeholder="Search columns..." />
           <CommandList className="h-fit max-h-[70vh]">
@@ -49,46 +35,37 @@ export function HeaderActionsColumns() {
                 value="toggle-columns"
                 onSelect={() =>
                   store.set(
-                    state =>
+                    (state) =>
                       ({
                         ...state,
-                        hiddenColumns:
-                          (hiddenColumns.length === 0 && columns?.map(col => col.id)) || [],
+                        hiddenColumns: (hiddenColumns.length === 0 && columns?.map((col) => col.id)) || [],
                       }) satisfies typeof state,
                   )
                 }
               >
-                <span className="size-4">
-                  {hiddenColumns.length === 0 && <RiCheckLine className="size-4 opacity-50" />}
-                </span>
+                <span className="size-4">{hiddenColumns.length === 0 && <RiCheckLine className="size-4 opacity-50" />}</span>
                 <RiLayoutColumnLine className="size-4 opacity-50" />
                 <span>{hiddenColumns.length === 0 ? 'Hide all columns' : 'Show all columns'}</span>
               </CommandItem>
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup>
-              {columns?.map(column => (
+              {columns?.map((column) => (
                 <CommandItem
                   key={column.id}
                   value={column.id}
                   keywords={[column.id, column.type ?? '', column.typeLabel ?? '']}
                   onSelect={() =>
                     store.set(
-                      state =>
+                      (state) =>
                         ({
                           ...state,
-                          hiddenColumns: hiddenColumns.includes(column.id)
-                            ? hiddenColumns.filter(id => id !== column.id)
-                            : [...hiddenColumns, column.id],
+                          hiddenColumns: hiddenColumns.includes(column.id) ? hiddenColumns.filter((id) => id !== column.id) : [...hiddenColumns, column.id],
                         }) satisfies typeof state,
                     )
                   }
                 >
-                  <span className="size-4 shrink-0">
-                    {!hiddenColumns.includes(column.id) && (
-                      <RiCheckLine className="size-4 opacity-50" />
-                    )}
-                  </span>
+                  <span className="size-4 shrink-0">{!hiddenColumns.includes(column.id) && <RiCheckLine className="size-4 opacity-50" />}</span>
                   <RiDatabase2Line className="size-4 shrink-0 opacity-50" />
                   <span data-mask className="truncate">
                     {column.id}

@@ -2,25 +2,12 @@ import { SUBSCRIPTION_PAST_DUE_MESSAGE } from '@conar/shared/constants'
 import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@conar/ui/components/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Skeleton } from '@conar/ui/components/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import {
-  RiErrorWarningLine,
-  RiHeart3Fill,
-  RiInformationLine,
-  RiLoader4Fill,
-  RiTimeLine,
-  RiWalletLine,
-} from '@remixicon/react'
+import { RiErrorWarningLine, RiHeart3Fill, RiInformationLine, RiLoader4Fill, RiTimeLine, RiWalletLine } from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
 import { format, formatDistanceToNow } from 'date-fns'
 import type { ReactNode } from 'react'
@@ -50,9 +37,7 @@ export function Subscription() {
   const { openBillingPortal, isOpening } = useBillingPortal({ returnHref })
   const { upgrade, isUpgrading } = useUpgradeSubscription()
   const [isYearly, setIsYearly] = useState(period === 'yearly')
-  const hasUpcomingTrialEnd = Boolean(
-    subscription?.trialEnd && subscription.trialEnd.getTime() > Date.now(),
-  )
+  const hasUpcomingTrialEnd = Boolean(subscription?.trialEnd && subscription.trialEnd.getTime() > Date.now())
 
   if (subscription && subscription.period === 'yearly' && !isYearly) {
     setIsYearly(true)
@@ -71,12 +56,7 @@ export function Subscription() {
         </div>
       ) : subscription ? (
         <div className="flex items-center gap-2">
-          <Button
-            size="xs"
-            variant="outline"
-            disabled={isOpening}
-            onClick={() => openBillingPortal()}
-          >
+          <Button size="xs" variant="outline" disabled={isOpening} onClick={() => openBillingPortal()}>
             <LoadingContent loading={isOpening}>
               <RiWalletLine className="size-3.5" />
               Manage Subscription
@@ -90,20 +70,13 @@ export function Subscription() {
               ) : (
                 'Cancels at period end'
               )
-            ) : subscription.status === 'trialing' &&
-              hasUpcomingTrialEnd &&
-              subscription.trialEnd ? (
+            ) : subscription.status === 'trialing' && hasUpcomingTrialEnd && subscription.trialEnd ? (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span>
-                    Free trial ends{' '}
-                    {formatDistanceToNow(subscription.trialEnd, { addSuffix: true })}
-                  </span>
+                  <span>Free trial ends {formatDistanceToNow(subscription.trialEnd, { addSuffix: true })}</span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <span>
-                    Your trial will end on {format(subscription.trialEnd, 'MMM d, yyyy h:mm a')}
-                  </span>
+                  <span>Your trial will end on {format(subscription.trialEnd, 'MMM d, yyyy h:mm a')}</span>
                 </TooltipContent>
               </Tooltip>
             ) : subscription.periodEnd ? (
@@ -153,25 +126,16 @@ export function Subscription() {
                 <TooltipContent className="max-w-xs bg-background p-0">
                   <div className={`space-y-4 bg-linear-to-b from-primary/5 to-card p-4 text-sm`}>
                     <div className="flex items-center gap-2">
-                      <span
-                        className={`inline-flex size-6 items-center justify-center rounded-full bg-primary/20 text-primary`}
-                      >
+                      <span className={`inline-flex size-6 items-center justify-center rounded-full bg-primary/20 text-primary`}>
                         <RiHeart3Fill className="size-4" />
                       </span>
-                      <span className="font-semibold text-primary">
-                        Conar is indie & user-supported
-                      </span>
+                      <span className="font-semibold text-primary">Conar is indie & user-supported</span>
                     </div>
                     <p className="text-balance text-foreground">
-                      Our small team works every day to improve Conar without sponsors or VCs, and
-                      on our own terms.
+                      Our small team works every day to improve Conar without sponsors or VCs, and on our own terms.
                     </p>
-                    <p className="text-balance text-muted-foreground">
-                      Your subscription directly supports our work and future development.
-                    </p>
-                    <p className="font-medium text-balance text-foreground">
-                      Thank you for helping us stay independent.
-                    </p>
+                    <p className="text-balance text-muted-foreground">Your subscription directly supports our work and future development.</p>
+                    <p className="font-medium text-balance text-foreground">Thank you for helping us stay independent.</p>
                   </div>
                 </TooltipContent>
               </Tooltip>
@@ -180,16 +144,14 @@ export function Subscription() {
           {!subscription && !isPending && (
             <div className="flex items-center">
               <div className={`inline-flex items-center rounded-full border bg-card p-1 shadow-sm`}>
-                {['Monthly', 'Yearly'].map(period => (
+                {['Monthly', 'Yearly'].map((period) => (
                   <button
                     type="button"
                     key={period}
                     onClick={() => setIsYearly(period === 'Yearly')}
                     className={cn(
                       `rounded-full px-3 py-1 text-sm font-medium transition-all duration-100`,
-                      (period === 'Yearly') === isYearly
-                        ? 'bg-primary text-primary-foreground'
-                        : `text-muted-foreground hover:text-foreground`,
+                      (period === 'Yearly') === isYearly ? 'bg-primary text-primary-foreground' : `text-muted-foreground hover:text-foreground`,
                     )}
                   >
                     {period}
@@ -202,18 +164,9 @@ export function Subscription() {
         <CardContent>
           <div className={`grid-cols-2 gap-6 lg:grid`}>
             {plans.map((plan, planIndex) => (
-              <div
-                key={plan.name}
-                className={cn(
-                  `flex h-50 flex-col justify-between rounded-lg border p-4 duration-100`,
-                )}
-              >
+              <div key={plan.name} className={cn(`flex h-50 flex-col justify-between rounded-lg border p-4 duration-100`)}>
                 <div className="flex flex-col gap-4">
-                  <span
-                    className={cn(
-                      `flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground duration-100`,
-                    )}
-                  >
+                  <span className={cn(`flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground duration-100`)}>
                     <plan.icon className="size-5 duration-100" />
                   </span>
                   <div>
@@ -229,11 +182,9 @@ export function Subscription() {
                           </span>
                         )}
                       </span>
-                      {!isPending &&
-                        (subscription?.plan === plan.name.toLowerCase() ||
-                          (!subscription && planIndex === 0)) && (
-                          <Badge variant="secondary">Current</Badge>
-                        )}
+                      {!isPending && (subscription?.plan === plan.name.toLowerCase() || (!subscription && planIndex === 0)) && (
+                        <Badge variant="secondary">Current</Badge>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground">{plan.description}</p>
                   </div>

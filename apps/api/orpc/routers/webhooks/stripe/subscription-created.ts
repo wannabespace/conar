@@ -17,23 +17,12 @@ export async function subscriptionCreated(event: Stripe.Event) {
     throw new Error('No userId found in subscription metadata')
   }
 
-  const [existing] = await db
-    .select({ id: subscriptions.id })
-    .from(subscriptions)
-    .where(eq(subscriptions.stripeSubscriptionId, subscription.id))
-    .limit(1)
+  const [existing] = await db.select({ id: subscriptions.id }).from(subscriptions).where(eq(subscriptions.stripeSubscriptionId, subscription.id)).limit(1)
 
-  const period =
-    subscription.items.data[0]?.price.id === env.STRIPE_ANNUAL_PRICE_ID ? 'yearly' : 'monthly'
-  const price = subscription.items.data[0]?.price.unit_amount
-    ? subscription.items.data[0].price.unit_amount / 100
-    : 0
-  const periodStart = subscription.items.data[0]?.current_period_start
-    ? new Date(subscription.items.data[0].current_period_start * 1000)
-    : null
-  const periodEnd = subscription.items.data[0]?.current_period_end
-    ? new Date(subscription.items.data[0].current_period_end * 1000)
-    : null
+  const period = subscription.items.data[0]?.price.id === env.STRIPE_ANNUAL_PRICE_ID ? 'yearly' : 'monthly'
+  const price = subscription.items.data[0]?.price.unit_amount ? subscription.items.data[0].price.unit_amount / 100 : 0
+  const periodStart = subscription.items.data[0]?.current_period_start ? new Date(subscription.items.data[0].current_period_start * 1000) : null
+  const periodEnd = subscription.items.data[0]?.current_period_end ? new Date(subscription.items.data[0].current_period_end * 1000) : null
 
   const subscriptionData = {
     plan: 'pro',
@@ -62,8 +51,7 @@ export async function subscriptionCreated(event: Stripe.Event) {
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1)
 
   if (user && !user.stripeCustomerId) {
-    const customerId =
-      typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id
+    const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id
 
     await db.update(users).set({ stripeCustomerId: customerId }).where(eq(users.id, userId))
   }

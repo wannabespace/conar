@@ -6,8 +6,8 @@ function getBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
 
-    reader.addEventListener('load', event => resolve(event.target?.result as string))
-    reader.addEventListener('error', error => reject(error))
+    reader.addEventListener('load', (event) => resolve(event.target?.result as string))
+    reader.addEventListener('error', (error) => reject(error))
 
     reader.readAsDataURL(file)
   })
@@ -21,7 +21,7 @@ export function toBase64(str: string) {
 
 export function fromBase64(base64: string) {
   const binString = atob(base64)
-  const bytes = Uint8Array.from(binString, m => m.codePointAt(0)!)
+  const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0)!)
   return new TextDecoder().decode(bytes)
 }
 
@@ -30,7 +30,7 @@ export function bytesToBase64(bytes: Uint8Array) {
 }
 
 export function base64ToBytes(base64: string) {
-  return Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+  return Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
 }
 
 export function b64UrlEncode(buf: Uint8Array) {

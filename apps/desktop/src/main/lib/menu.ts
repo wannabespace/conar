@@ -5,7 +5,7 @@ import { app, BrowserWindow, Menu, shell } from 'electron'
 import { autoUpdater, createWindow } from '../main'
 
 function getFocusedWindow() {
-  return BrowserWindow.getAllWindows().find(window => window.isFocused())
+  return BrowserWindow.getAllWindows().find((window) => window.isFocused())
 }
 
 function setupDevelopmentEnvironment(): void {

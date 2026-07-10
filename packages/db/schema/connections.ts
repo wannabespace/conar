@@ -41,31 +41,28 @@ export const connectionsResources = d.snakeCase.table(
       .notNull(),
     name: d.text(),
   },
-  t => [d.unique().on(t.connectionId, t.name)],
+  (t) => [d.unique().on(t.connectionId, t.name)],
 )
 
 export const connectionsResourcesSelectSchema = createSelectSchema(connectionsResources)
 export const connectionsResourcesUpdateSchema = createUpdateSchema(connectionsResources)
 export const connectionsResourcesInsertSchema = createInsertSchema(connectionsResources)
 
-export const connectionsRelations = defineRelationsPart(
-  { connections, connectionsResources, users },
-  r => ({
-    connections: {
-      user: r.one.users({
-        from: r.connections.userId,
-        to: r.users.id,
-      }),
-      resources: r.many.connectionsResources({
-        from: r.connections.id,
-        to: r.connectionsResources.connectionId,
-      }),
-    },
-    connectionsResources: {
-      connection: r.one.connections({
-        from: r.connectionsResources.connectionId,
-        to: r.connections.id,
-      }),
-    },
-  }),
-)
+export const connectionsRelations = defineRelationsPart({ connections, connectionsResources, users }, (r) => ({
+  connections: {
+    user: r.one.users({
+      from: r.connections.userId,
+      to: r.users.id,
+    }),
+    resources: r.many.connectionsResources({
+      from: r.connections.id,
+      to: r.connectionsResources.connectionId,
+    }),
+  },
+  connectionsResources: {
+    connection: r.one.connections({
+      from: r.connectionsResources.connectionId,
+      to: r.connections.id,
+    }),
+  },
+}))

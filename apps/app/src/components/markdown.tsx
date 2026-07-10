@@ -1,16 +1,5 @@
-import {
-  SingleAccordion,
-  SingleAccordionContent,
-  SingleAccordionTrigger,
-} from '@conar/ui/components/custom/single-accordion'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@conar/ui/components/table'
+import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@conar/ui/components/custom/single-accordion'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@conar/ui/components/table'
 import { cn } from '@conar/ui/lib/utils'
 import type { ContextSelector } from '@fluentui/react-context-selector'
 import { createContext, useContextSelector } from '@fluentui/react-context-selector'
@@ -70,12 +59,9 @@ const monacoOptions = {
 }
 
 function Pre({ children }: { children?: ReactNode }) {
-  const codeActions = useMarkdownContext(c => c.codeActions)
-  const generating = useMarkdownContext(c => c.generating)
-  const childrenProps =
-    (typeof children === 'object' &&
-      (children as ReactElement<{ children?: ReactNode; className?: string }>)?.props) ||
-    null
+  const codeActions = useMarkdownContext((c) => c.codeActions)
+  const generating = useMarkdownContext((c) => c.generating)
+  const childrenProps = (typeof children === 'object' && (children as ReactElement<{ children?: ReactNode; className?: string }>)?.props) || null
   const content = childrenProps?.children?.toString().trim() || null
   const lang = (childrenProps?.className?.split('-')[1] || 'text') as keyof typeof langsMap
   const [opened, setOpened] = useState(false)
@@ -85,43 +71,24 @@ function Pre({ children }: { children?: ReactNode }) {
   const lines = content.split('\n').length
 
   return (
-    <div
-      className={cn(
-        generating && 'animate-in duration-200 fade-in',
-        `typography-disabled relative my-4 first:mt-0 last:mb-0`,
-      )}
-    >
+    <div className={cn(generating && 'animate-in duration-200 fade-in', `typography-disabled relative my-4 first:mt-0 last:mb-0`)}>
       <SingleAccordion open={opened} onOpenChange={setOpened}>
         <SingleAccordionTrigger className="py-1.5" asChild>
           <div className="flex w-full items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2">
-                {lang === 'text' ? (
-                  <RiText className="size-4 text-muted-foreground" />
-                ) : (
-                  <RiCodeLine className="size-4 text-muted-foreground" />
-                )}
+                {lang === 'text' ? <RiText className="size-4 text-muted-foreground" /> : <RiCodeLine className="size-4 text-muted-foreground" />}
                 <span className="font-medium">{langsMap[lang] || lang}</span>
               </div>
               <span className="text-xs text-muted-foreground">
-                <NumberFlow
-                  className="tabular-nums"
-                  value={lines}
-                  suffix={lines === 1 ? ' line' : ' lines'}
-                />
+                <NumberFlow className="tabular-nums" value={lines} suffix={lines === 1 ? ' line' : ' lines'} />
               </span>
             </div>
             {codeActions?.({ content, lang })}
           </div>
         </SingleAccordionTrigger>
         <SingleAccordionContent className="p-0">
-          <Monaco
-            data-mask
-            value={content}
-            language={lang}
-            options={monacoOptions}
-            style={{ height: `${Math.min(content.split('\n').length * 19, 400)}px` }}
-          />
+          <Monaco data-mask value={content} language={lang} options={monacoOptions} style={{ height: `${Math.min(content.split('\n').length * 19, 400)}px` }} />
         </SingleAccordionContent>
       </SingleAccordion>
     </div>
@@ -141,7 +108,7 @@ function MarkdownTable({ children, className, ...props }: ComponentProps<'div'>)
 }
 
 function P({ children, className }: { children?: ReactNode; className?: string }) {
-  const generating = useMarkdownContext(c => c.generating)
+  const generating = useMarkdownContext((c) => c.generating)
 
   if (typeof children === 'string') {
     const chars = children.split('').map((char, i) => ({ char, key: `${char}-${i}` }))
@@ -184,7 +151,7 @@ function MarkdownBase({ content }: { content: string }) {
 
 function parseMarkdownIntoBlocks(markdown: string) {
   const tokens = marked.lexer(markdown)
-  return tokens.map(token => token.raw)
+  return tokens.map((token) => token.raw)
 }
 
 export function Markdown({
@@ -200,17 +167,11 @@ export function Markdown({
   generating?: boolean
 } & ComponentProps<'div'>) {
   const blocks = parseMarkdownIntoBlocks(content)
-  const markdownContextValue = useMemo(
-    () => ({ generating, codeActions }),
-    [generating, codeActions],
-  )
+  const markdownContextValue = useMemo(() => ({ generating, codeActions }), [generating, codeActions])
 
   return (
     <MarkdownContext.Provider value={markdownContextValue}>
-      <div
-        className={cn('typography', generating && `animate-in duration-200 fade-in`, className)}
-        {...props}
-      >
+      <div className={cn('typography', generating && `animate-in duration-200 fade-in`, className)} {...props}>
         {blocks.map((block, index) => (
           <MarkdownBase key={id ? `${id}-block_${index}` : `block_${index}`} content={block} />
         ))}

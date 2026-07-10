@@ -13,10 +13,8 @@ export function useScrollDirection(ref?: React.RefObject<HTMLElement | null>, de
     if (!element) return
 
     function handleScroll() {
-      const currentScrollY =
-        element === window ? window.scrollY : (element as HTMLElement).scrollTop
-      const currentScrollX =
-        element === window ? window.scrollX : (element as HTMLElement).scrollLeft
+      const currentScrollY = element === window ? window.scrollY : (element as HTMLElement).scrollTop
+      const currentScrollX = element === window ? window.scrollX : (element as HTMLElement).scrollLeft
 
       let newDirection: ScrollDirection = null
 

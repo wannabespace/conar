@@ -9,11 +9,7 @@ import { withPosthog } from '~/lib/posthog'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 async function getMessages(chatId: string) {
-  return db
-    .select()
-    .from(chatsMessages)
-    .where(eq(chatsMessages.chatId, chatId))
-    .orderBy(asc(chatsMessages.createdAt))
+  return db.select().from(chatsMessages).where(eq(chatsMessages.chatId, chatId)).orderBy(asc(chatsMessages.createdAt))
 }
 
 export const enhancePrompt = orpc
@@ -50,9 +46,9 @@ export const enhancePrompt = orpc
             '',
             'Context from current chat conversation:',
             JSON.stringify(
-              messages.map(m => ({
+              messages.map((m) => ({
                 role: m.role,
-                parts: m.parts.filter(p => p.type === 'text'),
+                parts: m.parts.filter((p) => p.type === 'text'),
               })),
               null,
               2,

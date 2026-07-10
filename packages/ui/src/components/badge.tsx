@@ -11,15 +11,9 @@ export interface BadgeProps extends useRender.ComponentProps<'span'> {
   size?: VariantProps<typeof badgeVariants>['size']
 }
 
-export function Badge({
-  className,
-  variant,
-  size,
-  render,
-  ...props
-}: BadgeProps): React.ReactElement {
+export function Badge({ className, variant, size, render, ...props }: BadgeProps): React.ReactElement {
   const defaultProps = {
-    className: cn(badgeVariants({ className, size, variant })),
+    'className': cn(badgeVariants({ className, size, variant })),
     'data-slot': 'badge',
   }
 

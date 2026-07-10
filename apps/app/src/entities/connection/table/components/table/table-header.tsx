@@ -63,7 +63,7 @@ function getNotVisibleColumns(
 
   let accumulatedLeft = 0
   for (const column of allColumns) {
-    const isVisible = visibleColumns.find(v => v.id === column.id)
+    const isVisible = visibleColumns.find((v) => v.id === column.id)
     const scrollLeft = accumulatedLeft
     const size = store.columnSizes[column.id] || column.size
 
@@ -85,9 +85,9 @@ function getNotVisibleColumns(
 
 function Header() {
   const store = useTablePageStore()
-  const scrollRef = useTableContext(state => state.scrollRef)
-  const direction = useTableContext(state => state.scrollDirection)
-  const columns = useTableContext(state => state.columns)
+  const scrollRef = useTableContext((state) => state.scrollRef)
+  const direction = useTableContext((state) => state.scrollDirection)
+  const columns = useTableContext((state) => state.columns)
   const isScrolled = useIsScrolled(scrollRef, { direction: 'vertical' })
   const [notVisibleColumns, setNotVisibleColumns] = useState<{
     left: HeaderColumn[]
@@ -100,13 +100,10 @@ function Header() {
     if (!scrollEl) return
 
     const extraSpace = direction === 'left' ? -40 : 40
-    const targetScrollLeft =
-      (direction === 'left'
-        ? column.scrollLeft
-        : column.scrollLeft + column.size - scrollEl.clientWidth) + extraSpace
+    const targetScrollLeft = (direction === 'left' ? column.scrollLeft : column.scrollLeft + column.size - scrollEl.clientWidth) + extraSpace
 
     animate(scrollEl.scrollLeft, targetScrollLeft, {
-      onUpdate: latest => {
+      onUpdate: (latest) => {
         scrollEl.scrollLeft = latest
       },
       duration: 0.5,
@@ -146,10 +143,7 @@ function Header() {
 
   return (
     <TableHeader
-      className={cn(
-        'flex transition-shadow duration-300',
-        isScrolled && `shadow-lg shadow-black/3`,
-      )}
+      className={cn('flex transition-shadow duration-300', isScrolled && `shadow-lg shadow-black/3`)}
       before={
         <div className="sticky inset-y-0 left-0 z-20 flex w-0 items-center">
           <DropdownMenu>
@@ -160,9 +154,7 @@ function Header() {
                   size="icon-sm"
                   className={cn(
                     `group absolute top-1/2 left-2 -translate-y-1/2 transition-opacity duration-150`,
-                    notVisibleColumns.left.length > 0
-                      ? 'opacity-100'
-                      : 'pointer-events-none opacity-0',
+                    notVisibleColumns.left.length > 0 ? 'opacity-100' : 'pointer-events-none opacity-0',
                   )}
                 />
               }
@@ -173,7 +165,7 @@ function Header() {
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {notVisibleColumns.left.map(column => (
+                {notVisibleColumns.left.map((column) => (
                   <DropdownMenuItem key={column.id} onClick={() => scrollToColumn(column, 'left')}>
                     <RiDatabase2Line className="size-4 text-muted-foreground" />
                     {column.id}
@@ -199,9 +191,7 @@ function Header() {
                   size="icon-sm"
                   className={cn(
                     `group absolute top-1/2 right-2 -translate-y-1/2 shadow-none transition-opacity duration-150`,
-                    notVisibleColumns.right.length > 0
-                      ? 'opacity-100'
-                      : `pointer-events-none opacity-0`,
+                    notVisibleColumns.right.length > 0 ? 'opacity-100' : `pointer-events-none opacity-0`,
                   )}
                 />
               }
@@ -212,7 +202,7 @@ function Header() {
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {notVisibleColumns.right.map(column => (
+                {notVisibleColumns.right.map((column) => (
                   <DropdownMenuItem key={column.id} onClick={() => scrollToColumn(column, 'right')}>
                     <RiDatabase2Line className="size-4 text-muted-foreground" />
                     {column.id}

@@ -3,15 +3,7 @@ import { Alert, AlertDescription, AlertTitle } from '@conar/ui/components/alert'
 import { Button } from '@conar/ui/components/button'
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogPanel,
-  DialogTitle,
-} from '@conar/ui/components/dialog'
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogPanel, DialogTitle } from '@conar/ui/components/dialog'
 import { Input } from '@conar/ui/components/input'
 import { Label } from '@conar/ui/components/label'
 import { RiAlertLine } from '@remixicon/react'
@@ -57,7 +49,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
 
       if (lastOpenedTable?.schema === schema && lastOpenedTable?.table === table) {
         store.set(
-          state =>
+          (state) =>
             ({
               ...state,
               lastOpenedTable: null,
@@ -69,9 +61,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
 
   const { mutate: dropTable, isPending } = useMutation({
     mutationFn: async () => {
-      await dropTableQuery({ table, schema, cascade }).run(
-        await connectionResourceToQueryParams(connectionResource),
-      )
+      await dropTableQuery({ table, schema, cascade }).run(await connectionResourceToQueryParams(connectionResource))
     },
     onSuccess: async () => {
       toast.success(`Table "${table}" successfully dropped`)
@@ -94,7 +84,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
       }
       removeTab(connectionResource.id, schema, table)
     },
-    onError: error => {
+    onError: (error) => {
       toast.error(`Failed to drop table "${error.message}".`)
     },
   })
@@ -111,9 +101,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
           <Alert variant="destructive">
             <RiAlertLine className="size-5 text-destructive" />
             <AlertTitle>This action cannot be undone.</AlertTitle>
-            <AlertDescription>
-              This will permanently delete the table and all its data from the database.
-            </AlertDescription>
+            <AlertDescription>This will permanently delete the table and all its data from the database.</AlertDescription>
           </Alert>
           <div className="space-y-2">
             <Label htmlFor="confirmation">
@@ -124,7 +112,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
             <Input
               id="confirmation"
               value={confirmationText}
-              onChange={e => setConfirmationText(e.target.value)}
+              onChange={(e) => setConfirmationText(e.target.value)}
               placeholder={table}
               spellCheck={false}
               autoComplete="off"
@@ -132,11 +120,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
           </div>
           {connection.type !== ConnectionType.ClickHouse && (
             <div className="flex items-center space-x-2">
-              <Checkbox
-                id="cascade"
-                checked={cascade}
-                onCheckedChange={() => setCascade(!cascade)}
-              />
+              <Checkbox id="cascade" checked={cascade} onCheckedChange={() => setCascade(!cascade)} />
               <Label htmlFor="cascade" className="font-normal">
                 Drop tables that depend on this table (CASCADE)
               </Label>
@@ -153,11 +137,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
           >
             Cancel
           </DialogClose>
-          <Button
-            variant="destructive"
-            onClick={() => dropTable()}
-            disabled={!canConfirm || isPending}
-          >
+          <Button variant="destructive" onClick={() => dropTable()} disabled={!canConfirm || isPending}>
             <LoadingContent loading={isPending}>Drop Table</LoadingContent>
           </Button>
         </DialogFooter>

@@ -26,9 +26,7 @@ export function Profile({ className }: { className?: string }) {
               <div>
                 <h3 className={`flex items-center gap-2 text-2xl font-semibold`}>
                   {data.user.name}
-                  <Badge variant="secondary">
-                    {subscription ? uppercaseFirst(subscription.plan) : 'Hobby'}
-                  </Badge>
+                  <Badge variant="secondary">{subscription ? uppercaseFirst(subscription.plan) : 'Hobby'}</Badge>
                 </h3>
                 <p className="text-sm text-muted-foreground">{data.user.email}</p>
               </div>
@@ -46,27 +44,14 @@ export function Profile({ className }: { className?: string }) {
           <Button
             variant="outline"
             size="sm"
-            render={
-              <a
-                href={`${import.meta.env.VITE_PUBLIC_MAIN_URL}/account`}
-                target={window.electron ? '_blank' : '_self'}
-                aria-label="View account"
-              />
-            }
+            render={<a href={`${import.meta.env.VITE_PUBLIC_MAIN_URL}/account`} target={window.electron ? '_blank' : '_self'} aria-label="View account" />}
           >
             Account
-            {window.electron ? (
-              <RiExternalLinkLine className="size-3.5 text-muted-foreground" />
-            ) : null}
+            {window.electron ? <RiExternalLinkLine className="size-3.5 text-muted-foreground" /> : null}
           </Button>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon-sm"
-                onClick={() => signOut()}
-                disabled={isSigningOut}
-              >
+              <Button variant="outline" size="icon-sm" onClick={() => signOut()} disabled={isSigningOut}>
                 <LoadingContent loading={isSigningOut}>
                   <RiLogoutCircleRLine className="size-4" />
                 </LoadingContent>

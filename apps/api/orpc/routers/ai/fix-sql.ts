@@ -35,9 +35,7 @@ export const fixSQL = orpc
         },
         {
           role: 'user',
-          content: ['=======SQL QUERY=======', input.sql, '=======END OF SQL QUERY======='].join(
-            '\n',
-          ),
+          content: ['=======SQL QUERY=======', input.sql, '=======END OF SQL QUERY======='].join('\n'),
         },
       ],
     })

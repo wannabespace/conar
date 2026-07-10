@@ -27,7 +27,7 @@ export const updatesStore = createStore<{
 })
 
 window.electron?.app.onUpdatesStatus(({ status, message }) => {
-  updatesStore.set(state => ({ ...state, status, message }) satisfies typeof state)
+  updatesStore.set((state) => ({ ...state, status, message }) satisfies typeof state)
 })
 
 export function useUpdatesObserver() {
@@ -42,11 +42,11 @@ export function useUpdatesObserver() {
     },
     queryClient,
   )
-  const status = useSubscription(updatesStore, { selector: state => state.status })
+  const status = useSubscription(updatesStore, { selector: (state) => state.status })
 
   useEffect(() => {
     if (version) {
-      updatesStore.set(state => ({ ...state, version }) satisfies typeof state)
+      updatesStore.set((state) => ({ ...state, version }) satisfies typeof state)
     }
   }, [version])
 

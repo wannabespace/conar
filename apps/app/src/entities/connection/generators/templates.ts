@@ -87,21 +87,12 @@ export function prismaQueryTemplate(table: string, whereObj: string) {
 }
 
 export function drizzleQueryTemplate(table: string, conditions: string) {
-  return conditions
-    ? ['await db.select()', `  .from(${table})`, '  .where(and(', `    ${conditions}`, '  ))'].join(
-        '\n',
-      )
-    : `await db.select().from(${table})`
+  return conditions ? ['await db.select()', `  .from(${table})`, '  .where(and(', `    ${conditions}`, '  ))'].join('\n') : `await db.select().from(${table})`
 }
 
 export function kyselyQueryTemplate(table: string, conditions: string) {
   const escapedTable = table.replace(SINGLE_QUOTE_RE, "\\'")
   return conditions
-    ? [
-        `await db.selectFrom('${escapedTable}')`,
-        '  .selectAll()',
-        `  .where(${conditions})`,
-        '  .execute()',
-      ].join('\n')
+    ? [`await db.selectFrom('${escapedTable}')`, '  .selectAll()', `  .where(${conditions})`, '  .execute()'].join('\n')
     : `await db.selectFrom('${escapedTable}').selectAll().execute()`
 }

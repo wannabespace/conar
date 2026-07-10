@@ -23,12 +23,7 @@ import { queryClient } from '~/main'
 
 import { useTableColumns } from '../../columns'
 import type { primaryKeysType } from '../../store'
-import {
-  draftsActions,
-  getRowKeyByPrimaryKeys,
-  primaryKeysKey,
-  useTablePageStore,
-} from '../../store'
+import { draftsActions, getRowKeyByPrimaryKeys, primaryKeysKey, useTablePageStore } from '../../store'
 import { DraftsReviewDrawer } from './drafts-review-drawer'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -42,13 +37,13 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
   const { connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const columns = useTableColumns()
-  const primaryColumns = columns.filter(c => c.primaryKey).map(c => c.id)
-  const drafts = useSubscription(store, { selector: state => state.drafts })
-  const rowsWithDrafts = Map.groupBy(drafts, d => primaryKeysKey(d.primaryKeys))
+  const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
+  const drafts = useSubscription(store, { selector: (state) => state.drafts })
+  const rowsWithDrafts = Map.groupBy(drafts, (d) => primaryKeysKey(d.primaryKeys))
   const { clear, removeRow, setRowStatus } = draftsActions(store)
   const [isReviewOpen, setIsReviewOpen] = useState(false)
 
-  const errorCount = drafts.filter(d => !!d.error).length
+  const errorCount = drafts.filter((d) => !!d.error).length
   const rowCount = rowsWithDrafts.size
 
   const handleDiscard = () => {
@@ -68,8 +63,7 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
 
   const { mutate: saveDrafts, isPending: isSaving } = useMutation({
     mutationFn: async () => {
-      if (primaryColumns.length === 0)
-        throw new Error('No primary keys found. Please use SQL Runner to update rows.')
+      if (primaryColumns.length === 0) throw new Error('No primary keys found. Please use SQL Runner to update rows.')
 
       const { filters, orderBy } = store.get()
       const rowsQueryOpts = resourceRowsQueryInfiniteOptions({
@@ -83,7 +77,7 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
 
       if (!cachedData) throw new Error('No data found. Please refresh the page.')
 
-      const allRows = cachedData.pages.flatMap(page => page.rows)
+      const allRows = cachedData.pages.flatMap((page) => page.rows)
       const rowEntries = Array.from(rowsWithDrafts.values())
 
       for (const rowDrafts of rowEntries) {
@@ -95,10 +89,8 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
       const db = await createDb()
 
       try {
-        const commits = await db.transaction().execute(async tx => {
-          const allRowsByPrimaryKey = new Map(
-            allRows.map(row => [getRowKeyByPrimaryKeys(row, primaryColumns), row] as const),
-          )
+        const commits = await db.transaction().execute(async (tx) => {
+          const allRowsByPrimaryKey = new Map(allRows.map((row) => [getRowKeyByPrimaryKeys(row, primaryColumns), row] as const))
           const commits: {
             primaryKeys: typeof primaryKeysType.infer
             values: Record<string, unknown>
@@ -117,9 +109,9 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
               throw new Error('Row not found in cache. Discarding change for this row.')
             }
 
-            const sqlFilters: ActiveFilter[] = primaryColumns.map(column => ({
+            const sqlFilters: ActiveFilter[] = primaryColumns.map((column) => ({
               column,
-              ref: SQL_FILTERS_LIST.find(f => f.operator === '=')!,
+              ref: SQL_FILTERS_LIST.find((f) => f.operator === '=')!,
               values: [row[column]],
             }))
 
@@ -134,14 +126,12 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
               .withTables<{ [table]: Record<string, unknown> }>()
               .updateTable(table)
               .set(values)
-              .where(eb => buildWhere(eb, sqlFilters))
+              .where((eb) => buildWhere(eb, sqlFilters))
               .execute()
 
             const modifiedColumns = Object.keys(values)
-            const updatedFilters = sqlFilters.map(filter =>
-              modifiedColumns.includes(filter.column)
-                ? Object.assign(filter, { values: [values[filter.column]] })
-                : filter,
+            const updatedFilters = sqlFilters.map((filter) =>
+              modifiedColumns.includes(filter.column) ? Object.assign(filter, { values: [values[filter.column]] }) : filter,
             )
 
             commits.push({ primaryKeys, values, modifiedColumns, updatedFilters })
@@ -156,7 +146,7 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
         return { status: 'error' as const, error, failedPrimaryKeys, rowEntries }
       }
     },
-    onSuccess: async data => {
+    onSuccess: async (data) => {
       if (data.status === 'error') {
         const { error, failedPrimaryKeys, rowEntries } = data
 
@@ -199,9 +189,9 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
               .withTables<{ [table]: Record<string, unknown> }>()
               .selectFrom(table)
               .select(modifiedColumns)
-              .where(eb => buildWhere(eb, updatedFilters))
+              .where((eb) => buildWhere(eb, updatedFilters))
               .execute()
-              .then(rows => rows[0])
+              .then((rows) => rows[0])
               .catch(() => {
                 toast.warning('Failed to refresh row', {
                   description: `Failed to refresh row ${primaryKeysKey(primaryKeys)}`,
@@ -209,22 +199,19 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
                 return null
               })
 
-            return [
-              primaryKeysKey(primaryKeys),
-              { primaryKeys, values: refreshed ?? values },
-            ] as const
+            return [primaryKeysKey(primaryKeys), { primaryKeys, values: refreshed ?? values }] as const
           }),
         ),
       )
 
-      queryClient.setQueryData(rowsQueryOpts.queryKey, data => {
+      queryClient.setQueryData(rowsQueryOpts.queryKey, (data) => {
         if (!data) return data
 
         return {
           ...data,
-          pages: data.pages.map(page => ({
+          pages: data.pages.map((page) => ({
             ...page,
-            rows: page.rows.map(row => {
+            rows: page.rows.map((row) => {
               const savedValues = savedValuesByRow.get(getRowKeyByPrimaryKeys(row, primaryColumns))
               if (!savedValues) return row
               return { ...row, ...savedValues.values }
@@ -239,15 +226,14 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
 
       const { filters, orderBy } = store.get()
 
-      if (filters.length > 0 || Object.keys(orderBy).length > 0)
-        queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
+      if (filters.length > 0 || Object.keys(orderBy).length > 0) queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
 
       const count = savedValuesByRow.size
       toast.success(`Saved ${count} row${count === 1 ? '' : 's'}`)
 
       setIsReviewOpen(false)
     },
-    onError: error => {
+    onError: (error) => {
       toast.error(error.message)
     },
   })
@@ -286,12 +272,7 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
         <Separator orientation="vertical" className="mx-1 h-4" />
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon-xs"
-              onClick={() => setIsReviewOpen(true)}
-              disabled={isSaving || drafts.length === 0}
-            >
+            <Button variant="outline" size="icon-xs" onClick={() => setIsReviewOpen(true)} disabled={isSaving || drafts.length === 0}>
               <RiEyeLine className="size-3.5" />
             </Button>
           </TooltipTrigger>
@@ -306,9 +287,7 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
               </LoadingContent>
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="top">
-            Save all unsaved changes atomically in a transaction
-          </TooltipContent>
+          <TooltipContent side="top">Save all unsaved changes atomically in a transaction</TooltipContent>
         </Tooltip>
       </motion.div>
       <DraftsReviewDrawer

@@ -5,18 +5,14 @@ import { parseSSLConfig } from './pg'
 
 describe('SSL Configuration', () => {
   it('should parse sslmode=disable', () => {
-    const connectionString = parseConnectionString(
-      'postgresql://user:password@localhost:5432/mydb?sslmode=disable',
-    )
+    const connectionString = parseConnectionString('postgresql://user:password@localhost:5432/mydb?sslmode=disable')
     const config = parseSSLConfig(connectionString.searchParams)
 
     expect(config).toBe(false)
   })
 
   it('should parse sslmode=require', () => {
-    const connectionString = parseConnectionString(
-      'postgresql://user:password@localhost:5432/mydb?sslmode=require',
-    )
+    const connectionString = parseConnectionString('postgresql://user:password@localhost:5432/mydb?sslmode=require')
     const config = parseSSLConfig(connectionString.searchParams)
 
     expect(config).toEqual({
@@ -25,9 +21,7 @@ describe('SSL Configuration', () => {
   })
 
   it('should parse sslmode=prefer', () => {
-    const connectionString = parseConnectionString(
-      'postgresql://user:password@localhost:5432/mydb?sslmode=prefer',
-    )
+    const connectionString = parseConnectionString('postgresql://user:password@localhost:5432/mydb?sslmode=prefer')
     const config = parseSSLConfig(connectionString.searchParams)
 
     expect(config).toEqual({
@@ -36,18 +30,14 @@ describe('SSL Configuration', () => {
   })
 
   it('should parse sslmode=verify-ca without sslrootcert', () => {
-    const connectionString = parseConnectionString(
-      'postgresql://user:password@localhost:5432/mydb?sslmode=verify-ca',
-    )
+    const connectionString = parseConnectionString('postgresql://user:password@localhost:5432/mydb?sslmode=verify-ca')
     const config = parseSSLConfig(connectionString.searchParams)
 
     expect(config).toEqual({})
   })
 
   it('should parse sslmode=verify-ca with sslrootcert', () => {
-    const connectionString = parseConnectionString(
-      'postgresql://user:password@localhost:5432/mydb?sslmode=verify-ca&sslrootcert=/path/to/ca.pem',
-    )
+    const connectionString = parseConnectionString('postgresql://user:password@localhost:5432/mydb?sslmode=verify-ca&sslrootcert=/path/to/ca.pem')
     const config = parseSSLConfig(connectionString.searchParams)
 
     expect(config).toEqual({
@@ -56,9 +46,7 @@ describe('SSL Configuration', () => {
   })
 
   it('should parse sslmode=verify with sslrootcert (Supabase pooler)', () => {
-    const connectionString = parseConnectionString(
-      'postgresql://user:password@localhost:5432/mydb?sslmode=verify&sslrootcert=/path/to/ca.pem',
-    )
+    const connectionString = parseConnectionString('postgresql://user:password@localhost:5432/mydb?sslmode=verify&sslrootcert=/path/to/ca.pem')
     const config = parseSSLConfig(connectionString.searchParams)
 
     expect(config).toEqual({
@@ -67,18 +55,14 @@ describe('SSL Configuration', () => {
   })
 
   it('should parse sslmode=verify without sslrootcert', () => {
-    const connectionString = parseConnectionString(
-      'postgresql://user:password@localhost:5432/mydb?sslmode=verify',
-    )
+    const connectionString = parseConnectionString('postgresql://user:password@localhost:5432/mydb?sslmode=verify')
     const config = parseSSLConfig(connectionString.searchParams)
 
     expect(config).toEqual({ rejectUnauthorized: true })
   })
 
   it('should parse invalid sslmode', () => {
-    const connectionString = parseConnectionString(
-      'postgresql://user:password@localhost:5432/mydb?sslmode=invalid',
-    )
+    const connectionString = parseConnectionString('postgresql://user:password@localhost:5432/mydb?sslmode=invalid')
     const config = parseSSLConfig(connectionString.searchParams)
 
     expect(config).toEqual({})
@@ -97,9 +81,7 @@ describe('SSL Configuration', () => {
   })
 
   it('should parse sslmode=verify-full with sslrootcert only', () => {
-    const connectionString = parseConnectionString(
-      'postgresql://user:password@localhost:5432/mydb?sslmode=verify-full&sslrootcert=/path/to/ca.pem',
-    )
+    const connectionString = parseConnectionString('postgresql://user:password@localhost:5432/mydb?sslmode=verify-full&sslrootcert=/path/to/ca.pem')
     const config = parseSSLConfig(connectionString.searchParams)
 
     expect(config).toEqual({
@@ -108,9 +90,7 @@ describe('SSL Configuration', () => {
   })
 
   it('should throw error for sslmode=disable with SSL parameters', () => {
-    const connectionString = parseConnectionString(
-      'postgresql://user:password@localhost:5432/mydb?sslmode=disable&sslcert=/path/to/cert.pem',
-    )
+    const connectionString = parseConnectionString('postgresql://user:password@localhost:5432/mydb?sslmode=disable&sslcert=/path/to/cert.pem')
 
     expect(() => parseSSLConfig(connectionString.searchParams)).toThrow(
       'sslmode=disable cannot be used with SSL certificate parameters (sslcert, sslkey, sslrootcert, sslpassword, sslservername)',
@@ -169,9 +149,7 @@ describe('SSL Configuration', () => {
   })
 
   it('should handle sslmode=require without SSL parameters (should return true)', () => {
-    const connectionString = parseConnectionString(
-      'postgresql://user:password@localhost:5432/mydb?sslmode=require',
-    )
+    const connectionString = parseConnectionString('postgresql://user:password@localhost:5432/mydb?sslmode=require')
     const config = parseSSLConfig(connectionString.searchParams)
 
     expect(config).toEqual({
@@ -180,46 +158,16 @@ describe('SSL Configuration', () => {
   })
 
   it('should parse ssl parameter (true/false, 1/0, case insensitive)', () => {
-    expect(
-      parseSSLConfig(
-        parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=true')
-          .searchParams,
-      ),
-    ).toBe(true)
-    expect(
-      parseSSLConfig(
-        parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=1').searchParams,
-      ),
-    ).toBe(true)
-    expect(
-      parseSSLConfig(
-        parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=TRUE')
-          .searchParams,
-      ),
-    ).toBe(true)
-    expect(
-      parseSSLConfig(
-        parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=false')
-          .searchParams,
-      ),
-    ).toBe(false)
-    expect(
-      parseSSLConfig(
-        parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=0').searchParams,
-      ),
-    ).toBe(false)
-    expect(
-      parseSSLConfig(
-        parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=FALSE')
-          .searchParams,
-      ),
-    ).toBe(false)
+    expect(parseSSLConfig(parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=true').searchParams)).toBe(true)
+    expect(parseSSLConfig(parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=1').searchParams)).toBe(true)
+    expect(parseSSLConfig(parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=TRUE').searchParams)).toBe(true)
+    expect(parseSSLConfig(parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=false').searchParams)).toBe(false)
+    expect(parseSSLConfig(parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=0').searchParams)).toBe(false)
+    expect(parseSSLConfig(parseConnectionString('postgresql://user:password@localhost:5432/mydb?ssl=FALSE').searchParams)).toBe(false)
   })
 
   it('should prioritize sslmode over ssl parameter', () => {
-    const connectionString = parseConnectionString(
-      'postgresql://user:password@localhost:5432/mydb?sslmode=disable&ssl=true',
-    )
+    const connectionString = parseConnectionString('postgresql://user:password@localhost:5432/mydb?sslmode=disable&ssl=true')
     const config = parseSSLConfig(connectionString.searchParams)
 
     expect(config).toBe(false)

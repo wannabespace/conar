@@ -11,11 +11,5 @@ export function Toggle<T extends string>({
   size,
   ...props
 }: TogglePrimitive.Props<T> & VariantProps<typeof toggleVariants>): React.ReactElement {
-  return (
-    <TogglePrimitive
-      className={cn(toggleVariants({ className, size, variant }))}
-      data-slot="toggle"
-      {...props}
-    />
-  )
+  return <TogglePrimitive className={cn(toggleVariants({ className, size, variant }))} data-slot="toggle" {...props} />
 }

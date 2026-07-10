@@ -1,8 +1,6 @@
 import * as React from 'react'
 
-export function useElementSize<T extends Element>(
-  ref: React.RefObject<T | null>,
-): { width: number | null; height: number | null }
+export function useElementSize<T extends Element>(ref: React.RefObject<T | null>): { width: number | null; height: number | null }
 export function useElementSize<T extends Element>(
   ref: React.RefObject<T | null>,
   initial: {
@@ -42,9 +40,7 @@ export function useElementSize<T extends Element = Element>(
         if (entry && entry.borderBoxSize) {
           const { inlineSize: width, blockSize: height } = entry.borderBoxSize[0]!
 
-          setSize(prev =>
-            width !== prev.width || height !== prev.height ? { width, height } : prev,
-          )
+          setSize((prev) => (width !== prev.width || height !== prev.height ? { width, height } : prev))
         }
       })
 

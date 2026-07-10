@@ -50,16 +50,12 @@ interface TxQueryPayload extends QueryPayload {
 
 export function createDialectProvider(type: ConnectionType, options: DialectOptions) {
   const { connectionsCollection, connectionsResourcesCollection } = getCollections()
-  const resource = options.resourceId
-    ? connectionsResourcesCollection.get(options.resourceId)
-    : null
+  const resource = options.resourceId ? connectionsResourcesCollection.get(options.resourceId) : null
   const connectionId = options.connectionId || resource?.connectionId
   const connection = connectionId ? connectionsCollection.get(connectionId) : null
 
   function resolveTransport() {
-    const proxy = connectionId
-      ? getConnectionStore(connectionId).get().proxy
-      : { enabled: false, url: null }
+    const proxy = connectionId ? getConnectionStore(connectionId).get().proxy : { enabled: false, url: null }
     const config = connection ? fetchingConfig(connection, { proxy }) : null
 
     if (config?.type === 'proxy') {
@@ -78,33 +74,25 @@ export function createDialectProvider(type: ConnectionType, options: DialectOpti
   return {
     execute(payload: QueryPayload) {
       const t = resolveTransport()
-      if (t.kind === 'electron')
-        return t.electron.execute({ connectionString: options.connectionString, ...payload })
+      if (t.kind === 'electron') return t.electron.execute({ connectionString: options.connectionString, ...payload })
       return t.proxy.execute({ ...resolveProxyIdParams(options), ...payload })
     },
     beginTransaction() {
       const t = resolveTransport()
-      if (t.kind === 'electron')
-        return t.electron.beginTransaction({ connectionString: options.connectionString })
+      if (t.kind === 'electron') return t.electron.beginTransaction({ connectionString: options.connectionString })
       return t.proxy.beginTransaction(resolveProxyIdParams(options))
     },
     executeTransaction(params: TxQueryPayload) {
       const t = resolveTransport()
-      return t.kind === 'electron'
-        ? t.electron.executeTransaction(params)
-        : t.proxy.executeTransaction(params)
+      return t.kind === 'electron' ? t.electron.executeTransaction(params) : t.proxy.executeTransaction(params)
     },
     commitTransaction(params: { txId: string }) {
       const t = resolveTransport()
-      return t.kind === 'electron'
-        ? t.electron.commitTransaction(params)
-        : t.proxy.commitTransaction(params)
+      return t.kind === 'electron' ? t.electron.commitTransaction(params) : t.proxy.commitTransaction(params)
     },
     rollbackTransaction(params: { txId: string }) {
       const t = resolveTransport()
-      return t.kind === 'electron'
-        ? t.electron.rollbackTransaction(params)
-        : t.proxy.rollbackTransaction(params)
+      return t.kind === 'electron' ? t.electron.rollbackTransaction(params) : t.proxy.rollbackTransaction(params)
     },
   }
 }
@@ -112,7 +100,7 @@ export function createDialectProvider(type: ConnectionType, options: DialectOpti
 export function createKyselyDriver({
   provider,
   logger,
-  transformQuery = compiledQuery => ({
+  transformQuery = (compiledQuery) => ({
     query: compiledQuery.sql,
     values: compiledQuery.parameters as unknown[],
   }),
@@ -143,9 +131,7 @@ export function createKyselyDriver({
       const state: { txId: string | null } = { txId: null }
       const connection: DatabaseConnection = {
         executeQuery: async <R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> => {
-          const { result } = state.txId
-            ? await executeInTxAndLog(state.txId, compiledQuery)
-            : await executeAndLog(compiledQuery)
+          const { result } = state.txId ? await executeInTxAndLog(state.txId, compiledQuery) : await executeAndLog(compiledQuery)
           return { rows: Array.isArray(result) ? (result as R[]) : [] }
         },
         streamQuery() {
@@ -189,20 +175,10 @@ export function createKyselyDriver({
 }
 
 export const dialects = {
-  postgres: memoize(
-    (options: DialectOptions) =>
-      new Kysely<PostgresDatabase>({ dialect: postgresDialect(options) }),
-  ),
-  mysql: memoize(
-    (options: DialectOptions) => new Kysely<MysqlDatabase>({ dialect: mysqlDialect(options) }),
-  ),
-  clickhouse: memoize(
-    (options: DialectOptions) =>
-      new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(options) }),
-  ),
-  mssql: memoize(
-    (options: DialectOptions) => new Kysely<MssqlDatabase>({ dialect: mssqlDialect(options) }),
-  ),
+  postgres: memoize((options: DialectOptions) => new Kysely<PostgresDatabase>({ dialect: postgresDialect(options) })),
+  mysql: memoize((options: DialectOptions) => new Kysely<MysqlDatabase>({ dialect: mysqlDialect(options) })),
+  clickhouse: memoize((options: DialectOptions) => new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(options) })),
+  mssql: memoize((options: DialectOptions) => new Kysely<MssqlDatabase>({ dialect: mssqlDialect(options) })),
 } satisfies Record<ConnectionType, AnyFunction>
 
 export const coldDialects = {

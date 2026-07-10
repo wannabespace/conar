@@ -4,22 +4,9 @@ import { createContext, use } from 'react'
 import type { Column } from '~/entities/connection/components/table/cell'
 import { getColumnUiType } from '~/entities/connection/components/table/cell'
 import type { ConnectionResource } from '~/entities/connection/core'
-import {
-  findEnum,
-  resourceConstraintsQueryOptions,
-  resourceEnumsQueryOptions,
-  resourceTableColumnsQueryOptions,
-} from '~/entities/connection/queries'
+import { findEnum, resourceConstraintsQueryOptions, resourceEnumsQueryOptions, resourceTableColumnsQueryOptions } from '~/entities/connection/queries'
 
-export function useTableColumnsQuery({
-  connectionResource,
-  table,
-  schema,
-}: {
-  connectionResource: ConnectionResource
-  table: string
-  schema: string
-}) {
+export function useTableColumnsQuery({ connectionResource, table, schema }: { connectionResource: ConnectionResource; table: string; schema: string }) {
   return useQueries({
     queries: [
       resourceTableColumnsQueryOptions({ connectionResource, table, schema }),
@@ -42,12 +29,10 @@ export function useTableColumnsQuery({
       const constraintsData = constraints.data || []
       const data = columns.data
         ?.map((column): Column => {
-          const columnConstraints = constraintsData.filter(
-            c => c.column === column.id && c.schema === schema && c.table === table,
-          )
-          const foreignConstraint = columnConstraints.find(c => c.type === 'foreignKey')
-          const uniqueConstraint = columnConstraints.find(c => c.type === 'unique')
-          const primaryConstraint = columnConstraints.find(c => c.type === 'primaryKey')
+          const columnConstraints = constraintsData.filter((c) => c.column === column.id && c.schema === schema && c.table === table)
+          const foreignConstraint = columnConstraints.find((c) => c.type === 'foreignKey')
+          const uniqueConstraint = columnConstraints.find((c) => c.type === 'unique')
+          const primaryConstraint = columnConstraints.find((c) => c.type === 'primaryKey')
 
           return {
             ...column,
@@ -64,10 +49,7 @@ export function useTableColumnsQuery({
             defaultValue: column.default,
             unique: uniqueConstraint?.name,
             foreign:
-              foreignConstraint &&
-              foreignConstraint.foreignSchema &&
-              foreignConstraint.foreignTable &&
-              foreignConstraint.foreignColumn
+              foreignConstraint && foreignConstraint.foreignSchema && foreignConstraint.foreignTable && foreignConstraint.foreignColumn
                 ? {
                     name: foreignConstraint.name,
                     schema: foreignConstraint.foreignSchema,
@@ -78,21 +60,10 @@ export function useTableColumnsQuery({
                   }
                 : undefined,
             references: constraintsData
-              .filter(
-                c =>
-                  c.type === 'foreignKey' &&
-                  c.foreignColumn === column.id &&
-                  c.foreignSchema === schema &&
-                  c.foreignTable === table &&
-                  !!c.column,
-              )
-              .map(c => {
+              .filter((c) => c.type === 'foreignKey' && c.foreignColumn === column.id && c.foreignSchema === schema && c.foreignTable === table && !!c.column)
+              .map((c) => {
                 const isUnique = constraintsData.some(
-                  u =>
-                    (u.type === 'unique' || u.type === 'primaryKey') &&
-                    u.schema === c.schema &&
-                    u.table === c.table &&
-                    u.column === c.column,
+                  (u) => (u.type === 'unique' || u.type === 'primaryKey') && u.schema === c.schema && u.table === c.table && u.column === c.column,
                 )
 
                 return {

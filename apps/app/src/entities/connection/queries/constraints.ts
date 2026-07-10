@@ -8,18 +8,14 @@ import { connectionResourceToQueryParams, createQuery } from '../runtime/query'
 
 const constraintType = type('"PRIMARY KEY" | "UNIQUE" | "FOREIGN KEY" | "CHECK" | "EXCLUSION"')
 
-const neededConstraintTypes = [
-  'PRIMARY KEY',
-  'UNIQUE',
-  'FOREIGN KEY',
-] as const satisfies (typeof constraintType.infer)[]
+const neededConstraintTypes = ['PRIMARY KEY', 'UNIQUE', 'FOREIGN KEY'] as const satisfies (typeof constraintType.infer)[]
 
 const constraintTypeLabelMap = {
   'PRIMARY KEY': 'primaryKey',
-  UNIQUE: 'unique',
+  'UNIQUE': 'unique',
   'FOREIGN KEY': 'foreignKey',
-  CHECK: 'check',
-  EXCLUSION: 'exclusion',
+  'CHECK': 'check',
+  'EXCLUSION': 'exclusion',
 } as const satisfies Record<typeof constraintType.infer, string>
 
 export const constraintsType = type({
@@ -44,34 +40,22 @@ export const constraintsType = type({
 export const resourceConstraintsQuery = createQuery({
   type: constraintsType.array(),
   query: {
-    postgres: db =>
+    postgres: (db) =>
       db
         .selectFrom('pg_catalog.pg_constraint as con')
         .innerJoin('pg_catalog.pg_class as c', 'con.conrelid', 'c.oid')
         .innerJoin('pg_catalog.pg_namespace as n', 'c.relnamespace', 'n.oid')
-        .innerJoin('pg_catalog.pg_attribute as a', join =>
-          join
-            .onRef('a.attrelid', '=', 'con.conrelid')
-            .on(sql<boolean>`a.attnum = ANY(con.conkey)`),
-        )
+        .innerJoin('pg_catalog.pg_attribute as a', (join) => join.onRef('a.attrelid', '=', 'con.conrelid').on(sql<boolean>`a.attnum = ANY(con.conkey)`))
         .leftJoin('pg_catalog.pg_class as fc', 'con.confrelid', 'fc.oid')
-        .leftJoin('pg_catalog.pg_namespace as fn', join =>
-          join.onRef('fn.oid', '=', 'fc.relnamespace'),
-        )
-        .leftJoin('pg_catalog.pg_attribute as fa', join =>
-          join
-            .onRef('fa.attrelid', '=', 'con.confrelid')
-            .on(sql<boolean>`fa.attnum = (con.confkey)[array_position(con.conkey, a.attnum)]`),
+        .leftJoin('pg_catalog.pg_namespace as fn', (join) => join.onRef('fn.oid', '=', 'fc.relnamespace'))
+        .leftJoin('pg_catalog.pg_attribute as fa', (join) =>
+          join.onRef('fa.attrelid', '=', 'con.confrelid').on(sql<boolean>`fa.attnum = (con.confkey)[array_position(con.conkey, a.attnum)]`),
         )
         .select([
           'n.nspname as schema',
           'c.relname as table',
           'con.conname as name',
-          sql<
-            typeof constraintType.infer
-          >`CASE con.contype WHEN 'p' THEN 'PRIMARY KEY' WHEN 'u' THEN 'UNIQUE' WHEN 'f' THEN 'FOREIGN KEY' END`.as(
-            'type',
-          ),
+          sql<typeof constraintType.infer>`CASE con.contype WHEN 'p' THEN 'PRIMARY KEY' WHEN 'u' THEN 'UNIQUE' WHEN 'f' THEN 'FOREIGN KEY' END`.as('type'),
           sql<string | null>`a.attname`.as('column'),
           'fn.nspname as foreign_schema',
           'fc.relname as foreign_table',
@@ -91,17 +75,17 @@ export const resourceConstraintsQuery = createQuery({
         .where('n.nspname', 'not like', 'pg_%')
         .where('n.nspname', '!=', 'information_schema')
         .execute(),
-    mysql: db =>
+    mysql: (db) =>
       db
         .selectFrom('information_schema.TABLE_CONSTRAINTS as tc')
-        .leftJoin('information_schema.KEY_COLUMN_USAGE as kcu', join =>
+        .leftJoin('information_schema.KEY_COLUMN_USAGE as kcu', (join) =>
           join
             .onRef('tc.CONSTRAINT_NAME', '=', 'kcu.CONSTRAINT_NAME')
             .onRef('tc.CONSTRAINT_SCHEMA', '=', 'kcu.CONSTRAINT_SCHEMA')
             .onRef('tc.TABLE_SCHEMA', '=', 'kcu.TABLE_SCHEMA')
             .onRef('tc.TABLE_NAME', '=', 'kcu.TABLE_NAME'),
         )
-        .leftJoin('information_schema.REFERENTIAL_CONSTRAINTS as rc', join =>
+        .leftJoin('information_schema.REFERENTIAL_CONSTRAINTS as rc', (join) =>
           join
             .onRef('tc.CONSTRAINT_NAME', '=', 'rc.CONSTRAINT_NAME')
             .onRef('tc.CONSTRAINT_SCHEMA', '=', 'rc.CONSTRAINT_SCHEMA')
@@ -120,29 +104,22 @@ export const resourceConstraintsQuery = createQuery({
           'rc.UPDATE_RULE as onUpdate',
         ])
         .where('tc.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
-        .where('tc.TABLE_SCHEMA', 'not in', [
-          'mysql',
-          'information_schema',
-          'performance_schema',
-          'sys',
-        ])
+        .where('tc.TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
         .execute(),
-    mssql: db =>
+    mssql: (db) =>
       db
         .selectFrom('information_schema.TABLE_CONSTRAINTS as tc')
-        .leftJoin('information_schema.KEY_COLUMN_USAGE as kcu', join =>
+        .leftJoin('information_schema.KEY_COLUMN_USAGE as kcu', (join) =>
           join
             .onRef('tc.CONSTRAINT_NAME', '=', 'kcu.CONSTRAINT_NAME')
             .onRef('tc.CONSTRAINT_SCHEMA', '=', 'kcu.CONSTRAINT_SCHEMA')
             .onRef('tc.TABLE_SCHEMA', '=', 'kcu.TABLE_SCHEMA')
             .onRef('tc.TABLE_NAME', '=', 'kcu.TABLE_NAME'),
         )
-        .leftJoin('information_schema.REFERENTIAL_CONSTRAINTS as rc', join =>
-          join
-            .onRef('tc.CONSTRAINT_NAME', '=', 'rc.CONSTRAINT_NAME')
-            .onRef('tc.CONSTRAINT_SCHEMA', '=', 'rc.CONSTRAINT_SCHEMA'),
+        .leftJoin('information_schema.REFERENTIAL_CONSTRAINTS as rc', (join) =>
+          join.onRef('tc.CONSTRAINT_NAME', '=', 'rc.CONSTRAINT_NAME').onRef('tc.CONSTRAINT_SCHEMA', '=', 'rc.CONSTRAINT_SCHEMA'),
         )
-        .leftJoin('information_schema.KEY_COLUMN_USAGE as referenced_kcu', join =>
+        .leftJoin('information_schema.KEY_COLUMN_USAGE as referenced_kcu', (join) =>
           join
             .onRef('rc.UNIQUE_CONSTRAINT_NAME', '=', 'referenced_kcu.CONSTRAINT_NAME')
             .onRef('rc.UNIQUE_CONSTRAINT_SCHEMA', '=', 'referenced_kcu.CONSTRAINT_SCHEMA')
@@ -163,7 +140,7 @@ export const resourceConstraintsQuery = createQuery({
         .where('tc.CONSTRAINT_TYPE', 'in', neededConstraintTypes)
         .where('tc.TABLE_SCHEMA', 'not in', ['INFORMATION_SCHEMA', 'sys'])
         .execute(),
-    clickhouse: async db => {
+    clickhouse: async (db) => {
       // Clickhouse generally doesn't support traditional constraints like foreign key but we can fetch primary keys
       const query = await db
         .selectFrom('system.columns')
@@ -172,7 +149,7 @@ export const resourceConstraintsQuery = createQuery({
         .where('database', 'not in', ['system', 'information_schema'])
         .execute()
 
-      return query.map(row =>
+      return query.map((row) =>
         Object.assign(row, {
           name: 'primary_key',
           type: 'PRIMARY KEY' as const,
@@ -187,14 +164,9 @@ export const resourceConstraintsQuery = createQuery({
   },
 })
 
-export function resourceConstraintsQueryOptions({
-  connectionResource,
-}: {
-  connectionResource: ConnectionResource
-}) {
+export function resourceConstraintsQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
   return queryOptions({
-    queryFn: async () =>
-      resourceConstraintsQuery.run(await connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () => resourceConstraintsQuery.run(await connectionResourceToQueryParams(connectionResource)),
     queryKey: ['connection-resource', connectionResource.id, 'constraints'],
   })
 }

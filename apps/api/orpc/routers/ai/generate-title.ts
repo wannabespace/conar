@@ -11,11 +11,7 @@ import { authMiddleware, orpc } from '~/orpc'
 import { publisher } from '../chats/events'
 
 async function getMessages(chatId: string) {
-  return db
-    .select()
-    .from(chatsMessages)
-    .where(eq(chatsMessages.chatId, chatId))
-    .orderBy(asc(chatsMessages.createdAt))
+  return db.select().from(chatsMessages).where(eq(chatsMessages.chatId, chatId)).orderBy(asc(chatsMessages.createdAt))
 }
 
 export const generateTitle = orpc
@@ -29,10 +25,10 @@ export const generateTitle = orpc
   .handler(async ({ input, signal, context }) => {
     const messages = await getMessages(input.chatId)
     const prompt = messages
-      .map(message =>
+      .map((message) =>
         message.parts
-          .filter(part => part.type === 'text')
-          .map(part => JSON.stringify(part, null, 2))
+          .filter((part) => part.type === 'text')
+          .map((part) => JSON.stringify(part, null, 2))
           .join('\n'),
       )
       .join('\n')
@@ -73,11 +69,7 @@ export const generateTitle = orpc
       generatedTitle: text,
     })
 
-    const [chat] = await db
-      .update(chats)
-      .set({ title: text })
-      .where(eq(chats.id, input.chatId))
-      .returning()
+    const [chat] = await db.update(chats).set({ title: text }).where(eq(chats.id, input.chatId)).returning()
 
     publisher.publish(context.user.id, {
       type: 'update',

@@ -2,16 +2,13 @@ import type { SchemaParams } from '..'
 import * as templates from '../templates'
 import { getColumnType, toLiteralKey } from '../utils'
 
-function buildZodType(
-  column: SchemaParams['columns'][number],
-  dialect: SchemaParams['dialect'],
-): string | null {
+function buildZodType(column: SchemaParams['columns'][number], dialect: SchemaParams['dialect']): string | null {
   let zodType = column.type ? getColumnType(column.type, 'zod', dialect) : null
 
   if (!zodType) return null
 
   if (column.enumName && column.availableValues?.length) {
-    zodType = `z.enum([${column.availableValues.map(v => `'${v}'`).join(', ')}])`
+    zodType = `z.enum([${column.availableValues.map((v) => `'${v}'`).join(', ')}])`
     if (column.type === 'set') {
       zodType = `${zodType}.array()`
     }
@@ -30,7 +27,7 @@ function buildZodType(
 
 export function generateSchemaZod({ table, columns, dialect }: SchemaParams) {
   const lines = columns
-    .map(column => {
+    .map((column) => {
       const key = toLiteralKey(column.id)
       const zodType = buildZodType(column, dialect)
 

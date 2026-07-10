@@ -8,14 +8,7 @@ export function AppLogoSquare(props: ComponentProps<'svg'>) {
   const id = useId()
 
   return (
-    <svg
-      width="824"
-      height="824"
-      viewBox="0 0 824 824"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
+    <svg width="824" height="824" viewBox="0 0 824 824" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
       <rect width="824" height="824" rx="200" fill={`url(#a-${id})`} />
       <g filter={`url(#b-${id})`}>
         <path
@@ -40,140 +33,62 @@ export function AppLogoSquare(props: ComponentProps<'svg'>) {
         />
       </g>
       <defs>
-        <linearGradient
-          id={`a-${id}`}
-          x1="824"
-          y1="824"
-          x2="0"
-          y2="0"
-          gradientUnits="userSpaceOnUse"
-        >
+        <linearGradient id={`a-${id}`} x1="824" y1="824" x2="0" y2="0" gradientUnits="userSpaceOnUse">
           <stop stopColor="#5689FF" />
           <stop offset="1" stopColor="#1E40B0" />
         </linearGradient>
-        <linearGradient
-          id={`c-${id}`}
-          x1="310.538"
-          y1="323.282"
-          x2="705.617"
-          y2="650.298"
-          gradientUnits="userSpaceOnUse"
-        >
+        <linearGradient id={`c-${id}`} x1="310.538" y1="323.282" x2="705.617" y2="650.298" gradientUnits="userSpaceOnUse">
           <stop stopColor="#fff" />
           <stop offset="1" stopColor="#C5D7F1" />
         </linearGradient>
-        <linearGradient
-          id={`d-${id}`}
-          x1="310.538"
-          y1="323.282"
-          x2="705.617"
-          y2="650.298"
-          gradientUnits="userSpaceOnUse"
-        >
+        <linearGradient id={`d-${id}`} x1="310.538" y1="323.282" x2="705.617" y2="650.298" gradientUnits="userSpaceOnUse">
           <stop stopColor="#fff" />
           <stop offset="1" stopColor="#C5D7F1" />
         </linearGradient>
-        <linearGradient
-          id={`e-${id}`}
-          x1="310.538"
-          y1="323.282"
-          x2="705.617"
-          y2="650.298"
-          gradientUnits="userSpaceOnUse"
-        >
+        <linearGradient id={`e-${id}`} x1="310.538" y1="323.282" x2="705.617" y2="650.298" gradientUnits="userSpaceOnUse">
           <stop stopColor="#fff" />
           <stop offset="1" stopColor="#C5D7F1" />
         </linearGradient>
-        <linearGradient
-          id={`f-${id}`}
-          x1="310.538"
-          y1="323.282"
-          x2="705.617"
-          y2="650.298"
-          gradientUnits="userSpaceOnUse"
-        >
+        <linearGradient id={`f-${id}`} x1="310.538" y1="323.282" x2="705.617" y2="650.298" gradientUnits="userSpaceOnUse">
           <stop stopColor="#fff" />
           <stop offset="1" stopColor="#C5D7F1" />
         </linearGradient>
-        <linearGradient
-          id={`g-${id}`}
-          x1="310.538"
-          y1="323.282"
-          x2="705.617"
-          y2="650.298"
-          gradientUnits="userSpaceOnUse"
-        >
+        <linearGradient id={`g-${id}`} x1="310.538" y1="323.282" x2="705.617" y2="650.298" gradientUnits="userSpaceOnUse">
           <stop stopColor="#fff" />
           <stop offset="1" stopColor="#C5D7F1" />
         </linearGradient>
-        <filter
-          id={`b-${id}`}
-          x="97.392"
-          y="107.186"
-          width="638.676"
-          height="660.229"
-          filterUnits="userSpaceOnUse"
-          colorInterpolationFilters="sRGB"
-        >
+        <filter id={`b-${id}`} x="97.392" y="107.186" width="638.676" height="660.229" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
           <feFlood floodOpacity="0" result="BackgroundImageFix" />
-          <feColorMatrix
-            in="SourceAlpha"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-            result="hardAlpha"
-          />
+          <feColorMatrix in="SourceAlpha" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
           <feOffset dx="14" dy="15" />
           <feGaussianBlur stdDeviation="17.5" />
           <feComposite in2="hardAlpha" operator="out" />
           <feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0" />
           <feBlend in2="BackgroundImageFix" result="effect1_dropShadow_2844_167" />
-          <feColorMatrix
-            in="SourceAlpha"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-            result="hardAlpha"
-          />
+          <feColorMatrix in="SourceAlpha" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
           <feOffset dx="4" dy="5" />
           <feGaussianBlur stdDeviation="5" />
           <feComposite in2="hardAlpha" operator="out" />
           <feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.15 0" />
           <feBlend in2="effect1_dropShadow_2844_167" result="effect2_dropShadow_2844_167" />
           <feBlend in="SourceGraphic" in2="effect2_dropShadow_2844_167" result="shape" />
-          <feColorMatrix
-            in="SourceAlpha"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-            result="hardAlpha"
-          />
+          <feColorMatrix in="SourceAlpha" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
           <feOffset dx="-9" dy="-7" />
           <feGaussianBlur stdDeviation="9.2" />
           <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
           <feColorMatrix values="0 0 0 0 0.0478458 0 0 0 0 0.128002 0 0 0 0 0.331731 0 0 0 0.15 0" />
           <feBlend in2="shape" result="effect3_innerShadow_2844_167" />
-          <feColorMatrix
-            in="SourceAlpha"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-            result="hardAlpha"
-          />
+          <feColorMatrix in="SourceAlpha" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
           <feOffset dx="-3" dy="-2" />
           <feGaussianBlur stdDeviation="4" />
           <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
           <feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0" />
-          <feBlend
-            mode="soft-light"
-            in2="effect3_innerShadow_2844_167"
-            result="effect4_innerShadow_2844_167"
-          />
-          <feColorMatrix
-            in="SourceAlpha"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-            result="hardAlpha"
-          />
+          <feBlend mode="soft-light" in2="effect3_innerShadow_2844_167" result="effect4_innerShadow_2844_167" />
+          <feColorMatrix in="SourceAlpha" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
           <feOffset dx="-1" dy="-1" />
           <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
           <feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0" />
-          <feBlend
-            mode="soft-light"
-            in2="effect4_innerShadow_2844_167"
-            result="effect5_innerShadow_2844_167"
-          />
+          <feBlend mode="soft-light" in2="effect4_innerShadow_2844_167" result="effect5_innerShadow_2844_167" />
         </filter>
       </defs>
     </svg>

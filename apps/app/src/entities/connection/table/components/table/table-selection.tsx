@@ -7,11 +7,7 @@ import { useSubscription } from 'seitu/react'
 
 import { useTablePageStore } from '../../store'
 
-function IndeterminateCheckbox({
-  indeterminate,
-  className,
-  ...props
-}: { indeterminate?: boolean } & ComponentProps<'input'>) {
+function IndeterminateCheckbox({ indeterminate, className, ...props }: { indeterminate?: boolean } & ComponentProps<'input'>) {
   return (
     <div className="relative inline-flex items-center justify-center">
       <input
@@ -24,9 +20,7 @@ function IndeterminateCheckbox({
         {...props}
       />
       <RiCheckLine
-        className={cn(
-          `pointer-events-none absolute size-3 text-primary-foreground opacity-0 transition-opacity duration-100 peer-checked:opacity-100`,
-        )}
+        className={cn(`pointer-events-none absolute size-3 text-primary-foreground opacity-0 transition-opacity duration-100 peer-checked:opacity-100`)}
       />
       <RiSubtractLine
         className="pointer-events-none absolute size-3 text-primary-foreground opacity-0 transition-opacity duration-100"
@@ -45,20 +39,14 @@ export function SelectionHeaderCell({
   keys: string[]
   className?: string
 }) {
-  const rows = useTableContext(state => state.rows)
+  const rows = useTableContext((state) => state.rows)
   const store = useTablePageStore()
   const [checked, indeterminate] = useSubscription(store, {
-    selector: state => [
-      !!rows && rows.length > 0 && state.selected.length === rows.length,
-      state.selected.length > 0,
-    ],
+    selector: (state) => [!!rows && rows.length > 0 && state.selected.length === rows.length, state.selected.length > 0],
   })
 
   return (
-    <div
-      className={cn('flex shrink-0 items-center px-2', columnIndex === 0 && `pl-4`, className)}
-      style={style}
-    >
+    <div className={cn('flex shrink-0 items-center px-2', columnIndex === 0 && `pl-4`, className)} style={style}>
       <IndeterminateCheckbox
         disabled={!rows || rows.length === 0}
         checked={checked}
@@ -66,7 +54,7 @@ export function SelectionHeaderCell({
         onChange={() => {
           if (checked) {
             store.set(
-              state =>
+              (state) =>
                 ({
                   ...state,
                   selected: [],
@@ -74,11 +62,11 @@ export function SelectionHeaderCell({
             )
           } else {
             store.set(
-              state =>
+              (state) =>
                 ({
                   ...state,
                   selected:
-                    rows?.map(row =>
+                    rows?.map((row) =>
                       keys.reduce(
                         (acc, key) => {
                           acc[key] = row[key]
@@ -107,10 +95,10 @@ export function SelectionCell({
   className?: string
 }) {
   const store = useTablePageStore()
-  const rows = useTableContext(state => state.rows)
+  const rows = useTableContext((state) => state.rows)
   const { isSelected, currentSelected, lastClickedIndex } = useSubscription(store, {
-    selector: state => ({
-      isSelected: state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])),
+    selector: (state) => ({
+      isSelected: state.selected.some((row) => keys.every((key) => row[key] === rows[rowIndex]![key])),
       currentSelected: state.selected,
       lastClickedIndex: state.lastClickedIndex,
     }),
@@ -127,7 +115,7 @@ export function SelectionCell({
     currentSelected,
     lastClickedIndex,
     getItemsInRange: (start, end) =>
-      rows.slice(start, end + 1).map(row =>
+      rows.slice(start, end + 1).map((row) =>
         keys.reduce<Record<string, string>>((acc, key) => {
           acc[key] = row[key] as string
           return acc
@@ -135,7 +123,7 @@ export function SelectionCell({
       ),
     onSelectionChange: (selected, selectionState, newLastClickedIndex) => {
       store.set(
-        state =>
+        (state) =>
           ({
             ...state,
             selected,
@@ -147,16 +135,8 @@ export function SelectionCell({
   })
 
   return (
-    <div
-      className={cn('flex items-center px-2', columnIndex === 0 && 'pl-4', className)}
-      style={style}
-    >
-      <IndeterminateCheckbox
-        checked={isSelected}
-        onMouseDown={handleMouseDown}
-        onKeyDown={handleKeyDown}
-        onChange={handleChange}
-      />
+    <div className={cn('flex items-center px-2', columnIndex === 0 && 'pl-4', className)} style={style}>
+      <IndeterminateCheckbox checked={isSelected} onMouseDown={handleMouseDown} onKeyDown={handleKeyDown} onChange={handleChange} />
     </div>
   )
 }

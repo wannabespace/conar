@@ -6,7 +6,7 @@ import { authMiddleware, orpc } from '~/orpc'
 
 export const resolve = orpc
   .use(authMiddleware)
-  .input(type({ id: 'string.uuid.v7', 'updatedAt?': 'Date' }))
+  .input(type({ 'id': 'string.uuid.v7', 'updatedAt?': 'Date' }))
   .handler(async ({ context, input }) => {
     const connection = await db.query.connections.findFirst({
       columns: {

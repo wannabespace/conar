@@ -1,11 +1,6 @@
 import '@conar/shared/arktype-config'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
-import {
-  createBrowserHistory,
-  createHashHistory,
-  createRouter,
-  RouterProvider,
-} from '@tanstack/react-router'
+import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { toast } from 'sonner'
 
@@ -20,7 +15,7 @@ if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
   import('react-scan').then(({ scan }) => scan())
 }
 
-window.electron?.app.onDeepLink(async url => {
+window.electron?.app.onDeepLink(async (url) => {
   window.initialDeepLink = url
 })
 
@@ -34,7 +29,7 @@ window.electron?.app.onSendToast(({ message, type, description, duration }) => {
 })
 
 if (window.electron) {
-  window.addEventListener('keydown', event => {
+  window.addEventListener('keydown', (event) => {
     if (((event.ctrlKey || event.metaKey) && event.key === 'r') || event.key === 'F5') {
       event.preventDefault()
     }
@@ -63,8 +58,7 @@ export const subscriptionQueryClient = new QueryClient({
 })
 
 export const router = createRouter({
-  history:
-    import.meta.env.VITE_TEST || !window.electron ? createBrowserHistory() : createHashHistory(),
+  history: import.meta.env.VITE_TEST || !window.electron ? createBrowserHistory() : createHashHistory(),
   routeTree,
   defaultPreload: 'intent',
   defaultPendingMinMs: 0,

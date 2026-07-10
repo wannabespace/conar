@@ -1,22 +1,9 @@
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { Button } from '@conar/ui/components/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@conar/ui/components/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Skeleton } from '@conar/ui/components/skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@conar/ui/components/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@conar/ui/components/table'
 import { RiExternalLinkLine, RiWalletLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
@@ -46,12 +33,7 @@ function RouteComponent() {
     <>
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-semibold tracking-tight">Billing & Invoices</h2>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => openBillingPortal()}
-          disabled={isOpening}
-        >
+        <Button variant="outline" size="sm" onClick={() => openBillingPortal()} disabled={isOpening}>
           <LoadingContent loading={isOpening}>
             <RiWalletLine className="size-4" />
             Manage Billing
@@ -97,17 +79,11 @@ function RouteComponent() {
                         </TableCell>
                       </TableRow>
                     ))
-                  : invoices.map(invoice => (
+                  : invoices.map((invoice) => (
                       <TableRow key={invoice.id}>
-                        <TableCell style={{ width: '35%' }}>
-                          {format(invoice.createdAt, 'MMMM d, yyyy')}
-                        </TableCell>
-                        <TableCell style={{ width: '25%' }}>
-                          {formatCurrency(invoice.amount)}
-                        </TableCell>
-                        <TableCell style={{ width: '20%' }}>
-                          {uppercaseFirst(invoice.status ?? 'unknown')}
-                        </TableCell>
+                        <TableCell style={{ width: '35%' }}>{format(invoice.createdAt, 'MMMM d, yyyy')}</TableCell>
+                        <TableCell style={{ width: '25%' }}>{formatCurrency(invoice.amount)}</TableCell>
+                        <TableCell style={{ width: '20%' }}>{uppercaseFirst(invoice.status ?? 'unknown')}</TableCell>
                         <TableCell style={{ width: '20%' }}>
                           {invoice.url ? (
                             <div className="flex justify-end">

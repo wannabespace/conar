@@ -4,13 +4,7 @@ import { RiInformationLine } from '@remixicon/react'
 
 import { MOTION_BLOCK_PROPS } from '../-constants'
 
-export function DefinitionsEmptyState({
-  title,
-  description,
-}: {
-  title: string
-  description: string
-}) {
+export function DefinitionsEmptyState({ title, description }: { title: string; description: string }) {
   return (
     <CardMotion layout {...MOTION_BLOCK_PROPS}>
       <CardContent className="flex flex-col items-center justify-center p-10 text-center">

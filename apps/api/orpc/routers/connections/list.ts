@@ -24,7 +24,7 @@ export const list = orpc.use(authMiddleware).handler(async ({ context }) => {
   const secret = await context.getUserSecret()
 
   try {
-    return list.map(connection =>
+    return list.map((connection) =>
       Object.assign(connection, {
         connectionString: decrypt({ encryptedText: connection.connectionString, secret }),
       }),

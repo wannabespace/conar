@@ -19,13 +19,7 @@ import type { Column } from '~/entities/connection/components/table/cell'
 function createResultsHeaderCellRenderer(columnId: string) {
   return function ResultsHeaderCell({ columnIndex, style }: TableHeaderCellProps) {
     return (
-      <div
-        className={cn(
-          'flex w-full shrink-0 items-center justify-between p-2',
-          columnIndex === 0 && 'pl-4',
-        )}
-        style={style}
-      >
+      <div className={cn('flex w-full shrink-0 items-center justify-between p-2', columnIndex === 0 && 'pl-4')} style={style}>
         <div className="text-xs">
           <div data-mask className="flex items-center gap-1 truncate font-medium" title={columnId}>
             {columnId}
@@ -38,13 +32,7 @@ function createResultsHeaderCellRenderer(columnId: string) {
 
 function createResultsCellRenderer(columnId: string, connectionType: ConnectionType) {
   return function ResultsCell(props: TableCellProps) {
-    return (
-      <TableCell
-        column={{ id: columnId, uiType: 'raw' }}
-        connectionType={connectionType}
-        {...props}
-      />
-    )
+    return <TableCell column={{ id: columnId, uiType: 'raw' }} connectionType={connectionType} {...props} />
   }
 }
 
@@ -77,9 +65,7 @@ export function RunnerResultsTable({
     () => {
       if (!search.trim()) return data
 
-      return data.filter(row =>
-        JSON.stringify(Object.values(row)).toLowerCase().includes(search.toLowerCase()),
-      )
+      return data.filter((row) => JSON.stringify(Object.values(row)).toLowerCase().includes(search.toLowerCase()))
     },
     [data, search],
     100,
@@ -87,7 +73,7 @@ export function RunnerResultsTable({
 
   const tableColumns = useMemo(() => {
     return columns.map(
-      column =>
+      (column) =>
         ({
           id: column.id,
           header: createResultsHeaderCellRenderer(column.id),
@@ -107,8 +93,7 @@ export function RunnerResultsTable({
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">Results</span>
           <span className="text-xs text-muted-foreground">
-            <NumberFlow value={filteredData.length} className="tabular-nums" />{' '}
-            {filteredData.length === 1 ? 'row' : 'rows'}
+            <NumberFlow value={filteredData.length} className="tabular-nums" /> {filteredData.length === 1 ? 'row' : 'rows'}
             {search && filteredData.length !== data.length && ` (filtered from ${data.length})`}
           </span>
           <Separator orientation="vertical" className="h-4!" />
@@ -119,32 +104,16 @@ export function RunnerResultsTable({
         </div>
         <div className="flex items-center gap-2">
           <div className="relative max-w-60 flex-1">
-            <Input
-              placeholder="Search results..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="h-8 w-full pr-8 pl-7 text-sm"
-            />
-            <RiSearchLine
-              className={`absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground`}
-            />
+            <Input placeholder="Search results..." value={search} onChange={(e) => setSearch(e.target.value)} className="h-8 w-full pr-8 pl-7 text-sm" />
+            <RiSearchLine className={`absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground`} />
             {search && (
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                className="absolute top-1/2 right-1.5 -translate-y-1/2"
-                onClick={() => setSearch('')}
-              >
+              <Button variant="ghost" size="icon-xs" className="absolute top-1/2 right-1.5 -translate-y-1/2" onClick={() => setSearch('')}>
                 <RiCloseLine className="size-4" />
               </Button>
             )}
           </div>
           <Separator orientation="vertical" className="h-6!" />
-          <ExportData
-            getData={getData}
-            filename="runner_results"
-            trigger={createExportTrigger(filteredData.length === 0)}
-          />
+          <ExportData getData={getData} filename="runner_results" trigger={createExportTrigger(filteredData.length === 0)} />
         </div>
       </div>
       <TableProvider rows={filteredData} columns={tableColumns}>

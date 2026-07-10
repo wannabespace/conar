@@ -1,20 +1,6 @@
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@conar/shared/constants'
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@conar/ui/components/command'
-import {
-  RiAddLine,
-  RiDashboardLine,
-  RiEyeFill,
-  RiEyeLine,
-  RiRefreshLine,
-  RiTableLine,
-} from '@remixicon/react'
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
+import { RiAddLine, RiDashboardLine, RiEyeFill, RiEyeLine, RiRefreshLine, RiTableLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
@@ -22,10 +8,7 @@ import { useParams, useRouter } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 
 import { useCollections } from '~/entities/collections'
-import type {
-  Connection,
-  ConnectionResource as ConnectionResourceType,
-} from '~/entities/connection'
+import type { Connection, ConnectionResource as ConnectionResourceType } from '~/entities/connection'
 import {
   ConnectionIcon,
   getConnectionResourceStore,
@@ -35,13 +18,7 @@ import {
 } from '~/entities/connection'
 import { appStore, setIsActionCenterOpen } from '~/store'
 
-function ActionsResourceTables({
-  connection,
-  connectionResource,
-}: {
-  connection: Connection
-  connectionResource: ConnectionResourceType
-}) {
+function ActionsResourceTables({ connection, connectionResource }: { connection: Connection; connectionResource: ConnectionResourceType }) {
   const store = getConnectionResourceStore(connectionResource.id)
   const { data: tablesAndSchemas } = useQuery({
     ...resourceTablesAndSchemasQueryOptions({
@@ -68,8 +45,8 @@ function ActionsResourceTables({
       heading={`${connection.name}${connectionResource.name ? ` - ${connectionResource.name}` : ''} Tables`}
       value={connectionResource.name || CONNECTION_RESOURCE_ROOT_LABEL}
     >
-      {tablesAndSchemas.schemas.map(schema =>
-        schema.tables.map(table => (
+      {tablesAndSchemas.schemas.map((schema) =>
+        schema.tables.map((table) => (
           <CommandItem
             key={table.name}
             keywords={[schema.name, table.name]}
@@ -91,13 +68,7 @@ function ActionsResourceTables({
   )
 }
 
-function ConnectionResource({
-  connection,
-  connectionResource,
-}: {
-  connection: Connection
-  connectionResource: ConnectionResourceType
-}) {
+function ConnectionResource({ connection, connectionResource }: { connection: Connection; connectionResource: ConnectionResourceType }) {
   const router = useRouter()
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
@@ -114,11 +85,7 @@ function ConnectionResource({
       <div className="flex items-center gap-2">
         {connection.name} - {connectionResource.name}
         {connection.label && (
-          <span
-            className={`rounded-full bg-muted-foreground/10 px-2 py-0.5 text-xs whitespace-nowrap text-muted-foreground`}
-          >
-            {connection.label}
-          </span>
+          <span className={`rounded-full bg-muted-foreground/10 px-2 py-0.5 text-xs whitespace-nowrap text-muted-foreground`}>{connection.label}</span>
         )}
       </div>
     </CommandItem>
@@ -129,13 +96,11 @@ export function ActionsCenter() {
   const { connectionsCollection, connectionsResourcesCollection } = useCollections()
   const { resourceId } = useParams({ strict: false })
   const { data } = useLiveQuery(
-    q =>
+    (q) =>
       q
         .from({ connections: connectionsCollection })
-        .innerJoin(
-          { connectionResources: connectionsResourcesCollection },
-          ({ connectionResources, connections }) =>
-            eq(connectionResources.connectionId, connections.id),
+        .innerJoin({ connectionResources: connectionsResourcesCollection }, ({ connectionResources, connections }) =>
+          eq(connectionResources.connectionId, connections.id),
         )
         .select(({ connections, connectionResources }) => ({
           connection: connections,
@@ -145,7 +110,7 @@ export function ActionsCenter() {
     [connectionsCollection, connectionsResourcesCollection],
   )
 
-  const isOpen = useSubscription(appStore, { selector: state => state.isActionCenterOpen })
+  const isOpen = useSubscription(appStore, { selector: (state) => state.isActionCenterOpen })
   const router = useRouter()
 
   useHotkey('Mod+P', () => {
@@ -192,20 +157,11 @@ export function ActionsCenter() {
         {!!data.length && (
           <CommandGroup heading="Connections">
             {data.map(({ connection, connectionResource }) => (
-              <ConnectionResource
-                key={connectionResource.id}
-                connection={connection}
-                connectionResource={connectionResource}
-              />
+              <ConnectionResource key={connectionResource.id} connection={connection} connectionResource={connectionResource} />
             ))}
           </CommandGroup>
         )}
-        {current && (
-          <ActionsResourceTables
-            connection={current.connection}
-            connectionResource={current.connectionResource}
-          />
-        )}
+        {current && <ActionsResourceTables connection={current.connection} connectionResource={current.connectionResource} />}
       </CommandList>
     </CommandDialog>
   )

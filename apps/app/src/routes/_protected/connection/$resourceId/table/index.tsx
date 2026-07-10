@@ -1,10 +1,6 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import { title } from '@conar/shared/utils/title'
-import {
-  ResizablePanel,
-  ResizablePanelGroup,
-  ResizableSeparator,
-} from '@conar/ui/components/resizable'
+import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
@@ -23,10 +19,7 @@ import {
   TablesTabs,
   useTableColumnsQuery,
 } from '~/entities/connection/table'
-import {
-  prefetchConnectionResourceCore,
-  prefetchConnectionResourceTableCore,
-} from '~/entities/connection/utils'
+import { prefetchConnectionResourceCore, prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId/table/')({
   validateSearch: type({
@@ -50,7 +43,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/table/'
 
       if (deps.filters) {
         store.set(
-          state =>
+          (state) =>
             ({
               ...state,
               filters: deps.filters!,
@@ -59,7 +52,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/table/'
       }
       if (deps.orderBy) {
         store.set(
-          state =>
+          (state) =>
             ({
               ...state,
               orderBy: deps.orderBy!,
@@ -91,9 +84,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/table/'
       ? [
           {
             title: title(
-              loaderData.schema && loaderData.table
-                ? `${loaderData.schema}.${loaderData.table}`
-                : 'Tables',
+              loaderData.schema && loaderData.table ? `${loaderData.schema}.${loaderData.table}` : 'Tables',
               loaderData.connection.name,
               loaderData.connectionResource.name,
             ),
@@ -117,7 +108,7 @@ function TableContent({ table, schema }: { table: string; schema: string }) {
         aria-label={`Add ${schema}.${table} tab`}
         className="h-[calc(100%-(--spacing(9)))]"
         onClick={() => addTab(connectionResource.id, schema, table)}
-        onKeyDown={e => {
+        onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
             addTab(connectionResource.id, schema, table)
@@ -142,13 +133,13 @@ function DatabaseTablesPage() {
   const { connectionResource } = Route.useRouteContext()
   const { schema, table } = Route.useSearch()
   const store = getConnectionResourceStore(connectionResource.id)
-  const lastOpenedTable = useSubscription(store, { selector: state => state.lastOpenedTable })
+  const lastOpenedTable = useSubscription(store, { selector: (state) => state.lastOpenedTable })
 
   const handleLastOpenedTableEvent = useEffectEvent(() => {
     if (schema && table) {
       if (schema !== lastOpenedTable?.schema || table !== lastOpenedTable?.table) {
         store.set(
-          state =>
+          (state) =>
             ({
               ...state,
               lastOpenedTable: { schema, table },
@@ -157,7 +148,7 @@ function DatabaseTablesPage() {
       }
     } else if (lastOpenedTable !== null) {
       store.set(
-        state =>
+        (state) =>
           ({
             ...state,
             lastOpenedTable: null,
@@ -176,26 +167,14 @@ function DatabaseTablesPage() {
   })
 
   return (
-    <ResizablePanelGroup
-      defaultLayout={defaultLayout}
-      onLayoutChanged={onLayoutChanged}
-      orientation="horizontal"
-      className="flex"
-    >
-      <ResizablePanel
-        defaultSize="20%"
-        minSize={200}
-        maxSize="50%"
-        className="h-full overflow-hidden rounded-lg bg-background"
-      >
+    <ResizablePanelGroup defaultLayout={defaultLayout} onLayoutChanged={onLayoutChanged} orientation="horizontal" className="flex">
+      <ResizablePanel defaultSize="20%" minSize={200} maxSize="50%" className="h-full overflow-hidden rounded-lg bg-background">
         <Sidebar key={connectionResource.id} />
       </ResizablePanel>
       <ResizableSeparator className="w-1 bg-transparent" />
       <ResizablePanel defaultSize="80%" className="flex-1 overflow-hidden rounded-lg bg-background">
         {schema && table ? (
-          <TablePageStoreContext
-            value={tablePageStore({ id: connectionResource.id, schema, table })}
-          >
+          <TablePageStoreContext value={tablePageStore({ id: connectionResource.id, schema, table })}>
             <TableContent table={table} schema={schema} />
           </TablePageStoreContext>
         ) : (
@@ -203,8 +182,7 @@ function DatabaseTablesPage() {
             <div className="space-y-4 text-center">
               <div className="text-lg font-medium">No table selected</div>
               <p className="mx-auto max-w-md text-sm text-muted-foreground">
-                Select a schema from the dropdown and choose a table from the sidebar to view and
-                manage your data.
+                Select a schema from the dropdown and choose a table from the sidebar to view and manage your data.
               </p>
             </div>
           </div>

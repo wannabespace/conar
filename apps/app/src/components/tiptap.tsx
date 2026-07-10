@@ -39,7 +39,7 @@ export function TipTap({
         Extension.create({
           addKeyboardShortcuts() {
             return {
-              Enter: () => {
+              'Enter': () => {
                 onEnter?.(this.editor.getText())
                 return true
               },
@@ -85,10 +85,7 @@ export function TipTap({
     [editor],
   )
 
-  const addImage = (
-    e: React.ClipboardEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement>,
-    data: DataTransfer,
-  ) => {
+  const addImage = (e: React.ClipboardEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement>, data: DataTransfer) => {
     if (!onImageAdd) return
 
     const { files } = data
@@ -113,10 +110,10 @@ export function TipTap({
     <EditorContent
       editor={editor}
       className="w-full"
-      onPaste={e => {
+      onPaste={(e) => {
         addImage(e, e.clipboardData)
       }}
-      onDrop={e => {
+      onDrop={(e) => {
         addImage(e, e.dataTransfer)
       }}
       {...props}

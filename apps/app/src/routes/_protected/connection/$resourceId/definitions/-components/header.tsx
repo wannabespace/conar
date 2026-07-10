@@ -19,18 +19,11 @@ export function DefinitionsHeader({
       <div className="flex items-center gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
-            <RefreshButton
-              variant="outline"
-              size="icon"
-              onClick={onRefresh}
-              refreshing={isRefreshing}
-            />
+            <RefreshButton variant="outline" size="icon" onClick={onRefresh} refreshing={isRefreshing} />
           </TooltipTrigger>
           <TooltipContent side="left">
             Refresh
-            <p className="text-xs opacity-70">
-              Last updated: {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
-            </p>
+            <p className="text-xs opacity-70">Last updated: {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}</p>
           </TooltipContent>
         </Tooltip>
       </div>

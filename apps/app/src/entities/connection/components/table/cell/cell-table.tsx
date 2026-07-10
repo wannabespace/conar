@@ -12,14 +12,7 @@ import { getRouteApi, Link } from '@tanstack/react-router'
 
 import type { Column } from '~/entities/connection/components/table/cell'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
-import {
-  TableBodySkeleton,
-  TableEmpty,
-  TableError,
-  TableHeaderCell,
-  TableInfiniteLoader,
-  useTableColumnsQuery,
-} from '~/entities/connection/table'
+import { TableBodySkeleton, TableEmpty, TableError, TableHeaderCell, TableInfiniteLoader, useTableColumnsQuery } from '~/entities/connection/table'
 import { createTransformer } from '~/entities/connection/transformers'
 
 import { TableCellContent } from './cell-content'
@@ -31,12 +24,7 @@ function createCellRenderer(column: Column, connectionType: ConnectionType) {
   return function CellRenderer(props: TableCellProps) {
     const transformer = createTransformer(connectionType, column)
     return (
-      <TableCellContent
-        column={column}
-        value={props.value}
-        position={props.position}
-        style={props.style}
-      >
+      <TableCellContent column={column} value={props.value} position={props.position} style={props.style}>
         <span className="truncate">{transformer.toDisplay(props.value, props.size)}</span>
       </TableCellContent>
     )
@@ -49,22 +37,12 @@ function createHeaderRenderer(column: Column) {
   }
 }
 
-export function TableCellTable({
-  schema,
-  table,
-  column,
-  value,
-}: {
-  schema: string
-  table: string
-  column: string
-  value: unknown
-}) {
+export function TableCellTable({ schema, table, column, value }: { schema: string; table: string; column: string; value: unknown }) {
   const { connection, connectionResource } = useRouteContext()
   const filters = [
     {
       column,
-      ref: SQL_FILTERS_LIST.find(filter => filter.operator === '=')!,
+      ref: SQL_FILTERS_LIST.find((filter) => filter.operator === '=')!,
       values: [value],
     } satisfies ActiveFilter,
   ]
@@ -86,7 +64,7 @@ export function TableCellTable({
   )
   const { data = [] } = useTableColumnsQuery({ connectionResource, table, schema })
   const columns = data.map(
-    column =>
+    (column) =>
       ({
         id: column.id,
         size: column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH,
@@ -98,9 +76,7 @@ export function TableCellTable({
   return (
     <TableProvider rows={rows} columns={columns}>
       <div className="relative size-full">
-        <div
-          className={`flex h-8 items-center justify-between bg-background px-4 text-xs text-muted-foreground`}
-        >
+        <div className={`flex h-8 items-center justify-between bg-background px-4 text-xs text-muted-foreground`}>
           <div>
             Showing records from{' '}
             <Badge data-mask variant="secondary">
@@ -119,13 +95,7 @@ export function TableCellTable({
           <Button
             variant="outline"
             size="xs"
-            render={
-              <Link
-                to="/connection/$resourceId/table"
-                params={{ resourceId: connectionResource.id }}
-                search={{ schema, table, filters, orderBy }}
-              />
-            }
+            render={<Link to="/connection/$resourceId/table" params={{ resourceId: connectionResource.id }} search={{ schema, table, filters, orderBy }} />}
           >
             <RiCornerRightUpLine className="size-3" />
             Open table
@@ -138,26 +108,13 @@ export function TableCellTable({
           ) : error ? (
             <TableError error={error} />
           ) : rows.length === 0 ? (
-            <TableEmpty
-              className="bottom-0 h-[calc(100%-5rem)]"
-              title="Table is empty"
-              description="There are no records to show"
-            />
+            <TableEmpty className="bottom-0 h-[calc(100%-5rem)]" title="Table is empty" description="There are no records to show" />
           ) : columns.length === 0 ? (
-            <TableEmpty
-              className="h-[calc(100%-5rem)]"
-              title="No columns to show"
-              description="Please show at least one column"
-            />
+            <TableEmpty className="h-[calc(100%-5rem)]" title="No columns to show" description="Please show at least one column" />
           ) : (
             <>
               <TableBody data-mask className="bg-background" />
-              <TableInfiniteLoader
-                table={table}
-                schema={schema}
-                filters={filters}
-                orderBy={orderBy}
-              />
+              <TableInfiniteLoader table={table} schema={schema} filters={filters} orderBy={orderBy} />
             </>
           )}
         </Table>

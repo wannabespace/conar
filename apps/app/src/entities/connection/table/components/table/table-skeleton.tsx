@@ -7,19 +7,9 @@ import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components'
 
 const ROWS_COUNT = 20
 
-export function TableBodySkeleton({
-  className,
-  selectable,
-  columnsCount = 6,
-}: {
-  className?: string
-  selectable?: boolean
-  columnsCount?: number
-}) {
-  const columns = useTableContext(state => state.columns)
-  const columnsWithoutInternal = columns.filter(
-    column => !Object.values(INTERNAL_COLUMN_IDS).includes(column.id),
-  )
+export function TableBodySkeleton({ className, selectable, columnsCount = 6 }: { className?: string; selectable?: boolean; columnsCount?: number }) {
+  const columns = useTableContext((state) => state.columns)
+  const columnsWithoutInternal = columns.filter((column) => !Object.values(INTERNAL_COLUMN_IDS).includes(column.id))
 
   const cols =
     columnsWithoutInternal.length === 0
@@ -27,7 +17,7 @@ export function TableBodySkeleton({
           id: `column-${index + 1}`,
           size: DEFAULT_COLUMN_WIDTH,
         }))
-      : columns.map(column => ({
+      : columns.map((column) => ({
           id: column.id,
           size: column.size ?? DEFAULT_COLUMN_WIDTH,
         }))

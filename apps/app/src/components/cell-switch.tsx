@@ -2,15 +2,7 @@ import { Switch } from '@conar/ui/components/switch'
 import { cn } from '@conar/ui/lib/utils'
 import { useId } from 'react'
 
-export function CellSwitch({
-  checked,
-  onChange,
-  className,
-}: {
-  checked: boolean
-  onChange: (checked: boolean) => void
-  className?: string
-}) {
+export function CellSwitch({ checked, onChange, className }: { checked: boolean; onChange: (checked: boolean) => void; className?: string }) {
   const id = useId()
 
   return (

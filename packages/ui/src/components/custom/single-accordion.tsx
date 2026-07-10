@@ -3,11 +3,7 @@ import * as AccordionPrimitive from '@radix-ui/react-accordion'
 import { ChevronDownIcon } from 'lucide-react'
 import type { ComponentProps } from 'react'
 
-export function SingleAccordionTrigger({
-  children,
-  className,
-  ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {
+export function SingleAccordionTrigger({ children, className, ...props }: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {
   return (
     <AccordionPrimitive.Header className="flex">
       <AccordionPrimitive.Trigger
@@ -25,20 +21,11 @@ export function SingleAccordionTrigger({
 
 export function SingleAccordionTriggerArrow({ className }: { className?: string }) {
   return (
-    <ChevronDownIcon
-      className={cn(
-        `pointer-events-none size-4 shrink-0 translate-y-0.5 text-muted-foreground transition-transform duration-200`,
-        className,
-      )}
-    />
+    <ChevronDownIcon className={cn(`pointer-events-none size-4 shrink-0 translate-y-0.5 text-muted-foreground transition-transform duration-200`, className)} />
   )
 }
 
-export function SingleAccordionContent({
-  children,
-  className,
-  ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Content>) {
+export function SingleAccordionContent({ children, className, ...props }: React.ComponentProps<typeof AccordionPrimitive.Content>) {
   return (
     <AccordionPrimitive.Content
       data-slot="accordion-content"
@@ -66,7 +53,7 @@ export function SingleAccordion({
       collapsible
       className={cn('w-full rounded-lg border bg-card text-card-foreground', className)}
       value={open ? 'accordion-item' : onOpenChange ? '' : undefined}
-      onValueChange={value => {
+      onValueChange={(value) => {
         onOpenChange?.(value === 'accordion-item')
       }}
       {...props}

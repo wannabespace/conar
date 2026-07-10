@@ -4,9 +4,7 @@ import { PostHog } from 'posthog-node'
 
 import { env } from '~/env'
 
-export const posthog = env.POSTHOG_TOKEN
-  ? new PostHog(env.POSTHOG_TOKEN, { host: 'https://eu.i.posthog.com' })
-  : null
+export const posthog = env.POSTHOG_TOKEN ? new PostHog(env.POSTHOG_TOKEN, { host: 'https://eu.i.posthog.com' }) : null
 
 export function withPosthog(
   model: LanguageModelV3,

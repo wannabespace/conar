@@ -1,11 +1,7 @@
 import * as React from 'react'
 
 // eslint-disable-next-line typescript/no-explicit-any
-export function useThrottledCallback<T extends (...args: any[]) => any>(
-  fn: T,
-  deps: React.DependencyList,
-  delay: number,
-): (...args: Parameters<T>) => void {
+export function useThrottledCallback<T extends (...args: any[]) => any>(fn: T, deps: React.DependencyList, delay: number): (...args: Parameters<T>) => void {
   const lastExecutedRef = React.useRef(0)
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
   const argsRef = React.useRef<Parameters<T> | null>(null)

@@ -17,11 +17,7 @@ export interface ShiftSelectionUpdate {
   range: { start: number; end: number }
 }
 
-export function reduceShiftArrowKey(
-  direction: ShiftSelectionDirection,
-  rowCount: number,
-  state: ShiftSelectionState,
-): ShiftSelectionUpdate | null {
+export function reduceShiftArrowKey(direction: ShiftSelectionDirection, rowCount: number, state: ShiftSelectionState): ShiftSelectionUpdate | null {
   if (rowCount === 0) return null
 
   const { anchorIndex, focusIndex, lastExpandDirection } = state

@@ -7,26 +7,12 @@ import { Button } from '@conar/ui/components/button'
 import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import { ScrollArea } from '@conar/ui/components/custom/scroll-area'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@conar/ui/components/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { useElementSize } from '@conar/ui/hookas/use-element-size'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import {
-  RiAlertLine,
-  RiArrowDownLine,
-  RiArrowDownSLine,
-  RiCheckLine,
-  RiFileCopyLine,
-  RiLoopLeftLine,
-  RiPlayListAddLine,
-  RiRestartLine,
-} from '@remixicon/react'
+import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiCheckLine, RiFileCopyLine, RiLoopLeftLine, RiPlayListAddLine, RiRestartLine } from '@remixicon/react'
 import type { ChatStatus } from 'ai'
 import { regex } from 'arktype'
 import type { ComponentProps, ReactNode } from 'react'
@@ -53,17 +39,7 @@ function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   )
 }
 
-function ChatMessageFooterButton({
-  onClick,
-  icon,
-  tooltip,
-  disabled,
-}: {
-  onClick: () => void
-  icon: ReactNode
-  tooltip: string
-  disabled?: boolean
-}) {
+function ChatMessageFooterButton({ onClick, icon, tooltip, disabled }: { onClick: () => void; icon: ReactNode; tooltip: string; disabled?: boolean }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -85,12 +61,9 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
   const [isReplacing, setIsReplacing] = useState(false)
 
   function getQueryNumber(index: number) {
-    const queriesBefore =
-      editorQueries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
+    const queriesBefore = editorQueries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
     const queriesLength = editorQueries[index]?.queries.length ?? 0
-    return queriesLength === 1
-      ? queriesBefore
-      : `${queriesBefore} - ${queriesBefore + queriesLength - 1}`
+    return queriesLength === 1 ? queriesBefore : `${queriesBefore} - ${queriesBefore + queriesLength - 1}`
   }
 
   function replaceQuery(query: (typeof editorQueries)[number]) {
@@ -118,7 +91,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
             text={content}
             successIcon={<RiCheckLine className="text-success" />}
             copyIcon={<RiFileCopyLine className="size-3.5" />}
-            onClick={e => {
+            onClick={(e) => {
               e.stopPropagation()
             }}
           />
@@ -132,17 +105,13 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
               <Button
                 size="icon-xs"
                 variant="ghost"
-                onClick={e => {
+                onClick={(e) => {
                   e.stopPropagation()
                   runnerHooks.callHook('appendToBottomAndFocus', content)
                   setIsAppending(true)
                 }}
               >
-                <ContentSwitch
-                  active={isAppending}
-                  activeContent={<RiCheckLine className="text-success" />}
-                  onSwitchEnd={() => setIsAppending(false)}
-                >
+                <ContentSwitch active={isAppending} activeContent={<RiCheckLine className="text-success" />} onSwitchEnd={() => setIsAppending(false)}>
                   <RiPlayListAddLine className="size-3.5" />
                 </ContentSwitch>
               </Button>
@@ -152,45 +121,29 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
           <DropdownMenu>
             <Tooltip>
               <DropdownMenuTrigger render={<TooltipTrigger asChild />}>
-                <Button size="icon-xs" variant="ghost" onClick={e => e.stopPropagation()}>
-                  <ContentSwitch
-                    active={isReplacing}
-                    activeContent={<RiCheckLine className="text-success" />}
-                    onSwitchEnd={() => setIsReplacing(false)}
-                  >
+                <Button size="icon-xs" variant="ghost" onClick={(e) => e.stopPropagation()}>
+                  <ContentSwitch active={isReplacing} activeContent={<RiCheckLine className="text-success" />} onSwitchEnd={() => setIsReplacing(false)}>
                     <RiLoopLeftLine className="size-3.5" />
                   </ContentSwitch>
                 </Button>
               </DropdownMenuTrigger>
               <TooltipContent>Replace a query in the runner</TooltipContent>
             </Tooltip>
-            <DropdownMenuContent
-              align="end"
-              className="max-h-64 min-w-55 overflow-auto"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="p-2 text-xs font-medium text-muted-foreground">
-                Replace existing query
-              </div>
-              {editorQueries.length === 0 && (
-                <div className={`px-3 py-2 text-xs text-muted-foreground select-none`}>
-                  No queries found
-                </div>
-              )}
+            <DropdownMenuContent align="end" className="max-h-64 min-w-55 overflow-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="p-2 text-xs font-medium text-muted-foreground">Replace existing query</div>
+              {editorQueries.length === 0 && <div className={`px-3 py-2 text-xs text-muted-foreground select-none`}>No queries found</div>}
               {editorQueries.map((q, index) => (
                 <DropdownMenuItem
                   key={`${q.startLineNumber}-${q.endLineNumber}`}
                   className="flex w-full items-center justify-between gap-2"
-                  onClick={e => {
+                  onClick={(e) => {
                     e.stopPropagation()
                     replaceQuery(q)
                   }}
                 >
                   <span className="text-xs font-medium">Query {getQueryNumber(index)}</span>
                   <span className={`font-mono text-[0.625rem] text-muted-foreground/70`}>
-                    {q.startLineNumber === q.endLineNumber
-                      ? `Line ${q.startLineNumber}`
-                      : `Lines ${q.startLineNumber} - ${q.endLineNumber}`}
+                    {q.startLineNumber === q.endLineNumber ? `Line ${q.startLineNumber}` : `Lines ${q.startLineNumber} - ${q.endLineNumber}`}
                   </span>
                 </DropdownMenuItem>
               ))}
@@ -207,14 +160,7 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts']; loadi
     const key = `${part.type}-${index}`
 
     if (part.type === 'text') {
-      return (
-        <Markdown
-          key={key}
-          content={part.text}
-          generating={loading}
-          codeActions={props => <ChatMessageCodeActions {...props} />}
-        />
-      )
+      return <Markdown key={key} content={part.text} generating={loading} codeActions={(props) => <ChatMessageCodeActions {...props} />} />
     }
 
     if (part.type === 'reasoning') {
@@ -227,41 +173,28 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts']; loadi
     }
 
     if (isToolUIPart(part)) {
-      return (
-        <ChatMessageTool
-          key={key}
-          className={cn(loading && 'animate-in duration-200 fade-in')}
-          part={part}
-        />
-      )
+      return <ChatMessageTool key={key} className={cn(loading && 'animate-in duration-200 fade-in')} part={part} />
     }
 
     return null
   })
 }
 
-function UserMessage({
-  message,
-  className,
-  ...props
-}: { message: UIMessage } & ComponentProps<'div'>) {
+function UserMessage({ message, className, ...props }: { message: UIMessage } & ComponentProps<'div'>) {
   const [isVisible, setIsVisible] = useState(false)
   const partsRef = useRef<HTMLDivElement>(null)
   const { height } = useElementSize(partsRef, {
     width: 0,
     height: 0,
   })
-  const images = message.parts.filter(part => part.type === 'file').map(part => part.url)
+  const images = message.parts.filter((part) => part.type === 'file').map((part) => part.url)
   const canHide = height > 200
 
   return (
     <ChatMessage className={cn('group/message', className)} {...props}>
       <div>
         <div
-          className={cn(
-            `relative inline-flex rounded-lg bg-primary px-2 py-1 text-primary-foreground`,
-            canHide && !isVisible && 'max-h-25 overflow-hidden',
-          )}
+          className={cn(`relative inline-flex rounded-lg bg-primary px-2 py-1 text-primary-foreground`, canHide && !isVisible && 'max-h-25 overflow-hidden')}
         >
           <div className={`h-fit [&_a]:text-white`} ref={partsRef}>
             <ChatMessageParts parts={message.parts} />
@@ -274,15 +207,9 @@ function UserMessage({
                 className={`-mr-1 shrink-0 text-primary-foreground! hover:bg-primary-foreground/10!`}
                 onClick={() => setIsVisible(!isVisible)}
               >
-                <RiArrowDownSLine
-                  className={cn('duration-100', isVisible ? `rotate-180` : `rotate-0`)}
-                />
+                <RiArrowDownSLine className={cn('duration-100', isVisible ? `rotate-180` : `rotate-0`)} />
               </Button>
-              {!isVisible && (
-                <div
-                  className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 bg-linear-to-t from-primary to-transparent`}
-                />
-              )}
+              {!isVisible && <div className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 bg-linear-to-t from-primary to-transparent`} />}
             </>
           )}
         </div>
@@ -302,10 +229,7 @@ function UserMessage({
 
 function AssistantMessageLoader({ children, className, ...props }: ComponentProps<'div'>) {
   return (
-    <div
-      className={cn(`flex animate-pulse items-center gap-2 text-muted-foreground`, className)}
-      {...props}
-    >
+    <div className={cn(`flex animate-pulse items-center gap-2 text-muted-foreground`, className)} {...props}>
       <AppLogo className="size-4" />
       {children}
     </div>
@@ -333,22 +257,11 @@ function AssistantMessage({
           <ChatMessageParts parts={message.parts} loading={isLoading} />
         </div>
       </div>
-      <div
-        className={`sticky bottom-0 z-30 mt-2 -mr-1 flex items-center justify-between gap-1 first:mt-0`}
-      >
-        <div
-          className={cn(
-            'duration-150',
-            isLoading ? 'opacity-100' : `pointer-events-none opacity-0`,
-          )}
-        >
-          <AssistantMessageLoader>
-            {status === 'submitted' ? 'Thinking...' : 'Writing...'}
-          </AssistantMessageLoader>
+      <div className={`sticky bottom-0 z-30 mt-2 -mr-1 flex items-center justify-between gap-1 first:mt-0`}>
+        <div className={cn('duration-150', isLoading ? 'opacity-100' : `pointer-events-none opacity-0`)}>
+          <AssistantMessageLoader>{status === 'submitted' ? 'Thinking...' : 'Writing...'}</AssistantMessageLoader>
         </div>
-        <div
-          className={`flex items-center gap-1 opacity-0 transition-opacity duration-150 group-hover/message:opacity-100`}
-        >
+        <div className={`flex items-center gap-1 opacity-0 transition-opacity duration-150 group-hover/message:opacity-100`}>
           {isLast && (
             <ChatMessageFooterButton
               icon={<RiRestartLine className="size-4 text-muted-foreground" />}
@@ -363,8 +276,8 @@ function AssistantMessage({
             onClick={() =>
               copy(
                 message.parts
-                  .filter(part => part.type === 'text')
-                  .map(part => part.text)
+                  .filter((part) => part.type === 'text')
+                  .map((part) => part.text)
                   .join('\n'),
                 'Message copied to clipboard',
               )
@@ -422,11 +335,7 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
     if (!userMessageRef.current) return
 
     const frame = requestAnimationFrame(() => {
-      setPlaceholderHeight(
-        (scrollRef.current?.offsetHeight || 0) -
-          (userMessageRef.current?.offsetHeight || 0) -
-          MESSAGES_GAP,
-      )
+      setPlaceholderHeight((scrollRef.current?.offsetHeight || 0) - (userMessageRef.current?.offsetHeight || 0) - MESSAGES_GAP)
     })
 
     return () => cancelAnimationFrame(frame)
@@ -436,11 +345,7 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
 
   return (
     <ScrollArea ref={scrollRef} className={cn('relative -mx-4', className)}>
-      <div
-        ref={contentRef}
-        className="relative flex flex-col px-4"
-        style={{ gap: `${MESSAGES_GAP}px` }}
-      >
+      <div ref={contentRef} className="relative flex flex-col px-4" style={{ gap: `${MESSAGES_GAP}px` }}>
         {messages.map((message, index) =>
           message.role === 'user' ? (
             <UserMessage key={message.id} ref={userMessageRef} message={message} />
@@ -468,18 +373,8 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
         )}
         {error && <ErrorMessage error={error} />}
       </div>
-      <div
-        className={cn(
-          'sticky bottom-4 z-40 transition-opacity duration-150',
-          isNearBottom ? `pointer-events-none opacity-0` : '',
-        )}
-      >
-        <Button
-          size="icon-sm"
-          variant="secondary"
-          className="absolute bottom-0 left-1/2 -translate-x-1/2"
-          onClick={() => scrollToBottom()}
-        >
+      <div className={cn('sticky bottom-4 z-40 transition-opacity duration-150', isNearBottom ? `pointer-events-none opacity-0` : '')}>
+        <Button size="icon-sm" variant="secondary" className="absolute bottom-0 left-1/2 -translate-x-1/2" onClick={() => scrollToBottom()}>
           <RiArrowDownLine />
         </Button>
       </div>

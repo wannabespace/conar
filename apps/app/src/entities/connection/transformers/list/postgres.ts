@@ -18,13 +18,11 @@ export function parsePgArrayLiteral(value: string): string[] | undefined {
   const inner = value.slice(1, -1)
   if (inner === '') return []
 
-  return Array.from(inner.matchAll(PG_ARRAY_ELEMENT_RE), ([m]) =>
-    m[0] === '"' ? m.slice(1, -1).replace(PG_UNESCAPE_RE, '$1') : m.trim(),
-  )
+  return Array.from(inner.matchAll(PG_ARRAY_ELEMENT_RE), ([m]) => (m[0] === '"' ? m.slice(1, -1).replace(PG_UNESCAPE_RE, '$1') : m.trim()))
 }
 
 export function toPgArrayLiteral(items: string[], separator = ','): string {
-  const escaped = items.map(item => {
+  const escaped = items.map((item) => {
     if (item === '') return '""'
 
     if (PG_NEEDS_QUOTING_RE.test(item) || item.toUpperCase() === 'NULL') {
@@ -43,23 +41,22 @@ export function createPostgresListTransformer(column: Column): ValueTransformer<
   const isEnum = !!column.enumName && !!column.availableValues
   return {
     toDisplay: getDisplayValue,
-    fromConnection: value => ({
+    fromConnection: (value) => ({
       toUI: () => {
         if (isEnum && typeof value === 'string') return parseToArray(value, parsePgArrayLiteral)
 
         return []
       },
-      toRaw: () =>
-        isEnum && typeof value === 'string' ? value : value === null ? '' : JSON.stringify(value),
+      toRaw: () => (isEnum && typeof value === 'string' ? value : value === null ? '' : JSON.stringify(value)),
     }),
     toConnection: {
-      fromUI: value => {
+      fromUI: (value) => {
         if (isEnum) return toPgArrayLiteral(value)
 
         // Only enums can have a UI
         throw new Error('Invalid array value')
       },
-      fromRaw: value => {
+      fromRaw: (value) => {
         if (isEnum) return value
 
         if (Array.isArray(value)) return value.map(String)

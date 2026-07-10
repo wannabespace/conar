@@ -11,11 +11,7 @@ interface TestimonialCardProps extends ComponentProps<'article'> {
 
 function TestimonialCard({ className, children, testimonialId, ...props }: TestimonialCardProps) {
   return (
-    <article
-      className={cn(`rounded-2xl border bg-card p-4 transition-all duration-300 sm:p-6`, className)}
-      data-testimonial={testimonialId}
-      {...props}
-    >
+    <article className={cn(`rounded-2xl border bg-card p-4 transition-all duration-300 sm:p-6`, className)} data-testimonial={testimonialId} {...props}>
       {children}
     </article>
   )
@@ -32,19 +28,14 @@ interface TestimonialProps {
 
 function Testimonial({ name, login, avatar, link, children, className }: TestimonialProps) {
   return (
-    <a
-      href={link}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`block space-y-4 transition-transform focus-visible:outline-ring/50 sm:space-y-6`}
-    >
+    <a href={link} target="_blank" rel="noopener noreferrer" className={`block space-y-4 transition-transform focus-visible:outline-ring/50 sm:space-y-6`}>
       <header className={cn(`mb-4 flex items-center gap-3 sm:mb-6 sm:gap-4`, className)}>
         <Avatar className={`size-10 shrink-0 rounded-full sm:size-12`}>
           <AvatarImage src={avatar} alt={name} />
           <AvatarFallback className="bg-primary/10 font-semibold text-primary">
             {name
               .split(' ')
-              .map(n => n[0])
+              .map((n) => n[0])
               .join('')
               .toUpperCase()}
           </AvatarFallback>
@@ -55,13 +46,8 @@ function Testimonial({ name, login, avatar, link, children, className }: Testimo
         </div>
       </header>
       <div className="relative">
-        <RiDoubleQuotesL
-          className={`absolute -top-1 -left-1 size-5 text-primary/20 sm:-top-2 sm:-left-2 sm:size-6`}
-          aria-hidden="true"
-        />
-        <blockquote className={`pl-3 text-sm/relaxed text-foreground sm:pl-4 sm:text-base`}>
-          {children}
-        </blockquote>
+        <RiDoubleQuotesL className={`absolute -top-1 -left-1 size-5 text-primary/20 sm:-top-2 sm:-left-2 sm:size-6`} aria-hidden="true" />
+        <blockquote className={`pl-3 text-sm/relaxed text-foreground sm:pl-4 sm:text-base`}>{children}</blockquote>
       </div>
     </a>
   )
@@ -71,25 +57,11 @@ function JoinTestimonials() {
   return (
     <div className={`flex min-h-full items-center justify-center space-y-4 sm:space-y-6`}>
       <div className="text-center">
-        <div
-          className={`mx-auto mb-3 flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-primary/20 to-primary/10 sm:mb-4 sm:size-12`}
-        >
+        <div className={`mx-auto mb-3 flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-primary/20 to-primary/10 sm:mb-4 sm:size-12`}>
           <RiTwitterXLine className={`size-5 text-primary sm:size-6`} aria-hidden="true" />
         </div>
-        <h3 className={`mb-2 text-sm font-semibold text-foreground sm:text-base`}>
-          Want to be featured here?
-        </h3>
-        <Button
-          render={
-            <a
-              href={SOCIAL_LINKS.TWITTER}
-              aria-label="Tag @conar_app on Twitter"
-              target="_blank"
-              rel="noopener noreferrer"
-            />
-          }
-          variant="link"
-        >
+        <h3 className={`mb-2 text-sm font-semibold text-foreground sm:text-base`}>Want to be featured here?</h3>
+        <Button render={<a href={SOCIAL_LINKS.TWITTER} aria-label="Tag @conar_app on Twitter" target="_blank" rel="noopener noreferrer" />} variant="link">
           Tag @conar_app on
           <RiTwitterXLine className={`size-3 sm:size-4`} aria-hidden="true" />
         </Button>
@@ -153,8 +125,7 @@ const testimonials: {
     login: 'DominikDoesDev',
     avatar: '/avatars/dominikdoesdev.jpg',
     link: 'https://x.com/DominikDoesDev/status/1942986868758372850',
-    children: () =>
-      "Not gonna lie I was looking for something like @conar_app a while ago but couldn't find it until now. I think I am in love with this 😍",
+    children: () => "Not gonna lie I was looking for something like @conar_app a while ago but couldn't find it until now. I think I am in love with this 😍",
   },
   {
     name: 'Sorin Curescu',
@@ -168,8 +139,7 @@ const testimonials: {
     login: 'chef_berke',
     avatar: '/avatars/chef_berke.jpg',
     link: 'https://x.com/chef_berke/status/1949880848246853733',
-    children: () =>
-      'found my new favorite db tool if you work with postgresql, definitely check this out @conar_app',
+    children: () => 'found my new favorite db tool if you work with postgresql, definitely check this out @conar_app',
   },
   {
     name: 'Alex Holovach',
@@ -190,8 +160,7 @@ const testimonials: {
     login: 'thanaen_dev',
     avatar: '/avatars/thanaen_dev.jpg',
     link: 'https://x.com/thanaen_dev/status/2029543137375314054',
-    children: () =>
-      "I came for the funny name (I'm French), I stayed for the app! Very practical and pleasant to use @conar_app",
+    children: () => "I came for the funny name (I'm French), I stayed for the app! Very practical and pleasant to use @conar_app",
   },
 ]
 
@@ -199,29 +168,15 @@ export function Testimonials() {
   return (
     <section aria-labelledby="testimonials-heading" className={`py-8 sm:py-12 lg:py-16`}>
       <div className={`mb-12 px-4 text-center sm:mb-16`}>
-        <h2
-          id="testimonials-heading"
-          className={`mb-3 text-center text-sm font-medium tracking-wide text-muted-foreground uppercase`}
-        >
+        <h2 id="testimonials-heading" className={`mb-3 text-center text-sm font-medium tracking-wide text-muted-foreground uppercase`}>
           Testimonials
         </h2>
-        <p
-          className={`mx-auto max-w-3xl text-center text-2xl/tight font-bold text-balance sm:text-3xl`}
-        >
-          Loved by developers worldwide
-        </p>
+        <p className={`mx-auto max-w-3xl text-center text-2xl/tight font-bold text-balance sm:text-3xl`}>Loved by developers worldwide</p>
       </div>
-      <div
-        className={`mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3`}
-      >
-        {testimonials.map(testimonial => (
+      <div className={`mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3`}>
+        {testimonials.map((testimonial) => (
           <TestimonialCard key={testimonial.login} testimonialId={testimonial.login}>
-            <Testimonial
-              name={testimonial.name}
-              login={testimonial.login}
-              avatar={testimonial.avatar}
-              link={testimonial.link}
-            >
+            <Testimonial name={testimonial.name} login={testimonial.login} avatar={testimonial.avatar} link={testimonial.link}>
               {testimonial.children()}
             </Testimonial>
           </TestimonialCard>

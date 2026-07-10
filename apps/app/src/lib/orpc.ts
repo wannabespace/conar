@@ -54,7 +54,7 @@ export const orpcProxy = createORPCClient(
   new RPCLink({
     url: `${proxyUrl}/rpc`,
     interceptors: [
-      async options => {
+      async (options) => {
         try {
           return await options.next()
         } catch (error) {
@@ -63,10 +63,7 @@ export const orpcProxy = createORPCClient(
           }
 
           if (error instanceof Error && isConnectionError(error)) {
-            throw new Error(
-              "We can't connect to the proxy, please check your connection and try again.",
-              { cause: error },
-            )
+            throw new Error("We can't connect to the proxy, please check your connection and try again.", { cause: error })
           }
 
           throw error
@@ -92,15 +89,14 @@ export const orpcProxy = createORPCClient(
 export type ORPCInputs = InferRouterInputs<typeof apiOrpc.router>
 export type ORPCOutputs = InferRouterOutputs<typeof apiOrpc.router>
 
-export const PROXY_ERROR_MESSAGE =
-  "We can't connect to the proxy, please check your connection and try again."
+export const PROXY_ERROR_MESSAGE = "We can't connect to the proxy, please check your connection and try again."
 
 export const createProxyClient = memoize((url: string): queryProxy.ORPCRouter => {
   return createORPCClient(
     new RPCLink({
       url,
       interceptors: [
-        async options => {
+        async (options) => {
           try {
             return await options.next()
           } catch (error) {

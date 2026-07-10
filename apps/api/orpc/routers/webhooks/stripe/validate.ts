@@ -11,11 +11,7 @@ export async function validateRequest(request: Request): Promise<Stripe.Event> {
   let event: Stripe.Event
 
   try {
-    event = await stripe.webhooks.constructEventAsync(
-      await request.text(),
-      signature,
-      env.STRIPE_WEBHOOK_SECRET!,
-    )
+    event = await stripe.webhooks.constructEventAsync(await request.text(), signature, env.STRIPE_WEBHOOK_SECRET!)
   } catch {
     throw new Error('Failed to validate request')
   }

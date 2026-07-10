@@ -8,23 +8,12 @@ import { authMiddleware, orpc } from '~/orpc'
 
 export function createSyncOutputSchema<const T>(
   schema: type.validate<T>,
-): type.instantiate<
-  | { type: '"insert"'; value: T }
-  | { type: '"update"'; value: T }
-  | { type: '"delete"'; key: 'string.uuid.v7' }
->
+): type.instantiate<{ type: '"insert"'; value: T } | { type: '"update"'; value: T } | { type: '"delete"'; key: 'string.uuid.v7' }>
 export function createSyncOutputSchema(schema: Type) {
-  return type.or(
-    type({ type: '"insert"', value: schema }),
-    type({ type: '"update"', value: schema }),
-    type({ type: '"delete"', key: 'string.uuid.v7' }),
-  )
+  return type.or(type({ type: '"insert"', value: schema }), type({ type: '"update"', value: schema }), type({ type: '"delete"', key: 'string.uuid.v7' }))
 }
 
-export function createSyncPublisher<T extends Type<{ type: 'insert' | 'update' | 'delete' }>>(
-  output: T,
-  prefix: string,
-) {
+export function createSyncPublisher<T extends Type<{ type: 'insert' | 'update' | 'delete' }>>(output: T, prefix: string) {
   return new IORedisPublisher<Record<string, typeof output.infer>>({
     commander: redis.duplicate(),
     listener: redis.duplicate(),
@@ -40,13 +29,13 @@ export async function syncDiff<TItem>(opts: {
     existing: (includeIds: string[]) => Promise<string[]>
   }
 }) {
-  const inputIds = opts.input.map(i => i.id)
+  const inputIds = opts.input.map((i) => i.id)
   const [updatedItems, newItems, existingIds] = await Promise.all([
     inputIds.length > 0 ? opts.queries.updated(opts.input) : ([] as TItem[]),
     opts.queries.new(inputIds),
     opts.queries.existing(inputIds),
   ])
-  const missingIds = inputIds.filter(id => !existingIds.includes(id))
+  const missingIds = inputIds.filter((id) => !existingIds.includes(id))
   return { updatedItems, newItems, missingIds }
 }
 

@@ -8,9 +8,7 @@ import type { QueryExecutor } from '..'
 import { handleQueryError } from '..'
 import { disposeTransaction, getTransaction, registerTransaction } from '../transactions'
 
-const clickhouse = createRequire(import.meta.url)(
-  '@clickhouse/client',
-) as typeof import('@clickhouse/client')
+const clickhouse = createRequire(import.meta.url)('@clickhouse/client') as typeof import('@clickhouse/client')
 
 const getClient = memoize((connectionString: string) => {
   let url = connectionString
@@ -33,9 +31,7 @@ export function wrapClickhouseError<T extends AnyFunction>(fn: T): T {
       return await handleQueryError(fn)(...args)
     } catch (error) {
       if (error instanceof Error) {
-        const parsed = tryParseJson<
-          Partial<{ message: string; status: string; code: number; request_id: string }>
-        >(error.message)
+        const parsed = tryParseJson<Partial<{ message: string; status: string; code: number; request_id: string }>>(error.message)
         if (parsed?.message) throw new Error(parsed.message, { cause: error })
       }
       throw error
@@ -44,9 +40,7 @@ export function wrapClickhouseError<T extends AnyFunction>(fn: T): T {
 }
 
 function isSelectLikeQuery(query: string) {
-  return ['SELECT', 'SHOW', 'DESCRIBE', 'EXPLAIN', 'WITH', 'CHECK'].some(keyword =>
-    query.trim().toUpperCase().startsWith(keyword),
-  )
+  return ['SELECT', 'SHOW', 'DESCRIBE', 'EXPLAIN', 'WITH', 'CHECK'].some((keyword) => query.trim().toUpperCase().startsWith(keyword))
 }
 
 export const query = {
@@ -55,9 +49,7 @@ export const query = {
 
     if (isSelectLikeQuery(query)) {
       const start = performance.now()
-      const result = await client
-        .query({ query, format: 'JSONEachRow' })
-        .then(result => result.json())
+      const result = await client.query({ query, format: 'JSONEachRow' }).then((result) => result.json())
       return { result, duration: performance.now() - start }
     }
 
@@ -79,14 +71,12 @@ export const query = {
     return { txId }
   }),
 
-  executeTransaction: handleQueryError(
-    async ({ txId, query, values }: { txId: string; query: string; values: unknown[] }) => {
-      const handle = getTransaction(txId)
-      if (!handle) throw new Error(`No active transaction found for id: ${txId}`)
+  executeTransaction: handleQueryError(async ({ txId, query, values }: { txId: string; query: string; values: unknown[] }) => {
+    const handle = getTransaction(txId)
+    if (!handle) throw new Error(`No active transaction found for id: ${txId}`)
 
-      return handle.execute(query, values)
-    },
-  ),
+    return handle.execute(query, values)
+  }),
 
   commitTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)

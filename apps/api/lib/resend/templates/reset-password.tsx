@@ -10,10 +10,7 @@ export function ResetPassword({ name, url }: { name: string; url: string }) {
         <Text>
           Hello, <strong>{name}</strong>!
         </Text>
-        <Text>
-          We received a request to reset your password. Click the button below to set a new
-          password:
-        </Text>
+        <Text>We received a request to reset your password. Click the button below to set a new password:</Text>
       </Section>
       <Section className="mb-5">
         <Button href={url}>Reset Password</Button>

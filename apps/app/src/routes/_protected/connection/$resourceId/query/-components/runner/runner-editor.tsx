@@ -28,25 +28,13 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
   const { connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
 
-  const replace = ({
-    query,
-    startLineNumber,
-    endLineNumber,
-  }: {
-    query: string
-    startLineNumber: number
-    endLineNumber: number
-  }) => {
+  const replace = ({ query, startLineNumber, endLineNumber }: { query: string; startLineNumber: number; endLineNumber: number }) => {
     const lines = store.get().query.split('\n')
     const newSqlLines = query.split('\n')
-    const updatedLines = [
-      ...lines.slice(0, startLineNumber - 1),
-      ...newSqlLines,
-      ...lines.slice(endLineNumber),
-    ]
+    const updatedLines = [...lines.slice(0, startLineNumber - 1), ...newSqlLines, ...lines.slice(endLineNumber)]
 
     store.set(
-      state =>
+      (state) =>
         ({
           ...state,
           query: updatedLines.join('\n'),
@@ -57,23 +45,23 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
   const replaceEvent = useEffectEvent(replace)
 
   useEffect(() => {
-    const appendToBottomHook = runnerHooks.hook('appendToBottom', query => {
+    const appendToBottomHook = runnerHooks.hook('appendToBottom', (query) => {
       store.set(
-        state =>
+        (state) =>
           ({
             ...state,
             query: state.query ? `${state.query}\n\n${query}` : query,
           }) satisfies typeof state,
       )
     })
-    const appendToBottomAndFocusHook = runnerHooks.hook('appendToBottomAndFocus', query => {
+    const appendToBottomAndFocusHook = runnerHooks.hook('appendToBottomAndFocus', (query) => {
       runnerHooks.callHook('appendToBottom', query)
       window.requestAnimationFrame(() => {
         runnerHooks.callHook('scrollToBottom')
         runnerHooks.callHook('focus')
       })
     })
-    const focusRunnerHook = runnerHooks.hook('focus', lineNumber => {
+    const focusRunnerHook = runnerHooks.hook('focus', (lineNumber) => {
       const editor = monacoRef.current
       if (!editor) return
 
@@ -86,7 +74,7 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
 
       editor.focus()
     })
-    const scrollToLineHook = runnerHooks.hook('scrollToLine', lineNumber => {
+    const scrollToLineHook = runnerHooks.hook('scrollToLine', (lineNumber) => {
       const editor = monacoRef.current
       if (!editor) return
 
@@ -102,12 +90,9 @@ function useRunnerEditorHooks(monacoRef: RefObject<editor.IStandaloneCodeEditor 
         editor.revealLineInCenter(lineCount)
       }
     })
-    const replaceQueryHook = runnerHooks.hook(
-      'replaceQuery',
-      ({ query, startLineNumber, endLineNumber }) => {
-        replaceEvent({ query, startLineNumber, endLineNumber })
-      },
-    )
+    const replaceQueryHook = runnerHooks.hook('replaceQuery', ({ query, startLineNumber, endLineNumber }) => {
+      replaceEvent({ query, startLineNumber, endLineNumber })
+    })
 
     return () => {
       appendToBottomHook()
@@ -167,15 +152,7 @@ export function RunnerEditor() {
   }, [connection, connectionResource])
 
   const getEditorQueriesEvent = useEffectEvent((position: Position) => {
-    return (
-      editorQueriesStore
-        .get()
-        .find(
-          query =>
-            position.lineNumber >= query.startLineNumber &&
-            position.lineNumber <= query.endLineNumber,
-        ) ?? null
-    )
+    return editorQueriesStore.get().find((query) => position.lineNumber >= query.startLineNumber && position.lineNumber <= query.endLineNumber) ?? null
   })
 
   useEffect(() => {
@@ -185,7 +162,7 @@ export function RunnerEditor() {
       id: 'conar.execute-on-enter',
       label: 'Execute on Enter',
       keybindings: [KeyMod.CtrlCmd | KeyCode.Enter],
-      run: e => {
+      run: (e) => {
         const position = e.getPosition()
 
         if (!position) return
@@ -217,10 +194,10 @@ export function RunnerEditor() {
       ref={monacoRef}
       language={dialectsMap[connection.type]}
       value={store.get().query}
-      onChange={q => {
+      onChange={(q) => {
         if (q === store.get().query) return
         store.set(
-          state =>
+          (state) =>
             ({
               ...state,
               query: q,

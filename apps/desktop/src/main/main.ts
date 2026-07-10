@@ -12,9 +12,7 @@ import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { buildMenu } from './lib/menu'
 
-const todesktop = createRequire(import.meta.url)(
-  '@todesktop/runtime',
-) as typeof import('@todesktop/runtime')
+const todesktop = createRequire(import.meta.url)('@todesktop/runtime') as typeof import('@todesktop/runtime')
 
 todesktop.init()
 
@@ -22,7 +20,7 @@ export const { autoUpdater } = todesktop
 
 initElectronEvents()
 
-process.on('uncaughtException', error => {
+process.on('uncaughtException', (error) => {
   if (isConnectionError(error)) {
     console.error('[Suppressed Connection Error]', error.message)
     return
@@ -30,12 +28,9 @@ process.on('uncaughtException', error => {
   throw error
 })
 
-process.on('unhandledRejection', reason => {
+process.on('unhandledRejection', (reason) => {
   if (isConnectionError(reason)) {
-    console.error(
-      '[Suppressed Connection Rejection]',
-      reason instanceof Error ? reason.message : reason,
-    )
+    console.error('[Suppressed Connection Rejection]', reason instanceof Error ? reason.message : reason)
     return
   }
   throw reason
@@ -116,9 +111,7 @@ export function createWindow() {
   })
 
   if (app.isPackaged) {
-    mainWindow.loadFile(
-      path.join(path.dirname(fileURLToPath(import.meta.url)), './renderer/index.html'),
-    )
+    mainWindow.loadFile(path.join(path.dirname(fileURLToPath(import.meta.url)), './renderer/index.html'))
   } else {
     mainWindow.webContents.openDevTools()
     mainWindow.loadURL('https://app.local.conar.app')
@@ -188,7 +181,7 @@ autoUpdater?.on('update-available', () => {
 autoUpdater?.on('update-not-available', () => {
   sendUpdatesStatus('no-updates')
 })
-autoUpdater?.on('error', e => {
+autoUpdater?.on('error', (e) => {
   sendUpdatesStatus('error', e.message.split('\n')[0])
 })
 autoUpdater?.on('download-progress', () => {

@@ -7,12 +7,11 @@ import { createMysqlListTransformer } from './mysql'
 import { createPostgresListTransformer } from './postgres'
 
 // eslint-disable-next-line typescript/no-explicit-any
-const listTransformers: Partial<Record<ConnectionType, (column: Column) => ValueTransformer<any>>> =
-  {
-    postgres: createPostgresListTransformer,
-    mysql: createMysqlListTransformer,
-    clickhouse: createClickHouseListTransformer,
-  }
+const listTransformers: Partial<Record<ConnectionType, (column: Column) => ValueTransformer<any>>> = {
+  postgres: createPostgresListTransformer,
+  mysql: createMysqlListTransformer,
+  clickhouse: createClickHouseListTransformer,
+}
 
 export function createListTransformer(
   connectionType: ConnectionType,

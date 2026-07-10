@@ -48,10 +48,7 @@ function createEnvFile(envExamplePath: string) {
     fs.copyFileSync(envExamplePath, envPath)
     return true
   } catch (error) {
-    console.error(
-      `Failed to create .env file: ${envPath}`,
-      error instanceof Error ? error.message : error,
-    )
+    console.error(`Failed to create .env file: ${envPath}`, error instanceof Error ? error.message : error)
     return false
   }
 }

@@ -7,27 +7,17 @@ import type { Column } from '../../components/table/cell'
 import { buildWhere } from '../../queries/rows'
 import { coldDialects } from '../../runtime/dialects'
 import * as templates from '../templates'
-import {
-  filterExplicitIndexes,
-  formatValue,
-  getColumnType,
-  groupIndexes,
-  quoteIdentifier,
-} from '../utils'
+import { filterExplicitIndexes, formatValue, getColumnType, groupIndexes, quoteIdentifier } from '../utils'
 
 function inlineParameters(sql: string, parameters: readonly unknown[]): string {
   let i = 0
   return sql.replace(/\$\d+|\?/g, () => formatValue(parameters[i++]))
 }
 
-export function generateQuerySQL({
-  table,
-  filters,
-  dialect = ConnectionType.Postgres,
-}: QueryParams) {
+export function generateQuerySQL({ table, filters, dialect = ConnectionType.Postgres }: QueryParams) {
   const db = coldDialects[dialect]()
   const base = db.withTables<{ [table]: Record<string, unknown> }>().selectFrom(table).selectAll()
-  const query = filters.length > 0 ? base.where(eb => buildWhere(eb, filters)) : base
+  const query = filters.length > 0 ? base.where((eb) => buildWhere(eb, filters)) : base
   const compiled = query.compile()
   return formatSql(inlineParameters(compiled.sql, compiled.parameters), dialect)
 }
@@ -43,7 +33,7 @@ function formatEnumType(values: string[], name: string, dialect: ConnectionType)
     return `${prefix}(${pairs})`
   }
   if (dialect === ConnectionType.MySQL) {
-    const valuesList = values.map(v => `'${escapeSqlString(v)}'`).join(', ')
+    const valuesList = values.map((v) => `'${escapeSqlString(v)}'`).join(', ')
     return `ENUM(${valuesList})`
   }
   if (dialect === ConnectionType.MSSQL) {
@@ -140,7 +130,7 @@ function buildColumnParts(
 
 function buildPostgresEnumStatements(usedEnums: Map<string, string[]>): string[] {
   return Array.from(usedEnums.entries(), ([name, values]) => {
-    const vals = values.map(v => `'${escapeSqlString(v)}'`).join(', ')
+    const vals = values.map((v) => `'${escapeSqlString(v)}'`).join(', ')
     return `CREATE TYPE "${name}" AS ENUM (${vals});`
   })
 }
@@ -155,7 +145,7 @@ function appendIndexStatements(
   const explicit = filterExplicitIndexes(groupedIndexes, columns, dialect)
   if (explicit.length === 0) return schema
 
-  const lines = explicit.map(idx => {
+  const lines = explicit.map((idx) => {
     return [
       'CREATE',
       idx.isUnique ? 'UNIQUE' : '',
@@ -164,9 +154,7 @@ function appendIndexStatements(
       'ON',
       quoteIdentifier(table, dialect),
       dialect === ConnectionType.Postgres && idx.type ? `USING ${idx.type}` : '',
-      `(${[...idx.columns.map(c => quoteIdentifier(c, dialect)), ...idx.customExpressions].join(
-        ', ',
-      )})`,
+      `(${[...idx.columns.map((c) => quoteIdentifier(c, dialect)), ...idx.customExpressions].join(', ')})`,
     ]
       .filter(Boolean)
       .join(' ')
@@ -185,10 +173,7 @@ export function generateSchemaSQL({ table, columns, dialect, indexes = [] }: Sch
       let typeDef = getTypeDef(c, dialect, usedEnums)
       let defaultValue = c.defaultValue
 
-      if (
-        dialect === ConnectionType.Postgres &&
-        defaultValue?.toLowerCase().startsWith('nextval')
-      ) {
+      if (dialect === ConnectionType.Postgres && defaultValue?.toLowerCase().startsWith('nextval')) {
         if (typeDef === 'INTEGER') {
           typeDef = 'SERIAL'
           defaultValue = null
@@ -214,26 +199,15 @@ export function generateSchemaSQL({ table, columns, dialect, indexes = [] }: Sch
   let schema = templates.sqlSchemaTemplate(quoteIdentifier(table, dialect), columnBlock)
 
   if (dialect === ConnectionType.ClickHouse) {
-    const orderBy =
-      pkColumns.length === 0
-        ? 'tuple()'
-        : pkColumns.length === 1
-          ? pkColumns[0]
-          : `(${pkColumns.join(', ')})`
+    const orderBy = pkColumns.length === 0 ? 'tuple()' : pkColumns.length === 1 ? pkColumns[0] : `(${pkColumns.join(', ')})`
     schema = schema.replace(/\);\s*$/, `) ENGINE = MergeTree() ORDER BY ${orderBy};`)
   }
 
   const groupedIndexes = groupIndexes(indexes, table)
   schema = appendIndexStatements(schema, table, columns, groupedIndexes, dialect)
 
-  const needsPostgresEnums =
-    usedEnums.size > 0 &&
-    dialect !== ConnectionType.MySQL &&
-    dialect !== ConnectionType.MSSQL &&
-    dialect !== ConnectionType.ClickHouse
-  const enumStatements = needsPostgresEnums
-    ? `${buildPostgresEnumStatements(usedEnums).join('\n')}\n\n`
-    : ''
+  const needsPostgresEnums = usedEnums.size > 0 && dialect !== ConnectionType.MySQL && dialect !== ConnectionType.MSSQL && dialect !== ConnectionType.ClickHouse
+  const enumStatements = needsPostgresEnums ? `${buildPostgresEnumStatements(usedEnums).join('\n')}\n\n` : ''
 
   return `${enumStatements}${schema}`
 }

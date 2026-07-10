@@ -23,11 +23,7 @@ function LastOpenedResource({
 
   return (
     <div className="flex items-center justify-between gap-2">
-      <Link
-        className="flex flex-1 items-center gap-2 py-0.5 text-sm text-foreground hover:underline"
-        preload={false}
-        {...params}
-      >
+      <Link className="flex flex-1 items-center gap-2 py-0.5 text-sm text-foreground hover:underline" preload={false} {...params}>
         <ConnectionIcon type={connection.type} className="size-4" />
         {connection.name} /{connectionResource.name}
       </Link>
@@ -39,7 +35,7 @@ function LastOpenedResource({
 }
 
 function close(resource: ConnectionResource) {
-  lastOpenedResourcesStorageValue.set(prev => prev.filter(id => id !== resource.id))
+  lastOpenedResourcesStorageValue.set((prev) => prev.filter((id) => id !== resource.id))
 }
 
 export function LastOpenedResources() {
@@ -47,14 +43,10 @@ export function LastOpenedResources() {
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
 
   const { data } = useLiveQuery(
-    q =>
+    (q) =>
       q
         .from({ connectionsResources: connectionsResourcesCollection })
-        .innerJoin(
-          { connections: connectionsCollection },
-          ({ connectionsResources, connections }) =>
-            eq(connectionsResources.connectionId, connections.id),
-        )
+        .innerJoin({ connections: connectionsCollection }, ({ connectionsResources, connections }) => eq(connectionsResources.connectionId, connections.id))
         .select(({ connectionsResources, connections }) => ({
           connectionResource: connectionsResources,
           connection: connections,
@@ -62,11 +54,7 @@ export function LastOpenedResources() {
         .where(({ connectionsResources }) => inArray(connectionsResources.id, lastOpenedResources)),
     [connectionsResourcesCollection, connectionsCollection, lastOpenedResources],
   )
-  const toShow = data.toSorted(
-    (a, b) =>
-      lastOpenedResources.indexOf(a.connectionResource.id) -
-      lastOpenedResources.indexOf(b.connectionResource.id),
-  )
+  const toShow = data.toSorted((a, b) => lastOpenedResources.indexOf(a.connectionResource.id) - lastOpenedResources.indexOf(b.connectionResource.id))
 
   if (toShow.length === 0) {
     return null

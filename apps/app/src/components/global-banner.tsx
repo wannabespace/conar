@@ -3,13 +3,7 @@ import { Button } from '@conar/ui/components/button'
 import { Spinner } from '@conar/ui/components/spinner'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import {
-  RiAlertLine,
-  RiCheckboxCircleLine,
-  RiCloseLine,
-  RiErrorWarningLine,
-  RiInformationLine,
-} from '@remixicon/react'
+import { RiAlertLine, RiCheckboxCircleLine, RiCloseLine, RiErrorWarningLine, RiInformationLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { type } from 'arktype'
@@ -66,10 +60,9 @@ function Banner({ className, children }: { className?: string; children: ReactNo
 export function GlobalBanner() {
   const { resourceId } = useParams({ strict: false })
   const reconnectingData = useSubscription(reconnectingPromises, {
-    selector: state =>
-      (resourceId && Object.values(state).find(p => p.resourceId === resourceId)) || null,
+    selector: (state) => (resourceId && Object.values(state).find((p) => p.resourceId === resourceId)) || null,
   })
-  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
+  const isOnline = useSubscription(appStore, { selector: (state) => state.isOnline })
   const dismissed = useSubscription(bannerDismissedValue)
 
   const { data = [] } = useQuery(
@@ -77,8 +70,8 @@ export function GlobalBanner() {
       staleTime: 1000 * 60 * 5,
       refetchInterval: 1000 * 60 * 5,
       throwOnError: false,
-      select: data => {
-        const filtered = data?.filter(item => !dismissed.includes(item.text))
+      select: (data) => {
+        const filtered = data?.filter((item) => !dismissed.includes(item.text))
         return [
           ...(isOnline
             ? []
@@ -97,17 +90,12 @@ export function GlobalBanner() {
 
   return (
     <AnimatePresence initial={false} mode="popLayout">
-      {data.map(item => (
+      {data.map((item) => (
         <Banner key={item.text} className={typeConfig[item.type].className}>
           {typeConfig[item.type].icon}
           <span className="flex-1 leading-none">{item.text}</span>
           {item.dismissible && (
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              aria-label="Dismiss banner"
-              onClick={() => bannerDismissedValue.set(state => [...state, item.text])}
-            >
+            <Button variant="ghost" size="icon-xs" aria-label="Dismiss banner" onClick={() => bannerDismissedValue.set((state) => [...state, item.text])}>
               <RiCloseLine className="size-3.5" />
             </Button>
           )}
@@ -118,11 +106,7 @@ export function GlobalBanner() {
           {typeConfig.warning.icon}
           <span className="flex flex-1 items-center gap-2 leading-none">
             <span>
-              Could not connect to the connection. Reconnection attempt{' '}
-              <NumberFlow
-                value={reconnectingData.attempt}
-                suffix={`/${MAX_RECONNECTION_ATTEMPTS}`}
-              />
+              Could not connect to the connection. Reconnection attempt <NumberFlow value={reconnectingData.attempt} suffix={`/${MAX_RECONNECTION_ATTEMPTS}`} />
             </span>
             <Spinner className="size-3.5" />
           </span>

@@ -35,10 +35,7 @@ export function NumberField({
   )
 }
 
-export function NumberFieldGroup({
-  className,
-  ...props
-}: NumberFieldPrimitive.Group.Props): React.ReactElement {
+export function NumberFieldGroup({ className, ...props }: NumberFieldPrimitive.Group.Props): React.ReactElement {
   return (
     <NumberFieldPrimitive.Group
       className={cn(
@@ -51,10 +48,7 @@ export function NumberFieldGroup({
   )
 }
 
-export function NumberFieldDecrement({
-  className,
-  ...props
-}: NumberFieldPrimitive.Decrement.Props): React.ReactElement {
+export function NumberFieldDecrement({ className, ...props }: NumberFieldPrimitive.Decrement.Props): React.ReactElement {
   return (
     <NumberFieldPrimitive.Decrement
       className={cn(
@@ -69,10 +63,7 @@ export function NumberFieldDecrement({
   )
 }
 
-export function NumberFieldIncrement({
-  className,
-  ...props
-}: NumberFieldPrimitive.Increment.Props): React.ReactElement {
+export function NumberFieldIncrement({ className, ...props }: NumberFieldPrimitive.Increment.Props): React.ReactElement {
   return (
     <NumberFieldPrimitive.Increment
       className={cn(
@@ -87,10 +78,7 @@ export function NumberFieldIncrement({
   )
 }
 
-export function NumberFieldInput({
-  className,
-  ...props
-}: NumberFieldPrimitive.Input.Props): React.ReactElement {
+export function NumberFieldInput({ className, ...props }: NumberFieldPrimitive.Input.Props): React.ReactElement {
   return (
     <NumberFieldPrimitive.Input
       className={cn(
@@ -113,17 +101,11 @@ export function NumberFieldScrubArea({
   const context = React.use(NumberFieldContext)
 
   if (!context) {
-    throw new Error(
-      'NumberFieldScrubArea must be used within a NumberField component for accessibility.',
-    )
+    throw new Error('NumberFieldScrubArea must be used within a NumberField component for accessibility.')
   }
 
   return (
-    <NumberFieldPrimitive.ScrubArea
-      className={cn('flex cursor-ew-resize', className)}
-      data-slot="number-field-scrub-area"
-      {...props}
-    >
+    <NumberFieldPrimitive.ScrubArea className={cn('flex cursor-ew-resize', className)} data-slot="number-field-scrub-area" {...props}>
       <Label className="cursor-ew-resize" htmlFor={context.fieldId}>
         {label}
       </Label>
@@ -136,16 +118,7 @@ export function NumberFieldScrubArea({
 
 export function CursorGrowIcon(props: React.ComponentProps<'svg'>): React.ReactElement {
   return (
-    <svg
-      aria-hidden="true"
-      fill="black"
-      height="14"
-      stroke="white"
-      viewBox="0 0 24 14"
-      width="26"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
+    <svg aria-hidden="true" fill="black" height="14" stroke="white" viewBox="0 0 24 14" width="26" xmlns="http://www.w3.org/2000/svg" {...props}>
       <path d="M19.5 5.5L6.49737 5.51844V2L1 6.9999L6.5 12L6.49737 8.5L19.5 8.5V12L25 6.9999L19.5 2V5.5Z" />
     </svg>
   )

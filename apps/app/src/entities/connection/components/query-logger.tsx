@@ -50,23 +50,15 @@ function getQueryStatus(query: QueryLog) {
   return 'pending'
 }
 
-function LogTrigger({
-  query,
-  className,
-  ...props
-}: { query: QueryLog } & ComponentProps<'button'>) {
+function LogTrigger({ query, className, ...props }: { query: QueryLog } & ComponentProps<'button'>) {
   const status = getQueryStatus(query)
   const truncatedQuery = query.query.replaceAll('\n', ' ')
-  const shortQuery =
-    truncatedQuery.length > 500 ? `${truncatedQuery.substring(0, 500)}...` : truncatedQuery
+  const shortQuery = truncatedQuery.length > 500 ? `${truncatedQuery.substring(0, 500)}...` : truncatedQuery
 
   return (
     <button
       type="button"
-      className={cn(
-        `flex w-full cursor-pointer items-center justify-between gap-2 border-t px-4 py-1.5 hover:bg-muted/50`,
-        className,
-      )}
+      className={cn(`flex w-full cursor-pointer items-center justify-between gap-2 border-t px-4 py-1.5 hover:bg-muted/50`, className)}
       {...props}
     >
       <span className="text-left text-xs text-muted-foreground tabular-nums">
@@ -80,9 +72,7 @@ function LogTrigger({
         })}
       </span>
       {getStatusIcon(status)}
-      <span className={`w-12 text-left text-xs text-muted-foreground tabular-nums`}>
-        {query.duration ? `${query.duration.toFixed()}ms` : ''}
-      </span>
+      <span className={`w-12 text-left text-xs text-muted-foreground tabular-nums`}>{query.duration ? `${query.duration.toFixed()}ms` : ''}</span>
       <code className="flex-1 truncate text-left font-mono text-xs">{shortQuery}</code>
     </button>
   )
@@ -96,24 +86,14 @@ const monacoOptions = {
   folding: false,
 }
 
-function Log({
-  query,
-  className,
-  connectionResource,
-}: {
-  query: QueryLog
-  className?: string
-  connectionResource: ConnectionResource
-}) {
+function Log({ query, className, connectionResource }: { query: QueryLog; className?: string; connectionResource: ConnectionResource }) {
   const [isOpen, setIsOpen] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
   const { connectionsCollection } = useCollections()
   const connection = connectionsCollection.get(connectionResource.connectionId)!
 
   if (!canInteract) {
-    return (
-      <LogTrigger query={query} className={className} onMouseEnter={() => setCanInteract(true)} />
-    )
+    return <LogTrigger query={query} className={className} onMouseEnter={() => setCanInteract(true)} />
   }
 
   function closePopover() {
@@ -124,15 +104,7 @@ function Log({
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger
-        render={
-          <LogTrigger
-            query={query}
-            className={cn(className, isOpen && 'bg-accent/30')}
-            onMouseLeave={closePopover}
-          />
-        }
-      />
+      <PopoverTrigger render={<LogTrigger query={query} className={cn(className, isOpen && 'bg-accent/30')} onMouseLeave={closePopover} />} />
       <PopoverContent className="flex w-[95vw] flex-row gap-4" onAnimationEnd={closePopover}>
         <div className="min-w-0 flex-1 space-y-2">
           <div className="space-y-2">
@@ -147,9 +119,7 @@ function Log({
           {query.values && query.values.length > 0 && (
             <div className="space-y-2">
               <Label>Values</Label>
-              <pre className={`overflow-x-auto rounded-sm bg-accent/50 p-2 font-mono text-xs`}>
-                {JSON.stringify(query.values)}
-              </pre>
+              <pre className={`overflow-x-auto rounded-sm bg-accent/50 p-2 font-mono text-xs`}>{JSON.stringify(query.values)}</pre>
             </div>
           )}
         </div>
@@ -157,12 +127,7 @@ function Log({
           {!!query.result && (
             <div className="space-y-2">
               <Label>Result</Label>
-              <Monaco
-                value={JSON.stringify(query.result)}
-                language="json"
-                options={monacoOptions}
-                className="h-[50vh] overflow-hidden rounded-md border"
-              />
+              <Monaco value={JSON.stringify(query.result)} language="json" options={monacoOptions} className="h-[50vh] overflow-hidden rounded-md border" />
             </div>
           )}
           {query.error && (
@@ -181,21 +146,12 @@ function Log({
   )
 }
 
-export function QueryLogger({
-  connectionResource,
-  className,
-}: {
-  connectionResource: ConnectionResource
-  className?: string
-}) {
+export function QueryLogger({ connectionResource, className }: { connectionResource: ConnectionResource; className?: string }) {
   const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({
     initial: 'instant',
   })
   const queries = useSubscription(queryLogsStore, {
-    selector: state =>
-      Object.values(state[connectionResource.id] || {}).toSorted(
-        (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
-      ),
+    selector: (state) => Object.values(state[connectionResource.id] || {}).toSorted((a, b) => a.createdAt.getTime() - b.createdAt.getTime()),
   })
   const [statusGroup, setStatusGroup] = useState<QueryStatus>()
   const [isClearing, setIsClearing] = useState(false)
@@ -203,7 +159,7 @@ export function QueryLogger({
 
   const filteredQueries = useMemo(() => {
     if (statusGroup) {
-      return queries.filter(query => getQueryStatus(query) === statusGroup)
+      return queries.filter((query) => getQueryStatus(query) === statusGroup)
     }
     return queries
   }, [queries, statusGroup])
@@ -225,7 +181,7 @@ export function QueryLogger({
   const clearQueries = () => {
     setIsClearing(true)
     queryLogsStore.set(
-      state =>
+      (state) =>
         ({
           ...state,
           [connectionResource.id]: {},
@@ -234,7 +190,7 @@ export function QueryLogger({
   }
 
   const toggleGroup = (status: QueryStatus) => {
-    setStatusGroup(prev => (prev === status ? undefined : status))
+    setStatusGroup((prev) => (prev === status ? undefined : status))
   }
 
   const { getVirtualItems, getTotalSize } = useVirtualizer({
@@ -251,10 +207,7 @@ export function QueryLogger({
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.style.setProperty('--scroll-top-offset', `${virtualItems[0]?.start ?? 0}px`)
-      scrollRef.current.style.setProperty(
-        '--scroll-bottom-offset',
-        `${totalSize - (virtualItems.at(-1)?.end ?? 0)}px`,
-      )
+      scrollRef.current.style.setProperty('--scroll-bottom-offset', `${totalSize - (virtualItems.at(-1)?.end ?? 0)}px`)
     }
   }, [scrollRef, virtualItems, totalSize])
 
@@ -297,21 +250,11 @@ export function QueryLogger({
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon-sm" onClick={clearQueries}>
-            <ContentSwitch
-              activeContent={<RiCheckLine className="size-4 text-success" />}
-              active={isClearing}
-              onSwitchEnd={setIsClearing}
-            >
+            <ContentSwitch activeContent={<RiCheckLine className="size-4 text-success" />} active={isClearing} onSwitchEnd={setIsClearing}>
               <RiDeleteBinLine className="size-4 text-destructive" />
             </ContentSwitch>
           </Button>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            onClick={() =>
-              store.set(state => ({ ...state, loggerOpened: false }) satisfies typeof state)
-            }
-          >
+          <Button variant="outline" size="icon-sm" onClick={() => store.set((state) => ({ ...state, loggerOpened: false }) satisfies typeof state)}>
             <RiCloseLine className="size-4" />
           </Button>
         </div>
@@ -327,21 +270,14 @@ export function QueryLogger({
         )}
         <div ref={contentRef} style={{ height: `${totalSize}px` }}>
           <div className="h-(--scroll-top-offset)" />
-          {virtualItems.map(virtualItem => (
-            <Log
-              key={virtualItem.key}
-              query={filteredQueries[virtualItem.index]!}
-              connectionResource={connectionResource}
-            />
+          {virtualItems.map((virtualItem) => (
+            <Log key={virtualItem.key} query={filteredQueries[virtualItem.index]!} connectionResource={connectionResource} />
           ))}
           <div className="h-(--scroll-bottom-offset)" />
         </div>
         <div className="sticky bottom-0 h-0">
           <Button
-            className={cn(
-              'absolute bottom-2 left-1/2 -translate-x-1/2',
-              isNearBottom ? `pointer-events-none opacity-0` : '',
-            )}
+            className={cn('absolute bottom-2 left-1/2 -translate-x-1/2', isNearBottom ? `pointer-events-none opacity-0` : '')}
             variant="secondary"
             size="icon-sm"
             onClick={() => scrollToBottom()}

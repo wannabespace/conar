@@ -22,12 +22,7 @@ export function Chat({ className }: { className?: string }) {
   const [isFocused, setIsFocused] = useState(false)
 
   useEffect(() => {
-    if (
-      subscription &&
-      chat.messages.at(-1)?.role === 'user' &&
-      chat.status !== 'streaming' &&
-      chat.status !== 'submitted'
-    ) {
+    if (subscription && chat.messages.at(-1)?.role === 'user' && chat.status !== 'streaming' && chat.status !== 'submitted') {
       chat.regenerate()
     }
   }, [chat, subscription])
@@ -52,7 +47,7 @@ export function Chat({ className }: { className?: string }) {
       // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- intentionally focusable to track focus state for the Mod+N hotkey scope, not a decorative container
       tabIndex={0}
       onFocusCapture={() => setIsFocused(true)}
-      onBlurCapture={event => {
+      onBlurCapture={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
           setIsFocused(false)
         }

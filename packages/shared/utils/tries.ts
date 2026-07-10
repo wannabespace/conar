@@ -5,13 +5,8 @@ type Fn<T, P extends object = {}> = (params: P) => MaybePromise<T>
 // eslint-disable-next-line typescript/no-empty-object-type
 type FnParam<T, P extends object = {}> = Fn<T, P> | undefined | false
 
-export async function tries<T>(
-  ...args: [FnParam<T>, ...FnParam<T, { firstError: unknown; previousError: unknown }>[]]
-): Promise<T> {
-  const filteredFn = args.filter(Boolean) as Fn<
-    T,
-    { firstError: unknown; previousError: unknown }
-  >[]
+export async function tries<T>(...args: [FnParam<T>, ...FnParam<T, { firstError: unknown; previousError: unknown }>[]]): Promise<T> {
+  const filteredFn = args.filter(Boolean) as Fn<T, { firstError: unknown; previousError: unknown }>[]
   let firstError: unknown
   let previousError: unknown
 

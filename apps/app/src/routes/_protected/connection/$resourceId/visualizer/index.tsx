@@ -3,36 +3,18 @@ import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { KbdCtrlLetter } from '@conar/ui/components/custom/shortcuts'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
 import { ReactFlowEdge } from '@conar/ui/components/react-flow/edge'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@conar/ui/components/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { RiCloseLine, RiSearchLine } from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import {
-  Background,
-  BackgroundVariant,
-  MiniMap,
-  ReactFlow,
-  ReactFlowProvider,
-  useEdgesState,
-  useNodesState,
-} from '@xyflow/react'
+import { Background, BackgroundVariant, MiniMap, ReactFlow, ReactFlowProvider, useEdgesState, useNodesState } from '@xyflow/react'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { ReactFlowNode } from '~/entities/connection/components'
 import type { constraintsType } from '~/entities/connection/queries'
-import {
-  resourceConstraintsQueryOptions,
-  resourceTableColumnsQueryOptions,
-  resourceTablesAndSchemasQueryOptions,
-} from '~/entities/connection/queries'
+import { resourceConstraintsQueryOptions, resourceTableColumnsQueryOptions, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import type { columnType } from '~/entities/connection/queries/columns'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
@@ -49,11 +31,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/visuali
     meta: loaderData
       ? [
           {
-            title: title(
-              'Visualizer',
-              loaderData.connection.name,
-              loaderData.connectionResource.name,
-            ),
+            title: title('Visualizer', loaderData.connection.name, loaderData.connectionResource.name),
           },
         ]
       : [],
@@ -64,23 +42,17 @@ function VisualizerPage() {
   const { connection } = Route.useLoaderData()
   const { connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, { selector: state => state.showSystem })
+  const showSystem = useSubscription(store, { selector: (state) => state.showSystem })
   const { data: tablesAndSchemas } = useQuery({
     ...resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
-    select: data =>
-      data.schemas.flatMap(({ name, tables }) =>
-        tables.map(table => ({ schema: name, table: table.name })),
-      ),
+    select: (data) => data.schemas.flatMap(({ name, tables }) => tables.map((table) => ({ schema: name, table: table.name }))),
   })
   const columnsQueries = useQueries({
-    queries:
-      tablesAndSchemas?.flatMap(({ schema, table }) =>
-        resourceTableColumnsQueryOptions({ connectionResource, schema, table }),
-      ) ?? [],
+    queries: tablesAndSchemas?.flatMap(({ schema, table }) => resourceTableColumnsQueryOptions({ connectionResource, schema, table })) ?? [],
   })
   const { data: constraints } = useQuery(resourceConstraintsQueryOptions({ connectionResource }))
 
-  if (!tablesAndSchemas || !constraints || columnsQueries.some(q => q.isPending)) {
+  if (!tablesAndSchemas || !constraints || columnsQueries.some((q) => q.isPending)) {
     return (
       <div className="flex size-full items-center justify-center rounded-lg border bg-background">
         <AppLogo className="size-40 animate-pulse text-muted-foreground" />
@@ -88,9 +60,7 @@ function VisualizerPage() {
     )
   }
 
-  const columns = columnsQueries
-    .flatMap(item => item.data)
-    .filter((item): item is typeof columnType.infer => !!item)
+  const columns = columnsQueries.flatMap((item) => item.data).filter((item): item is typeof columnType.infer => !!item)
 
   if (columns.length === 0 || tablesAndSchemas.length === 0) {
     return (
@@ -131,10 +101,8 @@ function Visualizer({
   const searchRef = useRef<HTMLInputElement>(null)
 
   const trimmedSearchQuery = searchQuery.trim().toLowerCase()
-  const schemaConstraints = constraints.filter(
-    c => c.schema === schema && (!c.foreignSchema || c.foreignSchema === schema),
-  )
-  const tables = tablesAndSchemas.filter(t => t.schema === schema).map(({ table }) => table)
+  const schemaConstraints = constraints.filter((c) => c.schema === schema && (!c.foreignSchema || c.foreignSchema === schema))
+  const tables = tablesAndSchemas.filter((t) => t.schema === schema).map(({ table }) => table)
 
   const { nodes: layoutNodes, edges: layoutEdges } = useMemo(() => {
     return getVisualizerLayout({
@@ -197,9 +165,9 @@ function Visualizer({
               placeholder="Search tables"
               value={searchQuery}
               autoFocus
-              onChange={e => {
+              onChange={(e) => {
                 setSearchQuery(e.target.value)
-                setNodes(nodes =>
+                setNodes((nodes) =>
                   applySearchHighlight({
                     nodes,
                     searchQuery: e.target.value.trim(),
@@ -220,11 +188,7 @@ function Visualizer({
               )}
 
               {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  aria-label="Clear table search"
-                >
+                <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear table search">
                   <RiCloseLine className="size-4 text-muted-foreground" />
                 </button>
               )}
@@ -233,7 +197,7 @@ function Visualizer({
         </div>
         <Select
           value={schema}
-          onValueChange={v => {
+          onValueChange={(v) => {
             if (v) {
               setSchema(v)
               setSearchQuery('')
@@ -249,7 +213,7 @@ function Visualizer({
             </div>
           </SelectTrigger>
           <SelectContent>
-            {schemas.map(schema => (
+            {schemas.map((schema) => (
               <SelectItem key={schema} value={schema}>
                 {schema}
               </SelectItem>
@@ -282,12 +246,7 @@ function Visualizer({
         }}
         attributionPosition="bottom-left"
       >
-        <Background
-          bgColor="var(--background)"
-          variant={BackgroundVariant.Dots}
-          gap={20}
-          size={2}
-        />
+        <Background bgColor="var(--background)" variant={BackgroundVariant.Dots} gap={20} size={2} />
         <MiniMap pannable zoomable bgColor="var(--background)" nodeColor="var(--muted)" />
       </ReactFlow>
     </div>

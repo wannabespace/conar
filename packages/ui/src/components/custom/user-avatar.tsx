@@ -20,14 +20,7 @@ export function UserAvatar({
       <AvatarFallback
         name={user?.email}
         facehashProps={{
-          colorClasses: [
-            'bg-slate-900',
-            'bg-slate-800',
-            'bg-sky-500',
-            'bg-indigo-500',
-            'bg-cyan-500',
-            'bg-zinc-800',
-          ],
+          colorClasses: ['bg-slate-900', 'bg-slate-800', 'bg-sky-500', 'bg-indigo-500', 'bg-cyan-500', 'bg-zinc-800'],
         }}
       />
     </Avatar>

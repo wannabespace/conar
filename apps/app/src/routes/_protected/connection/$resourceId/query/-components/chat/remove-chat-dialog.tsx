@@ -56,12 +56,7 @@ export function RemoveChatDialog({ ref }: RemoveChatDialogProps) {
           <AlertDialogTitle>Delete Chat</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete
-            {chat?.title ? (
-              <span className="font-semibold"> "{chat.title}"</span>
-            ) : (
-              ' this chat'
-            )}{' '}
-            and all its messages.
+            {chat?.title ? <span className="font-semibold"> "{chat.title}"</span> : ' this chat'} and all its messages.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

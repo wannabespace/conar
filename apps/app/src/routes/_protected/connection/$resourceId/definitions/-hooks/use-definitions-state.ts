@@ -6,22 +6,15 @@ import type { ConnectionResource } from '~/entities/connection/core'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 
-export function useDefinitionsState({
-  connectionResource,
-}: {
-  connectionResource: ConnectionResource
-}) {
+export function useDefinitionsState({ connectionResource }: { connectionResource: ConnectionResource }) {
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data } = useQuery(
-    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
-  )
+  const showSystem = useSubscription(store, { selector: (state) => state.showSystem })
+  const { data } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))
   const schemas = data?.schemas.map(({ name }) => name) ?? []
   const [selectedSchema, setSelectedSchema] = useState(schemas[0])
   const [search, setSearch] = useState('')
 
-  if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema)))
-    setSelectedSchema(schemas[0])
+  if (schemas.length > 0 && (!selectedSchema || !schemas.includes(selectedSchema))) setSelectedSchema(schemas[0])
 
   return { schemas, selectedSchema, setSelectedSchema, search, setSearch }
 }

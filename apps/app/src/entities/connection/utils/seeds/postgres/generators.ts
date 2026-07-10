@@ -18,23 +18,18 @@ export const PG_GENERATORS = {
   'postgres.lseg': {
     label: 'Line Segment',
     category: 'Postgres',
-    generate: () =>
-      `[(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})]`,
+    generate: () => `[(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})]`,
   },
   'postgres.box': {
     label: 'Box',
     category: 'Postgres',
-    generate: () =>
-      `(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})`,
+    generate: () => `(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})`,
   },
   'postgres.path': {
     label: 'Path',
     category: 'Postgres',
     generate: () => {
-      const pts = faker.helpers.multiple(
-        () => `(${faker.location.longitude()},${faker.location.latitude()})`,
-        { count: faker.number.int({ min: 2, max: 5 }) },
-      )
+      const pts = faker.helpers.multiple(() => `(${faker.location.longitude()},${faker.location.latitude()})`, { count: faker.number.int({ min: 2, max: 5 }) })
       return `[${pts.join(',')}]`
     },
   },
@@ -42,18 +37,14 @@ export const PG_GENERATORS = {
     label: 'Polygon',
     category: 'Postgres',
     generate: () => {
-      const pts = faker.helpers.multiple(
-        () => `(${faker.location.longitude()},${faker.location.latitude()})`,
-        { count: faker.number.int({ min: 3, max: 6 }) },
-      )
+      const pts = faker.helpers.multiple(() => `(${faker.location.longitude()},${faker.location.latitude()})`, { count: faker.number.int({ min: 3, max: 6 }) })
       return `(${pts.join(',')})`
     },
   },
   'postgres.circle': {
     label: 'Circle',
     category: 'Postgres',
-    generate: () =>
-      `<(${faker.location.longitude()},${faker.location.latitude()}),${faker.number.float({ min: 0.1, max: 100, fractionDigits: 2 })}>`,
+    generate: () => `<(${faker.location.longitude()},${faker.location.latitude()}),${faker.number.float({ min: 0.1, max: 100, fractionDigits: 2 })}>`,
   },
   'postgres.interval': {
     label: 'Interval',

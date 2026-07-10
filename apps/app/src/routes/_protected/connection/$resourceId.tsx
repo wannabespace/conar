@@ -1,9 +1,5 @@
 import { title } from '@conar/shared/utils/title'
-import {
-  ResizablePanel,
-  ResizablePanelGroup,
-  ResizableSeparator,
-} from '@conar/ui/components/resizable'
+import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { cn } from '@conar/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
@@ -15,10 +11,7 @@ import { getCollections, useCollections } from '~/entities/collections'
 import { QueryLogger } from '~/entities/connection/components'
 import type { connectionResourceType } from '~/entities/connection/store'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import {
-  lastOpenedResourcesStorageValue,
-  prefetchConnectionResourceCore,
-} from '~/entities/connection/utils'
+import { lastOpenedResourcesStorageValue, prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import type { FileRoutesById } from '~/routeTree.gen'
 
@@ -49,28 +42,24 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
     return { connection: context.connection, connectionResource: context.connectionResource }
   },
   head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [{ title: title(loaderData.connection.name, loaderData.connectionResource.name) }]
-      : [],
+    meta: loaderData ? [{ title: title(loaderData.connection.name, loaderData.connectionResource.name) }] : [],
   }),
 })
 
 function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
-  return routesIds.findLast(route =>
-    route.includes('/_protected/connection/$resourceId'),
-  ) as (typeof connectionResourceType.infer)['lastOpenedPage']
+  return routesIds.findLast((route) => route.includes('/_protected/connection/$resourceId')) as (typeof connectionResourceType.infer)['lastOpenedPage']
 }
 
 function ResourcePage() {
   const { connection, connectionResource } = Route.useRouteContext()
   const { connectionStringsCollection } = useCollections()
   const currentPageId = useMatches({
-    select: matches => getDatabasePageId(matches.map(match => match.routeId)),
+    select: (matches) => getDatabasePageId(matches.map((match) => match.routeId)),
   })
   const store = getConnectionResourceStore(connectionResource.id)
-  const loggerOpened = useSubscription(store, { selector: state => state.loggerOpened })
+  const loggerOpened = useSubscription(store, { selector: (state) => state.loggerOpened })
   const { data: connectionString } = useLiveQuery(
-    q =>
+    (q) =>
       q
         .from({ cs: connectionStringsCollection })
         .where(({ cs }) => eq(cs.connectionId, connection.id))
@@ -82,7 +71,7 @@ function ResourcePage() {
   useEffect(() => {
     if (currentPageId) {
       store.set(
-        state =>
+        (state) =>
           ({
             ...state,
             lastOpenedPage: currentPageId,
@@ -94,12 +83,7 @@ function ResourcePage() {
   useEffect(() => {
     const last = lastOpenedResourcesStorageValue.get()
     if (!last.includes(connectionResource.id))
-      lastOpenedResourcesStorageValue.set(
-        [
-          connectionResource.id,
-          ...last.filter(resourceId => resourceId !== connectionResource.id),
-        ].slice(0, 3),
-      )
+      lastOpenedResourcesStorageValue.set([connectionResource.id, ...last.filter((resourceId) => resourceId !== connectionResource.id)].slice(0, 3))
   }, [connectionResource.id])
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
@@ -116,29 +100,15 @@ function ResourcePage() {
   return (
     <div className={`flex bg-gray-100 dark:bg-neutral-950/60`}>
       <ConnectionSidebar className="w-16" />
-      <div
-        className={cn(
-          `m-2 ml-0 flex h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(16))-(--spacing(2)))] flex-col`,
-        )}
-      >
-        <ResizablePanelGroup
-          orientation="vertical"
-          className="min-h-0 flex-1"
-          defaultLayout={defaultLayout}
-          onLayoutChanged={onLayoutChanged}
-        >
+      <div className={cn(`m-2 ml-0 flex h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(16))-(--spacing(2)))] flex-col`)}>
+        <ResizablePanelGroup orientation="vertical" className="min-h-0 flex-1" defaultLayout={defaultLayout} onLayoutChanged={onLayoutChanged}>
           <ResizablePanel defaultSize="70%" minSize="50%">
             <Outlet />
           </ResizablePanel>
           {loggerOpened && (
             <>
               <ResizableSeparator className="h-1" />
-              <ResizablePanel
-                defaultSize="30%"
-                minSize="10%"
-                maxSize="50%"
-                className="overflow-auto rounded-lg bg-background"
-              >
+              <ResizablePanel defaultSize="30%" minSize="10%" maxSize="50%" className="overflow-auto rounded-lg bg-background">
                 <QueryLogger connectionResource={connectionResource} />
               </ResizablePanel>
             </>

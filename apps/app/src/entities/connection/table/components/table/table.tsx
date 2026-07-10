@@ -17,13 +17,7 @@ import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 
 import { useTableColumns } from '../../columns'
 import { useClearDraftsOnQueryChange, useSyncSelectionWithRows } from '../../hooks'
-import {
-  columnsOrder,
-  draftKey,
-  draftsActions,
-  getRowPrimaryKeysValues,
-  useTablePageStore,
-} from '../../store'
+import { columnsOrder, draftKey, draftsActions, getRowPrimaryKeysValues, useTablePageStore } from '../../store'
 import { DraftsToolbar } from './drafts-toolbar'
 import { RenameColumnDialog } from './rename-column-dialog'
 import { TableEmpty } from './table-empty'
@@ -37,9 +31,7 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export function TableError({ error }: { error: Error }) {
   return (
-    <div
-      className={`pointer-events-none sticky left-0 flex h-full items-center justify-center pb-10`}
-    >
+    <div className={`pointer-events-none sticky left-0 flex h-full items-center justify-center pb-10`}>
       <div className={`flex max-w-md flex-col items-center rounded-lg border bg-card p-4`}>
         <div className="mb-1 text-destructive">Error occurred</div>
         <p className="text-center font-mono text-sm text-muted-foreground">{error.message}</p>
@@ -83,19 +75,13 @@ function BodyCellRenderer({
     primaryColumns: string[]
   }) {
   const store = useTablePageStore()
-  const row = useTableContext(ctx => ctx.rows[props.rowIndex])
-  const rowDraftKey =
-    row && primaryColumns.length > 0
-      ? draftKey(getRowPrimaryKeysValues(row, primaryColumns), column.id)
-      : null
+  const row = useTableContext((ctx) => ctx.rows[props.rowIndex])
+  const rowDraftKey = row && primaryColumns.length > 0 ? draftKey(getRowPrimaryKeysValues(row, primaryColumns), column.id) : null
 
   const draft = useSubscription(store, {
-    selector: state =>
-      rowDraftKey
-        ? state.drafts.find(d => draftKey(d.primaryKeys, d.columnId) === rowDraftKey)
-        : undefined,
+    selector: (state) => (rowDraftKey ? state.drafts.find((d) => draftKey(d.primaryKeys, d.columnId) === rowDraftKey) : undefined),
   })
-  const order = useSubscription(store, { selector: state => state.orderBy[column.id] ?? null })
+  const order = useSubscription(store, { selector: (state) => state.orderBy[column.id] ?? null })
 
   return (
     <TableCell
@@ -118,22 +104,9 @@ function createTableHeaderCellRenderer(column: Column, handlers: ColumnHandlers)
   }
 }
 
-function createTableBodyCellRenderer(
-  column: Column,
-  connectionType: ConnectionType,
-  primaryColumns: string[],
-  handlers: ColumnHandlers,
-) {
+function createTableBodyCellRenderer(column: Column, connectionType: ConnectionType, primaryColumns: string[], handlers: ColumnHandlers) {
   return function TableBodyCellRenderer(props: TableCellProps) {
-    return (
-      <BodyCellRenderer
-        column={column}
-        connectionType={connectionType}
-        primaryColumns={primaryColumns}
-        {...handlers}
-        {...props}
-      />
-    )
+    return <BodyCellRenderer column={column} connectionType={connectionType} primaryColumns={primaryColumns} {...handlers} {...props} />
   }
 }
 
@@ -141,10 +114,10 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
   const { connection, connectionResource } = useRouteContext()
   const columns = useTableColumns()
   const store = useTablePageStore()
-  const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
-  const columnSizes = useSubscription(store, { selector: state => state.columnSizes })
-  const filters = useSubscription(store, { selector: state => state.filters })
-  const orderBy = useSubscription(store, { selector: state => state.orderBy })
+  const hiddenColumns = useSubscription(store, { selector: (state) => state.hiddenColumns })
+  const columnSizes = useSubscription(store, { selector: (state) => state.columnSizes })
+  const filters = useSubscription(store, { selector: (state) => state.filters })
+  const orderBy = useSubscription(store, { selector: (state) => state.orderBy })
   const {
     data: rows = [],
     error,
@@ -157,7 +130,7 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
       query: { filters, orderBy },
     }),
   )
-  const primaryColumns = useMemo(() => columns.filter(c => c.primaryKey).map(c => c.id), [columns])
+  const primaryColumns = useMemo(() => columns.filter((c) => c.primaryKey).map((c) => c.id), [columns])
   const renameColumnRef = useRef<ComponentRef<typeof RenameColumnDialog>>(null)
 
   useSyncSelectionWithRows(rows, primaryColumns)
@@ -166,8 +139,7 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
   const getHandlers = useCallback(
     (column: Column): ColumnHandlers => ({
       onQueueValue: async (rowIndex, newValue) => {
-        if (primaryColumns.length === 0)
-          throw new Error('No primary keys found. Please use SQL Runner to update this row.')
+        if (primaryColumns.length === 0) throw new Error('No primary keys found. Please use SQL Runner to update this row.')
 
         const row = rows[rowIndex]
         if (!row) throw new Error('Row not found. Please refresh the page.')
@@ -180,24 +152,24 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
           isCommitting: false,
         })
       },
-      onAddFilter: filter => {
+      onAddFilter: (filter) => {
         store.set(
-          state =>
+          (state) =>
             ({
               ...state,
               filters: [...state.filters, filter],
             }) satisfies typeof state,
         )
       },
-      onOrder: order => {
+      onOrder: (order) => {
         const actions = columnsOrder(store)
         if (order === undefined) return actions.toggleOrder(column.id)
         if (order) return actions.setOrder(column.id, order)
         return actions.removeOrder(column.id)
       },
-      onResize: newWidth => {
+      onResize: (newWidth) => {
         store.set(
-          state =>
+          (state) =>
             ({
               ...state,
               columnSizes: {
@@ -219,8 +191,8 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
 
   const tableColumns = useMemo<ColumnRenderer[]>(() => {
     return columns
-      .filter(c => !hiddenColumns.includes(c.id))
-      .map(column => {
+      .filter((c) => !hiddenColumns.includes(c.id))
+      .map((column) => {
         const handlers = getHandlers(column)
         return {
           id: column.id,
@@ -252,22 +224,16 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
 
   const handleShiftSelectionKeyDown = useShiftSelectionKeyDown({
     rowCount: rows.length,
-    getItemsInRange: (start, end) =>
-      rows.slice(start, end + 1).map(row => getRowPrimaryKeysValues(row, primaryColumns)),
+    getItemsInRange: (start, end) => rows.slice(start, end + 1).map((row) => getRowPrimaryKeysValues(row, primaryColumns)),
     getSelectionState: () => store.get().selectionState,
     onSelectionChange: (selected, selectionState) => {
-      store.set(state => ({ ...state, selected, selectionState }) satisfies typeof state)
+      store.set((state) => ({ ...state, selected, selectionState }) satisfies typeof state)
     },
   })
 
   return (
     <TableProvider rows={rows} columns={providerColumns} customColumnSizes={columnSizes}>
-      <div
-        role="grid"
-        className="relative size-full bg-background outline-none"
-        tabIndex={0}
-        onKeyDown={handleShiftSelectionKeyDown}
-      >
+      <div role="grid" className="relative size-full bg-background outline-none" tabIndex={0} onKeyDown={handleShiftSelectionKeyDown}>
         <Table>
           {tableColumns.length > 0 && <TableHeader />}
           {isRowsPending ? (
@@ -275,26 +241,13 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
           ) : error ? (
             <TableError error={error} />
           ) : rows?.length === 0 ? (
-            <TableEmpty
-              className="bottom-0 h-[calc(100%-5rem)]"
-              title="Table is empty"
-              description="There are no records to show"
-            />
+            <TableEmpty className="bottom-0 h-[calc(100%-5rem)]" title="Table is empty" description="There are no records to show" />
           ) : tableColumns.length === 0 ? (
-            <TableEmpty
-              className="h-[calc(100%-5rem)]"
-              title="No columns to show"
-              description="Please show at least one column"
-            />
+            <TableEmpty className="h-[calc(100%-5rem)]" title="No columns to show" description="Please show at least one column" />
           ) : (
             <>
               <TableBody data-mask className="bg-background" />
-              <TableInfiniteLoader
-                table={table}
-                schema={schema}
-                filters={filters}
-                orderBy={orderBy}
-              />
+              <TableInfiniteLoader table={table} schema={schema} filters={filters} orderBy={orderBy} />
             </>
           )}
         </Table>

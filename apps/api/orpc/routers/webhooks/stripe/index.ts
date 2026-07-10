@@ -26,17 +26,14 @@ export const stripe = orpc.handler(async ({ context }) => {
       throw new ORPCError('BAD_REQUEST', { message: 'Stripe event not found' })
     }
 
-    await handler(event).catch(async error => {
+    await handler(event).catch(async (error) => {
       if (env.ALERTS_EMAIL) {
         await sendEmail({
           to: env.ALERTS_EMAIL,
           subject: `Alert from Stripe: ${event.type}`,
           template: 'Alert',
           props: {
-            text:
-              typeof error === 'object' && error !== null
-                ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
-                : String(error),
+            text: typeof error === 'object' && error !== null ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2) : String(error),
             service: 'Stripe',
           },
         })

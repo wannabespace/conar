@@ -1,9 +1,5 @@
 import { db } from '@conar/db'
-import {
-  connections,
-  connectionsResources,
-  connectionsResourcesSelectSchema,
-} from '@conar/db/schema'
+import { connections, connectionsResources, connectionsResourcesSelectSchema } from '@conar/db/schema'
 import { type } from 'arktype'
 import { addSeconds } from 'date-fns'
 import { and, eq, getColumns, gte, inArray, notInArray, or } from 'drizzle-orm'
@@ -26,7 +22,7 @@ export const sync = orpc
     const { updatedItems, newItems, missingIds } = await syncDiff({
       input,
       queries: {
-        updated: items =>
+        updated: (items) =>
           db
             .select(getColumns(connectionsResources))
             .from(connectionsResources)
@@ -34,58 +30,41 @@ export const sync = orpc
             .where(
               and(
                 eq(connections.userId, context.user.id),
-                or(
-                  ...items.map(cr =>
-                    and(
-                      eq(connectionsResources.id, cr.id),
-                      gte(connectionsResources.updatedAt, addSeconds(cr.updatedAt, 1)),
-                    ),
-                  ),
-                ),
+                or(...items.map((cr) => and(eq(connectionsResources.id, cr.id), gte(connectionsResources.updatedAt, addSeconds(cr.updatedAt, 1))))),
               ),
             ),
-        new: excludeIds =>
+        new: (excludeIds) =>
           db
             .select(getColumns(connectionsResources))
             .from(connectionsResources)
             .innerJoin(connections, eq(connectionsResources.connectionId, connections.id))
-            .where(
-              and(
-                eq(connections.userId, context.user.id),
-                notInArray(connectionsResources.id, excludeIds),
-              ),
-            ),
-        existing: includeIds =>
+            .where(and(eq(connections.userId, context.user.id), notInArray(connectionsResources.id, excludeIds))),
+        existing: (includeIds) =>
           db
             .select({ id: connectionsResources.id })
             .from(connectionsResources)
             .innerJoin(connections, eq(connectionsResources.connectionId, connections.id))
-            .where(
-              and(
-                eq(connections.userId, context.user.id),
-                inArray(connectionsResources.id, includeIds),
-              ),
-            )
-            .then(r => r.map(i => i.id)),
+            .where(and(eq(connections.userId, context.user.id), inArray(connectionsResources.id, includeIds)))
+            .then((r) => r.map((i) => i.id)),
       },
     })
     const sync: typeof output.infer = []
 
-    updatedItems.forEach(item => {
+    updatedItems.forEach((item) => {
       sync.push({
         type: 'update',
         value: item,
       })
     })
 
-    newItems.forEach(item => {
+    newItems.forEach((item) => {
       sync.push({
         type: 'insert',
         value: item,
       })
     })
 
-    missingIds.forEach(item => {
+    missingIds.forEach((item) => {
       sync.push({
         type: 'delete',
         key: item,

@@ -29,11 +29,8 @@ export function findEnum({
   table: string
 }) {
   return (
-    enums.find(e => e.metadata?.table === table && e.metadata?.column === column.id) ??
-    enums.find(
-      e =>
-        (column.enumName && e.name === column.enumName) || (column.type && e.name === column.type),
-    )
+    enums.find((e) => e.metadata?.table === table && e.metadata?.column === column.id) ??
+    enums.find((e) => (column.enumName && e.name === column.enumName) || (column.type && e.name === column.type))
   )
 }
 
@@ -68,7 +65,7 @@ function parseClickhouseEnum(type: string): string[] {
   const pairs = match[1].split(clickhouseEnumValueRegex)
 
   return pairs
-    .map(pair => {
+    .map((pair) => {
       const valMatch = pair.match(clickhouseEnumValuePairRegex)
       return valMatch && valMatch[1] ? valMatch[1] : ''
     })
@@ -86,24 +83,18 @@ function parseMysqlEnumOrSet(typeString: string): string[] {
   // This splits on commas only outside of single quotes
   return valuesString.length === 0
     ? []
-    : valuesString
-        .split(/,(?=(?:[^']*'[^']*')*[^']*$)/)
-        .map(v => v.trim().replace(/^'/, '').replace(/'$/, '').replace(/''/g, "'"))
+    : valuesString.split(/,(?=(?:[^']*'[^']*')*[^']*$)/).map((v) => v.trim().replace(/^'/, '').replace(/'$/, '').replace(/''/g, "'"))
 }
 
 export const resourceEnumsQuery = createQuery({
   type: enumType.array(),
   query: {
-    postgres: async db => {
+    postgres: async (db) => {
       const query = await db
         .selectFrom('pg_type')
         .innerJoin('pg_enum', 'pg_type.oid', 'pg_enum.enumtypid')
         .innerJoin('pg_catalog.pg_namespace', 'pg_type.typnamespace', 'pg_catalog.pg_namespace.oid')
-        .select([
-          'pg_catalog.pg_namespace.nspname as schema',
-          'pg_type.typname as name',
-          'pg_enum.enumlabel as value',
-        ])
+        .select(['pg_catalog.pg_namespace.nspname as schema', 'pg_type.typname as name', 'pg_enum.enumlabel as value'])
         .where('pg_catalog.pg_namespace.nspname', 'not in', ['pg_catalog', 'information_schema'])
         .execute()
 
@@ -120,24 +111,13 @@ export const resourceEnumsQuery = createQuery({
 
       return [...grouped.values()]
     },
-    mysql: async db => {
+    mysql: async (db) => {
       const query = await db
         .selectFrom('information_schema.COLUMNS')
-        .select([
-          'TABLE_SCHEMA as schema',
-          'TABLE_NAME as table',
-          'COLUMN_TYPE as value',
-          'COLUMN_NAME as name',
-          'DATA_TYPE as data_type',
-        ])
+        .select(['TABLE_SCHEMA as schema', 'TABLE_NAME as table', 'COLUMN_TYPE as value', 'COLUMN_NAME as name', 'DATA_TYPE as data_type'])
         .where(({ or, and, eb }) =>
           and([
-            eb('TABLE_SCHEMA', 'not in', [
-              'mysql',
-              'information_schema',
-              'performance_schema',
-              'sys',
-            ]),
+            eb('TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys']),
             or([eb('DATA_TYPE', '=', 'enum'), eb('DATA_TYPE', '=', 'set')]),
           ]),
         )
@@ -145,7 +125,7 @@ export const resourceEnumsQuery = createQuery({
         .execute()
 
       return query.map(
-        row =>
+        (row) =>
           ({
             name: row.name,
             schema: row.schema,
@@ -158,16 +138,10 @@ export const resourceEnumsQuery = createQuery({
           }) satisfies typeof enumType.infer,
       )
     },
-    mssql: async db => {
+    mssql: async (db) => {
       const query = await db
         .selectFrom('information_schema.COLUMNS')
-        .select([
-          'TABLE_SCHEMA as schema',
-          'TABLE_NAME as table',
-          'DATA_TYPE as value',
-          'COLUMN_NAME as name',
-          'DATA_TYPE as data_type',
-        ])
+        .select(['TABLE_SCHEMA as schema', 'TABLE_NAME as table', 'DATA_TYPE as value', 'COLUMN_NAME as name', 'DATA_TYPE as data_type'])
         .where(({ or, and, eb }) =>
           and([
             eb('TABLE_SCHEMA', 'not in', ['INFORMATION_SCHEMA', 'information_schema', 'system']),
@@ -178,7 +152,7 @@ export const resourceEnumsQuery = createQuery({
         .execute()
 
       return query.map(
-        row =>
+        (row) =>
           ({
             name: row.name,
             schema: row.schema,
@@ -191,26 +165,16 @@ export const resourceEnumsQuery = createQuery({
           }) satisfies typeof enumType.infer,
       )
     },
-    clickhouse: async db => {
+    clickhouse: async (db) => {
       const query = await db
         .selectFrom('information_schema.columns')
-        .select([
-          'table_schema as schema',
-          'table_name as table',
-          'column_name as name',
-          'data_type as type',
-        ])
-        .where(({ and, eb }) =>
-          and([
-            eb('table_schema', 'not in', ['INFORMATION_SCHEMA', 'information_schema', 'system']),
-            eb('data_type', 'ilike', '%Enum%'),
-          ]),
-        )
+        .select(['table_schema as schema', 'table_name as table', 'column_name as name', 'data_type as type'])
+        .where(({ and, eb }) => and([eb('table_schema', 'not in', ['INFORMATION_SCHEMA', 'information_schema', 'system']), eb('data_type', 'ilike', '%Enum%')]))
         .execute()
 
       return query
         .map(
-          row =>
+          (row) =>
             ({
               name: row.name,
               schema: row.schema,
@@ -221,19 +185,14 @@ export const resourceEnumsQuery = createQuery({
               values: parseClickhouseEnum(row.type),
             }) satisfies typeof enumType.infer,
         )
-        .filter(res => res.values.length > 0)
+        .filter((res) => res.values.length > 0)
     },
   },
 })
 
-export function resourceEnumsQueryOptions({
-  connectionResource,
-}: {
-  connectionResource: ConnectionResource
-}) {
+export function resourceEnumsQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'enums'],
-    queryFn: async () =>
-      resourceEnumsQuery.run(await connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () => resourceEnumsQuery.run(await connectionResourceToQueryParams(connectionResource)),
   })
 }

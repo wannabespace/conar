@@ -6,14 +6,10 @@ export type { ResolvedTheme, Theme } from './theme-store'
 export function ThemeObserver() {
   return (
     <FunctionOnce param={THEME_STORAGE_KEY}>
-      {key => {
+      {(key) => {
         const theme: string | null = localStorage.getItem(key)
 
-        if (
-          theme === 'dark' ||
-          ((theme === null || theme === 'system') &&
-            window.matchMedia('(prefers-color-scheme: dark)').matches)
-        ) {
+        if (theme === 'dark' || ((theme === null || theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark')
         }
       }}

@@ -10,16 +10,12 @@ import { Route } from '../..'
 import { useRunnerContext } from './runner-context'
 import { RunnerEditorQueryZone } from './runner-editor-query-zone'
 
-export function useRunnerEditorQueryZones(
-  monacoRef: RefObject<editor.IStandaloneCodeEditor | null>,
-) {
+export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
 
-  const getQueriesEvent = useEffectEvent((lineNumber: number) =>
-    editorQueriesStore.get().find(query => query.startLineNumber === lineNumber),
-  )
+  const getQueriesEvent = useEffectEvent((lineNumber: number) => editorQueriesStore.get().find((query) => query.startLineNumber === lineNumber))
 
   const run = useRunnerContext(({ run }) => run)
   const runEvent = useEffectEvent(run)
@@ -94,8 +90,8 @@ export function useRunnerEditorQueryZones(
       const modelLineCount = model.getLineCount()
       const nextLines = editorQueriesStore
         .get()
-        .map(q => q.startLineNumber)
-        .filter(line => line <= modelLineCount)
+        .map((q) => q.startLineNumber)
+        .filter((line) => line <= modelLineCount)
       const nextSet = new Set(nextLines)
 
       let needsChange = zones.size !== nextSet.size
@@ -110,7 +106,7 @@ export function useRunnerEditorQueryZones(
 
       if (!needsChange) return
 
-      editor.changeViewZones(changeAccessor => {
+      editor.changeViewZones((changeAccessor) => {
         for (const [lineNumber, zone] of zones) {
           if (nextSet.has(lineNumber)) continue
 
@@ -165,7 +161,7 @@ export function useRunnerEditorQueryZones(
 
     return () => {
       unsubscribe()
-      editor.changeViewZones(changeAccessor => {
+      editor.changeViewZones((changeAccessor) => {
         for (const zone of zones.values()) {
           changeAccessor.removeZone(zone.zoneId)
           zone.domNode.remove()

@@ -18,11 +18,7 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
-import {
-  deleteRowsQuery,
-  resourceRowsQueryInfiniteOptions,
-  resourceTableTotalQueryOptions,
-} from '~/entities/connection/queries'
+import { deleteRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { queryClient } from '~/main'
 
@@ -34,18 +30,14 @@ export function HeaderActionsDelete({ table, schema }: { table: string; schema: 
   const { connectionResource } = useRouteContext()
   const [isOpened, setIsOpened] = useState(false)
   const store = useTablePageStore()
-  const selected = useSubscription(store, { selector: state => state.selected })
+  const selected = useSubscription(store, { selector: (state) => state.selected })
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
-      await deleteRowsQuery({ table, schema, primaryKeys: selected }).run(
-        await connectionResourceToQueryParams(connectionResource),
-      )
+      await deleteRowsQuery({ table, schema, primaryKeys: selected }).run(await connectionResourceToQueryParams(connectionResource))
     },
     onSuccess: () => {
-      toast.success(
-        `${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`,
-      )
+      toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)
       queryClient.invalidateQueries(
         resourceRowsQueryInfiniteOptions({
           connectionResource,
@@ -63,14 +55,14 @@ export function HeaderActionsDelete({ table, schema }: { table: string; schema: 
         }),
       )
       store.set(
-        state =>
+        (state) =>
           ({
             ...state,
             selected: [],
           }) satisfies typeof state,
       )
     },
-    onError: error => {
+    onError: (error) => {
       toast.error('Failed to delete rows', {
         description: error.message,
       })
@@ -87,16 +79,13 @@ export function HeaderActionsDelete({ table, schema }: { table: string; schema: 
               {selected.length === 1 ? '' : 's'} deletion
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the selected{' '}
-              {selected.length} {selected.length === 1 ? 'row' : 'rows'} from the database.
+              This action cannot be undone. This will permanently delete the selected {selected.length} {selected.length === 1 ? 'row' : 'rows'} from the
+              database.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-            <AlertDialogClose
-              render={<Button variant="destructive" />}
-              onClick={() => deleteRows()}
-            >
+            <AlertDialogClose render={<Button variant="destructive" />} onClick={() => deleteRows()}>
               <LoadingContent loading={isDeleting}>
                 Delete {selected.length} selected row
                 {selected.length === 1 ? '' : 's'}
@@ -107,22 +96,12 @@ export function HeaderActionsDelete({ table, schema }: { table: string; schema: 
       </AlertDialog>
       <AnimatePresence>
         {selected.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: 'auto' }}
-            exit={{ opacity: 0, width: 0 }}
-            transition={{ duration: 0.1 }}
-          >
+          <motion.div initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 'auto' }} exit={{ opacity: 0, width: 0 }} transition={{ duration: 0.1 }}>
             <Button variant="destructive" onClick={() => setIsOpened(true)}>
               <RiDeleteBin7Line />
               <span>
                 Delete (
-                <NumberFlow
-                  spinTiming={{ duration: 200 }}
-                  value={selected.length}
-                  className="tabular-nums"
-                />
-                )
+                <NumberFlow spinTiming={{ duration: 200 }} value={selected.length} className="tabular-nums" />)
               </span>
             </Button>
           </motion.div>

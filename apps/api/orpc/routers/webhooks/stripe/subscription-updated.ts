@@ -10,27 +10,16 @@ export async function subscriptionUpdated(event: Stripe.Event) {
 
   const subscription = event.data.object
 
-  const [existing] = await db
-    .select({ id: subscriptions.id })
-    .from(subscriptions)
-    .where(eq(subscriptions.stripeSubscriptionId, subscription.id))
-    .limit(1)
+  const [existing] = await db.select({ id: subscriptions.id }).from(subscriptions).where(eq(subscriptions.stripeSubscriptionId, subscription.id)).limit(1)
 
   if (!existing) {
     throw new Error(`Subscription ${subscription.id} not found in database`)
   }
 
-  const period =
-    subscription.items.data[0]?.price.id === env.STRIPE_ANNUAL_PRICE_ID ? 'yearly' : 'monthly'
-  const price = subscription.items.data[0]?.price.unit_amount
-    ? subscription.items.data[0].price.unit_amount / 100
-    : 0
-  const periodStart = subscription.items.data[0]?.current_period_start
-    ? new Date(subscription.items.data[0].current_period_start * 1000)
-    : null
-  const periodEnd = subscription.items.data[0]?.current_period_end
-    ? new Date(subscription.items.data[0].current_period_end * 1000)
-    : null
+  const period = subscription.items.data[0]?.price.id === env.STRIPE_ANNUAL_PRICE_ID ? 'yearly' : 'monthly'
+  const price = subscription.items.data[0]?.price.unit_amount ? subscription.items.data[0].price.unit_amount / 100 : 0
+  const periodStart = subscription.items.data[0]?.current_period_start ? new Date(subscription.items.data[0].current_period_start * 1000) : null
+  const periodEnd = subscription.items.data[0]?.current_period_end ? new Date(subscription.items.data[0].current_period_end * 1000) : null
 
   await db
     .update(subscriptions)

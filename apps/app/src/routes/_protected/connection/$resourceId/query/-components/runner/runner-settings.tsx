@@ -7,24 +7,11 @@ import type { ReactElement } from 'react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import {
-  getConnectionResourceStore,
-  setChatPosition,
-  toggleChat,
-  toggleResults,
-} from '~/entities/connection/store'
+import { getConnectionResourceStore, setChatPosition, toggleChat, toggleResults } from '~/entities/connection/store'
 
 import { Route } from '../..'
 
-function ToggleRow({
-  label,
-  checked,
-  onCheckedChange,
-}: {
-  label: string
-  checked: boolean
-  onCheckedChange: () => void
-}) {
+function ToggleRow({ label, checked, onCheckedChange }: { label: string; checked: boolean; onCheckedChange: () => void }) {
   return (
     <div className="flex items-center justify-between py-0.5">
       <Label htmlFor={label}>{label}</Label>
@@ -51,13 +38,13 @@ function PositionSelector<T extends string>({
         variant="outline"
         size="sm"
         value={[value]}
-        onValueChange={newValue => {
+        onValueChange={(newValue) => {
           if (newValue[0]) {
             onChange(newValue[0])
           }
         }}
       >
-        {options.map(option => (
+        {options.map((option) => (
           <ToggleGroupItem key={option.value} value={option.value} className="text-xs">
             {option.label}
           </ToggleGroupItem>
@@ -73,7 +60,7 @@ export function RunnerSettings({ children }: { children: ReactElement }) {
 
   const store = getConnectionResourceStore(resourceId)
   const { chatVisible, resultsVisible, chatPosition } = useSubscription(store, {
-    selector: s => pick(s.layout, ['chatVisible', 'resultsVisible', 'chatPosition']),
+    selector: (s) => pick(s.layout, ['chatVisible', 'resultsVisible', 'chatPosition']),
   })
 
   return (
@@ -81,16 +68,8 @@ export function RunnerSettings({ children }: { children: ReactElement }) {
       <PopoverTrigger render={children} />
       <PopoverContent align="start" className="w-64">
         <div className="space-y-1">
-          <ToggleRow
-            label="Chat Panel"
-            checked={chatVisible}
-            onCheckedChange={() => toggleChat(resourceId)}
-          />
-          <ToggleRow
-            label="Results Panel"
-            checked={resultsVisible}
-            onCheckedChange={() => toggleResults(resourceId)}
-          />
+          <ToggleRow label="Chat Panel" checked={chatVisible} onCheckedChange={() => toggleChat(resourceId)} />
+          <ToggleRow label="Results Panel" checked={resultsVisible} onCheckedChange={() => toggleResults(resourceId)} />
           <PositionSelector
             label="Chat Position"
             value={chatPosition}
@@ -98,7 +77,7 @@ export function RunnerSettings({ children }: { children: ReactElement }) {
               { value: 'left' as const, label: 'Left' },
               { value: 'right' as const, label: 'Right' },
             ]}
-            onChange={v => setChatPosition(resourceId, v)}
+            onChange={(v) => setChatPosition(resourceId, v)}
           />
         </div>
       </PopoverContent>

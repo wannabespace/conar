@@ -23,7 +23,7 @@ const gradientLayers = generateGradientLayers()
 export function BlurGradient({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div className={cn('pointer-events-none overflow-hidden', className)} {...props}>
-      {gradientLayers.map(style => (
+      {gradientLayers.map((style) => (
         <div key={style.zIndex} style={style} className="absolute inset-0" />
       ))}
     </div>

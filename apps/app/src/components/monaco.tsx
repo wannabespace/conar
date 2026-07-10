@@ -17,7 +17,7 @@ monaco.editor.defineTheme('sql-dark', vsPlusTheme.darkThemeData)
 monaco.editor.defineTheme('sql-light', vsPlusTheme.lightThemeData)
 
 resolvedThemeComputed.subscribe(
-  resolvedTheme => {
+  (resolvedTheme) => {
     monaco.editor.setTheme(resolvedTheme === 'dark' ? 'sql-dark' : 'sql-light')
   },
   { immediate: true },
@@ -177,10 +177,7 @@ export function MonacoDiff({
   useEffect(() => {
     if (!elementRef.current) return
 
-    diffEditorInstanceRef.current = monaco.editor.createDiffEditor(
-      elementRef.current,
-      getOptionsEvent(),
-    )
+    diffEditorInstanceRef.current = monaco.editor.createDiffEditor(elementRef.current, getOptionsEvent())
 
     const { originalValue, modifiedValue } = getValuesEvent()
     diffEditorInstanceRef.current.setModel({

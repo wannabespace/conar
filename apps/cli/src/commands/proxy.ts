@@ -30,11 +30,8 @@ export const proxyCommand = command({
     let resources: Resource[] = []
 
     async function fetchConnections() {
-      const prevIds = new Set(connections.map(c => c.id))
-      const [fetchedConnections, fetchedResources] = await Promise.all([
-        apiOrpc.connections.list(),
-        apiOrpc.connectionsResources.list(),
-      ])
+      const prevIds = new Set(connections.map((c) => c.id))
+      const [fetchedConnections, fetchedResources] = await Promise.all([apiOrpc.connections.list(), apiOrpc.connectionsResources.list()])
       connections = fetchedConnections
       resources = fetchedResources
       for (const conn of connections) {
@@ -49,24 +46,20 @@ export const proxyCommand = command({
       return connections.length
     }
 
-    function resolveConnectionString(input: {
-      connectionString?: string
-      resourceId?: string
-      connectionId?: string
-    }): string {
+    function resolveConnectionString(input: { connectionString?: string; resourceId?: string; connectionId?: string }): string {
       if (input.connectionString) {
         return input.connectionString
       }
 
       if (input.resourceId) {
-        const resource = resources.find(r => r.id === input.resourceId)
+        const resource = resources.find((r) => r.id === input.resourceId)
         if (!resource) {
           throw new ORPCError('NOT_FOUND', {
             message: `Resource "${input.resourceId}" not found in local cache. Try restarting \`conar proxy\`.`,
           })
         }
 
-        const conn = connections.find(c => c.id === resource.connectionId)
+        const conn = connections.find((c) => c.id === resource.connectionId)
         if (!conn) {
           throw new ORPCError('NOT_FOUND', {
             message: `Connection for resource "${input.resourceId}" not found in local cache.`,
@@ -79,7 +72,7 @@ export const proxyCommand = command({
       }
 
       if (input.connectionId) {
-        const conn = connections.find(c => c.id === input.connectionId)
+        const conn = connections.find((c) => c.id === input.connectionId)
         if (!conn) {
           throw new ORPCError('NOT_FOUND', {
             message: `Connection "${input.connectionId}" not found in local cache. Try restarting \`conar proxy\`.`,
@@ -121,7 +114,7 @@ export const proxyCommand = command({
       }),
     )
 
-    const router = createQueryRouter(authed, input => resolveConnectionString(input))
+    const router = createQueryRouter(authed, (input) => resolveConnectionString(input))
 
     consola.start('Fetching connections...')
     const count = await fetchConnections()
@@ -131,15 +124,13 @@ export const proxyCommand = command({
       try {
         await fetchConnections()
       } catch (error) {
-        consola.warn(
-          `Failed to refresh connections: ${error instanceof Error ? error.message : String(error)}`,
-        )
+        consola.warn(`Failed to refresh connections: ${error instanceof Error ? error.message : String(error)}`)
       }
     }, REFRESH_INTERVAL_MS)
 
     const handler = new RPCHandler(router, {
       interceptors: [
-        async options => {
+        async (options) => {
           try {
             return await options.next()
           } catch (error) {
@@ -153,11 +144,7 @@ export const proxyCommand = command({
             if (error instanceof ORPCError) {
               if (error.cause instanceof ValidationError) {
                 const message = error.cause.issues
-                  .map(issue =>
-                    issue.path
-                      ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
-                      : issue.message,
-                  )
+                  .map((issue) => (issue.path ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}` : issue.message))
                   .join(', ')
 
                 throw new ORPCError('BAD_REQUEST', { message })
@@ -181,15 +168,12 @@ export const proxyCommand = command({
         cors({
           origin(origin) {
             const allowedOrigins = [import.meta.env.MAIN_URL]
-            return origin.endsWith(`.${new URL(import.meta.env.MAIN_URL).host}`) ||
-              allowedOrigins.includes(origin)
-              ? origin
-              : null
+            return origin.endsWith(`.${new URL(import.meta.env.MAIN_URL).host}`) || allowedOrigins.includes(origin) ? origin : null
           },
           credentials: true,
         }),
       )
-      .get('/health', c =>
+      .get('/health', (c) =>
         c.json({
           ok: true,
           version: import.meta.env.VERSION,

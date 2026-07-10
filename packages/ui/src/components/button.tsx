@@ -11,21 +11,13 @@ export interface ButtonProps extends useRender.ComponentProps<'button'> {
   size?: VariantProps<typeof buttonVariants>['size']
 }
 
-export function Button({
-  className,
-  variant,
-  size,
-  render,
-  ...props
-}: ButtonProps): React.ReactElement {
-  const typeValue: React.ButtonHTMLAttributes<HTMLButtonElement>['type'] = render
-    ? undefined
-    : 'button'
+export function Button({ className, variant, size, render, ...props }: ButtonProps): React.ReactElement {
+  const typeValue: React.ButtonHTMLAttributes<HTMLButtonElement>['type'] = render ? undefined : 'button'
 
   const defaultProps = {
-    className: cn(buttonVariants({ className, size, variant })),
+    'className': cn(buttonVariants({ className, size, variant })),
     'data-slot': 'button',
-    type: typeValue,
+    'type': typeValue,
   }
 
   return useRender({

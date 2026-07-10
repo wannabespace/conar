@@ -25,11 +25,11 @@ import { useTablePageStore } from '../../store'
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export function HeaderSearch({ table, schema }: { table: string; schema: string }) {
-  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
+  const isOnline = useSubscription(appStore, { selector: (state) => state.isOnline })
   const { connectionResource } = useRouteContext()
   const inputRef = useRef<HTMLInputElement>(null)
   const store = useTablePageStore()
-  const prompt = useSubscription(store, { selector: state => state.prompt })
+  const prompt = useSubscription(store, { selector: (state) => state.prompt })
   const [freeAiUsage, setFreeAiUsage] = useState<{
     remaining: number
     max: number
@@ -37,34 +37,31 @@ export function HeaderSearch({ table, schema }: { table: string; schema: string 
   } | null>(null)
   const { mutate: generateFilter, isPending } = useMutation(
     orpc.ai.filters.mutationOptions({
-      onSuccess: data => {
+      onSuccess: (data) => {
         const hasOrderBy = Object.keys(data.orderBy).length > 0
         store.set(
-          state =>
+          (state) =>
             ({
               ...state,
               orderBy: data.orderBy,
               filters: data.filters
                 .map(
-                  filter =>
+                  (filter) =>
                     ({
                       column: filter.column,
-                      ref: SQL_FILTERS_LIST.find(f => f.operator === filter.operator),
+                      ref: SQL_FILTERS_LIST.find((f) => f.operator === filter.operator),
                       values: filter.values,
                     }) satisfies Omit<ActiveFilter, 'ref'> & { ref?: ActiveFilter['ref'] },
                 )
                 // For future updates if we'll have new filters
-                .filter(f => !!f.ref) as ActiveFilter[],
+                .filter((f) => !!f.ref) as ActiveFilter[],
             }) satisfies typeof state,
         )
 
         if (data.filters.length === 0 && !hasOrderBy) {
-          toast.info(
-            'No filters or ordering were generated, please try again with a different prompt',
-            {
-              id: 'no-filters-or-ordering',
-            },
-          )
+          toast.info('No filters or ordering were generated, please try again with a different prompt', {
+            id: 'no-filters-or-ordering',
+          })
         }
 
         setFreeAiUsage(data.freeAiUsage || null)
@@ -73,7 +70,7 @@ export function HeaderSearch({ table, schema }: { table: string; schema: string 
           inputRef.current?.focus()
         }, 100)
       },
-      onError: error => {
+      onError: (error) => {
         if (isDefinedError(error)) {
           setFreeAiUsage(error.data)
         }
@@ -87,7 +84,7 @@ export function HeaderSearch({ table, schema }: { table: string; schema: string 
     Table name: ${table}
     Schema name: ${schema}
     Columns: ${JSON.stringify(
-      columns?.map(col => ({
+      columns?.map((col) => ({
         id: col.id,
         type: col.type,
         default: col.defaultValue,
@@ -106,7 +103,7 @@ export function HeaderSearch({ table, schema }: { table: string; schema: string 
   return (
     <form
       className="relative w-full max-w-full"
-      onSubmit={e => {
+      onSubmit={(e) => {
         e.preventDefault()
         if (prompt.trim() === '') {
           toast.info('Please enter a prompt to generate filters', {
@@ -121,20 +118,13 @@ export function HeaderSearch({ table, schema }: { table: string; schema: string 
       <InputGroup>
         <InputGroupInput
           ref={inputRef}
-          placeholder={
-            isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'
-          }
+          placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
           disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
           value={prompt}
-          onChange={e =>
-            store.set(state => ({ ...state, prompt: e.target.value }) satisfies typeof state)
-          }
+          onChange={(e) => store.set((state) => ({ ...state, prompt: e.target.value }) satisfies typeof state)}
         />
         <InputGroupAddon>
-          <LoadingContent
-            className="pointer-events-none size-4 text-muted-foreground"
-            loading={isPending}
-          >
+          <LoadingContent className="pointer-events-none size-4 text-muted-foreground" loading={isPending}>
             <RiBardLine />
           </LoadingContent>
         </InputGroupAddon>
@@ -148,13 +138,11 @@ export function HeaderSearch({ table, schema }: { table: string; schema: string 
                   tabIndex={0}
                   aria-label={`You have ${freeAiUsage.remaining} out of ${freeAiUsage.max} free AI filter uses left this month.`}
                 >
-                  <NumberFlow value={freeAiUsage.remaining} className="tabular-nums" />/
-                  {freeAiUsage.max}
+                  <NumberFlow value={freeAiUsage.remaining} className="tabular-nums" />/{freeAiUsage.max}
                 </div>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                You have {freeAiUsage.remaining}/{freeAiUsage.max} free AI filter uses left this
-                month. Reset at {format(freeAiUsage.resetAt, 'MMM d, yyyy')}.
+                You have {freeAiUsage.remaining}/{freeAiUsage.max} free AI filter uses left this month. Reset at {format(freeAiUsage.resetAt, 'MMM d, yyyy')}.
               </TooltipContent>
             </Tooltip>
           )}

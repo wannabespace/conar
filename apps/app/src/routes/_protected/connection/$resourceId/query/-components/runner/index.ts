@@ -19,10 +19,7 @@ function transformResult({
 }: {
   rows: unknown[]
   duration: number
-} & Pick<
-  (typeof connectionResourceType.infer)['queriesToRun'][number],
-  'query' | 'startLineNumber' | 'endLineNumber'
->) {
+} & Pick<(typeof connectionResourceType.infer)['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
   return {
     data: rows as Record<string, unknown>[],
     error: null,
@@ -42,10 +39,7 @@ function transformError({
 }: {
   error: unknown
   duration: number
-} & Pick<
-  (typeof connectionResourceType.infer)['queriesToRun'][number],
-  'query' | 'startLineNumber' | 'endLineNumber'
->) {
+} & Pick<(typeof connectionResourceType.infer)['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
   return {
     data: null,
     error: error instanceof Error ? error.message : String(error),
@@ -93,31 +87,17 @@ export function runnerQueryOptions(connectionResource: ConnectionResource) {
         }
       }
 
-      const queriesWithDangerousSqlKeywords = queries.filter(({ query }) =>
-        hasDangerousSqlKeywords(query),
-      )
+      const queriesWithDangerousSqlKeywords = queries.filter(({ query }) => hasDangerousSqlKeywords(query))
 
       if (queriesWithDangerousSqlKeywords.length > 0) {
         const errors = results.filter(({ error }) => error !== null)
 
         if (errors.length === 0) {
-          toast.success(
-            queriesWithDangerousSqlKeywords.length > 1
-              ? 'All queries executed successfully!'
-              : 'Query executed successfully!',
-          )
+          toast.success(queriesWithDangerousSqlKeywords.length > 1 ? 'All queries executed successfully!' : 'Query executed successfully!')
         } else if (errors.length !== results.length) {
-          toast.warning(
-            queriesWithDangerousSqlKeywords.length > 1
-              ? 'Some queries failed to execute!'
-              : 'Query failed to execute!',
-          )
+          toast.warning(queriesWithDangerousSqlKeywords.length > 1 ? 'Some queries failed to execute!' : 'Query failed to execute!')
         } else {
-          toast.error(
-            queriesWithDangerousSqlKeywords.length > 1
-              ? 'All queries failed to execute!'
-              : 'Query failed to execute!',
-          )
+          toast.error(queriesWithDangerousSqlKeywords.length > 1 ? 'All queries failed to execute!' : 'Query failed to execute!')
         }
       }
 

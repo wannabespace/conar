@@ -1,19 +1,9 @@
 import { ConnectionType } from '@conar/shared/enums/connection-type'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@conar/ui/components/accordion'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
 import { Button } from '@conar/ui/components/button'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { Indicator } from '@conar/ui/components/custom/indicator'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@conar/ui/components/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { SeparatorMotion } from '@conar/ui/components/separator.motion'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
@@ -42,12 +32,7 @@ import { useSubscription } from 'seitu/react'
 import { SidebarLink } from '~/components/sidebar-link'
 import type { tablesAndSchemasType } from '~/entities/connection/queries'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
-import {
-  addTab,
-  cleanupPinnedTables,
-  getConnectionResourceStore,
-  togglePinTable,
-} from '~/entities/connection/store'
+import { addTab, cleanupPinnedTables, getConnectionResourceStore, togglePinTable } from '~/entities/connection/store'
 
 import { tablePageStore } from '../store'
 import { DropTableDialog } from './drop-table-dialog'
@@ -71,7 +56,7 @@ const skeletonWidths = Array.from({ length: 10 }).map(() => `${Math.random() * 4
 function Skeleton() {
   return (
     <div className="w-full space-y-3">
-      {skeletonWidths.map(width => (
+      {skeletonWidths.map((width) => (
         <div key={width} className="flex h-5 items-center gap-2 px-2">
           <div className="h-full w-5 shrink-0 animate-pulse rounded-md bg-muted" />
           <div className="h-full animate-pulse rounded-md bg-muted" style={{ width }} />
@@ -82,14 +67,14 @@ function Skeleton() {
 }
 
 const tableTypeIcon: Record<(typeof tablesAndSchemasType.infer)['type'], RemixiconComponentType> = {
-  table: RiTableLine,
-  view: RiEyeLine,
+  'table': RiTableLine,
+  'view': RiEyeLine,
   'materialized view': RiEyeFill,
 }
 
 const tableTypeLabel: Record<(typeof tablesAndSchemasType.infer)['type'], string> = {
-  table: 'Table',
-  view: 'View',
+  'table': 'Table',
+  'view': 'View',
   'materialized view': 'Materialized View',
 }
 
@@ -114,7 +99,7 @@ function TableItem({
   const Icon = tableTypeIcon[type]
   const isReadOnly = type !== 'table'
   const store = tablePageStore({ id: connectionResource.id, schema, table })
-  const hasDrafts = useSubscription(store, { selector: state => state.drafts.length > 0 })
+  const hasDrafts = useSubscription(store, { selector: (state) => state.drafts.length > 0 })
 
   return (
     <SidebarLink
@@ -130,12 +115,7 @@ function TableItem({
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="relative shrink-0">
-                <Icon
-                  className={cn(
-                    'size-4 text-muted-foreground opacity-50',
-                    isActive && 'text-primary opacity-100',
-                  )}
-                />
+                <Icon className={cn('size-4 text-muted-foreground opacity-50', isActive && 'text-primary opacity-100')} />
                 {hasDrafts && <Indicator />}
               </span>
             </TooltipTrigger>
@@ -150,25 +130,18 @@ function TableItem({
           <Button
             variant="ghost"
             size="icon-xs"
-            className={cn(
-              `-mr-1 ml-auto opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100`,
-              isActive && 'hover:bg-primary/10',
-            )}
-            onClick={e => {
+            className={cn(`-mr-1 ml-auto opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100`, isActive && 'hover:bg-primary/10')}
+            onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
               togglePinTable(connectionResource.id, schema, table)
             }}
           >
-            {pinned ? (
-              <RiPushpinFill className="size-3 text-primary" />
-            ) : (
-              <RiPushpinLine className="size-3" />
-            )}
+            {pinned ? <RiPushpinFill className="size-3 text-primary" /> : <RiPushpinLine className="size-3" />}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger
-              onClick={e => {
+              onClick={(e) => {
                 e.stopPropagation()
                 e.preventDefault()
               }}
@@ -176,10 +149,7 @@ function TableItem({
                 <Button
                   variant="ghost"
                   size="icon-xs"
-                  className={cn(
-                    `opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100`,
-                    isActive && 'hover:bg-primary/10',
-                  )}
+                  className={cn(`opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100`, isActive && 'hover:bg-primary/10')}
                 />
               }
             >
@@ -187,7 +157,7 @@ function TableItem({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-48">
               <DropdownMenuItem
-                onClick={e => {
+                onClick={(e) => {
                   e.stopPropagation()
                   copyToClipboard(table, 'Table name copied')
                 }}
@@ -197,7 +167,7 @@ function TableItem({
               </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={isReadOnly}
-                onClick={e => {
+                onClick={(e) => {
                   e.stopPropagation()
                   onRename()
                 }}
@@ -208,7 +178,7 @@ function TableItem({
               <DropdownMenuItem
                 disabled={isReadOnly}
                 variant="destructive"
-                onClick={e => {
+                onClick={(e) => {
                   e.stopPropagation()
                   onDrop()
                 }}
@@ -227,16 +197,13 @@ function TableItem({
 export function TablesTree({ className, search }: { className?: string; search?: string }) {
   const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data: tablesAndSchemas, isPending } = useQuery(
-    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
-  )
+  const showSystem = useSubscription(store, { selector: (state) => state.showSystem })
+  const { data: tablesAndSchemas, isPending } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))
   const { schema: schemaParam } = useSearch({ from: '/_protected/connection/$resourceId/table/' })
   const tablesTreeOpenedSchemas = useSubscription(store, {
-    selector: state =>
-      state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'],
+    selector: (state) => state.tablesTreeOpenedSchemas ?? [tablesAndSchemas?.schemas[0]?.name ?? 'public'],
   })
-  const pinnedTables = useSubscription(store, { selector: state => state.pinnedTables })
+  const pinnedTables = useSubscription(store, { selector: (state) => state.pinnedTables })
   const dropTableDialogRef = useRef<ComponentRef<typeof DropTableDialog>>(null)
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
 
@@ -245,9 +212,7 @@ export function TablesTree({ className, search }: { className?: string; search?:
 
     cleanupPinnedTables(
       connectionResource.id,
-      tablesAndSchemas.schemas.flatMap(schema =>
-        schema.tables.map(table => ({ schema: schema.name, table: table.name })),
-      ),
+      tablesAndSchemas.schemas.flatMap((schema) => schema.tables.map((table) => ({ schema: schema.name, table: table.name }))),
     )
   }, [connectionResource, tablesAndSchemas])
 
@@ -255,21 +220,21 @@ export function TablesTree({ className, search }: { className?: string; search?:
     if (!tablesAndSchemas) return []
 
     const schemas = tablesAndSchemas.schemas
-      .map(schema => ({
+      .map((schema) => ({
         ...schema,
         tables: schema.tables
-          .filter(table => !search || table.name.toLowerCase().includes(search.toLowerCase()))
+          .filter((table) => !search || table.name.toLowerCase().includes(search.toLowerCase()))
           .toSorted((a, b) => a.name.localeCompare(b.name)),
       }))
-      .filter(schema => schema.tables.length)
+      .filter((schema) => schema.tables.length)
 
-    const pinnedSet = new Set(pinnedTables.map(t => `${t.schema}:${t.table}`))
+    const pinnedSet = new Set(pinnedTables.map((t) => `${t.schema}:${t.table}`))
 
-    return schemas.map(schema => {
+    return schemas.map((schema) => {
       const pinned: (typeof schemas)[number]['tables'] = []
       const unpinned: (typeof schemas)[number]['tables'] = []
 
-      schema.tables.forEach(table => {
+      schema.tables.forEach((table) => {
         const isPinned = pinnedSet.has(`${schema.name}:${table.name}`)
         if (isPinned) {
           pinned.push(table)
@@ -286,7 +251,7 @@ export function TablesTree({ className, search }: { className?: string; search?:
   }, [search, tablesAndSchemas, pinnedTables])
 
   const searchAccordionValue = useMemo(
-    () => (search ? filteredTablesAndSchemas.map(schema => schema.name) : tablesTreeOpenedSchemas),
+    () => (search ? filteredTablesAndSchemas.map((schema) => schema.name) : tablesTreeOpenedSchemas),
     [search, filteredTablesAndSchemas, tablesTreeOpenedSchemas],
   )
 
@@ -296,10 +261,10 @@ export function TablesTree({ className, search }: { className?: string; search?:
       <RenameTableDialog ref={renameTableDialogRef} />
       <Accordion
         value={searchAccordionValue}
-        onValueChange={v => {
+        onValueChange={(v) => {
           if (!search) {
             store.set(
-              state =>
+              (state) =>
                 ({
                   ...state,
                   tablesTreeOpenedSchemas: v,
@@ -316,15 +281,13 @@ export function TablesTree({ className, search }: { className?: string; search?:
             <Skeleton />
           </div>
         ) : filteredTablesAndSchemas.length === 0 ? (
-          <div
-            className={`flex h-full flex-1 flex-col items-center justify-center py-8 text-center`}
-          >
+          <div className={`flex h-full flex-1 flex-col items-center justify-center py-8 text-center`}>
             <RiTableLine className="mb-2 size-10 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">No tables found</p>
           </div>
         ) : (
           <AnimatePresence>
-            {filteredTablesAndSchemas.map(schema => (
+            {filteredTablesAndSchemas.map((schema) => (
               <motion.div
                 key={schema.name}
                 initial={search ? { opacity: 0, height: 0 } : false}
@@ -334,17 +297,12 @@ export function TablesTree({ className, search }: { className?: string; search?:
               >
                 <AccordionItem value={schema.name} className="border-b-0">
                   {connection.type !== ConnectionType.ClickHouse && (
-                    <AccordionTrigger
-                      className={`mb-1 cursor-pointer truncate px-2 py-1.5 hover:bg-accent/50 hover:no-underline`}
-                    >
+                    <AccordionTrigger className={`mb-1 cursor-pointer truncate px-2 py-1.5 hover:bg-accent/50 hover:no-underline`}>
                       <span className="flex items-center gap-2">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <RiStackLine
-                              className={cn(
-                                `size-4 shrink-0 text-muted-foreground opacity-50`,
-                                schemaParam === schema.name && `text-primary opacity-100`,
-                              )}
+                              className={cn(`size-4 shrink-0 text-muted-foreground opacity-50`, schemaParam === schema.name && `text-primary opacity-100`)}
                             />
                           </TooltipTrigger>
                           <TooltipContent side="left">Schema</TooltipContent>
@@ -355,7 +313,7 @@ export function TablesTree({ className, search }: { className?: string; search?:
                   )}
                   <AccordionContent className="pb-0">
                     <AnimatePresence mode="popLayout">
-                      {schema.pinnedTables.map(table => (
+                      {schema.pinnedTables.map((table) => (
                         <motion.div
                           key={`${schema.name}:${table.name}`}
                           layout
@@ -371,9 +329,7 @@ export function TablesTree({ className, search }: { className?: string; search?:
                             type={table.type}
                             pinned
                             search={search}
-                            onRename={() =>
-                              renameTableDialogRef.current?.rename(schema.name, table.name)
-                            }
+                            onRename={() => renameTableDialogRef.current?.rename(schema.name, table.name)}
                             onDrop={() => dropTableDialogRef.current?.drop(schema.name, table.name)}
                           />
                         </motion.div>
@@ -389,7 +345,7 @@ export function TablesTree({ className, search }: { className?: string; search?:
                           transition={treeTransition}
                         />
                       )}
-                      {schema.unpinnedTables.map(table => (
+                      {schema.unpinnedTables.map((table) => (
                         <motion.div
                           key={`${schema.name}:${table.name}`}
                           layout
@@ -404,9 +360,7 @@ export function TablesTree({ className, search }: { className?: string; search?:
                             table={table.name}
                             type={table.type}
                             search={search}
-                            onRename={() =>
-                              renameTableDialogRef.current?.rename(schema.name, table.name)
-                            }
+                            onRename={() => renameTableDialogRef.current?.rename(schema.name, table.name)}
                             onDrop={() => dropTableDialogRef.current?.drop(schema.name, table.name)}
                           />
                         </motion.div>

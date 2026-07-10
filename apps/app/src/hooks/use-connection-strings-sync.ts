@@ -14,7 +14,7 @@ export function useConnectionStringsSync() {
     const { connectionsCollection, connectionStringsCollection } = collections
 
     const effect = createEffect<Connection>({
-      query: q => q.from({ connections: connectionsCollection }),
+      query: (q) => q.from({ connections: connectionsCollection }),
       skipInitial: false,
       onEnter: async ({ value }) => {
         if (abortController.signal.aborted) return
@@ -33,7 +33,7 @@ export function useConnectionStringsSync() {
           if (abortController.signal.aborted) return
 
           if (connectionStringsCollection.has(value.id)) {
-            connectionStringsCollection.update(value.id, draft => {
+            connectionStringsCollection.update(value.id, (draft) => {
               Object.assign(draft, record)
             })
           } else {

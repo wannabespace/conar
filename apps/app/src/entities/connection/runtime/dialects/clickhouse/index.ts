@@ -27,15 +27,7 @@ function prepareQuery(compiledQuery: CompiledQuery) {
     }
 
     if (Array.isArray(param)) {
-      return `[${param
-        .map(v =>
-          v === null || v === undefined
-            ? 'NULL'
-            : typeof v === 'number'
-              ? `${v}`
-              : `'${escapeSqlString(String(v))}'`,
-        )
-        .join(', ')}]`
+      return `[${param.map((v) => (v === null || v === undefined ? 'NULL' : typeof v === 'number' ? `${v}` : `'${escapeSqlString(String(v))}'`)).join(', ')}]`
     }
 
     if (typeof param === 'number') {
@@ -77,7 +69,7 @@ export function clickhouseDialect(options: DialectOptions) {
       createKyselyDriver({
         provider: createDialectProvider(ConnectionType.ClickHouse, options),
         logger: options.log,
-        transformQuery: compiledQuery => ({ query: prepareQuery(compiledQuery), values: [] }),
+        transformQuery: (compiledQuery) => ({ query: prepareQuery(compiledQuery), values: [] }),
       }),
     createQueryCompiler: () => new MysqlQueryCompiler(),
     createIntrospector: () => {

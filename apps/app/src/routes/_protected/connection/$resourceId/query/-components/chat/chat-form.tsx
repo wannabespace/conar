@@ -5,13 +5,7 @@ import { ContentSwitch } from '@conar/ui/components/custom/content-switch'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Spinner } from '@conar/ui/components/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import {
-  RiAttachment2,
-  RiCheckLine,
-  RiCornerDownLeftLine,
-  RiMagicLine,
-  RiStopCircleLine,
-} from '@remixicon/react'
+import { RiAttachment2, RiCheckLine, RiCornerDownLeftLine, RiMagicLine, RiStopCircleLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useLocation, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
@@ -40,7 +34,7 @@ function Images({ connectionResource }: { connectionResource: ConnectionResource
     return null
   }
 
-  const images = files.map(file => ({
+  const images = files.map((file) => ({
     name: file.name,
     url: URL.createObjectURL(file),
   }))
@@ -48,15 +42,15 @@ function Images({ connectionResource }: { connectionResource: ConnectionResource
   return (
     <ChatImages
       images={images}
-      onRemove={index => {
-        store.set(state => state.filter((_, i) => i !== index))
+      onRemove={(index) => {
+        store.set((state) => state.filter((_, i) => i !== index))
       }}
     />
   )
 }
 
 export function ChatForm() {
-  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
+  const isOnline = useSubscription(appStore, { selector: (state) => state.isOnline })
   const { chat } = Route.useLoaderData()
   const { error } = Route.useSearch()
   const router = useRouter()
@@ -117,7 +111,7 @@ export function ChatForm() {
             type: 'text',
             text: cachedValue,
           },
-          ...filesBase64.map(base64 => ({
+          ...filesBase64.map((base64) => ({
             type: 'file' as const,
             url: base64,
             mediaType: 'image/png',
@@ -128,10 +122,7 @@ export function ChatForm() {
       inputValue.set(cachedValue)
       filesStore.set(cachedFiles)
       toast.error('Failed to send message', {
-        description:
-          error instanceof Error
-            ? error.message
-            : 'An unexpected error occurred. Please try again.',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.',
       })
     }
   }
@@ -153,7 +144,7 @@ export function ChatForm() {
 
   const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation(
     orpc.ai.enhancePrompt.mutationOptions({
-      onSuccess: data => {
+      onSuccess: (data) => {
         if (input.length < 10) {
           return
         }
@@ -183,14 +174,10 @@ export function ChatForm() {
   return (
     <div className="flex flex-col gap-1">
       <Images connectionResource={connectionResource} />
-      <div
-        className={`relative flex flex-col gap-2 overflow-hidden rounded-md border dark:bg-input/30`}
-      >
+      <div className={`relative flex flex-col gap-2 overflow-hidden rounded-md border dark:bg-input/30`}>
         {!subscription && (
           <div className="z-10 flex items-center gap-2 border-b px-3 py-1.5 text-xs">
-            <span className="flex-1 text-muted-foreground">
-              Upgrade to Pro to generate SQL queries with AI.
-            </span>
+            <span className="flex-1 text-muted-foreground">Upgrade to Pro to generate SQL queries with AI.</span>
             <Button variant="outline" size="xs" onClick={() => setIsSubscriptionDialogOpen(true)}>
               Upgrade
             </Button>
@@ -200,29 +187,20 @@ export function ChatForm() {
           ref={ref}
           data-mask
           value={input}
-          setValue={value => {
+          setValue={(value) => {
             inputValue.set(value)
           }}
-          placeholder={
-            isOnline
-              ? 'Generate SQL queries using natural language'
-              : 'Check your internet connection to generate SQL queries'
-          }
+          placeholder={isOnline ? 'Generate SQL queries using natural language' : 'Check your internet connection to generate SQL queries'}
           className={`max-h-62.5 min-h-12.5 overflow-y-auto p-2 text-sm outline-none`}
           disabled={!subscription || !isOnline}
           onEnter={handleSend}
-          onImageAdd={file => {
+          onImageAdd={(file) => {
             filesStore.set([...files, file])
           }}
         />
         <div className={`pointer-events-none flex items-end justify-between px-2 pb-2`}>
           <div className="pointer-events-auto">
-            <Button
-              type="button"
-              size="icon-xs"
-              variant="outline"
-              render={<label htmlFor="chat-file-upload" aria-label="Attach files" />}
-            >
+            <Button type="button" size="icon-xs" variant="outline" render={<label htmlFor="chat-file-upload" aria-label="Attach files" />}>
               <RiAttachment2 className="size-3" />
               <input
                 id="chat-file-upload"
@@ -243,12 +221,7 @@ export function ChatForm() {
                   size="icon-xs"
                   variant="outline"
                   className={input.length < 10 ? 'cursor-default opacity-50' : ''}
-                  disabled={
-                    status === 'submitted' ||
-                    status === 'streaming' ||
-                    isEnhancingPrompt ||
-                    !subscription
-                  }
+                  disabled={status === 'submitted' || status === 'streaming' || isEnhancingPrompt || !subscription}
                   onClick={() =>
                     enhancePrompt({
                       prompt: input,
@@ -256,22 +229,14 @@ export function ChatForm() {
                     })
                   }
                 >
-                  <LoadingContent
-                    loading={isEnhancingPrompt}
-                    spinner={<Spinner className="size-3" />}
-                  >
-                    <ContentSwitch
-                      active={isEnhancingPrompt}
-                      activeContent={<RiCheckLine className="size-3 text-success" />}
-                    >
+                  <LoadingContent loading={isEnhancingPrompt} spinner={<Spinner className="size-3" />}>
+                    <ContentSwitch active={isEnhancingPrompt} activeContent={<RiCheckLine className="size-3 text-success" />}>
                       <RiMagicLine className="size-3" />
                     </ContentSwitch>
                   </LoadingContent>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="top">
-                {input.length < 10 ? 'Prompt is too short to enhance' : 'Enhance prompt'}
-              </TooltipContent>
+              <TooltipContent side="top">{input.length < 10 ? 'Prompt is too short to enhance' : 'Enhance prompt'}</TooltipContent>
             </Tooltip>
             {status === 'streaming' || status === 'submitted' ? (
               <Button size="xs" variant="outline" onClick={stop}>

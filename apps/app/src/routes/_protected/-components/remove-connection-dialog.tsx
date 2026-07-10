@@ -44,7 +44,7 @@ export function RemoveConnectionDialog({ ref }: RemoveConnectionDialogProps) {
     e.preventDefault()
 
     const { connectionsCollection, connectionsResourcesCollection } = collections
-    const allConnectionsResources = await queryOnce(q =>
+    const allConnectionsResources = await queryOnce((q) =>
       q
         .from({ connectionsResources: connectionsResourcesCollection })
         .select(({ connectionsResources }) => ({
@@ -54,16 +54,14 @@ export function RemoveConnectionDialog({ ref }: RemoveConnectionDialogProps) {
     )
     const resourcesIds = allConnectionsResources.map(({ id }) => id)
 
-    lastOpenedResourcesStorageValue.set(prev =>
-      prev.filter(resource => !resourcesIds.includes(resource)),
-    )
+    lastOpenedResourcesStorageValue.set((prev) => prev.filter((resource) => !resourcesIds.includes(resource)))
 
     connectionsCollection.delete(connection.id)
 
     const idsToRemove = [...resourcesIds, connection.id]
 
-    Object.keys(localStorage).forEach(key => {
-      if (idsToRemove.some(id => key.includes(id))) {
+    Object.keys(localStorage).forEach((key) => {
+      if (idsToRemove.some((id) => key.includes(id))) {
         localStorage.removeItem(key)
       }
     })
@@ -78,8 +76,7 @@ export function RemoveConnectionDialog({ ref }: RemoveConnectionDialogProps) {
         <AlertDialogHeader>
           <AlertDialogTitle>Remove Connection</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete this connection and remove
-            all associated data.
+            This action cannot be undone. This will permanently delete this connection and remove all associated data.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

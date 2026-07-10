@@ -41,7 +41,7 @@ function ForgotPasswordPage() {
     },
   })
 
-  const isSubmitting = useStore(form.store, state => state.isSubmitting)
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
 
   if (isSubmitting) {
     return (
@@ -49,8 +49,7 @@ function ForgotPasswordPage() {
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold tracking-tight">Email sent successfully</h2>
           <p className="max-w-sm text-sm text-muted-foreground">
-            We've sent you an email with a link to reset your password. Click the link and create a
-            new password.
+            We've sent you an email with a link to reset your password. Click the link and create a new password.
           </p>
         </div>
       </div>
@@ -60,32 +59,21 @@ function ForgotPasswordPage() {
   return (
     <>
       <div className="space-y-2">
-        <h1 className={`flex items-center gap-2 text-2xl font-semibold tracking-tight`}>
-          Forgot your password?
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Enter your email address and we'll send you a reset link to reset your password.
-        </p>
+        <h1 className={`flex items-center gap-2 text-2xl font-semibold tracking-tight`}>Forgot your password?</h1>
+        <p className="text-sm text-muted-foreground">Enter your email address and we'll send you a reset link to reset your password.</p>
       </div>
       <form
         className="space-y-4"
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           form.handleSubmit()
         }}
       >
         <form.AppField name="email">
-          {field => (
+          {(field) => (
             <Field>
               <FieldLabel>Email</FieldLabel>
-              <field.Input
-                placeholder="example@gmail.com"
-                type="email"
-                autoCapitalize="none"
-                autoComplete="email"
-                spellCheck={false}
-                autoFocus
-              />
+              <field.Input placeholder="example@gmail.com" type="email" autoCapitalize="none" autoComplete="email" spellCheck={false} autoFocus />
               <field.Error />
             </Field>
           )}

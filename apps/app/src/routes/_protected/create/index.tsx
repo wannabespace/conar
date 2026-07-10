@@ -51,9 +51,7 @@ function ConnectionErrorDescription({ message }: { message: string }) {
   return (
     <span
       dangerouslySetInnerHTML={{
-        __html: message.toLowerCase().includes('invalid url')
-          ? 'Invalid URL, check your connection string and try again'
-          : message.replaceAll('\n', '<br />'),
+        __html: message.toLowerCase().includes('invalid url') ? 'Invalid URL, check your connection string and try again' : message.replaceAll('\n', '<br />'),
       }}
     />
   )
@@ -116,7 +114,7 @@ function CreateConnectionPage() {
       })
 
       if (resource) {
-        getConnectionStore(id).set(state => ({
+        getConnectionStore(id).set((state) => ({
           ...state,
           lastOpenedResourceName: resource,
           pinnedResourcesNames: [resource],
@@ -176,16 +174,10 @@ function CreateConnectionPage() {
     onError: handleConnectionTestError,
   })
 
-  const connectionString = useStore(form.store, state => state.values.connectionString)
+  const connectionString = useStore(form.store, (state) => state.values.connectionString)
   const url = tryCatch(() => new SafeURL(connectionString.trim())).data
-  const {
-    name,
-    syncType,
-    label,
-    color,
-    type: typeValue,
-  } = useStore(form.store, state => state.values)
-  const isValid = useStore(form.store, state => state.isValid)
+  const { name, syncType, label, color, type: typeValue } = useStore(form.store, (state) => state.values)
+  const isValid = useStore(form.store, (state) => state.isValid)
 
   const isLocalProxyAvailable = useLocalProxyAvailable()
   const hasPassword = !!url?.password
@@ -206,29 +198,20 @@ function CreateConnectionPage() {
   return (
     <ScrollArea className="py-[10vh]">
       <form
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           form.handleSubmit()
         }}
         className="mx-auto flex w-full max-w-2xl flex-col px-6 py-10"
       >
         <div className="mb-6 flex w-full items-center gap-2">
-          <Button
-            type="button"
-            variant="link"
-            className="px-0! text-muted-foreground"
-            onClick={() => router.history.back()}
-          >
+          <Button type="button" variant="link" className="px-0! text-muted-foreground" onClick={() => router.history.back()}>
             <RiArrowLeftSLine className="size-3" />
             Back
           </Button>
         </div>
-        <h1 className={`scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl`}>
-          Create a connection
-        </h1>
-        <p className={`mb-10 leading-7 text-muted-foreground not-first:mt-2`}>
-          Connect to your database by providing the connection details.
-        </p>
+        <h1 className={`scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl`}>Create a connection</h1>
+        <p className={`mb-10 leading-7 text-muted-foreground not-first:mt-2`}>Connect to your database by providing the connection details.</p>
         <Stepper active={step} onChange={setStep}>
           <StepperList>
             <StepperTrigger value="type" number={1}>
@@ -244,7 +227,7 @@ function CreateConnectionPage() {
           <StepperContent value="type">
             <StepType
               type={typeValue}
-              setType={type => {
+              setType={(type) => {
                 form.setFieldValue('type', type)
                 setStep('credentials')
               }}
@@ -255,7 +238,7 @@ function CreateConnectionPage() {
               ref={inputRef}
               type={typeValue!}
               connectionString={connectionString}
-              setConnectionString={connectionString => {
+              setConnectionString={(connectionString) => {
                 reset()
                 form.setFieldValue('connectionString', connectionString)
               }}
@@ -281,13 +264,8 @@ function CreateConnectionPage() {
                     Continue
                   </Button>
                 ) : (
-                  <Button
-                    disabled={testingStatus === 'pending' || !connectionString || !canSend}
-                    onClick={() => test({ type: typeValue!, connectionString })}
-                  >
-                    <LoadingContent loading={testingStatus === 'pending'}>
-                      {testingStatus === 'error' ? 'Try again' : 'Test connection'}
-                    </LoadingContent>
+                  <Button disabled={testingStatus === 'pending' || !connectionString || !canSend} onClick={() => test({ type: typeValue!, connectionString })}>
+                    <LoadingContent loading={testingStatus === 'pending'}>{testingStatus === 'error' ? 'Try again' : 'Test connection'}</LoadingContent>
                   </Button>
                 )}
               </div>
@@ -298,14 +276,14 @@ function CreateConnectionPage() {
               type={typeValue!}
               name={name}
               connectionString={connectionString}
-              setName={name => form.setFieldValue('name', name)}
+              setName={(name) => form.setFieldValue('name', name)}
               onRandomName={() => form.setFieldValue('name', generateRandomName())}
               syncType={syncType}
-              setSyncType={syncType => form.setFieldValue('syncType', syncType)}
+              setSyncType={(syncType) => form.setFieldValue('syncType', syncType)}
               label={label}
-              setLabel={label => form.setFieldValue('label', label)}
+              setLabel={(label) => form.setFieldValue('label', label)}
               color={color}
-              setColor={color => form.setFieldValue('color', color)}
+              setColor={(color) => form.setFieldValue('color', color)}
             />
             <div className="mt-auto flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={() => setStep('credentials')}>

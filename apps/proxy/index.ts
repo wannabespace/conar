@@ -13,7 +13,7 @@ import { router } from './orpc/routers'
 
 const handler = new RPCHandler(router, {
   interceptors: [
-    async options => {
+    async (options) => {
       try {
         return await options.next()
       } catch (error) {
@@ -56,7 +56,7 @@ const app = new Hono<{
       credentials: true,
     }),
   )
-  .get('/', c => c.redirect(env.MAIN_URL))
+  .get('/', (c) => c.redirect(env.MAIN_URL))
   .use('*', async (c, next) => {
     const startTime = Date.now()
     c.set('logEvent', {})

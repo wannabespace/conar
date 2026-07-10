@@ -78,24 +78,14 @@ function SocialAuthForm() {
   return (
     <>
       <div className="grid grid-cols-2 gap-4">
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => googleSignIn()}
-          disabled={isGoogleSignInPending || isGithubSignInPending}
-        >
+        <Button variant="outline" className="w-full" onClick={() => googleSignIn()} disabled={isGoogleSignInPending || isGithubSignInPending}>
           <LoadingContent loading={isGoogleSignInPending}>
             <RiGoogleFill className="size-4" />
             Google
           </LoadingContent>
           {lastMethod === 'google' && <Last />}
         </Button>
-        <Button
-          variant="outline"
-          className="w-full"
-          disabled={isGithubSignInPending || isGoogleSignInPending}
-          onClick={() => githubSignIn()}
-        >
+        <Button variant="outline" className="w-full" disabled={isGithubSignInPending || isGoogleSignInPending} onClick={() => githubSignIn()}>
           <LoadingContent loading={isGithubSignInPending}>
             <RiGithubFill className="size-4" />
             GitHub
@@ -113,8 +103,7 @@ export function AuthForm({ type }: { type: Type }) {
   const router = useRouter()
 
   const form = useAppForm({
-    defaultValues:
-      type === 'sign-up' ? { email: '', password: '', name: '' } : { email: '', password: '' },
+    defaultValues: type === 'sign-up' ? { email: '', password: '', name: '' } : { email: '', password: '' },
     validators: {
       onSubmit: type === 'sign-up' ? signUpSchema : signInSchema,
     },
@@ -144,8 +133,7 @@ export function AuthForm({ type }: { type: Type }) {
 
         if (
           type === 'sign-up' &&
-          (error!.code === BASE_ERROR_CODES.USER_ALREADY_EXISTS.code ||
-            error!.code === BASE_ERROR_CODES.USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL.code)
+          (error!.code === BASE_ERROR_CODES.USER_ALREADY_EXISTS.code || error!.code === BASE_ERROR_CODES.USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL.code)
         ) {
           toast.error('User already exists. Please sign in or use a different email address.', {
             action: {
@@ -174,14 +162,12 @@ export function AuthForm({ type }: { type: Type }) {
     },
   })
 
-  const isSubmitting = useStore(form.store, state => state.isSubmitting)
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
 
   return (
     <>
       <div className="flex flex-col gap-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {type === 'sign-up' ? 'Create an account' : 'Sign in to your account'}
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{type === 'sign-up' ? 'Create an account' : 'Sign in to your account'}</h1>
         <p className="text-sm text-muted-foreground">
           {type === 'sign-up' ? 'Already have an account?' : "Don't have an account?"}{' '}
           <Link to={type === 'sign-up' ? '/sign-in' : '/sign-up'} search={search}>
@@ -191,57 +177,39 @@ export function AuthForm({ type }: { type: Type }) {
       </div>
       <form
         className="space-y-4"
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           form.handleSubmit()
         }}
       >
         <Fieldset className="flex w-full flex-col gap-6">
           <form.AppField name="email">
-            {field => (
+            {(field) => (
               <Field>
                 <FieldLabel>Email</FieldLabel>
-                <field.Input
-                  placeholder="example@gmail.com"
-                  type="email"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  spellCheck={false}
-                  required
-                  autoFocus
-                />
+                <field.Input placeholder="example@gmail.com" type="email" autoCapitalize="none" autoComplete="email" spellCheck={false} required autoFocus />
                 <field.Error />
               </Field>
             )}
           </form.AppField>
           {type === 'sign-up' && (
             <form.AppField name="name">
-              {field => (
+              {(field) => (
                 <Field>
                   <FieldLabel>Name</FieldLabel>
-                  <field.Input
-                    placeholder="John Doe"
-                    autoComplete="name"
-                    spellCheck={false}
-                    required
-                  />
+                  <field.Input placeholder="John Doe" autoComplete="name" spellCheck={false} required />
                   <field.Error />
                 </Field>
               )}
             </form.AppField>
           )}
           <form.AppField name="password">
-            {field => (
+            {(field) => (
               <Field>
                 <div className="flex w-full items-center justify-between">
                   <FieldLabel>Password</FieldLabel>
                   {type === 'sign-in' && (
-                    <Button
-                      variant="link"
-                      size="xs"
-                      className="text-muted-foreground"
-                      render={<Link to="/forgot-password" />}
-                    >
+                    <Button variant="link" size="xs" className="text-muted-foreground" render={<Link to="/forgot-password" />}>
                       Forgot password?
                     </Button>
                   )}
@@ -252,20 +220,14 @@ export function AuthForm({ type }: { type: Type }) {
             )}
           </form.AppField>
           <Button className="w-full" type="submit" disabled={isSubmitting}>
-            <LoadingContent loading={isSubmitting}>
-              {type === 'sign-up' ? 'Get started' : 'Sign in'}
-            </LoadingContent>
+            <LoadingContent loading={isSubmitting}>{type === 'sign-up' ? 'Get started' : 'Sign in'}</LoadingContent>
             {type === 'sign-in' && lastMethod === 'email' && <Last />}
           </Button>
         </Fieldset>
       </form>
       <div className="relative">
         <Separator />
-        <span
-          className={`absolute top-1/2 left-1/2 -translate-1/2 bg-background px-4 text-sm text-muted-foreground`}
-        >
-          Or continue with
-        </span>
+        <span className={`absolute top-1/2 left-1/2 -translate-1/2 bg-background px-4 text-sm text-muted-foreground`}>Or continue with</span>
       </div>
       <SocialAuthForm />
     </>

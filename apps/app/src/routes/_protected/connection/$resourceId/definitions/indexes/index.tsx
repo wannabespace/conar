@@ -4,13 +4,7 @@ import { CardContent, CardTitle } from '@conar/ui/components/card'
 import { CardMotion } from '@conar/ui/components/card.motion'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@conar/ui/components/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { RiFileList3Line, RiKey2Line, RiLayoutColumnLine, RiTable2 } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
@@ -46,10 +40,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/definit
 
 type IndexItem = typeof indexesType.infer
 
-interface GroupedIndex extends Pick<
-  IndexItem,
-  'schema' | 'table' | 'type' | 'name' | 'isUnique' | 'isPrimary'
-> {
+interface GroupedIndex extends Pick<IndexItem, 'schema' | 'table' | 'type' | 'name' | 'isUnique' | 'isPrimary'> {
   columns: string[]
   customExpressions: string[]
 }
@@ -65,13 +56,7 @@ const filterOptions: { label: string; value: IndexType | 'all' }[] = [
 
 function DatabaseIndexesPage() {
   const { connectionResource } = Route.useRouteContext()
-  const {
-    data: indexes,
-    refetch,
-    isFetching,
-    isPending,
-    dataUpdatedAt,
-  } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
+  const { data: indexes, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
   const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({
     connectionResource,
   })
@@ -82,9 +67,7 @@ function DatabaseIndexesPage() {
   const groupedIndexes = indexes?.reduce<Record<string, GroupedIndex>>((acc, indexItem) => {
     if (indexItem.schema !== selectedSchema) return acc
 
-    const matchesFilter =
-      filterType === 'all' ||
-      filterOptions.find(option => option.value === filterType)?.value === indexItem.type
+    const matchesFilter = filterType === 'all' || filterOptions.find((option) => option.value === filterType)?.value === indexItem.type
 
     if (!matchesFilter) return acc
 
@@ -102,10 +85,7 @@ function DatabaseIndexesPage() {
       if (indexItem.column && !acc[key].columns.includes(indexItem.column)) {
         acc[key].columns.push(indexItem.column)
       }
-      if (
-        indexItem.customExpression &&
-        !acc[key].customExpressions.includes(indexItem.customExpression)
-      ) {
+      if (indexItem.customExpression && !acc[key].customExpressions.includes(indexItem.customExpression)) {
         acc[key].customExpressions.push(indexItem.customExpression)
       }
     } else {
@@ -123,24 +103,14 @@ function DatabaseIndexesPage() {
 
   return (
     <>
-      <DefinitionsHeader
-        onRefresh={() => refetch()}
-        isRefreshing={isFetching}
-        dataUpdatedAt={dataUpdatedAt}
-      >
+      <DefinitionsHeader onRefresh={() => refetch()} isRefreshing={isFetching} dataUpdatedAt={dataUpdatedAt}>
         Indexes
       </DefinitionsHeader>
       <div className="mb-4 flex items-center gap-2">
-        <SearchInput
-          placeholder="Search indexes"
-          autoFocus
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          onClear={() => setSearch('')}
-        />
+        <SearchInput placeholder="Search indexes" autoFocus value={search} onChange={(e) => setSearch(e.target.value)} onClear={() => setSearch('')} />
         <Select
           value={filterType}
-          onValueChange={v => {
+          onValueChange={(v) => {
             if (v) {
               setFilterType(v)
             }
@@ -148,48 +118,29 @@ function DatabaseIndexesPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Type">
-              {value =>
-                value ? filterOptions.find(option => option.value === value)?.label : 'Filter Type'
-              }
+              {(value) => (value ? filterOptions.find((option) => option.value === value)?.label : 'Filter Type')}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {filterOptions.map(option => (
+            {filterOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <SchemaSelect
-          schemas={schemas}
-          selectedSchema={selectedSchema}
-          setSelectedSchema={setSelectedSchema}
-        />
+        <SchemaSelect schemas={schemas} selectedSchema={selectedSchema} setSelectedSchema={setSelectedSchema} />
       </div>
       <DefinitionsGrid loading={isPending}>
-        {indexList.length === 0 && (
-          <DefinitionsEmptyState
-            title="No indexes found"
-            description="This schema doesn't have any indexes matching your filter."
-          />
-        )}
+        {indexList.length === 0 && <DefinitionsEmptyState title="No indexes found" description="This schema doesn't have any indexes matching your filter." />}
 
-        {indexList.map(item => (
-          <CardMotion
-            key={`${item.schema}-${item.table}-${item.name}`}
-            layout
-            {...MOTION_BLOCK_PROPS}
-          >
+        {indexList.map((item) => (
+          <CardMotion key={`${item.schema}-${item.table}-${item.name}`} layout {...MOTION_BLOCK_PROPS}>
             <CardContent className="px-4 py-3">
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="mb-2 flex items-center gap-2 text-base">
-                    {item.isPrimary ? (
-                      <RiKey2Line className="size-4 text-primary" />
-                    ) : (
-                      <RiFileList3Line className="size-4 text-primary" />
-                    )}
+                    {item.isPrimary ? <RiKey2Line className="size-4 text-primary" /> : <RiFileList3Line className="size-4 text-primary" />}
                     <HighlightText text={item.name} match={search} />
                     {item.isPrimary && <Badge variant="secondary">Primary Key</Badge>}
                     {item.isUnique && !item.isPrimary && <Badge variant="secondary">Unique</Badge>}
@@ -202,7 +153,7 @@ function DatabaseIndexesPage() {
                     {(item.columns.length > 0 || item.customExpressions.length > 0) && (
                       <>
                         <span>on</span>
-                        {[...item.columns, ...item.customExpressions].map(col => (
+                        {[...item.columns, ...item.customExpressions].map((col) => (
                           <Badge key={col} variant="outline">
                             <RiLayoutColumnLine className="size-3" />
                             <HighlightText text={col} match={search} />

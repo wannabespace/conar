@@ -3,12 +3,7 @@ import type { Filter } from './types'
 export function cellToFilterValues(filter: Filter, cellValue: unknown): string[] {
   if (filter.hasValue === false) return ['']
 
-  const raw =
-    cellValue === null
-      ? ''
-      : typeof cellValue === 'object'
-        ? JSON.stringify(cellValue)
-        : String(cellValue)
+  const raw = cellValue === null ? '' : typeof cellValue === 'object' ? JSON.stringify(cellValue) : String(cellValue)
 
   if (filter.isArray) return raw === '' ? [''] : [raw]
 

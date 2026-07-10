@@ -27,16 +27,12 @@ export const resourceTableTotalQuery = memoize(
         isEstimated: 'boolean',
       }),
       query: {
-        postgres: async db => {
+        postgres: async (db) => {
           if (!exact && !filters?.length) {
             const estimate = await db
               .withSchema('pg_catalog')
               .selectFrom('pg_catalog.pg_class')
-              .innerJoin(
-                'pg_catalog.pg_namespace',
-                'pg_catalog.pg_namespace.oid',
-                'pg_catalog.pg_class.relnamespace',
-              )
+              .innerJoin('pg_catalog.pg_namespace', 'pg_catalog.pg_namespace.oid', 'pg_catalog.pg_class.relnamespace')
               .select('pg_catalog.pg_class.reltuples as count')
               .where('pg_catalog.pg_namespace.nspname', '=', schema)
               .where('pg_catalog.pg_class.relname', '=', table)
@@ -55,12 +51,12 @@ export const resourceTableTotalQuery = memoize(
             .withTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(db.fn.countAll().as('total'))
-            .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
+            .$if(filters !== undefined, (qb) => qb.where((eb) => buildWhere(eb, filters!)))
             .executeTakeFirst()
 
           return { count: Number(query?.total ?? 0), isEstimated: false }
         },
-        mysql: async db => {
+        mysql: async (db) => {
           if (!exact && !filters?.length) {
             const estimate = await db
               .withSchema('information_schema')
@@ -80,19 +76,19 @@ export const resourceTableTotalQuery = memoize(
             .withTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(db.fn.countAll().as('total'))
-            .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
+            .$if(filters !== undefined, (qb) => qb.where((eb) => buildWhere(eb, filters!)))
             .executeTakeFirst()
 
           return { count: Number(query?.total ?? 0), isEstimated: false }
         },
 
-        mssql: async db => {
+        mssql: async (db) => {
           const query = await db
             .withSchema(schema)
             .withTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(db.fn.countAll().as('total'))
-            .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
+            .$if(filters !== undefined, (qb) => qb.where((eb) => buildWhere(eb, filters!)))
             .executeTakeFirst()
 
           return {
@@ -101,7 +97,7 @@ export const resourceTableTotalQuery = memoize(
           }
         },
 
-        clickhouse: async db => {
+        clickhouse: async (db) => {
           if (!exact && !filters?.length) {
             const estimate = await db
               .withSchema('system')
@@ -122,7 +118,7 @@ export const resourceTableTotalQuery = memoize(
             .withTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(db.fn.countAll().as('total'))
-            .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
+            .$if(filters !== undefined, (qb) => qb.where((eb) => buildWhere(eb, filters!)))
             .executeTakeFirst()
 
           return { count: Number(query?.total ?? 0), isEstimated: false }
@@ -144,10 +140,7 @@ export function resourceTableTotalQueryOptions({
   query: { filters: ActiveFilter[]; exact: boolean }
 }) {
   return queryOptions({
-    queryFn: async () =>
-      resourceTableTotalQuery({ table, schema, query: { filters, exact } }).run(
-        await connectionResourceToQueryParams(connectionResource),
-      ),
+    queryFn: async () => resourceTableTotalQuery({ table, schema, query: { filters, exact } }).run(await connectionResourceToQueryParams(connectionResource)),
     queryKey: [
       'connection-resource',
       connectionResource.id,

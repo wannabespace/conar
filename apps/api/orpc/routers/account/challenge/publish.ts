@@ -8,7 +8,7 @@ export const publish = orpc
   .use(authMiddleware)
   .input(
     type({
-      codeChallenge: 'string',
+      'codeChallenge': 'string',
       'newUser?': 'boolean',
     }),
   )

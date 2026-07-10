@@ -15,11 +15,7 @@ export async function createRedisPubSub() {
   }
 }
 
-export async function redisMemoize<T>(
-  fn: () => MaybePromise<T>,
-  key: string,
-  ttl: number = 60 * 60 * 24,
-) {
+export async function redisMemoize<T>(fn: () => MaybePromise<T>, key: string, ttl: number = 60 * 60 * 24) {
   const cached = await redis.get(key)
   if (cached) return JSON.parse(cached) as T
 

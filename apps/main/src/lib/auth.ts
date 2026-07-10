@@ -1,12 +1,7 @@
 import { apiKeyClient } from '@better-auth/api-key/client'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
-import {
-  lastLoginMethodClient,
-  magicLinkClient,
-  organizationClient,
-  twoFactorClient,
-} from 'better-auth/client/plugins'
+import { lastLoginMethodClient, magicLinkClient, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 
 const getAuthHeadersIsomorphic = createIsomorphicFn()
@@ -15,7 +10,7 @@ const getAuthHeadersIsomorphic = createIsomorphicFn()
 
     return {
       'user-agent': request.headers.get('user-agent') ?? '',
-      cookie: request.headers.get('cookie') ?? '',
+      'cookie': request.headers.get('cookie') ?? '',
     }
   })
   .client(() => ({}))
@@ -24,7 +19,7 @@ export const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_PUBLIC_API_URL,
   basePath: '/auth',
   fetchOptions: {
-    onRequest: request => {
+    onRequest: (request) => {
       const headers = getAuthHeadersIsomorphic()
 
       for (const [key, value] of Object.entries(headers)) {
@@ -34,13 +29,7 @@ export const authClient = createAuthClient({
       return request
     },
   },
-  plugins: [
-    organizationClient(),
-    twoFactorClient(),
-    magicLinkClient(),
-    lastLoginMethodClient(),
-    apiKeyClient(),
-  ],
+  plugins: [organizationClient(), twoFactorClient(), magicLinkClient(), lastLoginMethodClient(), apiKeyClient()],
 })
 
 const LAST_USED_LOGIN_METHOD_COOKIE = 'better-auth.last_used_login_method'

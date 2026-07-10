@@ -29,16 +29,12 @@ export function CopyButton({
   return (
     <Button
       {...props}
-      onClick={e => {
+      onClick={(e) => {
         props.onClick?.(e)
         handleCopy()
       }}
     >
-      <ContentSwitch
-        active={copied}
-        onSwitchEnd={() => setCopied(false)}
-        activeContent={successIcon}
-      >
+      <ContentSwitch active={copied} onSwitchEnd={() => setCopied(false)} activeContent={successIcon}>
         {copyIcon}
       </ContentSwitch>
     </Button>

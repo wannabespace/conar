@@ -46,10 +46,10 @@ function pickConnection(connections: Connection[], identifier: string | undefine
     return process.exit(1)
   }
 
-  const byId = connections.find(c => c.id === identifier)
+  const byId = connections.find((c) => c.id === identifier)
   if (byId) return byId
 
-  const matchesByName = connections.filter(c => c.name === identifier)
+  const matchesByName = connections.filter((c) => c.name === identifier)
   if (matchesByName.length === 1) return matchesByName[0]!
 
   if (matchesByName.length > 1) {
@@ -77,20 +77,18 @@ function formatTable(rows: Record<string, unknown>[]): string {
 
   const columns = Array.from(
     rows.reduce<Set<string>>((set, row) => {
-      Object.keys(row).forEach(k => set.add(k))
+      Object.keys(row).forEach((k) => set.add(k))
       return set
     }, new Set()),
   )
 
-  const widths = columns.map(col =>
-    Math.max(col.length, ...rows.map(r => stringify(r[col]).length)),
-  )
+  const widths = columns.map((col) => Math.max(col.length, ...rows.map((r) => stringify(r[col]).length)))
 
   const renderRow = (cells: string[]) => cells.map((cell, i) => cell.padEnd(widths[i]!)).join(' │ ')
 
   const header = renderRow(columns)
-  const separator = widths.map(w => '─'.repeat(w)).join('─┼─')
-  const body = rows.map(r => renderRow(columns.map(c => stringify(r[c]))))
+  const separator = widths.map((w) => '─'.repeat(w)).join('─┼─')
+  const body = rows.map((r) => renderRow(columns.map((c) => stringify(r[c]))))
 
   return [header, separator, ...body].join('\n')
 }
@@ -100,16 +98,12 @@ export const queryCommand = command({
   desc: 'Run a SQL query against one of your connections',
   options: {
     sql: positional('sql').desc('SQL query to execute (omit when using --file)'),
-    connection: string()
-      .alias('c')
-      .desc('Connection id or name. Required if you have more than one connection.'),
-    file: string()
-      .alias('f')
-      .desc('Read the SQL query from a file instead of the positional argument'),
+    connection: string().alias('c').desc('Connection id or name. Required if you have more than one connection.'),
+    file: string().alias('f').desc('Read the SQL query from a file instead of the positional argument'),
     json: boolean().desc('Output the result as raw JSON'),
     list: boolean('list-connections').desc('List available connections and exit'),
   },
-  handler: async opts => {
+  handler: async (opts) => {
     await requireSession()
 
     const loadingSpinner = ora('Loading connections...').start()
@@ -141,9 +135,7 @@ export const queryCommand = command({
       try {
         sql = fs.readFileSync(opts.file, 'utf-8')
       } catch (error) {
-        return fail(
-          `Failed to read SQL file: ${error instanceof Error ? error.message : String(error)}`,
-        )
+        return fail(`Failed to read SQL file: ${error instanceof Error ? error.message : String(error)}`)
       }
     }
 
@@ -154,9 +146,7 @@ export const queryCommand = command({
     const connection = pickConnection(connections, opts.connection)
     const executor = queryMap[connection.type as ConnectionType]
 
-    const querySpinner = ora(
-      `Executing query on ${connection.name} (${connection.type})...`,
-    ).start()
+    const querySpinner = ora(`Executing query on ${connection.name} (${connection.type})...`).start()
 
     const start = Date.now()
 

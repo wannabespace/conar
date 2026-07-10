@@ -6,13 +6,7 @@ import { Separator } from '@conar/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { copy } from '@conar/ui/lib/copy'
 import { cn } from '@conar/ui/lib/utils'
-import {
-  RiCheckLine,
-  RiDeleteBin7Line,
-  RiFileCopyLine,
-  RiPlayListAddLine,
-  RiSaveLine,
-} from '@remixicon/react'
+import { RiCheckLine, RiDeleteBin7Line, RiFileCopyLine, RiPlayListAddLine, RiSaveLine } from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import type { ComponentProps, ComponentRef } from 'react'
 import { useRef, useState } from 'react'
@@ -27,7 +21,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
   const { connectionResource } = Route.useRouteContext()
   const { queriesCollection } = useCollections()
   const { data } = useLiveQuery(
-    q =>
+    (q) =>
       q
         .from({ queries: queriesCollection })
         .where(({ queries }) => eq(queries.connectionResourceId, connectionResource.id))
@@ -47,7 +41,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
       <ScrollArea className="flex-1 py-2">
         {data.length > 0 ? (
           <div className="space-y-1">
-            {data.map(query => (
+            {data.map((query) => (
               <div key={query.id} className="flex w-full items-center gap-2 px-4 py-1">
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -55,10 +49,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                       size="icon-sm"
                       variant="ghost"
                       onClick={() => {
-                        runnerHooks.callHook(
-                          'appendToBottomAndFocus',
-                          `-- ${query.name}\n${query.query}`,
-                        )
+                        runnerHooks.callHook('appendToBottomAndFocus', `-- ${query.name}\n${query.query}`)
                         setMovedId(query.id)
                       }}
                     >
@@ -77,11 +68,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                 </Tooltip>
                 <div className="flex min-w-0 flex-1 flex-col">
                   <div className="truncate text-sm font-medium">{query.name}</div>
-                  <div
-                    data-mask
-                    className={`max-w-full truncate text-xs text-muted-foreground`}
-                    title={query.query}
-                  >
+                  <div data-mask className={`max-w-full truncate text-xs text-muted-foreground`} title={query.query}>
                     {query.query}
                   </div>
                 </div>
@@ -126,13 +113,10 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
             ))}
           </div>
         ) : (
-          <div
-            className={`mx-auto flex h-full max-w-56 flex-col items-center justify-center px-6 py-12 text-center`}
-          >
+          <div className={`mx-auto flex h-full max-w-56 flex-col items-center justify-center px-6 py-12 text-center`}>
             <span className="mb-2">No saved queries found.</span>
             <span className="text-xs text-muted-foreground">
-              You can add a new query by pressing the <RiSaveLine className="inline-block size-4" />{' '}
-              button.
+              You can add a new query by pressing the <RiSaveLine className="inline-block size-4" /> button.
             </span>
           </div>
         )}

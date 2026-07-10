@@ -19,16 +19,7 @@ export const AUTH_COOKIE_PREFIX = 'conar' as const
 
 export const LABEL_OPTIONS = ['Local', 'Test', 'Dev', 'Staging', 'Prod']
 
-export const COLOR_OPTIONS = [
-  '#ef4444',
-  '#f97316',
-  '#f59e0b',
-  '#16a34a',
-  '#06b6d4',
-  '#2563eb',
-  '#9333ea',
-  '#db2777',
-]
+export const COLOR_OPTIONS = ['#ef4444', '#f97316', '#f59e0b', '#16a34a', '#06b6d4', '#2563eb', '#9333ea', '#db2777']
 
 export const LATEST_VERSION_BEFORE_SUBSCRIPTION = 26 as const
 
@@ -40,25 +31,11 @@ export const FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT = 50 as const
 
 export const CONNECTION_RESOURCE_ROOT_SYMBOL = Symbol('CONNECTION_RESOURCE_ROOT')
 export const CONNECTION_RESOURCE_ROOT_LABEL = 'root' as const
-export const CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES: ConnectionType[] = [
-  ConnectionType.MSSQL,
-  ConnectionType.ClickHouse,
-]
+export const CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES: ConnectionType[] = [ConnectionType.MSSQL, ConnectionType.ClickHouse]
 export const CONNECTION_TYPES_WITHOUT_SCHEMAS: ConnectionType[] = [ConnectionType.ClickHouse]
-export const CONNECTION_TYPES_WITH_EXPLAIN: ConnectionType[] = [
-  ConnectionType.Postgres,
-  ConnectionType.MySQL,
-]
-export const CONNECTION_TYPES_WITH_TRIGGERS: ConnectionType[] = [
-  ConnectionType.Postgres,
-  ConnectionType.MySQL,
-  ConnectionType.MSSQL,
-]
-export const CONNECTION_TYPES_WITH_FUNCTIONS: ConnectionType[] = [
-  ConnectionType.Postgres,
-  ConnectionType.MySQL,
-  ConnectionType.MSSQL,
-]
+export const CONNECTION_TYPES_WITH_EXPLAIN: ConnectionType[] = [ConnectionType.Postgres, ConnectionType.MySQL]
+export const CONNECTION_TYPES_WITH_TRIGGERS: ConnectionType[] = [ConnectionType.Postgres, ConnectionType.MySQL, ConnectionType.MSSQL]
+export const CONNECTION_TYPES_WITH_FUNCTIONS: ConnectionType[] = [ConnectionType.Postgres, ConnectionType.MySQL, ConnectionType.MSSQL]
 export const CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME: ConnectionType[] = [ConnectionType.ClickHouse]
 
 export const RECONNECT_ERROR_PATTERNS = [

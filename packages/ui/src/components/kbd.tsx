@@ -15,11 +15,5 @@ export function Kbd({ className, ...props }: React.ComponentProps<'kbd'>): React
 }
 
 export function KbdGroup({ className, ...props }: React.ComponentProps<'kbd'>): React.ReactElement {
-  return (
-    <kbd
-      className={cn('inline-flex items-center gap-1', className)}
-      data-slot="kbd-group"
-      {...props}
-    />
-  )
+  return <kbd className={cn('inline-flex items-center gap-1', className)} data-slot="kbd-group" {...props} />
 }

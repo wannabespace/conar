@@ -4,16 +4,7 @@ import { Button } from '@conar/ui/components/button'
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogPanel,
-  DialogTitle,
-} from '@conar/ui/components/dialog'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogTitle } from '@conar/ui/components/dialog'
 import { Field, FieldLabel } from '@conar/ui/components/field'
 import { Fieldset } from '@conar/ui/components/fieldset'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
@@ -55,13 +46,7 @@ function permissionSelectionToPayload(selection: PermissionSelection) {
   return out
 }
 
-export function CreateApiKeyDialog({
-  ref,
-  onRefetch,
-}: {
-  ref?: React.RefObject<{ open: () => void } | null>
-  onRefetch: () => void
-}) {
+export function CreateApiKeyDialog({ ref, onRefetch }: { ref?: React.RefObject<{ open: () => void } | null>; onRefetch: () => void }) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [revealKeyDialogOpen, setRevealKeyDialogOpen] = useState(false)
   const [createdKey, setCreatedKey] = useState<{ id: string; key: string } | null>(null)
@@ -96,7 +81,7 @@ export function CreateApiKeyDialog({
     },
   })
 
-  const isSubmitting = useStore(form.store, state => state.isSubmitting)
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
 
   return (
     <>
@@ -104,15 +89,13 @@ export function CreateApiKeyDialog({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Create API key</DialogTitle>
-            <DialogDescription>
-              Name it so you can tell keys apart later, and choose what this key is allowed to do.
-            </DialogDescription>
+            <DialogDescription>Name it so you can tell keys apart later, and choose what this key is allowed to do.</DialogDescription>
           </DialogHeader>
           <DialogPanel>
             <form
               id="create-api-key-form"
               className="space-y-4"
-              onSubmit={e => {
+              onSubmit={(e) => {
                 e.preventDefault()
                 form.handleSubmit()
               }}
@@ -128,7 +111,7 @@ export function CreateApiKeyDialog({
                     },
                   }}
                 >
-                  {field => (
+                  {(field) => (
                     <Field>
                       <FieldLabel>Name</FieldLabel>
                       <field.Input placeholder="e.g. local-mcp, ci-bot" maxLength={100} />
@@ -140,28 +123,23 @@ export function CreateApiKeyDialog({
                   name="permissions"
                   validators={{
                     onSubmit: ({ value }) => {
-                      const atLeastOne = Object.values(value).some(actions =>
-                        Object.values(actions).some(Boolean),
-                      )
+                      const atLeastOne = Object.values(value).some((actions) => Object.values(actions).some(Boolean))
                       if (!atLeastOne) {
                         return 'Select at least one permission'
                       }
                     },
                   }}
                 >
-                  {field => (
+                  {(field) => (
                     <Field>
                       <FieldLabel>Permissions</FieldLabel>
                       {objectEntries(API_KEY_PERMISSIONS).map(([resource, actions]) => (
                         <Field key={resource} className="gap-1">
-                          {actions.map(action => (
-                            <label
-                              key={action}
-                              className={`flex cursor-pointer items-center gap-2 text-sm`}
-                            >
+                          {actions.map((action) => (
+                            <label key={action} className={`flex cursor-pointer items-center gap-2 text-sm`}>
                               <Checkbox
                                 checked={field.state.value[resource][action]}
-                                onCheckedChange={checked => {
+                                onCheckedChange={(checked) => {
                                   field.handleChange({
                                     ...field.state.value,
                                     [resource]: {
@@ -194,7 +172,7 @@ export function CreateApiKeyDialog({
       <Dialog
         open={revealKeyDialogOpen}
         onOpenChange={setRevealKeyDialogOpen}
-        onOpenChangeComplete={isOpen => {
+        onOpenChangeComplete={(isOpen) => {
           if (!isOpen) {
             setCreatedKey(null)
           }
@@ -203,26 +181,14 @@ export function CreateApiKeyDialog({
         <DialogContent className="sm:max-w-md" showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>Your new API key</DialogTitle>
-            <DialogDescription>
-              This key is shown only once. Copy and store it safely.
-            </DialogDescription>
+            <DialogDescription>This key is shown only once. Copy and store it safely.</DialogDescription>
           </DialogHeader>
           <DialogPanel>
             {createdKey && (
               <InputGroup className="font-mono text-xs shadow-none">
-                <InputGroupInput
-                  readOnly
-                  value={createdKey.key}
-                  className="min-w-0 overflow-x-auto font-mono text-xs"
-                />
+                <InputGroupInput readOnly value={createdKey.key} className="min-w-0 overflow-x-auto font-mono text-xs" />
                 <InputGroupAddon align="inline-end">
-                  <CopyButton
-                    text={createdKey.key}
-                    variant="ghost"
-                    size="icon-xs"
-                    aria-label="Copy API key"
-                    onClick={() => toast.success('API key copied')}
-                  />
+                  <CopyButton text={createdKey.key} variant="ghost" size="icon-xs" aria-label="Copy API key" onClick={() => toast.success('API key copied')} />
                 </InputGroupAddon>
               </InputGroup>
             )}

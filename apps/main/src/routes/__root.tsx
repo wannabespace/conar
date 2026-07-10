@@ -21,26 +21,26 @@ const structuredData = {
     {
       '@type': 'SoftwareApplication',
       '@id': `${SITE_URL}/#app`,
-      name: 'Conar',
-      url: SITE_URL,
-      image: `${SITE_URL}/og-image.png`,
-      description: SEO.description,
-      applicationCategory: 'DeveloperApplication',
-      operatingSystem: 'macOS, Windows, Linux',
-      offers: {
+      'name': 'Conar',
+      'url': SITE_URL,
+      'image': `${SITE_URL}/og-image.png`,
+      'description': SEO.description,
+      'applicationCategory': 'DeveloperApplication',
+      'operatingSystem': 'macOS, Windows, Linux',
+      'offers': {
         '@type': 'Offer',
-        price: '0',
-        priceCurrency: 'USD',
+        'price': '0',
+        'priceCurrency': 'USD',
       },
-      sameAs: [SOCIAL_LINKS.GITHUB, SOCIAL_LINKS.TWITTER, SOCIAL_LINKS.DISCORD],
+      'sameAs': [SOCIAL_LINKS.GITHUB, SOCIAL_LINKS.TWITTER, SOCIAL_LINKS.DISCORD],
     },
     {
       '@type': 'Organization',
       '@id': `${SITE_URL}/#org`,
-      name: 'Conar',
-      url: SITE_URL,
-      logo: `${SITE_URL}/logo.png`,
-      sameAs: [SOCIAL_LINKS.GITHUB, SOCIAL_LINKS.TWITTER, SOCIAL_LINKS.DISCORD],
+      'name': 'Conar',
+      'url': SITE_URL,
+      'logo': `${SITE_URL}/logo.png`,
+      'sameAs': [SOCIAL_LINKS.GITHUB, SOCIAL_LINKS.TWITTER, SOCIAL_LINKS.DISCORD],
     },
   ],
 }
@@ -94,7 +94,7 @@ export const Route = createRootRouteWithContext<{
     }
   },
   component: RootComponent,
-  errorComponent: props => <ErrorPage {...props} />,
+  errorComponent: (props) => <ErrorPage {...props} />,
 })
 
 function RootComponent() {

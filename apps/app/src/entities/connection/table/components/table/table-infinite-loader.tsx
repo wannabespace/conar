@@ -42,7 +42,7 @@ export function TableInfiniteLoader({
     }
   }, [isVisible, hasNextPage, isFetching, fetchNextPage])
 
-  const scrollRef = useTableContext(state => state.scrollRef)
+  const scrollRef = useTableContext((state) => state.scrollRef)
   useMountedEffect(() => {
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }, [scrollRef, filters, orderBy])
@@ -57,11 +57,7 @@ export function TableInfiniteLoader({
         {hasNextPage ? (
           <RiLoaderLine className="size-10 animate-spin opacity-50" />
         ) : (
-          <TableEmpty
-            className="bottom-0 h-full"
-            title="No more data"
-            description="This table has no more rows"
-          />
+          <TableEmpty className="bottom-0 h-full" title="No more data" description="This table has no more rows" />
         )}
       </div>
     </div>

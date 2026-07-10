@@ -35,11 +35,7 @@ export function ScrollArea({
   )
 }
 
-export function ScrollBar({
-  className,
-  orientation = 'vertical',
-  ...props
-}: ScrollAreaPrimitive.Scrollbar.Props): React.ReactElement {
+export function ScrollBar({ className, orientation = 'vertical', ...props }: ScrollAreaPrimitive.Scrollbar.Props): React.ReactElement {
   return (
     <ScrollAreaPrimitive.Scrollbar
       className={cn(
@@ -50,10 +46,7 @@ export function ScrollBar({
       orientation={orientation}
       {...props}
     >
-      <ScrollAreaPrimitive.Thumb
-        className="relative flex-1 rounded-full bg-foreground/20"
-        data-slot="scroll-area-thumb"
-      />
+      <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-foreground/20" data-slot="scroll-area-thumb" />
     </ScrollAreaPrimitive.Scrollbar>
   )
 }

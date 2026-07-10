@@ -4,11 +4,7 @@ export type ScrollDirection = 'vertical' | 'horizontal' | 'both'
 
 export function useIsScrolled(
   ref: React.RefObject<Element | null>,
-  {
-    threshold = 10,
-    initial = false,
-    direction = 'both',
-  }: { threshold?: number; initial?: boolean; direction?: ScrollDirection } = {},
+  { threshold = 10, initial = false, direction = 'both' }: { threshold?: number; initial?: boolean; direction?: ScrollDirection } = {},
 ) {
   const [isScrolled, setIsScrolled] = React.useState(initial)
 

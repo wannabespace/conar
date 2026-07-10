@@ -6,25 +6,9 @@ import { UserAvatar } from '@conar/ui/components/custom/user-avatar'
 import { Separator } from '@conar/ui/components/separator'
 import { cn } from '@conar/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
-import {
-  RiDashboard3Line,
-  RiFileListLine,
-  RiGitBranchLine,
-  RiGithubFill,
-  RiLogoutCircleLine,
-  RiMoonLine,
-  RiSettingsLine,
-  RiSunLine,
-} from '@remixicon/react'
+import { RiDashboard3Line, RiFileListLine, RiGitBranchLine, RiGithubFill, RiLogoutCircleLine, RiMoonLine, RiSettingsLine, RiSunLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
-import {
-  createFileRoute,
-  Link,
-  Outlet,
-  redirect,
-  useMatches,
-  useRouter,
-} from '@tanstack/react-router'
+import { createFileRoute, Link, Outlet, redirect, useMatches, useRouter } from '@tanstack/react-router'
 
 import { Footer } from '~/components/footer'
 import { NavbarTextLogo } from '~/components/navbar-text-logo'
@@ -50,7 +34,7 @@ export const Route = createFileRoute('/account')({
 function AccountLayout() {
   const router = useRouter()
   const match = useMatches({
-    select: matches => matches.map(match => match.routeId).at(-1),
+    select: (matches) => matches.map((match) => match.routeId).at(-1),
   })
   const { data } = useQuery(orpc.repo.queryOptions())
   const { user } = Route.useLoaderData()
@@ -65,12 +49,7 @@ function AccountLayout() {
           </Link>
         </div>
         <div className={`flex flex-1 items-center justify-end gap-1 sm:gap-2`}>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`hidden gap-1 sm:flex sm:gap-2`}
-            render={<Link to="/releases" />}
-          >
+          <Button variant="ghost" size="sm" className={`hidden gap-1 sm:flex sm:gap-2`} render={<Link to="/releases" />}>
             <RiGitBranchLine className={`size-3 sm:size-4`} />
             Releases
           </Button>
@@ -78,41 +57,22 @@ function AccountLayout() {
             variant="ghost"
             size="sm"
             className={`hidden gap-1 sm:flex sm:gap-2`}
-            render={
-              <a
-                href={SOCIAL_LINKS.GITHUB}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="View source on GitHub"
-              />
-            }
+            render={<a href={SOCIAL_LINKS.GITHUB} target="_blank" rel="noopener noreferrer" aria-label="View source on GitHub" />}
           >
             <RiGithubFill className={`size-3 sm:size-4`} />
             <NumberFlow
               value={data?.stargazers_count || 0}
-              className={cn(
-                `text-xs tabular-nums duration-200 sm:text-sm`,
-                !data && `animate-pulse text-muted-foreground`,
-              )}
+              className={cn(`text-xs tabular-nums duration-200 sm:text-sm`, !data && `animate-pulse text-muted-foreground`)}
             />
           </Button>
           <ThemeToggle side="bottom" render={<Button size="icon-sm" variant="ghost" />}>
             <RiSunLine className={`size-4 dark:hidden`} />
             <RiMoonLine className={`hidden size-4 dark:block`} />
           </ThemeToggle>
-          <Button
-            variant="outline"
-            disabled
-            size="sm"
-            render={<Link to={import.meta.env.VITE_PUBLIC_WEB_URL!} />}
-          >
+          <Button variant="outline" disabled size="sm" render={<Link to={import.meta.env.VITE_PUBLIC_WEB_URL!} />}>
             Web version
           </Button>
-          <Button
-            size="sm"
-            className={`gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm`}
-            render={<Link to="/download" />}
-          >
+          <Button size="sm" className={`gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm`} render={<Link to="/download" />}>
             Download
           </Button>
         </div>
@@ -131,10 +91,7 @@ function AccountLayout() {
               <RiDashboard3Line className="size-4" />
               Dashboard
             </SidebarButton>
-            <SidebarButton
-              active={match === '/account/billing'}
-              render={<Link to="/account/billing" />}
-            >
+            <SidebarButton active={match === '/account/billing'} render={<Link to="/account/billing" />}>
               <RiFileListLine className="size-4" />
               Billing & Invoices
             </SidebarButton>
@@ -142,20 +99,13 @@ function AccountLayout() {
               <RiKey2Line className="size-4" />
               API Keys
             </SidebarButton> */}
-            <SidebarButton
-              active={match === '/account/settings/'}
-              render={<Link to="/account/settings" />}
-            >
+            <SidebarButton active={match === '/account/settings/'} render={<Link to="/account/settings" />}>
               <RiSettingsLine className="size-4" />
               Settings
             </SidebarButton>
             <SupportButton />
             <Separator className="my-2" />
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-foreground"
-              onClick={() => authClient.signOut().then(() => router.invalidate())}
-            >
+            <Button variant="ghost" className="w-full justify-start text-foreground" onClick={() => authClient.signOut().then(() => router.invalidate())}>
               <RiLogoutCircleLine className="size-4" />
               Sign out
             </Button>

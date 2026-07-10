@@ -20,10 +20,7 @@ const getEncryptionKey = memoize(async (): Promise<CryptoKey> => {
 
   if (stored) return stored
 
-  const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, [
-    'encrypt',
-    'decrypt',
-  ])
+  const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt'])
   await storage.set({ encryptionKey: key })
 
   return key

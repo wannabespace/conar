@@ -10,12 +10,12 @@ const schema = chatsInsertSchema.omit('userId', 'activeStreamId', 'title')
 
 export const create = orpc
   .use(subscriptionMiddleware)
-  .input(type.or(schema, schema.array()).pipe(data => (Array.isArray(data) ? data : [data])))
+  .input(type.or(schema, schema.array()).pipe((data) => (Array.isArray(data) ? data : [data])))
   .handler(async ({ context, input }) => {
     const inserted = await db
       .insert(chats)
       .values(
-        input.map(item => ({
+        input.map((item) => ({
           ...item,
           userId: context.user.id,
           activeStreamId: null,

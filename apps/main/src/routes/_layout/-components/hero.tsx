@@ -28,53 +28,27 @@ export function Hero({ className }: { className?: string }) {
       )}
     >
       <div className={`w-full lg:w-auto lg:flex-1`}>
-        <h1
-          className={cn(
-            `text-[clamp(2rem,min(7vh,7vw),4rem)] leading-none font-medium text-balance`,
-          )}
-        >
-          <motion.span
-            initial={{ opacity: 0, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            transition={{ duration: 0.5 }}
-          >
+        <h1 className={cn(`text-[clamp(2rem,min(7vh,7vw),4rem)] leading-none font-medium text-balance`)}>
+          <motion.span initial={{ opacity: 0, filter: 'blur(10px)' }} animate={{ opacity: 1, filter: 'blur(0px)' }} transition={{ duration: 0.5 }}>
             Manage
           </motion.span>
-          <motion.span
-            initial={{ opacity: 0, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            transition={{ duration: 0.5, delay: 0.05 }}
-          >
+          <motion.span initial={{ opacity: 0, filter: 'blur(10px)' }} animate={{ opacity: 1, filter: 'blur(0px)' }} transition={{ duration: 0.5, delay: 0.05 }}>
             <FlipWords words={Object.values(words)} duration={2000} />
           </motion.span>
           <br />
-          <motion.span
-            initial={{ opacity: 0, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
+          <motion.span initial={{ opacity: 0, filter: 'blur(10px)' }} animate={{ opacity: 1, filter: 'blur(0px)' }} transition={{ duration: 0.5, delay: 0.1 }}>
             quickly
           </motion.span>{' '}
-          <motion.span
-            initial={{ opacity: 0, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            transition={{ duration: 0.5, delay: 0.15 }}
-          >
+          <motion.span initial={{ opacity: 0, filter: 'blur(10px)' }} animate={{ opacity: 1, filter: 'blur(0px)' }} transition={{ duration: 0.5, delay: 0.15 }}>
             and
           </motion.span>
           &nbsp;
-          <motion.span
-            initial={{ opacity: 0, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
+          <motion.span initial={{ opacity: 0, filter: 'blur(10px)' }} animate={{ opacity: 1, filter: 'blur(0px)' }} transition={{ duration: 0.5, delay: 0.2 }}>
             easily
           </motion.span>
         </h1>
       </div>
-      <div
-        className={`flex w-full max-w-md flex-col items-start gap-4 sm:gap-6 lg:flex-1 lg:items-end`}
-      >
+      <div className={`flex w-full max-w-md flex-col items-start gap-4 sm:gap-6 lg:flex-1 lg:items-end`}>
         <motion.h2
           initial={{ opacity: 0, filter: 'blur(10px)' }}
           animate={{ opacity: 1, filter: 'blur(0px)' }}
@@ -90,12 +64,7 @@ export function Hero({ className }: { className?: string }) {
           className={`flex w-full flex-col gap-3 sm:flex-row sm:gap-4 lg:w-auto`}
         >
           <DownloadButton className="w-full sm:w-auto" />
-          <Button
-            variant="secondary"
-            size="lg"
-            className={`w-full sm:w-auto`}
-            render={<Link to="/download" />}
-          >
+          <Button variant="secondary" size="lg" className={`w-full sm:w-auto`} render={<Link to="/download" />}>
             All platforms
           </Button>
         </motion.div>

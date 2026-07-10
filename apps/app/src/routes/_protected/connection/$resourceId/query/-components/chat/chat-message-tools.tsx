@@ -1,21 +1,10 @@
 import type { ToolUIPart } from '@conar/ai/tools/helpers'
 import { FaviconWithFallback } from '@conar/ui/components/custom/favicon-with-fallback'
-import {
-  SingleAccordion,
-  SingleAccordionContent,
-  SingleAccordionTrigger,
-  SingleAccordionTriggerArrow,
-} from '@conar/ui/components/custom/single-accordion'
+import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger, SingleAccordionTriggerArrow } from '@conar/ui/components/custom/single-accordion'
 import { Spinner } from '@conar/ui/components/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import {
-  RiBook2Line,
-  RiEarthLine,
-  RiErrorWarningLine,
-  RiHammerLine,
-  RiSearchLine,
-} from '@remixicon/react'
+import { RiBook2Line, RiEarthLine, RiErrorWarningLine, RiHammerLine, RiSearchLine } from '@remixicon/react'
 import type { editor } from 'monaco-editor'
 
 import { InfoTable } from '~/components/info-table'
@@ -30,14 +19,7 @@ const monacoOptions = {
 } as const satisfies editor.IStandaloneEditorConstructionOptions
 
 function MonacoOutput({ value, language = 'json' }: { value: string; language?: string }) {
-  return (
-    <Monaco
-      value={value}
-      language={language}
-      options={monacoOptions}
-      className="-mx-2 h-50 max-h-[50vh]"
-    />
-  )
+  return <Monaco value={value} language={language} options={monacoOptions} className="-mx-2 h-50 max-h-[50vh]" />
 }
 
 const SKIP_CONTENT_TOOLS = ['dynamic-tool', 'tool-resolveLibraryId'] satisfies ToolUIPart['type'][]
@@ -46,16 +28,9 @@ function shouldSkipContent(part: ToolUIPart) {
   return SKIP_CONTENT_TOOLS.includes(part.type as (typeof SKIP_CONTENT_TOOLS)[number])
 }
 
-const ICONS: Record<
-  ToolUIPart['state'],
-  (props: { className?: string; part: ToolUIPart }) => React.ReactNode
-> = {
-  'input-streaming': ({ className }) => (
-    <Spinner className={cn(`animate-spin text-primary`, className)} />
-  ),
-  'input-available': ({ className }) => (
-    <Spinner className={cn(`animate-spin text-primary`, className)} />
-  ),
+const ICONS: Record<ToolUIPart['state'], (props: { className?: string; part: ToolUIPart }) => React.ReactNode> = {
+  'input-streaming': ({ className }) => <Spinner className={cn(`animate-spin text-primary`, className)} />,
+  'input-available': ({ className }) => <Spinner className={cn(`animate-spin text-primary`, className)} />,
   'output-available': ({ className, part }) => {
     if (part.type === 'tool-webSearch') {
       return <RiEarthLine className={cn('text-muted-foreground', className)} />
@@ -68,18 +43,10 @@ const ICONS: Record<
     }
     return <RiHammerLine className={cn('text-muted-foreground', className)} />
   },
-  'output-error': ({ className }) => (
-    <RiErrorWarningLine className={cn(`text-red-600`, className)} />
-  ),
-  'approval-requested': ({ className }) => (
-    <Spinner className={cn(`animate-spin text-primary`, className)} />
-  ),
-  'approval-responded': ({ className }) => (
-    <RiHammerLine className={cn(`text-muted-foreground`, className)} />
-  ),
-  'output-denied': ({ className }) => (
-    <RiErrorWarningLine className={cn(`text-red-600`, className)} />
-  ),
+  'output-error': ({ className }) => <RiErrorWarningLine className={cn(`text-red-600`, className)} />,
+  'approval-requested': ({ className }) => <Spinner className={cn(`animate-spin text-primary`, className)} />,
+  'approval-responded': ({ className }) => <RiHammerLine className={cn(`text-muted-foreground`, className)} />,
+  'output-denied': ({ className }) => <RiErrorWarningLine className={cn(`text-red-600`, className)} />,
 }
 
 function ToolIcon({ part, className }: { part: ToolUIPart; className?: string }) {
@@ -123,8 +90,7 @@ const TITLES: {
     return 'Searching the web...'
   },
   'tool-resolveLibraryId': ({ part }) => {
-    const libraryName =
-      part.input && typeof part.input.libraryName === 'string' ? part.input.libraryName : ''
+    const libraryName = part.input && typeof part.input.libraryName === 'string' ? part.input.libraryName : ''
 
     if (libraryName) {
       return `Resolved library "${libraryName}"`
@@ -148,31 +114,23 @@ function getTitle({ part }: { part: ToolUIPart }) {
 }
 
 const CONTENT: {
-  [K in Exclude<ToolUIPart['type'], (typeof SKIP_CONTENT_TOOLS)[number]>]: (props: {
-    part: Extract<ToolUIPart, { type: K }>
-  }) => React.ReactNode
+  [K in Exclude<ToolUIPart['type'], (typeof SKIP_CONTENT_TOOLS)[number]>]: (props: { part: Extract<ToolUIPart, { type: K }> }) => React.ReactNode
 } = {
   'tool-columns': ({ part }) => (
     <>
-      <div className="mb-4 text-xs text-muted-foreground">
-        Agent called a tool to get table columns.
-      </div>
+      <div className="mb-4 text-xs text-muted-foreground">Agent called a tool to get table columns.</div>
       {part.state === 'output-available' && <MonacoOutput value={JSON.stringify(part.output)} />}
     </>
   ),
   'tool-enums': ({ part }) => (
     <>
-      <div className="mb-4 text-xs text-muted-foreground">
-        Agent called a tool to get database enums.
-      </div>
+      <div className="mb-4 text-xs text-muted-foreground">Agent called a tool to get database enums.</div>
       {part.state === 'output-available' && <MonacoOutput value={JSON.stringify(part.output)} />}
     </>
   ),
   'tool-select': ({ part }) => (
     <div className="flex flex-col gap-2 text-xs">
-      <div className="text-muted-foreground">
-        Agent called a tool to get data from the database.
-      </div>
+      <div className="text-muted-foreground">Agent called a tool to get data from the database.</div>
       {part.input && (
         <InfoTable
           data={[
@@ -182,19 +140,16 @@ const CONTENT: {
             },
             {
               name: 'From',
-              value: part.input.tableAndSchema
-                ? `${part.input.tableAndSchema.schemaName}.${part.input.tableAndSchema?.tableName}`
-                : null,
+              value: part.input.tableAndSchema ? `${part.input.tableAndSchema.schemaName}.${part.input.tableAndSchema?.tableName}` : null,
             },
             {
               name: 'Where',
               value:
-                (part.state === 'input-available' || part.state === 'output-available') &&
-                part.input.whereFilters?.length
+                (part.state === 'input-available' || part.state === 'output-available') && part.input.whereFilters?.length
                   ? part.input.whereFilters
                       .map(
-                        filter =>
-                          `"${filter.column}" ${filter.operator} ${filter.values.length > 0 ? filter.values.map(value => `"${value}"`).join(', ') : ''}`,
+                        (filter) =>
+                          `"${filter.column}" ${filter.operator} ${filter.values.length > 0 ? filter.values.map((value) => `"${value}"`).join(', ') : ''}`,
                       )
                       .join(` ${part.input.whereConcatOperator} `)
                   : null,
@@ -218,43 +173,34 @@ const CONTENT: {
   ),
   'tool-webSearch': ({ part }) => (
     <>
-      <div className="mb-2 text-xs text-muted-foreground">
-        Agent searched the web for information.
-      </div>
+      <div className="mb-2 text-xs text-muted-foreground">Agent searched the web for information.</div>
       {part.state === 'output-available' && (
         <div className="space-y-2">
-          {!!part.output &&
-            typeof part.output === 'object' &&
-            'results' in part.output &&
-            Array.isArray(part.output.results) && (
-              <div className="flex flex-wrap gap-2">
-                {part.output.results
-                  .slice(0, 5)
-                  .map((result: { title: string; url: string; description?: string }) => (
-                    <Tooltip key={`${part.toolCallId}-${result.url}`}>
-                      <TooltipTrigger asChild>
-                        <a
-                          href={result.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={`group flex max-w-full min-w-50 flex-1 basis-1/3 items-center gap-1 rounded-md border bg-accent/20 px-1.5 py-0.5 text-xs transition-colors hover:bg-accent/40`}
-                        >
-                          <FaviconWithFallback url={result.url} className="size-3 shrink-0" />
-                          <span className={`truncate font-medium group-hover:text-primary`}>
-                            {result.title}
-                          </span>
-                        </a>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="max-w-xs">
-                          <div className="font-medium">{result.title}</div>
-                          <div className="mt-1 text-xs text-muted-foreground">{result.url}</div>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
-              </div>
-            )}
+          {!!part.output && typeof part.output === 'object' && 'results' in part.output && Array.isArray(part.output.results) && (
+            <div className="flex flex-wrap gap-2">
+              {part.output.results.slice(0, 5).map((result: { title: string; url: string; description?: string }) => (
+                <Tooltip key={`${part.toolCallId}-${result.url}`}>
+                  <TooltipTrigger asChild>
+                    <a
+                      href={result.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`group flex max-w-full min-w-50 flex-1 basis-1/3 items-center gap-1 rounded-md border bg-accent/20 px-1.5 py-0.5 text-xs transition-colors hover:bg-accent/40`}
+                    >
+                      <FaviconWithFallback url={result.url} className="size-3 shrink-0" />
+                      <span className={`truncate font-medium group-hover:text-primary`}>{result.title}</span>
+                    </a>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="max-w-xs">
+                      <div className="font-medium">{result.title}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{result.url}</div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </>
@@ -267,12 +213,7 @@ function ToolContent({ part }: { part: ToolUIPart }) {
     CONTENT[part.type as Exclude<ToolUIPart['type'], (typeof SKIP_CONTENT_TOOLS)[number]>]?.({
       part,
       // eslint-disable-next-line typescript/no-explicit-any
-    } as any) ||
-    (part.errorText ? (
-      <div className="text-xs text-destructive">{part.errorText}</div>
-    ) : (
-      <MonacoOutput value={JSON.stringify(part.output)} />
-    ))
+    } as any) || (part.errorText ? <div className="text-xs text-destructive">{part.errorText}</div> : <MonacoOutput value={JSON.stringify(part.output)} />)
   )
 }
 
@@ -300,12 +241,7 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart; classNa
 
   return (
     <SingleAccordion className={cn('my-2 rounded-sm', className)} open={error ? true : undefined}>
-      <SingleAccordionTrigger
-        className={cn(
-          'min-w-0 gap-2 overflow-hidden py-1 text-xs',
-          (skipContent || error) && `cursor-auto`,
-        )}
-      >
+      <SingleAccordionTrigger className={cn('min-w-0 gap-2 overflow-hidden py-1 text-xs', (skipContent || error) && `cursor-auto`)}>
         <div className="flex flex-1 items-center gap-2 overflow-hidden">
           <ToolIcon className={cn('size-4 shrink-0', error && 'text-destructive')} part={part} />
           <span className="truncate text-sm">{title}</span>
@@ -313,11 +249,7 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart; classNa
         {!error && !skipContent && <SingleAccordionTriggerArrow className="ml-auto shrink-0" />}
       </SingleAccordionTrigger>
       <SingleAccordionContent>
-        {error ? (
-          <div className="text-xs text-destructive">{error}</div>
-        ) : skipContent ? null : (
-          <ToolContent part={part} />
-        )}
+        {error ? <div className="text-xs text-destructive">{error}</div> : skipContent ? null : <ToolContent part={part} />}
       </SingleAccordionContent>
     </SingleAccordion>
   )

@@ -1,25 +1,12 @@
 import { Badge } from '@conar/ui/components/badge'
 import { Button } from '@conar/ui/components/button'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@conar/ui/components/command'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@conar/ui/components/command'
 import { Indicator } from '@conar/ui/components/custom/indicator'
 import { Popover, PopoverContent, PopoverTrigger } from '@conar/ui/components/popover'
 import { Separator } from '@conar/ui/components/separator'
 import { ToggleGroup, ToggleGroupItem } from '@conar/ui/components/toggle-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
-import {
-  RiAddLine,
-  RiArrowDownLine,
-  RiArrowUpDownLine,
-  RiArrowUpLine,
-  RiCloseLine,
-} from '@remixicon/react'
+import { RiAddLine, RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiCloseLine } from '@remixicon/react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
@@ -29,7 +16,7 @@ import { columnsOrder, useTablePageStore } from '../../store'
 export function HeaderActionsOrder() {
   const store = useTablePageStore()
   const orderEntries = useSubscription(store, {
-    selector: state => Object.entries(state.orderBy || {}),
+    selector: (state) => Object.entries(state.orderBy || {}),
   })
   const columns = useTableColumns()
   const [open, setOpen] = useState(false)
@@ -42,7 +29,7 @@ export function HeaderActionsOrder() {
   }
 
   const hasOrders = orderEntries.length > 0
-  const availableColumns = columns?.filter(col => !orderEntries.some(([id]) => id === col.id)) || []
+  const availableColumns = columns?.filter((col) => !orderEntries.some(([id]) => id === col.id)) || []
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -55,11 +42,7 @@ export function HeaderActionsOrder() {
         </TooltipTrigger>
         <TooltipContent side="top">Sort order</TooltipContent>
       </Tooltip>
-      <PopoverContent
-        className="w-90 p-0 **:data-[slot=popover-viewport]:p-0"
-        side="bottom"
-        align="end"
-      >
+      <PopoverContent className="w-90 p-0 **:data-[slot=popover-viewport]:p-0" side="bottom" align="end">
         <div className="flex flex-col">
           <div className="border-b px-4 py-3">
             <div className="flex items-center justify-between">
@@ -83,9 +66,7 @@ export function HeaderActionsOrder() {
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium">No sorting applied</p>
-                  <p className="text-xs text-muted-foreground">
-                    Click on column headers or add columns below
-                  </p>
+                  <p className="text-xs text-muted-foreground">Click on column headers or add columns below</p>
                 </div>
               </div>
             ) : (
@@ -101,7 +82,7 @@ export function HeaderActionsOrder() {
                           variant="outline"
                           size="sm"
                           value={[order]}
-                          onValueChange={value => {
+                          onValueChange={(value) => {
                             if (value[0]) setOrder(columnId, value[0])
                           }}
                         >
@@ -135,37 +116,20 @@ export function HeaderActionsOrder() {
               <Separator />
               <div className="p-3">
                 <Popover open={showAddColumn} onOpenChange={setShowAddColumn}>
-                  <PopoverTrigger
-                    render={
-                      <Button variant="outline" size="sm" className="w-full justify-start gap-2" />
-                    }
-                  >
+                  <PopoverTrigger render={<Button variant="outline" size="sm" className="w-full justify-start gap-2" />}>
                     <RiAddLine className="size-4" />
                     Add column to sort
                   </PopoverTrigger>
-                  <PopoverContent
-                    className="w-64 p-0 **:data-[slot=popover-viewport]:p-0"
-                    align="start"
-                    side="left"
-                  >
+                  <PopoverContent className="w-64 p-0 **:data-[slot=popover-viewport]:p-0" align="start" side="left">
                     <Command>
                       <CommandInput placeholder="Search columns..." />
                       <CommandList>
                         <CommandEmpty>No columns found.</CommandEmpty>
                         <CommandGroup>
-                          {availableColumns.map(column => (
-                            <CommandItem
-                              key={column.id}
-                              value={column.id}
-                              onSelect={() => addColumn(column.id)}
-                              className="gap-2"
-                            >
+                          {availableColumns.map((column) => (
+                            <CommandItem key={column.id} value={column.id} onSelect={() => addColumn(column.id)} className="gap-2">
                               <span className="truncate">{column.id}</span>
-                              {column.type && (
-                                <span className="ml-auto text-right text-xs text-muted-foreground">
-                                  {column.type}
-                                </span>
-                              )}
+                              {column.type && <span className="ml-auto text-right text-xs text-muted-foreground">{column.type}</span>}
                             </CommandItem>
                           ))}
                         </CommandGroup>

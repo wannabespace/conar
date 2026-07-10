@@ -7,11 +7,11 @@ import type { ConnectionResource } from '~/entities/connection/core'
 import { connectionResourceToQueryParams, createQuery } from '../runtime/query'
 
 export const triggersType = type({
-  schema: 'string',
-  table: 'string',
-  name: 'string',
-  event: 'string',
-  timing: 'string',
+  'schema': 'string',
+  'table': 'string',
+  'name': 'string',
+  'event': 'string',
+  'timing': 'string',
   'enabled?': 'boolean',
   'function_name?': 'string | null',
 }).pipe(({ function_name, enabled, ...item }) => ({
@@ -23,7 +23,7 @@ export const triggersType = type({
 export const resourceTriggersQuery = createQuery({
   type: triggersType.array(),
   query: {
-    postgres: db =>
+    postgres: (db) =>
       db
         .selectFrom('pg_catalog.pg_trigger as t')
         .innerJoin('pg_catalog.pg_class as c', 't.tgrelid', 'c.oid')
@@ -55,7 +55,7 @@ export const resourceTriggersQuery = createQuery({
         .where('n.nspname', 'not like', 'pg_%')
         .where('n.nspname', '!=', 'information_schema')
         .execute(),
-    mysql: db =>
+    mysql: (db) =>
       db
         .selectFrom('information_schema.TRIGGERS as t')
         .select([
@@ -65,14 +65,9 @@ export const resourceTriggersQuery = createQuery({
           't.EVENT_MANIPULATION as event',
           't.ACTION_TIMING as timing',
         ])
-        .where('t.TRIGGER_SCHEMA', 'not in', [
-          'mysql',
-          'information_schema',
-          'performance_schema',
-          'sys',
-        ])
+        .where('t.TRIGGER_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
         .execute(),
-    mssql: db =>
+    mssql: (db) =>
       db
         .selectFrom('sys.triggers as t')
         .innerJoin('sys.objects as o', 't.parent_id', 'o.object_id')
@@ -83,13 +78,7 @@ export const resourceTriggersQuery = createQuery({
           'o.name as table',
           't.name as name',
           sql<string>`COALESCE(STRING_AGG(te.type_desc, ' OR '), 'UNKNOWN')`.as('event'),
-          eb
-            .case()
-            .when('t.is_instead_of_trigger', '=', true)
-            .then('INSTEAD OF')
-            .else('AFTER')
-            .end()
-            .as('timing'),
+          eb.case().when('t.is_instead_of_trigger', '=', true).then('INSTEAD OF').else('AFTER').end().as('timing'),
           eb.case().when('t.is_disabled', '=', false).then(true).else(false).end().as('enabled'),
         ])
         .where('t.is_ms_shipped', '=', false)
@@ -103,14 +92,9 @@ export const resourceTriggersQuery = createQuery({
   },
 })
 
-export function resourceTriggersQueryOptions({
-  connectionResource,
-}: {
-  connectionResource: ConnectionResource
-}) {
+export function resourceTriggersQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
   return queryOptions({
-    queryFn: async () =>
-      resourceTriggersQuery.run(await connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () => resourceTriggersQuery.run(await connectionResourceToQueryParams(connectionResource)),
     queryKey: ['connection-resource', connectionResource.id, 'triggers'],
   })
 }

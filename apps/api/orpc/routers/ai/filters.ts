@@ -21,7 +21,7 @@ const schema = z.object({
   filters: z.array(
     z.object({
       column: z.string(),
-      operator: z.enum(SQL_FILTERS_LIST.map(filter => filter.operator)),
+      operator: z.enum(SQL_FILTERS_LIST.map((filter) => filter.operator)),
       values: z.array(z.string()),
     }),
   ),
@@ -71,8 +71,7 @@ export const filters = orpc
 
       if (usage >= FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT) {
         throw errors.FORBIDDEN({
-          message:
-            'You have reached the free AI usage limit. Please subscribe to a Pro plan to continue using AI features.',
+          message: 'You have reached the free AI usage limit. Please subscribe to a Pro plan to continue using AI features.',
           data: {
             remaining: 0,
             max: FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT,
@@ -126,17 +125,13 @@ export const filters = orpc
       }),
     })
 
-    const orderBy = Object.fromEntries(
-      (result?.orderBy ?? []).map(({ column, direction }) => [column, direction]),
-    )
+    const orderBy = Object.fromEntries((result?.orderBy ?? []).map(({ column, direction }) => [column, direction]))
 
     if (!context.subscription && result.filters.length > 0) {
       usage = await redisUsage.increment(context.user.id)
     }
 
-    const remainingFreeAiUsage = context.subscription
-      ? null
-      : FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT - usage
+    const remainingFreeAiUsage = context.subscription ? null : FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT - usage
 
     context.addLogData({
       filterResult: result,

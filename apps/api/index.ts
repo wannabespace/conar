@@ -34,11 +34,7 @@ const handler = new RPCHandler(router, {
         if (error instanceof ORPCError) {
           if (error.cause instanceof ValidationError) {
             const message = error.cause.issues
-              .map(issue =>
-                issue.path
-                  ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
-                  : issue.message,
-              )
+              .map((issue) => (issue.path ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}` : issue.message))
               .join(', ')
 
             throw new ORPCError('BAD_REQUEST', { message })
@@ -75,11 +71,10 @@ const app = new Hono<{
       credentials: true,
     }),
   )
-  .get('/', c => c.redirect(env.MAIN_URL))
+  .get('/', (c) => c.redirect(env.MAIN_URL))
   .use('*', async (c, next) => {
     const startTime = Date.now()
-    const xAppVersion =
-      (c.req.header('x-app-version') || c.req.header('x-desktop-version'))?.split('.') || null
+    const xAppVersion = (c.req.header('x-app-version') || c.req.header('x-desktop-version'))?.split('.') || null
     c.set('logEvent', {})
     const parsedAppVersion = xAppVersion
       ? {
@@ -89,12 +84,7 @@ const app = new Hono<{
         }
       : null
     c.set('parsedAppVersion', parsedAppVersion)
-    c.set(
-      'isAppOutdated',
-      !!env.MIN_DESKTOP_VERSION &&
-        !!parsedAppVersion?.minor &&
-        parsedAppVersion.minor < env.MIN_DESKTOP_VERSION,
-    )
+    c.set('isAppOutdated', !!env.MIN_DESKTOP_VERSION && !!parsedAppVersion?.minor && parsedAppVersion.minor < env.MIN_DESKTOP_VERSION)
 
     await next()
 
@@ -119,13 +109,7 @@ const app = new Hono<{
       ...sanitizeLogData(logEvent),
     }
 
-    if (
-      status >= 400 &&
-      status !== 401 &&
-      status !== 404 &&
-      env.ALERTS_EMAIL &&
-      !c.req.url.includes('healthcheck.railway.app')
-    ) {
+    if (status >= 400 && status !== 401 && status !== 404 && env.ALERTS_EMAIL && !c.req.url.includes('healthcheck.railway.app')) {
       sendEmail({
         to: env.ALERTS_EMAIL,
         subject: `Alert from API: ${status} ${method} ${c.req.url}`,
@@ -146,7 +130,7 @@ const app = new Hono<{
       console.info(log)
     }
   })
-  .on(['GET', 'POST'], '/auth/*', c => {
+  .on(['GET', 'POST'], '/auth/*', (c) => {
     const req = c.req.raw
 
     const origin = req.headers.get('origin')

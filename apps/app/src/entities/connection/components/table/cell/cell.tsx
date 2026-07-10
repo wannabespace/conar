@@ -30,13 +30,7 @@ import { TableCellReferences } from './cell-references'
 import { TableCellTable } from './cell-table'
 import type { Column, ColumnHandlers } from './utils'
 
-function SetNullAlertDialog({
-  open,
-  onOpenChange,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) {
+function SetNullAlertDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { value, onQueueValue } = useCellContext()
 
   const setNull = async () => {
@@ -52,17 +46,12 @@ function SetNullAlertDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Set value to null?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will set the cell value to <code className="font-mono">null</code>. This action can
-            be undone by editing the cell again.
+            This will set the cell value to <code className="font-mono">null</code>. This action can be undone by editing the cell again.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-          <AlertDialogClose
-            render={<Button variant="warning" />}
-            onClick={setNull}
-            disabled={value === null}
-          >
+          <AlertDialogClose render={<Button variant="warning" />} onClick={setNull} disabled={value === null}>
             Set to null
           </AlertDialogClose>
         </AlertDialogFooter>
@@ -127,13 +116,7 @@ export function TableCell({
   const [isSetNullDialogOpen, setIsSetNullDialogOpen] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
 
-  const status: SaveStatus = draft?.error
-    ? 'error'
-    : draft?.isCommitting
-      ? 'pending'
-      : hasDraft
-        ? 'draft'
-        : 'idle'
+  const status: SaveStatus = draft?.error ? 'error' : draft?.isCommitting ? 'pending' : hasDraft ? 'draft' : 'idle'
 
   const cellClassName = cn(
     isPopoverOpen && 'bg-primary/10 ring-primary/30',
@@ -145,13 +128,7 @@ export function TableCell({
   )
 
   function disableInteractIfPossible() {
-    if (
-      !isPopoverOpen &&
-      !isForeignOpen &&
-      !isReferencesOpen &&
-      !isContextMenuOpen &&
-      !isSetNullDialogOpen
-    ) {
+    if (!isPopoverOpen && !isForeignOpen && !isReferencesOpen && !isContextMenuOpen && !isSetNullDialogOpen) {
       sleep(200).then(() => setCanInteract(false))
     }
   }
@@ -170,9 +147,7 @@ export function TableCell({
       >
         <span className="truncate">{displayValue}</span>
         {!!effectiveValue && column.foreign && <ForeignButton />}
-        {!!effectiveValue && column.references && column.references.length > 0 && (
-          <ReferenceButton>{column.references.length}</ReferenceButton>
-        )}
+        {!!effectiveValue && column.references && column.references.length > 0 && <ReferenceButton>{column.references.length}</ReferenceButton>}
       </TableCellContent>
     )
   }
@@ -191,7 +166,7 @@ export function TableCell({
     >
       <SetNullAlertDialog
         open={isSetNullDialogOpen}
-        onOpenChange={open => {
+        onOpenChange={(open) => {
           setIsSetNullDialogOpen(open)
           if (!open) {
             disableInteractIfPossible()
@@ -200,20 +175,18 @@ export function TableCell({
       />
       <TableCellContextMenu
         open={isContextMenuOpen}
-        onOpenChange={open => {
+        onOpenChange={(open) => {
           setIsContextMenuOpen(open)
           if (!open) {
             disableInteractIfPossible()
           }
         }}
         style={style}
-        onSetNull={
-          onQueueValue && column.isNullable ? () => setIsSetNullDialogOpen(true) : undefined
-        }
+        onSetNull={onQueueValue && column.isNullable ? () => setIsSetNullDialogOpen(true) : undefined}
       >
         <Popover
           open={isPopoverOpen}
-          onOpenChange={isOpen => {
+          onOpenChange={(isOpen) => {
             if (!isOpen) {
               setIsPopoverOpen(isOpen)
               setIsBig(false)
@@ -225,14 +198,7 @@ export function TableCell({
             onDoubleClick={() => setIsPopoverOpen(true)}
             onMouseLeave={disableInteractIfPossible}
             render={
-              <TableCellContent
-                style={style}
-                value={effectiveValue}
-                position={position}
-                className={cellClassName}
-                column={column}
-                title={draft?.error}
-              />
+              <TableCellContent style={style} value={effectiveValue} position={position} className={cellClassName} column={column} title={draft?.error} />
             }
           >
             <span className="truncate">{displayValue}</span>
@@ -243,8 +209,8 @@ export function TableCell({
                     <PopoverTrigger
                       render={
                         <ForeignButton
-                          onDoubleClick={e => e.stopPropagation()}
-                          onClick={e => {
+                          onDoubleClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
                             e.stopPropagation()
 
                             setIsForeignOpen(true)
@@ -259,15 +225,10 @@ export function TableCell({
                 </Tooltip>
                 <PopoverContent
                   className="h-[45vh] w-[80vw] overflow-hidden p-0 **:data-[slot=popover-viewport]:p-0"
-                  onDoubleClick={e => e.stopPropagation()}
-                  onClick={e => e.stopPropagation()}
+                  onDoubleClick={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <TableCellTable
-                    schema={column.foreign.schema}
-                    table={column.foreign.table}
-                    column={column.foreign.column}
-                    value={effectiveValue}
-                  />
+                  <TableCellTable schema={column.foreign.schema} table={column.foreign.table} column={column.foreign.column} value={effectiveValue} />
                 </PopoverContent>
               </Popover>
             )}
@@ -278,8 +239,8 @@ export function TableCell({
                     <PopoverTrigger
                       render={
                         <ReferenceButton
-                          onDoubleClick={e => e.stopPropagation()}
-                          onClick={e => {
+                          onDoubleClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
                             e.stopPropagation()
 
                             setIsReferencesOpen(true)
@@ -299,8 +260,8 @@ export function TableCell({
                 </Tooltip>
                 <PopoverContent
                   className="h-[45vh] w-[80vw] overflow-hidden p-0 **:data-[slot=popover-viewport]:p-0"
-                  onDoubleClick={e => e.stopPropagation()}
-                  onClick={e => e.stopPropagation()}
+                  onDoubleClick={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <TableCellReferences references={column.references} value={effectiveValue} />
                 </PopoverContent>

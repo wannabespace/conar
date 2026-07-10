@@ -9,10 +9,7 @@ import * as templates from './templates'
 
 export const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null
 
-export async function sendEmail<
-  T extends keyof typeof templates,
-  P extends ComponentProps<(typeof templates)[T]>,
->({
+export async function sendEmail<T extends keyof typeof templates, P extends ComponentProps<(typeof templates)[T]>>({
   to,
   subject,
   template,
@@ -49,11 +46,7 @@ export async function sendEmail<
           throw error
         }
       } catch (error) {
-        console.error(
-          'Resend email service error:',
-          error instanceof Error ? error.message : 'Unknown error',
-          error,
-        )
+        console.error('Resend email service error:', error instanceof Error ? error.message : 'Unknown error', error)
       }
     },
     `resend:${JSON.stringify(options)}`,

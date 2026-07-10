@@ -1,10 +1,4 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@conar/ui/components/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 
 export function SchemaSelect({
   schemas,
@@ -20,7 +14,7 @@ export function SchemaSelect({
   return (
     <Select
       value={selectedSchema}
-      onValueChange={v => {
+      onValueChange={(v) => {
         if (v) {
           setSelectedSchema(v)
         }
@@ -35,7 +29,7 @@ export function SchemaSelect({
         </div>
       </SelectTrigger>
       <SelectContent>
-        {schemas.map(schema => (
+        {schemas.map((schema) => (
           <SelectItem key={schema} value={schema}>
             {schema}
           </SelectItem>

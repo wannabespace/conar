@@ -30,46 +30,30 @@ interface ConnectionInput {
 function createQueryDialect<T extends AnyBuilder>(
   dialect: QueryExecutor,
   orpc: T,
-  resolveConnectionString: (
-    input: ConnectionInput,
-    context: Parameters<Parameters<T['handler']>[0]>[0]['context'],
-  ) => string | Promise<string>,
+  resolveConnectionString: (input: ConnectionInput, context: Parameters<Parameters<T['handler']>[0]>[0]['context']) => string | Promise<string>,
 ) {
   return {
-    execute: orpc
-      .input(type<Params<typeof dialect.execute>>())
-      .handler(async ({ input, context }) =>
-        dialect.execute({
-          ...input,
-          connectionString: await resolveConnectionString(input, context),
-        }),
-      ),
-    beginTransaction: orpc
-      .input(type<Params<typeof dialect.beginTransaction>>())
-      .handler(async ({ input, context }) =>
-        dialect.beginTransaction({
-          ...input,
-          connectionString: await resolveConnectionString(input, context),
-        }),
-      ),
-    executeTransaction: orpc
-      .input(type<Params<typeof dialect.executeTransaction>>())
-      .handler(({ input }) => dialect.executeTransaction(input)),
-    commitTransaction: orpc
-      .input(type<Params<typeof dialect.commitTransaction>>())
-      .handler(({ input }) => dialect.commitTransaction(input)),
-    rollbackTransaction: orpc
-      .input(type<Params<typeof dialect.rollbackTransaction>>())
-      .handler(({ input }) => dialect.rollbackTransaction(input)),
+    execute: orpc.input(type<Params<typeof dialect.execute>>()).handler(async ({ input, context }) =>
+      dialect.execute({
+        ...input,
+        connectionString: await resolveConnectionString(input, context),
+      }),
+    ),
+    beginTransaction: orpc.input(type<Params<typeof dialect.beginTransaction>>()).handler(async ({ input, context }) =>
+      dialect.beginTransaction({
+        ...input,
+        connectionString: await resolveConnectionString(input, context),
+      }),
+    ),
+    executeTransaction: orpc.input(type<Params<typeof dialect.executeTransaction>>()).handler(({ input }) => dialect.executeTransaction(input)),
+    commitTransaction: orpc.input(type<Params<typeof dialect.commitTransaction>>()).handler(({ input }) => dialect.commitTransaction(input)),
+    rollbackTransaction: orpc.input(type<Params<typeof dialect.rollbackTransaction>>()).handler(({ input }) => dialect.rollbackTransaction(input)),
   } satisfies Record<keyof QueryExecutor, unknown>
 }
 
 export function createQueryRouter<T extends AnyBuilder>(
   orpc: T,
-  resolveConnectionString: (
-    input: ConnectionInput,
-    context: Parameters<Parameters<T['handler']>[0]>[0]['context'],
-  ) => string | Promise<string>,
+  resolveConnectionString: (input: ConnectionInput, context: Parameters<Parameters<T['handler']>[0]>[0]['context']) => string | Promise<string>,
 ) {
   return {
     postgres: createQueryDialect(pg.query, orpc, resolveConnectionString),

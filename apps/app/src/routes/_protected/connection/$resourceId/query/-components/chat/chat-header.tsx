@@ -66,9 +66,7 @@ function groupChats(data: Chat[]) {
     }
   }
 
-  return Object.fromEntries(
-    Object.entries(groups).filter(([_, chats]) => chats.length > 0),
-  ) as typeof groups
+  return Object.fromEntries(Object.entries(groups).filter(([_, chats]) => chats.length > 0)) as typeof groups
 }
 
 export function ChatHeader({ chatId }: { chatId: string }) {
@@ -77,11 +75,8 @@ export function ChatHeader({ chatId }: { chatId: string }) {
   const store = getConnectionResourceStore(resourceId)
   const removeDialogRef = useRef<ComponentRef<typeof RemoveChatDialog>>(null)
   const { chatsCollection } = useCollections()
-  const { data: allChats } = useLiveQuery(
-    q => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'),
-    [chatsCollection],
-  )
-  const chat = allChats.find(chat => chat.id === chatId)
+  const { data: allChats } = useLiveQuery((q) => q.from({ chats: chatsCollection }).orderBy(({ chats }) => chats.createdAt, 'desc'), [chatsCollection])
+  const chat = allChats.find((chat) => chat.id === chatId)
 
   const grouped = groupChats(allChats)
 
@@ -89,7 +84,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
     removeDialogRef.current?.remove(chat, () => {
       if (chat.id === chatId) {
         store.set(
-          state =>
+          (state) =>
             ({
               ...state,
               lastOpenedChatId: null,
@@ -109,15 +104,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
       <div className="flex h-8 items-center justify-between gap-2">
         <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
           <span data-mask className="block min-w-0 truncate">
-            {chat ? (
-              <>
-                {chat.title || (
-                  <span className={`block h-4 w-30 animate-pulse rounded-md bg-muted`} />
-                )}
-              </>
-            ) : (
-              'New Chat'
-            )}
+            {chat ? <>{chat.title || <span className={`block h-4 w-30 animate-pulse rounded-md bg-muted`} />}</> : 'New Chat'}
           </span>
         </CardTitle>
         <div className="flex items-center gap-2">
@@ -127,7 +114,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
               size="icon-sm"
               onClick={() =>
                 store.set(
-                  state =>
+                  (state) =>
                     ({
                       ...state,
                       lastOpenedChatId: null,
@@ -153,10 +140,8 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                   ) : (
                     Object.entries(grouped).map(([group, chats], idx) => (
                       <div key={group}>
-                        <DropdownMenuLabel className="text-xs opacity-70">
-                          {groupLabelMap[group as Group]}
-                        </DropdownMenuLabel>
-                        {chats.map(chat => (
+                        <DropdownMenuLabel className="text-xs opacity-70">{groupLabelMap[group as Group]}</DropdownMenuLabel>
+                        {chats.map((chat) => (
                           <DropdownMenuItem
                             key={chat.id}
                             className="group"
@@ -165,25 +150,18 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                                 to="/connection/$resourceId/query"
                                 params={{ resourceId }}
                                 search={{ chatId: chat.id }}
-                                className={cn(
-                                  `flex items-center justify-between gap-2 text-foreground`,
-                                  chat.id === chatId && `bg-accent`,
-                                )}
+                                className={cn(`flex items-center justify-between gap-2 text-foreground`, chat.id === chatId && `bg-accent`)}
                               />
                             }
                           >
-                            <span className="truncate">
-                              {chat.title || (
-                                <span className={`h-4 w-30 animate-pulse rounded-md bg-muted`} />
-                              )}
-                            </span>
+                            <span className="truncate">{chat.title || <span className={`h-4 w-30 animate-pulse rounded-md bg-muted`} />}</span>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
                                   variant="ghost"
                                   size="icon-xs"
                                   className={`-mr-1 opacity-0 transition-none group-hover:opacity-100 hover:text-destructive`}
-                                  onClick={e => {
+                                  onClick={(e) => {
                                     e.preventDefault()
                                     e.stopPropagation()
                                     removeChat(chat)

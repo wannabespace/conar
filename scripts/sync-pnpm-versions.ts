@@ -59,14 +59,8 @@ function syncPnpmVersion() {
     const rootDir = path.join(__dirname, '..')
 
     const todesktopUpdated = updateTodesktopJson(version)
-    const lintCheckUpdated = updateWorkflowYaml(
-      path.join(rootDir, '.github', 'workflows', 'lint-check.yml'),
-      version,
-    )
-    const releaseUpdated = updateWorkflowYaml(
-      path.join(rootDir, '.github', 'workflows', 'release.yml'),
-      version,
-    )
+    const lintCheckUpdated = updateWorkflowYaml(path.join(rootDir, '.github', 'workflows', 'lint-check.yml'), version)
+    const releaseUpdated = updateWorkflowYaml(path.join(rootDir, '.github', 'workflows', 'release.yml'), version)
 
     if (todesktopUpdated || lintCheckUpdated || releaseUpdated) {
       console.log('✓ Updated pnpm version in:')

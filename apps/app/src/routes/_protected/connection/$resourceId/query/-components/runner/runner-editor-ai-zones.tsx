@@ -27,7 +27,7 @@ function useTrackLineNumberChange(
 
     const editor = monacoRef.current
 
-    const disposable = editor.onDidChangeModelContent(e => {
+    const disposable = editor.onDidChangeModelContent((e) => {
       for (const change of e.changes) {
         const changeStartLine = change.range.startLineNumber
         const changeEndLine = change.range.endLineNumber
@@ -38,7 +38,7 @@ function useTrackLineNumberChange(
           const lineDiff = newLineCount - removedLineCount
 
           if (lineDiff !== 0) {
-            setCurrentAIZoneLineNumber(prev => (prev === null ? null : prev + lineDiff))
+            setCurrentAIZoneLineNumber((prev) => (prev === null ? null : prev + lineDiff))
           }
         }
       }
@@ -61,13 +61,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
   const currentAIZoneQuery = useMemo(() => {
     if (currentAIZoneLineNumber === null) return null
 
-    return (
-      editorQueries.find(
-        query =>
-          currentAIZoneLineNumber >= query.startLineNumber &&
-          currentAIZoneLineNumber <= query.endLineNumber,
-      ) ?? null
-    )
+    return editorQueries.find((query) => currentAIZoneLineNumber >= query.startLineNumber && currentAIZoneLineNumber <= query.endLineNumber) ?? null
   }, [currentAIZoneLineNumber, editorQueries])
 
   if (currentAIZoneLineNumber && !currentAIZoneQuery) {
@@ -108,7 +102,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
     let zoneId: string
 
     queueMicrotask(() => {
-      editor.changeViewZones(changeAccessor => {
+      editor.changeViewZones((changeAccessor) => {
         const domNode =
           domElementRef.current ||
           render(
@@ -123,7 +117,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
                   .join('\n')
               }
               onClose={() => {
-                editor.changeViewZones(changeAccessor => {
+                editor.changeViewZones((changeAccessor) => {
                   changeAccessor.removeZone(zoneId)
                 })
                 editor.setPosition({
@@ -134,7 +128,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
                 highlightCollection.clear()
                 setCurrentAIZoneLineNumber(null)
               }}
-              onUpdate={query => {
+              onUpdate={(query) => {
                 runnerHooks.callHook('replaceQuery', {
                   query,
                   startLineNumber: currentAIZoneQuery.startLineNumber,
@@ -157,7 +151,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
     })
 
     return () => {
-      editor.changeViewZones(changeAccessor => {
+      editor.changeViewZones((changeAccessor) => {
         changeAccessor.removeZone(zoneId)
       })
       highlightCollection.clear()
@@ -165,13 +159,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
   }, [monacoRef, connection, connectionResource, currentAIZoneQuery, store, subscription])
 
   const getInlineQueryEvent = useEffectEvent((position: Position) => {
-    return (
-      editorQueries.find(
-        query =>
-          position.lineNumber >= query.startLineNumber &&
-          position.lineNumber <= query.endLineNumber,
-      ) ?? null
-    )
+    return editorQueries.find((query) => position.lineNumber >= query.startLineNumber && position.lineNumber <= query.endLineNumber) ?? null
   })
 
   useEffect(() => {
@@ -181,7 +169,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
       id: 'conar.execute-on-k',
       label: 'Execute on K',
       keybindings: [KeyMod.CtrlCmd | KeyCode.KeyK],
-      run: e => {
+      run: (e) => {
         const position = e.getPosition()
 
         if (!position) return
@@ -190,9 +178,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
 
         if (inlineQuery === null) return
 
-        setCurrentAIZoneLineNumber(lineNumber =>
-          lineNumber === position.lineNumber ? null : position.lineNumber,
-        )
+        setCurrentAIZoneLineNumber((lineNumber) => (lineNumber === position.lineNumber ? null : position.lineNumber))
       },
     })
 

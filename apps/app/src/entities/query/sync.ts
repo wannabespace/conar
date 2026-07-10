@@ -16,14 +16,14 @@ export function createQueriesCollection() {
     persistedCollectionOptions<Query, string, never, SyncUtils>({
       ...syncCollectionOptions<Query>({
         id: 'queries',
-        getKey: item => item.id,
+        getKey: (item) => item.id,
         events: ({ signal }) => orpc.queries.events.call({}, { signal }),
         sync: ({ rows, signal }) => orpc.queries.sync.call(rows, { signal }),
         onInsert: async ({ transaction }) => {
-          await orpc.queries.create.call(transaction.mutations.map(m => m.modified))
+          await orpc.queries.create.call(transaction.mutations.map((m) => m.modified))
         },
         onDelete: async ({ transaction }) => {
-          await orpc.queries.remove.call(transaction.mutations.map(m => ({ id: m.key })))
+          await orpc.queries.remove.call(transaction.mutations.map((m) => ({ id: m.key })))
         },
       }),
       persistence,

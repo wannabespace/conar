@@ -22,31 +22,12 @@ function transitionProps(index: number) {
   } satisfies MotionProps
 }
 
-const imagesLight = [
-  '/demo-light-1.png',
-  '/demo-light-2.png',
-  '/demo-light-3.png',
-  '/demo-light-4.png',
-]
+const imagesLight = ['/demo-light-1.png', '/demo-light-2.png', '/demo-light-3.png', '/demo-light-4.png']
 
 const imagesDark = ['/demo-dark-1.png', '/demo-dark-2.png', '/demo-dark-3.png', '/demo-dark-4.png']
 
-function Image({
-  className,
-  image,
-  index,
-  type,
-}: {
-  className?: string
-  image: string
-  index: number
-  type: 'light' | 'dark'
-}) {
-  const imgClassName = cn(
-    type === 'dark' ? `hidden dark:block` : 'dark:hidden',
-    index === 0 ? 'mx-auto' : 'absolute top-0 left-0 rounded-xl',
-    className,
-  )
+function Image({ className, image, index, type }: { className?: string; image: string; index: number; type: 'light' | 'dark' }) {
+  const imgClassName = cn(type === 'dark' ? `hidden dark:block` : 'dark:hidden', index === 0 ? 'mx-auto' : 'absolute top-0 left-0 rounded-xl', className)
 
   const altTexts = [
     'Conar database management interface overview',
@@ -61,15 +42,7 @@ function Image({
     return <img key={image} src={image} alt={alt} className={imgClassName} />
   }
 
-  return (
-    <motion.img
-      key={image}
-      src={image}
-      alt={alt}
-      className={imgClassName}
-      {...transitionProps(index)}
-    />
-  )
+  return <motion.img key={image} src={image} alt={alt} className={imgClassName} {...transitionProps(index)} />
 }
 
 function Images() {
@@ -81,9 +54,7 @@ function Images() {
       {imagesDark.map((image, index) => (
         <Image key={image} image={image} index={index} type="dark" />
       ))}
-      <div
-        className={`absolute inset-x-0 bottom-0 z-10 h-full bg-linear-to-t from-background to-transparent`}
-      />
+      <div className={`absolute inset-x-0 bottom-0 z-10 h-full bg-linear-to-t from-background to-transparent`} />
     </div>
   )
 }

@@ -13,12 +13,7 @@ export function useSubscription() {
     }),
   )
 
-  const subscription =
-    list?.find(s =>
-      ACTIVE_SUBSCRIPTION_STATUSES.includes(
-        s.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number],
-      ),
-    ) ?? null
+  const subscription = list?.find((s) => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number])) ?? null
 
   return { subscription, isPending }
 }

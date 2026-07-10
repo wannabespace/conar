@@ -1,11 +1,5 @@
 import { UserAvatar } from '@conar/ui/components/custom/user-avatar'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@conar/ui/components/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@conar/ui/components/dropdown-menu'
 import { RiBrushLine, RiGlobalLine, RiLogoutCircleRLine, RiUserLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -41,7 +35,7 @@ export function UserButton() {
       toast.success('Local cache cleared. Reloading...')
       window.location.reload()
     },
-    onError: err => {
+    onError: (err) => {
       console.error(err)
       toast.error('Failed to clear cache')
     },
@@ -61,29 +55,17 @@ export function UserButton() {
           </div>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() =>
-            window.open(
-              `${import.meta.env.VITE_PUBLIC_MAIN_URL}/account`,
-              window.electron ? '_blank' : '_self',
-            )
-          }
-        >
+        <DropdownMenuItem onClick={() => window.open(`${import.meta.env.VITE_PUBLIC_MAIN_URL}/account`, window.electron ? '_blank' : '_self')}>
           <RiUserLine />
           Account
         </DropdownMenuItem>
         {window.electron && (
-          <DropdownMenuItem
-            onClick={() => window.open(import.meta.env.VITE_PUBLIC_WEB_URL, '_blank')}
-          >
+          <DropdownMenuItem onClick={() => window.open(import.meta.env.VITE_PUBLIC_WEB_URL, '_blank')}>
             <RiGlobalLine />
             Web app
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem
-          disabled={isSigningOut || isClearingCache}
-          onClick={() => clearLocalCache()}
-        >
+        <DropdownMenuItem disabled={isSigningOut || isClearingCache} onClick={() => clearLocalCache()}>
           <RiBrushLine />
           Clear cache
         </DropdownMenuItem>

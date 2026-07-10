@@ -6,11 +6,11 @@ import type { ConnectionResource } from '../core/sync'
 import { connectionResourceToQueryParams, createQuery } from '../runtime/query'
 
 export const functionsType = type({
-  schema: 'string',
-  name: 'string',
-  type: 'string',
+  'schema': 'string',
+  'name': 'string',
+  'type': 'string',
   'language?': 'string',
-  return_type: 'string | null',
+  'return_type': 'string | null',
   'argument_count?': 'number',
 }).pipe(({ type: fnType, argument_count, language, ...item }) => ({
   ...item,
@@ -22,7 +22,7 @@ export const functionsType = type({
 export const resourceFunctionsQuery = createQuery({
   type: functionsType.array(),
   query: {
-    postgres: db =>
+    postgres: (db) =>
       db
         .selectFrom('pg_catalog.pg_proc as p')
         .innerJoin('pg_catalog.pg_namespace as n', 'p.pronamespace', 'n.oid')
@@ -52,29 +52,18 @@ export const resourceFunctionsQuery = createQuery({
         .where('n.nspname', '!=', 'information_schema')
         .where('p.prokind', '!=', 'a')
         .execute(),
-    mysql: db =>
+    mysql: (db) =>
       db
         .selectFrom('information_schema.ROUTINES as r')
         .select(({ eb }) => [
           'r.ROUTINE_SCHEMA as schema',
           'r.ROUTINE_NAME as name',
           sql<string>`LOWER(r.ROUTINE_TYPE)`.as('type'),
-          eb
-            .case()
-            .when('r.ROUTINE_TYPE', '=', 'FUNCTION')
-            .then(eb.ref('r.DATA_TYPE'))
-            .else(null)
-            .end()
-            .as('return_type'),
+          eb.case().when('r.ROUTINE_TYPE', '=', 'FUNCTION').then(eb.ref('r.DATA_TYPE')).else(null).end().as('return_type'),
         ])
-        .where('r.ROUTINE_SCHEMA', 'not in', [
-          'mysql',
-          'information_schema',
-          'performance_schema',
-          'sys',
-        ])
+        .where('r.ROUTINE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
         .execute(),
-    mssql: db =>
+    mssql: (db) =>
       db
         .selectFrom('sys.objects as o')
         .innerJoin('sys.schemas as s', 'o.schema_id', 's.schema_id')
@@ -83,15 +72,7 @@ export const resourceFunctionsQuery = createQuery({
           'o.name as name',
           eb
             .case()
-            .when(
-              or([
-                eb('o.type', '=', 'FN'),
-                eb('o.type', '=', 'IF'),
-                eb('o.type', '=', 'TF'),
-                eb('o.type', '=', 'FS'),
-                eb('o.type', '=', 'FT'),
-              ]),
-            )
+            .when(or([eb('o.type', '=', 'FN'), eb('o.type', '=', 'IF'), eb('o.type', '=', 'TF'), eb('o.type', '=', 'FS'), eb('o.type', '=', 'FT')]))
             .then('function')
             .when(or([eb('o.type', '=', 'P'), eb('o.type', '=', 'PC')]))
             .then('procedure')
@@ -129,14 +110,9 @@ export const resourceFunctionsQuery = createQuery({
   },
 })
 
-export function resourceFunctionsQueryOptions({
-  connectionResource,
-}: {
-  connectionResource: ConnectionResource
-}) {
+export function resourceFunctionsQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
   return queryOptions({
-    queryFn: async () =>
-      resourceFunctionsQuery.run(await connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () => resourceFunctionsQuery.run(await connectionResourceToQueryParams(connectionResource)),
     queryKey: ['connection-resource', connectionResource.id, 'functions'],
   })
 }

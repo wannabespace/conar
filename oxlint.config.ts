@@ -1,18 +1,7 @@
 import { defineConfig } from 'oxlint'
 
 export default defineConfig({
-  plugins: [
-    'import',
-    'typescript',
-    'react',
-    'unicorn',
-    'jsdoc',
-    'node',
-    'promise',
-    'jsx-a11y',
-    'oxc',
-    'vitest',
-  ],
+  plugins: ['import', 'typescript', 'react', 'unicorn', 'jsdoc', 'node', 'promise', 'jsx-a11y', 'oxc', 'vitest'],
   jsPlugins: ['eslint-plugin-better-tailwindcss'],
   categories: {
     correctness: 'error',
@@ -121,7 +110,7 @@ export default defineConfig({
     'block-scoped-var': 'error',
     'constructor-super': 'error',
     'default-case-last': 'error',
-    eqeqeq: ['error', 'smart'],
+    'eqeqeq': ['error', 'smart'],
     'new-cap': [
       'error',
       {
@@ -337,7 +326,7 @@ export default defineConfig({
       },
     ],
     'vars-on-top': 'error',
-    yoda: ['error', 'never'],
+    'yoda': ['error', 'never'],
     'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
     'import/first': 'error',
     'import/no-duplicates': 'error',

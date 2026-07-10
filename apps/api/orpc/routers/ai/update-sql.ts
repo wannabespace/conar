@@ -41,11 +41,7 @@ export const updateSQL = orpc
         },
         {
           role: 'user',
-          content: [
-            '=======SELECTED SQL QUERY=======',
-            input.sql,
-            '=======END OF SELECTED SQL QUERY=======',
-          ].join('\n'),
+          content: ['=======SELECTED SQL QUERY=======', input.sql, '=======END OF SELECTED SQL QUERY======='].join('\n'),
         },
         {
           role: 'user',

@@ -1,10 +1,4 @@
-import {
-  RiAlertLine,
-  RiCheckLine,
-  RiErrorWarningLine,
-  RiInformationLine,
-  RiLoader4Line,
-} from '@remixicon/react'
+import { RiAlertLine, RiCheckLine, RiErrorWarningLine, RiInformationLine, RiLoader4Line } from '@remixicon/react'
 import { createPortal } from 'react-dom'
 import { Toaster as Sonner } from 'sonner'
 
@@ -31,7 +25,7 @@ export function Toaster() {
         },
         style: {
           '--z-index': '100',
-          zIndex: 'calc(var(--z-index) - var(--index))',
+          'zIndex': 'calc(var(--z-index) - var(--index))',
         },
       }}
       icons={{
