@@ -1,17 +1,15 @@
-import fs from 'node:fs'
-import process from 'node:process'
-
 import type { RouterOutputs } from '@conar/api/orpc/routers'
 import type { QueryExecutor } from '@conar/connection/queries'
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import fs from 'node:fs'
+import process from 'node:process'
 import * as clickhouse from '@conar/connection/queries/dialects/clickhouse'
 import * as mssql from '@conar/connection/queries/dialects/mssql'
 import * as mysql from '@conar/connection/queries/dialects/mysql'
 import * as pg from '@conar/connection/queries/dialects/pg'
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { boolean, command, positional, string } from '@drizzle-team/brocli'
 import { consola } from 'consola'
 import ora from 'ora'
-
 import { orpc } from '~/orpc'
 import { requireSession } from '~/session'
 
@@ -46,11 +44,13 @@ function pickConnection(connections: Connection[], identifier: string | undefine
     return process.exit(1)
   }
 
-  const byId = connections.find((c) => c.id === identifier)
-  if (byId) return byId
+  const byId = connections.find(c => c.id === identifier)
+  if (byId)
+    return byId
 
-  const matchesByName = connections.filter((c) => c.name === identifier)
-  if (matchesByName.length === 1) return matchesByName[0]!
+  const matchesByName = connections.filter(c => c.name === identifier)
+  if (matchesByName.length === 1)
+    return matchesByName[0]!
 
   if (matchesByName.length > 1) {
     consola.error(`Multiple connections named "${identifier}". Use a connection id instead:`)
@@ -63,13 +63,6 @@ function pickConnection(connections: Connection[], identifier: string | undefine
   return fail(`Connection not found: ${identifier}`)
 }
 
-function stringify(v: unknown): string {
-  if (v === null) return 'NULL'
-  if (v === undefined) return ''
-  if (typeof v === 'object') return JSON.stringify(v)
-  return String(v)
-}
-
 function formatTable(rows: Record<string, unknown>[]): string {
   if (rows.length === 0) {
     return '(no rows)'
@@ -77,20 +70,31 @@ function formatTable(rows: Record<string, unknown>[]): string {
 
   const columns = Array.from(
     rows.reduce<Set<string>>((set, row) => {
-      Object.keys(row).forEach((k) => set.add(k))
+      Object.keys(row).forEach(k => set.add(k))
       return set
     }, new Set()),
   )
 
-  const widths = columns.map((col) =>
-    Math.max(col.length, ...rows.map((r) => stringify(r[col]).length)),
+  const stringify = (v: unknown): string => {
+    if (v === null)
+      return 'NULL'
+    if (v === undefined)
+      return ''
+    if (typeof v === 'object')
+      return JSON.stringify(v)
+    return String(v)
+  }
+
+  const widths = columns.map(col =>
+    Math.max(col.length, ...rows.map(r => stringify(r[col]).length)),
   )
 
-  const renderRow = (cells: string[]) => cells.map((cell, i) => cell.padEnd(widths[i]!)).join(' │ ')
+  const renderRow = (cells: string[]) =>
+    cells.map((cell, i) => cell.padEnd(widths[i]!)).join(' │ ')
 
   const header = renderRow(columns)
-  const separator = widths.map((w) => '─'.repeat(w)).join('─┼─')
-  const body = rows.map((r) => renderRow(columns.map((c) => stringify(r[c]))))
+  const separator = widths.map(w => '─'.repeat(w)).join('─┼─')
+  const body = rows.map(r => renderRow(columns.map(c => stringify(r[c]))))
 
   return [header, separator, ...body].join('\n')
 }
@@ -117,7 +121,8 @@ export const queryCommand = command({
     try {
       connections = await orpc.connections.list()
       loadingSpinner.stop()
-    } catch (error) {
+    }
+    catch (error) {
       loadingSpinner.stop()
       consola.fail('Failed to load connections.')
       return fail(error instanceof Error ? error.message : String(error))
@@ -140,10 +145,9 @@ export const queryCommand = command({
     if (opts.file) {
       try {
         sql = fs.readFileSync(opts.file, 'utf-8')
-      } catch (error) {
-        return fail(
-          `Failed to read SQL file: ${error instanceof Error ? error.message : String(error)}`,
-        )
+      }
+      catch (error) {
+        return fail(`Failed to read SQL file: ${error instanceof Error ? error.message : String(error)}`)
       }
     }
 
@@ -154,9 +158,7 @@ export const queryCommand = command({
     const connection = pickConnection(connections, opts.connection)
     const executor = queryMap[connection.type as ConnectionType]
 
-    const querySpinner = ora(
-      `Executing query on ${connection.name} (${connection.type})...`,
-    ).start()
+    const querySpinner = ora(`Executing query on ${connection.name} (${connection.type})...`).start()
 
     const start = Date.now()
 
@@ -177,11 +179,13 @@ export const queryCommand = command({
 
       if (Array.isArray(result.result)) {
         consola.log(formatTable(result.result as Record<string, unknown>[]))
-      } else {
+      }
+      else {
         consola.log(JSON.stringify(result.result, null, 2))
       }
       return process.exit(0)
-    } catch (error) {
+    }
+    catch (error) {
       querySpinner.stop()
       consola.fail('Query failed.')
       return fail(error instanceof Error ? error.message : String(error))

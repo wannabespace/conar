@@ -1,19 +1,17 @@
+import type { QueryClient } from '@tanstack/react-query'
 import { SOCIAL_LINKS } from '@conar/shared/constants'
 import { Toaster } from '@conar/ui/components/sonner'
 import { TooltipProvider } from '@conar/ui/components/tooltip'
+import appCss from '@conar/ui/globals.css?url'
 import { cn } from '@conar/ui/lib/utils'
 import { ThemeObserver } from '@conar/ui/theme-observer'
-import type { QueryClient } from '@tanstack/react-query'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-
 import { SEO } from '~/constants'
 import { ErrorPage } from '~/error-page'
 import { seo, SITE_URL } from '~/utils/seo'
-
-import appCss from '@conar/ui/globals.css?url'
 
 const structuredData = {
   '@context': 'https://schema.org',
@@ -21,32 +19,34 @@ const structuredData = {
     {
       '@type': 'SoftwareApplication',
       '@id': `${SITE_URL}/#app`,
-      name: 'Conar',
-      url: SITE_URL,
-      image: `${SITE_URL}/og-image.png`,
-      description: SEO.description,
-      applicationCategory: 'DeveloperApplication',
-      operatingSystem: 'macOS, Windows, Linux',
-      offers: {
+      'name': 'Conar',
+      'url': SITE_URL,
+      'image': `${SITE_URL}/og-image.png`,
+      'description': SEO.description,
+      'applicationCategory': 'DeveloperApplication',
+      'operatingSystem': 'macOS, Windows, Linux',
+      'offers': {
         '@type': 'Offer',
-        price: '0',
-        priceCurrency: 'USD',
+        'price': '0',
+        'priceCurrency': 'USD',
       },
-      sameAs: [SOCIAL_LINKS.GITHUB, SOCIAL_LINKS.TWITTER, SOCIAL_LINKS.DISCORD],
+      'sameAs': [SOCIAL_LINKS.GITHUB, SOCIAL_LINKS.TWITTER, SOCIAL_LINKS.DISCORD],
     },
     {
       '@type': 'Organization',
       '@id': `${SITE_URL}/#org`,
-      name: 'Conar',
-      url: SITE_URL,
-      logo: `${SITE_URL}/logo.png`,
-      sameAs: [SOCIAL_LINKS.GITHUB, SOCIAL_LINKS.TWITTER, SOCIAL_LINKS.DISCORD],
+      'name': 'Conar',
+      'url': SITE_URL,
+      'logo': `${SITE_URL}/logo.png`,
+      'sameAs': [SOCIAL_LINKS.GITHUB, SOCIAL_LINKS.TWITTER, SOCIAL_LINKS.DISCORD],
     },
   ],
 }
 
 if (import.meta.env.DEV) {
-  import('react-scan').then(({ scan }) => scan())
+  import('react-scan').then(({ scan }) => {
+    scan()
+  })
 }
 
 export const Route = createRootRouteWithContext<{
@@ -84,19 +84,18 @@ export const Route = createRootRouteWithContext<{
         },
         ...(import.meta.env.DEV
           ? []
-          : [
-              {
-                defer: true,
-                src: 'https://assets.onedollarstats.com/stonks.js',
-              },
-            ]),
+          : [{
+              defer: true,
+              src: 'https://assets.onedollarstats.com/stonks.js',
+            }]),
       ],
     }
   },
   component: RootComponent,
-  errorComponent: (props) => <ErrorPage {...props} />,
+  errorComponent: props => <ErrorPage {...props} />,
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
 function RootComponent() {
   const { queryClient } = Route.useRouteContext()
 
@@ -105,7 +104,11 @@ function RootComponent() {
       <head>
         <HeadContent />
       </head>
-      <body className={cn(`relative bg-gray-100 dark:bg-neutral-950`)}>
+      <body className={cn(`
+        relative bg-gray-100
+        dark:bg-neutral-950
+      `)}
+      >
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <ThemeObserver />

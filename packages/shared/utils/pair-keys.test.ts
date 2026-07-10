@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'bun:test'
-
 import { decryptWithPrivateKey, encryptWithPublicKey, generateEncryptionKeyPair } from './pair-keys'
 
 describe('pair-keys', () => {

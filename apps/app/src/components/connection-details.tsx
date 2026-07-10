@@ -4,15 +4,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { useState } from 'react'
 
-export function ConnectionDetails({
-  className,
-  connectionString,
-  type,
-}: {
-  className?: string
-  connectionString: string
-  type: ConnectionType
-}) {
+export function ConnectionDetails({ className, connectionString, type }: { className?: string, connectionString: string, type: ConnectionType }) {
   const url = new SafeURL(connectionString)
   const [showPassword, setShowPassword] = useState(false)
 
@@ -33,16 +25,17 @@ export function ConnectionDetails({
             <td data-mask>
               <button
                 type="button"
-                className="mr-2 inline-block translate-y-0.5 cursor-pointer rounded-md p-1 hover:bg-accent/50 [&_svg]:size-3"
+                className="
+                  mr-2 inline-block translate-y-0.5 cursor-pointer rounded-md
+                  p-1
+                  hover:bg-accent/50
+                  [&_svg]:size-3
+                "
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
               </button>
-              {showPassword
-                ? url.password
-                : Array.from({ length: url.password.length })
-                    .map(() => '*')
-                    .join('')}
+              {showPassword ? url.password : Array.from({ length: url.password.length }).map(() => '*').join('')}
             </td>
           </tr>
         )}

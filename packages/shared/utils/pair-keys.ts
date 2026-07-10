@@ -27,20 +27,8 @@ export async function generateEncryptionKeyPair() {
   }
 }
 
-export async function encryptWithPublicKey({
-  text,
-  publicKey,
-}: {
-  text: string
-  publicKey: string
-}) {
-  const recipientPublicKey = await crypto.subtle.importKey(
-    'raw',
-    base64ToBytes(publicKey),
-    EC_PARAMS,
-    false,
-    [],
-  )
+export async function encryptWithPublicKey({ text, publicKey }: { text: string, publicKey: string }) {
+  const recipientPublicKey = await crypto.subtle.importKey('raw', base64ToBytes(publicKey), EC_PARAMS, false, [])
   const ephemeralKeyPair = await crypto.subtle.generateKey(EC_PARAMS, true, ['deriveKey'])
 
   const aesKey = await deriveAesKey(ephemeralKeyPair.privateKey, recipientPublicKey, 'encrypt')
@@ -57,20 +45,8 @@ export async function decryptWithPrivateKey(privateKey: string, encryptedText: s
     throw new Error('Failed to decrypt text')
   }
 
-  const importedPrivateKey = await crypto.subtle.importKey(
-    'pkcs8',
-    base64ToBytes(privateKey),
-    EC_PARAMS,
-    false,
-    ['deriveKey'],
-  )
-  const importedEphemeralPublicKey = await crypto.subtle.importKey(
-    'raw',
-    base64ToBytes(ephemeralPublicKey),
-    EC_PARAMS,
-    false,
-    [],
-  )
+  const importedPrivateKey = await crypto.subtle.importKey('pkcs8', base64ToBytes(privateKey), EC_PARAMS, false, ['deriveKey'])
+  const importedEphemeralPublicKey = await crypto.subtle.importKey('raw', base64ToBytes(ephemeralPublicKey), EC_PARAMS, false, [])
 
   const aesKey = await deriveAesKey(importedPrivateKey, importedEphemeralPublicKey, 'decrypt')
 

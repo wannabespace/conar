@@ -1,10 +1,8 @@
 import { Buffer } from 'node:buffer'
 import crypto from 'node:crypto'
-
 import { GITHUB_REPO_NAME, GITHUB_REPO_OWNER } from '@conar/shared/constants'
 import { Octokit } from '@octokit/rest'
 import { ORPCError } from '@orpc/server'
-
 import { env } from '~/env'
 import { orpc } from '~/orpc'
 
@@ -37,9 +35,15 @@ interface ToDesktopWebhookPayload {
 }
 
 function verifyWebhookSignature(requestBody: string, signature: string, secret: string) {
-  const expectedSignature = crypto.createHmac('sha256', secret).update(requestBody).digest('hex')
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(requestBody)
+    .digest('hex')
 
-  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature),
+  )
 }
 
 export const todesktop = orpc.handler(async ({ context }) => {
@@ -97,7 +101,8 @@ export const todesktop = orpc.handler(async ({ context }) => {
         appVersion: payload.appVersion,
       },
     })
-  } catch (error) {
+  }
+  catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
 
     throw new ORPCError('INTERNAL_SERVER_ERROR', {

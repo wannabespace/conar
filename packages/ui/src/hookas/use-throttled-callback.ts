@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-// eslint-disable-next-line typescript/no-explicit-any
+// eslint-disable-next-line ts/no-explicit-any
 export function useThrottledCallback<T extends (...args: any[]) => any>(
   fn: T,
   deps: React.DependencyList,
@@ -24,7 +24,8 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
         }
         lastExecutedRef.current = now
         fn(...args)
-      } else if (!timerRef.current) {
+      }
+      else if (!timerRef.current) {
         timerRef.current = setTimeout(() => {
           lastExecutedRef.current = Date.now()
           timerRef.current = null
@@ -38,14 +39,11 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
     [fn, delay, ...deps],
   )
 
-  React.useEffect(
-    () => () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current)
-      }
-    },
-    [],
-  )
+  React.useEffect(() => () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+    }
+  }, [])
 
   return throttledFn
 }

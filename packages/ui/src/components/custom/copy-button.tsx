@@ -1,18 +1,14 @@
+import type { ComponentProps, ReactNode } from 'react'
 import { copy } from '@conar/ui/lib/copy'
 import { RiCheckLine, RiFileCopyLine } from '@remixicon/react'
-import type { ComponentProps, ReactNode } from 'react'
 import { useState } from 'react'
-
 import { Button } from '../button'
 import { ContentSwitch } from './content-switch'
 
-const defaultCopyIcon = <RiFileCopyLine className="size-4" />
-const defaultSuccessIcon = <RiCheckLine className="size-4 text-success" />
-
 export function CopyButton({
   text,
-  copyIcon = defaultCopyIcon,
-  successIcon = defaultSuccessIcon,
+  copyIcon = <RiFileCopyLine className="size-4" />,
+  successIcon = <RiCheckLine className="size-4 text-success" />,
   ...props
 }: {
   text: string | (() => string)

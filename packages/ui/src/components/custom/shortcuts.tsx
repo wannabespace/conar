@@ -1,7 +1,6 @@
+import type { ComponentProps } from 'react'
 import { getOS } from '@conar/shared/utils/os'
 import { RiArrowUpLine, RiCommandLine, RiCornerDownLeftLine } from '@remixicon/react'
-import type { ComponentProps } from 'react'
-
 import { Kbd } from '../kbd'
 
 export function Ctrl({ userAgent }: { userAgent: string }) {
@@ -14,10 +13,7 @@ export function EnterIcon() {
   return <RiCornerDownLeftLine className="size-3" />
 }
 
-export function KbdCtrlEnter({
-  userAgent,
-  ...props
-}: ComponentProps<typeof Kbd> & { userAgent: string }) {
+export function KbdCtrlEnter({ userAgent, ...props }: ComponentProps<typeof Kbd> & { userAgent: string }) {
   return (
     <Kbd {...props}>
       <Ctrl userAgent={userAgent} />
@@ -26,11 +22,7 @@ export function KbdCtrlEnter({
   )
 }
 
-export function KbdCtrlLetter({
-  userAgent,
-  letter,
-  ...props
-}: ComponentProps<typeof Kbd> & { userAgent: string; letter: string }) {
+export function KbdCtrlLetter({ userAgent, letter, ...props }: ComponentProps<typeof Kbd> & { userAgent: string, letter: string }) {
   return (
     <Kbd {...props}>
       <Ctrl userAgent={userAgent} />
@@ -39,10 +31,7 @@ export function KbdCtrlLetter({
   )
 }
 
-export function KbdShiftCtrlEnter({
-  userAgent,
-  ...props
-}: ComponentProps<typeof Kbd> & { userAgent: string }) {
+export function KbdShiftCtrlEnter({ userAgent, ...props }: ComponentProps<typeof Kbd> & { userAgent: string }) {
   return (
     <Kbd {...props}>
       <Ctrl userAgent={userAgent} />
@@ -52,11 +41,7 @@ export function KbdShiftCtrlEnter({
   )
 }
 
-export function KbdShiftCtrlLetter({
-  userAgent,
-  letter,
-  ...props
-}: ComponentProps<typeof Kbd> & { userAgent: string; letter: string }) {
+export function KbdShiftCtrlLetter({ userAgent, letter, ...props }: ComponentProps<typeof Kbd> & { userAgent: string, letter: string }) {
   return (
     <Kbd {...props}>
       <Ctrl userAgent={userAgent} />

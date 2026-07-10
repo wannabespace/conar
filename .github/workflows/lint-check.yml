@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  oxlint:
+  eslint:
     runs-on: ubuntu-latest
 
     steps:

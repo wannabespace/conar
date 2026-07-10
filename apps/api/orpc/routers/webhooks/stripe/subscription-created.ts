@@ -1,13 +1,13 @@
+import type Stripe from 'stripe'
 import { db } from '@conar/db'
 import { subscriptions, users } from '@conar/db/schema'
 import { eq } from 'drizzle-orm'
-import type Stripe from 'stripe'
 import { v7 } from 'uuid'
-
 import { env } from '~/env'
 
 export async function subscriptionCreated(event: Stripe.Event) {
-  if (event.type !== 'customer.subscription.created') return
+  if (event.type !== 'customer.subscription.created')
+    return
 
   const subscription = event.data.object
 
@@ -23,17 +23,10 @@ export async function subscriptionCreated(event: Stripe.Event) {
     .where(eq(subscriptions.stripeSubscriptionId, subscription.id))
     .limit(1)
 
-  const period =
-    subscription.items.data[0]?.price.id === env.STRIPE_ANNUAL_PRICE_ID ? 'yearly' : 'monthly'
-  const price = subscription.items.data[0]?.price.unit_amount
-    ? subscription.items.data[0].price.unit_amount / 100
-    : 0
-  const periodStart = subscription.items.data[0]?.current_period_start
-    ? new Date(subscription.items.data[0].current_period_start * 1000)
-    : null
-  const periodEnd = subscription.items.data[0]?.current_period_end
-    ? new Date(subscription.items.data[0].current_period_end * 1000)
-    : null
+  const period = subscription.items.data[0]?.price.id === env.STRIPE_ANNUAL_PRICE_ID ? 'yearly' : 'monthly'
+  const price = subscription.items.data[0]?.price.unit_amount ? subscription.items.data[0].price.unit_amount / 100 : 0
+  const periodStart = subscription.items.data[0]?.current_period_start ? new Date(subscription.items.data[0].current_period_start * 1000) : null
+  const periodEnd = subscription.items.data[0]?.current_period_end ? new Date(subscription.items.data[0].current_period_end * 1000) : null
 
   const subscriptionData = {
     plan: 'pro',
@@ -51,20 +44,30 @@ export async function subscriptionCreated(event: Stripe.Event) {
   } satisfies typeof subscriptions.$inferInsert
 
   if (existing) {
-    await db.update(subscriptions).set(subscriptionData).where(eq(subscriptions.id, existing.id))
-  } else {
+    await db
+      .update(subscriptions)
+      .set(subscriptionData)
+      .where(eq(subscriptions.id, existing.id))
+  }
+  else {
     await db.insert(subscriptions).values({
       id: v7(),
       ...subscriptionData,
     })
   }
 
-  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1)
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1)
 
   if (user && !user.stripeCustomerId) {
-    const customerId =
-      typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id
+    const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id
 
-    await db.update(users).set({ stripeCustomerId: customerId }).where(eq(users.id, userId))
+    await db
+      .update(users)
+      .set({ stripeCustomerId: customerId })
+      .where(eq(users.id, userId))
   }
 }

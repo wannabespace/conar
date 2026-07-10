@@ -1,23 +1,19 @@
+/* eslint-disable perfectionist/sort-imports */
 import '@conar/shared/arktype-config'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
-import {
-  createBrowserHistory,
-  createHashHistory,
-  createRouter,
-  RouterProvider,
-} from '@tanstack/react-router'
+import { createBrowserHistory, createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
-import { toast } from 'sonner'
-
+import { routeTree } from './routeTree.gen'
 import './monaco-worker'
-
 import './assets/styles.css'
 import '@conar/ui/globals.css'
+import { toast } from 'sonner'
 import { isSignedIn } from './lib/auth'
-import { routeTree } from './routeTree.gen'
 
 if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
-  import('react-scan').then(({ scan }) => scan())
+  import('react-scan').then(({ scan }) => {
+    scan()
+  })
 }
 
 window.electron?.app.onDeepLink(async (url) => {
@@ -63,8 +59,7 @@ export const subscriptionQueryClient = new QueryClient({
 })
 
 export const router = createRouter({
-  history:
-    import.meta.env.VITE_TEST || !window.electron ? createBrowserHistory() : createHashHistory(),
+  history: import.meta.env.VITE_TEST || !window.electron ? createBrowserHistory() : createHashHistory(),
   routeTree,
   defaultPreload: 'intent',
   defaultPendingMinMs: 0,
@@ -76,13 +71,14 @@ declare module '@tanstack/react-router' {
   }
 }
 
-;(async () => {
+(async () => {
   const isAuthPage = router.state.location.pathname.startsWith('/auth')
   const isSigned = await isSignedIn()
 
   if (isAuthPage && isSigned) {
     router.navigate({ to: '/', replace: true })
-  } else if (!isAuthPage && !isSigned && navigator.onLine) {
+  }
+  else if (!isAuthPage && !isSigned && navigator.onLine) {
     router.navigate({ to: '/auth', replace: true })
   }
 

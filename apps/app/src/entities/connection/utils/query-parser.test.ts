@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'bun:test'
-
 import { getEditorQueries } from './query-parser'
 
 describe('getEditorQueries', () => {
@@ -17,45 +16,35 @@ describe('getEditorQueries', () => {
   })
 
   it('should parse multi-line queries', () => {
-    expect(
-      getEditorQueries(`SELECT *
+    expect(getEditorQueries(`SELECT *
 FROM users
-WHERE id = 1;`),
-    ).toEqual([
+WHERE id = 1;`)).toEqual([
       { startLineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1'] },
     ])
-    expect(
-      getEditorQueries(`SELECT *
+    expect(getEditorQueries(`SELECT *
 FROM users
-WHERE id = 1`),
-    ).toEqual([
+WHERE id = 1`)).toEqual([
       { startLineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1'] },
     ])
   })
 
   it('should ignore comments', () => {
-    expect(
-      getEditorQueries(`-- This is a comment
+    expect(getEditorQueries(`-- This is a comment
 SELECT * FROM users;
 -- Another comment
-SELECT * FROM posts;`),
-    ).toEqual([
+SELECT * FROM posts;`)).toEqual([
       { startLineNumber: 2, endLineNumber: 2, queries: ['SELECT * FROM users'] },
       { startLineNumber: 4, endLineNumber: 4, queries: ['SELECT * FROM posts'] },
     ])
-    expect(
-      getEditorQueries(`SELECT * FROM users -- get all users
-WHERE id = 1;`),
-    ).toEqual([
+    expect(getEditorQueries(`SELECT * FROM users -- get all users
+WHERE id = 1;`)).toEqual([
       { startLineNumber: 1, endLineNumber: 2, queries: ['SELECT * FROM users WHERE id = 1'] },
     ])
-    expect(
-      getEditorQueries(`/* This is a
+    expect(getEditorQueries(`/* This is a
 multi-line comment */
 SELECT * FROM users;
 /* Another comment */
-SELECT * FROM posts;`),
-    ).toEqual([
+SELECT * FROM posts;`)).toEqual([
       { startLineNumber: 3, endLineNumber: 3, queries: ['SELECT * FROM users'] },
       { startLineNumber: 5, endLineNumber: 5, queries: ['SELECT * FROM posts'] },
     ])
@@ -64,53 +53,31 @@ SELECT * FROM posts;`),
   it('should return empty array for empty or non-query input', () => {
     expect(getEditorQueries('')).toEqual([])
     expect(getEditorQueries('   \n  \n  ')).toEqual([])
-    expect(
-      getEditorQueries(`-- Just a comment
-/* Another comment */`),
-    ).toEqual([])
+    expect(getEditorQueries(`-- Just a comment
+/* Another comment */`)).toEqual([])
   })
 
   it('should handle complex queries with multiple statements', () => {
-    expect(
-      getEditorQueries(`INSERT INTO users (name, email) VALUES ('John', 'john@example.com');
+    expect(getEditorQueries(`INSERT INTO users (name, email) VALUES ('John', 'john@example.com');
 UPDATE users SET active = true WHERE id = 1;
-DELETE FROM users WHERE id = 2;`),
-    ).toEqual([
-      {
-        startLineNumber: 1,
-        endLineNumber: 1,
-        queries: ["INSERT INTO users (name, email) VALUES ('John', 'john@example.com')"],
-      },
-      {
-        startLineNumber: 2,
-        endLineNumber: 2,
-        queries: ['UPDATE users SET active = true WHERE id = 1'],
-      },
+DELETE FROM users WHERE id = 2;`)).toEqual([
+      { startLineNumber: 1, endLineNumber: 1, queries: ['INSERT INTO users (name, email) VALUES (\'John\', \'john@example.com\')'] },
+      { startLineNumber: 2, endLineNumber: 2, queries: ['UPDATE users SET active = true WHERE id = 1'] },
       { startLineNumber: 3, endLineNumber: 3, queries: ['DELETE FROM users WHERE id = 2'] },
     ])
   })
 
   it('should handle multiple queries on the same line', () => {
     expect(getEditorQueries('SELECT * FROM users; SELECT * FROM posts;')).toEqual([
-      {
-        startLineNumber: 1,
-        endLineNumber: 1,
-        queries: ['SELECT * FROM users', 'SELECT * FROM posts'],
-      },
+      { startLineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users', 'SELECT * FROM posts'] },
     ])
   })
 
   it('should handle multiple queries when first query is multiline and second is single line', () => {
-    expect(
-      getEditorQueries(`SELECT *
+    expect(getEditorQueries(`SELECT *
 FROM users
-WHERE id = 1; SELECT * FROM posts;`),
-    ).toEqual([
-      {
-        startLineNumber: 1,
-        endLineNumber: 3,
-        queries: ['SELECT * FROM users WHERE id = 1', 'SELECT * FROM posts'],
-      },
+WHERE id = 1; SELECT * FROM posts;`)).toEqual([
+      { startLineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1', 'SELECT * FROM posts'] },
     ])
   })
 

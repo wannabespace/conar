@@ -1,6 +1,5 @@
-import path from 'node:path'
-
 import type { BrowserWindow } from 'electron'
+import path from 'node:path'
 import { app } from 'electron'
 
 const DEEPLINK_PROTOCOL = 'conar'
@@ -15,7 +14,8 @@ export function setupProtocolHandler(win: BrowserWindow) {
     app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL, process.execPath, [
       path.resolve(process.argv[1]!),
     ])
-  } else {
+  }
+  else {
     app.setAsDefaultProtocolClient(DEEPLINK_PROTOCOL)
   }
 
@@ -23,9 +23,11 @@ export function setupProtocolHandler(win: BrowserWindow) {
 
   if (!gotTheLock) {
     app.quit()
-  } else {
+  }
+  else {
     app.on('second-instance', (_event, commandLine) => {
-      if (win.isMinimized()) win.restore()
+      if (win.isMinimized())
+        win.restore()
 
       win.focus()
 

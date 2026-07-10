@@ -14,14 +14,10 @@ import { Label } from '@conar/ui/components/label'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
-
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-export function DisableTfaDialog({
-  open,
-  onOpenChange,
-}: {
+export function DisableTfaDialog({ open, onOpenChange }: {
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
@@ -51,6 +47,7 @@ export function DisableTfaDialog({
         }}
         render={<form />}
       >
+
         <DialogHeader>
           <DialogTitle>Disable 2FA</DialogTitle>
           <DialogDescription>
@@ -63,7 +60,7 @@ export function DisableTfaDialog({
             id="disable-password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
             disabled={isPending}
             autoComplete="current-password"
             autoFocus
@@ -74,14 +71,20 @@ export function DisableTfaDialog({
             variant="outline"
             type="button"
             onClick={() => onOpenChange(false)}
-            className="w-full sm:w-auto"
+            className="
+              w-full
+              sm:w-auto
+            "
           >
             Cancel
           </Button>
           <Button
             type="submit"
             variant="destructive"
-            className="w-full sm:w-auto"
+            className="
+              w-full
+              sm:w-auto
+            "
             disabled={isPending || password.length === 0}
           >
             <LoadingContent loading={isPending}>Disable</LoadingContent>

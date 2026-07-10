@@ -1,7 +1,6 @@
 import type { KeyboardEvent } from 'react'
-import { useCallback } from 'react'
-
 import type { ShiftSelectionDirection, ShiftSelectionState } from './shift-selection-state'
+import { useCallback } from 'react'
 import { reduceShiftArrowKey } from './shift-selection-state'
 
 export interface UseShiftSelectionKeyDownOptions<TItem> {
@@ -22,19 +21,17 @@ export function useShiftSelectionKeyDown<TItem, TElement extends HTMLElement = H
   getSelectionState,
   onSelectionChange,
 }: UseShiftSelectionKeyDownOptions<TItem>) {
-  return useCallback(
-    (event: KeyboardEvent<TElement>) => {
-      const direction = ARROW_KEY_TO_DIRECTION[event.key]
+  return useCallback((event: KeyboardEvent<TElement>) => {
+    const direction = ARROW_KEY_TO_DIRECTION[event.key]
 
-      if (!event.shiftKey || !direction || rowCount === 0) return
+    if (!event.shiftKey || !direction || rowCount === 0)
+      return
 
-      event.preventDefault()
+    event.preventDefault()
 
-      const update = reduceShiftArrowKey(direction, rowCount, getSelectionState())
+    const update = reduceShiftArrowKey(direction, rowCount, getSelectionState())
 
-      if (update)
-        onSelectionChange(getItemsInRange(update.range.start, update.range.end), update.state)
-    },
-    [rowCount, getItemsInRange, getSelectionState, onSelectionChange],
-  )
+    if (update)
+      onSelectionChange(getItemsInRange(update.range.start, update.range.end), update.state)
+  }, [rowCount, getItemsInRange, getSelectionState, onSelectionChange])
 }

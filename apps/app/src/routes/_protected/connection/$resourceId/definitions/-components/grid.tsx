@@ -1,5 +1,5 @@
-import { AnimatePresence } from 'motion/react'
 import type { ReactNode } from 'react'
+import { AnimatePresence } from 'motion/react'
 
 function Skeleton() {
   return (
@@ -8,7 +8,10 @@ function Skeleton() {
         <div
           // eslint-disable-next-line react/no-array-index-key
           key={i}
-          className={`flex w-full flex-col gap-3 rounded-xl border border-border/40 bg-muted/10 p-4`}
+          className={`
+            flex w-full flex-col gap-3 rounded-xl border border-border/40
+            bg-muted/10 p-4
+          `}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -30,16 +33,19 @@ function Skeleton() {
   )
 }
 
-export function DefinitionsGrid({ loading, children }: { loading: boolean; children: ReactNode }) {
+export function DefinitionsGrid({ loading, children }: {
+  loading: boolean
+  children: ReactNode
+}) {
   return (
     <div className="mt-2 grid grid-cols-1 gap-4">
-      {loading ? (
-        <Skeleton />
-      ) : (
-        <AnimatePresence initial={false} mode="popLayout">
-          {children}
-        </AnimatePresence>
-      )}
+      {loading
+        ? <Skeleton />
+        : (
+            <AnimatePresence initial={false} mode="popLayout">
+              {children}
+            </AnimatePresence>
+          )}
     </div>
   )
 }

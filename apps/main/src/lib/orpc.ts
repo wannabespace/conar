@@ -6,30 +6,24 @@ import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 
 const getClientLink = createIsomorphicFn()
-  .client(
-    () =>
-      new RPCLink({
-        url: `${import.meta.env.VITE_PUBLIC_API_URL}/rpc`,
-        fetch(request, init) {
-          return fetch(request, {
-            ...init,
-            credentials: 'include',
-          })
-        },
-      }),
-  )
-  .server(
-    () =>
-      new RPCLink({
-        url: `${import.meta.env.VITE_PUBLIC_API_URL}/rpc`,
-        headers: () => {
-          const request = getRequest()
+  .client(() => new RPCLink({
+    url: `${import.meta.env.VITE_PUBLIC_API_URL}/rpc`,
+    fetch(request, init) {
+      return fetch(request, {
+        ...init,
+        credentials: 'include',
+      })
+    },
+  }))
+  .server(() => new RPCLink({
+    url: `${import.meta.env.VITE_PUBLIC_API_URL}/rpc`,
+    headers: () => {
+      const request = getRequest()
 
-          return {
-            cookie: request.headers.get('cookie') ?? '',
-          }
-        },
-      }),
-  )
+      return {
+        cookie: request.headers.get('cookie') ?? '',
+      }
+    },
+  }))
 
 export const orpc = createTanstackQueryUtils(createORPCClient<ORPCRouter>(getClientLink()))

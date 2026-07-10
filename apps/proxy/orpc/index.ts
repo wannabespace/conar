@@ -1,9 +1,7 @@
-import { ORPCError, os } from '@orpc/server'
 import type { Session } from 'better-auth'
-
-import { env } from '~/env'
-
 import type { Context } from './context'
+import { ORPCError, os } from '@orpc/server'
+import { env } from '~/env'
 
 export const orpc = os.$context<Context>()
 
@@ -16,17 +14,13 @@ async function getSession(headers: Headers) {
   })
 
   if (!res.ok) {
-    throw new ORPCError('UNAUTHORIZED', {
-      message: 'We could not find your session. Please sign in again.',
-    })
+    throw new ORPCError('UNAUTHORIZED', { message: 'We could not find your session. Please sign in again.' })
   }
 
-  const session = (await res.json()) as Session | null
+  const session = await res.json() as Session | null
 
   if (!session) {
-    throw new ORPCError('UNAUTHORIZED', {
-      message: 'We could not find your session. Please sign in again.',
-    })
+    throw new ORPCError('UNAUTHORIZED', { message: 'We could not find your session. Please sign in again.' })
   }
 
   return session

@@ -1,3 +1,4 @@
+import type { policyType } from '~/entities/connection/queries'
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { title } from '@conar/shared/utils/title'
 import { Badge } from '@conar/ui/components/badge'
@@ -5,40 +6,28 @@ import { CardContent, CardTitle } from '@conar/ui/components/card'
 import { CardMotion } from '@conar/ui/components/card.motion'
 import { HighlightText } from '@conar/ui/components/custom/highlight'
 import { SearchInput } from '@conar/ui/components/custom/search-input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@conar/ui/components/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@conar/ui/components/select'
 import { RiEyeLine, RiEyeOffLine, RiShieldCheckLine, RiTable2 } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-
-import type { policyType } from '~/entities/connection/queries'
 import { resourcePoliciesQuery } from '~/entities/connection/queries'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { DefinitionsEmptyState } from '~/routes/_protected/connection/$resourceId/definitions/-components/empty-state'
 import { DefinitionsGrid } from '~/routes/_protected/connection/$resourceId/definitions/-components/grid'
 import { DefinitionsHeader } from '~/routes/_protected/connection/$resourceId/definitions/-components/header'
 import { MOTION_BLOCK_PROPS } from '~/routes/_protected/connection/$resourceId/definitions/-constants'
-
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/policies/')({
   component: DatabasePoliciesPage,
-  loader: ({ context }) => ({
-    connection: context.connection,
-    connectionResource: context.connectionResource,
-  }),
+  loader: ({ context }) => ({ connection: context.connection, connectionResource: context.connectionResource }),
   head: ({ loaderData }) => ({
     meta: loaderData ? [{ title: title('Policies', loaderData.connection.name) }] : [],
   }),
 })
 
-type PolicyType = (typeof policyType.infer)['type']
+type PolicyType = typeof policyType.infer['type']
 
 function formatType(type: PolicyType) {
   return uppercaseFirst(type.toLowerCase())
@@ -55,32 +44,24 @@ function getIcon(type: PolicyType) {
   }
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabasePoliciesPage() {
   const { connectionResource } = Route.useLoaderData()
-  const {
-    data: policies,
-    refetch,
-    isFetching,
-    isPending,
-    dataUpdatedAt,
-  } = useQuery(resourcePoliciesQuery({ connectionResource }))
-  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({
-    connectionResource,
-  })
+  const { data: policies, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourcePoliciesQuery({ connectionResource }))
+  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({ connectionResource })
   const [filterType, setFilterType] = useState<PolicyType | 'all'>('all')
 
   useRefreshHotkey(refetch, isFetching)
 
-  const filteredPolicies =
-    policies?.filter(
-      (item) =>
-        item.schema === selectedSchema &&
-        (filterType === 'all' || filterType === item.type) &&
-        (!search ||
-          item.name.toLowerCase().includes(search.toLowerCase()) ||
-          item.table.toLowerCase().includes(search.toLowerCase()) ||
-          (item.command && item.command.toLowerCase().includes(search.toLowerCase()))),
-    ) ?? []
+  const filteredPolicies = policies?.filter(item =>
+    item.schema === selectedSchema
+    && (filterType === 'all' || filterType === item.type)
+    && (!search
+      || item.name.toLowerCase().includes(search.toLowerCase())
+      || item.table.toLowerCase().includes(search.toLowerCase())
+      || (item.command && item.command.toLowerCase().includes(search.toLowerCase()))
+    ),
+  ) ?? []
 
   return (
     <>
@@ -96,10 +77,10 @@ function DatabasePoliciesPage() {
           placeholder="Search policies"
           autoFocus
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={e => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
-        <Select value={filterType} onValueChange={(v) => setFilterType(v as PolicyType | 'all')}>
+        <Select value={filterType} onValueChange={v => setFilterType(v as PolicyType | 'all')}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter Type" />
           </SelectTrigger>
@@ -125,10 +106,8 @@ function DatabasePoliciesPage() {
               </div>
             </SelectTrigger>
             <SelectContent>
-              {schemas.map((schema) => (
-                <SelectItem key={schema} value={schema}>
-                  {schema}
-                </SelectItem>
+              {schemas.map(schema => (
+                <SelectItem key={schema} value={schema}>{schema}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -142,7 +121,7 @@ function DatabasePoliciesPage() {
           />
         )}
 
-        {filteredPolicies.map((item) => (
+        {filteredPolicies.map(item => (
           <CardMotion
             key={`${item.schema}-${item.table}-${item.name}`}
             layout
@@ -158,7 +137,10 @@ function DatabasePoliciesPage() {
                     <Badge variant="secondary">{item.command}</Badge>
                     {!item.enabled && <Badge variant="destructive">Disabled</Badge>}
                   </CardTitle>
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <div className="
+                    flex items-center gap-1.5 text-sm text-muted-foreground
+                  "
+                  >
                     <Badge variant="outline">
                       <RiTable2 className="size-3" />
                       <HighlightText text={item.table} match={search} />
@@ -166,7 +148,7 @@ function DatabasePoliciesPage() {
                     {item.roles.length > 0 && (
                       <>
                         <span>to</span>
-                        {item.roles.map((role) => (
+                        {item.roles.map(role => (
                           <Badge key={role} variant="outline">
                             {role}
                           </Badge>
@@ -179,7 +161,10 @@ function DatabasePoliciesPage() {
             </CardContent>
             {(item.using || item.check) && (
               <CardContent className="border-t bg-muted/10 px-4 py-3 text-sm">
-                <div className="flex flex-col gap-1.5 text-xs text-muted-foreground">
+                <div className="
+                  flex flex-col gap-1.5 text-xs text-muted-foreground
+                "
+                >
                   {item.using && (
                     <div className="flex items-baseline gap-1.5">
                       <span className="font-medium text-foreground">USING:</span>

@@ -1,10 +1,8 @@
+import type { PoolConfig } from 'pg'
+import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
-
 import { tries } from '@conar/shared/utils/tries'
 import { memoize } from 'memoza'
-import type { PoolConfig } from 'pg'
-
-import type { QueryExecutor } from '..'
 import { handleQueryError } from '..'
 import { parseConnectionString } from '../..'
 import { readSSLFiles } from '../../read-ssl-files'
@@ -38,17 +36,16 @@ const getPool = memoize(async (connectionString: string) => {
       await pool.query('SELECT 1')
       return pool
     },
-    !hasSsl &&
-      (async ({ previousError }) => {
-        const pool = new pg.Pool({
-          ...conf,
-          ssl: defaultSSLConfig,
-        })
-        await pool.query('SELECT 1').catch(() => {
-          throw previousError
-        })
-        return pool
-      }),
+    !hasSsl && (async ({ previousError }) => {
+      const pool = new pg.Pool({
+        ...conf,
+        ssl: defaultSSLConfig,
+      })
+      await pool.query('SELECT 1').catch(() => {
+        throw previousError
+      })
+      return pool
+    }),
   )
 })
 
@@ -66,7 +63,8 @@ export const query = {
 
     try {
       await client.query('BEGIN')
-    } catch (error) {
+    }
+    catch (error) {
       client.release()
       throw error
     }
@@ -91,33 +89,36 @@ export const query = {
     return { txId }
   }),
 
-  executeTransaction: handleQueryError(
-    async ({ txId, query, values }: { txId: string; query: string; values: unknown[] }) => {
-      const handle = getTransaction(txId)
-      if (!handle) throw new Error(`No active transaction found for id: ${txId}`)
+  executeTransaction: handleQueryError(async ({ txId, query, values }: { txId: string, query: string, values: unknown[] }) => {
+    const handle = getTransaction(txId)
+    if (!handle)
+      throw new Error(`No active transaction found for id: ${txId}`)
 
-      return handle.execute(query, values)
-    },
-  ),
+    return handle.execute(query, values)
+  }),
 
   commitTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
-    if (!handle) return
+    if (!handle)
+      return
 
     try {
       await handle.commit()
-    } finally {
+    }
+    finally {
       await handle.release().catch(() => {})
     }
   }),
 
   rollbackTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
-    if (!handle) return
+    if (!handle)
+      return
 
     try {
       await handle.rollback()
-    } finally {
+    }
+    finally {
       await handle.release().catch(() => {})
     }
   }),

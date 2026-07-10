@@ -1,12 +1,11 @@
 import type { QueryExecutor } from '@conar/connection/queries'
+import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import * as clickhouse from '@conar/connection/queries/dialects/clickhouse'
 import * as mssql from '@conar/connection/queries/dialects/mssql'
 import * as mysql from '@conar/connection/queries/dialects/mysql'
 import * as pg from '@conar/connection/queries/dialects/pg'
-import type { ConnectionType } from '@conar/shared/enums/connection-type'
 import { decrypt, encrypt } from '@conar/shared/utils/crypto-node'
 import { app, ipcMain } from 'electron'
-
 import { autoUpdater } from '../main'
 
 export const electron = {

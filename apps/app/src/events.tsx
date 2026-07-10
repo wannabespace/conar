@@ -1,6 +1,5 @@
 import { PostHogProvider } from 'posthog-js/react'
 import { useEffect } from 'react'
-
 import { authClient } from '~/lib/auth'
 import { posthog } from '~/lib/posthog'
 
@@ -12,13 +11,15 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (userId) {
       if (window.electron) {
-        window.electron.versions
-          .app()
-          .then((appVersion) => posthog.identify(userId, { appVersion }))
-      } else {
+        window.electron.versions.app().then((appVersion) => {
+          posthog.identify(userId, { appVersion })
+        })
+      }
+      else {
         posthog.identify(userId)
       }
-    } else {
+    }
+    else {
       posthog.reset()
     }
 
@@ -27,5 +28,9 @@ export function EventsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [userId])
 
-  return <PostHogProvider client={posthog}>{children}</PostHogProvider>
+  return (
+    <PostHogProvider client={posthog}>
+      {children}
+    </PostHogProvider>
+  )
 }

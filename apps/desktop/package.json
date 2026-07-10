@@ -1,13 +1,14 @@
 {
   "name": "@conar/desktop",
+  "type": "module",
   "version": "0.32.0",
+  "productName": "Conar",
   "description": "AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse.",
-  "homepage": "https://conar.app",
   "author": {
     "name": "Wannabe Space, LLC",
     "email": "wannabespace.llc@gmail.com"
   },
-  "type": "module",
+  "homepage": "https://conar.app",
   "main": "./dist-electron/main.js",
   "scripts": {
     "dev": "vite dev",
@@ -35,6 +36,5 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plugin-electron": "catalog:"
-  },
-  "productName": "Conar"
+  }
 }

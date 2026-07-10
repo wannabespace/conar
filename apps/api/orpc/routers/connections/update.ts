@@ -6,26 +6,18 @@ import { SafeURL } from '@conar/shared/utils/safe-url'
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
-
 import { authMiddleware, orpc } from '~/orpc'
-
 import { publisher } from './events'
 
 export const update = orpc
   .use(authMiddleware)
-  .input(
-    type.and(
-      connectionsUpdateSchema.omit('createdAt', 'updatedAt', 'userId', 'id'),
-      connectionsUpdateSchema.pick('id').required(),
-    ),
-  )
+  .input(type.and(
+    connectionsUpdateSchema.omit('createdAt', 'updatedAt', 'userId', 'id'),
+    connectionsUpdateSchema.pick('id').required(),
+  ))
   .handler(async ({ context, input }) => {
     const { id, ...changes } = input
-    const [found] = await db
-      .select()
-      .from(connections)
-      .where(and(eq(connections.id, id), eq(connections.userId, context.user.id)))
-      .limit(1)
+    const [found] = await db.select().from(connections).where(and(eq(connections.id, id), eq(connections.userId, context.user.id))).limit(1)
 
     if (!found) {
       throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
@@ -34,7 +26,8 @@ export const update = orpc
     const secret = await context.getUserSecret()
 
     const newConnectionString = new SafeURL(
-      changes.connectionString ?? decrypt({ encryptedText: found.connectionString, secret }),
+      changes.connectionString
+      ?? decrypt({ encryptedText: found.connectionString, secret }),
     )
 
     if ((changes.syncType ?? found.syncType) !== SyncType.Cloud) {

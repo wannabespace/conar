@@ -1,10 +1,8 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import type { Dispatch, SetStateAction } from 'react'
-import { createContext, use } from 'react'
-
-import type { ValueTransformer } from '~/entities/connection/transformers'
-
 import type { Column } from './utils'
+import type { ValueTransformer } from '~/entities/connection/transformers'
+import { createContext, use } from 'react'
 
 export type SaveStatus = 'idle' | 'pending' | 'draft' | 'error'
 

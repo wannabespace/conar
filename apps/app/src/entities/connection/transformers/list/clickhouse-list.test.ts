@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'bun:test'
-
 import { createClickHouseListTransformer } from './clickhouse'
 
 describe('createClickHouseListTransformer', () => {
@@ -59,7 +58,7 @@ describe('createClickHouseListTransformer', () => {
     })
 
     it('throws on malformed JSON array input', () => {
-      expect(() => t.toConnection.fromRaw('["1", \'2\']')).toThrow('Invalid JSON array format')
+      expect(() => t.toConnection.fromRaw('[\"1\", \'2\']')).toThrow('Invalid JSON array format')
       expect(() => t.toConnection.fromRaw('[1, 2,]')).toThrow('Invalid JSON array format')
     })
   })

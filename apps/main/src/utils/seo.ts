@@ -51,7 +51,9 @@ export function seo({
       : []),
   ]
 
-  const links = [{ rel: 'canonical', href: pageUrl }]
+  const links = [
+    { rel: 'canonical', href: pageUrl },
+  ]
 
   return { meta, links }
 }

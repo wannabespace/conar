@@ -1,9 +1,7 @@
 import process from 'node:process'
-
 import { InfisicalSDK } from '@infisical/sdk'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
-
 import { secrets } from './secrets'
 
 export const env = type({
@@ -37,21 +35,18 @@ export function isFolderMissingError(error: unknown): boolean {
 }
 
 export async function ensureFolders(folders: string[]) {
-  if (folders.length === 0) return
+  if (folders.length === 0)
+    return
 
   const client = await getClient()
 
   for (let i = 0; i < folders.length; i++) {
     const parent = i === 0 ? '/' : `/${folders.slice(0, i).join('/')}`
-    // oxlint-disable-next-line no-await-in-loop -- each folder's parent must exist before the next one is created
-    await client
-      .folders()
-      .create({
-        ...baseOptions,
-        name: folders[i]!,
-        path: parent,
-      })
-      .catch(() => {})
+    await client.folders().create({
+      ...baseOptions,
+      name: folders[i]!,
+      path: parent,
+    }).catch(() => {})
   }
 }
 

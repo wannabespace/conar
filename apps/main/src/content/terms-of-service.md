@@ -5,7 +5,6 @@ By using Conar you agree to these terms. If you disagree, do not use the service
 ## 2. What Conar Is
 
 Conar is a database management tool that provides:
-
 - Database connection and management
 - AI-powered SQL generation and assistance
 - Optional encrypted sync of connection information across devices
@@ -22,13 +21,11 @@ Conar is a database management tool that provides:
 ## 4. Acceptable Use
 
 **Permitted:**
-
 - Managing databases you are authorized to access
 - Using AI features for SQL generation and database assistance
 - Sharing connections with authorized team members
 
 **Prohibited:**
-
 - Illegal or unauthorized purposes
 - Attempting to access other accounts or systems without authorization
 - Interfering with or disrupting the service
@@ -38,14 +35,12 @@ Conar is a database management tool that provides:
 ## 5. Your Databases and Data
 
 ### What We Do
-
 - Provide tools to connect to and query your databases
 - Encrypt and optionally sync connection details when you enable cloud sync
 - Never store the contents of your databases — rows, query results, and table data never pass through our servers
 - Never access or modify your database data without your explicit action
 
 ### Your Responsibilities
-
 - Ensure you have legal authorization to access the databases you connect
 - **Maintain your own backups of your databases and their data**
 - Comply with your database provider's terms of service
@@ -66,7 +61,6 @@ Conar is a database management tool that provides:
 ## 7. Privacy
 
 We handle your data as described in our [Privacy Policy](https://conar.app/privacy-policy). Key points:
-
 - We do not sell your personal information
 - We share data with service providers only as needed to operate the service
 - We may disclose information if required by law

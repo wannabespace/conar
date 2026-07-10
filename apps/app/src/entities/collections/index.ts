@@ -1,11 +1,6 @@
 import { getRouteApi } from '@tanstack/react-router'
-
 import { createChatsCollection, createChatsMessagesCollection } from '~/entities/chat/sync'
-import {
-  createConnectionsCollection,
-  createConnectionsResourcesCollection,
-  createConnectionStringsCollection,
-} from '~/entities/connection/core'
+import { createConnectionsCollection, createConnectionsResourcesCollection, createConnectionStringsCollection } from '~/entities/connection/core'
 import { createQueriesCollection } from '~/entities/query/sync'
 
 export interface Collections {
@@ -21,7 +16,7 @@ let current: Collections | null = null
 const listeners = new Set<() => void>()
 
 function notify() {
-  listeners.forEach((l) => l())
+  listeners.forEach(l => l())
 }
 
 export function getCollections(): Collections {
@@ -43,7 +38,8 @@ export function getCollections(): Collections {
 }
 
 export function cleanCollections() {
-  if (!current) return
+  if (!current)
+    return
 
   current = null
   notify()

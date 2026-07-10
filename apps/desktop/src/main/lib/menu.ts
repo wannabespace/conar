@@ -1,17 +1,17 @@
-import { SOCIAL_LINKS } from '@conar/shared/constants'
 import type { MenuItemConstructorOptions } from 'electron'
+import { SOCIAL_LINKS } from '@conar/shared/constants'
 import { app, BrowserWindow, Menu, shell } from 'electron'
-
 import { autoUpdater, createWindow } from '../main'
 
 function getFocusedWindow() {
-  return BrowserWindow.getAllWindows().find((window) => window.isFocused())
+  return BrowserWindow.getAllWindows().find(window => window.isFocused())
 }
 
 function setupDevelopmentEnvironment(): void {
   const mainWindow = getFocusedWindow()
 
-  if (!mainWindow) return
+  if (!mainWindow)
+    return
 
   mainWindow.webContents.on('context-menu', (_, props) => {
     const { x, y } = props
@@ -89,7 +89,8 @@ function buildTemplate(): MenuItemConstructorOptions[] {
         accelerator: `${cmdOrCtrl}+W`,
         click: () => {
           const win = getFocusedWindow()
-          if (!win) return
+          if (!win)
+            return
 
           win.close()
         },

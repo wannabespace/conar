@@ -1,28 +1,18 @@
+import type { ConnectionResource } from '~/entities/connection/core'
+import type { connectionResourceType } from '~/entities/connection/store'
 import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
-
-import type { ConnectionResource } from '~/entities/connection/core'
 import { customQuery } from '~/entities/connection/queries/custom'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
-import type { connectionResourceType } from '~/entities/connection/store'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
 
 export * from './runner'
 
-function transformResult({
-  rows,
-  query,
-  startLineNumber,
-  endLineNumber,
-  duration,
-}: {
+function transformResult({ rows, query, startLineNumber, endLineNumber, duration }: {
   rows: unknown[]
   duration: number
-} & Pick<
-  (typeof connectionResourceType.infer)['queriesToRun'][number],
-  'query' | 'startLineNumber' | 'endLineNumber'
->) {
+} & Pick<typeof connectionResourceType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
   return {
     data: rows as Record<string, unknown>[],
     error: null,
@@ -33,19 +23,10 @@ function transformResult({
   }
 }
 
-function transformError({
-  error,
-  query,
-  startLineNumber,
-  endLineNumber,
-  duration,
-}: {
+function transformError({ error, query, startLineNumber, endLineNumber, duration }: {
   error: unknown
   duration: number
-} & Pick<
-  (typeof connectionResourceType.infer)['queriesToRun'][number],
-  'query' | 'startLineNumber' | 'endLineNumber'
->) {
+} & Pick<typeof connectionResourceType.infer['queriesToRun'][number], 'query' | 'startLineNumber' | 'endLineNumber'>) {
   return {
     data: null,
     error: error instanceof Error ? error.message : String(error),
@@ -73,50 +54,28 @@ export function runnerQueryOptions(connectionResource: ConnectionResource) {
 
         const startTime = performance.now()
         try {
-          // oxlint-disable-next-line no-await-in-loop -- queries must run sequentially, in source order
-          const rows = await customQuery({ query }).run(
-            await connectionResourceToQueryParams(connectionResource),
-          )
-          results.push(
-            transformResult({
-              rows,
-              query,
-              startLineNumber,
-              endLineNumber,
-              duration: performance.now() - startTime,
-            }),
-          )
-        } catch (error) {
+          const rows = await customQuery({ query }).run(await connectionResourceToQueryParams(connectionResource))
+          results.push(transformResult({ rows, query, startLineNumber, endLineNumber, duration: performance.now() - startTime }))
+        }
+        catch (error) {
           const duration = performance.now() - startTime
           results.push(transformError({ error, query, startLineNumber, endLineNumber, duration }))
         }
       }
 
-      const queriesWithDangerousSqlKeywords = queries.filter(({ query }) =>
-        hasDangerousSqlKeywords(query),
-      )
+      const queriesWithDangerousSqlKeywords = queries.filter(({ query }) => hasDangerousSqlKeywords(query))
 
       if (queriesWithDangerousSqlKeywords.length > 0) {
         const errors = results.filter(({ error }) => error !== null)
 
         if (errors.length === 0) {
-          toast.success(
-            queriesWithDangerousSqlKeywords.length > 1
-              ? 'All queries executed successfully!'
-              : 'Query executed successfully!',
-          )
-        } else if (errors.length !== results.length) {
-          toast.warning(
-            queriesWithDangerousSqlKeywords.length > 1
-              ? 'Some queries failed to execute!'
-              : 'Query failed to execute!',
-          )
-        } else {
-          toast.error(
-            queriesWithDangerousSqlKeywords.length > 1
-              ? 'All queries failed to execute!'
-              : 'Query failed to execute!',
-          )
+          toast.success(queriesWithDangerousSqlKeywords.length > 1 ? 'All queries executed successfully!' : 'Query executed successfully!')
+        }
+        else if (errors.length !== results.length) {
+          toast.warning(queriesWithDangerousSqlKeywords.length > 1 ? 'Some queries failed to execute!' : 'Query failed to execute!')
+        }
+        else {
+          toast.error(queriesWithDangerousSqlKeywords.length > 1 ? 'All queries failed to execute!' : 'Query failed to execute!')
         }
       }
 

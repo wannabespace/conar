@@ -1,7 +1,7 @@
 ---
-title: 'Security'
-sidebarTitle: 'Security'
-description: 'How Tamery encrypts connection strings and how the two sync modes handle your password.'
+title: "Security"
+sidebarTitle: "Security"
+description: "How Tamery encrypts connection strings and how the two sync modes handle your password."
 ---
 
 Every connection string is encrypted before it leaves your device. The sync type controls whether your password is stored in the cloud at all.
@@ -29,7 +29,6 @@ Both modes sync the connection across your devices.
     - Decrypted server-side and sent over HTTPS on sync.
 
     Best for dev and staging.
-
   </Tab>
   <Tab title="Cloud (without password)">
     Stores only metadata (host, port, database, username). The password is **never** uploaded.
@@ -40,19 +39,18 @@ Both modes sync the connection across your devices.
     - A compromised account exposes no stored password.
 
     Best for production or strict-policy environments.
-
   </Tab>
 </Tabs>
 
 ## Choosing a mode
 
-| Situation                      | Mode                     |
-| ------------------------------ | ------------------------ |
-| Local / dev databases          | Cloud (with password)    |
-| Staging                        | Cloud (with password)    |
-| Production                     | Cloud (without password) |
+| Situation | Mode |
+|---|---|
+| Local / dev databases | Cloud (with password) |
+| Staging | Cloud (with password) |
+| Production | Cloud (without password) |
 | External secret-storage policy | Cloud (without password) |
-| Shared machines                | Cloud (without password) |
+| Shared machines | Cloud (without password) |
 
 You can mix modes per connection.
 
@@ -61,11 +59,9 @@ You can mix modes per connection.
 Tamery is open source under **AGPL-3.0**, so the encryption implementation is auditable: [github.com/wannabespace/tamery](https://github.com/wannabespace/tamery). Report security issues via the repository.
 
 <Warning>
-  Never share connection strings — they contain everything needed to access your database. If one
-  leaks, rotate the password and update the connection.
+  Never share connection strings — they contain everything needed to access your database. If one leaks, rotate the password and update the connection.
 </Warning>
 
 <Note>
-  Query traffic goes directly between your machine and your database. Tamery's cloud stores only
-  encrypted connection metadata — it never handles live query data.
+  Query traffic goes directly between your machine and your database. Tamery's cloud stores only encrypted connection metadata — it never handles live query data.
 </Note>

@@ -36,7 +36,7 @@
   }
 
   .typography:not(.typography-disabled) pre {
-    @apply mt-6 mb-4 overflow-x-auto rounded-lg border bg-card p-4;
+    @apply mb-4 mt-6 overflow-x-auto rounded-lg border bg-card p-4;
   }
 
   .typography:not(.typography-disabled) pre > code {
@@ -48,6 +48,6 @@
   }
 
   .typography:not(.typography-disabled) small {
-    @apply text-[90%] leading-none font-medium;
+    @apply text-[90%] font-medium leading-none;
   }
 }

@@ -1,5 +1,4 @@
 import { useEffect, useEffectEvent } from 'react'
-
 import { globalHooks } from '~/global-hooks'
 
 export function useRefreshHotkey(refresh: () => unknown, disabled = false) {

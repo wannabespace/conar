@@ -1,7 +1,7 @@
 ---
-title: 'CLI commands'
-sidebarTitle: 'Commands'
-description: 'Reference for the Tamery CLI: login, logout, whoami, query, and proxy, with flags and examples.'
+title: "CLI commands"
+sidebarTitle: "Commands"
+description: "Reference for the Tamery CLI: login, logout, whoami, query, and proxy, with flags and examples."
 ---
 
 Run `tamery --help` for a summary, or `tamery <command> --help` for one command.
@@ -97,7 +97,9 @@ tamery query -c my-db --json "SELECT id, name FROM products"
 tamery query --list-connections
 ```
 
-<Note>Output includes execution time in milliseconds.</Note>
+<Note>
+  Output includes execution time in milliseconds.
+</Note>
 
 ---
 
@@ -110,6 +112,5 @@ tamery proxy
 ```
 
 <Tip>
-  You only need the proxy for databases not reachable from the internet. Public cloud endpoints work
-  without it.
+  You only need the proxy for databases not reachable from the internet. Public cloud endpoints work without it.
 </Tip>

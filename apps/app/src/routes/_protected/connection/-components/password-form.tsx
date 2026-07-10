@@ -1,13 +1,7 @@
+import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { SafeURL } from '@conar/shared/utils/safe-url'
 import { Button } from '@conar/ui/components/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@conar/ui/components/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { Input } from '@conar/ui/components/input'
 import { RiArrowLeftSLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react'
@@ -15,28 +9,10 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
-
 import { useCollections } from '~/entities/collections'
-import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 
-function ConnectionErrorDescription({ message }: { message: string }) {
-  return <span dangerouslySetInnerHTML={{ __html: message.replaceAll('\n', '<br />') }} />
-}
-
-function handleConnectionTestError(error: Error) {
-  toast.error("We couldn't connect to the connection", {
-    description: <ConnectionErrorDescription message={error.message} />,
-  })
-}
-
-export function PasswordForm({
-  connection,
-  connectionResource,
-}: {
-  connection: Connection
-  connectionResource: ConnectionResource
-}) {
+export function PasswordForm({ connection, connectionResource }: { connection: Connection, connectionResource: ConnectionResource }) {
   const { connectionStringsCollection } = useCollections()
   const router = useRouter()
   const [password, setPassword] = useState('')
@@ -69,7 +45,12 @@ export function PasswordForm({
       toast.success('Password successfully saved!')
       setPassword('')
     },
-    onError: handleConnectionTestError,
+    onError: (error) => {
+      toast.error('We couldn\'t connect to the connection', {
+        // eslint-disable-next-line react/dom-no-dangerously-set-innerhtml
+        description: <span dangerouslySetInnerHTML={{ __html: error.message.replaceAll('\n', '<br />') }} />,
+      })
+    },
   })
 
   return (
@@ -107,7 +88,7 @@ export function PasswordForm({
                     placeholder="••••••••"
                     value={password}
                     disabled={status === 'pending'}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={e => setPassword(e.target.value)}
                     type={showPassword ? 'text' : 'password'}
                     autoCapitalize="none"
                     autoFocus
@@ -124,17 +105,19 @@ export function PasswordForm({
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                   >
-                    {showPassword ? (
-                      <RiEyeOffLine className="size-4" />
-                    ) : (
-                      <RiEyeLine className="size-4" />
-                    )}
+                    {showPassword
+                      ? <RiEyeOffLine className="size-4" />
+                      : <RiEyeLine className="size-4" />}
                   </Button>
                 </div>
               </div>
             </CardContent>
             <CardFooter>
-              <Button type="submit" className="w-full" disabled={status === 'pending'}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={status === 'pending'}
+              >
                 <LoadingContent loading={status === 'pending'}>
                   {status === 'error' ? 'Retry Saving Password' : 'Save Password'}
                 </LoadingContent>

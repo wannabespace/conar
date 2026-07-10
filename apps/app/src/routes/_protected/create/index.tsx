@@ -16,7 +16,6 @@ import { type } from 'arktype'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
-
 import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
 import { useCollections } from '~/entities/collections'
 import { createConnectionTransaction } from '~/entities/connection/core'
@@ -26,12 +25,13 @@ import { getConnectionStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching'
 import { generateRandomName } from '~/utils/utils'
-
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
 import { StepType } from './-components/step-type'
 
-export const Route = createFileRoute('/_protected/create/')({
+export const Route = createFileRoute(
+  '/_protected/create/',
+)({
   component: CreateConnectionPage,
   head: () => ({
     meta: [{ title: title('Create connection') }],
@@ -47,24 +47,7 @@ const createConnectionType = type({
   color: 'string | null',
 })
 
-function ConnectionErrorDescription({ message }: { message: string }) {
-  return (
-    <span
-      dangerouslySetInnerHTML={{
-        __html: message.toLowerCase().includes('invalid url')
-          ? 'Invalid URL, check your connection string and try again'
-          : message.replaceAll('\n', '<br />'),
-      }}
-    />
-  )
-}
-
-function handleConnectionTestError(error: Error) {
-  toast.error("We couldn't connect to the connection", {
-    description: <ConnectionErrorDescription message={error.message} />,
-  })
-}
-
+// eslint-disable-next-line react-refresh/only-export-components
 function CreateConnectionPage() {
   const collections = useCollections()
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
@@ -116,7 +99,7 @@ function CreateConnectionPage() {
       })
 
       if (resource) {
-        getConnectionStore(id).set((state) => ({
+        getConnectionStore(id).set(state => ({
           ...state,
           lastOpenedResourceName: resource,
           pinnedResourcesNames: [resource],
@@ -159,48 +142,44 @@ function CreateConnectionPage() {
     },
   })
 
-  const {
-    mutate: test,
-    reset,
-    status: testingStatus,
-  } = useMutation({
-    mutationFn: ({ type, connectionString }: { type: ConnectionType; connectionString: string }) =>
-      testConnectionQuery.run({
-        type,
-        connectionString,
-      }),
+  const { mutate: test, reset, status: testingStatus } = useMutation({
+    mutationFn: ({ type, connectionString }: { type: ConnectionType, connectionString: string }) => testConnectionQuery.run({
+      type,
+      connectionString,
+    }),
     onSuccess: () => {
       setStep('save')
       toast.success('Connection successful. You can save the connection.')
     },
-    onError: handleConnectionTestError,
+    onError: (error) => {
+      toast.error('We couldn\'t connect to the connection', {
+        description: (
+          // eslint-disable-next-line react/dom-no-dangerously-set-innerhtml
+          <span dangerouslySetInnerHTML={{
+            __html: error.message.toLowerCase().includes('invalid url') ? 'Invalid URL, check your connection string and try again' : error.message.replaceAll('\n', '<br />'),
+          }}
+          />
+        ),
+      })
+    },
   })
 
-  const connectionString = useStore(form.store, (state) => state.values.connectionString)
+  const connectionString = useStore(form.store, state => state.values.connectionString)
   const url = tryCatch(() => new SafeURL(connectionString.trim())).data
-  const {
-    name,
-    syncType,
-    label,
-    color,
-    type: typeValue,
-  } = useStore(form.store, (state) => state.values)
-  const isValid = useStore(form.store, (state) => state.isValid)
+  const { name, syncType, label, color, type: typeValue } = useStore(form.store, state => state.values)
+  const isValid = useStore(form.store, state => state.isValid)
 
   const isLocalProxyAvailable = useLocalProxyAvailable()
   const hasPassword = !!url?.password
   const isLocalhost = tryCatch(() => isLocalhostConnectionString(connectionString)).data === true
-  const { canSend } = fetchingConfig(
-    {
-      syncType,
-      isPasswordExists: hasPassword,
-    },
-    {
-      isLocalProxyAvailable,
-      isPasswordPopulated: hasPassword,
-      isLocalhost,
-    },
-  )
+  const { canSend } = fetchingConfig({
+    syncType,
+    isPasswordExists: hasPassword,
+  }, {
+    isLocalProxyAvailable,
+    isPasswordPopulated: hasPassword,
+    isLocalhost,
+  })
   const canSaveInCloud = !!url && canSend
 
   return (
@@ -223,13 +202,24 @@ function CreateConnectionPage() {
             Back
           </Button>
         </div>
-        <h1 className={`scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl`}>
+        <h1 className={`
+          scroll-m-20 text-4xl font-extrabold tracking-tight
+          lg:text-5xl
+        `}
+        >
           Create a connection
         </h1>
-        <p className={`mb-10 leading-7 text-muted-foreground not-first:mt-2`}>
+        <p className={`
+          mb-10 leading-7 text-muted-foreground
+          not-first:mt-2
+        `}
+        >
           Connect to your database by providing the connection details.
         </p>
-        <Stepper active={step} onChange={setStep}>
+        <Stepper
+          active={step}
+          onChange={setStep}
+        >
           <StepperList>
             <StepperTrigger value="type" number={1}>
               Type
@@ -276,20 +266,25 @@ function CreateConnectionPage() {
                 >
                   Back
                 </Button>
-                {testingStatus === 'success' ? (
-                  <Button variant="default" onClick={() => setStep('save')}>
-                    Continue
-                  </Button>
-                ) : (
-                  <Button
-                    disabled={testingStatus === 'pending' || !connectionString || !canSend}
-                    onClick={() => test({ type: typeValue!, connectionString })}
-                  >
-                    <LoadingContent loading={testingStatus === 'pending'}>
-                      {testingStatus === 'error' ? 'Try again' : 'Test connection'}
-                    </LoadingContent>
-                  </Button>
-                )}
+                {testingStatus === 'success'
+                  ? (
+                      <Button
+                        variant="default"
+                        onClick={() => setStep('save')}
+                      >
+                        Continue
+                      </Button>
+                    )
+                  : (
+                      <Button
+                        disabled={testingStatus === 'pending' || !connectionString || !canSend}
+                        onClick={() => test({ type: typeValue!, connectionString })}
+                      >
+                        <LoadingContent loading={testingStatus === 'pending'}>
+                          {testingStatus === 'error' ? 'Try again' : 'Test connection'}
+                        </LoadingContent>
+                      </Button>
+                    )}
               </div>
             </div>
           </StepperContent>
@@ -298,20 +293,23 @@ function CreateConnectionPage() {
               type={typeValue!}
               name={name}
               connectionString={connectionString}
-              setName={(name) => form.setFieldValue('name', name)}
+              setName={name => form.setFieldValue('name', name)}
               onRandomName={() => form.setFieldValue('name', generateRandomName())}
               syncType={syncType}
-              setSyncType={(syncType) => form.setFieldValue('syncType', syncType)}
+              setSyncType={syncType => form.setFieldValue('syncType', syncType)}
               label={label}
-              setLabel={(label) => form.setFieldValue('label', label)}
+              setLabel={label => form.setFieldValue('label', label)}
               color={color}
-              setColor={(color) => form.setFieldValue('color', color)}
+              setColor={color => form.setFieldValue('color', color)}
             />
             <div className="mt-auto flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={() => setStep('credentials')}>
                 Back
               </Button>
-              <Button type="submit" disabled={!isValid || !canSaveInCloud}>
+              <Button
+                type="submit"
+                disabled={!isValid || !canSaveInCloud}
+              >
                 <LoadingContent loading={isCreatingConnection}>
                   <AppLogo className="w-4" />
                   Save connection

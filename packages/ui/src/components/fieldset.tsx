@@ -1,12 +1,18 @@
+import type * as React from 'react'
 import { Fieldset as FieldsetPrimitive } from '@base-ui/react/fieldset'
 import { cn } from '@conar/ui/lib/utils'
-import type * as React from 'react'
 
 export function Fieldset({
   className,
   ...props
 }: FieldsetPrimitive.Root.Props): React.ReactElement {
-  return <FieldsetPrimitive.Root className={className} data-slot="fieldset" {...props} />
+  return (
+    <FieldsetPrimitive.Root
+      className={className}
+      data-slot="fieldset"
+      {...props}
+    />
+  )
 }
 
 export function FieldsetLegend({

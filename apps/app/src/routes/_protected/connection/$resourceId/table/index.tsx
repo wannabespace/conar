@@ -1,16 +1,11 @@
 import type { ActiveFilter } from '@conar/shared/filters'
 import { title } from '@conar/shared/utils/title'
-import {
-  ResizablePanel,
-  ResizablePanelGroup,
-  ResizableSeparator,
-} from '@conar/ui/components/resizable'
+import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect, useEffectEvent } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
-
 import { addTab, getConnectionResourceStore } from '~/entities/connection/store'
 import {
   ColumnsContext,
@@ -23,12 +18,11 @@ import {
   TablesTabs,
   useTableColumnsQuery,
 } from '~/entities/connection/table'
-import {
-  prefetchConnectionResourceCore,
-  prefetchConnectionResourceTableCore,
-} from '~/entities/connection/utils'
+import { prefetchConnectionResourceCore, prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
 
-export const Route = createFileRoute('/_protected/connection/$resourceId/table/')({
+export const Route = createFileRoute(
+  '/_protected/connection/$resourceId/table/',
+)({
   validateSearch: type({
     'schema?': 'string',
     'table?': 'string',
@@ -41,30 +35,20 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/table/'
     prefetchConnectionResourceCore(context.connectionResource)
 
     if (deps.table && deps.schema) {
-      const store = tablePageStore({
-        id: context.connectionResource.id,
-        schema: deps.schema,
-        table: deps.table,
-      })
+      const store = tablePageStore({ id: context.connectionResource.id, schema: deps.schema, table: deps.table })
       const state = store.get()
 
       if (deps.filters) {
-        store.set(
-          (state) =>
-            ({
-              ...state,
-              filters: deps.filters!,
-            }) satisfies typeof state,
-        )
+        store.set(state => ({
+          ...state,
+          filters: deps.filters!,
+        } satisfies typeof state))
       }
       if (deps.orderBy) {
-        store.set(
-          (state) =>
-            ({
-              ...state,
-              orderBy: deps.orderBy!,
-            }) satisfies typeof state,
-        )
+        store.set(state => ({
+          ...state,
+          orderBy: deps.orderBy!,
+        } satisfies typeof state))
       }
 
       prefetchConnectionResourceTableCore({
@@ -88,22 +72,19 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/table/'
   },
   head: ({ loaderData }) => ({
     meta: loaderData
-      ? [
-          {
-            title: title(
-              loaderData.schema && loaderData.table
-                ? `${loaderData.schema}.${loaderData.table}`
-                : 'Tables',
-              loaderData.connection.name,
-              loaderData.connectionResource.name,
-            ),
-          },
-        ]
+      ? [{
+          title: title(
+            loaderData.schema && loaderData.table ? `${loaderData.schema}.${loaderData.table}` : 'Tables',
+            loaderData.connection.name,
+            loaderData.connectionResource.name,
+          ),
+        }]
       : [],
   }),
 })
 
-function TableContent({ table, schema }: { table: string; schema: string }) {
+// eslint-disable-next-line react-refresh/only-export-components
+function TableContent({ table, schema }: { table: string, schema: string }) {
   const { connectionResource } = Route.useRouteContext()
   const { data = [] } = useTableColumnsQuery({ connectionResource, table, schema })
 
@@ -111,18 +92,8 @@ function TableContent({ table, schema }: { table: string; schema: string }) {
     <ColumnsContext value={data}>
       <TablesTabs className="h-9" />
       <div
-        // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- cannot be a real <button>: this element wraps nested interactive content (table cells, inputs, buttons), which is invalid inside a native button
-        role="button"
-        tabIndex={0}
-        aria-label={`Add ${schema}.${table} tab`}
         className="h-[calc(100%-(--spacing(9)))]"
         onClick={() => addTab(connectionResource.id, schema, table)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            addTab(connectionResource.id, schema, table)
-          }
-        }}
       >
         <div className="flex h-full flex-col justify-between">
           <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
@@ -138,31 +109,27 @@ function TableContent({ table, schema }: { table: string; schema: string }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 function DatabaseTablesPage() {
   const { connectionResource } = Route.useRouteContext()
   const { schema, table } = Route.useSearch()
   const store = getConnectionResourceStore(connectionResource.id)
-  const lastOpenedTable = useSubscription(store, { selector: (state) => state.lastOpenedTable })
+  const lastOpenedTable = useSubscription(store, { selector: state => state.lastOpenedTable })
 
   const handleLastOpenedTableEvent = useEffectEvent(() => {
     if (schema && table) {
       if (schema !== lastOpenedTable?.schema || table !== lastOpenedTable?.table) {
-        store.set(
-          (state) =>
-            ({
-              ...state,
-              lastOpenedTable: { schema, table },
-            }) satisfies typeof state,
-        )
+        store.set(state => ({
+          ...state,
+          lastOpenedTable: { schema, table },
+        } satisfies typeof state))
       }
-    } else if (lastOpenedTable !== null) {
-      store.set(
-        (state) =>
-          ({
-            ...state,
-            lastOpenedTable: null,
-          }) satisfies typeof state,
-      )
+    }
+    else if (lastOpenedTable !== null) {
+      store.set(state => ({
+        ...state,
+        lastOpenedTable: null,
+      } satisfies typeof state))
     }
   })
 
@@ -191,24 +158,31 @@ function DatabaseTablesPage() {
         <Sidebar key={connectionResource.id} />
       </ResizablePanel>
       <ResizableSeparator className="w-1 bg-transparent" />
-      <ResizablePanel defaultSize="80%" className="flex-1 overflow-hidden rounded-lg bg-background">
-        {schema && table ? (
-          <TablePageStoreContext
-            value={tablePageStore({ id: connectionResource.id, schema, table })}
-          >
-            <TableContent table={table} schema={schema} />
-          </TablePageStoreContext>
-        ) : (
-          <div className="flex h-full items-center justify-center p-4">
-            <div className="space-y-4 text-center">
-              <div className="text-lg font-medium">No table selected</div>
-              <p className="mx-auto max-w-md text-sm text-muted-foreground">
-                Select a schema from the dropdown and choose a table from the sidebar to view and
-                manage your data.
-              </p>
-            </div>
-          </div>
-        )}
+      <ResizablePanel
+        defaultSize="80%"
+        className="flex-1 overflow-hidden rounded-lg bg-background"
+      >
+        {schema && table
+          ? (
+              <TablePageStoreContext value={tablePageStore({ id: connectionResource.id, schema, table })}>
+                <TableContent
+                  table={table}
+                  schema={schema}
+                />
+              </TablePageStoreContext>
+            )
+          : (
+              <div className="flex h-full items-center justify-center p-4">
+                <div className="space-y-4 text-center">
+                  <div className="text-lg font-medium">
+                    No table selected
+                  </div>
+                  <p className="mx-auto max-w-md text-sm text-muted-foreground">
+                    Select a schema from the dropdown and choose a table from the sidebar to view and manage your data.
+                  </p>
+                </div>
+              </div>
+            )}
       </ResizablePanel>
     </ResizablePanelGroup>
   )

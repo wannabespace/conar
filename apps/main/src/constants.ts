@@ -17,8 +17,7 @@ export const DOWNLOAD_LINKS = {
 
 export const SEO = {
   title: 'AI database client for Postgres, MySQL, MSSQL & ClickHouse',
-  description:
-    'Conar is an AI-powered database client for Postgres, MySQL, MSSQL, and ClickHouse. Write queries, explore data, and manage your databases with AI doing the heavy lifting.',
+  description: 'Conar is an AI-powered database client for Postgres, MySQL, MSSQL, and ClickHouse. Write queries, explore data, and manage your databases with AI doing the heavy lifting.',
 }
 
 export const NAVBAR_HEIGHT_BASE = 150

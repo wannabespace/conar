@@ -1,6 +1,5 @@
 import { sha256 } from '@noble/hashes/sha2.js'
 import { randomBytes } from '@noble/hashes/utils.js'
-
 import { b64UrlEncode } from './base64'
 
 export const challenge = {

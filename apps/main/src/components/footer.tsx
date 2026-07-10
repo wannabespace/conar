@@ -5,8 +5,10 @@ import { Link } from '@tanstack/react-router'
 
 export function Footer() {
   return (
-    <footer
-      className={`container mx-auto flex flex-col items-center justify-between gap-4 p-4 sm:flex-row sm:gap-0 sm:px-0`}
+    <footer className={`
+      container mx-auto flex flex-col items-center justify-between gap-4 p-4
+      sm:flex-row sm:gap-0 sm:px-0
+    `}
     >
       <div className="flex flex-1 items-center gap-2 text-muted-foreground">
         <AppLogo className="size-4" />
@@ -15,23 +17,36 @@ export function Footer() {
       <div className="flex flex-1 items-center justify-center gap-4">
         <Link
           to="/terms-of-service"
-          className={`text-sm text-muted-foreground transition-colors hover:text-foreground`}
+          className={`
+            text-sm text-muted-foreground transition-colors
+            hover:text-foreground
+          `}
         >
           Terms of Service
         </Link>
         <Link
           to="/privacy-policy"
-          className={`text-sm text-muted-foreground transition-colors hover:text-foreground`}
+          className={`
+            text-sm text-muted-foreground transition-colors
+            hover:text-foreground
+          `}
         >
           Privacy Policy
         </Link>
       </div>
-      <div className={`flex flex-1 items-center justify-center gap-2 sm:justify-end`}>
+      <div className={`
+        flex flex-1 items-center justify-center gap-2
+        sm:justify-end
+      `}
+      >
         <a
           href={SOCIAL_LINKS.TWITTER}
           target="_blank"
           rel="noopener noreferrer"
-          className={`text-muted-foreground transition-colors hover:text-foreground`}
+          className={`
+            text-muted-foreground transition-colors
+            hover:text-foreground
+          `}
         >
           <RiTwitterXLine className="size-4" />
         </a>
@@ -39,7 +54,10 @@ export function Footer() {
           href={SOCIAL_LINKS.DISCORD}
           target="_blank"
           rel="noopener noreferrer"
-          className={`text-muted-foreground transition-colors hover:text-foreground`}
+          className={`
+            text-muted-foreground transition-colors
+            hover:text-foreground
+          `}
         >
           <RiDiscordLine className="size-4" />
         </a>
@@ -47,7 +65,10 @@ export function Footer() {
           href={SOCIAL_LINKS.GITHUB}
           target="_blank"
           rel="noopener noreferrer"
-          className={`text-muted-foreground transition-colors hover:text-foreground`}
+          className={`
+            text-muted-foreground transition-colors
+            hover:text-foreground
+          `}
         >
           <RiGithubLine className="size-4" />
         </a>

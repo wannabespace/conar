@@ -4,7 +4,6 @@ import { useEffect } from 'react'
 import { createStore } from 'seitu'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
-
 import packageJson from '../../desktop/package.json'
 import { queryClient } from './main'
 
@@ -27,26 +26,24 @@ export const updatesStore = createStore<{
 })
 
 window.electron?.app.onUpdatesStatus(({ status, message }) => {
-  updatesStore.set((state) => ({ ...state, status, message }) satisfies typeof state)
+  updatesStore.set(state => ({ ...state, status, message } satisfies typeof state))
 })
 
 export function useUpdatesObserver() {
-  const { data: version } = useQuery(
-    {
-      queryKey: ['version'],
-      queryFn: () => {
-        if (!window.electron) return packageJson.version
+  const { data: version } = useQuery({
+    queryKey: ['version'],
+    queryFn: () => {
+      if (!window.electron)
+        return packageJson.version
 
-        return window.electron.versions.app()
-      },
+      return window.electron.versions.app()
     },
-    queryClient,
-  )
-  const status = useSubscription(updatesStore, { selector: (state) => state.status })
+  }, queryClient)
+  const status = useSubscription(updatesStore, { selector: state => state.status })
 
   useEffect(() => {
     if (version) {
-      updatesStore.set((state) => ({ ...state, version }) satisfies typeof state)
+      updatesStore.set(state => ({ ...state, version } satisfies typeof state))
     }
   }, [version])
 

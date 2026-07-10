@@ -1,3 +1,4 @@
+import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { EnterIcon } from '@conar/ui/components/custom/shortcuts'
@@ -7,9 +8,7 @@ import { cn } from '@conar/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-
 import { MonacoDiff } from '~/components/monaco'
-import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
@@ -30,7 +29,7 @@ export function RunnerEditorAIZone({
   onUpdate: (sql: string) => void
   onClose: () => void
 }) {
-  const isOnline = useSubscription(appStore, { selector: (state) => state.isOnline })
+  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const store = getConnectionResourceStore(connectionResource.id)
   const { subscription } = useUserSubscription()
   const [prompt, setPrompt] = useState('')
@@ -61,15 +60,12 @@ export function RunnerEditorAIZone({
     timeoutFocus()
   }, [])
 
-  const { mutate: updateSQL, isPending } = useMutation(
-    orpc.ai.updateSQL.mutationOptions({
-      onSuccess: (data) => {
-        setAiSuggestion(data)
-        timeoutFocus()
-      },
-    }),
-    queryClient,
-  )
+  const { mutate: updateSQL, isPending } = useMutation(orpc.ai.updateSQL.mutationOptions({
+    onSuccess: (data) => {
+      setAiSuggestion(data)
+      timeoutFocus()
+    },
+  }), queryClient)
 
   async function handleSubmit() {
     if (!prompt.trim()) {
@@ -83,23 +79,15 @@ export function RunnerEditorAIZone({
     if (aiSuggestion) {
       onUpdate(aiSuggestion)
       fullClose()
-    } else {
+    }
+    else {
       updateSQL({
         sql,
         prompt,
         type: connection.type,
         context: [
           'Database schemas and tables:',
-          JSON.stringify(
-            await queryClient.ensureQueryData(
-              resourceTablesAndSchemasQueryOptions({
-                connectionResource,
-                showSystem: store.get().showSystem,
-              }),
-            ),
-            null,
-            2,
-          ),
+          JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem: store.get().showSystem })), null, 2),
         ].join('\n'),
       })
     }
@@ -111,11 +99,21 @@ export function RunnerEditorAIZone({
         <Popover open={!!aiSuggestion}>
           <PopoverTrigger
             nativeButton={false}
-            render={<div className="relative flex h-full w-lg flex-col rounded-md border" />}
+            render={(
+              <div className="
+                relative flex h-full w-lg flex-col rounded-md border
+              "
+              />
+            )}
           >
             {!subscription && (
-              <div className="w-full bg-muted px-2 py-1 text-sm text-muted-foreground">
-                Please{' '}
+              <div
+                className="
+                  w-full bg-muted px-2 py-1 text-sm text-muted-foreground
+                "
+              >
+                Please
+                {' '}
                 <Button
                   variant="outline"
                   className="px-1 py-0.5"
@@ -123,7 +121,8 @@ export function RunnerEditorAIZone({
                   onClick={() => setIsSubscriptionDialogOpen(true)}
                 >
                   upgrade
-                </Button>{' '}
+                </Button>
+                {' '}
                 your subscription to generate SQL queries.
               </div>
             )}
@@ -136,22 +135,26 @@ export function RunnerEditorAIZone({
                 setAiSuggestion(null)
               }}
               className={cn(
-                `field-sizing-content flex-1 resize-none border-none px-2 py-1.5 pb-8 text-sm`,
+                `
+                  field-sizing-content flex-1 resize-none border-none px-2
+                  py-1.5 pb-8 text-sm
+                `,
                 // Disable monaco default styles
-                `focus:border-border! focus-visible:border-border! focus-visible:ring-0! focus-visible:outline-none!`,
+                `
+                  focus:border-border!
+                  focus-visible:border-border! focus-visible:ring-0!
+                  focus-visible:outline-none!
+                `,
               )}
-              placeholder={
-                isOnline
-                  ? 'Update selected SQL with AI'
-                  : 'Check your internet connection to update selected SQL'
-              }
+              placeholder={isOnline ? 'Update selected SQL with AI' : 'Check your internet connection to update selected SQL'}
               onKeyDown={(e) => {
                 e.stopPropagation()
 
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault()
                   handleSubmit()
-                } else if (e.key === 'Escape') {
+                }
+                else if (e.key === 'Escape') {
                   fullClose()
                 }
               }}
@@ -173,7 +176,10 @@ export function RunnerEditorAIZone({
               style={{
                 '--lines-height': `${Math.max(aiSuggestion.split('\n').length, originalSql.split('\n').length) * 18 * 2}px`,
               }}
-              className="h-[min(30vh,var(--lines-height))] w-lg p-0 **:data-[slot=popover-viewport]:p-0"
+              className="
+                h-[min(30vh,var(--lines-height))] w-lg p-0
+                **:data-[slot=popover-viewport]:p-0
+              "
             >
               <MonacoDiff
                 originalValue={originalSql}

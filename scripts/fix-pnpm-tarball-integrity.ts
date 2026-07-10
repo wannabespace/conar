@@ -1,4 +1,4 @@
-/* oxlint-disable no-console, no-underscore-dangle */
+/* eslint-disable no-console */
 import { Buffer } from 'node:buffer'
 import { createHash } from 'node:crypto'
 import fs from 'node:fs'
@@ -36,7 +36,6 @@ export async function fixPnpmTarballIntegrity() {
 
   for (const match of missing) {
     const url = match[1]!
-    // oxlint-disable-next-line no-await-in-loop
     const integrity = await tarballIntegrity(url)
     updated = updated.replace(
       `resolution: {tarball: ${url}}`,
@@ -52,7 +51,6 @@ export async function fixPnpmTarballIntegrity() {
 
 if (__filename === process.argv[1]) {
   fixPnpmTarballIntegrity()
-    // oxlint-disable-next-line always-return
     .then((count) => {
       if (count === 0) {
         console.log('No tarball entries missing integrity.')

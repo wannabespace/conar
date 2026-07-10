@@ -1,7 +1,7 @@
 {
   "name": "@conar/shared",
-  "private": true,
   "type": "module",
+  "private": true,
   "scripts": {
     "check-types": "tsc",
     "test": "bun test"

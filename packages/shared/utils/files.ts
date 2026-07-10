@@ -11,13 +11,15 @@ export function downloadFile(content: string, fileName: string, mimeType: string
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-  } finally {
+  }
+  finally {
     URL.revokeObjectURL(url)
   }
 }
 
 function escapeCSVValue(value: unknown): string {
-  if (value === null || value === undefined) return ''
+  if (value === null || value === undefined)
+    return ''
 
   const str = String(value)
 
@@ -27,20 +29,21 @@ function escapeCSVValue(value: unknown): string {
 }
 
 export function formatValueForPlainCell(value: unknown): string {
-  if (value === null || value === undefined) return ''
-  if (typeof value === 'object') return JSON.stringify(value)
+  if (value === null || value === undefined)
+    return ''
+  if (typeof value === 'object')
+    return JSON.stringify(value)
   return String(value)
 }
 
-export function toCSV(
-  columns: {
-    key: string
-    header?: string
-  }[],
-  data: Record<string, unknown>[],
-): string {
-  const headerRow = columns.map((c) => escapeCSVValue(c.header ?? c.key)).join(',')
-  const dataRows = data.map((row) => columns.map((c) => escapeCSVValue(row[c.key])).join(','))
+export function toCSV(columns: {
+  key: string
+  header?: string
+}[], data: Record<string, unknown>[]): string {
+  const headerRow = columns.map(c => escapeCSVValue(c.header ?? c.key)).join(',')
+  const dataRows = data.map(row =>
+    columns.map(c => escapeCSVValue(row[c.key])).join(','),
+  )
   return [headerRow, ...dataRows].join('\n')
 }
 
@@ -61,10 +64,14 @@ export function recordToMarkdownTable(
     header?: string
   }[],
 ): string {
-  const headers = columns.map((c) => escapeMarkdownTableCell(String(c.header ?? c.key)))
-  const values = columns.map((c) => escapeMarkdownTableCell(formatValueForPlainCell(row[c.key])))
+  const headers = columns.map(c => escapeMarkdownTableCell(String(c.header ?? c.key)))
+  const values = columns.map(c => escapeMarkdownTableCell(formatValueForPlainCell(row[c.key])))
   const rule = columns.map(() => '---').join(' | ')
-  return [`| ${headers.join(' | ')} |`, `| ${rule} |`, `| ${values.join(' | ')} |`].join('\n')
+  return [
+    `| ${headers.join(' | ')} |`,
+    `| ${rule} |`,
+    `| ${values.join(' | ')} |`,
+  ].join('\n')
 }
 
 export function recordsToMarkdownTable(
@@ -74,11 +81,14 @@ export function recordsToMarkdownTable(
   }[],
   data: Record<string, unknown>[],
 ): string {
-  const headers = columns.map((c) => escapeMarkdownTableCell(String(c.header ?? c.key)))
+  const headers = columns.map(c => escapeMarkdownTableCell(String(c.header ?? c.key)))
   const rule = columns.map(() => '---').join(' | ')
-  const rows = data.map(
-    (row) =>
-      `| ${columns.map((c) => escapeMarkdownTableCell(formatValueForPlainCell(row[c.key]))).join(' | ')} |`,
+  const rows = data.map(row =>
+    `| ${columns.map(c => escapeMarkdownTableCell(formatValueForPlainCell(row[c.key]))).join(' | ')} |`,
   )
-  return [`| ${headers.join(' | ')} |`, `| ${rule} |`, ...rows].join('\n')
+  return [
+    `| ${headers.join(' | ')} |`,
+    `| ${rule} |`,
+    ...rows,
+  ].join('\n')
 }

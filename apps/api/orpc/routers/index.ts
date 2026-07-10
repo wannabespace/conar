@@ -1,5 +1,4 @@
 import type { InferRouterInputs, InferRouterOutputs, RouterClient } from '@orpc/server'
-
 import * as account from './account'
 import * as ai from './ai'
 import { banner } from './banner'

@@ -1,5 +1,4 @@
 import type * as React from 'react'
-
 import type { ElectronPreload } from '../desktop/src/preload/preload'
 
 declare global {

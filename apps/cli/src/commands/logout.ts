@@ -1,7 +1,6 @@
 import { command } from '@drizzle-team/brocli'
 import { consola } from 'consola'
 import ora from 'ora'
-
 import { clearToken, getToken } from '~/config'
 import { serverSignOut } from '~/session'
 

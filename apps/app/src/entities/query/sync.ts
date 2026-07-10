@@ -1,8 +1,7 @@
+import type { BaseTable, SyncUtils } from '~/lib/sync'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import { createCollection } from '@tanstack/react-db'
-
 import { orpc } from '~/lib/orpc'
-import type { BaseTable, SyncUtils } from '~/lib/sync'
 import { persistence, syncCollectionOptions } from '~/lib/sync'
 
 export interface Query extends BaseTable {
@@ -12,22 +11,20 @@ export interface Query extends BaseTable {
 }
 
 export function createQueriesCollection() {
-  return createCollection(
-    persistedCollectionOptions<Query, string, never, SyncUtils>({
-      ...syncCollectionOptions<Query>({
-        id: 'queries',
-        getKey: (item) => item.id,
-        events: ({ signal }) => orpc.queries.events.call({}, { signal }),
-        sync: ({ rows, signal }) => orpc.queries.sync.call(rows, { signal }),
-        onInsert: async ({ transaction }) => {
-          await orpc.queries.create.call(transaction.mutations.map((m) => m.modified))
-        },
-        onDelete: async ({ transaction }) => {
-          await orpc.queries.remove.call(transaction.mutations.map((m) => ({ id: m.key })))
-        },
-      }),
-      persistence,
-      schemaVersion: 1,
+  return createCollection(persistedCollectionOptions<Query, string, never, SyncUtils>({
+    ...syncCollectionOptions<Query>({
+      id: 'queries',
+      getKey: item => item.id,
+      events: ({ signal }) => orpc.queries.events.call({}, { signal }),
+      sync: ({ rows, signal }) => orpc.queries.sync.call(rows, { signal }),
+      onInsert: async ({ transaction }) => {
+        await orpc.queries.create.call(transaction.mutations.map(m => m.modified))
+      },
+      onDelete: async ({ transaction }) => {
+        await orpc.queries.remove.call(transaction.mutations.map(m => ({ id: m.key })))
+      },
     }),
-  )
+    persistence,
+    schemaVersion: 1,
+  }))
 }

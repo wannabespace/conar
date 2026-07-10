@@ -1,8 +1,11 @@
-import { ConnectionType } from '@conar/shared/enums/connection-type'
 import type { SqlLanguage } from 'sql-formatter'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { format } from 'sql-formatter'
 
-export function formatSql(sql: string, type: ConnectionType) {
+export function formatSql(
+  sql: string,
+  type: ConnectionType,
+) {
   const langMap: Record<ConnectionType, SqlLanguage> = {
     [ConnectionType.Postgres]: 'postgresql',
     [ConnectionType.MySQL]: 'mysql',
@@ -15,7 +18,8 @@ export function formatSql(sql: string, type: ConnectionType) {
       language: langMap[type],
       keywordCase: 'upper',
     })
-  } catch {
+  }
+  catch {
     return sql
   }
 }

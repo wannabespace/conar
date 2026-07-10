@@ -1,7 +1,8 @@
 import { useEffect, useEffectEvent } from 'react'
 
 async function handleDeepLink(_url: string): Promise<{
-  type: 'unknown'
+  type:
+    | 'unknown'
 }> {
   // const { pathname, searchParams } = new URL(url.replace('conar://', 'https://conar.app/'))
   return {

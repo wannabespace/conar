@@ -1,14 +1,12 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { Type } from 'arktype'
+import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { isConnectionError } from '@conar/shared/utils/connections'
 import { SafeURL } from '@conar/shared/utils/safe-url'
-import type { Type } from 'arktype'
 import { Result } from 'better-result'
 import { createStore } from 'seitu'
 import { toast } from 'sonner'
-
 import { getCollections } from '~/entities/collections'
-import type { Connection, ConnectionResource } from '~/entities/connection/core'
-
 import { getConnectionStringToShow } from '../utils/helpers'
 import { dialects } from './dialects'
 import { logQuery } from './log'
@@ -22,26 +20,21 @@ export async function connectionToQueryParams(connection: Connection): Promise<Q
   }
 }
 
-export async function connectionResourceToQueryParams(
-  connectionResource: ConnectionResource,
-): Promise<QueryParams> {
+export async function connectionResourceToQueryParams(connectionResource: ConnectionResource): Promise<QueryParams> {
   const { connectionsCollection, connectionStringsCollection } = getCollections()
   const connection = connectionsCollection.get(connectionResource.connectionId)
 
   if (!connection)
     throw new Error(`Connection not found for connection resource "${connectionResource.id}"`)
 
-  const connectionString = new SafeURL(
-    await connectionStringsCollection.utils.decrypt(connection.id),
-  )
+  const connectionString = new SafeURL(await connectionStringsCollection.utils.decrypt(connection.id))
   connectionString.pathname = connectionResource.name || ''
 
   return {
     connectionString: connectionString.toString(),
     type: connection.type,
     resourceId: connectionResource.id,
-    log: ({ promise, query, values }) =>
-      logQuery({ resourceId: connectionResource.id, promise, query, values }),
+    log: ({ promise, query, values }) => logQuery({ resourceId: connectionResource.id, promise, query, values }),
   }
 }
 
@@ -63,28 +56,23 @@ export interface QueryParams {
 export const MAX_RECONNECTION_ATTEMPTS = 5
 const RECONNECTION_DELAY = 3000
 
-export const reconnectingPromises = createStore<
-  Record<
-    string,
-    {
-      promise: Promise<unknown>
-      resourceId?: string
-      attempt: number
-    }
-  >
->({})
+export const reconnectingPromises = createStore<Record<string, {
+  promise: Promise<unknown>
+  resourceId?: string
+  attempt: number
+}>>({})
 
 export function createQuery<T extends Type = Type<unknown>>(options: {
   type?: T
   query: {
-    [D in ConnectionType]: (
-      dialect: ReturnType<(typeof dialects)[D]>,
-    ) => Promise<T extends Type ? T['inferIn'] : unknown>
+    [D in ConnectionType]: (dialect: ReturnType<typeof dialects[D]>) => Promise<
+      T extends Type ? T['inferIn'] : unknown
+    >
   }
 }) {
-  const run = async (
-    queryParams: QueryParams,
-  ): Promise<T extends Type ? T['inferOut'] : unknown> => {
+  const run = async (queryParams: QueryParams): Promise<
+    T extends Type ? T['inferOut'] : unknown
+  > => {
     const dialect = dialects[queryParams.type]
     const instance = dialect({
       connectionString: queryParams.connectionString,
@@ -102,56 +90,52 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
 
     const resolvers = Promise.withResolvers()
 
-    const canShowToast = () =>
-      queryParams.resourceId ? location.href.includes(queryParams.resourceId) : false
+    const canShowToast = () => queryParams.resourceId ? location.href.includes(queryParams.resourceId) : false
 
-    const result = await Result.tryPromise(
-      {
-        try: async () => {
-          const retryPromise = reconnectingPromises.get()[queryParams.connectionString]
+    const result = await Result.tryPromise({
+      try: async () => {
+        const retryPromise = reconnectingPromises.get()[queryParams.connectionString]
 
-          if (attempt === 0 && retryPromise) {
-            await retryPromise.promise
-          }
+        if (attempt === 0 && retryPromise) {
+          await retryPromise.promise
+        }
 
-          // eslint-disable-next-line typescript/no-explicit-any
-          return queryFn(instance as any)
-        },
-        catch: (error) => {
-          if (isConnectionError(error)) {
-            attempt += 1
-
-            reconnectingPromises.set((state) => {
-              const existing = state[queryParams.connectionString]
-
-              return {
-                ...state,
-                [queryParams.connectionString]: existing
-                  ? {
-                      ...existing,
-                      attempt,
-                    }
-                  : {
-                      promise: resolvers.promise,
-                      resourceId: queryParams.resourceId,
-                      attempt,
-                    },
-              }
-            })
-          }
-
-          return error
-        },
+        // eslint-disable-next-line ts/no-explicit-any
+        return queryFn(instance as any)
       },
-      {
-        retry: {
-          times: MAX_RECONNECTION_ATTEMPTS,
-          delayMs: RECONNECTION_DELAY,
-          backoff: 'constant',
-          shouldRetry: isConnectionError,
-        },
+      catch: (error) => {
+        if (isConnectionError(error)) {
+          attempt += 1
+
+          reconnectingPromises.set((state) => {
+            const existing = state[queryParams.connectionString]
+
+            return {
+              ...state,
+              [queryParams.connectionString]: existing
+                ? {
+                    ...existing,
+                    attempt,
+                  }
+                : {
+                    promise: resolvers.promise,
+                    resourceId: queryParams.resourceId,
+                    attempt,
+                  },
+            }
+          })
+        }
+
+        return error
       },
-    )
+    }, {
+      retry: {
+        times: MAX_RECONNECTION_ATTEMPTS,
+        delayMs: RECONNECTION_DELAY,
+        backoff: 'constant',
+        shouldRetry: isConnectionError,
+      },
+    })
 
     if (Result.isOk(result)) {
       resolvers.resolve()
@@ -161,28 +145,22 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
         return newState
       })
       if (canShowToast() && attempt > 0) {
-        toast.success(
-          `Database connection successful after reconnection ${attempt} attempt${attempt > 1 ? 's' : ''}.`,
-          {
-            id: `reconnection-success-${connectionStringToShow}`,
-            description: connectionStringToShow,
-          },
-        )
+        toast.success(`Database connection successful after reconnection ${attempt} attempt${attempt > 1 ? 's' : ''}.`, {
+          id: `reconnection-success-${connectionStringToShow}`,
+          description: connectionStringToShow,
+        })
       }
 
       return options.type
-        ? (options.type.assert(result.value) as T extends Type ? T['inferOut'] : unknown)
+        ? options.type.assert(result.value) as T extends Type ? T['inferOut'] : unknown
         : result.value
     }
 
     if (canShowToast() && isConnectionError(result.error)) {
-      toast.error(
-        'Could not connect to the connection. Please check your network or connection server and try again.',
-        {
-          id: `reconnection-error-${connectionStringToShow}`,
-          description: connectionStringToShow,
-        },
-      )
+      toast.error('Could not connect to the connection. Please check your network or connection server and try again.', {
+        id: `reconnection-error-${connectionStringToShow}`,
+        description: connectionStringToShow,
+      })
     }
 
     resolvers.reject(result.error)

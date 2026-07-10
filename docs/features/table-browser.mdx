@@ -1,7 +1,7 @@
 ---
-title: 'Table browser'
-sidebarTitle: 'Table browser'
-description: 'View, filter, sort, and edit table data in Tamery, with draft review before commit and data seeding.'
+title: "Table browser"
+sidebarTitle: "Table browser"
+description: "View, filter, sort, and edit table data in Tamery, with draft review before commit and data seeding."
 ---
 
 The table browser is a two-panel view: a schema/table tree on the left, a data grid on the right. Filters, sort order, and column config are saved per table.
@@ -27,13 +27,14 @@ Click **Sort** to pick a column and direction. Add multiple levels to break ties
 ## Editing
 
 <Steps>
-  <Step title="Edit a cell">Click a cell, type a new value. Edited cells are highlighted.</Step>
+  <Step title="Edit a cell">
+    Click a cell, type a new value. Edited cells are highlighted.
+  </Step>
   <Step title="Review drafts">
     Click **Review changes** to see every staged edit — table, column, old value, new value.
   </Step>
   <Step title="Commit or discard">
-    **Commit** writes all changes in one transaction. **Discard** reverts. You can also discard
-    individual changes in the review drawer.
+    **Commit** writes all changes in one transaction. **Discard** reverts. You can also discard individual changes in the review drawer.
   </Step>
 </Steps>
 
@@ -44,16 +45,15 @@ Click **Sort** to pick a column and direction. Add multiple levels to break ties
 Click **Seed** while a table is open. Tamery picks generators from your column names and types — names, emails, timestamps, and foreign keys referencing existing rows. Review and adjust per column, then choose how many rows to insert.
 
 <Note>
-  Seeding is a subscription feature. Free accounts get a limited number of runs. See
-  [Plans](/account/plans).
+  Seeding is a subscription feature. Free accounts get a limited number of runs. See [Plans](/account/plans).
 </Note>
 
 ## Other actions
 
-| Action                  | Description                                    |
-| ----------------------- | ---------------------------------------------- |
-| **Column visibility**   | Hide/show columns (hidden, not deleted).       |
-| **Copy data**           | Copy selected rows or the whole result as TSV. |
-| **Full-text search**    | Filter rows across visible columns.            |
-| **Rename column**       | Right-click a column header.                   |
-| **Rename / drop table** | From the toolbar menu (with confirmation).     |
+| Action | Description |
+|---|---|
+| **Column visibility** | Hide/show columns (hidden, not deleted). |
+| **Copy data** | Copy selected rows or the whole result as TSV. |
+| **Full-text search** | Filter rows across visible columns. |
+| **Rename column** | Right-click a column header. |
+| **Rename / drop table** | From the toolbar menu (with confirmation). |

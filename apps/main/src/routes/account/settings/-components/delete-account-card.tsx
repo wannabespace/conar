@@ -17,7 +17,6 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
-
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
@@ -35,7 +34,7 @@ function DeleteAccountDialog({
   const { data: hasCredentialAccount = false } = useQuery({
     queryKey: ['accounts'],
     queryFn: () => authClient.listAccounts(),
-    select: (data) => data.data?.some((account) => account.providerId === 'credential') ?? false,
+    select: data => data.data?.some(account => account.providerId === 'credential') ?? false,
   })
 
   const { mutate, isPending } = useMutation({
@@ -80,8 +79,8 @@ function DeleteAccountDialog({
         <DialogHeader>
           <DialogTitle>Delete account</DialogTitle>
           <DialogDescription>
-            This action is permanent and cannot be undone. All your data, including your
-            subscription, settings, and sessions will be permanently removed.
+            This action is permanent and cannot be undone. All your data,
+            including your subscription, settings, and sessions will be permanently removed.
           </DialogDescription>
         </DialogHeader>
         <DialogPanel className="flex flex-col gap-4">
@@ -93,10 +92,9 @@ function DeleteAccountDialog({
                 type="password"
                 placeholder="Enter your password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
                 disabled={isPending}
                 autoComplete="current-password"
-                // oxlint-disable-next-line no-autofocus
                 autoFocus
               />
             </div>
@@ -104,17 +102,20 @@ function DeleteAccountDialog({
 
           <div className="space-y-2">
             <Label htmlFor="delete-confirmation">
-              Type <span className="font-mono font-semibold">delete</span> to confirm
+              Type
+              {' '}
+              <span className="font-mono font-semibold">delete</span>
+              {' '}
+              to confirm
             </Label>
             <Input
               id="delete-confirmation"
               type="text"
               placeholder="delete"
               value={confirmation}
-              onChange={(e) => setConfirmation(e.target.value)}
+              onChange={e => setConfirmation(e.target.value)}
               disabled={isPending}
               autoComplete="off"
-              // oxlint-disable-next-line no-autofocus
               autoFocus={!hasCredentialAccount}
             />
           </div>
@@ -124,7 +125,10 @@ function DeleteAccountDialog({
             variant="outline"
             type="button"
             onClick={() => handleOpenChange(false)}
-            className="w-full sm:w-auto"
+            className="
+              w-full
+              sm:w-auto
+            "
             disabled={isPending}
           >
             Cancel
@@ -132,7 +136,10 @@ function DeleteAccountDialog({
           <Button
             type="submit"
             variant="destructive"
-            className="w-full sm:w-auto"
+            className="
+              w-full
+              sm:w-auto
+            "
             disabled={!canSubmit || isPending}
           >
             <LoadingContent loading={isPending}>
@@ -151,7 +158,10 @@ export function DeleteAccountCard() {
 
   return (
     <>
-      <DeleteAccountDialog open={open} onOpenChange={setOpen} />
+      <DeleteAccountDialog
+        open={open}
+        onOpenChange={setOpen}
+      />
       <Card>
         <CardHeader>
           <CardTitle>Delete account</CardTitle>

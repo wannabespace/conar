@@ -1,24 +1,20 @@
-import { renderWithRoot } from '@conar/ui/lib/render'
 import type { editor } from 'monaco-editor'
 import type { RefObject } from 'react'
-import { useEffect, useEffectEvent } from 'react'
 import type { Root } from 'react-dom/client'
-
+import { renderWithRoot } from '@conar/ui/lib/render'
+import { useEffect, useEffectEvent } from 'react'
 import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
-
 import { Route } from '../..'
 import { useRunnerContext } from './runner-context'
 import { RunnerEditorQueryZone } from './runner-editor-query-zone'
 
-export function useRunnerEditorQueryZones(
-  monacoRef: RefObject<editor.IStandaloneCodeEditor | null>,
-) {
+export function useRunnerEditorQueryZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
   const { connection, connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
 
   const getQueriesEvent = useEffectEvent((lineNumber: number) =>
-    editorQueriesStore.get().find((query) => query.startLineNumber === lineNumber),
+    editorQueriesStore.get().find(query => query.startLineNumber === lineNumber),
   )
 
   const run = useRunnerContext(({ run }) => run)
@@ -30,72 +26,63 @@ export function useRunnerEditorQueryZones(
     onRun: (index: number) => {
       const editorQuery = getQueriesEvent(lineNumber)
 
-      if (!editorQuery) return
+      if (!editorQuery)
+        return
 
       const query = editorQuery.queries.at(index)
 
-      if (!query) return
+      if (!query)
+        return
 
-      runEvent([
-        {
-          startLineNumber: editorQuery.startLineNumber,
-          endLineNumber: editorQuery.endLineNumber,
-          query,
-        },
-      ])
+      runEvent([{
+        startLineNumber: editorQuery.startLineNumber,
+        endLineNumber: editorQuery.endLineNumber,
+        query,
+      }])
     },
     getQuery: () => {
       const query = getQueriesEvent(lineNumber)
 
-      if (!query) throw new Error('Query not found')
+      if (!query)
+        throw new Error('Query not found')
 
       const { startLineNumber, endLineNumber } = query
 
-      return store
-        .get()
-        .query.split('\n')
-        .slice(startLineNumber - 1, endLineNumber)
-        .join('\n')
+      return store.get().query.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n')
     },
     onSave: () => {
       const query = getQueriesEvent(lineNumber)
 
-      if (!query) return
+      if (!query)
+        return
 
       const { startLineNumber, endLineNumber } = query
 
-      saveEvent(
-        store
-          .get()
-          .query.split('\n')
-          .slice(startLineNumber - 1, endLineNumber)
-          .join('\n'),
-      )
+      saveEvent(store.get().query.split('\n').slice(startLineNumber - 1, endLineNumber).join('\n'))
     },
   }))
 
   useEffect(() => {
     const editor = monacoRef.current
-    if (!editor) return
+    if (!editor)
+      return
 
-    const zones = new Map<
-      number,
-      {
-        zoneId: string
-        domNode: HTMLDivElement
-        root: Root
-      }
-    >()
+    const zones = new Map<number, {
+      zoneId: string
+      domNode: HTMLDivElement
+      root: Root
+    }>()
 
     const syncZones = () => {
       const model = editor.getModel()
-      if (!model) return
+      if (!model)
+        return
 
       const modelLineCount = model.getLineCount()
       const nextLines = editorQueriesStore
         .get()
-        .map((q) => q.startLineNumber)
-        .filter((line) => line <= modelLineCount)
+        .map(q => q.startLineNumber)
+        .filter(line => line <= modelLineCount)
       const nextSet = new Set(nextLines)
 
       let needsChange = zones.size !== nextSet.size
@@ -108,11 +95,13 @@ export function useRunnerEditorQueryZones(
         }
       }
 
-      if (!needsChange) return
+      if (!needsChange)
+        return
 
       editor.changeViewZones((changeAccessor) => {
         for (const [lineNumber, zone] of zones) {
-          if (nextSet.has(lineNumber)) continue
+          if (nextSet.has(lineNumber))
+            continue
 
           changeAccessor.removeZone(zone.zoneId)
           zone.domNode.remove()
@@ -121,7 +110,8 @@ export function useRunnerEditorQueryZones(
         }
 
         for (const lineNumber of nextLines) {
-          if (zones.has(lineNumber)) continue
+          if (zones.has(lineNumber))
+            continue
 
           const handlers = createZoneHandlers(lineNumber)
           const { domNode, root } = renderWithRoot(
@@ -151,7 +141,8 @@ export function useRunnerEditorQueryZones(
     let scheduled = false
 
     const scheduleSync = () => {
-      if (scheduled) return
+      if (scheduled)
+        return
       scheduled = true
       queueMicrotask(() => {
         scheduled = false

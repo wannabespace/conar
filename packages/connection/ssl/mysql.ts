@@ -16,16 +16,7 @@ export function parseSSLConfig(searchParams: URLSearchParams): SslOptions | unde
   const sslMaxVersion = searchParams.get('sslmaxversion')
   const sslPfx = searchParams.get('sslpfx')
 
-  const hasSSLParams =
-    sslCa ||
-    sslCert ||
-    sslKey ||
-    sslPassphrase ||
-    sslCiphers ||
-    sslMinVersion ||
-    sslMaxVersion ||
-    sslPfx ||
-    sslRejectUnauthorized
+  const hasSSLParams = sslCa || sslCert || sslKey || sslPassphrase || sslCiphers || sslMinVersion || sslMaxVersion || sslPfx || sslRejectUnauthorized
 
   if (ssl === '0' || ssl?.toLowerCase() === 'false') {
     if (hasSSLParams) {
@@ -72,7 +63,8 @@ export function parseSSLConfig(searchParams: URLSearchParams): SslOptions | unde
     if (sslRejectUnauthorized !== null) {
       if (sslRejectUnauthorized === '0' || sslRejectUnauthorized?.toLowerCase() === 'false') {
         sslConfig.rejectUnauthorized = false
-      } else if (sslRejectUnauthorized === '1' || sslRejectUnauthorized?.toLowerCase() === 'true') {
+      }
+      else if (sslRejectUnauthorized === '1' || sslRejectUnauthorized?.toLowerCase() === 'true') {
         sslConfig.rejectUnauthorized = true
       }
     }

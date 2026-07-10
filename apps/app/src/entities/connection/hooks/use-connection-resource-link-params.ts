@@ -1,14 +1,11 @@
 import type { LinkProps } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { useSubscription } from 'seitu/react'
-
 import { getConnectionResourceStore } from '~/entities/connection/store'
 
 export function useConnectionResourceLinkParams(resourceId: string) {
   const store = getConnectionResourceStore(resourceId)
-  const [lastOpenedTable, lastOpenedPage, lastChatId] = useSubscription(store, {
-    selector: (state) => [state.lastOpenedTable, state.lastOpenedPage, state.lastOpenedChatId],
-  })
+  const [lastOpenedTable, lastOpenedPage, lastChatId] = useSubscription(store, { selector: state => [state.lastOpenedTable, state.lastOpenedPage, state.lastOpenedChatId] })
 
   return useMemo((): LinkProps => {
     if (lastOpenedPage) {
@@ -17,13 +14,15 @@ export function useConnectionResourceLinkParams(resourceId: string) {
           to: '/connection/$resourceId/definitions/enums',
           params: { resourceId },
         }
-      } else if (lastOpenedPage === '/_protected/connection/$resourceId/query/') {
+      }
+      else if (lastOpenedPage === '/_protected/connection/$resourceId/query/') {
         return {
           to: '/connection/$resourceId/query',
           params: { resourceId },
           search: lastChatId ? { chatId: lastChatId } : undefined,
         }
-      } else if (lastOpenedPage === '/_protected/connection/$resourceId/visualizer/') {
+      }
+      else if (lastOpenedPage === '/_protected/connection/$resourceId/visualizer/') {
         return {
           to: '/connection/$resourceId/visualizer',
           params: { resourceId },
@@ -34,9 +33,7 @@ export function useConnectionResourceLinkParams(resourceId: string) {
     return {
       to: '/connection/$resourceId/table',
       params: { resourceId },
-      search: lastOpenedTable
-        ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table }
-        : undefined,
+      search: lastOpenedTable ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table } : undefined,
     }
   }, [resourceId, lastOpenedPage, lastOpenedTable, lastChatId])
 }

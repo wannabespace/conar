@@ -1,17 +1,10 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { RefObject } from 'react'
 import { placeholderMap } from '@conar/shared/utils/connections'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@conar/ui/components/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
 import { Field, FieldDescription, FieldLabel } from '@conar/ui/components/field'
 import { Input } from '@conar/ui/components/input'
-import type { RefObject } from 'react'
 import { useId } from 'react'
-
 import { useLocalProxyAvailable } from '~/entities/connection/runtime'
 
 export function StepCredentials({
@@ -38,14 +31,16 @@ export function StepCredentials({
       </CardHeader>
       <CardContent>
         <Field className="gap-2">
-          <FieldLabel htmlFor={id}>Connection string</FieldLabel>
+          <FieldLabel htmlFor={id}>
+            Connection string
+          </FieldLabel>
           <Input
             id={id}
             placeholder={placeholderMap[type]}
             ref={ref}
             autoFocus
             value={connectionString}
-            onChange={(e) => setConnectionString(e.target.value)}
+            onChange={e => setConnectionString(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault()

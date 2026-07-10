@@ -3,9 +3,7 @@ import { connectionsResources } from '@conar/db/schema'
 import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { inArray } from 'drizzle-orm'
-
 import { authMiddleware, orpc } from '~/orpc'
-
 import { publisher } from './events'
 
 const input = type({
@@ -14,7 +12,7 @@ const input = type({
 
 export const remove = orpc
   .use(authMiddleware)
-  .input(type.or(input, input.array()).pipe((data) => (Array.isArray(data) ? data : [data])))
+  .input(type.or(input, input.array()).pipe(data => Array.isArray(data) ? data : [data]))
   .handler(async ({ context, input }) => {
     if (input.length === 0) {
       throw new ORPCError('BAD_REQUEST', { message: 'No connection resources to remove' })
@@ -26,7 +24,7 @@ export const remove = orpc
       },
       where: {
         id: {
-          in: input.map((item) => item.id),
+          in: input.map(item => item.id),
         },
         connection: {
           userId: {
@@ -40,12 +38,9 @@ export const remove = orpc
       throw new ORPCError('NOT_FOUND', { message: 'Some connection resources not found' })
     }
 
-    await db.delete(connectionsResources).where(
-      inArray(
-        connectionsResources.id,
-        input.map((item) => item.id),
-      ),
-    )
+    await db
+      .delete(connectionsResources)
+      .where(inArray(connectionsResources.id, input.map(item => item.id)))
 
     for (const item of input) {
       publisher.publish(context.user.id, {

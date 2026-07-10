@@ -15,7 +15,11 @@
         "groups": [
           {
             "group": "Get Started",
-            "pages": ["introduction", "quickstart", "installation"]
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
           },
           {
             "group": "Connections",
@@ -40,7 +44,10 @@
           },
           {
             "group": "Account & Billing",
-            "pages": ["account/plans", "account/settings"]
+            "pages": [
+              "account/plans",
+              "account/settings"
+            ]
           }
         ]
       },
@@ -49,13 +56,18 @@
         "groups": [
           {
             "group": "CLI",
-            "pages": ["cli/overview", "cli/commands"]
+            "pages": [
+              "cli/overview",
+              "cli/commands"
+            ]
           }
         ]
       },
       {
         "tab": "MCP",
-        "pages": ["mcp/overview"]
+        "pages": [
+          "mcp/overview"
+        ]
       }
     ]
   },

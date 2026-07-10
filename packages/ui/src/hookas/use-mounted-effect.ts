@@ -1,6 +1,9 @@
 import * as React from 'react'
 
-export function useMountedEffect(effect: React.EffectCallback, deps: React.DependencyList = []) {
+export function useMountedEffect(
+  effect: React.EffectCallback,
+  deps: React.DependencyList = [],
+) {
   const isMountedRef = React.useRef(false)
 
   const effectEvent = React.useEffectEvent(effect)
@@ -10,6 +13,6 @@ export function useMountedEffect(effect: React.EffectCallback, deps: React.Depen
       return effectEvent()
     }
     isMountedRef.current = true
-    // eslint-disable-next-line react/exhaustive-deps
+  // eslint-disable-next-line react/exhaustive-deps
   }, deps)
 }

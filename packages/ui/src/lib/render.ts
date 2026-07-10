@@ -11,10 +11,7 @@ export function render(component: React.ReactNode) {
   return div
 }
 
-export function renderWithRoot(component: React.ReactNode): {
-  domNode: HTMLDivElement
-  root: Root
-} {
+export function renderWithRoot(component: React.ReactNode): { domNode: HTMLDivElement, root: Root } {
   const domNode = document.createElement('div')
   const root = createRoot(domNode)
 

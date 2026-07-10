@@ -1,11 +1,10 @@
-import { cn } from '@conar/ui/lib/utils'
-import TiptapPlaceholder from '@tiptap/extension-placeholder'
 import type { Editor } from '@tiptap/react'
-import { EditorContent, Extension, useEditor } from '@tiptap/react'
-import TiptapStarterKit from '@tiptap/starter-kit'
 import type { ComponentProps, RefObject } from 'react'
+import { cn } from '@conar/ui/lib/utils'
+import Placeholder from '@tiptap/extension-placeholder'
+import { EditorContent, Extension, useEditor } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
 import { useEffect, useImperativeHandle } from 'react'
-
 import './tiptap.css'
 
 export function TipTap({
@@ -28,42 +27,39 @@ export function TipTap({
     editor: Editor
   } | null>
 } & Omit<ComponentProps<typeof EditorContent>, 'editor' | 'ref'>) {
-  const editor = useEditor(
-    {
-      extensions: [
-        TiptapStarterKit,
-        TiptapPlaceholder.configure({
-          placeholder: () => placeholder || '',
-          showOnlyWhenEditable: false,
-        }),
-        Extension.create({
-          addKeyboardShortcuts() {
-            return {
-              Enter: () => {
-                onEnter?.(this.editor.getText())
-                return true
-              },
-              'Cmd-Enter': () => {
-                onEnter?.(this.editor.getText())
-                return true
-              },
-              'Ctrl-Enter': () => {
-                onEnter?.(this.editor.getText())
-                return true
-              },
-            }
-          },
-        }),
-      ],
-      parseOptions: {
-        preserveWhitespace: 'full',
-      },
-      editable: !disabled,
-      content: value,
-      onUpdate: ({ editor }) => setValue(editor.getText()),
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Placeholder.configure({
+        placeholder: () => placeholder || '',
+        showOnlyWhenEditable: false,
+      }),
+      Extension.create({
+        addKeyboardShortcuts() {
+          return {
+            'Enter': () => {
+              onEnter?.(this.editor.getText())
+              return true
+            },
+            'Cmd-Enter': () => {
+              onEnter?.(this.editor.getText())
+              return true
+            },
+            'Ctrl-Enter': () => {
+              onEnter?.(this.editor.getText())
+              return true
+            },
+          }
+        },
+      }),
+    ],
+    parseOptions: {
+      preserveWhitespace: 'full',
     },
-    [onEnter, disabled, placeholder, setValue],
-  )
+    editable: !disabled,
+    content: value,
+    onUpdate: ({ editor }) => setValue(editor.getText()),
+  }, [onEnter, disabled, placeholder, setValue])
 
   useEffect(() => {
     if (editor) {
@@ -77,19 +73,13 @@ export function TipTap({
     }
   }, [editor, className])
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      editor,
-    }),
-    [editor],
-  )
+  useImperativeHandle(ref, () => ({
+    editor,
+  }), [editor])
 
-  const addImage = (
-    e: React.ClipboardEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement>,
-    data: DataTransfer,
-  ) => {
-    if (!onImageAdd) return
+  const addImage = (e: React.ClipboardEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement>, data: DataTransfer) => {
+    if (!onImageAdd)
+      return
 
     const { files } = data
 
@@ -99,7 +89,7 @@ export function TipTap({
     }
 
     if (files && files.length > 0) {
-      for (const file of files) {
+      for (const file of [...files]) {
         const [mime] = file.type.split('/')
 
         if (mime === 'image') {

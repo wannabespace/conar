@@ -1,6 +1,5 @@
-import process from 'node:process'
-
 import type { RouterOutputs } from '@conar/api/orpc/routers'
+import process from 'node:process'
 import { createQueryRouter } from '@conar/query-proxy'
 import { PORTS } from '@conar/shared/constants'
 import { SafeURL } from '@conar/shared/utils/safe-url'
@@ -11,7 +10,6 @@ import { RPCHandler } from '@orpc/server/fetch'
 import { consola } from 'consola'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-
 import { orpc as apiOrpc } from '~/orpc'
 import { requireSession } from '~/session'
 
@@ -30,7 +28,7 @@ export const proxyCommand = command({
     let resources: Resource[] = []
 
     async function fetchConnections() {
-      const prevIds = new Set(connections.map((c) => c.id))
+      const prevIds = new Set(connections.map(c => c.id))
       const [fetchedConnections, fetchedResources] = await Promise.all([
         apiOrpc.connections.list(),
         apiOrpc.connectionsResources.list(),
@@ -49,28 +47,20 @@ export const proxyCommand = command({
       return connections.length
     }
 
-    function resolveConnectionString(input: {
-      connectionString?: string
-      resourceId?: string
-      connectionId?: string
-    }): string {
+    function resolveConnectionString(input: { connectionString?: string, resourceId?: string, connectionId?: string }): string {
       if (input.connectionString) {
         return input.connectionString
       }
 
       if (input.resourceId) {
-        const resource = resources.find((r) => r.id === input.resourceId)
+        const resource = resources.find(r => r.id === input.resourceId)
         if (!resource) {
-          throw new ORPCError('NOT_FOUND', {
-            message: `Resource "${input.resourceId}" not found in local cache. Try restarting \`conar proxy\`.`,
-          })
+          throw new ORPCError('NOT_FOUND', { message: `Resource "${input.resourceId}" not found in local cache. Try restarting \`conar proxy\`.` })
         }
 
-        const conn = connections.find((c) => c.id === resource.connectionId)
+        const conn = connections.find(c => c.id === resource.connectionId)
         if (!conn) {
-          throw new ORPCError('NOT_FOUND', {
-            message: `Connection for resource "${input.resourceId}" not found in local cache.`,
-          })
+          throw new ORPCError('NOT_FOUND', { message: `Connection for resource "${input.resourceId}" not found in local cache.` })
         }
 
         const url = new SafeURL(conn.connectionString)
@@ -79,18 +69,14 @@ export const proxyCommand = command({
       }
 
       if (input.connectionId) {
-        const conn = connections.find((c) => c.id === input.connectionId)
+        const conn = connections.find(c => c.id === input.connectionId)
         if (!conn) {
-          throw new ORPCError('NOT_FOUND', {
-            message: `Connection "${input.connectionId}" not found in local cache. Try restarting \`conar proxy\`.`,
-          })
+          throw new ORPCError('NOT_FOUND', { message: `Connection "${input.connectionId}" not found in local cache. Try restarting \`conar proxy\`.` })
         }
         return conn.connectionString
       }
 
-      throw new ORPCError('BAD_REQUEST', {
-        message: 'One of connectionString, resourceId, or connectionId is required.',
-      })
+      throw new ORPCError('BAD_REQUEST', { message: 'One of connectionString, resourceId, or connectionId is required.' })
     }
 
     async function verifyBrowserSession(headers: Headers): Promise<void> {
@@ -102,7 +88,7 @@ export const proxyCommand = command({
         throw new Error('Invalid or expired browser session.')
       }
 
-      const data = (await res.json()) as { user?: { id?: string } } | null
+      const data = await res.json() as { user?: { id?: string } } | null
       if (!data?.user?.id) {
         throw new Error('Invalid browser session.')
       }
@@ -114,14 +100,12 @@ export const proxyCommand = command({
 
     const orpc = os.$context<{ headers: Headers }>()
 
-    const authed = orpc.use(
-      orpc.middleware(async ({ next, context }) => {
-        await verifyBrowserSession(context.headers)
-        return next({})
-      }),
-    )
+    const authed = orpc.use(orpc.middleware(async ({ next, context }) => {
+      await verifyBrowserSession(context.headers)
+      return next({})
+    }))
 
-    const router = createQueryRouter(authed, (input) => resolveConnectionString(input))
+    const router = createQueryRouter(authed, input => resolveConnectionString(input))
 
     consola.start('Fetching connections...')
     const count = await fetchConnections()
@@ -130,10 +114,9 @@ export const proxyCommand = command({
     const refreshInterval = setInterval(async () => {
       try {
         await fetchConnections()
-      } catch (error) {
-        consola.warn(
-          `Failed to refresh connections: ${error instanceof Error ? error.message : String(error)}`,
-        )
+      }
+      catch (error) {
+        consola.warn(`Failed to refresh connections: ${error instanceof Error ? error.message : String(error)}`)
       }
     }, REFRESH_INTERVAL_MS)
 
@@ -142,7 +125,8 @@ export const proxyCommand = command({
         async (options) => {
           try {
             return await options.next()
-          } catch (error) {
+          }
+          catch (error) {
             consola.error({
               type: error instanceof Error ? error.constructor.name : typeof error,
               message: error instanceof Error ? error.message : String(error),
@@ -152,13 +136,10 @@ export const proxyCommand = command({
 
             if (error instanceof ORPCError) {
               if (error.cause instanceof ValidationError) {
-                const message = error.cause.issues
-                  .map((issue) =>
-                    issue.path
-                      ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
-                      : issue.message,
-                  )
-                  .join(', ')
+                const message = error.cause.issues.map(issue => issue.path
+                  ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
+                  : issue.message,
+                ).join(', ')
 
                 throw new ORPCError('BAD_REQUEST', { message })
               }
@@ -177,25 +158,20 @@ export const proxyCommand = command({
     })
 
     const app = new Hono()
-      .use(
-        cors({
-          origin(origin) {
-            const allowedOrigins = [import.meta.env.MAIN_URL]
-            return origin.endsWith(`.${new URL(import.meta.env.MAIN_URL).host}`) ||
-              allowedOrigins.includes(origin)
-              ? origin
-              : null
-          },
-          credentials: true,
-        }),
-      )
-      .get('/health', (c) =>
-        c.json({
-          ok: true,
-          version: import.meta.env.VERSION,
-          userId: session.user.id,
-        }),
-      )
+      .use(cors({
+        origin(origin) {
+          const allowedOrigins = [
+            import.meta.env.MAIN_URL,
+          ]
+          return origin.endsWith(`.${new URL(import.meta.env.MAIN_URL).host}`) || allowedOrigins.includes(origin) ? origin : null
+        },
+        credentials: true,
+      }))
+      .get('/health', c => c.json({
+        ok: true,
+        version: import.meta.env.VERSION,
+        userId: session.user.id,
+      }))
       .use('/*', async (c, next) => {
         const { matched, response } = await handler.handle(c.req.raw.clone(), {
           context: { headers: c.req.raw.headers },
@@ -216,25 +192,22 @@ export const proxyCommand = command({
     process.once('SIGINT', onSigint)
     process.once('SIGTERM', onSigint)
 
-    serve(
-      {
-        fetch: app.fetch,
-        port: PORTS.LOCAL_PROXY,
-        hostname: '127.0.0.1',
-      },
-      () => {
-        consola.box({
-          title: 'Conar Local Proxy',
-          message: [
-            `Listening on http://127.0.0.1:${PORTS.LOCAL_PROXY}`,
-            `Signed in as ${session.user.email}`,
-            '',
-            'The web app will automatically route connections through this proxy.',
-            'Press Ctrl+C to stop.',
-          ].join('\n'),
-          style: { borderColor: 'cyan', borderStyle: 'rounded', padding: 1 },
-        })
-      },
-    )
+    serve({
+      fetch: app.fetch,
+      port: PORTS.LOCAL_PROXY,
+      hostname: '127.0.0.1',
+    }, () => {
+      consola.box({
+        title: 'Conar Local Proxy',
+        message: [
+          `Listening on http://127.0.0.1:${PORTS.LOCAL_PROXY}`,
+          `Signed in as ${session.user.email}`,
+          '',
+          'The web app will automatically route connections through this proxy.',
+          'Press Ctrl+C to stop.',
+        ].join('\n'),
+        style: { borderColor: 'cyan', borderStyle: 'rounded', padding: 1 },
+      })
+    })
   },
 })

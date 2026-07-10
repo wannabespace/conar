@@ -14,88 +14,67 @@ import { format } from 'date-fns'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
-
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
-
 import { useTableColumns } from '../../columns'
 import { useTablePageStore } from '../../store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-export function HeaderSearch({ table, schema }: { table: string; schema: string }) {
-  const isOnline = useSubscription(appStore, { selector: (state) => state.isOnline })
+export function HeaderSearch({ table, schema }: { table: string, schema: string }) {
+  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const { connectionResource } = useRouteContext()
   const inputRef = useRef<HTMLInputElement>(null)
   const store = useTablePageStore()
-  const prompt = useSubscription(store, { selector: (state) => state.prompt })
-  const [freeAiUsage, setFreeAiUsage] = useState<{
-    remaining: number
-    max: number
-    resetAt: Date
-  } | null>(null)
-  const { mutate: generateFilter, isPending } = useMutation(
-    orpc.ai.filters.mutationOptions({
-      onSuccess: (data) => {
-        const hasOrderBy = Object.keys(data.orderBy).length > 0
-        store.set(
-          (state) =>
-            ({
-              ...state,
-              orderBy: data.orderBy,
-              filters: data.filters
-                .map(
-                  (filter) =>
-                    ({
-                      column: filter.column,
-                      ref: SQL_FILTERS_LIST.find((f) => f.operator === filter.operator),
-                      values: filter.values,
-                    }) satisfies Omit<ActiveFilter, 'ref'> & { ref?: ActiveFilter['ref'] },
-                )
-                // For future updates if we'll have new filters
-                .filter((f) => !!f.ref) as ActiveFilter[],
-            }) satisfies typeof state,
-        )
+  const prompt = useSubscription(store, { selector: state => state.prompt })
+  const [freeAiUsage, setFreeAiUsage] = useState<{ remaining: number, max: number, resetAt: Date } | null>(null)
+  const { mutate: generateFilter, isPending } = useMutation(orpc.ai.filters.mutationOptions({
+    onSuccess: (data) => {
+      const hasOrderBy = Object.keys(data.orderBy).length > 0
+      store.set(state => ({
+        ...state,
+        orderBy: data.orderBy,
+        filters: data.filters
+          .map(filter => ({
+            column: filter.column,
+            ref: SQL_FILTERS_LIST.find(f => f.operator === filter.operator),
+            values: filter.values,
+          } satisfies Omit<ActiveFilter, 'ref'> & { ref?: ActiveFilter['ref'] }))
+          // For future updates if we'll have new filters
+          .filter(f => !!f.ref) as ActiveFilter[],
+      } satisfies typeof state))
 
-        if (data.filters.length === 0 && !hasOrderBy) {
-          toast.info(
-            'No filters or ordering were generated, please try again with a different prompt',
-            {
-              id: 'no-filters-or-ordering',
-            },
-          )
-        }
+      if (data.filters.length === 0 && !hasOrderBy) {
+        toast.info('No filters or ordering were generated, please try again with a different prompt', {
+          id: 'no-filters-or-ordering',
+        })
+      }
 
-        setFreeAiUsage(data.freeAiUsage || null)
+      setFreeAiUsage(data.freeAiUsage || null)
 
-        setTimeout(() => {
-          inputRef.current?.focus()
-        }, 100)
-      },
-      onError: (error) => {
-        if (isDefinedError(error)) {
-          setFreeAiUsage(error.data)
-        }
-      },
-    }),
-  )
+      setTimeout(() => {
+        inputRef.current?.focus()
+      }, 100)
+    },
+    onError: (error) => {
+      if (isDefinedError(error)) {
+        setFreeAiUsage(error.data)
+      }
+    },
+  }))
   const columns = useTableColumns()
   const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const context = `
     Filters working with AND operator.
     Table name: ${table}
     Schema name: ${schema}
-    Columns: ${JSON.stringify(
-      columns?.map((col) => ({
-        id: col.id,
-        type: col.type,
-        default: col.defaultValue,
-        isNullable: col.isNullable,
-      })),
-      null,
-      2,
-    )}
+    Columns: ${JSON.stringify(columns?.map(col => ({
+      id: col.id,
+      type: col.type,
+      default: col.defaultValue,
+      isNullable: col.isNullable,
+    })), null, 2)}
     Enums: ${JSON.stringify(enums, null, 2)}
   `.trim()
 
@@ -121,14 +100,10 @@ export function HeaderSearch({ table, schema }: { table: string; schema: string 
       <InputGroup>
         <InputGroupInput
           ref={inputRef}
-          placeholder={
-            isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'
-          }
+          placeholder={isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'}
           disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
           value={prompt}
-          onChange={(e) =>
-            store.set((state) => ({ ...state, prompt: e.target.value }) satisfies typeof state)
-          }
+          onChange={e => store.set(state => ({ ...state, prompt: e.target.value } satisfies typeof state))}
         />
         <InputGroupAddon>
           <LoadingContent
@@ -143,18 +118,31 @@ export function HeaderSearch({ table, schema }: { table: string; schema: string 
             <Tooltip>
               <TooltipTrigger asChild>
                 <div
-                  className="cursor-help text-xs whitespace-nowrap text-muted-foreground"
-                  // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- keyboard-accessible Tooltip trigger; aria-label already covers screen readers
+                  className="
+                    cursor-help text-xs whitespace-nowrap text-muted-foreground
+                  "
                   tabIndex={0}
                   aria-label={`You have ${freeAiUsage.remaining} out of ${freeAiUsage.max} free AI filter uses left this month.`}
                 >
-                  <NumberFlow value={freeAiUsage.remaining} className="tabular-nums" />/
+                  <NumberFlow
+                    value={freeAiUsage.remaining}
+                    className="tabular-nums"
+                  />
+                  /
                   {freeAiUsage.max}
                 </div>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                You have {freeAiUsage.remaining}/{freeAiUsage.max} free AI filter uses left this
-                month. Reset at {format(freeAiUsage.resetAt, 'MMM d, yyyy')}.
+                You have
+                {' '}
+                {freeAiUsage.remaining}
+                /
+                {freeAiUsage.max}
+                {' '}
+                free AI filter uses left this month. Reset at
+                {' '}
+                {format(freeAiUsage.resetAt, 'MMM d, yyyy')}
+                .
               </TooltipContent>
             </Tooltip>
           )}

@@ -1,12 +1,7 @@
 import { apiKeyClient } from '@better-auth/api-key/client'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
-import {
-  lastLoginMethodClient,
-  magicLinkClient,
-  organizationClient,
-  twoFactorClient,
-} from 'better-auth/client/plugins'
+import { lastLoginMethodClient, magicLinkClient, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
 import { createAuthClient } from 'better-auth/react'
 
 const getAuthHeadersIsomorphic = createIsomorphicFn()
@@ -15,7 +10,7 @@ const getAuthHeadersIsomorphic = createIsomorphicFn()
 
     return {
       'user-agent': request.headers.get('user-agent') ?? '',
-      cookie: request.headers.get('cookie') ?? '',
+      'cookie': request.headers.get('cookie') ?? '',
     }
   })
   .client(() => ({}))

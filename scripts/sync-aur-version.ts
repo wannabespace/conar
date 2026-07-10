@@ -27,8 +27,7 @@ function getDesktopVersion(): string {
 }
 
 const pkgverRe = /^(\s*pkgver = ).*$/m
-const sourceRe =
-  /^(\s*source_x86_64 = )conar-[^:]+(::https:\/\/download\.conar\.app\/linux\/deb\/x64)$/m
+const sourceRe = /^(\s*source_x86_64 = )conar-[^:]+(::https:\/\/download\.conar\.app\/linux\/deb\/x64)$/m
 const sha256Re = /^(\s*sha256sums_x86_64 = ).*$/m
 
 function updatePkgbuild(version: string, sha256: string | null): boolean {
@@ -73,7 +72,7 @@ async function fetchDebSha256(): Promise<string> {
   if (!res.ok) {
     throw new Error(`Failed to fetch ${DEB_URL}: ${res.status} ${res.statusText}`)
   }
-  const buf = Buffer.from((await res.arrayBuffer()) as ArrayBuffer)
+  const buf = Buffer.from(await res.arrayBuffer() as ArrayBuffer)
   return crypto.createHash('sha256').update(buf).digest('hex')
 }
 
@@ -98,7 +97,8 @@ async function main() {
     if (!sha256) {
       console.log('Tip: run with --checksum to update sha256sums (recommended for releases).')
     }
-  } else {
+  }
+  else {
     console.log('AUR files already in sync with version', version)
   }
 }

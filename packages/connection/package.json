@@ -1,10 +1,16 @@
 {
   "name": "@conar/connection",
-  "private": true,
   "type": "module",
+  "private": true,
   "scripts": {
     "test": "bun test",
     "check-types": "tsc"
+  },
+  "peerDependencies": {
+    "@clickhouse/client": "catalog:",
+    "mssql": "catalog:",
+    "mysql2": "catalog:",
+    "pg": "catalog:"
   },
   "dependencies": {
     "@conar/shared": "workspace:*",
@@ -18,11 +24,5 @@
     "mssql": "catalog:",
     "mysql2": "catalog:",
     "typescript": "catalog:"
-  },
-  "peerDependencies": {
-    "@clickhouse/client": "catalog:",
-    "mssql": "catalog:",
-    "mysql2": "catalog:",
-    "pg": "catalog:"
   }
 }

@@ -1,5 +1,5 @@
 {
   "name": "@conar/configs",
-  "private": true,
-  "type": "module"
+  "type": "module",
+  "private": true
 }

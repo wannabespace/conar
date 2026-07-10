@@ -11,22 +11,12 @@ import { RiCheckLine, RiExportLine, RiLoopLeftLine } from '@remixicon/react'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
-
 import { ExportData } from '~/components/export-data'
-import {
-  resourceConstraintsQueryOptions,
-  resourceEnumsQueryOptions,
-  resourceRowsQuery,
-  resourceRowsQueryInfiniteOptions,
-  resourceTableColumnsQueryOptions,
-  resourceTablesAndSchemasQueryOptions,
-  resourceTableTotalQueryOptions,
-} from '~/entities/connection/queries'
+import { resourceConstraintsQueryOptions, resourceEnumsQueryOptions, resourceRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableColumnsQueryOptions, resourceTablesAndSchemasQueryOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { queryClient } from '~/main'
-
 import { useTableColumns } from '../../columns'
 import { useTablePageStore } from '../../store'
 import { HeaderActionsColumns } from './header-actions-columns'
@@ -39,70 +29,25 @@ import { HeaderSearch } from './header-search'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-function createExportTrigger(disabled: boolean) {
-  return function ExportTrigger({ isExporting }: { isExporting: boolean }) {
-    return (
-      <Button variant="secondary" size="icon" disabled={isExporting || disabled}>
-        <LoadingContent loading={isExporting}>
-          <RiExportLine />
-        </LoadingContent>
-      </Button>
-    )
-  }
-}
-
-export function Header({ table, schema }: { table: string; schema: string }) {
+export function Header({ table, schema }: { table: string, schema: string }) {
   const { connectionResource } = useRouteContext()
   const columns = useTableColumns()
   const store = useTablePageStore()
   const connectionStore = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(connectionStore, { selector: (state) => state.showSystem })
-  const { data: tablesAndSchemas } = useQuery(
-    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
-  )
-  const tableType =
-    tablesAndSchemas?.schemas.find((s) => s.name === schema)?.tables?.find((t) => t.name === table)
-      ?.type ?? 'table'
-  const { filters, exact, orderBy, selected } = useSubscription(store, {
-    selector: (state) => pick(state, ['filters', 'orderBy', 'exact', 'selected']),
-  })
-  const { data: total, isLoading } = useQuery(
-    resourceTableTotalQueryOptions({
-      connectionResource,
-      table,
-      schema,
-      query: { filters, exact },
-    }),
-  )
+  const showSystem = useSubscription(connectionStore, { selector: state => state.showSystem })
+  const { data: tablesAndSchemas } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))
+  const tableType = tablesAndSchemas?.schemas.find(s => s.name === schema)?.tables?.find(t => t.name === table)?.type ?? 'table'
+  const { filters, exact, orderBy, selected } = useSubscription(store, { selector: state => pick(state, ['filters', 'orderBy', 'exact', 'selected']) })
+  const { data: total, isLoading } = useQuery(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters, exact } }))
 
-  const {
-    isFetching,
-    dataUpdatedAt,
-    refetch,
-    data: rows = [],
-    isPending,
-  } = useInfiniteQuery(
-    resourceRowsQueryInfiniteOptions({
-      connectionResource,
-      table,
-      schema,
-      query: { filters, orderBy },
-    }),
+  const { isFetching, dataUpdatedAt, refetch, data: rows = [], isPending } = useInfiniteQuery(
+    resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters, orderBy } }),
   )
 
   async function handleRefresh() {
     refetch()
-    queryClient.invalidateQueries(
-      resourceTableColumnsQueryOptions({ connectionResource, table, schema }),
-    )
-    queryClient.invalidateQueries(
-      resourceTableTotalQueryOptions({
-        connectionResource,
-        table,
-        schema,
-        query: { filters, exact },
-      }),
-    )
+    queryClient.invalidateQueries(resourceTableColumnsQueryOptions({ connectionResource, table, schema }))
+    queryClient.invalidateQueries(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters, exact } }))
     queryClient.invalidateQueries(resourceConstraintsQueryOptions({ connectionResource }))
     queryClient.invalidateQueries(resourceEnumsQueryOptions({ connectionResource }))
   }
@@ -113,10 +58,8 @@ export function Header({ table, schema }: { table: string; schema: string }) {
     const data: Record<string, unknown>[] = []
     const limit = 1000
     let offset = 0
-    const queryParams = await connectionResourceToQueryParams(connectionResource)
 
     while (true) {
-      // oxlint-disable-next-line no-await-in-loop -- pagination: each page's offset depends on the previous batch
       const batch = await resourceRowsQuery({
         schema,
         table,
@@ -127,7 +70,7 @@ export function Header({ table, schema }: { table: string; schema: string }) {
           filters: exportFilters || filters,
           filtersConcatOperator: exportFilters ? 'OR' : 'AND',
         },
-      }).run(queryParams)
+      }).run(await connectionResourceToQueryParams(connectionResource))
 
       data.push(...batch)
 
@@ -141,26 +84,19 @@ export function Header({ table, schema }: { table: string; schema: string }) {
     return data
   }
 
-  const getLimitedData = async ({
+  const getLimitedData = async ({ limit, filters: exportFilters }: { limit: number, filters?: ActiveFilter[] }) => resourceRowsQuery({
+    schema,
+    table,
     limit,
-    filters: exportFilters,
-  }: {
-    limit: number
-    filters?: ActiveFilter[]
-  }) =>
-    resourceRowsQuery({
-      schema,
-      table,
-      limit,
-      offset: 0,
-      query: {
-        orderBy,
-        filters: exportFilters || filters,
-        filtersConcatOperator: exportFilters ? 'OR' : 'AND',
-      },
-    }).run(await connectionResourceToQueryParams(connectionResource))
+    offset: 0,
+    query: {
+      orderBy,
+      filters: exportFilters || filters,
+      filtersConcatOperator: exportFilters ? 'OR' : 'AND',
+    },
+  }).run(await connectionResourceToQueryParams(connectionResource))
 
-  const getData = async ({ limit, filters }: { limit?: number; filters?: ActiveFilter[] }) => {
+  const getData = async ({ limit, filters }: { limit?: number, filters?: ActiveFilter[] }) => {
     return limit ? getLimitedData({ limit, filters }) : getAllData({ filters })
   }
 
@@ -168,52 +104,58 @@ export function Header({ table, schema }: { table: string; schema: string }) {
     <div className="flex flex-1 items-center gap-2">
       <div className="shrink-0">
         <h2 className="text-sm">
-          <span className="text-muted-foreground">{schema}.</span>
-          <span data-mask className="font-medium">
-            {table}
+          <span className="text-muted-foreground">
+            {schema}
+            .
           </span>
+          <span data-mask className="font-medium">{table}</span>
         </h2>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>
-            <span className="tabular-nums">{columns.length}</span> column
+            <span className="tabular-nums">{columns.length}</span>
+            {' '}
+            column
             {columns.length === 1 ? '' : 's'}
           </span>
           <Separator orientation="vertical" className="h-3!" />
-          {total?.count === undefined ? (
-            <>...</>
-          ) : (
-            <Tooltip>
-              <TooltipTrigger
-                className={cn(
-                  'inline-flex items-center gap-1',
-                  !exact && total.isEstimated && `cursor-pointer`,
-                )}
-                onClick={() =>
-                  store.set((state) => ({ ...state, exact: true }) satisfies typeof state)
-                }
-              >
-                <NumberFlow
-                  value={total.count}
-                  className={cn(
-                    'text-muted-foreground tabular-nums',
-                    isLoading && `animate-pulse text-muted-foreground/50`,
+          {total?.count === undefined
+            ? <>...</>
+            : (
+                <Tooltip>
+                  <TooltipTrigger
+                    className={cn('inline-flex items-center gap-1', !exact && total.isEstimated && `
+                      cursor-pointer
+                    `)}
+                    onClick={() => store.set(state => ({ ...state, exact: true } satisfies typeof state))}
+                  >
+                    <NumberFlow
+                      value={total.count}
+                      className={cn('text-muted-foreground tabular-nums', isLoading && `
+                        animate-pulse text-muted-foreground/50
+                      `)}
+                      prefix={total.isEstimated ? '~' : ''}
+                      suffix={total.count === 1 ? ' row' : ' rows'}
+                    />
+                  </TooltipTrigger>
+                  {!exact && total.isEstimated && (
+                    <TooltipContent side="bottom">
+                      Click to get the exact count.
+                    </TooltipContent>
                   )}
-                  prefix={total.isEstimated ? '~' : ''}
-                  suffix={total.count === 1 ? ' row' : ' rows'}
-                />
-              </TooltipTrigger>
-              {!exact && total.isEstimated && (
-                <TooltipContent side="bottom">Click to get the exact count.</TooltipContent>
+                </Tooltip>
               )}
-            </Tooltip>
-          )}
         </div>
       </div>
       <Separator orientation="vertical" className="mx-2 h-6!" />
       <HeaderSearch table={table} schema={schema} />
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isFetching}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={isFetching}
+          >
             <LoadingContent loading={isFetching}>
               <ContentSwitch
                 activeContent={<RiCheckLine className="text-success" />}
@@ -227,7 +169,9 @@ export function Header({ table, schema }: { table: string; schema: string }) {
         <TooltipContent>
           Refresh rows
           <p className="text-xs opacity-70">
-            Last updated: {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
+            Last updated:
+            {' '}
+            {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
           </p>
         </TooltipContent>
       </Tooltip>
@@ -243,7 +187,17 @@ export function Header({ table, schema }: { table: string; schema: string }) {
         selected={selected}
         filename={`${schema}_${table}`}
         getData={getData}
-        trigger={createExportTrigger(rows?.length === 0 || isPending)}
+        trigger={({ isExporting }) => (
+          <Button
+            variant="secondary"
+            size="icon"
+            disabled={isExporting || rows?.length === 0 || isPending}
+          >
+            <LoadingContent loading={isExporting}>
+              <RiExportLine />
+            </LoadingContent>
+          </Button>
+        )}
       />
     </div>
   )

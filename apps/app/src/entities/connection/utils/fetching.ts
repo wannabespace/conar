@@ -1,12 +1,10 @@
-import { SyncType } from '@conar/shared/enums/sync-type'
 import type { ActiveFilter } from '@conar/shared/filters'
+import type { Connection, ConnectionResource } from '~/entities/connection/core'
+import { SyncType } from '@conar/shared/enums/sync-type'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useSubscription } from 'seitu/react'
-
 import { getCollections, useCollections } from '~/entities/collections'
-import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { queryClient } from '~/main'
-
 import { resourceRowsQueryInfiniteOptions } from '../queries'
 import { resourceTableColumnsQueryOptions } from '../queries/columns'
 import { resourceConstraintsQueryOptions } from '../queries/constraints'
@@ -27,23 +25,13 @@ export async function prefetchConnectionResourceCore(connectionResource: Connect
 
   const store = getConnectionResourceStore(connectionResource.id)
   await Promise.all([
-    queryClient.prefetchQuery(
-      resourceTablesAndSchemasQueryOptions({
-        connectionResource,
-        showSystem: store.get().showSystem,
-      }),
-    ),
+    queryClient.prefetchQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem: store.get().showSystem })),
     queryClient.prefetchQuery(resourceEnumsQueryOptions({ connectionResource })),
     queryClient.prefetchQuery(resourceConstraintsQueryOptions({ connectionResource })),
   ])
 }
 
-export async function prefetchConnectionResourceTableCore({
-  connectionResource,
-  schema,
-  table,
-  query,
-}: {
+export async function prefetchConnectionResourceTableCore({ connectionResource, schema, table, query }: {
   connectionResource: ConnectionResource
   schema: string
   table: string
@@ -54,27 +42,18 @@ export async function prefetchConnectionResourceTableCore({
   }
 }) {
   await Promise.all([
-    queryClient.prefetchInfiniteQuery(
-      resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query }),
-    ),
-    queryClient.prefetchQuery(
-      resourceTableTotalQueryOptions({ connectionResource, table, schema, query }),
-    ),
-    queryClient.prefetchQuery(
-      resourceTableColumnsQueryOptions({ connectionResource, table, schema }),
-    ),
+    queryClient.prefetchInfiniteQuery(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query })),
+    queryClient.prefetchQuery(resourceTableTotalQueryOptions({ connectionResource, table, schema, query })),
+    queryClient.prefetchQuery(resourceTableColumnsQueryOptions({ connectionResource, table, schema })),
   ])
 }
 
-export function fetchingConfig(
-  connection: Pick<Connection, 'syncType' | 'isPasswordExists'>,
-  options?: {
-    isLocalProxyAvailable?: boolean
-    isPasswordPopulated?: boolean
-    isLocalhost?: boolean
-    proxy?: { enabled: boolean; url: string | null }
-  },
-): {
+export function fetchingConfig(connection: Pick<Connection, 'syncType' | 'isPasswordExists'>, options?: {
+  isLocalProxyAvailable?: boolean
+  isPasswordPopulated?: boolean
+  isLocalhost?: boolean
+  proxy?: { enabled: boolean, url: string | null }
+}): {
   type: 'cloud-proxy' | 'local' | 'proxy' | 'waiting-for-password'
   canSend: boolean
   reason: string | null
@@ -92,9 +71,8 @@ export function fetchingConfig(
     }
   }
 
-  const isPasswordFilled =
-    (connection.syncType === SyncType.CloudWithoutPassword && isPasswordPopulated) ||
-    connection.syncType === SyncType.Cloud
+  const isPasswordFilled = (connection.syncType === SyncType.CloudWithoutPassword && isPasswordPopulated)
+    || connection.syncType === SyncType.Cloud
   const proxyAvailable = options?.isLocalProxyAvailable ?? isLocalProxyAvailable()
   const proxyEnabled = options?.proxy?.enabled === true
   const hasCustomUrl = !!options?.proxy?.url
@@ -112,8 +90,7 @@ export function fetchingConfig(
     return {
       type: 'proxy',
       canSend: false,
-      reason:
-        'You cannot reach this connection from the web app. Open this connection in the desktop app.',
+      reason: 'You cannot reach this connection from the web app. Open this connection in the desktop app.',
     }
   }
 
@@ -128,20 +105,14 @@ export function fetchingConfig(
   }
 }
 
-export function useFetchingConfig(
-  connection: Pick<Connection, 'id' | 'syncType' | 'isPasswordExists'>,
-) {
+export function useFetchingConfig(connection: Pick<Connection, 'id' | 'syncType' | 'isPasswordExists'>) {
   const isLocalProxyAvailable = useLocalProxyAvailable()
   const { connectionStringsCollection } = useCollections()
-  const { data: connectionString } = useLiveQuery(
-    (q) =>
-      q
-        .from({ cs: connectionStringsCollection })
-        .where(({ cs }) => eq(cs.connectionId, connection.id))
-        .findOne(),
-    [connectionStringsCollection, connection.id],
-  )
-  const proxy = useSubscription(getConnectionStore(connection.id), { selector: (s) => s.proxy })
+  const { data: connectionString } = useLiveQuery(q => q
+    .from({ cs: connectionStringsCollection })
+    .where(({ cs }) => eq(cs.connectionId, connection.id))
+    .findOne(), [connectionStringsCollection, connection.id])
+  const proxy = useSubscription(getConnectionStore(connection.id), { selector: s => s.proxy })
 
   return fetchingConfig(connection, {
     isLocalProxyAvailable,

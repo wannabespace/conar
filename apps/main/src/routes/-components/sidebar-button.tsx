@@ -11,7 +11,11 @@ export function SidebarButton({
   return (
     <Button
       variant="ghost"
-      className={cn(`w-full justify-start`, active && `bg-accent/50`, className)}
+      className={cn(
+        `w-full justify-start`,
+        active && `bg-accent/50`,
+        className,
+      )}
       {...props}
     />
   )

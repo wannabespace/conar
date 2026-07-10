@@ -1,9 +1,8 @@
+import type { VariantProps } from 'class-variance-authority'
+import type * as React from 'react'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@conar/ui/lib/utils'
-import type { VariantProps } from 'class-variance-authority'
-import type * as React from 'react'
-
 import { badgeVariants } from './badge.variants'
 
 export interface BadgeProps extends useRender.ComponentProps<'span'> {
@@ -19,7 +18,7 @@ export function Badge({
   ...props
 }: BadgeProps): React.ReactElement {
   const defaultProps = {
-    className: cn(badgeVariants({ className, size, variant })),
+    'className': cn(badgeVariants({ className, size, variant })),
     'data-slot': 'badge',
   }
 

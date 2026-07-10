@@ -1,23 +1,11 @@
-import {
-  CONNECTION_TYPES_WITH_FUNCTIONS,
-  CONNECTION_TYPES_WITH_TRIGGERS,
-} from '@conar/shared/constants'
-import { ConnectionType } from '@conar/shared/enums/connection-type'
-import { CardTitle } from '@conar/ui/components/card'
 import type { RemixiconComponentType } from '@remixicon/react'
-import {
-  RiCodeSSlashLine,
-  RiFileList3Line,
-  RiFlashlightLine,
-  RiKey2Line,
-  RiListUnordered,
-  RiShieldCheckLine,
-} from '@remixicon/react'
-
-import { SidebarLink } from '~/components/sidebar-link'
 import type { Connection } from '~/entities/connection/core'
 import type { FileRoutesByTo } from '~/routeTree.gen'
-
+import { CONNECTION_TYPES_WITH_FUNCTIONS, CONNECTION_TYPES_WITH_TRIGGERS } from '@conar/shared/constants'
+import { ConnectionType } from '@conar/shared/enums/connection-type'
+import { CardTitle } from '@conar/ui/components/card'
+import { RiCodeSSlashLine, RiFileList3Line, RiFlashlightLine, RiKey2Line, RiListUnordered, RiShieldCheckLine } from '@remixicon/react'
+import { SidebarLink } from '~/components/sidebar-link'
 import { Route } from '../../definitions'
 
 function sidebarItems(connection: Connection) {
@@ -43,24 +31,20 @@ function sidebarItems(connection: Connection) {
       label: 'Policies',
     },
     ...(CONNECTION_TYPES_WITH_FUNCTIONS.includes(connection.type)
-      ? [
-          {
-            to: '/connection/$resourceId/definitions/functions' as const,
-            Icon: RiCodeSSlashLine,
-            label: 'Functions',
-          },
-        ]
+      ? [{
+          to: '/connection/$resourceId/definitions/functions' as const,
+          Icon: RiCodeSSlashLine,
+          label: 'Functions',
+        }]
       : []),
     ...(CONNECTION_TYPES_WITH_TRIGGERS.includes(connection.type)
-      ? [
-          {
-            to: '/connection/$resourceId/definitions/triggers' as const,
-            Icon: RiFlashlightLine,
-            label: 'Triggers',
-          },
-        ]
+      ? [{
+          to: '/connection/$resourceId/definitions/triggers' as const,
+          Icon: RiFlashlightLine,
+          label: 'Triggers',
+        }]
       : []),
-  ] satisfies { Icon: RemixiconComponentType; label: string; to: keyof FileRoutesByTo }[]
+  ] satisfies { Icon: RemixiconComponentType, label: string, to: keyof FileRoutesByTo }[]
 }
 
 export function Sidebar() {
@@ -71,7 +55,11 @@ export function Sidebar() {
       <CardTitle className="mb-4">Definitions</CardTitle>
       <nav className="space-y-1">
         {sidebarItems(connection).map(({ to, Icon, label }) => (
-          <SidebarLink key={to} to={to} params={{ resourceId: connectionResource.id }}>
+          <SidebarLink
+            key={to}
+            to={to}
+            params={{ resourceId: connectionResource.id }}
+          >
             <Icon className="size-4" />
             {label}
           </SidebarLink>

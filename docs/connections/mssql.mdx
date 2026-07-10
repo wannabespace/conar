@@ -1,7 +1,7 @@
 ---
-title: 'Connect to SQL Server (MSSQL)'
-sidebarTitle: 'SQL Server'
-description: 'Connect Tamery to Microsoft SQL Server or Azure SQL: connection string format and SSL/TLS options.'
+title: "Connect to SQL Server (MSSQL)"
+sidebarTitle: "SQL Server"
+description: "Connect Tamery to Microsoft SQL Server or Azure SQL: connection string format and SSL/TLS options."
 ---
 
 Tamery accepts both `mssql://` and `sqlserver://` (identical behavior):
@@ -10,13 +10,13 @@ Tamery accepts both `mssql://` and `sqlserver://` (identical behavior):
 mssql://username:password@hostname:1433/database
 ```
 
-| Part       | Description                                 |
-| ---------- | ------------------------------------------- |
-| `username` | SQL Server login (e.g. `sa`)                |
-| `password` | Password for that login                     |
+| Part | Description |
+| --- | --- |
+| `username` | SQL Server login (e.g. `sa`) |
+| `password` | Password for that login |
 | `hostname` | Host (e.g. `localhost` or a remote address) |
-| `1433`     | Port (default)                              |
-| `database` | Database name                               |
+| `1433` | Port (default) |
+| `database` | Database name |
 
 ## Azure SQL
 
@@ -30,11 +30,11 @@ sqlserver://username:password@your-server.database.windows.net:1433/your-databas
 
 Both default to `true` when unset.
 
-| Parameter                      | Description                                                     |
-| ------------------------------ | --------------------------------------------------------------- |
-| `encrypt=true`                 | Encrypt the connection. Required for Azure SQL.                 |
-| `encrypt=false`                | No encryption. Local dev only.                                  |
-| `trustServerCertificate=true`  | Skip certificate validation. Local dev with self-signed certs.  |
+| Parameter | Description |
+| --- | --- |
+| `encrypt=true` | Encrypt the connection. Required for Azure SQL. |
+| `encrypt=false` | No encryption. Local dev only. |
+| `trustServerCertificate=true` | Skip certificate validation. Local dev with self-signed certs. |
 | `trustServerCertificate=false` | Validate against a trusted CA. Use in production and Azure SQL. |
 
 **Local with self-signed cert:**
@@ -50,6 +50,5 @@ sqlserver://username:password@hostname:1433/database?encrypt=true&trustServerCer
 ```
 
 <Tip>
-  For a named instance like `SQLEXPRESS`, URI-encode the backslash: `localhost%5CSQLEXPRESS`. When
-  in doubt, use `127.0.0.1` with the explicit port.
+  For a named instance like `SQLEXPRESS`, URI-encode the backslash: `localhost%5CSQLEXPRESS`. When in doubt, use `127.0.0.1` with the explicit port.
 </Tip>

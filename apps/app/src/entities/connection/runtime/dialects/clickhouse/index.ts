@@ -1,9 +1,8 @@
+import type { CompiledQuery, Dialect } from 'kysely'
+import type { DialectOptions } from '..'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
 import { type } from 'arktype'
-import type { CompiledQuery, Dialect } from 'kysely'
 import { DummyDriver, MysqlQueryCompiler } from 'kysely'
-
-import type { DialectOptions } from '..'
 import { createDialectProvider, createKyselyDriver } from '..'
 
 const escapeSqlStringRegex = /[\\']/g
@@ -27,15 +26,13 @@ function prepareQuery(compiledQuery: CompiledQuery) {
     }
 
     if (Array.isArray(param)) {
-      return `[${param
-        .map((v) =>
-          v === null || v === undefined
-            ? 'NULL'
-            : typeof v === 'number'
-              ? `${v}`
-              : `'${escapeSqlString(String(v))}'`,
-        )
-        .join(', ')}]`
+      return `[${param.map(v =>
+        v === null || v === undefined
+          ? 'NULL'
+          : typeof v === 'number'
+            ? `${v}`
+            : `'${escapeSqlString(String(v))}'`,
+      ).join(', ')}]`
     }
 
     if (typeof param === 'number') {
@@ -57,7 +54,10 @@ function prepareQuery(compiledQuery: CompiledQuery) {
     return `'${escapeSqlString(param)}'`
   })
 
-  return compiledSql.replace(compiledSqlParameterRegex, 'alter table $1 update')
+  return compiledSql.replace(
+    compiledSqlParameterRegex,
+    'alter table $1 update',
+  )
 }
 
 function clickhouseAdapter() {
@@ -73,12 +73,11 @@ function clickhouseAdapter() {
 export function clickhouseDialect(options: DialectOptions) {
   return {
     createAdapter: clickhouseAdapter,
-    createDriver: () =>
-      createKyselyDriver({
-        provider: createDialectProvider(ConnectionType.ClickHouse, options),
-        logger: options.log,
-        transformQuery: (compiledQuery) => ({ query: prepareQuery(compiledQuery), values: [] }),
-      }),
+    createDriver: () => createKyselyDriver({
+      provider: createDialectProvider(ConnectionType.ClickHouse, options),
+      logger: options.log,
+      transformQuery: compiledQuery => ({ query: prepareQuery(compiledQuery), values: [] }),
+    }),
     createQueryCompiler: () => new MysqlQueryCompiler(),
     createIntrospector: () => {
       throw new Error('Not implemented')

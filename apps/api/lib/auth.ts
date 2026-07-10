@@ -11,11 +11,9 @@ import { createAuthMiddleware } from 'better-auth/api'
 import { anonymous, bearer, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
-
 import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
-
 import { redisMemoize } from './redis'
 
 export const auth = betterAuth({
@@ -99,12 +97,9 @@ export const auth = betterAuth({
 
       if (desktopVersion) {
         await redisMemoize(async () => {
-          await db
-            .update(users)
-            .set({
-              desktopVersion,
-            })
-            .where(eq(users.id, ctx.context.session!.user.id))
+          await db.update(users).set({
+            desktopVersion,
+          }).where(eq(users.id, ctx.context.session!.user.id))
         }, `desktop-version:${ctx.context.session.user.id}`)
       }
     }),
@@ -113,20 +108,15 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          await infisical.secrets
-            .set({
-              path: ['users', user.id],
-              name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
-              value: nanoid(),
-            })
-            .catch(async (error) => {
-              console.error(
-                `Failed to set user secret in Infisical: ${error instanceof Error ? error.message : error}`,
-                error instanceof Error && error.cause ? error.cause : undefined,
-              )
-              await db.delete(users).where(eq(users.id, user.id))
-              throw error
-            })
+          await infisical.secrets.set({
+            path: ['users', user.id],
+            name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
+            value: nanoid(),
+          }).catch(async (error) => {
+            console.error(`Failed to set user secret in Infisical: ${error instanceof Error ? error.message : error}`, error instanceof Error && error.cause ? error.cause : undefined)
+            await db.delete(users).where(eq(users.id, user.id))
+            throw error
+          })
 
           if (resend) {
             const [firstName, ...lastName] = user.name.split(' ')
@@ -144,14 +134,9 @@ export const auth = betterAuth({
       },
       delete: {
         after: async (user) => {
-          await infisical.secrets
-            .delete({ path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME })
-            .catch(async (error) => {
-              console.error(
-                `Failed to delete user secret in Infisical: ${error instanceof Error ? error.message : error}`,
-                error instanceof Error && error.cause ? error.cause : undefined,
-              )
-            })
+          await infisical.secrets.delete({ path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME }).catch(async (error) => {
+            console.error(`Failed to delete user secret in Infisical: ${error instanceof Error ? error.message : error}`, error instanceof Error && error.cause ? error.cause : undefined)
+          })
         },
       },
       update: {
@@ -176,10 +161,7 @@ export const auth = betterAuth({
   },
   onAPIError: {
     onError: async (error) => {
-      const text =
-        typeof error === 'object' && error !== null
-          ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
-          : String(error)
+      const text = typeof error === 'object' && error !== null ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2) : String(error)
 
       if (text.includes('Invalid email')) {
         return
@@ -195,12 +177,17 @@ export const auth = betterAuth({
             service: 'Better Auth',
           },
         })
-      } else {
+      }
+      else {
         console.error('Alert from Better Auth', { text })
       }
     },
   },
-  trustedOrigins: ['https://conar.app', 'https://*.conar.app', 'file://'],
+  trustedOrigins: [
+    'https://conar.app',
+    'https://*.conar.app',
+    'file://',
+  ],
   advanced: {
     cookiePrefix: AUTH_COOKIE_PREFIX,
     crossSubDomainCookies: {

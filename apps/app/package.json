@@ -1,6 +1,7 @@
 {
   "name": "@conar/app",
   "type": "module",
+  "portless": "app.local.conar",
   "scripts": {
     "dev": "portless run vite dev",
     "build": "vite build",
@@ -93,6 +94,5 @@
     "tw-animate-css": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:"
-  },
-  "portless": "app.local.conar"
+  }
 }

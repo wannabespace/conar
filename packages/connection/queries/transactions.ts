@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
 export interface TxHandle {
-  execute: (query: string, values: unknown[]) => Promise<{ result: unknown; duration: number }>
+  execute: (query: string, values: unknown[]) => Promise<{ result: unknown, duration: number }>
   commit: () => Promise<void>
   rollback: () => Promise<void>
   release: () => Promise<void>
@@ -16,10 +16,10 @@ export function registerTransaction(handle: TxHandle) {
 
   const timeout = setTimeout(() => {
     const current = activeTransactions.get(txId)
-    if (!current) return
+    if (!current)
+      return
     activeTransactions.delete(txId)
-    current
-      .rollback()
+    current.rollback()
       .catch(() => {})
       .finally(() => current.release().catch(() => {}))
   }, ORPHAN_TX_TIMEOUT_MS)
@@ -42,7 +42,8 @@ export function getTransaction(txId: string) {
 
 export function disposeTransaction(txId: string) {
   const handle = activeTransactions.get(txId)
-  if (!handle) return undefined
+  if (!handle)
+    return undefined
   activeTransactions.delete(txId)
   return handle
 }

@@ -1,7 +1,7 @@
 ---
-title: 'Connect to MySQL'
-sidebarTitle: 'MySQL'
-description: 'Connect Tamery to MySQL or MariaDB: connection string format, SSL options, and provider tips.'
+title: "Connect to MySQL"
+sidebarTitle: "MySQL"
+description: "Connect Tamery to MySQL or MariaDB: connection string format, SSL options, and provider tips."
 ---
 
 Tamery supports MySQL and MariaDB via the `mysql://` scheme:
@@ -10,13 +10,13 @@ Tamery supports MySQL and MariaDB via the `mysql://` scheme:
 mysql://username:password@hostname:3306/database
 ```
 
-| Part       | Description                                 |
-| ---------- | ------------------------------------------- |
-| `username` | MySQL user (e.g. `root`)                    |
-| `password` | Password for that user                      |
+| Part | Description |
+| --- | --- |
+| `username` | MySQL user (e.g. `root`) |
+| `password` | Password for that user |
 | `hostname` | Host (e.g. `localhost` or a remote address) |
-| `3306`     | Port (default)                              |
-| `database` | Database name                               |
+| `3306` | Port (default) |
+| `database` | Database name |
 
 ## SSL / TLS
 
@@ -43,7 +43,6 @@ Check your provider's docs for the exact parameters they require.
     ```bash
     mysql://username:password@aws.connect.psdb.cloud/your-database?sslaccept=strict
     ```
-
   </Tab>
   <Tab title="Railway">
     Project → MySQL service → **Connect** → **Database URL**.
@@ -51,7 +50,6 @@ Check your provider's docs for the exact parameters they require.
     ```bash
     mysql://root:password@monorail.proxy.rlwy.net:12345/railway
     ```
-
   </Tab>
   <Tab title="Local">
     ```bash
@@ -63,13 +61,11 @@ Check your provider's docs for the exact parameters they require.
     ```bash
     mysql://root@localhost:3306/mydb
     ```
-
   </Tab>
 </Tabs>
 
 <Note>
-  MySQL `SET` columns show as **Enums** in the Definitions view. Display only — your data and schema
-  are unaffected.
+  MySQL `SET` columns show as **Enums** in the Definitions view. Display only — your data and schema are unaffected.
 </Note>
 
 <Tip>

@@ -1,12 +1,8 @@
 import { uppercaseFirst } from '@conar/shared/utils/helpers'
 import { faker } from '@faker-js/faker'
 
-export const apiUrl =
-  localStorage.getItem('__API_URL_FOR_PRODUCTION_TEST_CASES__') ??
-  import.meta.env.VITE_PUBLIC_API_URL
-export const proxyUrl =
-  localStorage.getItem('__PROXY_URL_FOR_PRODUCTION_TEST_CASES__') ??
-  import.meta.env.VITE_PUBLIC_PROXY_URL
+export const apiUrl = localStorage.getItem('__API_URL_FOR_PRODUCTION_TEST_CASES__') ?? import.meta.env.VITE_PUBLIC_API_URL
+export const proxyUrl = localStorage.getItem('__PROXY_URL_FOR_PRODUCTION_TEST_CASES__') ?? import.meta.env.VITE_PUBLIC_PROXY_URL
 
 export function generateRandomName() {
   const color = faker.color.human()
@@ -24,7 +20,7 @@ export function generateRandomName() {
   const main = faker.helpers.arrayElement(categories)()
 
   return [color, main]
-    .map((str) => uppercaseFirst(str))
+    .map(str => uppercaseFirst(str))
     .filter(Boolean)
     .join(' ')
 }

@@ -1,4 +1,6 @@
 import type { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { RemixiconComponentType } from '@remixicon/react'
+import type { GeneratorFormat } from '~/entities/connection/generators/utils'
 import { Button } from '@conar/ui/components/button'
 import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import {
@@ -8,10 +10,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@conar/ui/components/dialog'
-import { Tabs, TabsList, TabsTrigger } from '@conar/ui/components/tabs'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from '@conar/ui/components/tabs'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import type { RemixiconComponentType } from '@remixicon/react'
 import {
   RiCodeSSlashLine,
   RiDatabase2Line,
@@ -25,17 +34,11 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-
 import { Monaco } from '~/components/monaco'
 import { SidebarButton } from '~/components/sidebar-link'
 import * as generators from '~/entities/connection/generators'
 import { GENERATOR_COMPATIBILITY } from '~/entities/connection/generators/compatibility'
-import type { GeneratorFormat } from '~/entities/connection/generators/utils'
-import {
-  resourceEnumsQueryOptions,
-  resourceIndexesQueryOptions,
-} from '~/entities/connection/queries'
-
+import { resourceEnumsQueryOptions, resourceIndexesQueryOptions } from '~/entities/connection/queries'
 import { useTableColumns } from '../../columns'
 import { useTablePageStore } from '../../store'
 
@@ -46,116 +49,37 @@ type Format = {
   label: string
   lang: string
   icon: RemixiconComponentType
-} & (
-  | {
-      kind: 'schema'
-      generator: typeof generators.generateSchemaDrizzle
-    }
-  | {
-      kind: 'query'
-      generator: typeof generators.generateQueryDrizzle
-    }
-)
+} & ({
+  kind: 'schema'
+  generator: typeof generators.generateSchemaDrizzle
+} | {
+  kind: 'query'
+  generator: typeof generators.generateQueryDrizzle
+})
 
 const FORMATS = {
   schema: [
-    {
-      kind: 'schema',
-      type: 'sql',
-      label: 'SQL',
-      lang: 'sql',
-      icon: RiDatabase2Line,
-      generator: generators.generateSchemaSQL,
-    },
-    {
-      kind: 'schema',
-      type: 'ts',
-      label: 'TypeScript',
-      lang: 'typescript',
-      icon: RiFileCodeLine,
-      generator: generators.generateSchemaTypeScript,
-    },
-    {
-      kind: 'schema',
-      type: 'zod',
-      label: 'Zod',
-      lang: 'typescript',
-      icon: RiShieldCheckLine,
-      generator: generators.generateSchemaZod,
-    },
-    {
-      kind: 'schema',
-      type: 'prisma',
-      label: 'Prisma',
-      lang: 'graphql',
-      icon: RiTriangleLine,
-      generator: generators.generateSchemaPrisma,
-    },
-    {
-      kind: 'schema',
-      type: 'drizzle',
-      label: 'Drizzle',
-      lang: 'typescript',
-      icon: RiDropLine,
-      generator: generators.generateSchemaDrizzle,
-    },
-    {
-      kind: 'schema',
-      type: 'kysely',
-      label: 'Kysely',
-      lang: 'typescript',
-      icon: RiTerminalBoxLine,
-      generator: generators.generateSchemaKysely,
-    },
+    { kind: 'schema', type: 'sql', label: 'SQL', lang: 'sql', icon: RiDatabase2Line, generator: generators.generateSchemaSQL },
+    { kind: 'schema', type: 'ts', label: 'TypeScript', lang: 'typescript', icon: RiFileCodeLine, generator: generators.generateSchemaTypeScript },
+    { kind: 'schema', type: 'zod', label: 'Zod', lang: 'typescript', icon: RiShieldCheckLine, generator: generators.generateSchemaZod },
+    { kind: 'schema', type: 'prisma', label: 'Prisma', lang: 'graphql', icon: RiTriangleLine, generator: generators.generateSchemaPrisma },
+    { kind: 'schema', type: 'drizzle', label: 'Drizzle', lang: 'typescript', icon: RiDropLine, generator: generators.generateSchemaDrizzle },
+    { kind: 'schema', type: 'kysely', label: 'Kysely', lang: 'typescript', icon: RiTerminalBoxLine, generator: generators.generateSchemaKysely },
   ],
   query: [
-    {
-      kind: 'query',
-      type: 'sql',
-      label: 'SQL',
-      lang: 'sql',
-      icon: RiDatabase2Line,
-      generator: generators.generateQuerySQL,
-    },
-    {
-      kind: 'query',
-      type: 'prisma',
-      label: 'Prisma',
-      lang: 'typescript',
-      icon: RiTriangleLine,
-      generator: generators.generateQueryPrisma,
-    },
-    {
-      kind: 'query',
-      type: 'drizzle',
-      label: 'Drizzle',
-      lang: 'typescript',
-      icon: RiDropLine,
-      generator: generators.generateQueryDrizzle,
-    },
-    {
-      kind: 'query',
-      type: 'kysely',
-      label: 'Kysely',
-      lang: 'typescript',
-      icon: RiTerminalBoxLine,
-      generator: generators.generateQueryKysely,
-    },
+    { kind: 'query', type: 'sql', label: 'SQL', lang: 'sql', icon: RiDatabase2Line, generator: generators.generateQuerySQL },
+    { kind: 'query', type: 'prisma', label: 'Prisma', lang: 'typescript', icon: RiTriangleLine, generator: generators.generateQueryPrisma },
+    { kind: 'query', type: 'drizzle', label: 'Drizzle', lang: 'typescript', icon: RiDropLine, generator: generators.generateQueryDrizzle },
+    { kind: 'query', type: 'kysely', label: 'Kysely', lang: 'typescript', icon: RiTerminalBoxLine, generator: generators.generateQueryKysely },
   ],
-} satisfies { schema: Format[]; query: Format[] }
+} satisfies { schema: Format[], query: Format[] }
 
 function isFormatCompatible(format: Format, connectionType: ConnectionType) {
   const compat = GENERATOR_COMPATIBILITY[format.type]
   return !compat || compat.includes(connectionType)
 }
 
-function DialogSidebar({
-  activeCategory,
-  activeFormat,
-  formats,
-  onFormatChange,
-  onCategoryChange,
-}: {
+function DialogSidebar({ activeCategory, activeFormat, formats, onFormatChange, onCategoryChange }: {
   activeCategory: keyof typeof FORMATS
   activeFormat: Format
   formats: Format[]
@@ -163,22 +87,21 @@ function DialogSidebar({
   onCategoryChange: (category: keyof typeof FORMATS) => void
 }) {
   return (
-    <div className={`flex w-40 flex-col gap-1 overflow-y-auto border-r bg-muted/30 p-2`}>
+    <div className={`
+      flex w-40 flex-col gap-1 overflow-y-auto border-r bg-muted/30 p-2
+    `}
+    >
       <Tabs
         value={activeCategory}
-        onValueChange={(value) => onCategoryChange(value as keyof typeof FORMATS)}
+        onValueChange={value => onCategoryChange(value as keyof typeof FORMATS)}
         className="mb-2"
       >
         <TabsList className="w-full">
-          <TabsTrigger value="schema" className="flex-1">
-            Schema
-          </TabsTrigger>
-          <TabsTrigger value="query" className="flex-1">
-            Query
-          </TabsTrigger>
+          <TabsTrigger value="schema" className="flex-1">Schema</TabsTrigger>
+          <TabsTrigger value="query" className="flex-1">Query</TabsTrigger>
         </TabsList>
       </Tabs>
-      {formats.map((fmt) => (
+      {formats.map(fmt => (
         <SidebarButton
           key={fmt.type}
           onClick={() => onFormatChange(fmt.type)}
@@ -192,11 +115,7 @@ function DialogSidebar({
   )
 }
 
-function CopyDialogEditor({
-  activeFormat,
-  activeCategory,
-  codeContent,
-}: {
+function CopyDialogEditor({ activeFormat, activeCategory, codeContent }: {
   activeFormat: Format
   activeCategory: keyof typeof FORMATS
   codeContent: string
@@ -205,7 +124,9 @@ function CopyDialogEditor({
     <div className="flex min-w-0 flex-1 flex-col">
       <DialogHeader className="border-b p-4 pr-4">
         <DialogTitle>
-          {activeFormat.label} {activeCategory === 'schema' ? 'Schema' : 'Query'}
+          {activeFormat.label}
+          {' '}
+          {activeCategory === 'schema' ? 'Schema' : 'Query'}
         </DialogTitle>
       </DialogHeader>
 
@@ -236,7 +157,7 @@ function CopyDialogEditor({
 export function HeaderActionsCopy({ table }: { table: string }) {
   const { connection, connectionResource } = useRouteContext()
   const store = useTablePageStore()
-  const filters = useSubscription(store, { selector: (state) => state.filters })
+  const filters = useSubscription(store, { selector: state => state.filters })
   const columns = useTableColumns()
   const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const { data: indexes } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
@@ -244,22 +165,15 @@ export function HeaderActionsCopy({ table }: { table: string }) {
   const [activeFormatType, setActiveFormatType] = useState<GeneratorFormat>('sql')
 
   const compatibleFormats = useMemo(
-    () => FORMATS[activeCategory].filter((f) => isFormatCompatible(f, connection.type)),
+    () => FORMATS[activeCategory].filter(f => isFormatCompatible(f, connection.type)),
     [activeCategory, connection.type],
   )
 
-  const activeFormat =
-    compatibleFormats.find((f) => f.type === activeFormatType) ?? compatibleFormats[0]!
+  const activeFormat = compatibleFormats.find(f => f.type === activeFormatType) ?? compatibleFormats[0]!
 
   const codeContent = useMemo(() => {
     if (activeFormat.kind === 'schema') {
-      return activeFormat.generator({
-        table,
-        columns,
-        enums: enums ?? [],
-        dialect: connection.type,
-        indexes: indexes ?? [],
-      })
+      return activeFormat.generator({ table, columns, enums: enums ?? [], dialect: connection.type, indexes: indexes ?? [] })
     }
 
     if (activeFormat.kind === 'query') {
@@ -277,10 +191,16 @@ export function HeaderActionsCopy({ table }: { table: string }) {
             <RiCodeSSlashLine />
           </DialogTrigger>
         </TooltipTrigger>
-        <TooltipContent side="top">Copy schema / query</TooltipContent>
+        <TooltipContent side="top">
+          Copy schema / query
+        </TooltipContent>
       </Tooltip>
-      <DialogContent
-        className={cn(`flex h-150 w-[60vw] flex-row gap-0 overflow-hidden p-0 sm:max-w-[60vw]`)}
+      <DialogContent className={cn(
+        `
+          flex h-150 w-[60vw] flex-row gap-0 overflow-hidden p-0
+          sm:max-w-[60vw]
+        `,
+      )}
       >
         <DialogSidebar
           activeCategory={activeCategory}

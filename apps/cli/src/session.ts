@@ -1,8 +1,6 @@
 import process from 'node:process'
-
 import { consola } from 'consola'
 import ora from 'ora'
-
 import { clearToken, getToken } from '~/config'
 
 export interface Session {
@@ -29,14 +27,15 @@ export async function getSession(): Promise<Session | null> {
       return null
     }
 
-    const data = (await res.json()) as Session | null
+    const data = await res.json() as Session | null
 
     if (!data?.user?.id) {
       return null
     }
 
     return data
-  } catch {
+  }
+  catch {
     return null
   }
 }
@@ -76,7 +75,8 @@ export async function serverSignOut(): Promise<void> {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     })
-  } catch {
+  }
+  catch {
     // ignore – we still clear local state
   }
 }

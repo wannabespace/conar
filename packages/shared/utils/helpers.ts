@@ -1,5 +1,5 @@
 export function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
@@ -10,6 +10,7 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
 
   const debounced = (...args: Parameters<F>) => {
     clearTimeout(timeout)
+    // eslint-disable-next-line e18e/prefer-timer-args
     timeout = setTimeout(() => func(...args), waitFor)
   }
 
@@ -33,9 +34,7 @@ export function pick<T extends object, K extends keyof T>(obj: T, keys: K[]): Pi
 }
 
 export function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
-  return Object.fromEntries(
-    Object.entries(obj).filter(([key]) => !keys.includes(key as K)),
-  ) as Omit<T, K>
+  return Object.fromEntries(Object.entries(obj).filter(([key]) => !keys.includes(key as K))) as Omit<T, K>
 }
 
 export function noop() {}
@@ -52,23 +51,23 @@ export type MaybePromise<T> = T | Promise<T>
 
 export type MaybeArray<T> = T | T[]
 
-// eslint-disable-next-line typescript/no-explicit-any
+// eslint-disable-next-line ts/no-explicit-any
 export type AnyFunction = (...args: any[]) => any
 
-export function tryCatch<T>(fn: () => T): { data: T; error: null } | { data: null; error: Error } {
+export function tryCatch<T>(fn: () => T): { data: T, error: null } | { data: null, error: Error } {
   try {
     return { data: fn(), error: null }
-  } catch (error) {
+  }
+  catch (error) {
     return { data: null, error: error instanceof Error ? error : new Error(String(error)) }
   }
 }
 
-export async function tryCatchAsync<T>(
-  fn: () => Promise<T>,
-): Promise<{ data: T; error: null } | { data: null; error: Error }> {
+export async function tryCatchAsync<T>(fn: () => Promise<T>): Promise<{ data: T, error: null } | { data: null, error: Error }> {
   try {
     return { data: await fn(), error: null }
-  } catch (error) {
+  }
+  catch (error) {
     return { data: null, error: error instanceof Error ? error : new Error(String(error)) }
   }
 }
@@ -80,14 +79,16 @@ export function uppercaseFirst(string: string) {
 export function tryParseJson<T>(json: string): T | null {
   try {
     return JSON.parse(json) as T
-  } catch {
+  }
+  catch {
     return null
   }
 }
 
 export function tryParseToJsonArray(editedValue: string): string[] {
   const parsed = tryParseJson<unknown[]>(editedValue)
-  if (Array.isArray(parsed)) return parsed.map(String)
+  if (Array.isArray(parsed))
+    return parsed.map(String)
   return [editedValue]
 }
 
@@ -95,7 +96,8 @@ export function handleAggregateError<T extends AnyFunction>(fn: T): T {
   return (async (...args: Parameters<T>) => {
     try {
       return await fn(...args)
-    } catch (error) {
+    }
+    catch (error) {
       if (error instanceof AggregateError && error.errors.length > 0) {
         throw error.errors[0]
       }

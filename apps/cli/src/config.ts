@@ -1,7 +1,6 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-
 import { tryCatch } from '@conar/shared/utils/helpers'
 
 const CONFIG_DIR = path.join(os.homedir(), '.config', 'conar')
@@ -15,7 +14,8 @@ function readConfig(): CliConfig {
   try {
     const raw = fs.readFileSync(CONFIG_FILE, 'utf-8')
     return JSON.parse(raw) as CliConfig
-  } catch {
+  }
+  catch {
     return { token: null }
   }
 }
