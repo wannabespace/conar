@@ -46,7 +46,7 @@ export function getDisplayValue(value: unknown, size: number): string {
 export function createTransformer(
   connectionType: ConnectionType,
   column: Column,
-  // eslint-disable-next-line typescript/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
 ): ValueTransformer<any> {
   switch (column.uiType) {
     case 'list':

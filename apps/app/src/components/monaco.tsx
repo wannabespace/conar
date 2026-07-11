@@ -103,7 +103,7 @@ export function Monaco({
     if (!monacoInstanceRef.current || !options) return
 
     monacoInstanceRef.current.updateOptions(options)
-    // eslint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [JSON.stringify(options)])
 
   useMountedEffect(() => {

@@ -143,7 +143,7 @@ const TITLES: {
 }
 
 function getTitle({ part }: { part: ToolUIPart }) {
-  // eslint-disable-next-line typescript/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   return TITLES[part.type]({ part } as any) || 'Unknown tool'
 }
 
@@ -266,7 +266,7 @@ function ToolContent({ part }: { part: ToolUIPart }) {
   return (
     CONTENT[part.type as Exclude<ToolUIPart['type'], (typeof SKIP_CONTENT_TOOLS)[number]>]?.({
       part,
-      // eslint-disable-next-line typescript/no-explicit-any
+      // oxlint-disable-next-line typescript/no-explicit-any
     } as any) ||
     (part.errorText ? (
       <div className="text-xs text-destructive">{part.errorText}</div>

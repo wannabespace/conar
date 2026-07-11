@@ -8,7 +8,7 @@ import type { AnyFunction, Prettify } from '@conar/shared/utils/helpers'
 import type { BuilderWithMiddlewares, RouterClient } from '@orpc/server'
 import { type } from '@orpc/server'
 
-// eslint-disable-next-line typescript/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 export type AnyBuilder = BuilderWithMiddlewares<any, any, any, any, any, any>
 
 type Params<T extends AnyFunction, P extends Parameters<T>[0] = Parameters<T>[0]> = Prettify<

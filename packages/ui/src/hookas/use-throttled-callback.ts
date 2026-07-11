@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-// eslint-disable-next-line typescript/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 export function useThrottledCallback<T extends (...args: any[]) => any>(
   fn: T,
   deps: React.DependencyList,
@@ -34,7 +34,7 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
         }, remaining)
       }
     },
-    // eslint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
     [fn, delay, ...deps],
   )
 

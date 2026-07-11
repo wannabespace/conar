@@ -1,4 +1,4 @@
-/* eslint-disable react/no-array-index-key */
+/* oxlint-disable react/no-array-index-key */
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '@conar/table/constants'
 import { useTableContext } from '@conar/table/hooks'
 import { cn } from '@conar/ui/lib/utils'

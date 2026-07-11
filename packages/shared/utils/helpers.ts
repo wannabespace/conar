@@ -52,7 +52,7 @@ export type MaybePromise<T> = T | Promise<T>
 
 export type MaybeArray<T> = T | T[]
 
-// eslint-disable-next-line typescript/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 export type AnyFunction = (...args: any[]) => any
 
 export function tryCatch<T>(fn: () => T): { data: T; error: null } | { data: null; error: Error } {

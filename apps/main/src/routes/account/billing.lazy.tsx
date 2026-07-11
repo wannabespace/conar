@@ -81,7 +81,7 @@ function RouteComponent() {
               <TableBody>
                 {isPending
                   ? Array.from({ length: 5 }).map((_, index) => (
-                      // eslint-disable-next-line react/no-array-index-key
+                      // oxlint-disable-next-line react/no-array-index-key
                       <TableRow key={`skeleton-${index}`}>
                         <TableCell style={{ width: '35%' }}>
                           <Skeleton className="h-4 w-40" />

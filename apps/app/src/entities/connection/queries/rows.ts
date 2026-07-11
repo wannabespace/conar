@@ -12,7 +12,7 @@ import { DEFAULT_PAGE_LIMIT } from '../utils/helpers'
 
 const rowType = type('Record<string, unknown>')
 
-// eslint-disable-next-line typescript/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 export function buildWhere<E extends ExpressionBuilder<any, any>>(
   eb: E,
   filters: ActiveFilter[],

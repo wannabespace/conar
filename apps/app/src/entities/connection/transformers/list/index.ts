@@ -6,7 +6,7 @@ import { createClickHouseListTransformer } from './clickhouse'
 import { createMysqlListTransformer } from './mysql'
 import { createPostgresListTransformer } from './postgres'
 
-// eslint-disable-next-line typescript/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 const listTransformers: Partial<Record<ConnectionType, (column: Column) => ValueTransformer<any>>> =
   {
     postgres: createPostgresListTransformer,
@@ -17,7 +17,7 @@ const listTransformers: Partial<Record<ConnectionType, (column: Column) => Value
 export function createListTransformer(
   connectionType: ConnectionType,
   column: Column,
-  // eslint-disable-next-line typescript/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
 ): ValueTransformer<any> {
   const factory = listTransformers[connectionType]
   return factory ? factory(column) : createPostgresListTransformer(column)

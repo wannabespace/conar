@@ -62,7 +62,7 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
       connectionString: queryParams.connectionString,
       resourceId: queryParams.resourceId,
       log: queryParams.log,
-      // eslint-disable-next-line typescript/no-explicit-any
+      // oxlint-disable-next-line typescript/no-explicit-any
     }) as unknown as Kysely<any>
   }
 

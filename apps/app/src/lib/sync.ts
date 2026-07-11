@@ -230,7 +230,7 @@ if (import.meta.env.DEV) {
       value: string
     }[]
 
-    // eslint-disable-next-line no-console
+    // oxlint-disable-next-line no-console
     console.log(collection.map(c => JSON.parse(c.value)))
   }
 

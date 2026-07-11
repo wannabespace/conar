@@ -42,9 +42,9 @@
   },
   "devDependencies": {
     "@conar/configs": "workspace:*",
+    "@letstri/oxc-config": "catalog:",
     "@types/bun": "catalog:",
     "cross-env": "catalog:",
-    "eslint": "catalog:",
     "eslint-plugin-better-tailwindcss": "catalog:",
     "husky": "catalog:",
     "node-modules-inspector": "catalog:",

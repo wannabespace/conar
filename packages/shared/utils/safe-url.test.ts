@@ -170,7 +170,7 @@ describe('new SafeURL', () => {
     // oxlint-disable-next-line consistent-function-scoping
     const errorMessage = () => {
       try {
-        // eslint-disable-next-line no-new
+        // oxlint-disable-next-line no-new
         new SafeURL('not-a-valid-connection-string')
       } catch (e) {
         return (e as Error).message

@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-// eslint-disable-next-line typescript/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 export function useDebouncedCallback<T extends (...args: any[]) => any>(
   fn: T,
   deps: React.DependencyList,
@@ -21,7 +21,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
     [
       fn,
       delay,
-      // eslint-disable-next-line react/exhaustive-deps
+      // oxlint-disable-next-line react/exhaustive-deps
       ...deps,
     ],
   )

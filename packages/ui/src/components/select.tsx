@@ -72,7 +72,7 @@ export function SelectValue({
 }: SelectPrimitive.Value.Props): React.ReactElement {
   return (
     <SelectPrimitive.Value
-      className={cn(`flex-1 truncate data-placeholder:text-muted-foreground`, className)}
+      className={cn('flex-1 truncate data-placeholder:text-muted-foreground', className)}
       data-slot="select-value"
       {...props}
     />

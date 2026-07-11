@@ -10,6 +10,6 @@ export function useMountedEffect(effect: React.EffectCallback, deps: React.Depen
       return effectEvent()
     }
     isMountedRef.current = true
-    // eslint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, deps)
 }

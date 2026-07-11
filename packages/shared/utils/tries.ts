@@ -1,8 +1,8 @@
 import type { MaybePromise } from './helpers'
 
-// eslint-disable-next-line typescript/no-empty-object-type
+// oxlint-disable-next-line typescript/no-empty-object-type
 type Fn<T, P extends object = {}> = (params: P) => MaybePromise<T>
-// eslint-disable-next-line typescript/no-empty-object-type
+// oxlint-disable-next-line typescript/no-empty-object-type
 type FnParam<T, P extends object = {}> = Fn<T, P> | undefined | false
 
 export async function tries<T>(

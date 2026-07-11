@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* oxlint-disable no-console */
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'

@@ -19,7 +19,7 @@ export function useDebouncedMemo<T>(factory: () => T, deps: React.DependencyList
     debouncedSetState(factoryEvent())
   }, [
     debouncedSetState,
-    // eslint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
     ...deps,
   ])
 

@@ -140,7 +140,7 @@ export function Filters() {
       <div className="flex flex-wrap gap-2">
         {filters.map((filter, index) => (
           <FilterItem
-            // eslint-disable-next-line react/no-array-index-key
+            // oxlint-disable-next-line react/no-array-index-key
             key={`${filter.column}-${filter.ref.operator}-${filter.values.join(',')}-${index}`}
             filter={filter}
             onRemove={() =>
