@@ -30,7 +30,6 @@ async function decryptConnectionString(encryptedConnectionString: string) {
   return decryptWithKey(await encryptionKey.get(), encryptedConnectionString)
 }
 
-// oxlint-disable-next-line typescript/consistent-type-definitions
 type ConnectionStringsUtils = {
   decrypt: (connectionId: string) => Promise<string>
   prepare: (

@@ -100,7 +100,7 @@ function DatabasePoliciesPage() {
           onClear={() => setSearch('')}
         />
         <Select value={filterType} onValueChange={v => setFilterType(v as PolicyType | 'all')}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Type" />
           </SelectTrigger>
           <SelectContent>
@@ -118,7 +118,7 @@ function DatabasePoliciesPage() {
               }
             }}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-45">
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">schema</span>
                 <SelectValue />

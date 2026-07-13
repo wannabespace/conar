@@ -29,7 +29,7 @@ export function ContentSwitch({
     }, 3000)
 
     return () => clearTimeout(timeout)
-  }, [active])
+  }, [active, onSwitchEnd])
 
   return (
     <AnimatePresence mode="popLayout" initial={false}>

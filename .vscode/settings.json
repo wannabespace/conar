@@ -7,10 +7,10 @@
   "prettier.enable": false,
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.formatOnSave": true,
-  "editor.formatOnSaveMode": "file", // oxfmt can only format whole files
+  "editor.formatOnSaveMode": "file",
   "editor.codeActionsOnSave": {
     "source.fixAll.oxc": "explicit",
-    "source.organizeImports": "never" // let oxfmt handle import organization
+    "source.organizeImports": "never"
   },
   "files.watcherExclude": {
     "**/routeTree.gen.ts": true
