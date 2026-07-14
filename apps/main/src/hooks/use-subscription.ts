@@ -1,16 +1,24 @@
 import { ACTIVE_SUBSCRIPTION_STATUSES } from '@conar/shared/constants'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
+
 import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
 export function useSubscription() {
   const { data } = authClient.useSession()
-  const { data: list, isPending } = useQuery(orpc.account.subscription.list.queryOptions({
-    enabled: !!data?.user.id,
-  }))
+  const { data: list, isPending } = useQuery(
+    orpc.account.subscription.list.queryOptions({
+      enabled: !!data?.user.id,
+    }),
+  )
 
-  const subscription = list?.find(s => ACTIVE_SUBSCRIPTION_STATUSES.includes(s.status as typeof ACTIVE_SUBSCRIPTION_STATUSES[number])) ?? null
+  const subscription =
+    list?.find(s =>
+      ACTIVE_SUBSCRIPTION_STATUSES.includes(
+        s.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number],
+      ),
+    ) ?? null
 
   return { subscription, isPending }
 }
@@ -18,8 +26,14 @@ export function useSubscription() {
 export function useUpgradeSubscription() {
   const router = useRouter()
   const returnHref = router.buildLocation({ to: '/account' }).href
-  const successHref = router.buildLocation({ to: '/account', search: { subscription: 'success' } }).href
-  const cancelHref = router.buildLocation({ to: '/account', search: { subscription: 'cancel' } }).href
+  const successHref = router.buildLocation({
+    to: '/account',
+    search: { subscription: 'success' },
+  }).href
+  const cancelHref = router.buildLocation({
+    to: '/account',
+    search: { subscription: 'cancel' },
+  }).href
 
   const { mutate: upgrade, isPending: isUpgrading } = useMutation({
     mutationKey: ['subscription', 'upgrade'],

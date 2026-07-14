@@ -7,7 +7,7 @@ export function createClickHouseListTransformer(): ValueTransformer<string[]> {
     toDisplay: getDisplayValue,
     fromConnection: value => ({
       toUI: () => parseToArray(value),
-      toRaw: () => typeof value === 'string' ? value : JSON.stringify(value),
+      toRaw: () => (typeof value === 'string' ? value : JSON.stringify(value)),
     }),
     toConnection: {
       fromUI: value => value,

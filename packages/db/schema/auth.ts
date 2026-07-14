@@ -1,5 +1,6 @@
 import { defineRelationsPart } from 'drizzle-orm'
 import * as d from 'drizzle-orm/pg-core'
+
 import { baseTable } from '../base-table'
 
 export const users = d.snakeCase.table('users', {
@@ -23,7 +24,10 @@ export const sessions = d.snakeCase.table(
     token: d.text().notNull().unique(),
     ipAddress: d.text(),
     userAgent: d.text(),
-    userId: d.uuid().notNull().references(() => users.id, { onDelete: 'cascade' }),
+    userId: d
+      .uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     activeWorkspaceId: d.text(),
   },
   table => [d.index('sessions_userId_idx').on(table.userId)],
@@ -35,7 +39,10 @@ export const accounts = d.snakeCase.table(
     ...baseTable,
     accountId: d.text().notNull(),
     providerId: d.text().notNull(),
-    userId: d.uuid().notNull().references(() => users.id, { onDelete: 'cascade' }),
+    userId: d
+      .uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     accessToken: d.text(),
     refreshToken: d.text(),
     idToken: d.text(),
@@ -64,7 +71,10 @@ export const twoFactors = d.snakeCase.table(
     ...baseTable,
     secret: d.text().notNull(),
     backupCodes: d.text().notNull(),
-    userId: d.uuid().notNull().references(() => users.id, { onDelete: 'cascade' }),
+    userId: d
+      .uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     verified: d.boolean().default(true),
   },
   table => [
@@ -89,8 +99,14 @@ export const members = d.snakeCase.table(
   'members',
   {
     ...baseTable,
-    workspaceId: d.uuid().notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
-    userId: d.uuid().notNull().references(() => users.id, { onDelete: 'cascade' }),
+    workspaceId: d
+      .uuid()
+      .notNull()
+      .references(() => workspaces.id, { onDelete: 'cascade' }),
+    userId: d
+      .uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
     role: d.text().default('member').notNull(),
   },
   table => [
@@ -103,12 +119,18 @@ export const invitations = d.snakeCase.table(
   'invitations',
   {
     ...baseTable,
-    workspaceId: d.uuid().notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
+    workspaceId: d
+      .uuid()
+      .notNull()
+      .references(() => workspaces.id, { onDelete: 'cascade' }),
     email: d.text().notNull(),
     role: d.text(),
     status: d.text().default('pending').notNull(),
     expiresAt: d.timestamp({ withTimezone: true }).notNull(),
-    inviterId: d.uuid().notNull().references(() => users.id, { onDelete: 'cascade' }),
+    inviterId: d
+      .uuid()
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
   },
   table => [
     d.index('invitations_workspaceId_idx').on(table.workspaceId),

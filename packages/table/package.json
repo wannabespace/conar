@@ -1,7 +1,7 @@
 {
   "name": "@conar/table",
-  "type": "module",
   "private": true,
+  "type": "module",
   "exports": {
     ".": "./src/index.ts",
     "./hooks": "./src/hooks.ts",
@@ -9,7 +9,7 @@
     "./constants": "./src/constants.ts"
   },
   "scripts": {
-    "check-types": "tsgo"
+    "check-types": "tsc"
   },
   "dependencies": {
     "@conar/shared": "workspace:*",

@@ -1,5 +1,4 @@
 import type { ToolUIPart } from '@conar/ai/tools/helpers'
-import type { editor } from 'monaco-editor'
 import { FaviconWithFallback } from '@conar/ui/components/custom/favicon-with-fallback'
 import {
   SingleAccordion,
@@ -17,6 +16,8 @@ import {
   RiHammerLine,
   RiSearchLine,
 } from '@remixicon/react'
+import type { editor } from 'monaco-editor'
+
 import { InfoTable } from '~/components/info-table'
 import { Monaco } from '~/components/monaco'
 
@@ -28,7 +29,7 @@ const monacoOptions = {
   folding: false,
 } as const satisfies editor.IStandaloneEditorConstructionOptions
 
-function MonacoOutput({ value, language = 'json' }: { value: string, language?: string }) {
+function MonacoOutput({ value, language = 'json' }: { value: string; language?: string }) {
   return (
     <Monaco
       value={value}
@@ -39,16 +40,16 @@ function MonacoOutput({ value, language = 'json' }: { value: string, language?: 
   )
 }
 
-const SKIP_CONTENT_TOOLS = [
-  'dynamic-tool',
-  'tool-resolveLibraryId',
-] satisfies ToolUIPart['type'][]
+const SKIP_CONTENT_TOOLS = ['dynamic-tool', 'tool-resolveLibraryId'] satisfies ToolUIPart['type'][]
 
 function shouldSkipContent(part: ToolUIPart) {
-  return SKIP_CONTENT_TOOLS.includes(part.type as typeof SKIP_CONTENT_TOOLS[number])
+  return SKIP_CONTENT_TOOLS.includes(part.type as (typeof SKIP_CONTENT_TOOLS)[number])
 }
 
-const ICONS: Record<ToolUIPart['state'], (props: { className?: string, part: ToolUIPart }) => React.ReactNode> = {
+const ICONS: Record<
+  ToolUIPart['state'],
+  (props: { className?: string; part: ToolUIPart }) => React.ReactNode
+> = {
   'input-streaming': ({ className }) => (
     <Spinner className={cn(`animate-spin text-primary`, className)} />
   ),
@@ -81,15 +82,21 @@ const ICONS: Record<ToolUIPart['state'], (props: { className?: string, part: Too
   ),
 }
 
-function ToolIcon({ part, className }: { part: ToolUIPart, className?: string }) {
+function ToolIcon({ part, className }: { part: ToolUIPart; className?: string }) {
   return ICONS[part.state]({ part, className })
 }
 
-const TITLES: { [K in ToolUIPart['type']]: (props: { part: Extract<ToolUIPart, { type: K }> }) => string } = {
+const TITLES: {
+  [K in ToolUIPart['type']]: (props: { part: Extract<ToolUIPart, { type: K }> }) => string
+} = {
   'dynamic-tool': ({ part }) => part.title || part.toolName,
   'tool-columns': ({ part }) => {
     if (part.input) {
-      const schema = part.input.tableAndSchema?.schemaName ? part.input.tableAndSchema.schemaName === 'public' ? '' : part.input.tableAndSchema.schemaName : ''
+      const schema = part.input.tableAndSchema?.schemaName
+        ? part.input.tableAndSchema.schemaName === 'public'
+          ? ''
+          : part.input.tableAndSchema.schemaName
+        : ''
 
       return `Get columns from ${schema ? `"${schema}".` : ''}${part.input.tableAndSchema?.tableName ? `"${part.input.tableAndSchema.tableName}"` : '...'}`
     }
@@ -98,7 +105,11 @@ const TITLES: { [K in ToolUIPart['type']]: (props: { part: Extract<ToolUIPart, {
   'tool-enums': () => 'Get enums',
   'tool-select': ({ part }) => {
     if (part.input) {
-      const schema = part.input.tableAndSchema?.schemaName ? part.input.tableAndSchema.schemaName === 'public' ? '' : part.input.tableAndSchema.schemaName : ''
+      const schema = part.input.tableAndSchema?.schemaName
+        ? part.input.tableAndSchema.schemaName === 'public'
+          ? ''
+          : part.input.tableAndSchema.schemaName
+        : ''
 
       return `Select data from ${schema ? `"${schema}".` : ''}${part.input.tableAndSchema?.tableName ? `"${part.input.tableAndSchema.tableName}"` : '...'}`
     }
@@ -112,7 +123,8 @@ const TITLES: { [K in ToolUIPart['type']]: (props: { part: Extract<ToolUIPart, {
     return 'Searching the web...'
   },
   'tool-resolveLibraryId': ({ part }) => {
-    const libraryName = part.input && typeof part.input.libraryName === 'string' ? part.input.libraryName : ''
+    const libraryName =
+      part.input && typeof part.input.libraryName === 'string' ? part.input.libraryName : ''
 
     if (libraryName) {
       return `Resolved library "${libraryName}"`
@@ -131,97 +143,118 @@ const TITLES: { [K in ToolUIPart['type']]: (props: { part: Extract<ToolUIPart, {
 }
 
 function getTitle({ part }: { part: ToolUIPart }) {
-  // eslint-disable-next-line ts/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   return TITLES[part.type]({ part } as any) || 'Unknown tool'
 }
 
-const CONTENT: { [K in Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[number]>]: (props: { part: Extract<ToolUIPart, { type: K }> }) => React.ReactNode } = {
+const CONTENT: {
+  [K in Exclude<ToolUIPart['type'], (typeof SKIP_CONTENT_TOOLS)[number]>]: (props: {
+    part: Extract<ToolUIPart, { type: K }>
+  }) => React.ReactNode
+} = {
   'tool-columns': ({ part }) => (
     <>
-      <div className="mb-4 text-xs text-muted-foreground">Agent called a tool to get table columns.</div>
-      {part.state === 'output-available' && (
-        <MonacoOutput value={JSON.stringify(part.output)} />
-      )}
+      <div className="mb-4 text-xs text-muted-foreground">
+        Agent called a tool to get table columns.
+      </div>
+      {part.state === 'output-available' && <MonacoOutput value={JSON.stringify(part.output)} />}
     </>
   ),
   'tool-enums': ({ part }) => (
     <>
-      <div className="mb-4 text-xs text-muted-foreground">Agent called a tool to get database enums.</div>
-      {part.state === 'output-available' && (
-        <MonacoOutput value={JSON.stringify(part.output)} />
-      )}
+      <div className="mb-4 text-xs text-muted-foreground">
+        Agent called a tool to get database enums.
+      </div>
+      {part.state === 'output-available' && <MonacoOutput value={JSON.stringify(part.output)} />}
     </>
   ),
   'tool-select': ({ part }) => (
     <div className="flex flex-col gap-2 text-xs">
-      <div className="text-muted-foreground">Agent called a tool to get data from the database.</div>
+      <div className="text-muted-foreground">
+        Agent called a tool to get data from the database.
+      </div>
       {part.input && (
         <InfoTable
           data={[
-            { name: 'Select', value: part.input.select?.length
-              ? part.input.select.join(', ')
-              : null },
-            { name: 'From', value: part.input.tableAndSchema ? `${part.input.tableAndSchema.schemaName}.${part.input.tableAndSchema?.tableName}` : null },
-            { name: 'Where', value: (part.state === 'input-available' || part.state === 'output-available') && part.input.whereFilters?.length
-              ? part.input.whereFilters.map(filter => `"${filter.column}" ${filter.operator} ${filter.values.length > 0 ? filter.values.map(value => `"${value}"`).join(', ') : ''}`).join(` ${part.input.whereConcatOperator} `)
-              : null },
-            { name: 'Order by', value: part.input.orderBy && Object.keys(part.input.orderBy).length
-              ? Object.entries(part.input.orderBy).map(([col, dir]) => `${col} ${dir}`).join(', ')
-              : null },
+            {
+              name: 'Select',
+              value: part.input.select?.length ? part.input.select.join(', ') : null,
+            },
+            {
+              name: 'From',
+              value: part.input.tableAndSchema
+                ? `${part.input.tableAndSchema.schemaName}.${part.input.tableAndSchema?.tableName}`
+                : null,
+            },
+            {
+              name: 'Where',
+              value:
+                (part.state === 'input-available' || part.state === 'output-available') &&
+                part.input.whereFilters?.length
+                  ? part.input.whereFilters
+                      .map(
+                        filter =>
+                          `"${filter.column}" ${filter.operator} ${filter.values.length > 0 ? filter.values.map(value => `"${value}"`).join(', ') : ''}`,
+                      )
+                      .join(` ${part.input.whereConcatOperator} `)
+                  : null,
+            },
+            {
+              name: 'Order by',
+              value:
+                part.input.orderBy && Object.keys(part.input.orderBy).length
+                  ? Object.entries(part.input.orderBy)
+                      .map(([col, dir]) => `${col} ${dir}`)
+                      .join(', ')
+                  : null,
+            },
             { name: 'Limit', value: part.input.limit },
             { name: 'Offset', value: part.input.offset || null },
           ]}
         />
       )}
-      {part.state === 'output-available' && (
-        <MonacoOutput value={JSON.stringify(part.output)} />
-      )}
+      {part.state === 'output-available' && <MonacoOutput value={JSON.stringify(part.output)} />}
     </div>
   ),
   'tool-webSearch': ({ part }) => (
     <>
-      <div className="mb-2 text-xs text-muted-foreground">Agent searched the web for information.</div>
+      <div className="mb-2 text-xs text-muted-foreground">
+        Agent searched the web for information.
+      </div>
       {part.state === 'output-available' && (
         <div className="space-y-2">
-          {!!part.output && typeof part.output === 'object' && 'results' in part.output && Array.isArray(part.output.results) && (
-            <div className="flex flex-wrap gap-2">
-              {part.output.results.slice(0, 5).map((result: { title: string, url: string, description?: string }) => (
-                <Tooltip key={`${part.toolCallId}-${result.url}`}>
-                  <TooltipTrigger asChild>
-                    <a
-                      href={result.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`
-                        group flex max-w-full min-w-50 flex-1 basis-1/3
-                        items-center gap-1 rounded-md border bg-accent/20 px-1.5
-                        py-0.5 text-xs transition-colors
-                        hover:bg-accent/40
-                      `}
-                    >
-                      <FaviconWithFallback
-                        url={result.url}
-                        className="size-3 shrink-0"
-                      />
-                      <span className={`
-                        truncate font-medium
-                        group-hover:text-primary
-                      `}
-                      >
-                        {result.title}
-                      </span>
-                    </a>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="max-w-xs">
-                      <div className="font-medium">{result.title}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{result.url}</div>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
-            </div>
-          )}
+          {!!part.output &&
+            typeof part.output === 'object' &&
+            'results' in part.output &&
+            Array.isArray(part.output.results) && (
+              <div className="flex flex-wrap gap-2">
+                {part.output.results
+                  .slice(0, 5)
+                  .map((result: { title: string; url: string; description?: string }) => (
+                    <Tooltip key={`${part.toolCallId}-${result.url}`}>
+                      <TooltipTrigger asChild>
+                        <a
+                          href={result.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`group flex max-w-full min-w-50 flex-1 basis-1/3 items-center gap-1 rounded-md border bg-accent/20 px-1.5 py-0.5 text-xs transition-colors hover:bg-accent/40`}
+                        >
+                          <FaviconWithFallback url={result.url} className="size-3 shrink-0" />
+                          <span className={`truncate font-medium group-hover:text-primary`}>
+                            {result.title}
+                          </span>
+                        </a>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="max-w-xs">
+                          <div className="font-medium">{result.title}</div>
+                          <div className="mt-1 text-xs text-muted-foreground">{result.url}</div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+              </div>
+            )}
         </div>
       )}
     </>
@@ -230,72 +263,61 @@ const CONTENT: { [K in Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[num
 }
 
 function ToolContent({ part }: { part: ToolUIPart }) {
-  // eslint-disable-next-line ts/no-explicit-any
-  return CONTENT[part.type as Exclude<ToolUIPart['type'], typeof SKIP_CONTENT_TOOLS[number]>]?.({ part } as any)
-    || (part.errorText
-      ? <div className="text-xs text-destructive">{part.errorText}</div>
-      : <MonacoOutput value={JSON.stringify(part.output)} />)
+  return (
+    CONTENT[part.type as Exclude<ToolUIPart['type'], (typeof SKIP_CONTENT_TOOLS)[number]>]?.({
+      part,
+      // oxlint-disable-next-line typescript/no-explicit-any
+    } as any) ||
+    (part.errorText ? (
+      <div className="text-xs text-destructive">{part.errorText}</div>
+    ) : (
+      <MonacoOutput value={JSON.stringify(part.output)} />
+    ))
+  )
 }
 
 function extractErrorMessage(part: ToolUIPart): string | null {
-  if (part.errorText)
-    return part.errorText
+  if (part.errorText) return part.errorText
 
   const output = part.output
 
-  if (typeof output !== 'object' || output === null || !('error' in output))
-    return null
+  if (typeof output !== 'object' || output === null || !('error' in output)) return null
 
   const { error } = output
 
-  if (typeof error === 'string')
-    return error
+  if (typeof error === 'string') return error
 
-  if (error instanceof Error)
-    return error.message
+  if (error instanceof Error) return error.message
 
   return JSON.stringify(error)
 }
 
-export function ChatMessageTool({ part, className }: { part: ToolUIPart, className?: string }) {
+export function ChatMessageTool({ part, className }: { part: ToolUIPart; className?: string }) {
   const error = part.state === 'output-error' ? extractErrorMessage(part) : null
   const skipContent = shouldSkipContent(part)
 
   const title = getTitle({ part })
 
   return (
-    <SingleAccordion
-      className={cn('my-2 rounded-sm', className)}
-      open={error ? true : undefined}
-    >
+    <SingleAccordion className={cn('my-2 rounded-sm', className)} open={error ? true : undefined}>
       <SingleAccordionTrigger
-        className={cn('min-w-0 gap-2 overflow-hidden py-1 text-xs', (skipContent || error) && `
-          cursor-auto
-        `)}
+        className={cn(
+          'min-w-0 gap-2 overflow-hidden py-1 text-xs',
+          (skipContent || error) && `cursor-auto`,
+        )}
       >
         <div className="flex flex-1 items-center gap-2 overflow-hidden">
-          <ToolIcon
-            className={cn('size-4 shrink-0', error && 'text-destructive')}
-            part={part}
-          />
-          <span className="truncate text-sm">
-            {title}
-          </span>
+          <ToolIcon className={cn('size-4 shrink-0', error && 'text-destructive')} part={part} />
+          <span className="truncate text-sm">{title}</span>
         </div>
-        {!error && !skipContent && (
-          <SingleAccordionTriggerArrow className="ml-auto shrink-0" />
-        )}
+        {!error && !skipContent && <SingleAccordionTriggerArrow className="ml-auto shrink-0" />}
       </SingleAccordionTrigger>
       <SingleAccordionContent>
-        {error
-          ? (
-              <div className="text-xs text-destructive">
-                {error}
-              </div>
-            )
-          : skipContent
-            ? null
-            : <ToolContent part={part} />}
+        {error ? (
+          <div className="text-xs text-destructive">{error}</div>
+        ) : skipContent ? null : (
+          <ToolContent part={part} />
+        )}
       </SingleAccordionContent>
     </SingleAccordion>
   )

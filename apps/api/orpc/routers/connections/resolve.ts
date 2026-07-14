@@ -1,6 +1,7 @@
 import { db } from '@conar/db'
 import { decrypt } from '@conar/shared/utils/crypto-node'
 import { type } from 'arktype'
+
 import { authMiddleware, orpc } from '~/orpc'
 
 export const resolve = orpc

@@ -1,12 +1,12 @@
-import type Stripe from 'stripe'
 import { db } from '@conar/db'
 import { subscriptions } from '@conar/db/schema'
 import { eq } from 'drizzle-orm'
+import type Stripe from 'stripe'
+
 import { env } from '~/env'
 
 export async function subscriptionUpdated(event: Stripe.Event) {
-  if (event.type !== 'customer.subscription.updated')
-    return
+  if (event.type !== 'customer.subscription.updated') return
 
   const subscription = event.data.object
 
@@ -20,10 +20,17 @@ export async function subscriptionUpdated(event: Stripe.Event) {
     throw new Error(`Subscription ${subscription.id} not found in database`)
   }
 
-  const period = subscription.items.data[0]?.price.id === env.STRIPE_ANNUAL_PRICE_ID ? 'yearly' : 'monthly'
-  const price = subscription.items.data[0]?.price.unit_amount ? subscription.items.data[0].price.unit_amount / 100 : 0
-  const periodStart = subscription.items.data[0]?.current_period_start ? new Date(subscription.items.data[0].current_period_start * 1000) : null
-  const periodEnd = subscription.items.data[0]?.current_period_end ? new Date(subscription.items.data[0].current_period_end * 1000) : null
+  const period =
+    subscription.items.data[0]?.price.id === env.STRIPE_ANNUAL_PRICE_ID ? 'yearly' : 'monthly'
+  const price = subscription.items.data[0]?.price.unit_amount
+    ? subscription.items.data[0].price.unit_amount / 100
+    : 0
+  const periodStart = subscription.items.data[0]?.current_period_start
+    ? new Date(subscription.items.data[0].current_period_start * 1000)
+    : null
+  const periodEnd = subscription.items.data[0]?.current_period_end
+    ? new Date(subscription.items.data[0].current_period_end * 1000)
+    : null
 
   await db
     .update(subscriptions)

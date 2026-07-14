@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react'
 import { RefreshButton } from '@conar/ui/components/custom/refresh-button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
+import type { ReactNode } from 'react'
 
 export function DefinitionsHeader({
   children,
@@ -15,9 +15,7 @@ export function DefinitionsHeader({
 }) {
   return (
     <div className="mb-4 flex items-center justify-between">
-      <h2 className="text-2xl font-bold">
-        {children}
-      </h2>
+      <h2 className="text-2xl font-bold">{children}</h2>
       <div className="flex items-center gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
@@ -31,9 +29,7 @@ export function DefinitionsHeader({
           <TooltipContent side="left">
             Refresh
             <p className="text-xs opacity-70">
-              Last updated:
-              {' '}
-              {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
+              Last updated: {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
             </p>
           </TooltipContent>
         </Tooltip>

@@ -7,10 +7,7 @@ const appDist = resolve(root, '../app/dist-desktop')
 const rendererDest = resolve(root, 'dist-electron/renderer')
 
 if (!existsSync(appDist)) {
-  console.error(
-    '[@conar/desktop] Renderer source missing: ',
-    appDist,
-  )
+  console.error('[@conar/desktop] Renderer source missing: ', appDist)
   process.exit(1)
 }
 

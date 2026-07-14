@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import { useDebouncedCallback } from './use-debounced-callback'
 
 export function useDebouncedMemo<T>(factory: () => T, deps: React.DependencyList, delay: number) {
@@ -6,16 +7,19 @@ export function useDebouncedMemo<T>(factory: () => T, deps: React.DependencyList
 
   const factoryEvent = React.useEffectEvent(factory)
 
-  const debouncedSetState = useDebouncedCallback((value: T) => {
-    // eslint-disable-next-line react/set-state-in-effect
-    setState(value)
-  }, [], delay)
+  const debouncedSetState = useDebouncedCallback(
+    (value: T) => {
+      setState(value)
+    },
+    [],
+    delay,
+  )
 
   React.useEffect(() => {
     debouncedSetState(factoryEvent())
   }, [
     debouncedSetState,
-    // eslint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
     ...deps,
   ])
 

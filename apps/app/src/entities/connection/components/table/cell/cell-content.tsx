@@ -1,7 +1,8 @@
 import type { TableCellProps } from '@conar/table'
-import type { ComponentProps } from 'react'
-import type { Column } from './utils'
 import { cn } from '@conar/ui/lib/utils'
+import type { ComponentProps } from 'react'
+
+import type { Column } from './utils'
 
 export function TableCellContent({
   className,
@@ -18,11 +19,7 @@ export function TableCellContent({
     <div
       data-mask
       className={cn(
-        `
-          flex h-full cursor-default items-center justify-between gap-1 truncate
-          rounded-md p-2 font-mono text-xs ring-1 ring-transparent outline-none
-          select-none
-        `,
+        `flex h-full cursor-default items-center justify-between gap-1 truncate rounded-md p-2 font-mono text-xs ring-1 ring-transparent outline-none select-none`,
         (value === null || value === '') && 'text-muted-foreground/50',
         position === 'first' && 'pl-4',
         position === 'last' && 'pr-4',

@@ -1,7 +1,7 @@
-/* eslint-disable perfectionist/sort-imports */
 import '@conar/shared/arktype-config'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import { createRouter } from '@tanstack/react-router'
+
 import { routeTree } from './routeTree.gen'
 import { handleError } from './utils/error'
 

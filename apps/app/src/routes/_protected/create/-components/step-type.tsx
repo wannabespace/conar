@@ -1,10 +1,23 @@
 import { connectionLabels, ConnectionType } from '@conar/shared/enums/connection-type'
 import { Button } from '@conar/ui/components/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@conar/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@conar/ui/components/card'
+
 import { ConnectionIcon } from '~/entities/connection/components'
 import { MongoIcon } from '~/icons/mongo'
 
-export function StepType({ type, setType }: { type: ConnectionType | null, setType: (type: ConnectionType) => void }) {
+export function StepType({
+  type,
+  setType,
+}: {
+  type: ConnectionType | null
+  setType: (type: ConnectionType) => void
+}) {
   return (
     <Card className="w-full">
       <CardHeader>
@@ -20,10 +33,7 @@ export function StepType({ type, setType }: { type: ConnectionType | null, setTy
               onClick={() => setType(connectionType)}
               className="flex items-center gap-2 px-4 py-2"
             >
-              <ConnectionIcon
-                type={connectionType}
-                className="size-4 shrink-0 text-primary"
-              />
+              <ConnectionIcon type={connectionType} className="size-4 shrink-0 text-primary" />
               {connectionLabels[connectionType]}
             </Button>
           ))}

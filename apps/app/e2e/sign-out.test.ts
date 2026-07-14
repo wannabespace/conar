@@ -1,4 +1,5 @@
 import { expect } from '@playwright/test'
+
 import { testWithSignUp } from './auth'
 
 testWithSignUp('sign out', async ({ page }) => {

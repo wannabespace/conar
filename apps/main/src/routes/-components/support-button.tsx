@@ -1,30 +1,46 @@
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogTitle, DialogTrigger } from '@conar/ui/components/dialog'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogPanel,
+  DialogTitle,
+  DialogTrigger,
+} from '@conar/ui/components/dialog'
 import { Field, FieldLabel } from '@conar/ui/components/field'
 import { Textarea } from '@conar/ui/components/textarea'
 import { RiMessageLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
+
 import { orpc } from '~/lib/orpc'
+
 import { SidebarButton } from './sidebar-button'
 
 export function SupportButton() {
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
 
-  const { mutate: sendSupport, isPending: loading } = useMutation(orpc.contact.mutationOptions({
-    onSuccess: () => {
-      toast.success('Support message sent successfully! We will get back to you as soon as possible.')
-      setOpen(false)
-      setMessage('')
-    },
-    onError: (err) => {
-      console.error(err)
-      toast.error('Failed to send message. Please try again later.')
-    },
-  }))
+  const { mutate: sendSupport, isPending: loading } = useMutation(
+    orpc.contact.mutationOptions({
+      onSuccess: () => {
+        toast.success(
+          'Support message sent successfully! We will get back to you as soon as possible.',
+        )
+        setOpen(false)
+        setMessage('')
+      },
+      onError: err => {
+        console.error(err)
+        toast.error('Failed to send message. Please try again later.')
+      },
+    }),
+  )
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -41,8 +57,7 @@ export function SupportButton() {
         <DialogHeader>
           <DialogTitle>Contact Support</DialogTitle>
           <DialogDescription>
-            Have a question, suggestion, or need assistance?
-            We're here to listen!
+            Have a question, suggestion, or need assistance? We're here to listen!
           </DialogDescription>
         </DialogHeader>
         <DialogPanel>
@@ -61,13 +76,9 @@ export function SupportButton() {
           </form>
         </DialogPanel>
         <DialogFooter>
-          <DialogClose render={<Button type="button" variant="outline" />}>
-            Cancel
-          </DialogClose>
+          <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
           <Button type="submit" disabled={loading || !message}>
-            <LoadingContent loading={loading}>
-              Send
-            </LoadingContent>
+            <LoadingContent loading={loading}>Send</LoadingContent>
           </Button>
         </DialogFooter>
       </DialogContent>

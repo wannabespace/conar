@@ -1,29 +1,33 @@
-import type { editor, Position } from 'monaco-editor'
-import type { Dispatch, RefObject, SetStateAction } from 'react'
 import { render } from '@conar/ui/lib/render'
+import type { editor, Position } from 'monaco-editor'
 import { KeyCode, KeyMod } from 'monaco-editor'
+import type { Dispatch, RefObject, SetStateAction } from 'react'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
+
 import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
+
 import { Route } from '../..'
 import { runnerHooks } from '../../-page'
 import { RunnerEditorAIZone } from './runner-editor-ai-zone'
 
-function useTrackLineNumberChange(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>, {
-  currentAIZoneLineNumber,
-  setCurrentAIZoneLineNumber,
-}: {
-  currentAIZoneLineNumber: number | null
-  setCurrentAIZoneLineNumber: Dispatch<SetStateAction<number | null>>
-}) {
+function useTrackLineNumberChange(
+  monacoRef: RefObject<editor.IStandaloneCodeEditor | null>,
+  {
+    currentAIZoneLineNumber,
+    setCurrentAIZoneLineNumber,
+  }: {
+    currentAIZoneLineNumber: number | null
+    setCurrentAIZoneLineNumber: Dispatch<SetStateAction<number | null>>
+  },
+) {
   useEffect(() => {
-    if (!monacoRef.current || currentAIZoneLineNumber === null)
-      return
+    if (!monacoRef.current || currentAIZoneLineNumber === null) return
 
     const editor = monacoRef.current
 
-    const disposable = editor.onDidChangeModelContent((e) => {
+    const disposable = editor.onDidChangeModelContent(e => {
       for (const change of e.changes) {
         const changeStartLine = change.range.startLineNumber
         const changeEndLine = change.range.endLineNumber
@@ -34,7 +38,7 @@ function useTrackLineNumberChange(monacoRef: RefObject<editor.IStandaloneCodeEdi
           const lineDiff = newLineCount - removedLineCount
 
           if (lineDiff !== 0) {
-            setCurrentAIZoneLineNumber(prev => prev === null ? null : prev + lineDiff)
+            setCurrentAIZoneLineNumber(prev => (prev === null ? null : prev + lineDiff))
           }
         }
       }
@@ -55,13 +59,15 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
   const [currentAIZoneLineNumber, setCurrentAIZoneLineNumber] = useState<number | null>(null)
 
   const currentAIZoneQuery = useMemo(() => {
-    if (currentAIZoneLineNumber === null)
-      return null
+    if (currentAIZoneLineNumber === null) return null
 
-    return editorQueries.find(query =>
-      currentAIZoneLineNumber >= query.startLineNumber
-      && currentAIZoneLineNumber <= query.endLineNumber,
-    ) ?? null
+    return (
+      editorQueries.find(
+        query =>
+          currentAIZoneLineNumber >= query.startLineNumber &&
+          currentAIZoneLineNumber <= query.endLineNumber,
+      ) ?? null
+    )
   }, [currentAIZoneLineNumber, editorQueries])
 
   if (currentAIZoneLineNumber && !currentAIZoneQuery) {
@@ -81,58 +87,62 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
   })
 
   useEffect(() => {
-    if (!monacoRef.current || !currentAIZoneQuery)
-      return
+    if (!monacoRef.current || !currentAIZoneQuery) return
 
     const editor = monacoRef.current
 
-    const highlightCollection = editor.createDecorationsCollection([{
-      range: {
-        startLineNumber: currentAIZoneQuery.startLineNumber,
-        startColumn: 1,
-        endLineNumber: currentAIZoneQuery.endLineNumber + 1,
-        endColumn: 1,
+    const highlightCollection = editor.createDecorationsCollection([
+      {
+        range: {
+          startLineNumber: currentAIZoneQuery.startLineNumber,
+          startColumn: 1,
+          endLineNumber: currentAIZoneQuery.endLineNumber + 1,
+          endColumn: 1,
+        },
+        options: {
+          className: 'monaco-highlight',
+        },
       },
-      options: {
-        className: 'monaco-highlight',
-      },
-    }])
+    ])
 
     let zoneId: string
 
     queueMicrotask(() => {
-      editor.changeViewZones((changeAccessor) => {
-        const domNode = domElementRef.current || render(
-          <RunnerEditorAIZone
-            connection={connection}
-            connectionResource={connectionResource}
-            getSql={() => store
-              .get()
-              .query
-              .split('\n')
-              .slice(currentAIZoneQuery.startLineNumber - 1, currentAIZoneQuery.endLineNumber)
-              .join('\n')}
-            onClose={() => {
-              editor.changeViewZones((changeAccessor) => {
-                changeAccessor.removeZone(zoneId)
-              })
-              editor.setPosition({
-                lineNumber: currentAIZoneQuery.startLineNumber,
-                column: 1,
-              })
-              editor.focus()
-              highlightCollection.clear()
-              setCurrentAIZoneLineNumber(null)
-            }}
-            onUpdate={(query) => {
-              runnerHooks.callHook('replaceQuery', {
-                query,
-                startLineNumber: currentAIZoneQuery.startLineNumber,
-                endLineNumber: currentAIZoneQuery.endLineNumber,
-              })
-            }}
-          />,
-        )
+      editor.changeViewZones(changeAccessor => {
+        const domNode =
+          domElementRef.current ||
+          render(
+            <RunnerEditorAIZone
+              connection={connection}
+              connectionResource={connectionResource}
+              getSql={() =>
+                store
+                  .get()
+                  .query.split('\n')
+                  .slice(currentAIZoneQuery.startLineNumber - 1, currentAIZoneQuery.endLineNumber)
+                  .join('\n')
+              }
+              onClose={() => {
+                editor.changeViewZones(changeAccessor => {
+                  changeAccessor.removeZone(zoneId)
+                })
+                editor.setPosition({
+                  lineNumber: currentAIZoneQuery.startLineNumber,
+                  column: 1,
+                })
+                editor.focus()
+                highlightCollection.clear()
+                setCurrentAIZoneLineNumber(null)
+              }}
+              onUpdate={query => {
+                runnerHooks.callHook('replaceQuery', {
+                  query,
+                  startLineNumber: currentAIZoneQuery.startLineNumber,
+                  endLineNumber: currentAIZoneQuery.endLineNumber,
+                })
+              }}
+            />,
+          )
 
         domNode.style.zIndex = '100'
 
@@ -147,7 +157,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
     })
 
     return () => {
-      editor.changeViewZones((changeAccessor) => {
+      editor.changeViewZones(changeAccessor => {
         changeAccessor.removeZone(zoneId)
       })
       highlightCollection.clear()
@@ -155,30 +165,30 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
   }, [monacoRef, connection, connectionResource, currentAIZoneQuery, store, subscription])
 
   const getInlineQueryEvent = useEffectEvent((position: Position) => {
-    return editorQueries.find(query =>
-      position.lineNumber >= query.startLineNumber
-      && position.lineNumber <= query.endLineNumber,
-    ) ?? null
+    return (
+      editorQueries.find(
+        query =>
+          position.lineNumber >= query.startLineNumber &&
+          position.lineNumber <= query.endLineNumber,
+      ) ?? null
+    )
   })
 
   useEffect(() => {
-    if (!monacoRef.current)
-      return
+    if (!monacoRef.current) return
 
     const disposable = monacoRef.current.addAction({
       id: 'conar.execute-on-k',
       label: 'Execute on K',
       keybindings: [KeyMod.CtrlCmd | KeyCode.KeyK],
-      run: (e) => {
+      run: e => {
         const position = e.getPosition()
 
-        if (!position)
-          return
+        if (!position) return
 
         const inlineQuery = getInlineQueryEvent(position)
 
-        if (inlineQuery === null)
-          return
+        if (inlineQuery === null) return
 
         setCurrentAIZoneLineNumber(lineNumber =>
           lineNumber === position.lineNumber ? null : position.lineNumber,

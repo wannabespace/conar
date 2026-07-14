@@ -12,6 +12,8 @@
   },
   "iconLibrary": "remixicon",
   "rtl": false,
+  "menuColor": "inverted-translucent",
+  "menuAccent": "subtle",
   "aliases": {
     "components": "@conar/ui/components",
     "utils": "@conar/ui/lib/utils",
@@ -19,7 +21,7 @@
     "lib": "@conar/ui/lib",
     "hooks": "@conar/ui/hooks"
   },
-  "menuColor": "inverted-translucent",
-  "menuAccent": "subtle",
-  "registries": {}
+  "registries": {
+    "@coss": "https://coss.com/ui/r/{name}.json"
+  }
 }

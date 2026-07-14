@@ -1,13 +1,8 @@
-import type {
-  Dialect,
-  LimitNode,
-  OffsetNode,
-  OperationNode,
-  SelectQueryNode,
-} from 'kysely'
-import type { DialectOptions } from '..'
 import { ConnectionType } from '@conar/shared/enums/connection-type'
+import type { Dialect, LimitNode, OffsetNode, OperationNode, SelectQueryNode } from 'kysely'
 import { MssqlQueryCompiler as DefaultMssqlQueryCompiler, DummyDriver, MssqlAdapter } from 'kysely'
+
+import type { DialectOptions } from '..'
 import { createDialectProvider, createKyselyDriver } from '..'
 
 function isSelectQueryNode(node: OperationNode): node is SelectQueryNode {
@@ -16,7 +11,11 @@ function isSelectQueryNode(node: OperationNode): node is SelectQueryNode {
 
 class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
   protected override visitOffset(node: OffsetNode) {
-    if (this.parentNode != null && isSelectQueryNode(this.parentNode) && this.parentNode.limit != null)
+    if (
+      this.parentNode != null &&
+      isSelectQueryNode(this.parentNode) &&
+      this.parentNode.limit != null
+    )
       return // will be handle when visitLimit
 
     this.append(' OFFSET ')
@@ -30,8 +29,7 @@ class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
         this.append(' OFFSET ')
         this.visitNode(this.parentNode.offset.offset)
         this.append(' ROWS ')
-      }
-      else {
+      } else {
         this.append(' OFFSET 0 ROWS ')
       }
     }
@@ -44,10 +42,11 @@ class MssqlQueryCompiler extends DefaultMssqlQueryCompiler {
 
 export function mssqlDialect(options: DialectOptions) {
   return {
-    createDriver: () => createKyselyDriver({
-      provider: createDialectProvider(ConnectionType.MSSQL, options),
-      logger: options.log,
-    }),
+    createDriver: () =>
+      createKyselyDriver({
+        provider: createDialectProvider(ConnectionType.MSSQL, options),
+        logger: options.log,
+      }),
     createQueryCompiler: () => new MssqlQueryCompiler(),
     createAdapter: () => new MssqlAdapter(),
     createIntrospector: () => {

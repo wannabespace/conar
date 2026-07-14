@@ -1,4 +1,5 @@
 import { Result } from 'better-result'
+
 import { baseOptions, ensureFolders, getClient, isFolderMissingError, pathToString } from '.'
 
 interface SecretLocation {
@@ -25,14 +26,14 @@ export const secrets = {
 
     const result = await Result.tryPromise(
       {
-        try: () => client.secrets().createSecret(opts.name, {
-          ...baseOptions,
-          secretPath,
-          secretValue: opts.value,
-        }),
+        try: () =>
+          client.secrets().createSecret(opts.name, {
+            ...baseOptions,
+            secretPath,
+            secretValue: opts.value,
+          }),
         catch: async (error: unknown) => {
-          if (isFolderMissingError(error))
-            await ensureFolders(opts.path)
+          if (isFolderMissingError(error)) await ensureFolders(opts.path)
 
           return error
         },
@@ -47,8 +48,7 @@ export const secrets = {
       },
     )
 
-    if (Result.isError(result))
-      throw result.error
+    if (Result.isError(result)) throw result.error
   },
 
   async update(opts: SecretLocation & { value: string }) {

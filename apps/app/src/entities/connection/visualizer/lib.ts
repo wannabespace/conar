@@ -1,15 +1,22 @@
+import dagre from '@dagrejs/dagre'
 import type { Edge } from '@xyflow/react'
+import { Position } from '@xyflow/react'
+
 import type { NodeType } from '~/entities/connection/components'
 import type { Column } from '~/entities/connection/components/table/cell'
+import { getColumnUiType } from '~/entities/connection/components/table/cell'
 import type { constraintsType } from '~/entities/connection/queries'
 import type { columnType } from '~/entities/connection/queries/columns'
-import dagre from '@dagrejs/dagre'
-import { Position } from '@xyflow/react'
-import { getColumnUiType } from '~/entities/connection/components/table/cell'
 
-export function getEdges({ constraints }: { constraints: typeof constraintsType.infer[] }): Edge[] {
+export function getEdges({
+  constraints,
+}: {
+  constraints: (typeof constraintsType.infer)[]
+}): Edge[] {
   return constraints
-    .filter(c => c.type === 'foreignKey' && c.foreignTable && c.foreignColumn && c.table && c.column)
+    .filter(
+      c => c.type === 'foreignKey' && c.foreignTable && c.foreignColumn && c.table && c.column,
+    )
     .map(c => ({
       id: `${c.table}_${c.column}_${c.foreignTable}_${c.foreignColumn}`,
       type: 'custom',
@@ -29,13 +36,19 @@ export function applySearchHighlight<TNode extends NodeType>({
   nodes: TNode[]
   searchQuery: string
   tables: string[]
-  columns: typeof columnType.infer[]
+  columns: (typeof columnType.infer)[]
 }): TNode[] {
   const matchedTables = searchQuery
     ? [...new Set(tables.filter(table => table.toLowerCase().includes(searchQuery)))]
     : []
   const matchedColumns = searchQuery
-    ? [...new Set(columns.filter(column => column.id.toLowerCase().includes(searchQuery)).map(column => column.id))]
+    ? [
+        ...new Set(
+          columns
+            .filter(column => column.id.toLowerCase().includes(searchQuery))
+            .map(column => column.id),
+        ),
+      ]
     : []
 
   return nodes.map(node => ({
@@ -63,14 +76,16 @@ export function getNodes({
   resourceId: string
   schema: string
   tables: string[]
-  columns: typeof columnType.infer[]
+  columns: (typeof columnType.infer)[]
   edges: Edge[]
-  constraints: typeof constraintsType.infer[]
+  constraints: (typeof constraintsType.infer)[]
 }): NodeType[] {
-  return tables.map((table) => {
+  return tables.map(table => {
     const tableColumns = columns.filter(c => c.table === table && c.schema === schema)
     const tableConstraints = constraints.filter(c => c.table === table && c.schema === schema)
-    const tableForeignKeys = tableConstraints.filter(c => c.type === 'foreignKey' && c.table === table && c.schema === schema)
+    const tableForeignKeys = tableConstraints.filter(
+      c => c.type === 'foreignKey' && c.table === table && c.schema === schema,
+    )
 
     return {
       id: table,
@@ -81,22 +96,32 @@ export function getNodes({
         table,
         resourceId,
         edges,
-        columns: tableColumns.map((c) => {
-          const columnConstraints = tableConstraints.filter(constraint => constraint.column === c.id)
-          const foreign = tableForeignKeys.find(foreignKey => foreignKey.column === c.id && foreignKey.schema === schema && foreignKey.table === table)
+        // oxlint-disable-next-line oxc/no-map-spread -- `columns` originates from react-query cached data; must not mutate the original items
+        columns: tableColumns.map(c => {
+          const columnConstraints = tableConstraints.filter(
+            constraint => constraint.column === c.id,
+          )
+          const foreign = tableForeignKeys.find(
+            foreignKey =>
+              foreignKey.column === c.id &&
+              foreignKey.schema === schema &&
+              foreignKey.table === table,
+          )
 
           return {
             ...c,
             uiType: getColumnUiType(c),
-            foreign: foreign && foreign.foreignSchema && foreign.foreignTable && foreign.foreignColumn
-              ? {
-                  name: foreign.name,
-                  schema: foreign.foreignSchema,
-                  table: foreign.foreignTable,
-                  column: foreign.foreignColumn,
-                }
-              : undefined,
-            primaryKey: columnConstraints.find(constraint => constraint.type === 'primaryKey')?.name,
+            foreign:
+              foreign && foreign.foreignSchema && foreign.foreignTable && foreign.foreignColumn
+                ? {
+                    name: foreign.name,
+                    schema: foreign.foreignSchema,
+                    table: foreign.foreignTable,
+                    column: foreign.foreignColumn,
+                  }
+                : undefined,
+            primaryKey: columnConstraints.find(constraint => constraint.type === 'primaryKey')
+              ?.name,
             unique: columnConstraints.find(constraint => constraint.type === 'unique')?.name,
           } satisfies Column
         }),
@@ -115,10 +140,12 @@ export function getVisualizerLayout({
   resourceId: string
   schema: string
   tables: string[]
-  columns: typeof columnType.infer[]
-  constraints: typeof constraintsType.infer[]
+  columns: (typeof columnType.infer)[]
+  constraints: (typeof constraintsType.infer)[]
 }) {
-  const edges = getEdges({ constraints }).filter(edge => tables.includes(edge.source) && tables.includes(edge.target))
+  const edges = getEdges({ constraints }).filter(
+    edge => tables.includes(edge.source) && tables.includes(edge.target),
+  )
   return getLayoutElements(
     getNodes({
       resourceId,
@@ -139,7 +166,7 @@ const nodeWidth = 264
 function getNodeSize(columns: NodeType['data']['columns']) {
   return {
     width: nodeWidth,
-    height: (columns.length * 33) + (8 * 2) + 45, // 8 is padding, 45 is header height
+    height: columns.length * 33 + 8 * 2 + 45, // 8 is padding, 45 is header height
   }
 }
 
@@ -147,18 +174,18 @@ export function getLayoutElements(nodes: NodeType[], edges: Edge[], direction = 
   const isHorizontal = direction === 'LR'
   dagreGraph.setGraph({ rankdir: direction })
 
-  nodes.forEach((node) => {
+  nodes.forEach(node => {
     const { width, height } = getNodeSize(node.data.columns)
     dagreGraph.setNode(node.id, { width, height })
   })
 
-  edges.forEach((edge) => {
+  edges.forEach(edge => {
     dagreGraph.setEdge(edge.source, edge.target)
   })
 
   dagre.layout(dagreGraph)
 
-  const newNodes = nodes.map((node) => {
+  const newNodes = nodes.map(node => {
     const { width, height } = getNodeSize(node.data.columns)
     const nodeWithPosition = dagreGraph.node(node.id)
     const newNode = {

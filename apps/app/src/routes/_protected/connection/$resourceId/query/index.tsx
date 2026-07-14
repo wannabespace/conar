@@ -1,18 +1,22 @@
 import { title } from '@conar/shared/utils/title'
-import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@conar/ui/components/resizable'
+import {
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizableSeparator,
+} from '@conar/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 import { v7 } from 'uuid'
+
 import { getConnectionResourceStore } from '~/entities/connection/store'
+
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
 
-export const Route = createFileRoute(
-  '/_protected/connection/$resourceId/query/',
-)({
+export const Route = createFileRoute('/_protected/connection/$resourceId/query/')({
   component: DatabaseSqlPage,
   validateSearch: type({
     'chatId?': 'string.uuid.v7 | undefined',
@@ -22,10 +26,7 @@ export const Route = createFileRoute(
   loader: async ({ context, deps }) => {
     const { chatsCollection, chatsMessagesCollection } = context.collections
 
-    await Promise.all([
-      chatsCollection.stateWhenReady(),
-      chatsMessagesCollection.stateWhenReady(),
-    ])
+    await Promise.all([chatsCollection.stateWhenReady(), chatsMessagesCollection.stateWhenReady()])
 
     return {
       connection: context.connection,
@@ -37,13 +38,22 @@ export const Route = createFileRoute(
     }
   },
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('SQL Runner', loaderData.connection.name, loaderData.connectionResource.name) }] : [],
+    meta: loaderData
+      ? [
+          {
+            title: title(
+              'SQL Runner',
+              loaderData.connection.name,
+              loaderData.connectionResource.name,
+            ),
+          },
+        ]
+      : [],
   }),
 })
 
 const MIN_CHAT_SIZE = '200px'
 
-// eslint-disable-next-line react-refresh/only-export-components
 function ChatPanel() {
   return (
     <ResizablePanel
@@ -57,7 +67,6 @@ function ChatPanel() {
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
   return (
     <ResizablePanel
@@ -70,7 +79,6 @@ function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 function DatabaseSqlPage() {
   const { connectionResource } = Route.useRouteContext()
   const { chatId } = Route.useSearch()
@@ -84,10 +92,13 @@ function DatabaseSqlPage() {
   })
 
   useEffect(() => {
-    store.set(state => ({
-      ...state,
-      lastOpenedChatId: chatId ?? null,
-    } satisfies typeof state))
+    store.set(
+      state =>
+        ({
+          ...state,
+          lastOpenedChatId: chatId ?? null,
+        }) satisfies typeof state,
+    )
   }, [chatId, store])
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
@@ -102,29 +113,25 @@ function DatabaseSqlPage() {
       orientation="horizontal"
       className="flex h-full"
     >
-      {chatVisible
-        ? (
+      {chatVisible ? (
+        <>
+          {chatPosition === 'left' ? (
             <>
-              {chatPosition === 'left'
-                ? (
-                    <>
-                      <ChatPanel key="chat" />
-                      <ResizableSeparator className="w-1" />
-                      <RunnerPanel key="runner" />
-                    </>
-                  )
-                : (
-                    <>
-                      <RunnerPanel key="runner" />
-                      <ResizableSeparator className="w-1" />
-                      <ChatPanel key="chat" />
-                    </>
-                  )}
+              <ChatPanel key="chat" />
+              <ResizableSeparator className="w-1" />
+              <RunnerPanel key="runner" />
             </>
-          )
-        : (
-            <RunnerPanel key="runner" chatVisible={false} />
+          ) : (
+            <>
+              <RunnerPanel key="runner" />
+              <ResizableSeparator className="w-1" />
+              <ChatPanel key="chat" />
+            </>
           )}
+        </>
+      ) : (
+        <RunnerPanel key="runner" chatVisible={false} />
+      )}
     </ResizablePanelGroup>
   )
 }

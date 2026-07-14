@@ -1,43 +1,60 @@
-import type { LinkProps } from '@tanstack/react-router'
 import { SyncType } from '@conar/shared/enums/sync-type'
 import { getOS } from '@conar/shared/utils/os'
 import { AppLogo } from '@conar/ui/components/brand/app-logo'
 import { Button } from '@conar/ui/components/button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
 import { ThemeToggle } from '@conar/ui/components/custom/theme-toggle'
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogTitle, DialogTrigger } from '@conar/ui/components/dialog'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogPanel,
+  DialogTitle,
+  DialogTrigger,
+} from '@conar/ui/components/dialog'
 import { Field, FieldLabel } from '@conar/ui/components/field'
 import { ScrollArea } from '@conar/ui/components/scroll-area'
 import { Separator } from '@conar/ui/components/separator'
 import { Textarea } from '@conar/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@conar/ui/components/tooltip'
 import { cn } from '@conar/ui/lib/utils'
-import { RiCommandLine, RiFileListLine, RiGlobalLine, RiMessageLine, RiMoonLine, RiNodeTree, RiPlayLargeLine, RiShieldCheckLine, RiSunLine, RiTableLine } from '@remixicon/react'
+import {
+  RiCommandLine,
+  RiFileListLine,
+  RiGlobalLine,
+  RiMessageLine,
+  RiMoonLine,
+  RiNodeTree,
+  RiPlayLargeLine,
+  RiShieldCheckLine,
+  RiSunLine,
+  RiTableLine,
+} from '@remixicon/react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useMutation } from '@tanstack/react-query'
+import type { LinkProps } from '@tanstack/react-router'
 import { Link, useLocation, useMatches, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
+
 import { useCollections } from '~/entities/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { UserButton } from '~/entities/user/components'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
+
 import { Route } from '../$resourceId'
 
 const os = getOS(navigator.userAgent)
 
 function baseClasses(isActive = false) {
   return cn(
-    `
-      flex size-9 cursor-pointer items-center justify-center rounded-md border
-      border-transparent text-foreground
-    `,
-    isActive && `
-      border-primary/20 bg-primary/10 text-primary
-      hover:bg-primary/20
-    `,
+    `flex size-9 cursor-pointer items-center justify-center rounded-md border border-transparent text-foreground`,
+    isActive && `border-primary/20 bg-primary/10 text-primary hover:bg-primary/20`,
   )
 }
 
@@ -45,17 +62,21 @@ function SupportButton() {
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
 
-  const { mutate: sendSupport, isPending: loading } = useMutation(orpc.contact.mutationOptions({
-    onSuccess: () => {
-      toast.success('Support message sent successfully! We will get back to you as soon as possible.')
-      setOpen(false)
-      setMessage('')
-    },
-    onError: (err) => {
-      console.error(err)
-      toast.error('Failed to send message. Please try again later.')
-    },
-  }))
+  const { mutate: sendSupport, isPending: loading } = useMutation(
+    orpc.contact.mutationOptions({
+      onSuccess: () => {
+        toast.success(
+          'Support message sent successfully! We will get back to you as soon as possible.',
+        )
+        setOpen(false)
+        setMessage('')
+      },
+      onError: err => {
+        console.error(err)
+        toast.error('Failed to send message. Please try again later.')
+      },
+    }),
+  )
 
   function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault()
@@ -76,8 +97,7 @@ function SupportButton() {
         <DialogHeader>
           <DialogTitle>Contact Support</DialogTitle>
           <DialogDescription>
-            Have a question, suggestion, or need assistance?
-            We're here to listen!
+            Have a question, suggestion, or need assistance? We're here to listen!
           </DialogDescription>
         </DialogHeader>
         <DialogPanel>
@@ -96,13 +116,9 @@ function SupportButton() {
           </form>
         </DialogPanel>
         <DialogFooter>
-          <DialogClose render={<Button type="button" variant="outline" />}>
-            Cancel
-          </DialogClose>
+          <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
           <Button type="submit" disabled={loading || !message}>
-            <LoadingContent loading={loading}>
-              Send
-            </LoadingContent>
+            <LoadingContent loading={loading}>Send</LoadingContent>
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -120,11 +136,19 @@ function MainLinks() {
   const lastOpenedTable = useSubscription(store, { selector: state => state.lastOpenedTable })
 
   useEffect(() => {
-    if (tableParam && schemaParam && tableParam !== lastOpenedTable?.table && schemaParam !== lastOpenedTable?.schema) {
-      store.set(state => ({
-        ...state,
-        lastOpenedTable: { schema: schemaParam, table: tableParam },
-      } satisfies typeof state))
+    if (
+      tableParam &&
+      schemaParam &&
+      tableParam !== lastOpenedTable?.table &&
+      schemaParam !== lastOpenedTable?.schema
+    ) {
+      store.set(
+        state =>
+          ({
+            ...state,
+            lastOpenedTable: { schema: schemaParam, table: tableParam },
+          }) satisfies typeof state,
+      )
     }
   }, [store, lastOpenedTable, tableParam, schemaParam])
 
@@ -133,7 +157,8 @@ function MainLinks() {
   const isActiveDefinitions = match?.includes('/_protected/connection/$resourceId/definitions')
   const isActiveVisualizer = match === '/_protected/connection/$resourceId/visualizer/'
 
-  const isCurrentTableAsLastOpened = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
+  const isCurrentTableAsLastOpened =
+    lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
 
   const route = useMemo(() => {
     if (!isCurrentTableAsLastOpened && lastOpenedTable) {
@@ -144,15 +169,21 @@ function MainLinks() {
       } satisfies LinkProps
     }
 
-    return { to: '/connection/$resourceId/table', params: { resourceId: connectionResource.id } } satisfies LinkProps
+    return {
+      to: '/connection/$resourceId/table',
+      params: { resourceId: connectionResource.id },
+    } satisfies LinkProps
   }, [connectionResource.id, isCurrentTableAsLastOpened, lastOpenedTable])
 
   function onTablesClick() {
     if (isCurrentTableAsLastOpened && lastOpenedTable) {
-      store.set(state => ({
-        ...state,
-        lastOpenedTable: null,
-      } satisfies typeof state))
+      store.set(
+        state =>
+          ({
+            ...state,
+            lastOpenedTable: null,
+          }) satisfies typeof state,
+      )
     }
   }
 
@@ -165,9 +196,7 @@ function MainLinks() {
           <Link
             to="/connection/$resourceId/query"
             params={{ resourceId: connectionResource.id }}
-            search={{
-              ...(lastOpenedChatId ? { chatId: lastOpenedChatId } : {}),
-            }}
+            search={lastOpenedChatId ? { chatId: lastOpenedChatId } : {}}
             className={baseClasses(isActiveSql)}
           >
             <RiPlayLargeLine className="size-4" />
@@ -220,10 +249,14 @@ function MainLinks() {
 export function ConnectionSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const { connection, connectionResource } = Route.useRouteContext()
   const { connectionStringsCollection } = useCollections()
-  const { data: connectionString } = useLiveQuery(q => q
-    .from({ cs: connectionStringsCollection })
-    .where(({ cs }) => eq(cs.connectionId, connection.id))
-    .findOne(), [connectionStringsCollection, connection.id])
+  const { data: connectionString } = useLiveQuery(
+    q =>
+      q
+        .from({ cs: connectionStringsCollection })
+        .where(({ cs }) => eq(cs.connectionId, connection.id))
+        .findOne(),
+    [connectionStringsCollection, connection.id],
+  )
   const store = getConnectionResourceStore(connectionResource.id)
   const location = useLocation()
 
@@ -236,10 +269,7 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
       <div className="flex flex-col p-4 pb-0">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Link
-              to="/"
-              className="p-2"
-            >
+            <Link to="/" className="p-2">
               <AppLogo className="size-6 text-primary" />
             </Link>
           </TooltipTrigger>
@@ -273,7 +303,11 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
             <Button
               size="icon"
               variant="ghost"
-              onClick={() => store.set(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
+              onClick={() =>
+                store.set(
+                  state => ({ ...state, loggerOpened: !state.loggerOpened }) satisfies typeof state,
+                )
+              }
             >
               <RiFileListLine className="size-4" />
             </Button>
@@ -287,27 +321,20 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
             <Button
               size="icon"
               variant="ghost"
-              onClick={() => appStore.set(state => ({ ...state, isActionCenterOpen: true } satisfies typeof state))}
+              onClick={() =>
+                appStore.set(
+                  state => ({ ...state, isActionCenterOpen: true }) satisfies typeof state,
+                )
+              }
             >
               <RiCommandLine className="size-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="right">
-            {os?.type === 'macos' ? '⌘' : 'Ctrl'}
-            P
-          </TooltipContent>
+          <TooltipContent side="right">{os?.type === 'macos' ? '⌘' : 'Ctrl'}P</TooltipContent>
         </Tooltip>
         <ThemeToggle render={<Button size="icon" variant="ghost" />}>
-          <RiSunLine className={`
-            size-4
-            dark:hidden
-          `}
-          />
-          <RiMoonLine className={`
-            hidden size-4
-            dark:block
-          `}
-          />
+          <RiSunLine className={`size-4 dark:hidden`} />
+          <RiMoonLine className={`hidden size-4 dark:block`} />
         </ThemeToggle>
         <div className="mt-2">
           <UserButton />

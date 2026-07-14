@@ -8,8 +8,7 @@ function buildZodType(
 ): string | null {
   let zodType = column.type ? getColumnType(column.type, 'zod', dialect) : null
 
-  if (!zodType)
-    return null
+  if (!zodType) return null
 
   if (column.enumName && column.availableValues?.length) {
     zodType = `z.enum([${column.availableValues.map(v => `'${v}'`).join(', ')}])`
@@ -18,8 +17,7 @@ function buildZodType(
     }
   }
 
-  if (column.isNullable)
-    zodType += '.nullable()'
+  if (column.isNullable) zodType += '.nullable()'
   if (column.maxLength && column.maxLength > 0 && zodType.includes('z.string')) {
     zodType = zodType.replace('z.string()', `z.string().max(${column.maxLength})`)
   }
@@ -30,18 +28,13 @@ function buildZodType(
   return zodType
 }
 
-export function generateSchemaZod({
-  table,
-  columns,
-  dialect,
-}: SchemaParams) {
+export function generateSchemaZod({ table, columns, dialect }: SchemaParams) {
   const lines = columns
-    .map((column) => {
+    .map(column => {
       const key = toLiteralKey(column.id)
       const zodType = buildZodType(column, dialect)
 
-      if (!zodType)
-        return null
+      if (!zodType) return null
 
       return `  ${key}: ${zodType},`
     })

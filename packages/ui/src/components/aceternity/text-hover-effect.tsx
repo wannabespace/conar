@@ -33,10 +33,9 @@ export function TextHoverEffect({
 
   return (
     <svg
-      ref={(e) => {
+      ref={e => {
         svgRef.current = e
-        if (ref)
-          ref.current = e
+        if (ref) ref.current = e
       }}
       width="100%"
       height="100%"
@@ -48,13 +47,7 @@ export function TextHoverEffect({
       className={cn('select-none', className)}
     >
       <defs>
-        <linearGradient
-          id="textGradient"
-          gradientUnits="userSpaceOnUse"
-          cx="50%"
-          cy="50%"
-          r="25%"
-        >
+        <linearGradient id="textGradient" gradientUnits="userSpaceOnUse" cx="50%" cy="50%" r="25%">
           {hovered && (
             <>
               <stop offset="0%" stopColor="#eab308" />
@@ -78,13 +71,7 @@ export function TextHoverEffect({
           <stop offset="100%" stopColor="black" />
         </motion.radialGradient>
         <mask id="textMask">
-          <rect
-            x="0"
-            y="0"
-            width="100%"
-            height="100%"
-            fill="url(#revealMask)"
-          />
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#revealMask)" />
         </mask>
       </defs>
       <text
@@ -93,11 +80,7 @@ export function TextHoverEffect({
         textAnchor="middle"
         dominantBaseline="middle"
         strokeWidth="0.3"
-        className="
-          fill-transparent stroke-neutral-200 font-[helvetica] text-7xl
-          font-bold
-          dark:stroke-neutral-800
-        "
+        className="fill-transparent stroke-neutral-200 font-[helvetica] text-7xl font-bold dark:stroke-neutral-800"
         style={{ opacity: hovered ? 0.7 : 0 }}
       >
         {text}
@@ -108,11 +91,7 @@ export function TextHoverEffect({
         textAnchor="middle"
         dominantBaseline="middle"
         strokeWidth="0.3"
-        className="
-          fill-transparent stroke-neutral-200 font-[helvetica] text-7xl
-          font-bold
-          dark:stroke-neutral-800
-        "
+        className="fill-transparent stroke-neutral-200 font-[helvetica] text-7xl font-bold dark:stroke-neutral-800"
         initial={{ strokeDashoffset: 1000, strokeDasharray: 1000 }}
         animate={{
           strokeDashoffset: 0,

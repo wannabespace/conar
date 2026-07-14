@@ -4,7 +4,16 @@ import { Button } from '@conar/ui/components/button'
 import { Checkbox } from '@conar/ui/components/checkbox'
 import { CopyButton } from '@conar/ui/components/custom/copy-button'
 import { LoadingContent } from '@conar/ui/components/custom/loading-content'
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogPanel, DialogTitle } from '@conar/ui/components/dialog'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogPanel,
+  DialogTitle,
+} from '@conar/ui/components/dialog'
 import { Field, FieldLabel } from '@conar/ui/components/field'
 import { Fieldset } from '@conar/ui/components/fieldset'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@conar/ui/components/input-group'
@@ -12,11 +21,12 @@ import { useAppForm } from '@conar/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
+
 import { orpc } from '~/lib/orpc'
 import { handleError } from '~/utils/error'
 
 type PermissionSelection = {
-  [K in keyof typeof API_KEY_PERMISSIONS]: Record<typeof API_KEY_PERMISSIONS[K][number], boolean>
+  [K in keyof typeof API_KEY_PERMISSIONS]: Record<(typeof API_KEY_PERMISSIONS)[K][number], boolean>
 }
 
 const defaultCreateApiKeyFormValues = {
@@ -31,31 +41,40 @@ const defaultCreateApiKeyFormValues = {
 
 function permissionSelectionToPayload(selection: PermissionSelection) {
   const out: {
-    [K in keyof typeof API_KEY_PERMISSIONS]: typeof API_KEY_PERMISSIONS[K][number][]
+    [K in keyof typeof API_KEY_PERMISSIONS]: (typeof API_KEY_PERMISSIONS)[K][number][]
   } = {
     connections: [],
   }
 
   for (const [resource, actions] of objectEntries(selection)) {
-    out[resource] = objectEntries(actions).filter(([, on]) => on).map(([action]) => action)
+    out[resource] = objectEntries(actions)
+      .filter(([, on]) => on)
+      .map(([action]) => action)
   }
 
   return out
 }
 
-export function CreateApiKeyDialog({ ref, onRefetch }: {
+export function CreateApiKeyDialog({
+  ref,
+  onRefetch,
+}: {
   ref?: React.RefObject<{ open: () => void } | null>
   onRefetch: () => void
 }) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [revealKeyDialogOpen, setRevealKeyDialogOpen] = useState(false)
-  const [createdKey, setCreatedKey] = useState<{ id: string, key: string } | null>(null)
+  const [createdKey, setCreatedKey] = useState<{ id: string; key: string } | null>(null)
 
-  useImperativeHandle(ref, () => ({
-    open: () => {
-      setCreateDialogOpen(true)
-    },
-  }), [])
+  useImperativeHandle(
+    ref,
+    () => ({
+      open: () => {
+        setCreateDialogOpen(true)
+      },
+    }),
+    [],
+  )
 
   const form = useAppForm({
     defaultValues: defaultCreateApiKeyFormValues,
@@ -71,8 +90,7 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
         setCreatedKey({ id: data.id, key: data.key })
         onRefetch()
         toast.success('API key created')
-      }
-      catch (e) {
+      } catch (e) {
         handleError(e)
       }
     },
@@ -82,10 +100,7 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
 
   return (
     <>
-      <Dialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-      >
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Create API key</DialogTitle>
@@ -97,7 +112,7 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
             <form
               id="create-api-key-form"
               className="space-y-4"
-              onSubmit={(e) => {
+              onSubmit={e => {
                 e.preventDefault()
                 form.handleSubmit()
               }}
@@ -116,10 +131,7 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
                   {field => (
                     <Field>
                       <FieldLabel>Name</FieldLabel>
-                      <field.Input
-                        placeholder="e.g. local-mcp, ci-bot"
-                        maxLength={100}
-                      />
+                      <field.Input placeholder="e.g. local-mcp, ci-bot" maxLength={100} />
                       <field.Error />
                     </Field>
                   )}
@@ -145,13 +157,11 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
                           {actions.map(action => (
                             <label
                               key={action}
-                              className={`
-                                flex cursor-pointer items-center gap-2 text-sm
-                              `}
+                              className={`flex cursor-pointer items-center gap-2 text-sm`}
                             >
                               <Checkbox
                                 checked={field.state.value[resource][action]}
-                                onCheckedChange={(checked) => {
+                                onCheckedChange={checked => {
                                   field.handleChange({
                                     ...field.state.value,
                                     [resource]: {
@@ -161,9 +171,7 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
                                   })
                                 }}
                               />
-                              {resource}
-                              :
-                              {action}
+                              {resource}:{action}
                             </label>
                           ))}
                         </Field>
@@ -176,13 +184,9 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
             </form>
           </DialogPanel>
           <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>
-              Cancel
-            </DialogClose>
+            <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
             <Button type="submit" form="create-api-key-form" disabled={isSubmitting}>
-              <LoadingContent loading={isSubmitting}>
-                Create
-              </LoadingContent>
+              <LoadingContent loading={isSubmitting}>Create</LoadingContent>
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -190,16 +194,13 @@ export function CreateApiKeyDialog({ ref, onRefetch }: {
       <Dialog
         open={revealKeyDialogOpen}
         onOpenChange={setRevealKeyDialogOpen}
-        onOpenChangeComplete={(isOpen) => {
+        onOpenChangeComplete={isOpen => {
           if (!isOpen) {
             setCreatedKey(null)
           }
         }}
       >
-        <DialogContent
-          className="sm:max-w-md"
-          showCloseButton={false}
-        >
+        <DialogContent className="sm:max-w-md" showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>Your new API key</DialogTitle>
             <DialogDescription>

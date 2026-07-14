@@ -1,43 +1,58 @@
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@conar/ui/components/accordion'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@conar/ui/components/accordion'
 import { Badge } from '@conar/ui/components/badge'
 import { Card, CardContent } from '@conar/ui/components/card'
 import { Separator } from '@conar/ui/components/separator'
 import { cn } from '@conar/ui/lib/utils'
 import { createFileRoute } from '@tanstack/react-router'
 import { format } from 'date-fns'
+import type { ComponentProps } from 'react'
 import { useState } from 'react'
+import type { ExtraProps } from 'streamdown'
 import { Streamdown } from 'streamdown'
+
 import { orpc } from '~/lib/orpc'
 import { seo } from '~/utils/seo'
 
 export const Route = createFileRoute('/_layout/releases')({
   component: RouteComponent,
-  head: () => seo({
-    title: 'Releases - Conar',
-    description: 'View the latest Conar releases, changelogs, and version history. Stay up to date with new features and improvements.',
-    image: '/og-image.png',
-    path: '/releases',
-  }),
+  head: () =>
+    seo({
+      title: 'Releases - Conar',
+      description:
+        'View the latest Conar releases, changelogs, and version history. Stay up to date with new features and improvements.',
+      image: '/og-image.png',
+      path: '/releases',
+    }),
   loader: async () => {
     const releases = await orpc.releases.call()
     return { releases }
   },
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
+function ReleaseH2({ children }: ComponentProps<'h2'> & ExtraProps) {
+  return <h2 className="mb-2 text-2xl font-semibold not-first:mt-6">{children}</h2>
+}
+
+function ReleaseH3({ children }: ComponentProps<'h3'> & ExtraProps) {
+  return <h3 className="mb-2 text-xl font-semibold not-first:mt-6">{children}</h3>
+}
+
+function ReleaseUl({ children }: ComponentProps<'ul'> & ExtraProps) {
+  return <ul className="list-disc pl-4">{children}</ul>
+}
+
 function RouteComponent() {
   const { releases } = Route.useLoaderData()
   const [expandedReleases, setExpandedReleases] = useState<string[]>([String(releases[0]!.id)])
 
   return (
     <div className="mx-auto max-w-xl py-6">
-      <h1 className="
-        mb-6 text-2xl leading-none font-bold
-        lg:text-4xl
-      "
-      >
-        Releases
-      </h1>
+      <h1 className="mb-6 text-2xl leading-none font-bold lg:text-4xl">Releases</h1>
       <Accordion
         type="multiple"
         value={expandedReleases}
@@ -52,28 +67,15 @@ function RouteComponent() {
             disabled={!release.body}
           >
             <div className="mb-2">
-              <AccordionTrigger
-                className={cn(
-                  `
-                    py-0
-                    hover:no-underline
-                  `,
-                )}
-              >
+              <AccordionTrigger className={cn(`py-0 hover:no-underline`)}>
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     <span className="text-base font-semibold">{release.tagName}</span>
-                    {index === 0 && (
-                      <Badge variant="secondary">
-                        Latest
-                      </Badge>
-                    )}
+                    {index === 0 && <Badge variant="secondary">Latest</Badge>}
                   </div>
                   {release.publishedAt && (
                     <p className="text-sm text-muted-foreground">
-                      Released on
-                      {' '}
-                      {format(new Date(release.publishedAt), 'MMMM dd, yyyy')}
+                      Released on {format(new Date(release.publishedAt), 'MMMM dd, yyyy')}
                     </p>
                   )}
                 </div>
@@ -88,25 +90,9 @@ function RouteComponent() {
                       className="text-sm"
                       linkSafety={{ enabled: false }}
                       components={{
-                        h2: ({ children }) => (
-                          <h2 className="
-                            mb-2 text-2xl font-semibold
-                            not-first:mt-6
-                          "
-                          >
-                            {children}
-                          </h2>
-                        ),
-                        h3: ({ children }) => (
-                          <h3 className="
-                            mb-2 text-xl font-semibold
-                            not-first:mt-6
-                          "
-                          >
-                            {children}
-                          </h3>
-                        ),
-                        ul: ({ children }) => <ul className="list-disc pl-4">{children}</ul>,
+                        h2: ReleaseH2,
+                        h3: ReleaseH3,
+                        ul: ReleaseUl,
                       }}
                     >
                       {release.body || ''}
@@ -115,9 +101,7 @@ function RouteComponent() {
                 </Card>
               </AccordionContent>
             )}
-            {index < releases.length - 1 && (
-              <Separator className="mt-6" />
-            )}
+            {index < releases.length - 1 && <Separator className="mt-6" />}
           </AccordionItem>
         ))}
       </Accordion>

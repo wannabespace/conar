@@ -1,19 +1,22 @@
-import type { AnyFunction } from '@conar/shared/utils/helpers'
-import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
+
+import type { AnyFunction } from '@conar/shared/utils/helpers'
 import { tryParseJson } from '@conar/shared/utils/helpers'
 import { memoize } from 'memoza'
+
+import type { QueryExecutor } from '..'
 import { handleQueryError } from '..'
 import { disposeTransaction, getTransaction, registerTransaction } from '../transactions'
 
-const clickhouse = createRequire(import.meta.url)('@clickhouse/client') as typeof import('@clickhouse/client')
+const clickhouse = createRequire(import.meta.url)(
+  '@clickhouse/client',
+) as typeof import('@clickhouse/client')
 
 const getClient = memoize((connectionString: string) => {
   let url = connectionString
   if (connectionString.startsWith('clickhouses')) {
     url = connectionString.replace('clickhouses', 'https')
-  }
-  else if (connectionString.startsWith('clickhouse')) {
+  } else if (connectionString.startsWith('clickhouse')) {
     url = connectionString.replace('clickhouse', 'http')
   }
   return clickhouse.createClient({
@@ -28,12 +31,12 @@ export function wrapClickhouseError<T extends AnyFunction>(fn: T): T {
   return (async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
     try {
       return await handleQueryError(fn)(...args)
-    }
-    catch (error) {
+    } catch (error) {
       if (error instanceof Error) {
-        const parsed = tryParseJson<Partial<{ message: string, status: string, code: number, request_id: string }>>(error.message)
-        if (parsed?.message)
-          throw new Error(parsed.message, { cause: error })
+        const parsed = tryParseJson<
+          Partial<{ message: string; status: string; code: number; request_id: string }>
+        >(error.message)
+        if (parsed?.message) throw new Error(parsed.message, { cause: error })
       }
       throw error
     }
@@ -41,14 +44,9 @@ export function wrapClickhouseError<T extends AnyFunction>(fn: T): T {
 }
 
 function isSelectLikeQuery(query: string) {
-  return [
-    'SELECT',
-    'SHOW',
-    'DESCRIBE',
-    'EXPLAIN',
-    'WITH',
-    'CHECK',
-  ].some(keyword => query.trim().toUpperCase().startsWith(keyword))
+  return ['SELECT', 'SHOW', 'DESCRIBE', 'EXPLAIN', 'WITH', 'CHECK'].some(keyword =>
+    query.trim().toUpperCase().startsWith(keyword),
+  )
 }
 
 export const query = {
@@ -57,7 +55,9 @@ export const query = {
 
     if (isSelectLikeQuery(query)) {
       const start = performance.now()
-      const result = await client.query({ query, format: 'JSONEachRow' }).then(result => result.json())
+      const result = await client
+        .query({ query, format: 'JSONEachRow' })
+        .then(result => result.json())
       return { result, duration: performance.now() - start }
     }
 
@@ -79,36 +79,33 @@ export const query = {
     return { txId }
   }),
 
-  executeTransaction: handleQueryError(async ({ txId, query, values }: { txId: string, query: string, values: unknown[] }) => {
-    const handle = getTransaction(txId)
-    if (!handle)
-      throw new Error(`No active transaction found for id: ${txId}`)
+  executeTransaction: handleQueryError(
+    async ({ txId, query, values }: { txId: string; query: string; values: unknown[] }) => {
+      const handle = getTransaction(txId)
+      if (!handle) throw new Error(`No active transaction found for id: ${txId}`)
 
-    return handle.execute(query, values)
-  }),
+      return handle.execute(query, values)
+    },
+  ),
 
   commitTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
-    if (!handle)
-      return
+    if (!handle) return
 
     try {
       await handle.commit()
-    }
-    finally {
+    } finally {
       await handle.release().catch(() => {})
     }
   }),
 
   rollbackTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
-    if (!handle)
-      return
+    if (!handle) return
 
     try {
       await handle.rollback()
-    }
-    finally {
+    } finally {
       await handle.release().catch(() => {})
     }
   }),

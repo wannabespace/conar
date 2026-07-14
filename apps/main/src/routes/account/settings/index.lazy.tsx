@@ -1,4 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
+
 import { DeleteAccountCard } from './-components/delete-account-card'
 import { SecurityCard } from './-components/security-card'
 import { SessionsCard } from './-components/sessions-card'
@@ -7,7 +8,6 @@ export const Route = createLazyFileRoute('/account/settings/')({
   component: SettingsPage,
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
 function SettingsPage() {
   return (
     <>

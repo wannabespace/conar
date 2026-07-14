@@ -1,9 +1,11 @@
 import process from 'node:process'
+
 import { challenge } from '@conar/shared/utils/challenge'
 import { boolean, command } from '@drizzle-team/brocli'
 import { consola } from 'consola'
 import open from 'open'
 import ora from 'ora'
+
 import { clearToken, saveToken } from '~/config'
 import { orpc } from '~/orpc'
 import { getSession } from '~/session'
@@ -19,7 +21,7 @@ export const loginCommand = command({
     force: boolean().alias('f').desc('Sign in even if already authenticated'),
     noOpen: boolean('no-open').desc('Do not attempt to open the browser automatically'),
   },
-  handler: async (opts) => {
+  handler: async opts => {
     const existing = await getSession()
 
     if (existing && !opts.force) {
@@ -40,10 +42,7 @@ export const loginCommand = command({
     const onSigint = () => controller.abort(new Error('Cancelled'))
     process.once('SIGINT', onSigint)
 
-    const timeout = setTimeout(
-      () => controller.abort(new Error('Timeout')),
-      AUTH_TIMEOUT_MS,
-    )
+    const timeout = setTimeout(() => controller.abort(new Error('Timeout')), AUTH_TIMEOUT_MS)
 
     let browserOpened = false
 
@@ -51,8 +50,7 @@ export const loginCommand = command({
       try {
         await open(url)
         browserOpened = true
-      }
-      catch {
+      } catch {
         browserOpened = false
       }
     }
@@ -95,8 +93,7 @@ export const loginCommand = command({
       const session = await getSession()
       spinner.stop()
       consola.success(session ? `Signed in as ${session.user.email}.` : 'Signed in successfully.')
-    }
-    catch (error) {
+    } catch (error) {
       spinner.stop()
 
       const reason = controller.signal.aborted
@@ -115,8 +112,7 @@ export const loginCommand = command({
 
       consola.fail(`Sign in failed: ${error instanceof Error ? error.message : String(error)}`)
       process.exit(1)
-    }
-    finally {
+    } finally {
       clearTimeout(timeout)
       process.off('SIGINT', onSigint)
     }

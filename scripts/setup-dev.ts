@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* oxlint-disable no-console */
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
@@ -25,8 +25,7 @@ function findEnvExampleFiles(dir: string, r: string[] = []) {
 
     if (stats.isDirectory()) {
       findEnvExampleFiles(fullPath, r)
-    }
-    else if (item === '.env.example') {
+    } else if (item === '.env.example') {
       r.push(fullPath)
     }
   }
@@ -48,9 +47,11 @@ function createEnvFile(envExamplePath: string) {
   try {
     fs.copyFileSync(envExamplePath, envPath)
     return true
-  }
-  catch (error) {
-    console.error(`Failed to create .env file: ${envPath}`, error instanceof Error ? error.message : error)
+  } catch (error) {
+    console.error(
+      `Failed to create .env file: ${envPath}`,
+      error instanceof Error ? error.message : error,
+    )
     return false
   }
 }

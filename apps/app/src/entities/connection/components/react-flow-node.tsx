@@ -1,47 +1,53 @@
-import type { Edge, Node, NodeProps } from '@xyflow/react'
-import type { Column } from './table/cell'
 import { Button } from '@conar/ui/components/button'
 import { cn } from '@conar/ui/lib/utils'
-import { RiBookOpenLine, RiEraserLine, RiExternalLinkLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiTableLine } from '@remixicon/react'
+import {
+  RiBookOpenLine,
+  RiEraserLine,
+  RiExternalLinkLine,
+  RiFingerprintLine,
+  RiKey2Line,
+  RiLinksLine,
+  RiTableLine,
+} from '@remixicon/react'
 import { Link } from '@tanstack/react-router'
+import type { Edge, Node, NodeProps } from '@xyflow/react'
 import { Handle, Position } from '@xyflow/react'
 
-export type NodeType = Node<{
-  resourceId: string
-  schema: string
-  table: string
-  columns: (Column & { searchMatched?: boolean })[]
-  searchActive?: boolean
-  tableSearchMatched?: boolean
-  edges: Edge[]
-}, 'tableNode'>
+import type { Column } from './table/cell'
+
+export type NodeType = Node<
+  {
+    resourceId: string
+    schema: string
+    table: string
+    columns: (Column & { searchMatched?: boolean })[]
+    searchActive?: boolean
+    tableSearchMatched?: boolean
+    edges: Edge[]
+  },
+  'tableNode'
+>
 
 export function ReactFlowNode({ data }: NodeProps<NodeType>) {
   return (
     <div
       className={cn(
-        `
-          w-66 rounded-xl bg-card font-mono
-          shadow-[0_0.0625rem_0.0625rem_rgba(0,0,0,0.02),0_0.125rem_0.125rem_rgba(0,0,0,0.02),0_0.25rem_0.25rem_rgba(0,0,0,0.02),0_0.5rem_0.5rem_rgba(0,0,0,0.02),0_1rem_1rem_rgba(0,0,0,0.02),0_2rem_2rem_rgba(0,0,0,0.02)]
-          transition-opacity
-        `,
+        `w-66 rounded-xl bg-card font-mono shadow-[0_0.0625rem_0.0625rem_rgba(0,0,0,0.02),0_0.125rem_0.125rem_rgba(0,0,0,0.02),0_0.25rem_0.25rem_rgba(0,0,0,0.02),0_0.5rem_0.5rem_rgba(0,0,0,0.02),0_1rem_1rem_rgba(0,0,0,0.02),0_2rem_2rem_rgba(0,0,0,0.02)] transition-opacity`,
         data.searchActive && data.tableSearchMatched && `ring-1 ring-primary/60`,
-        data.searchActive && !data.tableSearchMatched && !data.columns.some(c => c.searchMatched) && `
-          opacity-50
-        `,
+        data.searchActive &&
+          !data.tableSearchMatched &&
+          !data.columns.some(c => c.searchMatched) &&
+          `opacity-50`,
       )}
     >
-      <div className="
-        flex items-center justify-between gap-2 border-b border-border/80
-        bg-linear-to-t from-background/70 px-4 py-3
-        dark:from-background/30
-      "
-      >
+      <div className="flex items-center justify-between gap-2 border-b border-border/80 bg-linear-to-t from-background/70 px-4 py-3 dark:from-background/30">
         <div data-mask className="flex min-w-0 items-center gap-2 text-sm">
           <RiTableLine className="size-5 shrink-0 text-muted-foreground/80" />
-          <span className={cn(`block truncate`, data.searchActive && data.tableSearchMatched && `
-            text-primary
-          `)}
+          <span
+            className={cn(
+              `block truncate`,
+              data.searchActive && data.tableSearchMatched && `text-primary`,
+            )}
           >
             {data.table}
           </span>
@@ -49,13 +55,13 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
         <Button
           size="icon-xs"
           variant="outline"
-          render={(
+          render={
             <Link
               to="/connection/$resourceId/table"
               params={{ resourceId: data.resourceId }}
               search={{ schema: data.schema, table: data.table }}
             />
-          )}
+          }
         >
           <RiExternalLinkLine className="size-3" />
         </Button>
@@ -66,51 +72,35 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
             key={column.id}
             className={cn(
               'group relative px-4 transition-opacity',
-              data.searchActive && column.searchMatched && `
-                rounded-sm text-primary ring-1 ring-primary/60
-              `,
-              data.searchActive && data.columns.some(c => c.searchMatched) && !column.searchMatched && `
-                opacity-50
-              `,
+              data.searchActive &&
+                column.searchMatched &&
+                `rounded-sm text-primary ring-1 ring-primary/60`,
+              data.searchActive &&
+                data.columns.some(c => c.searchMatched) &&
+                !column.searchMatched &&
+                `opacity-50`,
             )}
           >
-            <div className="
-              flex items-center justify-between gap-2 border-dashed py-2
-              group-not-last:border-b
-            "
-            >
+            <div className="flex items-center justify-between gap-2 border-dashed py-2 group-not-last:border-b">
               <div className="flex items-center gap-1 truncate">
                 {column.primaryKey && (
-                  <RiKey2Line className="
-                    size-3 shrink-0 text-muted-foreground/70
-                  "
-                  />
+                  <RiKey2Line className="size-3 shrink-0 text-muted-foreground/70" />
                 )}
                 {column.isNullable && (
-                  <RiEraserLine className="
-                    size-3 shrink-0 text-muted-foreground/70
-                  "
-                  />
+                  <RiEraserLine className="size-3 shrink-0 text-muted-foreground/70" />
                 )}
                 {column.unique && (
-                  <RiFingerprintLine className="
-                    size-3 shrink-0 text-muted-foreground/70
-                  "
-                  />
+                  <RiFingerprintLine className="size-3 shrink-0 text-muted-foreground/70" />
                 )}
                 {column.isEditable === false && (
-                  <RiBookOpenLine className="
-                    size-3 shrink-0 text-muted-foreground/70
-                  "
-                  />
+                  <RiBookOpenLine className="size-3 shrink-0 text-muted-foreground/70" />
                 )}
                 {column.foreign && (
-                  <RiLinksLine className="
-                    size-3 shrink-0 text-muted-foreground/70
-                  "
-                  />
+                  <RiLinksLine className="size-3 shrink-0 text-muted-foreground/70" />
                 )}
-                <span data-mask className="truncate font-medium">{column.id}</span>
+                <span data-mask className="truncate font-medium">
+                  {column.id}
+                </span>
               </div>
               {(column.typeLabel || column.type) && (
                 <span className="max-w-1/2 truncate text-muted-foreground/60">
@@ -122,10 +112,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
                   type="source"
                   position={Position.Right}
                   id={column.id}
-                  className="
-                    size-2.5 rounded-full border-2 border-background
-                    bg-foreground!
-                  "
+                  className="size-2.5 rounded-full border-2 border-background bg-foreground!"
                   isConnectable={false}
                 />
               )}
@@ -134,10 +121,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
                   type="target"
                   position={Position.Left}
                   id={column.id}
-                  className="
-                    size-2.5 rounded-full border-2 border-background
-                    bg-foreground!
-                  "
+                  className="size-2.5 rounded-full border-2 border-background bg-foreground!"
                   isConnectable={false}
                 />
               )}

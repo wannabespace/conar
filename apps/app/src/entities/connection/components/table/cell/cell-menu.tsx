@@ -1,11 +1,6 @@
 import type { Filter } from '@conar/shared/filters'
-import type { CSSProperties, ReactNode } from 'react'
 import { cellToFilterValues, FILTER_GROUPS, SQL_FILTERS_GROUPED } from '@conar/shared/filters'
-import {
-  formatValueForPlainCell,
-  recordToMarkdownTable,
-  toCSV,
-} from '@conar/shared/utils/files'
+import { formatValueForPlainCell, recordToMarkdownTable, toCSV } from '@conar/shared/utils/files'
 import { useTableContext } from '@conar/table/hooks'
 import {
   ContextMenu,
@@ -22,8 +17,10 @@ import {
   ContextMenuTrigger,
 } from '@conar/ui/components/context-menu'
 import { copy } from '@conar/ui/lib/copy'
+import type { CSSProperties, ReactNode } from 'react'
 import { Fragment, useMemo } from 'react'
 import { toast } from 'sonner'
+
 import { useCellContext } from './cell-context'
 import { INTERNAL_COLUMN_IDS } from './utils'
 
@@ -49,8 +46,10 @@ export function TableCellContextMenu({
   const { value, column, rowIndex, onAddFilter, onOrder, order, onRename } = useCellContext()
   const row = useTableContext(({ rows }) => rows[rowIndex]!)
   const columns = useTableContext(({ columns }) => columns)
-  const columnKeys = useMemo(() =>
-    columns.map(c => c.id).filter(id => !internalColumnIds.includes(id)), [columns])
+  const columnKeys = useMemo(
+    () => columns.map(c => c.id).filter(id => !internalColumnIds.includes(id)),
+    [columns],
+  )
   const rowCopyDisabled = columnKeys.length === 0
 
   return (
@@ -79,23 +78,15 @@ export function TableCellContextMenu({
             <ContextMenuSeparator />
             <ContextMenuGroup>
               <ContextMenuLabel>Column</ContextMenuLabel>
-              {onRename && (
-                <ContextMenuItem onClick={onRename}>
-                  Rename
-                </ContextMenuItem>
-              )}
+              {onRename && <ContextMenuItem onClick={onRename}>Rename</ContextMenuItem>}
               {onAddFilter && (
                 <ContextMenuSub>
-                  <ContextMenuSubTrigger>
-                    Add filter
-                  </ContextMenuSubTrigger>
+                  <ContextMenuSubTrigger>Add filter</ContextMenuSubTrigger>
                   <ContextMenuSubContent>
                     {SQL_FILTERS_GROUPED.map(({ group, filters }, index) => (
                       <Fragment key={group}>
                         {index > 0 && <ContextMenuSeparator />}
-                        <ContextMenuLabel>
-                          {FILTER_GROUPS[group]}
-                        </ContextMenuLabel>
+                        <ContextMenuLabel>{FILTER_GROUPS[group]}</ContextMenuLabel>
                         {filters.map(filter => (
                           <ContextMenuItem
                             key={filter.operator}
@@ -110,10 +101,7 @@ export function TableCellContextMenu({
                             }}
                           >
                             {filter.label}
-                            <span className="
-                              ml-auto pl-2 text-xs text-muted-foreground
-                            "
-                            >
+                            <span className="ml-auto pl-2 text-xs text-muted-foreground">
                               {filter.operator}
                             </span>
                           </ContextMenuItem>
@@ -125,25 +113,17 @@ export function TableCellContextMenu({
               )}
               {onOrder && (
                 <ContextMenuSub>
-                  <ContextMenuSubTrigger>
-                    Sort
-                  </ContextMenuSubTrigger>
+                  <ContextMenuSubTrigger>Sort</ContextMenuSubTrigger>
                   <ContextMenuSubContent>
                     <ContextMenuRadioGroup
                       value={order ?? 'default'}
-                      onValueChange={(value) => {
-                        onOrder(value === 'default' ? null : value as 'ASC' | 'DESC')
+                      onValueChange={value => {
+                        onOrder(value === 'default' ? null : (value as 'ASC' | 'DESC'))
                       }}
                     >
-                      <ContextMenuRadioItem value="default">
-                        None
-                      </ContextMenuRadioItem>
-                      <ContextMenuRadioItem value="ASC">
-                        Ascending
-                      </ContextMenuRadioItem>
-                      <ContextMenuRadioItem value="DESC">
-                        Descending
-                      </ContextMenuRadioItem>
+                      <ContextMenuRadioItem value="default">None</ContextMenuRadioItem>
+                      <ContextMenuRadioItem value="ASC">Ascending</ContextMenuRadioItem>
+                      <ContextMenuRadioItem value="DESC">Descending</ContextMenuRadioItem>
                     </ContextMenuRadioGroup>
                   </ContextMenuSubContent>
                 </ContextMenuSub>
@@ -155,9 +135,7 @@ export function TableCellContextMenu({
         <ContextMenuGroup>
           <ContextMenuLabel>Row</ContextMenuLabel>
           <ContextMenuSub>
-            <ContextMenuSubTrigger disabled={rowCopyDisabled}>
-              Copy as
-            </ContextMenuSubTrigger>
+            <ContextMenuSubTrigger disabled={rowCopyDisabled}>Copy as</ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuItem
                 disabled={rowCopyDisabled}
@@ -170,7 +148,13 @@ export function TableCellContextMenu({
               <ContextMenuItem
                 disabled={rowCopyDisabled}
                 onClick={() => {
-                  copy(toCSV(columnKeys.map(key => ({ key })), [row]), 'Row copied as CSV')
+                  copy(
+                    toCSV(
+                      columnKeys.map(key => ({ key })),
+                      [row],
+                    ),
+                    'Row copied as CSV',
+                  )
                 }}
               >
                 CSV
@@ -178,7 +162,13 @@ export function TableCellContextMenu({
               <ContextMenuItem
                 disabled={rowCopyDisabled}
                 onClick={() => {
-                  copy(recordToMarkdownTable(row, columnKeys.map(key => ({ key }))), 'Row copied as Markdown table')
+                  copy(
+                    recordToMarkdownTable(
+                      row,
+                      columnKeys.map(key => ({ key })),
+                    ),
+                    'Row copied as Markdown table',
+                  )
                 }}
               >
                 Markdown table
