@@ -1,7 +1,20 @@
-import { RiAddLine, RiArrowDownLine, RiArrowUpDownLine, RiArrowUpLine, RiCloseLine } from '@remixicon/react'
+import {
+  RiAddLine,
+  RiArrowDownLine,
+  RiArrowUpDownLine,
+  RiArrowUpLine,
+  RiCloseLine,
+} from '@remixicon/react'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@tamery/ui/components/command'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@tamery/ui/components/command'
 import { Indicator } from '@tamery/ui/components/custom/indicator'
 import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
 import { Separator } from '@tamery/ui/components/separator'
@@ -9,12 +22,15 @@ import { ToggleGroup, ToggleGroupItem } from '@tamery/ui/components/toggle-group
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
+
 import { useTableColumns } from '../../columns'
 import { columnsOrder, useTablePageStore } from '../../store'
 
 export function HeaderActionsOrder() {
   const store = useTablePageStore()
-  const orderEntries = useSubscription(store, { selector: state => Object.entries(state.orderBy || {}) })
+  const orderEntries = useSubscription(store, {
+    selector: state => Object.entries(state.orderBy || {}),
+  })
   const columns = useTableColumns()
   const [open, setOpen] = useState(false)
   const [showAddColumn, setShowAddColumn] = useState(false)
@@ -31,22 +47,13 @@ export function HeaderActionsOrder() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <Tooltip>
-        <TooltipTrigger render={(
-          <PopoverTrigger render={(
-            <Button
-              variant="outline"
-              size="icon"
-            />
-          )}
-          />
-        )}
+        <TooltipTrigger
+          render={<PopoverTrigger render={<Button variant="outline" size="icon" />} />}
         >
           <RiArrowUpDownLine />
           {hasOrders && <Indicator />}
         </TooltipTrigger>
-        <TooltipContent side="top">
-          Sort order
-        </TooltipContent>
+        <TooltipContent side="top">Sort order</TooltipContent>
       </Tooltip>
       <PopoverContent
         className="
@@ -65,103 +72,88 @@ export function HeaderActionsOrder() {
               </div>
               {hasOrders && (
                 <Badge variant="secondary" className="text-xs">
-                  {orderEntries.length}
-                  {' '}
-                  {orderEntries.length === 1 ? 'column' : 'columns'}
+                  {orderEntries.length} {orderEntries.length === 1 ? 'column' : 'columns'}
                 </Badge>
               )}
             </div>
           </div>
 
           <div className="max-h-[70vh] space-y-3 overflow-y-auto p-4">
-            {orderEntries.length === 0
-              ? (
-                  <div className="space-y-2 py-8 text-center">
-                    <div className="
+            {orderEntries.length === 0 ? (
+              <div className="space-y-2 py-8 text-center">
+                <div
+                  className="
                       mx-auto flex size-12 items-center justify-center
                       rounded-full bg-muted
                     "
-                    >
-                      <RiArrowUpDownLine className="
+                >
+                  <RiArrowUpDownLine
+                    className="
                         size-6 text-muted-foreground
                       "
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">No sorting applied</p>
-                      <p className="text-xs text-muted-foreground">
-                        Click on column headers or add columns below
+                  />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">No sorting applied</p>
+                  <p className="text-xs text-muted-foreground">
+                    Click on column headers or add columns below
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {orderEntries.map(([columnId, order]) => (
+                  <div key={columnId} className="group relative">
+                    <div className="flex items-center gap-3">
+                      <p className="flex-1 truncate text-sm" title={columnId}>
+                        {columnId}
                       </p>
-                    </div>
-                  </div>
-                )
-              : (
-                  <div className="space-y-2">
-                    {orderEntries.map(([columnId, order]) => (
-                      <div
-                        key={columnId}
-                        className="group relative"
-                      >
-                        <div className="flex items-center gap-3">
-                          <p className="flex-1 truncate text-sm" title={columnId}>
-                            {columnId}
-                          </p>
-                          <div className="flex shrink-0 items-center gap-2">
-                            <ToggleGroup
-                              variant="outline"
-                              size="sm"
-                              value={[order]}
-                              onValueChange={(value) => {
-                                if (value[0])
-                                  setOrder(columnId, value[0] as 'ASC' | 'DESC')
-                              }}
-                            >
-                              <ToggleGroupItem
-                                value="ASC"
-                                aria-label="Sort ascending"
-                              >
-                                <RiArrowUpLine className="size-3.5" />
-                                ASC
-                              </ToggleGroupItem>
-                              <ToggleGroupItem
-                                value="DESC"
-                                aria-label="Sort descending"
-                              >
-                                <RiArrowDownLine className="size-3.5" />
-                                DESC
-                              </ToggleGroupItem>
-                            </ToggleGroup>
-                            <Button
-                              variant="ghost"
-                              size="icon-xs"
-                              onClick={() => removeOrder(columnId)}
-                              aria-label={`Remove sort from ${columnId}`}
-                              className="
+                      <div className="flex shrink-0 items-center gap-2">
+                        <ToggleGroup
+                          variant="outline"
+                          size="sm"
+                          value={[order]}
+                          onValueChange={value => {
+                            if (value[0]) setOrder(columnId, value[0] as 'ASC' | 'DESC')
+                          }}
+                        >
+                          <ToggleGroupItem value="ASC" aria-label="Sort ascending">
+                            <RiArrowUpLine className="size-3.5" />
+                            ASC
+                          </ToggleGroupItem>
+                          <ToggleGroupItem value="DESC" aria-label="Sort descending">
+                            <RiArrowDownLine className="size-3.5" />
+                            DESC
+                          </ToggleGroupItem>
+                        </ToggleGroup>
+                        <Button
+                          variant="ghost"
+                          size="icon-xs"
+                          onClick={() => removeOrder(columnId)}
+                          aria-label={`Remove sort from ${columnId}`}
+                          className="
                                 opacity-0 transition-opacity
                                 group-hover:opacity-100
                               "
-                            >
-                              <RiCloseLine className="size-4" />
-                            </Button>
-                          </div>
-                        </div>
+                        >
+                          <RiCloseLine className="size-4" />
+                        </Button>
                       </div>
-                    ))}
+                    </div>
                   </div>
-                )}
+                ))}
+              </div>
+            )}
           </div>
           {availableColumns.length > 0 && (
             <>
               <Separator />
               <div className="p-3">
                 <Popover open={showAddColumn} onOpenChange={setShowAddColumn}>
-                  <PopoverTrigger render={(
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full justify-start gap-2"
-                    />
-                  )}
+                  <PopoverTrigger
+                    render={
+                      <Button variant="outline" size="sm" className="w-full justify-start gap-2" />
+                    }
                   >
                     <RiAddLine className="size-4" />
                     Add column to sort
@@ -188,7 +180,8 @@ export function HeaderActionsOrder() {
                             >
                               <span className="truncate">{column.id}</span>
                               {column.type && (
-                                <span className="
+                                <span
+                                  className="
                                   ml-auto text-right text-xs
                                   text-muted-foreground
                                 "

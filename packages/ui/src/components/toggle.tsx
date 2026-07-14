@@ -1,6 +1,7 @@
-import type { VariantProps } from 'class-variance-authority'
 import { Toggle as TogglePrimitive } from '@base-ui/react/toggle'
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
+
 import { toggleVariants } from './toggle.utils'
 
 function Toggle({

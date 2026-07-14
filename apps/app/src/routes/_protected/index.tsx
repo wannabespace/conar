@@ -1,4 +1,11 @@
-import { RiAddLine, RiDiscordLine, RiDownloadLine, RiGithubLine, RiGlobalLine, RiTwitterXLine } from '@remixicon/react'
+import {
+  RiAddLine,
+  RiDiscordLine,
+  RiDownloadLine,
+  RiGithubLine,
+  RiGlobalLine,
+  RiTwitterXLine,
+} from '@remixicon/react'
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import { pick } from '@tamery/shared/utils/helpers'
 import { title } from '@tamery/shared/utils/title'
@@ -9,7 +16,9 @@ import { Spinner } from '@tamery/ui/components/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
+
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
+
 import { ConnectionsList } from './-components/connections-list'
 
 export const Route = createFileRoute('/_protected/')({
@@ -19,9 +28,11 @@ export const Route = createFileRoute('/_protected/')({
   }),
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
+// oxlint-disable-next-line react/only-export-components
 function DashboardPage() {
-  const { version, status } = useSubscription(updatesStore, { selector: state => pick(state, ['version', 'status']) })
+  const { version, status } = useSubscription(updatesStore, {
+    selector: state => pick(state, ['version', 'status']),
+  })
 
   return (
     <ScrollArea className="overflow-auto">
@@ -90,26 +101,19 @@ function DashboardPage() {
                 hover:text-muted-foreground/70
               `}
             >
-              Current version
-              {' '}
-              v
-              {version}
-            </button>
-            {' '}
-            {status === 'checking' && (
-              <Spinner className="size-3 text-muted-foreground/50" />
-            )}
+              Current version v{version}
+            </button>{' '}
+            {status === 'checking' && <Spinner className="size-3 text-muted-foreground/50" />}
             {status === 'downloading' && (
               <Tooltip>
                 <TooltipTrigger>
-                  <RiDownloadLine className={`
+                  <RiDownloadLine
+                    className={`
                     size-3 animate-bounce text-muted-foreground/50
                   `}
                   />
                 </TooltipTrigger>
-                <TooltipContent>
-                  Downloading update...
-                </TooltipContent>
+                <TooltipContent>Downloading update...</TooltipContent>
               </Tooltip>
             )}
           </div>

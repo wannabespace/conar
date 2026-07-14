@@ -61,10 +61,7 @@ function DrawerClose({ ...props }: DrawerPrimitive.Close.Props) {
   return <DrawerPrimitive.Close data-slot="drawer-close" {...props} />
 }
 
-function DrawerOverlay({
-  className,
-  ...props
-}: DrawerPrimitive.Backdrop.Props) {
+function DrawerOverlay({ className, ...props }: DrawerPrimitive.Backdrop.Props) {
   return (
     <DrawerPrimitive.Backdrop
       data-slot="drawer-overlay"
@@ -89,10 +86,7 @@ function DrawerOverlay({
   )
 }
 
-function DrawerSwipeHandle({
-  className,
-  ...props
-}: React.ComponentProps<'div'>) {
+function DrawerSwipeHandle({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="drawer-swipe-handle"
@@ -116,10 +110,10 @@ function DrawerSwipeHandle({
           group-data-[swipe-direction=up]/drawer-popup:order-last
           group-data-[swipe-direction=up]/drawer-popup:items-start
           after:block after:shrink-0 after:rounded-full after:bg-muted
-          group-data-[swipe-axis=x]/drawer-popup:after:h-[100px]
+          group-data-[swipe-axis=x]/drawer-popup:after:h-25
           group-data-[swipe-axis=x]/drawer-popup:after:w-1.5
           group-data-[swipe-axis=y]/drawer-popup:after:h-1.5
-          group-data-[swipe-axis=y]/drawer-popup:after:w-[100px]
+          group-data-[swipe-axis=y]/drawer-popup:after:w-25
           active:cursor-grabbing
         `,
         className,
@@ -129,20 +123,13 @@ function DrawerSwipeHandle({
   )
 }
 
-function DrawerContent({
-  className,
-  children,
-  ...props
-}: DrawerPrimitive.Popup.Props) {
+function DrawerContent({ className, children, ...props }: DrawerPrimitive.Popup.Props) {
   const { hasSnapPoints, modal, showSwipeHandle, swipeDirection } = useDrawer()
-  const swipeAxis
-    = swipeDirection === 'down' || swipeDirection === 'up' ? 'y' : 'x'
+  const swipeAxis = swipeDirection === 'down' || swipeDirection === 'up' ? 'y' : 'x'
 
   return (
     <DrawerPortal data-slot="drawer-portal">
-      {modal === true && (
-        <DrawerOverlay data-snap-points={hasSnapPoints ? '' : undefined} />
-      )}
+      {modal === true && <DrawerOverlay data-snap-points={hasSnapPoints ? '' : undefined} />}
       <DrawerPrimitive.Viewport
         data-slot="drawer-viewport"
         data-modal={modal}
@@ -199,7 +186,7 @@ function DrawerContent({
               data-[swipe-axis=x]:[--drawer-content-width:75%]
               data-[swipe-axis=y]:[--drawer-content-max-height:calc(100dvh-6rem)]
               data-[swipe-axis=y]:data-snap-points:[--drawer-content-height:100dvh]
-              data-[swipe-axis=x]:sm:[--drawer-content-width:24rem]
+              sm:data-[swipe-axis=x]:[--drawer-content-width:24rem]
             `,
             // Stack.
             `
@@ -314,19 +301,13 @@ function DrawerTitle({ className, ...props }: DrawerPrimitive.Title.Props) {
   return (
     <DrawerPrimitive.Title
       data-slot="drawer-title"
-      className={cn(
-        'font-heading text-base font-medium text-foreground',
-        className,
-      )}
+      className={cn('font-heading text-base font-medium text-foreground', className)}
       {...props}
     />
   )
 }
 
-function DrawerDescription({
-  className,
-  ...props
-}: DrawerPrimitive.Description.Props) {
+function DrawerDescription({ className, ...props }: DrawerPrimitive.Description.Props) {
   return (
     <DrawerPrimitive.Description
       data-slot="drawer-description"

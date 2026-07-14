@@ -1,8 +1,15 @@
-import type { Column } from '../../components/table/cell/utils'
 import { describe, expect, it } from 'bun:test'
+
+import type { Column } from '../../components/table/cell/utils'
 import { createPostgresListTransformer } from './postgres'
 
-const enumColumn: Column = { id: 'status', uiType: 'list', isArray: true, enumName: 'status_enum', availableValues: ['a', 'b', 'c'] }
+const enumColumn: Column = {
+  id: 'status',
+  uiType: 'list',
+  isArray: true,
+  enumName: 'status_enum',
+  availableValues: ['a', 'b', 'c'],
+}
 const arrayColumn: Column = { id: 'tags', uiType: 'list', isArray: true }
 
 describe('createPostgresListTransformer (enum — brace literal)', () => {
@@ -146,7 +153,7 @@ describe('createPostgresListTransformer (plain array — JSON)', () => {
     })
 
     it('throws on malformed JSON array input', () => {
-      expect(() => t.toConnection.fromRaw('[\"1\", \'2\']')).toThrow()
+      expect(() => t.toConnection.fromRaw('["1", \'2\']')).toThrow()
       expect(() => t.toConnection.fromRaw('[1, 2,]')).toThrow()
     })
   })

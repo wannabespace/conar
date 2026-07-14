@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react'
-import type { Markdown as MarkdownImpl } from './markdown'
 import { lazy, Suspense } from 'react'
+
+import type { Markdown as MarkdownImpl } from './markdown'
 
 const LazyMarkdown = lazy(() => import('./markdown').then(m => ({ default: m.Markdown })))
 

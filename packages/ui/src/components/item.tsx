@@ -1,8 +1,8 @@
-import type { VariantProps } from 'class-variance-authority'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import { Separator } from '@tamery/ui/components/separator'
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
 import { cva } from 'class-variance-authority'
 import * as React from 'react'
 
@@ -24,10 +24,7 @@ function ItemGroup({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-function ItemSeparator({
-  className,
-  ...props
-}: React.ComponentProps<typeof Separator>) {
+function ItemSeparator({ className, ...props }: React.ComponentProps<typeof Separator>) {
   return (
     <Separator
       data-slot="item-separator"
@@ -105,9 +102,8 @@ const itemMediaVariants = cva(
     variants: {
       variant: {
         default: 'bg-transparent',
-        icon: '[&_svg:not([class*=\'size-\'])]:size-4',
-        image:
-          `
+        icon: "[&_svg:not([class*='size-'])]:size-4",
+        image: `
             size-10 overflow-hidden rounded-xl
             group-data-[size=sm]/item:size-8
             group-data-[size=xs]/item:size-6
@@ -189,11 +185,7 @@ function ItemDescription({ className, ...props }: React.ComponentProps<'p'>) {
 
 function ItemActions({ className, ...props }: React.ComponentProps<'div'>) {
   return (
-    <div
-      data-slot="item-actions"
-      className={cn('flex items-center gap-2', className)}
-      {...props}
-    />
+    <div data-slot="item-actions" className={cn('flex items-center gap-2', className)} {...props} />
   )
 }
 
@@ -201,10 +193,7 @@ function ItemHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="item-header"
-      className={cn(
-        'flex basis-full items-center justify-between gap-2',
-        className,
-      )}
+      className={cn('flex basis-full items-center justify-between gap-2', className)}
       {...props}
     />
   )
@@ -214,10 +203,7 @@ function ItemFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="item-footer"
-      className={cn(
-        'flex basis-full items-center justify-between gap-2',
-        className,
-      )}
+      className={cn('flex basis-full items-center justify-between gap-2', className)}
       {...props}
     />
   )

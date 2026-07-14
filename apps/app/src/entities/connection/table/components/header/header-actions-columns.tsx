@@ -1,10 +1,19 @@
 import { RiCheckLine, RiDatabase2Line, RiLayoutColumnLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@tamery/ui/components/command'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from '@tamery/ui/components/command'
 import { Indicator } from '@tamery/ui/components/custom/indicator'
 import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useSubscription } from 'seitu/react'
+
 import { useTableColumns } from '../../columns'
 import { useTablePageStore } from '../../store'
 
@@ -16,23 +25,17 @@ export function HeaderActionsColumns() {
   return (
     <Popover>
       <Tooltip>
-        <TooltipTrigger render={(
-          <PopoverTrigger render={(
-            <Button
-              size="icon"
-              variant="outline"
-              className="overflow-visible"
+        <TooltipTrigger
+          render={
+            <PopoverTrigger
+              render={<Button size="icon" variant="outline" className="overflow-visible" />}
             />
-          )}
-          />
-        )}
+          }
         >
           <RiLayoutColumnLine />
           {hiddenColumns.length > 0 && <Indicator />}
         </TooltipTrigger>
-        <TooltipContent side="top">
-          Columns visibility
-        </TooltipContent>
+        <TooltipContent side="top">Columns visibility</TooltipContent>
       </Tooltip>
       <PopoverContent
         className="
@@ -49,15 +52,19 @@ export function HeaderActionsColumns() {
             <CommandGroup>
               <CommandItem
                 value="toggle-columns"
-                onSelect={() => store.set(state => ({
-                  ...state,
-                  hiddenColumns: (hiddenColumns.length === 0 && columns?.map(col => col.id)) || [],
-                } satisfies typeof state))}
+                onSelect={() =>
+                  store.set(
+                    state =>
+                      ({
+                        ...state,
+                        hiddenColumns:
+                          (hiddenColumns.length === 0 && columns?.map(col => col.id)) || [],
+                      }) satisfies typeof state,
+                  )
+                }
               >
                 <span className="size-4">
-                  {hiddenColumns.length === 0 && (
-                    <RiCheckLine className="size-4 opacity-50" />
-                  )}
+                  {hiddenColumns.length === 0 && <RiCheckLine className="size-4 opacity-50" />}
                 </span>
                 <RiLayoutColumnLine className="size-4 opacity-50" />
                 <span>{hiddenColumns.length === 0 ? 'Hide all columns' : 'Show all columns'}</span>
@@ -70,12 +77,17 @@ export function HeaderActionsColumns() {
                   key={column.id}
                   value={column.id}
                   keywords={[column.id, column.type ?? '', column.typeLabel ?? '']}
-                  onSelect={() => store.set(state => ({
-                    ...state,
-                    hiddenColumns: hiddenColumns.includes(column.id)
-                      ? hiddenColumns.filter(id => id !== column.id)
-                      : [...hiddenColumns, column.id],
-                  } satisfies typeof state))}
+                  onSelect={() =>
+                    store.set(
+                      state =>
+                        ({
+                          ...state,
+                          hiddenColumns: hiddenColumns.includes(column.id)
+                            ? hiddenColumns.filter(id => id !== column.id)
+                            : [...hiddenColumns, column.id],
+                        }) satisfies typeof state,
+                    )
+                  }
                 >
                   <span className="size-4 shrink-0">
                     {!hiddenColumns.includes(column.id) && (
@@ -83,7 +95,9 @@ export function HeaderActionsColumns() {
                     )}
                   </span>
                   <RiDatabase2Line className="size-4 shrink-0 opacity-50" />
-                  <span data-mask className="truncate">{column.id}</span>
+                  <span data-mask className="truncate">
+                    {column.id}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>

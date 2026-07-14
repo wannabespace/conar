@@ -1,6 +1,5 @@
 import { Dialog as SheetPrimitive } from '@base-ui/react/dialog'
 import { RiCloseLine } from '@remixicon/react'
-
 import { Button } from '@tamery/ui/components/button'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
@@ -80,8 +79,8 @@ function SheetContent({
             data-[side=top]:h-auto data-[side=top]:border-b
             data-[side=top]:data-ending-style:-translate-y-10
             data-[side=top]:data-starting-style:-translate-y-10
-            data-[side=left]:sm:max-w-sm
-            data-[side=right]:sm:max-w-sm
+            sm:data-[side=left]:max-w-sm
+            sm:data-[side=right]:max-w-sm
           `,
           className,
         )}
@@ -91,13 +90,13 @@ function SheetContent({
         {showCloseButton && (
           <SheetPrimitive.Close
             data-slot="sheet-close"
-            render={(
+            render={
               <Button
                 variant="ghost"
                 className="absolute top-4 right-4 bg-secondary"
                 size="icon-sm"
               />
-            )}
+            }
           >
             <RiCloseLine />
             <span className="sr-only">Close</span>
@@ -132,19 +131,13 @@ function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
   return (
     <SheetPrimitive.Title
       data-slot="sheet-title"
-      className={cn(
-        'font-heading text-base font-medium text-foreground',
-        className,
-      )}
+      className={cn('font-heading text-base font-medium text-foreground', className)}
       {...props}
     />
   )
 }
 
-function SheetDescription({
-  className,
-  ...props
-}: SheetPrimitive.Description.Props) {
+function SheetDescription({ className, ...props }: SheetPrimitive.Description.Props) {
   return (
     <SheetPrimitive.Description
       data-slot="sheet-description"

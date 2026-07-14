@@ -2,12 +2,13 @@ import { RiErrorWarningLine } from '@remixicon/react'
 import { challenge } from '@tamery/shared/utils/challenge'
 import { title } from '@tamery/shared/utils/title'
 import { Badge } from '@tamery/ui/components/badge'
-import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo'
+import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.utils'
 import { Button } from '@tamery/ui/components/button'
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
+
 import { TitleBar } from '~/components/title-bar'
 import { enterAppAnimation } from '~/global-hooks'
 import { authClient, bearerToken, successAuthToast } from '~/lib/auth'
@@ -21,8 +22,7 @@ export const Route = createFileRoute('/auth')({
   }),
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
-function AuthPage() {
+export function AuthPage() {
   const { refetch } = authClient.useSession()
   const [verifier, setVerifier] = useState<string | null>(null)
   const [codeChallenge, setCodeChallenge] = useState<string | null>(null)
@@ -35,25 +35,28 @@ function AuthPage() {
     const url = `${import.meta.env.VITE_PUBLIC_MAIN_URL}/deep/sign-in?codeChallenge=${codeChallenge}&type=${window.electron ? 'desktop' : 'web'}`
     if (window.electron) {
       window.open(url, '_blank')
-    }
-    else {
+    } else {
       location.assign(url)
     }
   }
 
-  const { data, error, isPending } = useQuery(orpc.account.challenge.listen.experimental_liveOptions({
-    input: codeChallenge ? { codeChallenge } : skipToken,
-    throwOnError: false,
-  }))
+  const { data, error, isPending } = useQuery(
+    orpc.account.challenge.listen.experimental_liveOptions({
+      input: codeChallenge ? { codeChallenge } : skipToken,
+      throwOnError: false,
+    }),
+  )
 
-  const { mutate: exchange } = useMutation(orpc.account.challenge.exchange.mutationOptions({
-    onSuccess: async (data) => {
-      bearerToken.set(data.token)
-      await refetch()
-      router.navigate({ to: '/' })
-      successAuthToast(!!data.newUser)
-    },
-  }))
+  const { mutate: exchange } = useMutation(
+    orpc.account.challenge.exchange.mutationOptions({
+      onSuccess: async data => {
+        bearerToken.set(data.token)
+        await refetch()
+        router.navigate({ to: '/' })
+        successAuthToast(!!data.newUser)
+      },
+    }),
+  )
 
   useEffect(() => {
     enterAppAnimation()
@@ -71,7 +74,8 @@ function AuthPage() {
     <>
       {window.electron && <TitleBar className="-mb-10" />}
       <div className="relative flex flex-col overflow-hidden px-4 py-6">
-        <div className="
+        <div
+          className="
           m-auto flex w-full max-w-md flex-1 flex-col justify-center
         "
         >
@@ -82,7 +86,7 @@ function AuthPage() {
             "
             initial={{ opacity: 0, transform: 'translateY(10px)', filter: 'blur(4px)' }}
             animate={{ opacity: 1, transform: 'translateY(0)', filter: 'none' }}
-            transition={{ duration: 0.4, delay: 0.50 }}
+            transition={{ duration: 0.4, delay: 0.5 }}
           >
             <AppLogoMotion
               className="size-8.5 text-white will-change-transform"
@@ -97,7 +101,8 @@ function AuthPage() {
             animate={{ opacity: 1, transform: 'translateY(0)', filter: 'none' }}
             transition={{ duration: 0.4, delay: 0.35 }}
           >
-            <h1 className="
+            <h1
+              className="
               text-2xl font-semibold tracking-tight text-foreground
             "
             >
@@ -113,21 +118,20 @@ function AuthPage() {
             animate={{ opacity: 1, transform: 'translateY(0)', filter: 'none' }}
             transition={{ duration: 0.4, delay: 0.2 }}
           >
-            <Button
-              className="mb-2 w-full"
-              size="lg"
-              onClick={() => signInWithChallenge()}
-            >
-              {!!codeChallenge && isPending
-                ? <span className="animate-pulse">Waiting for sign in...</span>
-                : 'Sign In'}
+            <Button className="mb-2 w-full" size="lg" onClick={() => signInWithChallenge()}>
+              {!!codeChallenge && isPending ? (
+                <span className="animate-pulse">Waiting for sign in...</span>
+              ) : (
+                'Sign In'
+              )}
             </Button>
             <p className="mb-4 text-center text-xs text-muted-foreground">
               Sign-in unlocks AI queries and cloud sync.
             </p>
           </motion.div>
           {!!error && (
-            <div className="
+            <div
+              className="
               flex items-center gap-2 text-sm text-muted-foreground
             "
             >
@@ -146,7 +150,9 @@ function AuthPage() {
         >
           <Button className="w-full" variant="secondary">
             Continue without an account
-            <Badge variant="secondary" className="ml-1">Soon</Badge>
+            <Badge variant="secondary" className="ml-1">
+              Soon
+            </Badge>
           </Button>
         </motion.div>
       </div>

@@ -1,5 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
+
 import { authClient } from '~/lib/auth'
+
 import { AuthForm } from './-components/auth-form'
 
 export const Route = createFileRoute('/_auth/sign-up')({
@@ -13,7 +15,7 @@ export const Route = createFileRoute('/_auth/sign-up')({
   },
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
+// oxlint-disable-next-line react/only-export-components
 function SignUpPage() {
   return <AuthForm type="sign-up" />
 }

@@ -1,7 +1,8 @@
-import type { Column } from './utils'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@tamery/ui/components/tabs'
+
 import { TableCellTable } from './cell-table'
+import type { Column } from './utils'
 
 export function TableCellReferences({
   references,
@@ -17,12 +18,7 @@ export function TableCellReferences({
       <ScrollArea className="bg-muted/50">
         <TabsList className="h-8 w-full justify-start bg-transparent">
           {references.map(reference => (
-            <TabsTrigger
-              key={reference.name}
-              value={reference.name}
-              className="flex-1"
-              data-mask
-            >
+            <TabsTrigger key={reference.name} value={reference.name} className="flex-1" data-mask>
               {showSchemas && `${reference.schema}.`}
               {reference.table}
             </TabsTrigger>

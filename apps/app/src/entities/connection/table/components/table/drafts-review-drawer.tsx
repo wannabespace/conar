@@ -1,4 +1,3 @@
-import type { draftType } from '../../store'
 import { RiAlertLine, RiArrowGoBackLine, RiArrowRightLine, RiSaveLine } from '@remixicon/react'
 import { pick } from '@tamery/shared/utils/helpers'
 import { Button } from '@tamery/ui/components/button'
@@ -17,10 +16,18 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
+
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { createTransformer, getDisplayValue } from '~/entities/connection/transformers'
+
 import { useTableColumns } from '../../columns'
-import { draftsActions, getRowKeyByPrimaryKeys, primaryKeysKey, useTablePageStore } from '../../store'
+import type { draftType } from '../../store'
+import {
+  draftsActions,
+  getRowKeyByPrimaryKeys,
+  primaryKeysKey,
+  useTablePageStore,
+} from '../../store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -40,7 +47,8 @@ function ValueCell({
           max-h-40 overflow-auto rounded-md border bg-muted/30 px-2 py-1
           font-mono text-[0.7rem] wrap-break-word
         `,
-        (value === null || value === undefined || value === '') && `
+        (value === null || value === undefined || value === '') &&
+          `
           text-muted-foreground italic
         `,
         className,
@@ -73,29 +81,36 @@ export function DraftsReviewDrawer({
   const primaryColumns = columns.filter(c => c.primaryKey).map(c => c.id)
   const store = useTablePageStore()
   const drafts = useSubscription(store, { selector: state => state.drafts })
-  const { filters, orderBy } = useSubscription(store, { selector: state => pick(state, ['filters', 'orderBy']) })
+  const { filters, orderBy } = useSubscription(store, {
+    selector: state => pick(state, ['filters', 'orderBy']),
+  })
   const { remove: removeDraft, removeRow } = draftsActions(store)
 
-  const { data: rows = [] } = useInfiniteQuery(resourceRowsQueryInfiniteOptions({
-    connectionResource,
-    table,
-    schema,
-    query: { filters, orderBy },
-  }))
+  const { data: rows = [] } = useInfiniteQuery(
+    resourceRowsQueryInfiniteOptions({
+      connectionResource,
+      table,
+      schema,
+      query: { filters, orderBy },
+    }),
+  )
 
   const rowsByPrimaryKey = new Map(
-    rows.map((row, index) => [getRowKeyByPrimaryKeys(row, primaryColumns), { row, index }] as const),
+    rows.map(
+      (row, index) => [getRowKeyByPrimaryKeys(row, primaryColumns), { row, index }] as const,
+    ),
   )
-  const draftIndex = (rowDrafts: typeof draftType.infer[]) =>
-    rowsByPrimaryKey.get(primaryKeysKey(rowDrafts[0]!.primaryKeys))?.index ?? Number.MAX_SAFE_INTEGER
-  const rowsEntries = Array.from(Map.groupBy(drafts, d => primaryKeysKey(d.primaryKeys)).values())
-    .sort((a, b) => draftIndex(a) - draftIndex(b))
+  const draftIndex = (rowDrafts: (typeof draftType.infer)[]) =>
+    rowsByPrimaryKey.get(primaryKeysKey(rowDrafts[0]!.primaryKeys))?.index ??
+    Number.MAX_SAFE_INTEGER
+  const rowsEntries = Array.from(
+    Map.groupBy(drafts, d => primaryKeysKey(d.primaryKeys)).values(),
+  ).toSorted((a, b) => draftIndex(a) - draftIndex(b))
 
   const columnDisplay = (columnId: string, value: unknown) => {
     const column = columns.find(c => c.id === columnId)
 
-    if (!column)
-      return getDisplayValue(value, Number.POSITIVE_INFINITY)
+    if (!column) return getDisplayValue(value, Number.POSITIVE_INFINITY)
 
     return createTransformer(connection.type, column).toDisplay(value, Number.POSITIVE_INFINITY)
   }
@@ -106,112 +121,104 @@ export function DraftsReviewDrawer({
         <DrawerHeader>
           <DrawerTitle>Review changes</DrawerTitle>
           <DrawerDescription>
-            {drafts.length}
-            {' '}
-            change
-            {drafts.length === 1 ? '' : 's'}
-            {' '}
-            in
-            {' '}
+            {drafts.length} change
+            {drafts.length === 1 ? '' : 's'} in{' '}
             <span className="font-medium">
-              {schema}
-              .
-              {table}
+              {schema}.{table}
             </span>
           </DrawerDescription>
         </DrawerHeader>
         <div className="flex-1 overflow-auto px-4">
-          {rowsEntries.length === 0
-            ? (
-                <div className="
+          {rowsEntries.length === 0 ? (
+            <div
+              className="
                   flex h-full min-h-40 items-center justify-center rounded-md
                   border border-dashed
                 "
-                >
-                  <p className="text-sm text-muted-foreground">
-                    No row changes to review yet.
-                  </p>
-                </div>
-              )
-            : (
-                <div className="flex flex-col gap-3">
-                  {rowsEntries.map((rowDrafts) => {
-                    const { primaryKeys } = rowDrafts[0]!
-                    const row = rowsByPrimaryKey.get(primaryKeysKey(primaryKeys))?.row
-                    const primaryLabel = Object.entries(primaryKeys).length > 0
-                      ? Object.entries(primaryKeys).map(([columnId, value]) => `${columnId} = ${columnDisplay(columnId, value)}`)
-                      : ['Unknown row']
-                    const errors = [...new Set(rowDrafts.flatMap(draft => draft.error ? [draft.error] : []))]
+            >
+              <p className="text-sm text-muted-foreground">No row changes to review yet.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {rowsEntries.map(rowDrafts => {
+                const { primaryKeys } = rowDrafts[0]!
+                const row = rowsByPrimaryKey.get(primaryKeysKey(primaryKeys))?.row
+                const primaryLabel =
+                  Object.entries(primaryKeys).length > 0
+                    ? Object.entries(primaryKeys).map(
+                        ([columnId, value]) => `${columnId} = ${columnDisplay(columnId, value)}`,
+                      )
+                    : ['Unknown row']
+                const errors = [
+                  ...new Set(rowDrafts.flatMap(draft => (draft.error ? [draft.error] : []))),
+                ]
 
-                    return (
-                      <div
-                        key={primaryKeysKey(primaryKeys)}
-                        className="
+                return (
+                  <div
+                    key={primaryKeysKey(primaryKeys)}
+                    className="
                           relative flex flex-col rounded-2xl bg-muted/72 p-1
                         "
-                      >
-                        <header className="flex flex-row px-3 py-2">
-                          <div className="flex gap-1 text-sm font-semibold">
-                            {!!errors.length && (
-                              <Tooltip>
-                                <TooltipTrigger render={(
-                                  <RiAlertLine className="
+                  >
+                    <header className="flex flex-row px-3 py-2">
+                      <div className="flex gap-1 text-sm font-semibold">
+                        {!!errors.length && (
+                          <Tooltip>
+                            <TooltipTrigger
+                              render={
+                                <RiAlertLine
+                                  className="
                                     mt-1 size-3 text-destructive
                                   "
-                                  />
-                                )}
-                                >
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-lg">
-                                  {errors.map(error => (
-                                    <div
-                                      key={error}
-                                      className="flex items-start gap-2"
-                                    >
-                                      <RiAlertLine className="
+                                />
+                              }
+                            ></TooltipTrigger>
+                            <TooltipContent className="max-w-lg">
+                              {errors.map(error => (
+                                <div key={error} className="flex items-start gap-2">
+                                  <RiAlertLine
+                                    className="
                                         mt-0.5 size-3 shrink-0 text-destructive
                                       "
-                                      />
-                                      {error}
-                                    </div>
-                                  ))}
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
-                            Row
-                          </div>
-                          <div className="
+                                  />
+                                  {error}
+                                </div>
+                              ))}
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                        Row
+                      </div>
+                      <div
+                        className="
                             mt-1 ml-2 flex flex-1 flex-col gap-0.5 pt-px
                             text-[0.7rem] text-muted-foreground
                           "
-                          >
-                            {primaryLabel.map(label => (
-                              <span
-                                key={label}
-                                className="truncate leading-none"
-                                title={label}
-                              >
-                                {label}
-                              </span>
-                            ))}
-                          </div>
-                          <Tooltip>
-                            <TooltipTrigger render={(
-                              <Button
-                                variant="ghost"
-                                size="icon-xs"
-                                onClick={() => removeRow(primaryKeys)}
-                                disabled={isSaving}
-                              />
-                            )}
-                            >
-                              <RiArrowGoBackLine />
-                            </TooltipTrigger>
-                            <TooltipContent>Discard row</TooltipContent>
-                          </Tooltip>
-                        </header>
-                        <div
-                          className="
+                      >
+                        {primaryLabel.map(label => (
+                          <span key={label} className="truncate leading-none" title={label}>
+                            {label}
+                          </span>
+                        ))}
+                      </div>
+                      <Tooltip>
+                        <TooltipTrigger
+                          render={
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              onClick={() => removeRow(primaryKeys)}
+                              disabled={isSaving}
+                            />
+                          }
+                        >
+                          <RiArrowGoBackLine />
+                        </TooltipTrigger>
+                        <TooltipContent>Discard row</TooltipContent>
+                      </Tooltip>
+                    </header>
+                    <div
+                      className="
                             relative rounded-xl border bg-background
                             bg-clip-padding p-3 shadow-xs/5
                             before:pointer-events-none before:absolute
@@ -220,75 +227,79 @@ export function DraftsReviewDrawer({
                             before:shadow-[0_1px_--theme(--color-black/4%)]
                             dark:before:shadow-[0_-1px_--theme(--color-white/6%)]
                           "
-                        >
-                          <div className="flex flex-col gap-2.5">
-                            {rowDrafts.map((draft) => {
-                              const before = row ? columnDisplay(draft.columnId, row[draft.columnId]) : ''
-                              const after = columnDisplay(draft.columnId, draft.value)
+                    >
+                      <div className="flex flex-col gap-2.5">
+                        {rowDrafts.map(draft => {
+                          const before = row
+                            ? columnDisplay(draft.columnId, row[draft.columnId])
+                            : ''
+                          const after = columnDisplay(draft.columnId, draft.value)
 
-                              return (
-                                <div
-                                  key={draft.columnId}
-                                  className="flex items-start gap-2"
-                                >
-                                  <div className="
+                          return (
+                            <div key={draft.columnId} className="flex items-start gap-2">
+                              <div
+                                className="
                                     grid flex-1 grid-cols-2 gap-x-2 gap-y-1
                                   "
-                                  >
-                                    <div className="
+                              >
+                                <div
+                                  className="
                                       truncate font-mono text-[0.7rem]
                                       font-medium text-muted-foreground
                                     "
-                                    >
-                                      {draft.columnId}
-                                    </div>
-                                    <div className="
+                                >
+                                  {draft.columnId}
+                                </div>
+                                <div
+                                  className="
                                       flex items-center gap-1 text-[0.7rem]
                                       font-medium text-muted-foreground
                                     "
-                                    >
-                                      <RiArrowRightLine className="
+                                >
+                                  <RiArrowRightLine
+                                    className="
                                         size-3 shrink-0
                                       "
-                                      />
-                                      Modified
-                                    </div>
-                                    <ValueCell value={row?.[draft.columnId]}>{before}</ValueCell>
-                                    <ValueCell
-                                      value={draft.value}
-                                      className="
+                                  />
+                                  Modified
+                                </div>
+                                <ValueCell value={row?.[draft.columnId]}>{before}</ValueCell>
+                                <ValueCell
+                                  value={draft.value}
+                                  className="
                                         border-warning/30 bg-warning/10
                                         text-warning-foreground
                                       "
-                                    >
-                                      {after}
-                                    </ValueCell>
-                                  </div>
-                                  <Tooltip>
-                                    <TooltipTrigger render={(
-                                      <Button
-                                        variant="ghost"
-                                        size="icon-xs"
-                                        onClick={() => removeDraft(primaryKeys, draft.columnId)}
-                                        disabled={isSaving}
-                                        className="mt-6 shrink-0"
-                                      />
-                                    )}
-                                    >
-                                      <RiArrowGoBackLine />
-                                    </TooltipTrigger>
-                                    <TooltipContent>Discard change</TooltipContent>
-                                  </Tooltip>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        </div>
+                                >
+                                  {after}
+                                </ValueCell>
+                              </div>
+                              <Tooltip>
+                                <TooltipTrigger
+                                  render={
+                                    <Button
+                                      variant="ghost"
+                                      size="icon-xs"
+                                      onClick={() => removeDraft(primaryKeys, draft.columnId)}
+                                      disabled={isSaving}
+                                      className="mt-6 shrink-0"
+                                    />
+                                  }
+                                >
+                                  <RiArrowGoBackLine />
+                                </TooltipTrigger>
+                                <TooltipContent>Discard change</TooltipContent>
+                              </Tooltip>
+                            </div>
+                          )
+                        })}
                       </div>
-                    )
-                  })}
-                </div>
-              )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
         <DrawerFooter>
           <Button
@@ -301,10 +312,7 @@ export function DraftsReviewDrawer({
             Discard all
           </Button>
           <DrawerClose render={<Button variant="outline">Close</Button>} />
-          <Button
-            onClick={onSave}
-            disabled={isSaving || drafts.length === 0}
-          >
+          <Button onClick={onSave} disabled={isSaving || drafts.length === 0}>
             <LoadingContent loading={isSaving}>
               <RiSaveLine />
               Save all

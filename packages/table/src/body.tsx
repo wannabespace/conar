@@ -1,8 +1,9 @@
+import { cn } from '@tamery/ui/lib/utils'
 import type { VirtualItem } from '@tanstack/react-virtual'
 import type { ComponentProps, CSSProperties } from 'react'
-import type { ColumnRenderer } from './'
-import { cn } from '@tamery/ui/lib/utils'
 import { memo } from 'react'
+
+import type { ColumnRenderer } from './'
 import { useTableContext } from './table-context'
 import { getBaseColumnStyle } from './utils'
 
@@ -34,11 +35,13 @@ const VirtualColumn = memo(function VirtualColumn({
       size={virtualColumn.size}
       rowIndex={rowIndex}
       columnIndex={virtualColumn.index}
-      position={virtualColumn.index === 0
-        ? 'first'
-        : virtualColumn.index === columnsLength - 1
-          ? 'last'
-          : 'middle'}
+      position={
+        virtualColumn.index === 0
+          ? 'first'
+          : virtualColumn.index === columnsLength - 1
+            ? 'last'
+            : 'middle'
+      }
       style={getBaseColumnStyle({ id: column.id, defaultSize: column.size })}
     />
   )
@@ -48,13 +51,7 @@ const spacerStyle: CSSProperties = {
   contain: 'layout style size',
 }
 
-const Row = memo(function Row({
-  size,
-  rowIndex,
-}: {
-  size: number
-  rowIndex: number
-}) {
+const Row = memo(function Row({ size, rowIndex }: { size: number; rowIndex: number }) {
   const columns = useTableContext(context => context.columns)
   const virtualColumns = useTableContext(context => context.virtualColumns)
   const rows = useTableContext(context => context.rows)
@@ -63,10 +60,13 @@ const Row = memo(function Row({
 
   return (
     <div
-      className={cn(`
+      className={cn(
+        `
         flex w-fit min-w-full border-b
         hover:bg-accent/30
-      `, rowIndex === lastIndex && `border-b-0`)}
+      `,
+        rowIndex === lastIndex && `border-b-0`,
+      )}
       style={{ height: `${size}px`, contain: 'layout style' }}
     >
       <div
@@ -74,7 +74,7 @@ const Row = memo(function Row({
         className="w-(--table-scroll-left-offset) shrink-0 will-change-[height]"
         style={spacerStyle}
       />
-      {virtualColumns.map((virtualColumn) => {
+      {virtualColumns.map(virtualColumn => {
         const column = columns[virtualColumn.index]!
         const value = row?.[column?.id]
 
@@ -115,11 +115,7 @@ export function TableBody({ className, style, ...props }: ComponentProps<'div'>)
         style={spacerStyle}
       />
       {virtualRows.map(virtualRow => (
-        <Row
-          key={virtualRow.key}
-          rowIndex={virtualRow.index}
-          size={virtualRow.size}
-        />
+        <Row key={virtualRow.key} rowIndex={virtualRow.index} size={virtualRow.size} />
       ))}
       <div
         aria-hidden="true"

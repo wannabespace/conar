@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* oxlint-disable */
 
 // @ts-nocheck
 
@@ -9,22 +9,22 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as DevRouteImport } from './routes/dev'
-import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProtectedRouteImport } from './routes/_protected'
-import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
-import { Route as ProtectedCreateIndexRouteImport } from './routes/_protected/create/index'
 import { Route as ProtectedConnectionResourceIdRouteImport } from './routes/_protected/connection/$resourceId'
 import { Route as ProtectedConnectionResourceIdDefinitionsRouteImport } from './routes/_protected/connection/$resourceId/definitions'
-import { Route as ProtectedConnectionResourceIdVisualizerIndexRouteImport } from './routes/_protected/connection/$resourceId/visualizer/index'
-import { Route as ProtectedConnectionResourceIdTableIndexRouteImport } from './routes/_protected/connection/$resourceId/table/index'
-import { Route as ProtectedConnectionResourceIdQueryIndexRouteImport } from './routes/_protected/connection/$resourceId/query/index'
-import { Route as ProtectedConnectionResourceIdDefinitionsTriggersIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/triggers/index'
-import { Route as ProtectedConnectionResourceIdDefinitionsPoliciesIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/policies/index'
-import { Route as ProtectedConnectionResourceIdDefinitionsIndexesIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/indexes/index'
-import { Route as ProtectedConnectionResourceIdDefinitionsFunctionsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/functions/index'
-import { Route as ProtectedConnectionResourceIdDefinitionsEnumsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/enums/index'
 import { Route as ProtectedConnectionResourceIdDefinitionsConstraintsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/constraints/index'
+import { Route as ProtectedConnectionResourceIdDefinitionsEnumsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/enums/index'
+import { Route as ProtectedConnectionResourceIdDefinitionsFunctionsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/functions/index'
+import { Route as ProtectedConnectionResourceIdDefinitionsIndexesIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/indexes/index'
+import { Route as ProtectedConnectionResourceIdDefinitionsPoliciesIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/policies/index'
+import { Route as ProtectedConnectionResourceIdDefinitionsTriggersIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/triggers/index'
+import { Route as ProtectedConnectionResourceIdQueryIndexRouteImport } from './routes/_protected/connection/$resourceId/query/index'
+import { Route as ProtectedConnectionResourceIdTableIndexRouteImport } from './routes/_protected/connection/$resourceId/table/index'
+import { Route as ProtectedConnectionResourceIdVisualizerIndexRouteImport } from './routes/_protected/connection/$resourceId/visualizer/index'
+import { Route as ProtectedCreateIndexRouteImport } from './routes/_protected/create/index'
+import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DevRouteImport } from './routes/dev'
 
 const DevRoute = DevRouteImport.update({
   id: '/dev',
@@ -50,12 +50,11 @@ const ProtectedCreateIndexRoute = ProtectedCreateIndexRouteImport.update({
   path: '/create/',
   getParentRoute: () => ProtectedRoute,
 } as any)
-const ProtectedConnectionResourceIdRoute =
-  ProtectedConnectionResourceIdRouteImport.update({
-    id: '/connection/$resourceId',
-    path: '/connection/$resourceId',
-    getParentRoute: () => ProtectedRoute,
-  } as any)
+const ProtectedConnectionResourceIdRoute = ProtectedConnectionResourceIdRouteImport.update({
+  id: '/connection/$resourceId',
+  path: '/connection/$resourceId',
+  getParentRoute: () => ProtectedRoute,
+} as any)
 const ProtectedConnectionResourceIdDefinitionsRoute =
   ProtectedConnectionResourceIdDefinitionsRouteImport.update({
     id: '/definitions',
@@ -152,7 +151,7 @@ export interface FileRoutesByTo {
   '/connection/$resourceId/definitions/triggers': typeof ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
+  '__root__': typeof rootRouteImport
   '/_protected': typeof ProtectedRouteWithChildren
   '/auth': typeof AuthRoute
   '/dev': typeof DevRoute
@@ -385,22 +384,17 @@ interface ProtectedConnectionResourceIdRouteChildren {
   ProtectedConnectionResourceIdVisualizerIndexRoute: typeof ProtectedConnectionResourceIdVisualizerIndexRoute
 }
 
-const ProtectedConnectionResourceIdRouteChildren: ProtectedConnectionResourceIdRouteChildren =
-  {
-    ProtectedConnectionResourceIdDefinitionsRoute:
-      ProtectedConnectionResourceIdDefinitionsRouteWithChildren,
-    ProtectedConnectionResourceIdQueryIndexRoute:
-      ProtectedConnectionResourceIdQueryIndexRoute,
-    ProtectedConnectionResourceIdTableIndexRoute:
-      ProtectedConnectionResourceIdTableIndexRoute,
-    ProtectedConnectionResourceIdVisualizerIndexRoute:
-      ProtectedConnectionResourceIdVisualizerIndexRoute,
-  }
+const ProtectedConnectionResourceIdRouteChildren: ProtectedConnectionResourceIdRouteChildren = {
+  ProtectedConnectionResourceIdDefinitionsRoute:
+    ProtectedConnectionResourceIdDefinitionsRouteWithChildren,
+  ProtectedConnectionResourceIdQueryIndexRoute: ProtectedConnectionResourceIdQueryIndexRoute,
+  ProtectedConnectionResourceIdTableIndexRoute: ProtectedConnectionResourceIdTableIndexRoute,
+  ProtectedConnectionResourceIdVisualizerIndexRoute:
+    ProtectedConnectionResourceIdVisualizerIndexRoute,
+}
 
 const ProtectedConnectionResourceIdRouteWithChildren =
-  ProtectedConnectionResourceIdRoute._addFileChildren(
-    ProtectedConnectionResourceIdRouteChildren,
-  )
+  ProtectedConnectionResourceIdRoute._addFileChildren(ProtectedConnectionResourceIdRouteChildren)
 
 interface ProtectedRouteChildren {
   ProtectedIndexRoute: typeof ProtectedIndexRoute
@@ -410,14 +404,11 @@ interface ProtectedRouteChildren {
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedIndexRoute: ProtectedIndexRoute,
-  ProtectedConnectionResourceIdRoute:
-    ProtectedConnectionResourceIdRouteWithChildren,
+  ProtectedConnectionResourceIdRoute: ProtectedConnectionResourceIdRouteWithChildren,
   ProtectedCreateIndexRoute: ProtectedCreateIndexRoute,
 }
 
-const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
-  ProtectedRouteChildren,
-)
+const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(ProtectedRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   ProtectedRoute: ProtectedRouteWithChildren,

@@ -1,11 +1,19 @@
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
+
+import { formatSql } from '~/utils/formatter'
+
 import type { QueryParams, SchemaParams } from '..'
 import type { Column } from '../../components/table/cell'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { formatSql } from '~/utils/formatter'
 import { buildWhere } from '../../queries/rows'
 import { coldDialects } from '../../runtime/dialects'
 import * as templates from '../templates'
-import { filterExplicitIndexes, formatValue, getColumnType, groupIndexes, quoteIdentifier } from '../utils'
+import {
+  filterExplicitIndexes,
+  formatValue,
+  getColumnType,
+  groupIndexes,
+  quoteIdentifier,
+} from '../utils'
 
 function inlineParameters(sql: string, parameters: readonly unknown[]): string {
   let i = 0
@@ -25,15 +33,13 @@ export function generateQuerySQL({
 }
 
 function escapeSqlString(s: string): string {
-  return s.replace(/'/g, '\'\'')
+  return s.replace(/'/g, "''")
 }
 
 function formatEnumType(values: string[], name: string, dialect: ConnectionType): string {
   if (dialect === ConnectionType.ClickHouse) {
     const prefix = values.length > 255 ? 'Enum16' : 'Enum8'
-    const pairs = values
-      .map((v, i) => `'${escapeSqlString(v)}' = ${i + 1}`)
-      .join(', ')
+    const pairs = values.map((v, i) => `'${escapeSqlString(v)}' = ${i + 1}`).join(', ')
     return `${prefix}(${pairs})`
   }
   if (dialect === ConnectionType.MySQL) {
@@ -71,11 +77,7 @@ function formatScalarType(c: Column, dialect: ConnectionType) {
   return typeDef
 }
 
-function getTypeDef(
-  c: Column,
-  dialect: ConnectionType,
-  usedEnums: Map<string, string[]>,
-): string {
+function getTypeDef(c: Column, dialect: ConnectionType, usedEnums: Map<string, string[]>): string {
   if (c.enumName && c.availableValues?.length) {
     const enumName = c.enumName
     if (dialect === ConnectionType.Postgres) {
@@ -93,7 +95,7 @@ function buildColumnParts(
   dialect: ConnectionType,
   pkColumns: string[],
   defaultValue?: string | null,
-): { parts: string[], foreignKey: string | null } {
+): { parts: string[]; foreignKey: string | null } {
   const quoted = quoteIdentifier(c.id, dialect)
   const parts = [quoted, typeDef]
 
@@ -117,8 +119,7 @@ function buildColumnParts(
 
   if (c.primaryKey && dialect !== ConnectionType.ClickHouse) {
     parts.push('PRIMARY KEY')
-  }
-  else if (c.unique) {
+  } else if (c.unique) {
     parts.push('UNIQUE')
   }
 
@@ -128,10 +129,8 @@ function buildColumnParts(
     const col = quoteIdentifier(c.foreign.column, dialect)
     let fk = `  FOREIGN KEY (${quoted}) REFERENCES ${ref}(${col})`
 
-    if (c.foreign.onDelete)
-      fk += ` ON DELETE ${c.foreign.onDelete}`
-    if (c.foreign.onUpdate)
-      fk += ` ON UPDATE ${c.foreign.onUpdate}`
+    if (c.foreign.onDelete) fk += ` ON DELETE ${c.foreign.onDelete}`
+    if (c.foreign.onUpdate) fk += ` ON UPDATE ${c.foreign.onUpdate}`
 
     foreignKey = fk
   }
@@ -154,10 +153,9 @@ function appendIndexStatements(
   dialect: ConnectionType,
 ): string {
   const explicit = filterExplicitIndexes(groupedIndexes, columns, dialect)
-  if (explicit.length === 0)
-    return schema
+  if (explicit.length === 0) return schema
 
-  const lines = explicit.map((idx) => {
+  const lines = explicit.map(idx => {
     return [
       'CREATE',
       idx.isUnique ? 'UNIQUE' : '',
@@ -166,21 +164,17 @@ function appendIndexStatements(
       'ON',
       quoteIdentifier(table, dialect),
       dialect === ConnectionType.Postgres && idx.type ? `USING ${idx.type}` : '',
-      `(${[
-        ...idx.columns.map(c => quoteIdentifier(c, dialect)),
-        ...idx.customExpressions,
-      ].join(', ')})`,
-    ].filter(Boolean).join(' ')
+      `(${[...idx.columns.map(c => quoteIdentifier(c, dialect)), ...idx.customExpressions].join(
+        ', ',
+      )})`,
+    ]
+      .filter(Boolean)
+      .join(' ')
   })
   return `${schema}\n\n${lines.join('\n')}`
 }
 
-export function generateSchemaSQL({
-  table,
-  columns,
-  dialect,
-  indexes = [],
-}: SchemaParams) {
+export function generateSchemaSQL({ table, columns, dialect, indexes = [] }: SchemaParams) {
   const usedEnums = new Map<string, string[]>()
   const pkColumns: string[] = []
   const { columnLines, foreignKeys } = columns.reduce<{
@@ -191,12 +185,14 @@ export function generateSchemaSQL({
       let typeDef = getTypeDef(c, dialect, usedEnums)
       let defaultValue = c.defaultValue
 
-      if (dialect === ConnectionType.Postgres && defaultValue?.toLowerCase().startsWith('nextval')) {
+      if (
+        dialect === ConnectionType.Postgres &&
+        defaultValue?.toLowerCase().startsWith('nextval')
+      ) {
         if (typeDef === 'INTEGER') {
           typeDef = 'SERIAL'
           defaultValue = null
-        }
-        else if (typeDef === 'BIGINT') {
+        } else if (typeDef === 'BIGINT') {
           typeDef = 'BIGSERIAL'
           defaultValue = null
         }
@@ -204,8 +200,7 @@ export function generateSchemaSQL({
 
       const { parts, foreignKey } = buildColumnParts(c, typeDef, dialect, pkColumns, defaultValue)
       acc.columnLines.push(`  ${parts.join(' ')}`)
-      if (foreignKey)
-        acc.foreignKeys.push(foreignKey)
+      if (foreignKey) acc.foreignKeys.push(foreignKey)
       return acc
     },
     { columnLines: [], foreignKeys: [] },
@@ -219,21 +214,23 @@ export function generateSchemaSQL({
   let schema = templates.sqlSchemaTemplate(quoteIdentifier(table, dialect), columnBlock)
 
   if (dialect === ConnectionType.ClickHouse) {
-    const orderBy = pkColumns.length === 0
-      ? 'tuple()'
-      : pkColumns.length === 1
-        ? pkColumns[0]
-        : `(${pkColumns.join(', ')})`
+    const orderBy =
+      pkColumns.length === 0
+        ? 'tuple()'
+        : pkColumns.length === 1
+          ? pkColumns[0]
+          : `(${pkColumns.join(', ')})`
     schema = schema.replace(/\);\s*$/, `) ENGINE = MergeTree() ORDER BY ${orderBy};`)
   }
 
   const groupedIndexes = groupIndexes(indexes, table)
   schema = appendIndexStatements(schema, table, columns, groupedIndexes, dialect)
 
-  const needsPostgresEnums = usedEnums.size > 0
-    && dialect !== ConnectionType.MySQL
-    && dialect !== ConnectionType.MSSQL
-    && dialect !== ConnectionType.ClickHouse
+  const needsPostgresEnums =
+    usedEnums.size > 0 &&
+    dialect !== ConnectionType.MySQL &&
+    dialect !== ConnectionType.MSSQL &&
+    dialect !== ConnectionType.ClickHouse
   const enumStatements = needsPostgresEnums
     ? `${buildPostgresEnumStatements(usedEnums).join('\n')}\n\n`
     : ''

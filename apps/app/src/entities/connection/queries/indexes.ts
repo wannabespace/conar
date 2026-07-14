@@ -1,7 +1,8 @@
-import type { ConnectionResource } from '../core/sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
+
+import type { ConnectionResource } from '../core/sync'
 import { connectionResourceToQueryParams, createQuery } from '../runtime/query'
 
 export const indexesType = type({
@@ -24,15 +25,15 @@ export const indexesType = type({
 export const resourceIndexesQuery = createQuery({
   type: indexesType.array(),
   query: {
-    postgres: async (db) => {
+    postgres: async db => {
       const query = await db
         .selectFrom('pg_catalog.pg_class as t')
         .innerJoin('pg_catalog.pg_index as ix', 't.oid', 'ix.indrelid')
         .innerJoin('pg_catalog.pg_class as i', 'i.oid', 'ix.indexrelid')
         .innerJoin('pg_catalog.pg_am as am', 'i.relam', 'am.oid')
-        .leftJoin('pg_catalog.pg_attribute as a', join => join
-          .onRef('a.attrelid', '=', 't.oid')
-          .on(sql<boolean>`a.attnum = ANY(ix.indkey)`))
+        .leftJoin('pg_catalog.pg_attribute as a', join =>
+          join.onRef('a.attrelid', '=', 't.oid').on(sql<boolean>`a.attnum = ANY(ix.indkey)`),
+        )
         .innerJoin('pg_catalog.pg_namespace as n', 'n.oid', 't.relnamespace')
         .select([
           'n.nspname as schema',
@@ -68,47 +69,50 @@ export const resourceIndexesQuery = createQuery({
       })
     },
 
-    mysql: db => db
-      .selectFrom('information_schema.STATISTICS')
-      .select([
-        'TABLE_SCHEMA as schema',
-        'TABLE_NAME as table',
-        'INDEX_NAME as name',
-        'COLUMN_NAME as column',
-        eb => eb('NON_UNIQUE', '=', 0).as('is_unique'),
-        eb => eb('INDEX_NAME', '=', 'PRIMARY').as('is_primary'),
-      ])
-      .where('TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
-      .execute(),
+    mysql: db =>
+      db
+        .selectFrom('information_schema.STATISTICS')
+        .select([
+          'TABLE_SCHEMA as schema',
+          'TABLE_NAME as table',
+          'INDEX_NAME as name',
+          'COLUMN_NAME as column',
+          eb => eb('NON_UNIQUE', '=', 0).as('is_unique'),
+          eb => eb('INDEX_NAME', '=', 'PRIMARY').as('is_primary'),
+        ])
+        .where('TABLE_SCHEMA', 'not in', [
+          'mysql',
+          'information_schema',
+          'performance_schema',
+          'sys',
+        ])
+        .execute(),
 
-    mssql: db => db
-      .selectFrom('sys.indexes as i')
-      .innerJoin('sys.tables as t', 't.object_id', 'i.object_id')
-      .innerJoin('sys.schemas as s', 's.schema_id', 't.schema_id')
-      .innerJoin('sys.index_columns as ic', join => join
-        .onRef('ic.object_id', '=', 'i.object_id')
-        .onRef('ic.index_id', '=', 'i.index_id'))
-      .innerJoin('sys.columns as c', join => join
-        .onRef('c.object_id', '=', 'ic.object_id')
-        .onRef('c.column_id', '=', 'ic.column_id'))
-      .select([
-        's.name as schema',
-        't.name as table',
-        'i.name as name',
-        'c.name as column',
-        'i.is_unique as is_unique',
-        'i.is_primary_key as is_primary',
-      ])
-      .execute(),
+    mssql: db =>
+      db
+        .selectFrom('sys.indexes as i')
+        .innerJoin('sys.tables as t', 't.object_id', 'i.object_id')
+        .innerJoin('sys.schemas as s', 's.schema_id', 't.schema_id')
+        .innerJoin('sys.index_columns as ic', join =>
+          join.onRef('ic.object_id', '=', 'i.object_id').onRef('ic.index_id', '=', 'i.index_id'),
+        )
+        .innerJoin('sys.columns as c', join =>
+          join.onRef('c.object_id', '=', 'ic.object_id').onRef('c.column_id', '=', 'ic.column_id'),
+        )
+        .select([
+          's.name as schema',
+          't.name as table',
+          'i.name as name',
+          'c.name as column',
+          'i.is_unique as is_unique',
+          'i.is_primary_key as is_primary',
+        ])
+        .execute(),
 
-    clickhouse: async (db) => {
+    clickhouse: async db => {
       const query = await db
         .selectFrom('system.columns')
-        .select([
-          'database as schema',
-          'table',
-          'name as column',
-        ])
+        .select(['database as schema', 'table', 'name as column'])
         .where('is_in_primary_key', '=', 1)
         .where('database', 'not in', ['system', 'information_schema'])
         .execute()
@@ -123,9 +127,14 @@ export const resourceIndexesQuery = createQuery({
   },
 })
 
-export function resourceIndexesQueryOptions({ connectionResource }: { connectionResource: ConnectionResource }) {
+export function resourceIndexesQueryOptions({
+  connectionResource,
+}: {
+  connectionResource: ConnectionResource
+}) {
   return queryOptions({
     queryKey: ['connection-resource', connectionResource.id, 'indexes'],
-    queryFn: async () => resourceIndexesQuery.run(await connectionResourceToQueryParams(connectionResource)),
+    queryFn: async () =>
+      resourceIndexesQuery.run(await connectionResourceToQueryParams(connectionResource)),
   })
 }

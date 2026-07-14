@@ -1,24 +1,36 @@
-/* eslint-disable react/no-array-index-key */
+/* oxlint-disable react/no-array-index-key */
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '@tamery/table/constants'
 import { useTableContext } from '@tamery/table/hooks'
 import { cn } from '@tamery/ui/lib/utils'
+
 import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components'
 
 const ROWS_COUNT = 20
 
-export function TableBodySkeleton({ className, selectable, columnsCount = 6 }: { className?: string, selectable?: boolean, columnsCount?: number }) {
+export function TableBodySkeleton({
+  className,
+  selectable,
+  columnsCount = 6,
+}: {
+  className?: string
+  selectable?: boolean
+  columnsCount?: number
+}) {
   const columns = useTableContext(state => state.columns)
-  const columnsWithoutInternal = columns.filter(column => !Object.values(INTERNAL_COLUMN_IDS).includes(column.id))
+  const columnsWithoutInternal = columns.filter(
+    column => !Object.values(INTERNAL_COLUMN_IDS).includes(column.id),
+  )
 
-  const cols = columnsWithoutInternal.length === 0
-    ? Array.from({ length: columnsCount }).map((_, index) => ({
-        id: `column-${index + 1}`,
-        size: DEFAULT_COLUMN_WIDTH,
-      }))
-    : columns.map(column => ({
-        id: column.id,
-        size: column.size ?? DEFAULT_COLUMN_WIDTH,
-      }))
+  const cols =
+    columnsWithoutInternal.length === 0
+      ? Array.from({ length: columnsCount }).map((_, index) => ({
+          id: `column-${index + 1}`,
+          size: DEFAULT_COLUMN_WIDTH,
+        }))
+      : columns.map(column => ({
+          id: column.id,
+          size: column.size ?? DEFAULT_COLUMN_WIDTH,
+        }))
 
   return (
     <div className={cn('relative w-full', className)}>
@@ -31,7 +43,7 @@ export function TableBodySkeleton({ className, selectable, columnsCount = 6 }: {
           `}
           style={{
             height: `${DEFAULT_ROW_HEIGHT}px`,
-            opacity: 1 - (rowIndex * (1 / ROWS_COUNT)),
+            opacity: 1 - rowIndex * (1 / ROWS_COUNT),
           }}
         >
           {selectable && (
@@ -50,7 +62,8 @@ export function TableBodySkeleton({ className, selectable, columnsCount = 6 }: {
                 width: `${column.size}px`,
               }}
             >
-              <div className={`
+              <div
+                className={`
                 h-4 w-full shrink-0 animate-pulse rounded-sm bg-muted
               `}
               />

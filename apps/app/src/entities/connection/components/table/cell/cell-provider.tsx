@@ -1,9 +1,11 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
-import type { Column } from './utils'
-import type { ValueTransformer } from '~/entities/connection/transformers'
 import { useState } from 'react'
 import { toast } from 'sonner'
+
+import type { ValueTransformer } from '~/entities/connection/transformers'
+
 import { CellContext } from './cell-context'
+import type { Column } from './utils'
 
 export function TableCellProvider({
   rowIndex,
@@ -32,15 +34,13 @@ export function TableCellProvider({
   const [rawValue, setRawValue] = useState(() => transformer.fromConnection(value).toRaw())
 
   const queue = async (rawValue: unknown) => {
-    if (!onQueueValue)
-      return
+    if (!onQueueValue) return
 
     try {
       onQueueValue(rowIndex, rawValue)
       setNewValue(transformer.fromConnection(rawValue).toUI())
       setRawValue(transformer.fromConnection(rawValue).toRaw())
-    }
-    catch (e) {
+    } catch (e) {
       const error = e instanceof Error ? e : new Error(String(e))
       console.error(error)
 
@@ -53,21 +53,22 @@ export function TableCellProvider({
   }
 
   return (
-    <CellContext value={{
-      rowIndex,
-      newValue,
-      setNewValue,
-      column,
-      value,
-      onQueueValue: queue,
-      rawValue,
-      setRawValue,
-      transformer,
-      onAddFilter,
-      onOrder,
-      order,
-      onRename,
-    }}
+    <CellContext
+      value={{
+        rowIndex,
+        newValue,
+        setNewValue,
+        column,
+        value,
+        onQueueValue: queue,
+        rawValue,
+        setRawValue,
+        transformer,
+        onAddFilter,
+        onOrder,
+        order,
+        onRename,
+      }}
     >
       {children}
     </CellContext>

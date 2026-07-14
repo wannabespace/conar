@@ -13,10 +13,14 @@ import { Label } from '@tamery/ui/components/label'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
+
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-export function DisableTfaDialog({ open, onOpenChange }: {
+export function DisableTfaDialog({
+  open,
+  onOpenChange,
+}: {
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
@@ -40,13 +44,12 @@ export function DisableTfaDialog({ open, onOpenChange }: {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="sm:max-w-sm"
-        onSubmit={(e) => {
+        onSubmit={e => {
           e.preventDefault()
           mutate(password)
         }}
         render={<form />}
       >
-
         <DialogHeader>
           <DialogTitle>Disable 2FA</DialogTitle>
           <DialogDescription>

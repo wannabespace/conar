@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
 export interface TxHandle {
-  execute: (query: string, values: unknown[]) => Promise<{ result: unknown, duration: number }>
+  execute: (query: string, values: unknown[]) => Promise<{ result: unknown; duration: number }>
   commit: () => Promise<void>
   rollback: () => Promise<void>
   release: () => Promise<void>
@@ -22,10 +22,10 @@ export function registerTransaction(handle: TxHandle, ownerId?: string) {
 
   const timeout = setTimeout(() => {
     const current = activeTransactions.get(txId)
-    if (!current)
-      return
+    if (!current) return
     activeTransactions.delete(txId)
-    current.handle.rollback()
+    current.handle
+      .rollback()
       .catch(() => {})
       .finally(() => current.handle.release().catch(() => {}))
   }, ORPHAN_TX_TIMEOUT_MS)
@@ -43,22 +43,19 @@ export function registerTransaction(handle: TxHandle, ownerId?: string) {
 }
 
 function assertOwner(entry: OwnedTx, ownerId?: string) {
-  if (entry.ownerId && ownerId !== entry.ownerId)
-    return false
+  if (entry.ownerId && ownerId !== entry.ownerId) return false
   return true
 }
 
 export function getTransaction(txId: string, ownerId?: string) {
   const entry = activeTransactions.get(txId)
-  if (!entry || !assertOwner(entry, ownerId))
-    return undefined
+  if (!entry || !assertOwner(entry, ownerId)) return undefined
   return entry.handle
 }
 
 export function disposeTransaction(txId: string, ownerId?: string) {
   const entry = activeTransactions.get(txId)
-  if (!entry || !assertOwner(entry, ownerId))
-    return undefined
+  if (!entry || !assertOwner(entry, ownerId)) return undefined
   activeTransactions.delete(txId)
   return entry.handle
 }

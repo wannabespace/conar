@@ -4,6 +4,7 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import JSConfetti from 'js-confetti'
 import { useEffect, useState } from 'react'
+
 import { Subscription } from './-components/subscription'
 
 export const Route = createFileRoute('/account/')({
@@ -16,7 +17,7 @@ export const Route = createFileRoute('/account/')({
 
 const confetti = typeof window !== 'undefined' ? new JSConfetti() : null
 
-// eslint-disable-next-line react-refresh/only-export-components
+// oxlint-disable-next-line react/only-export-components
 function RouteComponent() {
   const { subscription } = Route.useSearch()
   const router = useRouter()
@@ -46,9 +47,7 @@ function RouteComponent() {
             <RiHeart3Fill className="size-4" />
             Subscription upgraded successfully!
           </AlertTitle>
-          <AlertDescription>
-            Your subscription has been upgraded successfully.
-          </AlertDescription>
+          <AlertDescription>Your subscription has been upgraded successfully.</AlertDescription>
         </Alert>
       )}
       <Subscription />

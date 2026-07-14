@@ -1,7 +1,8 @@
 import type { TableCellProps } from '@tamery/table'
-import type { ComponentProps } from 'react'
-import type { Column } from './utils'
 import { cn } from '@tamery/ui/lib/utils'
+import type { ComponentProps } from 'react'
+
+import type { Column } from './utils'
 
 export function TableCellContent({
   className,

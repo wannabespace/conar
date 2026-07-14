@@ -24,43 +24,38 @@ export const buttonVariants = cva(
           bg-primary text-primary-foreground
           hover:bg-primary/80
         `,
-        outline:
-          `
+        outline: `
             border-border bg-background
             hover:bg-muted hover:text-foreground
             aria-expanded:bg-muted aria-expanded:text-foreground
             dark:bg-transparent
-            dark:hover:bg-input/30
+            hover:dark:bg-input/30
           `,
-        secondary:
-          `
+        secondary: `
             bg-secondary text-secondary-foreground
             hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)]
             aria-expanded:bg-secondary aria-expanded:text-secondary-foreground
           `,
-        ghost:
-          `
+        ghost: `
             hover:bg-accent hover:text-accent-foreground
             aria-expanded:bg-accent aria-expanded:text-accent-foreground
           `,
-        destructive:
-          `
+        destructive: `
             bg-destructive/10 text-destructive
             hover:bg-destructive/20
             focus-visible:border-destructive/40
             focus-visible:ring-destructive/20
             dark:bg-destructive/20
-            dark:hover:bg-destructive/30
-            dark:focus-visible:ring-destructive/40
+            hover:dark:bg-destructive/30
+            focus-visible:dark:ring-destructive/40
           `,
-        warning:
-          `
+        warning: `
             bg-warning/10 text-warning
             hover:bg-warning/20
             focus-visible:border-warning/40 focus-visible:ring-warning/20
             dark:bg-warning/20
-            dark:hover:bg-warning/30
-            dark:focus-visible:ring-warning/40
+            hover:dark:bg-warning/30
+            focus-visible:dark:ring-warning/40
           `,
         link: `
           text-primary underline-offset-4
@@ -68,8 +63,7 @@ export const buttonVariants = cva(
         `,
       },
       size: {
-        'default':
-          `
+        'default': `
             h-8 gap-1.5 px-3
             has-data-[icon=inline-end]:pr-2.5
             has-data-[icon=inline-start]:pl-2.5

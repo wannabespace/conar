@@ -11,7 +11,9 @@ export function FieldError() {
   return (
     <FieldErrorPrimitive>
       {field.state.meta.errors
-        .map(error => typeof error === 'string' ? error : typeof error === 'object' ? error?.message : error)
+        .map(error =>
+          typeof error === 'string' ? error : typeof error === 'object' ? error?.message : error,
+        )
         .filter(Boolean)
         .join(', ')}
     </FieldErrorPrimitive>

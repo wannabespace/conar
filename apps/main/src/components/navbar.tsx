@@ -1,4 +1,3 @@
-import type { ComponentProps } from 'react'
 import NumberFlow from '@number-flow/react'
 import { RiGitBranchLine, RiGithubFill, RiMoonLine, RiSunLine } from '@remixicon/react'
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
@@ -9,9 +8,12 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
+import type { ComponentProps } from 'react'
+
 import { NAVBAR_HEIGHT_BASE } from '~/constants'
 import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
+
 import { NavbarTextLogo } from './navbar-text-logo'
 
 const AppLogoMotion = motion.create(AppLogo)
@@ -25,10 +27,13 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
 
   return (
     <header
-      className={cn(`
+      className={cn(
+        `
         flex items-center justify-between px-4
         sm:px-0
-      `, className)}
+      `,
+        className,
+      )}
       {...props}
     >
       <NavbarTextLogo to={isSignedIn ? '/home' : '/'} />
@@ -44,7 +49,8 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
           />
         </Link>
       </div>
-      <div className={`
+      <div
+        className={`
         flex flex-1 items-center justify-end gap-1
         sm:gap-2
       `}
@@ -58,7 +64,8 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
           `}
           render={<Link to="/releases" />}
         >
-          <RiGitBranchLine className={`
+          <RiGitBranchLine
+            className={`
             size-3
             sm:size-4
           `}
@@ -72,35 +79,41 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
             hidden gap-1
             sm:flex sm:gap-2
           `}
-          render={(
+          render={
             <a
               href={SOCIAL_LINKS.GITHUB}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="GitHub"
             />
-          )}
+          }
         >
-
-          <RiGithubFill className={`
+          <RiGithubFill
+            className={`
             size-3
             sm:size-4
           `}
           />
           <NumberFlow
             value={data?.stargazers_count || 0}
-            className={cn(`
+            className={cn(
+              `
               text-xs tabular-nums duration-200
               sm:text-sm
-            `, !data && `animate-pulse text-muted-foreground`)}
+            `,
+              !data && `animate-pulse text-muted-foreground`,
+            )}
           />
         </Button>
         <ThemeToggle side="bottom" render={<Button size="icon-sm" variant="ghost" />}>
-          <RiSunLine className={`
+          <RiSunLine
+            className={`
             size-4
             dark:hidden
           `}
           />
-          <RiMoonLine className={`
+          <RiMoonLine
+            className={`
             hidden size-4
             dark:block
           `}
@@ -125,7 +138,8 @@ export function Navbar({ className, ...props }: ComponentProps<'header'>) {
           `}
           render={<Link to="/download" />}
         >
-          <span className={`
+          <span
+            className={`
             hidden
             sm:inline
           `}

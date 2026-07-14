@@ -1,15 +1,17 @@
-import type { Dialect } from 'kysely'
-import type { DialectOptions } from '..'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { Dialect } from 'kysely'
 import { DummyDriver, PostgresAdapter, PostgresQueryCompiler } from 'kysely'
+
+import type { DialectOptions } from '..'
 import { createDialectProvider, createKyselyDriver } from '..'
 
 export function postgresDialect(options: DialectOptions) {
   return {
-    createDriver: () => createKyselyDriver({
-      provider: createDialectProvider(ConnectionType.Postgres, options),
-      logger: options.log,
-    }),
+    createDriver: () =>
+      createKyselyDriver({
+        provider: createDialectProvider(ConnectionType.Postgres, options),
+        logger: options.log,
+      }),
     createQueryCompiler: () => new PostgresQueryCompiler(),
     createAdapter: () => new PostgresAdapter(),
     createIntrospector: () => {

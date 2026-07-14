@@ -17,12 +17,11 @@ export function useScrollInfo(ref: React.RefObject<HTMLElement | null>) {
 
   const updateScrollInfo = React.useCallback(() => {
     const el = ref.current
-    if (!el)
-      return
+    if (!el) return
 
     const { scrollLeft, scrollTop, scrollWidth, scrollHeight, clientWidth, clientHeight } = el
 
-    // eslint-disable-next-line react/set-state-in-effect
+    // oxlint-disable-next-line react/set-state-in-effect
     setScrollInfo({
       left: scrollLeft,
       top: scrollTop,
@@ -33,8 +32,7 @@ export function useScrollInfo(ref: React.RefObject<HTMLElement | null>) {
 
   React.useEffect(() => {
     const el = ref.current
-    if (!el)
-      return
+    if (!el) return
 
     updateScrollInfo()
 

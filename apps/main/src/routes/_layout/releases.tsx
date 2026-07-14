@@ -1,4 +1,9 @@
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@tamery/ui/components/accordion'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@tamery/ui/components/accordion'
 import { Badge } from '@tamery/ui/components/badge'
 import { Card, CardContent } from '@tamery/ui/components/card'
 import { Separator } from '@tamery/ui/components/separator'
@@ -7,42 +12,42 @@ import { createFileRoute } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { useState } from 'react'
 import { Streamdown } from 'streamdown'
+
 import { orpc } from '~/lib/orpc'
 import { seo } from '~/utils/seo'
 
 export const Route = createFileRoute('/_layout/releases')({
   component: RouteComponent,
-  head: () => seo({
-    title: 'Releases - Tamery',
-    description: 'View the latest Tamery releases, changelogs, and version history. Stay up to date with new features and improvements.',
-    image: '/og-image.png',
-    path: '/releases',
-  }),
+  head: () =>
+    seo({
+      title: 'Releases - Tamery',
+      description:
+        'View the latest Tamery releases, changelogs, and version history. Stay up to date with new features and improvements.',
+      image: '/og-image.png',
+      path: '/releases',
+    }),
   loader: async () => {
     const releases = await orpc.releases.call()
     return { releases }
   },
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
+// oxlint-disable-next-line react/only-export-components
 function RouteComponent() {
   const { releases } = Route.useLoaderData()
   const [expandedReleases, setExpandedReleases] = useState<string[]>([String(releases[0]!.id)])
 
   return (
     <div className="mx-auto max-w-xl py-6">
-      <h1 className="
+      <h1
+        className="
         mb-6 text-2xl leading-none font-bold
         lg:text-4xl
       "
       >
         Releases
       </h1>
-      <Accordion
-        value={expandedReleases}
-        onValueChange={setExpandedReleases}
-        className="space-y-6"
-      >
+      <Accordion value={expandedReleases} onValueChange={setExpandedReleases} className="space-y-6">
         {releases.map((release, index) => (
           <AccordionItem
             key={release.id}
@@ -62,17 +67,11 @@ function RouteComponent() {
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     <span className="text-base font-semibold">{release.tagName}</span>
-                    {index === 0 && (
-                      <Badge variant="secondary">
-                        Latest
-                      </Badge>
-                    )}
+                    {index === 0 && <Badge variant="secondary">Latest</Badge>}
                   </div>
                   {release.publishedAt && (
                     <p className="text-sm text-muted-foreground">
-                      Released on
-                      {' '}
-                      {format(new Date(release.publishedAt), 'MMMM dd, yyyy')}
+                      Released on {format(new Date(release.publishedAt), 'MMMM dd, yyyy')}
                     </p>
                   )}
                 </div>
@@ -88,7 +87,8 @@ function RouteComponent() {
                       linkSafety={{ enabled: false }}
                       components={{
                         h2: ({ children }) => (
-                          <h2 className="
+                          <h2
+                            className="
                             mb-2 text-2xl font-semibold
                             not-first:mt-6
                           "
@@ -97,7 +97,8 @@ function RouteComponent() {
                           </h2>
                         ),
                         h3: ({ children }) => (
-                          <h3 className="
+                          <h3
+                            className="
                             mb-2 text-xl font-semibold
                             not-first:mt-6
                           "
@@ -114,9 +115,7 @@ function RouteComponent() {
                 </Card>
               </AccordionContent>
             )}
-            {index < releases.length - 1 && (
-              <Separator className="mt-6" />
-            )}
+            {index < releases.length - 1 && <Separator className="mt-6" />}
           </AccordionItem>
         ))}
       </Accordion>

@@ -1,9 +1,22 @@
-import type { ComponentProps } from 'react'
-import { RiAddLine, RiBardLine, RiChatAiLine, RiCloseLine, RiCloudLine, RiDatabase2Line, RiDeleteBinLine, RiEditLine, RiEyeLine, RiFilterLine, RiSendPlaneLine, RiUserLine } from '@remixicon/react'
+import {
+  RiAddLine,
+  RiBardLine,
+  RiChatAiLine,
+  RiCloseLine,
+  RiCloudLine,
+  RiDatabase2Line,
+  RiDeleteBinLine,
+  RiEditLine,
+  RiEyeLine,
+  RiFilterLine,
+  RiSendPlaneLine,
+  RiUserLine,
+} from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import { Input } from '@tamery/ui/components/input'
 import { Separator } from '@tamery/ui/components/separator'
 import { cn } from '@tamery/ui/lib/utils'
+import type { ComponentProps } from 'react'
 
 interface FeatureCardProps extends ComponentProps<'article'> {
   featureId: string
@@ -31,7 +44,8 @@ interface FeatureCardTitleProps {
 function FeatureCardTitle({ title, description, icon, className }: FeatureCardTitleProps) {
   return (
     <header className={cn('flex flex-col', className)}>
-      <h3 className={`
+      <h3
+        className={`
         mb-3 flex items-center gap-2 text-sm font-medium tracking-wide
         text-muted-foreground
       `}
@@ -53,12 +67,14 @@ interface FilterItemProps {
 
 function FilterItem({ name, operator, value, onRemove }: FilterItemProps) {
   return (
-    <div className={`
+    <div
+      className={`
       flex h-7 items-center overflow-hidden rounded-md border transition-colors
       dark:bg-input/30
     `}
     >
-      <div className={`
+      <div
+        className={`
         flex h-full items-center gap-1 px-2 text-xs font-medium text-foreground
       `}
       >
@@ -66,14 +82,16 @@ function FilterItem({ name, operator, value, onRemove }: FilterItemProps) {
         {name}
       </div>
       <Separator orientation="vertical" />
-      <div className={`
+      <div
+        className={`
         h-full px-2 py-0.5 font-mono text-xs text-muted-foreground
       `}
       >
         {operator}
       </div>
       <Separator orientation="vertical" />
-      <div className={`
+      <div
+        className={`
         max-w-20 truncate px-2 font-mono text-xs text-foreground
         sm:max-w-40
         lg:max-w-60
@@ -99,7 +117,8 @@ function FilterItem({ name, operator, value, onRemove }: FilterItemProps) {
 
 function FilterWithAI() {
   return (
-    <div className={`
+    <div
+      className={`
       space-y-4
       sm:space-y-6
     `}
@@ -113,7 +132,8 @@ function FilterWithAI() {
         description="Let AI help you create filters naturally - no more manual entry needed."
         icon={<RiFilterLine className="size-4" aria-hidden="true" />}
       />
-      <div className={`
+      <div
+        className={`
         space-y-3
         sm:space-y-4
       `}
@@ -164,31 +184,35 @@ function FilterWithAI() {
           </Button>
         </div>
         <div className="overflow-hidden overflow-x-auto rounded-lg border">
-          <table className="w-full min-w-100 text-xs" role="table" aria-label="Filtered data results">
+          <table className="w-full min-w-100 text-xs" aria-label="Filtered data results">
             <thead className="bg-muted/50">
               <tr>
-                <th className={`
+                <th
+                  className={`
                   p-2 text-left font-medium text-foreground
                   sm:p-3
                 `}
                 >
                   ID
                 </th>
-                <th className={`
+                <th
+                  className={`
                   p-2 text-left font-medium text-foreground
                   sm:p-3
                 `}
                 >
                   Name
                 </th>
-                <th className={`
+                <th
+                  className={`
                   p-2 text-left font-medium text-foreground
                   sm:p-3
                 `}
                 >
                   Price
                 </th>
-                <th className={`
+                <th
+                  className={`
                   p-2 text-left font-medium text-foreground
                   sm:p-3
                 `}
@@ -198,33 +222,38 @@ function FilterWithAI() {
               </tr>
             </thead>
             <tbody>
-              <tr className={`
+              <tr
+                className={`
                 border-t transition-colors
                 hover:bg-muted/30
               `}
               >
-                <td className={`
+                <td
+                  className={`
                   p-2 font-mono
                   sm:p-3
                 `}
                 >
                   1
                 </td>
-                <td className={`
+                <td
+                  className={`
                   p-2
                   sm:p-3
                 `}
                 >
                   Laptop
                 </td>
-                <td className={`
+                <td
+                  className={`
                   p-2 font-mono
                   sm:p-3
                 `}
                 >
                   899
                 </td>
-                <td className={`
+                <td
+                  className={`
                   p-2
                   sm:p-3
                 `}
@@ -232,33 +261,38 @@ function FilterWithAI() {
                   Electronics
                 </td>
               </tr>
-              <tr className={`
+              <tr
+                className={`
                 border-t transition-colors
                 hover:bg-muted/30
               `}
               >
-                <td className={`
+                <td
+                  className={`
                   p-2 font-mono
                   sm:p-3
                 `}
                 >
                   2
                 </td>
-                <td className={`
+                <td
+                  className={`
                   p-2
                   sm:p-3
                 `}
                 >
                   Coffee Maker
                 </td>
-                <td className={`
+                <td
+                  className={`
                   p-2 font-mono
                   sm:p-3
                 `}
                 >
                   650
                 </td>
-                <td className={`
+                <td
+                  className={`
                   p-2
                   sm:p-3
                 `}
@@ -282,13 +316,15 @@ interface MessageProps {
 function UserMessage({ children, ...props }: MessageProps) {
   return (
     <div className="flex gap-3" {...props}>
-      <div className={`
+      <div
+        className={`
         flex size-7 shrink-0 items-center justify-center rounded-full bg-muted
       `}
       >
         <RiUserLine className="size-4 text-muted-foreground" aria-hidden="true" />
       </div>
-      <div className={`
+      <div
+        className={`
         max-w-[85%] rounded-lg bg-muted px-4 py-3 text-sm text-foreground
       `}
       >
@@ -301,14 +337,16 @@ function UserMessage({ children, ...props }: MessageProps) {
 function AIMessage({ children, ...props }: MessageProps) {
   return (
     <div className="flex justify-end gap-3" {...props}>
-      <div className={`
+      <div
+        className={`
         max-w-[85%] rounded-lg bg-primary px-4 py-3 text-sm
         text-primary-foreground shadow-sm
       `}
       >
         {children}
       </div>
-      <div className={`
+      <div
+        className={`
         flex size-7 shrink-0 items-center justify-center rounded-full bg-primary
         text-xs font-medium text-white shadow-sm
       `}
@@ -321,7 +359,8 @@ function AIMessage({ children, ...props }: MessageProps) {
 
 function ChatWithDB() {
   return (
-    <div className={`
+    <div
+      className={`
       space-y-4
       sm:space-y-6
     `}
@@ -335,7 +374,8 @@ function ChatWithDB() {
         description="Ask questions in natural language and get instant answers from your data."
         icon={<RiChatAiLine className="size-4" aria-hidden="true" />}
       />
-      <div className={`
+      <div
+        className={`
         space-y-3
         sm:space-y-4
       `}
@@ -344,7 +384,8 @@ function ChatWithDB() {
         <AIMessage aria-label="AI response">
           Here's a query that might help you:
           <br />
-          <code className={`
+          <code
+            className={`
             mt-2 inline-block rounded-sm bg-primary-foreground/20 px-2 py-1
             font-mono text-xs break-all
           `}
@@ -361,7 +402,8 @@ function ChatWithDB() {
 
 function CloudSync() {
   return (
-    <div className={`
+    <div
+      className={`
       space-y-4
       sm:space-y-6
     `}
@@ -375,18 +417,21 @@ function CloudSync() {
         description="Sync your connections with the cloud to keep them safe and accessible from any device."
         icon={<RiCloudLine className="size-4" aria-hidden="true" />}
       />
-      <div className={`
+      <div
+        className={`
         space-y-3
         sm:space-y-4
       `}
       >
-        <div className={`
+        <div
+          className={`
           flex items-center gap-3 rounded-xl border border-border/50
           bg-linear-to-r from-muted/30 to-muted/50 p-3
           sm:gap-4 sm:p-4
         `}
         >
-          <div className={`
+          <div
+            className={`
             flex size-10 shrink-0 items-center justify-center rounded-md
             bg-linear-to-br from-primary/20 to-primary/10
             sm:size-12
@@ -402,17 +447,21 @@ function CloudSync() {
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-semibold text-foreground">Local Database</div>
-            <div className="truncate font-mono text-xs text-muted-foreground">postgresql://localhost:5432</div>
+            <div className="truncate font-mono text-xs text-muted-foreground">
+              postgresql://localhost:5432
+            </div>
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1 text-xs">
-            <span className={`
+            <span
+              className={`
               font-medium text-green-600
               dark:text-green-400
             `}
             >
               Synced
             </span>
-            <span className={`
+            <span
+              className={`
               hidden text-muted-foreground
               sm:block
             `}
@@ -421,13 +470,15 @@ function CloudSync() {
             </span>
           </div>
         </div>
-        <div className={`
+        <div
+          className={`
           flex items-center gap-3 rounded-xl border border-border/50
           bg-linear-to-r from-muted/30 to-muted/50 p-3
           sm:gap-4 sm:p-4
         `}
         >
-          <div className={`
+          <div
+            className={`
             flex size-10 shrink-0 items-center justify-center rounded-md
             bg-linear-to-br from-primary/20 to-primary/10
             sm:size-12
@@ -443,10 +494,13 @@ function CloudSync() {
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-semibold text-foreground">Production Database</div>
-            <div className="truncate font-mono text-xs text-muted-foreground">postgresql://prod.example.com:5432</div>
+            <div className="truncate font-mono text-xs text-muted-foreground">
+              postgresql://prod.example.com:5432
+            </div>
           </div>
           <div className="flex shrink-0 items-center gap-1 text-xs">
-            <span className={`
+            <span
+              className={`
               font-medium text-green-600
               dark:text-green-400
             `}
@@ -469,9 +523,11 @@ interface DataActionCardProps {
 
 function DataActionCard({ icon, title, description, color }: DataActionCardProps) {
   const colorClasses = {
-    green: 'from-green-500/10 to-green-600/10 border-green-500/20 hover:border-green-500/40 text-green-700 dark:text-green-400',
+    green:
+      'from-green-500/10 to-green-600/10 border-green-500/20 hover:border-green-500/40 text-green-700 dark:text-green-400',
     blue: 'from-blue-500/10 to-blue-600/10 border-blue-500/20 hover:border-blue-500/40 text-blue-700 dark:text-blue-400',
-    yellow: 'from-yellow-500/10 to-yellow-600/10 border-yellow-500/20 hover:border-yellow-500/40 text-yellow-700 dark:text-yellow-400',
+    yellow:
+      'from-yellow-500/10 to-yellow-600/10 border-yellow-500/20 hover:border-yellow-500/40 text-yellow-700 dark:text-yellow-400',
     red: 'from-red-500/10 to-red-600/10 border-red-500/20 hover:border-red-500/40 text-red-700 dark:text-red-400',
   }
 
@@ -490,28 +546,31 @@ function DataActionCard({ icon, title, description, color }: DataActionCardProps
   }
 
   return (
-    <div className={cn(
-      `
+    <div
+      className={cn(
+        `
         cursor-pointer rounded-lg border bg-linear-to-br p-3 transition-all
         duration-300
         hover:shadow-md
         sm:p-4
       `,
-      colorClasses[color],
-    )}
+        colorClasses[color],
+      )}
     >
-      <div className={`
+      <div
+        className={`
         mb-2 flex items-center gap-2
         sm:mb-3 sm:gap-3
       `}
       >
-        <div className={cn(
-          `
+        <div
+          className={cn(
+            `
             flex size-6 shrink-0 items-center justify-center rounded-md
             sm:size-7
           `,
-          bgColorClasses[color],
-        )}
+            bgColorClasses[color],
+          )}
         >
           <div className={cn(iconColorClasses[color])} aria-hidden="true">
             {icon}
@@ -526,7 +585,8 @@ function DataActionCard({ icon, title, description, color }: DataActionCardProps
 
 function ManageData() {
   return (
-    <div className={`
+    <div
+      className={`
       space-y-4
       sm:space-y-6
     `}
@@ -540,12 +600,14 @@ function ManageData() {
         description="Manage your data with ease. Add, edit, and delete data with a few clicks."
         icon={<RiDatabase2Line className="size-4" aria-hidden="true" />}
       />
-      <div className={`
+      <div
+        className={`
         space-y-3
         sm:space-y-4
       `}
       >
-        <div className={`
+        <div
+          className={`
           grid grid-cols-1 gap-3
           sm:grid-cols-2 sm:gap-4
         `}
@@ -593,7 +655,8 @@ export function Features() {
         lg:py-16
       `}
     >
-      <div className={`
+      <div
+        className={`
         mb-12 text-center
         sm:mb-16
       `}
@@ -607,7 +670,8 @@ export function Features() {
         >
           Features
         </h2>
-        <p className={`
+        <p
+          className={`
           mx-auto max-w-3xl text-center text-2xl/tight font-bold text-balance
           sm:text-3xl
         `}
@@ -615,7 +679,8 @@ export function Features() {
           All the basic features you expect, plus powerful capabilities that set us apart
         </p>
       </div>
-      <div className={`
+      <div
+        className={`
         mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4
         sm:gap-6
         lg:grid-cols-2

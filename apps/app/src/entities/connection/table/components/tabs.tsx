@@ -1,6 +1,3 @@
-import type { ComponentProps } from 'react'
-import type { ConnectionResource } from '~/entities/connection/core'
-import type { connectionResourceType } from '~/entities/connection/store'
 import { RiCloseLine, RiTableLine } from '@remixicon/react'
 import { getOS } from '@tamery/shared/utils/os'
 import {
@@ -20,11 +17,21 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, useRouter, useSearch } from '@tanstack/react-router'
 import { Reorder } from 'motion/react'
+import type { ComponentProps } from 'react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
+
+import type { ConnectionResource } from '~/entities/connection/core'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
-import { addTab, getConnectionResourceStore, removeTab, updateTabs } from '~/entities/connection/store'
+import type { connectionResourceType } from '~/entities/connection/store'
+import {
+  addTab,
+  getConnectionResourceStore,
+  removeTab,
+  updateTabs,
+} from '~/entities/connection/store'
 import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
+
 import { tablePageStore } from '../store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -34,23 +41,20 @@ const os = getOS(navigator.userAgent)
 function CloseButton({ onClick }: { onClick: ComponentProps<'svg'>['onClick'] }) {
   return (
     <Tooltip>
-      <TooltipTrigger render={(
-        <RiCloseLine
-          className={`
+      <TooltipTrigger
+        render={
+          <RiCloseLine
+            className={`
             size-3.5 opacity-0
             group-hover:opacity-30
             hover:opacity-100
           `}
-          onClick={onClick}
-        />
-      )}
-      >
-      </TooltipTrigger>
+            onClick={onClick}
+          />
+        }
+      ></TooltipTrigger>
       <TooltipContent side="bottom" sideOffset={12}>
-        Close tab (
-        {os.type === 'macos' ? '⌘' : 'Ctrl'}
-        {' '}
-        + W)
+        Close tab ({os.type === 'macos' ? '⌘' : 'Ctrl'} + W)
       </TooltipContent>
     </Tooltip>
   )
@@ -77,7 +81,7 @@ function SortableTab({
   currentTabIndex,
   totalTabs,
 }: {
-  item: { id: string, tab: typeof connectionResourceType.infer['tabs'][number] }
+  item: { id: string; tab: (typeof connectionResourceType.infer)['tabs'][number] }
   showSchema: boolean
   connectionResource: ConnectionResource
   onClose: VoidFunction
@@ -88,7 +92,9 @@ function SortableTab({
   totalTabs: number
 }) {
   const router = useRouter()
-  const { schema: schemaParam, table: tableParam } = useSearch({ from: '/_protected/connection/$resourceId/table/' })
+  const { schema: schemaParam, table: tableParam } = useSearch({
+    from: '/_protected/connection/$resourceId/table/',
+  })
   const ref = useRef<HTMLDivElement>(null)
   const isVisible = useIsInViewport(ref, 'full')
   const [contextMenuOpen, setContextMenuOpen] = useState(false)
@@ -128,23 +134,36 @@ function SortableTab({
                 border-transparent pr-1.5 pl-2 text-sm text-foreground
                 hover:border-accent hover:bg-muted/70
               `,
-              isActive && `
+              isActive &&
+                `
                 border-primary/50 bg-primary/10
                 hover:border-primary/50 hover:bg-primary/10
               `,
             )}
             onDoubleClick={() => addTab(connectionResource.id, item.tab.schema, item.tab.table)}
-            onMouseOver={() => prefetchConnectionResourceTableCore({
-              connectionResource,
-              schema: item.tab.schema,
-              table: item.tab.table,
-              query: getQueryOpts(connectionResource, item.tab.schema, item.tab.table),
-            })}
-            onClick={() => router.navigate({
-              to: '/connection/$resourceId/table',
-              params: { resourceId: connectionResource.id },
-              search: { schema: item.tab.schema, table: item.tab.table },
-            })}
+            onMouseOver={() =>
+              prefetchConnectionResourceTableCore({
+                connectionResource,
+                schema: item.tab.schema,
+                table: item.tab.table,
+                query: getQueryOpts(connectionResource, item.tab.schema, item.tab.table),
+              })
+            }
+            onFocus={() =>
+              prefetchConnectionResourceTableCore({
+                connectionResource,
+                schema: item.tab.schema,
+                table: item.tab.table,
+                query: getQueryOpts(connectionResource, item.tab.schema, item.tab.table),
+              })
+            }
+            onClick={() =>
+              router.navigate({
+                to: '/connection/$resourceId/table',
+                params: { resourceId: connectionResource.id },
+                search: { schema: item.tab.schema, table: item.tab.table },
+              })
+            }
           >
             <RiTableLine
               className={cn(
@@ -152,15 +171,10 @@ function SortableTab({
                 isActive && 'text-primary opacity-100',
               )}
             />
-            {showSchema && (
-              <span className="text-muted-foreground">
-                {item.tab.schema}
-                .
-              </span>
-            )}
+            {showSchema && <span className="text-muted-foreground">{item.tab.schema}.</span>}
             {item.tab.table}
             <CloseButton
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation()
                 onClose()
               }}
@@ -191,16 +205,16 @@ function SortableTab({
   )
 }
 
-export function TablesTabs({
-  className,
-}: {
-  className?: string
-}) {
+export function TablesTabs({ className }: { className?: string }) {
   const { connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data: tablesAndSchemas } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))
-  const { schema: schemaParam, table: tableParam } = useSearch({ from: '/_protected/connection/$resourceId/table/' })
+  const { data: tablesAndSchemas } = useQuery(
+    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
+  )
+  const { schema: schemaParam, table: tableParam } = useSearch({
+    from: '/_protected/connection/$resourceId/table/',
+  })
   const router = useRouter()
   const tabs = useSubscription(store, { selector: state => state.tabs })
 
@@ -226,7 +240,7 @@ export function TablesTabs({
       })
     }
 
-    tabs.forEach((tab) => {
+    tabs.forEach(tab => {
       removeTab(connectionResource.id, tab.schema, tab.table)
     })
   }
@@ -239,7 +253,9 @@ export function TablesTabs({
     }
 
     const tabsToClose = tabs.slice(currentIndex + 1)
-    const isActiveTabOnTheRight = tabsToClose.some(tab => tab.schema === schemaParam && tab.table === tableParam)
+    const isActiveTabOnTheRight = tabsToClose.some(
+      tab => tab.schema === schemaParam && tab.table === tableParam,
+    )
 
     if (isActiveTabOnTheRight) {
       const leftTab = tabs[currentIndex]!
@@ -273,7 +289,7 @@ export function TablesTabs({
       })
     }
 
-    tabsToClose.forEach((tab) => {
+    tabsToClose.forEach(tab => {
       removeTab(connectionResource.id, tab.schema, tab.table)
     })
   }
@@ -296,7 +312,8 @@ export function TablesTabs({
     const nextTabIndex = currentTabIndex === tabs.length - 1 ? null : currentTabIndex + 1
     const prevTabIndex = currentTabIndex === 0 ? null : currentTabIndex - 1
 
-    const newTab = nextTabIndex !== null || prevTabIndex !== null ? tabs[(nextTabIndex ?? prevTabIndex)!] : null
+    const newTab =
+      nextTabIndex !== null || prevTabIndex !== null ? tabs[(nextTabIndex ?? prevTabIndex)!] : null
 
     if (newTab) {
       await router.navigate({
@@ -304,8 +321,7 @@ export function TablesTabs({
         params: { resourceId: connectionResource.id },
         search: { schema: newTab.schema, table: newTab.table },
       })
-    }
-    else {
+    } else {
       await router.navigate({
         to: '/connection/$resourceId/table',
         params: { resourceId: connectionResource.id },
@@ -318,7 +334,7 @@ export function TablesTabs({
     removeTab(connectionResource.id, schema, table)
   }
 
-  useHotkey('Mod+W', (e) => {
+  useHotkey('Mod+W', e => {
     e.preventDefault()
 
     if (schemaParam && tableParam) {
@@ -326,8 +342,10 @@ export function TablesTabs({
     }
   })
 
-  const cleanupTabsEvent = useEffectEvent(async (tables: { schema: string, table: string }[]) => {
-    const tabsToRemove = tabs.filter(tab => !tables.some(t => t.schema === tab.schema && t.table === tab.table))
+  const cleanupTabsEvent = useEffectEvent(async (tables: { schema: string; table: string }[]) => {
+    const tabsToRemove = tabs.filter(
+      tab => !tables.some(t => t.schema === tab.schema && t.table === tab.table),
+    )
 
     for (const { schema, table } of tabsToRemove) {
       closeTab(schema, table)
@@ -335,11 +353,13 @@ export function TablesTabs({
   })
 
   useEffect(() => {
-    if (!tablesAndSchemas)
-      return
+    if (!tablesAndSchemas) return
 
-    cleanupTabsEvent(tablesAndSchemas.schemas
-      .flatMap(schema => schema.tables.map(table => ({ schema: schema.name, table: table.name }))))
+    cleanupTabsEvent(
+      tablesAndSchemas.schemas.flatMap(schema =>
+        schema.tables.map(table => ({ schema: schema.name, table: table.name })),
+      ),
+    )
   }, [tablesAndSchemas])
 
   const isOneSchema = tabs.length
@@ -356,8 +376,11 @@ export function TablesTabs({
       <Reorder.Group
         axis="x"
         values={tabItems}
-        onReorder={(newItems) => {
-          updateTabs(connectionResource.id, newItems.map(item => item.tab))
+        onReorder={newItems => {
+          updateTabs(
+            connectionResource.id,
+            newItems.map(item => item.tab),
+          )
         }}
         className="flex h-full gap-1 p-1"
       >

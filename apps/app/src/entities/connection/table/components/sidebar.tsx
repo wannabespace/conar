@@ -7,9 +7,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/t
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
+
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
+
 import { TablesTree } from './tables-tree'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -19,7 +21,12 @@ export function Sidebar() {
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const search = useSubscription(store, { selector: state => state.tablesSearch })
-  const { data: tablesAndSchemas, refetch: refetchTablesAndSchemas, isFetching: isRefreshingTablesAndSchemas, dataUpdatedAt } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))
+  const {
+    data: tablesAndSchemas,
+    refetch: refetchTablesAndSchemas,
+    isFetching: isRefreshingTablesAndSchemas,
+    dataUpdatedAt,
+  } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))
 
   useRefreshHotkey(refetchTablesAndSchemas, isRefreshingTablesAndSchemas)
 
@@ -31,35 +38,34 @@ export function Sidebar() {
           <div className="flex items-center gap-4">
             {!CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES.includes(connection.type) && (
               <Tooltip>
-                <TooltipTrigger render={(
-                  <Switch
-                    checked={showSystem}
-                    onCheckedChange={value => store.set(state => ({ ...state, showSystem: value } satisfies typeof state))}
-                  />
-                )}
-                >
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  Show system tables
-                </TooltipContent>
+                <TooltipTrigger
+                  render={
+                    <Switch
+                      checked={showSystem}
+                      onCheckedChange={value =>
+                        store.set(state => ({ ...state, showSystem: value }) satisfies typeof state)
+                      }
+                    />
+                  }
+                ></TooltipTrigger>
+                <TooltipContent side="bottom">Show system tables</TooltipContent>
               </Tooltip>
             )}
             <Tooltip>
-              <TooltipTrigger render={(
-                <RefreshButton
-                  variant="outline"
-                  size="icon"
-                  onClick={() => refetchTablesAndSchemas()}
-                  refreshing={isRefreshingTablesAndSchemas}
-                />
-              )}
-              >
-              </TooltipTrigger>
+              <TooltipTrigger
+                render={
+                  <RefreshButton
+                    variant="outline"
+                    size="icon"
+                    onClick={() => refetchTablesAndSchemas()}
+                    refreshing={isRefreshingTablesAndSchemas}
+                  />
+                }
+              ></TooltipTrigger>
               <TooltipContent side="right">
                 Refresh tables and schemas list
                 <p className="text-xs opacity-70">
-                  Last updated:
-                  {' '}
+                  Last updated:{' '}
                   {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
                 </p>
               </TooltipContent>
@@ -72,7 +78,11 @@ export function Sidebar() {
               placeholder="Search tables"
               className="pr-8"
               value={search}
-              onChange={e => store.set(state => ({ ...state, tablesSearch: e.target.value } satisfies typeof state))}
+              onChange={e =>
+                store.set(
+                  state => ({ ...state, tablesSearch: e.target.value }) satisfies typeof state,
+                )
+              }
             />
             {search && (
               <button
@@ -80,7 +90,9 @@ export function Sidebar() {
                 className={`
                   absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer p-1
                 `}
-                onClick={() => store.set(state => ({ ...state, tablesSearch: '' } satisfies typeof state))}
+                onClick={() =>
+                  store.set(state => ({ ...state, tablesSearch: '' }) satisfies typeof state)
+                }
               >
                 <RiCloseLine className="size-4 text-muted-foreground" />
               </button>

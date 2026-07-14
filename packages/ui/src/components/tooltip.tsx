@@ -1,18 +1,8 @@
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip'
-
 import { cn } from '@tamery/ui/lib/utils'
 
-function TooltipProvider({
-  delay = 0,
-  ...props
-}: TooltipPrimitive.Provider.Props) {
-  return (
-    <TooltipPrimitive.Provider
-      data-slot="tooltip-provider"
-      delay={delay}
-      {...props}
-    />
-  )
+function TooltipProvider({ delay = 0, ...props }: TooltipPrimitive.Provider.Props) {
+  return <TooltipPrimitive.Provider data-slot="tooltip-provider" delay={delay} {...props} />
 }
 
 function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
@@ -31,11 +21,8 @@ function TooltipContent({
   alignOffset = 0,
   children,
   ...props
-}: TooltipPrimitive.Popup.Props
-  & Pick<
-    TooltipPrimitive.Positioner.Props,
-    'align' | 'alignOffset' | 'side' | 'sideOffset'
-  >) {
+}: TooltipPrimitive.Popup.Props &
+  Pick<TooltipPrimitive.Positioner.Props, 'align' | 'alignOffset' | 'side' | 'sideOffset'>) {
   return (
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Positioner
@@ -73,8 +60,9 @@ function TooltipContent({
           {...props}
         >
           {children}
-          <TooltipPrimitive.Arrow className="
-            z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px]
+          <TooltipPrimitive.Arrow
+            className="
+            z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-xs
             bg-foreground fill-foreground
             data-[side=bottom]:top-1
             data-[side=inline-end]:top-1/2! data-[side=inline-end]:-left-1

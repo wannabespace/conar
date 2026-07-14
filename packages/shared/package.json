@@ -1,9 +1,9 @@
 {
   "name": "@tamery/shared",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
-    "check-types": "tsgo",
+    "check-types": "tsc",
     "test": "bun test"
   },
   "dependencies": {

@@ -12,9 +12,8 @@ export function SingleAccordionTrigger({
   render,
   ...props
 }: AccordionPrimitive.Trigger.Props & { asChild?: boolean }) {
-  const resolvedRender = asChild && React.isValidElement(children)
-    ? (children as React.ReactElement)
-    : render
+  const resolvedRender =
+    asChild && React.isValidElement(children) ? (children as React.ReactElement) : render
 
   return (
     <AccordionPrimitive.Header className="flex">
@@ -42,15 +41,23 @@ export function SingleAccordionTrigger({
 
 export function SingleAccordionTriggerArrow({ className }: { className?: string }) {
   return (
-    <RiArrowDownSLine className={cn(`
+    <RiArrowDownSLine
+      className={cn(
+        `
       pointer-events-none size-4 shrink-0 translate-y-0.5 text-muted-foreground
       transition-transform duration-200
-    `, className)}
+    `,
+        className,
+      )}
     />
   )
 }
 
-export function SingleAccordionContent({ children, className, ...props }: AccordionPrimitive.Panel.Props) {
+export function SingleAccordionContent({
+  children,
+  className,
+  ...props
+}: AccordionPrimitive.Panel.Props) {
   return (
     <AccordionPrimitive.Panel
       data-slot="accordion-content"
@@ -67,19 +74,26 @@ export function SingleAccordionContent({ children, className, ...props }: Accord
   )
 }
 
-export function SingleAccordion({ open, onOpenChange, children, className, ...props }: { open?: boolean, onOpenChange?: (open: boolean) => void } & Omit<AccordionPrimitive.Root.Props, 'value' | 'defaultValue' | 'onValueChange'>) {
+export function SingleAccordion({
+  open,
+  onOpenChange,
+  children,
+  className,
+  ...props
+}: { open?: boolean; onOpenChange?: (open: boolean) => void } & Omit<
+  AccordionPrimitive.Root.Props,
+  'value' | 'defaultValue' | 'onValueChange'
+>) {
   return (
     <AccordionPrimitive.Root
       className={cn('w-full rounded-lg border bg-card text-card-foreground', className)}
       value={open ? [ITEM_VALUE] : onOpenChange ? [] : undefined}
-      onValueChange={(value) => {
+      onValueChange={value => {
         onOpenChange?.(value.includes(ITEM_VALUE))
       }}
       {...props}
     >
-      <AccordionPrimitive.Item value={ITEM_VALUE}>
-        {children}
-      </AccordionPrimitive.Item>
+      <AccordionPrimitive.Item value={ITEM_VALUE}>{children}</AccordionPrimitive.Item>
     </AccordionPrimitive.Root>
   )
 }

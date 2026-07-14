@@ -1,8 +1,7 @@
-import type { VariantProps } from 'class-variance-authority'
 import { Label } from '@tamery/ui/components/label'
-
 import { Separator } from '@tamery/ui/components/separator'
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
 import { cva } from 'class-variance-authority'
 import { useMemo } from 'react'
 
@@ -75,15 +74,13 @@ const fieldVariants = cva(
           *:w-full
           [&>.sr-only]:w-auto
         `,
-        horizontal:
-          `
+        horizontal: `
             flex-row items-center
             has-[>[data-slot=field-content]]:items-start
             *:data-[slot=field-label]:flex-auto
             has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px
           `,
-        responsive:
-          `
+        responsive: `
             flex-col
             *:w-full
             @md/field-group:flex-row @md/field-group:items-center
@@ -121,19 +118,13 @@ function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="field-content"
-      className={cn(
-        'group/field-content flex flex-1 flex-col gap-1 leading-snug',
-        className,
-      )}
+      className={cn('group/field-content flex flex-1 flex-col gap-1 leading-snug', className)}
       {...props}
     />
   )
 }
 
-function FieldLabel({
-  className,
-  ...props
-}: React.ComponentProps<typeof Label>) {
+function FieldLabel({ className, ...props }: React.ComponentProps<typeof Label>) {
   return (
     <Label
       data-slot="field-label"
@@ -247,9 +238,7 @@ function FieldError({
       return null
     }
 
-    const uniqueErrors = [
-      ...new Map(errors.map(error => [error?.message, error])).values(),
-    ]
+    const uniqueErrors = [...new Map(errors.map(error => [error?.message, error])).values()]
 
     if (uniqueErrors?.length === 1) {
       return uniqueErrors[0]?.message
@@ -259,7 +248,7 @@ function FieldError({
       <ul className="ml-4 flex list-disc flex-col gap-1">
         {uniqueErrors.map(
           (error, index) =>
-            // eslint-disable-next-line react/no-array-index-key
+            // oxlint-disable-next-line react/no-array-index-key
             error?.message && <li key={index}>{error.message}</li>,
         )}
       </ul>

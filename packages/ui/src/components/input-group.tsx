@@ -1,9 +1,10 @@
-import type { VariantProps } from 'class-variance-authority'
 import { Button } from '@tamery/ui/components/button'
 import { Input } from '@tamery/ui/components/input'
 import { Textarea } from '@tamery/ui/components/textarea'
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
 import * as React from 'react'
+
 import { inputGroupAddonVariants, inputGroupButtonVariants } from './input-group.utils'
 
 function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
@@ -16,8 +17,8 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
           group/input-group relative flex h-8 w-full min-w-0 items-center
           rounded-2xl border border-transparent bg-input
           transition-[color,box-shadow] duration-200 outline-none
-          in-data-[slot=combobox-content]:focus-within:border-inherit
-          in-data-[slot=combobox-content]:focus-within:ring-0
+          focus-within:in-data-[slot=combobox-content]:border-inherit
+          focus-within:in-data-[slot=combobox-content]:ring-0
           has-[[data-slot=input-group-control]:focus-visible]:border-ring
           has-[[data-slot=input-group-control]:focus-visible]:ring-3
           has-[[data-slot=input-group-control]:focus-visible]:ring-ring/30
@@ -48,12 +49,14 @@ function InputGroupAddon({
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof inputGroupAddonVariants>) {
   return (
+    // Mouse-only convenience: clicking the addon focuses the input; keyboard users tab to it directly
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events
     <div
       role="group"
       data-slot="input-group-addon"
       data-align={align}
       className={cn(inputGroupAddonVariants({ align }), className)}
-      onClick={(e) => {
+      onClick={e => {
         if ((e.target as HTMLElement).closest('button')) {
           return
         }
@@ -70,8 +73,8 @@ function InputGroupButton({
   variant = 'ghost',
   size = 'xs',
   ...props
-}: Omit<React.ComponentProps<typeof Button>, 'size' | 'type'>
-  & VariantProps<typeof inputGroupButtonVariants> & {
+}: Omit<React.ComponentProps<typeof Button>, 'size' | 'type'> &
+  VariantProps<typeof inputGroupButtonVariants> & {
     type?: 'button' | 'submit' | 'reset'
   }) {
   return (
@@ -101,10 +104,7 @@ function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
   )
 }
 
-function InputGroupInput({
-  className,
-  ...props
-}: React.ComponentProps<'input'>) {
+function InputGroupInput({ className, ...props }: React.ComponentProps<'input'>) {
   return (
     <Input
       data-slot="input-group-control"
@@ -122,10 +122,7 @@ function InputGroupInput({
   )
 }
 
-function InputGroupTextarea({
-  className,
-  ...props
-}: React.ComponentProps<'textarea'>) {
+function InputGroupTextarea({ className, ...props }: React.ComponentProps<'textarea'>) {
   return (
     <Textarea
       data-slot="input-group-control"

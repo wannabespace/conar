@@ -1,11 +1,16 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
+
 import { nanoid } from 'nanoid'
+
 import { decryptWithKey, encryptWithKey } from './crypto-web'
 
 let key: CryptoKey
 
 beforeAll(async () => {
-  key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt'])
+  key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, [
+    'encrypt',
+    'decrypt',
+  ])
 })
 
 describe('encryption', () => {
@@ -34,7 +39,10 @@ describe('encryption', () => {
 
   it('should fail decryption with wrong key', async () => {
     const encrypted = await encryptWithKey(key, 'Hello, World!')
-    const wrongKey = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt'])
+    const wrongKey = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, [
+      'encrypt',
+      'decrypt',
+    ])
 
     expect(decryptWithKey(wrongKey, encrypted)).rejects.toThrow()
   })

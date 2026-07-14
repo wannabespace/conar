@@ -1,11 +1,12 @@
-import type { ActiveFilter } from '@tamery/shared/filters'
 import { RiAddLine, RiCloseLine, RiDatabase2Line, RiFilterOffLine } from '@remixicon/react'
+import type { ActiveFilter } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
 import { Group, GroupSeparator } from '@tamery/ui/components/group'
 import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
 import { useToggle } from '@tamery/ui/hookas/use-toggle'
 import { useEffect, useEffectEvent, useState } from 'react'
 import { useSubscription } from 'seitu/react'
+
 import { useTableColumns } from '../../columns'
 import { useTablePageStore } from '../../store'
 import { FiltersColumnSelector } from './filters-column-selector'
@@ -30,20 +31,18 @@ function FilterItem({
   return (
     <Group>
       <Popover open={isColumnOpen} onOpenChange={setIsColumnOpen}>
-        <PopoverTrigger
-          data-mask
-          render={<Button size="xs" variant="outline" />}
-        >
+        <PopoverTrigger data-mask render={<Button size="xs" variant="outline" />}>
           <RiDatabase2Line className="size-3 text-muted-foreground" />
           {filter.column}
         </PopoverTrigger>
-        <PopoverContent className="
+        <PopoverContent
+          className="
           p-0
           **:data-[slot=popover-viewport]:p-0
         "
         >
           <FiltersColumnSelector
-            onSelect={(column) => {
+            onSelect={column => {
               onEdit({ column, ref: filter.ref, values })
               setIsColumnOpen(false)
             }}
@@ -52,18 +51,17 @@ function FilterItem({
       </Popover>
       <GroupSeparator />
       <Popover open={isOperatorOpen} onOpenChange={setIsOperatorOpen}>
-        <PopoverTrigger
-          render={<Button size="xs" variant="outline" />}
-        >
+        <PopoverTrigger render={<Button size="xs" variant="outline" />}>
           {filter.ref.operator}
         </PopoverTrigger>
-        <PopoverContent className="
+        <PopoverContent
+          className="
           p-0
           **:data-[slot=popover-viewport]:p-0
         "
         >
           <FiltersSelector
-            onSelect={(operator) => {
+            onSelect={operator => {
               onEdit({ column: filter.column, ref: operator, values })
               setIsOperatorOpen(false)
             }}
@@ -74,17 +72,17 @@ function FilterItem({
         <>
           <GroupSeparator />
           <Popover open={isValueOpen} onOpenChange={setIsValueOpen}>
-            <PopoverTrigger
-              render={<Button size="xs" variant="outline" />}
-              className="max-w-72"
-            >
+            <PopoverTrigger render={<Button size="xs" variant="outline" />} className="max-w-72">
               <span className="truncate">
-                {(filter.values?.length === 0 || filter.values?.every(value => value === ''))
-                  ? <span className="opacity-30">Empty</span>
-                  : filter.values?.join(', ')}
+                {filter.values?.length === 0 || filter.values?.every(value => value === '') ? (
+                  <span className="opacity-30">Empty</span>
+                ) : (
+                  filter.values?.join(', ')
+                )}
               </span>
             </PopoverTrigger>
-            <PopoverContent className="
+            <PopoverContent
+              className="
               max-h-[calc(100vh-10rem)] p-0
               **:data-[slot=popover-viewport]:p-0
             "
@@ -105,12 +103,7 @@ function FilterItem({
         </>
       )}
       <GroupSeparator />
-      <Button
-        size="icon-xs"
-        variant="destructive"
-        onClick={onRemove}
-        aria-label="Remove filter"
-      >
+      <Button size="icon-xs" variant="destructive" onClick={onRemove} aria-label="Remove filter">
         <RiCloseLine className="size-3.5" />
       </Button>
     </Group>
@@ -124,23 +117,24 @@ export function Filters() {
   const columns = useTableColumns()
 
   const removeUnusedOrdersEvent = useEffectEvent(() => {
-    if (!columns || columns.length === 0)
-      return
+    if (!columns || columns.length === 0) return
 
-    const columnIds = columns.map(col => col.id)
-    const invalidOrderByKeys = Object.keys(store.get().orderBy).filter(key => !columnIds.includes(key))
+    const columnIds = new Set(columns.map(col => col.id))
+    const invalidOrderByKeys = Object.keys(store.get().orderBy).filter(key => !columnIds.has(key))
 
-    if (invalidOrderByKeys.length === 0)
-      return
+    if (invalidOrderByKeys.length === 0) return
 
     const newOrderBy = Object.fromEntries(
       Object.entries(store.get().orderBy).filter(([key]) => !invalidOrderByKeys.includes(key)),
     )
 
-    store.set(state => ({
-      ...state,
-      orderBy: newOrderBy,
-    } satisfies typeof state))
+    store.set(
+      state =>
+        ({
+          ...state,
+          orderBy: newOrderBy,
+        }) satisfies typeof state,
+    )
   })
 
   useEffect(() => {
@@ -152,49 +146,57 @@ export function Filters() {
   }
 
   return (
-
     <div className="flex justify-between gap-2">
       <div className="flex flex-wrap gap-2">
         {filters.map((filter, index) => (
           <FilterItem
-            // eslint-disable-next-line react/no-array-index-key
+            // oxlint-disable-next-line react/no-array-index-key
             key={`${filter.column}-${filter.ref.operator}-${filter.values.join(',')}-${index}`}
             filter={filter}
-            onRemove={() => store.set(state => ({
-              ...state,
-              filters: state.filters.filter((_, i) => i !== index),
-            } satisfies typeof state))}
-            onEdit={({ column, ref, values }) => store.set(state => ({
-              ...state,
-              filters: state.filters.map((f, i) => i === index
-                ? { column, ref, values }
-                : f),
-            } satisfies typeof state))}
+            onRemove={() =>
+              store.set(
+                state =>
+                  ({
+                    ...state,
+                    filters: state.filters.filter((_, i) => i !== index),
+                  }) satisfies typeof state,
+              )
+            }
+            onEdit={({ column, ref, values }) =>
+              store.set(
+                state =>
+                  ({
+                    ...state,
+                    filters: state.filters.map((f, i) =>
+                      i === index ? { column, ref, values } : f,
+                    ),
+                  }) satisfies typeof state,
+              )
+            }
           />
         ))}
         <Popover open={isOpened} onOpenChange={toggleForm}>
-          <PopoverTrigger render={(
-            <Button
-              variant="outline"
-              size="icon-xs"
-              onClick={() => toggleForm()}
-            />
-          )}
+          <PopoverTrigger
+            render={<Button variant="outline" size="icon-xs" onClick={() => toggleForm()} />}
           >
             <RiAddLine className="size-4" />
           </PopoverTrigger>
-          <PopoverContent className="
+          <PopoverContent
+            className="
             p-0
             **:data-[slot=popover-viewport]:p-0
           "
           >
             <FilterForm
-              onAdd={(filter) => {
+              onAdd={filter => {
                 toggleForm(false)
-                store.set(state => ({
-                  ...state,
-                  filters: [...state.filters, filter],
-                } satisfies typeof state))
+                store.set(
+                  state =>
+                    ({
+                      ...state,
+                      filters: [...state.filters, filter],
+                    }) satisfies typeof state,
+                )
               }}
             />
           </PopoverContent>
@@ -203,10 +205,15 @@ export function Filters() {
       <Button
         variant="destructive"
         size="xs"
-        onClick={() => store.set(state => ({
-          ...state,
-          filters: [],
-        } satisfies typeof state))}
+        onClick={() =>
+          store.set(
+            state =>
+              ({
+                ...state,
+                filters: [],
+              }) satisfies typeof state,
+          )
+        }
       >
         <RiFilterOffLine className="size-3" />
         Clear

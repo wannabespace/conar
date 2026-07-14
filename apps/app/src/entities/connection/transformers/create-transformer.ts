@@ -1,4 +1,5 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+
 import type { Column } from '../components/table/cell/utils'
 import { createBooleanTransformer } from './boolean'
 import { createListTransformer } from './list'
@@ -27,28 +28,26 @@ export function getDisplayValue(value: unknown, size: number): string {
 
   if (value === null) {
     display = 'null'
-  }
-  else if (value === '') {
+  } else if (value === '') {
     display = 'empty'
-  }
-  else if (typeof value === 'string') {
+  } else if (typeof value === 'string') {
     display = value
-  }
-  else if (value instanceof Date) {
+  } else if (value instanceof Date) {
     display = value.toISOString()
-  }
-  else if (typeof value === 'object') {
+  } else if (typeof value === 'object') {
     display = JSON.stringify(value)
-  }
-  else {
+  } else {
     display = String(value)
   }
 
-  return display.replaceAll('\n', ' ').slice(0, (size / 6) + 5 + 50)
+  return display.replaceAll('\n', ' ').slice(0, size / 6 + 5 + 50)
 }
 
-// eslint-disable-next-line ts/no-explicit-any
-export function createTransformer(connectionType: ConnectionType, column: Column): ValueTransformer<any> {
+export function createTransformer(
+  connectionType: ConnectionType,
+  column: Column,
+  // oxlint-disable-next-line ts/no-explicit-any
+): ValueTransformer<any> {
   switch (column.uiType) {
     case 'list':
       return createListTransformer(connectionType, column)

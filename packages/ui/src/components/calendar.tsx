@@ -1,12 +1,10 @@
-import type { DayButton, Locale } from 'react-day-picker'
 import { RiArrowDownSLine, RiArrowLeftSLine, RiArrowRightSLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
-import {
-  DayPicker,
-  getDefaultClassNames,
-} from 'react-day-picker'
+import type { DayButton, Locale } from 'react-day-picker'
+import { DayPicker, getDefaultClassNames } from 'react-day-picker'
+
 import { buttonVariants } from './button.utils'
 
 function Calendar({
@@ -41,8 +39,7 @@ function Calendar({
       captionLayout={captionLayout}
       locale={locale}
       formatters={{
-        formatMonthDropdown: date =>
-          date.toLocaleString(locale?.code, { month: 'short' }),
+        formatMonthDropdown: date => date.toLocaleString(locale?.code, { month: 'short' }),
         ...formatters,
       }}
       classNames={{
@@ -92,14 +89,8 @@ function Calendar({
           `,
           defaultClassNames.dropdowns,
         ),
-        dropdown_root: cn(
-          'relative rounded-(--cell-radius)',
-          defaultClassNames.dropdown_root,
-        ),
-        dropdown: cn(
-          'absolute inset-0 bg-popover opacity-0',
-          defaultClassNames.dropdown,
-        ),
+        dropdown_root: cn('relative rounded-(--cell-radius)', defaultClassNames.dropdown_root),
+        dropdown: cn('absolute inset-0 bg-popover opacity-0', defaultClassNames.dropdown),
         caption_label: cn(
           'font-medium select-none',
           captionLayout === 'label'
@@ -120,10 +111,7 @@ function Calendar({
           defaultClassNames.weekday,
         ),
         week: cn('mt-2 flex w-full', defaultClassNames.week),
-        week_number_header: cn(
-          'w-(--cell-size) select-none',
-          defaultClassNames.week_number_header,
-        ),
+        week_number_header: cn('w-(--cell-size) select-none', defaultClassNames.week_number_header),
         week_number: cn(
           'text-[0.8rem] text-muted-foreground select-none',
           defaultClassNames.week_number,
@@ -173,52 +161,31 @@ function Calendar({
           `,
           defaultClassNames.outside,
         ),
-        disabled: cn(
-          'text-muted-foreground opacity-50',
-          defaultClassNames.disabled,
-        ),
+        disabled: cn('text-muted-foreground opacity-50', defaultClassNames.disabled),
         hidden: cn('invisible', defaultClassNames.hidden),
         ...classNames,
       }}
       components={{
-        // eslint-disable-next-line react/no-nested-component-definitions
         Root: ({ className, rootRef, ...props }) => {
-          return (
-            <div
-              data-slot="calendar"
-              ref={rootRef}
-              className={cn(className)}
-              {...props}
-            />
-          )
+          return <div data-slot="calendar" ref={rootRef} className={cn(className)} {...props} />
         },
-        // eslint-disable-next-line react/no-nested-component-definitions
         Chevron: ({ className, orientation, ...props }) => {
           if (orientation === 'left') {
-            return (
-              <RiArrowLeftSLine className={cn('size-4', className)} {...props} />
-            )
+            return <RiArrowLeftSLine className={cn('size-4', className)} {...props} />
           }
 
           if (orientation === 'right') {
-            return (
-              <RiArrowRightSLine className={cn('size-4', className)} {...props} />
-            )
+            return <RiArrowRightSLine className={cn('size-4', className)} {...props} />
           }
 
-          return (
-            <RiArrowDownSLine className={cn('size-4', className)} {...props} />
-          )
+          return <RiArrowDownSLine className={cn('size-4', className)} {...props} />
         },
-        // eslint-disable-next-line react/no-nested-component-definitions
-        DayButton: ({ ...props }) => (
-          <CalendarDayButton locale={locale} {...props} />
-        ),
-        // eslint-disable-next-line react/no-nested-component-definitions
+        DayButton: ({ ...props }) => <CalendarDayButton locale={locale} {...props} />,
         WeekNumber: ({ children, ...props }) => {
           return (
             <td {...props}>
-              <div className="
+              <div
+                className="
                 flex size-(--cell-size) items-center justify-center text-center
               "
               >
@@ -245,8 +212,7 @@ function CalendarDayButton({
 
   const ref = React.useRef<HTMLButtonElement>(null)
   React.useEffect(() => {
-    if (modifiers.focused)
-      ref.current?.focus()
+    if (modifiers.focused) ref.current?.focus()
   }, [modifiers.focused])
 
   return (
@@ -255,10 +221,10 @@ function CalendarDayButton({
       size="icon"
       data-day={day.date.toLocaleDateString(locale?.code)}
       data-selected-single={
-        modifiers.selected
-        && !modifiers.range_start
-        && !modifiers.range_end
-        && !modifiers.range_middle
+        modifiers.selected &&
+        !modifiers.range_start &&
+        !modifiers.range_end &&
+        !modifiers.range_middle
       }
       data-range-start={modifiers.range_start}
       data-range-end={modifiers.range_end}
@@ -285,7 +251,7 @@ function CalendarDayButton({
           data-[range-start=true]:text-primary-foreground
           data-[selected-single=true]:bg-primary
           data-[selected-single=true]:text-primary-foreground
-          dark:hover:text-foreground
+          hover:dark:text-foreground
           [&>span]:text-xs [&>span]:opacity-70
         `,
         defaultClassNames.day,

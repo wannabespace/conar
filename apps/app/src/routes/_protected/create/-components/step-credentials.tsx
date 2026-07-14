@@ -1,10 +1,17 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { RefObject } from 'react'
 import { placeholderMap } from '@tamery/shared/utils/connections'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tamery/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@tamery/ui/components/card'
 import { Field, FieldDescription, FieldLabel } from '@tamery/ui/components/field'
 import { Input } from '@tamery/ui/components/input'
+import type { RefObject } from 'react'
 import { useId } from 'react'
+
 import { useLocalProxyAvailable } from '~/entities/connection/runtime'
 
 export function StepCredentials({
@@ -31,9 +38,7 @@ export function StepCredentials({
       </CardHeader>
       <CardContent>
         <Field className="gap-2">
-          <FieldLabel htmlFor={id}>
-            Connection string
-          </FieldLabel>
+          <FieldLabel htmlFor={id}>Connection string</FieldLabel>
           <Input
             id={id}
             placeholder={placeholderMap[type]}
@@ -41,7 +46,7 @@ export function StepCredentials({
             autoFocus
             value={connectionString}
             onChange={e => setConnectionString(e.target.value)}
-            onKeyDown={(e) => {
+            onKeyDown={e => {
               if (e.key === 'Enter') {
                 e.preventDefault()
                 onEnter()

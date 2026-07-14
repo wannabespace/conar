@@ -5,7 +5,7 @@ import { motion } from 'motion/react'
 export const tabsListVariants = cva(
   `
     group/tabs-list inline-flex w-fit items-center justify-center rounded-2xl
-    p-[3px] text-muted-foreground
+    p-0.75 text-muted-foreground
     group-data-horizontal/tabs:h-8
     group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col
     group-data-vertical/tabs:p-1

@@ -1,15 +1,48 @@
-import type { ComponentRef } from 'react'
-import type { Connection } from '~/entities/connection'
-import { RiAddLine, RiAlertLine, RiArrowDownSLine, RiCheckLine, RiDatabase2Line, RiDeleteBinLine, RiLockUnlockLine, RiMoreLine, RiPushpinFill, RiPushpinLine, RiRefreshLine, RiSortAsc, RiSortDesc } from '@remixicon/react'
-import { CONNECTION_RESOURCE_ROOT_LABEL, CONNECTION_RESOURCE_ROOT_SYMBOL } from '@tamery/shared/constants'
+import {
+  RiAddLine,
+  RiAlertLine,
+  RiArrowDownSLine,
+  RiCheckLine,
+  RiDatabase2Line,
+  RiDeleteBinLine,
+  RiLockUnlockLine,
+  RiMoreLine,
+  RiPushpinFill,
+  RiPushpinLine,
+  RiRefreshLine,
+  RiSortAsc,
+  RiSortDesc,
+} from '@remixicon/react'
+import {
+  CONNECTION_RESOURCE_ROOT_LABEL,
+  CONNECTION_RESOURCE_ROOT_SYMBOL,
+} from '@tamery/shared/constants'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
 import { Button } from '@tamery/ui/components/button'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@tamery/ui/components/command'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@tamery/ui/components/dropdown-menu'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@tamery/ui/components/command'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@tamery/ui/components/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@tamery/ui/components/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@tamery/ui/components/select'
 import { Separator } from '@tamery/ui/components/separator'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import { Spinner } from '@tamery/ui/components/spinner'
@@ -22,11 +55,14 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { AnimatePresence, motion } from 'motion/react'
+import type { ComponentRef } from 'react'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
+
 import { useCollections } from '~/entities/collections'
+import type { Connection } from '~/entities/connection'
 import {
   ConnectionIcon,
   ConnectionResourceLink,
@@ -36,24 +72,28 @@ import {
   lastOpenedResourcesStorageValue,
   useFetchingConfig,
 } from '~/entities/connection'
+
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
 function ConnectionIconWithVersion({ connection }: { connection: Connection }) {
   const { canSend } = useFetchingConfig(connection)
-  const { data: version, isPending: isVersionPending, refetch: refetchVersion, isRefetching: isVersionRefetching } = useQuery({
+  const {
+    data: version,
+    isPending: isVersionPending,
+    refetch: refetchVersion,
+    isRefetching: isVersionRefetching,
+  } = useQuery({
     ...connectionVersionQueryOptions(connection),
     enabled: canSend,
   })
 
   return (
     <Tooltip>
-      <TooltipTrigger render={(
-        <ConnectionIcon
-          type={connection.type}
-          className="pointer-events-auto size-6 shrink-0"
-        />
-      )}
+      <TooltipTrigger
+        render={
+          <ConnectionIcon type={connection.type} className="pointer-events-auto size-6 shrink-0" />
+        }
       />
 
       <TooltipContent
@@ -62,29 +102,33 @@ function ConnectionIconWithVersion({ connection }: { connection: Connection }) {
         sideOffset={10}
       >
         <span className="opacity-50">Version: </span>
-        {!canSend
-          ? <span className="opacity-50">Unavailable in web app</span>
-          : isVersionPending
-            ? <span className="animate-pulse">Loading version...</span>
-            : version
-              ? (
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      className="cursor-pointer"
-                      onClick={() => refetchVersion()}
-                    >
-                      {version}
-                    </button>
-                    {isVersionRefetching && (
-                      <Spinner className="size-3" />
-                    )}
-                  </div>
-                )
-              : <span className="opacity-50">Version cannot be detected</span>}
+        {!canSend ? (
+          <span className="opacity-50">Unavailable in web app</span>
+        ) : isVersionPending ? (
+          <span className="animate-pulse">Loading version...</span>
+        ) : version ? (
+          <div className="flex items-center gap-1">
+            <button type="button" className="cursor-pointer" onClick={() => refetchVersion()}>
+              {version}
+            </button>
+            {isVersionRefetching && <Spinner className="size-3" />}
+          </div>
+        ) : (
+          <span className="opacity-50">Version cannot be detected</span>
+        )}
       </TooltipContent>
     </Tooltip>
   )
+}
+
+function resourceValue(resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL) {
+  return resource === CONNECTION_RESOURCE_ROOT_SYMBOL
+    ? CONNECTION_RESOURCE_ROOT_SYMBOL.description!
+    : resource
+}
+
+function resourceLabel(resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL) {
+  return resource === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_LABEL : resource
 }
 
 function ConnectionResourcesCombobox({
@@ -107,14 +151,6 @@ function ConnectionResourcesCombobox({
   const pinned = resources.filter(resource => pinnedResourcesNames.includes(resource))
   const unpinned = resources.filter(resource => !pinnedResourcesNames.includes(resource))
 
-  function resourceValue(resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL) {
-    return resource === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_SYMBOL.description! : resource
-  }
-
-  function resourceLabel(resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL) {
-    return resource === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_LABEL : resource
-  }
-
   function renderItem(resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL) {
     const isPinned = pinnedResourcesNames.includes(resource)
 
@@ -135,27 +171,28 @@ function ConnectionResourcesCombobox({
             resource === selectedResourceName ? 'opacity-100' : 'opacity-0',
           )}
         />
-        <span className="flex-1 truncate">
-          {resourceLabel(resource)}
-        </span>
+        <span className="flex-1 truncate">{resourceLabel(resource)}</span>
         <Button
           variant="ghost"
           size="icon-xs"
           className={cn(
             '-mr-1 shrink-0',
-            !isPinned && `
+            !isPinned &&
+              `
               opacity-0
               group-hover:opacity-100
             `,
           )}
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation()
             onPinnedResourceNameChange(resource)
           }}
         >
-          {isPinned
-            ? <RiPushpinFill className="size-3.5 text-primary" />
-            : <RiPushpinLine className="size-3.5" />}
+          {isPinned ? (
+            <RiPushpinFill className="size-3.5 text-primary" />
+          ) : (
+            <RiPushpinLine className="size-3.5" />
+          )}
         </Button>
       </CommandItem>
     )
@@ -164,35 +201,30 @@ function ConnectionResourcesCombobox({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        render={(
+        render={
           <Button
             variant="outline"
             size="xs"
             disabled={disabled}
             className="pointer-events-auto text-xs"
           />
-        )}
+        }
       >
-        {selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_LABEL : selectedResourceName}
+        {selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL
+          ? CONNECTION_RESOURCE_ROOT_LABEL
+          : selectedResourceName}
         <RiArrowDownSLine />
       </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        className="pointer-events-auto w-56 overflow-hidden p-0"
-      >
+      <PopoverContent align="start" className="pointer-events-auto w-56 overflow-hidden p-0">
         <Command>
           <CommandInput placeholder="Search resources..." />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             {pinned.length > 0 && (
-              <CommandGroup heading="Pinned">
-                {pinned.map(renderItem)}
-              </CommandGroup>
+              <CommandGroup heading="Pinned">{pinned.map(renderItem)}</CommandGroup>
             )}
             {unpinned.length > 0 && (
-              <CommandGroup heading="Unpinned">
-                {unpinned.map(renderItem)}
-              </CommandGroup>
+              <CommandGroup heading="Unpinned">{unpinned.map(renderItem)}</CommandGroup>
             )}
           </CommandList>
         </Command>
@@ -209,16 +241,26 @@ function ConnectionCard({
   onRemove: VoidFunction
 }) {
   const { connectionStringsCollection, connectionsResourcesCollection } = useCollections()
-  const { data: connectionString } = useLiveQuery(q => q
-    .from({ cs: connectionStringsCollection })
-    .where(({ cs }) => eq(cs.connectionId, connection.id))
-    .findOne(), [connectionStringsCollection, connection.id])
-  const { data: connectionResources } = useLiveQuery(q => q
-    .from({ cr: connectionsResourcesCollection })
-    .where(({ cr }) => eq(cr.connectionId, connection.id))
-    .orderBy(({ cr }) => cr.name, 'asc'), [connectionsResourcesCollection, connection.id])
+  const { data: connectionString } = useLiveQuery(
+    q =>
+      q
+        .from({ cs: connectionStringsCollection })
+        .where(({ cs }) => eq(cs.connectionId, connection.id))
+        .findOne(),
+    [connectionStringsCollection, connection.id],
+  )
+  const { data: connectionResources } = useLiveQuery(
+    q =>
+      q
+        .from({ cr: connectionsResourcesCollection })
+        .where(({ cr }) => eq(cr.connectionId, connection.id))
+        .orderBy(({ cr }) => cr.name, 'asc'),
+    [connectionsResourcesCollection, connection.id],
+  )
 
-  const connectionResourcesNames = connectionResources.map(r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL)
+  const connectionResourcesNames = connectionResources.map(
+    r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL,
+  )
   const { type, canSend, reason } = useFetchingConfig(connection)
 
   const {
@@ -240,11 +282,15 @@ function ConnectionCard({
   const connectionStore = getConnectionStore(connection.id)
   const { selectedResourceName, pinnedResourcesNames } = useSubscription(connectionStore, {
     selector: state => ({
-      selectedResourceName: (state.lastOpenedResourceName || defaultResourceName || resources[0] || null) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
+      selectedResourceName: (state.lastOpenedResourceName ||
+        defaultResourceName ||
+        resources[0] ||
+        null) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
       pinnedResourcesNames: state.pinnedResourcesNames,
     }),
   })
-  const resolvedSelectedResourceName = selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? null : selectedResourceName
+  const resolvedSelectedResourceName =
+    selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? null : selectedResourceName
   const selectedResource = connectionResources.find(r => r.name === resolvedSelectedResourceName)
   const canOpenResource = canSend || (type === 'waiting-for-password' && !!window.electron)
 
@@ -258,7 +304,10 @@ function ConnectionCard({
     const connectionString = await connectionStringsCollection.utils.decrypt(connection.id)
 
     const connectionStringToCopy = new SafeURL(connectionString)
-    connectionStringToCopy.pathname = selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL || selectedResourceName === null ? '' : selectedResourceName
+    connectionStringToCopy.pathname =
+      selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL || selectedResourceName === null
+        ? ''
+        : selectedResourceName
 
     copy(connectionStringToCopy.toString())
     setIsCopied(true)
@@ -271,8 +320,7 @@ function ConnectionCard({
 
   const handleClearPassword = async () => {
     const record = connectionStringsCollection.get(connection.id)
-    if (!record)
-      return
+    if (!record) return
 
     const url = new SafeURL(await connectionStringsCollection.utils.decrypt(connection.id))
     url.password = ''
@@ -283,7 +331,7 @@ function ConnectionCard({
       updatedAt: record.updatedAt,
     })
 
-    connectionStringsCollection.update(connection.id, (draft) => {
+    connectionStringsCollection.update(connection.id, draft => {
       Object.assign(draft, connectionStringRecord)
     })
 
@@ -326,63 +374,60 @@ function ConnectionCard({
             "
           />
         )}
-        <div className={cn(`
+        <div
+          className={cn(
+            `
           pointer-events-none relative z-10 flex min-w-0 flex-1 items-center
           gap-3
-        `, isFetching && `animate-pulse`)}
+        `,
+            isFetching && `animate-pulse`,
+          )}
         >
           <ConnectionIconWithVersion connection={connection} />
           <div className="flex min-w-0 items-center gap-2">
-            <span
-              title={connection.name}
-              className="truncate text-sm leading-none font-medium"
-            >
+            <span title={connection.name} className="truncate text-sm leading-none font-medium">
               {connection.name}
             </span>
             {connection.label && (
               <span className="shrink-0 truncate text-xs text-muted-foreground">
-                ·
-                {' '}
-                {connection.label}
+                · {connection.label}
               </span>
             )}
-            {isFetching && canSend && (
-              <Spinner className="size-3 shrink-0" />
-            )}
+            {isFetching && canSend && <Spinner className="size-3 shrink-0" />}
             {!canSend && (
               <Tooltip>
-                <TooltipTrigger render={(
-                  <RiAlertLine
-                    className="
+                <TooltipTrigger
+                  render={
+                    <RiAlertLine
+                      className="
                       pointer-events-auto size-3 shrink-0 text-muted-foreground
                     "
-                  />
-                )}
+                    />
+                  }
                 />
-                <TooltipContent className="pointer-events-auto max-w-xs">
-                  {reason}
-                </TooltipContent>
+                <TooltipContent className="pointer-events-auto max-w-xs">{reason}</TooltipContent>
               </Tooltip>
             )}
             {error && canSend && (
               <Tooltip>
-                <TooltipTrigger render={(
-                  <RiAlertLine className="
+                <TooltipTrigger
+                  render={
+                    <RiAlertLine
+                      className="
                     pointer-events-auto size-3 shrink-0 text-warning
                   "
-                  />
-                )}
+                    />
+                  }
                 />
                 <TooltipContent className="pointer-events-auto">
-                  Failed to get resources:
-                  {' '}
-                  <p className="text-xs text-warning">{error.message}</p>
+                  Failed to get resources: <p className="text-xs text-warning">{error.message}</p>
                 </TooltipContent>
               </Tooltip>
             )}
           </div>
         </div>
-        <div className="
+        <div
+          className="
           pointer-events-none relative z-10 flex min-w-0 shrink-0 items-center
           gap-2 text-xs text-muted-foreground
         "
@@ -396,9 +441,11 @@ function ConnectionCard({
               "
               onClick={() => handleCopy()}
             >
-              {connectionString?.displayUrl
-                ? <span className="truncate">{connectionString?.displayUrl}</span>
-                : <Skeleton className="h-3 w-40" />}
+              {connectionString?.displayUrl ? (
+                <span className="truncate">{connectionString?.displayUrl}</span>
+              ) : (
+                <Skeleton className="h-3 w-40" />
+              )}
             </TooltipTrigger>
             <TooltipContent className="flex items-center gap-1" side="bottom">
               {isCopied ? 'Connection string copied!' : 'Copy connection string'}
@@ -409,13 +456,22 @@ function ConnectionCard({
               resources={resources}
               pinnedResourcesNames={pinnedResourcesNames}
               selectedResourceName={selectedResourceName}
-              onSelectedResourceNameChange={value => connectionStore.set(state => ({ ...state, lastOpenedResourceName: value } satisfies typeof state))}
-              onPinnedResourceNameChange={value => connectionStore.set(state => ({
-                ...state,
-                pinnedResourcesNames: state.pinnedResourcesNames.includes(value)
-                  ? state.pinnedResourcesNames.filter(name => name !== value)
-                  : [...state.pinnedResourcesNames, value],
-              } satisfies typeof state))}
+              onSelectedResourceNameChange={value =>
+                connectionStore.set(
+                  state => ({ ...state, lastOpenedResourceName: value }) satisfies typeof state,
+                )
+              }
+              onPinnedResourceNameChange={value =>
+                connectionStore.set(
+                  state =>
+                    ({
+                      ...state,
+                      pinnedResourcesNames: state.pinnedResourcesNames.includes(value)
+                        ? state.pinnedResourcesNames.filter(name => name !== value)
+                        : [...state.pinnedResourcesNames, value],
+                    }) satisfies typeof state,
+                )
+              }
               disabled={!canSend}
             />
           )}
@@ -427,10 +483,7 @@ function ConnectionCard({
               <RiMoreLine className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-auto">
-              <DropdownMenuItem
-                disabled={!canSend}
-                onClick={() => refetch()}
-              >
+              <DropdownMenuItem disabled={!canSend} onClick={() => refetch()}>
                 <RiRefreshLine className="size-4" />
                 Refresh
               </DropdownMenuItem>
@@ -444,10 +497,7 @@ function ConnectionCard({
                   Clear password
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => onRemove()}
-              >
+              <DropdownMenuItem variant="destructive" onClick={() => onRemove()}>
                 <RiDeleteBinLine className="size-4" />
                 Remove
               </DropdownMenuItem>
@@ -459,12 +509,26 @@ function ConnectionCard({
   )
 }
 
-function GhostRow({ nameWidth, urlWidth, lit = false, className }: { nameWidth: string, urlWidth: string, lit?: boolean, className?: string }) {
+function GhostRow({
+  nameWidth,
+  urlWidth,
+  lit = false,
+  className,
+}: {
+  nameWidth: string
+  urlWidth: string
+  lit?: boolean
+  className?: string
+}) {
   return (
-    <div className={cn(`
+    <div
+      className={cn(
+        `
       flex h-11 items-center gap-3 border-b border-border/40 px-3
       last:border-b-0
-    `, className)}
+    `,
+        className,
+      )}
     >
       <span
         className={cn(
@@ -475,10 +539,14 @@ function GhostRow({ nameWidth, urlWidth, lit = false, className }: { nameWidth: 
       <span className="size-5 shrink-0 rounded-md bg-muted-foreground/15" />
       <span className={cn('h-2.5 rounded-full bg-muted-foreground/15', nameWidth)} />
       <span className="flex-1" />
-      <span className={cn(`
+      <span
+        className={cn(
+          `
         hidden h-2 rounded-full bg-muted-foreground/10
         md:block
-      `, urlWidth)}
+      `,
+          urlWidth,
+        )}
       />
     </div>
   )
@@ -500,7 +568,8 @@ export function Empty() {
         <GhostRow nameWidth="w-36" urlWidth="w-24" className="opacity-40" />
       </div>
 
-      <div className="
+      <div
+        className="
         -mt-6 flex size-12 items-center justify-center rounded-xl border
         border-border/50 bg-card shadow-xs
       "
@@ -508,9 +577,7 @@ export function Empty() {
         <RiDatabase2Line className="size-5 text-muted-foreground" />
       </div>
 
-      <h2 className="mt-5 text-base font-medium text-foreground">
-        No connections yet
-      </h2>
+      <h2 className="mt-5 text-base font-medium text-foreground">No connections yet</h2>
       <p className="mt-1 max-w-xs text-sm text-muted-foreground">
         Add a database and it shows up here — open it in one click.
       </p>
@@ -533,7 +600,7 @@ const sortOptions = [
 const sortValue = createWebStorageValue({
   type: 'localStorage',
   key: 'connections-list-sort',
-  schema: type('string' as type.cast<typeof sortOptions[number]['value']>),
+  schema: type('string' as type.cast<(typeof sortOptions)[number]['value']>),
   defaultValue: 'date-desc',
 })
 
@@ -541,33 +608,35 @@ export function ConnectionsList() {
   const { connectionsCollection } = useCollections()
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
   const sort = useSubscription(sortValue)
-  const { data } = useLiveQuery((q) => {
-    let query = q.from({ c: connectionsCollection })
+  const { data } = useLiveQuery(
+    q => {
+      let query = q.from({ c: connectionsCollection })
 
-    if (sort === 'date-desc') {
-      query = query.orderBy(({ c }) => c.createdAt, 'desc')
-    }
-    else if (sort === 'date-asc') {
-      query = query.orderBy(({ c }) => c.createdAt, 'asc')
-    }
-    else if (sort === 'name-asc') {
-      query = query.orderBy(({ c }) => c.name, 'asc')
-    }
-    else {
-      query = query.orderBy(({ c }) => c.name, 'desc')
-    }
+      if (sort === 'date-desc') {
+        query = query.orderBy(({ c }) => c.createdAt, 'desc')
+      } else if (sort === 'date-asc') {
+        query = query.orderBy(({ c }) => c.createdAt, 'asc')
+      } else if (sort === 'name-asc') {
+        query = query.orderBy(({ c }) => c.name, 'asc')
+      } else {
+        query = query.orderBy(({ c }) => c.name, 'desc')
+      }
 
-    if (selectedLabel) {
-      query = query.where(({ c }) => eq(c.label, selectedLabel))
-    }
+      if (selectedLabel) {
+        query = query.where(({ c }) => eq(c.label, selectedLabel))
+      }
 
-    return query
-  }, [connectionsCollection, selectedLabel, sort])
+      return query
+    },
+    [connectionsCollection, selectedLabel, sort],
+  )
 
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
 
-  const availableLabels = [...new Set(data.flatMap(connection => connection.label ? [connection.label] : []))].toSorted()
+  const availableLabels = [
+    ...new Set(data.flatMap(connection => (connection.label ? [connection.label] : []))),
+  ].toSorted()
   const showLastOpened = lastOpenedResources.length > 0 && data.length > 1
 
   return (
@@ -594,9 +663,7 @@ export function ConnectionsList() {
                 className="w-max max-w-none"
               >
                 <TabsList>
-                  <TabsTrigger value="all">
-                    All
-                  </TabsTrigger>
+                  <TabsTrigger value="all">All</TabsTrigger>
                   {availableLabels.map(label => (
                     <TabsTrigger key={label} value={label}>
                       {label}
@@ -606,15 +673,10 @@ export function ConnectionsList() {
               </Tabs>
             </ScrollArea>
           )}
-          <Select
-            value={sort}
-            onValueChange={value => sortValue.set(value!)}
-          >
+          <Select value={sort} onValueChange={value => sortValue.set(value!)}>
             <SelectTrigger className="w-50 shrink-0">
               {sort.includes('asc') ? <RiSortAsc /> : <RiSortDesc />}
-              <SelectValue>
-                {sortOptions.find(option => option.value === sort)!.label}
-              </SelectValue>
+              <SelectValue>{sortOptions.find(option => option.value === sort)!.label}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {sortOptions.map(option => (
@@ -626,23 +688,23 @@ export function ConnectionsList() {
           </Select>
         </div>
       )}
-      {data.length > 0
-        ? (
-            <div className="flex flex-col gap-2">
-              <AnimatePresence initial={false} mode="popLayout">
-                {data.map(connection => (
-                  <ConnectionCard
-                    key={connection.id}
-                    connection={connection}
-                    onRemove={() => {
-                      removeDialogRef.current?.remove(connection)
-                    }}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
-          )
-        : <Empty />}
+      {data.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          <AnimatePresence initial={false} mode="popLayout">
+            {data.map(connection => (
+              <ConnectionCard
+                key={connection.id}
+                connection={connection}
+                onRemove={() => {
+                  removeDialogRef.current?.remove(connection)
+                }}
+              />
+            ))}
+          </AnimatePresence>
+        </div>
+      ) : (
+        <Empty />
+      )}
     </div>
   )
 }

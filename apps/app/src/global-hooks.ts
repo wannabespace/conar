@@ -10,8 +10,7 @@ export const globalHooks = createHooks<{
 }>()
 
 export function enterAppAnimation() {
-  if (isEntered)
-    return
+  if (isEntered) return
 
   isEntered = true
 
@@ -22,9 +21,7 @@ export function enterAppAnimation() {
     root.classList.remove('scale-[1.2]', 'opacity-0')
     document.body.classList.remove('overflow-hidden')
     // 300 - transition duration
-    sleep(300).then(() => {
-      globalHooks.callHook('animationFinished')
-    })
+    return sleep(300).then(() => globalHooks.callHook('animationFinished'))
   })
 
   if (preloader) {

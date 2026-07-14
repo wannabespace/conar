@@ -1,8 +1,10 @@
-import type { PoolConfig } from 'pg'
-import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
+
 import { tries } from '@tamery/shared/utils/tries'
 import { memoize } from 'memoza'
+import type { PoolConfig } from 'pg'
+
+import type { QueryExecutor } from '..'
 import { handleQueryError } from '..'
 import { parseConnectionString } from '../..'
 import { readSSLFiles } from '../../read-ssl-files'
@@ -36,16 +38,17 @@ const getPool = memoize(async (connectionString: string) => {
       await pool.query('SELECT 1')
       return pool
     },
-    !hasSsl && (async ({ previousError }) => {
-      const pool = new pg.Pool({
-        ...conf,
-        ssl: defaultSSLConfig,
-      })
-      await pool.query('SELECT 1').catch(() => {
-        throw previousError
-      })
-      return pool
-    }),
+    !hasSsl &&
+      (async ({ previousError }) => {
+        const pool = new pg.Pool({
+          ...conf,
+          ssl: defaultSSLConfig,
+        })
+        await pool.query('SELECT 1').catch(() => {
+          throw previousError
+        })
+        return pool
+      }),
   )
 })
 
@@ -57,69 +60,84 @@ export const query = {
 
     return { result: result.rows as unknown, duration: performance.now() - start }
   }),
-  beginTransaction: handleQueryError(async ({ connectionString, ownerId }: { connectionString: string, ownerId?: string }) => {
-    const pool = await getPool(connectionString)
-    const client = await pool.connect()
+  beginTransaction: handleQueryError(
+    async ({ connectionString, ownerId }: { connectionString: string; ownerId?: string }) => {
+      const pool = await getPool(connectionString)
+      const client = await pool.connect()
 
-    try {
-      await client.query('BEGIN')
-    }
-    catch (error) {
-      client.release()
-      throw error
-    }
-
-    const txId = registerTransaction({
-      execute: async (query, values) => {
-        const start = performance.now()
-        const result = await client.query(query, values)
-        return { result: result.rows as unknown, duration: performance.now() - start }
-      },
-      commit: async () => {
-        await client.query('COMMIT')
-      },
-      rollback: async () => {
-        await client.query('ROLLBACK')
-      },
-      release: async () => {
+      try {
+        await client.query('BEGIN')
+      } catch (error) {
         client.release()
-      },
-    }, ownerId)
+        throw error
+      }
 
-    return { txId }
-  }),
+      const txId = registerTransaction(
+        {
+          execute: async (query, values) => {
+            const start = performance.now()
+            const result = await client.query(query, values)
+            return { result: result.rows as unknown, duration: performance.now() - start }
+          },
+          commit: async () => {
+            await client.query('COMMIT')
+          },
+          rollback: async () => {
+            await client.query('ROLLBACK')
+          },
+          release: async () => {
+            client.release()
+          },
+        },
+        ownerId,
+      )
 
-  executeTransaction: handleQueryError(async ({ txId, query, values, ownerId }: { txId: string, query: string, values: unknown[], ownerId?: string }) => {
-    const handle = getTransaction(txId, ownerId)
-    if (!handle)
-      throw new Error(`No active transaction found for id: ${txId}`)
+      return { txId }
+    },
+  ),
 
-    return handle.execute(query, values)
-  }),
+  executeTransaction: handleQueryError(
+    async ({
+      txId,
+      query,
+      values,
+      ownerId,
+    }: {
+      txId: string
+      query: string
+      values: unknown[]
+      ownerId?: string
+    }) => {
+      const handle = getTransaction(txId, ownerId)
+      if (!handle) throw new Error(`No active transaction found for id: ${txId}`)
 
-  commitTransaction: handleQueryError(async ({ txId, ownerId }: { txId: string, ownerId?: string }) => {
-    const handle = disposeTransaction(txId, ownerId)
-    if (!handle)
-      return
+      return handle.execute(query, values)
+    },
+  ),
 
-    try {
-      await handle.commit()
-    }
-    finally {
-      await handle.release().catch(() => {})
-    }
-  }),
+  commitTransaction: handleQueryError(
+    async ({ txId, ownerId }: { txId: string; ownerId?: string }) => {
+      const handle = disposeTransaction(txId, ownerId)
+      if (!handle) return
 
-  rollbackTransaction: handleQueryError(async ({ txId, ownerId }: { txId: string, ownerId?: string }) => {
-    const handle = disposeTransaction(txId, ownerId)
-    if (!handle)
-      return
+      try {
+        await handle.commit()
+      } finally {
+        await handle.release().catch(() => {})
+      }
+    },
+  ),
 
-    try {
-      await handle.rollback()
-    }
-    finally {
-      await handle.release().catch(() => {})
-    }
-  }),
+  rollbackTransaction: handleQueryError(
+    async ({ txId, ownerId }: { txId: string; ownerId?: string }) => {
+      const handle = disposeTransaction(txId, ownerId)
+      if (!handle) return
+
+      try {
+        await handle.rollback()
+      } finally {
+        await handle.release().catch(() => {})
+      }
+    },
+  ),
 } satisfies QueryExecutor

@@ -3,6 +3,7 @@ import { BlurGradient } from '@tamery/ui/components/custom/blur-gradient'
 import { cn } from '@tamery/ui/lib/utils'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'motion/react'
+
 import { Footer } from '~/components/footer'
 import { Navbar } from '~/components/navbar'
 import { NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED } from '~/constants'
@@ -11,12 +12,18 @@ export const Route = createFileRoute('/_layout')({
   component: MainLayout,
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
+// oxlint-disable-next-line react/only-export-components
 function MainLayout() {
   const { scrollY } = useScroll()
-  const navbarHeight = useTransform(scrollY, [0, NAVBAR_HEIGHT_BASE], [NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED])
+  const navbarHeight = useTransform(
+    scrollY,
+    [0, NAVBAR_HEIGHT_BASE],
+    [NAVBAR_HEIGHT_BASE, NAVBAR_HEIGHT_SCROLLED],
+  )
   const navbarHeightPx = useTransform(() => `${Math.ceil(navbarHeight.get())}px`)
-  const blurTranslateY = useTransform(() => `${Math.min((NAVBAR_HEIGHT_BASE - scrollY.get()) * -1, 0)}px`)
+  const blurTranslateY = useTransform(
+    () => `${Math.min((NAVBAR_HEIGHT_BASE - scrollY.get()) * -1, 0)}px`,
+  )
 
   return (
     <motion.div
@@ -25,19 +32,22 @@ function MainLayout() {
       "
       style={{ '--navbar-height': navbarHeightPx }}
     >
-      <div className={cn(`
+      <div
+        className={cn(`
         sticky top-0 z-50 h-(--navbar-height) w-full bg-gray-100
         dark:bg-neutral-950
       `)}
       >
         <div className="relative flex size-full items-center">
           <Navbar className="w-full" />
-          <div className={`
+          <div
+            className={`
             pointer-events-none absolute inset-x-0 top-full h-10 w-full
             overflow-hidden
           `}
           >
-            <div className={`
+            <div
+              className={`
               h-20 w-full rounded-3xl ring-50 ring-gray-100
               dark:ring-neutral-950
             `}
@@ -47,9 +57,7 @@ function MainLayout() {
       </div>
       <div className="rounded-3xl bg-background">
         <motion.div
-          className={cn(
-            'sticky inset-x-0 top-(--navbar-height) z-30 w-full',
-          )}
+          className={cn('sticky inset-x-0 top-(--navbar-height) z-30 w-full')}
           style={{
             translateY: blurTranslateY,
           }}
@@ -62,17 +70,20 @@ function MainLayout() {
         </motion.div>
         <Outlet />
         <div className="sticky inset-x-0 bottom-0 z-30 w-full">
-          <div className={`
+          <div
+            className={`
             pointer-events-none relative z-20 h-10 w-full overflow-hidden
           `}
           >
-            <div className={`
+            <div
+              className={`
               absolute inset-x-0 bottom-0 h-20 rounded-3xl ring-50 ring-gray-100
               dark:ring-neutral-950
             `}
             />
           </div>
-          <div className={`
+          <div
+            className={`
             relative z-20 h-4 bg-gray-100
             dark:bg-neutral-950
           `}

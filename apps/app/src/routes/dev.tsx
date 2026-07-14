@@ -4,15 +4,49 @@ import { Alert, AlertDescription, AlertTitle } from '@tamery/ui/components/alert
 import { Avatar, AvatarFallback, AvatarImage } from '@tamery/ui/components/avatar'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@tamery/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@tamery/ui/components/card'
 import { Checkbox } from '@tamery/ui/components/checkbox'
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@tamery/ui/components/dialog'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@tamery/ui/components/dialog'
 import { Input } from '@tamery/ui/components/input'
 import { Kbd, KbdGroup } from '@tamery/ui/components/kbd'
 import { Label } from '@tamery/ui/components/label'
-import { Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle, PopoverTrigger } from '@tamery/ui/components/popover'
-import { Progress, ProgressIndicator, ProgressTrack, ProgressValue } from '@tamery/ui/components/progress'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@tamery/ui/components/select'
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from '@tamery/ui/components/popover'
+import {
+  Progress,
+  ProgressIndicator,
+  ProgressTrack,
+  ProgressValue,
+} from '@tamery/ui/components/progress'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@tamery/ui/components/select'
 import { Separator } from '@tamery/ui/components/separator'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import { Slider } from '@tamery/ui/components/slider'
@@ -23,6 +57,7 @@ import { Textarea } from '@tamery/ui/components/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useEffect } from 'react'
+
 import { enterAppAnimation } from '~/global-hooks'
 
 export const Route = createFileRoute('/dev')({
@@ -37,12 +72,13 @@ export const Route = createFileRoute('/dev')({
   }),
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
-function Section({ title: heading, children }: { title: string, children: React.ReactNode }) {
+// oxlint-disable-next-line react/only-export-components
+function Section({ title: heading, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-4">
       <div>
-        <h2 className="
+        <h2
+          className="
           text-sm font-semibold tracking-tight text-muted-foreground uppercase
         "
         >
@@ -50,14 +86,12 @@ function Section({ title: heading, children }: { title: string, children: React.
         </h2>
         <Separator className="mt-2" />
       </div>
-      <div className="flex flex-wrap items-center gap-3">
-        {children}
-      </div>
+      <div className="flex flex-wrap items-center gap-3">{children}</div>
     </section>
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
+// oxlint-disable-next-line react/only-export-components
 function DevPage() {
   useEffect(() => {
     enterAppAnimation()
@@ -84,7 +118,9 @@ function DevPage() {
           <Button disabled>Disabled</Button>
           <Button size="sm">Small</Button>
           <Button size="lg">Large</Button>
-          <Button size="icon" aria-label="Star"><RiStarLine /></Button>
+          <Button size="icon" aria-label="Star">
+            <RiStarLine />
+          </Button>
           <Button>
             <RiHeartLine />
             With icon
@@ -145,9 +181,15 @@ function DevPage() {
               <TabsTrigger value="two">Activity</TabsTrigger>
               <TabsTrigger value="three">Settings</TabsTrigger>
             </TabsList>
-            <TabsContent value="one" className="text-sm text-muted-foreground">Overview panel</TabsContent>
-            <TabsContent value="two" className="text-sm text-muted-foreground">Activity panel</TabsContent>
-            <TabsContent value="three" className="text-sm text-muted-foreground">Settings panel</TabsContent>
+            <TabsContent value="one" className="text-sm text-muted-foreground">
+              Overview panel
+            </TabsContent>
+            <TabsContent value="two" className="text-sm text-muted-foreground">
+              Activity panel
+            </TabsContent>
+            <TabsContent value="three" className="text-sm text-muted-foreground">
+              Settings panel
+            </TabsContent>
           </Tabs>
         </Section>
 
@@ -226,13 +268,11 @@ function DevPage() {
         <Section title="Tooltip & Kbd">
           <Tooltip>
             <TooltipTrigger
-              render={(
+              render={
                 <Button variant="outline">
-                  <RiSearchLine />
-                  {' '}
-                  Hover me
+                  <RiSearchLine /> Hover me
                 </Button>
-              )}
+              }
             />
             <TooltipContent>Search everything</TooltipContent>
           </Tooltip>

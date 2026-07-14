@@ -1,7 +1,8 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { GeneratorMap } from '..'
 import { faker } from '@faker-js/faker'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
+
+import type { GeneratorMap } from '..'
 
 const XML_TAG_SANITIZE_REGEX = /[^a-z0-9]/gi
 
@@ -73,7 +74,8 @@ export const MSSQL_GENERATORS = {
   'mssql.binary': {
     label: 'Binary',
     category: 'MSSQL',
-    generate: () => sql`CONVERT(varbinary(max), ${faker.string.hexadecimal({ length: 32, prefix: '' })}, 2)`,
+    generate: () =>
+      sql`CONVERT(varbinary(max), ${faker.string.hexadecimal({ length: 32, prefix: '' })}, 2)`,
   },
   'mssql.geography': {
     label: 'Geography Point',

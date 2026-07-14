@@ -1,24 +1,46 @@
-import type { ComponentRef } from 'react'
-import type { Connection, ConnectionResource } from '~/entities/connection'
-import { RiAddLine, RiArrowDownSLine, RiCommandLine, RiDeleteBinLine, RiMoonLine, RiSunLine } from '@remixicon/react'
+import {
+  RiAddLine,
+  RiArrowDownSLine,
+  RiCommandLine,
+  RiDeleteBinLine,
+  RiMoonLine,
+  RiSunLine,
+} from '@remixicon/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
 import { getOS } from '@tamery/shared/utils/os'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
 import { ThemeToggle } from '@tamery/ui/components/custom/theme-toggle'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@tamery/ui/components/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@tamery/ui/components/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
+import type { ComponentRef } from 'react'
 import { useRef, useState } from 'react'
+
 import { GlobalBanner } from '~/components/global-banner'
 import { SupportButton } from '~/components/support-button'
 import { TitleBar } from '~/components/title-bar'
 import { UpdateButton } from '~/components/update-button'
 import { useCollections } from '~/entities/collections'
-import { ConnectionIcon, ConnectionResourceLink, useConnectionResourceLinkParams } from '~/entities/connection'
+import type { Connection, ConnectionResource } from '~/entities/connection'
+import {
+  ConnectionIcon,
+  ConnectionResourceLink,
+  useConnectionResourceLinkParams,
+} from '~/entities/connection'
 import { UserButton } from '~/entities/user/components'
 import { setIsActionCenterOpen } from '~/store'
+
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
 const os = getOS(navigator.userAgent)
@@ -63,10 +85,7 @@ function ConnectionSubMenu({
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          variant="destructive"
-          onClick={() => onRemove(connection)}
-        >
+        <DropdownMenuItem variant="destructive" onClick={() => onRemove(connection)}>
           <RiDeleteBinLine className="size-4" />
           Remove
         </DropdownMenuItem>
@@ -88,34 +107,24 @@ function ConnectionsDropdown({
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger
-        render={<Button variant="ghost" size="sm" className="max-w-64" />}
-      >
-        {current
-          ? (
-              <>
-                <ConnectionIcon type={current.type} className="size-4 shrink-0" />
-                <span className="truncate">{current.name}</span>
-              </>
-            )
-          : (
-              <span className="truncate">Connections</span>
-            )}
+      <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="max-w-64" />}>
+        {current ? (
+          <>
+            <ConnectionIcon type={current.type} className="size-4 shrink-0" />
+            <span className="truncate">{current.name}</span>
+          </>
+        ) : (
+          <span className="truncate">Connections</span>
+        )}
         <RiArrowDownSLine className="size-4 shrink-0 text-muted-foreground" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        className="max-h-[70vh] min-w-64 overflow-auto"
-      >
+      <DropdownMenuContent align="start" className="max-h-[70vh] min-w-64 overflow-auto">
         {groups.length === 0 && (
-          <div className="px-2 py-1.5 text-sm text-muted-foreground">
-            No connections yet
-          </div>
+          <div className="px-2 py-1.5 text-sm text-muted-foreground">No connections yet</div>
         )}
-        {groups.map((group) => {
+        {groups.map(group => {
           const firstResource = group.resources[0]
-          if (!firstResource)
-            return null
+          if (!firstResource) return null
           return (
             <ConnectionSubMenu
               key={group.connection.id}
@@ -145,16 +154,11 @@ function ResourcesDropdown({
 }) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={<Button variant="ghost" size="sm" className="max-w-64" />}
-      >
+      <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="max-w-64" />}>
         <span className="truncate">{current.name || CONNECTION_RESOURCE_ROOT_LABEL}</span>
         <RiArrowDownSLine className="size-4 shrink-0 text-muted-foreground" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        className="max-h-[70vh] min-w-48 overflow-auto"
-      >
+      <DropdownMenuContent align="start" className="max-h-[70vh] min-w-48 overflow-auto">
         {resources.map(resource => (
           <DropdownMenuItem
             key={resource.id}
@@ -171,14 +175,15 @@ function ResourcesDropdown({
 function ConnectionsBreadcrumb({ onRemove }: { onRemove: (connection: Connection) => void }) {
   const { connectionsCollection, connectionsResourcesCollection } = useCollections()
   const { resourceId } = useParams({ strict: false })
-  const { data } = useLiveQuery(q => q
-    .from({ c: connectionsCollection })
-    .innerJoin(
-      { r: connectionsResourcesCollection },
-      ({ c, r }) => eq(r.connectionId, c.id),
-    )
-    .select(({ c, r }) => ({ connection: c, resource: r }))
-    .orderBy(({ c }) => c.createdAt, 'desc'), [connectionsCollection, connectionsResourcesCollection])
+  const { data } = useLiveQuery(
+    q =>
+      q
+        .from({ c: connectionsCollection })
+        .innerJoin({ r: connectionsResourcesCollection }, ({ c, r }) => eq(r.connectionId, c.id))
+        .select(({ c, r }) => ({ connection: c, resource: r }))
+        .orderBy(({ c }) => c.createdAt, 'desc'),
+    [connectionsCollection, connectionsResourcesCollection],
+  )
 
   const groups: ConnectionGroup[] = []
   const groupById = new Map<string, ConnectionGroup>()
@@ -196,22 +201,16 @@ function ConnectionsBreadcrumb({ onRemove }: { onRemove: (connection: Connection
   }
 
   const current = data.find(({ resource }) => resource.id === resourceId)
-  const currentGroup = current && groups.find(group => group.connection.id === current.connection.id)
+  const currentGroup =
+    current && groups.find(group => group.connection.id === current.connection.id)
 
   return (
     <>
-      <ConnectionsDropdown
-        groups={groups}
-        current={current?.connection}
-        onRemove={onRemove}
-      />
+      <ConnectionsDropdown groups={groups} current={current?.connection} onRemove={onRemove} />
       {current && currentGroup && (
         <>
           <span className="truncate text-muted-foreground/50">/</span>
-          <ResourcesDropdown
-            resources={currentGroup.resources}
-            current={current.resource}
-          />
+          <ResourcesDropdown resources={currentGroup.resources} current={current.resource} />
         </>
       )}
     </>
@@ -236,35 +235,37 @@ export function AppTitleBar() {
           <AppLogo className="size-4 text-primary" />
         </Link>
         <span className="truncate text-muted-foreground/40">/</span>
-        <ConnectionsBreadcrumb onRemove={connection => removeDialogRef.current?.remove(connection)} />
+        <ConnectionsBreadcrumb
+          onRemove={connection => removeDialogRef.current?.remove(connection)}
+        />
         <div className="ml-auto flex h-full shrink-0 items-center gap-1">
           <UpdateButton />
           <SupportButton side="bottom" />
           <Tooltip>
-            <TooltipTrigger render={(
-              <Button
-                size="icon-sm"
-                variant="ghost"
-                aria-label="Command palette"
-                onClick={() => setIsActionCenterOpen(true)}
-              />
-            )}
+            <TooltipTrigger
+              render={
+                <Button
+                  size="icon-sm"
+                  variant="ghost"
+                  aria-label="Command palette"
+                  onClick={() => setIsActionCenterOpen(true)}
+                />
+              }
             >
               <RiCommandLine className="size-4" />
             </TooltipTrigger>
-            <TooltipContent side="bottom">
-              {os?.type === 'macos' ? '⌘' : 'Ctrl'}
-              P
-            </TooltipContent>
+            <TooltipContent side="bottom">{os?.type === 'macos' ? '⌘' : 'Ctrl'}P</TooltipContent>
           </Tooltip>
           <span className="mx-1 h-4 w-px shrink-0 self-center bg-border" />
           <ThemeToggle render={<Button size="icon-sm" variant="ghost" />}>
-            <RiSunLine className={`
+            <RiSunLine
+              className={`
               size-4
               dark:hidden
             `}
             />
-            <RiMoonLine className={`
+            <RiMoonLine
+              className={`
               hidden size-4
               dark:block
             `}

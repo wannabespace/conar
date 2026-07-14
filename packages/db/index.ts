@@ -1,4 +1,5 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
+
 import { env } from './env'
 import { authRelations } from './schema/auth'
 import { chatsRelations } from './schema/chats'

@@ -1,5 +1,5 @@
 {
   "name": "@tamery/configs",
-  "type": "module",
-  "private": true
+  "private": true,
+  "type": "module"
 }

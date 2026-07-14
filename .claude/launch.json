@@ -16,7 +16,16 @@
     {
       "name": "api",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@tamery/api", "exec", "--", "bun", "--watch", "run", "./index.ts"],
+      "runtimeArgs": [
+        "--filter",
+        "@tamery/api",
+        "exec",
+        "--",
+        "bun",
+        "--watch",
+        "run",
+        "./index.ts"
+      ],
       "port": 5982,
       "env": {
         "NODE_ENV": "development",
@@ -38,7 +47,16 @@
     {
       "name": "proxy",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@tamery/proxy", "exec", "--", "bun", "--watch", "run", "./index.ts"],
+      "runtimeArgs": [
+        "--filter",
+        "@tamery/proxy",
+        "exec",
+        "--",
+        "bun",
+        "--watch",
+        "run",
+        "./index.ts"
+      ],
       "port": 5984,
       "env": {
         "NODE_ENV": "development",

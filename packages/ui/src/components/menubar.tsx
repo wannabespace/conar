@@ -1,7 +1,6 @@
 import { Menu as MenuPrimitive } from '@base-ui/react/menu'
 import { Menubar as MenubarPrimitive } from '@base-ui/react/menubar'
 import { RiCheckLine } from '@remixicon/react'
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,10 +23,7 @@ function Menubar({ className, ...props }: MenubarPrimitive.Props) {
   return (
     <MenubarPrimitive
       data-slot="menubar"
-      className={cn(
-        'flex h-8 items-center rounded-2xl border p-[3px]',
-        className,
-      )}
+      className={cn('flex h-8 items-center rounded-2xl border p-0.75', className)}
       {...props}
     />
   )
@@ -37,28 +33,21 @@ function MenubarMenu({ ...props }: React.ComponentProps<typeof DropdownMenu>) {
   return <DropdownMenu data-slot="menubar-menu" {...props} />
 }
 
-function MenubarGroup({
-  ...props
-}: React.ComponentProps<typeof DropdownMenuGroup>) {
+function MenubarGroup({ ...props }: React.ComponentProps<typeof DropdownMenuGroup>) {
   return <DropdownMenuGroup data-slot="menubar-group" {...props} />
 }
 
-function MenubarPortal({
-  ...props
-}: React.ComponentProps<typeof DropdownMenuPortal>) {
+function MenubarPortal({ ...props }: React.ComponentProps<typeof DropdownMenuPortal>) {
   return <DropdownMenuPortal data-slot="menubar-portal" {...props} />
 }
 
-function MenubarTrigger({
-  className,
-  ...props
-}: React.ComponentProps<typeof DropdownMenuTrigger>) {
+function MenubarTrigger({ className, ...props }: React.ComponentProps<typeof DropdownMenuTrigger>) {
   return (
     <DropdownMenuTrigger
       data-slot="menubar-trigger"
       className={cn(
         `
-          flex items-center rounded-2xl px-1.5 py-[2px] text-sm font-medium
+          flex items-center rounded-2xl px-1.5 py-0.5 text-sm font-medium
           outline-hidden select-none
           hover:bg-muted
           aria-expanded:bg-muted
@@ -83,7 +72,8 @@ function MenubarContent({
       align={align}
       alignOffset={alignOffset}
       sideOffset={sideOffset}
-      className={cn(`
+      className={cn(
+        `
         relative min-w-36 animate-none! rounded-2xl bg-popover/70 p-1
         text-popover-foreground shadow-lg ring-1 ring-foreground/5 duration-100
         before:pointer-events-none before:absolute before:inset-0 before:-z-1
@@ -95,17 +85,19 @@ function MenubarContent({
         data-[side=left]:slide-in-from-right-2
         data-[side=right]:slide-in-from-left-2
         data-[side=top]:slide-in-from-bottom-2
-        **:data-[slot$=-item]:focus:bg-foreground/10
+        **:focus:data-[slot$=-item]:bg-foreground/10
         **:data-[slot$=-item]:data-highlighted:bg-foreground/10
         **:data-[slot$=-separator]:bg-foreground/5
-        **:data-[slot$=-trigger]:focus:bg-foreground/10
+        **:focus:data-[slot$=-trigger]:bg-foreground/10
         **:data-[slot$=-trigger]:aria-expanded:bg-foreground/10!
         **:data-[variant=destructive]:**:text-accent-foreground!
         **:data-[variant=destructive]:text-accent-foreground!
-        **:data-[variant=destructive]:focus:bg-foreground/10!
+        **:focus:data-[variant=destructive]:bg-foreground/10!
         dark:ring-foreground/10
         data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95
-      `, className)}
+      `,
+        className,
+      )}
       {...props}
     />
   )
@@ -126,12 +118,12 @@ function MenubarItem({
         `
           group/menubar-item min-h-7 gap-2 rounded-xl px-2 py-1.5 text-sm
           focus:bg-accent focus:text-accent-foreground
-          not-data-[variant=destructive]:focus:**:text-accent-foreground
+          focus:not-data-[variant=destructive]:**:text-accent-foreground
           data-inset:pl-7
           data-[variant=destructive]:text-destructive
-          data-[variant=destructive]:focus:bg-destructive/10
-          data-[variant=destructive]:focus:text-destructive
-          dark:data-[variant=destructive]:focus:bg-destructive/20
+          focus:data-[variant=destructive]:bg-destructive/10
+          focus:data-[variant=destructive]:text-destructive
+          focus:dark:data-[variant=destructive]:bg-destructive/20
           data-disabled:opacity-50
           [&_svg:not([class*='size-'])]:size-4
           data-[variant=destructive]:*:[svg]:text-destructive!
@@ -171,7 +163,8 @@ function MenubarCheckboxItem({
       checked={checked}
       {...props}
     >
-      <span className="
+      <span
+        className="
         pointer-events-none absolute left-1.5 flex size-4 items-center
         justify-center
         [&_svg:not([class*='size-'])]:size-4
@@ -186,9 +179,7 @@ function MenubarCheckboxItem({
   )
 }
 
-function MenubarRadioGroup({
-  ...props
-}: React.ComponentProps<typeof DropdownMenuRadioGroup>) {
+function MenubarRadioGroup({ ...props }: React.ComponentProps<typeof DropdownMenuRadioGroup>) {
   return <DropdownMenuRadioGroup data-slot="menubar-radio-group" {...props} />
 }
 
@@ -219,7 +210,8 @@ function MenubarRadioItem({
       )}
       {...props}
     >
-      <span className="
+      <span
+        className="
         pointer-events-none absolute left-1.5 flex size-4 items-center
         justify-center
         [&_svg:not([class*='size-'])]:size-4
@@ -289,9 +281,7 @@ function MenubarShortcut({
   )
 }
 
-function MenubarSub({
-  ...props
-}: React.ComponentProps<typeof DropdownMenuSub>) {
+function MenubarSub({ ...props }: React.ComponentProps<typeof DropdownMenuSub>) {
   return <DropdownMenuSub data-slot="menubar-sub" {...props} />
 }
 
@@ -328,7 +318,8 @@ function MenubarSubContent({
   return (
     <DropdownMenuSubContent
       data-slot="menubar-sub-content"
-      className={cn(`
+      className={cn(
+        `
         relative min-w-32 animate-none! rounded-2xl bg-popover/70 p-1
         text-popover-foreground shadow-lg ring-1 ring-foreground/5 duration-100
         before:pointer-events-none before:absolute before:inset-0 before:-z-1
@@ -338,18 +329,20 @@ function MenubarSubContent({
         data-[side=left]:slide-in-from-right-2
         data-[side=right]:slide-in-from-left-2
         data-[side=top]:slide-in-from-bottom-2
-        **:data-[slot$=-item]:focus:bg-foreground/10
+        **:focus:data-[slot$=-item]:bg-foreground/10
         **:data-[slot$=-item]:data-highlighted:bg-foreground/10
         **:data-[slot$=-separator]:bg-foreground/5
-        **:data-[slot$=-trigger]:focus:bg-foreground/10
+        **:focus:data-[slot$=-trigger]:bg-foreground/10
         **:data-[slot$=-trigger]:aria-expanded:bg-foreground/10!
         **:data-[variant=destructive]:**:text-accent-foreground!
         **:data-[variant=destructive]:text-accent-foreground!
-        **:data-[variant=destructive]:focus:bg-foreground/10!
+        **:focus:data-[variant=destructive]:bg-foreground/10!
         dark:ring-foreground/10
         data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95
         data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95
-      `, className)}
+      `,
+        className,
+      )}
       {...props}
     />
   )

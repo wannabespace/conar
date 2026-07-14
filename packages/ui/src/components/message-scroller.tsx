@@ -98,8 +98,8 @@ function MessageScrollerButton({
   variant = 'secondary',
   size = 'icon-sm',
   ...props
-}: React.ComponentProps<typeof MessageScrollerPrimitive.Button>
-  & Pick<React.ComponentProps<typeof Button>, 'variant' | 'size'>) {
+}: React.ComponentProps<typeof MessageScrollerPrimitive.Button> &
+  Pick<React.ComponentProps<typeof Button>, 'variant' | 'size'>) {
   return (
     <MessageScrollerPrimitive.Button
       data-slot="message-scroller-button"
@@ -149,7 +149,10 @@ export {
   MessageScrollerItem,
   MessageScrollerProvider,
   MessageScrollerViewport,
+  // oxlint-disable-next-line react/only-export-components
   useMessageScroller,
+  // oxlint-disable-next-line react/only-export-components
   useMessageScrollerScrollable,
+  // oxlint-disable-next-line react/only-export-components
   useMessageScrollerVisibility,
 }

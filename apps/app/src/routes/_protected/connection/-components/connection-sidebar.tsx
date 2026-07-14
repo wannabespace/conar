@@ -1,16 +1,25 @@
-import type { LinkProps } from '@tanstack/react-router'
-import { RiFileListLine, RiGlobalLine, RiNodeTree, RiPlayLargeLine, RiShieldCheckLine, RiTableLine } from '@remixicon/react'
+import {
+  RiFileListLine,
+  RiGlobalLine,
+  RiNodeTree,
+  RiPlayLargeLine,
+  RiShieldCheckLine,
+  RiTableLine,
+} from '@remixicon/react'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { Button } from '@tamery/ui/components/button'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
+import type { LinkProps } from '@tanstack/react-router'
 import { Link, useLocation, useMatches, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
 import { useSubscription } from 'seitu/react'
+
 import { useCollections } from '~/entities/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
+
 import { Route } from '../$resourceId'
 
 function baseClasses(isActive = false) {
@@ -19,7 +28,8 @@ function baseClasses(isActive = false) {
       flex size-9 cursor-pointer items-center justify-center rounded-md border
       border-transparent text-foreground
     `,
-    isActive && `
+    isActive &&
+      `
       border-primary/20 bg-primary/10 text-primary
       hover:bg-primary/20
     `,
@@ -36,11 +46,19 @@ function MainLinks() {
   const lastOpenedTable = useSubscription(store, { selector: state => state.lastOpenedTable })
 
   useEffect(() => {
-    if (tableParam && schemaParam && tableParam !== lastOpenedTable?.table && schemaParam !== lastOpenedTable?.schema) {
-      store.set(state => ({
-        ...state,
-        lastOpenedTable: { schema: schemaParam, table: tableParam },
-      } satisfies typeof state))
+    if (
+      tableParam &&
+      schemaParam &&
+      tableParam !== lastOpenedTable?.table &&
+      schemaParam !== lastOpenedTable?.schema
+    ) {
+      store.set(
+        state =>
+          ({
+            ...state,
+            lastOpenedTable: { schema: schemaParam, table: tableParam },
+          }) satisfies typeof state,
+      )
     }
   }, [store, lastOpenedTable, tableParam, schemaParam])
 
@@ -49,7 +67,8 @@ function MainLinks() {
   const isActiveDefinitions = match?.includes('/_protected/connection/$resourceId/definitions')
   const isActiveVisualizer = match === '/_protected/connection/$resourceId/visualizer/'
 
-  const isCurrentTableAsLastOpened = lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
+  const isCurrentTableAsLastOpened =
+    lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
 
   const route = useMemo(() => {
     if (!isCurrentTableAsLastOpened && lastOpenedTable) {
@@ -60,15 +79,21 @@ function MainLinks() {
       } satisfies LinkProps
     }
 
-    return { to: '/connection/$resourceId/table', params: { resourceId: connectionResource.id } } satisfies LinkProps
+    return {
+      to: '/connection/$resourceId/table',
+      params: { resourceId: connectionResource.id },
+    } satisfies LinkProps
   }, [connectionResource.id, isCurrentTableAsLastOpened, lastOpenedTable])
 
   function onTablesClick() {
     if (isCurrentTableAsLastOpened && lastOpenedTable) {
-      store.set(state => ({
-        ...state,
-        lastOpenedTable: null,
-      } satisfies typeof state))
+      store.set(
+        state =>
+          ({
+            ...state,
+            lastOpenedTable: null,
+          }) satisfies typeof state,
+      )
     }
   }
 
@@ -77,57 +102,59 @@ function MainLinks() {
   return (
     <>
       <Tooltip>
-        <TooltipTrigger render={(
-          <Link
-            to="/connection/$resourceId/query"
-            params={{ resourceId: connectionResource.id }}
-            search={{
-              ...(lastOpenedChatId ? { chatId: lastOpenedChatId } : {}),
-            }}
-            className={baseClasses(isActiveSql)}
-          />
-        )}
+        <TooltipTrigger
+          render={
+            <Link
+              to="/connection/$resourceId/query"
+              params={{ resourceId: connectionResource.id }}
+              search={lastOpenedChatId ? { chatId: lastOpenedChatId } : {}}
+              className={baseClasses(isActiveSql)}
+            />
+          }
         >
           <RiPlayLargeLine className="size-4" />
         </TooltipTrigger>
         <TooltipContent side="right">SQL Runner</TooltipContent>
       </Tooltip>
       <Tooltip>
-        <TooltipTrigger render={(
-          <Link
-            className={baseClasses(isActiveTables)}
-            {...route}
-            onClick={() => {
-              onTablesClick()
-            }}
-          />
-        )}
+        <TooltipTrigger
+          render={
+            <Link
+              className={baseClasses(isActiveTables)}
+              {...route}
+              onClick={() => {
+                onTablesClick()
+              }}
+            />
+          }
         >
           <RiTableLine className="size-4" />
         </TooltipTrigger>
         <TooltipContent side="right">Tables</TooltipContent>
       </Tooltip>
       <Tooltip>
-        <TooltipTrigger render={(
-          <Link
-            to="/connection/$resourceId/definitions"
-            params={{ resourceId: connectionResource.id }}
-            className={baseClasses(isActiveDefinitions)}
-          />
-        )}
+        <TooltipTrigger
+          render={
+            <Link
+              to="/connection/$resourceId/definitions"
+              params={{ resourceId: connectionResource.id }}
+              className={baseClasses(isActiveDefinitions)}
+            />
+          }
         >
           <RiShieldCheckLine className="size-4" />
         </TooltipTrigger>
         <TooltipContent side="right">Definitions</TooltipContent>
       </Tooltip>
       <Tooltip>
-        <TooltipTrigger render={(
-          <Link
-            to="/connection/$resourceId/visualizer"
-            params={{ resourceId: connectionResource.id }}
-            className={baseClasses(isActiveVisualizer)}
-          />
-        )}
+        <TooltipTrigger
+          render={
+            <Link
+              to="/connection/$resourceId/visualizer"
+              params={{ resourceId: connectionResource.id }}
+              className={baseClasses(isActiveVisualizer)}
+            />
+          }
         >
           <RiNodeTree className="size-4" />
         </TooltipTrigger>
@@ -140,10 +167,14 @@ function MainLinks() {
 export function ConnectionSidebar({ className, ...props }: React.ComponentProps<'div'>) {
   const { connection, connectionResource } = Route.useRouteContext()
   const { connectionStringsCollection } = useCollections()
-  const { data: connectionString } = useLiveQuery(q => q
-    .from({ cs: connectionStringsCollection })
-    .where(({ cs }) => eq(cs.connectionId, connection.id))
-    .findOne(), [connectionStringsCollection, connection.id])
+  const { data: connectionString } = useLiveQuery(
+    q =>
+      q
+        .from({ cs: connectionStringsCollection })
+        .where(({ cs }) => eq(cs.connectionId, connection.id))
+        .findOne(),
+    [connectionStringsCollection, connection.id],
+  )
   const store = getConnectionResourceStore(connectionResource.id)
   const location = useLocation()
 
@@ -163,13 +194,14 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
       <div className="flex flex-col items-center p-4 pt-0">
         {canOpenWeb && (
           <Tooltip>
-            <TooltipTrigger render={(
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => window.open(import.meta.env.VITE_PUBLIC_WEB_URL + location.href)}
-              />
-            )}
+            <TooltipTrigger
+              render={
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => window.open(import.meta.env.VITE_PUBLIC_WEB_URL + location.href)}
+                />
+              }
             >
               <RiGlobalLine className="size-4" />
             </TooltipTrigger>
@@ -177,13 +209,19 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
           </Tooltip>
         )}
         <Tooltip>
-          <TooltipTrigger render={(
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => store.set(state => ({ ...state, loggerOpened: !state.loggerOpened } satisfies typeof state))}
-            />
-          )}
+          <TooltipTrigger
+            render={
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() =>
+                  store.set(
+                    state =>
+                      ({ ...state, loggerOpened: !state.loggerOpened }) satisfies typeof state,
+                  )
+                }
+              />
+            }
           >
             <RiFileListLine className="size-4" />
           </TooltipTrigger>

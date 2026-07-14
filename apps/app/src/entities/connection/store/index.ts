@@ -1,9 +1,10 @@
-import type { FileRoutesById } from '~/routeTree.gen'
 import { CONNECTION_RESOURCE_ROOT_SYMBOL } from '@tamery/shared/constants'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
 import { createStore } from 'seitu'
 import { createWebStorageValue } from 'seitu/web'
+
+import type { FileRoutesById } from '~/routeTree.gen'
 
 export * from './editor-queries'
 export * from './helpers'
@@ -19,23 +20,30 @@ const schema = type({
   lastOpenedResourceName: (lastOpenedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL.description
     ? CONNECTION_RESOURCE_ROOT_SYMBOL
     : lastOpenedResourceName) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
-  pinnedResourcesNames: pinnedResourcesNames.map(name => name === CONNECTION_RESOURCE_ROOT_SYMBOL.description ? CONNECTION_RESOURCE_ROOT_SYMBOL : name),
+  pinnedResourcesNames: pinnedResourcesNames.map(name =>
+    name === CONNECTION_RESOURCE_ROOT_SYMBOL.description ? CONNECTION_RESOURCE_ROOT_SYMBOL : name,
+  ),
   proxy,
 }))
 
-export const getConnectionStore = memoize((id: string) => createWebStorageValue({
-  type: 'localStorage',
-  key: `connection-store-${id}`,
-  defaultValue: {
-    lastOpenedResourceName: null,
-    pinnedResourcesNames: [],
-    proxy: { enabled: !window.electron, url: null },
-  },
-  schema,
-}))
+export const getConnectionStore = memoize((id: string) =>
+  createWebStorageValue({
+    type: 'localStorage',
+    key: `connection-store-${id}`,
+    defaultValue: {
+      lastOpenedResourceName: null,
+      pinnedResourcesNames: [],
+      proxy: { enabled: !window.electron, url: null },
+    },
+    schema,
+  }),
+)
 
 export const connectionResourceType = type({
-  lastOpenedPage: 'string | null' as type.cast<Extract<keyof FileRoutesById, `/_protected/connection/$resourceId/${string}`> | null>,
+  lastOpenedPage: 'string | null' as type.cast<Extract<
+    keyof FileRoutesById,
+    `/_protected/connection/$resourceId/${string}`
+  > | null>,
   lastOpenedChatId: 'string.uuid | null',
   lastOpenedTable: type({
     schema: 'string',
@@ -80,7 +88,7 @@ const connectionResourceDefaultState: typeof connectionResourceType.infer = {
     'SELECT * FROM users LIMIT 10;',
     '',
     '-- Example: Query with filtering',
-    'SELECT id, name, email FROM users WHERE created_at > \'2025-01-01\' ORDER BY name;',
+    "SELECT id, name, email FROM users WHERE created_at > '2025-01-01' ORDER BY name;",
     '',
     '-- Example: Join example',
     'SELECT u.id, u.name, p.title FROM users u',
@@ -103,11 +111,13 @@ const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   },
 }
 
-export const getConnectionResourceStore = memoize((id: string) => createWebStorageValue({
-  type: 'localStorage',
-  key: `connection-resource-store-${id}`,
-  defaultValue: connectionResourceDefaultState,
-  schema: connectionResourceType,
-}))
+export const getConnectionResourceStore = memoize((id: string) =>
+  createWebStorageValue({
+    type: 'localStorage',
+    key: `connection-resource-store-${id}`,
+    defaultValue: connectionResourceDefaultState,
+    schema: connectionResourceType,
+  }),
+)
 
 export const getFilesStore = memoize((_id: string) => createStore<File[]>([]))

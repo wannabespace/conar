@@ -13,16 +13,13 @@ export function Stepper<T extends string>({
   onChange: (active: T) => void
   children: React.ReactNode
 }) {
-  return (
-    <StepperContext value={useMemo(() => ({ active }), [active])}>
-      {children}
-    </StepperContext>
-  )
+  return <StepperContext value={useMemo(() => ({ active }), [active])}>{children}</StepperContext>
 }
 
 export function StepperList({ children }: { children: React.ReactNode }) {
   return (
-    <div className="
+    <div
+      className="
       relative -mx-4 mb-6 flex h-10 justify-between
       before:absolute before:inset-0 before:top-1/2 before:-z-10 before:h-0.5
       before:w-full before:-translate-y-1/2 before:bg-linear-to-r
@@ -34,7 +31,15 @@ export function StepperList({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function StepperTrigger({ children, value, number }: { children: React.ReactNode, value: string, number: number }) {
+export function StepperTrigger({
+  children,
+  value,
+  number,
+}: {
+  children: React.ReactNode
+  value: string
+  number: number
+}) {
   const { active } = use(StepperContext)
 
   return (
@@ -57,17 +62,10 @@ export function StepperTrigger({ children, value, number }: { children: React.Re
   )
 }
 
-export function StepperContent({
-  value,
-  children,
-}: {
-  value: string
-  children: React.ReactNode
-}) {
+export function StepperContent({ value, children }: { value: string; children: React.ReactNode }) {
   const { active } = use(StepperContext)
 
-  if (active !== value)
-    return null
+  if (active !== value) return null
 
   return children
 }

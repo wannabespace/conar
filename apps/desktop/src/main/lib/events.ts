@@ -1,11 +1,12 @@
 import type { QueryExecutor } from '@tamery/connection/queries'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
 import * as pg from '@tamery/connection/queries/dialects/pg'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { decrypt, encrypt } from '@tamery/shared/utils/crypto-node'
 import { app, ipcMain } from 'electron'
+
 import { autoUpdater } from '../main'
 
 export const electron = {

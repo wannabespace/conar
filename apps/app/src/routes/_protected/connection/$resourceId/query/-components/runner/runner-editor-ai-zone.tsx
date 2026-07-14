@@ -1,4 +1,3 @@
-import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { EnterIcon } from '@tamery/ui/components/custom/shortcuts'
@@ -8,7 +7,9 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
+
 import { MonacoDiff } from '~/components/monaco'
+import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
@@ -60,12 +61,15 @@ export function RunnerEditorAIZone({
     timeoutFocus()
   }, [])
 
-  const { mutate: updateSQL, isPending } = useMutation(orpc.ai.updateSQL.mutationOptions({
-    onSuccess: (data) => {
-      setAiSuggestion(data)
-      timeoutFocus()
-    },
-  }), queryClient)
+  const { mutate: updateSQL, isPending } = useMutation(
+    orpc.ai.updateSQL.mutationOptions({
+      onSuccess: data => {
+        setAiSuggestion(data)
+        timeoutFocus()
+      },
+    }),
+    queryClient,
+  )
 
   async function handleSubmit() {
     if (!prompt.trim()) {
@@ -79,15 +83,23 @@ export function RunnerEditorAIZone({
     if (aiSuggestion) {
       onUpdate(aiSuggestion)
       fullClose()
-    }
-    else {
+    } else {
       updateSQL({
         sql,
         prompt,
         type: connection.type,
         context: [
           'Database schemas and tables:',
-          JSON.stringify(await queryClient.ensureQueryData(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem: store.get().showSystem })), null, 2),
+          JSON.stringify(
+            await queryClient.ensureQueryData(
+              resourceTablesAndSchemasQueryOptions({
+                connectionResource,
+                showSystem: store.get().showSystem,
+              }),
+            ),
+            null,
+            2,
+          ),
         ].join('\n'),
       })
     }
@@ -99,12 +111,13 @@ export function RunnerEditorAIZone({
         <Popover open={!!aiSuggestion}>
           <PopoverTrigger
             nativeButton={false}
-            render={(
-              <div className="
+            render={
+              <div
+                className="
                 relative flex h-full w-lg flex-col rounded-md border
               "
               />
-            )}
+            }
           >
             {!subscription && (
               <div
@@ -112,8 +125,7 @@ export function RunnerEditorAIZone({
                   w-full bg-muted px-2 py-1 text-sm text-muted-foreground
                 "
               >
-                Please
-                {' '}
+                Please{' '}
                 <Button
                   variant="outline"
                   className="px-1 py-0.5"
@@ -121,8 +133,7 @@ export function RunnerEditorAIZone({
                   onClick={() => setIsSubscriptionDialogOpen(true)}
                 >
                   upgrade
-                </Button>
-                {' '}
+                </Button>{' '}
                 your subscription to generate SQL queries.
               </div>
             )}
@@ -130,7 +141,7 @@ export function RunnerEditorAIZone({
               ref={ref}
               value={prompt}
               disabled={isPending || !subscription || !isOnline}
-              onChange={(e) => {
+              onChange={e => {
                 setPrompt(e.target.value)
                 setAiSuggestion(null)
               }}
@@ -146,15 +157,18 @@ export function RunnerEditorAIZone({
                   focus-visible:outline-none!
                 `,
               )}
-              placeholder={isOnline ? 'Update selected SQL with AI' : 'Check your internet connection to update selected SQL'}
-              onKeyDown={(e) => {
+              placeholder={
+                isOnline
+                  ? 'Update selected SQL with AI'
+                  : 'Check your internet connection to update selected SQL'
+              }
+              onKeyDown={e => {
                 e.stopPropagation()
 
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault()
                   handleSubmit()
-                }
-                else if (e.key === 'Escape') {
+                } else if (e.key === 'Escape') {
                   fullClose()
                 }
               }}

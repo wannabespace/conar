@@ -1,8 +1,9 @@
-import type { VariantProps } from 'class-variance-authority'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
 import * as React from 'react'
+
 import { bubbleReactionsVariants, bubbleVariants } from './bubble.utils'
 
 function BubbleGroup({ className, ...props }: React.ComponentProps<'div'>) {
@@ -20,8 +21,8 @@ function Bubble({
   align = 'start',
   className,
   ...props
-}: React.ComponentProps<'div'>
-  & VariantProps<typeof bubbleVariants> & {
+}: React.ComponentProps<'div'> &
+  VariantProps<typeof bubbleVariants> & {
     align?: 'start' | 'end'
   }) {
   return (
@@ -35,11 +36,7 @@ function Bubble({
   )
 }
 
-function BubbleContent({
-  className,
-  render,
-  ...props
-}: useRender.ComponentProps<'div'>) {
+function BubbleContent({ className, render, ...props }: useRender.ComponentProps<'div'>) {
   return useRender({
     defaultTagName: 'div',
     props: mergeProps<'div'>(

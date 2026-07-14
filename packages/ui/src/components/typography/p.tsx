@@ -1,4 +1,5 @@
 import type { ComponentProps } from 'react'
+
 import { cn } from '../../lib/utils'
 
 export function TypographyP({ className, ...props }: ComponentProps<'p'>) {

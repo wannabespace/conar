@@ -1,6 +1,12 @@
 import { RiDeleteBinLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tamery/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@tamery/ui/components/card'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
   Dialog,
@@ -16,6 +22,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
+
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
@@ -69,7 +76,7 @@ function DeleteAccountDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className="sm:max-w-sm"
-        onSubmit={(e) => {
+        onSubmit={e => {
           e.preventDefault()
           mutate()
         }}
@@ -78,8 +85,8 @@ function DeleteAccountDialog({
         <DialogHeader>
           <DialogTitle>Delete account</DialogTitle>
           <DialogDescription>
-            This action is permanent and cannot be undone. All your data,
-            including your subscription, settings, and sessions will be permanently removed.
+            This action is permanent and cannot be undone. All your data, including your
+            subscription, settings, and sessions will be permanently removed.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">
@@ -101,11 +108,7 @@ function DeleteAccountDialog({
 
           <div className="space-y-2">
             <Label htmlFor="delete-confirmation">
-              Type
-              {' '}
-              <span className="font-mono font-semibold">delete</span>
-              {' '}
-              to confirm
+              Type <span className="font-mono font-semibold">delete</span> to confirm
             </Label>
             <Input
               id="delete-confirmation"
@@ -157,10 +160,7 @@ export function DeleteAccountCard() {
 
   return (
     <>
-      <DeleteAccountDialog
-        open={open}
-        onOpenChange={setOpen}
-      />
+      <DeleteAccountDialog open={open} onOpenChange={setOpen} />
       <Card>
         <CardHeader>
           <CardTitle>Delete account</CardTitle>

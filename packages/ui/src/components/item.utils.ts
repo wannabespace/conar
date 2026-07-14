@@ -45,9 +45,8 @@ export const itemMediaVariants = cva(
     variants: {
       variant: {
         default: 'bg-transparent',
-        icon: '[&_svg:not([class*=\'size-\'])]:size-4',
-        image:
-          `
+        icon: "[&_svg:not([class*='size-'])]:size-4",
+        image: `
             size-10 overflow-hidden rounded-xl
             group-data-[size=sm]/item:size-8
             group-data-[size=xs]/item:size-6

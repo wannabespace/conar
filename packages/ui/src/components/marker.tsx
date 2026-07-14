@@ -1,8 +1,9 @@
-import type { VariantProps } from 'class-variance-authority'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
 import * as React from 'react'
+
 import { markerVariants } from './marker.utils'
 
 function Marker({
@@ -63,4 +64,4 @@ function MarkerContent({ className, ...props }: React.ComponentProps<'span'>) {
   )
 }
 
-export { Marker, MarkerContent, MarkerIcon, markerVariants }
+export { Marker, MarkerContent, MarkerIcon }

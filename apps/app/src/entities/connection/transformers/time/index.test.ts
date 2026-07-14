@@ -1,6 +1,7 @@
-import type { Column } from '../../components'
 import { describe, expect, it } from 'bun:test'
+
 import { createTimeTransformer } from '.'
+import type { Column } from '../../components'
 
 describe('createTimeTransformer', () => {
   const column: Column = {

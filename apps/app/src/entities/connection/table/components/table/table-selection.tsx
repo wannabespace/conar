@@ -1,9 +1,10 @@
-import type { TableCellProps, TableHeaderCellProps } from '@tamery/table'
-import type { ComponentProps } from 'react'
 import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
+import type { TableCellProps, TableHeaderCellProps } from '@tamery/table'
 import { useShiftSelectionClick, useTableContext } from '@tamery/table/hooks'
 import { cn } from '@tamery/ui/lib/utils'
+import type { ComponentProps } from 'react'
 import { useSubscription } from 'seitu/react'
+
 import { useTablePageStore } from '../../store'
 
 function IndeterminateCheckbox({
@@ -49,7 +50,12 @@ function IndeterminateCheckbox({
   )
 }
 
-export function SelectionHeaderCell({ columnIndex, className, style, keys }: TableHeaderCellProps & {
+export function SelectionHeaderCell({
+  columnIndex,
+  className,
+  style,
+  keys,
+}: TableHeaderCellProps & {
   keys: string[]
   className?: string
 }) {
@@ -64,9 +70,14 @@ export function SelectionHeaderCell({ columnIndex, className, style, keys }: Tab
 
   return (
     <div
-      className={cn('flex shrink-0 items-center px-2', columnIndex === 0 && `
+      className={cn(
+        'flex shrink-0 items-center px-2',
+        columnIndex === 0 &&
+          `
         pl-4
-      `, className)}
+      `,
+        className,
+      )}
       style={style}
     >
       <IndeterminateCheckbox
@@ -75,16 +86,24 @@ export function SelectionHeaderCell({ columnIndex, className, style, keys }: Tab
         indeterminate={indeterminate}
         onChange={() => {
           if (checked) {
-            store.set(state => ({
-              ...state,
-              selected: [],
-            } satisfies typeof state))
-          }
-          else {
-            store.set(state => ({
-              ...state,
-              selected: rows?.map(row => keys.reduce((acc, key) => ({ ...acc, [key]: row[key] }), {})) ?? [],
-            } satisfies typeof state))
+            store.set(
+              state =>
+                ({
+                  ...state,
+                  selected: [],
+                }) satisfies typeof state,
+            )
+          } else {
+            store.set(
+              state =>
+                ({
+                  ...state,
+                  selected:
+                    rows?.map(row =>
+                      keys.reduce((acc, key) => ({ ...acc, [key]: row[key] }), {}),
+                    ) ?? [],
+                }) satisfies typeof state,
+            )
           }
         }}
       />
@@ -92,7 +111,13 @@ export function SelectionHeaderCell({ columnIndex, className, style, keys }: Tab
   )
 }
 
-export function SelectionCell({ rowIndex, columnIndex, className, style, keys }: TableCellProps & {
+export function SelectionCell({
+  rowIndex,
+  columnIndex,
+  className,
+  style,
+  keys,
+}: TableCellProps & {
   keys: string[]
   className?: string
 }) {
@@ -116,19 +141,25 @@ export function SelectionCell({ rowIndex, columnIndex, className, style, keys }:
     rowIndex,
     currentSelected,
     lastClickedIndex,
-    getItemsInRange: (start, end) => rows.slice(start, end + 1).map(row =>
-      keys.reduce<Record<string, string>>(
-        (acc, key) => ({ ...acc, [key]: row[key] as string }),
-        {},
-      ),
-    ),
+    getItemsInRange: (start, end) =>
+      rows
+        .slice(start, end + 1)
+        .map(row =>
+          keys.reduce<Record<string, string>>(
+            (acc, key) => ({ ...acc, [key]: row[key] as string }),
+            {},
+          ),
+        ),
     onSelectionChange: (selected, selectionState, newLastClickedIndex) => {
-      store.set(state => ({
-        ...state,
-        selected,
-        selectionState,
-        lastClickedIndex: newLastClickedIndex,
-      } satisfies typeof state))
+      store.set(
+        state =>
+          ({
+            ...state,
+            selected,
+            selectionState,
+            lastClickedIndex: newLastClickedIndex,
+          }) satisfies typeof state,
+      )
     },
   })
 

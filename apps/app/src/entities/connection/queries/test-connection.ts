@@ -1,4 +1,5 @@
 import { sql } from 'kysely'
+
 import { createQuery } from '../runtime/query'
 
 export const testConnectionQuery = createQuery({

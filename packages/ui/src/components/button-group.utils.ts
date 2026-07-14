@@ -20,15 +20,13 @@ export const buttonGroupVariants = cva(
   {
     variants: {
       orientation: {
-        horizontal:
-          `
+        horizontal: `
             *:data-slot:rounded-r-none
             [&>[data-slot]:not(:has(~[data-slot]))]:rounded-r-2xl!
             [&>[data-slot]~[data-slot]]:rounded-l-none
             [&>[data-slot]~[data-slot]]:border-l-0
           `,
-        vertical:
-          `
+        vertical: `
             flex-col
             *:data-slot:rounded-b-none
             [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-2xl!

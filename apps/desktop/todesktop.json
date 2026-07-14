@@ -9,9 +9,7 @@
   "packageManager": "pnpm",
   "pnpmVersion": "11.9.0",
   "copyright": "Copyright © 2024 Wannabe Space, LLC",
-  "appFiles": [
-    "dist-electron/**"
-  ],
+  "appFiles": ["dist-electron/**"],
   "uploadSizeLimit": 80,
   "bundleWorkspacePackages": {
     "enabled": true
@@ -22,9 +20,7 @@
     "icon": "./resources/macos-icon-1024x1024.png"
   },
   "windows": {
-    "publisherName": [
-      "Wannabe Space, LLC"
-    ]
+    "publisherName": ["Wannabe Space, LLC"]
   },
   "linux": {
     "category": "Development"

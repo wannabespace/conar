@@ -11,6 +11,8 @@ export function CellSwitch({
   className?: string
 }) {
   return (
+    // Label implicitly wraps the Switch control (valid association the linter can't detect)
+    // eslint-disable-next-line jsx-a11y/label-has-associated-control
     <label className={cn('flex items-center gap-2 text-sm', className)}>
       <code className="font-mono">false</code>
       <Switch checked={checked} onCheckedChange={onChange} />

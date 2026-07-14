@@ -15,7 +15,7 @@ function InputOTP({
       data-slot="input-otp"
       containerClassName={cn(
         `
-          cn-input-otp flex items-center
+          flex items-center
           has-disabled:opacity-50
         `,
         containerClassName,
@@ -78,11 +78,13 @@ function InputOTPSlot({
     >
       {char}
       {hasFakeCaret && (
-        <div className="
+        <div
+          className="
           pointer-events-none absolute inset-0 flex items-center justify-center
         "
         >
-          <div className="
+          <div
+            className="
             h-4 w-px animate-caret-blink bg-foreground duration-1000
           "
           />

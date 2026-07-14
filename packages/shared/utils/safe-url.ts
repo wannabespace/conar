@@ -13,7 +13,7 @@ export class SafeURL implements URL {
       return
     }
 
-    let _url = url
+    let normalizedUrl = url
     const atIndex = url.lastIndexOf('@')
 
     let username = ''
@@ -26,15 +26,15 @@ export class SafeURL implements URL {
 
       if (authMatch) {
         const [, protocol, _user, _password] = authMatch
-        _url = `${protocol}://${afterAt}`
+        normalizedUrl = `${protocol}://${afterAt}`
         username = _user || ''
         password = _password || ''
       }
     }
 
-    const _URL = new URL(_url)
+    const parsedUrl = new URL(normalizedUrl)
 
-    this.#url = _URL
+    this.#url = parsedUrl
     this.username = username || ''
     this.password = password || ''
   }

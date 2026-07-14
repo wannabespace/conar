@@ -1,21 +1,24 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import ReactMarkdown from 'react-markdown'
+
 import termsOfServiceContent from '~/content/terms-of-service.md?raw'
 
 export const Route = createLazyFileRoute('/_layout/terms-of-service')({
   component: TermsOfService,
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
+// oxlint-disable-next-line react/only-export-components
 function TermsOfService() {
   return (
     <div className="container mx-auto max-w-3xl px-4 py-20">
-      <div className={`
+      <div
+        className={`
         prose max-w-none prose-gray
         dark:prose-invert
       `}
       >
-        <h1 className="
+        <h1
+          className="
           mb-6 text-2xl leading-none font-bold
           lg:text-4xl
         "

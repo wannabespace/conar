@@ -2,35 +2,22 @@
   "version": "8",
   "dialect": "postgres",
   "id": "a4cc4068-1d3f-4ff2-a593-46b8e90fad01",
-  "prevIds": [
-    "a25a4c0b-2c50-41d2-9efd-fb40dab25772"
-  ],
+  "prevIds": ["a25a4c0b-2c50-41d2-9efd-fb40dab25772"],
   "ddl": [
     {
-      "values": [
-        "postgres",
-        "mysql",
-        "mssql",
-        "clickhouse"
-      ],
+      "values": ["postgres", "mysql", "mssql", "clickhouse"],
       "name": "connection_type",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "cloud",
-        "cloud_without_password"
-      ],
+      "values": ["cloud", "cloud_without_password"],
       "name": "sync_type",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "monthly",
-        "yearly"
-      ],
+      "values": ["monthly", "yearly"],
       "name": "subscription_period",
       "entityType": "enums",
       "schema": "public"
@@ -2343,14 +2330,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "accounts_user_id_users_id_fk",
@@ -2360,14 +2343,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "workspace_id"
-      ],
+      "columns": ["workspace_id"],
       "schemaTo": "public",
       "tableTo": "workspaces",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "invitations_workspace_id_workspaces_id_fk",
@@ -2377,14 +2356,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "inviter_id"
-      ],
+      "columns": ["inviter_id"],
       "schemaTo": "public",
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "invitations_inviter_id_users_id_fk",
@@ -2394,14 +2369,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "workspace_id"
-      ],
+      "columns": ["workspace_id"],
       "schemaTo": "public",
       "tableTo": "workspaces",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "members_workspace_id_workspaces_id_fk",
@@ -2411,14 +2382,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "members_user_id_users_id_fk",
@@ -2428,14 +2395,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "sessions_user_id_users_id_fk",
@@ -2445,14 +2408,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "two_factors_user_id_users_id_fk",
@@ -2462,14 +2421,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chats_user_id_users_id_fk",
@@ -2479,14 +2434,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "connection_resource_id"
-      ],
+      "columns": ["connection_resource_id"],
       "schemaTo": "public",
       "tableTo": "connections_resources",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chats_connection_resource_id_connections_resources_id_fkey",
@@ -2496,14 +2447,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "chat_id"
-      ],
+      "columns": ["chat_id"],
       "schemaTo": "public",
       "tableTo": "chats",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "chats_messages_chat_id_chats_id_fk",
@@ -2513,14 +2460,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "connections_user_id_users_id_fk",
@@ -2530,14 +2473,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "connection_id"
-      ],
+      "columns": ["connection_id"],
       "schemaTo": "public",
       "tableTo": "connections",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "connections_resources_connection_id_connections_id_fkey",
@@ -2547,14 +2486,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "queries_user_id_users_id_fk",
@@ -2564,14 +2499,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "connection_resource_id"
-      ],
+      "columns": ["connection_resource_id"],
       "schemaTo": "public",
       "tableTo": "connections_resources",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "queries_connection_resource_id_connections_resources_id_fkey",
@@ -2581,14 +2512,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "users",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "subscriptions_user_id_users_id_fk",
@@ -2597,9 +2524,7 @@
       "table": "subscriptions"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "accounts_pkey",
       "schema": "public",
@@ -2607,9 +2532,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "api_keys_pkey",
       "schema": "public",
@@ -2617,9 +2540,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "invitations_pkey",
       "schema": "public",
@@ -2627,9 +2548,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "members_pkey",
       "schema": "public",
@@ -2637,9 +2556,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "sessions_pkey",
       "schema": "public",
@@ -2647,9 +2564,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "two_factors_pkey",
       "schema": "public",
@@ -2657,9 +2572,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "users_pkey",
       "schema": "public",
@@ -2667,9 +2580,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "verifications_pkey",
       "schema": "public",
@@ -2677,9 +2588,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "workspaces_pkey",
       "schema": "public",
@@ -2687,9 +2596,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chats_pkey",
       "schema": "public",
@@ -2697,9 +2604,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "chats_messages_pkey",
       "schema": "public",
@@ -2707,9 +2612,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "connections_pkey",
       "schema": "public",
@@ -2717,9 +2620,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "connections_resources_pkey",
       "schema": "public",
@@ -2727,9 +2628,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "queries_pkey",
       "schema": "public",
@@ -2737,9 +2636,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "subscriptions_pkey",
       "schema": "public",
@@ -2748,10 +2645,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "connection_id",
-        "name"
-      ],
+      "columns": ["connection_id", "name"],
       "nullsNotDistinct": false,
       "name": "connections_resources_connection_id_name_unique",
       "entityType": "uniques",
@@ -2760,9 +2654,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "token"
-      ],
+      "columns": ["token"],
       "nullsNotDistinct": false,
       "name": "sessions_token_unique",
       "schema": "public",
@@ -2771,9 +2663,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "email"
-      ],
+      "columns": ["email"],
       "nullsNotDistinct": false,
       "name": "users_email_unique",
       "schema": "public",
@@ -2782,9 +2672,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "normalized_email"
-      ],
+      "columns": ["normalized_email"],
       "nullsNotDistinct": false,
       "name": "users_normalized_email_unique",
       "schema": "public",
@@ -2793,9 +2681,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "slug"
-      ],
+      "columns": ["slug"],
       "nullsNotDistinct": false,
       "name": "workspaces_slug_unique",
       "schema": "public",

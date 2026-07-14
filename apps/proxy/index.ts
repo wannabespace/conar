@@ -1,22 +1,22 @@
-/* eslint-disable perfectionist/sort-imports */
 import '@tamery/shared/arktype-config'
 import process from 'node:process'
+
 import { ORPCError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
+import { sanitizeLogData } from '@tamery/shared/utils/sanitize-log'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+
 import { env, nodeEnv } from './env'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
-import { sanitizeLogData } from '@tamery/shared/utils/sanitize-log'
 
 const handler = new RPCHandler(router, {
   interceptors: [
-    async (options) => {
+    async options => {
       try {
         return await options.next()
-      }
-      catch (error) {
+      } catch (error) {
         options.context.addLogData({
           error: {
             type: error instanceof Error ? error.constructor.name : typeof error,
@@ -47,17 +47,16 @@ export interface AppVariables {
 const app = new Hono<{
   Variables: AppVariables
 }>()
-  .use(cors({
-    origin(origin) {
-      const allowedOrigins = [
-        'https://tamery.app',
-      ]
-      if (nodeEnv === 'development' && origin.startsWith('http://localhost:'))
-        return origin
-      return origin.endsWith('.tamery.app') || allowedOrigins.includes(origin) ? origin : null
-    },
-    credentials: true,
-  }))
+  .use(
+    cors({
+      origin(origin) {
+        const allowedOrigins = ['https://tamery.app']
+        if (nodeEnv === 'development' && origin.startsWith('http://localhost:')) return origin
+        return origin.endsWith('.tamery.app') || allowedOrigins.includes(origin) ? origin : null
+      },
+      credentials: true,
+    }),
+  )
   .get('/', c => c.redirect(env.MAIN_URL))
   .use('*', async (c, next) => {
     const startTime = Date.now()
@@ -93,9 +92,8 @@ const app = new Hono<{
 
     if (status >= 400) {
       console.error(log)
-    }
-    else {
-      // eslint-disable-next-line no-console
+    } else {
+      // oxlint-disable-next-line no-console
       console.info(log)
     }
   })

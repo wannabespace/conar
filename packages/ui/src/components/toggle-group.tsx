@@ -1,8 +1,8 @@
-import type { VariantProps } from 'class-variance-authority'
 import { Toggle as TogglePrimitive } from '@base-ui/react/toggle'
 import { ToggleGroup as ToggleGroupPrimitive } from '@base-ui/react/toggle-group'
 import { toggleVariants } from '@tamery/ui/components/toggle.utils'
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
 import * as React from 'react'
 
 const ToggleGroupContext = React.createContext<
@@ -25,11 +25,16 @@ function ToggleGroup({
   orientation = 'horizontal',
   children,
   ...props
-}: ToggleGroupPrimitive.Props
-  & VariantProps<typeof toggleVariants> & {
+}: ToggleGroupPrimitive.Props &
+  VariantProps<typeof toggleVariants> & {
     spacing?: number
     orientation?: 'horizontal' | 'vertical'
   }) {
+  const contextValue = React.useMemo(
+    () => ({ variant, size, spacing, orientation }),
+    [variant, size, spacing, orientation],
+  )
+
   return (
     <ToggleGroupPrimitive
       data-slot="toggle-group"
@@ -49,11 +54,7 @@ function ToggleGroup({
       )}
       {...props}
     >
-      <ToggleGroupContext.Provider
-        value={{ variant, size, spacing, orientation }}
-      >
-        {children}
-      </ToggleGroupContext.Provider>
+      <ToggleGroupContext.Provider value={contextValue}>{children}</ToggleGroupContext.Provider>
     </ToggleGroupPrimitive>
   )
 }
@@ -83,15 +84,15 @@ function ToggleGroupItem({
           focus-visible:z-10
           group-data-[spacing=0]/toggle-group:has-data-[icon=inline-end]:pr-1.5
           group-data-[spacing=0]/toggle-group:has-data-[icon=inline-start]:pl-1.5
-          group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-l-2xl
-          group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-t-2xl
-          group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-r-2xl
-          group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-b-2xl
+          first:group-data-horizontal/toggle-group:data-[spacing=0]:rounded-l-2xl
+          first:group-data-vertical/toggle-group:data-[spacing=0]:rounded-t-2xl
+          last:group-data-horizontal/toggle-group:data-[spacing=0]:rounded-r-2xl
+          last:group-data-vertical/toggle-group:data-[spacing=0]:rounded-b-2xl
           data-[state=on]:bg-muted
           group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l-0
           group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0
-          group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-l
-          group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t
+          first:group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l
+          first:group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t
         `,
         toggleVariants({
           variant: context.variant || variant,

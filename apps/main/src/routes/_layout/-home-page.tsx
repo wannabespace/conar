@@ -6,7 +6,8 @@ import { Testimonials } from './-components/testimonials'
 
 export function HomePage() {
   return (
-    <main className={`
+    <main
+      className={`
       px-4
       sm:px-6
       lg:px-10

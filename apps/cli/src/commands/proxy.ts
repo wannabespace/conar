@@ -1,15 +1,17 @@
-import type { RouterOutputs } from '@tamery/api/orpc/routers'
 import process from 'node:process'
+
 import { command } from '@drizzle-team/brocli'
 import { serve } from '@hono/node-server'
 import { ORPCError, os, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
+import type { RouterOutputs } from '@tamery/api/orpc/routers'
 import { createQueryRouter } from '@tamery/query-proxy'
 import { PORTS } from '@tamery/shared/constants'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
 import { consola } from 'consola'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+
 import { orpc as apiOrpc } from '~/orpc'
 import { requireSession } from '~/session'
 
@@ -47,7 +49,11 @@ export const proxyCommand = command({
       return connections.length
     }
 
-    function resolveConnectionString(input: { connectionString?: string, resourceId?: string, connectionId?: string }): string {
+    function resolveConnectionString(input: {
+      connectionString?: string
+      resourceId?: string
+      connectionId?: string
+    }): string {
       if (input.connectionString) {
         return input.connectionString
       }
@@ -55,12 +61,16 @@ export const proxyCommand = command({
       if (input.resourceId) {
         const resource = resources.find(r => r.id === input.resourceId)
         if (!resource) {
-          throw new ORPCError('NOT_FOUND', { message: `Resource "${input.resourceId}" not found in local cache. Try restarting \`tamery proxy\`.` })
+          throw new ORPCError('NOT_FOUND', {
+            message: `Resource "${input.resourceId}" not found in local cache. Try restarting \`tamery proxy\`.`,
+          })
         }
 
         const conn = connections.find(c => c.id === resource.connectionId)
         if (!conn) {
-          throw new ORPCError('NOT_FOUND', { message: `Connection for resource "${input.resourceId}" not found in local cache.` })
+          throw new ORPCError('NOT_FOUND', {
+            message: `Connection for resource "${input.resourceId}" not found in local cache.`,
+          })
         }
 
         const url = new SafeURL(conn.connectionString)
@@ -71,12 +81,16 @@ export const proxyCommand = command({
       if (input.connectionId) {
         const conn = connections.find(c => c.id === input.connectionId)
         if (!conn) {
-          throw new ORPCError('NOT_FOUND', { message: `Connection "${input.connectionId}" not found in local cache. Try restarting \`tamery proxy\`.` })
+          throw new ORPCError('NOT_FOUND', {
+            message: `Connection "${input.connectionId}" not found in local cache. Try restarting \`tamery proxy\`.`,
+          })
         }
         return conn.connectionString
       }
 
-      throw new ORPCError('BAD_REQUEST', { message: 'One of connectionString, resourceId, or connectionId is required.' })
+      throw new ORPCError('BAD_REQUEST', {
+        message: 'One of connectionString, resourceId, or connectionId is required.',
+      })
     }
 
     async function verifyBrowserSession(headers: Headers): Promise<void> {
@@ -88,7 +102,7 @@ export const proxyCommand = command({
         throw new Error('Invalid or expired browser session.')
       }
 
-      const data = await res.json() as { user?: { id?: string } } | null
+      const data = (await res.json()) as { user?: { id?: string } } | null
       if (!data?.user?.id) {
         throw new Error('Invalid browser session.')
       }
@@ -100,10 +114,12 @@ export const proxyCommand = command({
 
     const orpc = os.$context<{ headers: Headers }>()
 
-    const authed = orpc.use(orpc.middleware(async ({ next, context }) => {
-      await verifyBrowserSession(context.headers)
-      return next({})
-    }))
+    const authed = orpc.use(
+      orpc.middleware(async ({ next, context }) => {
+        await verifyBrowserSession(context.headers)
+        return next({})
+      }),
+    )
 
     const router = createQueryRouter(authed, input => resolveConnectionString(input))
 
@@ -114,19 +130,19 @@ export const proxyCommand = command({
     const refreshInterval = setInterval(async () => {
       try {
         await fetchConnections()
-      }
-      catch (error) {
-        consola.warn(`Failed to refresh connections: ${error instanceof Error ? error.message : String(error)}`)
+      } catch (error) {
+        consola.warn(
+          `Failed to refresh connections: ${error instanceof Error ? error.message : String(error)}`,
+        )
       }
     }, REFRESH_INTERVAL_MS)
 
     const handler = new RPCHandler(router, {
       interceptors: [
-        async (options) => {
+        async options => {
           try {
             return await options.next()
-          }
-          catch (error) {
+          } catch (error) {
             consola.error({
               type: error instanceof Error ? error.constructor.name : typeof error,
               message: error instanceof Error ? error.message : String(error),
@@ -136,10 +152,13 @@ export const proxyCommand = command({
 
             if (error instanceof ORPCError) {
               if (error.cause instanceof ValidationError) {
-                const message = error.cause.issues.map(issue => issue.path
-                  ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
-                  : issue.message,
-                ).join(', ')
+                const message = error.cause.issues
+                  .map(issue =>
+                    issue.path
+                      ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
+                      : issue.message,
+                  )
+                  .join(', ')
 
                 throw new ORPCError('BAD_REQUEST', { message })
               }
@@ -158,20 +177,25 @@ export const proxyCommand = command({
     })
 
     const app = new Hono()
-      .use(cors({
-        origin(origin) {
-          const allowedOrigins = [
-            import.meta.env.MAIN_URL,
-          ]
-          return origin.endsWith(`.${new URL(import.meta.env.MAIN_URL).host}`) || allowedOrigins.includes(origin) ? origin : null
-        },
-        credentials: true,
-      }))
-      .get('/health', c => c.json({
-        ok: true,
-        version: import.meta.env.VERSION,
-        userId: session.user.id,
-      }))
+      .use(
+        cors({
+          origin(origin) {
+            const allowedOrigins = [import.meta.env.MAIN_URL]
+            return origin.endsWith(`.${new URL(import.meta.env.MAIN_URL).host}`) ||
+              allowedOrigins.includes(origin)
+              ? origin
+              : null
+          },
+          credentials: true,
+        }),
+      )
+      .get('/health', c =>
+        c.json({
+          ok: true,
+          version: import.meta.env.VERSION,
+          userId: session.user.id,
+        }),
+      )
       .use('/*', async (c, next) => {
         const { matched, response } = await handler.handle(c.req.raw.clone(), {
           context: { headers: c.req.raw.headers },
@@ -192,22 +216,25 @@ export const proxyCommand = command({
     process.once('SIGINT', onSigint)
     process.once('SIGTERM', onSigint)
 
-    serve({
-      fetch: app.fetch,
-      port: PORTS.LOCAL_PROXY,
-      hostname: '127.0.0.1',
-    }, () => {
-      consola.box({
-        title: 'Tamery Local Proxy',
-        message: [
-          `Listening on http://127.0.0.1:${PORTS.LOCAL_PROXY}`,
-          `Signed in as ${session.user.email}`,
-          '',
-          'The web app will automatically route connections through this proxy.',
-          'Press Ctrl+C to stop.',
-        ].join('\n'),
-        style: { borderColor: 'cyan', borderStyle: 'rounded', padding: 1 },
-      })
-    })
+    serve(
+      {
+        fetch: app.fetch,
+        port: PORTS.LOCAL_PROXY,
+        hostname: '127.0.0.1',
+      },
+      () => {
+        consola.box({
+          title: 'Tamery Local Proxy',
+          message: [
+            `Listening on http://127.0.0.1:${PORTS.LOCAL_PROXY}`,
+            `Signed in as ${session.user.email}`,
+            '',
+            'The web app will automatically route connections through this proxy.',
+            'Press Ctrl+C to stop.',
+          ].join('\n'),
+          style: { borderColor: 'cyan', borderStyle: 'rounded', padding: 1 },
+        })
+      },
+    )
   },
 })

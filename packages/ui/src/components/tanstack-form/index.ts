@@ -1,6 +1,7 @@
 import type { AnyFieldApi } from '@tanstack/react-form'
-import type { ComponentProps } from 'react'
 import { createFormHook, createFormHookContexts } from '@tanstack/react-form'
+import type { ComponentProps } from 'react'
+
 import { FieldError } from './field-error'
 import { FieldInput } from './field-input'
 import { FieldPasswordInput } from './field-password-input'
@@ -16,7 +17,8 @@ export function formInputProps(field: AnyFieldApi) {
 
 export type FormInputProps = ReturnType<typeof formInputProps>
 
-export const { fieldContext, formContext, useFieldContext, useFormContext } = createFormHookContexts()
+export const { fieldContext, formContext, useFieldContext, useFormContext } =
+  createFormHookContexts()
 
 export const { useAppForm } = createFormHook({
   fieldComponents: {

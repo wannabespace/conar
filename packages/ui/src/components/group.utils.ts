@@ -17,8 +17,7 @@ export const groupVariants = cva(
     },
     variants: {
       orientation: {
-        horizontal:
-          `
+        horizontal: `
             *:data-slot:has-[~[data-slot]]:rounded-e-none
             *:data-slot:has-[~[data-slot]]:border-e-0
             *:data-slot:has-[~[data-slot]]:before:rounded-e-none
@@ -29,8 +28,7 @@ export const groupVariants = cva(
             *:[[data-slot]~[data-slot]]:before:rounded-s-none
             *:[[data-slot]~[data-slot]:not([data-slot=separator])]:before:inset-s-[-0.03125rem]
           `,
-        vertical:
-          `
+        vertical: `
             flex-col
             *:data-slot:has-[~[data-slot]]:rounded-b-none
             *:data-slot:has-[~[data-slot]]:border-b-0

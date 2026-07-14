@@ -1,13 +1,10 @@
-import type { VariantProps } from 'class-variance-authority'
 import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
+
 import { tabsListVariants } from './tabs.utils'
 
-function Tabs({
-  className,
-  orientation = 'horizontal',
-  ...props
-}: TabsPrimitive.Root.Props) {
+function Tabs({ className, orientation = 'horizontal', ...props }: TabsPrimitive.Root.Props) {
   return (
     <TabsPrimitive.Root
       data-slot="tabs"
@@ -58,15 +55,15 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
           disabled:pointer-events-none disabled:opacity-50
           aria-disabled:pointer-events-none aria-disabled:opacity-50
           dark:text-muted-foreground
-          dark:hover:text-foreground
+          hover:dark:text-foreground
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
         `,
         `
           group-data-[variant=line]/tabs-list:bg-transparent
-          group-data-[variant=line]/tabs-list:data-active:bg-transparent
-          dark:group-data-[variant=line]/tabs-list:data-active:border-transparent
-          dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent
+          data-active:group-data-[variant=line]/tabs-list:bg-transparent
+          dark:data-active:group-data-[variant=line]/tabs-list:border-transparent
+          dark:data-active:group-data-[variant=line]/tabs-list:bg-transparent
         `,
         `
           data-active:bg-background data-active:text-foreground
@@ -77,12 +74,12 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
           after:absolute after:bg-foreground after:opacity-0
           after:transition-opacity
           group-data-horizontal/tabs:after:inset-x-0
-          group-data-horizontal/tabs:after:bottom-[-5px]
+          group-data-horizontal/tabs:after:-bottom-1.25
           group-data-horizontal/tabs:after:h-0.5
           group-data-vertical/tabs:after:inset-y-0
           group-data-vertical/tabs:after:-right-1
           group-data-vertical/tabs:after:w-0.5
-          group-data-[variant=line]/tabs-list:data-active:after:opacity-100
+          data-active:group-data-[variant=line]/tabs-list:after:opacity-100
         `,
         className,
       )}
@@ -101,4 +98,4 @@ function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
   )
 }
 
-export { Tabs, TabsContent, TabsList, tabsListVariants, TabsTrigger }
+export { Tabs, TabsContent, TabsList, TabsTrigger }

@@ -1,20 +1,32 @@
-import type { Edge, Node, NodeProps } from '@xyflow/react'
-import type { Column } from './table/cell'
-import { RiBookOpenLine, RiEraserLine, RiExternalLinkLine, RiFingerprintLine, RiKey2Line, RiLinksLine, RiTableLine } from '@remixicon/react'
+import {
+  RiBookOpenLine,
+  RiEraserLine,
+  RiExternalLinkLine,
+  RiFingerprintLine,
+  RiKey2Line,
+  RiLinksLine,
+  RiTableLine,
+} from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import { cn } from '@tamery/ui/lib/utils'
 import { Link } from '@tanstack/react-router'
+import type { Edge, Node, NodeProps } from '@xyflow/react'
 import { Handle, Position } from '@xyflow/react'
 
-export type NodeType = Node<{
-  resourceId: string
-  schema: string
-  table: string
-  columns: (Column & { searchMatched?: boolean })[]
-  searchActive?: boolean
-  tableSearchMatched?: boolean
-  edges: Edge[]
-}, 'tableNode'>
+import type { Column } from './table/cell'
+
+export type NodeType = Node<
+  {
+    resourceId: string
+    schema: string
+    table: string
+    columns: (Column & { searchMatched?: boolean })[]
+    searchActive?: boolean
+    tableSearchMatched?: boolean
+    edges: Edge[]
+  },
+  'tableNode'
+>
 
 export function ReactFlowNode({ data }: NodeProps<NodeType>) {
   return (
@@ -26,12 +38,16 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
           transition-opacity
         `,
         data.searchActive && data.tableSearchMatched && `ring-1 ring-primary/60`,
-        data.searchActive && !data.tableSearchMatched && !data.columns.some(c => c.searchMatched) && `
+        data.searchActive &&
+          !data.tableSearchMatched &&
+          !data.columns.some(c => c.searchMatched) &&
+          `
           opacity-50
         `,
       )}
     >
-      <div className="
+      <div
+        className="
         flex items-center justify-between gap-2 border-b border-border/80
         bg-linear-to-t from-background/70 px-4 py-3
         dark:from-background/30
@@ -39,9 +55,15 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
       >
         <div data-mask className="flex min-w-0 items-center gap-2 text-sm">
           <RiTableLine className="size-5 shrink-0 text-muted-foreground/80" />
-          <span className={cn(`block truncate`, data.searchActive && data.tableSearchMatched && `
+          <span
+            className={cn(
+              `block truncate`,
+              data.searchActive &&
+                data.tableSearchMatched &&
+                `
             text-primary
-          `)}
+          `,
+            )}
           >
             {data.table}
           </span>
@@ -49,13 +71,13 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
         <Button
           size="icon-xs"
           variant="outline"
-          render={(
+          render={
             <Link
               to="/connection/$resourceId/table"
               params={{ resourceId: data.resourceId }}
               search={{ schema: data.schema, table: data.table }}
             />
-          )}
+          }
         >
           <RiExternalLinkLine className="size-3" />
         </Button>
@@ -66,51 +88,64 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
             key={column.id}
             className={cn(
               'group relative px-4 transition-opacity',
-              data.searchActive && column.searchMatched && `
+              data.searchActive &&
+                column.searchMatched &&
+                `
                 rounded-sm text-primary ring-1 ring-primary/60
               `,
-              data.searchActive && data.columns.some(c => c.searchMatched) && !column.searchMatched && `
+              data.searchActive &&
+                data.columns.some(c => c.searchMatched) &&
+                !column.searchMatched &&
+                `
                 opacity-50
               `,
             )}
           >
-            <div className="
+            <div
+              className="
               flex items-center justify-between gap-2 border-dashed py-2
               group-not-last:border-b
             "
             >
               <div className="flex items-center gap-1 truncate">
                 {column.primaryKey && (
-                  <RiKey2Line className="
+                  <RiKey2Line
+                    className="
                     size-3 shrink-0 text-muted-foreground/70
                   "
                   />
                 )}
                 {column.isNullable && (
-                  <RiEraserLine className="
+                  <RiEraserLine
+                    className="
                     size-3 shrink-0 text-muted-foreground/70
                   "
                   />
                 )}
                 {column.unique && (
-                  <RiFingerprintLine className="
+                  <RiFingerprintLine
+                    className="
                     size-3 shrink-0 text-muted-foreground/70
                   "
                   />
                 )}
                 {column.isEditable === false && (
-                  <RiBookOpenLine className="
+                  <RiBookOpenLine
+                    className="
                     size-3 shrink-0 text-muted-foreground/70
                   "
                   />
                 )}
                 {column.foreign && (
-                  <RiLinksLine className="
+                  <RiLinksLine
+                    className="
                     size-3 shrink-0 text-muted-foreground/70
                   "
                   />
                 )}
-                <span data-mask className="truncate font-medium">{column.id}</span>
+                <span data-mask className="truncate font-medium">
+                  {column.id}
+                </span>
               </div>
               {(column.typeLabel || column.type) && (
                 <span className="max-w-1/2 truncate text-muted-foreground/60">

@@ -15,11 +15,15 @@ import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { QRCode } from 'react-qr-code'
 import { toast } from 'sonner'
+
 import { TotpCodeInput } from '~/components/totp-code-input'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-export function EnableTfaDialog({ open, onOpenChange }: {
+export function EnableTfaDialog({
+  open,
+  onOpenChange,
+}: {
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
@@ -27,7 +31,11 @@ export function EnableTfaDialog({ open, onOpenChange }: {
   const [code, setCode] = useState('')
   const [setupOpen, setSetupOpen] = useState(false)
 
-  const { mutate: enableTotp, isPending: isEnableTotpPending, data: totpURI } = useMutation({
+  const {
+    mutate: enableTotp,
+    isPending: isEnableTotpPending,
+    data: totpURI,
+  } = useMutation({
     mutationFn: async (password: string) => {
       const { data, error } = await authClient.twoFactor.enable({ password })
 
@@ -60,7 +68,7 @@ export function EnableTfaDialog({ open, onOpenChange }: {
       onOpenChange(false)
       setSetupOpen(false)
     },
-    onError: (e) => {
+    onError: e => {
       handleError(e)
       setCode('')
     },
@@ -77,7 +85,7 @@ export function EnableTfaDialog({ open, onOpenChange }: {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="sm:max-w-sm"
-        onSubmit={(e) => {
+        onSubmit={e => {
           e.preventDefault()
           enableTotp(password)
         }}
@@ -85,14 +93,10 @@ export function EnableTfaDialog({ open, onOpenChange }: {
       >
         <DialogHeader>
           <DialogTitle>Enable 2FA</DialogTitle>
-          <DialogDescription>
-            Enter your password to continue.
-          </DialogDescription>
+          <DialogDescription>Enter your password to continue.</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="enable-password">
-            Password
-          </Label>
+          <Label htmlFor="enable-password">Password</Label>
           <Input
             id="enable-password"
             type="password"
@@ -121,7 +125,7 @@ export function EnableTfaDialog({ open, onOpenChange }: {
                 sm:max-w-xs
               "
               showCloseButton={false}
-              onSubmit={(e) => {
+              onSubmit={e => {
                 e.preventDefault()
                 verifyTotp(code)
               }}

@@ -17,8 +17,8 @@ export const sidebarMenuButtonVariants = cva(
     has-[>svg:first-child]:pl-2.5
     has-[>svg:last-child]:pr-2.5
     aria-disabled:pointer-events-none aria-disabled:opacity-50
-    data-open:hover:bg-sidebar-accent
-    data-open:hover:text-sidebar-accent-foreground
+    hover:data-open:bg-sidebar-accent
+    hover:data-open:text-sidebar-accent-foreground
     data-active:bg-sidebar-accent data-active:font-medium
     data-active:text-sidebar-accent-foreground
     [&_svg]:size-4 [&_svg]:shrink-0
@@ -28,8 +28,7 @@ export const sidebarMenuButtonVariants = cva(
     variants: {
       variant: {
         default: 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-        outline:
-          `
+        outline: `
             bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))]
             hover:bg-sidebar-accent hover:text-sidebar-accent-foreground
             hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]

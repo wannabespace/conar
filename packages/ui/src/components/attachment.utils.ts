@@ -7,15 +7,14 @@ export const attachmentVariants = cva(
     group/attachment relative flex w-fit max-w-full min-w-0 shrink-0 flex-wrap
     rounded-2xl border bg-card text-card-foreground transition-colors
     focus-within:ring-1 focus-within:ring-ring/30
-    has-[>a,>button]:hover:bg-muted/50
+    hover:has-[>a,>button]:bg-muted/50
     data-[state=error]:border-destructive/30
     data-[state=idle]:border-dashed
   `,
   {
     variants: {
       size: {
-        default:
-          `
+        default: `
             gap-2 text-sm
             has-data-[slot=attachment-content]:px-2.5
             has-data-[slot=attachment-content]:py-2
@@ -65,8 +64,7 @@ export const attachmentMediaVariants = cva(
     variants: {
       variant: {
         icon: '',
-        image:
-          `
+        image: `
             opacity-60
             group-data-[state=done]/attachment:opacity-100
             group-data-[state=idle]/attachment:opacity-100

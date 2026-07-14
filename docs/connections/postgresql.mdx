@@ -1,7 +1,7 @@
 ---
-title: "Connect to PostgreSQL"
-sidebarTitle: "PostgreSQL"
-description: "Connect Tamery to PostgreSQL: connection string format, SSL options, and provider tips."
+title: 'Connect to PostgreSQL'
+sidebarTitle: 'PostgreSQL'
+description: 'Connect Tamery to PostgreSQL: connection string format, SSL options, and provider tips.'
 ---
 
 Tamery accepts both `postgresql://` and `postgres://`:
@@ -10,23 +10,23 @@ Tamery accepts both `postgresql://` and `postgres://`:
 postgresql://username:password@hostname:5432/database
 ```
 
-| Part | Description |
-| --- | --- |
-| `username` | PostgreSQL user (e.g. `postgres`) |
-| `password` | Password for that user |
+| Part       | Description                                 |
+| ---------- | ------------------------------------------- |
+| `username` | PostgreSQL user (e.g. `postgres`)           |
+| `password` | Password for that user                      |
 | `hostname` | Host (e.g. `localhost` or a remote address) |
-| `5432` | Port (default) |
-| `database` | Database name |
+| `5432`     | Port (default)                              |
+| `database` | Database name                               |
 
 ## Parameters
 
 Append query parameters after the database name with `?`, separated by `&`.
 
-| Parameter | Description | Example |
-| --- | --- | --- |
-| `sslmode` | SSL/TLS negotiation | `sslmode=require` |
-| `connect_timeout` | Max seconds to open a connection | `connect_timeout=10` |
-| `application_name` | Label in `pg_stat_activity` | `application_name=tamery` |
+| Parameter          | Description                      | Example                   |
+| ------------------ | -------------------------------- | ------------------------- |
+| `sslmode`          | SSL/TLS negotiation              | `sslmode=require`         |
+| `connect_timeout`  | Max seconds to open a connection | `connect_timeout=10`      |
+| `application_name` | Label in `pg_stat_activity`      | `application_name=tamery` |
 
 ```bash
 postgresql://username:password@hostname:5432/database?sslmode=require&connect_timeout=10
@@ -34,11 +34,11 @@ postgresql://username:password@hostname:5432/database?sslmode=require&connect_ti
 
 ## SSL / TLS
 
-| `sslmode` | Behavior |
-| --- | --- |
-| `disable` | No SSL |
-| `require` | SSL on, certificate not verified |
-| `verify-ca` | SSL on, certificate must be from a trusted CA |
+| `sslmode`     | Behavior                                       |
+| ------------- | ---------------------------------------------- |
+| `disable`     | No SSL                                         |
+| `require`     | SSL on, certificate not verified               |
+| `verify-ca`   | SSL on, certificate must be from a trusted CA  |
 | `verify-full` | SSL on, trusted CA **and** hostname must match |
 
 `require` works for most managed providers; use `verify-full` for stricter setups.
@@ -54,6 +54,7 @@ postgresql://username:password@hostname:5432/database?sslmode=require&connect_ti
     ```
 
     Supabase requires SSL — add `?sslmode=require` if missing.
+
   </Tab>
   <Tab title="Neon">
     Copy either the pooled or direct string from the dashboard — both include SSL settings.
@@ -61,6 +62,7 @@ postgresql://username:password@hostname:5432/database?sslmode=require&connect_ti
     ```bash
     postgresql://username:password@ep-<name>.us-east-2.aws.neon.tech/neondb?sslmode=require
     ```
+
   </Tab>
   <Tab title="Railway">
     Project → PostgreSQL service → **Connect** → **Database URL**.
@@ -68,6 +70,7 @@ postgresql://username:password@hostname:5432/database?sslmode=require&connect_ti
     ```bash
     postgresql://postgres:password@monorail.proxy.rlwy.net:12345/railway
     ```
+
   </Tab>
   <Tab title="Local">
     ```bash
@@ -75,9 +78,11 @@ postgresql://username:password@hostname:5432/database?sslmode=require&connect_ti
     ```
 
     Depending on `pg_hba.conf`, you may be able to omit the password.
+
   </Tab>
 </Tabs>
 
 <Tip>
-  Always **Test connection** before saving. If it fails, check host, port, credentials, database name, and SSL parameters.
+  Always **Test connection** before saving. If it fails, check host, port, credentials, database
+  name, and SSL parameters.
 </Tip>

@@ -1,20 +1,35 @@
-import type { ReactNode } from 'react'
-import type { PricingPlan } from '~/utils/pricing'
-import { RiErrorWarningLine, RiHeart3Fill, RiInformationLine, RiLoader4Fill, RiTimeLine, RiWalletLine } from '@remixicon/react'
+import {
+  RiErrorWarningLine,
+  RiHeart3Fill,
+  RiInformationLine,
+  RiLoader4Fill,
+  RiTimeLine,
+  RiWalletLine,
+} from '@remixicon/react'
 import { SUBSCRIPTION_PAST_DUE_MESSAGE } from '@tamery/shared/constants'
 import { Alert, AlertDescription, AlertTitle } from '@tamery/ui/components/alert'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tamery/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@tamery/ui/components/card'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { useRouter } from '@tanstack/react-router'
 import { format, formatDistanceToNow } from 'date-fns'
+import type { ReactNode } from 'react'
 import { useState } from 'react'
+
 import { useBillingPortal, useSubscription, useUpgradeSubscription } from '~/hooks/use-subscription'
+import type { PricingPlan } from '~/utils/pricing'
 import { HOBBY_PLAN, PRO_PLAN } from '~/utils/pricing'
+
 import { Route } from '..'
 
 function formatCurrency(amount: number) {
@@ -35,8 +50,9 @@ export function Subscription() {
   const { openBillingPortal, isOpening } = useBillingPortal({ returnHref })
   const { upgrade, isUpgrading } = useUpgradeSubscription()
   const [isYearly, setIsYearly] = useState(period === 'yearly')
-  // eslint-disable-next-line react/purity
-  const hasUpcomingTrialEnd = Boolean(subscription?.trialEnd && subscription.trialEnd.getTime() > Date.now())
+  const hasUpcomingTrialEnd = Boolean(
+    subscription?.trialEnd && subscription.trialEnd.getTime() > Date.now(),
+  )
 
   if (subscription && subscription.period === 'yearly' && !isYearly) {
     setIsYearly(true)
@@ -48,78 +64,64 @@ export function Subscription() {
     HOBBY_PLAN,
     {
       ...PRO_PLAN,
-      footer: isPending
-        ? (
-            <div className="flex items-center gap-2">
-              <Skeleton
-                className="h-5 w-30"
-              />
-              <Skeleton
-                className="h-5 w-30"
-              />
-            </div>
-          )
-        : subscription
-          ? (
-              <div className="flex items-center gap-2">
-                <Button
-                  size="xs"
-                  variant="outline"
-                  disabled={isOpening}
-                  onClick={() => openBillingPortal()}
-                >
-                  <LoadingContent loading={isOpening}>
-                    <RiWalletLine className="size-3.5" />
-                    Manage Subscription
-                  </LoadingContent>
-                </Button>
-                <span className={`
+      footer: isPending ? (
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-5 w-30" />
+          <Skeleton className="h-5 w-30" />
+        </div>
+      ) : subscription ? (
+        <div className="flex items-center gap-2">
+          <Button
+            size="xs"
+            variant="outline"
+            disabled={isOpening}
+            onClick={() => openBillingPortal()}
+          >
+            <LoadingContent loading={isOpening}>
+              <RiWalletLine className="size-3.5" />
+              Manage Subscription
+            </LoadingContent>
+          </Button>
+          <span
+            className={`
                   flex items-center gap-1 text-xs text-muted-foreground
                 `}
-                >
-                  <RiTimeLine className="size-3.5" />
-                  {(subscription.cancelAtPeriodEnd || subscription.cancelAt)
-                    ? subscription.cancelAt ? `Cancels at ${format(subscription.cancelAt, 'MMM d, yyyy')}` : 'Cancels at period end'
-                    : subscription.status === 'trialing' && hasUpcomingTrialEnd && subscription.trialEnd
-                      ? (
-                          <Tooltip>
-                            <TooltipTrigger render={<span />}>
-                              Free trial ends
-                              {' '}
-                              {formatDistanceToNow(subscription.trialEnd, { addSuffix: true })}
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <span>
-                                Your trial will end on
-                                {' '}
-                                {format(subscription.trialEnd, 'MMM d, yyyy h:mm a')}
-                              </span>
-                            </TooltipContent>
-                          </Tooltip>
-                        )
-                      : (subscription.periodEnd
-                          ? `Next payment on ${format(subscription.periodEnd, 'MMM d, yyyy')}`
-                          : 'No upcoming payment'
-                        )}
-                </span>
-              </div>
-            )
-          : (
-              <div className="flex items-center gap-4">
-                <Button
-                  size="xs"
-                  disabled={isUpgrading}
-                  onClick={() => upgrade(isYearly)}
-                >
-                  <LoadingContent loading={isUpgrading}>
-                    Upgrade to Pro
-                  </LoadingContent>
-                </Button>
-                <span className="text-xs text-muted-foreground">
-                  7-day free trial included
-                </span>
-              </div>
-            ),
+          >
+            <RiTimeLine className="size-3.5" />
+            {subscription.cancelAtPeriodEnd || subscription.cancelAt ? (
+              subscription.cancelAt ? (
+                `Cancels at ${format(subscription.cancelAt, 'MMM d, yyyy')}`
+              ) : (
+                'Cancels at period end'
+              )
+            ) : subscription.status === 'trialing' &&
+              hasUpcomingTrialEnd &&
+              subscription.trialEnd ? (
+              <Tooltip>
+                <TooltipTrigger render={<span />}>
+                  Free trial ends {formatDistanceToNow(subscription.trialEnd, { addSuffix: true })}
+                </TooltipTrigger>
+                <TooltipContent>
+                  <span>
+                    Your trial will end on {format(subscription.trialEnd, 'MMM d, yyyy h:mm a')}
+                  </span>
+                </TooltipContent>
+              </Tooltip>
+            ) : subscription.periodEnd ? (
+              `Next payment on ${format(subscription.periodEnd, 'MMM d, yyyy')}`
+            ) : (
+              'No upcoming payment'
+            )}
+          </span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-4">
+          <Button size="xs" disabled={isUpgrading} onClick={() => upgrade(isYearly)}>
+            <LoadingContent loading={isUpgrading}>Upgrade to Pro</LoadingContent>
+          </Button>
+          <span className="text-xs text-muted-foreground">7-day free trial included</span>
+        </div>
+      ),
     },
   ]
 
@@ -131,9 +133,7 @@ export function Subscription() {
             <RiErrorWarningLine className="size-4 text-destructive" />
             Payment issue with your subscription
           </AlertTitle>
-          <AlertDescription>
-            {SUBSCRIPTION_PAST_DUE_MESSAGE}
-          </AlertDescription>
+          <AlertDescription>{SUBSCRIPTION_PAST_DUE_MESSAGE}</AlertDescription>
         </Alert>
       )}
       <Card>
@@ -141,46 +141,45 @@ export function Subscription() {
           <div className="flex flex-col">
             <CardTitle className="flex items-center gap-2">
               Subscription
-              {isPending && (
-                <RiLoader4Fill
-                  className={cn('size-4 animate-spin')}
-                />
-              )}
+              {isPending && <RiLoader4Fill className={cn('size-4 animate-spin')} />}
             </CardTitle>
             <CardDescription className="flex items-center gap-2">
               Manage your subscription
               <Tooltip>
-                <TooltipTrigger render={(
-                  <span
-                    tabIndex={0}
-                    className="focus:outline-none"
-                  />
-                )}
-                >
+                {/* Focusable so the tooltip is reachable by keyboard */}
+                {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+                <TooltipTrigger render={<span tabIndex={0} className="focus:outline-none" />}>
                   <RiInformationLine className="size-4" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs bg-background p-0">
-                  <div className={`
+                  <div
+                    className={`
                     space-y-4 bg-linear-to-b from-primary/5 to-card p-4 text-sm
                   `}
                   >
                     <div className="flex items-center gap-2">
-                      <span className={`
+                      <span
+                        className={`
                         inline-flex size-6 items-center justify-center
                         rounded-full bg-primary/20 text-primary
                       `}
                       >
                         <RiHeart3Fill className="size-4" />
                       </span>
-                      <span className="font-semibold text-primary">Tamery is indie & user-supported</span>
+                      <span className="font-semibold text-primary">
+                        Tamery is indie & user-supported
+                      </span>
                     </div>
                     <p className="text-balance text-foreground">
-                      Our small team works every day to improve Tamery without sponsors or VCs, and on our own terms.
+                      Our small team works every day to improve Tamery without sponsors or VCs, and
+                      on our own terms.
                     </p>
                     <p className="text-balance text-muted-foreground">
                       Your subscription directly supports our work and future development.
                     </p>
-                    <p className="font-medium text-balance text-foreground">Thank you for helping us stay independent.</p>
+                    <p className="font-medium text-balance text-foreground">
+                      Thank you for helping us stay independent.
+                    </p>
                   </div>
                 </TooltipContent>
               </Tooltip>
@@ -188,7 +187,8 @@ export function Subscription() {
           </div>
           {!subscription && !isPending && (
             <div className="flex items-center">
-              <div className={`
+              <div
+                className={`
                 inline-flex items-center rounded-full border bg-card p-1
                 shadow-sm
               `}
@@ -219,7 +219,8 @@ export function Subscription() {
           )}
         </CardHeader>
         <CardContent>
-          <div className={`
+          <div
+            className={`
             grid-cols-2 gap-6
             lg:grid
           `}
@@ -233,7 +234,8 @@ export function Subscription() {
                 `)}
               >
                 <div className="flex flex-col gap-4">
-                  <span className={cn(`
+                  <span
+                    className={cn(`
                     flex size-10 shrink-0 items-center justify-center rounded-md
                     bg-muted text-muted-foreground duration-100
                   `)}
@@ -243,10 +245,10 @@ export function Subscription() {
                   <div>
                     <div className="flex items-center gap-2 text-lg">
                       <span className="font-medium">
-                        {plan.name}
-                        {' '}
+                        {plan.name}{' '}
                         {plan.price.monthly > 0 && (
-                          <span className={`
+                          <span
+                            className={`
                             text-sm font-normal text-muted-foreground
                           `}
                           >
@@ -257,15 +259,13 @@ export function Subscription() {
                           </span>
                         )}
                       </span>
-                      {!isPending && ((subscription?.plan === plan.name.toLowerCase() || (!subscription && planIndex === 0))) && (
-                        <Badge variant="secondary">
-                          Current
-                        </Badge>
-                      )}
+                      {!isPending &&
+                        (subscription?.plan === plan.name.toLowerCase() ||
+                          (!subscription && planIndex === 0)) && (
+                          <Badge variant="secondary">Current</Badge>
+                        )}
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {plan.description}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{plan.description}</p>
                   </div>
                 </div>
                 <div>{plan.footer}</div>

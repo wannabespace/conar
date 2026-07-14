@@ -1,7 +1,8 @@
-import type { ConnectionResource } from '../core/sync'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { memoize } from 'memoza'
+
+import type { ConnectionResource } from '../core/sync'
 import { connectionResourceToQueryParams, createQuery } from '../runtime/query'
 
 export const policyType = type({
@@ -37,7 +38,7 @@ const mssqlOperationMap = {
 const query = createQuery({
   type: policyType.array(),
   query: {
-    postgres: async (db) => {
+    postgres: async db => {
       const rows = await db
         .selectFrom('pg_catalog.pg_policy as p')
         .innerJoin('pg_catalog.pg_class as c', 'p.polrelid', 'c.oid')
@@ -64,18 +65,17 @@ const query = createQuery({
         enabled: true,
       }))
     },
-    mysql: async (db) => {
+    mysql: async db => {
       // MySQL doesn't support regular RLS, but we can show table privileges
       const rows = await db
         .selectFrom('information_schema.TABLE_PRIVILEGES')
-        .select([
-          'TABLE_SCHEMA',
-          'TABLE_NAME',
-          'GRANTEE',
-          'PRIVILEGE_TYPE',
-          'IS_GRANTABLE',
+        .select(['TABLE_SCHEMA', 'TABLE_NAME', 'GRANTEE', 'PRIVILEGE_TYPE', 'IS_GRANTABLE'])
+        .where('TABLE_SCHEMA', 'not in', [
+          'mysql',
+          'information_schema',
+          'performance_schema',
+          'sys',
         ])
-        .where('TABLE_SCHEMA', 'not in', ['mysql', 'information_schema', 'performance_schema', 'sys'])
         .execute()
       return rows.map(row => ({
         schema: row.TABLE_SCHEMA,
@@ -89,7 +89,7 @@ const query = createQuery({
         enabled: true,
       }))
     },
-    mssql: async (db) => {
+    mssql: async db => {
       const rows = await db
         .selectFrom('sys.security_policies as sp')
         .leftJoin('sys.security_predicates as pr', 'sp.object_id', 'pr.object_id')
@@ -117,16 +117,10 @@ const query = createQuery({
         enabled: row.is_enabled,
       }))
     },
-    clickhouse: async (db) => {
+    clickhouse: async db => {
       const rows = await db
         .selectFrom('system.row_policies')
-        .select([
-          'database',
-          'table',
-          'name',
-          'is_restrictive',
-          'select_filter',
-        ])
+        .select(['database', 'table', 'name', 'is_restrictive', 'select_filter'])
         .where('database', 'not in', ['system', 'information_schema'])
         .execute()
       return rows.map(row => ({
@@ -144,9 +138,11 @@ const query = createQuery({
   },
 })
 
-export const resourcePoliciesQuery = memoize(({ connectionResource }: { connectionResource: ConnectionResource }) => {
-  return queryOptions({
-    queryKey: ['connection-resource', connectionResource.id, 'policies'],
-    queryFn: async () => query.run(await connectionResourceToQueryParams(connectionResource)),
-  })
-})
+export const resourcePoliciesQuery = memoize(
+  ({ connectionResource }: { connectionResource: ConnectionResource }) => {
+    return queryOptions({
+      queryKey: ['connection-resource', connectionResource.id, 'policies'],
+      queryFn: async () => query.run(await connectionResourceToQueryParams(connectionResource)),
+    })
+  },
+)

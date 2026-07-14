@@ -1,20 +1,19 @@
 import { db } from '@tamery/db'
+
 import { authMiddleware, orpc } from '~/orpc'
 
-export const list = orpc
-  .use(authMiddleware)
-  .handler(async ({ context }) => {
-    return db.query.chats.findMany({
-      where: {
-        userId: context.user.id,
+export const list = orpc.use(authMiddleware).handler(async ({ context }) => {
+  return db.query.chats.findMany({
+    where: {
+      userId: context.user.id,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    with: {
+      messages: {
+        orderBy: { createdAt: 'desc' },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      with: {
-        messages: {
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    })
+    },
   })
+})

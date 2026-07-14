@@ -1,14 +1,27 @@
 import { RiMoreLine } from '@remixicon/react'
 import { cn } from '@tamery/ui/lib/utils'
 
-export function TableEmpty({ className, title, description }: { className?: string, title: string, description: string }) {
+export function TableEmpty({
+  className,
+  title,
+  description,
+}: {
+  className?: string
+  title: string
+  description: string
+}) {
   return (
-    <div className={cn(`
+    <div
+      className={cn(
+        `
       pointer-events-none sticky left-0 flex items-center justify-center
-    `, className)}
+    `,
+        className,
+      )}
     >
       <div className="flex h-32 w-full flex-col items-center justify-center">
-        <div className="
+        <div
+          className="
           mb-4 flex items-center justify-center rounded-full bg-muted/60 p-3
         "
         >

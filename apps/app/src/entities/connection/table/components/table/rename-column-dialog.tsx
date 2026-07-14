@@ -16,7 +16,12 @@ import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { renameColumnQuery, resourceRowsQueryInfiniteOptions, resourceTableColumnsQueryOptions } from '~/entities/connection/queries'
+
+import {
+  renameColumnQuery,
+  resourceRowsQueryInfiniteOptions,
+  resourceTableColumnsQueryOptions,
+} from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { queryClient } from '~/main'
 
@@ -59,12 +64,19 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
       toast.success(`Column "${column}" successfully renamed to "${newColumnName}"`)
       setOpen(false)
 
-      await queryClient.invalidateQueries(resourceTableColumnsQueryOptions({ connectionResource, table, schema }))
+      await queryClient.invalidateQueries(
+        resourceTableColumnsQueryOptions({ connectionResource, table, schema }),
+      )
       await queryClient.invalidateQueries({
-        queryKey: resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters: [], orderBy: {} } }).queryKey.slice(0, -1),
+        queryKey: resourceRowsQueryInfiniteOptions({
+          connectionResource,
+          table,
+          schema,
+          query: { filters: [], orderBy: {} },
+        }).queryKey.slice(0, -1),
       })
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Failed to rename column "${error.message}".`)
     },
   })
@@ -75,28 +87,18 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            Rename Column
-          </DialogTitle>
+          <DialogTitle>Rename Column</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <Alert>
             <RiInformationLine className="size-5 text-blue-500" />
-            <AlertTitle>
-              Rename column "
-              {column}
-              "
-            </AlertTitle>
+            <AlertTitle>Rename column "{column}"</AlertTitle>
             <AlertDescription>
-              This will rename the column from "
-              {column}
-              " to the new name you specify.
+              This will rename the column from "{column}" to the new name you specify.
             </AlertDescription>
           </Alert>
           <div className="space-y-2">
-            <Label htmlFor="newColumnName">
-              Column name
-            </Label>
+            <Label htmlFor="newColumnName">Column name</Label>
             <Input
               id="newColumnName"
               value={newColumnName}
@@ -104,7 +106,7 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
               spellCheck={false}
               autoComplete="off"
               onChange={e => setNewColumnName(e.target.value)}
-              onKeyDown={(e) => {
+              onKeyDown={e => {
                 if (e.key === 'Enter' && canConfirm) {
                   renameColumn()
                 }
@@ -113,9 +115,7 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
           </div>
         </div>
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>
-            Cancel
-          </DialogClose>
+          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
           <Button
             disabled={!canConfirm}
             onClick={() => {
@@ -124,9 +124,7 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
               }
             }}
           >
-            <LoadingContent loading={isPending}>
-              Rename Column
-            </LoadingContent>
+            <LoadingContent loading={isPending}>Rename Column</LoadingContent>
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,5 +1,4 @@
 import { Slider as SliderPrimitive } from '@base-ui/react/slider'
-
 import { cn } from '@tamery/ui/lib/utils'
 
 function Slider({
@@ -10,7 +9,7 @@ function Slider({
   max = 100,
   ...props
 }: SliderPrimitive.Root.Props) {
-  const _values = Array.isArray(value)
+  const values = Array.isArray(value)
     ? value
     : Array.isArray(defaultValue)
       ? defaultValue
@@ -18,10 +17,13 @@ function Slider({
 
   return (
     <SliderPrimitive.Root
-      className={cn(`
+      className={cn(
+        `
         data-horizontal:w-full
         data-vertical:h-full
-      `, className)}
+      `,
+        className,
+      )}
       data-slot="slider"
       defaultValue={defaultValue}
       value={value}
@@ -30,7 +32,8 @@ function Slider({
       thumbAlignment="edge"
       {...props}
     >
-      <SliderPrimitive.Control className="
+      <SliderPrimitive.Control
+        className="
         relative flex w-full touch-none items-center select-none
         data-disabled:opacity-50
         data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto
@@ -54,7 +57,7 @@ function Slider({
             "
           />
         </SliderPrimitive.Track>
-        {Array.from({ length: _values.length }, (_, index) => (
+        {Array.from({ length: values.length }, (_, index) => (
           <SliderPrimitive.Thumb
             data-slot="slider-thumb"
             key={index}

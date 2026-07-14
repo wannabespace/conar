@@ -1,5 +1,3 @@
 {
-  "recommendations": [
-    "typescriptteam.native-preview"
-  ]
+  "recommendations": ["oxc.oxc-vscode"]
 }

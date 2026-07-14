@@ -1,6 +1,7 @@
-import type { VariantProps } from 'class-variance-authority'
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
 import * as React from 'react'
+
 import { alertVariants } from './alert.utils'
 
 function Alert({
@@ -36,10 +37,7 @@ function AlertTitle({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-function AlertDescription({
-  className,
-  ...props
-}: React.ComponentProps<'div'>) {
+function AlertDescription({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="alert-description"

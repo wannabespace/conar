@@ -1,18 +1,16 @@
-import type { Column } from '../../components'
-import type { ValueTransformer } from '../create-transformer'
 import { TZDate } from '@date-fns/tz'
 import { format, isValid } from 'date-fns'
+
+import type { Column } from '../../components'
+import type { ValueTransformer } from '../create-transformer'
 import { getDisplayValue } from '../create-transformer'
 
 function getTimeFormatPattern(value: Date) {
   const ms = value.getMilliseconds()
 
-  if (ms === 0)
-    return 'HH:mm:ss'
-  if (ms % 100 === 0)
-    return 'HH:mm:ss.S'
-  if (ms % 10 === 0)
-    return 'HH:mm:ss.SS'
+  if (ms === 0) return 'HH:mm:ss'
+  if (ms % 100 === 0) return 'HH:mm:ss.S'
+  if (ms % 10 === 0) return 'HH:mm:ss.SS'
 
   return 'HH:mm:ss.SSS'
 }
@@ -49,8 +47,7 @@ export function createTimeTransformer(column: Column): ValueTransformer<string> 
         return String(value).trim()
       },
       toRaw: () => {
-        if (value === null)
-          return ''
+        if (value === null) return ''
 
         if (value instanceof Date && isValid(value)) {
           return formatTime(value)
@@ -64,15 +61,13 @@ export function createTimeTransformer(column: Column): ValueTransformer<string> 
       },
     }),
     toConnection: {
-      fromUI: (value) => {
-        if (value === '' && column.isNullable)
-          return null
+      fromUI: value => {
+        if (value === '' && column.isNullable) return null
 
         return value
       },
-      fromRaw: (value) => {
-        if (value === '' && column.isNullable)
-          return null
+      fromRaw: value => {
+        if (value === '' && column.isNullable) return null
 
         return value.trim()
       },

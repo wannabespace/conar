@@ -22,12 +22,13 @@ export function ContentSwitch({
 
   useMountedEffect(() => {
     if (active) {
-      // eslint-disable-next-line react/set-state-in-effect
+      // oxlint-disable-next-line react/set-state-in-effect
       setIsActive(true)
     }
 
     const timeout = setTimeout(() => {
       setIsActive(false)
+      // oxlint-disable-next-line react-hooks/rules-of-hooks
       onSwitchEndEvent(false)
     }, 3000)
 
@@ -36,31 +37,29 @@ export function ContentSwitch({
 
   return (
     <AnimatePresence mode="popLayout" initial={false}>
-      {isActive
-        ? (
-            <motion.span
-              key="active"
-              className={className}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              transition={{ duration: 0.1 }}
-            >
-              {activeContent}
-            </motion.span>
-          )
-        : (
-            <motion.span
-              key="default"
-              className={className}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              transition={{ duration: 0.1 }}
-            >
-              {children}
-            </motion.span>
-          )}
+      {isActive ? (
+        <motion.span
+          key="active"
+          className={className}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          transition={{ duration: 0.1 }}
+        >
+          {activeContent}
+        </motion.span>
+      ) : (
+        <motion.span
+          key="default"
+          className={className}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          transition={{ duration: 0.1 }}
+        >
+          {children}
+        </motion.span>
+      )}
     </AnimatePresence>
   )
 }

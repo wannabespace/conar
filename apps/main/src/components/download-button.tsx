@@ -1,9 +1,15 @@
-import type { OS } from '@tamery/shared/utils/os'
 import { RiAppleFill, RiWindowsFill } from '@remixicon/react'
+import type { OS } from '@tamery/shared/utils/os'
 import { Button } from '@tamery/ui/components/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@tamery/ui/components/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@tamery/ui/components/dropdown-menu'
 import { Linux } from '@tamery/ui/components/icons/linux'
 import { cn } from '@tamery/ui/lib/utils'
+
 import { DOWNLOAD_LINKS } from '~/constants'
 import { getOSIsomorphic } from '~/utils/os'
 
@@ -35,41 +41,40 @@ export function DownloadButton({ className }: { className?: string }) {
 
   if (assets.length === 1) {
     return (
-      <Button size="lg" className={cn('flex items-center justify-center gap-2', className)} render={<a href={assets[0]!.link} download />}>
+      <Button
+        size="lg"
+        className={cn('flex items-center justify-center gap-2', className)}
+        render={<a href={assets[0]!.link} download aria-label={`Download for ${os.label}`} />}
+      >
         {Icon && <Icon className="size-4" />}
-        Download for
-        {' '}
-        {os.label}
+        Download for {os.label}
       </Button>
     )
   }
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={(
-        <Button
-          size="lg"
-          className={cn(`flex items-center justify-center gap-2`, className)}
-        />
-      )}
+      <DropdownMenuTrigger
+        render={
+          <Button size="lg" className={cn(`flex items-center justify-center gap-2`, className)} />
+        }
       >
         {Icon && <Icon className="size-4" />}
-        Download for
-        {' '}
-        {os.label}
+        Download for {os.label}
       </DropdownMenuTrigger>
       {assets.length > 1 && (
         <DropdownMenuContent>
           {assets.map(asset => (
             <DropdownMenuItem
               key={asset.link}
-              render={(
+              render={
                 <a
                   href={asset.link}
                   download
                   className="flex gap-2 text-foreground"
+                  aria-label={`Download ${asset.arch}`}
                 />
-              )}
+              }
             >
               {asset.arch}
             </DropdownMenuItem>

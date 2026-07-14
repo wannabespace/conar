@@ -1,18 +1,20 @@
 import type { Context as HonoContext } from 'hono'
-import type { AppVariables } from '..'
 import { UAParser } from 'ua-parser-js'
+
+import type { AppVariables } from '..'
 
 export function createContext(c: HonoContext<{ Variables: AppVariables }>) {
   const ua = c.req.raw.headers.get('User-Agent')
   const userAgent = ua ? new UAParser(ua) : null
   const osName = userAgent?.getOS().name
-  const os = osName === 'Linux'
-    ? 'linux' as const
-    : osName === 'macOS'
-      ? 'macos' as const
-      : osName === 'Windows'
-        ? 'windows' as const
-        : null
+  const os =
+    osName === 'Linux'
+      ? ('linux' as const)
+      : osName === 'macOS'
+        ? ('macos' as const)
+        : osName === 'Windows'
+          ? ('windows' as const)
+          : null
 
   const parsedAppVersion = c.get('parsedAppVersion')
   const isAppOutdated = c.get('isAppOutdated')

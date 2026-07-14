@@ -6,18 +6,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
-import {
-  InputGroup,
-  InputGroupAddon,
-} from '@tamery/ui/components/input-group'
+import { InputGroup, InputGroupAddon } from '@tamery/ui/components/input-group'
 import { cn } from '@tamery/ui/lib/utils'
 import { Command as CommandPrimitive } from 'cmdk'
 import * as React from 'react'
 
-function Command({
-  className,
-  ...props
-}: React.ComponentProps<typeof CommandPrimitive>) {
+function Command({ className, ...props }: React.ComponentProps<typeof CommandPrimitive>) {
   return (
     <CommandPrimitive
       data-slot="command"
@@ -54,10 +48,7 @@ function CommandDialog({
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
       <DialogContent
-        className={cn(
-          'top-1/3 translate-y-0 overflow-hidden rounded-3xl! p-0',
-          className,
-        )}
+        className={cn('top-1/3 translate-y-0 overflow-hidden rounded-3xl! p-0', className)}
         showCloseButton={showCloseButton}
       >
         {children}
@@ -92,10 +83,7 @@ function CommandInput({
   )
 }
 
-function CommandList({
-  className,
-  ...props
-}: React.ComponentProps<typeof CommandPrimitive.List>) {
+function CommandList({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.List>) {
   return (
     <CommandPrimitive.List
       data-slot="command-list"
@@ -184,7 +172,8 @@ function CommandItem({
       {...props}
     >
       {children}
-      <RiCheckLine className="
+      <RiCheckLine
+        className="
         ml-auto opacity-0
         group-has-data-[slot=command-shortcut]/command-item:hidden
         group-data-[checked=true]/command-item:opacity-100
@@ -194,10 +183,7 @@ function CommandItem({
   )
 }
 
-function CommandShortcut({
-  className,
-  ...props
-}: React.ComponentProps<'span'>) {
+function CommandShortcut({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
       data-slot="command-shortcut"

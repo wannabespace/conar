@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* oxlint-disable no-console */
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
@@ -70,15 +70,11 @@ function syncPnpmVersion() {
 
     if (todesktopUpdated || lintCheckUpdated || releaseUpdated) {
       console.log('✓ Updated pnpm version in:')
-      if (todesktopUpdated)
-        console.log('  - apps/desktop/todesktop.json')
-      if (lintCheckUpdated)
-        console.log('  - .github/workflows/lint-check.yml')
-      if (releaseUpdated)
-        console.log('  - .github/workflows/release.yml')
+      if (todesktopUpdated) console.log('  - apps/desktop/todesktop.json')
+      if (lintCheckUpdated) console.log('  - .github/workflows/lint-check.yml')
+      if (releaseUpdated) console.log('  - .github/workflows/release.yml')
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('Failed to sync pnpm version:', error instanceof Error ? error.message : error)
     process.exit(1)
   }

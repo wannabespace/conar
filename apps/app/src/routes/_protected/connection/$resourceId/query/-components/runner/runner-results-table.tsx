@@ -1,8 +1,7 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { ColumnRenderer } from '@tamery/table'
-import type { Column } from '~/entities/connection/components/table/cell'
 import NumberFlow from '@number-flow/react'
 import { RiCloseLine, RiExportLine, RiSearchLine } from '@remixicon/react'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { ColumnRenderer } from '@tamery/table'
 import { Table, TableBody, TableHeader, TableProvider } from '@tamery/table'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 import { Button } from '@tamery/ui/components/button'
@@ -12,8 +11,10 @@ import { Separator } from '@tamery/ui/components/separator'
 import { useDebouncedMemo } from '@tamery/ui/hookas/use-debounced-memo'
 import { cn } from '@tamery/ui/lib/utils'
 import { useMemo, useState } from 'react'
+
 import { ExportData } from '~/components/export-data'
 import { TableCell } from '~/entities/connection/components'
+import type { Column } from '~/entities/connection/components/table/cell'
 
 export function RunnerResultsTable({
   data,
@@ -28,46 +29,52 @@ export function RunnerResultsTable({
 }) {
   const [search, setSearch] = useState('')
 
-  const filteredData = useDebouncedMemo(() => {
-    if (!search.trim())
-      return data
+  const filteredData = useDebouncedMemo(
+    () => {
+      if (!search.trim()) return data
 
-    return data.filter(row =>
-      JSON.stringify(Object.values(row)).toLowerCase().includes(search.toLowerCase()),
-    )
-  }, [data, search], 100)
+      return data.filter(row =>
+        JSON.stringify(Object.values(row)).toLowerCase().includes(search.toLowerCase()),
+      )
+    },
+    [data, search],
+    100,
+  )
 
   const tableColumns = useMemo(() => {
-    return columns.map(column => ({
-      id: column.id,
-      header: ({ columnIndex, style }) => (
-        <div
-          className={cn(
-            'flex w-full shrink-0 items-center justify-between p-2',
-            columnIndex === 0 && 'pl-4',
-          )}
-          style={style}
-        >
-          <div className="text-xs">
+    return columns.map(
+      column =>
+        ({
+          id: column.id,
+          header: ({ columnIndex, style }) => (
             <div
-              data-mask
-              className="flex items-center gap-1 truncate font-medium"
-              title={column.id}
+              className={cn(
+                'flex w-full shrink-0 items-center justify-between p-2',
+                columnIndex === 0 && 'pl-4',
+              )}
+              style={style}
             >
-              {column.id}
+              <div className="text-xs">
+                <div
+                  data-mask
+                  className="flex items-center gap-1 truncate font-medium"
+                  title={column.id}
+                >
+                  {column.id}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      ),
-      cell: props => (
-        <TableCell
-          column={{ id: column.id, uiType: 'raw' }}
-          connectionType={connectionType}
-          {...props}
-        />
-      ),
-      size: DEFAULT_COLUMN_WIDTH,
-    } satisfies ColumnRenderer))
+          ),
+          cell: props => (
+            <TableCell
+              column={{ id: column.id, uiType: 'raw' }}
+              connectionType={connectionType}
+              {...props}
+            />
+          ),
+          size: DEFAULT_COLUMN_WIDTH,
+        }) satisfies ColumnRenderer,
+    )
   }, [columns, connectionType])
 
   const getData = async ({ limit }: { limit?: number }) => {
@@ -80,8 +87,7 @@ export function RunnerResultsTable({
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">Results</span>
           <span className="text-xs text-muted-foreground">
-            <NumberFlow value={filteredData.length} className="tabular-nums" />
-            {' '}
+            <NumberFlow value={filteredData.length} className="tabular-nums" />{' '}
             {filteredData.length === 1 ? 'row' : 'rows'}
             {search && filteredData.length !== data.length && ` (filtered from ${data.length})`}
           </span>
@@ -99,7 +105,8 @@ export function RunnerResultsTable({
               onChange={e => setSearch(e.target.value)}
               className="h-8 w-full pr-8 pl-7 text-sm"
             />
-            <RiSearchLine className={`
+            <RiSearchLine
+              className={`
               absolute top-1/2 left-2 size-3.5 -translate-y-1/2
               text-muted-foreground
             `}
@@ -133,10 +140,7 @@ export function RunnerResultsTable({
           />
         </div>
       </div>
-      <TableProvider
-        rows={filteredData}
-        columns={tableColumns}
-      >
+      <TableProvider rows={filteredData} columns={tableColumns}>
         <Table className="h-[calc(100%-(--spacing(10)))]">
           <TableHeader />
           <TableBody data-mask />

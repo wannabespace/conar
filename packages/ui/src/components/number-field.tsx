@@ -20,9 +20,10 @@ export function NumberField({
 }): React.ReactElement {
   const generatedId = React.useId()
   const fieldId = id ?? generatedId
+  const contextValue = React.useMemo(() => ({ fieldId }), [fieldId])
 
   return (
-    <NumberFieldContext.Provider value={{ fieldId }}>
+    <NumberFieldContext.Provider value={contextValue}>
       <NumberFieldPrimitive.Root
         className={cn('flex w-full flex-col items-start gap-2', className)}
         data-size={size}
@@ -176,19 +177,14 @@ export function NumberFieldScrubArea({
       <Label className="cursor-ew-resize" htmlFor={context.fieldId}>
         {label}
       </Label>
-      <NumberFieldPrimitive.ScrubAreaCursor className="
-        drop-shadow-[0_1px_1px_#0008] filter
-      "
-      >
+      <NumberFieldPrimitive.ScrubAreaCursor className="drop-shadow-[0_1px_1px_#0008]">
         <CursorGrowIcon />
       </NumberFieldPrimitive.ScrubAreaCursor>
     </NumberFieldPrimitive.ScrubArea>
   )
 }
 
-export function CursorGrowIcon(
-  props: React.ComponentProps<'svg'>,
-): React.ReactElement {
+export function CursorGrowIcon(props: React.ComponentProps<'svg'>): React.ReactElement {
   return (
     <svg
       aria-hidden="true"

@@ -3,6 +3,7 @@ import { Button } from '@tamery/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useState } from 'react'
+
 import { useTablePageStore } from '../../store'
 import { FilterForm } from '../filters/filters-form'
 
@@ -13,12 +14,12 @@ export function HeaderActionsFilters() {
   return (
     <Popover open={isFiltersOpened} onOpenChange={setIsFiltersOpened}>
       <Tooltip>
-        <TooltipTrigger render={<PopoverTrigger render={<Button size="icon" variant="outline" />} />}>
+        <TooltipTrigger
+          render={<PopoverTrigger render={<Button size="icon" variant="outline" />} />}
+        >
           <RiFilterLine />
         </TooltipTrigger>
-        <TooltipContent side="top">
-          Add new filter
-        </TooltipContent>
+        <TooltipContent side="top">Add new filter</TooltipContent>
       </Tooltip>
       <PopoverContent
         className="
@@ -29,12 +30,15 @@ export function HeaderActionsFilters() {
         align="end"
       >
         <FilterForm
-          onAdd={(filter) => {
+          onAdd={filter => {
             setIsFiltersOpened(false)
-            store.set(state => ({
-              ...state,
-              filters: [...state.filters, filter],
-            } satisfies typeof state))
+            store.set(
+              state =>
+                ({
+                  ...state,
+                  filters: [...state.filters, filter],
+                }) satisfies typeof state,
+            )
           }}
         />
       </PopoverContent>

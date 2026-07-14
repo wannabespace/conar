@@ -3,6 +3,7 @@ import { Button } from '@tamery/ui/components/button'
 import { Spinner } from '@tamery/ui/components/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useSubscription } from 'seitu/react'
+
 import { updatesStore } from '~/use-updates-observer'
 
 export function UpdateButton() {
@@ -14,10 +15,7 @@ export function UpdateButton() {
 
   if (status === 'ready') {
     return (
-      <Button
-        size="xs"
-        onClick={() => window.electron?.app.quitAndInstall()}
-      >
+      <Button size="xs" onClick={() => window.electron?.app.quitAndInstall()}>
         <RiRefreshLine />
         Restart to update
       </Button>
@@ -30,19 +28,11 @@ export function UpdateButton() {
 
   return (
     <Tooltip>
-      <TooltipTrigger render={(
-        <Button
-          size="icon-sm"
-          variant="ghost"
-          disabled
-        />
-      )}
-      >
-        {status === 'checking' && (
-          <Spinner className="size-4 text-muted-foreground" />
-        )}
+      <TooltipTrigger render={<Button size="icon-sm" variant="ghost" disabled />}>
+        {status === 'checking' && <Spinner className="size-4 text-muted-foreground" />}
         {status === 'downloading' && (
-          <RiDownloadLine className="
+          <RiDownloadLine
+            className="
             size-4 animate-bounce text-muted-foreground
           "
           />

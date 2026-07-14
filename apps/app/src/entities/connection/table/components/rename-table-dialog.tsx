@@ -16,7 +16,11 @@ import { useMutation } from '@tanstack/react-query'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
-import { renameTableQuery, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
+
+import {
+  renameTableQuery,
+  resourceTablesAndSchemasQueryOptions,
+} from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { getConnectionResourceStore, renameTab } from '~/entities/connection/store'
 import { queryClient } from '~/main'
@@ -49,13 +53,20 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
 
   const { mutate: renameTable, isPending } = useMutation({
     mutationFn: async () => {
-      await renameTableQuery({ schema, oldTable: table, newTable: newTableName }).run(await connectionResourceToQueryParams(connectionResource))
+      await renameTableQuery({ schema, oldTable: table, newTable: newTableName }).run(
+        await connectionResourceToQueryParams(connectionResource),
+      )
     },
     onSuccess: async () => {
       toast.success(`Table "${table}" successfully renamed to "${newTableName}"`)
       setOpen(false)
 
-      await queryClient.invalidateQueries(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem: store.get().showSystem }))
+      await queryClient.invalidateQueries(
+        resourceTablesAndSchemasQueryOptions({
+          connectionResource,
+          showSystem: store.get().showSystem,
+        }),
+      )
       renameTab(connectionResource.id, schema, table, newTableName)
 
       router.navigate({
@@ -65,7 +76,7 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
         search: { schema, table: newTableName },
       })
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Failed to rename table "${error.message}".`)
     },
   })
@@ -76,28 +87,19 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            Rename Table
-          </DialogTitle>
+          <DialogTitle>Rename Table</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <Alert>
             <RiInformationLine className="size-5" />
-            <AlertTitle>
-              Rename table "
-              {table}
-              "
-            </AlertTitle>
+            <AlertTitle>Rename table "{table}"</AlertTitle>
             <AlertDescription>
-              This will rename the table from "
-              {table}
-              " to the new name you specify. This action cannot be undone.
+              This will rename the table from "{table}" to the new name you specify. This action
+              cannot be undone.
             </AlertDescription>
           </Alert>
           <div className="space-y-2">
-            <Label htmlFor="newTableName">
-              Table name
-            </Label>
+            <Label htmlFor="newTableName">Table name</Label>
             <Input
               id="newTableName"
               value={newTableName}
@@ -105,7 +107,7 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
               spellCheck={false}
               autoComplete="off"
               onChange={e => setNewTableName(e.target.value)}
-              onKeyDown={(e) => {
+              onKeyDown={e => {
                 if (e.key === 'Enter' && canConfirm) {
                   renameTable()
                 }
@@ -114,9 +116,7 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
           </div>
         </div>
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>
-            Cancel
-          </DialogClose>
+          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
           <Button
             disabled={!canConfirm}
             onClick={() => {
@@ -125,9 +125,7 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
               }
             }}
           >
-            <LoadingContent loading={isPending}>
-              Rename Table
-            </LoadingContent>
+            <LoadingContent loading={isPending}>Rename Table</LoadingContent>
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,8 +1,15 @@
 import type { UIMessage } from '@ai-sdk/react'
-import type { ChatStatus } from 'ai'
-import type { ComponentProps, ReactNode } from 'react'
 import { useChat } from '@ai-sdk/react'
-import { RiAlertLine, RiArrowDownLine, RiArrowDownSLine, RiCheckLine, RiFileCopyLine, RiLoopLeftLine, RiPlayListAddLine, RiRestartLine } from '@remixicon/react'
+import {
+  RiAlertLine,
+  RiArrowDownLine,
+  RiArrowDownSLine,
+  RiCheckLine,
+  RiFileCopyLine,
+  RiLoopLeftLine,
+  RiPlayListAddLine,
+  RiRestartLine,
+} from '@remixicon/react'
 import { isToolUIPart } from '@tamery/ai/tools/helpers'
 import { Alert, AlertDescription, AlertTitle } from '@tamery/ui/components/alert'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
@@ -10,18 +17,27 @@ import { Button } from '@tamery/ui/components/button'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@tamery/ui/components/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@tamery/ui/components/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useElementSize } from '@tamery/ui/hookas/use-element-size'
 import { copy } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
+import type { ChatStatus } from 'ai'
 import { regex } from 'arktype'
+import type { ComponentProps, ReactNode } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
+
 import { Markdown } from '~/components/markdown-lazy'
 import { getEditorQueriesComputed } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
+
 import { Route } from '../..'
 import { chatHooks, runnerHooks } from '../../-page'
 import { ChatImages } from './chat-images'
@@ -37,17 +53,21 @@ function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
   )
 }
 
-function ChatMessageFooterButton({ onClick, icon, tooltip, disabled }: { onClick: () => void, icon: ReactNode, tooltip: string, disabled?: boolean }) {
+function ChatMessageFooterButton({
+  onClick,
+  icon,
+  tooltip,
+  disabled,
+}: {
+  onClick: () => void
+  icon: ReactNode
+  tooltip: string
+  disabled?: boolean
+}) {
   return (
     <Tooltip>
-      <TooltipTrigger render={(
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={onClick}
-          disabled={disabled}
-        />
-      )}
+      <TooltipTrigger
+        render={<Button variant="ghost" size="icon-sm" onClick={onClick} disabled={disabled} />}
       >
         {icon}
       </TooltipTrigger>
@@ -56,7 +76,7 @@ function ChatMessageFooterButton({ onClick, icon, tooltip, disabled }: { onClick
   )
 }
 
-function ChatMessageCodeActions({ content, lang }: { content: string, lang: string }) {
+function ChatMessageCodeActions({ content, lang }: { content: string; lang: string }) {
   const { connectionResource } = Route.useRouteContext()
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
   const editorQueries = useSubscription(editorQueriesStore)
@@ -65,12 +85,15 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
   const [isReplacing, setIsReplacing] = useState(false)
 
   function getQueryNumber(index: number) {
-    const queriesBefore = editorQueries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
+    const queriesBefore =
+      editorQueries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
     const queriesLength = editorQueries[index]?.queries.length ?? 0
-    return queriesLength === 1 ? queriesBefore : `${queriesBefore} - ${queriesBefore + queriesLength - 1}`
+    return queriesLength === 1
+      ? queriesBefore
+      : `${queriesBefore} - ${queriesBefore + queriesLength - 1}`
   }
 
-  function replaceQuery(query: typeof editorQueries[number]) {
+  function replaceQuery(query: (typeof editorQueries)[number]) {
     runnerHooks.callHook('replaceQuery', {
       query: content.replace(COMMENT_REGEX, ''),
       startLineNumber: query.startLineNumber,
@@ -88,38 +111,37 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
   return (
     <div className="flex gap-1">
       <Tooltip>
-        <TooltipTrigger render={(
-          <CopyButton
-            size="icon-xs"
-            variant="ghost"
-            text={content}
-            successIcon={<RiCheckLine className="text-success" />}
-            copyIcon={<RiFileCopyLine className="size-3.5" />}
-            onClick={(e) => {
-              e.stopPropagation()
-            }}
-          />
-        )}
-        >
-        </TooltipTrigger>
-        <TooltipContent>
-          Copy to clipboard
-        </TooltipContent>
+        <TooltipTrigger
+          render={
+            <CopyButton
+              size="icon-xs"
+              variant="ghost"
+              text={content}
+              successIcon={<RiCheckLine className="text-success" />}
+              copyIcon={<RiFileCopyLine className="size-3.5" />}
+              onClick={e => {
+                e.stopPropagation()
+              }}
+            />
+          }
+        ></TooltipTrigger>
+        <TooltipContent>Copy to clipboard</TooltipContent>
       </Tooltip>
       {lang === 'sql' && (
         <>
           <Tooltip>
-            <TooltipTrigger render={(
-              <Button
-                size="icon-xs"
-                variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  runnerHooks.callHook('appendToBottomAndFocus', content)
-                  setIsAppending(true)
-                }}
-              />
-            )}
+            <TooltipTrigger
+              render={
+                <Button
+                  size="icon-xs"
+                  variant="ghost"
+                  onClick={e => {
+                    e.stopPropagation()
+                    runnerHooks.callHook('appendToBottomAndFocus', content)
+                    setIsAppending(true)
+                  }}
+                />
+              }
             >
               <ContentSwitch
                 active={isAppending}
@@ -129,24 +151,18 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
                 <RiPlayListAddLine className="size-3.5" />
               </ContentSwitch>
             </TooltipTrigger>
-            <TooltipContent>
-              Append to bottom of runner
-            </TooltipContent>
+            <TooltipContent>Append to bottom of runner</TooltipContent>
           </Tooltip>
           <DropdownMenu>
             <Tooltip>
               <DropdownMenuTrigger
-                render={(
+                render={
                   <TooltipTrigger
-                    render={(
-                      <Button
-                        size="icon-xs"
-                        variant="ghost"
-                        onClick={e => e.stopPropagation()}
-                      />
-                    )}
+                    render={
+                      <Button size="icon-xs" variant="ghost" onClick={e => e.stopPropagation()} />
+                    }
                   />
-                )}
+                }
               >
                 <ContentSwitch
                   active={isReplacing}
@@ -156,9 +172,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
                   <RiLoopLeftLine className="size-3.5" />
                 </ContentSwitch>
               </DropdownMenuTrigger>
-              <TooltipContent>
-                Replace a query in the runner
-              </TooltipContent>
+              <TooltipContent>Replace a query in the runner</TooltipContent>
             </Tooltip>
             <DropdownMenuContent
               align="end"
@@ -169,7 +183,8 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
                 Replace existing query
               </div>
               {editorQueries.length === 0 && (
-                <div className={`
+                <div
+                  className={`
                   px-3 py-2 text-xs text-muted-foreground select-none
                 `}
                 >
@@ -180,17 +195,14 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
                 <DropdownMenuItem
                   key={`${q.startLineNumber}-${q.endLineNumber}`}
                   className="flex w-full items-center justify-between gap-2"
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation()
                     replaceQuery(q)
                   }}
                 >
-                  <span className="text-xs font-medium">
-                    Query
-                    {' '}
-                    {getQueryNumber(index)}
-                  </span>
-                  <span className={`
+                  <span className="text-xs font-medium">Query {getQueryNumber(index)}</span>
+                  <span
+                    className={`
                     font-mono text-[0.625rem] text-muted-foreground/70
                   `}
                   >
@@ -208,7 +220,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string, lang: stri
   )
 }
 
-function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts'], loading?: boolean }) {
+function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts']; loading?: boolean }) {
   return parts.map((part, index) => {
     const key = `${part.type}-${index}`
 
@@ -225,10 +237,7 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts'], loadi
 
     if (part.type === 'reasoning') {
       return (
-        <div
-          key={key}
-          className={cn(loading && 'animate-in duration-200 fade-in')}
-        >
+        <div key={key} className={cn(loading && 'animate-in duration-200 fade-in')}>
           <p className="text-xs font-medium">Reasoning</p>
           <p className="text-xs">{part.text}</p>
         </div>
@@ -249,7 +258,11 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts'], loadi
   })
 }
 
-function UserMessage({ message, className, ...props }: { message: UIMessage } & ComponentProps<'div'>) {
+function UserMessage({
+  message,
+  className,
+  ...props
+}: { message: UIMessage } & ComponentProps<'div'>) {
   const [isVisible, setIsVisible] = useState(false)
   const partsRef = useRef<HTMLDivElement>(null)
   const { height } = useElementSize(partsRef, {
@@ -291,13 +304,13 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
                 `}
                 onClick={() => setIsVisible(!isVisible)}
               >
-                <RiArrowDownSLine className={cn('duration-100', isVisible
-                  ? `rotate-180`
-                  : `rotate-0`)}
+                <RiArrowDownSLine
+                  className={cn('duration-100', isVisible ? `rotate-180` : `rotate-0`)}
                 />
               </Button>
               {!isVisible && (
-                <div className={`
+                <div
+                  className={`
                   pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16
                   bg-linear-to-t from-primary to-transparent
                 `}
@@ -323,9 +336,12 @@ function UserMessage({ message, className, ...props }: { message: UIMessage } & 
 function AssistantMessageLoader({ children, className, ...props }: ComponentProps<'div'>) {
   return (
     <div
-      className={cn(`
+      className={cn(
+        `
         flex animate-pulse items-center gap-2 text-muted-foreground
-      `, className)}
+      `,
+        className,
+      )}
       {...props}
     >
       <AppLogo className="size-4" />
@@ -334,7 +350,13 @@ function AssistantMessageLoader({ children, className, ...props }: ComponentProp
   )
 }
 
-function AssistantMessage({ message, isLast, status, className, ...props }: { message: UIMessage, isLast: boolean, status: ChatStatus } & ComponentProps<'div'>) {
+function AssistantMessage({
+  message,
+  isLast,
+  status,
+  className,
+  ...props
+}: { message: UIMessage; isLast: boolean; status: ChatStatus } & ComponentProps<'div'>) {
   const { chat } = Route.useLoaderData()
   const ref = useRef<HTMLDivElement>(null)
   const { height } = useElementSize(ref)
@@ -344,31 +366,29 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
 
   return (
     <ChatMessage className={cn('group/message', className)} {...props}>
-      <div
-        style={{ height: height ? `${height}px` : undefined }}
-        className="duration-150"
-      >
+      <div style={{ height: height ? `${height}px` : undefined }} className="duration-150">
         <div ref={ref}>
-          <ChatMessageParts
-            parts={message.parts}
-            loading={isLoading}
-          />
+          <ChatMessageParts parts={message.parts} loading={isLoading} />
         </div>
       </div>
-      <div className={`
+      <div
+        className={`
         sticky bottom-0 z-30 mt-2 -mr-1 flex items-center justify-between gap-1
         first:mt-0
       `}
       >
-        <div className={cn('duration-150', isLoading
-          ? 'opacity-100'
-          : `pointer-events-none opacity-0`)}
+        <div
+          className={cn(
+            'duration-150',
+            isLoading ? 'opacity-100' : `pointer-events-none opacity-0`,
+          )}
         >
           <AssistantMessageLoader>
             {status === 'submitted' ? 'Thinking...' : 'Writing...'}
           </AssistantMessageLoader>
         </div>
-        <div className={`
+        <div
+          className={`
           flex items-center gap-1 opacity-0 transition-opacity duration-150
           group-hover/message:opacity-100
         `}
@@ -384,7 +404,15 @@ function AssistantMessage({ message, isLast, status, className, ...props }: { me
           <ChatMessageFooterButton
             icon={<RiFileCopyLine className="size-4 text-muted-foreground" />}
             tooltip="Copy message"
-            onClick={() => copy(message.parts.filter(part => part.type === 'text').map(part => part.text).join('\n'), 'Message copied to clipboard')}
+            onClick={() =>
+              copy(
+                message.parts
+                  .filter(part => part.type === 'text')
+                  .map(part => part.text)
+                  .join('\n'),
+                'Message copied to clipboard',
+              )
+            }
           />
         </div>
       </div>
@@ -400,23 +428,14 @@ function ErrorMessage({ error, className, ...props }: { error: Error } & Compone
   }, [error])
 
   return (
-    <ChatMessage
-      className={cn(
-        'relative z-20 flex justify-center',
-        className,
-      )}
-      {...props}
-    >
+    <ChatMessage className={cn('relative z-20 flex justify-center', className)} {...props}>
       <Alert>
         <RiAlertLine />
         <AlertTitle>Error generating response</AlertTitle>
         <AlertDescription>
           <p>{error.message}</p>
           <div className="mt-2 flex gap-2">
-            <Button
-              size="sm"
-              onClick={() => chat.regenerate()}
-            >
+            <Button size="sm" onClick={() => chat.regenerate()}>
               Retry
             </Button>
           </div>
@@ -430,7 +449,9 @@ const MESSAGES_GAP = 16
 
 export function ChatMessages({ className }: ComponentProps<'div'>) {
   const { chat } = Route.useLoaderData()
-  const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({ initial: 'instant' })
+  const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({
+    initial: 'instant',
+  })
   const { messages, error, status } = useChat({ chat })
   const userMessageRef = useRef<HTMLDivElement>(null)
   const [placeholderHeight, setPlaceholderHeight] = useState(0)
@@ -442,12 +463,13 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
   }, [scrollToBottom])
 
   useEffect(() => {
-    if (!userMessageRef.current)
-      return
+    if (!userMessageRef.current) return
 
     const frame = requestAnimationFrame(() => {
       setPlaceholderHeight(
-        (scrollRef.current?.offsetHeight || 0) - (userMessageRef.current?.offsetHeight || 0) - MESSAGES_GAP,
+        (scrollRef.current?.offsetHeight || 0) -
+          (userMessageRef.current?.offsetHeight || 0) -
+          MESSAGES_GAP,
       )
     })
 
@@ -457,36 +479,27 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
   const isLastMessageFromUser = messages.at(-1)?.role === 'user'
 
   return (
-    <ScrollArea
-      ref={scrollRef}
-      className={cn('relative -mx-4', className)}
-    >
+    <ScrollArea ref={scrollRef} className={cn('relative -mx-4', className)}>
       <div
         ref={contentRef}
         className="relative flex flex-col px-4"
         style={{ gap: `${MESSAGES_GAP}px` }}
       >
-        {messages.map((message, index) => (
-          message.role === 'user'
-            ? (
-                <UserMessage
-                  key={message.id}
-                  ref={userMessageRef}
-                  message={message}
-                />
-              )
-            : (
-                <AssistantMessage
-                  key={message.id}
-                  message={message}
-                  isLast={index === messages.length - 1}
-                  status={status}
-                  style={{
-                    minHeight: index === messages.length - 1 ? `${placeholderHeight}px` : undefined,
-                  }}
-                />
-              )
-        ))}
+        {messages.map((message, index) =>
+          message.role === 'user' ? (
+            <UserMessage key={message.id} ref={userMessageRef} message={message} />
+          ) : (
+            <AssistantMessage
+              key={message.id}
+              message={message}
+              isLast={index === messages.length - 1}
+              status={status}
+              style={{
+                minHeight: index === messages.length - 1 ? `${placeholderHeight}px` : undefined,
+              }}
+            />
+          ),
+        )}
         {isLastMessageFromUser && status === 'submitted' && (
           <ChatMessage
             className="flex flex-col items-start gap-2"
@@ -494,16 +507,16 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
               minHeight: `${placeholderHeight}px`,
             }}
           >
-            <AssistantMessageLoader>
-              Thinking...
-            </AssistantMessageLoader>
+            <AssistantMessageLoader>Thinking...</AssistantMessageLoader>
           </ChatMessage>
         )}
         {error && <ErrorMessage error={error} />}
       </div>
-      <div className={cn('sticky bottom-4 z-40 transition-opacity duration-150', isNearBottom
-        ? `pointer-events-none opacity-0`
-        : '')}
+      <div
+        className={cn(
+          'sticky bottom-4 z-40 transition-opacity duration-150',
+          isNearBottom ? `pointer-events-none opacity-0` : '',
+        )}
       >
         <Button
           size="icon-sm"

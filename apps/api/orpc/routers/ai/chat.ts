@@ -1,29 +1,30 @@
-import type { AppUIMessage } from '@tamery/ai/tools/helpers'
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
 import { streamToEventIterator } from '@orpc/server'
 import { tools } from '@tamery/ai/tools'
+import type { AppUIMessage } from '@tamery/ai/tools/helpers'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { createRetryableModel } from 'ai-retry/language-model'
 import { type } from 'arktype'
 import { v7 } from 'uuid'
+
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 const model = createRetryableModel({
   model: anthropic('claude-opus-4-8'),
-  retries: [
-    openai('gpt-5.3-codex'),
-    google('gemini-pro-latest'),
-  ],
+  retries: [openai('gpt-5.3-codex'), google('gemini-pro-latest')],
 })
 
 function handleError(error: unknown) {
   if (typeof error === 'object' && (error as { type?: string }).type === 'overloaded_error') {
     return 'Sorry, I was unable to generate a response due to high load. Please try again later.'
   }
-  if (typeof error === 'object' && (error as { message?: string }).message?.includes('prompt is too long')) {
+  if (
+    typeof error === 'object' &&
+    (error as { message?: string }).message?.includes('prompt is too long')
+  ) {
     return 'Sorry, I was unable to generate a response. Currently I cannot handle larger chats like yours. Please create a new chat.'
   }
   return 'Sorry, I was unable to generate a response due to an error. Please try again.'
@@ -37,14 +38,16 @@ export const chat = orpc
 
     return next()
   })
-  .input(type({
-    id: 'string.uuid.v7',
-    type: type.valueOf(ConnectionType),
-    context: 'string',
-    createdAt: 'Date',
-    updatedAt: 'Date',
-    messages: 'object[]' as type.cast<AppUIMessage[]>,
-  }))
+  .input(
+    type({
+      id: 'string.uuid.v7',
+      type: type.valueOf(ConnectionType),
+      context: 'string',
+      createdAt: 'Date',
+      updatedAt: 'Date',
+      messages: 'object[]' as type.cast<AppUIMessage[]>,
+    }),
+  )
   .handler(async ({ input, context, signal }) => {
     context.addLogData({
       chatId: input.id,
@@ -67,7 +70,7 @@ export const chat = orpc
             '',
             '<rules>',
             'Response format:',
-            '- Reply in the same language as the user\'s message.',
+            "- Reply in the same language as the user's message.",
             '- Use markdown. Place each SQL query in its own ```sql code block.',
             '- Do not use headings (no # or ##). Keep answers flat and scannable.',
             '- When generating SQL, briefly explain what the query does and why you wrote it that way.',
@@ -87,13 +90,15 @@ export const chat = orpc
             '- The generated SQL will be executed directly against a live database. Treat every query as production.',
             '- Never generate DROP, TRUNCATE, or DELETE without a WHERE clause unless the user explicitly requests it, and add a warning.',
             '- When using the select tool or generating queries, never expose sensitive data (passwords, tokens, secrets, card numbers). Mask with asterisks if needed.',
-            '- If a request seems destructive or risky, confirm the user\'s intent before providing the query.',
+            "- If a request seems destructive or risky, confirm the user's intent before providing the query.",
             '</rules>',
             '',
             '<tool_strategy>',
             'You have tools — use them proactively when they help produce a better answer:',
             '',
-            Object.entries(tools).map(([name, { description }]) => `- ${name}: ${description}`).join('\n'),
+            Object.entries(tools)
+              .map(([name, { description }]) => `- ${name}: ${description}`)
+              .join('\n'),
             '',
             'Guidelines:',
             '- Use "columns" to discover column names and types before writing queries for tables not fully described in the context.',
@@ -125,7 +130,7 @@ export const chat = orpc
       originalMessages: input.messages,
       generateMessageId: () => v7(),
       sendSources: true,
-      onFinish: async (result) => {
+      onFinish: async result => {
         context.addLogData({
           response: {
             ...result.responseMessage,
@@ -133,7 +138,7 @@ export const chat = orpc
           },
         })
       },
-      onError: (error) => {
+      onError: error => {
         context.addLogData({
           streamError: error,
         })

@@ -1,9 +1,12 @@
 import type { ContextSelector } from '@fluentui/react-context-selector'
-import type { ComponentProps, ReactElement, ReactNode } from 'react'
 import { createContext, useContextSelector } from '@fluentui/react-context-selector'
 import NumberFlow from '@number-flow/react'
 import { RiCodeLine, RiText } from '@remixicon/react'
-import { SingleAccordion, SingleAccordionContent, SingleAccordionTrigger } from '@tamery/ui/components/custom/single-accordion'
+import {
+  SingleAccordion,
+  SingleAccordionContent,
+  SingleAccordionTrigger,
+} from '@tamery/ui/components/custom/single-accordion'
 import {
   Table,
   TableBody,
@@ -14,9 +17,11 @@ import {
 } from '@tamery/ui/components/table'
 import { cn } from '@tamery/ui/lib/utils'
 import { marked } from 'marked'
-import { useState } from 'react'
+import type { ComponentProps, ReactElement, ReactNode } from 'react'
+import { useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+
 import { Monaco } from './monaco-lazy'
 
 const langsMap = {
@@ -39,7 +44,7 @@ const langsMap = {
 
 interface MarkdownContextType {
   generating?: boolean
-  codeActions?: (props: { content: string, lang: string }) => ReactNode
+  codeActions?: (props: { content: string; lang: string }) => ReactNode
 }
 
 const MarkdownContext = createContext<MarkdownContextType>(null!)
@@ -49,9 +54,9 @@ function useMarkdownContext<T>(selector: ContextSelector<MarkdownContextType, T>
 }
 
 function A({ target, rel, ...props }: ComponentProps<'a'>) {
-  return (
-    <a {...props} target="_blank" rel="noopener noreferrer" />
-  )
+  // Content is provided by ReactMarkdown via spread props (children)
+  // eslint-disable-next-line jsx-a11y/anchor-has-content
+  return <a {...props} target="_blank" rel="noopener noreferrer" />
 }
 
 const monacoOptions = {
@@ -65,41 +70,40 @@ const monacoOptions = {
 function Pre({ children }: { children?: ReactNode }) {
   const codeActions = useMarkdownContext(c => c.codeActions)
   const generating = useMarkdownContext(c => c.generating)
-  const childrenProps = (typeof children === 'object' && (children as ReactElement<{ children?: ReactNode, className?: string }>)?.props) || null
+  const childrenProps =
+    (typeof children === 'object' &&
+      (children as ReactElement<{ children?: ReactNode; className?: string }>)?.props) ||
+    null
   const content = childrenProps?.children?.toString().trim() || null
   const lang = (childrenProps?.className?.split('-')[1] || 'text') as keyof typeof langsMap
   const [opened, setOpened] = useState(false)
 
-  if (!content)
-    return null
+  if (!content) return null
 
   const lines = content.split('\n').length
 
   return (
-    <div className={cn(generating && 'animate-in duration-200 fade-in', `
+    <div
+      className={cn(
+        generating && 'animate-in duration-200 fade-in',
+        `
       typography-disabled relative my-4
       first:mt-0
       last:mb-0
-    `)}
+    `,
+      )}
     >
-      <SingleAccordion
-        open={opened}
-        onOpenChange={setOpened}
-      >
+      <SingleAccordion open={opened} onOpenChange={setOpened}>
         <SingleAccordionTrigger className="py-1.5" asChild>
           <div className="flex w-full items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2">
-                {lang === 'text'
-                  ? (
-                      <RiText className="size-4 text-muted-foreground" />
-                    )
-                  : (
-                      <RiCodeLine className="size-4 text-muted-foreground" />
-                    )}
-                <span className="font-medium">
-                  {langsMap[lang] || lang}
-                </span>
+                {lang === 'text' ? (
+                  <RiText className="size-4 text-muted-foreground" />
+                ) : (
+                  <RiCodeLine className="size-4 text-muted-foreground" />
+                )}
+                <span className="font-medium">{langsMap[lang] || lang}</span>
               </div>
               <span className="text-xs text-muted-foreground">
                 <NumberFlow
@@ -129,14 +133,12 @@ function Pre({ children }: { children?: ReactNode }) {
 function MarkdownTable({ children, className, ...props }: ComponentProps<'div'>) {
   return (
     <div className={cn('my-4 overflow-x-auto', className)} {...props}>
-      <Table className="w-full text-sm">
-        {children}
-      </Table>
+      <Table className="w-full text-sm">{children}</Table>
     </div>
   )
 }
 
-function P({ children, className }: { children?: ReactNode, className?: string }) {
+function P({ children, className }: { children?: ReactNode; className?: string }) {
   const generating = useMarkdownContext(c => c.generating)
 
   if (typeof children === 'string') {
@@ -144,10 +146,7 @@ function P({ children, className }: { children?: ReactNode, className?: string }
     return (
       <p className={className}>
         {chars.map(({ char, key }) => (
-          <span
-            key={key}
-            className={cn(generating && 'animate-in duration-200 fade-in')}
-          >
+          <span key={key} className={cn(generating && 'animate-in duration-200 fade-in')}>
             {char}
           </span>
         ))}
@@ -195,25 +194,27 @@ export function Markdown({
   ...props
 }: {
   content: string
-  codeActions?: (props: { content: string, lang: string }) => ReactNode
+  codeActions?: (props: { content: string; lang: string }) => ReactNode
   generating?: boolean
 } & ComponentProps<'div'>) {
   const blocks = parseMarkdownIntoBlocks(content)
+  const contextValue = useMemo(() => ({ generating, codeActions }), [generating, codeActions])
 
   return (
-    <MarkdownContext.Provider value={{ generating, codeActions }}>
+    <MarkdownContext.Provider value={contextValue}>
       <div
-        className={cn('typography', generating && `
+        className={cn(
+          'typography',
+          generating &&
+            `
           animate-in duration-200 fade-in
-        `, className)}
+        `,
+          className,
+        )}
         {...props}
       >
         {blocks.map((block, index) => (
-          <MarkdownBase
-            // eslint-disable-next-line react/no-array-index-key
-            key={id ? `${id}-block_${index}` : `block_${index}`}
-            content={block}
-          />
+          <MarkdownBase key={id ? `${id}-block_${index}` : `block_${index}`} content={block} />
         ))}
       </div>
     </MarkdownContext.Provider>

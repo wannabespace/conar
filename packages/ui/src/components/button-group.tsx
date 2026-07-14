@@ -1,51 +1,10 @@
-import type { VariantProps } from 'class-variance-authority'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
-
 import { Separator } from '@tamery/ui/components/separator'
 import { cn } from '@tamery/ui/lib/utils'
-import { cva } from 'class-variance-authority'
+import type { VariantProps } from 'class-variance-authority'
 
-const buttonGroupVariants = cva(
-  `
-    flex w-fit items-stretch
-    *:focus-visible:relative *:focus-visible:z-10
-    has-[>[data-slot=button-group]]:gap-2
-    has-[>[data-variant=outline]]:*:data-[slot=input-group]:border-border
-    has-[>[data-variant=outline]]:*:data-[slot=select-trigger]:border-border
-    has-[>[data-variant=outline]]:[&>[data-slot=input-group]:has(:focus-visible)]:border-ring
-    has-[>[data-variant=outline]]:[&>[data-slot=select-trigger]:focus-visible]:border-ring
-    has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-2xl
-    [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit
-    [&>input]:flex-1
-    has-[>[data-variant=outline]]:[&>input]:border-border
-    has-[>[data-variant=outline]]:[&>input:focus-visible]:border-ring
-  `,
-  {
-    variants: {
-      orientation: {
-        horizontal:
-          `
-            *:data-slot:rounded-r-none
-            [&>[data-slot]:not(:has(~[data-slot]))]:rounded-r-2xl!
-            [&>[data-slot]~[data-slot]]:rounded-l-none
-            [&>[data-slot]~[data-slot]]:border-l-0
-          `,
-        vertical:
-          `
-            flex-col
-            *:data-slot:rounded-b-none
-            [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-2xl!
-            [&>[data-slot]~[data-slot]]:rounded-t-none
-            [&>[data-slot]~[data-slot]]:border-t-0
-          `,
-      },
-    },
-    defaultVariants: {
-      orientation: 'horizontal',
-    },
-  },
-)
+import { buttonGroupVariants } from './button-group.utils'
 
 function ButtonGroup({
   className,
@@ -63,11 +22,7 @@ function ButtonGroup({
   )
 }
 
-function ButtonGroupText({
-  className,
-  render,
-  ...props
-}: useRender.ComponentProps<'div'>) {
+function ButtonGroupText({ className, render, ...props }: useRender.ComponentProps<'div'>) {
   return useRender({
     defaultTagName: 'div',
     props: mergeProps<'div'>(
@@ -113,9 +68,4 @@ function ButtonGroupSeparator({
   )
 }
 
-export {
-  ButtonGroup,
-  ButtonGroupSeparator,
-  ButtonGroupText,
-  buttonGroupVariants,
-}
+export { ButtonGroup, ButtonGroupSeparator, ButtonGroupText }

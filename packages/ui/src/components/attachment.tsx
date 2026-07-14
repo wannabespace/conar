@@ -1,9 +1,10 @@
-import type { VariantProps } from 'class-variance-authority'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import { Button } from '@tamery/ui/components/button'
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
 import * as React from 'react'
+
 import { attachmentMediaVariants, attachmentVariants } from './attachment.utils'
 
 function Attachment({
@@ -12,8 +13,8 @@ function Attachment({
   size = 'default',
   orientation = 'horizontal',
   ...props
-}: React.ComponentProps<'div'>
-  & VariantProps<typeof attachmentVariants> & {
+}: React.ComponentProps<'div'> &
+  VariantProps<typeof attachmentVariants> & {
     state?: 'idle' | 'uploading' | 'processing' | 'error' | 'done'
   }) {
   return (
@@ -43,10 +44,7 @@ function AttachmentMedia({
   )
 }
 
-function AttachmentContent({
-  className,
-  ...props
-}: React.ComponentProps<'div'>) {
+function AttachmentContent({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="attachment-content"
@@ -62,10 +60,7 @@ function AttachmentContent({
   )
 }
 
-function AttachmentTitle({
-  className,
-  ...props
-}: React.ComponentProps<'span'>) {
+function AttachmentTitle({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
       data-slot="attachment-title"
@@ -82,10 +77,7 @@ function AttachmentTitle({
   )
 }
 
-function AttachmentDescription({
-  className,
-  ...props
-}: React.ComponentProps<'span'>) {
+function AttachmentDescription({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
       data-slot="attachment-description"
@@ -102,10 +94,7 @@ function AttachmentDescription({
   )
 }
 
-function AttachmentActions({
-  className,
-  ...props
-}: React.ComponentProps<'div'>) {
+function AttachmentActions({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="attachment-actions"

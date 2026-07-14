@@ -4,7 +4,9 @@ import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
+
 import { router } from '~/main'
+
 import { apiUrl } from '../utils/utils'
 import { encryptionKey } from './encryption-key'
 import { clearDb } from './sync'
@@ -21,7 +23,7 @@ export const bearerToken = createWebStorageValue({
 export function successAuthToast(newUser: boolean) {
   toast.success(
     newUser
-      ? 'Welcome to Tamery! We\'re excited to help you manage your connections with ease. Get started by creating your first connection.'
+      ? "Welcome to Tamery! We're excited to help you manage your connections with ease. Get started by creating your first connection."
       : 'Welcome back! Your connections are ready for you.',
     {
       duration: 10000,
@@ -33,11 +35,7 @@ export function successAuthToast(newUser: boolean) {
 export const authClient = createAuthClient({
   baseURL: apiUrl,
   basePath: '/auth',
-  plugins: window.electron
-    ? [
-        bearer(),
-      ]
-    : [],
+  plugins: window.electron ? [bearer()] : [],
   fetchOptions: {
     auth: {
       type: 'Bearer',

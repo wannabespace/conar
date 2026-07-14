@@ -1,5 +1,6 @@
 import { PORTS } from '@tamery/shared/constants'
 import { queryOptions, useQuery } from '@tanstack/react-query'
+
 import { queryClient } from '~/main'
 
 const LOCAL_PROXY_HEALTH_KEY = ['proxy-health'] as const
@@ -11,16 +12,14 @@ const localProxyHealthQueryOptions = queryOptions({
       const res = await fetch(`http://127.0.0.1:${PORTS.LOCAL_PROXY}/health`, {
         signal: AbortSignal.timeout(1500),
       })
-      if (!res.ok)
-        return null
+      if (!res.ok) return null
 
-      return await res.json() as {
+      return (await res.json()) as {
         ok: boolean
         version: string
         userId: string
       }
-    }
-    catch {
+    } catch {
       return null
     }
   },

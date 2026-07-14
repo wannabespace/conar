@@ -3,6 +3,8 @@ import * as React from 'react'
 
 function Label({ className, ...props }: React.ComponentProps<'label'>) {
   return (
+    // Primitive label; association with a control is the consumer's responsibility
+    // eslint-disable-next-line jsx-a11y/label-has-associated-control
     <label
       data-slot="label"
       className={cn(

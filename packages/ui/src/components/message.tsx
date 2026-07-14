@@ -1,5 +1,4 @@
 import { cn } from '@tamery/ui/lib/utils'
-
 import * as React from 'react'
 
 function MessageGroup({ className, ...props }: React.ComponentProps<'div'>) {
@@ -101,11 +100,4 @@ function MessageFooter({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-export {
-  Message,
-  MessageAvatar,
-  MessageContent,
-  MessageFooter,
-  MessageGroup,
-  MessageHeader,
-}
+export { Message, MessageAvatar, MessageContent, MessageFooter, MessageGroup, MessageHeader }

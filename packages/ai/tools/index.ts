@@ -1,9 +1,10 @@
-import type { InferUITools } from 'ai'
 import { webSearch } from '@exalabs/ai-sdk'
 import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
+import type { InferUITools } from 'ai'
 import { tool } from 'ai'
 import * as z from 'zod/mini'
+
 import { env } from '../env'
 
 export const tools = {
@@ -52,17 +53,16 @@ export const tools = {
       whereFilters: z.array(
         z.object({
           column: z.string(),
-          operator: z.enum(SQL_FILTERS_LIST.map(filter => filter.operator) as [string, ...string[]]),
+          operator: z.enum(
+            SQL_FILTERS_LIST.map(filter => filter.operator) as [string, ...string[]],
+          ),
           values: z.array(z.string()),
         }),
       ),
       select: z.array(z.string()),
       limit: z.number(),
       offset: z.number(),
-      orderBy: z.union([
-        z.record(z.string(), z.enum(['ASC', 'DESC'])),
-        z.null(),
-      ]),
+      orderBy: z.union([z.record(z.string(), z.enum(['ASC', 'DESC'])), z.null()]),
       tableAndSchema: z.object({
         tableName: z.string(),
         schemaName: z.string(),

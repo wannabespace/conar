@@ -5,20 +5,25 @@ import { generateText, Output } from 'ai'
 import { type } from 'arktype'
 import { addDays, differenceInSeconds, endOfMonth, format } from 'date-fns'
 import * as z from 'zod/mini'
+
 import { redis } from '~/lib/redis'
 import { optionalSubscriptionMiddleware, orpc } from '~/orpc'
 
 // Arktype doesn't work here, so we use Zod
 const schema = z.object({
-  orderBy: z.array(z.object({
-    column: z.string(),
-    direction: z.enum(['ASC', 'DESC']),
-  })),
-  filters: z.array(z.object({
-    column: z.string(),
-    operator: z.enum(SQL_FILTERS_LIST.map(filter => filter.operator)),
-    values: z.array(z.string()),
-  })),
+  orderBy: z.array(
+    z.object({
+      column: z.string(),
+      direction: z.enum(['ASC', 'DESC']),
+    }),
+  ),
+  filters: z.array(
+    z.object({
+      column: z.string(),
+      operator: z.enum(SQL_FILTERS_LIST.map(filter => filter.operator)),
+      values: z.array(z.string()),
+    }),
+  ),
 })
 
 const redisUsage = {
@@ -37,10 +42,12 @@ const redisUsage = {
 
 export const filters = orpc
   .use(optionalSubscriptionMiddleware)
-  .input(type({
-    prompt: 'string',
-    context: 'string',
-  }))
+  .input(
+    type({
+      prompt: 'string',
+      context: 'string',
+    }),
+  )
   .errors({
     FORBIDDEN: {
       message: 'string',
@@ -63,7 +70,8 @@ export const filters = orpc
 
       if (usage >= FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT) {
         throw errors.FORBIDDEN({
-          message: 'You have reached the free AI usage limit. Please subscribe to a Pro plan to continue using AI features.',
+          message:
+            'You have reached the free AI usage limit. Please subscribe to a Pro plan to continue using AI features.',
           data: {
             remaining: 0,
             max: FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT,
@@ -87,7 +95,7 @@ export const filters = orpc
         '- Format values correctly based on column types (strings, numbers, dates, etc.)',
         '- For enum columns, ensure values match the available options',
         '- For exact days use >= and <= operators',
-        '- If user asks \'empty\' and the column is a string, use empty string as item in values array',
+        "- If user asks 'empty' and the column is a string, use empty string as item in values array",
         '- If context already contains a filter, you can use it as reference to generate a new filter',
         '- User can paste only the value, you should try to understand to which column the value belongs',
         '- Try to generate at least one filter unless the prompt is completely unclear',
@@ -108,7 +116,8 @@ export const filters = orpc
       abortSignal: signal,
       output: Output.object({
         schema,
-        description: 'An object with filters array and orderBy array; each filter has column, operator, and values; each orderBy entry has column and direction.',
+        description:
+          'An object with filters array and orderBy array; each filter has column, operator, and values; each orderBy entry has column and direction.',
       }),
     })
 
@@ -120,7 +129,9 @@ export const filters = orpc
       usage = await redisUsage.increment(context.user.id)
     }
 
-    const remainingFreeAiUsage = context.subscription ? null : FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT - usage
+    const remainingFreeAiUsage = context.subscription
+      ? null
+      : FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT - usage
 
     context.addLogData({
       filterResult: result,

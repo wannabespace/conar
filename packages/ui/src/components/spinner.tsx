@@ -1,6 +1,6 @@
-import type { ComponentProps } from 'react'
 import { RiLoaderLine } from '@remixicon/react'
 import { cn } from '@tamery/ui/lib/utils'
+import type { ComponentProps } from 'react'
 
 function Spinner({ className, ...props }: ComponentProps<typeof RiLoaderLine>) {
   return (

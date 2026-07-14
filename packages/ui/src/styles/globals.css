@@ -1,11 +1,11 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "@xyflow/react/dist/style.css";
-@import "./monaco.css";
-@import "./typography.css";
-@import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
-@import "@fontsource-variable/geist-mono";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@xyflow/react/dist/style.css';
+@import './monaco.css';
+@import './typography.css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
 
 @plugin 'tailwind-scrollbar';
 @plugin '@tailwindcss/typography';
@@ -174,7 +174,7 @@
   select,
   textarea,
   label,
-  [role="button"],
+  [role='button'],
   [contenteditable] {
     -webkit-app-region: no-drag;
   }
@@ -220,7 +220,7 @@
 @utility hit-area-debug {
   position: relative;
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     top: var(--hit-area-t, 0rem);
     right: var(--hit-area-r, 0rem);
@@ -237,7 +237,7 @@
 @utility hit-area {
   position: relative;
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     top: var(--hit-area-t, 0rem);
     right: var(--hit-area-r, 0rem);
@@ -262,7 +262,7 @@
   --hit-area-r: calc(--value([*]) * -1);
   --hit-area-r: calc(--value([*]) * -1);
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     top: var(--hit-area-t, 0rem);
     right: var(--hit-area-r, 0rem);
@@ -278,7 +278,7 @@
   --hit-area-l: calc(--value([*]) * -1);
   --hit-area-l: calc(--value([*]) * -1);
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     top: var(--hit-area-t, 0rem);
     right: var(--hit-area-r, 0rem);
@@ -294,7 +294,7 @@
   --hit-area-r: calc(--value([*]) * -1);
   --hit-area-r: calc(--value([*]) * -1);
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     top: var(--hit-area-t, 0rem);
     right: var(--hit-area-r, 0rem);
@@ -310,7 +310,7 @@
   --hit-area-t: calc(--value([*]) * -1);
   --hit-area-t: calc(--value([*]) * -1);
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     top: var(--hit-area-t, 0rem);
     right: var(--hit-area-r, 0rem);
@@ -326,7 +326,7 @@
   --hit-area-b: calc(--value([*]) * -1);
   --hit-area-b: calc(--value([*]) * -1);
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     top: var(--hit-area-t, 0rem);
     right: var(--hit-area-r, 0rem);
@@ -345,7 +345,7 @@
   --hit-area-r: calc(--value([*]) * -1);
   --hit-area-r: calc(--value([*]) * -1);
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     top: var(--hit-area-t, 0rem);
     right: var(--hit-area-r, 0rem);
@@ -364,7 +364,7 @@
   --hit-area-b: calc(--value([*]) * -1);
   --hit-area-b: calc(--value([*]) * -1);
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     top: var(--hit-area-t, 0rem);
     right: var(--hit-area-r, 0rem);

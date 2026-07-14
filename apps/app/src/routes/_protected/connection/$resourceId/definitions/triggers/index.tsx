@@ -5,12 +5,20 @@ import { CardContent, CardTitle } from '@tamery/ui/components/card'
 import { CardMotion } from '@tamery/ui/components/card.motion'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@tamery/ui/components/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@tamery/ui/components/select'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
+
 import { resourceTriggersQueryOptions } from '~/entities/connection/queries'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
+
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
@@ -20,9 +28,22 @@ import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/triggers/')({
   component: DatabaseTriggersPage,
-  loader: ({ context }) => ({ connection: context.connection, connectionResource: context.connectionResource }),
+  loader: ({ context }) => ({
+    connection: context.connection,
+    connectionResource: context.connectionResource,
+  }),
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('Triggers', loaderData.connection.name, loaderData.connectionResource.name) }] : [],
+    meta: loaderData
+      ? [
+          {
+            title: title(
+              'Triggers',
+              loaderData.connection.name,
+              loaderData.connectionResource.name,
+            ),
+          },
+        ]
+      : [],
   }),
 })
 
@@ -41,26 +62,34 @@ const timingFilterOptions = [
   { label: 'Instead Of', value: 'INSTEAD OF' },
 ]
 
-// eslint-disable-next-line react-refresh/only-export-components
-function DatabaseTriggersPage() {
+export function DatabaseTriggersPage() {
   const { connectionResource } = Route.useRouteContext()
-  const { data: triggers, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceTriggersQueryOptions({ connectionResource }))
-  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({ connectionResource })
+  const {
+    data: triggers,
+    refetch,
+    isFetching,
+    isPending,
+    dataUpdatedAt,
+  } = useQuery(resourceTriggersQueryOptions({ connectionResource }))
+  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({
+    connectionResource,
+  })
   const [filterEvent, setFilterEvent] = useState('all')
   const [filterTiming, setFilterTiming] = useState('all')
 
   useRefreshHotkey(refetch, isFetching)
 
-  const filteredTriggers = triggers?.filter(item =>
-    item.schema === selectedSchema
-    && (filterEvent === 'all' || item.event.includes(filterEvent))
-    && (filterTiming === 'all' || filterTiming === item.timing)
-    && (!search
-      || item.name.toLowerCase().includes(search.toLowerCase())
-      || item.table.toLowerCase().includes(search.toLowerCase())
-      || item.functionName?.toLowerCase().includes(search.toLowerCase())
-    ),
-  ) ?? []
+  const filteredTriggers =
+    triggers?.filter(
+      item =>
+        item.schema === selectedSchema &&
+        (filterEvent === 'all' || item.event.includes(filterEvent)) &&
+        (filterTiming === 'all' || filterTiming === item.timing) &&
+        (!search ||
+          item.name.toLowerCase().includes(search.toLowerCase()) ||
+          item.table.toLowerCase().includes(search.toLowerCase()) ||
+          item.functionName?.toLowerCase().includes(search.toLowerCase())),
+    ) ?? []
 
   return (
     <>
@@ -81,7 +110,7 @@ function DatabaseTriggersPage() {
         />
         <Select
           value={filterEvent}
-          onValueChange={(v) => {
+          onValueChange={v => {
             if (v) {
               setFilterEvent(v)
             }
@@ -89,7 +118,11 @@ function DatabaseTriggersPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Event">
-              {value => value ? eventFilterOptions.find(option => option.value === value)?.label : 'Filter Event'}
+              {value =>
+                value
+                  ? eventFilterOptions.find(option => option.value === value)?.label
+                  : 'Filter Event'
+              }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -102,7 +135,7 @@ function DatabaseTriggersPage() {
         </Select>
         <Select
           value={filterTiming}
-          onValueChange={(v) => {
+          onValueChange={v => {
             if (v) {
               setFilterTiming(v)
             }
@@ -110,7 +143,11 @@ function DatabaseTriggersPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Timing">
-              {value => value ? timingFilterOptions.find(option => option.value === value)?.label : 'Filter Timing'}
+              {value =>
+                value
+                  ? timingFilterOptions.find(option => option.value === value)?.label
+                  : 'Filter Timing'
+              }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -121,7 +158,11 @@ function DatabaseTriggersPage() {
             ))}
           </SelectContent>
         </Select>
-        <SchemaSelect schemas={schemas} selectedSchema={selectedSchema} setSelectedSchema={setSelectedSchema} />
+        <SchemaSelect
+          schemas={schemas}
+          selectedSchema={selectedSchema}
+          setSelectedSchema={setSelectedSchema}
+        />
       </div>
       <DefinitionsGrid loading={isPending}>
         {filteredTriggers.length === 0 && (
@@ -147,7 +188,8 @@ function DatabaseTriggersPage() {
                     <Badge variant="secondary">{item.event}</Badge>
                     {!item.enabled && <Badge variant="destructive">Disabled</Badge>}
                   </CardTitle>
-                  <div className="
+                  <div
+                    className="
                     flex items-center gap-1.5 text-sm text-muted-foreground
                   "
                   >

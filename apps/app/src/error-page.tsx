@@ -1,15 +1,24 @@
-import type { ErrorComponentProps } from '@tanstack/react-router'
 import { RiAlertLine, RiArrowGoBackLine, RiHomeLine, RiLoopLeftLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@tamery/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@tamery/ui/components/card'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { Toaster } from '@tamery/ui/components/sonner'
 import { ThemeObserver } from '@tamery/ui/theme-observer'
+import type { ErrorComponentProps } from '@tanstack/react-router'
 import { useRouter } from '@tanstack/react-router'
 import { TraversalError } from 'arktype'
 import posthog from 'posthog-js'
 import { useEffect } from 'react'
+
 import { EventsProvider } from '~/events'
+
 import { enterAppAnimation } from './global-hooks'
 
 // User specific errors that we don't want to track
@@ -48,7 +57,8 @@ export function ErrorPage({ error }: ErrorComponentProps) {
         <div className="relative z-20 w-full max-w-lg">
           <Card>
             <CardHeader className="text-center">
-              <div className={`
+              <div
+                className={`
                 mx-auto mb-4 flex size-16 items-center justify-center
                 rounded-full bg-destructive/10
               `}
@@ -64,15 +74,14 @@ export function ErrorPage({ error }: ErrorComponentProps) {
             </CardHeader>
             <CardContent>
               {!(error instanceof TraversalError) && (
-                <ScrollArea className={`
+                <ScrollArea
+                  className={`
                   h-75 rounded-md bg-muted p-4 font-mono text-sm
                 `}
                 >
                   {error.message}
                   {!!error.cause && !String(error.cause).includes(error.message) && (
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      {String(error.cause)}
-                    </div>
+                    <div className="mt-2 text-xs text-muted-foreground">{String(error.cause)}</div>
                   )}
                   {error.stack && (
                     <div className="mt-4">
@@ -86,13 +95,13 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                 </ScrollArea>
               )}
               {error instanceof TraversalError && (
-                <ScrollArea className={`
+                <ScrollArea
+                  className={`
                   h-75 rounded-md bg-muted p-4 font-mono text-xs
                   text-muted-foreground
                 `}
                 >
                   {error.arkErrors.map((err, index) => (
-
                     <div
                       key={err.message}
                       className={`
@@ -100,26 +109,15 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                         last:mb-0
                       `}
                     >
-                      <div className="font-semibold text-destructive">
-                        Error
-                        {' '}
-                        {index + 1}
-                        :
-                      </div>
-                      <div className="mt-1 ml-2">
-                        {err.message}
-                      </div>
+                      <div className="font-semibold text-destructive">Error {index + 1}:</div>
+                      <div className="mt-1 ml-2">{err.message}</div>
                     </div>
                   ))}
                 </ScrollArea>
               )}
             </CardContent>
             <CardFooter className="flex justify-between gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => router.history.back()}
-              >
+              <Button variant="outline" className="flex-1" onClick={() => router.history.back()}>
                 <RiArrowGoBackLine />
                 Go back
               </Button>
@@ -131,10 +129,7 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                 <RiHomeLine />
                 Home
               </Button>
-              <Button
-                className="flex-1"
-                onClick={() => window.location.reload()}
-              >
+              <Button className="flex-1" onClick={() => window.location.reload()}>
                 <RiLoopLeftLine />
                 Refresh
               </Button>

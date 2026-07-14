@@ -13,7 +13,9 @@ import { Label } from '@tamery/ui/components/label'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
+
 import { useCollections } from '~/entities/collections'
+
 import { Route } from '../..'
 
 interface RunnerSaveDialogProps {
@@ -30,7 +32,7 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
   const [open, setOpen] = useState(false)
 
   useImperativeHandle(ref, () => ({
-    open: (query) => {
+    open: query => {
       setName('')
       setOpen(true)
       setQuery(query)
@@ -56,19 +58,16 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            Save Query
-          </DialogTitle>
+          <DialogTitle>Save Query</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <Alert>
             <AlertDescription>
-              Saved queries are stored for this database and can be quickly accessed and run from the "Saved queries" panel.
+              Saved queries are stored for this database and can be quickly accessed and run from
+              the "Saved queries" panel.
             </AlertDescription>
           </Alert>
-          <Label htmlFor="name">
-            Query name
-          </Label>
+          <Label htmlFor="name">Query name</Label>
           <Input
             id="name"
             value={name}
@@ -76,7 +75,7 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
             spellCheck={false}
             autoComplete="off"
             onChange={e => setName(e.target.value)}
-            onKeyDown={(e) => {
+            onKeyDown={e => {
               if (e.key === 'Enter' && canConfirm) {
                 createQuery()
               }
@@ -84,9 +83,7 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
           />
         </div>
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>
-            Cancel
-          </DialogClose>
+          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
           <Button
             disabled={!canConfirm}
             onClick={() => {

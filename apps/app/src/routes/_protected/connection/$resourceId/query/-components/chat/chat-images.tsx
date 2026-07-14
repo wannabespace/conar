@@ -7,7 +7,7 @@ export function ChatImages({
   imageClassName,
   onRemove,
 }: {
-  images: { name: string, url: string }[]
+  images: { name: string; url: string }[]
   imageClassName?: string
   onRemove?: (index: number) => void
 }) {
@@ -20,13 +20,17 @@ export function ChatImages({
               <img
                 src={image.url}
                 alt={image.name}
-                className={cn(`
+                className={cn(
+                  `
                   size-10 shrink-0 cursor-pointer rounded-md border object-cover
                   transition-all
                   hover:ring-2 hover:ring-primary/50
-                `, imageClassName)}
+                `,
+                  imageClassName,
+                )}
               />
-              <div className="
+              <div
+                className="
                 absolute inset-0 rounded-md bg-black/5 opacity-0
                 transition-opacity
                 group-hover:opacity-100
@@ -58,7 +62,7 @@ export function ChatImages({
                 opacity-0 transition-opacity
                 group-hover:opacity-100
               "
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation()
                 onRemove(index)
               }}

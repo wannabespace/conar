@@ -15,15 +15,13 @@ export const fieldVariants = cva(
           *:w-full
           [&>.sr-only]:w-auto
         `,
-        horizontal:
-          `
+        horizontal: `
             flex-row items-center
             has-[>[data-slot=field-content]]:items-start
             *:data-[slot=field-label]:flex-auto
             has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px
           `,
-        responsive:
-          `
+        responsive: `
             flex-col
             *:w-full
             @md/field-group:flex-row @md/field-group:items-center
