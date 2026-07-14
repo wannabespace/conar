@@ -50,7 +50,11 @@ export function createConnectionsCollection() {
       ...syncCollectionOptions<Connection>({
         id: 'connections',
         getKey: item => item.id,
-        events: ({ signal }) => orpc.connections.events.call({}, { signal }),
+        events: async ({ signal, write }) => {
+          for await (const message of await orpc.connections.events.call({}, { signal })) {
+            write(message)
+          }
+        },
         sync: ({ rows, signal }) => orpc.connections.sync.call(rows, { signal }),
         onInsert: async ({ transaction }) => {
           await orpc.connections.create.call(
@@ -83,7 +87,11 @@ export function createConnectionsResourcesCollection() {
       ...syncCollectionOptions<ConnectionResource>({
         id: 'connections-resources',
         getKey: item => item.id,
-        events: ({ signal }) => orpc.connectionsResources.events.call({}, { signal }),
+        events: async ({ signal, write }) => {
+          for await (const message of await orpc.connectionsResources.events.call({}, { signal })) {
+            write(message)
+          }
+        },
         sync: ({ rows, signal }) => orpc.connectionsResources.sync.call(rows, { signal }),
         onInsert: async ({ transaction }) => {
           await orpc.connectionsResources.create.call(transaction.mutations.map(m => m.modified))

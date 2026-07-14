@@ -17,7 +17,11 @@ export function createQueriesCollection() {
       ...syncCollectionOptions<Query>({
         id: 'queries',
         getKey: item => item.id,
-        events: ({ signal }) => orpc.queries.events.call({}, { signal }),
+        events: async ({ signal, write }) => {
+          for await (const message of await orpc.queries.events.call({}, { signal })) {
+            write(message)
+          }
+        },
         sync: ({ rows, signal }) => orpc.queries.sync.call(rows, { signal }),
         onInsert: async ({ transaction }) => {
           await orpc.queries.create.call(transaction.mutations.map(m => m.modified))
