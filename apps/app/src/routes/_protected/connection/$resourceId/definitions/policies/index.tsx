@@ -55,7 +55,7 @@ function getIcon(type: PolicyType) {
   }
 }
 
-export function DatabasePoliciesPage() {
+function DatabasePoliciesPage() {
   const { connectionResource } = Route.useLoaderData()
   const {
     data: policies,

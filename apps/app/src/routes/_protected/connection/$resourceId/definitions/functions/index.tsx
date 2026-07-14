@@ -56,7 +56,7 @@ const typeFilterOptions: { label: string; value: FunctionType | 'all' }[] = [
   { label: 'Procedure', value: 'procedure' },
 ]
 
-export function DatabaseFunctionsPage() {
+function DatabaseFunctionsPage() {
   const { connectionResource } = Route.useRouteContext()
   const {
     data: functions,

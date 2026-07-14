@@ -22,7 +22,7 @@ export const Route = createFileRoute('/auth')({
   }),
 })
 
-export function AuthPage() {
+function AuthPage() {
   const { refetch } = authClient.useSession()
   const [verifier, setVerifier] = useState<string | null>(null)
   const [codeChallenge, setCodeChallenge] = useState<string | null>(null)

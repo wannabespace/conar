@@ -31,7 +31,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/definit
   }),
 })
 
-export function DefinitionsLayout() {
+function DefinitionsLayout() {
   return (
     <div className="flex size-full gap-1">
       <Sidebar />

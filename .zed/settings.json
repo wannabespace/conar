@@ -70,5 +70,6 @@
         }
       ]
     }
-  }
+  },
+  "file_scan_exclusions": ["**/*.svg", "**/pnpm-lock.yaml"]
 }

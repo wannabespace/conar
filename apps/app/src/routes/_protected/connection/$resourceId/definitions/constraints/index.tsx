@@ -77,7 +77,7 @@ function getIcon(type: ConstraintType) {
   }
 }
 
-export function DatabaseConstraintsPage() {
+function DatabaseConstraintsPage() {
   const { connectionResource } = Route.useRouteContext()
   const {
     data: constraints,

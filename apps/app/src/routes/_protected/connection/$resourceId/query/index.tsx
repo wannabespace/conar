@@ -54,7 +54,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/query/'
 
 const MIN_CHAT_SIZE = '200px'
 
-export function ChatPanel() {
+function ChatPanel() {
   return (
     <ResizablePanel
       defaultSize="300px"
@@ -67,7 +67,7 @@ export function ChatPanel() {
   )
 }
 
-export function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
+function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
   return (
     <ResizablePanel
       defaultSize={chatVisible ? '70%' : '100%'}
@@ -79,7 +79,7 @@ export function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
   )
 }
 
-export function DatabaseSqlPage() {
+function DatabaseSqlPage() {
   const { connectionResource } = Route.useRouteContext()
   const { chatId } = Route.useSearch()
   const store = getConnectionResourceStore(connectionResource.id)

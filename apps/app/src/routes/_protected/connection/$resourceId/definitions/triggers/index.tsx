@@ -62,7 +62,7 @@ const timingFilterOptions = [
   { label: 'Instead Of', value: 'INSTEAD OF' },
 ]
 
-export function DatabaseTriggersPage() {
+function DatabaseTriggersPage() {
   const { connectionResource } = Route.useRouteContext()
   const {
     data: triggers,

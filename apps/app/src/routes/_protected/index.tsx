@@ -48,7 +48,7 @@ function DashboardPage() {
           <Separator />
           <div className="mt-3 flex items-center gap-2">
             <a
-              href="https://conar.app"
+              href="https://tamery.app"
               target="_blank"
               rel="noopener noreferrer"
               className={`

@@ -63,7 +63,7 @@ const filterOptions: { label: string; value: IndexType | 'all' }[] = [
   { label: 'Regular Index', value: 'regular' },
 ]
 
-export function DatabaseIndexesPage() {
+function DatabaseIndexesPage() {
   const { connectionResource } = Route.useRouteContext()
   const {
     data: indexes,
