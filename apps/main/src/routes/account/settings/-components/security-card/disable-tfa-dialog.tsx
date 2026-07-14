@@ -73,20 +73,14 @@ export function DisableTfaDialog({
             variant="outline"
             type="button"
             onClick={() => onOpenChange(false)}
-            className="
-              w-full
-              sm:w-auto
-            "
+            className="w-full sm:w-auto"
           >
             Cancel
           </Button>
           <Button
             type="submit"
             variant="destructive"
-            className="
-              w-full
-              sm:w-auto
-            "
+            className="w-full sm:w-auto"
             disabled={isPending || password.length === 0}
           >
             <LoadingContent loading={isPending}>Disable</LoadingContent>

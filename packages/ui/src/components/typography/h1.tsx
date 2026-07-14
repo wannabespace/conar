@@ -6,10 +6,7 @@ export function TypographyH1({ className, children, ...props }: ComponentProps<'
   return (
     <h1
       className={cn(
-        `
-          scroll-m-20 text-center text-4xl font-extrabold tracking-tight
-          text-balance
-        `,
+        `scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance`,
         className,
       )}
       {...props}

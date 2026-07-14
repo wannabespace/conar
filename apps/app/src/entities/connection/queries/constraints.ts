@@ -172,16 +172,17 @@ export const resourceConstraintsQuery = createQuery({
         .where('database', 'not in', ['system', 'information_schema'])
         .execute()
 
-      return query.map(row => ({
-        ...row,
-        name: 'primary_key',
-        type: 'PRIMARY KEY',
-        foreign_schema: null,
-        foreign_table: null,
-        foreign_column: null,
-        onDelete: null,
-        onUpdate: null,
-      }))
+      return query.map(row =>
+        Object.assign(row, {
+          name: 'primary_key',
+          type: 'PRIMARY KEY' as const,
+          foreign_schema: null,
+          foreign_table: null,
+          foreign_column: null,
+          onDelete: null,
+          onUpdate: null,
+        }),
+      )
     },
   },
 })

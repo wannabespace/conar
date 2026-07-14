@@ -8,10 +8,7 @@ function Skeleton() {
         <div
           // oxlint-disable-next-line react/no-array-index-key
           key={i}
-          className={`
-            flex w-full flex-col gap-3 rounded-xl border border-border/40
-            bg-muted/10 p-4
-          `}
+          className={`flex w-full flex-col gap-3 rounded-xl border border-border/40 bg-muted/10 p-4`}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

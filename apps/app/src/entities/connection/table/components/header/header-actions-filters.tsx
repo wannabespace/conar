@@ -22,10 +22,7 @@ export function HeaderActionsFilters() {
         <TooltipContent side="top">Add new filter</TooltipContent>
       </Tooltip>
       <PopoverContent
-        className="
-          w-2xs p-0
-          **:data-[slot=popover-viewport]:p-0
-        "
+        className="w-2xs p-0 **:data-[slot=popover-viewport]:p-0"
         side="bottom"
         align="end"
       >

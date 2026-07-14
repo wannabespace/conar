@@ -65,7 +65,7 @@ export const resourceIndexesQuery = createQuery({
           customExpression = customExpression.slice(1, -1)
         }
 
-        return { ...row, custom_expression: customExpression }
+        return Object.assign(row, { custom_expression: customExpression })
       })
     },
 
@@ -117,12 +117,13 @@ export const resourceIndexesQuery = createQuery({
         .where('database', 'not in', ['system', 'information_schema'])
         .execute()
 
-      return query.map(row => ({
-        ...row,
-        name: 'primary_key',
-        is_unique: true,
-        is_primary: true,
-      }))
+      return query.map(row =>
+        Object.assign(row, {
+          name: 'primary_key',
+          is_unique: true,
+          is_primary: true,
+        }),
+      )
     },
   },
 })

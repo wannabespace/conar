@@ -101,6 +101,7 @@ function DeleteAccountDialog({
                 onChange={e => setPassword(e.target.value)}
                 disabled={isPending}
                 autoComplete="current-password"
+                // oxlint-disable-next-line no-autofocus
                 autoFocus
               />
             </div>
@@ -118,6 +119,7 @@ function DeleteAccountDialog({
               onChange={e => setConfirmation(e.target.value)}
               disabled={isPending}
               autoComplete="off"
+              // oxlint-disable-next-line no-autofocus
               autoFocus={!hasCredentialAccount}
             />
           </div>
@@ -127,10 +129,7 @@ function DeleteAccountDialog({
             variant="outline"
             type="button"
             onClick={() => handleOpenChange(false)}
-            className="
-              w-full
-              sm:w-auto
-            "
+            className="w-full sm:w-auto"
             disabled={isPending}
           >
             Cancel
@@ -138,10 +137,7 @@ function DeleteAccountDialog({
           <Button
             type="submit"
             variant="destructive"
-            className="
-              w-full
-              sm:w-auto
-            "
+            className="w-full sm:w-auto"
             disabled={!canSubmit || isPending}
           >
             <LoadingContent loading={isPending}>
