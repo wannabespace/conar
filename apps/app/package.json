@@ -88,7 +88,6 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "react-scan": "catalog:",
     "serve": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",

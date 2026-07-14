@@ -61,5 +61,5 @@
   "engines": {
     "bun": ">=1.3.0"
   },
-  "packageManager": "pnpm@11.9.0"
+  "packageManager": "pnpm@11.13.0"
 }

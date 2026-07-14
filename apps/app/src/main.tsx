@@ -14,10 +14,6 @@ import './monaco-worker'
 import { isSignedIn } from './lib/auth'
 import { routeTree } from './routeTree.gen'
 
-if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
-  import('react-scan').then(({ scan }) => scan())
-}
-
 window.electron?.app.onDeepLink(async url => {
   window.initialDeepLink = url
 })

@@ -1,4 +1,4 @@
-/* oxlint-disable */
+/* eslint-disable */
 
 // @ts-nocheck
 
@@ -11,27 +11,30 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthRouteImport } from './routes/_auth'
-import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
-import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
-import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
-import { Route as AuthTwoFactorRouteImport } from './routes/_auth/two-factor'
-import { Route as LayoutRouteImport } from './routes/_layout'
-import { Route as LayoutDownloadRouteImport } from './routes/_layout/download'
-import { Route as LayoutHomeRouteImport } from './routes/_layout/home'
-import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
-import { Route as LayoutPrivacyPolicyRouteImport } from './routes/_layout/privacy-policy'
-import { Route as LayoutReleasesRouteImport } from './routes/_layout/releases'
-import { Route as LayoutTermsOfServiceRouteImport } from './routes/_layout/terms-of-service'
-import { Route as AccountRouteImport } from './routes/account'
-import { Route as AccountIndexRouteImport } from './routes/account/index'
-import { Route as DeepSignInRouteImport } from './routes/deep.sign-in'
 import { Route as OpenRouteImport } from './routes/open'
+import { Route as AccountRouteImport } from './routes/account'
+import { Route as LayoutRouteImport } from './routes/_layout'
+import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AccountIndexRouteImport } from './routes/account/index'
+import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
+import { Route as DeepSignInRouteImport } from './routes/deep.sign-in'
+import { Route as LayoutTermsOfServiceRouteImport } from './routes/_layout/terms-of-service'
+import { Route as LayoutReleasesRouteImport } from './routes/_layout/releases'
+import { Route as LayoutPrivacyPolicyRouteImport } from './routes/_layout/privacy-policy'
+import { Route as LayoutHomeRouteImport } from './routes/_layout/home'
+import { Route as LayoutDownloadRouteImport } from './routes/_layout/download'
+import { Route as AuthTwoFactorRouteImport } from './routes/_auth/two-factor'
+import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
+import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
+import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
 
 const AccountBillingLazyRouteImport = createFileRoute('/account/billing')()
 const AccountApiKeysLazyRouteImport = createFileRoute('/account/api-keys')()
-const AuthForgotPasswordLazyRouteImport = createFileRoute('/_auth/forgot-password')()
-const AccountSettingsIndexLazyRouteImport = createFileRoute('/account/settings/')()
+const AuthForgotPasswordLazyRouteImport = createFileRoute(
+  '/_auth/forgot-password',
+)()
+const AccountSettingsIndexLazyRouteImport =
+  createFileRoute('/account/settings/')()
 
 const OpenRoute = OpenRouteImport.update({
   id: '/open',
@@ -65,17 +68,23 @@ const AccountBillingLazyRoute = AccountBillingLazyRouteImport.update({
   id: '/billing',
   path: '/billing',
   getParentRoute: () => AccountRoute,
-} as any).lazy(() => import('./routes/account/billing.lazy').then(d => d.Route))
+} as any).lazy(() =>
+  import('./routes/account/billing.lazy').then((d) => d.Route),
+)
 const AccountApiKeysLazyRoute = AccountApiKeysLazyRouteImport.update({
   id: '/api-keys',
   path: '/api-keys',
   getParentRoute: () => AccountRoute,
-} as any).lazy(() => import('./routes/account/api-keys.lazy').then(d => d.Route))
+} as any).lazy(() =>
+  import('./routes/account/api-keys.lazy').then((d) => d.Route),
+)
 const AuthForgotPasswordLazyRoute = AuthForgotPasswordLazyRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
   getParentRoute: () => AuthRoute,
-} as any).lazy(() => import('./routes/_auth/forgot-password.lazy').then(d => d.Route))
+} as any).lazy(() =>
+  import('./routes/_auth/forgot-password.lazy').then((d) => d.Route),
+)
 const DeepSignInRoute = DeepSignInRouteImport.update({
   id: '/deep/sign-in',
   path: '/deep/sign-in',
@@ -85,7 +94,9 @@ const LayoutTermsOfServiceRoute = LayoutTermsOfServiceRouteImport.update({
   id: '/terms-of-service',
   path: '/terms-of-service',
   getParentRoute: () => LayoutRoute,
-} as any).lazy(() => import('./routes/_layout/terms-of-service.lazy').then(d => d.Route))
+} as any).lazy(() =>
+  import('./routes/_layout/terms-of-service.lazy').then((d) => d.Route),
+)
 const LayoutReleasesRoute = LayoutReleasesRouteImport.update({
   id: '/releases',
   path: '/releases',
@@ -95,7 +106,9 @@ const LayoutPrivacyPolicyRoute = LayoutPrivacyPolicyRouteImport.update({
   id: '/privacy-policy',
   path: '/privacy-policy',
   getParentRoute: () => LayoutRoute,
-} as any).lazy(() => import('./routes/_layout/privacy-policy.lazy').then(d => d.Route))
+} as any).lazy(() =>
+  import('./routes/_layout/privacy-policy.lazy').then((d) => d.Route),
+)
 const LayoutHomeRoute = LayoutHomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -126,11 +139,14 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => AuthRoute,
 } as any)
-const AccountSettingsIndexLazyRoute = AccountSettingsIndexLazyRouteImport.update({
-  id: '/settings/',
-  path: '/settings/',
-  getParentRoute: () => AccountRoute,
-} as any).lazy(() => import('./routes/account/settings/index.lazy').then(d => d.Route))
+const AccountSettingsIndexLazyRoute =
+  AccountSettingsIndexLazyRouteImport.update({
+    id: '/settings/',
+    path: '/settings/',
+    getParentRoute: () => AccountRoute,
+  } as any).lazy(() =>
+    import('./routes/account/settings/index.lazy').then((d) => d.Route),
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
@@ -172,7 +188,7 @@ export interface FileRoutesByTo {
   '/account/settings': typeof AccountSettingsIndexLazyRoute
 }
 export interface FileRoutesById {
-  '__root__': typeof rootRouteImport
+  __root__: typeof rootRouteImport
   '/_auth': typeof AuthRouteWithChildren
   '/_layout': typeof LayoutRouteWithChildren
   '/account': typeof AccountRouteWithChildren
@@ -447,7 +463,8 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutIndexRoute: LayoutIndexRoute,
 }
 
-const LayoutRouteWithChildren = LayoutRoute._addFileChildren(LayoutRouteChildren)
+const LayoutRouteWithChildren =
+  LayoutRoute._addFileChildren(LayoutRouteChildren)
 
 interface AccountRouteChildren {
   AccountApiKeysLazyRoute: typeof AccountApiKeysLazyRoute
@@ -463,7 +480,8 @@ const AccountRouteChildren: AccountRouteChildren = {
   AccountSettingsIndexLazyRoute: AccountSettingsIndexLazyRoute,
 }
 
-const AccountRouteWithChildren = AccountRoute._addFileChildren(AccountRouteChildren)
+const AccountRouteWithChildren =
+  AccountRoute._addFileChildren(AccountRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
@@ -476,9 +494,8 @@ export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
-import type { createStart } from '@tanstack/react-start'
-
 import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true

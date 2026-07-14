@@ -45,10 +45,6 @@ const structuredData = {
   ],
 }
 
-if (import.meta.env.DEV) {
-  import('react-scan').then(({ scan }) => scan())
-}
-
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
 }>()({
