@@ -47,7 +47,6 @@ const createConnectionType = type({
   color: 'string | null',
 })
 
-// oxlint-disable-next-line react/only-export-components
 function CreateConnectionPage() {
   const collections = useCollections()
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
@@ -156,7 +155,6 @@ function CreateConnectionPage() {
       setStep('save')
       toast.success('Connection successful. You can save the connection.')
     },
-    // oxlint-disable-next-line react/no-unstable-nested-components
     onError: error => {
       toast.error("We couldn't connect to the connection", {
         description: (

@@ -67,10 +67,10 @@
 }
 
 :root {
-  --body: oklch(0.955 0 0);
-  --background: oklch(0.98 0 0);
+  --body: oklch(0.9632 0.0034 247.86);
+  --background: oklch(0.9839 0.0025 228.78);
   --foreground: oklch(0.18 0 0);
-  --card: oklch(0.98 0 0);
+  --card: oklch(0.9839 0.0025 228.78);
   --card-foreground: oklch(0.18 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.18 0 0);

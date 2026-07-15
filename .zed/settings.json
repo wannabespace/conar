@@ -18,6 +18,12 @@
           "run": "onSave"
         }
       }
+    },
+    "vtsls": {
+      "binary": {
+        "path": "node_modules/.bin/tsc",
+        "arguments": ["--lsp", "--stdio"]
+      }
     }
   },
   "format_on_save": "on",
@@ -45,7 +51,7 @@
       ]
     },
     "TypeScript": {
-      "language_servers": ["tsgo", "!vtsls", "!typescript-language-server", "..."],
+      "language_servers": ["!typescript-language-server", "..."],
       "formatter": [
         {
           "language_server": {
@@ -58,7 +64,7 @@
       ]
     },
     "TSX": {
-      "language_servers": ["tsgo", "!vtsls", "!typescript-language-server", "..."],
+      "language_servers": ["!typescript-language-server", "..."],
       "formatter": [
         {
           "language_server": {
