@@ -148,7 +148,7 @@ export function HeaderSearch({ table, schema }: { table: string; schema: string 
                     cursor-help text-xs whitespace-nowrap text-muted-foreground
                   "
                     // Focusable so the tooltip is reachable by keyboard
-                    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+                    // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex
                     tabIndex={0}
                     aria-label={`You have ${freeAiUsage.remaining} out of ${freeAiUsage.max} free AI filter uses left this month.`}
                   />

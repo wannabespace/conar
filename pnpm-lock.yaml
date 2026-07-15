@@ -61,8 +61,8 @@ catalogs:
       specifier: ^5.0.2
       version: 5.0.2
     '@letstri/oxlint-config':
-      specifier: ^1.0.4
-      version: 1.0.4
+      specifier: ^1.2.1
+      version: 1.2.1
     '@monaco-editor/loader':
       specifier: ^1.7.0
       version: 1.7.0
@@ -444,7 +444,7 @@ importers:
     devDependencies:
       '@letstri/oxlint-config':
         specifier: 'catalog:'
-        version: 1.0.4(oxfmt@0.58.0)(oxlint-tailwindcss@1.3.5)(oxlint@1.73.0)
+        version: 1.2.1(oxfmt@0.58.0)(oxlint-tailwindcss@1.3.5)(oxlint@1.73.0)
       '@tamery/configs':
         specifier: workspace:*
         version: link:packages/configs
@@ -2535,8 +2535,8 @@ packages:
     resolution: {integrity: sha512-hloP58zRVCRSpgDxmqCWJNlizAlUgJFqG2ypq79DCvyv9tHjRYMDOcPFjzfl/A1/YxDvRCZz8wvZvmapQnKwFQ==}
     engines: {node: '>=12'}
 
-  '@letstri/oxlint-config@1.0.4':
-    resolution: {integrity: sha512-HlG10PwwERp3v68VCYqRs7JB0oIK6vXiStReisDTDuERn7ftHNmgXhUnW+kU6TswZBj+S3g3aLWLISPIM6jYOg==}
+  '@letstri/oxlint-config@1.2.1':
+    resolution: {integrity: sha512-bi6WgupYz4/uchsmAMdRTbn0x70DqE1jSJYiTL+ORgAnMXrvFEOUj6iSxSo2HBT7Lo8GhFuO9JvyNoEoph/GSQ==}
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -5599,6 +5599,9 @@ packages:
     resolution: {integrity: sha512-77PSwercCZU2Fc4sX94eF8k8Pxte6JAwL4/ICZLFjJLqegs7kCuAsqqj/70NQF6TvDpgFjkubQB2FW2ZZddvQg==}
     engines: {node: '>=8'}
 
+  citty@0.2.2:
+    resolution: {integrity: sha512-+6vJA3L98yv+IdfKGZHBNiGW5KHn22e/JwID0Strsz8h4S/csAu/OuICwxrg44k5MRiZHWIo8XXuJgQTriRP4w==}
+
   cjs-module-lexer@2.2.0:
     resolution: {integrity: sha512-4bHTS2YuzUvtoLjdy+98ykbNB5jS0+07EvFNXerqZQJ89F7DI6ET7OQo/HJuW6K0aVsKA9hj9/RVb2kQVOrPDQ==}
 
@@ -8196,6 +8199,11 @@ packages:
 
   number-flow@0.6.1:
     resolution: {integrity: sha512-5NUCwZA6J/kZeEzqApOyq7KOf1Wu/oxjpp/95HB0NBNBFlpK/Pp7i4jH8h0LIXyRDKSTewDAUaYHL7IBrk19Ew==}
+
+  nypm@0.6.8:
+    resolution: {integrity: sha512-Q9K4Diu6l5u6xJQogeFSs/zKtyMSgFKFtRQV+tHP4kL7KPm2grpBU0dFIwFaXwNxN0MtfKWc43VpCugAa+LPsw==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
@@ -11707,11 +11715,12 @@ snapshots:
     dependencies:
       jsbi: 4.3.2
 
-  '@letstri/oxlint-config@1.0.4(oxfmt@0.58.0)(oxlint-tailwindcss@1.3.5)(oxlint@1.73.0)':
+  '@letstri/oxlint-config@1.2.1(oxfmt@0.58.0)(oxlint-tailwindcss@1.3.5)(oxlint@1.73.0)':
     dependencies:
       '@clack/prompts': 1.7.0
       defu: 6.1.7
       jsonc-parser: 3.3.1
+      nypm: 0.6.8
       oxfmt: 0.58.0
       oxlint: 1.73.0
     optionalDependencies:
@@ -14588,6 +14597,8 @@ snapshots:
 
   ci-info@4.4.0: {}
 
+  citty@0.2.2: {}
+
   cjs-module-lexer@2.2.0: {}
 
   class-variance-authority@0.7.1:
@@ -17339,6 +17350,12 @@ snapshots:
   number-flow@0.6.1:
     dependencies:
       esm-env: 1.2.2
+
+  nypm@0.6.8:
+    dependencies:
+      citty: 0.2.2
+      pathe: 2.0.3
+      tinyexec: 1.2.4
 
   object-assign@4.1.1: {}
 

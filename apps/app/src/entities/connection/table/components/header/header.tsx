@@ -106,7 +106,7 @@ export function Header({ table, schema }: { table: string; schema: string }) {
 
     while (true) {
       // Sequential by design: paginated fetch — each batch depends on the previous offset
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       const batch = await resourceRowsQuery({
         schema,
         table,

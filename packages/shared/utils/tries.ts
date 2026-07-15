@@ -21,8 +21,7 @@ export async function tries<T>(
 
   for (const [index, fn] of filteredFn.entries()) {
     try {
-      // Sequential by design: each fallback runs only after the previous one fails
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       return await fn({ firstError, previousError })
     } catch (error) {
       if (index === 0) {

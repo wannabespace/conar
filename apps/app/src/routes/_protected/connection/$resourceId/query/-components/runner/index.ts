@@ -76,7 +76,7 @@ export function runnerQueryOptions(connectionResource: ConnectionResource) {
         const startTime = performance.now()
         try {
           // Sequential by design: queries run in order on the same connection
-          // eslint-disable-next-line no-await-in-loop
+          // oxlint-disable-next-line no-await-in-loop
           const rows = await customQuery({ query }).run(queryParams)
           results.push(
             transformResult({

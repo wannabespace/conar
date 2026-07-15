@@ -50,7 +50,7 @@ export function Chat({ className }: { className?: string }) {
       className={cn('relative flex flex-col justify-between gap-4 p-4', className)}
       ref={elementRef}
       // Focusable container for chat focus/blur management
-      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+      // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex
       tabIndex={0}
       onFocusCapture={() => setIsFocused(true)}
       onBlurCapture={event => {

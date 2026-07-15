@@ -129,7 +129,7 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
             }, {})
 
             // Sequential by design: updates run in order within a single transaction
-            // eslint-disable-next-line no-await-in-loop
+            // oxlint-disable-next-line no-await-in-loop
             await tx
               .withSchema(schema)
               .withTables<{ [table]: Record<string, unknown> }>()

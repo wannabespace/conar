@@ -39,7 +39,7 @@ export const SQL_FILTERS_GROUPED = [
   filters: Filter[]
 }[]
 
-// eslint-disable-next-line unicorn/prefer-array-flat-map -- flatMap widens the `as const` tuple union and breaks Filter typing
+// oxlint-disable-next-line unicorn/prefer-array-flat-map -- flatMap widens the `as const` tuple union and breaks Filter typing
 export const SQL_FILTERS_LIST = SQL_FILTERS_GROUPED.map(group => group.filters).flat()
 
 export interface QueryParams {

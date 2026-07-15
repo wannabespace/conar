@@ -54,8 +54,7 @@ function useMarkdownContext<T>(selector: ContextSelector<MarkdownContextType, T>
 }
 
 function A({ target, rel, ...props }: ComponentProps<'a'>) {
-  // Content is provided by ReactMarkdown via spread props (children)
-  // eslint-disable-next-line jsx-a11y/anchor-has-content
+  // oxlint-disable-next-line jsx-a11y/anchor-has-content
   return <a {...props} target="_blank" rel="noopener noreferrer" />
 }
 

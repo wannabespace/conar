@@ -44,7 +44,7 @@ export async function ensureFolders(folders: string[]) {
   for (let i = 0; i < folders.length; i++) {
     const parent = i === 0 ? '/' : `/${folders.slice(0, i).join('/')}`
     // Sequential by design: each folder's parent must exist before it is created
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     await client
       .folders()
       .create({

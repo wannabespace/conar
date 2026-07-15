@@ -160,7 +160,7 @@ export function syncCollectionOptions<T extends { updatedAt: Date }>(
 
         while (!signal.aborted) {
           try {
-            // eslint-disable-next-line no-await-in-loop
+            // oxlint-disable-next-line no-await-in-loop
             await Promise.all([
               catchUp(),
               config.events({ signal, write: item => writeItems([item]) }),
@@ -172,7 +172,7 @@ export function syncCollectionOptions<T extends { updatedAt: Date }>(
             failures++
           }
 
-          // eslint-disable-next-line no-await-in-loop
+          // oxlint-disable-next-line no-await-in-loop
           await sleep(Math.min(RETRY_MIN_DELAY * 2 ** failures, RETRY_MAX_DELAY), signal)
         }
       }
@@ -225,7 +225,7 @@ export async function clearDb() {
 
       if (tableName && !systemTables.has(tableName)) {
         // Sequential by design: statements run on a single SQLite connection
-        // eslint-disable-next-line no-await-in-loop
+        // oxlint-disable-next-line no-await-in-loop
         await database.execute(`DELETE FROM "${tableName}";`)
       }
     }

@@ -112,7 +112,7 @@ function TableContent({ table, schema }: { table: string; schema: string }) {
     <ColumnsContext value={data}>
       <TablesTabs className="h-9" />
       {/* Convenience click on the pane opens the tab; interactive children remain keyboard-reachable */}
-      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
+      {/* oxlint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
       <div
         className="h-[calc(100%-(--spacing(9)))]"
         onClick={() => addTab(connectionResource.id, schema, table)}

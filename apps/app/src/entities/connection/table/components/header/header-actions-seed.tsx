@@ -275,8 +275,7 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
       const BATCH_SIZE = 500
       for (let i = 0; i < rows.length; i += BATCH_SIZE) {
         const batch = rows.slice(i, i + BATCH_SIZE)
-        // Sequential by design: batches insert in order to avoid overloading the connection
-        // eslint-disable-next-line no-await-in-loop
+        // oxlint-disable-next-line no-await-in-loop
         await insertQuery({ schema, table, rows: batch }).run(queryParams)
       }
     },

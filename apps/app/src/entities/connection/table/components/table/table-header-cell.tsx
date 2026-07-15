@@ -340,7 +340,7 @@ export function TableHeaderCell({
               isResizing && `bg-primary! opacity-100!`,
             )}
             // Drag-to-resize handle; interactions are pointer-driven by design
-            // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+            // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
             onDoubleClick={removeSize}
             onMouseDown={handleResize}
           />

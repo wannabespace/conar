@@ -33,7 +33,6 @@ export async function sendEmail<
     return
   }
 
-  // oxlint-disable-next-line import/namespace -- computed access is safe: `template` is constrained to `keyof typeof templates`
   const Template = templates[template] as (props?: P) => React.ReactElement
   const options: CreateEmailOptions = {
     from: `Tamery <${env.RESEND_FROM_EMAIL}>`,

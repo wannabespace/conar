@@ -147,7 +147,7 @@ export function Subscription() {
               Manage your subscription
               <Tooltip>
                 {/* Focusable so the tooltip is reachable by keyboard */}
-                {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+                {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
                 <TooltipTrigger render={<span tabIndex={0} className="focus:outline-none" />}>
                   <RiInformationLine className="size-4" />
                 </TooltipTrigger>

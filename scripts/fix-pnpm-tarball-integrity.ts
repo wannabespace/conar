@@ -37,7 +37,7 @@ export async function fixPnpmTarballIntegrity() {
   for (const match of missing) {
     const url = match[1]!
     // Sequential by design: the lockfile string is rewritten incrementally per match
-    // eslint-disable-next-line no-await-in-loop
+    // oxlint-disable-next-line no-await-in-loop
     const integrity = await tarballIntegrity(url)
     updated = updated.replace(
       `resolution: {tarball: ${url}}`,
