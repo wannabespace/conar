@@ -1,20 +1,19 @@
 {
   "name": "@tamery/desktop",
-  "type": "module",
   "version": "0.32.0",
-  "productName": "Tamery",
   "description": "AI-powered tool for working with Postgres, MySQL, MSSQL and Clickhouse.",
+  "homepage": "https://tamery.app",
   "author": {
     "name": "Wannabe Space, LLC",
     "email": "wannabespace.llc@gmail.com"
   },
-  "homepage": "https://tamery.app",
+  "type": "module",
   "main": "./dist-electron/main.js",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && bun ./scripts/copy-renderer.ts",
     "build:todesktop": "todesktop build",
-    "check-types": "tsgo",
+    "check-types": "tsc",
     "todesktop:beforeInstall": "./scripts/todesktop-before-install.cjs"
   },
   "dependencies": {
@@ -32,9 +31,10 @@
     "@todesktop/cli": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
-    "@typescript/native-preview": "catalog:",
     "electron": "catalog:",
+    "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plugin-electron": "catalog:"
-  }
+  },
+  "productName": "Tamery"
 }

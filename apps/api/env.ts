@@ -1,4 +1,5 @@
 import process from 'node:process'
+
 import { type } from 'arktype'
 
 export const nodeEnv = type('"production" | "development" | "test"').assert(process.env.NODE_ENV)
@@ -58,9 +59,9 @@ const devOptionalEnvs = [
   'TODESKTOP_WEBHOOK_SECRET',
 ] satisfies (keyof typeof envType.infer)[]
 
-export const env = nodeEnv === 'production' || nodeEnv === 'test'
-  ? envType.assert(process.env)
-  : type.and(
-      envType.omit(...devOptionalEnvs),
-      envType.pick(...devOptionalEnvs).partial(),
-    ).assert(process.env)
+export const env =
+  nodeEnv === 'production' || nodeEnv === 'test'
+    ? envType.assert(process.env)
+    : type
+        .and(envType.omit(...devOptionalEnvs), envType.pick(...devOptionalEnvs).partial())
+        .assert(process.env)

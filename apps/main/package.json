@@ -1,12 +1,11 @@
 {
   "name": "@tamery/main",
   "type": "module",
-  "portless": "main.local.tamery",
   "scripts": {
     "dev": "portless run vite dev",
     "build": "vite build",
     "start": "bun run .output/server/index.mjs",
-    "check-types": "tsgo"
+    "check-types": "tsc"
   },
   "dependencies": {
     "@better-auth/api-key": "catalog:",
@@ -35,22 +34,23 @@
     "ua-parser-js": "catalog:"
   },
   "devDependencies": {
-    "@orpc/server": "catalog:",
-    "@remixicon/react": "catalog:",
-    "@rolldown/plugin-babel": "catalog:",
-    "@tailwindcss/vite": "catalog:",
     "@tamery/api": "workspace:*",
     "@tamery/configs": "workspace:*",
     "@tamery/shared": "workspace:*",
     "@tamery/ui": "workspace:*",
+    "@orpc/server": "catalog:",
+    "@remixicon/react": "catalog:",
+    "@rolldown/plugin-babel": "catalog:",
+    "@tailwindcss/vite": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@typescript/native-preview": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "react-scan": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
+    "typescript": "catalog:",
     "vite": "catalog:"
-  }
+  },
+  "portless": "main.local.tamery"
 }

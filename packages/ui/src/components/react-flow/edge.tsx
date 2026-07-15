@@ -1,11 +1,5 @@
-import type {
-  EdgeProps,
-} from '@xyflow/react'
-import {
-  BaseEdge,
-  getSmoothStepPath,
-  Position,
-} from '@xyflow/react'
+import type { EdgeProps } from '@xyflow/react'
+import { BaseEdge, getSmoothStepPath, Position } from '@xyflow/react'
 
 export function ReactFlowEdge({
   sourceX,

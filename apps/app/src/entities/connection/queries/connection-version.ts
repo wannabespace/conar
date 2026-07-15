@@ -1,7 +1,9 @@
-import type { Connection } from '~/entities/connection/core'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
+
+import type { Connection } from '~/entities/connection/core'
+
 import { connectionToQueryParams, createQuery } from '../runtime/query'
 
 export const connectionVersionType = type({
@@ -12,19 +14,22 @@ export const connectionVersionQuery = createQuery({
   type: connectionVersionType,
   // Each query has a fallback to get a version in older versions
   query: {
-    postgres: async (db) => {
+    postgres: async db => {
       try {
         return await db
           .selectFrom('pg_catalog.pg_settings')
           .select('setting as version')
           .where('name', '=', 'server_version')
           .executeTakeFirstOrThrow()
-      }
-      catch {
-        return (await sql<{ version: string }>`SELECT current_setting('server_version') as version`.execute(db)).rows[0]!
+      } catch {
+        return (
+          await sql<{
+            version: string
+          }>`SELECT current_setting('server_version') as version`.execute(db)
+        ).rows[0]!
       }
     },
-    mysql: async (db) => {
+    mysql: async db => {
       try {
         // for mysql >= v8.0
         return await db
@@ -32,12 +37,11 @@ export const connectionVersionQuery = createQuery({
           .select('VARIABLE_VALUE as version')
           .where('VARIABLE_NAME', '=', 'version')
           .executeTakeFirstOrThrow()
-      }
-      catch {
+      } catch {
         return (await sql<{ version: string }>`SELECT VERSION() as version`.execute(db)).rows[0]!
       }
     },
-    mssql: async (db) => {
+    mssql: async db => {
       try {
         return await db
           .selectFrom('sys.databases')
@@ -45,19 +49,21 @@ export const connectionVersionQuery = createQuery({
           .orderBy('name')
           .limit(1)
           .executeTakeFirstOrThrow()
-      }
-      catch {
-        return (await sql<{ version: string }>`SELECT SERVERPROPERTY('ProductVersion') as version`.execute(db)).rows[0]!
+      } catch {
+        return (
+          await sql<{
+            version: string
+          }>`SELECT SERVERPROPERTY('ProductVersion') as version`.execute(db)
+        ).rows[0]!
       }
     },
-    clickhouse: async (db) => {
+    clickhouse: async db => {
       try {
         return await db
           .selectFrom('system.one')
           .select(eb => eb.fn<string>('version', []).as('version'))
           .executeTakeFirstOrThrow()
-      }
-      catch {
+      } catch {
         return (await sql<{ version: string }>`SELECT version() as version`.execute(db)).rows[0]!
       }
     },

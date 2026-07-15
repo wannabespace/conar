@@ -1,7 +1,5 @@
-import type { RemixiconComponentType } from '@remixicon/react'
-import type { OS } from '@tamery/shared/utils/os'
-import { RiAppleFill, RiTerminalLine, RiWindowsFill } from '@remixicon/react'
 import { BREW_INSTALL_COMMAND } from '@tamery/shared/constants'
+import type { OS } from '@tamery/shared/utils/os'
 import { osMap } from '@tamery/shared/utils/os'
 import { Badge } from '@tamery/ui/components/badge'
 import { AppLogoSquare } from '@tamery/ui/components/brand/app-logo-square'
@@ -10,7 +8,10 @@ import { Card } from '@tamery/ui/components/card'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { Linux } from '@tamery/ui/components/icons/linux'
 import { Tooltip, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import type { RemixiconComponentType } from '@remixicon/react'
+import { RiAppleFill, RiTerminalLine, RiWindowsFill } from '@remixicon/react'
 import { createFileRoute } from '@tanstack/react-router'
+
 import { DownloadButton } from '~/components/download-button'
 import { DOWNLOAD_LINKS } from '~/constants'
 import { getOSIsomorphic } from '~/utils/os'
@@ -20,56 +21,34 @@ const os = getOSIsomorphic()
 
 export const Route = createFileRoute('/_layout/download')({
   component: RouteComponent,
-  head: () => seo({
-    title: 'Download Tamery - Available for macOS, Windows and Linux',
-    description: 'Download Tamery for macOS (Apple Silicon & Intel), Windows, and Linux. Available as DMG, EXE, DEB, RPM, and AppImage.',
-    image: '/og-image.png',
-    path: '/download',
-  }),
+  head: () =>
+    seo({
+      title: 'Download Tamery - Available for macOS, Windows and Linux',
+      description:
+        'Download Tamery for macOS (Apple Silicon & Intel), Windows, and Linux. Available as DMG, EXE, DEB, RPM, and AppImage.',
+      image: '/og-image.png',
+      path: '/download',
+    }),
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
 function HomebrewInstall() {
   if (os?.type !== 'macos') {
     return null
   }
 
   return (
-    <div className={`
-      mb-8 w-full max-w-xl px-4
-      sm:mb-12
-    `}
-    >
-      <h2 className={`
-        mb-4 text-center text-xl font-semibold
-        sm:text-2xl
-      `}
+    <div className={`mb-8 w-full max-w-xl px-4 sm:mb-12`}>
+      <h2 className={`mb-4 text-center text-xl font-semibold sm:text-2xl`}>Install via Homebrew</h2>
+      <Card
+        className={`flex w-full flex-row items-center justify-between gap-4 p-3 sm:gap-8 sm:p-2`}
       >
-        Install via Homebrew
-      </h2>
-      <Card className={`
-        flex w-full flex-row items-center justify-between gap-4 p-3
-        sm:gap-8 sm:p-2
-      `}
-      >
-        <div className={`
-          flex min-w-0 flex-1 items-center gap-3
-          sm:gap-4
-        `}
-        >
-          <div className={`
-            flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted
-          `}
-          >
+        <div className={`flex min-w-0 flex-1 items-center gap-3 sm:gap-4`}>
+          <div className={`flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted`}>
             <RiTerminalLine className="size-4 text-muted-foreground" />
           </div>
           <input
             type="text"
-            className={`
-              m-0 block flex-1 border-none bg-transparent p-0 pr-10 font-mono
-              text-sm outline-none
-              sm:text-base
-            `}
+            className={`m-0 block flex-1 border-none bg-transparent p-0 pr-10 font-mono text-sm outline-none sm:text-base`}
             value={BREW_INSTALL_COMMAND}
             readOnly
           />
@@ -80,7 +59,6 @@ function HomebrewInstall() {
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 function AllPlatforms() {
   return (
     <>
@@ -102,68 +80,40 @@ function AllPlatforms() {
         arch="exe"
         link={DOWNLOAD_LINKS.windows.exe}
       />
-      <DownloadOption
-        Icon={Linux}
-        type="linux"
-        arch="deb"
-        link={DOWNLOAD_LINKS.linux.deb}
-      />
+      <DownloadOption Icon={Linux} type="linux" arch="deb" link={DOWNLOAD_LINKS.linux.deb} />
       <DownloadOption
         Icon={Linux}
         type="linux"
         arch="AppImage"
         link={DOWNLOAD_LINKS.linux.appImage}
       />
-      <DownloadOption
-        Icon={Linux}
-        type="linux"
-        arch="rpm"
-        link={DOWNLOAD_LINKS.linux.rpm}
-      />
+      <DownloadOption Icon={Linux} type="linux" arch="rpm" link={DOWNLOAD_LINKS.linux.rpm} />
     </>
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
-function DownloadOption({ Icon, type, arch, link }: {
+function DownloadOption({
+  Icon,
+  type,
+  arch,
+  link,
+}: {
   Icon: RemixiconComponentType
   type: OS
   arch?: string
   link: string
 }) {
   return (
-    <Card className={`
-      flex w-full flex-row items-center justify-between gap-4 p-3
-      sm:gap-8 sm:p-2
-    `}
-    >
-      <div className={`
-        flex min-w-0 flex-1 items-center gap-3
-        sm:gap-4
-      `}
-      >
-        <div className={`
-          flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted
-        `}
-        >
+    <Card className={`flex w-full flex-row items-center justify-between gap-4 p-3 sm:gap-8 sm:p-2`}>
+      <div className={`flex min-w-0 flex-1 items-center gap-3 sm:gap-4`}>
+        <div className={`flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted`}>
           <Icon className="size-4 text-muted-foreground" />
         </div>
         <div className="flex flex-col items-start">
-          <span className={`
-            w-full truncate text-sm font-medium
-            sm:text-base
-          `}
-          >
-            {osMap[type].label}
-            {' '}
+          <span className={`w-full truncate text-sm font-medium sm:text-base`}>
+            {osMap[type].label}{' '}
             {arch && (
-              <Badge
-                variant="outline"
-                className={`
-                  text-xs
-                  sm:text-sm
-                `}
-              >
+              <Badge variant="outline" className={`text-xs sm:text-sm`}>
                 {arch}
               </Badge>
             )}
@@ -173,12 +123,7 @@ function DownloadOption({ Icon, type, arch, link }: {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            render={(
-              <a
-                href={link}
-                download
-              />
-            )}
+            render={<a href={link} download aria-label="Download" />}
             size="sm"
             disabled={!link}
             variant="secondary"
@@ -191,56 +136,25 @@ function DownloadOption({ Icon, type, arch, link }: {
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 function RouteComponent() {
   return (
-    <div className={`
-      flex flex-col items-center justify-center px-4 py-8
-      sm:px-6 sm:py-[10vh]
-    `}
-    >
-      <div className={`
-        mx-auto flex w-full max-w-2xl flex-col items-center text-center
-      `}
-      >
-        <AppLogoSquare className={`
-          mb-4 size-24
-          sm:mb-6 sm:size-32
-        `}
-        />
-        <h1 className={`
-          mb-2 px-2 text-2xl font-medium tracking-tight
-          sm:mb-3 sm:text-3xl
-          md:text-4xl
-        `}
+    <div className={`flex flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-[10vh]`}>
+      <div className={`mx-auto flex w-full max-w-2xl flex-col items-center text-center`}>
+        <AppLogoSquare className={`mb-4 size-24 sm:mb-6 sm:size-32`} />
+        <h1
+          className={`mb-2 px-2 text-2xl font-medium tracking-tight sm:mb-3 sm:text-3xl md:text-4xl`}
         >
-          Download
-          {' '}
-          <strong>Tamery</strong>
+          Download <strong>Tamery</strong>
         </h1>
-        <p className={`
-          mb-6 px-2 text-base text-muted-foreground
-          sm:mb-10 sm:text-lg
-        `}
-        >
+        <p className={`mb-6 px-2 text-base text-muted-foreground sm:mb-10 sm:text-lg`}>
           Available for macOS, Windows and Linux
         </p>
-        <div className={`
-          mb-8 space-y-2 px-4 text-center
-          sm:mb-12
-        `}
-        >
+        <div className={`mb-8 space-y-2 px-4 text-center sm:mb-12`}>
           <DownloadButton />
         </div>
         <HomebrewInstall />
         <div className="w-full max-w-xl px-4">
-          <h2 className={`
-            mb-4 text-center text-xl font-semibold
-            sm:text-2xl
-          `}
-          >
-            All platforms
-          </h2>
+          <h2 className={`mb-4 text-center text-xl font-semibold sm:text-2xl`}>All platforms</h2>
           <div className="w-full space-y-2">
             <AllPlatforms />
           </div>

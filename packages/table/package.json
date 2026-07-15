@@ -1,7 +1,7 @@
 {
   "name": "@tamery/table",
-  "type": "module",
   "private": true,
+  "type": "module",
   "exports": {
     ".": "./src/index.ts",
     "./hooks": "./src/hooks.ts",
@@ -9,13 +9,13 @@
     "./constants": "./src/constants.ts"
   },
   "scripts": {
-    "check-types": "tsgo"
+    "check-types": "tsc"
   },
   "dependencies": {
-    "@fluentui/react-context-selector": "catalog:",
-    "@remixicon/react": "catalog:",
     "@tamery/shared": "workspace:*",
     "@tamery/ui": "workspace:*",
+    "@fluentui/react-context-selector": "catalog:",
+    "@remixicon/react": "catalog:",
     "@tanstack/react-virtual": "catalog:",
     "react": "catalog:"
   },

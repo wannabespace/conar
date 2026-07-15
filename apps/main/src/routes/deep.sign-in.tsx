@@ -1,5 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
+
 import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 

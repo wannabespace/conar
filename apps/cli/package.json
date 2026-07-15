@@ -1,31 +1,30 @@
 {
   "name": "tamery",
-  "type": "module",
   "version": "0.0.1",
   "description": "Tamery CLI – manage and query your connections from the terminal.",
+  "keywords": [
+    "cli",
+    "clickhouse",
+    "tamery",
+    "database",
+    "mssql",
+    "mysql",
+    "postgres",
+    "sql"
+  ],
+  "homepage": "https://tamery.app",
+  "bugs": {
+    "url": "https://github.com/wannabespace/tamery/issues"
+  },
   "author": {
     "name": "Wannabe Space, LLC",
     "email": "wannabespace.llc@gmail.com"
   },
-  "homepage": "https://tamery.app",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wannabespace/tamery.git",
     "directory": "apps/cli"
   },
-  "bugs": {
-    "url": "https://github.com/wannabespace/tamery/issues"
-  },
-  "keywords": [
-    "tamery",
-    "cli",
-    "database",
-    "postgres",
-    "mysql",
-    "mssql",
-    "clickhouse",
-    "sql"
-  ],
   "bin": {
     "tamery": "./dist/index.js"
   },
@@ -34,12 +33,10 @@
     "README.md",
     "dist"
   ],
-  "engines": {
-    "node": ">=22"
-  },
+  "type": "module",
   "scripts": {
     "build": "tsdown",
-    "check-types": "tsgo",
+    "check-types": "tsc",
     "prepublishOnly": "tsdown"
   },
   "dependencies": {
@@ -56,17 +53,20 @@
     "pg": "catalog:"
   },
   "devDependencies": {
-    "@orpc/server": "catalog:",
     "@tamery/api": "workspace:*",
     "@tamery/configs": "workspace:*",
     "@tamery/connection": "workspace:*",
     "@tamery/query-proxy": "workspace:*",
     "@tamery/shared": "workspace:*",
+    "@orpc/server": "catalog:",
     "@types/bun": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
-    "@typescript/native-preview": "catalog:",
     "memoza": "catalog:",
-    "tsdown": "catalog:"
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

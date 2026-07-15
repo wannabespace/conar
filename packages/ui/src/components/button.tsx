@@ -1,8 +1,9 @@
-import type { VariantProps } from 'class-variance-authority'
-import type * as React from 'react'
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@tamery/ui/lib/utils'
+import type { VariantProps } from 'class-variance-authority'
+import type * as React from 'react'
+
 import { buttonVariants } from './button.variants'
 
 export interface ButtonProps extends useRender.ComponentProps<'button'> {
@@ -17,8 +18,9 @@ export function Button({
   render,
   ...props
 }: ButtonProps): React.ReactElement {
-  const typeValue: React.ButtonHTMLAttributes<HTMLButtonElement>['type']
-    = render ? undefined : 'button'
+  const typeValue: React.ButtonHTMLAttributes<HTMLButtonElement>['type'] = render
+    ? undefined
+    : 'button'
 
   const defaultProps = {
     'className': cn(buttonVariants({ className, size, variant })),

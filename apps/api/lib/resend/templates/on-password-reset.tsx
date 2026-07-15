@@ -1,7 +1,5 @@
-import {
-  Section,
-  Text,
-} from '@react-email/components'
+import { Section, Text } from '@react-email/components'
+
 import { Base } from '../components/base'
 
 export function OnPasswordReset({ name }: { name: string }) {
@@ -12,17 +10,10 @@ export function OnPasswordReset({ name }: { name: string }) {
     >
       <Section>
         <Text>
-          Hello,
-          {' '}
-          <strong>{name}</strong>
-          !
+          Hello, <strong>{name}</strong>!
         </Text>
-        <Text>
-          Your password for your account has been successfully reset.
-        </Text>
-        <Text>
-          If you did not make this change, please contact our support team immediately.
-        </Text>
+        <Text>Your password for your account has been successfully reset.</Text>
+        <Text>If you did not make this change, please contact our support team immediately.</Text>
       </Section>
     </Base>
   )

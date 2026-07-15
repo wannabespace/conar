@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
+
 import { fullSignOut } from '~/lib/auth'
 import { queryClient } from '~/main'
 import { handleError } from '~/utils/error'

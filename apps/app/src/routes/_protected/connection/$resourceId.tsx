@@ -1,18 +1,27 @@
-import type { connectionResourceType } from '~/entities/connection/store'
-import type { FileRoutesById } from '~/routeTree.gen'
 import { title } from '@tamery/shared/utils/title'
-import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@tamery/ui/components/resizable'
+import {
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizableSeparator,
+} from '@tamery/ui/components/resizable'
 import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
+
 import { getCollections, useCollections } from '~/entities/collections'
 import { QueryLogger } from '~/entities/connection/components'
+import type { connectionResourceType } from '~/entities/connection/store'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { lastOpenedResourcesStorageValue, prefetchConnectionResourceCore } from '~/entities/connection/utils'
+import {
+  lastOpenedResourcesStorageValue,
+  prefetchConnectionResourceCore,
+} from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
+import type { FileRoutesById } from '~/routeTree.gen'
+
 import { ConnectionSidebar } from './-components/connection-sidebar'
 import { PasswordForm } from './-components/password-form'
 
@@ -47,10 +56,11 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
 })
 
 function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
-  return routesIds.findLast(route => route.includes('/_protected/connection/$resourceId')) as typeof connectionResourceType.infer['lastOpenedPage']
+  return routesIds.findLast(route =>
+    route.includes('/_protected/connection/$resourceId'),
+  ) as (typeof connectionResourceType.infer)['lastOpenedPage']
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 function ResourcePage() {
   const { connection, connectionResource } = Route.useRouteContext()
   const { connectionStringsCollection } = useCollections()
@@ -59,25 +69,37 @@ function ResourcePage() {
   })
   const store = getConnectionResourceStore(connectionResource.id)
   const loggerOpened = useSubscription(store, { selector: state => state.loggerOpened })
-  const { data: connectionString } = useLiveQuery(q => q
-    .from({ cs: connectionStringsCollection })
-    .where(({ cs }) => eq(cs.connectionId, connection.id))
-    .findOne(), [connectionStringsCollection, connection.id])
+  const { data: connectionString } = useLiveQuery(
+    q =>
+      q
+        .from({ cs: connectionStringsCollection })
+        .where(({ cs }) => eq(cs.connectionId, connection.id))
+        .findOne(),
+    [connectionStringsCollection, connection.id],
+  )
   const isPasswordPopulated = connectionString?.isPasswordPopulated
 
   useEffect(() => {
     if (currentPageId) {
-      store.set(state => ({
-        ...state,
-        lastOpenedPage: currentPageId,
-      } satisfies typeof state))
+      store.set(
+        state =>
+          ({
+            ...state,
+            lastOpenedPage: currentPageId,
+          }) satisfies typeof state,
+      )
     }
   }, [currentPageId, store])
 
   useEffect(() => {
     const last = lastOpenedResourcesStorageValue.get()
     if (!last.includes(connectionResource.id))
-      lastOpenedResourcesStorageValue.set([connectionResource.id, ...last.filter(resourceId => resourceId !== connectionResource.id)].slice(0, 3))
+      lastOpenedResourcesStorageValue.set(
+        [
+          connectionResource.id,
+          ...last.filter(resourceId => resourceId !== connectionResource.id),
+        ].slice(0, 3),
+      )
   }, [connectionResource.id])
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
@@ -92,18 +114,11 @@ function ResourcePage() {
   }
 
   return (
-    <div className={`
-      flex bg-gray-100
-      dark:bg-neutral-950/60
-    `}
-    >
+    <div className={`flex bg-gray-100 dark:bg-neutral-950/60`}>
       <ConnectionSidebar className="w-16" />
       <div
         className={cn(
-          `
-            m-2 ml-0 flex h-[calc(100%-(--spacing(4)))]
-            w-[calc(100%-(--spacing(16))-(--spacing(2)))] flex-col
-          `,
+          `m-2 ml-0 flex h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(16))-(--spacing(2)))] flex-col`,
         )}
       >
         <ResizablePanelGroup

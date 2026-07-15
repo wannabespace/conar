@@ -1,7 +1,8 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { GeneratorMap } from '..'
 import { faker } from '@faker-js/faker'
 import { sql } from 'kysely'
+
+import type { GeneratorMap } from '..'
 
 function wkt(expr: string) {
   return sql`ST_GeomFromText(${expr})`
@@ -95,10 +96,7 @@ export const MYSQL_GENERATORS = {
     label: 'GeometryCollection',
     category: 'MySQL Spatial',
     generate: () => {
-      const items = [
-        `POINT(${randomPoint()})`,
-        `LINESTRING(${randomLineString()})`,
-      ]
+      const items = [`POINT(${randomPoint()})`, `LINESTRING(${randomLineString()})`]
       return wkt(`GEOMETRYCOLLECTION(${items.join(', ')})`)
     },
   },

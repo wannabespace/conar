@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+
 import { fromBase64, toBase64 } from './base64'
 
 describe('toBase64 / fromBase64', () => {

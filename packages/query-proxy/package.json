@@ -1,17 +1,17 @@
 {
   "name": "@tamery/query-proxy",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
-    "check-types": "tsgo"
+    "check-types": "tsc"
   },
   "dependencies": {
-    "@orpc/server": "catalog:",
     "@tamery/connection": "workspace:*",
-    "@tamery/shared": "workspace:*"
+    "@tamery/shared": "workspace:*",
+    "@orpc/server": "catalog:"
   },
   "devDependencies": {
     "@tamery/configs": "workspace:*",
-    "@typescript/native-preview": "catalog:"
+    "typescript": "catalog:"
   }
 }

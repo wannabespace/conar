@@ -1,7 +1,12 @@
-import { RiExternalLinkLine, RiWalletLine } from '@remixicon/react'
 import { uppercaseFirst } from '@tamery/shared/utils/helpers'
 import { Button } from '@tamery/ui/components/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tamery/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@tamery/ui/components/card'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import {
@@ -12,9 +17,11 @@ import {
   TableHeader,
   TableRow,
 } from '@tamery/ui/components/table'
+import { RiExternalLinkLine, RiWalletLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
 import { format } from 'date-fns'
+
 import { useBillingPortal } from '~/hooks/use-subscription'
 import { orpc } from '~/lib/orpc'
 
@@ -29,7 +36,6 @@ function formatCurrency(amount: number) {
   }).format(amount / 100)
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 function RouteComponent() {
   const { data: invoices = [], isPending } = useQuery(orpc.account.invoices.queryOptions())
   const router = useRouter()
@@ -58,83 +64,70 @@ function RouteComponent() {
           <CardDescription>View your invoices</CardDescription>
         </CardHeader>
         <CardContent>
-          {!isPending && invoices.length === 0
-            ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  No invoices found
-                </div>
-              )
-            : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead style={{ width: '35%' }}>Date</TableHead>
-                      <TableHead style={{ width: '25%' }}>Amount</TableHead>
-                      <TableHead style={{ width: '20%' }}>Status</TableHead>
-                      <TableHead style={{ width: '20%' }} className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isPending
-                      ? Array.from({ length: 5 }).map((_, index) => (
-
-                          (
-                            // eslint-disable-next-line react/no-array-index-key
-                            <TableRow key={`skeleton-${index}`}>
-                              <TableCell style={{ width: '35%' }}>
-                                <Skeleton className="h-4 w-40" />
-                              </TableCell>
-                              <TableCell style={{ width: '25%' }}>
-                                <Skeleton className="h-4 w-20" />
-                              </TableCell>
-                              <TableCell style={{ width: '20%' }}>
-                                <Skeleton className="h-4 w-16" />
-                              </TableCell>
-                              <TableCell style={{ width: '20%' }}>
-                                <Skeleton className="ml-auto h-4 w-12" />
-                              </TableCell>
-                            </TableRow>
-                          )
-                        ))
-                      : (
-                          invoices.map(invoice => (
-                            <TableRow key={invoice.id}>
-                              <TableCell style={{ width: '35%' }}>
-                                {format(invoice.createdAt, 'MMMM d, yyyy')}
-                              </TableCell>
-                              <TableCell style={{ width: '25%' }}>
-                                {formatCurrency(invoice.amount)}
-                              </TableCell>
-                              <TableCell style={{ width: '20%' }}>
-                                {uppercaseFirst(invoice.status ?? 'unknown')}
-                              </TableCell>
-                              <TableCell style={{ width: '20%' }}>
-                                {invoice.url
-                                  ? (
-                                      <div className="flex justify-end">
-                                        <a
-                                          href={invoice.url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className={`
-                                            flex items-center gap-1
-                                            text-foreground
-                                            hover:underline
-                                          `}
-                                        >
-                                          View
-                                          <RiExternalLinkLine className="size-3" />
-                                        </a>
-                                      </div>
-                                    )
-                                  : null}
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        )}
-                  </TableBody>
-                </Table>
-              )}
+          {!isPending && invoices.length === 0 ? (
+            <div className="py-8 text-center text-muted-foreground">No invoices found</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead style={{ width: '35%' }}>Date</TableHead>
+                  <TableHead style={{ width: '25%' }}>Amount</TableHead>
+                  <TableHead style={{ width: '20%' }}>Status</TableHead>
+                  <TableHead style={{ width: '20%' }} className="text-right">
+                    Actions
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isPending
+                  ? Array.from({ length: 5 }).map((_, index) => (
+                      // oxlint-disable-next-line react/no-array-index-key
+                      <TableRow key={`skeleton-${index}`}>
+                        <TableCell style={{ width: '35%' }}>
+                          <Skeleton className="h-4 w-40" />
+                        </TableCell>
+                        <TableCell style={{ width: '25%' }}>
+                          <Skeleton className="h-4 w-20" />
+                        </TableCell>
+                        <TableCell style={{ width: '20%' }}>
+                          <Skeleton className="h-4 w-16" />
+                        </TableCell>
+                        <TableCell style={{ width: '20%' }}>
+                          <Skeleton className="ml-auto h-4 w-12" />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  : invoices.map(invoice => (
+                      <TableRow key={invoice.id}>
+                        <TableCell style={{ width: '35%' }}>
+                          {format(invoice.createdAt, 'MMMM d, yyyy')}
+                        </TableCell>
+                        <TableCell style={{ width: '25%' }}>
+                          {formatCurrency(invoice.amount)}
+                        </TableCell>
+                        <TableCell style={{ width: '20%' }}>
+                          {uppercaseFirst(invoice.status ?? 'unknown')}
+                        </TableCell>
+                        <TableCell style={{ width: '20%' }}>
+                          {invoice.url ? (
+                            <div className="flex justify-end">
+                              <a
+                                href={invoice.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`flex items-center gap-1 text-foreground hover:underline`}
+                              >
+                                View
+                                <RiExternalLinkLine className="size-3" />
+                              </a>
+                            </div>
+                          ) : null}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </>

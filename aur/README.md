@@ -1,5 +1,5 @@
 Tamery : https://github.com/wannabespace/tamery
-AUR   : https://aur.archlinux.org/packages/tamery
+AUR : https://aur.archlinux.org/packages/tamery-bin
 
 If you want to help, feel free to fork & open a PR.
 
@@ -22,7 +22,7 @@ pnpm run aur:sync:checksum
 
 After running, push the updated `aur/` files to the AUR package:
 
-- Clone: `git clone ssh://aur@aur.archlinux.org/tamery.git` (or use your AUR helper)
+- Clone: `git clone ssh://aur@aur.archlinux.org/tamery-bin.git` (or use your AUR helper)
 - Copy `PKGBUILD`, `.SRCINFO`, and optionally `LICENSE` from this `aur/` folder
 - Commit and push to AUR
 

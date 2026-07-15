@@ -1,9 +1,17 @@
-import type { ComponentProps } from 'react'
-import { RiComputerLine, RiMoonLine, RiSunLine } from '@remixicon/react'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@tamery/ui/components/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@tamery/ui/components/dropdown-menu'
 import { themeStore } from '@tamery/ui/theme-store'
+import { RiComputerLine, RiMoonLine, RiSunLine } from '@remixicon/react'
+import type { ComponentProps } from 'react'
 
-export function ThemeToggle({ side = 'right', ...props }: ComponentProps<typeof DropdownMenuTrigger> & { side?: 'top' | 'right' | 'bottom' | 'left' }) {
+export function ThemeToggle({
+  side = 'right',
+  ...props
+}: ComponentProps<typeof DropdownMenuTrigger> & { side?: 'top' | 'right' | 'bottom' | 'left' }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger {...props} />

@@ -1,6 +1,8 @@
-import type { QueryExecutor } from '..'
 import { createRequire } from 'node:module'
+
 import { memoize } from 'memoza'
+
+import type { QueryExecutor } from '..'
 import { handleQueryError } from '..'
 import { parseConnectionString } from '../..'
 import { parseSSLConfig } from '../../ssl/mssql'
@@ -70,36 +72,33 @@ export const query = {
     return { txId }
   }),
 
-  executeTransaction: handleQueryError(async ({ txId, query, values }: { txId: string, query: string, values: unknown[] }) => {
-    const handle = getTransaction(txId)
-    if (!handle)
-      throw new Error(`No active transaction found for id: ${txId}`)
+  executeTransaction: handleQueryError(
+    async ({ txId, query, values }: { txId: string; query: string; values: unknown[] }) => {
+      const handle = getTransaction(txId)
+      if (!handle) throw new Error(`No active transaction found for id: ${txId}`)
 
-    return handle.execute(query, values)
-  }),
+      return handle.execute(query, values)
+    },
+  ),
 
   commitTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
-    if (!handle)
-      return
+    if (!handle) return
 
     try {
       await handle.commit()
-    }
-    finally {
+    } finally {
       await handle.release().catch(() => {})
     }
   }),
 
   rollbackTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
-    if (!handle)
-      return
+    if (!handle) return
 
     try {
       await handle.rollback()
-    }
-    finally {
+    } finally {
       await handle.release().catch(() => {})
     }
   }),

@@ -1,25 +1,37 @@
-import type { ComponentRef } from 'react'
-import type { QueryToRun } from './runner-context'
-import NumberFlow from '@number-flow/react'
-import { RiBrush2Line, RiCheckLine, RiPlayFill, RiSettings3Line, RiStarLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import { CardHeader, CardTitle } from '@tamery/ui/components/card'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
 import { KbdCtrlEnter, KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
-import { ResizablePanel, ResizablePanelGroup, ResizableSeparator } from '@tamery/ui/components/resizable'
+import {
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizableSeparator,
+} from '@tamery/ui/components/resizable'
+import NumberFlow from '@number-flow/react'
+import {
+  RiBrush2Line,
+  RiCheckLine,
+  RiPlayFill,
+  RiSettings3Line,
+  RiStarLine,
+} from '@remixicon/react'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
-import { useRef, useState } from 'react'
+import type { ComponentRef } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
+
 import { useCollections } from '~/entities/collections'
 import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
 import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
 import { formatSql } from '~/utils/formatter'
+
 import { runnerQueryOptions } from '.'
 import { Route } from '../..'
 import { RunnerAlertDialog } from './runner-alert-dialog'
+import type { QueryToRun } from './runner-context'
 import { RunnerContext } from './runner-context'
 import { RunnerEditor } from './runner-editor'
 import { RunnerQueries } from './runner-queries'
@@ -34,35 +46,34 @@ function useQueriesToRun(): QueryToRun[] {
   const editorQueries = useSubscription(editorQueriesStore)
   const selectedLines = useSubscription(store, { selector: state => state.selectedLines })
 
-  const queries = selectedLines.length > 0
-    ? editorQueries.filter(query => selectedLines.includes(query.startLineNumber))
-    : editorQueries
+  const queries =
+    selectedLines.length > 0
+      ? editorQueries.filter(query => selectedLines.includes(query.startLineNumber))
+      : editorQueries
 
-  return queries.flatMap(({ startLineNumber, endLineNumber, queries }) => queries.map(query => ({
-    startLineNumber,
-    endLineNumber,
-    query,
-  })))
+  return queries.flatMap(({ startLineNumber, endLineNumber, queries }) =>
+    queries.map(query => ({
+      startLineNumber,
+      endLineNumber,
+      query,
+    })),
+  )
 }
 
 function RunnerRunButton({ onRun }: { onRun: (queries: QueryToRun[]) => void }) {
   const { connectionResource } = Route.useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const selectedLinesLength = useSubscription(store, { selector: state => state.selectedLines.length })
+  const selectedLinesLength = useSubscription(store, {
+    selector: state => state.selectedLines.length,
+  })
   const queriesToRun = useQueriesToRun()
   const { fetchStatus } = useQuery(runnerQueryOptions(connectionResource))
   const isDisabled = fetchStatus === 'fetching' || queriesToRun.length === 0
 
   return (
-    <Button
-      disabled={isDisabled}
-      size="sm"
-      onClick={() => onRun(queriesToRun)}
-    >
+    <Button disabled={isDisabled} size="sm" onClick={() => onRun(queriesToRun)}>
       <RiPlayFill />
-      Run
-      {' '}
-      {selectedLinesLength > 0 ? 'selected' : 'all'}
+      Run {selectedLinesLength > 0 ? 'selected' : 'all'}
       {selectedLinesLength > 0 && (
         <NumberFlow
           value={queriesToRun.length}
@@ -81,70 +92,87 @@ export function Runner() {
   const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
   const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
   const { queriesCollection } = useCollections()
-  const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(q => q
-    .from({ queries: queriesCollection })
-    .where(({ queries }) => eq(queries.connectionResourceId, connectionResource.id))
-    .select(({ queries }) => ({ queriesCount: count(queries.id) }))
-    .findOne(), [queriesCollection, connectionResource.id])
+  const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(
+    q =>
+      q
+        .from({ queries: queriesCollection })
+        .where(({ queries }) => eq(queries.connectionResourceId, connectionResource.id))
+        .select(({ queries }) => ({ queriesCount: count(queries.id) }))
+        .findOne(),
+    [queriesCollection, connectionResource.id],
+  )
   const [isFormatting, setIsFormatting] = useState(false)
   const store = getConnectionResourceStore(connectionResource.id)
-  const resultsVisible = useSubscription(store, { selector: state => state.layout.resultsVisible })
+  const resultsVisible = useSubscription(store, {
+    selector: state => state.layout.resultsVisible,
+  })
 
   function format() {
     const formatted = formatSql(store.get().query, connection.type)
 
-    store.set(state => ({
-      ...state,
-      query: formatted,
-    } satisfies typeof state))
+    store.set(
+      state =>
+        ({
+          ...state,
+          query: formatted,
+        }) satisfies typeof state,
+    )
   }
 
   const { refetch: refetchRunner } = useQuery(runnerQueryOptions(connectionResource))
 
-  function runQueries(queries: QueryToRun[]) {
-    store.set(state => ({
-      ...state,
-      queriesToRun: queries,
-    } satisfies typeof state))
-    refetchRunner()
-  }
-
-  function runQueriesWithAlert(editorQueries: QueryToRun[]) {
-    const hasDangerousKeywords = editorQueries.some(({ query }) => hasDangerousSqlKeywords(query))
-
-    if (hasDangerousKeywords) {
-      alertDialogRef.current?.confirm(
-        editorQueries.map(({ query }) => query),
-        () => runQueries(editorQueries),
+  const runQueries = useCallback(
+    (queries: QueryToRun[]) => {
+      store.set(
+        state =>
+          ({
+            ...state,
+            queriesToRun: queries,
+          }) satisfies typeof state,
       )
-    }
-    else {
-      runQueries(editorQueries)
-    }
-  }
+      refetchRunner()
+    },
+    [store, refetchRunner],
+  )
+
+  const runQueriesWithAlert = useCallback(
+    (editorQueries: QueryToRun[]) => {
+      const hasDangerousKeywords = editorQueries.some(({ query }) => hasDangerousSqlKeywords(query))
+
+      if (hasDangerousKeywords) {
+        alertDialogRef.current?.confirm(
+          editorQueries.map(({ query }) => query),
+          () => runQueries(editorQueries),
+        )
+      } else {
+        runQueries(editorQueries)
+      }
+    },
+    [runQueries],
+  )
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
     id: `runner-layout-${connectionResource.id}`,
     storage: localStorage,
   })
 
+  const runnerContextValue = useMemo(
+    () => ({
+      run: runQueriesWithAlert,
+      save: (query: string) => saveQueryDialogRef.current?.open(query),
+    }),
+    [runQueriesWithAlert],
+  )
+
   return (
-    <RunnerContext.Provider
-      value={{
-        run: runQueriesWithAlert,
-        save: q => saveQueryDialogRef.current?.open(q),
-      }}
-    >
+    <RunnerContext.Provider value={runnerContextValue}>
       <ResizablePanelGroup
         defaultLayout={defaultLayout}
         onLayoutChanged={onLayoutChanged}
         orientation="vertical"
         className="h-full"
       >
-        <ResizablePanel
-          minSize="20%"
-          defaultSize={resultsVisible ? '70%' : '100%'}
-        >
+        <ResizablePanel minSize="20%" defaultSize={resultsVisible ? '70%' : '100%'}>
           <CardHeader className="h-14 py-3">
             <CardTitle className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
@@ -157,29 +185,18 @@ export function Runner() {
               </div>
               <div className="flex gap-2">
                 <Popover>
-                  <PopoverTrigger render={(
-                    <Button
-                      className="relative"
-                      variant="secondary"
-                      size="sm"
-                    />
-                  )}
+                  <PopoverTrigger
+                    render={<Button className="relative" variant="secondary" size="sm" />}
                   >
                     <RiStarLine />
                     Saved
-                    <span className={`
-                      flex h-5 items-center justify-center rounded-full
-                      bg-accent px-1.5 text-xs
-                    `}
+                    <span
+                      className={`flex h-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs`}
                     >
                       {queriesCount}
                     </span>
                   </PopoverTrigger>
-                  <PopoverContent className="
-                    min-w-md p-0
-                    **:data-[slot=popover-viewport]:p-0
-                  "
-                  >
+                  <PopoverContent className="min-w-md p-0 **:data-[slot=popover-viewport]:p-0">
                     <RunnerQueries />
                   </PopoverContent>
                 </Popover>
@@ -206,20 +223,14 @@ export function Runner() {
           </CardHeader>
           <div className="relative h-[calc(100%-(--spacing(14)))] flex-1">
             <RunnerEditor />
-            <span className={`
-              pointer-events-none absolute right-6 bottom-2 flex flex-col
-              items-end text-xs text-muted-foreground
-            `}
+            <span
+              className={`pointer-events-none absolute right-6 bottom-2 flex flex-col items-end text-xs text-muted-foreground`}
             >
               <span className="flex items-center gap-1">
-                <KbdCtrlLetter letter="K" userAgent={navigator.userAgent} />
-                {' '}
-                to call the AI
+                <KbdCtrlLetter letter="K" userAgent={navigator.userAgent} /> to call the AI
               </span>
               <span className="flex items-center gap-1">
-                <KbdCtrlEnter userAgent={navigator.userAgent} />
-                {' '}
-                to run the focused query
+                <KbdCtrlEnter userAgent={navigator.userAgent} /> to run the focused query
               </span>
             </span>
           </div>
@@ -229,10 +240,7 @@ export function Runner() {
         {resultsVisible && (
           <>
             <ResizableSeparator withHandle className="bg-border" />
-            <ResizablePanel
-              minSize="20%"
-              defaultSize="30%"
-            >
+            <ResizablePanel minSize="20%" defaultSize="30%">
               <RunnerResults />
             </ResizablePanel>
           </>

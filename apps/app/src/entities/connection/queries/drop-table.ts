@@ -1,52 +1,53 @@
 import { memoize } from 'memoza'
+
 import { createQuery } from '../runtime/query'
 
-export const dropTableQuery = memoize(({ table, schema, cascade }: { table: string, schema: string, cascade: boolean }) => createQuery({
-  query: {
-    postgres: (db) => {
-      let query = db
-        .withSchema(schema)
-        .withTables<{ [table]: Record<string, unknown> }>()
-        .schema
-        .dropTable(table)
+export const dropTableQuery = memoize(
+  ({ table, schema, cascade }: { table: string; schema: string; cascade: boolean }) =>
+    createQuery({
+      query: {
+        postgres: db => {
+          let query = db
+            .withSchema(schema)
+            .withTables<{ [table]: Record<string, unknown> }>()
+            .schema.dropTable(table)
 
-      if (cascade) {
-        query = query.cascade()
-      }
+          if (cascade) {
+            query = query.cascade()
+          }
 
-      return query.execute()
-    },
-    mysql: (db) => {
-      let query = db
-        .withSchema(schema)
-        .withTables<{ [table]: Record<string, unknown> }>()
-        .schema
-        .dropTable(table)
+          return query.execute()
+        },
+        mysql: db => {
+          let query = db
+            .withSchema(schema)
+            .withTables<{ [table]: Record<string, unknown> }>()
+            .schema.dropTable(table)
 
-      if (cascade) {
-        query = query.cascade()
-      }
+          if (cascade) {
+            query = query.cascade()
+          }
 
-      return query.execute()
-    },
-    mssql: (db) => {
-      let query = db
-        .withSchema(schema)
-        .withTables<{ [table]: Record<string, unknown> }>()
-        .schema
-        .dropTable(table)
+          return query.execute()
+        },
+        mssql: db => {
+          let query = db
+            .withSchema(schema)
+            .withTables<{ [table]: Record<string, unknown> }>()
+            .schema.dropTable(table)
 
-      if (cascade) {
-        query = query.cascade()
-      }
+          if (cascade) {
+            query = query.cascade()
+          }
 
-      return query.execute()
-    },
-    clickhouse: db => db
-      .withSchema(schema)
-      .withTables<{ [table]: Record<string, unknown> }>()
-      .schema
-      .dropTable(table)
-      .execute(),
-  },
-}))
+          return query.execute()
+        },
+        clickhouse: db =>
+          db
+            .withSchema(schema)
+            .withTables<{ [table]: Record<string, unknown> }>()
+            .schema.dropTable(table)
+            .execute(),
+      },
+    }),
+)

@@ -4,8 +4,10 @@ import { chats, chatsMessages } from '@tamery/db/schema'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 import { asc, eq } from 'drizzle-orm'
+
 import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
+
 import { publisher } from '../chats/events'
 
 async function getMessages(chatId: string) {
@@ -18,16 +20,22 @@ async function getMessages(chatId: string) {
 
 export const generateTitle = orpc
   .use(authMiddleware)
-  .input(type({
-    chatId: 'string.uuid.v7',
-    messages: 'unknown?', // TODO: remove in future
-  }))
+  .input(
+    type({
+      chatId: 'string.uuid.v7',
+      messages: 'unknown?', // TODO: remove in future
+    }),
+  )
   .handler(async ({ input, signal, context }) => {
     const messages = await getMessages(input.chatId)
-    const prompt = messages.map(message => message.parts.filter(part => part.type === 'text')
-      .map(part => JSON.stringify(part, null, 2))
-      .join('\n'),
-    ).join('\n')
+    const prompt = messages
+      .map(message =>
+        message.parts
+          .filter(part => part.type === 'text')
+          .map(part => JSON.stringify(part, null, 2))
+          .join('\n'),
+      )
+      .join('\n')
 
     context.addLogData({
       chatId: input.chatId,
@@ -44,8 +52,8 @@ export const generateTitle = orpc
           role: 'system',
           content: [
             'You are a title generator that generates a title for a chat.',
-            'The title should be in the same language as the user\'s message.',
-            'Try to generate a title that is as close as possible to the user\'s message.',
+            "The title should be in the same language as the user's message.",
+            "Try to generate a title that is as close as possible to the user's message.",
             'Title should not be more than 30 characters.',
             'Title should be properly formatted, example: "Update component in React".',
             'Do not use dots, commas, etc.',
@@ -65,7 +73,11 @@ export const generateTitle = orpc
       generatedTitle: text,
     })
 
-    const [chat] = await db.update(chats).set({ title: text }).where(eq(chats.id, input.chatId)).returning()
+    const [chat] = await db
+      .update(chats)
+      .set({ title: text })
+      .where(eq(chats.id, input.chatId))
+      .returning()
 
     publisher.publish(context.user.id, {
       type: 'update',

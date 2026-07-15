@@ -1,13 +1,12 @@
 {
   "name": "@tamery/app",
   "type": "module",
-  "portless": "app.local.tamery",
   "scripts": {
     "dev": "portless run vite dev",
     "build": "vite build",
     "build:desktop": "vite build --mode desktop",
     "start": "serve -s dist -l $PORT",
-    "check-types": "tsgo",
+    "check-types": "tsc",
     "test:start": "vite build --mode test && vite preview --mode test",
     "test": "bun test ./src",
     "test:e2e": "playwright test --ui"
@@ -15,6 +14,9 @@
   "dependencies": {
     "@ai-sdk/react": "catalog:",
     "@base-ui/react": "catalog:",
+    "@tamery/shared": "workspace:*",
+    "@tamery/table": "workspace:*",
+    "@tamery/ui": "workspace:*",
     "@dagrejs/dagre": "catalog:",
     "@date-fns/tz": "catalog:",
     "@faker-js/faker": "catalog:",
@@ -26,9 +28,6 @@
     "@orpc/tanstack-query": "catalog:",
     "@remixicon/react": "catalog:",
     "@tailwindcss/vite": "catalog:",
-    "@tamery/shared": "workspace:*",
-    "@tamery/table": "workspace:*",
-    "@tamery/ui": "workspace:*",
     "@tanstack/browser-db-sqlite-persistence": "catalog:",
     "@tanstack/offline-transactions": "catalog:",
     "@tanstack/react-db": "catalog:",
@@ -73,26 +72,27 @@
     "uuid": "catalog:"
   },
   "devDependencies": {
-    "@playwright/test": "catalog:",
-    "@rolldown/plugin-babel": "catalog:",
-    "@standard-schema/spec": "catalog:",
     "@tamery/ai": "workspace:*",
     "@tamery/api": "workspace:*",
     "@tamery/configs": "workspace:*",
     "@tamery/connection": "workspace:*",
     "@tamery/proxy": "workspace:*",
     "@tamery/query-proxy": "workspace:*",
+    "@playwright/test": "catalog:",
+    "@rolldown/plugin-babel": "catalog:",
+    "@standard-schema/spec": "catalog:",
     "@tanstack/react-devtools": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@typescript/native-preview": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "react-scan": "catalog:",
     "serve": "catalog:",
     "tailwindcss": "catalog:",
     "tw-animate-css": "catalog:",
+    "typescript": "catalog:",
     "vite": "catalog:"
-  }
+  },
+  "portless": "app.local.tamery"
 }

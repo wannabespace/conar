@@ -1,17 +1,25 @@
-import type { functionsType } from '~/entities/connection/queries'
-import { RiCodeSSlashLine } from '@remixicon/react'
 import { title } from '@tamery/shared/utils/title'
 import { Badge } from '@tamery/ui/components/badge'
 import { CardContent, CardTitle } from '@tamery/ui/components/card'
 import { CardMotion } from '@tamery/ui/components/card.motion'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@tamery/ui/components/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@tamery/ui/components/select'
+import { RiCodeSSlashLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
+
+import type { functionsType } from '~/entities/connection/queries'
 import { resourceFunctionsQueryOptions } from '~/entities/connection/queries'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
+
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
 import { DefinitionsHeader } from '../-components/header'
@@ -21,38 +29,59 @@ import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/functions/')({
   component: DatabaseFunctionsPage,
-  loader: ({ context }) => ({ connection: context.connection, connectionResource: context.connectionResource }),
+  loader: ({ context }) => ({
+    connection: context.connection,
+    connectionResource: context.connectionResource,
+  }),
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: title('Functions', loaderData.connection.name, loaderData.connectionResource.name) }] : [],
+    meta: loaderData
+      ? [
+          {
+            title: title(
+              'Functions',
+              loaderData.connection.name,
+              loaderData.connectionResource.name,
+            ),
+          },
+        ]
+      : [],
   }),
 })
 
-type FunctionType = typeof functionsType.infer['type']
+type FunctionType = (typeof functionsType.infer)['type']
 
-const typeFilterOptions: { label: string, value: FunctionType | 'all' }[] = [
+const typeFilterOptions: { label: string; value: FunctionType | 'all' }[] = [
   { label: 'All Types', value: 'all' },
   { label: 'Function', value: 'function' },
   { label: 'Procedure', value: 'procedure' },
 ]
 
-// eslint-disable-next-line react-refresh/only-export-components
 function DatabaseFunctionsPage() {
   const { connectionResource } = Route.useRouteContext()
-  const { data: functions, refetch, isFetching, isPending, dataUpdatedAt } = useQuery(resourceFunctionsQueryOptions({ connectionResource }))
-  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({ connectionResource })
-  const [filterType, setFilterType] = useState<typeof typeFilterOptions[number]['value']>('all')
+  const {
+    data: functions,
+    refetch,
+    isFetching,
+    isPending,
+    dataUpdatedAt,
+  } = useQuery(resourceFunctionsQueryOptions({ connectionResource }))
+  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({
+    connectionResource,
+  })
+  const [filterType, setFilterType] = useState<(typeof typeFilterOptions)[number]['value']>('all')
 
   useRefreshHotkey(refetch, isFetching)
 
-  const filteredFunctions = functions?.filter(item =>
-    item.schema === selectedSchema
-    && (filterType === 'all' || filterType === item.type)
-    && (!search
-      || item.name.toLowerCase().includes(search.toLowerCase())
-      || item.language?.toLowerCase().includes(search.toLowerCase())
-      || (item.return_type && item.return_type.toLowerCase().includes(search.toLowerCase()))
-    ),
-  ) ?? []
+  const filteredFunctions =
+    functions?.filter(
+      item =>
+        item.schema === selectedSchema &&
+        (filterType === 'all' || filterType === item.type) &&
+        (!search ||
+          item.name.toLowerCase().includes(search.toLowerCase()) ||
+          item.language?.toLowerCase().includes(search.toLowerCase()) ||
+          (item.return_type && item.return_type.toLowerCase().includes(search.toLowerCase()))),
+    ) ?? []
 
   return (
     <>
@@ -73,7 +102,7 @@ function DatabaseFunctionsPage() {
         />
         <Select
           value={filterType}
-          onValueChange={(v) => {
+          onValueChange={v => {
             if (v) {
               setFilterType(v)
             }
@@ -81,7 +110,11 @@ function DatabaseFunctionsPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Type">
-              {value => value ? typeFilterOptions.find(option => option.value === value)?.label : 'Filter Type'}
+              {value =>
+                value
+                  ? typeFilterOptions.find(option => option.value === value)?.label
+                  : 'Filter Type'
+              }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -92,7 +125,11 @@ function DatabaseFunctionsPage() {
             ))}
           </SelectContent>
         </Select>
-        <SchemaSelect schemas={schemas} selectedSchema={selectedSchema} setSelectedSchema={setSelectedSchema} />
+        <SchemaSelect
+          schemas={schemas}
+          selectedSchema={selectedSchema}
+          setSelectedSchema={setSelectedSchema}
+        />
       </div>
       <DefinitionsGrid loading={isPending}>
         {filteredFunctions.length === 0 && (
@@ -118,10 +155,7 @@ function DatabaseFunctionsPage() {
                       {item.type === 'function' ? 'Function' : 'Procedure'}
                     </Badge>
                   </CardTitle>
-                  <div className="
-                    flex items-center gap-1.5 text-sm text-muted-foreground
-                  "
-                  >
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     {item.language && (
                       <Badge variant="outline">
                         <HighlightText text={item.language} match={search} />
@@ -137,9 +171,7 @@ function DatabaseFunctionsPage() {
                     )}
                     {!!item.argumentCount && (
                       <span>
-                        {item.argumentCount}
-                        {' '}
-                        {item.argumentCount === 1 ? 'arg' : 'args'}
+                        {item.argumentCount} {item.argumentCount === 1 ? 'arg' : 'args'}
                       </span>
                     )}
                   </div>

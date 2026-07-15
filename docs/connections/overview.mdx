@@ -1,7 +1,7 @@
 ---
-title: "Managing connections"
-sidebarTitle: "Overview"
-description: "Add and manage database connections in Tamery, including sync types, labels, and colors."
+title: 'Managing connections'
+sidebarTitle: 'Overview'
+description: 'Add and manage database connections in Tamery, including sync types, labels, and colors.'
 ---
 
 Connections live in one place so you can switch between databases and devices.
@@ -9,9 +9,7 @@ Connections live in one place so you can switch between databases and devices.
 ## Add a connection
 
 <Steps>
-  <Step title="Choose a database type">
-    PostgreSQL, MySQL, MSSQL, or ClickHouse.
-  </Step>
+  <Step title="Choose a database type">PostgreSQL, MySQL, MSSQL, or ClickHouse.</Step>
   <Step title="Enter a connection string">
     Paste your string and click **Test connection** to verify it before saving.
   </Step>
@@ -21,7 +19,8 @@ Connections live in one place so you can switch between databases and devices.
 </Steps>
 
 <Note>
-  Tamery tests the connection before saving. If it fails, check the host, port, credentials, and database name.
+  Tamery tests the connection before saving. If it fails, check the host, port, credentials, and
+  database name.
 </Note>
 
 ## Sync types
@@ -33,11 +32,13 @@ Sync type controls whether Tamery stores your password. Both options sync the co
     The full connection string, including the password, is encrypted with your per-user key and stored in the cloud. Available on every device with no re-entry.
 
     Good for dev and staging.
+
   </Tab>
   <Tab title="Cloud (without password)">
     Only metadata (host, port, database, username) is stored; the password is never uploaded. You enter it on each device.
 
     Good for production or when policy forbids storing passwords externally.
+
   </Tab>
 </Tabs>
 

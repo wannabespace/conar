@@ -1,11 +1,11 @@
 import { db } from '@tamery/db'
 import { subscriptions } from '@tamery/db/schema'
 import { eq } from 'drizzle-orm'
+
 import { authMiddleware, orpc } from '~/orpc'
 
-export const list = orpc
-  .use(authMiddleware)
-  .handler(async ({ context }) => db
+export const list = orpc.use(authMiddleware).handler(async ({ context }) =>
+  db
     .select({
       id: subscriptions.id,
       plan: subscriptions.plan,
@@ -21,4 +21,4 @@ export const list = orpc
     })
     .from(subscriptions)
     .where(eq(subscriptions.userId, context.user.id)),
-  )
+)

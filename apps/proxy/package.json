@@ -1,20 +1,19 @@
 {
   "name": "@tamery/proxy",
   "type": "module",
-  "portless": "proxy.local.tamery",
   "scripts": {
     "dev": "portless run cross-env NODE_ENV=development bun --watch run ./index.ts",
     "start": "cross-env NODE_ENV=production bun run ./index.ts",
-    "check-types": "tsgo",
+    "check-types": "tsc",
     "test:start": "cross-env NODE_ENV=test bun --env-file=.env.test run ./index.ts"
   },
   "dependencies": {
-    "@orpc/client": "catalog:",
-    "@orpc/server": "catalog:",
     "@tamery/api": "workspace:*",
     "@tamery/connection": "workspace:*",
     "@tamery/query-proxy": "workspace:*",
     "@tamery/shared": "workspace:*",
+    "@orpc/client": "catalog:",
+    "@orpc/server": "catalog:",
     "arktype": "catalog:",
     "hono": "catalog:",
     "memoza": "catalog:",
@@ -23,5 +22,6 @@
   "devDependencies": {
     "@tamery/configs": "workspace:*",
     "better-auth": "catalog:"
-  }
+  },
+  "portless": "proxy.local.tamery"
 }

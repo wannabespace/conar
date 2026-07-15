@@ -1,17 +1,19 @@
-import type { QueryClient } from '@tanstack/react-query'
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import { Toaster } from '@tamery/ui/components/sonner'
 import { TooltipProvider } from '@tamery/ui/components/tooltip'
-import appCss from '@tamery/ui/globals.css?url'
 import { cn } from '@tamery/ui/lib/utils'
 import { ThemeObserver } from '@tamery/ui/theme-observer'
+import type { QueryClient } from '@tanstack/react-query'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+
 import { SEO } from '~/constants'
 import { ErrorPage } from '~/error-page'
 import { seo, SITE_URL } from '~/utils/seo'
+
+import appCss from '@tamery/ui/globals.css?url'
 
 const structuredData = {
   '@context': 'https://schema.org',
@@ -44,9 +46,7 @@ const structuredData = {
 }
 
 if (import.meta.env.DEV) {
-  import('react-scan').then(({ scan }) => {
-    scan()
-  })
+  import('react-scan').then(({ scan }) => scan())
 }
 
 export const Route = createRootRouteWithContext<{
@@ -84,10 +84,12 @@ export const Route = createRootRouteWithContext<{
         },
         ...(import.meta.env.DEV
           ? []
-          : [{
-              defer: true,
-              src: 'https://assets.onedollarstats.com/stonks.js',
-            }]),
+          : [
+              {
+                defer: true,
+                src: 'https://assets.onedollarstats.com/stonks.js',
+              },
+            ]),
       ],
     }
   },
@@ -95,7 +97,6 @@ export const Route = createRootRouteWithContext<{
   errorComponent: props => <ErrorPage {...props} />,
 })
 
-// eslint-disable-next-line react-refresh/only-export-components
 function RootComponent() {
   const { queryClient } = Route.useRouteContext()
 
@@ -104,11 +105,7 @@ function RootComponent() {
       <head>
         <HeadContent />
       </head>
-      <body className={cn(`
-        relative bg-gray-100
-        dark:bg-neutral-950
-      `)}
-      >
+      <body className={cn(`relative bg-gray-100 dark:bg-neutral-950`)}>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <ThemeObserver />

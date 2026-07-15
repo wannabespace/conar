@@ -1,7 +1,14 @@
 import type { Filter } from '@tamery/shared/filters'
-import type { RefObject } from 'react'
 import { FILTER_GROUPS, SQL_FILTERS_GROUPED } from '@tamery/shared/filters'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@tamery/ui/components/command'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@tamery/ui/components/command'
+import type { RefObject } from 'react'
 
 export function FiltersSelector({
   ref,
@@ -17,7 +24,7 @@ export function FiltersSelector({
       <CommandInput
         ref={ref}
         placeholder="Select operator..."
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           if (e.key === 'Backspace') {
             onBackspace?.()
           }
@@ -35,9 +42,7 @@ export function FiltersSelector({
                 onSelect={() => onSelect(filter)}
               >
                 <span>{filter.label}</span>
-                <span className="ml-auto text-xs text-muted-foreground">
-                  {filter.operator}
-                </span>
+                <span className="ml-auto text-xs text-muted-foreground">{filter.operator}</span>
               </CommandItem>
             ))}
           </CommandGroup>

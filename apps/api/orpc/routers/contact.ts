@@ -1,13 +1,16 @@
 import { SUPPORT_EMAIL } from '@tamery/shared/constants'
 import { type } from 'arktype'
+
 import { resend } from '~/lib/resend'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const contact = orpc
   .use(authMiddleware)
-  .input(type({
-    message: 'string',
-  }))
+  .input(
+    type({
+      message: 'string',
+    }),
+  )
   .handler(async ({ input, context }) => {
     if (!resend) {
       context.addLogData({ warning: 'Resend is not configured' })

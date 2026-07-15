@@ -5,19 +5,17 @@ export function UserAvatar({
   user,
   className,
 }: {
-  user: {
-    email: string
-    image?: string | null
-  } | null | undefined
+  user:
+    | {
+        email: string
+        image?: string | null
+      }
+    | null
+    | undefined
   className?: string
 }) {
   return (
-    <Avatar
-      className={cn(
-        `size-6 shrink-0 overflow-hidden rounded-lg`,
-        className,
-      )}
-    >
+    <Avatar className={cn(`size-6 shrink-0 overflow-hidden rounded-lg`, className)}>
       <AvatarImage src={user?.image} />
       <AvatarFallback
         name={user?.email}

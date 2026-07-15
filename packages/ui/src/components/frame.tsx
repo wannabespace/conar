@@ -1,10 +1,7 @@
-import type * as React from 'react'
 import { cn } from '@tamery/ui/lib/utils'
+import type * as React from 'react'
 
-export function Frame({
-  className,
-  ...props
-}: React.ComponentProps<'div'>): React.ReactElement {
+export function Frame({ className, ...props }: React.ComponentProps<'div'>): React.ReactElement {
   return (
     <div
       className={cn(
@@ -25,14 +22,7 @@ export function FramePanel({
   return (
     <div
       className={cn(
-        `
-          relative rounded-xl border bg-background bg-clip-padding p-5
-          shadow-xs/5
-          before:pointer-events-none before:absolute before:inset-0
-          before:rounded-[calc(var(--radius-xl)-1px)]
-          before:shadow-[0_1px_--theme(--color-black/4%)]
-          dark:before:shadow-[0_-1px_--theme(--color-white/6%)]
-        `,
+        `relative rounded-xl border bg-background bg-clip-padding p-5 shadow-xs/5 before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-xl)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] dark:before:shadow-[0_-1px_--theme(--color-white/6%)]`,
         className,
       )}
       data-slot="frame-panel"
@@ -84,11 +74,5 @@ export function FrameFooter({
   className,
   ...props
 }: React.ComponentProps<'footer'>): React.ReactElement {
-  return (
-    <footer
-      className={cn('px-5 py-4', className)}
-      data-slot="frame-panel-footer"
-      {...props}
-    />
-  )
+  return <footer className={cn('px-5 py-4', className)} data-slot="frame-panel-footer" {...props} />
 }

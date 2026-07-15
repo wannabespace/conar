@@ -1,13 +1,13 @@
 {
   "name": "@tamery/infisical",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
-    "check-types": "tsgo"
+    "check-types": "tsc"
   },
   "dependencies": {
-    "@infisical/sdk": "catalog:",
     "@tamery/configs": "workspace:*",
+    "@infisical/sdk": "catalog:",
     "arktype": "catalog:",
     "better-result": "catalog:",
     "memoza": "catalog:"

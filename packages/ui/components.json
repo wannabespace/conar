@@ -12,6 +12,8 @@
   },
   "iconLibrary": "remixicon",
   "rtl": false,
+  "menuColor": "inverted-translucent",
+  "menuAccent": "subtle",
   "aliases": {
     "components": "@tamery/ui/components",
     "utils": "@tamery/ui/lib/utils",
@@ -19,7 +21,7 @@
     "lib": "@tamery/ui/lib",
     "hooks": "@tamery/ui/hooks"
   },
-  "menuColor": "inverted-translucent",
-  "menuAccent": "subtle",
-  "registries": {}
+  "registries": {
+    "@coss": "https://coss.com/ui/r/{name}.json"
+  }
 }

@@ -1,6 +1,6 @@
-import type * as React from 'react'
-import { RiLoader4Line } from '@remixicon/react'
 import { cn } from '@tamery/ui/lib/utils'
+import { RiLoader4Line } from '@remixicon/react'
+import type * as React from 'react'
 
 export function Spinner({
   className,
@@ -10,6 +10,7 @@ export function Spinner({
     <RiLoader4Line
       aria-label="Loading"
       className={cn('animate-spin', className)}
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- this is an SVG icon component, not swappable for a semantic `<output>` element
       role="status"
       {...props}
     />

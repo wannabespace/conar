@@ -1,5 +1,4 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
-import { RiBracesLine, RiDownloadLine, RiFileCopyLine, RiMarkdownLine, RiTableLine } from '@remixicon/react'
 import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
 import { downloadFile, recordsToMarkdownTable, toCSV } from '@tamery/shared/utils/files'
 import {
@@ -12,14 +11,18 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { copy } from '@tamery/ui/lib/copy'
+import {
+  RiBracesLine,
+  RiDownloadLine,
+  RiFileCopyLine,
+  RiMarkdownLine,
+  RiTableLine,
+} from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { formatDate } from 'date-fns'
+
 import { handleError } from '~/utils/error'
 
 const EXPORT_LIMITS = [50, 100, 500, 1000, 5000] as const
@@ -105,11 +108,16 @@ function ExportDataDropdownMenuSubContent({
   onExport: (props: ExportProps) => void
   selected?: Record<string, unknown>[]
 }) {
-  const filters = selected?.flatMap(row => Object.entries(row).map(([column, value]) => ({
-    column,
-    ref: SQL_FILTERS_LIST.find(filter => filter.operator === '=')!,
-    values: [value],
-  } satisfies ActiveFilter)))
+  const filters = selected?.flatMap(row =>
+    Object.entries(row).map(
+      ([column, value]) =>
+        ({
+          column,
+          ref: SQL_FILTERS_LIST.find(filter => filter.operator === '=')!,
+          values: [value],
+        }) satisfies ActiveFilter,
+    ),
+  )
 
   const limits = EXPORT_LIMITS.map(limit => ({
     limit,
@@ -133,21 +141,12 @@ function ExportDataDropdownMenuSubContent({
         </>
       )}
       {limits.map(({ limit }) => (
-        <DropdownMenuItem
-          key={limit}
-          onClick={() => onExport({ type, format, limit })}
-        >
-          First
-          {' '}
-          {limit}
-          {' '}
-          rows
+        <DropdownMenuItem key={limit} onClick={() => onExport({ type, format, limit })}>
+          First {limit} rows
         </DropdownMenuItem>
       ))}
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={() => onExport({ type, format })}>
-        All rows
-      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => onExport({ type, format })}>All rows</DropdownMenuItem>
     </DropdownMenuSubContent>
   )
 }
@@ -159,20 +158,26 @@ export function ExportData({
   selected,
 }: {
   filename: string
-  getData: ({ limit, filters }: { limit?: (typeof EXPORT_LIMITS)[number], filters?: ActiveFilter[] }) => Promise<Record<string, unknown>[]>
+  getData: ({
+    limit,
+    filters,
+  }: {
+    limit?: (typeof EXPORT_LIMITS)[number]
+    filters?: ActiveFilter[]
+  }) => Promise<Record<string, unknown>[]>
   trigger: (props: { isExporting: boolean }) => React.ReactNode
   selected?: Record<string, unknown>[]
 }) {
   const { mutate: startExport, isPending } = useMutation({
-    mutationFn: async ({
-      type,
-      format,
-      filters,
-      limit,
-    }: ExportProps) => {
+    mutationFn: async ({ type, format, filters, limit }: ExportProps) => {
       const data = await getData({ limit, filters })
 
-      exportData({ type, data, format, filename: `${filename}${limit ? `_${limit}` : ''}_${formatDate(new Date(), 'yyyy-MM-dd_HH-mm-ss')}` })()
+      exportData({
+        type,
+        data,
+        format,
+        filename: `${filename}${limit ? `_${limit}` : ''}_${formatDate(new Date(), 'yyyy-MM-dd_HH-mm-ss')}`,
+      })()
     },
     onError: handleError,
   })
@@ -274,9 +279,7 @@ export function ExportData({
           </DropdownMenuSub>
         </DropdownMenuContent>
       </DropdownMenu>
-      <TooltipContent>
-        Export data
-      </TooltipContent>
+      <TooltipContent>Export data</TooltipContent>
     </Tooltip>
   )
 }

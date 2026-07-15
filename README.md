@@ -53,6 +53,7 @@ Tamery is an AI-powered open-source project that simplifies database interaction
 ## Development Setup
 
 - **📦 Package Installation**
+
   ```bash
   pnpm install
   ```
@@ -70,6 +71,7 @@ Tamery is an AI-powered open-source project that simplifies database interaction
 - **🗄️ Prepare Database**
 
   This will run database migrations to set up the required tables and schema.
+
   ```bash
   pnpm run drizzle:migrate
   ```
@@ -78,12 +80,12 @@ Tamery is an AI-powered open-source project that simplifies database interaction
 
   This starts all development servers through [portless](https://portless.sh) (HTTPS on `.local.tamery.app` domains):
 
-  | Service | URL |
-  | --- | --- |
-  | API | https://api.local.tamery.app |
-  | App | https://app.local.tamery.app |
-  | Main | https://main.local.tamery.app |
-  | Proxy | https://proxy.local.tamery.app |
+  | Service | URL                           |
+  | ------- | ----------------------------- |
+  | API     | https://api.local.tamery.app   |
+  | App     | https://app.local.tamery.app   |
+  | Main    | https://main.local.tamery.app  |
+  | Proxy   | https://proxy.local.tamery.app |
 
   ```bash
   pnpm run dev

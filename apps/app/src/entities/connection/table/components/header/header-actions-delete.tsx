@@ -1,22 +1,36 @@
-import NumberFlow from '@number-flow/react'
-import { RiDeleteBin7Line } from '@remixicon/react'
-import { AlertDialog, AlertDialogClose, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@tamery/ui/components/alert-dialog'
+import {
+  AlertDialog,
+  AlertDialogClose,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@tamery/ui/components/alert-dialog'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import NumberFlow from '@number-flow/react'
+import { RiDeleteBin7Line } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
-import { deleteRowsQuery, resourceRowsQueryInfiniteOptions, resourceTableTotalQueryOptions } from '~/entities/connection/queries'
+
+import {
+  deleteRowsQuery,
+  resourceRowsQueryInfiniteOptions,
+  resourceTableTotalQueryOptions,
+} from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { queryClient } from '~/main'
+
 import { useTablePageStore } from '../../store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-export function HeaderActionsDelete({ table, schema }: { table: string, schema: string }) {
+export function HeaderActionsDelete({ table, schema }: { table: string; schema: string }) {
   const { connectionResource } = useRouteContext()
   const [isOpened, setIsOpened] = useState(false)
   const store = useTablePageStore()
@@ -24,18 +38,39 @@ export function HeaderActionsDelete({ table, schema }: { table: string, schema: 
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
-      await deleteRowsQuery({ table, schema, primaryKeys: selected }).run(await connectionResourceToQueryParams(connectionResource))
+      await deleteRowsQuery({ table, schema, primaryKeys: selected }).run(
+        await connectionResourceToQueryParams(connectionResource),
+      )
     },
     onSuccess: () => {
-      toast.success(`${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`)
-      queryClient.invalidateQueries(resourceRowsQueryInfiniteOptions({ connectionResource, table, schema, query: { filters: store.get().filters, orderBy: store.get().orderBy } }))
-      queryClient.invalidateQueries(resourceTableTotalQueryOptions({ connectionResource, table, schema, query: { filters: store.get().filters, exact: store.get().exact } }))
-      store.set(state => ({
-        ...state,
-        selected: [],
-      } satisfies typeof state))
+      toast.success(
+        `${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`,
+      )
+      queryClient.invalidateQueries(
+        resourceRowsQueryInfiniteOptions({
+          connectionResource,
+          table,
+          schema,
+          query: { filters: store.get().filters, orderBy: store.get().orderBy },
+        }),
+      )
+      queryClient.invalidateQueries(
+        resourceTableTotalQueryOptions({
+          connectionResource,
+          table,
+          schema,
+          query: { filters: store.get().filters, exact: store.get().exact },
+        }),
+      )
+      store.set(
+        state =>
+          ({
+            ...state,
+            selected: [],
+          }) satisfies typeof state,
+      )
     },
-    onError: (error) => {
+    onError: error => {
       toast.error('Failed to delete rows', {
         description: error.message,
       })
@@ -49,29 +84,21 @@ export function HeaderActionsDelete({ table, schema }: { table: string, schema: 
           <AlertDialogHeader>
             <AlertDialogTitle>
               Confirm row
-              {selected.length === 1 ? '' : 's'}
-              {' '}
-              deletion
+              {selected.length === 1 ? '' : 's'} deletion
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the selected
-              {' '}
-              {selected.length}
-              {' '}
-              {selected.length === 1 ? 'row' : 'rows'}
-              {' '}
-              from the database.
+              This action cannot be undone. This will permanently delete the selected{' '}
+              {selected.length} {selected.length === 1 ? 'row' : 'rows'} from the database.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-            <AlertDialogClose render={<Button variant="destructive" />} onClick={() => deleteRows()}>
+            <AlertDialogClose
+              render={<Button variant="destructive" />}
+              onClick={() => deleteRows()}
+            >
               <LoadingContent loading={isDeleting}>
-                Delete
-                {' '}
-                {selected.length}
-                {' '}
-                selected row
+                Delete {selected.length} selected row
                 {selected.length === 1 ? '' : 's'}
               </LoadingContent>
             </AlertDialogClose>
@@ -89,8 +116,7 @@ export function HeaderActionsDelete({ table, schema }: { table: string, schema: 
             <Button variant="destructive" onClick={() => setIsOpened(true)}>
               <RiDeleteBin7Line />
               <span>
-                Delete
-                (
+                Delete (
                 <NumberFlow
                   spinTiming={{ duration: 200 }}
                   value={selected.length}

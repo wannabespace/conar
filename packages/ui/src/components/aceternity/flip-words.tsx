@@ -47,17 +47,14 @@ export function FlipWords({
         }}
         transition={{ duration: 0.5 }}
         className={cn(
-          `
-            relative z-10 inline-block px-2 text-left text-neutral-900
-            dark:text-neutral-100
-          `,
+          `relative z-10 inline-block px-2 text-left text-neutral-900 dark:text-neutral-100`,
           className,
         )}
         key={currentWord}
       >
         {currentWord.split(' ').map((word, wordIndex) => (
           <motion.span
-            // eslint-disable-next-line react/no-array-index-key
+            // oxlint-disable-next-line react/no-array-index-key
             key={word + wordIndex}
             initial={{ opacity: 0, y: 10, filter: 'blur(8px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
@@ -69,7 +66,7 @@ export function FlipWords({
           >
             {word.split('').map((letter, letterIndex) => (
               <motion.span
-                // eslint-disable-next-line react/no-array-index-key
+                // oxlint-disable-next-line react/no-array-index-key
                 key={word + letterIndex}
                 initial={{ opacity: 0, y: 10, filter: 'blur(8px)' }}
                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}

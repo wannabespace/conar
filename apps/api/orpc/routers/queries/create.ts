@@ -2,21 +2,25 @@ import { db } from '@tamery/db'
 import { queriesInsertSchema } from '@tamery/db/schema'
 import { queries } from '@tamery/db/schema/queries'
 import { type } from 'arktype'
+
 import { authMiddleware, orpc } from '~/orpc'
+
 import { publisher } from './events'
 
 const schema = queriesInsertSchema.omit('userId')
 
 export const create = orpc
   .use(authMiddleware)
-  .input(type.or(schema, schema.array()).pipe(data => Array.isArray(data) ? data : [data]))
+  .input(type.or(schema, schema.array()).pipe(data => (Array.isArray(data) ? data : [data])))
   .handler(async ({ context, input }) => {
     const inserted = await db
       .insert(queries)
-      .values(input.map(item => ({
-        ...item,
-        userId: context.user.id,
-      })))
+      .values(
+        input.map(item => ({
+          ...item,
+          userId: context.user.id,
+        })),
+      )
       .returning()
 
     for (const query of inserted) {

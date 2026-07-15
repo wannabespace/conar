@@ -1,8 +1,10 @@
-import type { CompletionService, ICompletionItem } from 'monaco-sql-languages'
-import type { ConnectionResource } from '~/entities/connection/core'
 import { languages } from 'monaco-editor'
+import type { CompletionService, ICompletionItem } from 'monaco-sql-languages'
 import { EntityContextType } from 'monaco-sql-languages'
+
+import type { ConnectionResource } from '~/entities/connection/core'
 import { queryClient } from '~/main'
+
 import { resourceTableColumnsQueryOptions } from '../queries/columns'
 import { resourceEnumsQueryOptions } from '../queries/enums'
 import { resourceTablesAndSchemasQueryOptions } from '../queries/tables-and-schemas'
@@ -38,25 +40,24 @@ const keywordPriority = [
 
 const dotMatchesRegex = /(\w+(?:\.\w+)*)\.\s*$/g
 
-export function connectionCompletionService(connectionResource: ConnectionResource): CompletionService {
+export function connectionCompletionService(
+  connectionResource: ConnectionResource,
+): CompletionService {
   const store = getConnectionResourceStore(connectionResource.id)
-  queryClient.prefetchQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem: store.get().showSystem }))
+  queryClient.prefetchQuery(
+    resourceTablesAndSchemasQueryOptions({
+      connectionResource,
+      showSystem: store.get().showSystem,
+    }),
+  )
   queryClient.prefetchQuery(resourceEnumsQueryOptions({ connectionResource }))
 
-  return async (
-    model,
-    position,
-    _completionContext,
-    suggestions,
-    _entities,
-    _snippets,
-  ) => {
-    if (!suggestions)
-      return []
+  return async (model, position, _completionContext, suggestions, _entities, _snippets) => {
+    if (!suggestions) return []
 
     const { keywords, syntax } = suggestions
 
-    const keywordItems = keywords.map((kw) => {
+    const keywordItems = keywords.map(kw => {
       const index = keywordPriority.indexOf(kw.toUpperCase())
       const priority = index === -1 ? 100 : index
       return {
@@ -68,7 +69,12 @@ export function connectionCompletionService(connectionResource: ConnectionResour
     })
 
     const [tablesAndSchemas, enums] = await Promise.all([
-      queryClient.ensureQueryData(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem: store.get().showSystem })),
+      queryClient.ensureQueryData(
+        resourceTablesAndSchemasQueryOptions({
+          connectionResource,
+          showSystem: store.get().showSystem,
+        }),
+      ),
       queryClient.ensureQueryData(resourceEnumsQueryOptions({ connectionResource })),
     ])
 
@@ -98,15 +104,22 @@ export function connectionCompletionService(connectionResource: ConnectionResour
 
         if (table) {
           const columns = await queryClient.ensureQueryData(
-            resourceTableColumnsQueryOptions({ connectionResource, schema: schemaName, table: tableName }),
+            resourceTableColumnsQueryOptions({
+              connectionResource,
+              schema: schemaName,
+              table: tableName,
+            }),
           )
-          const columnItems = columns.map(col => ({
-            label: col.id,
-            kind: languages.CompletionItemKind.Field,
-            detail: `${col.type}${col.isNullable ? ' (nullable)' : ' (not null)'}`,
-            sortText: `1${col.id}`,
-            insertText: col.id,
-          } satisfies ICompletionItem))
+          const columnItems = columns.map(
+            col =>
+              ({
+                label: col.id,
+                kind: languages.CompletionItemKind.Field,
+                detail: `${col.type}${col.isNullable ? ' (nullable)' : ' (not null)'}`,
+                sortText: `1${col.id}`,
+                insertText: col.id,
+              }) satisfies ICompletionItem,
+          )
           return [...columnItems, ...keywordItems]
         }
       }
@@ -115,22 +128,31 @@ export function connectionCompletionService(connectionResource: ConnectionResour
 
     if (tablesAndSchemas && isColumnContext && !isTableContext) {
       const columnPromises = tablesAndSchemas.schemas.flatMap(schema =>
-        schema.tables.map(async (tableEntry) => {
+        schema.tables.map(async tableEntry => {
           const columns = await queryClient.ensureQueryData(
-            resourceTableColumnsQueryOptions({ connectionResource, schema: schema.name, table: tableEntry.name }),
+            resourceTableColumnsQueryOptions({
+              connectionResource,
+              schema: schema.name,
+              table: tableEntry.name,
+            }),
           )
-          return columns.map(col => ({
-            label: col.id,
-            kind: languages.CompletionItemKind.Field,
-            detail: `${col.type}${col.isNullable ? ' (nullable)' : ' (not null)'}`,
-            sortText: `1${col.id}`,
-            insertText: col.id,
-          } satisfies ICompletionItem))
+          return columns.map(
+            col =>
+              ({
+                label: col.id,
+                kind: languages.CompletionItemKind.Field,
+                detail: `${col.type}${col.isNullable ? ' (nullable)' : ' (not null)'}`,
+                sortText: `1${col.id}`,
+                insertText: col.id,
+              }) satisfies ICompletionItem,
+          )
         }),
       )
       const allColumns = (await Promise.all(columnPromises)).flat()
 
-      items.push(...allColumns.filter((item, i, arr) => arr.findIndex(x => x.label === item.label) === i))
+      items.push(
+        ...allColumns.filter((item, i, arr) => arr.findIndex(x => x.label === item.label) === i),
+      )
     }
 
     if (tablesAndSchemas) {
@@ -158,13 +180,16 @@ export function connectionCompletionService(connectionResource: ConnectionResour
 
     if (enums) {
       const enumItems = enums.flatMap(enumItem =>
-        enumItem.values.map(value => ({
-          label: value,
-          kind: languages.CompletionItemKind.EnumMember,
-          detail: `enum value (${enumItem.schema}.${enumItem.name})`,
-          sortText: `3${value}`,
-          insertText: value,
-        } satisfies ICompletionItem)),
+        enumItem.values.map(
+          value =>
+            ({
+              label: value,
+              kind: languages.CompletionItemKind.EnumMember,
+              detail: `enum value (${enumItem.schema}.${enumItem.name})`,
+              sortText: `3${value}`,
+              insertText: value,
+            }) satisfies ICompletionItem,
+        ),
       )
 
       items.push(...enumItems)

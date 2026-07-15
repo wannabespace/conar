@@ -1,10 +1,10 @@
-import type { RefObject } from 'react'
 import { noop } from '@tamery/shared/utils/helpers'
 import { formatXml } from '@tamery/shared/utils/xml'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { resolvedThemeComputed } from '@tamery/ui/theme-store'
 import * as monaco from 'monaco-editor'
 import { vsPlusTheme } from 'monaco-sql-languages'
+import type { RefObject } from 'react'
 import { useEffect, useEffectEvent, useRef } from 'react'
 
 // Sync with packages/ui/src/styles/monaco.css
@@ -16,9 +16,12 @@ vsPlusTheme.darkThemeData.colors['editor.background'] = '#1b1b1c'
 monaco.editor.defineTheme('sql-dark', vsPlusTheme.darkThemeData)
 monaco.editor.defineTheme('sql-light', vsPlusTheme.lightThemeData)
 
-resolvedThemeComputed.subscribe((resolvedTheme) => {
-  monaco.editor.setTheme(resolvedTheme === 'dark' ? 'sql-dark' : 'sql-light')
-}, { immediate: true })
+resolvedThemeComputed.subscribe(
+  resolvedTheme => {
+    monaco.editor.setTheme(resolvedTheme === 'dark' ? 'sql-dark' : 'sql-light')
+  },
+  { immediate: true },
+)
 
 export function Monaco({
   ref,
@@ -41,39 +44,39 @@ export function Monaco({
   const preventTriggerChangeEventRef = useRef(false)
 
   const onChangeEvent = useEffectEvent(onChange)
-  const getOptionsEvent = useEffectEvent(() => ({
-    value: (() => {
-      if (language?.includes('json')) {
-        try {
-          return JSON.stringify(JSON.parse(value), null, 2)
-        }
-        catch {
-          return value
-        }
-      }
+  const getOptionsEvent = useEffectEvent(
+    () =>
+      ({
+        value: (() => {
+          if (language?.includes('json')) {
+            try {
+              return JSON.stringify(JSON.parse(value), null, 2)
+            } catch {
+              return value
+            }
+          }
 
-      if (language?.includes('xml')) {
-        try {
-          return formatXml(value)
-        }
-        catch {
-          return value
-        }
-      }
+          if (language?.includes('xml')) {
+            try {
+              return formatXml(value)
+            } catch {
+              return value
+            }
+          }
 
-      return value
-    })(),
-    language,
-    automaticLayout: true,
-    minimap: { enabled: false },
-    fontFamily: '"Geist Mono", monospace',
-    tabSize: 2,
-    ...options,
-  } satisfies monaco.editor.IStandaloneEditorConstructionOptions))
+          return value
+        })(),
+        language,
+        automaticLayout: true,
+        minimap: { enabled: false },
+        fontFamily: '"Geist Mono", monospace',
+        tabSize: 2,
+        ...options,
+      }) satisfies monaco.editor.IStandaloneEditorConstructionOptions,
+  )
 
   useEffect(() => {
-    if (!elementRef.current)
-      return
+    if (!elementRef.current) return
 
     monacoInstanceRef.current = monaco.editor.create(elementRef.current, getOptionsEvent())
 
@@ -97,22 +100,19 @@ export function Monaco({
   }, [elementRef, language, ref])
 
   useMountedEffect(() => {
-    if (!monacoInstanceRef.current || !options)
-      return
+    if (!monacoInstanceRef.current || !options) return
 
     monacoInstanceRef.current.updateOptions(options)
-  // eslint-disable-next-line react/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [JSON.stringify(options)])
 
   useMountedEffect(() => {
-    if (!monacoInstanceRef.current)
-      return
+    if (!monacoInstanceRef.current) return
 
     const editor = monacoInstanceRef.current
     const model = editor.getModel()
 
-    if (!model)
-      return
+    if (!model) return
 
     const currentValue = editor.getValue()
 
@@ -122,8 +122,7 @@ export function Monaco({
 
     if (options?.readOnly) {
       editor.setValue(value)
-    }
-    else {
+    } else {
       preventTriggerChangeEventRef.current = true
       editor.executeEdits('', [
         {
@@ -159,13 +158,16 @@ export function MonacoDiff({
   const elementRef = useRef<HTMLDivElement>(null)
   const diffEditorInstanceRef = useRef<monaco.editor.IStandaloneDiffEditor | null>(null)
 
-  const getOptionsEvent = useEffectEvent(() => ({
-    automaticLayout: true,
-    minimap: { enabled: false },
-    fontFamily: '"Geist Mono", monospace',
-    readOnly: true,
-    ...options,
-  } satisfies monaco.editor.IStandaloneDiffEditorConstructionOptions))
+  const getOptionsEvent = useEffectEvent(
+    () =>
+      ({
+        automaticLayout: true,
+        minimap: { enabled: false },
+        fontFamily: '"Geist Mono", monospace',
+        readOnly: true,
+        ...options,
+      }) satisfies monaco.editor.IStandaloneDiffEditorConstructionOptions,
+  )
 
   const getValuesEvent = useEffectEvent(() => ({
     originalValue,
@@ -173,8 +175,7 @@ export function MonacoDiff({
   }))
 
   useEffect(() => {
-    if (!elementRef.current)
-      return
+    if (!elementRef.current) return
 
     diffEditorInstanceRef.current = monaco.editor.createDiffEditor(
       elementRef.current,
@@ -197,15 +198,13 @@ export function MonacoDiff({
   }, [elementRef, language, ref])
 
   useMountedEffect(() => {
-    if (!diffEditorInstanceRef.current || !options)
-      return
+    if (!diffEditorInstanceRef.current || !options) return
 
     diffEditorInstanceRef.current.updateOptions(options)
   }, [options])
 
   useMountedEffect(() => {
-    if (!diffEditorInstanceRef.current)
-      return
+    if (!diffEditorInstanceRef.current) return
 
     const editor = diffEditorInstanceRef.current
     const originalModel = editor.getModel()?.original

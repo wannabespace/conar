@@ -1,5 +1,6 @@
-import type { ValueTransformer } from './create-transformer'
 import { getValueForEditor } from '~/entities/connection/utils/helpers'
+
+import type { ValueTransformer } from './create-transformer'
 import { getDisplayValue } from './create-transformer'
 
 export function createRawTransformer(): ValueTransformer<unknown> {

@@ -1,7 +1,12 @@
-import type { SyncConfig } from '@tanstack/react-db'
 import { GITHUB_REPO_NAME } from '@tamery/shared/constants'
-import { BrowserCollectionCoordinator, createBrowserWASQLitePersistence, openBrowserWASQLiteOPFSDatabase } from '@tanstack/browser-db-sqlite-persistence'
+import {
+  BrowserCollectionCoordinator,
+  createBrowserWASQLitePersistence,
+  openBrowserWASQLiteOPFSDatabase,
+} from '@tanstack/browser-db-sqlite-persistence'
+import type { SyncConfig } from '@tanstack/react-db'
 import { BasicIndex } from '@tanstack/react-db'
+
 import { posthog } from './posthog'
 
 export interface BaseTable {
@@ -33,8 +38,7 @@ export function createSyncTracker(): SyncTracker {
     awaitChange(key, updatedAt, timeout = 10_000) {
       const versioned = versionKey(key, updatedAt)
 
-      if (synced.has(versioned))
-        return Promise.resolve()
+      if (synced.has(versioned)) return Promise.resolve()
 
       return new Promise<void>((resolve, reject) => {
         const timer = setTimeout(() => {
@@ -43,8 +47,7 @@ export function createSyncTracker(): SyncTracker {
         }, timeout)
 
         function listener() {
-          if (!synced.has(versioned))
-            return
+          if (!synced.has(versioned)) return
           clearTimeout(timer)
           listeners.delete(listener)
           resolve()
@@ -58,7 +61,6 @@ export function createSyncTracker(): SyncTracker {
 
 const DATABASE_NAME = `${GITHUB_REPO_NAME}.sqlite`
 
-// eslint-disable-next-line antfu/no-top-level-await
 export const database = await openBrowserWASQLiteOPFSDatabase({
   databaseName: DATABASE_NAME,
 })
@@ -78,26 +80,28 @@ export const persistence = createBrowserWASQLitePersistence({
   schemaMismatchPolicy: 'reset',
 })
 
-export type SyncMessage<T>
-  = | { type: 'insert', value: T }
-    | { type: 'update', value: T }
-    | { type: 'delete', key: string }
+export type SyncMessage<T> =
+  | { type: 'insert'; value: T }
+  | { type: 'update'; value: T }
+  | { type: 'delete'; key: string }
 
 type MutationFn<T> = (params: {
-  transaction: { mutations: { key: string, modified: T, changes: Partial<T> }[] }
+  transaction: { mutations: { key: string; modified: T; changes: Partial<T> }[] }
 }) => Promise<void>
 
 export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
   id: string
   getKey: (item: T) => string
   events: (params: { signal: AbortSignal }) => Promise<AsyncIterable<SyncMessage<T>>>
-  sync: (params: { rows: T[], signal: AbortSignal }) => Promise<SyncMessage<T>[]>
+  sync: (params: { rows: T[]; signal: AbortSignal }) => Promise<SyncMessage<T>[]>
   onInsert?: MutationFn<T>
   onUpdate?: MutationFn<T>
   onDelete?: MutationFn<T>
 }
 
-export function syncCollectionOptions<T extends { updatedAt: Date }>(config: SyncCollectionConfig<T>) {
+export function syncCollectionOptions<T extends { updatedAt: Date }>(
+  config: SyncCollectionConfig<T>,
+) {
   const tracker = createSyncTracker()
 
   const sync: SyncConfig<T, string> = {
@@ -113,33 +117,34 @@ export function syncCollectionOptions<T extends { updatedAt: Date }>(config: Syn
         tracker.markSynced(config.getKey(item.value), item.value.updatedAt)
       }
 
-      config.events({ signal: abortController.signal })
-        .then(async (events) => {
-          if (abortController.signal.aborted)
-            return
+      config
+        .events({ signal: abortController.signal })
+        .then(async events => {
+          if (abortController.signal.aborted) return
           markReady()
           for await (const item of events) {
-            if (abortController.signal.aborted)
-              break
+            if (abortController.signal.aborted) break
             begin()
             writeItem(item)
             commit()
           }
+
+          return undefined
         })
         .catch(() => {
-          if (!abortController.signal.aborted)
-            markReady()
+          if (!abortController.signal.aborted) markReady()
         })
 
-      collection.toArrayWhenReady().then(async (rows) => {
+      collection.toArrayWhenReady().then(async rows => {
         const items = await config.sync({ rows, signal: abortController.signal })
-        if (abortController.signal.aborted)
-          return
+        if (abortController.signal.aborted) return
         begin()
         for (const item of items) {
           writeItem(item)
         }
         commit()
+
+        return undefined
       })
 
       return () => {
@@ -186,14 +191,14 @@ export async function clearDb() {
       const tableName = table.name
 
       if (tableName && !systemTables.has(tableName)) {
+        // oxlint-disable-next-line no-await-in-loop -- sequential DELETEs on a single SQLite connection, no parallelism benefit
         await database.execute(`DELETE FROM "${tableName}";`)
       }
     }
 
     await database.execute('PRAGMA foreign_keys = ON;')
     await database.execute('VACUUM;')
-  }
-  catch (error) {
+  } catch (error) {
     posthog.captureException(error)
     await database.execute('PRAGMA foreign_keys = ON;').catch(() => {})
   }
@@ -201,10 +206,13 @@ export async function clearDb() {
 
 if (import.meta.env.DEV) {
   async function getCollectionTableName(name: string) {
-    const collections = await database.execute('SELECT * FROM collection_registry') as { collection_id: string, table_name: string, schema_version: number }[]
+    const collections = (await database.execute('SELECT * FROM collection_registry')) as {
+      collection_id: string
+      table_name: string
+      schema_version: number
+    }[]
     const matching = collections.filter(c => c.collection_id === name)
-    if (matching.length === 0)
-      return undefined
+    if (matching.length === 0) return undefined
 
     return matching.toSorted((a, b) => b.schema_version - a.schema_version)[0]!.table_name
   }
@@ -215,9 +223,14 @@ if (import.meta.env.DEV) {
       return
     }
 
-    const collection = await database.execute(`SELECT * FROM ${tableName}`) as { key: string, metadata: unknown, row_version: number, value: string }[]
+    const collection = (await database.execute(`SELECT * FROM ${tableName}`)) as {
+      key: string
+      metadata: unknown
+      row_version: number
+      value: string
+    }[]
 
-    // eslint-disable-next-line no-console
+    // oxlint-disable-next-line no-console
     console.log(collection.map(c => JSON.parse(c.value)))
   }
 

@@ -1,6 +1,7 @@
-import type { ComponentProps, ReactNode } from 'react'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import type { ComponentProps, ReactNode } from 'react'
 import { createElement } from 'react'
+
 import { ClickHouseIcon } from '~/icons/clickhouse'
 import { MSSQLIcon } from '~/icons/mssql'
 import { MySQLIcon } from '~/icons/mysql'
@@ -13,6 +14,9 @@ const iconMap: Record<ConnectionType, (props: ComponentProps<'svg'>) => ReactNod
   [ConnectionType.MSSQL]: MSSQLIcon,
 }
 
-export function ConnectionIcon({ type, ...props }: { type: ConnectionType } & ComponentProps<'svg'>) {
+export function ConnectionIcon({
+  type,
+  ...props
+}: { type: ConnectionType } & ComponentProps<'svg'>) {
   return createElement(iconMap[type], props)
 }

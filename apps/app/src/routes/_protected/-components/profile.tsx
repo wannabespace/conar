@@ -1,4 +1,3 @@
-import { RiExternalLinkLine, RiLogoutCircleRLine } from '@remixicon/react'
 import { uppercaseFirst } from '@tamery/shared/utils/helpers'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
@@ -7,6 +6,8 @@ import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
+import { RiExternalLinkLine, RiLogoutCircleRLine } from '@remixicon/react'
+
 import { useSignOut, useSubscription } from '~/entities/user/hooks'
 import { authClient } from '~/lib/auth'
 
@@ -21,43 +22,42 @@ export function Profile({ className }: { className?: string }) {
         <div className="flex flex-row items-center gap-4">
           <UserAvatar className="size-14" user={data?.user} />
           <div>
-            {data?.user
-              ? (
-                  <div>
-                    <h3 className={`
-                      flex items-center gap-2 text-2xl font-semibold
-                    `}
-                    >
-                      {data.user.name}
-                      <Badge variant="secondary">
-                        {subscription ? uppercaseFirst(subscription.plan) : 'Hobby'}
-                      </Badge>
-                    </h3>
-                    <p className="text-sm text-muted-foreground">{data.user.email}</p>
-                  </div>
-                )
-              : (
-                  <>
-                    <div className="space-y-2">
-                      <Skeleton className="h-6 w-50 bg-accent/70" />
-                      <Skeleton className="h-4 w-32 bg-accent/70" />
-                    </div>
-                  </>
-                )}
+            {data?.user ? (
+              <div>
+                <h3 className={`flex items-center gap-2 text-2xl font-semibold`}>
+                  {data.user.name}
+                  <Badge variant="secondary">
+                    {subscription ? uppercaseFirst(subscription.plan) : 'Hobby'}
+                  </Badge>
+                </h3>
+                <p className="text-sm text-muted-foreground">{data.user.email}</p>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-50 bg-accent/70" />
+                  <Skeleton className="h-4 w-32 bg-accent/70" />
+                </div>
+              </>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            render={<a href={`${import.meta.env.VITE_PUBLIC_MAIN_URL}/account`} target={window.electron ? '_blank' : '_self'} />}
+            render={
+              <a
+                href={`${import.meta.env.VITE_PUBLIC_MAIN_URL}/account`}
+                target={window.electron ? '_blank' : '_self'}
+                aria-label="View account"
+              />
+            }
           >
             Account
-            {window.electron
-              ? (
-                  <RiExternalLinkLine className="size-3.5 text-muted-foreground" />
-                )
-              : null}
+            {window.electron ? (
+              <RiExternalLinkLine className="size-3.5 text-muted-foreground" />
+            ) : null}
           </Button>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -72,9 +72,7 @@ export function Profile({ className }: { className?: string }) {
                 </LoadingContent>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              Sign out
-            </TooltipContent>
+            <TooltipContent>Sign out</TooltipContent>
           </Tooltip>
         </div>
       </div>

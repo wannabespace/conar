@@ -1,18 +1,42 @@
-import type { Connection, ConnectionResource } from '~/entities/connection/core'
-import { RiArrowLeftSLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
 import { Button } from '@tamery/ui/components/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@tamery/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@tamery/ui/components/card'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { Input } from '@tamery/ui/components/input'
+import { RiArrowLeftSLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
+
 import { useCollections } from '~/entities/collections'
+import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 
-export function PasswordForm({ connection, connectionResource }: { connection: Connection, connectionResource: ConnectionResource }) {
+function ConnectionErrorDescription({ message }: { message: string }) {
+  return <span dangerouslySetInnerHTML={{ __html: message.replaceAll('\n', '<br />') }} />
+}
+
+function handleConnectionTestError(error: Error) {
+  toast.error("We couldn't connect to the connection", {
+    description: <ConnectionErrorDescription message={error.message} />,
+  })
+}
+
+export function PasswordForm({
+  connection,
+  connectionResource,
+}: {
+  connection: Connection
+  connectionResource: ConnectionResource
+}) {
   const { connectionStringsCollection } = useCollections()
   const router = useRouter()
   const [password, setPassword] = useState('')
@@ -37,7 +61,7 @@ export function PasswordForm({ connection, connectionResource }: { connection: C
         updatedAt: connection.updatedAt,
       })
 
-      connectionStringsCollection.update(connection.id, (draft) => {
+      connectionStringsCollection.update(connection.id, draft => {
         Object.assign(draft, record)
       })
     },
@@ -45,12 +69,7 @@ export function PasswordForm({ connection, connectionResource }: { connection: C
       toast.success('Password successfully saved!')
       setPassword('')
     },
-    onError: (error) => {
-      toast.error('We couldn\'t connect to the connection', {
-        // eslint-disable-next-line react/dom-no-dangerously-set-innerhtml
-        description: <span dangerouslySetInnerHTML={{ __html: error.message.replaceAll('\n', '<br />') }} />,
-      })
-    },
+    onError: handleConnectionTestError,
   })
 
   return (
@@ -69,7 +88,7 @@ export function PasswordForm({ connection, connectionResource }: { connection: C
         </div>
         <form
           className="flex w-full items-center justify-center"
-          onSubmit={(e) => {
+          onSubmit={e => {
             e.preventDefault()
             savePassword(password)
           }}
@@ -105,19 +124,17 @@ export function PasswordForm({ connection, connectionResource }: { connection: C
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                   >
-                    {showPassword
-                      ? <RiEyeOffLine className="size-4" />
-                      : <RiEyeLine className="size-4" />}
+                    {showPassword ? (
+                      <RiEyeOffLine className="size-4" />
+                    ) : (
+                      <RiEyeLine className="size-4" />
+                    )}
                   </Button>
                 </div>
               </div>
             </CardContent>
             <CardFooter>
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={status === 'pending'}
-              >
+              <Button type="submit" className="w-full" disabled={status === 'pending'}>
                 <LoadingContent loading={status === 'pending'}>
                   {status === 'error' ? 'Retry Saving Password' : 'Save Password'}
                 </LoadingContent>

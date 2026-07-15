@@ -1,10 +1,11 @@
 import { type } from 'arktype'
 import { CompiledQuery } from 'kysely'
+
 import { createQuery } from '../runtime/query'
 
 const customType = type({ rows: 'Record<string, unknown>[]' }).pipe(({ rows }) => rows)
 
-export function customQuery({ query, values }: { query: string, values?: unknown[] }) {
+export function customQuery({ query, values }: { query: string; values?: unknown[] }) {
   return createQuery({
     type: customType,
     query: {

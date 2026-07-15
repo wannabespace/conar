@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+
 import { hasDangerousSqlKeywords, wrapExplainQuery } from './helpers'
 
 describe('hasDangerousSqlKeywords', () => {
@@ -37,6 +38,8 @@ describe('wrapExplainQuery', () => {
 
   it('should not double-wrap when query already starts with EXPLAIN', () => {
     expect(wrapExplainQuery('EXPLAIN SELECT * FROM users')).toBe('EXPLAIN SELECT * FROM users')
-    expect(wrapExplainQuery('  EXPLAIN ANALYZE SELECT * FROM users')).toBe('  EXPLAIN ANALYZE SELECT * FROM users')
+    expect(wrapExplainQuery('  EXPLAIN ANALYZE SELECT * FROM users')).toBe(
+      '  EXPLAIN ANALYZE SELECT * FROM users',
+    )
   })
 })
