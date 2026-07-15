@@ -17,11 +17,11 @@ overrides:
 patchedDependencies:
   '@better-auth/kysely-adapter@1.7.0-beta.9': patches/@better-auth__kysely-adapter@1.7.0-beta.9.patch
 catalog:
-  '@ai-sdk/anthropic': ^4.0.12
-  '@ai-sdk/google': ^4.0.12
-  '@ai-sdk/openai': ^4.0.11
-  '@ai-sdk/react': ^4.0.24
-  '@ai-sdk/xai': ^4.0.10
+  '@ai-sdk/anthropic': ^4.0.14
+  '@ai-sdk/google': ^4.0.14
+  '@ai-sdk/openai': ^4.0.13
+  '@ai-sdk/react': ^4.0.27
+  '@ai-sdk/xai': ^4.0.12
   '@base-ui/react': ^1.6.0
   '@better-auth/api-key': ^1.6.23
   '@better-auth/drizzle-adapter': ^1.6.23
@@ -63,11 +63,11 @@ catalog:
   '@tanstack/react-hotkeys': ^0.10.0
   '@tanstack/react-query': ^5.101.2
   '@tanstack/react-query-devtools': ^5.101.2
-  '@tanstack/react-router': ^1.170.17
+  '@tanstack/react-router': ^1.170.18
   '@tanstack/react-router-devtools': ^1.167.0
-  '@tanstack/react-start': ^1.168.27
+  '@tanstack/react-start': ^1.168.28
   '@tanstack/react-virtual': ^3.14.6
-  '@tanstack/router-plugin': ^1.168.19
+  '@tanstack/router-plugin': ^1.168.20
   '@tiptap/extension-placeholder': ^3.27.4
   '@tiptap/react': ^3.27.4
   '@tiptap/starter-kit': ^3.27.4
@@ -82,7 +82,7 @@ catalog:
   '@upstash/context7-tools-ai-sdk': ^0.2.4
   '@vitejs/plugin-react': ^6.0.3
   '@xyflow/react': ^12.11.2
-  ai: ^7.0.23
+  ai: ^7.0.26
   ai-retry: ^2.0.0
   arktype: ^2.2.3
   babel-plugin-react-compiler: ^1.0.0
@@ -106,7 +106,7 @@ catalog:
   husky: ^9.1.7
   input-otp: ^1.4.2
   ioredis: ^5.11.1
-  js-base64: ^3.8.1
+  js-base64: ^3.9.0
   js-confetti: ^0.13.1
   kysely: ^0.29.3
   marked: ^18.0.6
@@ -125,8 +125,8 @@ catalog:
   ora: ^9.4.1
   pg: ^8.22.0
   playwright: ^1.61.1
-  portless: ^0.15.1
-  posthog-js: ^1.399.4
+  portless: ^0.15.2
+  posthog-js: ^1.399.5
   react: ^19.2.7
   react-day-picker: ^10.0.1
   react-dom: ^19.2.7
@@ -157,8 +157,8 @@ catalog:
   vite: ^8.1.4
   vite-plugin-electron: ^1.1.0
   zod: ^4.4.3
-  oxfmt: ^0.58.0
-  oxlint: ^1.73.0
+  oxfmt: ^0.59.0
+  oxlint: ^1.74.0
   oxlint-tailwindcss: ^1.3.5
 allowBuilds:
   '@firebase/util': false
