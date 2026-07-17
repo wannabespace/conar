@@ -4,13 +4,14 @@ import * as React from 'react'
 
 function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
   return (
-    <InputPrimitive
-      type={type}
-      data-slot="input"
-      className={cn(
-        `
-          h-8 w-full min-w-0 rounded-2xl border border-transparent bg-input
-          px-2.5 py-1 text-base transition-[color,box-shadow] duration-200
+    <span className="relative">
+      <InputPrimitive
+        type={type}
+        data-slot="input"
+        className={cn(
+          `
+          h-8 w-full min-w-0 rounded-2xl border bg-input px-2.5
+          py-1 text-base transition-[color,box-shadow] duration-200
           outline-none
           file:inline-flex file:h-6 file:border-0 file:bg-transparent
           file:text-sm file:font-medium file:text-foreground
@@ -25,10 +26,12 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
           dark:aria-invalid:border-destructive/50
           dark:aria-invalid:ring-destructive/40
         `,
-        className,
-      )}
-      {...props}
-    />
+          className,
+        )}
+        {...props}
+      />
+      <span className="border-blend" />
+    </span>
   )
 }
 

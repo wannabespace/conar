@@ -25,7 +25,7 @@ export const buttonVariants = cva(
           hover:bg-primary/80
         `,
         outline: `
-            border-border bg-background
+            border-border bg-input
             hover:bg-muted hover:text-foreground
             aria-expanded:bg-muted aria-expanded:text-foreground
             dark:bg-transparent

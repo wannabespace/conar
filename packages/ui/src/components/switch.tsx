@@ -26,7 +26,7 @@ function Switch({
           dark:aria-invalid:border-destructive/50
           dark:aria-invalid:ring-destructive/40
           data-checked:border-primary data-checked:bg-primary
-          data-unchecked:border-transparent data-unchecked:bg-input/90
+          data-unchecked:border-transparent data-unchecked:bg-muted
           data-disabled:cursor-not-allowed data-disabled:opacity-50
         `,
         className,
