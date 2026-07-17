@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react'
 import { TitleBar } from '~/components/title-bar'
 import { enterAppAnimation } from '~/global-hooks'
 import { authClient, bearerToken, successAuthToast } from '~/lib/auth'
+import { lastLocationStorageValue } from '~/lib/last-location'
 import { orpc } from '~/lib/orpc'
 import { router } from '~/main'
 
@@ -52,7 +53,7 @@ function AuthPage() {
       onSuccess: async data => {
         bearerToken.set(data.token)
         await refetch()
-        router.navigate({ to: '/' })
+        router.navigate({ href: lastLocationStorageValue.get() ?? '/' })
         successAuthToast(!!data.newUser)
       },
     }),

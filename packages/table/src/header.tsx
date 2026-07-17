@@ -71,7 +71,7 @@ export function TableHeader({
       {...props}
     >
       {before}
-      <div className="flex h-full w-fit min-w-full items-center bg-card">
+      <div className="flex h-full w-fit min-w-full items-center bg-popover">
         <div
           aria-hidden="true"
           className="

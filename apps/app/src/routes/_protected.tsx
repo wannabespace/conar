@@ -7,7 +7,6 @@ import { cleanCollections, getCollections } from '~/entities/collections'
 import { EventsProvider } from '~/events'
 import { enterAppAnimation } from '~/global-hooks'
 import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
-import { authClient } from '~/lib/auth'
 import { subscriptionQueryClient } from '~/main'
 
 import { ActionsCenter } from './-components/actions-center'
@@ -28,10 +27,7 @@ export const Route = createFileRoute('/_protected')({
   },
 })
 
-// oxlint-disable-next-line react/only-export-components
 function ProtectedLayout() {
-  const { isPending } = authClient.useSession()
-
   useConnectionStringsSync()
 
   useEffect(() => {
@@ -41,12 +37,8 @@ function ProtectedLayout() {
   }, [])
 
   useEffect(() => {
-    if (isPending) {
-      return
-    }
-
     enterAppAnimation()
-  }, [isPending])
+  }, [])
 
   useEffect(() => {
     const handleFocus = () => {
