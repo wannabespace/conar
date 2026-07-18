@@ -34,7 +34,6 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/definit
   }),
 })
 
-// oxlint-disable-next-line react/only-export-components
 function DatabaseEnumsPage() {
   const { connection, connectionResource } = Route.useRouteContext()
   const {
@@ -158,7 +157,6 @@ function DatabaseEnumsPage() {
                                   matched && 'border-primary/30 bg-primary/10',
                                 )}
                               >
-                                {/* oxlint-disable-next-line react/dom-no-dangerously-set-innerhtml */}
                                 <span dangerouslySetInnerHTML={{ __html: html }} />
                               </Badge>
                             </motion.div>

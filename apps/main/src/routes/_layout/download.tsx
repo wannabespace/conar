@@ -31,7 +31,6 @@ export const Route = createFileRoute('/_layout/download')({
     }),
 })
 
-// oxlint-disable-next-line react/only-export-components
 function HomebrewInstall() {
   if (os?.type !== 'macos') {
     return null
@@ -88,7 +87,6 @@ function HomebrewInstall() {
   )
 }
 
-// oxlint-disable-next-line react/only-export-components
 function AllPlatforms() {
   return (
     <>
@@ -122,7 +120,6 @@ function AllPlatforms() {
   )
 }
 
-// oxlint-disable-next-line react/only-export-components
 function DownloadOption({
   Icon,
   type,
@@ -194,7 +191,6 @@ function DownloadOption({
   )
 }
 
-// oxlint-disable-next-line react/only-export-components
 function RouteComponent() {
   return (
     <div

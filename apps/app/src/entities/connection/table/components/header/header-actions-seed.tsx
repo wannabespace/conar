@@ -51,7 +51,7 @@ import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
 import { Monaco } from '~/components/monaco-lazy'
-import type { Column } from '~/entities/connection/components'
+import type { Column } from '~/entities/connection/components/table/cell'
 import {
   distinctQuery,
   insertQuery,

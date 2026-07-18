@@ -61,7 +61,6 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/visuali
   }),
 })
 
-// oxlint-disable-next-line react/only-export-components
 function VisualizerPage() {
   const { connection } = Route.useLoaderData()
   const { connectionResource } = Route.useRouteContext()
@@ -127,7 +126,6 @@ const edgeTypes = {
   custom: ReactFlowEdge,
 }
 
-// oxlint-disable-next-line react/only-export-components
 function Visualizer({
   tablesAndSchemas,
   columns,

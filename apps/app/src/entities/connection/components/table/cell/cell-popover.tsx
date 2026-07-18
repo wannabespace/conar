@@ -37,7 +37,7 @@ import { toast } from 'sonner'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
 import { CellSwitch } from '~/components/cell-switch'
-import { Monaco } from '~/components/monaco'
+import { Monaco } from '~/components/monaco-lazy'
 
 import { useCellContext } from './cell-context'
 

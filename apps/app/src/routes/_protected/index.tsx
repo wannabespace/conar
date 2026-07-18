@@ -28,7 +28,6 @@ export const Route = createFileRoute('/_protected/')({
   }),
 })
 
-// oxlint-disable-next-line react/only-export-components
 function DashboardPage() {
   const { version, status } = useSubscription(updatesStore, {
     selector: state => pick(state, ['version', 'status']),
@@ -38,7 +37,7 @@ function DashboardPage() {
     <ScrollArea className="overflow-auto">
       <div className="mx-auto flex size-full max-w-2xl flex-col px-6 py-10">
         <div className="mb-6 flex items-center justify-end">
-          <Button render={<Link to="/create" />}>
+          <Button nativeButton={false} render={<Link to="/create" />}>
             <RiAddLine className="size-4" />
             Add new
           </Button>

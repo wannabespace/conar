@@ -17,7 +17,6 @@ export const Route = createFileRoute('/_auth/two-factor')({
   },
 })
 
-// oxlint-disable-next-line react/only-export-components
 function TwoFactorPage() {
   const router = useRouter()
   const search = Route.useSearch()

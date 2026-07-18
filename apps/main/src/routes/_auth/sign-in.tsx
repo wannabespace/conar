@@ -15,7 +15,6 @@ export const Route = createFileRoute('/_auth/sign-in')({
   },
 })
 
-// oxlint-disable-next-line react/only-export-components
 function SignInPage() {
   return <AuthForm type="sign-in" />
 }

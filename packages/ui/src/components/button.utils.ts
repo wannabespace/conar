@@ -28,8 +28,6 @@ export const buttonVariants = cva(
             border-border bg-input
             hover:bg-muted hover:text-foreground
             aria-expanded:bg-muted aria-expanded:text-foreground
-            dark:bg-transparent
-            hover:dark:bg-input/30
           `,
         secondary: `
             bg-secondary text-secondary-foreground
@@ -45,17 +43,11 @@ export const buttonVariants = cva(
             hover:bg-destructive/20
             focus-visible:border-destructive/40
             focus-visible:ring-destructive/20
-            dark:bg-destructive/20
-            hover:dark:bg-destructive/30
-            focus-visible:dark:ring-destructive/40
           `,
         warning: `
             bg-warning/10 text-warning
             hover:bg-warning/20
             focus-visible:border-warning/40 focus-visible:ring-warning/20
-            dark:bg-warning/20
-            hover:dark:bg-warning/30
-            focus-visible:dark:ring-warning/40
           `,
         link: `
           text-primary underline-offset-4

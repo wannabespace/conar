@@ -15,7 +15,6 @@ export const Route = createFileRoute('/_auth/sign-up')({
   },
 })
 
-// oxlint-disable-next-line react/only-export-components
 function SignUpPage() {
   return <AuthForm type="sign-up" />
 }

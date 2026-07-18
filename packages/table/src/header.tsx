@@ -62,7 +62,7 @@ export function TableHeader({
     <div
       className={cn(
         `
-        sticky top-0 z-10 h-8 w-fit min-w-full border-y bg-background
+        sticky top-0 z-10 h-8 w-fit min-w-full rounded-lg border bg-background/90 backdrop-blur-sm
         has-data-footer:h-12
       `,
         className,
@@ -71,7 +71,7 @@ export function TableHeader({
       {...props}
     >
       {before}
-      <div className="flex h-full w-fit min-w-full items-center bg-popover">
+      <div className="flex h-full w-fit min-w-full items-center">
         <div
           aria-hidden="true"
           className="

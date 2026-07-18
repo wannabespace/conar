@@ -47,7 +47,6 @@ export const Route = createFileRoute('/account')({
   },
 })
 
-// oxlint-disable-next-line react/only-export-components
 function AccountLayout() {
   const router = useRouter()
   const match = useMatches({

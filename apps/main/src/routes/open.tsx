@@ -26,7 +26,6 @@ export const Route = createFileRoute('/open')({
   },
 })
 
-// oxlint-disable-next-line react/only-export-components
 function OpenPageContent() {
   const { data } = authClient.useSession()
   const { type } = Route.useSearch()
@@ -86,7 +85,6 @@ function handleCopyUrl(token: string, codeChallenge: string, newUser?: boolean) 
   copy(getUrl(token, codeChallenge, newUser), 'URL copied to clipboard')
 }
 
-// oxlint-disable-next-line react/only-export-components
 function OpenPage() {
   const { 'code-challenge': codeChallenge, 'new-user': newUser } = Route.useSearch()
   const { data, isPending } = authClient.useSession()

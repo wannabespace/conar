@@ -25,7 +25,7 @@ import { useLocalProxyAvailable } from '~/entities/connection/runtime'
 import { getConnectionStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching'
-import { generateRandomName } from '~/utils/utils'
+import { generateRandomName } from '~/utils/faker'
 
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'

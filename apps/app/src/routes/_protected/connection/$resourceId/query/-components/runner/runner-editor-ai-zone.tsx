@@ -8,7 +8,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { MonacoDiff } from '~/components/monaco'
+import { MonacoDiff } from '~/components/monaco-lazy'
 import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'

@@ -7,7 +7,6 @@ export const Route = createLazyFileRoute('/_layout/terms-of-service')({
   component: TermsOfService,
 })
 
-// oxlint-disable-next-line react/only-export-components
 function TermsOfService() {
   return (
     <div className="container mx-auto max-w-3xl px-4 py-20">

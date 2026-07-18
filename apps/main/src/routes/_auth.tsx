@@ -12,7 +12,6 @@ export const Route = createFileRoute('/_auth')({
   }),
 })
 
-// oxlint-disable-next-line react/only-export-components
 function AuthLayout() {
   const match = useMatches({
     select: matches => matches.map(match => match.routeId).at(-1),

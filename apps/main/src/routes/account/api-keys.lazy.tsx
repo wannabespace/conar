@@ -50,7 +50,6 @@ export const Route = createLazyFileRoute('/account/api-keys')({
   component: RouteComponent,
 })
 
-// oxlint-disable-next-line react/only-export-components
 function ApiKeysEmptyState({ onCreateClick }: { onCreateClick: () => void }) {
   return (
     <div
@@ -87,7 +86,6 @@ function ApiKeysEmptyState({ onCreateClick }: { onCreateClick: () => void }) {
   )
 }
 
-// oxlint-disable-next-line react/only-export-components
 function RouteComponent() {
   const createDialogRef = useRef<ComponentRef<typeof CreateApiKeyDialog>>(null)
   const revokeDialogRef = useRef<ComponentRef<typeof RevokeApiKeyDialog>>(null)

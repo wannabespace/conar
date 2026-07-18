@@ -1,4 +1,4 @@
-import type { Column } from '../../components'
+import type { Column } from '../../components/table/cell'
 import type { ValueTransformer } from '../create-transformer'
 import { getDisplayValue } from '../create-transformer'
 import { parseToArray } from './shared'

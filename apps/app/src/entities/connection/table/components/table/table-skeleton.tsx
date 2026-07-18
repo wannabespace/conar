@@ -3,7 +3,7 @@ import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from '@tamery/table/constant
 import { useTableContext } from '@tamery/table/hooks'
 import { cn } from '@tamery/ui/lib/utils'
 
-import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components'
+import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell'
 
 const ROWS_COUNT = 20
 

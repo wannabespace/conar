@@ -36,7 +36,6 @@ function formatCurrency(amount: number) {
   }).format(amount / 100)
 }
 
-// oxlint-disable-next-line react/only-export-components
 function RouteComponent() {
   const { data: invoices = [], isPending } = useQuery(orpc.account.invoices.queryOptions())
   const router = useRouter()

@@ -13,7 +13,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useMemo, useState } from 'react'
 
 import { ExportData } from '~/components/export-data'
-import { TableCell } from '~/entities/connection/components'
+import { TableCell } from '~/entities/connection/components/table/cell'
 import type { Column } from '~/entities/connection/components/table/cell'
 
 export function RunnerResultsTable({

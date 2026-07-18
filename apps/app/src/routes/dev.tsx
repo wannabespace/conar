@@ -72,7 +72,6 @@ export const Route = createFileRoute('/dev')({
   }),
 })
 
-// oxlint-disable-next-line react/only-export-components
 function Section({ title: heading, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-4">
@@ -91,7 +90,6 @@ function Section({ title: heading, children }: { title: string; children: React.
   )
 }
 
-// oxlint-disable-next-line react/only-export-components
 function DevPage() {
   useEffect(() => {
     enterAppAnimation()

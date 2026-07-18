@@ -8,7 +8,6 @@ export const Route = createLazyFileRoute('/account/settings/')({
   component: SettingsPage,
 })
 
-// oxlint-disable-next-line react/only-export-components
 function SettingsPage() {
   return (
     <>

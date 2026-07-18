@@ -28,7 +28,6 @@ const passwordSchema = type({
   }),
 })
 
-// oxlint-disable-next-line react/only-export-components
 function ResetPasswordPage() {
   const navigate = useNavigate()
   const { token } = Route.useSearch()

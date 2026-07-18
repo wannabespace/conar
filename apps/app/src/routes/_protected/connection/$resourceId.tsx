@@ -61,7 +61,6 @@ function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
   ) as (typeof connectionResourceType.infer)['lastOpenedPage']
 }
 
-// oxlint-disable-next-line react/only-export-components
 function ResourcePage() {
   const { connection, connectionResource } = Route.useRouteContext()
   const { connectionStringsCollection } = useCollections()

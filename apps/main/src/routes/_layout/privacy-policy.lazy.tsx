@@ -7,7 +7,6 @@ export const Route = createLazyFileRoute('/_layout/privacy-policy')({
   component: PrivacyPolicy,
 })
 
-// oxlint-disable-next-line react/only-export-components
 function PrivacyPolicy() {
   return (
     <div className="container mx-auto max-w-3xl px-4 py-20">

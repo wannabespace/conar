@@ -1,6 +1,6 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import type { Column } from '../../components'
+import type { Column } from '../../components/table/cell'
 import type { ValueTransformer } from '../create-transformer'
 import { createClickHouseListTransformer } from './clickhouse'
 import { createMysqlListTransformer } from './mysql'

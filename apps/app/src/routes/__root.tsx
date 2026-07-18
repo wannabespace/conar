@@ -25,7 +25,6 @@ export const Route = createRootRoute({
   }),
 })
 
-// oxlint-disable-next-line react/only-export-components
 function RootDocument() {
   const router = useRouter()
 

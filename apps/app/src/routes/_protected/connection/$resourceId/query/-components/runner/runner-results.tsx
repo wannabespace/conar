@@ -7,7 +7,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 
-import { Monaco } from '~/components/monaco'
+import { Monaco } from '~/components/monaco-lazy'
 import { toggleChat } from '~/entities/connection/store'
 import { useSubscription } from '~/entities/user/hooks/use-subscription'
 import { queryClient } from '~/main'

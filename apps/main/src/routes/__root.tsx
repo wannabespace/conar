@@ -93,7 +93,6 @@ export const Route = createRootRouteWithContext<{
   errorComponent: props => <ErrorPage {...props} />,
 })
 
-// oxlint-disable-next-line react/only-export-components
 function RootComponent() {
   const { queryClient } = Route.useRouteContext()
 

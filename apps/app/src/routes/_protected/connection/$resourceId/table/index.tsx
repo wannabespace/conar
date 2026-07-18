@@ -103,7 +103,6 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/table/'
   }),
 })
 
-// oxlint-disable-next-line react/only-export-components
 function TableContent({ table, schema }: { table: string; schema: string }) {
   const { connectionResource } = Route.useRouteContext()
   const { data = [] } = useTableColumnsQuery({ connectionResource, table, schema })
@@ -118,7 +117,7 @@ function TableContent({ table, schema }: { table: string; schema: string }) {
         onClick={() => addTab(connectionResource.id, schema, table)}
       >
         <div className="flex h-full flex-col justify-between">
-          <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
+          <div className="mb-2 flex flex-col gap-4 rounded-lg border bg-background/90 px-4 py-2 backdrop-blur-sm">
             <Header table={table} schema={schema} />
             <Filters />
           </div>
@@ -131,7 +130,6 @@ function TableContent({ table, schema }: { table: string; schema: string }) {
   )
 }
 
-// oxlint-disable-next-line react/only-export-components
 function DatabaseTablesPage() {
   const { connectionResource } = Route.useRouteContext()
   const { schema, table } = Route.useSearch()
@@ -180,12 +178,12 @@ function DatabaseTablesPage() {
         defaultSize="20%"
         minSize={200}
         maxSize="50%"
-        className="h-full overflow-hidden rounded-lg bg-background"
+        className="h-full overflow-hidden rounded-lg border bg-background"
       >
         <Sidebar key={connectionResource.id} />
       </ResizablePanel>
       <ResizableHandle className="w-1 bg-transparent" />
-      <ResizablePanel defaultSize="80%" className="flex-1 overflow-hidden rounded-lg bg-background">
+      <ResizablePanel defaultSize="80%" className="flex-1 overflow-hidden">
         {schema && table ? (
           <TablePageStoreContext
             value={tablePageStore({ id: connectionResource.id, schema, table })}

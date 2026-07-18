@@ -5,7 +5,7 @@ import { LanguageIdEnum, setupLanguageFeatures } from 'monaco-sql-languages'
 import type { RefObject } from 'react'
 import { useEffect, useEffectEvent, useRef } from 'react'
 
-import { Monaco } from '~/components/monaco'
+import { Monaco } from '~/components/monaco-lazy'
 import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
 import { connectionCompletionService } from '~/entities/connection/utils/monaco'
 

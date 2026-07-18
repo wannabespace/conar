@@ -17,7 +17,6 @@ export const Route = createFileRoute('/account/')({
 
 const confetti = typeof window !== 'undefined' ? new JSConfetti() : null
 
-// oxlint-disable-next-line react/only-export-components
 function RouteComponent() {
   const { subscription } = Route.useSearch()
   const router = useRouter()

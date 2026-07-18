@@ -12,7 +12,6 @@ export const Route = createFileRoute('/_layout')({
   component: MainLayout,
 })
 
-// oxlint-disable-next-line react/only-export-components
 function MainLayout() {
   const { scrollY } = useScroll()
   const navbarHeight = useTransform(

@@ -11,7 +11,7 @@ import { useEffect, useEffectEvent, useRef } from 'react'
 vsPlusTheme.darkThemeData.colors['editor.selectionBackground'] = '#5081f150'
 vsPlusTheme.lightThemeData.colors['editor.selectionBackground'] = '#5081f150'
 
-vsPlusTheme.darkThemeData.colors['editor.background'] = '#1b1b1c'
+vsPlusTheme.darkThemeData.colors['editor.background'] = '#26272b'
 
 monaco.editor.defineTheme('sql-dark', vsPlusTheme.darkThemeData)
 monaco.editor.defineTheme('sql-light', vsPlusTheme.lightThemeData)
@@ -103,7 +103,6 @@ export function Monaco({
     if (!monacoInstanceRef.current || !options) return
 
     monacoInstanceRef.current.updateOptions(options)
-    // oxlint-disable-next-line react/exhaustive-deps
   }, [JSON.stringify(options)])
 
   useMountedEffect(() => {

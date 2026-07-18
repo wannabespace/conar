@@ -1,3 +1,4 @@
+import './monaco-worker'
 import '@tamery/shared/arktype-config'
 import '@tamery/ui/globals.css'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
@@ -10,7 +11,6 @@ import {
 import { createRoot } from 'react-dom/client'
 import { toast } from 'sonner'
 
-import './monaco-worker'
 import { lastLocationStorageValue } from './lib/last-location'
 import { routeTree } from './routeTree.gen'
 

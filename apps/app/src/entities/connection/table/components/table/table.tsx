@@ -10,9 +10,12 @@ import type { ComponentRef } from 'react'
 import { useCallback, useMemo, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { TableCell } from '~/entities/connection/components'
+import {
+  TableCell,
+  getColumnSize,
+  INTERNAL_COLUMN_IDS,
+} from '~/entities/connection/components/table/cell'
 import type { Column, ColumnHandlers } from '~/entities/connection/components/table/cell'
-import { getColumnSize, INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 
 import { useTableColumns } from '../../columns'
@@ -242,7 +245,7 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
     <TableProvider rows={rows} columns={providerColumns} customColumnSizes={columnSizes}>
       <div
         role="grid"
-        className="relative size-full bg-background outline-none"
+        className="relative size-full outline-none"
         tabIndex={0}
         onKeyDown={handleShiftSelectionKeyDown}
       >

@@ -148,10 +148,7 @@ function Header() {
     <TableHeader
       className={cn(
         'flex transition-shadow duration-300',
-        isScrolled &&
-          `
-        shadow-lg shadow-black/3
-      `,
+        isScrolled && `shadow-lg shadow-black/3`,
       )}
       before={
         <div className="sticky inset-y-0 left-0 z-20 flex w-0 items-center">
