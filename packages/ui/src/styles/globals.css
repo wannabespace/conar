@@ -217,10 +217,6 @@
   @apply bg-white/90 text-primary;
 }
 
-@utility border-blend {
-  @apply absolute inset-0 rounded-[inherit] mix-blend-overlay;
-}
-
 @utility hit-area-debug {
   position: relative;
   &::before {
