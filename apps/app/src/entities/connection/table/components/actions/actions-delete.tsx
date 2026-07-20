@@ -31,7 +31,7 @@ import { useTablePageStore } from '../../store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-export function HeaderActionsDelete({ table, schema }: { table: string; schema: string }) {
+export function ActionsDelete({ table, schema }: { table: string; schema: string }) {
   const { connectionResource } = useRouteContext()
   const [isOpened, setIsOpened] = useState(false)
   const store = useTablePageStore()
@@ -111,7 +111,16 @@ export function HeaderActionsDelete({ table, schema }: { table: string; schema: 
             exit={{ opacity: 0, width: 0 }}
             transition={{ duration: 0.1 }}
           >
-            <Button variant="destructive" onClick={() => setIsOpened(true)}>
+            <Button
+              variant="destructive"
+              // The dock has no shared background — translucent destructive
+              // tint disappears over table data, so go solid red
+              className="
+                bg-destructive text-white shadow-xs
+                hover:bg-destructive/85
+              "
+              onClick={() => setIsOpened(true)}
+            >
               <RiDeleteBin7Line />
               <span>
                 Delete (

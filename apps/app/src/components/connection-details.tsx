@@ -33,7 +33,7 @@ export function ConnectionDetails({
             <td data-mask>
               <button
                 type="button"
-                className="mr-2 inline-block translate-y-0.5 cursor-pointer rounded-md p-1 hover:bg-accent/50 [&_svg]:size-3"
+                className="mr-2 inline-block translate-y-0.5 rounded-md p-1 hover:bg-accent/50 [&_svg]:size-3"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}

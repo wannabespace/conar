@@ -238,6 +238,7 @@ function CalendarDayButton({
           group-data-[focused=true]/day:border-ring
           group-data-[focused=true]/day:ring-[3px]
           group-data-[focused=true]/day:ring-ring/50
+          hover:text-foreground
           data-[range-end=true]:rounded-(--cell-radius)
           data-[range-end=true]:rounded-r-(--cell-radius)
           data-[range-end=true]:bg-primary
@@ -251,7 +252,6 @@ function CalendarDayButton({
           data-[range-start=true]:text-primary-foreground
           data-[selected-single=true]:bg-primary
           data-[selected-single=true]:text-primary-foreground
-          hover:dark:text-foreground
           [&>span]:text-xs [&>span]:opacity-70
         `,
         defaultClassNames.day,

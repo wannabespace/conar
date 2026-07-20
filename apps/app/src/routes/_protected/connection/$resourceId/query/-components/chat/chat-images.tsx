@@ -22,7 +22,7 @@ export function ChatImages({
                 alt={image.name}
                 className={cn(
                   `
-                  size-10 shrink-0 cursor-pointer rounded-md border object-cover
+                  size-10 shrink-0 rounded-md border object-cover
                   transition-all
                   hover:ring-2 hover:ring-primary/50
                 `,
@@ -57,7 +57,7 @@ export function ChatImages({
               type="button"
               aria-label={`Remove ${image.name}`}
               className="
-                absolute -top-2 -right-2 z-10 flex size-4 cursor-pointer
+                absolute -top-2 -right-2 z-10 flex size-4
                 items-center justify-center rounded-full border bg-background
                 opacity-0 transition-opacity
                 group-hover:opacity-100

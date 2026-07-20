@@ -137,7 +137,7 @@ export function StepSave({
                     aria-label={`Select ${colorOption} color`}
                     className={cn(
                       `
-                        size-6 cursor-pointer rounded-full bg-(--color)
+                        size-6 rounded-full bg-(--color)
                         transition-all
                       `,
                       color === colorOption &&

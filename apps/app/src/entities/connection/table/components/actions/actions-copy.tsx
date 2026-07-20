@@ -230,13 +230,7 @@ function CopyDialogEditor({
   )
 }
 
-export function HeaderActionsCopy({
-  table,
-  trigger,
-}: {
-  table: string
-  trigger?: React.ReactElement
-}) {
+export function ActionsCopy({ table, trigger }: { table: string; trigger?: React.ReactElement }) {
   const { connection, connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const filters = useSubscription(store, { selector: state => state.filters })

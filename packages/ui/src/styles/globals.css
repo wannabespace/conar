@@ -159,6 +159,24 @@
   --sidebar-ring: oklch(0.552 0 0);
 }
 
+/* Native macOS chrome dimming: while the window is inactive the desktop app
+   toggles `window-blurred` on <html>, and accent fills fall back to neutral
+   grays — Finder-style gray sidebar selection, gray active states, gray
+   primary buttons. Colors snap without transition, matching AppKit. */
+.electron.window-blurred {
+  --primary: oklch(0.87 0 0);
+  --primary-foreground: oklch(0.3 0 0);
+  --sidebar-primary: oklch(0.87 0 0);
+  --sidebar-primary-foreground: oklch(0.3 0 0);
+}
+
+.electron.window-blurred.dark {
+  --primary: oklch(0.38 0 0);
+  --primary-foreground: oklch(0.92 0 0);
+  --sidebar-primary: oklch(0.38 0 0);
+  --sidebar-primary-foreground: oklch(0.92 0 0);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -199,7 +217,9 @@
   }
 
   body {
-    @apply font-sans antialiased bg-body text-foreground;
+    /* overscroll-none: the window itself must not rubber-band like a web
+       page — inner scrollers keep their own native bounce */
+    @apply font-sans antialiased bg-body text-foreground overscroll-none;
   }
 
   .electron {

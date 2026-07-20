@@ -23,7 +23,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { SupportDialog } from '~/components/support-button'
+import { SupportDialog } from '~/components/support-dialog'
 import { authClient } from '~/lib/auth'
 import { clearDb } from '~/lib/sync'
 

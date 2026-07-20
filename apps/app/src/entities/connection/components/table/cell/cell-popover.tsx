@@ -4,7 +4,6 @@ import {
   RiExpandDiagonal2Line,
   RiFileCopyLine,
 } from '@remixicon/react'
-import { getOS } from '@tamery/shared/utils/os'
 import { Button } from '@tamery/ui/components/button'
 import {
   Combobox,
@@ -19,6 +18,7 @@ import {
 } from '@tamery/ui/components/combobox'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
+import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Select,
   SelectContent,
@@ -335,7 +335,8 @@ export function CellPopoverContent({
                   Apply
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                  Apply with {getOS(navigator.userAgent).type === 'macos' ? '⌘' : 'Ctrl'} + Enter
+                  Apply with
+                  <KbdCtrlEnter userAgent={navigator.userAgent} />
                 </TooltipContent>
               </Tooltip>
             </>

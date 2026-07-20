@@ -49,8 +49,7 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
       <div
         className="
         flex items-center justify-between gap-2 border-b border-border/80
-        bg-linear-to-t from-background/70 px-4 py-3
-        dark:from-background/30
+        bg-linear-to-t from-background/50 px-4 py-3
       "
       >
         <div data-mask className="flex min-w-0 items-center gap-2 text-sm">

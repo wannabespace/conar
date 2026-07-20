@@ -19,12 +19,10 @@ function Switch({
           after:absolute after:-inset-x-3 after:-inset-y-2
           focus-visible:border-ring focus-visible:ring-3
           focus-visible:ring-ring/30
-          aria-invalid:border-destructive aria-invalid:ring-3
-          aria-invalid:ring-destructive/20
+          aria-invalid:border-destructive/60 aria-invalid:ring-3
+          aria-invalid:ring-destructive/30
           data-[size=default]:h-5 data-[size=default]:w-8
           data-[size=sm]:h-4 data-[size=sm]:w-6
-          dark:aria-invalid:border-destructive/50
-          dark:aria-invalid:ring-destructive/40
           data-checked:border-primary data-checked:bg-primary
           data-unchecked:border-transparent data-unchecked:bg-muted
           data-disabled:cursor-not-allowed data-disabled:opacity-50
@@ -36,15 +34,13 @@ function Switch({
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
         className="
-          pointer-events-none block rounded-2xl bg-background shadow-sm ring-0
+          pointer-events-none block rounded-2xl bg-white bg-clip-padding
+          shadow-sm ring-0
           transition-transform
-          not-dark:bg-clip-padding
           group-data-[size=default]/switch:size-4
           group-data-[size=sm]/switch:size-3
           data-checked:translate-x-[calc(100%-4px)]
-          dark:data-checked:bg-primary-foreground
           data-unchecked:translate-x-0
-          dark:data-unchecked:bg-foreground
         "
       />
     </SwitchPrimitive.Root>

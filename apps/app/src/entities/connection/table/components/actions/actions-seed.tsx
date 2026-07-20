@@ -182,7 +182,7 @@ function CustomExpressionPopover({ columnId }: { columnId: string }) {
   )
 }
 
-export function HeaderActionsSeed({
+export function ActionsSeed({
   table,
   schema,
   trigger,

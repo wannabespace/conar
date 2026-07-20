@@ -6,15 +6,17 @@ import type { ComponentProps } from 'react'
 
 export function RefreshButton({
   refreshing,
+  iconClassName,
   ...props
 }: {
   refreshing: boolean
+  iconClassName?: string
 } & Omit<ComponentProps<typeof Button>, 'children'>) {
   return (
     <Button {...props}>
       <LoadingContent loading={refreshing}>
         <ContentSwitch activeContent={<RiCheckLine className="text-success" />} active={refreshing}>
-          <RiLoopLeftLine />
+          <RiLoopLeftLine className={iconClassName} />
         </ContentSwitch>
       </LoadingContent>
     </Button>

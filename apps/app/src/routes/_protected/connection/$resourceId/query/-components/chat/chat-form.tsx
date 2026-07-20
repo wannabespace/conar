@@ -186,7 +186,7 @@ export function ChatForm() {
       <div
         className={`
         relative flex flex-col gap-2 overflow-hidden rounded-md border
-        dark:bg-input/30
+        bg-input/32
       `}
       >
         {!subscription && (

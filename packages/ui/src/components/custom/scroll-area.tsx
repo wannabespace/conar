@@ -7,9 +7,8 @@ export function ScrollArea({ className, ...props }: ComponentProps<'div'>) {
       className={cn(
         // oxlint-disable-next-line tailwindcss/no-conflicting-classes
         `
-          scrollbar-thin scrollbar-thumb-black/15 scrollbar-track-transparent
+          scrollbar-thin scrollbar-thumb-foreground/15 scrollbar-track-transparent
           overflow-auto
-          dark:scrollbar-thumb-white/15
         `,
         className,
       )}

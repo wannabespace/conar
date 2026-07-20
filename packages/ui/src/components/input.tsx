@@ -19,11 +19,9 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
           focus-visible:ring-ring/30
           disabled:pointer-events-none disabled:cursor-not-allowed
           disabled:opacity-50
-          aria-invalid:border-destructive aria-invalid:ring-3
-          aria-invalid:ring-destructive/20
+          aria-invalid:border-destructive/60 aria-invalid:ring-3
+          aria-invalid:ring-destructive/30
           md:text-sm
-          dark:aria-invalid:border-destructive/50
-          dark:aria-invalid:ring-destructive/40
         `,
         className,
       )}

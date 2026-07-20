@@ -8,8 +8,8 @@ export const groupVariants = cva(
     *:focus-visible:z-1
     *:has-focus-visible:z-1
     has-[>[data-slot=group]]:gap-2
-    dark:*:[[data-slot=separator]:has(~button:hover):not(:has(~[data-slot=separator]~[data-slot]:hover)),[data-slot=separator]:has(~[data-slot][data-pressed]):not(:has(~[data-slot=separator]~[data-slot][data-pressed]))]:before:bg-input/64
-    dark:*:[button:hover~[data-slot=separator]:not([data-slot]:hover~[data-slot=separator]~[data-slot=separator]),[data-slot][data-pressed]~[data-slot=separator]:not([data-slot][data-pressed]~[data-slot=separator]~[data-slot=separator])]:before:bg-input/64
+    *:[[data-slot=separator]:has(~button:hover):not(:has(~[data-slot=separator]~[data-slot]:hover)),[data-slot=separator]:has(~[data-slot][data-pressed]):not(:has(~[data-slot=separator]~[data-slot][data-pressed]))]:before:bg-input/64
+    *:[button:hover~[data-slot=separator]:not([data-slot]:hover~[data-slot=separator]~[data-slot=separator]),[data-slot][data-pressed]~[data-slot=separator]:not([data-slot][data-pressed]~[data-slot=separator]~[data-slot=separator])]:before:bg-input/64
   `,
   {
     defaultVariants: {
@@ -35,8 +35,6 @@ export const groupVariants = cva(
             *:data-slot:has-[~[data-slot]]:before:rounded-b-none
             *:data-slot:not-data-[slot=separator]:has-[~[data-slot]]:before:bottom-[-0.03125rem]
             *:data-slot:not-data-[slot=separator]:has-[~[data-slot]]:before:hidden
-            dark:*:first:before:block
-            dark:*:last:before:hidden
             *:pointer-coarse:after:min-h-auto
             *:[[data-slot]~[data-slot]]:rounded-t-none
             *:[[data-slot]~[data-slot]]:border-t-0

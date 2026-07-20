@@ -11,8 +11,7 @@ export const badgeVariants = cva(
     focus-visible:ring-ring/50
     has-data-[icon=inline-end]:pr-1.5
     has-data-[icon=inline-start]:pl-1.5
-    aria-invalid:border-destructive aria-invalid:ring-destructive/20
-    dark:aria-invalid:ring-destructive/40
+    aria-invalid:border-destructive/60 aria-invalid:ring-destructive/30
     [&>svg]:pointer-events-none [&>svg]:size-3!
   `,
   {
@@ -27,19 +26,16 @@ export const badgeVariants = cva(
             [a]:hover:bg-secondary/80
           `,
         destructive: `
-            bg-destructive/10 text-destructive
-            focus-visible:ring-destructive/20
-            dark:bg-destructive/20
-            focus-visible:dark:ring-destructive/40
-            [a]:hover:bg-destructive/20
+            bg-destructive/15 text-destructive
+            focus-visible:ring-destructive/30
+            [a]:hover:bg-destructive/25
           `,
         outline: `
             border-border text-foreground
             [a]:hover:bg-muted [a]:hover:text-muted-foreground
           `,
         ghost: `
-            hover:bg-muted hover:text-muted-foreground
-            hover:dark:bg-muted/50
+            hover:bg-foreground/5 hover:text-muted-foreground
           `,
         link: `
           text-primary underline-offset-4

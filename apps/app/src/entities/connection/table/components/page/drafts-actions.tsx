@@ -1,9 +1,9 @@
-import { RiAlertLine, RiEyeLine } from '@remixicon/react'
+import { RiEyeLine } from '@remixicon/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
-import { getOS } from '@tamery/shared/utils/os'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -28,13 +28,11 @@ import {
   primaryKeysKey,
   useTablePageStore,
 } from '../../store'
-import { DraftsReviewDrawer } from './drafts-review-drawer'
+import { DraftsReviewDrawer } from '../table/drafts-review-drawer'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const os = getOS(navigator.userAgent)
-
-export function DraftsToolbar({ table, schema }: { table: string; schema: string }) {
+export function DraftsActions({ table, schema }: { table: string; schema: string }) {
   const { connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const columns = useTableColumns()
@@ -257,69 +255,70 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
 
   return (
     <>
-      {/* Renders as the command bar's top row — no floating shell of its own,
-          so unsaved-changes state lives in the same surface as everything else */}
+      {/* Inline cluster in the command bar's controls row — drafts state lives
+          next to everything else, no separate floating toolbar */}
       <AnimatePresence initial={false}>
         {drafts.length > 0 && (
           <motion.div
             key="drafts"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
-            className="overflow-hidden"
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: 'auto' }}
+            exit={{ opacity: 0, width: 0 }}
+            transition={{ duration: 0.15 }}
+            className="flex shrink-0 items-center gap-1 overflow-hidden"
           >
-            <div className="flex items-center gap-2 border-b py-1.5 pr-1.5 pl-3">
-              <div className="flex min-w-0 items-center gap-2 text-xs">
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="relative overflow-visible"
+                    onClick={() => setIsReviewOpen(true)}
+                    disabled={isSaving}
+                  />
+                }
+              >
+                <RiEyeLine />
                 {errorCount > 0 && (
-                  <>
-                    <span className="flex items-center gap-1 text-destructive">
-                      <RiAlertLine className="size-3.5" />
-                      <span className="font-medium">{errorCount} failed</span>
-                    </span>
-                    <span className="text-muted-foreground">·</span>
-                  </>
+                  <span
+                    aria-hidden
+                    className="
+                      absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center
+                      justify-center rounded-full bg-destructive px-1 text-2xs
+                      font-medium text-white tabular-nums
+                    "
+                  >
+                    {errorCount}
+                  </span>
                 )}
-                <span className="truncate">
-                  <span className="font-medium">{drafts.length}</span> unsaved change
-                  {drafts.length === 1 ? '' : 's'} in{' '}
-                  <span className="font-medium">{rowCount}</span> row
-                  {rowCount === 1 ? '' : 's'}
-                </span>
-              </div>
-              <div className="ml-auto flex shrink-0 items-center gap-1">
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button
-                        variant="outline"
-                        size="icon-xs"
-                        onClick={() => setIsReviewOpen(true)}
-                        disabled={isSaving}
-                      />
-                    }
-                  >
-                    <RiEyeLine className="size-3.5" />
-                  </TooltipTrigger>
-                  <TooltipContent side="top">Review changes before saving</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger
-                    render={<Button size="xs" onClick={handleSave} disabled={isSaving} />}
-                  >
-                    <LoadingContent loading={isSaving}>Save</LoadingContent>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <div className="flex flex-col gap-0.5">
-                      <span>Save all unsaved changes atomically in a transaction</span>
-                      <span className="whitespace-nowrap opacity-70">
-                        {os?.type === 'macos' ? '⌘' : 'Ctrl'} + S
-                      </span>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </div>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <div className="flex flex-col gap-0.5">
+                  <span>Review changes before saving</span>
+                  {errorCount > 0 && (
+                    <span className="opacity-70">
+                      {errorCount} change{errorCount === 1 ? '' : 's'} failed
+                    </span>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger render={<Button onClick={handleSave} disabled={isSaving} />}>
+                <LoadingContent loading={isSaving}>Save ({drafts.length})</LoadingContent>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <div className="flex flex-col gap-0.5">
+                  <span>
+                    Save {drafts.length} unsaved change
+                    {drafts.length === 1 ? '' : 's'} in {rowCount} row
+                    {rowCount === 1 ? '' : 's'} atomically in a transaction
+                  </span>
+                  <KbdCtrlLetter userAgent={navigator.userAgent} letter="S" />
+                </div>
+              </TooltipContent>
+            </Tooltip>
           </motion.div>
         )}
       </AnimatePresence>

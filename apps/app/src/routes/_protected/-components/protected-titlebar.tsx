@@ -1,8 +1,8 @@
 import { RiAddLine, RiArrowDownSLine, RiCommandLine, RiDeleteBinLine } from '@remixicon/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
-import { getOS } from '@tamery/shared/utils/os'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
+import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,8 +32,6 @@ import { UserButton } from '~/entities/user/components'
 import { setIsActionCenterOpen } from '~/store'
 
 import { RemoveConnectionDialog } from './remove-connection-dialog'
-
-const os = getOS(navigator.userAgent)
 
 interface ConnectionGroup {
   connection: Connection
@@ -221,46 +219,48 @@ function ConnectionsBreadcrumb({ onRemove }: { onRemove: (connection: Connection
   )
 }
 
-export function AppTitleBar() {
+export function ProtectedTitleBar() {
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
 
   return (
     <div className="flex shrink-0 flex-col">
-      <TitleBar className="gap-1.5 border-b-border bg-card px-2">
-        <RemoveConnectionDialog ref={removeDialogRef} />
-        <Link
-          to="/"
-          aria-label="Home"
-          className={`
-            shrink-0 rounded-md p-1.5 transition-colors
-            hover:bg-muted
-          `}
-        >
-          <AppLogo className="size-4 text-primary" />
-        </Link>
-        <span className="truncate text-muted-foreground/40">/</span>
-        <ConnectionsBreadcrumb
-          onRemove={connection => removeDialogRef.current?.remove(connection)}
-        />
-        <div className="ml-auto flex h-full shrink-0 items-center gap-1">
-          <UpdateButton />
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  aria-label="Command palette"
-                  onClick={() => setIsActionCenterOpen(true)}
-                />
-              }
-            >
-              <RiCommandLine className="size-4" />
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{os?.type === 'macos' ? '⌘' : 'Ctrl'}P</TooltipContent>
-          </Tooltip>
-          <span className="mx-1 h-4 w-px shrink-0 self-center bg-border" />
-          <UserButton side="bottom" align="end" />
+      <TitleBar className="gap-1.5 border-b-border bg-card">
+        <div className="flex w-full items-center px-2">
+          <RemoveConnectionDialog ref={removeDialogRef} />
+          <Link
+            to="/"
+            aria-label="Home"
+            className="shrink-0 rounded-md p-1.5 transition-colors hover:bg-muted"
+          >
+            <AppLogo className="size-4 text-primary" />
+          </Link>
+          <span className="truncate text-muted-foreground/40">/</span>
+          <ConnectionsBreadcrumb
+            onRemove={connection => removeDialogRef.current?.remove(connection)}
+          />
+          <div className="ml-auto flex h-full shrink-0 items-center gap-1">
+            <UpdateButton />
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    aria-label="Command palette"
+                    onClick={() => setIsActionCenterOpen(true)}
+                  />
+                }
+              >
+                <RiCommandLine className="size-4" />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                Command palette
+                <KbdCtrlLetter userAgent={navigator.userAgent} letter="P" />
+              </TooltipContent>
+            </Tooltip>
+            <span className="mx-1 h-4 w-px shrink-0 self-center bg-border" />
+            <UserButton side="bottom" align="end" />
+          </div>
         </div>
       </TitleBar>
     </div>

@@ -105,13 +105,15 @@ export function createWindow() {
   mainWindow.on('enter-full-screen', saveBounds)
   mainWindow.on('leave-full-screen', saveBounds)
 
-  // Notify the renderer so the custom topbar can drop its native-control inset
-  // while fullscreen hides the traffic lights / window-controls overlay.
   const sendFullscreen = () =>
     mainWindow?.webContents.send('fullscreen-changed', mainWindow.isFullScreen())
   mainWindow.on('enter-full-screen', sendFullscreen)
   mainWindow.on('leave-full-screen', sendFullscreen)
   mainWindow.webContents.on('did-finish-load', sendFullscreen)
+
+  const sendFocus = () => mainWindow?.webContents.send('focus-changed', mainWindow.isFocused())
+  mainWindow.on('blur', sendFocus)
+  mainWindow.webContents.on('did-finish-load', sendFocus)
 
   mainWindow.on('close', () => {
     if (!mainWindow) return
@@ -131,6 +133,7 @@ export function createWindow() {
 
   mainWindow.on('focus', () => {
     buildMenu()
+    sendFocus()
   })
 
   if (app.isPackaged) {

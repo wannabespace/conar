@@ -364,7 +364,9 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
                       Filter by {column.id}
                     </span>
                     {column.type && (
-                      <CommandShortcut className="tracking-normal">{column.type}</CommandShortcut>
+                      <CommandShortcut className="tracking-normal">
+                        {column.typeLabel || column.type}
+                      </CommandShortcut>
                     )}
                   </CommandItem>
                 ))}

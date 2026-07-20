@@ -11,7 +11,7 @@ import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
 import { subscriptionQueryClient } from '~/main'
 
 import { ActionsCenter } from './-components/actions-center'
-import { AppTitleBar } from './_protected/-components/app-titlebar'
+import { ProtectedTitleBar } from './_protected/-components/protected-titlebar'
 
 export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
@@ -59,7 +59,7 @@ function ProtectedLayout() {
       <SubscriptionModal />
       <ActionsCenter />
       <div className="flex h-full flex-col">
-        <AppTitleBar />
+        <ProtectedTitleBar />
         <GlobalBanner />
         <div
           className={cn(

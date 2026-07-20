@@ -23,10 +23,8 @@ export function TitleBar({ className, children, ...props }: React.ComponentProps
   return (
     <div
       className={cn(
-        `
-          flex h-[calc(--spacing(10)+1px)] shrink-0 items-center border-b
-          border-transparent
-        `,
+        // oxlint-disable-next-line tailwindcss/enforce-canonical
+        'flex h-[calc(40px+1px)] shrink-0 items-center border-b border-transparent',
         isElectron && '[-webkit-app-region:drag]',
         className,
         // After the consumer className so its px-* can't merge these away —

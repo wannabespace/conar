@@ -70,7 +70,7 @@ function DirectionToggle({
   )
 }
 
-export function HeaderActionsOrder() {
+export function ActionsOrder() {
   const store = useTablePageStore()
   const orderEntries = useSubscription(store, {
     selector: state => Object.entries(state.orderBy || {}),

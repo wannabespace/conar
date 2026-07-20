@@ -15,6 +15,7 @@ import { globalHooks } from '~/global-hooks'
 import { queryClient } from '~/main'
 import { useDeepLinksObserver } from '~/use-deep-links-observer'
 import { useUpdatesObserver } from '~/use-updates-observer'
+import { useWindowFocusObserver } from '~/use-window-focus-observer'
 
 export const Route = createRootRoute({
   component: RootDocument,
@@ -34,6 +35,8 @@ function RootDocument() {
     useHotkey('Mod+Shift+R', () => location.reload())
     // oxlint-disable-next-line react/rules-of-hooks
     useDeepLinksObserver()
+    // oxlint-disable-next-line react/rules-of-hooks
+    useWindowFocusObserver()
   }
 
   useHotkey('Mod+S', () => globalHooks.callHook('savePressed'))

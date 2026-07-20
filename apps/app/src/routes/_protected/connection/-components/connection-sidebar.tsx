@@ -25,7 +25,7 @@ import { Route } from '../$resourceId'
 function baseClasses(isActive = false) {
   return cn(
     `
-      flex size-9 cursor-pointer items-center justify-center rounded-md border
+      flex size-9 items-center justify-center rounded-md border
       border-transparent text-foreground
     `,
     isActive &&

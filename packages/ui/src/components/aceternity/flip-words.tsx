@@ -46,10 +46,7 @@ export function FlipWords({
           position: 'absolute',
         }}
         transition={{ duration: 0.5 }}
-        className={cn(
-          `relative z-10 inline-block px-2 text-left text-neutral-900 dark:text-neutral-100`,
-          className,
-        )}
+        className={cn(`relative z-10 inline-block px-2 text-left text-foreground`, className)}
         key={currentWord}
       >
         {currentWord.split(' ').map((word, wordIndex) => (

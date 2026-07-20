@@ -114,7 +114,7 @@ function ComboboxContent({
             min-w-[calc(var(--anchor-width)+(--spacing(7)))]
             origin-(--transform-origin) animate-none! overflow-hidden
             rounded-2xl bg-popover/70 text-popover-foreground shadow-lg ring-1
-            ring-foreground/5 duration-100
+            ring-foreground/8 duration-100
             before:pointer-events-none before:absolute before:inset-0
             before:-z-1 before:rounded-[inherit] before:backdrop-blur-2xl
             before:backdrop-saturate-150
@@ -138,7 +138,6 @@ function ComboboxContent({
             **:data-[variant=destructive]:**:text-accent-foreground!
             **:data-[variant=destructive]:text-accent-foreground!
             **:focus:data-[variant=destructive]:bg-foreground/10!
-            dark:ring-foreground/10
             data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95
             data-closed:animate-out data-closed:fade-out-0
             data-closed:zoom-out-95
@@ -263,11 +262,9 @@ function ComboboxChips({
           border-transparent bg-input bg-clip-padding px-2.5 py-1 text-sm
           transition-[color,box-shadow] duration-200
           focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/30
-          has-aria-invalid:border-destructive has-aria-invalid:ring-3
-          has-aria-invalid:ring-destructive/20
+          has-aria-invalid:border-destructive/60 has-aria-invalid:ring-3
+          has-aria-invalid:ring-destructive/30
           has-data-[slot=combobox-chip]:px-1
-          dark:has-aria-invalid:border-destructive/50
-          dark:has-aria-invalid:ring-destructive/40
         `,
         className,
       )}
@@ -290,12 +287,11 @@ function ComboboxChip({
       className={cn(
         `
           flex h-[calc(--spacing(5.25))] w-fit items-center justify-center gap-1
-          rounded-2xl bg-input px-1.5 text-xs font-medium whitespace-nowrap
+          rounded-2xl bg-input/60 px-1.5 text-xs font-medium whitespace-nowrap
           text-foreground
           has-disabled:pointer-events-none has-disabled:cursor-not-allowed
           has-disabled:opacity-50
           has-data-[slot=combobox-chip-remove]:pr-0.5
-          dark:bg-input/60
         `,
         className,
       )}

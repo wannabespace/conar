@@ -75,7 +75,7 @@ function MenubarContent({
       className={cn(
         `
         relative min-w-36 animate-none! rounded-2xl bg-popover/70 p-1
-        text-popover-foreground shadow-lg ring-1 ring-foreground/5 duration-100
+        text-popover-foreground shadow-lg ring-1 ring-foreground/8 duration-100
         before:pointer-events-none before:absolute before:inset-0 before:-z-1
         before:rounded-[inherit] before:backdrop-blur-2xl
         before:backdrop-saturate-150
@@ -93,7 +93,6 @@ function MenubarContent({
         **:data-[variant=destructive]:**:text-accent-foreground!
         **:data-[variant=destructive]:text-accent-foreground!
         **:focus:data-[variant=destructive]:bg-foreground/10!
-        dark:ring-foreground/10
         data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95
       `,
         className,
@@ -121,9 +120,8 @@ function MenubarItem({
           focus:not-data-[variant=destructive]:**:text-accent-foreground
           data-inset:pl-7
           data-[variant=destructive]:text-destructive
-          focus:data-[variant=destructive]:bg-destructive/10
+          focus:data-[variant=destructive]:bg-destructive/15
           focus:data-[variant=destructive]:text-destructive
-          focus:dark:data-[variant=destructive]:bg-destructive/20
           data-disabled:opacity-50
           [&_svg:not([class*='size-'])]:size-4
           data-[variant=destructive]:*:[svg]:text-destructive!
@@ -321,7 +319,7 @@ function MenubarSubContent({
       className={cn(
         `
         relative min-w-32 animate-none! rounded-2xl bg-popover/70 p-1
-        text-popover-foreground shadow-lg ring-1 ring-foreground/5 duration-100
+        text-popover-foreground shadow-lg ring-1 ring-foreground/8 duration-100
         before:pointer-events-none before:absolute before:inset-0 before:-z-1
         before:rounded-[inherit] before:backdrop-blur-2xl
         before:backdrop-saturate-150
@@ -337,7 +335,6 @@ function MenubarSubContent({
         **:data-[variant=destructive]:**:text-accent-foreground!
         **:data-[variant=destructive]:text-accent-foreground!
         **:focus:data-[variant=destructive]:bg-foreground/10!
-        dark:ring-foreground/10
         data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95
         data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95
       `,

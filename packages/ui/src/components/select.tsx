@@ -45,8 +45,8 @@ function SelectTrigger({
           focus-visible:border-ring focus-visible:ring-3
           focus-visible:ring-ring/30
           disabled:cursor-not-allowed disabled:opacity-50
-          aria-invalid:border-destructive aria-invalid:ring-3
-          aria-invalid:ring-destructive/20
+          aria-invalid:border-destructive/60 aria-invalid:ring-3
+          aria-invalid:ring-destructive/30
           data-placeholder:text-muted-foreground
           data-[size=default]:h-8
           data-[size=sm]:h-7
@@ -54,8 +54,6 @@ function SelectTrigger({
           *:data-[slot=select-value]:flex
           *:data-[slot=select-value]:items-center
           *:data-[slot=select-value]:gap-1.5
-          dark:aria-invalid:border-destructive/50
-          dark:aria-invalid:ring-destructive/40
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
         `,
@@ -109,7 +107,7 @@ function SelectContent({
             relative isolate z-50 max-h-(--available-height)
             min-w-(--anchor-width) origin-(--transform-origin) overflow-x-hidden
             overflow-y-auto rounded-2xl bg-popover text-popover-foreground
-            shadow-lg ring-1 ring-foreground/5 duration-100
+            shadow-lg ring-1 ring-foreground/8 duration-100
             data-[align-trigger=true]:animate-none
             data-[side=bottom]:slide-in-from-top-2
             data-[side=inline-end]:slide-in-from-left-2
@@ -117,7 +115,6 @@ function SelectContent({
             data-[side=left]:slide-in-from-right-2
             data-[side=right]:slide-in-from-left-2
             data-[side=top]:slide-in-from-bottom-2
-            dark:ring-foreground/10
             data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95
             data-closed:animate-out data-closed:fade-out-0
             data-closed:zoom-out-95

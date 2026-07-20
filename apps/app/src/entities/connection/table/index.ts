@@ -1,6 +1,6 @@
 export * from './columns'
 export * from './components/page'
-export { DraftsToolbar } from './components/table/drafts-toolbar'
+export { DraftsActions } from './components/page/drafts-actions'
 export { Table, TableError } from './components/table/table'
 export { TableEmpty } from './components/table/table-empty'
 export { TableHeaderCell } from './components/table/table-header-cell'

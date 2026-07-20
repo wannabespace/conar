@@ -16,7 +16,7 @@ import { useSubscription } from 'seitu/react'
 import { useTableColumns } from '../../columns'
 import { useTablePageStore } from '../../store'
 
-export function HeaderActionsColumns() {
+export function ActionsColumns() {
   const store = useTablePageStore()
   const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
   const columns = useTableColumns()

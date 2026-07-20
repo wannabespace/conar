@@ -16,14 +16,11 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
           focus-visible:border-ring focus-visible:ring-3
           focus-visible:ring-ring/30
           disabled:cursor-not-allowed disabled:opacity-50
-          aria-invalid:border-destructive aria-invalid:ring-3
-          aria-invalid:ring-destructive/20
+          aria-invalid:border-destructive/60 aria-invalid:ring-3
+          aria-invalid:ring-destructive/30
           aria-invalid:aria-checked:border-primary
-          dark:aria-invalid:border-destructive/50
-          dark:aria-invalid:ring-destructive/40
           data-checked:border-primary data-checked:bg-primary
           data-checked:text-primary-foreground
-          dark:data-checked:bg-primary
         `,
         className,
       )}

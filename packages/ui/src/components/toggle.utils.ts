@@ -10,9 +10,8 @@ export const toggleVariants = cva(
     focus-visible:border-ring focus-visible:ring-[3px]
     focus-visible:ring-ring/30
     disabled:pointer-events-none disabled:opacity-50
-    aria-invalid:border-destructive aria-invalid:ring-destructive/20
+    aria-invalid:border-destructive/60 aria-invalid:ring-destructive/30
     aria-pressed:bg-muted
-    dark:aria-invalid:ring-destructive/40
     [&_svg]:pointer-events-none [&_svg]:shrink-0
     [&_svg:not([class*='size-'])]:size-4
   `,

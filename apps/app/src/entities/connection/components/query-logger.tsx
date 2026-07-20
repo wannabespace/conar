@@ -64,7 +64,7 @@ function LogTrigger({
       type="button"
       className={cn(
         `
-          flex w-full cursor-pointer items-center justify-between gap-2 border-t
+          flex w-full items-center justify-between gap-2 border-t
           px-4 py-1.5
           hover:bg-muted/50
         `,
@@ -181,9 +181,8 @@ function Log({
               <Label className="text-destructive">Error</Label>
               <pre
                 className={`
-                overflow-x-auto rounded-sm bg-red-50 p-2 font-mono text-xs
-                whitespace-break-spaces text-red-700
-                dark:bg-red-950 dark:text-red-300
+                overflow-x-auto rounded-sm bg-destructive/10 p-2 font-mono text-xs
+                whitespace-break-spaces text-destructive
               `}
               >
                 {query.error}

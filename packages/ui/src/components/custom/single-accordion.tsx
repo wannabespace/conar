@@ -20,7 +20,7 @@ export function SingleAccordionTrigger({
       <AccordionPrimitive.Trigger
         className={cn(
           `
-            flex flex-1 cursor-pointer items-center justify-between gap-4
+            flex flex-1 items-center justify-between gap-4
             rounded-md p-2 text-left text-sm font-medium transition-all
             outline-none
             focus-visible:border-ring focus-visible:ring-[0.1875rem]

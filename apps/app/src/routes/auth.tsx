@@ -1,9 +1,11 @@
+import { MeshGradient } from '@paper-design/shaders-react'
 import { RiErrorWarningLine } from '@remixicon/react'
 import { challenge } from '@tamery/shared/utils/challenge'
 import { title } from '@tamery/shared/utils/title'
 import { Badge } from '@tamery/ui/components/badge'
 import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.utils'
 import { Button } from '@tamery/ui/components/button'
+import { useResolvedTheme } from '@tamery/ui/theme-store'
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { motion } from 'motion/react'
@@ -22,6 +24,37 @@ export const Route = createFileRoute('/auth')({
     meta: [{ title: title('Sign in') }],
   }),
 })
+
+// Shader colors are literal by necessity (WebGL uniforms) — two palettes keyed
+// off the resolved theme, both staying close to the app canvas with a faint
+// primary-blue drift
+const MESH_COLORS = {
+  light: ['#f6f7f9', '#e6edfb', '#f0f3f8', '#dbe6fa'],
+  dark: ['#16181d', '#1a2230', '#191c24', '#1f2a41'],
+}
+
+function AuthBackground() {
+  const theme = useResolvedTheme()
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  return (
+    <motion.div
+      aria-hidden
+      className="pointer-events-none absolute inset-0"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.2 }}
+    >
+      <MeshGradient
+        colors={MESH_COLORS[theme]}
+        distortion={0.9}
+        swirl={0.5}
+        speed={prefersReducedMotion ? 0 : 0.2}
+        style={{ width: '100%', height: '100%' }}
+      />
+    </motion.div>
+  )
+}
 
 function AuthPage() {
   const { refetch } = authClient.useSession()
@@ -75,9 +108,10 @@ function AuthPage() {
     <>
       {window.electron && <TitleBar className="-mb-10" />}
       <div className="relative flex flex-col overflow-hidden px-4 py-6">
+        <AuthBackground />
         <div
           className="
-          m-auto flex w-full max-w-md flex-1 flex-col justify-center
+          relative m-auto flex w-full max-w-md flex-1 flex-col justify-center
         "
         >
           <motion.div
@@ -143,7 +177,8 @@ function AuthPage() {
         </div>
         <motion.div
           className="
-            mx-auto mt-auto w-full max-w-md pt-10 will-change-transform
+            relative mx-auto mt-auto w-full max-w-md pt-10
+            will-change-transform
           "
           initial={{ opacity: 0, transform: 'translateY(10px)', filter: 'blur(4px)' }}
           animate={{ opacity: 1, transform: 'translateY(0)', filter: 'none' }}

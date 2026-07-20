@@ -30,12 +30,12 @@ import { getConnectionResourceStore } from '~/entities/connection/store'
 
 import { useTableColumns } from '../../columns'
 import { useTablePageStore } from '../../store'
-import { HeaderActionsColumns } from '../header/header-actions-columns'
-import { HeaderActionsCopy } from '../header/header-actions-copy'
-import { HeaderActionsDelete } from '../header/header-actions-delete'
-import { HeaderActionsOrder } from '../header/header-actions-order'
-import { HeaderActionsSeed } from '../header/header-actions-seed'
-import { DraftsToolbar } from '../table/drafts-toolbar'
+import { ActionsColumns } from '../actions/actions-columns'
+import { ActionsCopy } from '../actions/actions-copy'
+import { ActionsDelete } from '../actions/actions-delete'
+import { ActionsOrder } from '../actions/actions-order'
+import { ActionsSeed } from '../actions/actions-seed'
+import { DraftsActions } from './drafts-actions'
 import { FilterSearchBar } from './filter-search-bar'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -158,115 +158,115 @@ export function CommandBar({ table, schema }: { table: string; schema: string })
   }
 
   return (
+    // No shared shell — each control floats on its own; gaps click through
     <div
-      className={`
-        pointer-events-auto flex w-full max-w-3xl flex-col rounded-xl border
-        bg-background/90 shadow-lg backdrop-blur-xs
-      `}
+      className="
+        pointer-events-none flex w-full max-w-3xl items-end gap-2
+        *:pointer-events-auto
+      "
     >
-      <DraftsToolbar table={table} schema={schema} />
-      <div className="flex items-end gap-2 p-1.5">
-        <FilterSearchBar table={table} schema={schema} />
-        <Tooltip>
-          <TooltipTrigger
-            className="
-              flex h-8 shrink-0 cursor-default items-center gap-2 px-1.5
-              text-2xs whitespace-nowrap text-muted-foreground tabular-nums
+      <Tooltip>
+        <TooltipTrigger
+          className="
+              flex h-8 shrink-0 cursor-default items-center gap-2 rounded-xl
+              border bg-input px-2.5 text-2xs whitespace-nowrap
+              text-muted-foreground tabular-nums shadow-xs
             "
-            onClick={() => store.set(state => ({ ...state, exact: true }) satisfies typeof state)}
-          >
-            <span className="flex items-center gap-1">
-              <RiLayoutColumnLine className="size-3 text-muted-foreground/60" />
-              {columns.length}
-            </span>
-            <span className="flex items-center gap-1">
-              <RiMenuLine className="size-3 text-muted-foreground/60" />
-              {total?.count === undefined ? (
-                '…'
-              ) : (
-                <NumberFlow
-                  value={total.count}
-                  className={cn(
-                    'tabular-nums',
-                    isTotalLoading && 'animate-pulse text-muted-foreground/50',
-                  )}
-                  prefix={total.isEstimated ? '~' : ''}
-                />
-              )}
-            </span>
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            <div className="flex flex-col gap-0.5">
-              <span>
-                {columns.length} columns ·{' '}
-                {total?.count === undefined
-                  ? '… rows'
-                  : `${total.isEstimated ? '~' : ''}${total.count} row${total.count === 1 ? '' : 's'}`}
-                {!exact && total?.isEstimated && '. Click to get the exact count.'}
-              </span>
-              <span className="opacity-70">
-                Updated: {totalUpdatedAt ? new Date(totalUpdatedAt).toLocaleTimeString() : 'never'}
-              </span>
-            </div>
-          </TooltipContent>
-        </Tooltip>
-        {tableType === 'table' && <HeaderActionsDelete table={table} schema={schema} />}
-        <div className="flex shrink-0 items-center gap-1">
-          <HeaderActionsColumns />
-          <HeaderActionsOrder />
-          <Popover>
-            <Tooltip>
-              <TooltipTrigger
-                render={<PopoverTrigger render={<Button variant="outline" size="icon" />} />}
-              >
-                <RiMoreLine />
-              </TooltipTrigger>
-              <TooltipContent side="top">More actions</TooltipContent>
-            </Tooltip>
-            <PopoverContent
-              side="top"
-              align="end"
-              className="w-44 gap-0 rounded-2xl p-1 **:data-[slot=popover-viewport]:p-0"
-            >
-              {tableType === 'table' && (
-                <HeaderActionsSeed
-                  table={table}
-                  schema={schema}
-                  trigger={
-                    <OverflowRow>
-                      <RiSeedlingLine className="size-4 text-muted-foreground" />
-                      Seed data
-                    </OverflowRow>
-                  }
-                />
-              )}
-              <ExportData
-                selected={selected}
-                filename={`${schema}_${table}`}
-                getData={getData}
-                trigger={({ isExporting }) => (
-                  <OverflowRow disabled={isExporting || rows?.length === 0 || isPending}>
-                    <LoadingContent loading={isExporting} className="size-4">
-                      <RiDownloadLine className="size-4 text-muted-foreground" />
-                    </LoadingContent>
-                    Download
-                  </OverflowRow>
+          onClick={() => store.set(state => ({ ...state, exact: true }) satisfies typeof state)}
+        >
+          <span className="flex items-center gap-1">
+            <RiLayoutColumnLine className="size-3 text-muted-foreground/60" />
+            {columns.length}
+          </span>
+          <span className="flex items-center gap-1">
+            <RiMenuLine className="size-3 text-muted-foreground/60" />
+            {total?.count === undefined ? (
+              '…'
+            ) : (
+              <NumberFlow
+                value={total.count}
+                className={cn(
+                  'tabular-nums',
+                  isTotalLoading && 'animate-pulse text-muted-foreground/50',
                 )}
+                prefix={total.isEstimated ? '~' : ''}
               />
-              {tableType === 'table' && (
-                <HeaderActionsCopy
-                  table={table}
-                  trigger={
-                    <OverflowRow>
-                      <RiCodeSSlashLine className="size-4 text-muted-foreground" />
-                      Code
-                    </OverflowRow>
-                  }
-                />
+            )}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top">
+          <div className="flex flex-col gap-0.5">
+            <span>
+              {columns.length} columns ·{' '}
+              {total?.count === undefined
+                ? '… rows'
+                : `${total.isEstimated ? '~' : ''}${total.count} row${total.count === 1 ? '' : 's'}`}
+              {!exact && total?.isEstimated && '. Click to get the exact count.'}
+            </span>
+            <span className="opacity-70">
+              Updated: {totalUpdatedAt ? new Date(totalUpdatedAt).toLocaleTimeString() : 'never'}
+            </span>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+      <FilterSearchBar table={table} schema={schema} />
+      <DraftsActions table={table} schema={schema} />
+      {tableType === 'table' && <ActionsDelete table={table} schema={schema} />}
+      <div className="flex shrink-0 items-center gap-1">
+        <ActionsColumns />
+        <ActionsOrder />
+        <Popover>
+          <Tooltip>
+            <TooltipTrigger
+              render={<PopoverTrigger render={<Button variant="outline" size="icon" />} />}
+            >
+              <RiMoreLine />
+            </TooltipTrigger>
+            <TooltipContent side="top">More actions</TooltipContent>
+          </Tooltip>
+          <PopoverContent
+            side="top"
+            align="end"
+            className="w-44 gap-0 rounded-2xl p-1 **:data-[slot=popover-viewport]:p-0"
+          >
+            {tableType === 'table' && (
+              <ActionsSeed
+                table={table}
+                schema={schema}
+                trigger={
+                  <OverflowRow>
+                    <RiSeedlingLine className="size-4 text-muted-foreground" />
+                    Seed data
+                  </OverflowRow>
+                }
+              />
+            )}
+            <ExportData
+              selected={selected}
+              filename={`${schema}_${table}`}
+              getData={getData}
+              trigger={({ isExporting }) => (
+                <OverflowRow disabled={isExporting || rows?.length === 0 || isPending}>
+                  <LoadingContent loading={isExporting} className="size-4">
+                    <RiDownloadLine className="size-4 text-muted-foreground" />
+                  </LoadingContent>
+                  Download
+                </OverflowRow>
               )}
-            </PopoverContent>
-          </Popover>
-        </div>
+            />
+            {tableType === 'table' && (
+              <ActionsCopy
+                table={table}
+                trigger={
+                  <OverflowRow>
+                    <RiCodeSSlashLine className="size-4 text-muted-foreground" />
+                    Code
+                  </OverflowRow>
+                }
+              />
+            )}
+          </PopoverContent>
+        </Popover>
       </div>
     </div>
   )

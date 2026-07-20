@@ -1,6 +1,5 @@
 import { RiArrowLeftSLine, RiArrowRightSLine, RiCloseLine, RiTableLine } from '@remixicon/react'
 import { enabledFilters } from '@tamery/shared/filters'
-import { getOS } from '@tamery/shared/utils/os'
 import { Button } from '@tamery/ui/components/button'
 import {
   ContextMenu,
@@ -48,8 +47,6 @@ import { tablePageStore } from '../../store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const os = getOS(navigator.userAgent)
-
 function TableRefresh({ schema, table }: { schema: string; table: string }) {
   const { connectionResource } = useRouteContext()
   const store = tablePageStore({ id: connectionResource.id, schema, table })
@@ -96,13 +93,16 @@ function TableRefresh({ schema, table }: { schema: string; table: string }) {
             variant="ghost"
             size="icon-sm"
             className="text-muted-foreground"
+            iconClassName="size-3.5"
             refreshing={isFetching}
             onClick={handleRefresh}
           />
         }
       ></TooltipTrigger>
       <TooltipContent side="bottom">
-        Refresh table ({os.type === 'macos' ? '⌘' : 'Ctrl'} + R)
+        {/* ⌘R is bound via the Electron main process; in the browser it reloads the page */}
+        Refresh table
+        {window.electron && <KbdCtrlLetter userAgent={navigator.userAgent} letter="R" />}
       </TooltipContent>
     </Tooltip>
   )
@@ -484,7 +484,8 @@ export function TabBar({ className }: { className?: string }) {
             render={<SidebarTrigger className="text-muted-foreground" />}
           ></TooltipTrigger>
           <TooltipContent side="bottom">
-            Toggle tables sidebar ({os.type === 'macos' ? '⌘' : 'Ctrl'} + B)
+            Toggle tables sidebar
+            <KbdCtrlLetter userAgent={navigator.userAgent} letter="B" />
           </TooltipContent>
         </Tooltip>
         <HistoryNav />

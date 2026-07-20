@@ -151,7 +151,7 @@ function DrawerContent({ className, children, ...props }: DrawerPrimitive.Popup.
               w-(--drawer-content-width,auto)
               transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))]
               flex-col rounded-[min(var(--radius-4xl),24px)] border
-              border-popover bg-popover text-sm text-popover-foreground
+              border-white/10 bg-popover text-sm text-popover-foreground
               shadow-xl transition-[transform,height,opacity,filter]
               duration-450 ease-[cubic-bezier(0.22,1,0.36,1)]
               will-change-transform outline-none select-none
@@ -160,7 +160,6 @@ function DrawerContent({ className, children, ...props }: DrawerPrimitive.Popup.
               [--drawer-stacked-shadow:0_-20px_25px_-5px_rgb(0_0_0/0.1),0_-8px_10px_-6px_rgb(0_0_0/0.1)]
               [interpolate-size:allow-keywords]
               data-[swipe-direction=down]:data-nested-drawer-open:shadow-(--drawer-stacked-shadow)
-              dark:border-border
             `,
             // Nested.
             `

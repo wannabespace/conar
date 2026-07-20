@@ -11,7 +11,13 @@ Tamery is a native-feeling macOS database client (Electron + React + Tailwind v4
 
 1. **Never use `dark:` selectors.** Colors must come from theme tokens that resolve correctly in both themes via CSS variables (`packages/ui/src/styles/globals.css`). If a token pair has no contrast in one theme (e.g. `muted` ≈ canvas in dark), pick a cross-theme construction instead:
    - neutral tint that works everywhere: `bg-foreground/5` (groove), `bg-foreground/3` (zebra)
-   - elevation: `bg-input` is above `bg-background` in both themes
+   - elevation: `bg-input` is above `bg-background` in both theme
+   - **No new custom vars for theme pairs either** (owner decision — a `--foo-light/dark` token layer was tried and rejected). Express the pair as ONE inline construction that self-resolves per theme:
+     - alpha over a theme-resolving token: `ring-destructive/30`, `ring-foreground/8`, `bg-destructive/15` — the base color already flips per theme, one alpha reads fine in both
+     - **`bg-input/N` trick**: `--input` is pure white in light, an elevated gray in dark — so `bg-input/32`, `bg-input/60` are invisible over light surfaces and a translucent lift in dark (used by number-field group, combobox chips, group separator grooves, chat composer)
+     - **dual-hairline shadow trick**: `shadow-[0_1px_--theme(--color-black/6%),0_-1px_--theme(--color-white/6%)]` — both hairlines always on; black bottom edge only contrasts in light, white top highlight only in dark
+     - **mix with `--background`**: tinted fills that must be pale in light and deep in dark — `bg-[color-mix(in_oklch,var(--primary)_18%,var(--background))]` (chat bubble tinted variant)
+     - white where both themes want white: switch/slider thumbs are `bg-white`, dark-only hairlines are `border-white/10` (invisible on light)s
 2. **Never use pixel font sizes** (`text-[13px]`). Use tokens only: `text-2xs` (0.6875rem, custom token in globals.css) for micro labels, `text-xs` for secondary/chips, `text-sm` for primary UI labels, `text-base`+ for headings. If a size is missing, add a rem token to `@theme` — don't inline arbitrary values.
 3. **No `cursor-pointer`.** Native apps use the arrow cursor. Put `cursor-default` on links/buttons that act as controls (router `Link`s especially — the UA gives `<a>` a hand cursor). Only exceptions: text inputs (I-beam) and resize handles (`cursor-col-resize`).
 4. **Fix sizing/colors at the kit level** (`packages/ui/src/components/*`) when the problem is systemic — menus, command lists, tabs — so the whole app moves together. Page-level overrides are for page-specific design only.
@@ -25,11 +31,13 @@ Tamery is a native-feeling macOS database client (Electron + React + Tailwind v4
 | 2 (surface) | `bg-background`, `bg-card` | The "window" pane (rounded-xl border shadow), active tab, grouped list containers |
 | 3 (elevated) | `bg-input`, `bg-popover` | Buttons, inputs, chips, popovers, menus, active segmented-control pill |
 
-Glass (floating chrome over data): `bg-background/75`–`/90` + `backdrop-blur`, hairline `border`. Used by: sticky table column header and the floating command bar. The command bar is the **single** floating surface on the table page — the drafts row renders inside it as an animated top row (`height 0↔auto`, `border-b`), never as a second floating pill; don't add parallel floating toolbars that can stack or overlap.
+Glass (floating chrome over data): `bg-background/75`–`/90` + `backdrop-blur`, hairline `border` — used by the sticky table column header. The table-page dock has **no shared shell**: it's a single `pointer-events-none` row of self-contained floating controls (`*:pointer-events-auto`, each with its own `bg-input`/solid surface) so gaps click through to the data. Drafts controls (review eye + "Save (N)") render inline in that row via a width-collapse `AnimatePresence` cluster — never as a separate floating toolbar that can stack or overlap.
 
 Shadows: the kit overrides Tailwind's `--shadow-*` scale in `globals.css` `@theme` — larger blur/offset, lower alpha (0.04–0.14) for macOS-style diffuse elevation. Use the standard `shadow-xs`…`shadow-2xl` classes; never inline `shadow-[...]` values or re-densify with `shadow-black/20`-style modifiers.
 
 Accent usage: selection fills use solid `bg-primary text-primary-foreground` (Finder-style sidebar active row); idle sidebar glyphs are `text-primary/75`; everything else stays neutral. Zebra tables: `bg-foreground/3` on odd rows, **no row borders** (borders + zebra is double separation).
+
+Cell state highlights (data table) stay in the blue/neutral family — warning-yellow was tried and rejected as foreign to the palette. Draft/unsaved: `bg-foreground/4 ring-border italic` (italic = the app's "unsaved/preview" cue, same as preview tabs). Editing: `bg-primary/8 ring-primary/60`. Error: `bg-destructive/10 ring-destructive/40` (only truly semantic state keeps color). All rings are the cell's built-in 1px `ring-1` slot — never `ring-2`.
 
 ## Typography & density
 
@@ -42,6 +50,10 @@ Accent usage: selection fills use solid `bg-primary text-primary-foreground` (Fi
 
 ## Native macOS patterns (established in this codebase)
 
+- **Inactive-window dimming**: the desktop app toggles `window-blurred` on `<html>` (main process `focus`/`blur` → `focus-changed` IPC → `useWindowFocusObserver` in `apps/app/src/use-window-focus-observer.ts`). Under `.electron.window-blurred`, globals.css swaps `--primary`/`--sidebar-primary` (+ foregrounds) to neutral grays — Finder-style gray selection, gray primary buttons. Colors snap without transition, matching AppKit. Scope any new accent-colored chrome through these tokens so it dims for free.
+- **No root rubber-band**: `body` carries `overscroll-none` (globals.css) — the window itself never bounces; inner scrollers keep native overscroll.
+- **Shader backgrounds** (`@paper-design/shaders-react` `MeshGradient`): auth page only — never behind working surfaces (fights the native look, ignores theme tokens and inactive-window dimming). Recipe: two literal hex palettes keyed off `useResolvedTheme()` (WebGL uniforms can't read CSS vars), slow `speed ~0.2`, `0` under `prefers-reduced-motion`, `pointer-events-none absolute inset-0` behind `relative` content, 1s opacity fade-in to hide the WebGL pop.
+
 - **Right-click context menus** over visible `⋯` buttons (sidebar rows, connection rows, tabs). Keep destructive items last, after a separator, `variant="destructive"`.
 - **Menus are compact**: kit defaults are already tuned (`min-h-7 py-1 text-sm`, `rounded-2xl` container). Don't re-inflate; don't shrink further.
 - **Popovers size to content**: `w-auto min-w-40` unless a search input needs room; hide `CommandInput` below ~8 items; hide group headings when only one group exists.
@@ -49,7 +61,8 @@ Accent usage: selection fills use solid `bg-primary text-primary-foreground` (Fi
 - **Tabs (Finder-style)**: content-width (`shrink-0`, no truncate — full names visible, no tooltip), each tab carries `border-b`, active gets `border-b-transparent bg-background`; bar background `bg-body/50`.
 - **Floating bottom command bar** owns table-page actions: the unified filter field (flex-1, leftmost), delete-on-selection, then columns/sort buttons + `⋯` overflow. `items-end` on the bar so buttons stay bottom-anchored while the field grows upward when chips wrap.
 - **Empty states**: centered soft-squircle icon (`rounded-2xl bg-muted/60`), `text-sm font-medium` title, `text-xs text-muted-foreground` hint, gentle fade/scale-in.
-- **Tooltips**: plain-text shortcut hints ("⌘ + W"), never `Kbd` chips inside a dark tooltip (invisible). Never nest a tooltip trigger inside another tooltip's trigger — merge into one. `TooltipContent` is `inline-flex items-center` (for inline kbd), so a bare text node + `<p>` render side by side — wrap multi-line tooltip content in a `flex flex-col gap-0.5` div.
+- **Keyboard shortcuts always come from `packages/ui/src/components/custom/shortcuts.tsx`** (`KbdCtrlLetter`, `KbdCtrlEnter`, `KbdShiftCtrlLetter`, `Ctrl`, `EnterIcon`) — never hand-roll `os.type === 'macos' ? '⌘' : 'Ctrl'` strings. Pass `userAgent={navigator.userAgent}`; the components handle the ⌘/Ctrl split. `TooltipContent` has built-in `data-[slot=kbd]` styling, so Kbd chips compose inline with tooltip text. Only advertise a shortcut where it actually fires — e.g. ⌘R is Electron-only (browser reloads the page), so gate the chip on `window.electron`.
+- **Tooltips**: never nest a tooltip trigger inside another tooltip's trigger — merge into one. `TooltipContent` is `inline-flex items-center` (for inline kbd), so a bare text node + `<p>` render side by side — wrap multi-line tooltip content in a `flex flex-col gap-0.5` div.
 - **Copy affordances**: use `CopyButton` (kit) — it animates copy→check via `ContentSwitch`; it accepts `children` for labeled buttons. Silent `copy(text)` (no toast) when the icon morph is confirmation enough.
 - **Count badges** on icon buttons: absolute `-top-1.5 -right-1.5 h-4 min-w-4 rounded-full bg-primary text-2xs` — and the Button **must get `relative overflow-visible`** (Button has no `position` by default).
 - **Sidebar nav rows** outside the kit Sidebar (definitions nav, dialog format lists): use `SidebarLink`/`SidebarButton` from `~/components/sidebar-link.tsx` — Finder row `h-7 rounded-md text-sm`, solid `bg-primary text-primary-foreground` active, icons `text-primary/75` → `text-primary-foreground`.

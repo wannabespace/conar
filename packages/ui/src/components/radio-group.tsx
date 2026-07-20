@@ -25,12 +25,9 @@ function RadioGroupItem({ className, ...props }: RadioPrimitive.Root.Props) {
           focus-visible:border-ring focus-visible:ring-3
           focus-visible:ring-ring/30
           disabled:cursor-not-allowed disabled:opacity-50
-          aria-invalid:border-destructive aria-invalid:ring-3
-          aria-invalid:ring-destructive/20
-          dark:aria-invalid:border-destructive/50
-          dark:aria-invalid:ring-destructive/40
+          aria-invalid:border-destructive/60 aria-invalid:ring-3
+          aria-invalid:ring-destructive/30
           data-checked:bg-primary data-checked:text-primary-foreground
-          dark:data-checked:bg-primary
         `,
         className,
       )}
@@ -44,7 +41,6 @@ function RadioGroupItem({ className, ...props }: RadioPrimitive.Root.Props) {
           className="
           absolute top-1/2 left-1/2 size-2 -translate-1/2 rounded-full
           bg-primary-foreground
-          dark:size-2.5
         "
         />
       </RadioPrimitive.Indicator>

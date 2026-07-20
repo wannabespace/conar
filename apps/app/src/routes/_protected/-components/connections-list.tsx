@@ -107,7 +107,7 @@ function ConnectionIconWithVersion({ connection }: { connection: Connection }) {
           <span className="animate-pulse">Loading version...</span>
         ) : version ? (
           <div className="flex items-center gap-1">
-            <button type="button" className="cursor-pointer" onClick={() => refetchVersion()}>
+            <button type="button" onClick={() => refetchVersion()}>
               {version}
             </button>
             {isVersionRefetching && <Spinner className="size-3" />}

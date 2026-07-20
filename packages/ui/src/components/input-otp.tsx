@@ -34,9 +34,8 @@ function InputOTPGroup({ className, ...props }: React.ComponentProps<'div'>) {
       className={cn(
         `
           flex items-center rounded-2xl
-          has-aria-invalid:border-destructive has-aria-invalid:ring-3
-          has-aria-invalid:ring-destructive/20
-          dark:has-aria-invalid:ring-destructive/40
+          has-aria-invalid:border-destructive/60 has-aria-invalid:ring-3
+          has-aria-invalid:ring-destructive/30
         `,
         className,
       )}
@@ -66,11 +65,10 @@ function InputOTPSlot({
           duration-200 outline-none
           first:rounded-l-2xl first:border-l
           last:rounded-r-2xl
-          aria-invalid:border-destructive
+          aria-invalid:border-destructive/60
           data-[active=true]:z-10 data-[active=true]:border-ring
           data-[active=true]:ring-3 data-[active=true]:ring-ring/30
-          data-[active=true]:aria-invalid:ring-destructive/20
-          dark:data-[active=true]:aria-invalid:ring-destructive/40
+          data-[active=true]:aria-invalid:ring-destructive/30
         `,
         className,
       )}
