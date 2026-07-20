@@ -98,9 +98,8 @@ function TableRefresh({ schema, table }: { schema: string; table: string }) {
             onClick={handleRefresh}
           />
         }
-      ></TooltipTrigger>
+      />
       <TooltipContent side="bottom">
-        {/* ⌘R is bound via the Electron main process; in the browser it reloads the page */}
         Refresh table
         {window.electron && <KbdCtrlLetter userAgent={navigator.userAgent} letter="R" />}
       </TooltipContent>
@@ -108,11 +107,11 @@ function TableRefresh({ schema, table }: { schema: string; table: string }) {
   )
 }
 
-// Browser chrome already has back/forward — only the desktop app needs them
 function HistoryNav() {
   const router = useRouter()
   const canGoBack = useCanGoBack()
 
+  // Browser chrome already has back/forward — only the desktop app needs them
   if (!window.electron) return null
 
   return (
