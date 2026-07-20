@@ -1,7 +1,8 @@
 import { RiCloseLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
-import { eq, inArray, useLiveQuery } from '@tanstack/react-db'
+import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { useCollections } from '~/entities/collections'
@@ -22,19 +23,34 @@ function LastOpenedResource({
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
   return (
-    <div className="flex items-center justify-between gap-2">
+    <div className="group relative">
       <Link
         className="
-          flex flex-1 items-center gap-2 py-0.5 text-sm text-foreground
-          hover:underline
+          flex h-8 cursor-default items-center gap-2.5 rounded-md px-2
+          text-sm text-foreground
+          hover:bg-accent/50 hover:text-foreground
         "
         preload={false}
         {...params}
       >
-        <ConnectionIcon type={connection.type} className="size-4" />
-        {connection.name} /{connectionResource.name}
+        <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
+        <span className="truncate">
+          {connection.name}
+          <span className="text-muted-foreground"> / {connectionResource.name}</span>
+        </span>
       </Link>
-      <Button variant="ghost" size="icon-xs" className="shrink-0" onClick={onClose}>
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        aria-label="Remove from recents"
+        className="
+          absolute top-1/2 right-1 shrink-0 -translate-y-1/2 opacity-0
+          transition-opacity duration-100
+          group-hover:opacity-100
+          focus-visible:opacity-100
+        "
+        onClick={onClose}
+      >
         <RiCloseLine className="text-muted-foreground" />
       </Button>
     </div>
@@ -61,15 +77,30 @@ export function LastOpenedResources() {
         .select(({ connectionsResources, connections }) => ({
           connectionResource: connectionsResources,
           connection: connections,
-        }))
-        .where(({ connectionsResources }) => inArray(connectionsResources.id, lastOpenedResources)),
-    [connectionsResourcesCollection, connectionsCollection, lastOpenedResources],
+        })),
+    [connectionsResourcesCollection, connectionsCollection],
   )
-  const toShow = data.toSorted(
-    (a, b) =>
-      lastOpenedResources.indexOf(a.connectionResource.id) -
-      lastOpenedResources.indexOf(b.connectionResource.id),
-  )
+  const toShow = data
+    .filter(({ connectionResource }) => lastOpenedResources.includes(connectionResource.id))
+    .toSorted(
+      (a, b) =>
+        lastOpenedResources.indexOf(a.connectionResource.id) -
+        lastOpenedResources.indexOf(b.connectionResource.id),
+    )
+
+  // Deleted or recreated resources leave stale ids behind; prune them so they
+  // don't occupy the recents slots forever. Guarded so an empty first frame
+  // from the live query can't wipe valid entries.
+  useEffect(() => {
+    if (data.length === 0) return
+
+    const known = new Set(data.map(({ connectionResource }) => connectionResource.id))
+    const valid = lastOpenedResources.filter(id => known.has(id))
+
+    if (valid.length !== lastOpenedResources.length) {
+      lastOpenedResourcesStorageValue.set(valid)
+    }
+  }, [data, lastOpenedResources])
 
   if (toShow.length === 0) {
     return null
@@ -77,8 +108,15 @@ export function LastOpenedResources() {
 
   return (
     <div>
-      <h3 className="mb-2 text-sm font-medium text-muted-foreground">Last Opened</h3>
-      <div className="flex flex-col gap-1">
+      <h3
+        className="
+          mb-1.5 px-2 text-2xs font-semibold tracking-wider
+          text-muted-foreground uppercase
+        "
+      >
+        Last Opened
+      </h3>
+      <div className="flex flex-col gap-0.5">
         {toShow.map(({ connectionResource, connection }) => (
           <LastOpenedResource
             key={connectionResource.id}

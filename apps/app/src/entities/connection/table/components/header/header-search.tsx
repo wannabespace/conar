@@ -118,12 +118,10 @@ export function HeaderSearch({ table, schema }: { table: string; schema: string 
         generateFilter({ prompt, context })
       }}
     >
-      <InputGroup>
+      <InputGroup className="border-border">
         <InputGroupInput
           ref={inputRef}
-          placeholder={
-            isOnline ? 'Ask AI to filter data...' : 'Check your internet connection to ask AI'
-          }
+          placeholder={isOnline ? 'Ask AI to filter…' : 'Offline — AI unavailable'}
           disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
           value={prompt}
           onChange={e =>
@@ -135,7 +133,7 @@ export function HeaderSearch({ table, schema }: { table: string; schema: string 
             className="pointer-events-none size-4 text-muted-foreground"
             loading={isPending}
           >
-            <RiBardLine />
+            <RiBardLine className="size-4" />
           </LoadingContent>
         </InputGroupAddon>
         <InputGroupAddon align="inline-end">

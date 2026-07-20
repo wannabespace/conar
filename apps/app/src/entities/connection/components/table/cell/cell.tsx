@@ -132,7 +132,7 @@ export function TableCell({
         : 'idle'
 
   const cellClassName = cn(
-    isPopoverOpen && 'bg-primary/10 ring-primary/30',
+    isPopoverOpen && 'bg-primary/5 ring-2 ring-primary/70',
     (isForeignOpen || isReferencesOpen) && 'bg-accent/30 ring-accent/60',
     status === 'error' && 'bg-destructive/15 ring-destructive/50',
     status === 'pending' && 'animate-pulse bg-primary/10',

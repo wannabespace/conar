@@ -18,13 +18,16 @@ export function DefinitionsEmptyState({
         flex flex-col items-center justify-center p-10 text-center
       "
       >
-        <RiInformationLine
+        <div
           className="
-          mx-auto mb-3 size-12 text-muted-foreground
-        "
-        />
-        <h3 className="text-lg font-medium text-foreground">{title}</h3>
-        <p className="max-w-md text-sm text-muted-foreground">{description}</p>
+            mb-4 flex size-12 items-center justify-center rounded-2xl
+            bg-muted/60
+          "
+        >
+          <RiInformationLine className="size-6 text-muted-foreground/70" />
+        </div>
+        <h3 className="text-sm font-medium">{title}</h3>
+        <p className="mt-1 max-w-md text-xs text-muted-foreground">{description}</p>
       </CardContent>
     </CardMotion>
   )

@@ -237,7 +237,13 @@ function CopyDialogEditor({
   )
 }
 
-export function HeaderActionsCopy({ table }: { table: string }) {
+export function HeaderActionsCopy({
+  table,
+  trigger,
+}: {
+  table: string
+  trigger?: React.ReactElement
+}) {
   const { connection, connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const filters = useSubscription(store, { selector: state => state.filters })
@@ -275,14 +281,18 @@ export function HeaderActionsCopy({ table }: { table: string }) {
 
   return (
     <Dialog>
-      <Tooltip>
-        <TooltipTrigger
-          render={<DialogTrigger render={<Button variant="secondary" size="icon" />} />}
-        >
-          <RiCodeSSlashLine />
-        </TooltipTrigger>
-        <TooltipContent side="top">Copy schema / query</TooltipContent>
-      </Tooltip>
+      {trigger ? (
+        <DialogTrigger render={trigger} />
+      ) : (
+        <Tooltip>
+          <TooltipTrigger
+            render={<DialogTrigger render={<Button variant="secondary" size="icon" />} />}
+          >
+            <RiCodeSSlashLine />
+          </TooltipTrigger>
+          <TooltipContent side="top">Copy schema / query</TooltipContent>
+        </Tooltip>
+      )}
       <DialogContent
         className={cn(
           `

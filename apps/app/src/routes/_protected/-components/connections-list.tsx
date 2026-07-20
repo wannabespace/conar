@@ -6,7 +6,6 @@ import {
   RiDatabase2Line,
   RiDeleteBinLine,
   RiLockUnlockLine,
-  RiMoreLine,
   RiPushpinFill,
   RiPushpinLine,
   RiRefreshLine,
@@ -29,11 +28,12 @@ import {
   CommandList,
 } from '@tamery/ui/components/command'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@tamery/ui/components/dropdown-menu'
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from '@tamery/ui/components/context-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
 import {
@@ -43,7 +43,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
-import { Separator } from '@tamery/ui/components/separator'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import { Spinner } from '@tamery/ui/components/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@tamery/ui/components/tabs'
@@ -150,16 +149,19 @@ function ConnectionResourcesCombobox({
 
   const pinned = resources.filter(resource => pinnedResourcesNames.includes(resource))
   const unpinned = resources.filter(resource => !pinnedResourcesNames.includes(resource))
+  const hasSearch = resources.length >= 8
+  const hasGroups = pinned.length > 0
 
   function renderItem(resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL) {
     const isPinned = pinnedResourcesNames.includes(resource)
+    const isSelected = resource === selectedResourceName
 
     return (
       <CommandItem
         key={resourceValue(resource)}
         value={resourceValue(resource)}
         keywords={[resourceLabel(resource)]}
-        className="group"
+        className="group h-7 pr-1 text-sm"
         onSelect={() => {
           onSelectedResourceNameChange(resourceValue(resource))
           setOpen(false)
@@ -167,16 +169,20 @@ function ConnectionResourcesCombobox({
       >
         <RiCheckLine
           className={cn(
-            'size-3.5 shrink-0 text-primary',
-            resource === selectedResourceName ? 'opacity-100' : 'opacity-0',
+            'size-3.5 shrink-0 text-foreground',
+            isSelected ? 'opacity-100' : 'opacity-0',
           )}
         />
-        <span className="flex-1 truncate">{resourceLabel(resource)}</span>
+        <RiDatabase2Line className="size-3.5 shrink-0 text-muted-foreground/70" />
+        <span className={cn('flex-1 truncate', isSelected && 'font-medium')}>
+          {resourceLabel(resource)}
+        </span>
         <Button
           variant="ghost"
           size="icon-xs"
+          aria-label={isPinned ? 'Unpin resource' : 'Pin resource'}
           className={cn(
-            '-mr-1 shrink-0',
+            'shrink-0',
             !isPinned &&
               `
               opacity-0
@@ -215,16 +221,26 @@ function ConnectionResourcesCombobox({
           : selectedResourceName}
         <RiArrowDownSLine />
       </PopoverTrigger>
-      <PopoverContent align="start" className="pointer-events-auto w-56 overflow-hidden p-0">
+      <PopoverContent
+        align="end"
+        className={cn(
+          'pointer-events-auto overflow-hidden p-0',
+          hasSearch ? 'w-56' : 'w-auto min-w-40',
+        )}
+      >
         <Command>
-          <CommandInput placeholder="Search resources..." />
-          <CommandList>
+          {hasSearch && <CommandInput placeholder="Search resources..." />}
+          <CommandList className="p-1">
             <CommandEmpty>No results found.</CommandEmpty>
-            {pinned.length > 0 && (
-              <CommandGroup heading="Pinned">{pinned.map(renderItem)}</CommandGroup>
-            )}
-            {unpinned.length > 0 && (
-              <CommandGroup heading="Unpinned">{unpinned.map(renderItem)}</CommandGroup>
+            {hasGroups ? (
+              <>
+                <CommandGroup heading="Pinned">{pinned.map(renderItem)}</CommandGroup>
+                {unpinned.length > 0 && (
+                  <CommandGroup heading="Other">{unpinned.map(renderItem)}</CommandGroup>
+                )}
+              </>
+            ) : (
+              <CommandGroup>{unpinned.map(renderItem)}</CommandGroup>
             )}
           </CommandList>
         </Command>
@@ -348,163 +364,161 @@ function ConnectionCard({
       exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
       style={connection.color ? { '--color': connection.color } : {}}
-      className="relative flex flex-col rounded-2xl bg-card p-1"
+      className="
+        relative flex flex-col border-b
+        last:border-b-0
+      "
     >
-      <div
-        className={cn(`
-          group relative flex h-11 items-center gap-3 px-3 transition-colors
-          duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]
-          hover:bg-accent
-          has-[[data-resource-link]:hover]:bg-accent
-        `)}
-      >
-        {selectedResource && canOpenResource && (
-          <ConnectionResourceLink
-            resourceId={selectedResource.id}
-            className="absolute inset-0 cursor-default"
-            preload={false}
-            data-resource-link
-          />
-        )}
-        {connection.color && (
-          <span
-            className="
+      <ContextMenu>
+        <ContextMenuTrigger
+          className={cn(`
+            group relative flex h-11 items-center gap-3 px-3 transition-colors
+            duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]
+            hover:bg-accent/50
+            has-[[data-resource-link]:hover]:bg-accent/50
+          `)}
+        >
+          {selectedResource && canOpenResource && (
+            <ConnectionResourceLink
+              resourceId={selectedResource.id}
+              className="absolute inset-0 cursor-default"
+              preload={false}
+              data-resource-link
+            />
+          )}
+          {connection.color && (
+            <span
+              className="
               pointer-events-none absolute top-1/2 left-0 h-5 w-0.5
               -translate-y-1/2 rounded-full bg-(--color)
             "
-          />
-        )}
-        <div
-          className={cn(
-            `
+            />
+          )}
+          <div
+            className={cn(
+              `
           pointer-events-none relative z-10 flex min-w-0 flex-1 items-center
           gap-3
         `,
-            isFetching && `animate-pulse`,
-          )}
-        >
-          <ConnectionIconWithVersion connection={connection} />
-          <div className="flex min-w-0 items-center gap-2">
-            <span title={connection.name} className="truncate text-sm leading-none font-medium">
-              {connection.name}
-            </span>
-            {connection.label && (
-              <span className="shrink-0 truncate text-xs text-muted-foreground">
-                · {connection.label}
-              </span>
+              isFetching && `animate-pulse`,
             )}
-            {isFetching && canSend && <Spinner className="size-3 shrink-0" />}
-            {!canSend && (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <RiAlertLine
-                      className="
+          >
+            <ConnectionIconWithVersion connection={connection} />
+            <div className="flex min-w-0 items-center gap-2">
+              <span title={connection.name} className="truncate text-sm leading-none font-medium">
+                {connection.name}
+              </span>
+              {connection.label && (
+                <span className="shrink-0 truncate text-xs text-muted-foreground">
+                  · {connection.label}
+                </span>
+              )}
+              {isFetching && canSend && <Spinner className="size-3 shrink-0" />}
+              {!canSend && (
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <RiAlertLine
+                        className="
                       pointer-events-auto size-3 shrink-0 text-muted-foreground
                     "
-                    />
-                  }
-                />
-                <TooltipContent className="pointer-events-auto max-w-xs">{reason}</TooltipContent>
-              </Tooltip>
-            )}
-            {error && canSend && (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <RiAlertLine
-                      className="
+                      />
+                    }
+                  />
+                  <TooltipContent className="pointer-events-auto max-w-xs">{reason}</TooltipContent>
+                </Tooltip>
+              )}
+              {error && canSend && (
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <RiAlertLine
+                        className="
                     pointer-events-auto size-3 shrink-0 text-warning
                   "
-                    />
-                  }
-                />
-                <TooltipContent className="pointer-events-auto">
-                  Failed to get resources: <p className="text-xs text-warning">{error.message}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
+                      />
+                    }
+                  />
+                  <TooltipContent className="pointer-events-auto">
+                    Failed to get resources: <p className="text-xs text-warning">{error.message}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
           </div>
-        </div>
-        <div
-          className="
+          <div
+            className="
           pointer-events-none relative z-10 flex min-w-0 shrink-0 items-center
           gap-2 text-xs text-muted-foreground
         "
-        >
-          <Tooltip open={isOpen || isCopied} onOpenChange={setIsOpen}>
-            <TooltipTrigger
-              className="
-                pointer-events-auto hidden max-w-52 min-w-0 cursor-pointer
+          >
+            <Tooltip open={isOpen || isCopied} onOpenChange={setIsOpen}>
+              <TooltipTrigger
+                className="
+                pointer-events-auto hidden max-w-52 min-w-0 cursor-default
                 items-center font-mono
                 md:flex
               "
-              onClick={() => handleCopy()}
+                onClick={() => handleCopy()}
+              >
+                {connectionString?.displayUrl ? (
+                  <span className="truncate">{connectionString?.displayUrl}</span>
+                ) : (
+                  <Skeleton className="h-3 w-40" />
+                )}
+              </TooltipTrigger>
+              <TooltipContent className="flex items-center gap-1" side="bottom">
+                {isCopied ? 'Connection string copied!' : 'Copy connection string'}
+              </TooltipContent>
+            </Tooltip>
+            {isResourcesShown && (
+              <ConnectionResourcesCombobox
+                resources={resources}
+                pinnedResourcesNames={pinnedResourcesNames}
+                selectedResourceName={selectedResourceName}
+                onSelectedResourceNameChange={value =>
+                  connectionStore.set(
+                    state => ({ ...state, lastOpenedResourceName: value }) satisfies typeof state,
+                  )
+                }
+                onPinnedResourceNameChange={value =>
+                  connectionStore.set(
+                    state =>
+                      ({
+                        ...state,
+                        pinnedResourcesNames: state.pinnedResourcesNames.includes(value)
+                          ? state.pinnedResourcesNames.filter(name => name !== value)
+                          : [...state.pinnedResourcesNames, value],
+                      }) satisfies typeof state,
+                  )
+                }
+                disabled={!canSend}
+              />
+            )}
+          </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent className="min-w-44">
+          <ContextMenuItem disabled={!canSend} onClick={() => refetch()}>
+            <RiRefreshLine className="size-4" />
+            Refresh
+          </ContextMenuItem>
+          {connection.syncType === SyncType.CloudWithoutPassword && (
+            <ContextMenuItem
+              className="whitespace-nowrap"
+              disabled={!connectionString?.isPasswordPopulated}
+              onClick={() => handleClearPassword()}
             >
-              {connectionString?.displayUrl ? (
-                <span className="truncate">{connectionString?.displayUrl}</span>
-              ) : (
-                <Skeleton className="h-3 w-40" />
-              )}
-            </TooltipTrigger>
-            <TooltipContent className="flex items-center gap-1" side="bottom">
-              {isCopied ? 'Connection string copied!' : 'Copy connection string'}
-            </TooltipContent>
-          </Tooltip>
-          {isResourcesShown && (
-            <ConnectionResourcesCombobox
-              resources={resources}
-              pinnedResourcesNames={pinnedResourcesNames}
-              selectedResourceName={selectedResourceName}
-              onSelectedResourceNameChange={value =>
-                connectionStore.set(
-                  state => ({ ...state, lastOpenedResourceName: value }) satisfies typeof state,
-                )
-              }
-              onPinnedResourceNameChange={value =>
-                connectionStore.set(
-                  state =>
-                    ({
-                      ...state,
-                      pinnedResourcesNames: state.pinnedResourcesNames.includes(value)
-                        ? state.pinnedResourcesNames.filter(name => name !== value)
-                        : [...state.pinnedResourcesNames, value],
-                    }) satisfies typeof state,
-                )
-              }
-              disabled={!canSend}
-            />
+              <RiLockUnlockLine className="size-4 shrink-0" />
+              Clear password
+            </ContextMenuItem>
           )}
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className="pointer-events-auto shrink-0 text-muted-foreground"
-              render={<Button variant="ghost" size="icon-sm" />}
-            >
-              <RiMoreLine className="size-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-auto">
-              <DropdownMenuItem disabled={!canSend} onClick={() => refetch()}>
-                <RiRefreshLine className="size-4" />
-                Refresh
-              </DropdownMenuItem>
-              {connection.syncType === SyncType.CloudWithoutPassword && (
-                <DropdownMenuItem
-                  className="whitespace-nowrap"
-                  disabled={!connectionString?.isPasswordPopulated}
-                  onClick={() => handleClearPassword()}
-                >
-                  <RiLockUnlockLine className="size-4 shrink-0" />
-                  Clear password
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem variant="destructive" onClick={() => onRemove()}>
-                <RiDeleteBinLine className="size-4" />
-                Remove
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
+          <ContextMenuSeparator />
+          <ContextMenuItem variant="destructive" onClick={() => onRemove()}>
+            <RiDeleteBinLine className="size-4" />
+            Remove
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
     </motion.div>
   )
 }
@@ -608,7 +622,7 @@ export function ConnectionsList() {
   const { connectionsCollection } = useCollections()
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
   const sort = useSubscription(sortValue)
-  const { data } = useLiveQuery(
+  const { data: allConnections } = useLiveQuery(
     q => {
       let query = q.from({ c: connectionsCollection })
 
@@ -622,32 +636,29 @@ export function ConnectionsList() {
         query = query.orderBy(({ c }) => c.name, 'desc')
       }
 
-      if (selectedLabel) {
-        query = query.where(({ c }) => eq(c.label, selectedLabel))
-      }
-
       return query
     },
-    [connectionsCollection, selectedLabel, sort],
+    [connectionsCollection, sort],
   )
+
+  // Label filtering happens client-side so recents and the label tabs derive
+  // from the full list — picking a label must not hide them
+  const data = selectedLabel
+    ? allConnections.filter(connection => connection.label === selectedLabel)
+    : allConnections
 
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
 
   const availableLabels = [
-    ...new Set(data.flatMap(connection => (connection.label ? [connection.label] : []))),
+    ...new Set(allConnections.flatMap(connection => (connection.label ? [connection.label] : []))),
   ].toSorted()
-  const showLastOpened = lastOpenedResources.length > 0 && data.length > 1
+  const showLastOpened = lastOpenedResources.length > 0 && allConnections.length > 1
 
   return (
     <div className="flex flex-col gap-6">
       <RemoveConnectionDialog ref={removeDialogRef} />
-      {showLastOpened && (
-        <>
-          <LastOpenedResources />
-          <Separator />
-        </>
-      )}
+      {showLastOpened && <LastOpenedResources />}
       {data.length > 0 && (
         <div
           className={cn(
@@ -674,7 +685,7 @@ export function ConnectionsList() {
             </ScrollArea>
           )}
           <Select value={sort} onValueChange={value => sortValue.set(value!)}>
-            <SelectTrigger className="w-50 shrink-0">
+            <SelectTrigger className="h-7 w-46 shrink-0 text-sm">
               {sort.includes('asc') ? <RiSortAsc /> : <RiSortDesc />}
               <SelectValue>{sortOptions.find(option => option.value === sort)!.label}</SelectValue>
             </SelectTrigger>
@@ -689,7 +700,11 @@ export function ConnectionsList() {
         </div>
       )}
       {data.length > 0 ? (
-        <div className="flex flex-col gap-2">
+        <div
+          className="
+            overflow-hidden rounded-xl border bg-card shadow-xs
+          "
+        >
           <AnimatePresence initial={false} mode="popLayout">
             {data.map(connection => (
               <ConnectionCard

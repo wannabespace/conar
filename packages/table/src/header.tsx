@@ -62,7 +62,7 @@ export function TableHeader({
     <div
       className={cn(
         `
-        sticky top-0 z-10 h-8 w-fit min-w-full rounded-lg border bg-background/90 backdrop-blur-sm
+        sticky top-0 z-10 h-8 w-fit min-w-full rounded-lg border bg-background/90 backdrop-blur-xs
         has-data-footer:h-12
       `,
         className,

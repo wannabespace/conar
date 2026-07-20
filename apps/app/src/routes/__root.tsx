@@ -50,8 +50,9 @@ function RootDocument() {
           <div
             className={cn(
               'flex h-screen flex-col',
-              // For simple page layouts, we want outlet to be the full height of the screen
-              '*:last:h-full *:last:min-h-[inherit] *:last:flex-1',
+              // The page fills whatever the banners leave over; forcing h-full
+              // here made banners push the layout past the viewport
+              '*:last:min-h-0 *:last:flex-1',
             )}
           >
             <GlobalBanner />

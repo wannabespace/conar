@@ -54,21 +54,18 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
           focus-visible:outline-ring
           disabled:pointer-events-none disabled:opacity-50
           aria-disabled:pointer-events-none aria-disabled:opacity-50
-          dark:text-muted-foreground
-          hover:dark:text-foreground
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
         `,
         `
           group-data-[variant=line]/tabs-list:bg-transparent
+          data-active:group-data-[variant=line]/tabs-list:border-transparent
           data-active:group-data-[variant=line]/tabs-list:bg-transparent
-          dark:data-active:group-data-[variant=line]/tabs-list:border-transparent
-          dark:data-active:group-data-[variant=line]/tabs-list:bg-transparent
         `,
         `
-          data-active:bg-background data-active:text-foreground
-          dark:data-active:border-input dark:data-active:bg-input/30
-          dark:data-active:text-foreground
+          data-active:border-border! data-active:bg-input
+          data-active:text-foreground data-active:shadow-2xs
+          data-active:group-data-[variant=line]/tabs-list:border-transparent!
         `,
         `
           after:absolute after:bg-foreground after:opacity-0

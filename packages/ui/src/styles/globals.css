@@ -16,6 +16,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 0.875rem;
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;
   --font-mono: 'Geist Mono Variable', monospace;
@@ -64,6 +66,14 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* Softer, larger shadows than Tailwind defaults — macOS-style diffuse elevation */
+  --shadow-2xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-xs: 0 2px 4px 0 rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 2px 8px -1px rgb(0 0 0 / 0.05), 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-md: 0 6px 16px -2px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+  --shadow-lg: 0 16px 32px -4px rgb(0 0 0 / 0.07), 0 4px 8px -4px rgb(0 0 0 / 0.04);
+  --shadow-xl: 0 28px 56px -8px rgb(0 0 0 / 0.09), 0 8px 16px -8px rgb(0 0 0 / 0.05);
+  --shadow-2xl: 0 40px 80px -12px rgb(0 0 0 / 0.14);
 }
 
 :root {
@@ -89,7 +99,7 @@
   --warning-foreground: oklch(0.985 0 0);
   --info: oklch(0.623 0.214 259.815);
   --info-foreground: oklch(0.985 0 0);
-  --border: oklch(0 0 0 / 6%);
+  --border: oklch(0 0 0 / 5%);
   --input: oklch(1 0 0);
   --ring: oklch(0.7 0 0);
   --chart-1: oklch(0.809 0.105 251.813);
@@ -97,7 +107,7 @@
   --chart-3: oklch(0.546 0.245 262.881);
   --chart-4: oklch(0.488 0.243 264.376);
   --chart-5: oklch(0.424 0.199 265.638);
-  --radius: 0.45rem;
+  --radius: 0.35rem;
   --sidebar: oklch(0.98 0 0);
   --sidebar-foreground: oklch(0.18 0 0);
   --sidebar-primary: oklch(0.5788 0.2316 259.64);

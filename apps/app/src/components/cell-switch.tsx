@@ -13,10 +13,24 @@ export function CellSwitch({
   return (
     // Label implicitly wraps the Switch control (valid association the linter can't detect)
     // oxlint-disable-next-line jsx-a11y/label-has-associated-control
-    <label className={cn('flex items-center gap-2 text-sm', className)}>
-      <code className="font-mono">false</code>
+    <label className={cn('flex items-center gap-2.5 text-sm', className)}>
+      <code
+        className={cn(
+          'font-mono transition-colors duration-150',
+          checked ? 'text-muted-foreground/60' : 'font-medium text-foreground',
+        )}
+      >
+        false
+      </code>
       <Switch checked={checked} onCheckedChange={onChange} />
-      <code className="font-mono">true</code>
+      <code
+        className={cn(
+          'font-mono transition-colors duration-150',
+          checked ? 'font-medium text-foreground' : 'text-muted-foreground/60',
+        )}
+      >
+        true
+      </code>
     </label>
   )
 }

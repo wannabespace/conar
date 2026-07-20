@@ -95,7 +95,7 @@ function DashboardPage() {
               type="button"
               onClick={() => checkForUpdates()}
               className={`
-                cursor-pointer text-xs text-muted-foreground/50
+                text-xs text-muted-foreground/50
                 transition-colors
                 hover:text-muted-foreground/70
               `}

@@ -27,7 +27,6 @@ import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
 import { useRef, useState } from 'react'
 
-import { GlobalBanner } from '~/components/global-banner'
 import { SupportButton } from '~/components/support-button'
 import { TitleBar } from '~/components/title-bar'
 import { UpdateButton } from '~/components/update-button'
@@ -274,7 +273,6 @@ export function AppTitleBar() {
           <UserButton side="bottom" align="end" />
         </div>
       </TitleBar>
-      <GlobalBanner />
     </div>
   )
 }

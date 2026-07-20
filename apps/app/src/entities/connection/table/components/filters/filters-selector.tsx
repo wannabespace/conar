@@ -6,6 +6,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandShortcut,
   CommandList,
 } from '@tamery/ui/components/command'
 import type { RefObject } from 'react'
@@ -41,8 +42,8 @@ export function FiltersSelector({
                 keywords={[filter.label, filter.operator]}
                 onSelect={() => onSelect(filter)}
               >
-                <span>{filter.label}</span>
-                <span className="ml-auto text-xs text-muted-foreground">{filter.operator}</span>
+                <span className="min-w-0 flex-1 truncate">{filter.label}</span>
+                <CommandShortcut className="tracking-normal">{filter.operator}</CommandShortcut>
               </CommandItem>
             ))}
           </CommandGroup>

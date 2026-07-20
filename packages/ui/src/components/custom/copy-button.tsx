@@ -13,12 +13,13 @@ export function CopyButton({
   text,
   copyIcon = defaultCopyIcon,
   successIcon = defaultSuccessIcon,
+  children,
   ...props
 }: {
   text: string | (() => string)
   copyIcon?: ReactNode
   successIcon?: ReactNode
-} & Omit<ComponentProps<typeof Button>, 'children'>) {
+} & ComponentProps<typeof Button>) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
@@ -41,6 +42,7 @@ export function CopyButton({
       >
         {copyIcon}
       </ContentSwitch>
+      {children}
     </Button>
   )
 }

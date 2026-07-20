@@ -4,6 +4,7 @@ import {
   RiExpandDiagonal2Line,
   RiFileCopyLine,
 } from '@remixicon/react'
+import { getOS } from '@tamery/shared/utils/os'
 import { Button } from '@tamery/ui/components/button'
 import {
   Combobox,
@@ -18,7 +19,6 @@ import {
 } from '@tamery/ui/components/combobox'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
-import { KbdCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
 import {
   Select,
   SelectContent,
@@ -65,7 +65,7 @@ export function CellPopoverContent({
     if (column.uiType === 'boolean') {
       return (
         <CellSwitch
-          className="w-full justify-center py-6"
+          className="w-full justify-center py-4"
           checked={newValue === true}
           onChange={checked => setNewValue(checked)}
         />
@@ -161,6 +161,14 @@ export function CellPopoverContent({
 
   const [isRaw, setIsRaw] = useState(!uiRender)
 
+  // Editor grows with its content — a one-line email gets a compact field, a
+  // JSON blob caps at the full height; isBig still expands beyond the cap
+  const compactText = isRaw ? rawValue : String(newValue ?? '')
+  const compactLines = compactText
+    .split('\n')
+    .reduce((acc, line) => acc + Math.max(1, Math.ceil(line.length / 48)), 0)
+  const compactHeight = Math.min(160, Math.max(56, compactLines * 20 + 36))
+
   const queue = async () => {
     if (!onQueueValue) return
 
@@ -185,6 +193,7 @@ export function CellPopoverContent({
     wordWrap: isBig ? 'off' : 'on',
     scrollBeyondLastLine: false,
     folding: isBig,
+    padding: { top: 8, bottom: 8 },
     scrollbar: {
       horizontalScrollbarSize: 5,
       verticalScrollbarSize: 5,
@@ -195,6 +204,16 @@ export function CellPopoverContent({
     if (!monacoRef.current) return
 
     monacoRef.current.focus()
+
+    // Cursor at the end instead of Monaco's default stray word selection
+    const model = monacoRef.current.getModel()
+    if (model) {
+      const lastLine = model.getLineCount()
+      monacoRef.current.setPosition({
+        lineNumber: lastLine,
+        column: model.getLineMaxColumn(lastLine),
+      })
+    }
 
     const disposable = monacoRef.current.addAction({
       id: 'tamery.execute-on-enter',
@@ -226,19 +245,14 @@ export function CellPopoverContent({
                 ? 'xml'
                 : undefined
           }
-          className={cn(
-            'h-40 w-full transition-[height] duration-300',
-            isBig &&
-              `
-                h-[min(45vh,40rem)]
-              `,
-          )}
+          className={cn('w-full transition-[height] duration-300', isBig && 'h-[min(45vh,40rem)]!')}
+          style={{ height: compactHeight }}
           onChange={isRaw ? setRawValue : setNewValue}
           options={monacoOptions}
         />
       )}
-      <div className="flex items-center justify-between gap-2 border-t p-2">
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between gap-2 border-t px-1.5 py-1.5">
+        <div className="flex items-center gap-0.5">
           {isRaw && (
             <Tooltip>
               <TooltipTrigger
@@ -246,14 +260,15 @@ export function CellPopoverContent({
                   <Button
                     variant="outline"
                     size="icon-xs"
+                    className="text-muted-foreground"
                     onClick={() => setIsBig(prev => !prev)}
                   />
                 }
               >
                 {isBig ? (
-                  <RiCollapseDiagonal2Line className="size-3" />
+                  <RiCollapseDiagonal2Line className="size-3.5" />
                 ) : (
-                  <RiExpandDiagonal2Line className="size-3" />
+                  <RiExpandDiagonal2Line className="size-3.5" />
                 )}
               </TooltipTrigger>
               <TooltipContent side="bottom">Toggle size</TooltipContent>
@@ -265,6 +280,7 @@ export function CellPopoverContent({
                 <CopyButton
                   size="icon-xs"
                   variant="outline"
+                  className="text-muted-foreground"
                   text={
                     isRaw
                       ? rawValue
@@ -272,8 +288,8 @@ export function CellPopoverContent({
                         ? newValue
                         : JSON.stringify(newValue)
                   }
-                  copyIcon={<RiFileCopyLine className="size-3" />}
-                  successIcon={<RiCheckLine className="size-3 text-success" />}
+                  copyIcon={<RiFileCopyLine className="size-3.5" />}
+                  successIcon={<RiCheckLine className="size-3.5 text-success" />}
                 />
               }
             ></TooltipTrigger>
@@ -283,7 +299,13 @@ export function CellPopoverContent({
             <Tooltip>
               <TooltipTrigger
                 render={
-                  <Button variant="outline" size="xs" onClick={() => setIsRaw(prev => !prev)} />
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    aria-pressed={isRaw}
+                    className={cn('text-muted-foreground', isRaw && 'bg-accent text-foreground')}
+                    onClick={() => setIsRaw(prev => !prev)}
+                  />
                 }
               >
                 Raw
@@ -294,18 +316,28 @@ export function CellPopoverContent({
             </Tooltip>
           )}
         </div>
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1">
           {canEdit && (
             <>
               {!!column?.isNullable && (
-                <Button size="xs" variant="secondary" disabled={value === null} onClick={onSetNull}>
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  className="text-muted-foreground"
+                  disabled={value === null}
+                  onClick={onSetNull}
+                >
                   Set <span className="font-mono">null</span>
                 </Button>
               )}
-              <Button size="xs" onClick={() => queue()}>
-                Apply
-                <KbdCtrlEnter userAgent={navigator.userAgent} className="text-white" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger render={<Button size="xs" onClick={() => queue()} />}>
+                  Apply
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  Apply with {getOS(navigator.userAgent).type === 'macos' ? '⌘' : 'Ctrl'} + Enter
+                </TooltipContent>
+              </Tooltip>
             </>
           )}
         </div>

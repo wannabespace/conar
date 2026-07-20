@@ -83,7 +83,7 @@ function getNotVisibleColumns(
   return notVisibleColumns
 }
 
-function Header() {
+function Header({ className }: { className?: string }) {
   const store = useTablePageStore()
   const scrollRef = useTableContext(state => state.scrollRef)
   const direction = useTableContext(state => state.scrollDirection)
@@ -146,10 +146,7 @@ function Header() {
 
   return (
     <TableHeader
-      className={cn(
-        'flex transition-shadow duration-300',
-        isScrolled && `shadow-lg shadow-black/3`,
-      )}
+      className={cn('flex transition-shadow duration-300', isScrolled && 'shadow-lg', className)}
       before={
         <div className="sticky inset-y-0 left-0 z-20 flex w-0 items-center">
           <DropdownMenu>

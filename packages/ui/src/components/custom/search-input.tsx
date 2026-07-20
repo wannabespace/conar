@@ -16,7 +16,7 @@ export function SearchInput({
   const hasValue = typeof value === 'string' ? value.length > 0 : Boolean(value)
 
   return (
-    <InputGroup className={cn(className)}>
+    <InputGroup className={cn('border-border', className)}>
       <InputGroupInput value={value} {...props} />
       {hasValue && (
         <InputGroupAddon align="inline-end">

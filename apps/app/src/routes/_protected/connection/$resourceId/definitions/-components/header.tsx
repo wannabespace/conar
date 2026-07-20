@@ -15,7 +15,7 @@ export function DefinitionsHeader({
 }) {
   return (
     <div className="mb-4 flex items-center justify-between">
-      <h2 className="text-2xl font-bold">{children}</h2>
+      <h2 className="text-lg font-semibold">{children}</h2>
       <div className="flex items-center gap-2">
         <Tooltip>
           <TooltipTrigger

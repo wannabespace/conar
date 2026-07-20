@@ -1,26 +1,24 @@
+import { RiTable2 } from '@remixicon/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { title } from '@tamery/shared/utils/title'
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from '@tamery/ui/components/resizable'
+import { SidebarProvider } from '@tamery/ui/components/sidebar'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
-import { useEffect, useEffectEvent } from 'react'
-import { useDefaultLayout } from 'react-resizable-panels'
+import { motion } from 'motion/react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { addTab, getConnectionResourceStore } from '~/entities/connection/store'
 import {
   ColumnsContext,
-  Filters,
-  Header,
-  Sidebar,
+  CommandBar,
+  DraftsToolbar,
+  FiltersRow,
+  PageSidebar,
+  TabBar,
   Table,
   tablePageStore,
   TablePageStoreContext,
-  TablesTabs,
   useTableColumnsQuery,
 } from '~/entities/connection/table'
 import {
@@ -106,27 +104,75 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/table/'
 function TableContent({ table, schema }: { table: string; schema: string }) {
   const { connectionResource } = Route.useRouteContext()
   const { data = [] } = useTableColumnsQuery({ connectionResource, table, schema })
+  const [isDockHovered, setIsDockHovered] = useState(false)
+  const dockLeaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Generous grace period: crossing gaps between the dock's floating pieces or
+  // briefly slipping off it entirely shouldn't tuck the filter strip away
+  const handleDockEnter = () => {
+    if (dockLeaveTimer.current) clearTimeout(dockLeaveTimer.current)
+    setIsDockHovered(true)
+  }
+  const handleDockLeave = () => {
+    if (dockLeaveTimer.current) clearTimeout(dockLeaveTimer.current)
+    dockLeaveTimer.current = setTimeout(() => setIsDockHovered(false), 800)
+  }
 
   return (
     <ColumnsContext value={data}>
-      <TablesTabs className="h-9" />
       {/* Convenience click on the pane opens the tab; interactive children remain keyboard-reachable */}
       {/* oxlint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
       <div
-        className="h-[calc(100%-(--spacing(9)))]"
+        className="flex min-h-0 flex-1 flex-col"
         onClick={() => addTab(connectionResource.id, schema, table)}
       >
-        <div className="flex h-full flex-col justify-between">
-          <div className="mb-2 flex flex-col gap-4 rounded-lg border bg-background/90 px-4 py-2 backdrop-blur-sm">
-            <Header table={table} schema={schema} />
-            <Filters />
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <Table table={table} schema={schema} />
+        <div className="relative min-h-0 flex-1">
+          <Table table={table} schema={schema} />
+          <div
+            className={`
+              pointer-events-none absolute inset-x-3 bottom-3 z-20 flex
+              flex-col items-center gap-2
+            `}
+            onMouseEnter={handleDockEnter}
+            onMouseLeave={handleDockLeave}
+          >
+            <DraftsToolbar
+              table={table}
+              schema={schema}
+              className="static inset-x-auto bottom-auto"
+            />
+            <FiltersRow revealed={isDockHovered} />
+            <CommandBar table={table} schema={schema} />
           </div>
         </div>
       </div>
     </ColumnsContext>
+  )
+}
+
+function EmptyPane() {
+  return (
+    <div className="flex min-h-0 flex-1 items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+        className="flex flex-col items-center text-center"
+      >
+        <div
+          className={`
+            mb-4 flex size-14 items-center justify-center rounded-2xl
+            bg-muted/60
+          `}
+        >
+          <RiTable2 className="size-7 text-muted-foreground/70" />
+        </div>
+        <div className="text-sm font-medium">No Table Selected</div>
+        <p className="mt-1 max-w-64 text-xs text-muted-foreground">
+          Choose a table from the sidebar to browse and edit its data.
+        </p>
+      </motion.div>
+    </div>
   )
 }
 
@@ -162,28 +208,19 @@ function DatabaseTablesPage() {
     handleLastOpenedTableEvent()
   }, [schema, table, lastOpenedTable])
 
-  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: `database-table-layout-${connectionResource.id}`,
-    storage: localStorage,
-  })
-
   return (
-    <ResizablePanelGroup
-      defaultLayout={defaultLayout}
-      onLayoutChanged={onLayoutChanged}
-      orientation="horizontal"
-      className="flex"
+    <SidebarProvider
+      defaultOpen={!document.cookie.includes('sidebar_state=false')}
+      className="h-full min-h-0 w-full"
     >
-      <ResizablePanel
-        defaultSize="20%"
-        minSize={200}
-        maxSize="50%"
-        className="h-full overflow-hidden rounded-lg border bg-background"
+      <PageSidebar key={connectionResource.id} />
+      <div
+        className={`
+          flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-xl border
+          bg-background shadow-lg
+        `}
       >
-        <Sidebar key={connectionResource.id} />
-      </ResizablePanel>
-      <ResizableHandle className="w-1 bg-transparent" />
-      <ResizablePanel defaultSize="80%" className="flex-1 overflow-hidden">
+        <TabBar />
         {schema && table ? (
           <TablePageStoreContext
             value={tablePageStore({ id: connectionResource.id, schema, table })}
@@ -191,17 +228,9 @@ function DatabaseTablesPage() {
             <TableContent table={table} schema={schema} />
           </TablePageStoreContext>
         ) : (
-          <div className="flex h-full items-center justify-center p-4">
-            <div className="space-y-4 text-center">
-              <div className="text-lg font-medium">No table selected</div>
-              <p className="mx-auto max-w-md text-sm text-muted-foreground">
-                Select a schema from the dropdown and choose a table from the sidebar to view and
-                manage your data.
-              </p>
-            </div>
-          </div>
+          <EmptyPane />
         )}
-      </ResizablePanel>
-    </ResizablePanelGroup>
+      </div>
+    </SidebarProvider>
   )
 }

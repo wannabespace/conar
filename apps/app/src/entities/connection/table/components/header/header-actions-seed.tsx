@@ -176,7 +176,15 @@ function CustomExpressionPopover({ columnId }: { columnId: string }) {
   )
 }
 
-export function HeaderActionsSeed({ table, schema }: { table: string; schema: string }) {
+export function HeaderActionsSeed({
+  table,
+  schema,
+  trigger,
+}: {
+  table: string
+  schema: string
+  trigger?: React.ReactElement
+}) {
   const columns = useTableColumns()
   const { connection, connectionResource } = useRouteContext()
   const allGenerators = getGenerators(connection.type)
@@ -315,20 +323,24 @@ export function HeaderActionsSeed({ table, schema }: { table: string; schema: st
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange} swipeDirection="right">
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <DrawerTrigger
-              render={
-                <Button variant="secondary" size="icon" disabled={isPending}>
-                  <RiSeedlingLine />
-                </Button>
-              }
-            />
-          }
-        />
-        <TooltipContent>Seed data</TooltipContent>
-      </Tooltip>
+      {trigger ? (
+        <DrawerTrigger render={trigger} />
+      ) : (
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <DrawerTrigger
+                render={
+                  <Button variant="secondary" size="icon" disabled={isPending}>
+                    <RiSeedlingLine />
+                  </Button>
+                }
+              />
+            }
+          />
+          <TooltipContent>Seed data</TooltipContent>
+        </Tooltip>
+      )}
       <DrawerContent className="max-w-xl">
         <DrawerHeader>
           <DrawerTitle>Seed Data</DrawerTitle>

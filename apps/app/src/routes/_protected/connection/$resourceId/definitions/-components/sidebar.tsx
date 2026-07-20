@@ -12,7 +12,6 @@ import {
   CONNECTION_TYPES_WITH_TRIGGERS,
 } from '@tamery/shared/constants'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { CardTitle } from '@tamery/ui/components/card'
 
 import { SidebarLink } from '~/components/sidebar-link'
 import type { Connection } from '~/entities/connection/core'
@@ -67,12 +66,19 @@ export function Sidebar() {
   const { connection, connectionResource } = Route.useRouteContext()
 
   return (
-    <aside className="h-full w-64 flex-col rounded-lg bg-background p-4">
-      <CardTitle className="mb-4">Definitions</CardTitle>
-      <nav className="space-y-1">
+    <aside className="flex h-full w-52 shrink-0 flex-col">
+      <div
+        className="
+          px-3 pt-3 pb-1.5 text-2xs font-semibold tracking-wider
+          text-muted-foreground uppercase select-none
+        "
+      >
+        Definitions
+      </div>
+      <nav className="flex flex-col gap-0.5 px-2">
         {sidebarItems(connection).map(({ to, Icon, label }) => (
           <SidebarLink key={to} to={to} params={{ resourceId: connectionResource.id }}>
-            <Icon className="size-4" />
+            <Icon />
             {label}
           </SidebarLink>
         ))}

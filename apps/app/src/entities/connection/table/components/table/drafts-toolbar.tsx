@@ -6,6 +6,7 @@ import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { Separator } from '@tamery/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import { cn } from '@tamery/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import type { Kysely } from 'kysely'
@@ -38,7 +39,15 @@ const motionVariants = {
   visible: { opacity: 1, y: 0 },
 }
 
-export function DraftsToolbar({ table, schema }: { table: string; schema: string }) {
+export function DraftsToolbar({
+  table,
+  schema,
+  className,
+}: {
+  table: string
+  schema: string
+  className?: string
+}) {
   const { connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const columns = useTableColumns()
@@ -266,12 +275,16 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
         initial="hidden"
         animate={drafts.length > 0 ? 'visible' : 'hidden'}
         transition={{ duration: 0.3, type: 'spring' }}
-        className="
-          pointer-events-auto absolute inset-x-0 bottom-3 z-20 mx-auto flex
-          w-fit items-center gap-2 rounded-lg border bg-card/60 py-1.5 pr-1.5
-          pl-3 text-card-foreground shadow-lg backdrop-blur-md
-          dark:bg-input/32
-        "
+        className={cn(
+          `
+            absolute inset-x-0 bottom-3 z-20 mx-auto flex
+            w-fit items-center gap-2 rounded-lg border bg-card/60 py-1.5 pr-1.5
+            pl-3 text-card-foreground shadow-lg backdrop-blur-md
+            dark:bg-input/32
+          `,
+          drafts.length > 0 ? 'pointer-events-auto' : 'pointer-events-none',
+          className,
+        )}
       >
         <div className="flex items-center gap-2 text-xs">
           {errorCount > 0 && (

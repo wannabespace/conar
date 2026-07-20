@@ -5,6 +5,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandShortcut,
   CommandList,
 } from '@tamery/ui/components/command'
 import type { RefObject } from 'react'
@@ -34,10 +35,8 @@ export function FiltersColumnSelector({
               onSelect={onSelect}
             >
               <RiDatabase2Line className="size-4 opacity-50" />
-              <span>{column.id}</span>
-              <span className="ml-auto text-right text-xs text-muted-foreground">
-                {column.typeLabel}
-              </span>
+              <span className="min-w-0 flex-1 truncate">{column.id}</span>
+              <CommandShortcut className="tracking-normal">{column.typeLabel}</CommandShortcut>
             </CommandItem>
           ))}
         </CommandGroup>

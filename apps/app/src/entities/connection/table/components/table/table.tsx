@@ -27,7 +27,6 @@ import {
   getRowPrimaryKeysValues,
   useTablePageStore,
 } from '../../store'
-import { DraftsToolbar } from './drafts-toolbar'
 import { RenameColumnDialog } from './rename-column-dialog'
 import { TableEmpty } from './table-empty'
 import { TableHeader } from './table-header'
@@ -250,7 +249,14 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
         onKeyDown={handleShiftSelectionKeyDown}
       >
         <Table>
-          {tableColumns.length > 0 && <TableHeader />}
+          {tableColumns.length > 0 && (
+            <TableHeader
+              className={`
+                transform-gpu rounded-none border-0 border-b bg-background/75
+                backdrop-blur-xl
+              `}
+            />
+          )}
           {isRowsPending ? (
             <TableBodySkeleton selectable={primaryColumns.length > 0} />
           ) : error ? (
@@ -269,7 +275,7 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
             />
           ) : (
             <>
-              <TableBody data-mask className="bg-background" />
+              <TableBody data-mask zebra className="bg-transparent" />
               <TableInfiniteLoader
                 table={table}
                 schema={schema}
@@ -279,7 +285,6 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
             </>
           )}
         </Table>
-        <DraftsToolbar table={table} schema={schema} />
       </div>
       <RenameColumnDialog ref={renameColumnRef} />
     </TableProvider>

@@ -13,6 +13,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandShortcut,
   CommandList,
 } from '@tamery/ui/components/command'
 import { Indicator } from '@tamery/ui/components/custom/indicator'
@@ -178,16 +179,11 @@ export function HeaderActionsOrder() {
                               onSelect={() => addColumn(column.id)}
                               className="gap-2"
                             >
-                              <span className="truncate">{column.id}</span>
+                              <span className="min-w-0 flex-1 truncate">{column.id}</span>
                               {column.type && (
-                                <span
-                                  className="
-                                  ml-auto text-right text-xs
-                                  text-muted-foreground
-                                "
-                                >
+                                <CommandShortcut className="tracking-normal">
                                   {column.type}
-                                </span>
+                                </CommandShortcut>
                               )}
                             </CommandItem>
                           ))}

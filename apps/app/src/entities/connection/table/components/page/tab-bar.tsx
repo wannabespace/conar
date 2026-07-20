@@ -10,6 +10,7 @@ import {
 } from '@tamery/ui/components/context-menu'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
+import { SidebarTrigger } from '@tamery/ui/components/sidebar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useIsInViewport } from '@tamery/ui/hookas/use-is-in-viewport'
 import { cn } from '@tamery/ui/lib/utils'
@@ -17,7 +18,6 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, useRouter, useSearch } from '@tanstack/react-router'
 import { Reorder } from 'motion/react'
-import type { ComponentProps } from 'react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
@@ -32,33 +32,11 @@ import {
 } from '~/entities/connection/store'
 import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
 
-import { tablePageStore } from '../store'
+import { tablePageStore } from '../../store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const os = getOS(navigator.userAgent)
-
-function CloseButton({ onClick }: { onClick: ComponentProps<'svg'>['onClick'] }) {
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <RiCloseLine
-            className={`
-            size-3.5 opacity-0
-            group-hover:opacity-30
-            hover:opacity-100
-          `}
-            onClick={onClick}
-          />
-        }
-      ></TooltipTrigger>
-      <TooltipContent side="bottom" sideOffset={12}>
-        Close tab ({os.type === 'macos' ? '⌘' : 'Ctrl'} + W)
-      </TooltipContent>
-    </Tooltip>
-  )
-}
 
 function getQueryOpts(connectionResource: ConnectionResource, schema: string, tableName: string) {
   const state = tablePageStore({ id: connectionResource.id, schema, table: tableName }).get()
@@ -70,7 +48,7 @@ function getQueryOpts(connectionResource: ConnectionResource, schema: string, ta
   }
 }
 
-function SortableTab({
+function Tab({
   item,
   connectionResource,
   showSchema,
@@ -92,9 +70,7 @@ function SortableTab({
   totalTabs: number
 }) {
   const router = useRouter()
-  const { schema: schemaParam, table: tableParam } = useSearch({
-    from: '/_protected/connection/$resourceId/table/',
-  })
+  const { schema: schemaParam, table: tableParam } = useSearch({ strict: false })
   const ref = useRef<HTMLDivElement>(null)
   const isVisible = useIsInViewport(ref, 'full')
   const [contextMenuOpen, setContextMenuOpen] = useState(false)
@@ -110,53 +86,47 @@ function SortableTab({
     }
   }, [isActive, isVisible])
 
+  const prefetch = () =>
+    prefetchConnectionResourceTableCore({
+      connectionResource,
+      schema: item.tab.schema,
+      table: item.tab.table,
+      query: getQueryOpts(connectionResource, item.tab.schema, item.tab.table),
+    })
+
   return (
     <Reorder.Item
       value={item}
       as="div"
       ref={ref}
-      className={cn(
-        `
-          relative rounded-sm bg-background
-          aria-pressed:z-10
-        `,
-        item.tab.preview && 'italic',
-      )}
+      className={`
+        relative shrink-0
+        aria-pressed:z-10
+      `}
     >
       <ContextMenu open={contextMenuOpen} onOpenChange={setContextMenuOpen}>
-        <ContextMenuTrigger className="h-full">
+        <ContextMenuTrigger className="block h-full">
           <button
             data-mask
             type="button"
+            aria-label={`${item.tab.schema}.${item.tab.table} tab`}
             className={cn(
               `
-                group flex h-full items-center gap-1 rounded-sm border
-                border-transparent pr-1.5 pl-2 text-sm text-foreground
-                hover:border-accent hover:bg-muted/70
+                group relative flex h-full cursor-default items-center gap-1.5
+                border-r border-b pr-8 pl-3 text-sm whitespace-nowrap
+                text-muted-foreground transition-colors duration-100
+                hover:bg-background/50
               `,
               isActive &&
                 `
-                border-primary/50 bg-primary/10
-                hover:border-primary/50 hover:bg-primary/10
-              `,
+                  border-b-transparent bg-background text-foreground
+                  hover:bg-background
+                `,
+              item.tab.preview && 'italic',
             )}
             onDoubleClick={() => addTab(connectionResource.id, item.tab.schema, item.tab.table)}
-            onMouseOver={() =>
-              prefetchConnectionResourceTableCore({
-                connectionResource,
-                schema: item.tab.schema,
-                table: item.tab.table,
-                query: getQueryOpts(connectionResource, item.tab.schema, item.tab.table),
-              })
-            }
-            onFocus={() =>
-              prefetchConnectionResourceTableCore({
-                connectionResource,
-                schema: item.tab.schema,
-                table: item.tab.table,
-                query: getQueryOpts(connectionResource, item.tab.schema, item.tab.table),
-              })
-            }
+            onMouseOver={prefetch}
+            onFocus={prefetch}
             onClick={() =>
               router.navigate({
                 to: '/connection/$resourceId/table',
@@ -167,18 +137,38 @@ function SortableTab({
           >
             <RiTableLine
               className={cn(
-                'size-4 shrink-0 text-muted-foreground opacity-50',
-                isActive && 'text-primary opacity-100',
+                'size-3.5 shrink-0 text-muted-foreground/60',
+                isActive && 'text-primary',
               )}
             />
-            {showSchema && <span className="text-muted-foreground">{item.tab.schema}.</span>}
-            {item.tab.table}
-            <CloseButton
+            <span>
+              {showSchema && <span className="text-muted-foreground">{item.tab.schema}.</span>}
+              {item.tab.table}
+            </span>
+            <span
+              role="button"
+              tabIndex={-1}
+              aria-label="Close tab"
+              className={`
+                absolute right-2 flex size-4 items-center justify-center
+                rounded-sm opacity-0 transition-opacity duration-100
+                group-hover:opacity-60
+                hover:bg-accent hover:opacity-100!
+              `}
               onClick={e => {
                 e.stopPropagation()
                 onClose()
               }}
-            />
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onClose()
+                }
+              }}
+            >
+              <RiCloseLine className="size-3.5" />
+            </span>
           </button>
         </ContextMenuTrigger>
         <ContextMenuContent>
@@ -205,16 +195,14 @@ function SortableTab({
   )
 }
 
-export function TablesTabs({ className }: { className?: string }) {
+export function TabBar({ className }: { className?: string }) {
   const { connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })
   const { data: tablesAndSchemas } = useQuery(
     resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
   )
-  const { schema: schemaParam, table: tableParam } = useSearch({
-    from: '/_protected/connection/$resourceId/table/',
-  })
+  const { schema: schemaParam, table: tableParam } = useSearch({ strict: false })
   const router = useRouter()
   const tabs = useSubscription(store, { selector: state => state.tabs })
 
@@ -372,33 +360,52 @@ export function TablesTabs({ className }: { className?: string }) {
   }))
 
   return (
-    <ScrollArea className={cn('h-full', className)}>
-      <Reorder.Group
-        axis="x"
-        values={tabItems}
-        onReorder={newItems => {
-          updateTabs(
-            connectionResource.id,
-            newItems.map(item => item.tab),
-          )
-        }}
-        className="flex h-full gap-1 p-1"
-      >
-        {tabItems.map((item, index) => (
-          <SortableTab
-            key={item.id}
-            item={item}
-            connectionResource={connectionResource}
-            showSchema={!isOneSchema}
-            onClose={() => closeTab(item.tab.schema, item.tab.table)}
-            onCloseAll={closeAllTabs}
-            onCloseToTheRight={() => closeTabsToTheRight(item.tab.schema, item.tab.table)}
-            onCloseOthers={() => closeOtherTabs(item.tab.schema, item.tab.table)}
-            currentTabIndex={index}
-            totalTabs={tabItems.length}
-          />
-        ))}
-      </Reorder.Group>
-    </ScrollArea>
+    <div className={cn('flex h-8 shrink-0 items-stretch bg-body/50', className)}>
+      <div className="flex shrink-0 items-center border-r border-b px-1">
+        <Tooltip>
+          <TooltipTrigger
+            render={<SidebarTrigger className="text-muted-foreground" />}
+          ></TooltipTrigger>
+          <TooltipContent side="bottom">
+            Toggle tables sidebar ({os.type === 'macos' ? '⌘' : 'Ctrl'} + B)
+          </TooltipContent>
+        </Tooltip>
+      </div>
+      {tabItems.length > 0 ? (
+        <ScrollArea className="h-full min-w-0 flex-1">
+          <div className="flex h-8 min-w-full items-stretch">
+            <Reorder.Group
+              axis="x"
+              values={tabItems}
+              onReorder={newItems => {
+                updateTabs(
+                  connectionResource.id,
+                  newItems.map(item => item.tab),
+                )
+              }}
+              className="flex items-stretch"
+            >
+              {tabItems.map((item, index) => (
+                <Tab
+                  key={item.id}
+                  item={item}
+                  connectionResource={connectionResource}
+                  showSchema={!isOneSchema}
+                  onClose={() => closeTab(item.tab.schema, item.tab.table)}
+                  onCloseAll={closeAllTabs}
+                  onCloseToTheRight={() => closeTabsToTheRight(item.tab.schema, item.tab.table)}
+                  onCloseOthers={() => closeOtherTabs(item.tab.schema, item.tab.table)}
+                  currentTabIndex={index}
+                  totalTabs={tabItems.length}
+                />
+              ))}
+            </Reorder.Group>
+            <div aria-hidden className="min-w-0 flex-1 border-b" />
+          </div>
+        </ScrollArea>
+      ) : (
+        <div aria-hidden className="min-w-0 flex-1 border-b" />
+      )}
+    </div>
   )
 }

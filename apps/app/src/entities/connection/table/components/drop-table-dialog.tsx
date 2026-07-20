@@ -15,7 +15,7 @@ import {
 import { Input } from '@tamery/ui/components/input'
 import { Label } from '@tamery/ui/components/label'
 import { useMutation } from '@tanstack/react-query'
-import { getRouteApi, useRouter } from '@tanstack/react-router'
+import { getRouteApi, useRouter, useSearch } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -25,7 +25,6 @@ import { getConnectionResourceStore, removeTab } from '~/entities/connection/sto
 import { queryClient } from '~/main'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
-const { useSearch } = getRouteApi('/_protected/connection/$resourceId/table/')
 
 interface DropTableDialogProps {
   ref: React.RefObject<{
@@ -35,7 +34,7 @@ interface DropTableDialogProps {
 
 export function DropTableDialog({ ref }: DropTableDialogProps) {
   const { connection, connectionResource } = useRouteContext()
-  const { schema: schemaFromSearch, table: tableFromSearch } = useSearch()
+  const { schema: schemaFromSearch, table: tableFromSearch } = useSearch({ strict: false })
   const store = getConnectionResourceStore(connectionResource.id)
   const router = useRouter()
   const [confirmationText, setConfirmationText] = useState('')

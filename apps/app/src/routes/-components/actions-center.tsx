@@ -1,20 +1,32 @@
 import {
   RiAddLine,
+  RiComputerLine,
   RiDashboardLine,
+  RiDownloadLine,
   RiEyeFill,
   RiEyeLine,
+  RiFileListLine,
+  RiHistoryLine,
+  RiMoonLine,
+  RiNodeTree,
   RiRefreshLine,
+  RiSunLine,
   RiTableLine,
+  RiTerminalBoxLine,
 } from '@remixicon/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
 import {
+  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
+  CommandShortcut,
 } from '@tamery/ui/components/command'
+import { Kbd } from '@tamery/ui/components/kbd'
+import { themeStore, useResolvedTheme } from '@tamery/ui/theme-store'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
@@ -34,6 +46,7 @@ import {
   useConnectionResourceLinkParams,
 } from '~/entities/connection'
 import { appStore, setIsActionCenterOpen } from '~/store'
+import { checkForUpdates } from '~/use-updates-observer'
 
 function ActionsResourceTables({
   connection,
@@ -83,7 +96,10 @@ function ActionsResourceTables({
             ) : (
               <RiTableLine className="size-4 shrink-0 text-muted-foreground" />
             )}
-            {schema.name}.{table.name}
+            <span data-mask className="truncate">
+              <span className="text-muted-foreground">{schema.name}.</span>
+              {table.name}
+            </span>
           </CommandItem>
         )),
       )}
@@ -111,22 +127,29 @@ function ConnectionResource({
   return (
     <CommandItem onSelect={() => onResourceSelect(connectionResource)}>
       <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
-      <div className="flex items-center gap-2">
+      <span data-mask className="truncate">
         {connection.name} - {connectionResource.name}
-        {connection.label && (
-          <span
-            className={`
-            rounded-full bg-muted-foreground/10 px-2 py-0.5 text-xs
-            whitespace-nowrap text-muted-foreground
-          `}
-          >
-            {connection.label}
-          </span>
-        )}
-      </div>
+      </span>
+      {connection.label && (
+        <CommandShortcut className="tracking-normal">{connection.label}</CommandShortcut>
+      )}
     </CommandItem>
   )
 }
+
+function run(action: () => void) {
+  return () => {
+    setIsActionCenterOpen(false)
+    action()
+  }
+}
+
+const CONNECTION_PAGES = [
+  { label: 'SQL Runner', to: '/connection/$resourceId/query', icon: RiTerminalBoxLine },
+  { label: 'Tables', to: '/connection/$resourceId/table', icon: RiTableLine },
+  { label: 'Definitions', to: '/connection/$resourceId/definitions', icon: RiFileListLine },
+  { label: 'Visualizer', to: '/connection/$resourceId/visualizer', icon: RiNodeTree },
+] as const
 
 export function ActionsCenter() {
   const { connectionsCollection, connectionsResourcesCollection } = useCollections()
@@ -150,10 +173,11 @@ export function ActionsCenter() {
 
   const isOpen = useSubscription(appStore, { selector: state => state.isActionCenterOpen })
   const router = useRouter()
+  const resolvedTheme = useResolvedTheme()
 
-  useHotkey('Mod+P', () => {
-    if (data.length === 0) return
-
+  useHotkey('Mod+P', e => {
+    // Keep the browser print dialog from hijacking the shortcut
+    e.preventDefault()
     setIsActionCenterOpen(!isOpen)
   })
 
@@ -161,55 +185,131 @@ export function ActionsCenter() {
 
   return (
     <CommandDialog open={isOpen} onOpenChange={setIsActionCenterOpen}>
-      <CommandInput placeholder="Type a command..." />
-      <CommandList className="max-h-140">
-        <CommandEmpty>No commands found.</CommandEmpty>
-        <CommandGroup heading="Commands">
-          <CommandItem
-            onSelect={() => {
-              setIsActionCenterOpen(false)
-              router.navigate({ to: '/' })
-            }}
-          >
-            <RiDashboardLine className="size-4 shrink-0 text-muted-foreground" />
-            Home
-          </CommandItem>
-          <CommandItem
-            onSelect={() => {
-              window.location.reload()
-            }}
-          >
-            <RiRefreshLine className="size-4 shrink-0 text-muted-foreground" />
-            Reload window
-          </CommandItem>
-          <CommandItem
-            onSelect={() => {
-              setIsActionCenterOpen(false)
-              router.navigate({ to: '/create' })
-            }}
-          >
-            <RiAddLine className="size-4 shrink-0 text-muted-foreground" />
-            Add new connection...
-          </CommandItem>
-        </CommandGroup>
-        {!!data.length && (
-          <CommandGroup heading="Connections">
-            {data.map(({ connection, connectionResource }) => (
-              <ConnectionResource
-                key={connectionResource.id}
-                connection={connection}
-                connectionResource={connectionResource}
-              />
-            ))}
+      <Command loop>
+        <CommandInput placeholder="Type a command or search…" />
+        <CommandList className="max-h-140">
+          <CommandEmpty>No commands found.</CommandEmpty>
+          <CommandGroup heading="Navigation">
+            <CommandItem
+              keywords={['dashboard']}
+              onSelect={run(() => router.navigate({ to: '/' }))}
+            >
+              <RiDashboardLine className="size-4 shrink-0 text-muted-foreground" />
+              Home
+            </CommandItem>
+            {current &&
+              CONNECTION_PAGES.map(page => (
+                <CommandItem
+                  key={page.to}
+                  keywords={['go to', page.label]}
+                  onSelect={run(() =>
+                    router.navigate({
+                      to: page.to,
+                      params: { resourceId: current.connectionResource.id },
+                    }),
+                  )}
+                >
+                  <page.icon className="size-4 shrink-0 text-muted-foreground" />
+                  Go to {page.label}
+                </CommandItem>
+              ))}
+            <CommandItem
+              keywords={['new', 'create', 'database']}
+              onSelect={run(() => router.navigate({ to: '/create' }))}
+            >
+              <RiAddLine className="size-4 shrink-0 text-muted-foreground" />
+              Add new connection…
+            </CommandItem>
           </CommandGroup>
-        )}
-        {current && (
-          <ActionsResourceTables
-            connection={current.connection}
-            connectionResource={current.connectionResource}
-          />
-        )}
-      </CommandList>
+          <CommandGroup heading="Appearance">
+            <CommandItem
+              keywords={['theme', 'dark', 'light', 'mode']}
+              onSelect={run(() => themeStore.set(resolvedTheme === 'dark' ? 'light' : 'dark'))}
+            >
+              {resolvedTheme === 'dark' ? (
+                <RiSunLine className="size-4 shrink-0 text-muted-foreground" />
+              ) : (
+                <RiMoonLine className="size-4 shrink-0 text-muted-foreground" />
+              )}
+              Switch to {resolvedTheme === 'dark' ? 'light' : 'dark'} theme
+            </CommandItem>
+            <CommandItem
+              keywords={['theme', 'system', 'auto']}
+              onSelect={run(() => themeStore.set('system'))}
+            >
+              <RiComputerLine className="size-4 shrink-0 text-muted-foreground" />
+              Use system theme
+            </CommandItem>
+          </CommandGroup>
+          <CommandGroup heading="Application">
+            {current && (
+              <CommandItem
+                keywords={['logs', 'queries', 'history']}
+                onSelect={run(() => {
+                  const store = getConnectionResourceStore(current.connectionResource.id)
+                  store.set(
+                    state =>
+                      ({ ...state, loggerOpened: !state.loggerOpened }) satisfies typeof state,
+                  )
+                })}
+              >
+                <RiHistoryLine className="size-4 shrink-0 text-muted-foreground" />
+                Toggle query logger
+              </CommandItem>
+            )}
+            {!!window.electron && (
+              <CommandItem keywords={['update', 'version']} onSelect={run(() => checkForUpdates())}>
+                <RiDownloadLine className="size-4 shrink-0 text-muted-foreground" />
+                Check for updates…
+              </CommandItem>
+            )}
+            <CommandItem
+              keywords={['restart', 'refresh']}
+              onSelect={() => window.location.reload()}
+            >
+              <RiRefreshLine className="size-4 shrink-0 text-muted-foreground" />
+              Reload window
+            </CommandItem>
+          </CommandGroup>
+          {!!data.length && (
+            <CommandGroup heading="Connections">
+              {data.map(({ connection, connectionResource }) => (
+                <ConnectionResource
+                  key={connectionResource.id}
+                  connection={connection}
+                  connectionResource={connectionResource}
+                />
+              ))}
+            </CommandGroup>
+          )}
+          {current && (
+            <ActionsResourceTables
+              connection={current.connection}
+              connectionResource={current.connectionResource}
+            />
+          )}
+        </CommandList>
+      </Command>
+      <div
+        className={`
+          flex items-center gap-3 border-t px-3 py-1.5 text-2xs
+          text-muted-foreground/70
+        `}
+      >
+        <span className="flex items-center gap-1">
+          <Kbd>↑</Kbd>
+          <Kbd>↓</Kbd>
+          navigate
+        </span>
+        <span className="flex items-center gap-1">
+          <Kbd>↵</Kbd>
+          open
+        </span>
+        <span className="flex items-center gap-1">
+          <Kbd>esc</Kbd>
+          close
+        </span>
+      </div>
     </CommandDialog>
   )
 }
