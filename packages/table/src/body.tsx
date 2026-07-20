@@ -71,7 +71,7 @@ const Row = memo(function Row({
       className={cn(
         `
         flex w-fit min-w-full border-b
-        hover:bg-accent/30
+        hover:bg-foreground/6
       `,
         rowIndex === lastIndex && `border-b-0`,
         zebra && 'border-b-0',

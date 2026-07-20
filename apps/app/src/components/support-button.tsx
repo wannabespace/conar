@@ -1,4 +1,3 @@
-import { RiMessageLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
@@ -9,19 +8,22 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@tamery/ui/components/dialog'
 import { Field, FieldLabel } from '@tamery/ui/components/field'
 import { Textarea } from '@tamery/ui/components/textarea'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { orpc } from '~/lib/orpc'
 
-export function SupportButton({ side = 'bottom' }: { side?: 'top' | 'right' | 'bottom' | 'left' }) {
-  const [open, setOpen] = useState(false)
+export function SupportDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
   const [message, setMessage] = useState('')
 
   const { mutate: sendSupport, isPending: loading } = useMutation(
@@ -30,7 +32,7 @@ export function SupportButton({ side = 'bottom' }: { side?: 'top' | 'right' | 'b
         toast.success(
           'Support message sent successfully! We will get back to you as soon as possible.',
         )
-        setOpen(false)
+        onOpenChange(false)
         setMessage('')
       },
       onError: err => {
@@ -46,15 +48,7 @@ export function SupportButton({ side = 'bottom' }: { side?: 'top' | 'right' | 'b
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <Tooltip>
-        <TooltipTrigger
-          render={<DialogTrigger render={<Button size="icon-sm" variant="ghost" />} />}
-        >
-          <RiMessageLine className="size-4" />
-        </TooltipTrigger>
-        <TooltipContent side={side}>Support</TooltipContent>
-      </Tooltip>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Contact Support</DialogTitle>
@@ -63,7 +57,7 @@ export function SupportButton({ side = 'bottom' }: { side?: 'top' | 'right' | 'b
           </DialogDescription>
         </DialogHeader>
         <div>
-          <form onSubmit={handleSubmit}>
+          <form id="support-form" onSubmit={handleSubmit}>
             <Field>
               <FieldLabel htmlFor="support-message">Message</FieldLabel>
               <Textarea
@@ -79,7 +73,7 @@ export function SupportButton({ side = 'bottom' }: { side?: 'top' | 'right' | 'b
         </div>
         <DialogFooter>
           <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
-          <Button type="submit" disabled={loading || !message}>
+          <Button type="submit" form="support-form" disabled={loading || !message}>
             <LoadingContent loading={loading}>Send</LoadingContent>
           </Button>
         </DialogFooter>

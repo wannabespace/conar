@@ -1,5 +1,6 @@
 import { CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { enabledFilters } from '@tamery/shared/filters'
 import type { ColumnRenderer, TableCellProps } from '@tamery/table'
 import { Table, TableBody, TableProvider } from '@tamery/table'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
@@ -115,7 +116,10 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
   const store = useTablePageStore()
   const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
   const columnSizes = useSubscription(store, { selector: state => state.columnSizes })
-  const filters = useSubscription(store, { selector: state => state.filters })
+  const filters = useSubscription(store, {
+    selector: state => enabledFilters(state.filters),
+    isEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
+  })
   const orderBy = useSubscription(store, { selector: state => state.orderBy })
   const {
     data: rows = [],
@@ -250,12 +254,7 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
       >
         <Table>
           {tableColumns.length > 0 && (
-            <TableHeader
-              className={`
-                transform-gpu rounded-none border-0 border-b bg-background/75
-                backdrop-blur-xl
-              `}
-            />
+            <TableHeader className="rounded-none border-0 border-b bg-background" />
           )}
           {isRowsPending ? (
             <TableBodySkeleton selectable={primaryColumns.length > 0} />

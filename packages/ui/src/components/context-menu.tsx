@@ -111,7 +111,7 @@ function ContextMenuItem({
       className={cn(
         `
           group/context-menu-item relative flex min-h-7 cursor-default
-          items-center gap-2 rounded-xl px-2 py-1 text-sm outline-hidden
+          items-center gap-2 rounded-lg px-2 py-1 text-sm outline-hidden
           select-none
           focus:bg-accent focus:text-accent-foreground
           data-inset:pl-7
@@ -150,7 +150,7 @@ function ContextMenuSubTrigger({
       data-inset={inset}
       className={cn(
         `
-          flex min-h-7 cursor-default items-center rounded-xl px-2 py-1
+          flex min-h-7 cursor-default items-center rounded-lg px-2 py-1
           text-sm outline-hidden select-none
           focus:bg-accent focus:text-accent-foreground
           data-inset:pl-7
@@ -194,7 +194,7 @@ function ContextMenuCheckboxItem({
       data-inset={inset}
       className={cn(
         `
-          relative flex min-h-7 cursor-default items-center gap-2 rounded-xl
+          relative flex min-h-7 cursor-default items-center gap-2 rounded-lg
           py-1 pr-8 pl-2 text-sm outline-hidden select-none
           focus:bg-accent focus:text-accent-foreground
           data-inset:pl-7
@@ -235,7 +235,7 @@ function ContextMenuRadioItem({
       data-inset={inset}
       className={cn(
         `
-          relative flex min-h-7 cursor-default items-center gap-2 rounded-xl
+          relative flex min-h-7 cursor-default items-center gap-2 rounded-lg
           py-1 pr-8 pl-2 text-sm outline-hidden select-none
           focus:bg-accent focus:text-accent-foreground
           data-inset:pl-7

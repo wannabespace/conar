@@ -7,7 +7,7 @@ export const inputGroupAddonVariants = cva(
     flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm
     font-medium text-muted-foreground select-none
     group-data-[disabled=true]/input-group:opacity-50
-    **:data-[slot=kbd]:rounded-2xl **:data-[slot=kbd]:bg-muted-foreground/10
+    **:data-[slot=kbd]:rounded-md **:data-[slot=kbd]:bg-muted-foreground/10
     **:data-[slot=kbd]:px-1.5
     [&>svg:not([class*='size-'])]:size-4
   `,
@@ -43,17 +43,17 @@ export const inputGroupAddonVariants = cva(
 )
 
 export const inputGroupButtonVariants = cva(
-  'flex items-center gap-2 rounded-2xl text-sm shadow-none',
+  'flex items-center gap-2 rounded-lg text-sm shadow-none',
   {
     variants: {
       size: {
         'xs': `
-          h-6 gap-1 rounded-xl px-1.5
+          h-6 gap-1 rounded-md px-1.5
           [&>svg:not([class*='size-'])]:size-3.5
         `,
         'sm': '',
         'icon-xs': `
-          size-6 rounded-xl p-0
+          size-6 rounded-md p-0
           has-[>svg]:p-0
         `,
         'icon-sm': `

@@ -158,7 +158,7 @@ function CommandItem({
       className={cn(
         `
           group/command-item relative flex min-h-7 cursor-default items-center
-          gap-2 rounded-xl px-2 py-1 text-sm outline-hidden select-none
+          gap-2 rounded-lg px-2 py-1 text-sm outline-hidden select-none
           in-data-[slot=dialog-content]:rounded-2xl
           data-[disabled=true]:pointer-events-none
           data-[disabled=true]:opacity-50
@@ -207,6 +207,8 @@ export {
   CommandInput,
   CommandItem,
   CommandList,
+  // Unstyled cmdk root/parts for custom compositions (e.g. inline filter fields)
+  CommandPrimitive,
   CommandSeparator,
   CommandShortcut,
 }

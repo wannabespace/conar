@@ -43,7 +43,7 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
       className={cn(
         `
           relative inline-flex h-[calc(100%-1px)] flex-1 items-center
-          justify-center gap-1.5 rounded-2xl border border-transparent! px-1.5
+          justify-center gap-1.5 rounded-lg border border-transparent! px-1.5
           py-0.5 text-sm font-medium whitespace-nowrap text-foreground/60
           transition-all
           group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start

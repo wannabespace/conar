@@ -18,7 +18,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { copy } from '@tamery/ui/lib/copy'
 import { useMutation } from '@tanstack/react-query'
 import { formatDate } from 'date-fns'
@@ -183,103 +182,98 @@ export function ExportData({
   })
 
   return (
-    <Tooltip>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={<TooltipTrigger render={trigger({ isExporting: isPending })} />}
-        />
-        <DropdownMenuContent align="end">
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-              <RiDownloadLine />
-              Export
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <RiTableLine />
-                  Export as CSV
-                </DropdownMenuSubTrigger>
-                <ExportDataDropdownMenuSubContent
-                  type="download"
-                  format="csv"
-                  onExport={startExport}
-                  selected={selected}
-                />
-              </DropdownMenuSub>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <RiBracesLine />
-                  Export as JSON
-                </DropdownMenuSubTrigger>
-                <ExportDataDropdownMenuSubContent
-                  type="download"
-                  format="json"
-                  onExport={startExport}
-                  selected={selected}
-                />
-              </DropdownMenuSub>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <RiMarkdownLine />
-                  Export as Markdown
-                </DropdownMenuSubTrigger>
-                <ExportDataDropdownMenuSubContent
-                  type="download"
-                  format="markdown"
-                  onExport={startExport}
-                  selected={selected}
-                />
-              </DropdownMenuSub>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-              <RiFileCopyLine />
-              Copy
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <RiTableLine />
-                  Copy as CSV
-                </DropdownMenuSubTrigger>
-                <ExportDataDropdownMenuSubContent
-                  type="copy"
-                  format="csv"
-                  onExport={startExport}
-                  selected={selected}
-                />
-              </DropdownMenuSub>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <RiBracesLine />
-                  Copy as JSON
-                </DropdownMenuSubTrigger>
-                <ExportDataDropdownMenuSubContent
-                  type="copy"
-                  format="json"
-                  onExport={startExport}
-                  selected={selected}
-                />
-              </DropdownMenuSub>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <RiMarkdownLine />
-                  Copy as Markdown
-                </DropdownMenuSubTrigger>
-                <ExportDataDropdownMenuSubContent
-                  type="copy"
-                  format="markdown"
-                  onExport={startExport}
-                  selected={selected}
-                />
-              </DropdownMenuSub>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <TooltipContent>Export data</TooltipContent>
-    </Tooltip>
+    <DropdownMenu>
+      <DropdownMenuTrigger render={trigger({ isExporting: isPending })} />
+      <DropdownMenuContent align="end">
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <RiDownloadLine />
+            Export
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <RiTableLine />
+                Export as CSV
+              </DropdownMenuSubTrigger>
+              <ExportDataDropdownMenuSubContent
+                type="download"
+                format="csv"
+                onExport={startExport}
+                selected={selected}
+              />
+            </DropdownMenuSub>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <RiBracesLine />
+                Export as JSON
+              </DropdownMenuSubTrigger>
+              <ExportDataDropdownMenuSubContent
+                type="download"
+                format="json"
+                onExport={startExport}
+                selected={selected}
+              />
+            </DropdownMenuSub>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <RiMarkdownLine />
+                Export as Markdown
+              </DropdownMenuSubTrigger>
+              <ExportDataDropdownMenuSubContent
+                type="download"
+                format="markdown"
+                onExport={startExport}
+                selected={selected}
+              />
+            </DropdownMenuSub>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <RiFileCopyLine />
+            Copy
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <RiTableLine />
+                Copy as CSV
+              </DropdownMenuSubTrigger>
+              <ExportDataDropdownMenuSubContent
+                type="copy"
+                format="csv"
+                onExport={startExport}
+                selected={selected}
+              />
+            </DropdownMenuSub>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <RiBracesLine />
+                Copy as JSON
+              </DropdownMenuSubTrigger>
+              <ExportDataDropdownMenuSubContent
+                type="copy"
+                format="json"
+                onExport={startExport}
+                selected={selected}
+              />
+            </DropdownMenuSub>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <RiMarkdownLine />
+                Copy as Markdown
+              </DropdownMenuSubTrigger>
+              <ExportDataDropdownMenuSubContent
+                type="copy"
+                format="markdown"
+                onExport={startExport}
+                selected={selected}
+              />
+            </DropdownMenuSub>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

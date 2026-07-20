@@ -227,6 +227,27 @@
   @apply bg-white/90 text-primary;
 }
 
+/* Vertical scroll fade for the data table: keeps the sticky header band fully
+   opaque and dissolves the rows right beneath it. Pairs with the shadcn
+   `scroll-fade` utility, which drives --scroll-fade-t/b via scroll-driven
+   animations — this only swaps the mask shape it renders. */
+@utility table-scroll-fade {
+  --table-header-height: calc(var(--spacing) * 8);
+
+  --scroll-fade-mask: linear-gradient(
+    to bottom,
+    #000 0 var(--table-header-height),
+    transparent var(--table-header-height),
+    #000 calc(var(--table-header-height) + var(--scroll-fade-t, 0px)),
+    #000 calc(100% - var(--scroll-fade-b, 0px)),
+    transparent 100%
+  );
+
+  &:has([data-footer]) {
+    --table-header-height: calc(var(--spacing) * 12);
+  }
+}
+
 @utility hit-area-debug {
   position: relative;
   &::before {

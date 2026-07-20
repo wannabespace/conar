@@ -11,13 +11,7 @@ import {
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@tamery/ui/components/dialog'
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@tamery/ui/components/dialog'
 import { Tabs, TabsList, TabsTrigger } from '@tamery/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
@@ -163,15 +157,10 @@ function DialogSidebar({
   onCategoryChange: (category: keyof typeof FORMATS) => void
 }) {
   return (
-    <div
-      className={`
-      flex w-40 flex-col gap-1 overflow-y-auto border-r bg-muted/30 p-2
-    `}
-    >
+    <div className="flex w-44 shrink-0 flex-col overflow-y-auto border-r bg-body/50 p-2">
       <Tabs
         value={activeCategory}
         onValueChange={value => onCategoryChange(value as keyof typeof FORMATS)}
-        className="mb-2"
       >
         <TabsList className="w-full">
           <TabsTrigger value="schema" className="flex-1">
@@ -182,16 +171,26 @@ function DialogSidebar({
           </TabsTrigger>
         </TabsList>
       </Tabs>
-      {formats.map(fmt => (
-        <SidebarButton
-          key={fmt.type}
-          onClick={() => onFormatChange(fmt.type)}
-          active={fmt.type === activeFormat.type}
-        >
-          <fmt.icon className="size-4" />
-          {fmt.label}
-        </SidebarButton>
-      ))}
+      <div
+        className="
+          px-2 pt-3 pb-1 text-2xs font-semibold tracking-wider
+          text-muted-foreground uppercase select-none
+        "
+      >
+        Format
+      </div>
+      <div className="flex flex-col gap-0.5">
+        {formats.map(fmt => (
+          <SidebarButton
+            key={fmt.type}
+            onClick={() => onFormatChange(fmt.type)}
+            active={fmt.type === activeFormat.type}
+          >
+            <fmt.icon />
+            {fmt.label}
+          </SidebarButton>
+        ))}
+      </div>
     </div>
   )
 }
@@ -207,19 +206,13 @@ function CopyDialogEditor({
 }) {
   return (
     <div className="flex min-w-0 flex-1 flex-col">
-      <DialogHeader className="border-b p-4 pr-4">
-        <DialogTitle>
+      <div className="flex h-12 shrink-0 items-center gap-2 border-b pr-13 pl-4">
+        <DialogTitle className="truncate text-sm font-semibold">
           {activeFormat.label} {activeCategory === 'schema' ? 'Schema' : 'Query'}
         </DialogTitle>
-      </DialogHeader>
-
-      <div className="relative min-h-0 flex-1">
-        <CopyButton
-          className="absolute top-2 right-6 z-10"
-          text={codeContent}
-          variant="outline"
-          size="icon-sm"
-        />
+        <CopyButton className="ml-auto" text={codeContent} variant="outline" size="icon-sm" />
+      </div>
+      <div className="min-h-0 flex-1">
         <Monaco
           value={codeContent}
           language={activeFormat.lang}
@@ -227,7 +220,7 @@ function CopyDialogEditor({
             readOnly: true,
             minimap: { enabled: false },
             lineNumbers: 'off',
-            padding: { top: 16, bottom: 16 },
+            padding: { top: 12, bottom: 12 },
             scrollBeyondLastLine: false,
           }}
           className="size-full"
@@ -296,8 +289,9 @@ export function HeaderActionsCopy({
       <DialogContent
         className={cn(
           `
-          flex h-150 w-[60vw] flex-row gap-0 overflow-hidden p-0
-          sm:max-w-[60vw]
+          flex h-[70vh] max-h-140 w-full flex-row gap-0 overflow-hidden
+          rounded-2xl p-0
+          sm:max-w-3xl
         `,
         )}
       >

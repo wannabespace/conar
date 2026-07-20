@@ -685,7 +685,7 @@ export function ConnectionsList() {
             </ScrollArea>
           )}
           <Select value={sort} onValueChange={value => sortValue.set(value!)}>
-            <SelectTrigger className="h-7 w-46 shrink-0 text-sm">
+            <SelectTrigger className="h-7 shrink-0 text-sm">
               {sort.includes('asc') ? <RiSortAsc /> : <RiSortDesc />}
               <SelectValue>{sortOptions.find(option => option.value === sort)!.label}</SelectValue>
             </SelectTrigger>

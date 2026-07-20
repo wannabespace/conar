@@ -1,5 +1,4 @@
 export { CommandBar } from './command-bar'
 export { SIDEBAR_FOLD_TRANSITION } from './constants'
-export { FiltersRow } from './filters-row'
 export { PageSidebar } from './page-sidebar'
 export { TabBar } from './tab-bar'

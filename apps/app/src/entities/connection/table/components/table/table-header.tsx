@@ -12,7 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
-import { useIsScrolled } from '@tamery/ui/hookas/use-is-scrolled'
 import { useThrottledCallback } from '@tamery/ui/hookas/use-throttled-callback'
 import { cn } from '@tamery/ui/lib/utils'
 import { animate } from 'motion'
@@ -88,7 +87,6 @@ function Header({ className }: { className?: string }) {
   const scrollRef = useTableContext(state => state.scrollRef)
   const direction = useTableContext(state => state.scrollDirection)
   const columns = useTableContext(state => state.columns)
-  const isScrolled = useIsScrolled(scrollRef, { direction: 'vertical' })
   const [notVisibleColumns, setNotVisibleColumns] = useState<{
     left: HeaderColumn[]
     right: HeaderColumn[]
@@ -146,7 +144,7 @@ function Header({ className }: { className?: string }) {
 
   return (
     <TableHeader
-      className={cn('flex transition-shadow duration-300', isScrolled && 'shadow-lg', className)}
+      className={cn('flex', className)}
       before={
         <div className="sticky inset-y-0 left-0 z-20 flex w-0 items-center">
           <DropdownMenu>

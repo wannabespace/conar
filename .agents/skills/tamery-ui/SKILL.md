@@ -25,7 +25,7 @@ Tamery is a native-feeling macOS database client (Electron + React + Tailwind v4
 | 2 (surface) | `bg-background`, `bg-card` | The "window" pane (rounded-xl border shadow), active tab, grouped list containers |
 | 3 (elevated) | `bg-input`, `bg-popover` | Buttons, inputs, chips, popovers, menus, active segmented-control pill |
 
-Glass (floating chrome over data): `bg-background/75`–`/80` + `backdrop-blur-xl`, hairline `border`. Used by: sticky table column header, floating command bar, filter chip strip, drafts toolbar.
+Glass (floating chrome over data): `bg-background/75`–`/90` + `backdrop-blur`, hairline `border`. Used by: sticky table column header and the floating command bar. The command bar is the **single** floating surface on the table page — the drafts row renders inside it as an animated top row (`height 0↔auto`, `border-b`), never as a second floating pill; don't add parallel floating toolbars that can stack or overlap.
 
 Shadows: the kit overrides Tailwind's `--shadow-*` scale in `globals.css` `@theme` — larger blur/offset, lower alpha (0.04–0.14) for macOS-style diffuse elevation. Use the standard `shadow-xs`…`shadow-2xl` classes; never inline `shadow-[...]` values or re-densify with `shadow-black/20`-style modifiers.
 
@@ -38,6 +38,7 @@ Accent usage: selection fills use solid `bg-primary text-primary-foreground` (Fi
 - Micro labels (uppercase section headers, status counts, badges): `text-2xs`, section headers add `font-semibold tracking-wider uppercase text-muted-foreground`
 - Row heights: menus/list rows `min-h-7`/`h-7`, tab bar `h-8`, toolbar rows `h-11`–`h-12`, chips `h-6`
 - Counts/numbers: `tabular-nums`; values/hosts/SQL: `font-mono`
+- **Radius scales with control size** (kit encodes this — don't override): `h-8`+ controls (buttons, inputs, selects, tab tracks) `rounded-xl`; `h-7` controls and menu items `rounded-lg`; `h-6` chips, badges, kbd, checkboxes `rounded-md`. Floating containers (menus, popovers) `rounded-2xl`, large panes `rounded-xl`+. Nested pills follow the concentric rule: inner radius ≈ outer radius − padding (menu `rounded-2xl` + `p-1` → items `rounded-lg`; tabs track `rounded-xl` + `p-*` → pill `rounded-lg`). Never one blanket radius on every size — 10px corners on a 24px control reads as a blob.
 
 ## Native macOS patterns (established in this codebase)
 
@@ -46,27 +47,29 @@ Accent usage: selection fills use solid `bg-primary text-primary-foreground` (Fi
 - **Popovers size to content**: `w-auto min-w-40` unless a search input needs room; hide `CommandInput` below ~8 items; hide group headings when only one group exists.
 - **Grouped lists** (dashboard): one `rounded-xl border bg-card` container, rows with `border-b last:border-b-0`, `hover:bg-accent/50` — not per-row floating cards.
 - **Tabs (Finder-style)**: content-width (`shrink-0`, no truncate — full names visible, no tooltip), each tab carries `border-b`, active gets `border-b-transparent bg-background`; bar background `bg-body/50`.
-- **Floating bottom command bar** owns table-page actions: info zone (morphs to "N selected · Delete" on selection), centered AI search, 3 primary buttons + `⋯` overflow. Filter chips dock *behind* the bar and reveal on hover (see Motion).
+- **Floating bottom command bar** owns table-page actions: the unified filter field (flex-1, leftmost), delete-on-selection, then columns/sort buttons + `⋯` overflow. `items-end` on the bar so buttons stay bottom-anchored while the field grows upward when chips wrap.
 - **Empty states**: centered soft-squircle icon (`rounded-2xl bg-muted/60`), `text-sm font-medium` title, `text-xs text-muted-foreground` hint, gentle fade/scale-in.
 - **Tooltips**: plain-text shortcut hints ("⌘ + W"), never `Kbd` chips inside a dark tooltip (invisible). Never nest a tooltip trigger inside another tooltip's trigger — merge into one.
 - **Copy affordances**: use `CopyButton` (kit) — it animates copy→check via `ContentSwitch`; it accepts `children` for labeled buttons. Silent `copy(text)` (no toast) when the icon morph is confirmation enough.
 - **Count badges** on icon buttons: absolute `-top-1.5 -right-1.5 h-4 min-w-4 rounded-full bg-primary text-2xs` — and the Button **must get `relative overflow-visible`** (Button has no `position` by default).
 - **Sidebar nav rows** outside the kit Sidebar (definitions nav, dialog format lists): use `SidebarLink`/`SidebarButton` from `~/components/sidebar-link.tsx` — Finder row `h-7 rounded-md text-sm`, solid `bg-primary text-primary-foreground` active, icons `text-primary/75` → `text-primary-foreground`.
-- **Focus-stretch search field** (command bar): search sits **rightmost** (Finder-style), rendered as a right-anchored `absolute` overlay above an invisible fixed-width layout slot (`w-56`). On focus, animate ONE measured value with motion — `animate={{ width: focused ? barClientWidth - padding : REST_WIDTH }}` (px→px, ResizeObserver keeps the target fresh) — so it grows leftward across the whole bar; static clusters just fade `opacity 0.2s` beneath it. Never animate the flex siblings' widths instead: competing `max-width`/`flex-grow` transitions ease independently and look broken, and motion `layout` FLIP would distort the input's text. Blur via `relatedTarget` check + Escape-to-blur on the overlay.
+- **Unified filter field** (`page/filter-search-bar.tsx`): one input-styled container (`min-h-8 flex-wrap bg-input rounded-xl`, `has-[input:focus]` ring) holds the filter chips inline plus a bare `CommandPrimitive.Input` (`flex-1 min-w-32`, transparent). Typing opens an upward suggestion panel (`absolute bottom-full mb-2`, `bg-popover rounded-2xl p-1`) built from kit `CommandList`/`CommandItem` inside an unstyled `CommandPrimitive` root (exported from the kit for exactly this) — items: "Ask AI: …" (with remaining-uses meta), "Filter by {column}" matches, "Clear all filters". Picking a column enters a guided stage machine (column → operator → value): a pending chip — styled identically to committed chips (`bg-background border shadow-2xs`, segmented with dividers), just without the eye/✕ segments — shows the partial filter in the field, the panel swaps to grouped operators then an "Apply: col op value ↵" item, Backspace on empty steps back a stage, Escape cancels the stage, blur resets it. Backspace on an empty input removes the last chip; ⌘F focuses; Escape blurs. `onMouseDown={e => e.preventDefault()}` on the panel keeps the input focused through suggestion clicks. Chips inside the field are `bg-background shadow-2xs` (one level below the field's `bg-input`).
 
 ## Motion
 
 - **Use the `motion` library for interactive/interruptible animation**, not CSS transitions. CSS transitions run on wall-clock and snap to the end state when frames drop; motion redirects from the current value. This bit us on the sidebar fold.
 - House curve: `ease: [0.32, 0.72, 0, 1]`, 200–300ms (Apple sheet curve). Collapse/reveal via width/transform, **no whole-panel opacity fades** (content ghosting under `overflow-hidden` clipping reads more native).
 - `AnimatePresence` for mount/exit of conditional chrome (filter strip, drafts toolbar, empty states).
-- **Heavy-reflow guard**: when animating a container whose child is the virtualized table, freeze the data area's inline width for the duration (`useFreezeWidthDuringSidebarFold` in the table route) so the column virtualizer re-measures once, not per frame.
-- **Dock reveal recipe** (filter strip): translate down `calc(100% + gap)` behind the glass bar + `scale 0.9` + `rotateX 18` with `transformPerspective: 800` and `origin-bottom`; reveal on dock hover **and hold while any child popover is open** (count open popovers through tracked setters — controlled popovers closed programmatically don't fire `onOpenChange`). The dock container is `pointer-events-none`, so bridge the flex gap with hit-area on the strip itself (`pb-2 -mb-2`) and debounce the container's `onMouseLeave` generously (~800ms, owner-tuned) — crossing gaps or briefly slipping off the dock must not tuck the strip.
+- **Heavy-reflow guard**: when animating a container whose child is a virtualized table, consider pinning the data area's inline width for the duration so the column virtualizer re-measures once at the end, not per frame.
+- **Filter strip is persistent, not hover-revealed** (owner decision after trying hover-reveal): while any filter is active the chip strip stays visible above the command bar; it animates only on mount (first filter added) and exit (all cleared) — `opacity 0→1, y 8→0, scale 0.98→1`, 200ms house curve via `AnimatePresence`. Hover-reveal was rejected: hidden active filters = data looks wrong with the cause invisible, and hover in/out timers are unfixably fiddly. Don't reintroduce hover-gated chrome for state the user chose to apply. Chip anatomy: `[eye toggle | column | operator | value | ✕]` segments — the eye disables the filter without removing it; the chip's content segments dim to `opacity-45` while the eye and ✕ stay full-strength.
 - Layout-affecting hover states are banned: nothing may shift pixels on hover — reserve space and animate `opacity`/`transform` only.
+- **Scroll-edge cues use the shadcn `scroll-fade` utilities** (CSS scroll-driven mask, zero JS — available via the `shadcn/tailwind.css` import), not JS scroll listeners toggling shadows. For scroll containers with a sticky header inside, `scroll-fade` alone would mask the header too — pair it with `table-scroll-fade` (globals.css), which overrides `--scroll-fade-mask` to keep the header band opaque and dissolve rows beneath it. The data table's scroll container has both by default.
 
 ## Kit gotchas (hard-won, check before debugging)
 
 - `CommandDialog` is only a Dialog shell — you **must** wrap contents in `<Command>` yourself or every cmdk part crashes with `undefined (reading 'subscribe')`.
 - `PopoverContent` defaults to `flex flex-col gap-4 p-4 w-72 rounded-3xl` — menu-like popovers need `gap-0 p-1 rounded-2xl` and often `w-auto`.
+- `DropdownMenuLabel` must sit inside a `DropdownMenuGroup` — base-ui throws `MenuGroupContext is missing` at runtime otherwise (it renders GroupLabel).
 - `CommandItem` appends a hidden `ml-auto` check icon. A second `ml-auto` child splits the free space (ragged alignment). For right-aligned meta (types, operators) use `CommandShortcut` — it also hides the check slot. Give the name span `min-w-0 flex-1 truncate`.
 - Kit `Sidebar` collapsible variants are `fixed` full-viewport — inside app chrome use `collapsible="none"` in a width-animated shell driven by `useSidebar()`; persist fold via the provider cookie and width via a seitu localStorage value.
 - base-ui **render prop pattern**: `<Trigger render={<Button/>}>children</Trigger>` — children land inside the rendered element. A `div role="button"` as a menu trigger needs `nativeButton={false}` and an `aria-label` (lint requires labels on empty render-prop controls).
@@ -74,14 +77,14 @@ Accent usage: selection fills use solid `bg-primary text-primary-foreground` (Fi
 - `InputGroup` defaults to `border-transparent bg-input` — invisible on white-ish surfaces (glass bar, `bg-background` pane). Add `border-border` per instance (or in the wrapping custom component, as `SearchInput` does).
 - TanStack Router `Link` **concatenates** `activeProps.className` with the base className — no tailwind-merge — so conflicting utilities (base `text-sidebar-foreground` vs active `text-primary-foreground`) resolve by stylesheet order, not intent. Style active state with `data-[status=active]:` variants in a single className instead. `~/components/sidebar-link.tsx` (`SidebarLink`/`SidebarButton`) already encodes this — reuse it for sidebar-style nav rows.
 - CSS transitions can't interpolate between a length and a percentage — `max-w-64 → max-w-full` snaps. Keep both endpoints in rem (`max-w-64 → max-w-3xl`).
+- Never give `SelectTrigger` a fixed width narrower than its longest label — the label clips and the popup (which sizes to its items, floored at `min-w-(--anchor-width)`) opens wider than the trigger. Let triggers size to content (kit default `w-fit`).
 - Hotkeys: always `e.preventDefault()` (⌘P otherwise opens the browser print dialog).
-- `tanstack-db` live queries: don't `inArray()` against a reactive array from outside the query — join broadly and filter client-side; prune stale ids kept in localStorage against the live collection (guard against the empty first frame).
 - `getOS(navigator.userAgent)` for ⌘ vs Ctrl in labels.
 
 ## Reference implementations
 
 - Table page composition: `apps/app/src/routes/_protected/connection/$resourceId/table/index.tsx`
-- Floating command bar / filter dock / tab bar / virtualized sidebar tree: `apps/app/src/entities/connection/table/components/page/`
+- Floating command bar / filter strip / tab bar / virtualized sidebar tree: `apps/app/src/entities/connection/table/components/page/`
 - Column header menu: `apps/app/src/entities/connection/table/components/table/table-header-cell.tsx`
 - Grouped list + context menu: `apps/app/src/routes/_protected/-components/connections-list.tsx`
 - Naked sidebar + window pane layout (non-table page): `apps/app/src/routes/_protected/connection/$resourceId/definitions.tsx` + its `-components/sidebar.tsx`

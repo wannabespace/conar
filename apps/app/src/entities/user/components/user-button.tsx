@@ -1,15 +1,29 @@
-import { RiBrushLine, RiGlobalLine, RiLogoutCircleRLine, RiUserLine } from '@remixicon/react'
+import {
+  RiBrushLine,
+  RiGlobalLine,
+  RiHistoryLine,
+  RiLogoutCircleRLine,
+  RiMessageLine,
+  RiUserLine,
+} from '@remixicon/react'
+import { RELEASES_URL } from '@tamery/shared/constants'
 import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
+import type { Theme } from '@tamery/ui/theme-store'
+import { themeStore, useTheme } from '@tamery/ui/theme-store'
 import { useMutation } from '@tanstack/react-query'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
+import { SupportDialog } from '~/components/support-button'
 import { authClient } from '~/lib/auth'
 import { clearDb } from '~/lib/sync'
 
@@ -31,6 +45,12 @@ async function clearLocalAppCache() {
   }
 }
 
+const THEME_OPTIONS: { value: Theme; label: string }[] = [
+  { value: 'system', label: 'System' },
+  { value: 'dark', label: 'Dark' },
+  { value: 'light', label: 'Light' },
+]
+
 export function UserButton({
   side = 'right',
   align = 'end',
@@ -40,6 +60,8 @@ export function UserButton({
 } = {}) {
   const { signOut, isSigningOut } = useSignOut()
   const { data } = authClient.useSession()
+  const theme = useTheme()
+  const [isSupportOpen, setIsSupportOpen] = useState(false)
 
   const { mutate: clearLocalCache, isPending: isClearingCache } = useMutation({
     mutationFn: clearLocalAppCache,
@@ -55,16 +77,13 @@ export function UserButton({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="size-5 cursor-pointer rounded-sm">
+      <DropdownMenuTrigger className="size-5 cursor-default rounded-sm">
         <UserAvatar className="size-full" user={data?.user} />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-56" side={side} align={align}>
-        <div className="mt-1 mb-2 flex h-10 items-center gap-2 px-2">
-          <UserAvatar className="size-8" user={data?.user} />
-          <div className="flex flex-col leading-0">
-            <span className="text-sm font-medium">{data?.user.name}</span>
-            <span className="text-xs text-muted-foreground">{data?.user.email}</span>
-          </div>
+        <div className="flex flex-col px-2 py-1.5 leading-tight">
+          <span className="text-sm font-medium">{data?.user.name}</span>
+          <span className="text-xs text-muted-foreground">{data?.user.email}</span>
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -86,6 +105,14 @@ export function UserButton({
             Web app
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem onClick={() => window.open(RELEASES_URL, '_blank')}>
+          <RiHistoryLine />
+          Releases
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setIsSupportOpen(true)}>
+          <RiMessageLine />
+          Support
+        </DropdownMenuItem>
         <DropdownMenuItem
           disabled={isSigningOut || isClearingCache}
           onClick={() => clearLocalCache()}
@@ -94,11 +121,24 @@ export function UserButton({
           Clear cache
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-muted-foreground">Theme</DropdownMenuLabel>
+          {THEME_OPTIONS.map(option => (
+            <DropdownMenuItem key={option.value} onClick={() => themeStore.set(option.value)}>
+              <span aria-hidden className="flex size-4 items-center justify-center">
+                {theme === option.value && <span className="size-1.5 rounded-full bg-foreground" />}
+              </span>
+              {option.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
         <DropdownMenuItem disabled={isSigningOut} onClick={() => signOut()}>
           <RiLogoutCircleRLine />
           Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
+      <SupportDialog open={isSupportOpen} onOpenChange={setIsSupportOpen} />
     </DropdownMenu>
   )
 }

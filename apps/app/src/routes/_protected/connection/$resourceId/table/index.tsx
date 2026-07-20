@@ -1,19 +1,18 @@
 import { RiTable2 } from '@remixicon/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
+import { enabledFilters } from '@tamery/shared/filters'
 import { title } from '@tamery/shared/utils/title'
 import { SidebarProvider } from '@tamery/ui/components/sidebar'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { motion } from 'motion/react'
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useEffect, useEffectEvent } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { addTab, getConnectionResourceStore } from '~/entities/connection/store'
 import {
   ColumnsContext,
   CommandBar,
-  DraftsToolbar,
-  FiltersRow,
   PageSidebar,
   TabBar,
   Table,
@@ -70,7 +69,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/table/'
         schema: deps.schema,
         table: deps.table,
         query: {
-          filters: state.filters,
+          filters: enabledFilters(state.filters),
           orderBy: state.orderBy,
           exact: state.exact,
         },
@@ -104,19 +103,6 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/table/'
 function TableContent({ table, schema }: { table: string; schema: string }) {
   const { connectionResource } = Route.useRouteContext()
   const { data = [] } = useTableColumnsQuery({ connectionResource, table, schema })
-  const [isDockHovered, setIsDockHovered] = useState(false)
-  const dockLeaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  // Generous grace period: crossing gaps between the dock's floating pieces or
-  // briefly slipping off it entirely shouldn't tuck the filter strip away
-  const handleDockEnter = () => {
-    if (dockLeaveTimer.current) clearTimeout(dockLeaveTimer.current)
-    setIsDockHovered(true)
-  }
-  const handleDockLeave = () => {
-    if (dockLeaveTimer.current) clearTimeout(dockLeaveTimer.current)
-    dockLeaveTimer.current = setTimeout(() => setIsDockHovered(false), 800)
-  }
 
   return (
     <ColumnsContext value={data}>
@@ -131,17 +117,9 @@ function TableContent({ table, schema }: { table: string; schema: string }) {
           <div
             className={`
               pointer-events-none absolute inset-x-3 bottom-3 z-20 flex
-              flex-col items-center gap-2
+              flex-col items-center
             `}
-            onMouseEnter={handleDockEnter}
-            onMouseLeave={handleDockLeave}
           >
-            <DraftsToolbar
-              table={table}
-              schema={schema}
-              className="static inset-x-auto bottom-auto"
-            />
-            <FiltersRow revealed={isDockHovered} />
             <CommandBar table={table} schema={schema} />
           </div>
         </div>

@@ -9,7 +9,6 @@ import {
   CommandList,
   CommandSeparator,
 } from '@tamery/ui/components/command'
-import { Indicator } from '@tamery/ui/components/custom/indicator'
 import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useSubscription } from 'seitu/react'
@@ -28,14 +27,30 @@ export function HeaderActionsColumns() {
         <TooltipTrigger
           render={
             <PopoverTrigger
-              render={<Button size="icon" variant="outline" className="overflow-visible" />}
+              render={
+                <Button size="icon" variant="outline" className="relative overflow-visible" />
+              }
             />
           }
         >
           <RiLayoutColumnLine />
-          {hiddenColumns.length > 0 && <Indicator />}
+          {hiddenColumns.length > 0 && (
+            <span
+              className={`
+                absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center
+                justify-center rounded-full bg-primary px-1 text-2xs
+                font-medium text-primary-foreground tabular-nums
+              `}
+            >
+              {hiddenColumns.length}
+            </span>
+          )}
         </TooltipTrigger>
-        <TooltipContent side="top">Columns visibility</TooltipContent>
+        <TooltipContent side="top">
+          {hiddenColumns.length > 0
+            ? `${hiddenColumns.length} hidden column${hiddenColumns.length === 1 ? '' : 's'}`
+            : 'Columns visibility'}
+        </TooltipContent>
       </Tooltip>
       <PopoverContent
         className="

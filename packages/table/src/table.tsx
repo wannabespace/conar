@@ -8,7 +8,11 @@ export function Table({ className, children, ...props }: Omit<ComponentProps<'di
   const scrollRef = useTableContext(state => state.scrollRef)
 
   return (
-    <ScrollArea ref={scrollRef} className={cn('size-full', className)} {...props}>
+    <ScrollArea
+      ref={scrollRef}
+      className={cn('size-full scroll-fade table-scroll-fade', className)}
+      {...props}
+    >
       {children}
     </ScrollArea>
   )

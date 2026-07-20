@@ -12,11 +12,12 @@ Expand a schema in the tree, then click a table to open it. Each open table is a
 
 ## Filtering
 
-Click **Filter** to open the panel. Each condition has three parts:
+Use the filter field in the bottom toolbar (or press <kbd>⌘</kbd> <kbd>F</kbd>). Start typing to either:
 
-1. **Column**
-2. **Operator** — `equals`, `contains`, `is null`, `greater than`, etc.
-3. **Value**
+- **Pick a column** — choose a _Filter by column_ suggestion, then pick an operator (`=`, `contains`, `is null`, `greater than`, etc.) and type a value, all without leaving the field. Press <kbd>Enter</kbd> to apply; <kbd>Backspace</kbd> steps back, <kbd>Esc</kbd> cancels.
+- **Ask AI** — type a plain-language request (for example, "verified users created this week") and choose _Ask AI_ to generate filters automatically.
+
+Active filters appear as chips inside the field. Each chip can be edited segment by segment, temporarily disabled with the eye toggle (kept in the field but excluded from the query), or removed with ×. Press <kbd>Backspace</kbd> in the empty field to remove the last chip.
 
 Conditions combine with `AND`. Filters are saved per table in local storage.
 

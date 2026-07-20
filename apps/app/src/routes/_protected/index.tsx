@@ -35,7 +35,7 @@ function DashboardPage() {
 
   return (
     <ScrollArea className="overflow-auto">
-      <div className="mx-auto flex size-full max-w-2xl flex-col px-6 py-10">
+      <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col px-6 py-6">
         <div className="mb-6 flex items-center justify-end">
           <Button nativeButton={false} render={<Link to="/create" />}>
             <RiAddLine className="size-4" />
@@ -43,7 +43,7 @@ function DashboardPage() {
           </Button>
         </div>
         <ConnectionsList />
-        <div className="mt-auto py-6">
+        <div className="mt-auto pt-6">
           <Separator />
           <div className="mt-3 flex items-center gap-2">
             <a

@@ -1,16 +1,14 @@
 import { RiAlertLine, RiEyeLine } from '@remixicon/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
+import { getOS } from '@tamery/shared/utils/os'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
-import { Separator } from '@tamery/ui/components/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
-import { cn } from '@tamery/ui/lib/utils'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import type { Kysely } from 'kysely'
-import { motion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
@@ -34,20 +32,9 @@ import { DraftsReviewDrawer } from './drafts-review-drawer'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const motionVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0 },
-}
+const os = getOS(navigator.userAgent)
 
-export function DraftsToolbar({
-  table,
-  schema,
-  className,
-}: {
-  table: string
-  schema: string
-  className?: string
-}) {
+export function DraftsToolbar({ table, schema }: { table: string; schema: string }) {
   const { connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const columns = useTableColumns()
@@ -270,70 +257,70 @@ export function DraftsToolbar({
 
   return (
     <>
-      <motion.div
-        variants={motionVariants}
-        initial="hidden"
-        animate={drafts.length > 0 ? 'visible' : 'hidden'}
-        transition={{ duration: 0.3, type: 'spring' }}
-        className={cn(
-          `
-            absolute inset-x-0 bottom-3 z-20 mx-auto flex
-            w-fit items-center gap-2 rounded-lg border bg-card/60 py-1.5 pr-1.5
-            pl-3 text-card-foreground shadow-lg backdrop-blur-md
-            dark:bg-input/32
-          `,
-          drafts.length > 0 ? 'pointer-events-auto' : 'pointer-events-none',
-          className,
+      {/* Renders as the command bar's top row — no floating shell of its own,
+          so unsaved-changes state lives in the same surface as everything else */}
+      <AnimatePresence initial={false}>
+        {drafts.length > 0 && (
+          <motion.div
+            key="drafts"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="flex items-center gap-2 border-b py-1.5 pr-1.5 pl-3">
+              <div className="flex min-w-0 items-center gap-2 text-xs">
+                {errorCount > 0 && (
+                  <>
+                    <span className="flex items-center gap-1 text-destructive">
+                      <RiAlertLine className="size-3.5" />
+                      <span className="font-medium">{errorCount} failed</span>
+                    </span>
+                    <span className="text-muted-foreground">·</span>
+                  </>
+                )}
+                <span className="truncate">
+                  <span className="font-medium">{drafts.length}</span> unsaved change
+                  {drafts.length === 1 ? '' : 's'} in{' '}
+                  <span className="font-medium">{rowCount}</span> row
+                  {rowCount === 1 ? '' : 's'}
+                </span>
+              </div>
+              <div className="ml-auto flex shrink-0 items-center gap-1">
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        variant="outline"
+                        size="icon-xs"
+                        onClick={() => setIsReviewOpen(true)}
+                        disabled={isSaving}
+                      />
+                    }
+                  >
+                    <RiEyeLine className="size-3.5" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top">Review changes before saving</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger
+                    render={<Button size="xs" onClick={handleSave} disabled={isSaving} />}
+                  >
+                    <LoadingContent loading={isSaving}>Save</LoadingContent>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    Save all unsaved changes atomically in a transaction
+                    <p className="text-xs whitespace-nowrap opacity-70">
+                      {os?.type === 'macos' ? '⌘' : 'Ctrl'} + S
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+          </motion.div>
         )}
-      >
-        <div className="flex items-center gap-2 text-xs">
-          {errorCount > 0 && (
-            <>
-              <span className="flex items-center gap-1 text-destructive">
-                <RiAlertLine className="size-3.5" />
-                <span className="font-medium">{errorCount} failed</span>
-              </span>
-              <span className="text-muted-foreground">·</span>
-            </>
-          )}
-          <span>
-            <span className="font-medium">{drafts.length}</span> unsaved change
-            {drafts.length === 1 ? '' : 's'} in <span className="font-medium">{rowCount}</span> row
-            {rowCount === 1 ? '' : 's'}
-          </span>
-        </div>
-        <Separator orientation="vertical" className="mx-1 h-4" />
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="outline"
-                size="icon-xs"
-                onClick={() => setIsReviewOpen(true)}
-                disabled={isSaving || drafts.length === 0}
-              />
-            }
-          >
-            <RiEyeLine className="size-3.5" />
-          </TooltipTrigger>
-          <TooltipContent side="top">Review changes before saving</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button size="xs" onClick={handleSave} disabled={isSaving || drafts.length === 0} />
-            }
-          >
-            <LoadingContent loading={isSaving}>
-              Save
-              <KbdCtrlLetter userAgent={navigator.userAgent} letter="S" className="text-white" />
-            </LoadingContent>
-          </TooltipTrigger>
-          <TooltipContent side="top">
-            Save all unsaved changes atomically in a transaction
-          </TooltipContent>
-        </Tooltip>
-      </motion.div>
+      </AnimatePresence>
       <DraftsReviewDrawer
         open={isReviewOpen}
         onOpenChange={setIsReviewOpen}

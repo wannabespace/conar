@@ -5,7 +5,7 @@ import { motion } from 'motion/react'
 export const badgeVariants = cva(
   `
     group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1
-    overflow-hidden rounded-2xl border border-transparent px-2 py-0.5 text-xs
+    overflow-hidden rounded-md border border-transparent px-2 py-0.5 text-xs
     font-medium whitespace-nowrap transition-all
     focus-visible:border-ring focus-visible:ring-[3px]
     focus-visible:ring-ring/50

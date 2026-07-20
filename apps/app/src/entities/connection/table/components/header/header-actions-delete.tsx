@@ -1,5 +1,6 @@
 import NumberFlow from '@number-flow/react'
 import { RiDeleteBin7Line } from '@remixicon/react'
+import { enabledFilters } from '@tamery/shared/filters'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -51,7 +52,7 @@ export function HeaderActionsDelete({ table, schema }: { table: string; schema: 
           connectionResource,
           table,
           schema,
-          query: { filters: store.get().filters, orderBy: store.get().orderBy },
+          query: { filters: enabledFilters(store.get().filters), orderBy: store.get().orderBy },
         }),
       )
       queryClient.invalidateQueries(
@@ -59,7 +60,7 @@ export function HeaderActionsDelete({ table, schema }: { table: string; schema: 
           connectionResource,
           table,
           schema,
-          query: { filters: store.get().filters, exact: store.get().exact },
+          query: { filters: enabledFilters(store.get().filters), exact: store.get().exact },
         }),
       )
       store.set(

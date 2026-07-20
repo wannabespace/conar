@@ -21,9 +21,10 @@ export const draftType = type({
 export const tablePageType = type({
   selected: primaryKeysType.array(),
   filters: type({
-    column: 'string',
-    ref: 'object' as type.cast<Filter>,
-    values: 'unknown[]',
+    'column': 'string',
+    'ref': 'object' as type.cast<Filter>,
+    'values': 'unknown[]',
+    'disabled?': 'boolean',
   }).array() as type.cast<ActiveFilter[]>,
   exact: 'boolean',
   hiddenColumns: 'string[]',

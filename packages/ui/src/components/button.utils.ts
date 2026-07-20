@@ -4,7 +4,7 @@ import { motion } from 'motion/react'
 
 export const buttonVariants = cva(
   `
-    group/button inline-flex shrink-0 items-center justify-center rounded-2xl
+    group/button inline-flex shrink-0 items-center justify-center rounded-xl
     border border-transparent bg-clip-padding text-sm font-medium
     whitespace-nowrap transition-all outline-none select-none
     focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30
@@ -61,13 +61,13 @@ export const buttonVariants = cva(
             has-data-[icon=inline-start]:pl-2.5
           `,
         'xs': `
-          h-6 gap-1 px-2.5 text-xs
+          h-6 gap-1 rounded-md px-2.5 text-xs
           has-data-[icon=inline-end]:pr-2
           has-data-[icon=inline-start]:pl-2
           [&_svg:not([class*='size-'])]:size-3
         `,
         'sm': `
-          h-7 gap-1 px-3
+          h-7 gap-1 rounded-lg px-3
           has-data-[icon=inline-end]:pr-2
           has-data-[icon=inline-start]:pl-2
         `,
@@ -78,10 +78,10 @@ export const buttonVariants = cva(
         `,
         'icon': 'size-8',
         'icon-xs': `
-          size-6
+          size-6 rounded-md
           [&_svg:not([class*='size-'])]:size-3
         `,
-        'icon-sm': 'size-7',
+        'icon-sm': 'size-7 rounded-lg',
         'icon-lg': 'size-9',
       },
     },

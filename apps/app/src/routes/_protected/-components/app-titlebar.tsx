@@ -1,16 +1,8 @@
-import {
-  RiAddLine,
-  RiArrowDownSLine,
-  RiCommandLine,
-  RiDeleteBinLine,
-  RiMoonLine,
-  RiSunLine,
-} from '@remixicon/react'
+import { RiAddLine, RiArrowDownSLine, RiCommandLine, RiDeleteBinLine } from '@remixicon/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
 import { getOS } from '@tamery/shared/utils/os'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
-import { ThemeToggle } from '@tamery/ui/components/custom/theme-toggle'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +19,6 @@ import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
 import { useRef, useState } from 'react'
 
-import { SupportButton } from '~/components/support-button'
 import { TitleBar } from '~/components/title-bar'
 import { UpdateButton } from '~/components/update-button'
 import { useCollections } from '~/entities/collections'
@@ -73,6 +64,13 @@ function ConnectionSubMenu({
       >
         <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
         <span className="truncate">{connection.name}</span>
+        {connection.color && (
+          <span
+            aria-hidden
+            className="size-2 shrink-0 rounded-full"
+            style={{ backgroundColor: connection.color }}
+          />
+        )}
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent className="max-h-[60vh] min-w-48 overflow-auto">
         {resources.map(resource => (
@@ -111,6 +109,13 @@ function ConnectionsDropdown({
           <>
             <ConnectionIcon type={current.type} className="size-4 shrink-0" />
             <span className="truncate">{current.name}</span>
+            {current.color && (
+              <span
+                aria-hidden
+                className="size-2 shrink-0 rounded-full"
+                style={{ backgroundColor: current.color }}
+              />
+            )}
           </>
         ) : (
           <span className="truncate">Connections</span>
@@ -239,7 +244,6 @@ export function AppTitleBar() {
         />
         <div className="ml-auto flex h-full shrink-0 items-center gap-1">
           <UpdateButton />
-          <SupportButton side="bottom" />
           <Tooltip>
             <TooltipTrigger
               render={
@@ -256,20 +260,6 @@ export function AppTitleBar() {
             <TooltipContent side="bottom">{os?.type === 'macos' ? '⌘' : 'Ctrl'}P</TooltipContent>
           </Tooltip>
           <span className="mx-1 h-4 w-px shrink-0 self-center bg-border" />
-          <ThemeToggle render={<Button size="icon-sm" variant="ghost" />}>
-            <RiSunLine
-              className={`
-              size-4
-              dark:hidden
-            `}
-            />
-            <RiMoonLine
-              className={`
-              hidden size-4
-              dark:block
-            `}
-            />
-          </ThemeToggle>
           <UserButton side="bottom" align="end" />
         </div>
       </TitleBar>

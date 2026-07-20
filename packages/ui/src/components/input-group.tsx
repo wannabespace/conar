@@ -15,7 +15,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
       className={cn(
         `
           group/input-group relative flex h-8 w-full min-w-0 items-center
-          rounded-2xl border border-transparent bg-input
+          rounded-xl border border-transparent bg-input
           transition-[color,box-shadow] duration-200 outline-none
           focus-within:in-data-[slot=combobox-content]:border-inherit
           focus-within:in-data-[slot=combobox-content]:ring-0

@@ -7,7 +7,7 @@ function Kbd({ className, ...props }: React.ComponentProps<'kbd'>) {
       className={cn(
         `
           pointer-events-none inline-flex h-5 w-fit min-w-5 items-center
-          justify-center gap-1 rounded-lg bg-muted px-1 font-sans text-xs
+          justify-center gap-1 rounded-md bg-muted px-1 font-sans text-xs
           font-medium text-muted-foreground select-none
           in-data-[slot=input-group]:bg-input
           in-data-[slot=tooltip-content]:bg-background/20

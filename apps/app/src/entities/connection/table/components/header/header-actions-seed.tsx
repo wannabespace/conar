@@ -137,7 +137,13 @@ function CustomExpressionPopover({ columnId }: { columnId: string }) {
     >
       <Tooltip>
         <TooltipTrigger
-          render={<PopoverTrigger render={<Button variant="outline" size="icon-sm" />} />}
+          render={
+            <PopoverTrigger
+              render={
+                <Button variant="outline" size="icon-sm" className="relative overflow-visible" />
+              }
+            />
+          }
         >
           {customExpression && <Indicator />}
           <RiCodeSSlashLine />

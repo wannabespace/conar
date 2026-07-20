@@ -1,5 +1,6 @@
-import { RiCloseLine, RiTableLine } from '@remixicon/react'
+import { RiArrowLeftSLine, RiArrowRightSLine, RiCloseLine, RiTableLine } from '@remixicon/react'
 import { getOS } from '@tamery/shared/utils/os'
+import { Button } from '@tamery/ui/components/button'
 import {
   ContextMenu,
   ContextMenuContent,
@@ -16,7 +17,7 @@ import { useIsInViewport } from '@tamery/ui/hookas/use-is-in-viewport'
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
-import { getRouteApi, useRouter, useSearch } from '@tanstack/react-router'
+import { getRouteApi, useCanGoBack, useRouter, useSearch } from '@tanstack/react-router'
 import { Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -37,6 +38,53 @@ import { tablePageStore } from '../../store'
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const os = getOS(navigator.userAgent)
+
+// Browser chrome already has back/forward — only the desktop app needs them
+function HistoryNav() {
+  const router = useRouter()
+  const canGoBack = useCanGoBack()
+
+  if (!window.electron) return null
+
+  return (
+    <>
+      <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-border" />
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Go back"
+              className="text-muted-foreground"
+              disabled={!canGoBack}
+              onClick={() => router.history.back()}
+            />
+          }
+        >
+          <RiArrowLeftSLine />
+        </TooltipTrigger>
+        <TooltipContent side="bottom">Back</TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Go forward"
+              className="text-muted-foreground"
+              onClick={() => router.history.forward()}
+            />
+          }
+        >
+          <RiArrowRightSLine />
+        </TooltipTrigger>
+        <TooltipContent side="bottom">Forward</TooltipContent>
+      </Tooltip>
+    </>
+  )
+}
 
 function getQueryOpts(connectionResource: ConnectionResource, schema: string, tableName: string) {
   const state = tablePageStore({ id: connectionResource.id, schema, table: tableName }).get()
@@ -361,7 +409,7 @@ export function TabBar({ className }: { className?: string }) {
 
   return (
     <div className={cn('flex h-8 shrink-0 items-stretch bg-body/50', className)}>
-      <div className="flex shrink-0 items-center border-r border-b px-1">
+      <div className="flex shrink-0 items-center gap-0.5 border-r border-b px-1">
         <Tooltip>
           <TooltipTrigger
             render={<SidebarTrigger className="text-muted-foreground" />}
@@ -370,6 +418,7 @@ export function TabBar({ className }: { className?: string }) {
             Toggle tables sidebar ({os.type === 'macos' ? '⌘' : 'Ctrl'} + B)
           </TooltipContent>
         </Tooltip>
+        <HistoryNav />
       </div>
       {tabItems.length > 0 ? (
         <ScrollArea className="h-full min-w-0 flex-1">
