@@ -10,7 +10,6 @@ import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import { createRootRoute, HeadContent, Outlet, useRouter } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
-import { GlobalBanner } from '~/components/global-banner'
 import { ErrorPage } from '~/error-page'
 import { globalHooks } from '~/global-hooks'
 import { queryClient } from '~/main'
@@ -55,7 +54,6 @@ function RootDocument() {
               '*:last:min-h-0 *:last:flex-1',
             )}
           >
-            <GlobalBanner />
             <Outlet />
           </div>
           {import.meta.env.DEV && (

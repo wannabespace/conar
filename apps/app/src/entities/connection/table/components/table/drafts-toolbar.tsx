@@ -310,10 +310,12 @@ export function DraftsToolbar({ table, schema }: { table: string; schema: string
                     <LoadingContent loading={isSaving}>Save</LoadingContent>
                   </TooltipTrigger>
                   <TooltipContent side="top">
-                    Save all unsaved changes atomically in a transaction
-                    <p className="text-xs whitespace-nowrap opacity-70">
-                      {os?.type === 'macos' ? '⌘' : 'Ctrl'} + S
-                    </p>
+                    <div className="flex flex-col gap-0.5">
+                      <span>Save all unsaved changes atomically in a transaction</span>
+                      <span className="whitespace-nowrap opacity-70">
+                        {os?.type === 'macos' ? '⌘' : 'Ctrl'} + S
+                      </span>
+                    </div>
                   </TooltipContent>
                 </Tooltip>
               </div>

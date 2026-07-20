@@ -29,10 +29,13 @@ export function DefinitionsHeader({
             }
           ></TooltipTrigger>
           <TooltipContent side="left">
-            Refresh
-            <p className="text-xs opacity-70">
-              Last updated: {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
-            </p>
+            <div className="flex flex-col gap-0.5">
+              <span>Refresh</span>
+              <span className="opacity-70">
+                Last updated:{' '}
+                {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
+              </span>
+            </div>
           </TooltipContent>
         </Tooltip>
       </div>

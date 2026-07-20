@@ -2,6 +2,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
+import { GlobalBanner } from '~/components/global-banner'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
 import { cleanCollections, getCollections } from '~/entities/collections'
 import { EventsProvider } from '~/events'
@@ -59,6 +60,7 @@ function ProtectedLayout() {
       <ActionsCenter />
       <div className="flex h-full flex-col">
         <AppTitleBar />
+        <GlobalBanner />
         <div
           className={cn(
             'min-h-0 flex-1',

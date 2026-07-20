@@ -1,4 +1,5 @@
 import { RiArrowLeftSLine, RiArrowRightSLine, RiCloseLine, RiTableLine } from '@remixicon/react'
+import { enabledFilters } from '@tamery/shared/filters'
 import { getOS } from '@tamery/shared/utils/os'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -9,6 +10,7 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from '@tamery/ui/components/context-menu'
+import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
 import { SidebarTrigger } from '@tamery/ui/components/sidebar'
@@ -16,14 +18,21 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/t
 import { useIsInViewport } from '@tamery/ui/hookas/use-is-in-viewport'
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey } from '@tanstack/react-hotkeys'
-import { useQuery } from '@tanstack/react-query'
+import { useIsFetching, useQuery } from '@tanstack/react-query'
 import { getRouteApi, useCanGoBack, useRouter, useSearch } from '@tanstack/react-router'
 import { Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import type { ConnectionResource } from '~/entities/connection/core'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
+import {
+  resourceConstraintsQueryOptions,
+  resourceEnumsQueryOptions,
+  resourceRowsQueryInfiniteOptions,
+  resourceTableColumnsQueryOptions,
+  resourceTablesAndSchemasQueryOptions,
+  resourceTableTotalQueryOptions,
+} from '~/entities/connection/queries'
 import type { connectionResourceType } from '~/entities/connection/store'
 import {
   addTab,
@@ -32,12 +41,72 @@ import {
   updateTabs,
 } from '~/entities/connection/store'
 import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
+import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
+import { queryClient } from '~/main'
 
 import { tablePageStore } from '../../store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const os = getOS(navigator.userAgent)
+
+function TableRefresh({ schema, table }: { schema: string; table: string }) {
+  const { connectionResource } = useRouteContext()
+  const store = tablePageStore({ id: connectionResource.id, schema, table })
+  const { filters, orderBy, exact } = useSubscription(store, {
+    selector: state => ({
+      filters: enabledFilters(state.filters),
+      orderBy: state.orderBy,
+      exact: state.exact,
+    }),
+  })
+
+  const rowsQueryOpts = resourceRowsQueryInfiniteOptions({
+    connectionResource,
+    table,
+    schema,
+    query: { filters, orderBy },
+  })
+  const isFetching = useIsFetching({ queryKey: rowsQueryOpts.queryKey }) > 0
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries(rowsQueryOpts)
+    queryClient.invalidateQueries(
+      resourceTableColumnsQueryOptions({ connectionResource, table, schema }),
+    )
+    queryClient.invalidateQueries(
+      resourceTableTotalQueryOptions({
+        connectionResource,
+        table,
+        schema,
+        query: { filters, exact },
+      }),
+    )
+    queryClient.invalidateQueries(resourceConstraintsQueryOptions({ connectionResource }))
+    queryClient.invalidateQueries(resourceEnumsQueryOptions({ connectionResource }))
+  }
+
+  useRefreshHotkey(handleRefresh, isFetching)
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <RefreshButton
+            variant="ghost"
+            size="icon-sm"
+            className="text-muted-foreground"
+            refreshing={isFetching}
+            onClick={handleRefresh}
+          />
+        }
+      ></TooltipTrigger>
+      <TooltipContent side="bottom">
+        Refresh table ({os.type === 'macos' ? '⌘' : 'Ctrl'} + R)
+      </TooltipContent>
+    </Tooltip>
+  )
+}
 
 // Browser chrome already has back/forward — only the desktop app needs them
 function HistoryNav() {
@@ -419,6 +488,7 @@ export function TabBar({ className }: { className?: string }) {
           </TooltipContent>
         </Tooltip>
         <HistoryNav />
+        {schemaParam && tableParam && <TableRefresh schema={schemaParam} table={tableParam} />}
       </div>
       {tabItems.length > 0 ? (
         <ScrollArea className="h-full min-w-0 flex-1">

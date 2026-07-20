@@ -1,10 +1,8 @@
 import NumberFlow from '@number-flow/react'
 import {
-  RiCheckLine,
   RiCodeSSlashLine,
   RiDownloadLine,
   RiLayoutColumnLine,
-  RiLoopLeftLine,
   RiMenuLine,
   RiMoreLine,
   RiSeedlingLine,
@@ -12,7 +10,6 @@ import {
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { enabledFilters } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
-import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
@@ -23,18 +20,13 @@ import { useSubscription } from 'seitu/react'
 
 import { ExportData } from '~/components/export-data'
 import {
-  resourceConstraintsQueryOptions,
-  resourceEnumsQueryOptions,
   resourceRowsQuery,
   resourceRowsQueryInfiniteOptions,
-  resourceTableColumnsQueryOptions,
   resourceTablesAndSchemasQueryOptions,
   resourceTableTotalQueryOptions,
 } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
-import { queryClient } from '~/main'
 
 import { useTableColumns } from '../../columns'
 import { useTablePageStore } from '../../store'
@@ -99,12 +91,7 @@ export function CommandBar({ table, schema }: { table: string; schema: string })
     }),
   )
 
-  const {
-    isFetching,
-    refetch,
-    data: rows = [],
-    isPending,
-  } = useInfiniteQuery(
+  const { data: rows = [], isPending } = useInfiniteQuery(
     resourceRowsQueryInfiniteOptions({
       connectionResource,
       table,
@@ -112,25 +99,6 @@ export function CommandBar({ table, schema }: { table: string; schema: string })
       query: { filters, orderBy },
     }),
   )
-
-  async function handleRefresh() {
-    refetch()
-    queryClient.invalidateQueries(
-      resourceTableColumnsQueryOptions({ connectionResource, table, schema }),
-    )
-    queryClient.invalidateQueries(
-      resourceTableTotalQueryOptions({
-        connectionResource,
-        table,
-        schema,
-        query: { filters, exact },
-      }),
-    )
-    queryClient.invalidateQueries(resourceConstraintsQueryOptions({ connectionResource }))
-    queryClient.invalidateQueries(resourceEnumsQueryOptions({ connectionResource }))
-  }
-
-  useRefreshHotkey(handleRefresh, isFetching)
 
   const getAllData = async ({ filters: exportFilters }: { filters?: ActiveFilter[] }) => {
     const data: Record<string, unknown>[] = []
@@ -260,17 +228,6 @@ export function CommandBar({ table, schema }: { table: string; schema: string })
               align="end"
               className="w-44 gap-0 rounded-2xl p-1 **:data-[slot=popover-viewport]:p-0"
             >
-              <OverflowRow onClick={handleRefresh} disabled={isFetching}>
-                <LoadingContent loading={isFetching} className="size-4">
-                  <ContentSwitch
-                    activeContent={<RiCheckLine className="text-success" />}
-                    active={isFetching}
-                  >
-                    <RiLoopLeftLine className="size-4 text-muted-foreground" />
-                  </ContentSwitch>
-                </LoadingContent>
-                Refresh
-              </OverflowRow>
               {tableType === 'table' && (
                 <HeaderActionsSeed
                   table={table}

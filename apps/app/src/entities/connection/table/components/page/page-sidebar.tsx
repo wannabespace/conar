@@ -15,7 +15,6 @@ import { useSubscription } from 'seitu/react'
 
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 
 import {
   SIDEBAR_DEFAULT_WIDTH,
@@ -42,8 +41,6 @@ export function PageSidebar() {
     isFetching: isRefreshingTablesAndSchemas,
     dataUpdatedAt,
   } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))
-
-  useRefreshHotkey(refetchTablesAndSchemas, isRefreshingTablesAndSchemas)
 
   const canToggleSystem = !CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES.includes(connection.type)
 
@@ -149,11 +146,13 @@ export function PageSidebar() {
               }
             ></TooltipTrigger>
             <TooltipContent side="bottom">
-              Refresh tables and schemas
-              <p className="text-xs opacity-70">
-                Last updated:{' '}
-                {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
-              </p>
+              <div className="flex flex-col gap-0.5">
+                <span>Refresh tables and schemas</span>
+                <span className="opacity-70">
+                  Last updated:{' '}
+                  {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
+                </span>
+              </div>
             </TooltipContent>
           </Tooltip>
         </SidebarHeader>
