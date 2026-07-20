@@ -1,8 +1,11 @@
+import NumberFlow from '@number-flow/react'
 import {
   RiCheckLine,
   RiCodeSSlashLine,
   RiDownloadLine,
+  RiLayoutColumnLine,
   RiLoopLeftLine,
+  RiMenuLine,
   RiMoreLine,
   RiSeedlingLine,
 } from '@remixicon/react'
@@ -33,6 +36,7 @@ import { getConnectionResourceStore } from '~/entities/connection/store'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { queryClient } from '~/main'
 
+import { useTableColumns } from '../../columns'
 import { useTablePageStore } from '../../store'
 import { HeaderActionsColumns } from '../header/header-actions-columns'
 import { HeaderActionsCopy } from '../header/header-actions-copy'
@@ -80,6 +84,20 @@ export function CommandBar({ table, schema }: { table: string; schema: string })
       filters: enabledFilters(state.filters),
     }),
   })
+
+  const columns = useTableColumns()
+  const {
+    data: total,
+    isLoading: isTotalLoading,
+    dataUpdatedAt: totalUpdatedAt,
+  } = useQuery(
+    resourceTableTotalQueryOptions({
+      connectionResource,
+      table,
+      schema,
+      query: { filters, exact },
+    }),
+  )
 
   const {
     isFetching,
@@ -181,6 +199,49 @@ export function CommandBar({ table, schema }: { table: string; schema: string })
       <DraftsToolbar table={table} schema={schema} />
       <div className="flex items-end gap-2 p-1.5">
         <FilterSearchBar table={table} schema={schema} />
+        <Tooltip>
+          <TooltipTrigger
+            className="
+              flex h-8 shrink-0 cursor-default items-center gap-2 px-1.5
+              text-2xs whitespace-nowrap text-muted-foreground tabular-nums
+            "
+            onClick={() => store.set(state => ({ ...state, exact: true }) satisfies typeof state)}
+          >
+            <span className="flex items-center gap-1">
+              <RiLayoutColumnLine className="size-3 text-muted-foreground/60" />
+              {columns.length}
+            </span>
+            <span className="flex items-center gap-1">
+              <RiMenuLine className="size-3 text-muted-foreground/60" />
+              {total?.count === undefined ? (
+                '…'
+              ) : (
+                <NumberFlow
+                  value={total.count}
+                  className={cn(
+                    'tabular-nums',
+                    isTotalLoading && 'animate-pulse text-muted-foreground/50',
+                  )}
+                  prefix={total.isEstimated ? '~' : ''}
+                />
+              )}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <div className="flex flex-col gap-0.5">
+              <span>
+                {columns.length} columns ·{' '}
+                {total?.count === undefined
+                  ? '… rows'
+                  : `${total.isEstimated ? '~' : ''}${total.count} row${total.count === 1 ? '' : 's'}`}
+                {!exact && total?.isEstimated && '. Click to get the exact count.'}
+              </span>
+              <span className="opacity-70">
+                Updated: {totalUpdatedAt ? new Date(totalUpdatedAt).toLocaleTimeString() : 'never'}
+              </span>
+            </div>
+          </TooltipContent>
+        </Tooltip>
         {tableType === 'table' && <HeaderActionsDelete table={table} schema={schema} />}
         <div className="flex shrink-0 items-center gap-1">
           <HeaderActionsColumns />
