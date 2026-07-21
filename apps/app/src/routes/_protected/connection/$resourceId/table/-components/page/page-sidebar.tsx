@@ -83,6 +83,7 @@ export function PageSidebar() {
       initial={false}
       animate={{
         width: isOpen ? width : 0,
+        marginRight: isOpen ? 8 : 0,
       }}
       transition={isResizing ? { duration: 0 } : SIDEBAR_FOLD_TRANSITION}
       className="relative h-full shrink-0 overflow-hidden"
