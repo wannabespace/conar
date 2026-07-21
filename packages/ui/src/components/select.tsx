@@ -42,17 +42,17 @@ function SelectTrigger({
         // rest, hairline border on hover/open; heights come from `size` only
         `
           flex w-fit items-center justify-between gap-1.5 rounded-xl border
-          border-border bg-input bg-clip-padding px-3 text-sm
-          whitespace-nowrap
+          border-transparent bg-input px-3 text-sm
+          whitespace-nowrap shadow-xs ring-[0.5px] ring-foreground/4
           transition-[color,box-shadow] duration-200 outline-none
-          hover:bg-muted hover:text-foreground
+          hover:bg-[color-mix(in_oklch,var(--input),var(--foreground)_6%)] hover:text-foreground
           focus-visible:border-ring focus-visible:ring-3
           focus-visible:ring-ring/30
           disabled:cursor-not-allowed disabled:opacity-50
           aria-invalid:border-destructive/60 aria-invalid:ring-3
           aria-invalid:ring-destructive/30
           data-placeholder:text-muted-foreground
-          data-popup-open:bg-muted
+          data-popup-open:bg-[color-mix(in_oklch,var(--input),var(--foreground)_6%)]
           data-[size=default]:h-8
           data-[size=sm]:h-7 data-[size=sm]:rounded-lg
           *:data-[slot=select-value]:line-clamp-1
@@ -112,7 +112,7 @@ function SelectContent({
             relative isolate z-50 max-h-(--available-height)
             min-w-(--anchor-width) origin-(--transform-origin) overflow-x-hidden
             overflow-y-auto rounded-xl bg-popover text-popover-foreground
-            shadow-lg ring-1 ring-foreground/8 duration-100
+            shadow-lg ring-1 ring-foreground/4 duration-100
             data-[align-trigger=true]:animate-none
             data-[side=bottom]:slide-in-from-top-2
             data-[side=inline-end]:slide-in-from-left-2

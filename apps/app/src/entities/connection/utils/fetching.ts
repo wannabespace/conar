@@ -113,7 +113,7 @@ export function fetchingConfig(
       type: 'proxy',
       canSend: false,
       reason:
-        'You cannot reach this connection from the web app. Open this connection in the desktop app.',
+        'You cannot reach this connection from the web app. Run `tamery proxy` or open this connection in the desktop app.',
     }
   }
 
@@ -124,7 +124,7 @@ export function fetchingConfig(
     canSend,
     reason: canSend
       ? null
-      : 'You cannot reach this connection from the web app. Run `tamery proxy` or open this connection in the desktop app.',
+      : 'You cannot reach this connection from the web app. Open this connection in the desktop app.',
   }
 }
 

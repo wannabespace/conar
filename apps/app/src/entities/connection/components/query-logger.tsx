@@ -66,7 +66,7 @@ function LogTrigger({
         `
           flex w-full items-center justify-between gap-2 border-t
           px-4 py-1.5
-          hover:bg-muted/50
+          hover:bg-accent/50
         `,
         className,
       )}

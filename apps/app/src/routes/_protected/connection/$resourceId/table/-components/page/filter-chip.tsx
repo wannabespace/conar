@@ -52,8 +52,8 @@ export function FilterChip({
   return (
     <div
       className="
-        flex h-6 shrink-0 items-stretch overflow-hidden rounded-md border
-        bg-background shadow-2xs
+        flex h-6 shrink-0 items-stretch overflow-hidden rounded-md
+        bg-background shadow-2xs ring-[0.5px] ring-foreground/4
       "
     >
       <Tooltip>

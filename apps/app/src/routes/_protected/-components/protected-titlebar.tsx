@@ -245,7 +245,7 @@ export function ProtectedTitleBar() {
           <Link
             to="/"
             aria-label="Home"
-            className="shrink-0 rounded-md p-1.5 transition-colors hover:bg-muted"
+            className="shrink-0 rounded-md p-1.5 transition-colors hover:bg-foreground/5"
           >
             <AppLogo className="size-4 text-primary" />
           </Link>
@@ -264,7 +264,7 @@ export function ProtectedTitleBar() {
                       className="
                         rounded-md px-1.5 py-0.5 text-2xs
                         text-muted-foreground/60 tabular-nums
-                        hover:bg-muted hover:text-muted-foreground
+                        hover:bg-foreground/5 hover:text-muted-foreground
                       "
                       onClick={() => checkForUpdates()}
                     />

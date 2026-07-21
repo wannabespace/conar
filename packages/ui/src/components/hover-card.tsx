@@ -32,7 +32,7 @@ function HoverCardContent({
           className={cn(
             `
               z-50 w-72 origin-(--transform-origin) rounded-3xl bg-popover p-4
-              text-sm text-popover-foreground shadow-lg ring-1 ring-foreground/8
+              text-sm text-popover-foreground shadow-lg ring-1 ring-foreground/4
               outline-hidden duration-100
               data-[side=bottom]:slide-in-from-top-2
               data-[side=inline-end]:slide-in-from-left-2

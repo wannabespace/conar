@@ -162,7 +162,7 @@ function CommandItem({
           in-data-[slot=dialog-content]:rounded-2xl
           data-[disabled=true]:pointer-events-none
           data-[disabled=true]:opacity-50
-          data-selected:bg-muted data-selected:text-foreground
+          data-selected:bg-accent data-selected:text-accent-foreground
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
           data-selected:*:[svg]:text-foreground

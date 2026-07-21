@@ -14,7 +14,7 @@ function Card({
         `
           group/card flex flex-col gap-(--card-spacing) overflow-hidden
           rounded-[min(var(--radius-4xl),24px)] bg-card py-(--card-spacing)
-          text-sm text-card-foreground shadow-sm ring-1 ring-foreground/8
+          text-sm text-card-foreground shadow-sm ring-1 ring-foreground/4
           [--card-spacing:--spacing(5)]
           has-[>img:first-child]:pt-0
           data-[size=sm]:[--card-spacing:--spacing(4)]

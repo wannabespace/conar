@@ -34,8 +34,8 @@ function DirectionToggle({
   return (
     <div
       className="
-        flex h-6 shrink-0 items-stretch overflow-hidden rounded-md border
-        bg-input shadow-2xs
+        flex h-6 shrink-0 items-stretch overflow-hidden rounded-md
+        bg-input shadow-2xs ring-[0.5px] ring-foreground/4
       "
     >
       {(['ASC', 'DESC'] as const).map((direction, index) => (

@@ -14,11 +14,16 @@
 
 ## Shadows
 
-Kit overrides `--shadow-*` in globals (big blur, alpha 0.04–0.14, macOS diffuse). Use `shadow-xs`…`shadow-2xl`; never inline `shadow-[...]` or re-darken.
+Kit overrides `--shadow-*` in globals (big blur, alpha 0.02–0.10, macOS diffuse — deliberately faint). Use `shadow-xs`…`shadow-2xl`; never inline `shadow-[...]` or re-darken.
 
 ## Accent
 
 Selection = solid `bg-primary text-primary-foreground` (Finder style); idle sidebar glyphs `text-primary/75`; everything else neutral. Zebra: `bg-foreground/3` odd rows, no row borders.
+
+**Token semantics (owner rule):**
+- `--muted` — static darker backgrounds only (skeletons, kbd chips, section fills). Never for hover states.
+- `--accent` — hover/focus fills of interactive elements (menu items, list rows, row hovers).
+- Filled controls (buttons/selects) hover via the foreground-mix construction instead (see patterns.md) — accent read too dark on light-mode buttons.
 
 ## Cell highlights (data table)
 

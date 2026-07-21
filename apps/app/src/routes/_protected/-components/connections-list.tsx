@@ -776,6 +776,7 @@ export function ConnectionsList() {
             <Button
               variant="outline"
               size="sm"
+              nativeButton={false}
               className="text-foreground"
               render={<Link to="/create" />}
             >

@@ -42,7 +42,7 @@ const itemVariants = cva(
     focus-visible:border-ring focus-visible:ring-[3px]
     focus-visible:ring-ring/50
     [a]:transition-colors
-    [a]:hover:bg-muted
+    [a]:hover:bg-accent
   `,
   {
     variants: {

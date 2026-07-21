@@ -1,7 +1,6 @@
 import { RiCloseLine } from '@remixicon/react'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@tamery/ui/components/input-group'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
-import { cn } from '@tamery/ui/lib/utils'
 import type * as React from 'react'
 
 import { Button } from '../button'
@@ -17,7 +16,7 @@ export function SearchInput({
   const hasValue = typeof value === 'string' ? value.length > 0 : Boolean(value)
 
   return (
-    <InputGroup className={cn('border-border', className)}>
+    <InputGroup className={className}>
       <InputGroupInput value={value} {...props} />
       {hasValue && (
         <InputGroupAddon align="inline-end">

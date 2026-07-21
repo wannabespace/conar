@@ -169,8 +169,8 @@ export function CommandBar({ table, schema }: { table: string; schema: string })
         <TooltipTrigger
           className="
               flex h-8 shrink-0 cursor-default items-center gap-2 rounded-xl
-              border bg-input px-2.5 text-2xs whitespace-nowrap
-              text-muted-foreground tabular-nums shadow-xs
+              bg-input px-2.5 text-2xs whitespace-nowrap text-muted-foreground tabular-nums
+              shadow-xs ring-[0.5px] ring-foreground/4
             "
           onClick={() => store.set(state => ({ ...state, exact: true }) satisfies typeof state)}
         >

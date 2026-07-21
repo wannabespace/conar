@@ -49,7 +49,7 @@ function MenubarTrigger({ className, ...props }: React.ComponentProps<typeof Dro
         `
           flex items-center rounded-2xl px-1.5 py-0.5 text-sm font-medium
           outline-hidden select-none
-          hover:bg-muted
+          hover:bg-accent
           aria-expanded:bg-muted
         `,
         className,
@@ -75,7 +75,7 @@ function MenubarContent({
       className={cn(
         `
         relative min-w-36 animate-none! rounded-2xl bg-popover/70 p-1
-        text-popover-foreground shadow-lg ring-1 ring-foreground/8 duration-100
+        text-popover-foreground shadow-lg ring-1 ring-foreground/4 duration-100
         before:pointer-events-none before:absolute before:inset-0 before:-z-1
         before:rounded-[inherit] before:backdrop-blur-2xl
         before:backdrop-saturate-150
@@ -319,7 +319,7 @@ function MenubarSubContent({
       className={cn(
         `
         relative min-w-32 animate-none! rounded-2xl bg-popover/70 p-1
-        text-popover-foreground shadow-lg ring-1 ring-foreground/8 duration-100
+        text-popover-foreground shadow-lg ring-1 ring-foreground/4 duration-100
         before:pointer-events-none before:absolute before:inset-0 before:-z-1
         before:rounded-[inherit] before:backdrop-blur-2xl
         before:backdrop-saturate-150

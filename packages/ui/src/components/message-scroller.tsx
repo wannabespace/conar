@@ -111,7 +111,7 @@ function MessageScrollerButton({
         `
           absolute inset-s-1/2 -translate-x-1/2 border-border bg-background
           text-foreground transition-[translate,scale,opacity] duration-200
-          hover:bg-muted hover:text-foreground
+          hover:bg-accent hover:text-accent-foreground
           data-[active=false]:pointer-events-none data-[active=false]:scale-95
           data-[active=false]:opacity-0 data-[active=false]:duration-400
           data-[active=false]:ease-[cubic-bezier(0.7,0,0.84,0)]

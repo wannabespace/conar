@@ -274,7 +274,7 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
       <div
         className="
           flex min-h-8 w-full flex-wrap items-center gap-1 rounded-xl border
-          bg-input py-0.75 pr-1.5 pl-2
+          border-transparent bg-input py-0.75 pr-1.5 pl-2 shadow-xs ring-[0.5px] ring-foreground/4
           transition-[color,box-shadow] duration-200
           has-[input:focus]:border-ring has-[input:focus]:ring-3
           has-[input:focus]:ring-ring/30
@@ -305,8 +305,8 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
         {stage.step !== 'idle' && (
           <span
             className="
-              flex h-6 shrink-0 items-stretch overflow-hidden rounded-md border
-              bg-background shadow-2xs
+              flex h-6 shrink-0 items-stretch overflow-hidden rounded-md
+              bg-background shadow-2xs ring-[0.5px] ring-foreground/4
             "
           >
             <span data-mask className="flex items-center px-1.5 text-xs font-medium">
@@ -370,7 +370,7 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
           role="presentation"
           className="
             absolute bottom-full left-0 z-30 mb-2 w-full overflow-hidden
-            rounded-xl border bg-popover p-1 shadow-lg
+            rounded-xl bg-popover p-1 shadow-lg ring-1 ring-foreground/4
           "
           // Keep the input focused while clicking suggestions
           onMouseDown={e => e.preventDefault()}

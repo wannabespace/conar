@@ -34,7 +34,7 @@ function PopoverContent({
             `
               z-50 flex w-72 origin-(--transform-origin) flex-col gap-4
               rounded-xl bg-popover p-4 text-sm text-popover-foreground
-              shadow-lg ring-1 ring-foreground/8 outline-hidden duration-100
+              shadow-lg ring-1 ring-foreground/4 outline-hidden duration-100
               data-[side=bottom]:slide-in-from-top-2
               data-[side=inline-end]:slide-in-from-left-2
               data-[side=inline-start]:slide-in-from-right-2

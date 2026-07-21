@@ -45,7 +45,7 @@ function ContextMenuContent({
             `
             z-50 max-h-(--available-height) min-w-36 origin-(--transform-origin)
             overflow-x-hidden overflow-y-auto rounded-xl bg-popover p-1
-            text-popover-foreground shadow-lg ring-1 ring-foreground/8
+            text-popover-foreground shadow-lg ring-1 ring-foreground/4
             duration-100 outline-none
             data-[side=bottom]:slide-in-from-top-2
             data-[side=inline-end]:slide-in-from-left-2

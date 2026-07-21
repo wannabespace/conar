@@ -150,9 +150,9 @@ function DrawerContent({ className, children, ...props }: DrawerPrimitive.Popup.
               max-h-(--drawer-content-max-height,none) min-h-0
               w-(--drawer-content-width,auto)
               transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))]
-              flex-col rounded-[min(var(--radius-4xl),24px)] border
-              border-white/10 bg-popover text-sm text-popover-foreground
-              shadow-xl transition-[transform,height,opacity,filter]
+              flex-col rounded-[min(var(--radius-4xl),24px)]
+              bg-popover text-sm text-popover-foreground shadow-xl ring-1
+              ring-foreground/4 transition-[transform,height,opacity,filter]
               duration-450 ease-[cubic-bezier(0.22,1,0.36,1)]
               will-change-transform outline-none select-none
               [--drawer-bleed-background:transparent]

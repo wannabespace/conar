@@ -129,7 +129,7 @@ function ComboboxContent({
             min-w-[calc(var(--anchor-width)+(--spacing(7)))]
             origin-(--transform-origin) animate-none! overflow-hidden
             rounded-2xl bg-popover/70 text-popover-foreground shadow-lg ring-1
-            ring-foreground/8 duration-100
+            ring-foreground/4 duration-100
             before:pointer-events-none before:absolute before:inset-0
             before:-z-1 before:rounded-[inherit] before:backdrop-blur-2xl
             before:backdrop-saturate-150

@@ -29,8 +29,9 @@ function Toaster() {
         classNames: {
           // Glass floating chrome: translucent surface + blur + hairline border
           toast: `
-            flex w-(--width) items-start gap-2.5 rounded-xl border
-            bg-background/80 p-3 shadow-lg backdrop-blur-xl select-none
+            flex w-(--width) items-start gap-2.5 rounded-xl bg-background/80
+            p-3 shadow-lg ring-1 ring-foreground/4 backdrop-blur-xl
+            select-none
           `,
           content: 'flex min-w-0 flex-1 flex-col gap-0.5',
           icon: 'mt-0.5 flex size-4 shrink-0 items-center justify-center',
@@ -48,7 +49,8 @@ function Toaster() {
           `,
           closeButton: `
             absolute -top-1.5 -left-1.5 flex size-5 items-center justify-center
-            rounded-full border bg-popover text-muted-foreground shadow-xs
+            rounded-full bg-popover text-muted-foreground shadow-xs ring-1
+            ring-foreground/4
             hover:text-foreground
           `,
         },

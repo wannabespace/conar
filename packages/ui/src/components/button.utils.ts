@@ -5,7 +5,7 @@ import { motion } from 'motion/react'
 export const buttonVariants = cva(
   `
     group/button inline-flex shrink-0 cursor-default items-center
-    justify-center rounded-xl border border-transparent bg-clip-padding
+    justify-center rounded-xl border border-transparent
     text-sm font-medium whitespace-nowrap transition-all outline-none
     select-none
     focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30
@@ -24,30 +24,32 @@ export const buttonVariants = cva(
           hover:bg-primary/80
         `,
         outline: `
-            border-border bg-input
-            hover:bg-muted hover:text-foreground
-            aria-expanded:bg-muted aria-expanded:text-foreground
-          `,
+          bg-input shadow-xs ring-[0.5px] ring-foreground/4
+          hover:bg-[color-mix(in_oklch,var(--input),var(--foreground)_6%)]
+          hover:text-foreground
+          aria-expanded:bg-[color-mix(in_oklch,var(--input),var(--foreground)_6%)]
+          aria-expanded:text-foreground
+        `,
         secondary: `
-            bg-secondary text-secondary-foreground
-            hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)]
-            aria-expanded:bg-secondary aria-expanded:text-secondary-foreground
-          `,
+          bg-secondary text-secondary-foreground
+          hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)]
+          aria-expanded:bg-secondary aria-expanded:text-secondary-foreground
+        `,
         ghost: `
-            hover:bg-accent hover:text-accent-foreground
-            aria-expanded:bg-accent aria-expanded:text-accent-foreground
-          `,
+          hover:bg-foreground/5 hover:text-foreground
+          aria-expanded:bg-foreground/5 aria-expanded:text-foreground
+        `,
         destructive: `
-            bg-destructive/10 text-destructive
-            hover:bg-destructive/20
-            focus-visible:border-destructive/40
-            focus-visible:ring-destructive/30
-          `,
+          bg-destructive/10 text-destructive
+          hover:bg-destructive/20
+          focus-visible:border-destructive/40
+          focus-visible:ring-destructive/30
+        `,
         warning: `
-            bg-warning/10 text-warning
-            hover:bg-warning/20
-            focus-visible:border-warning/40 focus-visible:ring-warning/20
-          `,
+          bg-warning/10 text-warning
+          hover:bg-warning/20
+          focus-visible:border-warning/40 focus-visible:ring-warning/20
+        `,
         link: `
           text-primary underline-offset-4
           hover:underline
@@ -55,10 +57,10 @@ export const buttonVariants = cva(
       },
       size: {
         'default': `
-            h-8 gap-1.5 px-3
-            has-data-[icon=inline-end]:pr-2.5
-            has-data-[icon=inline-start]:pl-2.5
-          `,
+          h-8 gap-1.5 px-3
+          has-data-[icon=inline-end]:pr-2.5
+          has-data-[icon=inline-start]:pl-2.5
+        `,
         'xs': `
           h-6 gap-1 rounded-md px-2.5 text-xs
           has-data-[icon=inline-end]:pr-2
