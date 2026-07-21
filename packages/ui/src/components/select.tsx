@@ -40,16 +40,18 @@ function SelectTrigger({
       className={cn(
         `
           flex w-fit items-center justify-between gap-1.5 rounded-xl border
-          border-transparent bg-input px-3 py-2 text-sm whitespace-nowrap
+          border-border bg-input px-3 text-sm font-medium whitespace-nowrap
           transition-[color,box-shadow] duration-200 outline-none
+          hover:bg-muted hover:text-foreground
           focus-visible:border-ring focus-visible:ring-3
           focus-visible:ring-ring/30
           disabled:cursor-not-allowed disabled:opacity-50
           aria-invalid:border-destructive/60 aria-invalid:ring-3
           aria-invalid:ring-destructive/30
           data-placeholder:text-muted-foreground
+          data-popup-open:bg-muted
           data-[size=default]:h-8
-          data-[size=sm]:h-7
+          data-[size=sm]:h-7 data-[size=sm]:rounded-lg
           *:data-[slot=select-value]:line-clamp-1
           *:data-[slot=select-value]:flex
           *:data-[slot=select-value]:items-center

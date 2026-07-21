@@ -744,7 +744,7 @@ export function ConnectionsList() {
           </span>
           <div className="flex items-center gap-2">
             <Select value={grouping} onValueChange={value => groupValue.set(value!)}>
-              <SelectTrigger className="h-7 shrink-0 text-sm">
+              <SelectTrigger size="sm" className="shrink-0">
                 <RiStackLine />
                 <SelectValue>
                   {groupOptions.find(option => option.value === grouping)!.label}
@@ -759,7 +759,7 @@ export function ConnectionsList() {
               </SelectContent>
             </Select>
             <Select value={sort} onValueChange={value => sortValue.set(value!)}>
-              <SelectTrigger className="h-7 shrink-0 text-sm">
+              <SelectTrigger size="sm" className="shrink-0">
                 {sort.includes('asc') ? <RiSortAsc /> : <RiSortDesc />}
                 <SelectValue>
                   {sortOptions.find(option => option.value === sort)!.label}
@@ -773,21 +773,15 @@ export function ConnectionsList() {
                 ))}
               </SelectContent>
             </Select>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    variant="outline"
-                    size="icon-sm"
-                    aria-label="New connection"
-                    render={<Link to="/create" />}
-                  />
-                }
-              >
-                <RiAddLine className="size-4" />
-              </TooltipTrigger>
-              <TooltipContent side="top">New connection</TooltipContent>
-            </Tooltip>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-foreground"
+              render={<Link to="/create" />}
+            >
+              <RiAddLine className="size-4 text-muted-foreground" />
+              New
+            </Button>
           </div>
         </div>
       )}

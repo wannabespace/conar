@@ -4,6 +4,7 @@
 - **No root rubber-band**: `body` has `overscroll-none`; inner scrollers keep native bounce.
 - **Shaders** (`MeshGradient`): auth page only, never behind working surfaces. Literal hex palettes per `useResolvedTheme()` (WebGL can't read CSS vars), `speed ~0.2`, 0 under reduced-motion, `pointer-events-none absolute inset-0`, 1s fade-in.
 - **Context menus** via right-click on rows/tabs; destructive item last after separator, `variant="destructive"`.
+- **Selects = outline buttons**: `SelectTrigger` mirrors the outline Button recipe at kit level (`border-border bg-input font-medium hover:bg-muted`, `data-popup-open:bg-muted`, default `h-8 rounded-xl` / `size="sm"` `h-7 rounded-lg`). Use the `size` prop, never per-page height/border overrides — mixed control heights in one row read as broken.
 - **Menus compact**: kit defaults (`min-h-7 py-1 text-sm`, `rounded-xl`) — don't re-inflate or shrink.
 - **Popovers size to content**: `w-auto min-w-40`; `CommandInput` only at ~8+ items; hide group headings when one group.
 - **Grouped lists** (dashboard): one `rounded-xl border bg-card` container, `border-b last:border-b-0` rows, `hover:bg-accent/50`. Sections (labels/types): micro-label header per section, one container each, ungrouped last.
