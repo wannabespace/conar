@@ -17,7 +17,7 @@ function Command({ className, ...props }: React.ComponentProps<typeof CommandPri
       data-slot="command"
       className={cn(
         `
-          flex size-full flex-col overflow-hidden rounded-3xl bg-popover p-1
+          flex size-full flex-col overflow-hidden rounded-xl bg-popover p-1
           text-popover-foreground
         `,
         className,
@@ -158,7 +158,7 @@ function CommandItem({
       className={cn(
         `
           group/command-item relative flex min-h-7 cursor-default items-center
-          gap-2 rounded-lg px-2 py-1 text-sm outline-hidden select-none
+          gap-2 rounded-md px-2 py-1 text-sm outline-hidden select-none
           in-data-[slot=dialog-content]:rounded-2xl
           data-[disabled=true]:pointer-events-none
           data-[disabled=true]:opacity-50

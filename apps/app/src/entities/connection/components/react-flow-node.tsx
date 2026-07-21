@@ -8,6 +8,7 @@ import {
   RiTableLine,
 } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { Link } from '@tanstack/react-router'
 import type { Edge, Node, NodeProps } from '@xyflow/react'
@@ -67,19 +68,27 @@ export function ReactFlowNode({ data }: NodeProps<NodeType>) {
             {data.table}
           </span>
         </div>
-        <Button
-          size="icon-xs"
-          variant="outline"
-          render={
-            <Link
-              to="/connection/$resourceId/table"
-              params={{ resourceId: data.resourceId }}
-              search={{ schema: data.schema, table: data.table }}
-            />
-          }
-        >
-          <RiExternalLinkLine className="size-3" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                size="icon-xs"
+                variant="outline"
+                aria-label="Open table"
+                render={
+                  <Link
+                    to="/connection/$resourceId/table"
+                    params={{ resourceId: data.resourceId }}
+                    search={{ schema: data.schema, table: data.table }}
+                  />
+                }
+              />
+            }
+          >
+            <RiExternalLinkLine className="size-3" />
+          </TooltipTrigger>
+          <TooltipContent side="top">Open table</TooltipContent>
+        </Tooltip>
       </div>
       <div className="py-2 text-xs">
         {data.columns.map(column => (

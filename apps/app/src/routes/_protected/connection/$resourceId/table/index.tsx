@@ -2,7 +2,6 @@ import { RiTable2 } from '@remixicon/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { enabledFilters } from '@tamery/shared/filters'
 import { title } from '@tamery/shared/utils/title'
-import { SidebarProvider } from '@tamery/ui/components/sidebar'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { motion } from 'motion/react'
@@ -11,19 +10,14 @@ import { useSubscription } from 'seitu/react'
 
 import { addTab, getConnectionResourceStore } from '~/entities/connection/store'
 import {
-  ColumnsContext,
-  CommandBar,
-  PageSidebar,
-  TabBar,
-  Table,
-  tablePageStore,
-  TablePageStoreContext,
-  useTableColumnsQuery,
-} from '~/entities/connection/table'
-import {
   prefetchConnectionResourceCore,
   prefetchConnectionResourceTableCore,
 } from '~/entities/connection/utils'
+
+import { CommandBar, PageSidebar, TabBar } from './-components/page'
+import { Table } from './-components/table/table'
+import { ColumnsContext, useTableColumnsQuery } from './-lib/columns'
+import { tablePageStore, TablePageStoreContext } from './-lib/store'
 
 export const Route = createFileRoute('/_protected/connection/$resourceId/table/')({
   validateSearch: type({
@@ -187,10 +181,7 @@ function DatabaseTablesPage() {
   }, [schema, table, lastOpenedTable])
 
   return (
-    <SidebarProvider
-      defaultOpen={!document.cookie.includes('sidebar_state=false')}
-      className="h-full min-h-0 w-full"
-    >
+    <div className="flex h-full min-h-0 w-full">
       <PageSidebar key={connectionResource.id} />
       <div
         className={`
@@ -209,6 +200,6 @@ function DatabaseTablesPage() {
           <EmptyPane />
         )}
       </div>
-    </SidebarProvider>
+    </div>
   )
 }

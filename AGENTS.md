@@ -11,8 +11,8 @@ This file is the source of truth for Tamery's architecture, main logic, and conv
 - Add or change an architecture constraint (API layer, state, ORM, auth, secrets, runtime, styles)
 - Add, remove, or change oRPC middlewares or the router pattern
 - Rename or reshape a core domain concept (Connection, SyncType, collections, sync/GC lifecycle)
-- Add or change a UI design rule — update `.claude/skills/tamery-ui/SKILL.md` alongside the summary here
-- Establish or refine **any** UI pattern, motion recipe, kit gotcha, or design decision during a task — record it in `.claude/skills/tamery-ui/SKILL.md` in the same task, even when the summary here doesn't change. The skill is the living design system; improvements that stay only in code get lost.
+- Add or change a UI design rule — update the `tamery-ui` skill alongside the summary here
+- Establish or refine **any** UI pattern, motion recipe, kit gotcha, or design decision during a task — record it in the `tamery-ui` skill in the same task, even when the summary here doesn't change. The skill is the living design system; improvements that stay only in code get lost. The skill is **split into topic files** (`.claude/skills/tamery-ui/`: `SKILL.md` index + hard rules, `colors.md`, `typography.md`, `patterns.md`, `motion.md`, `gotchas.md`, `reference.md`) to keep parallel edits conflict-free — append to the matching topic file, never grow `SKILL.md` beyond the hard rules and index.
 
 If a claim here no longer matches the code, fix the claim — do not leave it stale.
 
@@ -122,10 +122,11 @@ Local URLs (via portless, requires `pnpm run dev`):
 | Runtime      | Bun — not Node for server processes. Node 22+ supported as fallback.                  |
 | Testing      | Bun test for unit tests. Playwright for E2E.                                          |
 | Styles       | TailwindCSS v4 — no inline `style=` props for layout/theme values.                    |
+| Page code    | Files used by a single page live next to its route in `-`-prefixed folders (`-components/`, `-lib/`, `-utils/`), e.g. `routes/_protected/connection/$resourceId/table/-components/`. `entities/` is only for code shared across pages. |
 
 ## UI design rules
 
-**Before writing or reviewing any UI (components, styles, popovers, menus, animations), load the `tamery-ui` skill** (`.claude/skills/tamery-ui/SKILL.md`). It encodes the owner's design decisions: the native macOS look, the three-level color system, typography tokens, motion recipes, and the UI kit's known traps.
+**Before writing or reviewing any UI (components, styles, popovers, menus, animations), load the `tamery-ui` skill** (`.claude/skills/tamery-ui/` — `SKILL.md` holds the hard rules plus an index of topic files; read every topic file the task touches). It encodes the owner's design decisions: the native macOS look, the three-level color system, typography tokens, motion recipes, and the UI kit's known traps.
 
 Non-negotiables (enforced in review):
 
@@ -134,9 +135,11 @@ Non-negotiables (enforced in review):
 - **No `cursor-pointer`** — arrow cursor everywhere except text inputs and resize handles; `cursor-default` on link-based controls.
 - **Three darkness levels** — `bg-body` canvas → `bg-background`/`bg-card` panes → `bg-input`/`bg-popover` controls; glass floating chrome is `bg-background/75-80` + `backdrop-blur-xl`.
 - **Motion library for interactive animation** (interruptible; CSS transitions snap under frame drops), house curve `[0.32, 0.72, 0, 1]`, no layout shifts on hover.
+- **No `sidebar-*` color tokens** — regular tokens everywhere (`bg-accent`, `text-foreground`, …).
+- **No bare interactive icons** — every clickable icon gets a visible hover state and a tooltip.
 - **Kit-level fixes** in `packages/ui` when a sizing/color problem is systemic.
 
-Companion skills for deeper design work: `apple-design`, `emil-design-eng`, `design-an-interface` — `tamery-ui` wins on conflicts.
+Companion skills for deeper design work: `apple-design`, `emil-design-eng`, `design-an-interface`, `design-taste-frontend` (marketing/landing surfaces only — never app chrome) — `tamery-ui` wins on conflicts.
 
 Per-file hygiene for touched UI files: `pnpm oxlint --fix <paths>` and `pnpm oxfmt <paths>` (lint enforces Tailwind class order and canonical class names). Never hand-edit `apps/app/src/routeTree.gen.ts` — the Vite plugin regenerates it.
 

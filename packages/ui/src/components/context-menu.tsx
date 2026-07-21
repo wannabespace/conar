@@ -44,7 +44,7 @@ function ContextMenuContent({
           className={cn(
             `
             z-50 max-h-(--available-height) min-w-36 origin-(--transform-origin)
-            overflow-x-hidden overflow-y-auto rounded-2xl bg-popover p-1
+            overflow-x-hidden overflow-y-auto rounded-xl bg-popover p-1
             text-popover-foreground shadow-lg ring-1 ring-foreground/8
             duration-100 outline-none
             data-[side=bottom]:slide-in-from-top-2
@@ -110,7 +110,7 @@ function ContextMenuItem({
       className={cn(
         `
           group/context-menu-item relative flex min-h-7 cursor-default
-          items-center gap-2 rounded-lg px-2 py-1 text-sm outline-hidden
+          items-center gap-2 rounded-md px-2 py-1 text-sm outline-hidden
           select-none
           focus:bg-accent focus:text-accent-foreground
           data-inset:pl-7
@@ -148,7 +148,7 @@ function ContextMenuSubTrigger({
       data-inset={inset}
       className={cn(
         `
-          flex min-h-7 cursor-default items-center rounded-lg px-2 py-1
+          flex min-h-7 cursor-default items-center rounded-md px-2 py-1
           text-sm outline-hidden select-none
           focus:bg-accent focus:text-accent-foreground
           data-inset:pl-7
@@ -192,7 +192,7 @@ function ContextMenuCheckboxItem({
       data-inset={inset}
       className={cn(
         `
-          relative flex min-h-7 cursor-default items-center gap-2 rounded-lg
+          relative flex min-h-7 cursor-default items-center gap-2 rounded-md
           py-1 pr-8 pl-2 text-sm outline-hidden select-none
           focus:bg-accent focus:text-accent-foreground
           data-inset:pl-7
@@ -233,7 +233,7 @@ function ContextMenuRadioItem({
       data-inset={inset}
       className={cn(
         `
-          relative flex min-h-7 cursor-default items-center gap-2 rounded-lg
+          relative flex min-h-7 cursor-default items-center gap-2 rounded-md
           py-1 pr-8 pl-2 text-sm outline-hidden select-none
           focus:bg-accent focus:text-accent-foreground
           data-inset:pl-7

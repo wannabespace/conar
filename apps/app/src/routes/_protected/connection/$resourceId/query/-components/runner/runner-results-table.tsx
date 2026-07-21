@@ -8,6 +8,7 @@ import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { Input } from '@tamery/ui/components/input'
 import { Separator } from '@tamery/ui/components/separator'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useDebouncedMemo } from '@tamery/ui/hookas/use-debounced-memo'
 import { cn } from '@tamery/ui/lib/utils'
 import { useMemo, useState } from 'react'
@@ -112,24 +113,38 @@ export function RunnerResultsTable({
             `}
             />
             {search && (
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                className="absolute top-1/2 right-1.5 -translate-y-1/2"
-                onClick={() => setSearch('')}
-              >
-                <RiCloseLine className="size-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      aria-label="Clear search"
+                      className="
+                        absolute top-1/2 right-1.5 -translate-y-1/2
+                        text-muted-foreground
+                        hover:bg-foreground/10 hover:text-foreground
+                      "
+                      onClick={() => setSearch('')}
+                    />
+                  }
+                >
+                  <RiCloseLine className="size-4" />
+                </TooltipTrigger>
+                <TooltipContent side="top">Clear</TooltipContent>
+              </Tooltip>
             )}
           </div>
           <Separator orientation="vertical" className="h-6!" />
           <ExportData
             getData={getData}
             filename="runner_results"
+            tooltip="Export results"
             trigger={({ isExporting }) => (
               <Button
                 variant="secondary"
                 size="icon-sm"
+                aria-label="Export results"
                 disabled={isExporting || filteredData.length === 0}
               >
                 <LoadingContent loading={isExporting}>

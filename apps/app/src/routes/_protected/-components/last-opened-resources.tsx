@@ -1,5 +1,6 @@
 import { RiCloseLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
 import { useEffect } from 'react'
@@ -39,20 +40,29 @@ function LastOpenedResource({
           <span className="text-muted-foreground"> / {connectionResource.name}</span>
         </span>
       </Link>
-      <Button
-        variant="ghost"
-        size="icon-xs"
-        aria-label="Remove from recents"
-        className="
-          absolute top-1/2 right-1 shrink-0 -translate-y-1/2 opacity-0
-          transition-opacity duration-100
-          group-hover:opacity-100
-          focus-visible:opacity-100
-        "
-        onClick={onClose}
-      >
-        <RiCloseLine className="text-muted-foreground" />
-      </Button>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              aria-label="Remove from recents"
+              className="
+                absolute top-1/2 right-1 shrink-0 -translate-y-1/2
+                text-muted-foreground opacity-0 transition-opacity
+                duration-100
+                group-hover:opacity-100
+                hover:bg-foreground/10 hover:text-foreground
+                focus-visible:opacity-100
+              "
+              onClick={onClose}
+            />
+          }
+        >
+          <RiCloseLine />
+        </TooltipTrigger>
+        <TooltipContent side="top">Remove from recents</TooltipContent>
+      </Tooltip>
     </div>
   )
 }

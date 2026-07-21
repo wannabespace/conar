@@ -6,7 +6,7 @@ import type { ComponentProps } from 'react'
 // Finder-style sidebar row: neutral at rest, solid primary fill when active
 const baseClasses = `
   flex h-7 w-full cursor-default items-center gap-2 rounded-md px-2 text-sm
-  text-sidebar-foreground select-none
+  text-foreground select-none
   [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-primary/75
 `
 const activeClasses = `

@@ -1,4 +1,10 @@
-import { RiAddLine, RiArrowDownSLine, RiCommandLine, RiDeleteBinLine } from '@remixicon/react'
+import {
+  RiAddLine,
+  RiArrowRightSLine,
+  RiCommandLine,
+  RiDeleteBinLine,
+  RiExpandUpDownLine,
+} from '@remixicon/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
@@ -18,6 +24,7 @@ import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
 import { useRef, useState } from 'react'
+import { useSubscription } from 'seitu/react'
 
 import { TitleBar } from '~/components/title-bar'
 import { UpdateButton } from '~/components/update-button'
@@ -30,6 +37,7 @@ import {
 } from '~/entities/connection'
 import { UserButton } from '~/entities/user/components'
 import { setIsActionCenterOpen } from '~/store'
+import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
@@ -102,11 +110,12 @@ function ConnectionsDropdown({
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="max-w-64" />}>
+      <DropdownMenuTrigger
+        render={<Button variant="ghost" size="sm" className="max-w-64 gap-1.5 px-2" />}
+      >
         {current ? (
           <>
             <ConnectionIcon type={current.type} className="size-4 shrink-0" />
-            <span className="truncate">{current.name}</span>
             {current.color && (
               <span
                 aria-hidden
@@ -114,11 +123,12 @@ function ConnectionsDropdown({
                 style={{ backgroundColor: current.color }}
               />
             )}
+            <span className="truncate font-medium">{current.name}</span>
           </>
         ) : (
-          <span className="truncate">Connections</span>
+          <span className="truncate font-medium">Connections</span>
         )}
-        <RiArrowDownSLine className="size-4 shrink-0 text-muted-foreground" />
+        <RiExpandUpDownLine className="size-3 shrink-0 text-muted-foreground/70" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="max-h-[70vh] min-w-64 overflow-auto">
         {groups.length === 0 && (
@@ -156,9 +166,13 @@ function ResourcesDropdown({
 }) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="max-w-64" />}>
-        <span className="truncate">{current.name || CONNECTION_RESOURCE_ROOT_LABEL}</span>
-        <RiArrowDownSLine className="size-4 shrink-0 text-muted-foreground" />
+      <DropdownMenuTrigger
+        render={<Button variant="ghost" size="sm" className="max-w-64 gap-1.5 px-2" />}
+      >
+        <span className="truncate text-muted-foreground">
+          {current.name || CONNECTION_RESOURCE_ROOT_LABEL}
+        </span>
+        <RiExpandUpDownLine className="size-3 shrink-0 text-muted-foreground/70" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="max-h-[70vh] min-w-48 overflow-auto">
         {resources.map(resource => (
@@ -211,7 +225,7 @@ function ConnectionsBreadcrumb({ onRemove }: { onRemove: (connection: Connection
       <ConnectionsDropdown groups={groups} current={current?.connection} onRemove={onRemove} />
       {current && currentGroup && (
         <>
-          <span className="truncate text-muted-foreground/50">/</span>
+          <RiArrowRightSLine aria-hidden className="size-3.5 shrink-0 text-muted-foreground/40" />
           <ResourcesDropdown resources={currentGroup.resources} current={current.resource} />
         </>
       )}
@@ -221,6 +235,7 @@ function ConnectionsBreadcrumb({ onRemove }: { onRemove: (connection: Connection
 
 export function ProtectedTitleBar() {
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
+  const version = useSubscription(updatesStore, { selector: state => state.version })
 
   return (
     <div className="flex shrink-0 flex-col">
@@ -234,11 +249,32 @@ export function ProtectedTitleBar() {
           >
             <AppLogo className="size-4 text-primary" />
           </Link>
-          <span className="truncate text-muted-foreground/40">/</span>
+          <RiArrowRightSLine aria-hidden className="size-3.5 shrink-0 text-muted-foreground/40" />
           <ConnectionsBreadcrumb
             onRemove={connection => removeDialogRef.current?.remove(connection)}
           />
           <div className="ml-auto flex h-full shrink-0 items-center gap-1">
+            {window.electron && (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <button
+                      type="button"
+                      aria-label="Check for updates"
+                      className="
+                        rounded-md px-1.5 py-0.5 text-2xs
+                        text-muted-foreground/60 tabular-nums
+                        hover:bg-muted hover:text-muted-foreground
+                      "
+                      onClick={() => checkForUpdates()}
+                    />
+                  }
+                >
+                  v{version}
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Check for updates</TooltipContent>
+              </Tooltip>
+            )}
             <UpdateButton />
             <Tooltip>
               <TooltipTrigger

@@ -126,27 +126,44 @@ export function ChatHeader({ chatId }: { chatId: string }) {
         </CardTitle>
         <div className="flex items-center gap-2">
           {chat && (
-            <Button
-              variant="outline"
-              size="icon-sm"
-              onClick={() =>
-                store.set(
-                  state =>
-                    ({
-                      ...state,
-                      lastOpenedChatId: null,
-                    }) satisfies typeof state,
-                )
-              }
-              render={<Link to="/connection/$resourceId/query" params={{ resourceId }} />}
-            >
-              <RiAddLine className="size-4" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    aria-label="New chat"
+                    onClick={() =>
+                      store.set(
+                        state =>
+                          ({
+                            ...state,
+                            lastOpenedChatId: null,
+                          }) satisfies typeof state,
+                      )
+                    }
+                    render={<Link to="/connection/$resourceId/query" params={{ resourceId }} />}
+                  />
+                }
+              >
+                <RiAddLine className="size-4" />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">New chat</TooltipContent>
+            </Tooltip>
           )}
           <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="outline" size="icon-sm" />}>
-              <RiHistoryLine className="size-4" />
-            </DropdownMenuTrigger>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <DropdownMenuTrigger
+                    render={<Button variant="outline" size="icon-sm" aria-label="Chat history" />}
+                  />
+                }
+              >
+                <RiHistoryLine className="size-4" />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Chat history</TooltipContent>
+            </Tooltip>
             <DropdownMenuContent align="end" className="min-w-60">
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Chats</DropdownMenuLabel>

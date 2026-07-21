@@ -22,7 +22,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
-import { Monaco } from '~/components/monaco-lazy'
+import { Monaco } from '~/components/monaco'
 import { useCollections } from '~/entities/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { formatSql } from '~/utils/formatter'

@@ -18,6 +18,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { copy } from '@tamery/ui/lib/copy'
 import { useMutation } from '@tanstack/react-query'
 import { formatDate } from 'date-fns'
@@ -154,6 +155,7 @@ export function ExportData({
   filename,
   getData,
   trigger,
+  tooltip,
   selected,
 }: {
   filename: string
@@ -165,6 +167,7 @@ export function ExportData({
     filters?: ActiveFilter[]
   }) => Promise<Record<string, unknown>[]>
   trigger: (props: { isExporting: boolean }) => React.ReactElement
+  tooltip?: string
   selected?: Record<string, unknown>[]
 }) {
   const { mutate: startExport, isPending } = useMutation({
@@ -183,7 +186,16 @@ export function ExportData({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={trigger({ isExporting: isPending })} />
+      {tooltip ? (
+        <Tooltip>
+          <TooltipTrigger
+            render={<DropdownMenuTrigger render={trigger({ isExporting: isPending })} />}
+          />
+          <TooltipContent side="top">{tooltip}</TooltipContent>
+        </Tooltip>
+      ) : (
+        <DropdownMenuTrigger render={trigger({ isExporting: isPending })} />
+      )}
       <DropdownMenuContent align="end">
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>

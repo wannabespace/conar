@@ -230,24 +230,31 @@ export function ChatForm() {
         `}
         >
           <div className="pointer-events-auto">
-            <Button
-              nativeButton={false}
-              size="icon-xs"
-              variant="outline"
-              render={<label htmlFor="chat-file-upload" aria-label="Attach files" />}
-            >
-              <RiAttachment2 className="size-3" />
-              <input
-                id="chat-file-upload"
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handleFileAttach}
-                tabIndex={-1}
-                aria-label="Attach files"
-              />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    nativeButton={false}
+                    size="icon-xs"
+                    variant="outline"
+                    render={<label htmlFor="chat-file-upload" aria-label="Attach files" />}
+                  />
+                }
+              >
+                <RiAttachment2 className="size-3" />
+                <input
+                  id="chat-file-upload"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileAttach}
+                  tabIndex={-1}
+                  aria-label="Attach files"
+                />
+              </TooltipTrigger>
+              <TooltipContent side="top">Attach images</TooltipContent>
+            </Tooltip>
           </div>
           <div className="pointer-events-auto flex gap-2">
             <Tooltip>

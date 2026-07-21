@@ -295,19 +295,29 @@ function UserMessage({
           </div>
           {canHide && (
             <>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className={`
-                  -mr-1 shrink-0 text-primary-foreground!
-                  hover:bg-primary-foreground/10!
-                `}
-                onClick={() => setIsVisible(!isVisible)}
-              >
-                <RiArrowDownSLine
-                  className={cn('duration-100', isVisible ? `rotate-180` : `rotate-0`)}
-                />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={isVisible ? 'Collapse message' : 'Expand message'}
+                      className={`
+                        -mr-1 shrink-0 text-primary-foreground!
+                        hover:bg-primary-foreground/10!
+                      `}
+                      onClick={() => setIsVisible(!isVisible)}
+                    />
+                  }
+                >
+                  <RiArrowDownSLine
+                    className={cn('duration-100', isVisible ? `rotate-180` : `rotate-0`)}
+                  />
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  {isVisible ? 'Collapse message' : 'Expand message'}
+                </TooltipContent>
+              </Tooltip>
               {!isVisible && (
                 <div
                   className={`

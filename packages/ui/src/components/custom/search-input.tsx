@@ -1,5 +1,6 @@
 import { RiCloseLine } from '@remixicon/react'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@tamery/ui/components/input-group'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import type * as React from 'react'
 
@@ -20,9 +21,25 @@ export function SearchInput({
       <InputGroupInput value={value} {...props} />
       {hasValue && (
         <InputGroupAddon align="inline-end">
-          <Button variant="ghost" size="icon-xs" onClick={onClear}>
-            <RiCloseLine />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label="Clear"
+                  className="
+                    text-muted-foreground
+                    hover:bg-foreground/10 hover:text-foreground
+                  "
+                  onClick={onClear}
+                />
+              }
+            >
+              <RiCloseLine />
+            </TooltipTrigger>
+            <TooltipContent side="top">Clear</TooltipContent>
+          </Tooltip>
         </InputGroupAddon>
       )}
     </InputGroup>

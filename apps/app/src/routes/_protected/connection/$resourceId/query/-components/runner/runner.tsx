@@ -16,6 +16,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@tamery/ui/components/resizable'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import type { ComponentRef } from 'react'
@@ -175,11 +176,18 @@ export function Runner() {
             <CardTitle className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 SQL Runner
-                <RunnerSettings>
-                  <Button variant="ghost" size="icon-sm">
-                    <RiSettings3Line />
-                  </Button>
-                </RunnerSettings>
+                <Tooltip>
+                  <RunnerSettings>
+                    <TooltipTrigger
+                      render={
+                        <Button variant="ghost" size="icon-sm" aria-label="Layout settings" />
+                      }
+                    >
+                      <RiSettings3Line />
+                    </TooltipTrigger>
+                  </RunnerSettings>
+                  <TooltipContent side="bottom">Layout settings</TooltipContent>
+                </Tooltip>
               </div>
               <div className="flex gap-2">
                 <Popover>

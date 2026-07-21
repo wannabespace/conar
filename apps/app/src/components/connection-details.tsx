@@ -1,6 +1,7 @@
 import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { useState } from 'react'
 
@@ -31,13 +32,28 @@ export function ConnectionDetails({
           <tr>
             <td className="py-1 pr-4 text-muted-foreground">Password</td>
             <td data-mask>
-              <button
-                type="button"
-                className="mr-2 inline-block translate-y-0.5 rounded-md p-1 hover:bg-accent/50 [&_svg]:size-3"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
-              </button>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <button
+                      type="button"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      className="
+                        mr-2 inline-block translate-y-0.5 rounded-md p-1
+                        text-muted-foreground
+                        hover:bg-foreground/10 hover:text-foreground
+                        [&_svg]:size-3
+                      "
+                      onClick={() => setShowPassword(!showPassword)}
+                    />
+                  }
+                >
+                  {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  {showPassword ? 'Hide password' : 'Show password'}
+                </TooltipContent>
+              </Tooltip>
               {showPassword
                 ? url.password
                 : Array.from({ length: url.password.length })

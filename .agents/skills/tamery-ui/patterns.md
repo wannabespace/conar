@@ -1,0 +1,20 @@
+# Native macOS patterns
+
+- **Window dimming**: `.electron.window-blurred` on `<html>` (IPC → `use-window-focus-observer.ts`) swaps `--primary` to gray in globals — accent chrome dims for free if it uses these tokens. No transition (AppKit snaps).
+- **No root rubber-band**: `body` has `overscroll-none`; inner scrollers keep native bounce.
+- **Shaders** (`MeshGradient`): auth page only, never behind working surfaces. Literal hex palettes per `useResolvedTheme()` (WebGL can't read CSS vars), `speed ~0.2`, 0 under reduced-motion, `pointer-events-none absolute inset-0`, 1s fade-in.
+- **Context menus** via right-click on rows/tabs; destructive item last after separator, `variant="destructive"`.
+- **Menus compact**: kit defaults (`min-h-7 py-1 text-sm`, `rounded-xl`) — don't re-inflate or shrink.
+- **Popovers size to content**: `w-auto min-w-40`; `CommandInput` only at ~8+ items; hide group headings when one group.
+- **Grouped lists** (dashboard): one `rounded-xl border bg-card` container, `border-b last:border-b-0` rows, `hover:bg-accent/50`. Sections (labels/types): micro-label header per section, one container each, ungrouped last.
+- **Tabs (Finder)**: content-width, no truncate; each tab `border-b`, active `border-b-transparent bg-background`; bar `bg-body/50`.
+- **Command bar** (table page): filter field flex-1 left, delete-on-selection, columns/sort, `⋯` overflow. `items-end` so buttons stay anchored while the field grows upward.
+- **Empty states**: centered `rounded-2xl bg-muted/60` icon, `text-sm font-medium` title, `text-xs muted` hint, gentle fade/scale-in.
+- **Shortcuts**: only via `packages/ui/src/components/custom/shortcuts.tsx` (`KbdCtrlLetter` etc., pass `userAgent`). Never hand-roll ⌘/Ctrl. Only advertise shortcuts that fire — gate Electron-only ones (⌘R) on `window.electron`.
+- **Tooltips**: never nest triggers; `TooltipContent` is `inline-flex` — wrap multi-line content in `flex flex-col gap-0.5`.
+- **Toasts** (`sonner.tsx`): `unstyled: true` + Tailwind classNames — glass (`bg-background/80 backdrop-blur-xl rounded-xl border shadow-lg`), filled Remix icons in semantic colors. Never sonner's default theme.
+- **Copy**: kit `CopyButton` (copy→check morph); silent `copy(text)` when the morph is confirmation enough.
+- **Interactive icons — app-wide rule**: hover surface (`ghost` icon Button + `hover:bg-foreground/10`), icon `muted → foreground`, `Tooltip` naming the action. Toggles (pin/unpin) swap icon on button hover (`group/pin` + hidden/block pair). In cmdk rows, reveal via `group-data-selected/command-item:opacity-100` (keyboard too) and wrap the button in `CommandShortcut`. Reference: `ResourceRow` in `connections-list.tsx`. Upgrade bare icons whenever touching a file.
+- **Count badges**: absolute `-top-1.5 -right-1.5 h-4 min-w-4 rounded-full bg-primary text-2xs`; Button needs `relative overflow-visible`.
+- **Sidebar-style nav rows** (definitions nav, dialog rails): `SidebarLink`/`SidebarButton` from `~/components/sidebar-link.tsx` — `h-7 rounded-md text-sm`, solid `bg-primary` active.
+- **Unified filter field** (`table/-components/page/filter-search-bar.tsx`): input-styled container (`min-h-8 flex-wrap bg-input rounded-xl`, `has-[input:focus]` ring) with chips inline + bare `CommandPrimitive.Input`. Suggestion panel opens upward (`absolute bottom-full mb-2 bg-popover rounded-xl p-1`, kit `CommandList` in unstyled `CommandPrimitive`); `onMouseDown preventDefault` keeps focus. Stage machine column → operator → value; pending chip styled like committed chips minus eye/✕. Value stage adds "Suggested values" (enums via `column.availableValues`, booleans true/false) — pick applies immediately, or toggles into the comma list for `isArray`. Backspace on empty steps back / pops last chip; ⌘F focuses; Escape cancels stage then blurs. Chips are `bg-background shadow-2xs` (one level below the field).

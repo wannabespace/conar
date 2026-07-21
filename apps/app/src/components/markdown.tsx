@@ -22,7 +22,7 @@ import { useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
-import { Monaco } from './monaco-lazy'
+import { Monaco } from './monaco'
 
 const langsMap = {
   text: 'Text',

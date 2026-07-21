@@ -19,7 +19,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import type { editor } from 'monaco-editor'
 
 import { InfoTable } from '~/components/info-table'
-import { Monaco } from '~/components/monaco-lazy'
+import { Monaco } from '~/components/monaco'
 
 const monacoOptions = {
   readOnly: true,

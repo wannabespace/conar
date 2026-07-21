@@ -1,12 +1,16 @@
 import {
   RiBrushLine,
+  RiDiscordLine,
+  RiGithubLine,
   RiGlobalLine,
   RiHistoryLine,
   RiLogoutCircleRLine,
   RiMessageLine,
+  RiTwitterXLine,
   RiUserLine,
 } from '@remixicon/react'
-import { RELEASES_URL } from '@tamery/shared/constants'
+import { RELEASES_URL, SOCIAL_LINKS } from '@tamery/shared/constants'
+import { Button } from '@tamery/ui/components/button'
 import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
 import {
   DropdownMenu,
@@ -17,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import type { Theme } from '@tamery/ui/theme-store'
 import { themeStore, useTheme } from '@tamery/ui/theme-store'
 import { useMutation } from '@tanstack/react-query'
@@ -50,6 +55,13 @@ const THEME_OPTIONS: { value: Theme; label: string }[] = [
   { value: 'dark', label: 'Dark' },
   { value: 'light', label: 'Light' },
 ]
+
+const SOCIAL_ROWS = [
+  { label: 'Website', href: 'https://tamery.app', icon: RiGlobalLine },
+  { label: 'X', href: SOCIAL_LINKS.TWITTER, icon: RiTwitterXLine },
+  { label: 'Discord', href: SOCIAL_LINKS.DISCORD, icon: RiDiscordLine },
+  { label: 'GitHub', href: SOCIAL_LINKS.GITHUB, icon: RiGithubLine },
+] as const
 
 export function UserButton({
   side = 'right',
@@ -137,6 +149,30 @@ export function UserButton({
           <RiLogoutCircleRLine />
           Sign out
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <div className="flex items-center gap-1 px-1 py-0.5">
+          {SOCIAL_ROWS.map(social => (
+            <Tooltip key={social.label}>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label={social.label}
+                    className="
+                      text-muted-foreground
+                      hover:bg-foreground/10 hover:text-foreground
+                    "
+                    onClick={() => window.open(social.href, '_blank')}
+                  />
+                }
+              >
+                <social.icon className="size-3.5" />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">{social.label}</TooltipContent>
+            </Tooltip>
+          ))}
+        </div>
       </DropdownMenuContent>
       <SupportDialog open={isSupportOpen} onOpenChange={setIsSupportOpen} />
     </DropdownMenu>

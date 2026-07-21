@@ -9,6 +9,7 @@ import {
 import type { RouterOutputs } from '@tamery/api/orpc/routers'
 import { Button } from '@tamery/ui/components/button'
 import { Spinner } from '@tamery/ui/components/spinner'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
@@ -102,14 +103,22 @@ export function GlobalBanner() {
           {typeConfig[item.type].icon}
           <span className="flex-1 leading-none">{item.text}</span>
           {item.dismissible && (
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              aria-label="Dismiss banner"
-              onClick={() => bannerDismissedValue.set(state => [...state, item.text])}
-            >
-              <RiCloseLine className="size-3.5" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label="Dismiss banner"
+                    className="hover:bg-foreground/10"
+                    onClick={() => bannerDismissedValue.set(state => [...state, item.text])}
+                  />
+                }
+              >
+                <RiCloseLine className="size-3.5" />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Dismiss</TooltipContent>
+            </Tooltip>
           )}
         </Banner>
       ))}

@@ -11,6 +11,7 @@ import {
 } from '@tamery/ui/components/card'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { Input } from '@tamery/ui/components/input'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -113,20 +114,34 @@ export function PasswordForm({
                     spellCheck="false"
                     required
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-1/2 right-2 size-7 -translate-y-1/2"
-                    onClick={() => setShowPassword(!showPassword)}
-                    tabIndex={-1}
-                  >
-                    {showPassword ? (
-                      <RiEyeOffLine className="size-4" />
-                    ) : (
-                      <RiEyeLine className="size-4" />
-                    )}
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                          className="
+                            absolute top-1/2 right-2 size-7 -translate-y-1/2
+                            text-muted-foreground
+                            hover:bg-foreground/10 hover:text-foreground
+                          "
+                          onClick={() => setShowPassword(!showPassword)}
+                          tabIndex={-1}
+                        />
+                      }
+                    >
+                      {showPassword ? (
+                        <RiEyeOffLine className="size-4" />
+                      ) : (
+                        <RiEyeLine className="size-4" />
+                      )}
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      {showPassword ? 'Hide password' : 'Show password'}
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
             </CardContent>

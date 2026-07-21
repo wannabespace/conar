@@ -7,6 +7,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '@tamery/ui/components/input-group'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
@@ -35,14 +36,28 @@ function ComboboxTrigger({ className, children, ...props }: ComboboxPrimitive.Tr
 
 function ComboboxClear({ className, ...props }: ComboboxPrimitive.Clear.Props) {
   return (
-    <ComboboxPrimitive.Clear
-      data-slot="combobox-clear"
-      render={<InputGroupButton variant="ghost" size="icon-xs" />}
-      className={cn(className)}
-      {...props}
-    >
-      <RiCloseLine className="pointer-events-none" />
-    </ComboboxPrimitive.Clear>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <ComboboxPrimitive.Clear
+            data-slot="combobox-clear"
+            aria-label="Clear"
+            render={<InputGroupButton variant="ghost" size="icon-xs" />}
+            className={cn(
+              `
+                text-muted-foreground
+                hover:bg-foreground/10 hover:text-foreground
+              `,
+              className,
+            )}
+            {...props}
+          />
+        }
+      >
+        <RiCloseLine className="pointer-events-none" />
+      </TooltipTrigger>
+      <TooltipContent side="top">Clear</TooltipContent>
+    </Tooltip>
   )
 }
 

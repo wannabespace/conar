@@ -136,7 +136,7 @@ export function TableCell({
     (isForeignOpen || isReferencesOpen) && 'bg-accent/50 ring-border',
     status === 'error' && 'bg-destructive/10 ring-destructive/40',
     status === 'pending' && 'animate-pulse bg-primary/8',
-    status === 'draft' && 'bg-foreground/4 italic ring-border',
+    status === 'draft' && 'bg-primary/12 italic ring-primary/30',
     (column.foreign || (column.references?.length ?? 0) > 0) && 'pr-1!',
   )
 
@@ -252,7 +252,7 @@ export function TableCell({
                         }
                       />
                     }
-                  ></TooltipTrigger>
+                  />
                   <TooltipContent side="right">See foreign record</TooltipContent>
                 </Tooltip>
                 <PopoverContent

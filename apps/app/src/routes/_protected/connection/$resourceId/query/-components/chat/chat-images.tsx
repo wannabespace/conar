@@ -53,22 +53,31 @@ export function ChatImages({
             </TooltipContent>
           </Tooltip>
           {onRemove && (
-            <button
-              type="button"
-              aria-label={`Remove ${image.name}`}
-              className="
-                absolute -top-2 -right-2 z-10 flex size-4
-                items-center justify-center rounded-full border bg-background
-                opacity-0 transition-opacity
-                group-hover:opacity-100
-              "
-              onClick={e => {
-                e.stopPropagation()
-                onRemove(index)
-              }}
-            >
-              <RiCloseLine className="size-3" />
-            </button>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <button
+                    type="button"
+                    aria-label={`Remove ${image.name}`}
+                    className="
+                      absolute -top-2 -right-2 z-10 flex size-4
+                      items-center justify-center rounded-full border
+                      bg-background text-muted-foreground opacity-0
+                      transition-opacity
+                      group-hover:opacity-100
+                      hover:bg-foreground/10 hover:text-foreground
+                    "
+                    onClick={e => {
+                      e.stopPropagation()
+                      onRemove(index)
+                    }}
+                  />
+                }
+              >
+                <RiCloseLine className="size-3" />
+              </TooltipTrigger>
+              <TooltipContent side="top">Remove image</TooltipContent>
+            </Tooltip>
           )}
         </div>
       ))}

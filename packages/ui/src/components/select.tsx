@@ -106,7 +106,7 @@ function SelectContent({
             `
             relative isolate z-50 max-h-(--available-height)
             min-w-(--anchor-width) origin-(--transform-origin) overflow-x-hidden
-            overflow-y-auto rounded-2xl bg-popover text-popover-foreground
+            overflow-y-auto rounded-xl bg-popover text-popover-foreground
             shadow-lg ring-1 ring-foreground/8 duration-100
             data-[align-trigger=true]:animate-none
             data-[side=bottom]:slide-in-from-top-2
@@ -149,7 +149,7 @@ function SelectItem({ className, children, ...props }: SelectPrimitive.Item.Prop
       className={cn(
         `
           relative flex min-h-7 w-full cursor-default items-center gap-2
-          rounded-lg py-1.5 pr-8 pl-2 text-sm outline-hidden select-none
+          rounded-md py-1.5 pr-8 pl-2 text-sm outline-hidden select-none
           focus:bg-accent focus:text-accent-foreground
           focus:not-data-[variant=destructive]:**:text-accent-foreground
           data-disabled:pointer-events-none data-disabled:opacity-50
@@ -163,7 +163,7 @@ function SelectItem({ className, children, ...props }: SelectPrimitive.Item.Prop
     >
       <SelectPrimitive.ItemText
         className="
-        flex flex-1 shrink-0 gap-2 whitespace-nowrap
+        flex min-w-0 flex-1 gap-2 truncate whitespace-nowrap
       "
       >
         {children}

@@ -1,6 +1,7 @@
 import { RiCloseLine, RiSearchLine } from '@remixicon/react'
 import { title } from '@tamery/shared/utils/title'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
+import { Button } from '@tamery/ui/components/button'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@tamery/ui/components/input-group'
 import { ReactFlowEdge } from '@tamery/ui/components/react-flow/edge'
@@ -11,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQueries, useQuery } from '@tanstack/react-query'
@@ -241,13 +243,25 @@ function Visualizer({
               )}
 
               {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  aria-label="Clear table search"
-                >
-                  <RiCloseLine className="size-4 text-muted-foreground" />
-                </button>
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        aria-label="Clear table search"
+                        className="
+                          text-muted-foreground
+                          hover:bg-foreground/10 hover:text-foreground
+                        "
+                        onClick={() => setSearchQuery('')}
+                      />
+                    }
+                  >
+                    <RiCloseLine className="size-4" />
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">Clear</TooltipContent>
+                </Tooltip>
               )}
             </InputGroupAddon>
           </InputGroup>

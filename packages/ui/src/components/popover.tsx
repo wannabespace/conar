@@ -33,7 +33,7 @@ function PopoverContent({
           className={cn(
             `
               z-50 flex w-72 origin-(--transform-origin) flex-col gap-4
-              rounded-3xl bg-popover p-4 text-sm text-popover-foreground
+              rounded-xl bg-popover p-4 text-sm text-popover-foreground
               shadow-lg ring-1 ring-foreground/8 outline-hidden duration-100
               data-[side=bottom]:slide-in-from-top-2
               data-[side=inline-end]:slide-in-from-left-2
