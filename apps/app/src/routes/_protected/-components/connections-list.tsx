@@ -776,7 +776,7 @@ export function ConnectionsList() {
             <Button
               variant="outline"
               size="sm"
-              className="h-7 text-foreground"
+              className="text-foreground"
               render={<Link to="/create" />}
             >
               <RiAddLine className="size-4 text-muted-foreground" />

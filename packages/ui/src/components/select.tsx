@@ -38,9 +38,12 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
+        // Control-family look shared with the outline Button: borderless at
+        // rest, hairline border on hover/open; heights come from `size` only
         `
           flex w-fit items-center justify-between gap-1.5 rounded-xl border
-          border-border bg-input px-3 text-sm font-medium whitespace-nowrap
+          border-border bg-input bg-clip-padding px-3 text-sm
+          whitespace-nowrap
           transition-[color,box-shadow] duration-200 outline-none
           hover:bg-muted hover:text-foreground
           focus-visible:border-ring focus-visible:ring-3

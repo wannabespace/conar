@@ -32,3 +32,4 @@ Topic files — read the ones your task touches; record new decisions in the mat
 5. **No bare interactive icons.** Hover bg + color shift + tooltip, always — pattern in [patterns.md](patterns.md).
 6. **No `sidebar-*` color tokens.** Regular tokens everywhere.
 7. **Global anchor rule:** `a { text-primary }` in globals — row-styled `Link`s must set `text-foreground` or they render blue.
+8. **Verify heights in a row.** After touching any control that shares a line with others (toolbar, controls row, dock), measure every element's `getBoundingClientRect().height` in the browser — they must be equal to the pixel. Watch the classic traps: `py-*` + fixed-height children exceeding `min-h`, borders without `bg-clip-padding`, and hand-set `h-*` instead of size props.

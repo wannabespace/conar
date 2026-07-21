@@ -274,7 +274,7 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
       <div
         className="
           flex min-h-8 w-full flex-wrap items-center gap-1 rounded-xl border
-          bg-input py-1 pr-1.5 pl-2
+          bg-input py-0.75 pr-1.5 pl-2
           transition-[color,box-shadow] duration-200
           has-[input:focus]:border-ring has-[input:focus]:ring-3
           has-[input:focus]:ring-ring/30
