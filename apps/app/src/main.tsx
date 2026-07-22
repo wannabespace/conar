@@ -11,7 +11,6 @@ import {
 import { createRoot } from 'react-dom/client'
 import { toast } from 'sonner'
 
-// import { bearerToken } from './lib/auth'
 import { lastLocationStorageValue } from './lib/last-location'
 import { routeTree } from './routeTree.gen'
 
@@ -78,9 +77,6 @@ router.subscribe('onResolved', ({ toLocation }) => {
 
   lastLocationStorageValue.set(toLocation.href)
 })
-
-// lastLocationStorageValue.set('/')
-// bearerToken.set('kpDzTkdwXaAw9aHMZJIXfWHzaJnHxzSB')
 
 if (router.state.location.pathname === '/') {
   const lastLocation = lastLocationStorageValue.get()

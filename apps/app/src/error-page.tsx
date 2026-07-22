@@ -37,8 +37,6 @@ function getStack(error: ErrorComponentProps['error']) {
     : error.stack
 }
 
-// Raw JSON blobs (e.g. arktype union errors) are diagnostics, not prose —
-// keep them out of the visible summary
 function isReadableMessage(message: string) {
   const trimmed = message.trim()
   return !trimmed.startsWith('{') && !trimmed.startsWith('[')

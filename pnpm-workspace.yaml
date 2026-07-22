@@ -18,6 +18,7 @@ patchedDependencies:
   '@better-auth/kysely-adapter@1.7.0-beta.9': patches/@better-auth__kysely-adapter@1.7.0-beta.9.patch
   cmdk@1.1.1: patches/cmdk@1.1.1.patch
 catalog:
+  '@paper-design/shaders-react': ^0.0.77
   '@ai-sdk/anthropic': ^4.0.16
   '@ai-sdk/google': ^4.0.18
   '@ai-sdk/openai': ^4.0.16
@@ -155,7 +156,6 @@ catalog:
   oxfmt: ^0.59.0
   oxlint: ^1.74.0
   oxlint-tailwindcss: ^1.3.5
-  '@paper-design/shaders-react': ^0.0.77
   '@fontsource-variable/geist': ^5.3.0
   '@fontsource-variable/geist-mono': ^5.3.0
 allowBuilds:
