@@ -212,10 +212,6 @@
   @apply bg-white/90 text-primary;
 }
 
-/* Table scroll-edge fades as sticky overlay gradients inside the scroller —
-   never a mask (masks clip the scrollbar), never siblings above the scroller
-   (they'd paint over the scrollbar too). Descendants can't cover their own
-   scroller's scrollbar, so it stays fully visible. */
 @utility table-fade {
   --table-header-height: calc(var(--spacing) * 8);
 

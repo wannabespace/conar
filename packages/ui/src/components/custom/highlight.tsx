@@ -2,10 +2,7 @@ import { escapeSpecialCharacters } from '@tamery/shared/utils/helpers'
 import type { ReactNode } from 'react'
 
 function DefaultRender({ html }: { html: string }) {
-  return (
-    // oxlint-disable-next-line react/dom-no-dangerously-set-innerhtml
-    <span dangerouslySetInnerHTML={{ __html: html }} />
-  )
+  return <span dangerouslySetInnerHTML={{ __html: html }} />
 }
 
 export function HighlightText({

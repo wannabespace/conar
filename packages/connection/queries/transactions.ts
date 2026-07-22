@@ -9,7 +9,6 @@ export interface TxHandle {
 
 interface OwnedTx {
   handle: TxHandle
-  /** When set, only this owner may use the transaction (multi-tenant cloud proxy). */
   ownerId?: string
 }
 
@@ -42,20 +41,20 @@ export function registerTransaction(handle: TxHandle, ownerId?: string) {
   return txId
 }
 
-function assertOwner(entry: OwnedTx, ownerId?: string) {
+function checkOwner(entry: OwnedTx, ownerId?: string) {
   if (entry.ownerId && ownerId !== entry.ownerId) return false
   return true
 }
 
 export function getTransaction(txId: string, ownerId?: string) {
   const entry = activeTransactions.get(txId)
-  if (!entry || !assertOwner(entry, ownerId)) return undefined
+  if (!entry || !checkOwner(entry, ownerId)) return undefined
   return entry.handle
 }
 
 export function disposeTransaction(txId: string, ownerId?: string) {
   const entry = activeTransactions.get(txId)
-  if (!entry || !assertOwner(entry, ownerId)) return undefined
+  if (!entry || !checkOwner(entry, ownerId)) return undefined
   activeTransactions.delete(txId)
   return entry.handle
 }
