@@ -46,7 +46,6 @@ export function SidebarMenuButton({
             peer/menu-button flex h-8 w-full items-center gap-2
             overflow-hidden rounded-xl px-3 py-2 text-left text-sm
             whitespace-nowrap outline-hidden
-            group-has-data-[sidebar=menu-action]/menu-item:pr-8
             hover:bg-accent hover:text-accent-foreground
             focus-visible:ring-3 focus-visible:ring-ring
             active:bg-accent active:text-accent-foreground

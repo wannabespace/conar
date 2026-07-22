@@ -154,14 +154,17 @@ function TableRow({
       <ContextMenuTrigger className="block h-full">
         <SidebarMenuButton
           isActive={isActive}
-          className={`
-            h-7 cursor-default rounded-md pl-2 text-sm font-[450]
-            text-foreground
-            hover:text-foreground data-active:bg-primary
-            data-active:font-[450]
-            data-active:text-primary-foreground hover:data-active:bg-primary
-            hover:data-active:text-primary-foreground
-          `}
+          className={cn(
+            `
+              h-7 cursor-default rounded-md pl-2 text-sm font-[450]
+              text-foreground
+              hover:text-foreground data-active:bg-primary
+              data-active:font-[450]
+              data-active:text-primary-foreground hover:data-active:bg-primary
+              hover:data-active:text-primary-foreground
+            `,
+            row.pinned && 'pr-8',
+          )}
           render={
             <Link
               to="/connection/$resourceId/table"
@@ -184,7 +187,15 @@ function TableRow({
               />
             )}
           </span>
-          <span className="min-w-0 flex-1 truncate">
+          <span
+            className={cn(
+              'min-w-0 flex-1 truncate',
+              !row.pinned &&
+                `
+                group-hover/menu-item:mask-[linear-gradient(to_right,#000_calc(100%-3.5rem),transparent_calc(100%-1.25rem))]
+              `,
+            )}
+          >
             <HighlightText text={row.table.name} match={search} />
           </span>
         </SidebarMenuButton>
