@@ -40,4 +40,4 @@ function toggleTheme() {
   root.classList.toggle('light', resolved === 'light')
 }
 
-resolvedTheme.subscribe(toggleTheme)
+resolvedTheme.subscribe(toggleTheme, { immediate: true })

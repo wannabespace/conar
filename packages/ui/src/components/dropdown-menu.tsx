@@ -106,7 +106,7 @@ function DropdownMenuItem({
           group/dropdown-menu-item relative flex min-h-7 cursor-default
           items-center gap-2 rounded-md px-2 py-1 text-sm
           text-popover-foreground outline-hidden select-none
-          focus:bg-accent focus:text-accent-foreground
+          focus:bg-accent/60 focus:text-accent-foreground
           focus:not-data-[variant=destructive]:**:text-accent-foreground
           data-inset:pl-7
           data-[variant=destructive]:text-destructive
@@ -144,11 +144,11 @@ function DropdownMenuSubTrigger({
         `
           flex min-h-7 cursor-default items-center gap-2 rounded-md px-2 py-1
           text-sm outline-hidden select-none
-          focus:bg-accent focus:text-accent-foreground
+          focus:bg-accent/60 focus:text-accent-foreground
           focus:not-data-[variant=destructive]:**:text-accent-foreground
           data-inset:pl-7
-          data-popup-open:bg-accent data-popup-open:text-accent-foreground
-          data-open:bg-accent data-open:text-accent-foreground
+          data-popup-open:bg-accent/60 data-popup-open:text-accent-foreground
+          data-open:bg-accent/60 data-open:text-accent-foreground
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
         `,
@@ -212,7 +212,7 @@ function DropdownMenuCheckboxItem({
         `
           relative flex min-h-7 cursor-default items-center gap-2 rounded-md
           py-1 pr-8 pl-2 text-sm outline-hidden select-none
-          focus:bg-accent focus:text-accent-foreground
+          focus:bg-accent/60 focus:text-accent-foreground
           focus:**:text-accent-foreground
           data-inset:pl-7
           data-disabled:pointer-events-none data-disabled:opacity-50
@@ -259,7 +259,7 @@ function DropdownMenuRadioItem({
         `
           relative flex min-h-7 cursor-default items-center gap-2 rounded-md
           py-1 pr-8 pl-2 text-sm outline-hidden select-none
-          focus:bg-accent focus:text-accent-foreground
+          focus:bg-accent/60 focus:text-accent-foreground
           focus:**:text-accent-foreground
           data-inset:pl-7
           data-disabled:pointer-events-none data-disabled:opacity-50

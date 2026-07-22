@@ -116,7 +116,7 @@ function MenubarItem({
       className={cn(
         `
           group/menubar-item min-h-7 gap-2 rounded-xl px-2 py-1.5 text-sm
-          focus:bg-accent focus:text-accent-foreground
+          focus:bg-accent/60 focus:text-accent-foreground
           focus:not-data-[variant=destructive]:**:text-accent-foreground
           data-inset:pl-7
           data-[variant=destructive]:text-destructive
@@ -150,7 +150,7 @@ function MenubarCheckboxItem({
         `
           relative flex min-h-7 cursor-default items-center gap-2 rounded-xl
           py-1.5 pr-1.5 pl-7 text-sm outline-hidden select-none
-          focus:bg-accent focus:text-accent-foreground
+          focus:bg-accent/60 focus:text-accent-foreground
           focus:**:text-accent-foreground
           data-inset:pl-7
           data-disabled:pointer-events-none data-disabled:opacity-50
@@ -197,7 +197,7 @@ function MenubarRadioItem({
         `
           relative flex min-h-7 cursor-default items-center gap-2 rounded-xl
           py-1.5 pr-1.5 pl-7 text-sm outline-hidden select-none
-          focus:bg-accent focus:text-accent-foreground
+          focus:bg-accent/60 focus:text-accent-foreground
           focus:**:text-accent-foreground
           data-inset:pl-7
           data-disabled:pointer-events-none data-disabled:opacity-50
@@ -297,9 +297,9 @@ function MenubarSubTrigger({
       className={cn(
         `
           min-h-7 gap-2 rounded-xl px-2 py-1.5 text-sm
-          focus:bg-accent focus:text-accent-foreground
+          focus:bg-accent/60 focus:text-accent-foreground
           data-inset:pl-7
-          data-open:bg-accent data-open:text-accent-foreground
+          data-open:bg-accent/60 data-open:text-accent-foreground
           [&_svg:not([class*='size-'])]:size-4
         `,
         className,

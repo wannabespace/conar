@@ -62,7 +62,7 @@ export function createWindow() {
     // Custom topbar: hide the native title bar background on every OS.
     titleBarStyle: 'hidden',
     // macOS: keep native traffic lights, inset into the 40px topbar.
-    trafficLightPosition: { x: 16, y: 14 },
+    trafficLightPosition: { x: 16, y: 13 },
     // Windows/Linux: native min/max/close via Window Controls Overlay.
     ...(!isMac && {
       titleBarOverlay: {

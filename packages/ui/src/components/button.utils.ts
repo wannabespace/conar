@@ -6,7 +6,7 @@ export const buttonVariants = cva(
   `
     group/button inline-flex shrink-0 cursor-default items-center
     justify-center rounded-xl border border-transparent
-    text-sm font-medium whitespace-nowrap transition-all outline-none
+    text-sm font-medium whitespace-nowrap transition-[transform,box-shadow] outline-none
     select-none
     focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30
     active:not-aria-[haspopup]:translate-y-px
@@ -25,9 +25,9 @@ export const buttonVariants = cva(
         `,
         outline: `
           bg-input shadow-xs ring-[0.5px] ring-foreground/4
-          hover:bg-[color-mix(in_oklch,var(--input),var(--foreground)_6%)]
+          hover:bg-[color-mix(in_oklch,var(--input),var(--foreground)_3%)]
           hover:text-foreground
-          aria-expanded:bg-[color-mix(in_oklch,var(--input),var(--foreground)_6%)]
+          aria-expanded:bg-[color-mix(in_oklch,var(--input),var(--foreground)_3%)]
           aria-expanded:text-foreground
         `,
         secondary: `

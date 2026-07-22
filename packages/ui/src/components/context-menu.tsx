@@ -112,7 +112,7 @@ function ContextMenuItem({
           group/context-menu-item relative flex min-h-7 cursor-default
           items-center gap-2 rounded-md px-2 py-1 text-sm outline-hidden
           select-none
-          focus:bg-accent focus:text-accent-foreground
+          focus:bg-accent/60 focus:text-accent-foreground
           data-inset:pl-7
           data-[variant=destructive]:text-destructive
           focus:data-[variant=destructive]:bg-destructive/15
@@ -150,9 +150,9 @@ function ContextMenuSubTrigger({
         `
           flex min-h-7 cursor-default items-center rounded-md px-2 py-1
           text-sm outline-hidden select-none
-          focus:bg-accent focus:text-accent-foreground
+          focus:bg-accent/60 focus:text-accent-foreground
           data-inset:pl-7
-          data-open:bg-accent data-open:text-accent-foreground
+          data-open:bg-accent/60 data-open:text-accent-foreground
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
         `,
@@ -194,7 +194,7 @@ function ContextMenuCheckboxItem({
         `
           relative flex min-h-7 cursor-default items-center gap-2 rounded-md
           py-1 pr-8 pl-2 text-sm outline-hidden select-none
-          focus:bg-accent focus:text-accent-foreground
+          focus:bg-accent/60 focus:text-accent-foreground
           data-inset:pl-7
           data-disabled:pointer-events-none data-disabled:opacity-50
           [&_svg]:pointer-events-none [&_svg]:shrink-0
@@ -235,7 +235,7 @@ function ContextMenuRadioItem({
         `
           relative flex min-h-7 cursor-default items-center gap-2 rounded-md
           py-1 pr-8 pl-2 text-sm outline-hidden select-none
-          focus:bg-accent focus:text-accent-foreground
+          focus:bg-accent/60 focus:text-accent-foreground
           data-inset:pl-7
           data-disabled:pointer-events-none data-disabled:opacity-50
           [&_svg]:pointer-events-none [&_svg]:shrink-0

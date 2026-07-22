@@ -1,19 +1,14 @@
 import {
   RiAddLine,
   RiAlertLine,
-  RiCheckLine,
   RiDatabase2Line,
   RiDeleteBinLine,
-  RiExpandUpDownLine,
   RiFileCopyLine,
   RiLockUnlockLine,
-  RiPushpinFill,
-  RiPushpinLine,
   RiRefreshLine,
   RiSortAsc,
   RiSortDesc,
   RiStackLine,
-  RiUnpinLine,
 } from '@remixicon/react'
 import {
   CONNECTION_RESOURCE_ROOT_LABEL,
@@ -24,22 +19,12 @@ import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
 import { Button } from '@tamery/ui/components/button'
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandShortcut,
-} from '@tamery/ui/components/command'
-import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from '@tamery/ui/components/context-menu'
-import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
 import {
   Select,
   SelectContent,
@@ -58,7 +43,7 @@ import { Link } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { AnimatePresence, motion } from 'motion/react'
 import type { ComponentRef } from 'react'
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
@@ -133,180 +118,36 @@ function resourceLabel(resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL
   return resource === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_LABEL : resource
 }
 
-// Micro-label group headings (PINNED / OTHER) — overrides the kit's default heading style
-const resourceGroupClassName = `
-  p-0
-  not-first:mt-1
-  **:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:pt-1.5
-  **:[[cmdk-group-heading]]:pb-0.5 **:[[cmdk-group-heading]]:text-2xs
-  **:[[cmdk-group-heading]]:font-semibold
-  **:[[cmdk-group-heading]]:tracking-wider
-  **:[[cmdk-group-heading]]:uppercase
-`
-
-function ResourceRow({
-  resource,
-  isPinned,
-  isSelected,
-  onSelect,
-  onPinToggle,
-}: {
-  resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL
-  isPinned: boolean
-  isSelected: boolean
-  onSelect: VoidFunction
-  onPinToggle: VoidFunction
-}) {
-  return (
-    <CommandItem
-      value={resourceValue(resource)}
-      keywords={[resourceLabel(resource)]}
-      className="h-7 gap-2 py-0 pr-1 pl-2 text-sm"
-      onSelect={onSelect}
-    >
-      {/* Left state column, like NSMenu — space always reserved so names align */}
-      <RiCheckLine
-        className={cn('size-3.5 shrink-0', isSelected ? 'text-foreground' : 'opacity-0')}
-      />
-      <RiDatabase2Line className="size-3.5 shrink-0 text-muted-foreground/70" />
-      <span className={cn('min-w-0 flex-1 truncate', isSelected && 'font-medium')}>
-        {resourceLabel(resource)}
-      </span>
-      {/* CommandShortcut slot hides the kit's built-in trailing check */}
-      <CommandShortcut className="flex tracking-normal">
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                aria-label={isPinned ? 'Unpin' : 'Pin'}
-                className={cn(
-                  'group/pin shrink-0 hover:bg-foreground/10',
-                  // Reveal follows cmdk selection so keyboard navigation shows it too
-                  !isPinned &&
-                    `
-                    opacity-0
-                    group-data-selected/command-item:opacity-100
-                  `,
-                )}
-                onClick={e => {
-                  e.stopPropagation()
-                  onPinToggle()
-                }}
-              />
-            }
-          >
-            {isPinned ? (
-              <>
-                <RiPushpinFill className="size-3.5 text-primary group-hover/pin:hidden" />
-                <RiUnpinLine
-                  className="
-                    hidden size-3.5 text-foreground
-                    group-hover/pin:block
-                  "
-                />
-              </>
-            ) : (
-              <RiPushpinLine
-                className="
-                  size-3.5 text-muted-foreground
-                  group-hover/pin:text-foreground
-                "
-              />
-            )}
-          </TooltipTrigger>
-          <TooltipContent side="right">{isPinned ? 'Unpin' : 'Pin'}</TooltipContent>
-        </Tooltip>
-      </CommandShortcut>
-    </CommandItem>
-  )
-}
-
-function ConnectionResourcesCombobox({
+function ConnectionResourcesSelect({
   resources,
   selectedResourceName,
   onSelectedResourceNameChange,
-  pinnedResourcesNames,
-  onPinnedResourceNameChange,
   disabled,
 }: {
   resources: (string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL)[]
   selectedResourceName: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null
   onSelectedResourceNameChange: (resource: string | null) => void
-  pinnedResourcesNames: (string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL)[]
-  onPinnedResourceNameChange: (resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL) => void
   disabled: boolean
 }) {
-  const [open, setOpen] = useState(false)
-
-  const pinned = resources.filter(resource => pinnedResourcesNames.includes(resource))
-  const unpinned = resources.filter(resource => !pinnedResourcesNames.includes(resource))
-  const hasSearch = resources.length >= 8
-  const hasGroups = pinned.length > 0
-
-  function renderItem(resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL) {
-    return (
-      <ResourceRow
-        key={resourceValue(resource)}
-        resource={resource}
-        isPinned={pinnedResourcesNames.includes(resource)}
-        isSelected={resource === selectedResourceName}
-        onSelect={() => {
-          onSelectedResourceNameChange(resourceValue(resource))
-          setOpen(false)
-        }}
-        onPinToggle={() => onPinnedResourceNameChange(resource)}
-      />
-    )
-  }
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={
-          <Button
-            variant="outline"
-            size="xs"
-            disabled={disabled}
-            className="pointer-events-auto gap-1 text-xs"
-          />
-        }
-      >
-        {selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL
-          ? CONNECTION_RESOURCE_ROOT_LABEL
-          : selectedResourceName}
-        <RiExpandUpDownLine className="size-3 text-muted-foreground/70" />
-      </PopoverTrigger>
-      <PopoverContent
-        align="end"
-        className={cn(
-          'pointer-events-auto overflow-hidden p-0',
-          hasSearch ? 'w-56' : 'w-auto min-w-44',
-        )}
-      >
-        <Command>
-          {hasSearch && <CommandInput placeholder="Search resources..." />}
-          <CommandList className="p-1">
-            <CommandEmpty>No results found.</CommandEmpty>
-            {hasGroups ? (
-              <>
-                <CommandGroup heading="Pinned" className={resourceGroupClassName}>
-                  {pinned.map(renderItem)}
-                </CommandGroup>
-                {unpinned.length > 0 && (
-                  <CommandGroup heading="Other" className={resourceGroupClassName}>
-                    {unpinned.map(renderItem)}
-                  </CommandGroup>
-                )}
-              </>
-            ) : (
-              <CommandGroup className="p-0">{unpinned.map(renderItem)}</CommandGroup>
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <Select
+      value={selectedResourceName === null ? undefined : resourceValue(selectedResourceName)}
+      onValueChange={value => onSelectedResourceNameChange(value ?? null)}
+      disabled={disabled}
+    >
+      <SelectTrigger size="xs" className="pointer-events-auto">
+        <SelectValue>
+          {selectedResourceName === null ? null : resourceLabel(selectedResourceName)}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent size="xs">
+        {resources.map(resource => (
+          <SelectItem key={resourceValue(resource)} value={resourceValue(resource)}>
+            {resourceLabel(resource)}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }
 
@@ -353,14 +194,12 @@ function ConnectionCard({
   const defaultResourceName = connectionString?.defaultResourceName ?? null
 
   const connectionStore = getConnectionStore(connection.id)
-  const { selectedResourceName, pinnedResourcesNames } = useSubscription(connectionStore, {
-    selector: state => ({
-      selectedResourceName: (state.lastOpenedResourceName ||
-        defaultResourceName ||
-        resources[0] ||
-        null) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
-      pinnedResourcesNames: state.pinnedResourcesNames,
-    }),
+  const selectedResourceName = useSubscription(connectionStore, {
+    selector: state =>
+      (state.lastOpenedResourceName || defaultResourceName || resources[0] || null) as
+        | string
+        | typeof CONNECTION_RESOURCE_ROOT_SYMBOL
+        | null,
   })
   const resolvedSelectedResourceName =
     selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? null : selectedResourceName
@@ -510,24 +349,12 @@ function ConnectionCard({
               )}
             </div>
             {isResourcesShown ? (
-              <ConnectionResourcesCombobox
+              <ConnectionResourcesSelect
                 resources={resources}
-                pinnedResourcesNames={pinnedResourcesNames}
                 selectedResourceName={selectedResourceName}
                 onSelectedResourceNameChange={value =>
                   connectionStore.set(
                     state => ({ ...state, lastOpenedResourceName: value }) satisfies typeof state,
-                  )
-                }
-                onPinnedResourceNameChange={value =>
-                  connectionStore.set(
-                    state =>
-                      ({
-                        ...state,
-                        pinnedResourcesNames: state.pinnedResourcesNames.includes(value)
-                          ? state.pinnedResourcesNames.filter(name => name !== value)
-                          : [...state.pinnedResourcesNames, value],
-                      }) satisfies typeof state,
                   )
                 }
                 disabled={!canSend}

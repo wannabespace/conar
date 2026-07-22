@@ -22,7 +22,7 @@ Selection = solid `bg-primary text-primary-foreground` (Finder style); idle side
 
 **Token semantics (owner rule):**
 - `--muted` — static darker backgrounds only (skeletons, kbd chips, section fills). Never for hover states.
-- `--accent` — hover/focus fills of interactive elements (menu items, list rows, row hovers).
+- `--accent` — hover/focus fills of interactive elements. Menu/command/select items use `bg-accent/60` (full accent on the white popover surface read too dark); rows on `bg-card` use `bg-accent`/`bg-accent/50` as suits.
 - Filled controls (buttons/selects) hover via the foreground-mix construction instead (see patterns.md) — accent read too dark on light-mode buttons.
 
 ## Cell highlights (data table)

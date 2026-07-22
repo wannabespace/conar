@@ -3,6 +3,8 @@ import { RiArrowDownSLine, RiArrowUpSLine, RiCheckLine } from '@remixicon/react'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
+type SelectSize = 'xs' | 'sm' | 'default'
+
 const Select = SelectPrimitive.Root
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
@@ -31,36 +33,37 @@ function SelectTrigger({
   children,
   ...props
 }: SelectPrimitive.Trigger.Props & {
-  size?: 'sm' | 'default'
+  size?: SelectSize
 }) {
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        // Control-family look shared with the outline Button: borderless at
-        // rest, hairline border on hover/open; heights come from `size` only
         `
           flex w-fit items-center justify-between gap-1.5 rounded-xl border
           border-transparent bg-input px-3 text-sm
           whitespace-nowrap shadow-xs ring-[0.5px] ring-foreground/4
-          transition-[color,box-shadow] duration-200 outline-none
-          hover:bg-[color-mix(in_oklch,var(--input),var(--foreground)_6%)] hover:text-foreground
+          transition-shadow duration-200 outline-none
+          hover:bg-[color-mix(in_oklch,var(--input),var(--foreground)_3%)] hover:text-foreground
           focus-visible:border-ring focus-visible:ring-3
           focus-visible:ring-ring/30
           disabled:cursor-not-allowed disabled:opacity-50
           aria-invalid:border-destructive/60 aria-invalid:ring-3
           aria-invalid:ring-destructive/30
           data-placeholder:text-muted-foreground
-          data-popup-open:bg-[color-mix(in_oklch,var(--input),var(--foreground)_6%)]
+          data-popup-open:bg-[color-mix(in_oklch,var(--input),var(--foreground)_3%)]
           data-[size=default]:h-8
           data-[size=sm]:h-7 data-[size=sm]:rounded-lg
+          data-[size=xs]:h-6 data-[size=xs]:gap-1 data-[size=xs]:rounded-md
+          data-[size=xs]:px-2.5 data-[size=xs]:text-xs
           *:data-[slot=select-value]:line-clamp-1
           *:data-[slot=select-value]:flex
           *:data-[slot=select-value]:items-center
           *:data-[slot=select-value]:gap-1.5
-          [&_svg]:pointer-events-none [&_svg]:shrink-0
-          [&_svg:not([class*='size-'])]:size-4
+          [&_svg]:pointer-events-none
+          [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4
+          data-[size=xs]:[&_svg:not([class*='size-'])]:size-3
         `,
         className,
       )}
@@ -88,12 +91,13 @@ function SelectContent({
   align = 'center',
   alignOffset = 0,
   alignItemWithTrigger = true,
+  size = 'default',
   ...props
 }: SelectPrimitive.Popup.Props &
   Pick<
     SelectPrimitive.Positioner.Props,
     'align' | 'alignOffset' | 'side' | 'sideOffset' | 'alignItemWithTrigger'
-  >) {
+  > & { size?: SelectSize }) {
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Positioner
@@ -107,6 +111,7 @@ function SelectContent({
         <SelectPrimitive.Popup
           data-slot="select-content"
           data-align-trigger={alignItemWithTrigger}
+          data-size={size}
           className={cn(
             `
             relative isolate z-50 max-h-(--available-height)
@@ -120,6 +125,7 @@ function SelectContent({
             data-[side=left]:slide-in-from-right-2
             data-[side=right]:slide-in-from-left-2
             data-[side=top]:slide-in-from-bottom-2
+            data-[size=xs]:rounded-lg
             data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95
             data-closed:animate-out data-closed:fade-out-0
             data-closed:zoom-out-95
@@ -155,11 +161,15 @@ function SelectItem({ className, children, ...props }: SelectPrimitive.Item.Prop
         `
           relative flex min-h-7 w-full cursor-default items-center gap-2
           rounded-md py-1.5 pr-8 pl-2 text-sm outline-hidden select-none
-          focus:bg-accent focus:text-accent-foreground
+          focus:bg-accent/60 focus:text-accent-foreground
           focus:not-data-[variant=destructive]:**:text-accent-foreground
-          data-disabled:pointer-events-none data-disabled:opacity-50
-          [&_svg]:pointer-events-none [&_svg]:shrink-0
-          [&_svg:not([class*='size-'])]:size-4
+          in-data-[size=xs]:min-h-6 in-data-[size=xs]:gap-1.5
+          in-data-[size=xs]:rounded-sm in-data-[size=xs]:py-1
+          in-data-[size=xs]:pr-7 in-data-[size=xs]:text-xs data-disabled:pointer-events-none
+          data-disabled:opacity-50
+          [&_svg]:pointer-events-none
+          [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4
+          in-data-[size=xs]:[&_svg:not([class*='size-'])]:size-3
           *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2
         `,
         className,

@@ -11,18 +11,14 @@ export * from './helpers'
 
 const schema = type({
   lastOpenedResourceName: 'string | null',
-  pinnedResourcesNames: 'string[]',
   proxy: {
     enabled: 'boolean',
     url: 'string | null',
   },
-}).pipe(({ lastOpenedResourceName, pinnedResourcesNames, proxy }) => ({
+}).pipe(({ lastOpenedResourceName, proxy }) => ({
   lastOpenedResourceName: (lastOpenedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL.description
     ? CONNECTION_RESOURCE_ROOT_SYMBOL
     : lastOpenedResourceName) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
-  pinnedResourcesNames: pinnedResourcesNames.map(name =>
-    name === CONNECTION_RESOURCE_ROOT_SYMBOL.description ? CONNECTION_RESOURCE_ROOT_SYMBOL : name,
-  ),
   proxy,
 }))
 
@@ -32,7 +28,6 @@ export const getConnectionStore = memoize((id: string) =>
     key: `connection-store-${id}`,
     defaultValue: {
       lastOpenedResourceName: null,
-      pinnedResourcesNames: [],
       proxy: { enabled: !window.electron, url: null },
     },
     schema,

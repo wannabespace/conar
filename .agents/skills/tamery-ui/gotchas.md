@@ -9,6 +9,6 @@
 - `InputGroup` addon sizes direct-child svgs only — icons nested in wrappers need explicit `size-4`. Default `border-transparent bg-input` is invisible on light surfaces — add `border-border` per instance.
 - Router `Link` concatenates `activeProps.className` (no tw-merge) — use `data-[status=active]:` variants in one className. `sidebar-link.tsx` encodes this.
 - CSS transitions can't interpolate length↔percentage (`max-w-64 → max-w-full` snaps) — keep both endpoints in rem.
-- Selects: macOS overlay mode (`alignItemWithTrigger` true) + `min-w-(--anchor-width)`. Trigger-only icon makes popup hang slightly past the edge — accepted (icon-in-items and exact-width both rejected). Never fix-width a trigger narrower than its longest option.
+- Selects: macOS overlay mode (`alignItemWithTrigger` true) + `min-w-(--anchor-width)`. Trigger-only icon makes popup hang slightly past the edge — accepted (icon-in-items and exact-width both rejected). Never fix-width a trigger narrower than its longest option. Sizes (`xs`/`sm`/`default`): set `size` on `SelectTrigger` AND `SelectContent` (popup carries `data-size`; items follow via `in-data-[size=xs]:` variants — no context).
 - Hotkeys: always `e.preventDefault()` (⌘P opens print otherwise).
 - `getOS(navigator.userAgent)` for ⌘ vs Ctrl labels.

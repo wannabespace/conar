@@ -101,7 +101,6 @@ function CreateConnectionPage() {
         getConnectionStore(id).set(state => ({
           ...state,
           lastOpenedResourceName: resource,
-          pinnedResourcesNames: [resource],
         }))
       }
 
