@@ -160,7 +160,11 @@ function ConnectionResource({
   }
 
   return (
-    <CommandItem onSelect={onResourceSelect}>
+    <CommandItem
+      value={`${connection.name} - ${connectionResource.name}`}
+      keywords={connection.label ? [connection.label] : undefined}
+      onSelect={onResourceSelect}
+    >
       <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
       <span data-mask className="min-w-0 flex-1 truncate">
         {connection.name}
@@ -237,6 +241,7 @@ export function ActionsCenter() {
           <CommandGroup heading="Navigation">
             <Action
               icon={RiDashboardLine}
+              value="Home"
               keywords={['dashboard']}
               onSelect={run(() => router.navigate({ to: '/' }))}
             >
@@ -247,6 +252,7 @@ export function ActionsCenter() {
                 <Action
                   key={page.to}
                   icon={page.icon}
+                  value={`Go to ${page.label}`}
                   keywords={['go to', page.label]}
                   onSelect={run(() =>
                     router.navigate({
@@ -260,6 +266,7 @@ export function ActionsCenter() {
               ))}
             <Action
               icon={RiAddLine}
+              value="Add new connection"
               keywords={['new', 'create', 'database']}
               onSelect={run(() => router.navigate({ to: '/create' }))}
             >
@@ -269,6 +276,7 @@ export function ActionsCenter() {
           <CommandGroup heading="Appearance">
             <Action
               icon={resolvedTheme === 'dark' ? RiSunLine : RiMoonLine}
+              value={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} theme`}
               keywords={['theme', 'dark', 'light', 'mode']}
               onSelect={run(() => themeStore.set(resolvedTheme === 'dark' ? 'light' : 'dark'))}
             >
@@ -276,6 +284,7 @@ export function ActionsCenter() {
             </Action>
             <Action
               icon={RiComputerLine}
+              value="Use system theme"
               keywords={['theme', 'system', 'auto']}
               onSelect={run(() => themeStore.set('system'))}
             >
@@ -286,6 +295,7 @@ export function ActionsCenter() {
             {current && (
               <Action
                 icon={RiHistoryLine}
+                value="Toggle query logger"
                 keywords={['logs', 'queries', 'history']}
                 onSelect={run(() => {
                   const store = getConnectionResourceStore(current.connectionResource.id)
@@ -301,6 +311,7 @@ export function ActionsCenter() {
             {!!window.electron && (
               <Action
                 icon={RiDownloadLine}
+                value="Check for updates"
                 keywords={['update', 'version']}
                 onSelect={run(() => checkForUpdates())}
               >
@@ -309,6 +320,7 @@ export function ActionsCenter() {
             )}
             <Action
               icon={RiRefreshLine}
+              value="Reload window"
               keywords={['restart', 'refresh']}
               onSelect={() => window.location.reload()}
             >

@@ -281,7 +281,9 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
         "
       >
         <LoadingContent
-          className="pointer-events-none size-4 shrink-0 text-muted-foreground"
+          className="
+            pointer-events-none mr-1 size-4 shrink-0 text-muted-foreground
+          "
           loading={isPending}
         >
           <RiSearchLine className="size-4" />
@@ -305,8 +307,9 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
         {stage.step !== 'idle' && (
           <span
             className="
-              flex h-6 shrink-0 items-stretch overflow-hidden rounded-md
-              bg-background shadow-2xs ring-[0.5px] ring-foreground/4
+              flex h-5 shrink-0 items-stretch overflow-hidden rounded-md
+              bg-[color-mix(in_oklch,var(--input),var(--foreground)_4%)]
+              shadow-2xs ring-[0.5px] ring-foreground/4
             "
           >
             <span data-mask className="flex items-center px-1.5 text-xs font-medium">
