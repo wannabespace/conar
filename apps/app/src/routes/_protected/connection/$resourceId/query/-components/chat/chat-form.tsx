@@ -21,7 +21,7 @@ import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 
-import { TipTap } from '~/components/tiptap-lazy'
+import { TipTap } from '~/components/tiptap'
 import type { ConnectionResource } from '~/entities/connection/core'
 import { getFilesStore } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'

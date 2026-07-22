@@ -11,7 +11,6 @@ export function CellSwitch({
   className?: string
 }) {
   return (
-    // Label implicitly wraps the Switch control (valid association the linter can't detect)
     // oxlint-disable-next-line jsx-a11y/label-has-associated-control
     <label className={cn('flex items-center gap-2.5 text-sm', className)}>
       <code

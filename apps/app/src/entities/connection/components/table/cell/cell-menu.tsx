@@ -101,11 +101,7 @@ export function TableCellContextMenu({
                             }}
                           >
                             {filter.label}
-                            <span
-                              className="
-                              ml-auto pl-2 text-xs text-muted-foreground
-                            "
-                            >
+                            <span className="ml-auto pl-2 text-xs text-muted-foreground">
                               {filter.operator}
                             </span>
                           </ContextMenuItem>

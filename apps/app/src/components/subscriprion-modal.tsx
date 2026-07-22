@@ -32,18 +32,14 @@ export function SubscriptionModal() {
 
   return (
     <Dialog open={isSubscriptionDialogOpen} onOpenChange={setIsSubscriptionDialogOpen}>
-      <DialogContent
-        className={`
-        max-w-md bg-linear-to-b from-primary/5 via-background to-background
-      `}
-      >
+      <DialogContent className="max-w-md bg-linear-to-b from-primary/5 via-background to-background">
         <DialogHeader>
           <div className="flex items-center gap-2">
             <div
               className={`
-              flex size-7 shrink-0 items-center justify-center rounded-full
-              bg-primary/10
-            `}
+                flex size-7 shrink-0 items-center justify-center rounded-full
+                bg-primary/10
+              `}
             >
               <RiVipCrownLine className="size-4 text-primary" />
             </div>
@@ -54,11 +50,7 @@ export function SubscriptionModal() {
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
-          <div
-            className="
-            flex items-start gap-3 rounded-lg bg-muted/50 px-6 py-2
-          "
-          >
+          <div className="flex items-start gap-3 rounded-lg bg-muted/50 px-6 py-2">
             <div className="space-y-1">
               <p className="text-sm font-medium">Tamery is indie & user-supported</p>
               <p className="text-sm text-muted-foreground">
@@ -67,27 +59,16 @@ export function SubscriptionModal() {
             </div>
           </div>
         </div>
-        <DialogFooter
-          className={`
-          flex-col gap-2
-          sm:flex-row
-        `}
-        >
+        <DialogFooter className="flex-col gap-2 sm:flex-row">
           <Button
             variant="outline"
             onClick={() => setIsSubscriptionDialogOpen(false)}
-            className={`
-              w-full
-              sm:w-auto
-            `}
+            className="w-full sm:w-auto"
           >
             Maybe Later
           </Button>
           <Button
-            className={`
-              w-full
-              sm:w-auto
-            `}
+            className="w-full sm:w-auto"
             render={
               <a
                 href={accountUrl}

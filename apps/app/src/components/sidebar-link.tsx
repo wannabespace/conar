@@ -3,7 +3,6 @@ import type { LinkProps } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
 import type { ComponentProps } from 'react'
 
-// Finder-style sidebar row: neutral at rest, solid primary fill when active
 const baseClasses = `
   flex h-7 w-full cursor-default items-center gap-2 rounded-md px-2 text-sm
   text-foreground select-none
@@ -35,9 +34,6 @@ export function SidebarLink({
 }: LinkProps & Omit<ComponentProps<'a'>, 'children'>) {
   return (
     <Link
-      // data-status variants instead of activeProps: TanStack Link concatenates
-      // activeProps.className with the base, and the conflicting text/bg classes
-      // resolve by stylesheet order instead of intent
       className={cn(
         baseClasses,
         `

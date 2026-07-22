@@ -40,6 +40,7 @@ import { CellSwitch } from '~/components/cell-switch'
 import { Monaco } from '~/components/monaco'
 
 import { useCellContext } from './cell-context'
+import { estimateCompactHeight } from './utils'
 
 export function CellPopoverContent({
   isBig,
@@ -163,11 +164,7 @@ export function CellPopoverContent({
 
   // Editor grows with its content — a one-line email gets a compact field, a
   // JSON blob caps at the full height; isBig still expands beyond the cap
-  const compactText = isRaw ? rawValue : String(newValue ?? '')
-  const compactLines = compactText
-    .split('\n')
-    .reduce((acc, line) => acc + Math.max(1, Math.ceil(line.length / 48)), 0)
-  const compactHeight = Math.min(160, Math.max(56, compactLines * 20 + 36))
+  const compactHeight = estimateCompactHeight(isRaw ? rawValue : String(newValue ?? ''))
 
   const queue = async () => {
     if (!onQueueValue) return
@@ -205,7 +202,6 @@ export function CellPopoverContent({
 
     monacoRef.current.focus()
 
-    // Cursor at the end instead of Monaco's default stray word selection
     const model = monacoRef.current.getModel()
     if (model) {
       const lastLine = model.getLineCount()
@@ -252,7 +248,7 @@ export function CellPopoverContent({
         />
       )}
       <div className="flex items-center justify-between gap-2 border-t px-1.5 py-1.5">
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-1.5">
           {isRaw && (
             <Tooltip>
               <TooltipTrigger

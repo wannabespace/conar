@@ -132,11 +132,11 @@ export function TableCell({
         : 'idle'
 
   const cellClassName = cn(
-    isPopoverOpen && 'bg-primary/8 ring-primary/60',
-    (isForeignOpen || isReferencesOpen) && 'bg-accent/50 ring-border',
-    status === 'error' && 'bg-destructive/10 ring-destructive/40',
+    isPopoverOpen && 'bg-primary/8 inset-ring-primary/60',
+    (isForeignOpen || isReferencesOpen) && 'bg-accent/50 inset-ring-border',
+    status === 'error' && 'bg-destructive/10 inset-ring-destructive/40',
     status === 'pending' && 'animate-pulse bg-primary/8',
-    status === 'draft' && 'bg-primary/12 italic ring-primary/30',
+    status === 'draft' && 'bg-primary/12 italic inset-ring-primary/30',
     (column.foreign || (column.references?.length ?? 0) > 0) && 'pr-1!',
   )
 

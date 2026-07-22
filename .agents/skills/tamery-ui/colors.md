@@ -27,8 +27,8 @@ Selection = solid `bg-primary text-primary-foreground` (Finder style); idle side
 
 ## Cell highlights (data table)
 
-Blue/neutral family only (yellow and faint-neutral both rejected). Rings use the cell's built-in `ring-1` slot, never `ring-2`.
+Blue/neutral family only (yellow and faint-neutral both rejected). Strokes use the cell's built-in **`inset-ring`** slot (inset so adjacent highlighted cells never overlap strokes — outer rings/shadows bleed onto neighbors), never `ring-2`.
 
-- Draft: `bg-primary/12 ring-primary/30 italic` (italic = unsaved/preview cue, same as preview tabs)
-- Editing: `bg-primary/8 ring-primary/60`
-- Error: `bg-destructive/10 ring-destructive/40`
+- Draft: `bg-primary/12 inset-ring-primary/30 italic` (italic = unsaved/preview cue, same as preview tabs)
+- Editing: `bg-primary/8 inset-ring-primary/60`
+- Error: `bg-destructive/10 inset-ring-destructive/40`

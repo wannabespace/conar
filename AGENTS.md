@@ -143,6 +143,8 @@ Companion skills for deeper design work: `apple-design`, `emil-design-eng`, `des
 
 Per-file hygiene for touched UI files: `pnpm oxlint --fix <paths>` and `pnpm oxfmt <paths>` (lint enforces Tailwind class order and canonical class names). Never hand-edit `apps/app/src/routeTree.gen.ts` — the Vite plugin regenerates it.
 
+**No code comments unless truly needed** (repo-wide). Write code that explains itself — clear names, small extracted functions, named constants. A comment is justified only for a non-obvious constraint the code cannot express (a workaround for an upstream bug, a deliberate trade-off, math whose intent isn't recoverable from the code). Never comment what the next line does, restate the obvious, or narrate a change.
+
 ## oRPC router pattern
 
 Adding a new procedure:

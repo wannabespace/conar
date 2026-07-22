@@ -99,3 +99,25 @@ export interface ColumnHandlers {
   onResize?: (newWidth: number) => void
   onRename?: () => void
 }
+
+// Compact cell-editor sizing: estimate rendered lines (long lines wrap),
+// convert to pixels, clamp between a one-liner field and the pre-expand cap
+const COMPACT_CHARS_PER_LINE = 48
+const COMPACT_LINE_HEIGHT = 20
+const COMPACT_VERTICAL_CHROME = 36 // monaco top/bottom padding + breathing room
+const COMPACT_MIN_HEIGHT = 56
+const COMPACT_MAX_HEIGHT = 160
+
+export function estimateCompactHeight(text: string) {
+  const lines = text
+    .split('\n')
+    .reduce(
+      (total, line) => total + Math.max(1, Math.ceil(line.length / COMPACT_CHARS_PER_LINE)),
+      0,
+    )
+
+  return Math.min(
+    COMPACT_MAX_HEIGHT,
+    Math.max(COMPACT_MIN_HEIGHT, lines * COMPACT_LINE_HEIGHT + COMPACT_VERTICAL_CHROME),
+  )
+}

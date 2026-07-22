@@ -27,8 +27,6 @@ export function TitleBar({ className, children, ...props }: React.ComponentProps
         'flex h-[calc(40px+1px)] shrink-0 items-center border-b border-transparent',
         isElectron && '[-webkit-app-region:drag]',
         className,
-        // After the consumer className so its px-* can't merge these away —
-        // this padding reserves the traffic lights / window controls area
         isElectron && !isFullscreen && (isMac ? 'pl-20' : 'pr-34'),
       )}
       {...props}

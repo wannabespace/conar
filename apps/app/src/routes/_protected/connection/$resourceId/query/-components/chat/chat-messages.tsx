@@ -34,7 +34,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
-import { Markdown } from '~/components/markdown-lazy'
+import { Markdown } from '~/components/markdown'
 import { getEditorQueriesComputed } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 

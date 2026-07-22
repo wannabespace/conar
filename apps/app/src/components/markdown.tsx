@@ -85,11 +85,7 @@ function Pre({ children }: { children?: ReactNode }) {
     <div
       className={cn(
         generating && 'animate-in duration-200 fade-in',
-        `
-      typography-disabled relative my-4
-      first:mt-0
-      last:mb-0
-    `,
+        'typography-disabled relative my-4 first:mt-0 last:mb-0',
       )}
     >
       <SingleAccordion open={opened} onOpenChange={setOpened}>
@@ -202,14 +198,7 @@ export function Markdown({
   return (
     <MarkdownContext.Provider value={contextValue}>
       <div
-        className={cn(
-          'typography',
-          generating &&
-            `
-          animate-in duration-200 fade-in
-        `,
-          className,
-        )}
+        className={cn('typography', generating && 'animate-in duration-200 fade-in', className)}
         {...props}
       >
         {blocks.map((block, index) => (
