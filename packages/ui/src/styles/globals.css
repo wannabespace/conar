@@ -134,10 +134,6 @@
   --chart-5: oklch(0.5788 0.2316 259.64);
 }
 
-/* Native macOS chrome dimming: while the window is inactive the desktop app
-   toggles `window-blurred` on <html>, and accent fills fall back to neutral
-   grays — Finder-style gray sidebar selection, gray active states, gray
-   primary buttons. Colors snap without transition, matching AppKit. */
 .electron.window-blurred {
   --primary: oklch(0.87 0 0);
   --primary-foreground: oklch(0.3 0 0);
@@ -188,8 +184,6 @@
   }
 
   body {
-    /* overscroll-none: the window itself must not rubber-band like a web
-       page — inner scrollers keep their own native bounce */
     @apply font-sans antialiased bg-body text-foreground overscroll-none;
   }
 
