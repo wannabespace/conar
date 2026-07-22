@@ -30,14 +30,12 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
   beforeLoad: async ({ params }) => {
     const { connectionsCollection, connectionsResourcesCollection } = getCollections()
     const connectionResource = connectionsResourcesCollection.get(params.resourceId)
+    const connection = connectionResource
+      ? connectionsCollection.get(connectionResource.connectionId)
+      : undefined
 
-    if (!connectionResource) {
-      throw redirect({ to: '/' })
-    }
-
-    const connection = connectionsCollection.get(connectionResource.connectionId)
-
-    if (!connection) {
+    if (!connectionResource || !connection) {
+      lastOpenedResourcesStorageValue.set(prev => prev.filter(id => id !== params.resourceId))
       throw redirect({ to: '/' })
     }
 

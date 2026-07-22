@@ -8,6 +8,7 @@ import { cleanCollections, getCollections } from '~/entities/collections'
 import { EventsProvider } from '~/events'
 import { enterAppAnimation } from '~/global-hooks'
 import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
+import { useLastOpenedResourcesSync } from '~/hooks/use-last-opened-resources-sync'
 import { subscriptionQueryClient } from '~/main'
 
 import { ActionsCenter } from './-components/actions-center'
@@ -30,6 +31,7 @@ export const Route = createFileRoute('/_protected')({
 
 function ProtectedLayout() {
   useConnectionStringsSync()
+  useLastOpenedResourcesSync()
 
   useEffect(() => {
     return () => {

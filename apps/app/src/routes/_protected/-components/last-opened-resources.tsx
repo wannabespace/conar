@@ -3,7 +3,6 @@ import { Button } from '@tamery/ui/components/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Link } from '@tanstack/react-router'
-import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { useCollections } from '~/entities/collections'
@@ -97,20 +96,6 @@ export function LastOpenedResources() {
         lastOpenedResources.indexOf(a.connectionResource.id) -
         lastOpenedResources.indexOf(b.connectionResource.id),
     )
-
-  // Deleted or recreated resources leave stale ids behind; prune them so they
-  // don't occupy the recents slots forever. Guarded so an empty first frame
-  // from the live query can't wipe valid entries.
-  useEffect(() => {
-    if (data.length === 0) return
-
-    const known = new Set(data.map(({ connectionResource }) => connectionResource.id))
-    const valid = lastOpenedResources.filter(id => known.has(id))
-
-    if (valid.length !== lastOpenedResources.length) {
-      lastOpenedResourcesStorageValue.set(valid)
-    }
-  }, [data, lastOpenedResources])
 
   if (toShow.length === 0) {
     return null

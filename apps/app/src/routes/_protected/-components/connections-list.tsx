@@ -37,7 +37,7 @@ import { Spinner } from '@tamery/ui/components/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { copy } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
-import { eq, useLiveQuery } from '@tanstack/react-db'
+import { caseWhen, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { type } from 'arktype'
@@ -509,48 +509,44 @@ const groupValue = createWebStorageValue({
 export function ConnectionsList() {
   const { connectionsCollection } = useCollections()
   const sort = useSubscription(sortValue)
+  const grouping = useSubscription(groupValue)
   const { data } = useLiveQuery(
     q => {
       let query = q.from({ c: connectionsCollection })
 
-      if (sort === 'date-desc') {
-        query = query.orderBy(({ c }) => c.createdAt, 'desc')
-      } else if (sort === 'date-asc') {
-        query = query.orderBy(({ c }) => c.createdAt, 'asc')
-      } else if (sort === 'name-asc') {
-        query = query.orderBy(({ c }) => c.name, 'asc')
-      } else {
-        query = query.orderBy(({ c }) => c.name, 'desc')
+      if (grouping === 'label') {
+        query = query.orderBy(({ c }) => caseWhen(eq(c.label, ''), null, c.label), {
+          nulls: 'last',
+        })
+      } else if (grouping === 'type') {
+        query = query.orderBy(({ c }) => c.type)
       }
 
-      return query
+      const [sortField, sortDirection] = sort.split('-') as ['date' | 'name', 'asc' | 'desc']
+      return query.orderBy(({ c }) => (sortField === 'date' ? c.createdAt : c.name), sortDirection)
     },
-    [connectionsCollection, sort],
+    [connectionsCollection, sort, grouping],
   )
 
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
-  const grouping = useSubscription(groupValue)
 
-  // Connections grouped into sections (by label or database type, alphabetical,
-  // ungrouped last) — sections instead of filter tabs, so every group is
-  // visible at once
-  const groupKey = (connection: Connection): string | null => {
+  const groupTitle = (connection: Connection): string | null => {
     if (grouping === 'label') return connection.label || null
     if (grouping === 'type') return connectionLabels[connection.type]
     return null
   }
-  const keys = [
-    ...new Set(data.flatMap(connection => (groupKey(connection) ? [groupKey(connection)!] : []))),
-  ].toSorted()
-  const groups: { label: string | null; connections: Connection[] }[] = [
-    ...keys.map(key => ({
-      label: key as string | null,
-      connections: data.filter(connection => groupKey(connection) === key),
-    })),
-    { label: null, connections: data.filter(connection => groupKey(connection) === null) },
-  ].filter(group => group.connections.length > 0)
-  const showHeaders = keys.length > 0
+  const groups: { label: string | null; connections: Connection[] }[] = []
+  for (const connection of data) {
+    const label = groupTitle(connection)
+    const previous = groups.at(-1)
+    if (previous && previous.label === label) {
+      previous.connections.push(connection)
+    } else {
+      groups.push({ label, connections: [connection] })
+    }
+  }
+  const showHeaders = groups.some(group => group.label !== null)
 
   const showLastOpened = lastOpenedResources.length > 0 && data.length > 1
 
