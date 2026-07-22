@@ -162,8 +162,6 @@ export function CellPopoverContent({
 
   const [isRaw, setIsRaw] = useState(!uiRender)
 
-  // Editor grows with its content — a one-line email gets a compact field, a
-  // JSON blob caps at the full height; isBig still expands beyond the cap
   const compactHeight = estimateCompactHeight(isRaw ? rawValue : String(newValue ?? ''))
 
   const queue = async () => {
@@ -316,13 +314,7 @@ export function CellPopoverContent({
           {canEdit && (
             <>
               {!!column?.isNullable && (
-                <Button
-                  size="xs"
-                  variant="ghost"
-                  className="text-muted-foreground"
-                  disabled={value === null}
-                  onClick={onSetNull}
-                >
+                <Button size="xs" variant="secondary" disabled={value === null} onClick={onSetNull}>
                   Set <span className="font-mono">null</span>
                 </Button>
               )}
