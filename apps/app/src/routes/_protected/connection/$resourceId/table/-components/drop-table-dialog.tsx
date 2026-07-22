@@ -116,7 +116,11 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
           <div className="space-y-2">
             <Label htmlFor="confirmation">
               <span>
-                Type <span className="font-semibold">{table}</span> to confirm
+                Type{' '}
+                <span data-mask className="font-semibold">
+                  {table}
+                </span>{' '}
+                to confirm
               </span>
             </Label>
             <Input

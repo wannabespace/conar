@@ -275,7 +275,7 @@ function Visualizer({
             }
           }}
         >
-          <SelectTrigger className="max-w-56 min-w-45">
+          <SelectTrigger data-mask className="max-w-56 min-w-45">
             <div
               className="
               flex flex-1 items-center gap-2 overflow-hidden text-left
@@ -287,7 +287,7 @@ function Visualizer({
               </span>
             </div>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent data-mask>
             {schemas.map(schema => (
               <SelectItem key={schema} value={schema}>
                 {schema}

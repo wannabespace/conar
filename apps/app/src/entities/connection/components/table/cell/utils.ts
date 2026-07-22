@@ -100,8 +100,7 @@ export interface ColumnHandlers {
   onRename?: () => void
 }
 
-// Compact cell-editor sizing: estimate rendered lines (long lines wrap),
-// convert to pixels, clamp between a one-liner field and the pre-expand cap
+// Compact cell-editor sizing: estimate rendered lines (long lines wrap)
 const COMPACT_CHARS_PER_LINE = 48
 const COMPACT_LINE_HEIGHT = 20
 const COMPACT_VERTICAL_CHROME = 36 // monaco top/bottom padding + breathing room

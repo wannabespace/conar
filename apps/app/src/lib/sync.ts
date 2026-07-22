@@ -1,4 +1,5 @@
 import { GITHUB_REPO_NAME } from '@tamery/shared/constants'
+import { sleep } from '@tamery/shared/utils/helpers'
 import {
   BrowserCollectionCoordinator,
   createBrowserWASQLitePersistence,
@@ -96,17 +97,6 @@ export type SyncEventsFn<T> = (params: {
 
 const RETRY_MIN_DELAY = 1000
 const RETRY_MAX_DELAY = 30_000
-
-function sleep(ms: number, signal: AbortSignal) {
-  return new Promise<void>(resolve => {
-    const timer = setTimeout(resolve, ms)
-    signal.addEventListener('abort', () => {
-      clearTimeout(timer)
-      // oxlint-disable-next-line promise/no-multiple-resolved -- the timer is cancelled above
-      resolve()
-    })
-  })
-}
 
 export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
   id: string

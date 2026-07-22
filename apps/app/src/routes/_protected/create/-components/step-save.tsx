@@ -78,6 +78,7 @@ export function StepSave({
             <div className="flex w-full items-end gap-2">
               <Input
                 id={nameId}
+                data-mask
                 className="field-sizing-content"
                 placeholder="My connection"
                 autoFocus
@@ -104,6 +105,7 @@ export function StepSave({
             <div className="flex flex-col gap-2">
               <Input
                 id={labelId}
+                data-mask
                 placeholder="Development, Production, Staging, etc."
                 value={label ?? ''}
                 onChange={e => setLabel(e.target.value)}

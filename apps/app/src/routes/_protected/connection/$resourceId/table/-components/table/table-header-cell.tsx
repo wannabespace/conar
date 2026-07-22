@@ -53,7 +53,9 @@ export function PrimaryKeyTooltipIcon({ primaryKey }: { primaryKey: string }) {
           <RiKey2Line className="size-3 text-primary" />
           Primary key
         </div>
-        <div className="text-xs opacity-70">{primaryKey}</div>
+        <div data-mask className="text-xs opacity-70">
+          {primaryKey}
+        </div>
       </TooltipContent>
     </Tooltip>
   )
@@ -86,7 +88,9 @@ export function UniqueTooltipIcon({ unique }: { unique: string }) {
           <RiFingerprintLine className="size-3 opacity-70" />
           Unique
         </div>
-        <div className="text-xs opacity-70">{unique}</div>
+        <div data-mask className="text-xs opacity-70">
+          {unique}
+        </div>
       </TooltipContent>
     </Tooltip>
   )
@@ -119,7 +123,9 @@ export function DefaultValueTooltipIcon({ defaultValue }: { defaultValue: string
           <RiCharacterRecognitionLine className="size-3 opacity-70" />
           Default
         </div>
-        <div className="max-w-sm font-mono text-xs break-all opacity-70">{defaultValue}</div>
+        <div data-mask className="max-w-sm font-mono text-xs break-all opacity-70">
+          {defaultValue}
+        </div>
       </TooltipContent>
     </Tooltip>
   )
@@ -144,7 +150,7 @@ function ForeignTooltipIcon({
           <RiLinksLine className="size-3 opacity-70" />
           Foreign key
         </div>
-        <div className="text-xs opacity-70">
+        <div data-mask className="text-xs opacity-70">
           {name} ({table}.{column})
         </div>
       </TooltipContent>
@@ -159,6 +165,7 @@ function EnumTooltipIcon({ values, children }: { values: string[]; children: Rea
       <TooltipContent>
         <div className="mb-1 text-xs opacity-70">Available values:</div>
         <div
+          data-mask
           className="
           flex max-w-sm flex-wrap gap-1 font-mono text-xs font-medium
         "

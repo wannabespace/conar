@@ -30,8 +30,6 @@ async function decryptConnectionString(encryptedConnectionString: string) {
   return decryptWithKey(await encryptionKey.get(), encryptedConnectionString)
 }
 
-// Must stay a type alias: the collection's `utils` generic requires an implicit index signature,
-// which interfaces do not get.
 // oxlint-disable-next-line typescript/consistent-type-definitions
 type ConnectionStringsUtils = {
   decrypt: (connectionId: string) => Promise<string>

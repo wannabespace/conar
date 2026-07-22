@@ -111,16 +111,7 @@ export function ActionsDelete({ table, schema }: { table: string; schema: string
             exit={{ opacity: 0, width: 0 }}
             transition={{ duration: 0.1 }}
           >
-            <Button
-              variant="destructive"
-              // The dock has no shared background — translucent destructive
-              // tint disappears over table data, so go solid red
-              className="
-                bg-destructive text-white shadow-xs
-                hover:bg-destructive/85
-              "
-              onClick={() => setIsOpened(true)}
-            >
+            <Button variant="destructive" onClick={() => setIsOpened(true)}>
               <RiDeleteBin7Line />
               <span>
                 Delete (

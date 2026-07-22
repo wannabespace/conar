@@ -44,7 +44,9 @@ export function FilterValueSelector({
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-1">
               <span className="text-muted-foreground">Filtering</span>
-              <span className="font-medium text-primary">{column}</span>
+              <span data-mask className="font-medium text-primary">
+                {column}
+              </span>
             </div>
             <Separator />
             <div className="flex items-center gap-1">

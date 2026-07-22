@@ -32,7 +32,7 @@ function Skeleton() {
 
 export function DefinitionsGrid({ loading, children }: { loading: boolean; children: ReactNode }) {
   return (
-    <div className="mt-2 grid grid-cols-1 gap-4">
+    <div data-mask className="mt-2 grid grid-cols-1 gap-4">
       {loading ? (
         <Skeleton />
       ) : (

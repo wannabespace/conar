@@ -92,8 +92,8 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
         <div className="space-y-4">
           <Alert>
             <RiInformationLine className="size-5 text-blue-500" />
-            <AlertTitle>Rename column "{column}"</AlertTitle>
-            <AlertDescription>
+            <AlertTitle data-mask>Rename column "{column}"</AlertTitle>
+            <AlertDescription data-mask>
               This will rename the column from "{column}" to the new name you specify.
             </AlertDescription>
           </Alert>

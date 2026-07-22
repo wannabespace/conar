@@ -135,12 +135,12 @@ function ConnectionResourcesSelect({
       onValueChange={value => onSelectedResourceNameChange(value ?? null)}
       disabled={disabled}
     >
-      <SelectTrigger size="xs" className="pointer-events-auto">
+      <SelectTrigger data-mask size="xs" className="pointer-events-auto">
         <SelectValue>
           {selectedResourceName === null ? null : resourceLabel(selectedResourceName)}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent size="xs">
+      <SelectContent data-mask size="xs">
         {resources.map(resource => (
           <SelectItem key={resourceValue(resource)} value={resourceValue(resource)}>
             {resourceLabel(resource)}
@@ -238,11 +238,7 @@ function ConnectionCard({
     toast.success('Password cleared from this device')
   }
 
-  // Persisted names alone are enough to render the combobox — gating on the
-  // live probe made multi-resource connections flash as a single string first
   const isResourcesShown = resources.length > 1
-  // Persisted resources render immediately; only show loading affordances when
-  // there is nothing stored yet (first probe of a fresh connection)
   const isLoadingVisible = isFetching && connectionResourcesNames.length === 0
 
   return (
@@ -285,16 +281,17 @@ function ConnectionCard({
           )}
           <div
             className={cn(
-              `
-          pointer-events-none relative z-10 flex min-w-0 flex-1 items-center
-          gap-3
-        `,
-              isLoadingVisible && `animate-pulse`,
+              'pointer-events-none relative z-10 flex min-w-0 flex-1 items-center gap-3',
+              isLoadingVisible && 'animate-pulse',
             )}
           >
             <ConnectionIconWithVersion connection={connection} />
             <div className="flex min-w-0 items-center gap-2">
-              <span title={connection.name} className="truncate text-sm leading-none font-medium">
+              <span
+                data-mask
+                title={connection.name}
+                className="truncate text-sm leading-none font-medium"
+              >
                 {connection.name}
               </span>
               {isLoadingVisible && canSend && <Spinner className="size-3 shrink-0" />}
@@ -324,7 +321,10 @@ function ConnectionCard({
                     }
                   />
                   <TooltipContent className="pointer-events-auto">
-                    Failed to get resources: <p className="text-xs text-warning">{error.message}</p>
+                    Failed to get resources:{' '}
+                    <p data-mask className="text-xs text-warning">
+                      {error.message}
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -343,7 +343,9 @@ function ConnectionCard({
               "
             >
               {connectionString?.displayUrl ? (
-                <span className="truncate">{connectionString?.displayUrl}</span>
+                <span data-mask className="truncate">
+                  {connectionString?.displayUrl}
+                </span>
               ) : (
                 <Skeleton className="h-3 w-40" />
               )}
@@ -413,10 +415,7 @@ function GhostRow({
   return (
     <div
       className={cn(
-        `
-      flex h-11 items-center gap-3 border-b border-border/40 px-3
-      last:border-b-0
-    `,
+        'flex h-11 items-center gap-3 border-b border-border/40 px-3 last:border-b-0',
         className,
       )}
     >

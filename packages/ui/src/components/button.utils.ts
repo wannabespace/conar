@@ -40,14 +40,14 @@ export const buttonVariants = cva(
           aria-expanded:bg-foreground/5 aria-expanded:text-foreground
         `,
         destructive: `
-          bg-destructive/10 text-destructive
-          hover:bg-destructive/20
+          bg-destructive text-white shadow-xs
+          hover:bg-destructive/85
           focus-visible:border-destructive/40
           focus-visible:ring-destructive/30
         `,
         warning: `
-          bg-warning/10 text-warning
-          hover:bg-warning/20
+          bg-warning text-white shadow-xs
+          hover:bg-warning/85
           focus-visible:border-warning/40 focus-visible:ring-warning/20
         `,
         link: `

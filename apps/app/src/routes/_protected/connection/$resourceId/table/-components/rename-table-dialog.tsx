@@ -92,8 +92,8 @@ export function RenameTableDialog({ ref }: RenameTableDialogProps) {
         <div className="space-y-4">
           <Alert>
             <RiInformationLine className="size-5" />
-            <AlertTitle>Rename table "{table}"</AlertTitle>
-            <AlertDescription>
+            <AlertTitle data-mask>Rename table "{table}"</AlertTitle>
+            <AlertDescription data-mask>
               This will rename the table from "{table}" to the new name you specify. This action
               cannot be undone.
             </AlertDescription>

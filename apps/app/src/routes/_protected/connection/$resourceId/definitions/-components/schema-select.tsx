@@ -26,7 +26,7 @@ export function SchemaSelect({
         }
       }}
     >
-      <SelectTrigger className="max-w-56 min-w-45">
+      <SelectTrigger data-mask className="max-w-56 min-w-45">
         <div className="flex flex-1 items-center gap-2 overflow-hidden">
           <span className="shrink-0 text-muted-foreground">schema</span>
           <span className="truncate">
@@ -34,7 +34,7 @@ export function SchemaSelect({
           </span>
         </div>
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent data-mask>
         {schemas.map(schema => (
           <SelectItem key={schema} value={schema}>
             {schema}

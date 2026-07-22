@@ -196,7 +196,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                               />
                             }
                           >
-                            <span className="truncate">
+                            <span data-mask className="truncate">
                               {chat.title || (
                                 <span
                                   className={`

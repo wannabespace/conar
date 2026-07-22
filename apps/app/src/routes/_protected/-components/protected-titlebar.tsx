@@ -69,7 +69,9 @@ function ConnectionSubMenu({
         }}
       >
         <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
-        <span className="truncate">{connection.name}</span>
+        <span data-mask className="truncate">
+          {connection.name}
+        </span>
         {connection.color && (
           <span
             aria-hidden
@@ -84,7 +86,9 @@ function ConnectionSubMenu({
             key={resource.id}
             render={<ConnectionResourceLink resourceId={resource.id} />}
           >
-            <span className="truncate">{resource.name || CONNECTION_RESOURCE_ROOT_LABEL}</span>
+            <span data-mask className="truncate">
+              {resource.name || CONNECTION_RESOURCE_ROOT_LABEL}
+            </span>
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
@@ -123,7 +127,9 @@ function ConnectionsDropdown({
                 style={{ backgroundColor: current.color }}
               />
             )}
-            <span className="truncate font-medium">{current.name}</span>
+            <span data-mask className="truncate font-medium">
+              {current.name}
+            </span>
           </>
         ) : (
           <span className="truncate font-medium">Connections</span>
@@ -169,7 +175,7 @@ function ResourcesDropdown({
       <DropdownMenuTrigger
         render={<Button variant="ghost" size="sm" className="max-w-64 gap-1.5 px-2" />}
       >
-        <span className="truncate text-muted-foreground">
+        <span data-mask className="truncate text-muted-foreground">
           {current.name || CONNECTION_RESOURCE_ROOT_LABEL}
         </span>
         <RiExpandUpDownLine className="size-3 shrink-0 text-muted-foreground/70" />
@@ -180,7 +186,9 @@ function ResourcesDropdown({
             key={resource.id}
             render={<ConnectionResourceLink resourceId={resource.id} />}
           >
-            <span className="truncate">{resource.name || CONNECTION_RESOURCE_ROOT_LABEL}</span>
+            <span data-mask className="truncate">
+              {resource.name || CONNECTION_RESOURCE_ROOT_LABEL}
+            </span>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

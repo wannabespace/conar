@@ -78,7 +78,9 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                   <TooltipContent side="left">Append to bottom of runner</TooltipContent>
                 </Tooltip>
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <div className="truncate text-sm font-medium">{query.name}</div>
+                  <div data-mask className="truncate text-sm font-medium">
+                    {query.name}
+                  </div>
                   <div
                     data-mask
                     className={`

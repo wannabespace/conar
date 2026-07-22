@@ -49,7 +49,11 @@ export function RemoveQueryDialog({ ref }: RemoveQueryDialogProps) {
         <AlertDialogHeader>
           <AlertDialogTitle>Remove Query</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to remove <span className="font-semibold">{query?.name}</span>?
+            Are you sure you want to remove{' '}
+            <span data-mask className="font-semibold">
+              {query?.name}
+            </span>
+            ?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

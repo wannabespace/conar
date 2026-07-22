@@ -50,7 +50,7 @@ function AlertDialogContent({
           `
             group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid w-full
             -translate-1/2 gap-6 rounded-[min(var(--radius-4xl),24px)]
-            bg-popover p-6 text-popover-foreground shadow-xl ring-1
+            bg-background p-6 text-foreground shadow-xl ring-1
             ring-foreground/4 duration-100 outline-none
             data-[size=default]:max-w-xs
             data-[size=sm]:max-w-xs

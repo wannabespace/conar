@@ -77,7 +77,7 @@ export function CellPopoverContent({
       const selectedValues = Array.isArray(newValue) ? newValue : []
       const comboboxItems = column.availableValues.map(v => ({ value: v, label: v }))
       return (
-        <div className="p-2">
+        <div data-mask className="p-2">
           <Combobox
             value={comboboxItems.filter(item => selectedValues.includes(item.value))}
             items={comboboxItems}
@@ -132,7 +132,7 @@ export function CellPopoverContent({
 
     if (column.uiType === 'select') {
       return (
-        <div className="p-2">
+        <div data-mask className="p-2">
           <Select
             value={!newValue || newValue === 'null' ? null : newValue}
             disabled={!canEdit}

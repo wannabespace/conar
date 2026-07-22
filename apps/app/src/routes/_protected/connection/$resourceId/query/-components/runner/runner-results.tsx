@@ -74,7 +74,7 @@ export function RunnerResults() {
                   >
                     Result {results.length > 1 ? index + 1 : ''}
                   </TooltipTrigger>
-                  <TooltipContent sideOffset={8} className="w-lg p-0 pl-2">
+                  <TooltipContent data-mask sideOffset={8} className="w-lg p-0 pl-2">
                     <Monaco
                       value={formatSql(query, connection.type)}
                       language="sql"
@@ -108,6 +108,7 @@ export function RunnerResults() {
               >
                 Error executing query
                 <div
+                  data-mask
                   className={`
                       mb-2 max-h-1/2 max-w-full overflow-auto rounded-sm
                       bg-destructive/10 px-2 py-1 font-mono text-xs text-balance

@@ -273,7 +273,7 @@ export function QueryLogger({
   }, [scrollRef, virtualItems, totalSize])
 
   return (
-    <div className={cn('flex h-full flex-col justify-between', className)}>
+    <div data-mask className={cn('flex h-full flex-col justify-between', className)}>
       <div className="flex items-center justify-between px-4 py-2">
         <div className="flex items-center gap-2">
           <CardTitle>Query Logger</CardTitle>
@@ -281,13 +281,7 @@ export function QueryLogger({
             <Button
               size="xs"
               variant="outline"
-              className={cn(
-                'text-success!',
-                statusGroup === 'success' &&
-                  `
-                bg-accent!
-              `,
-              )}
+              className={cn('text-success!', statusGroup === 'success' && 'bg-accent!')}
               onClick={() => toggleGroup('success')}
             >
               <RiCheckboxCircleLine className="size-3" />
@@ -297,13 +291,7 @@ export function QueryLogger({
             <Button
               size="xs"
               variant="outline"
-              className={cn(
-                'text-destructive!',
-                statusGroup === 'error' &&
-                  `
-                bg-accent!
-              `,
-              )}
+              className={cn('text-destructive!', statusGroup === 'error' && 'bg-accent!')}
               onClick={() => toggleGroup('error')}
             >
               <RiCloseCircleLine className="size-3" />
@@ -313,13 +301,7 @@ export function QueryLogger({
             <Button
               size="xs"
               variant="outline"
-              className={cn(
-                'text-warning!',
-                statusGroup === 'pending' &&
-                  `
-                bg-accent!
-              `,
-              )}
+              className={cn('text-warning!', statusGroup === 'pending' && 'bg-accent!')}
               onClick={() => toggleGroup('pending')}
             >
               <RiTimeLine className="size-3" />

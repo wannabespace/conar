@@ -35,7 +35,7 @@ function LastOpenedResource({
         {...params}
       >
         <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
-        <span className="truncate">
+        <span data-mask className="truncate">
           {connection.name}
           <span className="text-muted-foreground"> / {connectionResource.name}</span>
         </span>

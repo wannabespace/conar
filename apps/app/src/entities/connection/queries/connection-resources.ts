@@ -79,8 +79,6 @@ export function connectionResourcesQueryOptions(connection: Connection) {
 
       return resources
     },
-    // The persisted collection already has the resources — a fresh probe per
-    // dashboard visit is noise; refresh at most every 5 minutes.
     staleTime: 5 * 60 * 1000,
     throwOnError: false,
   })

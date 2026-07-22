@@ -1,5 +1,12 @@
-export function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+export function sleep(ms: number, signal?: AbortSignal) {
+  return new Promise<void>(resolve => {
+    const timer = setTimeout(resolve, ms)
+    signal?.addEventListener('abort', () => {
+      clearTimeout(timer)
+      // oxlint-disable-next-line promise/no-multiple-resolved
+      resolve()
+    })
+  })
 }
 
 export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
@@ -10,7 +17,6 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
 
   const debounced = (...args: Parameters<F>) => {
     clearTimeout(timeout)
-    // oxlint-disable-next-line e18e/prefer-timer-args
     timeout = setTimeout(() => func(...args), waitFor)
   }
 

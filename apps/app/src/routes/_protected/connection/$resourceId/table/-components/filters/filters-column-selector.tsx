@@ -24,7 +24,7 @@ export function FiltersColumnSelector({
   return (
     <Command>
       <CommandInput ref={ref} placeholder="Select column to filter..." />
-      <CommandList className="h-fit max-h-[45vh]">
+      <CommandList data-mask className="h-fit max-h-[45vh]">
         <CommandEmpty>No columns found.</CommandEmpty>
         <CommandGroup>
           {columns.map(column => (

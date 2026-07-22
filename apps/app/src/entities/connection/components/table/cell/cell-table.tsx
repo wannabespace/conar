@@ -120,11 +120,7 @@ export function TableCellTable({
             Open table
           </Button>
         </div>
-        <Table
-          className={`
-          h-[calc(100%-(--spacing(8)))] rounded-b-lg bg-background
-        `}
-        >
+        <Table className="h-[calc(100%-(--spacing(8)))] rounded-b-lg bg-background">
           <TableHeader />
           {isRowsPending ? (
             <TableBodySkeleton />
