@@ -3,10 +3,13 @@
   "oxc.fmt.configPath": "oxfmt.config.ts",
   "oxc.typeAware": true,
   "oxc.unusedDisableDirectives": "deny",
+  "oxc.enable": true,
+  "prettier.enable": false,
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "file",
   "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "explicit",
     "source.organizeImports": "never"
   }
 }
