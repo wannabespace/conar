@@ -48,7 +48,8 @@ export function RunnerResults() {
       <Tabs defaultValue="table-0" className="size-full gap-0">
         <div
           className="
-          h-8 w-full min-w-0 shrink-0 scroll-fade-x overflow-x-auto
+          no-scrollbar h-8 w-full min-w-0 shrink-0 scroll-fade-x
+          overflow-x-auto
         "
         >
           <TabsList className="w-max max-w-none rounded-none bg-muted/50">

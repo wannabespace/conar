@@ -220,9 +220,9 @@ function ChartTooltipContent({
                         <div
                           className={cn(
                             `
-                                      shrink-0 rounded-xs border-border
-                                      bg-(--color-bg)
-                                    `,
+                              shrink-0 rounded-xs border-border
+                              bg-(--color-bg)
+                            `,
                             {
                               'size-2.5': indicator === 'dot',
                               'w-1': indicator === 'line',

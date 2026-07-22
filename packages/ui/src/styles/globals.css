@@ -212,20 +212,81 @@
   @apply bg-white/90 text-primary;
 }
 
-@utility table-scroll-fade {
+/* Table scroll-edge fades as sticky overlay gradients inside the scroller —
+   never a mask (masks clip the scrollbar), never siblings above the scroller
+   (they'd paint over the scrollbar too). Descendants can't cover their own
+   scroller's scrollbar, so it stays fully visible. */
+@utility table-fade {
   --table-header-height: calc(var(--spacing) * 8);
-
-  --scroll-fade-mask: linear-gradient(
-    to bottom,
-    #000 0 var(--table-header-height),
-    transparent var(--table-header-height),
-    #000 calc(var(--table-header-height) + var(--scroll-fade-t, 0px)),
-    #000 calc(100% - var(--scroll-fade-b, 0px)),
-    transparent 100%
-  );
 
   &:has([data-footer]) {
     --table-header-height: calc(var(--spacing) * 12);
+  }
+}
+
+@utility table-fade-anchor {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  height: 0;
+
+  &:first-child {
+    top: var(--table-header-height);
+  }
+  &:last-child {
+    bottom: 0;
+  }
+}
+
+@utility table-fade-top {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: calc(var(--spacing) * 10);
+  background: linear-gradient(to bottom, var(--background), transparent);
+  opacity: 0;
+
+  @supports (animation-timeline: scroll()) {
+    animation: table-fade-in 1ms linear both;
+    animation-timeline: scroll(nearest block);
+    animation-range: 0 calc(var(--spacing) * 24);
+  }
+}
+
+@utility table-fade-bottom {
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: calc(var(--spacing) * 10);
+  background: linear-gradient(to top, var(--background), transparent);
+  opacity: 0;
+
+  @supports (animation-timeline: scroll()) {
+    animation: table-fade-out 1ms linear both;
+    animation-timeline: scroll(nearest block);
+    animation-range: calc(100% - calc(var(--spacing) * 24)) 100%;
+  }
+}
+
+@keyframes table-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes table-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 

@@ -330,7 +330,7 @@ export function QueryLogger({
           </Button>
         </div>
       </div>
-      <div ref={scrollRef} className="relative min-h-0 scroll-fade overflow-auto">
+      <div ref={scrollRef} className="relative no-scrollbar min-h-0 scroll-fade overflow-auto">
         {filteredQueries.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="mb-3">

@@ -7,4 +7,4 @@
 - Heavy-reflow guard: when animating a container holding a virtualized table, pin the data area's width for the duration.
 - **Filter strip is persistent** (hover-reveal rejected): animates only on mount/exit — `opacity 0→1, y 8→0, scale 0.98→1`, 200ms. Chip anatomy `[eye | column | op | value | ✕]`; eye disables (content dims to `opacity-45`, eye/✕ stay full).
 - No layout shifts on hover — reserve space, animate opacity/transform only.
-- Scroll-edge cues: shadcn `scroll-fade` utilities (CSS scroll-driven mask), never JS scroll listeners. Sticky-header containers pair it with `table-scroll-fade` (globals) to keep the header band opaque.
+- Scroll-edge cues: never JS scroll listeners. Plain scrollers use shadcn `scroll-fade` (CSS scroll-driven mask). The data table uses `table-fade` overlay gradients instead (mask would clip the scrollbar) — see gotchas.
