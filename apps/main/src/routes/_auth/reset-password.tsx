@@ -1,6 +1,6 @@
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { Field, FieldLabel, FieldSet } from '@tamery/ui/components/field'
+import { FieldSet } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
@@ -90,8 +90,8 @@ function ResetPasswordPage() {
         <FieldSet className="flex w-full flex-col gap-6">
           <form.AppField name="password">
             {field => (
-              <Field>
-                <FieldLabel>New Password</FieldLabel>
+              <field.Field>
+                <field.Label>New Password</field.Label>
                 <field.PasswordInput
                   autoFocus
                   autoComplete="new-password"
@@ -101,7 +101,7 @@ function ResetPasswordPage() {
                   autoCapitalize="none"
                 />
                 <field.Error />
-              </Field>
+              </field.Field>
             )}
           </form.AppField>
 
@@ -115,8 +115,8 @@ function ResetPasswordPage() {
             }}
           >
             {field => (
-              <Field>
-                <FieldLabel>Confirm Password</FieldLabel>
+              <field.Field>
+                <field.Label>Confirm Password</field.Label>
                 <field.PasswordInput
                   autoComplete="confirm-password"
                   required
@@ -125,7 +125,7 @@ function ResetPasswordPage() {
                   autoCapitalize="none"
                 />
                 <field.Error />
-              </Field>
+              </field.Field>
             )}
           </form.AppField>
           <Button className="w-full" type="submit" disabled={isSubmitting}>

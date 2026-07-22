@@ -8,14 +8,9 @@ export function FieldError() {
     return null
   }
 
-  return (
-    <FieldErrorPrimitive>
-      {field.state.meta.errors
-        .map(error =>
-          typeof error === 'string' ? error : typeof error === 'object' ? error?.message : error,
-        )
-        .filter(Boolean)
-        .join(', ')}
-    </FieldErrorPrimitive>
+  const errors = field.state.meta.errors.map(error =>
+    typeof error === 'string' ? { message: error } : error,
   )
+
+  return <FieldErrorPrimitive id={`${field.name}-error`} errors={errors} />
 }

@@ -33,6 +33,10 @@ export function useResolvedTheme() {
 }
 
 function toggleTheme() {
+  if (typeof window === 'undefined') {
+    return
+  }
+
   const root = window.document.documentElement
   const resolved = resolvedTheme.get()
 

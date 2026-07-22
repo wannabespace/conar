@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
-import { Field, FieldLabel, FieldSet } from '@tamery/ui/components/field'
+import { Field, FieldSet } from '@tamery/ui/components/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@tamery/ui/components/input-group'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
@@ -127,11 +127,11 @@ export function CreateApiKeyDialog({
                   }}
                 >
                   {field => (
-                    <Field>
-                      <FieldLabel>Name</FieldLabel>
+                    <field.Field>
+                      <field.Label>Name</field.Label>
                       <field.Input placeholder="e.g. local-mcp, ci-bot" maxLength={100} />
                       <field.Error />
-                    </Field>
+                    </field.Field>
                   )}
                 </form.AppField>
                 <form.AppField
@@ -148,8 +148,8 @@ export function CreateApiKeyDialog({
                   }}
                 >
                   {field => (
-                    <Field>
-                      <FieldLabel>Permissions</FieldLabel>
+                    <field.Field>
+                      <field.Label>Permissions</field.Label>
                       {objectEntries(API_KEY_PERMISSIONS).map(([resource, actions]) => (
                         <Field key={resource} className="gap-1">
                           {actions.map(action => (
@@ -177,7 +177,7 @@ export function CreateApiKeyDialog({
                         </Field>
                       ))}
                       <field.Error />
-                    </Field>
+                    </field.Field>
                   )}
                 </form.AppField>
               </FieldSet>
