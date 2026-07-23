@@ -23,12 +23,17 @@ function LastOpenedResource({
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
   return (
-    <div className="group relative">
+    <div
+      className="
+        group flex h-8 items-center gap-1 rounded-md pr-1 pl-2 text-sm
+        hover:bg-accent/50
+      "
+    >
       <Link
         className="
-          flex h-8 cursor-default items-center gap-2.5 rounded-md px-2
-          text-sm text-foreground
-          hover:bg-accent/50 hover:text-foreground
+          flex min-w-0 flex-1 cursor-default items-center gap-2.5
+          text-foreground
+          hover:text-foreground
         "
         preload={false}
         {...params}
@@ -47,8 +52,7 @@ function LastOpenedResource({
               size="icon-xs"
               aria-label="Remove from recents"
               className="
-                absolute top-1/2 right-1 shrink-0 -translate-y-1/2
-                text-muted-foreground opacity-0 transition-opacity
+                shrink-0 text-muted-foreground opacity-0 transition-opacity
                 duration-100
                 group-hover:opacity-100
                 hover:bg-foreground/10 hover:text-foreground
