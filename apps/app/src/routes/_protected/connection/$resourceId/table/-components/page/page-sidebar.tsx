@@ -87,7 +87,6 @@ export function PageSidebar() {
       transition={isResizing ? { duration: 0 } : SIDEBAR_FOLD_TRANSITION}
       className="relative h-full shrink-0 overflow-hidden"
     >
-      {/* pr clears the resize handle so rows never sit under it */}
       <div className="flex h-full flex-col pr-2 text-foreground" style={{ width }}>
         <div className="flex shrink-0 items-center gap-1 p-2 pb-1.5">
           <InputGroup className="h-7 flex-1 rounded-md bg-input/60">

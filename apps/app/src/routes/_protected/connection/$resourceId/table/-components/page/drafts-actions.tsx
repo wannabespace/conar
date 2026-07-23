@@ -122,11 +122,10 @@ export function DraftsActions({ table, schema }: { table: string; schema: string
               return acc
             }, {})
 
-            // Sequential by design: updates run in order within a single transaction
             // oxlint-disable-next-line no-await-in-loop
             await tx
               .withSchema(schema)
-              .withTables<{ [table]: Record<string, unknown> }>()
+              .$extendTables<{ [table]: Record<string, unknown> }>()
               .updateTable(table)
               .set(values)
               .where(eb => buildWhere(eb, sqlFilters))
@@ -191,7 +190,7 @@ export function DraftsActions({ table, schema }: { table: string; schema: string
           commits.map(async ({ primaryKeys, values, modifiedColumns, updatedFilters }) => {
             const refreshed = await db
               .withSchema(schema)
-              .withTables<{ [table]: Record<string, unknown> }>()
+              .$extendTables<{ [table]: Record<string, unknown> }>()
               .selectFrom(table)
               .select(modifiedColumns)
               .where(eb => buildWhere(eb, updatedFilters))
