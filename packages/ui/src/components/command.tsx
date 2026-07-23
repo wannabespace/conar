@@ -8,7 +8,7 @@ import {
 } from '@tamery/ui/components/dialog'
 import { InputGroup, InputGroupAddon } from '@tamery/ui/components/input-group'
 import { cn } from '@tamery/ui/lib/utils'
-import { Command as CommandPrimitive } from 'cmdk'
+import { Command as CommandPrimitive, defaultFilter } from 'cmdk'
 import * as React from 'react'
 
 function Command({ className, ...props }: React.ComponentProps<typeof CommandPrimitive>) {
@@ -220,4 +220,6 @@ export {
   CommandPrimitive,
   CommandSeparator,
   CommandShortcut,
+  // oxlint-disable-next-line react/only-export-components
+  defaultFilter,
 }

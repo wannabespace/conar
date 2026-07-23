@@ -428,7 +428,6 @@ overrides:
 
 patchedDependencies:
   '@better-auth/kysely-adapter@1.7.0-beta.9': 6ed6867c4be5d0b77f4c93c169b5219d78ea61349ff5a45d4c4875c9d5d0e4f3
-  cmdk@1.1.1: 2cac1bd2f78667a67f318ad960a8ced560da82651c3eb9faede4c2d378e6caad
 
 importers:
 
@@ -1369,7 +1368,7 @@ importers:
         version: 0.7.1
       cmdk:
         specifier: 'catalog:'
-        version: 1.1.1(patch_hash=2cac1bd2f78667a67f318ad960a8ced560da82651c3eb9faede4c2d378e6caad)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        version: 1.1.1(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       cnfast:
         specifier: 'catalog:'
         version: 0.0.8
@@ -14828,7 +14827,7 @@ snapshots:
 
   cluster-key-slot@1.1.2: {}
 
-  cmdk@1.1.1(patch_hash=2cac1bd2f78667a67f318ad960a8ced560da82651c3eb9faede4c2d378e6caad)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+  cmdk@1.1.1(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:
       '@radix-ui/react-compose-refs': 1.1.3(@types/react@19.2.17)(react@19.2.7)
       '@radix-ui/react-dialog': 1.1.19(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
