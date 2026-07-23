@@ -42,7 +42,7 @@ export function TableHeaderSkeleton({
         <div
           // oxlint-disable-next-line react/no-array-index-key
           key={columnIndex}
-          className="flex shrink-0 flex-col justify-center p-2 first:pl-4"
+          className="flex shrink-0 flex-col justify-center px-2 py-1.5 first:pl-4"
           style={{ width: `${DEFAULT_COLUMN_WIDTH}px` }}
         >
           <div className="flex h-4 items-center">

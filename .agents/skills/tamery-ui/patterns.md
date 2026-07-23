@@ -8,7 +8,7 @@
 - **Popovers size to content**: `w-auto min-w-40`; `CommandInput` only at ~8+ items; hide group headings when one group.
 - **Grouped lists** (dashboard): one `rounded-xl border bg-card` container, `border-b last:border-b-0` rows, `hover:bg-accent/50`. Sections (labels/types): micro-label header per section, one container each, ungrouped last.
 - **Tabs (Finder)**: content-width, no truncate; each tab `border-b`, active `border-b-transparent bg-background`; bar `bg-body/50`.
-- **Command bar** (table page): filter field flex-1 left, delete-on-selection, columns/sort, `⋯` overflow. `items-end` so buttons stay anchored while the field grows upward.
+- **Table toolbar** (`table/-components/page/table-toolbar.tsx`): filter field flex-1 left, delete-on-selection, columns/sort, `⋯` overflow. `items-end` so buttons stay anchored while the field grows upward.
 - **Empty states**: centered `rounded-2xl bg-muted/60` icon, `text-sm font-medium` title, `text-xs muted` hint, gentle fade/scale-in.
 - **Shortcuts**: only via `packages/ui/src/components/custom/shortcuts.tsx` (`KbdCtrlLetter` etc., pass `userAgent`). Never hand-roll ⌘/Ctrl. Only advertise shortcuts that fire — gate Electron-only ones (⌘R) on `window.electron`.
 - **Tooltips**: never nest triggers; `TooltipContent` is `inline-flex` — wrap multi-line content in `flex flex-col gap-0.5`.

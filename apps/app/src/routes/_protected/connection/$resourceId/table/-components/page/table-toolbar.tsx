@@ -40,24 +40,18 @@ import { FilterSearchBar } from './filter-search-bar'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-function OverflowRow(props: React.ComponentProps<typeof Button>) {
+function OverflowButton({ className, ...props }: React.ComponentProps<typeof Button>) {
   return (
     <Button
       variant="ghost"
       size="sm"
+      className={cn('justify-start font-normal', className)}
       {...props}
-      className={cn(
-        `
-          h-7 w-full justify-start gap-2 rounded-md px-2 text-sm
-          font-normal
-        `,
-        props.className,
-      )}
     />
   )
 }
 
-export function CommandBar({ table, schema }: { table: string; schema: string }) {
+export function TableToolbar({ table, schema }: { table: string; schema: string }) {
   const { connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const connectionStore = getConnectionResourceStore(connectionResource.id)
@@ -158,7 +152,6 @@ export function CommandBar({ table, schema }: { table: string; schema: string })
   }
 
   return (
-    // No shared shell — each control floats on its own; gaps click through
     <div
       className="
         pointer-events-none flex w-full max-w-3xl items-end gap-2
@@ -234,10 +227,10 @@ export function CommandBar({ table, schema }: { table: string; schema: string })
                 table={table}
                 schema={schema}
                 trigger={
-                  <OverflowRow>
+                  <OverflowButton>
                     <RiSeedlingLine className="size-4 text-muted-foreground" />
                     Seed data
-                  </OverflowRow>
+                  </OverflowButton>
                 }
               />
             )}
@@ -246,22 +239,22 @@ export function CommandBar({ table, schema }: { table: string; schema: string })
               filename={`${schema}_${table}`}
               getData={getData}
               trigger={({ isExporting }) => (
-                <OverflowRow disabled={isExporting || rows?.length === 0 || isPending}>
+                <OverflowButton disabled={isExporting || rows?.length === 0 || isPending}>
                   <LoadingContent loading={isExporting} className="size-4">
                     <RiDownloadLine className="size-4 text-muted-foreground" />
                   </LoadingContent>
                   Download
-                </OverflowRow>
+                </OverflowButton>
               )}
             />
             {tableType === 'table' && (
               <ActionsCopy
                 table={table}
                 trigger={
-                  <OverflowRow>
+                  <OverflowButton>
                     <RiCodeSSlashLine className="size-4 text-muted-foreground" />
                     Code
-                  </OverflowRow>
+                  </OverflowButton>
                 }
               />
             )}

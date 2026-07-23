@@ -45,7 +45,7 @@ export function PrimaryKeyTooltipIcon({ primaryKey }: { primaryKey: string }) {
   return (
     <Tooltip>
       <TooltipTrigger>
-        <RiKey2Line className="size-3 shrink-0 text-primary" />
+        <RiKey2Line className="size-2.5 shrink-0 text-primary" />
       </TooltipTrigger>
       <TooltipContent className="max-w-none">
         <div className="flex items-center gap-1">
@@ -64,7 +64,7 @@ export function NullableTooltipIcon() {
   return (
     <Tooltip>
       <TooltipTrigger
-        render={<RiEraserLine className="size-3 shrink-0 opacity-70" />}
+        render={<RiEraserLine className="size-2.5 shrink-0 opacity-70" />}
       ></TooltipTrigger>
       <TooltipContent>
         <div className="flex items-center gap-1">
@@ -80,7 +80,7 @@ export function UniqueTooltipIcon({ unique }: { unique: string }) {
   return (
     <Tooltip>
       <TooltipTrigger>
-        <RiFingerprintLine className="size-3 shrink-0 opacity-70" />
+        <RiFingerprintLine className="size-2.5 shrink-0 opacity-70" />
       </TooltipTrigger>
       <TooltipContent className="max-w-none">
         <div className="flex items-center gap-1">
@@ -99,7 +99,7 @@ export function ReadOnlyTooltipIcon() {
   return (
     <Tooltip>
       <TooltipTrigger>
-        <RiBookOpenLine className="size-3 shrink-0 opacity-70" />
+        <RiBookOpenLine className="size-2.5 shrink-0 opacity-70" />
       </TooltipTrigger>
       <TooltipContent>
         <div className="flex items-center gap-1">
@@ -115,7 +115,7 @@ export function DefaultValueTooltipIcon({ defaultValue }: { defaultValue: string
   return (
     <Tooltip>
       <TooltipTrigger>
-        <RiCharacterRecognitionLine className="size-3 shrink-0 opacity-70" />
+        <RiCharacterRecognitionLine className="size-2.5 shrink-0 opacity-70" />
       </TooltipTrigger>
       <TooltipContent className="max-w-none">
         <div className="flex items-center gap-1">
@@ -142,7 +142,7 @@ function ForeignTooltipIcon({
   return (
     <Tooltip>
       <TooltipTrigger
-        render={<RiLinksLine className="size-3 shrink-0 opacity-70" />}
+        render={<RiLinksLine className="size-2.5 shrink-0 opacity-70" />}
       ></TooltipTrigger>
       <TooltipContent className="max-w-none">
         <div className="flex items-center gap-1">
@@ -269,7 +269,7 @@ export function TableHeaderCell({
             className={cn(
               `
                 group/header-cell relative flex w-full shrink-0 cursor-default
-                items-center justify-between p-2 outline-none
+                items-center justify-between px-2 py-1.5 outline-none
               `,
               className,
             )}
@@ -285,7 +285,10 @@ export function TableHeaderCell({
             {column.id}
           </div>
           {column?.typeLabel && (
-            <div data-footer={!!column.typeLabel} className="flex items-center gap-1">
+            <div
+              data-footer={!!column.typeLabel}
+              className="flex items-center gap-0.5 text-2xs leading-4"
+            >
               {column.primaryKey && <PrimaryKeyTooltipIcon primaryKey={column.primaryKey} />}
               {column.isNullable && <NullableTooltipIcon />}
               {column.unique && <UniqueTooltipIcon unique={column.unique} />}
@@ -334,15 +337,10 @@ export function TableHeaderCell({
               aria-orientation="vertical"
               aria-label="Resize column"
               tabIndex={0}
-              className={cn(
-                `
-                h-full w-1 cursor-col-resize rounded-xs bg-foreground/20
-                opacity-0 transition-opacity select-none
-                group-hover/header-cell:opacity-100
-                hover:bg-primary
-              `,
-                isResizing && `bg-primary! opacity-100!`,
-              )}
+              className="
+                group/resize flex cursor-col-resize items-stretch self-stretch
+                p-1 select-none
+              "
               // Drag-to-resize handle; interactions are pointer-driven by design
               onDoubleClick={removeSize}
               onMouseDown={e => {
@@ -350,7 +348,19 @@ export function TableHeaderCell({
                 handleResize(e)
               }}
               onClick={e => e.stopPropagation()}
-            />
+            >
+              <span
+                className={cn(
+                  `
+                  w-1 rounded-full bg-foreground/20 opacity-0
+                  transition-opacity
+                  group-hover/header-cell:opacity-100
+                  group-hover/resize:bg-primary
+                `,
+                  isResizing && `bg-primary! opacity-100!`,
+                )}
+              />
+            </div>
           )}
         </div>
       </ContextMenuTrigger>

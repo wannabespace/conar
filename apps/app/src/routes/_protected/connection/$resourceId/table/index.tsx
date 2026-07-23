@@ -14,7 +14,7 @@ import {
   prefetchConnectionResourceTableCore,
 } from '~/entities/connection/utils'
 
-import { CommandBar, PageSidebar, TabBar } from './-components/page'
+import { PageSidebar, TabBar, TableToolbar } from './-components/page'
 import { Table } from './-components/table/table'
 import { ColumnsContext, useTableColumnsQuery } from './-lib/columns'
 import { tablePageStore, TablePageStoreContext } from './-lib/store'
@@ -113,7 +113,7 @@ function TableContent({ table, schema }: { table: string; schema: string }) {
               flex-col items-center
             `}
           >
-            <CommandBar table={table} schema={schema} />
+            <TableToolbar table={table} schema={schema} />
           </div>
         </div>
       </div>

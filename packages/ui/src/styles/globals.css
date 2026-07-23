@@ -216,7 +216,7 @@
   --table-header-height: calc(var(--spacing) * 8);
 
   &:has([data-footer]) {
-    --table-header-height: calc(var(--spacing) * 12);
+    --table-header-height: calc(var(--spacing) * 11);
   }
 }
 
