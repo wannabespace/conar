@@ -120,8 +120,8 @@ export function useTableColumnsQuery({
   })
 }
 
-export const ColumnsContext = createContext<Column[]>(null!)
+export const ColumnsContext = createContext<{ columns: Column[]; isPending: boolean }>(null!)
 
-export function useTableColumns() {
+export function useTableColumnsContext() {
   return use(ColumnsContext)
 }

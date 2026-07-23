@@ -28,7 +28,7 @@ import {
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 
-import { useTableColumns } from '../../-lib/columns'
+import { useTableColumnsContext } from '../../-lib/columns'
 import { useTablePageStore } from '../../-lib/store'
 import { ActionsColumns } from '../actions/actions-columns'
 import { ActionsCopy } from '../actions/actions-copy'
@@ -77,7 +77,7 @@ export function CommandBar({ table, schema }: { table: string; schema: string })
     }),
   })
 
-  const columns = useTableColumns()
+  const { columns } = useTableColumnsContext()
   const {
     data: total,
     isLoading: isTotalLoading,

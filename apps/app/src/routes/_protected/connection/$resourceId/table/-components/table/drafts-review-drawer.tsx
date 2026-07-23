@@ -25,7 +25,7 @@ import { useSubscription } from 'seitu/react'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 import { createTransformer, getDisplayValue } from '~/entities/connection/transformers'
 
-import { useTableColumns } from '../../-lib/columns'
+import { useTableColumnsContext } from '../../-lib/columns'
 import type { draftType } from '../../-lib/store'
 import {
   draftsActions,
@@ -67,7 +67,7 @@ export function DraftsReviewDrawer({
   onDiscardAll: () => void
 }) {
   const { connection, connectionResource } = useRouteContext()
-  const columns = useTableColumns()
+  const { columns } = useTableColumnsContext()
   const primaryColumns = columns.filter(c => c.primaryKey).map(c => c.id)
   const store = useTablePageStore()
   const drafts = useSubscription(store, { selector: state => state.drafts })

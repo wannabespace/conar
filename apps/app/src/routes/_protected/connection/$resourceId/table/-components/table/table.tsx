@@ -19,7 +19,7 @@ import {
 import type { Column, ColumnHandlers } from '~/entities/connection/components/table/cell'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 
-import { useTableColumns } from '../../-lib/columns'
+import { useTableColumnsContext } from '../../-lib/columns'
 import { useClearDraftsOnQueryChange, useSyncSelectionWithRows } from '../../-lib/hooks'
 import {
   columnsOrder,
@@ -34,7 +34,7 @@ import { TableHeader } from './table-header'
 import { TableHeaderCell } from './table-header-cell'
 import { TableInfiniteLoader } from './table-infinite-loader'
 import { SelectionCell, SelectionHeaderCell } from './table-selection'
-import { TableBodySkeleton } from './table-skeleton'
+import { TableBodySkeleton, TableHeaderSkeleton } from './table-skeleton'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -112,7 +112,7 @@ function BodyCellRenderer({
 
 function TableComponent({ table, schema }: { table: string; schema: string }) {
   const { connection, connectionResource } = useRouteContext()
-  const columns = useTableColumns()
+  const { columns, isPending: isColumnsPending } = useTableColumnsContext()
   const store = useTablePageStore()
   const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
   const columnSizes = useSubscription(store, { selector: state => state.columnSizes })
@@ -253,10 +253,19 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
         onKeyDown={handleShiftSelectionKeyDown}
       >
         <Table>
-          {tableColumns.length > 0 && (
-            <TableHeader className="rounded-none border-0 border-b bg-background" />
+          {tableColumns.length > 0 ? (
+            <TableHeader
+              className="
+                rounded-none bg-background inset-shadow-[0_-1px_0_0_var(--color-border)]
+                inset-ring-0
+              "
+            />
+          ) : (
+            (isRowsPending || isColumnsPending) && (
+              <TableHeaderSkeleton selectable={primaryColumns.length > 0} />
+            )
           )}
-          {isRowsPending ? (
+          {isRowsPending || isColumnsPending ? (
             <TableBodySkeleton selectable={primaryColumns.length > 0} />
           ) : error ? (
             <TableError error={error} />

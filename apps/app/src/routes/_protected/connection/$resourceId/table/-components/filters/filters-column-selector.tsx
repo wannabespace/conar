@@ -10,7 +10,7 @@ import {
 } from '@tamery/ui/components/command'
 import type { RefObject } from 'react'
 
-import { useTableColumns } from '../../-lib/columns'
+import { useTableColumnsContext } from '../../-lib/columns'
 
 export function FiltersColumnSelector({
   ref,
@@ -19,7 +19,7 @@ export function FiltersColumnSelector({
   ref?: RefObject<HTMLInputElement | null>
   onSelect: (column: string) => void
 }) {
-  const columns = useTableColumns()
+  const { columns } = useTableColumnsContext()
 
   return (
     <Command>

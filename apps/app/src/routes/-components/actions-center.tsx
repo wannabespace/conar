@@ -215,7 +215,6 @@ export function ActionsCenter() {
   const resolvedTheme = useResolvedTheme()
 
   useHotkey('Mod+P', e => {
-    // Keep the browser print dialog from hijacking the shortcut
     e.preventDefault()
     setIsActionCenterOpen(!isOpen)
   })

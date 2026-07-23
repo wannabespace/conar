@@ -1,7 +1,7 @@
 import type { ActiveFilter, Filter } from '@tamery/shared/filters'
 import { useEffect, useRef, useState } from 'react'
 
-import { useTableColumns } from '../../-lib/columns'
+import { useTableColumnsContext } from '../../-lib/columns'
 import { FiltersColumnSelector } from './filters-column-selector'
 import { FiltersSelector } from './filters-selector'
 import { FilterValueSelector } from './filters-value-selector'
@@ -10,7 +10,7 @@ export function FilterForm({ onAdd }: { onAdd: (filter: ActiveFilter) => void })
   const [selectedColumn, setSelectedColumn] = useState<string | null>(null)
   const [selectedFilter, setSelectedFilter] = useState<Filter | null>(null)
   const [values, setValues] = useState<string[]>([''])
-  const columns = useTableColumns()
+  const { columns } = useTableColumnsContext()
 
   const operatorRef = useRef<HTMLInputElement>(null)
 

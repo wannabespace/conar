@@ -21,7 +21,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { useTableColumns } from '../../-lib/columns'
+import { useTableColumnsContext } from '../../-lib/columns'
 import { columnsOrder, useTablePageStore } from '../../-lib/store'
 
 function DirectionToggle({
@@ -84,7 +84,7 @@ export function ActionsOrder() {
   const orderEntries = useSubscription(store, {
     selector: state => Object.entries(state.orderBy || {}),
   })
-  const columns = useTableColumns()
+  const { columns } = useTableColumnsContext()
   const [open, setOpen] = useState(false)
   const [showAddColumn, setShowAddColumn] = useState(false)
   const { setOrder, removeOrder } = columnsOrder(store)

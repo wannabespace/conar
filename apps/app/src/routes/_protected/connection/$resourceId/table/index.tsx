@@ -96,11 +96,10 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/table/'
 
 function TableContent({ table, schema }: { table: string; schema: string }) {
   const { connectionResource } = Route.useRouteContext()
-  const { data = [] } = useTableColumnsQuery({ connectionResource, table, schema })
+  const { data = [], isPending } = useTableColumnsQuery({ connectionResource, table, schema })
 
   return (
-    <ColumnsContext value={data}>
-      {/* Convenience click on the pane opens the tab; interactive children remain keyboard-reachable */}
+    <ColumnsContext value={{ columns: data, isPending }}>
       {/* oxlint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
       <div
         className="flex min-h-0 flex-1 flex-col"

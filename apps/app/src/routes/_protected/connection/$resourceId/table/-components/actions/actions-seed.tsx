@@ -79,7 +79,7 @@ import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 import { queryClient } from '~/main'
 import { setIsSubscriptionDialogOpen } from '~/store'
 
-import { useTableColumns } from '../../-lib/columns'
+import { useTableColumnsContext } from '../../-lib/columns'
 import { useTablePageStore } from '../../-lib/store'
 import {
   DefaultValueTooltipIcon,
@@ -191,7 +191,7 @@ export function ActionsSeed({
   schema: string
   trigger?: React.ReactElement
 }) {
-  const columns = useTableColumns()
+  const { columns } = useTableColumnsContext()
   const { connection, connectionResource } = useRouteContext()
   const allGenerators = getGenerators(connection.type)
   const [open, setOpen] = useState(false)

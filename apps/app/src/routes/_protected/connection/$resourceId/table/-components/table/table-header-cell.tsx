@@ -1,6 +1,5 @@
 import {
   RiArrowDownLine,
-  RiArrowDownSLine,
   RiArrowUpLine,
   RiBookOpenLine,
   RiCharacterRecognitionLine,
@@ -17,12 +16,12 @@ import {
 import type { TableHeaderCellProps } from '@tamery/table'
 import { useTableContext } from '@tamery/table/hooks'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@tamery/ui/components/dropdown-menu'
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from '@tamery/ui/components/context-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
@@ -261,22 +260,16 @@ export function TableHeaderCell({
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        nativeButton={false}
+    <ContextMenu>
+      <ContextMenuTrigger
         render={
           <div
             ref={ref}
-            role="button"
-            tabIndex={0}
             aria-label={`${column.id} column options`}
             className={cn(
               `
                 group/header-cell relative flex w-full shrink-0 cursor-default
                 items-center justify-between p-2 outline-none
-                hover:bg-accent/40
-                focus-visible:bg-accent/40
-                aria-expanded:bg-accent/60
               `,
               className,
             )}
@@ -324,8 +317,8 @@ export function TableHeaderCell({
             </div>
           )}
         </div>
-        <div className="flex h-full shrink-0 items-center gap-1">
-          {order !== null ? (
+        <div className="flex shrink-0 items-center gap-1 self-stretch">
+          {order !== null && (
             <span className="flex size-4 items-center justify-center text-primary">
               {order === 'ASC' ? (
                 <RiArrowUpLine className="size-3 shrink-0" />
@@ -333,18 +326,8 @@ export function TableHeaderCell({
                 <RiArrowDownLine className="size-3 shrink-0" />
               )}
             </span>
-          ) : (
-            <RiArrowDownSLine
-              className={`
-                size-3.5 shrink-0 text-muted-foreground opacity-0
-                transition-opacity
-                group-hover/header-cell:opacity-60
-                group-aria-expanded/header-cell:opacity-60
-              `}
-            />
           )}
           {onResize && (
-            // Pointer-driven drag handle; stopPropagation click keeps drag release from toggling the menu
             // oxlint-disable-next-line jsx-a11y/click-events-have-key-events
             <div
               role="separator"
@@ -370,55 +353,55 @@ export function TableHeaderCell({
             />
           )}
         </div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent side="bottom" align="start" className="min-w-52">
+      </ContextMenuTrigger>
+      <ContextMenuContent side="bottom" align="start" className="min-w-52">
         {isSortable && (
           <>
-            <DropdownMenuItem
+            <ContextMenuItem
               onClick={() => (order === 'ASC' ? onOrder?.(null) : onOrder?.('ASC'))}
               className={cn(order === 'ASC' && 'text-primary')}
             >
               <RiArrowUpLine className={cn('size-4', order === 'ASC' && 'text-primary')} />
               Sort Ascending
-            </DropdownMenuItem>
-            <DropdownMenuItem
+            </ContextMenuItem>
+            <ContextMenuItem
               onClick={() => (order === 'DESC' ? onOrder?.(null) : onOrder?.('DESC'))}
               className={cn(order === 'DESC' && 'text-primary')}
             >
               <RiArrowDownLine className={cn('size-4', order === 'DESC' && 'text-primary')} />
               Sort Descending
-            </DropdownMenuItem>
+            </ContextMenuItem>
             {order !== null && (
-              <DropdownMenuItem onClick={() => onOrder?.(null)}>
+              <ContextMenuItem onClick={() => onOrder?.(null)}>
                 <RiCloseLine className="size-4" />
                 Clear Sort
-              </DropdownMenuItem>
+              </ContextMenuItem>
             )}
-            <DropdownMenuSeparator />
+            <ContextMenuSeparator />
           </>
         )}
         {onRename && (
-          <DropdownMenuItem onClick={onRename}>
+          <ContextMenuItem onClick={onRename}>
             <RiPencilLine className="size-4" />
             Rename Column
-          </DropdownMenuItem>
+          </ContextMenuItem>
         )}
-        <DropdownMenuItem onClick={() => copyToClipboard(column.id, 'Column name copied')}>
+        <ContextMenuItem onClick={() => copyToClipboard(column.id, 'Column name copied')}>
           <RiFileCopyLine className="size-4" />
           Copy Name
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={hideColumn}>
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem onClick={hideColumn}>
           <RiEyeOffLine className="size-4" />
           Hide Column
-        </DropdownMenuItem>
+        </ContextMenuItem>
         {hasCustomSize && onResize && (
-          <DropdownMenuItem onClick={removeSize}>
+          <ContextMenuItem onClick={removeSize}>
             <RiExpandLeftRightLine className="size-4" />
             Reset Width
-          </DropdownMenuItem>
+          </ContextMenuItem>
         )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </ContextMenuContent>
+    </ContextMenu>
   )
 }

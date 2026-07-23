@@ -30,7 +30,7 @@ import {
   resourceIndexesQueryOptions,
 } from '~/entities/connection/queries'
 
-import { useTableColumns } from '../../-lib/columns'
+import { useTableColumnsContext } from '../../-lib/columns'
 import { useTablePageStore } from '../../-lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -234,7 +234,7 @@ export function ActionsCopy({ table, trigger }: { table: string; trigger?: React
   const { connection, connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const filters = useSubscription(store, { selector: state => state.filters })
-  const columns = useTableColumns()
+  const { columns } = useTableColumnsContext()
   const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
   const { data: indexes } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
   const [activeCategory, setActiveCategory] = useState<'schema' | 'query'>('schema')

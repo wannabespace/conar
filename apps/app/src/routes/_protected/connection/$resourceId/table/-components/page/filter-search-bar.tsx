@@ -29,7 +29,7 @@ import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 
-import { useTableColumns } from '../../-lib/columns'
+import { useTableColumnsContext } from '../../-lib/columns'
 import { useTablePageStore } from '../../-lib/store'
 import { FilterChip } from './filter-chip'
 
@@ -83,7 +83,7 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
   const setFilters = (updater: (filters: ActiveFilter[]) => ActiveFilter[]) =>
     store.set(state => ({ ...state, filters: updater(state.filters) }) satisfies typeof state)
 
-  const columns = useTableColumns()
+  const { columns } = useTableColumnsContext()
   const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
 
   const { mutate: generateFilter, isPending } = useMutation(

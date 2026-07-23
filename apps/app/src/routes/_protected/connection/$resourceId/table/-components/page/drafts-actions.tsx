@@ -20,7 +20,7 @@ import { dialects } from '~/entities/connection/runtime/dialects'
 import { useSaveHotkey } from '~/hooks/use-save-hotkey'
 import { queryClient } from '~/main'
 
-import { useTableColumns } from '../../-lib/columns'
+import { useTableColumnsContext } from '../../-lib/columns'
 import type { primaryKeysType } from '../../-lib/store'
 import {
   draftsActions,
@@ -35,7 +35,7 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 export function DraftsActions({ table, schema }: { table: string; schema: string }) {
   const { connectionResource } = useRouteContext()
   const store = useTablePageStore()
-  const columns = useTableColumns()
+  const { columns } = useTableColumnsContext()
   const primaryColumns = columns.filter(c => c.primaryKey).map(c => c.id)
   const drafts = useSubscription(store, { selector: state => state.drafts })
   const rowsWithDrafts = Map.groupBy(drafts, d => primaryKeysKey(d.primaryKeys))
