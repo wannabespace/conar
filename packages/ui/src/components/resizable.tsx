@@ -1,23 +1,27 @@
-import { RiDraggable } from '@remixicon/react'
+import { cn } from '@tamery/ui/lib/utils'
 import * as ResizablePrimitive from 'react-resizable-panels'
 
-import { cn } from '../lib/utils'
-
-export function ResizablePanelGroup({ className, ...props }: ResizablePrimitive.GroupProps) {
+function ResizablePanelGroup({ className, ...props }: ResizablePrimitive.GroupProps) {
   return (
     <ResizablePrimitive.Group
       data-slot="resizable-panel-group"
-      className={cn('size-full', className)}
+      className={cn(
+        `
+          flex size-full
+          aria-[orientation=vertical]:flex-col
+        `,
+        className,
+      )}
       {...props}
     />
   )
 }
 
-export function ResizablePanel({ ...props }: ResizablePrimitive.PanelProps) {
+function ResizablePanel({ ...props }: ResizablePrimitive.PanelProps) {
   return <ResizablePrimitive.Panel data-slot="resizable-panel" {...props} />
 }
 
-export function ResizableSeparator({
+function ResizableHandle({
   withHandle,
   className,
   ...props
@@ -26,20 +30,31 @@ export function ResizableSeparator({
 }) {
   return (
     <ResizablePrimitive.Separator
-      data-slot="resizable-separator"
+      data-slot="resizable-handle"
       className={cn(
-        `group relative min-h-1 min-w-1 shrink-0 rounded-sm delay-75 duration-75 focus-visible:bg-primary/40 data-[separator='active']:bg-primary/30 data-[separator='hover']:bg-primary/50`,
+        `
+          relative flex w-px items-center justify-center bg-border
+          ring-offset-background
+          after:absolute after:inset-y-0 after:left-1/2 after:w-1
+          after:-translate-x-1/2
+          focus-visible:ring-1 focus-visible:ring-ring
+          focus-visible:outline-hidden
+          aria-[orientation=horizontal]:h-px
+          aria-[orientation=horizontal]:w-full
+          aria-[orientation=horizontal]:after:left-0
+          aria-[orientation=horizontal]:after:h-1
+          aria-[orientation=horizontal]:after:w-full
+          aria-[orientation=horizontal]:after:translate-x-0
+          aria-[orientation=horizontal]:after:-translate-y-1/2
+          [&[aria-orientation=horizontal]>div]:rotate-90
+        `,
         className,
       )}
       {...props}
     >
-      {withHandle && (
-        <div
-          className={`pointer-events-none absolute top-1/2 left-1/2 -translate-1/2 rounded-xs bg-border delay-75 duration-75 group-aria-[orientation='horizontal']:px-0.5 group-aria-[orientation='horizontal']:py-px group-aria-[orientation='vertical']:px-0.5 group-aria-[orientation='vertical']:py-px group-data-[separator='active']:bg-primary group-data-[separator='hover']:bg-primary group-data-[separator='hover']:text-primary-foreground`}
-        >
-          <RiDraggable className={`size-2.5 group-aria-[orientation='horizontal']:rotate-90`} />
-        </div>
-      )}
+      {withHandle && <div className="z-10 flex h-6 w-1 shrink-0 rounded-lg bg-border" />}
     </ResizablePrimitive.Separator>
   )
 }
+
+export { ResizableHandle, ResizablePanel, ResizablePanelGroup }

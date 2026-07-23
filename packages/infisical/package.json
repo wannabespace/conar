@@ -6,8 +6,8 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@tamery/configs": "workspace:*",
     "@infisical/sdk": "catalog:",
+    "@tamery/configs": "workspace:*",
     "arktype": "catalog:",
     "better-result": "catalog:",
     "memoza": "catalog:"

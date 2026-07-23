@@ -54,7 +54,11 @@ export const banner = orpc
       })
     }
 
-    if (context.parsedAppVersion?.minor && context.parsedAppVersion.minor >= 28 && context.parsedAppVersion.minor < 33) {
+    if (
+      context.parsedAppVersion?.minor &&
+      context.parsedAppVersion.minor >= 28 &&
+      context.parsedAppVersion.minor < 33
+    ) {
       items.push({
         text: 'Conar is now Tamery! New name, even better app - thanks for being part of the journey!',
         type: 'info',

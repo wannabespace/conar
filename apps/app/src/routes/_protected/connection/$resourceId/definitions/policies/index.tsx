@@ -1,3 +1,4 @@
+import { RiEyeLine, RiEyeOffLine, RiShieldCheckLine, RiTable2 } from '@remixicon/react'
 import { uppercaseFirst } from '@tamery/shared/utils/helpers'
 import { title } from '@tamery/shared/utils/title'
 import { Badge } from '@tamery/ui/components/badge'
@@ -12,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
-import { RiEyeLine, RiEyeOffLine, RiShieldCheckLine, RiTable2 } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -158,7 +158,11 @@ function DatabasePoliciesPage() {
                     <Badge variant="secondary">{item.command}</Badge>
                     {!item.enabled && <Badge variant="destructive">Disabled</Badge>}
                   </CardTitle>
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <div
+                    className="
+                    flex items-center gap-1.5 text-sm text-muted-foreground
+                  "
+                  >
                     <Badge variant="outline">
                       <RiTable2 className="size-3" />
                       <HighlightText text={item.table} match={search} />
@@ -179,7 +183,11 @@ function DatabasePoliciesPage() {
             </CardContent>
             {(item.using || item.check) && (
               <CardContent className="border-t bg-muted/10 px-4 py-3 text-sm">
-                <div className="flex flex-col gap-1.5 text-xs text-muted-foreground">
+                <div
+                  className="
+                  flex flex-col gap-1.5 text-xs text-muted-foreground
+                "
+                >
                   {item.using && (
                     <div className="flex items-baseline gap-1.5">
                       <span className="font-medium text-foreground">USING:</span>

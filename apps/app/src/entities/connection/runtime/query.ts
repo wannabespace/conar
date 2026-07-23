@@ -114,7 +114,7 @@ export function createQuery<T extends Type = Type<unknown>>(options: {
             await retryPromise.promise
           }
 
-          // oxlint-disable-next-line typescript/no-explicit-any
+          // oxlint-disable-next-line ts/no-explicit-any
           return queryFn(instance as any)
         },
         catch: error => {

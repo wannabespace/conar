@@ -1,7 +1,7 @@
 import { noop } from '@tamery/shared/utils/helpers'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
+import { useEffectEvent, useState } from 'react'
 
 export function ContentSwitch({
   children,
@@ -18,18 +18,22 @@ export function ContentSwitch({
 }) {
   const [isActive, setIsActive] = useState(false)
 
+  const onSwitchEndEvent = useEffectEvent(onSwitchEnd)
+
   useMountedEffect(() => {
     if (active) {
+      // oxlint-disable-next-line react/set-state-in-effect
       setIsActive(true)
     }
 
     const timeout = setTimeout(() => {
       setIsActive(false)
-      onSwitchEnd(false)
+      // oxlint-disable-next-line react-hooks/rules-of-hooks
+      onSwitchEndEvent(false)
     }, 3000)
 
     return () => clearTimeout(timeout)
-  }, [active, onSwitchEnd])
+  }, [active])
 
   return (
     <AnimatePresence mode="popLayout" initial={false}>

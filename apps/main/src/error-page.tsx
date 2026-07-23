@@ -1,3 +1,4 @@
+import { RiAlertLine, RiArrowGoBackLine, RiLoopLeftLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import {
   Card,
@@ -10,7 +11,6 @@ import {
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { Toaster } from '@tamery/ui/components/sonner'
 import { ThemeObserver } from '@tamery/ui/theme-observer'
-import { RiAlertLine, RiArrowGoBackLine, RiLoopLeftLine } from '@remixicon/react'
 import type { ErrorComponentProps } from '@tanstack/react-router'
 import { useRouter } from '@tanstack/react-router'
 import { TraversalError } from 'arktype'
@@ -27,7 +27,10 @@ export function ErrorPage({ error }: ErrorComponentProps) {
           <Card>
             <CardHeader className="text-center">
               <div
-                className={`mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-destructive/10`}
+                className={`
+                mx-auto mb-4 flex size-16 items-center justify-center
+                rounded-full bg-destructive/10
+              `}
               >
                 <RiAlertLine className="size-8 text-destructive" />
               </div>
@@ -37,24 +40,38 @@ export function ErrorPage({ error }: ErrorComponentProps) {
             <CardContent>
               {!(error instanceof TraversalError) && !error.stack && (
                 <ScrollArea
-                  className={`h-50 rounded-md bg-muted p-4 text-sm text-muted-foreground`}
+                  className={`
+                  h-50 rounded-md bg-muted p-4 text-sm text-muted-foreground
+                `}
                 >
                   {error.message}
                 </ScrollArea>
               )}
               {!(error instanceof TraversalError) && error.stack && (
                 <ScrollArea
-                  className={`h-75 rounded-md bg-muted p-4 font-mono text-xs text-muted-foreground`}
+                  className={`
+                  h-75 rounded-md bg-muted p-4 font-mono text-xs
+                  text-muted-foreground
+                `}
                 >
                   {error.stack}
                 </ScrollArea>
               )}
               {error instanceof TraversalError && (
                 <ScrollArea
-                  className={`h-75 rounded-md bg-muted p-4 font-mono text-xs text-muted-foreground`}
+                  className={`
+                  h-75 rounded-md bg-muted p-4 font-mono text-xs
+                  text-muted-foreground
+                `}
                 >
                   {error.arkErrors.map((err, index) => (
-                    <div key={err.message} className={`mb-4 last:mb-0`}>
+                    <div
+                      key={err.message}
+                      className={`
+                        mb-4
+                        last:mb-0
+                      `}
+                    >
                       <div className="font-semibold text-destructive">Error {index + 1}:</div>
                       <div className="mt-1 ml-2">
                         <div>{err.message}</div>
@@ -65,7 +82,10 @@ export function ErrorPage({ error }: ErrorComponentProps) {
                     <div className="mt-4">
                       <h3 className="mb-2 text-sm font-medium">Stack</h3>
                       <div
-                        className={`rounded-md bg-muted font-mono text-xs text-muted-foreground`}
+                        className={`
+                        rounded-md bg-muted font-mono text-xs
+                        text-muted-foreground
+                      `}
                       >
                         {error.stack}
                       </div>

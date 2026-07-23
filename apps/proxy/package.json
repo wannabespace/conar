@@ -8,12 +8,12 @@
     "test:start": "cross-env NODE_ENV=test bun --env-file=.env.test run ./index.ts"
   },
   "dependencies": {
+    "@orpc/client": "catalog:",
+    "@orpc/server": "catalog:",
     "@tamery/api": "workspace:*",
     "@tamery/connection": "workspace:*",
     "@tamery/query-proxy": "workspace:*",
     "@tamery/shared": "workspace:*",
-    "@orpc/client": "catalog:",
-    "@orpc/server": "catalog:",
     "arktype": "catalog:",
     "hono": "catalog:",
     "memoza": "catalog:",

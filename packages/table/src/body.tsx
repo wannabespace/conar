@@ -51,7 +51,15 @@ const spacerStyle: CSSProperties = {
   contain: 'layout style size',
 }
 
-const Row = memo(function Row({ size, rowIndex }: { size: number; rowIndex: number }) {
+const Row = memo(function Row({
+  size,
+  rowIndex,
+  zebra,
+}: {
+  size: number
+  rowIndex: number
+  zebra?: boolean
+}) {
   const columns = useTableContext(context => context.columns)
   const virtualColumns = useTableContext(context => context.virtualColumns)
   const rows = useTableContext(context => context.rows)
@@ -61,8 +69,13 @@ const Row = memo(function Row({ size, rowIndex }: { size: number; rowIndex: numb
   return (
     <div
       className={cn(
-        `flex w-fit min-w-full border-b hover:bg-accent/30`,
+        `
+        flex w-fit min-w-full border-b
+        hover:bg-foreground/6
+      `,
         rowIndex === lastIndex && `border-b-0`,
+        zebra && 'border-b-0',
+        zebra && rowIndex % 2 === 1 && 'bg-foreground/3',
       )}
       style={{ height: `${size}px`, contain: 'layout style' }}
     >
@@ -87,14 +100,21 @@ const Row = memo(function Row({ size, rowIndex }: { size: number; rowIndex: numb
       })}
       <div
         aria-hidden="true"
-        className="w-(--table-scroll-right-offset) shrink-0 will-change-[height]"
+        className="
+          w-(--table-scroll-right-offset) shrink-0 will-change-[height]
+        "
         style={spacerStyle}
       />
     </div>
   )
 })
 
-export function TableBody({ className, style, ...props }: ComponentProps<'div'>) {
+export function TableBody({
+  className,
+  style,
+  zebra,
+  ...props
+}: ComponentProps<'div'> & { zebra?: boolean }) {
   const virtualRows = useTableContext(context => context.virtualRows)
   const tableWidth = useTableContext(context => context.tableWidth)
 
@@ -110,11 +130,18 @@ export function TableBody({ className, style, ...props }: ComponentProps<'div'>)
         style={spacerStyle}
       />
       {virtualRows.map(virtualRow => (
-        <Row key={virtualRow.key} rowIndex={virtualRow.index} size={virtualRow.size} />
+        <Row
+          key={virtualRow.key}
+          rowIndex={virtualRow.index}
+          size={virtualRow.size}
+          zebra={zebra}
+        />
       ))}
       <div
         aria-hidden="true"
-        className="h-(--table-scroll-bottom-offset) shrink-0 will-change-[height]"
+        className="
+          h-(--table-scroll-bottom-offset) shrink-0 will-change-[height]
+        "
         style={spacerStyle}
       />
     </div>

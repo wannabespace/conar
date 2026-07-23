@@ -10,12 +10,12 @@ import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import { createRootRoute, HeadContent, Outlet, useRouter } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
-import { GlobalBanner } from '~/components/global-banner'
 import { ErrorPage } from '~/error-page'
 import { globalHooks } from '~/global-hooks'
 import { queryClient } from '~/main'
 import { useDeepLinksObserver } from '~/use-deep-links-observer'
 import { useUpdatesObserver } from '~/use-updates-observer'
+import { useWindowFocusObserver } from '~/use-window-focus-observer'
 
 export const Route = createRootRoute({
   component: RootDocument,
@@ -35,6 +35,8 @@ function RootDocument() {
     useHotkey('Mod+Shift+R', () => location.reload())
     // oxlint-disable-next-line react/rules-of-hooks
     useDeepLinksObserver()
+    // oxlint-disable-next-line react/rules-of-hooks
+    useWindowFocusObserver()
   }
 
   useHotkey('Mod+S', () => globalHooks.callHook('savePressed'))
@@ -50,11 +52,11 @@ function RootDocument() {
           <div
             className={cn(
               'flex h-screen flex-col',
-              // For simple page layouts, we want outlet to be the full height of the screen
-              '*:last:h-full *:last:min-h-[inherit] *:last:flex-1',
+              // The page fills whatever the banners leave over; forcing h-full
+              // here made banners push the layout past the viewport
+              '*:last:min-h-0 *:last:flex-1',
             )}
           >
-            <GlobalBanner />
             <Outlet />
           </div>
           {import.meta.env.DEV && (

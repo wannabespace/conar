@@ -128,31 +128,35 @@ const resourceTableColumnsQuery = memoize(
               .orderBy('a.attnum', 'asc')
               .execute()
 
-            return fallback.map(row =>
-              Object.assign(row, {
-                type: row.type.endsWith('[]') ? row.type.slice(0, -2) : row.type,
-                isArray: row.type.endsWith('[]'),
-                editable: false,
-              } satisfies Partial<typeof columnType.inferIn>),
+            return fallback.map(
+              row =>
+                ({
+                  ...row,
+                  type: row.type.endsWith('[]') ? row.type.slice(0, -2) : row.type,
+                  isArray: row.type.endsWith('[]'),
+                  editable: false,
+                }) satisfies typeof columnType.inferIn,
             )
           }
 
-          return query.map(({ data_type, udt_name, ...row }) =>
-            Object.assign(row, {
-              type: data_type === 'ARRAY' ? `${udt_name.slice(1)}[]` : data_type,
-              typeLabel:
-                data_type === 'ARRAY'
-                  ? `${getPgColumnType(data_type, udt_name)}[]`
-                  : getPgColumnType(data_type, udt_name),
-              enumName:
-                data_type === 'USER-DEFINED'
-                  ? udt_name
-                  : data_type === 'ARRAY'
-                    ? udt_name.slice(1)
-                    : undefined,
-              isArray: data_type === 'ARRAY',
-              maxLength: row.max_length,
-            } satisfies Partial<typeof columnType.inferIn>),
+          return query.map(
+            ({ data_type, udt_name, ...row }) =>
+              ({
+                ...row,
+                type: data_type === 'ARRAY' ? `${udt_name.slice(1)}[]` : data_type,
+                typeLabel:
+                  data_type === 'ARRAY'
+                    ? `${getPgColumnType(data_type, udt_name)}[]`
+                    : getPgColumnType(data_type, udt_name),
+                enumName:
+                  data_type === 'USER-DEFINED'
+                    ? udt_name
+                    : data_type === 'ARRAY'
+                      ? udt_name.slice(1)
+                      : undefined,
+                isArray: data_type === 'ARRAY',
+                maxLength: row.max_length,
+              }) satisfies typeof columnType.inferIn,
           )
         },
         mysql: async db => {
@@ -181,12 +185,14 @@ const resourceTableColumnsQuery = memoize(
             )
             .execute()
 
-          return query.map(column =>
-            Object.assign(column, {
-              enumName: column.type === 'set' || column.type === 'enum' ? column.id : undefined,
-              isArray: column.type === 'set',
-              maxLength: column.max_length,
-            } satisfies Partial<typeof columnType.inferIn>),
+          return query.map(
+            column =>
+              ({
+                ...column,
+                enumName: column.type === 'set' || column.type === 'enum' ? column.id : undefined,
+                isArray: column.type === 'set',
+                maxLength: column.max_length,
+              }) satisfies typeof columnType.inferIn,
           )
         },
         mssql: async db => {
@@ -222,13 +228,15 @@ const resourceTableColumnsQuery = memoize(
             )
             .execute()
 
-          return query.map(({ name, ...column }) =>
-            Object.assign(column, {
-              id: name,
-              enumName: column.type === 'set' || column.type === 'enum' ? name : undefined,
-              isArray: column.type === 'set',
-              maxLength: column.max_length,
-            } satisfies Partial<typeof columnType.inferIn>),
+          return query.map(
+            ({ name, ...column }) =>
+              ({
+                ...column,
+                id: name,
+                enumName: column.type === 'set' || column.type === 'enum' ? name : undefined,
+                isArray: column.type === 'set',
+                maxLength: column.max_length,
+              }) satisfies typeof columnType.inferIn,
           )
         },
         clickhouse: async db => {
@@ -247,14 +255,13 @@ const resourceTableColumnsQuery = memoize(
             )
             .execute()
 
-          return query.map(row =>
-            Object.assign(row, {
-              enumName: row.type.includes('Enum') ? row.id : undefined,
-              isArray: row.type.includes('Array('),
-              label: getClickhouseColumnType(row.type),
-              editable: true,
-            }),
-          )
+          return query.map(row => ({
+            ...row,
+            enumName: row.type.includes('Enum') ? row.id : undefined,
+            isArray: row.type.includes('Array('),
+            label: getClickhouseColumnType(row.type),
+            editable: true,
+          }))
         },
       },
     })

@@ -1,15 +1,14 @@
+import { RiAlertLine } from '@remixicon/react'
 import {
   AlertDialog,
-  AlertDialogClose,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@tamery/ui/components/alert-dialog'
-import { Button } from '@tamery/ui/components/button'
 import { KbdShiftCtrlEnter } from '@tamery/ui/components/custom/shortcuts'
-import { RiAlertLine } from '@remixicon/react'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useImperativeHandle, useRef, useState } from 'react'
 
@@ -62,7 +61,11 @@ export function RunnerAlertDialog({
             Potentially Dangerous SQL Query
           </AlertDialogTitle>
           <AlertDialogDescription>
-            <span className="mb-3 block rounded-md border border-warning/20 bg-warning/10 p-3">
+            <span
+              className="
+              mb-3 block rounded-md border border-warning/20 bg-warning/10 p-3
+            "
+            >
               Your query contains potentially dangerous SQL keywords:
               <span className="font-semibold text-warning">
                 {' '}
@@ -76,13 +79,13 @@ export function RunnerAlertDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="gap-2">
-          <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-          <AlertDialogClose render={<Button variant="warning" />} onClick={onConfirm}>
+          <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
+          <AlertDialogCancel variant="warning" onClick={onConfirm}>
             <span className="flex items-center gap-2">
               Run Anyway
               <KbdShiftCtrlEnter userAgent={navigator.userAgent} className="text-white" />
             </span>
-          </AlertDialogClose>
+          </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

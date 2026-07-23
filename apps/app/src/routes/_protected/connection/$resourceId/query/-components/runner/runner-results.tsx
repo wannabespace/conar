@@ -1,6 +1,5 @@
 import { RiChatAiLine, RiStopLine, RiVipCrownLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
-import { ScrollArea } from '@tamery/ui/components/scroll-area'
 import { Spinner } from '@tamery/ui/components/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@tamery/ui/components/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
@@ -47,7 +46,12 @@ export function RunnerResults() {
   if (results && results.length > 0) {
     return (
       <Tabs defaultValue="table-0" className="size-full gap-0">
-        <ScrollArea className="h-8 w-full min-w-0 shrink-0" scrollFade>
+        <div
+          className="
+          no-scrollbar h-8 w-full min-w-0 shrink-0 scroll-fade-x
+          overflow-x-auto
+        "
+        >
           <TabsList className="w-max max-w-none rounded-none bg-muted/50">
             {results.map(({ query, error }, index) => (
               <TabsTrigger
@@ -57,17 +61,21 @@ export function RunnerResults() {
                 className="h-8"
               >
                 <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span
-                      className={cn(
-                        `flex w-full items-center justify-center gap-1`,
-                        error && `text-destructive`,
-                      )}
-                    >
-                      Result {results.length > 1 ? index + 1 : ''}
-                    </span>
+                  <TooltipTrigger
+                    render={
+                      <span
+                        className={cn(
+                          `
+                      flex w-full items-center justify-center gap-1
+                    `,
+                          error && `text-destructive`,
+                        )}
+                      />
+                    }
+                  >
+                    Result {results.length > 1 ? index + 1 : ''}
                   </TooltipTrigger>
-                  <TooltipContent sideOffset={8} className="w-lg p-0 pl-2">
+                  <TooltipContent data-mask sideOffset={8} className="w-lg p-0 pl-2">
                     <Monaco
                       value={formatSql(query, connection.type)}
                       language="sql"
@@ -85,7 +93,7 @@ export function RunnerResults() {
               </TabsTrigger>
             ))}
           </TabsList>
-        </ScrollArea>
+        </div>
         {results.map(({ data, error, startLineNumber, endLineNumber, duration }, index) => (
           <TabsContent
             key={`result-${data?.length ?? 'error'}-${startLineNumber}`}
@@ -94,11 +102,19 @@ export function RunnerResults() {
           >
             {error ? (
               <div
-                className={`mx-auto flex h-full max-w-2/3 flex-col items-center justify-center gap-2`}
+                className={`
+                    mx-auto flex h-full max-w-2/3 flex-col items-center
+                    justify-center gap-2
+                  `}
               >
                 Error executing query
                 <div
-                  className={`mb-2 max-h-1/2 max-w-full overflow-auto rounded-sm bg-red-50 px-2 py-1 font-mono text-xs text-balance text-red-700 dark:bg-red-950 dark:text-red-300`}
+                  data-mask
+                  className={`
+                      mb-2 max-h-1/2 max-w-full overflow-auto rounded-sm
+                      bg-destructive/10 px-2 py-1 font-mono text-xs text-balance
+                      text-destructive
+                    `}
                 >
                   {error}
                 </div>
@@ -136,7 +152,11 @@ export function RunnerResults() {
                 )}
               </div>
             ) : !data || !data[0] || data.length === 0 ? (
-              <div className={`flex h-full flex-col items-center justify-center gap-2`}>
+              <div
+                className={`
+                        flex h-full flex-col items-center justify-center gap-2
+                      `}
+              >
                 No data returned{' '}
                 <span className="text-muted-foreground">
                   ({duration.toFixed()}

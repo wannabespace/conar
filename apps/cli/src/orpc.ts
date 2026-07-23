@@ -1,6 +1,6 @@
-import type { ORPCRouter } from '@tamery/api/orpc/routers'
 import { createORPCClient } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
+import type { ORPCRouter } from '@tamery/api/orpc/routers'
 
 import { getToken } from '~/config'
 

@@ -2,30 +2,29 @@ import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import { cn } from '@tamery/ui/lib/utils'
 import type { VariantProps } from 'class-variance-authority'
-import type * as React from 'react'
 
-import { badgeVariants } from './badge.variants'
+import { badgeVariants } from './badge.utils'
 
-export interface BadgeProps extends useRender.ComponentProps<'span'> {
-  variant?: VariantProps<typeof badgeVariants>['variant']
-  size?: VariantProps<typeof badgeVariants>['size']
-}
-
-export function Badge({
+function Badge({
   className,
-  variant,
-  size,
+  variant = 'default',
   render,
   ...props
-}: BadgeProps): React.ReactElement {
-  const defaultProps = {
-    'className': cn(badgeVariants({ className, size, variant })),
-    'data-slot': 'badge',
-  }
-
+}: useRender.ComponentProps<'span'> & VariantProps<typeof badgeVariants>) {
   return useRender({
     defaultTagName: 'span',
-    props: mergeProps<'span'>(defaultProps, props),
+    props: mergeProps<'span'>(
+      {
+        className: cn(badgeVariants({ variant }), className),
+      },
+      props,
+    ),
     render,
+    state: {
+      slot: 'badge',
+      variant,
+    },
   })
 }
+
+export { Badge }

@@ -1,5 +1,5 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { faker } from '@faker-js/faker'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
 import type { GeneratorMap } from '..'

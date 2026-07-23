@@ -8,6 +8,8 @@ export const SOCIAL_LINKS = {
   DISCORD: 'https://discord.gg/XweDPUVadR',
 } as const
 
+export const RELEASES_URL = 'https://tamery.app/releases' as const
+
 export const GITHUB_REPO_OWNER = 'wannabespace' as const
 export const GITHUB_REPO_NAME = 'tamery' as const
 

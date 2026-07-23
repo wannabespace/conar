@@ -2,6 +2,15 @@ import { describe, expect, it } from 'bun:test'
 
 import { SafeURL } from './safe-url'
 
+function errorMessage() {
+  try {
+    // oxlint-disable-next-line no-new
+    new SafeURL('not-a-valid-connection-string')
+  } catch (e) {
+    return (e as Error).message
+  }
+}
+
 const RANDOM_URLS = [
   'http://localhost:5432/mydb',
   'postgresql://user:pass@localhost:5432/mydb',
@@ -167,16 +176,6 @@ describe('new SafeURL', () => {
   })
 
   it('throws on invalid connection string', () => {
-    // oxlint-disable-next-line consistent-function-scoping
-    const errorMessage = () => {
-      try {
-        // oxlint-disable-next-line no-new
-        new SafeURL('not-a-valid-connection-string')
-      } catch (e) {
-        return (e as Error).message
-      }
-    }
-
     expect(() => new SafeURL('not-a-valid-connection-string')).toThrow(errorMessage())
   })
 

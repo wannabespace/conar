@@ -21,6 +21,7 @@ export function useScrollInfo(ref: React.RefObject<HTMLElement | null>) {
 
     const { scrollLeft, scrollTop, scrollWidth, scrollHeight, clientWidth, clientHeight } = el
 
+    // oxlint-disable-next-line react/set-state-in-effect
     setScrollInfo({
       left: scrollLeft,
       top: scrollTop,

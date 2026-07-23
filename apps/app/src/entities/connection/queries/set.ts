@@ -21,7 +21,7 @@ export const setQuery = memoize(
         postgres: db =>
           db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .updateTable(table)
             .set(values)
             .where(eb => buildWhere(eb, filters))
@@ -29,7 +29,7 @@ export const setQuery = memoize(
         mysql: db =>
           db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .updateTable(table)
             .set(values)
             .where(eb => buildWhere(eb, filters))
@@ -37,7 +37,7 @@ export const setQuery = memoize(
         mssql: db =>
           db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .updateTable(table)
             .set(values)
             .where(eb => buildWhere(eb, filters))
@@ -45,7 +45,7 @@ export const setQuery = memoize(
         clickhouse: db =>
           db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .updateTable(table)
             .set(values)
             .where(eb => buildWhere(eb, filters))

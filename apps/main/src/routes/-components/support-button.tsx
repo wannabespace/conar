@@ -1,3 +1,4 @@
+import { RiMessageLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
@@ -7,13 +8,11 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogPanel,
   DialogTitle,
   DialogTrigger,
 } from '@tamery/ui/components/dialog'
 import { Field, FieldLabel } from '@tamery/ui/components/field'
 import { Textarea } from '@tamery/ui/components/textarea'
-import { RiMessageLine } from '@remixicon/react'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -60,7 +59,7 @@ export function SupportButton() {
             Have a question, suggestion, or need assistance? We're here to listen!
           </DialogDescription>
         </DialogHeader>
-        <DialogPanel>
+        <div>
           <form onSubmit={handleSubmit} className="space-y-2">
             <Field>
               <FieldLabel htmlFor="support-message">Message</FieldLabel>
@@ -74,7 +73,7 @@ export function SupportButton() {
               />
             </Field>
           </form>
-        </DialogPanel>
+        </div>
         <DialogFooter>
           <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
           <Button type="submit" disabled={loading || !message}>

@@ -1,3 +1,4 @@
+import { RiLoopLeftLine } from '@remixicon/react'
 import { COLOR_OPTIONS, LABEL_OPTIONS } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
@@ -15,7 +16,6 @@ import { Input } from '@tamery/ui/components/input'
 import { Label } from '@tamery/ui/components/label'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
-import { RiLoopLeftLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { useId } from 'react'
 
@@ -78,6 +78,7 @@ export function StepSave({
             <div className="flex w-full items-end gap-2">
               <Input
                 id={nameId}
+                data-mask
                 className="field-sizing-content"
                 placeholder="My connection"
                 autoFocus
@@ -85,10 +86,12 @@ export function StepSave({
                 onChange={e => setName(e.target.value)}
               />
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button type="button" variant="outline" size="icon" onClick={onRandomName}>
-                    <RiLoopLeftLine />
-                  </Button>
+                <TooltipTrigger
+                  render={
+                    <Button type="button" variant="outline" size="icon" onClick={onRandomName} />
+                  }
+                >
+                  <RiLoopLeftLine />
                 </TooltipTrigger>
                 <TooltipContent sideOffset={8}>Generate a random connection name</TooltipContent>
               </Tooltip>
@@ -102,6 +105,7 @@ export function StepSave({
             <div className="flex flex-col gap-2">
               <Input
                 id={labelId}
+                data-mask
                 placeholder="Development, Production, Staging, etc."
                 value={label ?? ''}
                 onChange={e => setLabel(e.target.value)}
@@ -132,11 +136,17 @@ export function StepSave({
                   <button
                     key={colorOption}
                     type="button"
-                    aria-label={`Set color to ${colorOption}`}
+                    aria-label={`Select ${colorOption} color`}
                     className={cn(
-                      `size-6 cursor-pointer rounded-full bg-(--color) transition-all`,
+                      `
+                        size-6 rounded-full bg-(--color)
+                        transition-all
+                      `,
                       color === colorOption &&
-                        `ring-2 ring-(--color) ring-offset-2 ring-offset-background`,
+                        `
+                        ring-2 ring-(--color) ring-offset-2
+                        ring-offset-background
+                      `,
                     )}
                     style={{
                       '--color': colorOption,

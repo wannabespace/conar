@@ -1,6 +1,5 @@
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { Field, FieldLabel } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
@@ -60,7 +59,11 @@ function ForgotPasswordPage() {
   return (
     <>
       <div className="space-y-2">
-        <h1 className={`flex items-center gap-2 text-2xl font-semibold tracking-tight`}>
+        <h1
+          className={`
+          flex items-center gap-2 text-2xl font-semibold tracking-tight
+        `}
+        >
           Forgot your password?
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -76,8 +79,8 @@ function ForgotPasswordPage() {
       >
         <form.AppField name="email">
           {field => (
-            <Field>
-              <FieldLabel>Email</FieldLabel>
+            <field.Field>
+              <field.Label>Email</field.Label>
               <field.Input
                 placeholder="example@gmail.com"
                 type="email"
@@ -87,7 +90,7 @@ function ForgotPasswordPage() {
                 autoFocus
               />
               <field.Error />
-            </Field>
+            </field.Field>
           )}
         </form.AppField>
         <Button className="w-full" type="submit" disabled={isSubmitting}>

@@ -49,7 +49,8 @@ export function Chat({ className }: { className?: string }) {
       key={chat.id}
       className={cn('relative flex flex-col justify-between gap-4 p-4', className)}
       ref={elementRef}
-      // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- intentionally focusable to track focus state for the Mod+N hotkey scope, not a decorative container
+      // Focusable container for chat focus/blur management
+      // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex
       tabIndex={0}
       onFocusCapture={() => setIsFocused(true)}
       onBlurCapture={event => {

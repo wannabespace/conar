@@ -1,12 +1,3 @@
-import { sleep } from '@tamery/shared/utils/helpers'
-import { Button } from '@tamery/ui/components/button'
-import { CardTitle } from '@tamery/ui/components/card'
-import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
-import { Group, GroupSeparator } from '@tamery/ui/components/group'
-import { Label } from '@tamery/ui/components/label'
-import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
-import { ScrollArea } from '@tamery/ui/components/scroll-area'
-import { cn } from '@tamery/ui/lib/utils'
 import {
   RiArrowDownLine,
   RiCheckboxCircleLine,
@@ -17,6 +8,14 @@ import {
   RiFileListLine,
   RiTimeLine,
 } from '@remixicon/react'
+import { sleep } from '@tamery/shared/utils/helpers'
+import { Button } from '@tamery/ui/components/button'
+import { CardTitle } from '@tamery/ui/components/card'
+import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
+import { Group, GroupSeparator } from '@tamery/ui/components/group'
+import { Label } from '@tamery/ui/components/label'
+import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
+import { cn } from '@tamery/ui/lib/utils'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import type { ComponentProps } from 'react'
 import { useEffect, useMemo, useState } from 'react'
@@ -64,7 +63,11 @@ function LogTrigger({
     <button
       type="button"
       className={cn(
-        `flex w-full cursor-pointer items-center justify-between gap-2 border-t px-4 py-1.5 hover:bg-muted/50`,
+        `
+          flex w-full items-center justify-between gap-2 border-t
+          px-4 py-1.5
+          hover:bg-accent/50
+        `,
         className,
       )}
       {...props}
@@ -80,7 +83,11 @@ function LogTrigger({
         })}
       </span>
       {getStatusIcon(status)}
-      <span className={`w-12 text-left text-xs text-muted-foreground tabular-nums`}>
+      <span
+        className={`
+        w-12 text-left text-xs text-muted-foreground tabular-nums
+      `}
+      >
         {query.duration ? `${query.duration.toFixed()}ms` : ''}
       </span>
       <code className="flex-1 truncate text-left font-mono text-xs">{shortQuery}</code>
@@ -147,7 +154,11 @@ function Log({
           {query.values && query.values.length > 0 && (
             <div className="space-y-2">
               <Label>Values</Label>
-              <pre className={`overflow-x-auto rounded-sm bg-accent/50 p-2 font-mono text-xs`}>
+              <pre
+                className={`
+                overflow-x-auto rounded-sm bg-accent/50 p-2 font-mono text-xs
+              `}
+              >
                 {JSON.stringify(query.values)}
               </pre>
             </div>
@@ -169,7 +180,10 @@ function Log({
             <div className="space-y-2">
               <Label className="text-destructive">Error</Label>
               <pre
-                className={`overflow-x-auto rounded-sm bg-red-50 p-2 font-mono text-xs whitespace-break-spaces text-red-700 dark:bg-red-950 dark:text-red-300`}
+                className={`
+                overflow-x-auto rounded-sm bg-destructive/10 p-2 font-mono text-xs
+                whitespace-break-spaces text-destructive
+              `}
               >
                 {query.error}
               </pre>
@@ -259,7 +273,7 @@ export function QueryLogger({
   }, [scrollRef, virtualItems, totalSize])
 
   return (
-    <div className={cn('flex h-full flex-col justify-between', className)}>
+    <div data-mask className={cn('flex h-full flex-col justify-between', className)}>
       <div className="flex items-center justify-between px-4 py-2">
         <div className="flex items-center gap-2">
           <CardTitle>Query Logger</CardTitle>
@@ -267,7 +281,7 @@ export function QueryLogger({
             <Button
               size="xs"
               variant="outline"
-              className={cn('text-success!', statusGroup === 'success' && `bg-accent!`)}
+              className={cn('text-success!', statusGroup === 'success' && 'bg-accent!')}
               onClick={() => toggleGroup('success')}
             >
               <RiCheckboxCircleLine className="size-3" />
@@ -277,7 +291,7 @@ export function QueryLogger({
             <Button
               size="xs"
               variant="outline"
-              className={cn('text-destructive!', statusGroup === 'error' && `bg-accent!`)}
+              className={cn('text-destructive!', statusGroup === 'error' && 'bg-accent!')}
               onClick={() => toggleGroup('error')}
             >
               <RiCloseCircleLine className="size-3" />
@@ -287,7 +301,7 @@ export function QueryLogger({
             <Button
               size="xs"
               variant="outline"
-              className={cn('text-warning!', statusGroup === 'pending' && `bg-accent!`)}
+              className={cn('text-warning!', statusGroup === 'pending' && 'bg-accent!')}
               onClick={() => toggleGroup('pending')}
             >
               <RiTimeLine className="size-3" />
@@ -316,7 +330,7 @@ export function QueryLogger({
           </Button>
         </div>
       </div>
-      <ScrollArea viewportRef={scrollRef} scrollFade className="relative min-h-0">
+      <div ref={scrollRef} className="relative no-scrollbar min-h-0 scroll-fade overflow-auto">
         {filteredQueries.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="mb-3">
@@ -349,7 +363,7 @@ export function QueryLogger({
             <RiArrowDownLine className="size-4" />
           </Button>
         </div>
-      </ScrollArea>
+      </div>
     </div>
   )
 }

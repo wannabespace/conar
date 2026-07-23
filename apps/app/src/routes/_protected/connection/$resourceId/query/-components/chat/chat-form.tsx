@@ -1,10 +1,4 @@
 import { useChat } from '@ai-sdk/react'
-import { getBase64FromFiles } from '@tamery/shared/utils/base64'
-import { Button } from '@tamery/ui/components/button'
-import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
-import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { Spinner } from '@tamery/ui/components/spinner'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import {
   RiAttachment2,
   RiCheckLine,
@@ -12,6 +6,12 @@ import {
   RiMagicLine,
   RiStopCircleLine,
 } from '@remixicon/react'
+import { getBase64FromFiles } from '@tamery/shared/utils/base64'
+import { Button } from '@tamery/ui/components/button'
+import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
+import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { Spinner } from '@tamery/ui/components/spinner'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useMutation } from '@tanstack/react-query'
 import { useLocation, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
@@ -184,10 +184,17 @@ export function ChatForm() {
     <div className="flex flex-col gap-1">
       <Images connectionResource={connectionResource} />
       <div
-        className={`relative flex flex-col gap-2 overflow-hidden rounded-md border dark:bg-input/30`}
+        className={`
+        relative flex flex-col gap-2 overflow-hidden rounded-md border
+        bg-input/32
+      `}
       >
         {!subscription && (
-          <div className="z-10 flex items-center gap-2 border-b px-3 py-1.5 text-xs">
+          <div
+            className="
+              z-10 flex items-center gap-2 border-b px-3 py-1.5 text-xs
+            "
+          >
             <span className="flex-1 text-muted-foreground">
               Upgrade to Pro to generate SQL queries with AI.
             </span>
@@ -208,66 +215,81 @@ export function ChatForm() {
               ? 'Generate SQL queries using natural language'
               : 'Check your internet connection to generate SQL queries'
           }
-          className={`max-h-62.5 min-h-12.5 overflow-y-auto p-2 text-sm outline-none`}
+          className={`
+            max-h-62.5 min-h-12.5 overflow-y-auto p-2 text-sm outline-none
+          `}
           disabled={!subscription || !isOnline}
           onEnter={handleSend}
           onImageAdd={file => {
             filesStore.set([...files, file])
           }}
         />
-        <div className={`pointer-events-none flex items-end justify-between px-2 pb-2`}>
+        <div
+          className={`
+          pointer-events-none flex items-end justify-between px-2 pb-2
+        `}
+        >
           <div className="pointer-events-auto">
-            <Button
-              type="button"
-              size="icon-xs"
-              variant="outline"
-              render={<label htmlFor="chat-file-upload" aria-label="Attach files" />}
-            >
-              <RiAttachment2 className="size-3" />
-              <input
-                id="chat-file-upload"
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handleFileAttach}
-                tabIndex={-1}
-                aria-label="Attach files"
-              />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    nativeButton={false}
+                    size="icon-xs"
+                    variant="outline"
+                    render={<label htmlFor="chat-file-upload" aria-label="Attach files" />}
+                  />
+                }
+              >
+                <RiAttachment2 className="size-3" />
+                <input
+                  id="chat-file-upload"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileAttach}
+                  tabIndex={-1}
+                  aria-label="Attach files"
+                />
+              </TooltipTrigger>
+              <TooltipContent side="top">Attach images</TooltipContent>
+            </Tooltip>
           </div>
           <div className="pointer-events-auto flex gap-2">
             <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size="icon-xs"
-                  variant="outline"
-                  className={input.length < 10 ? 'cursor-default opacity-50' : ''}
-                  disabled={
-                    status === 'submitted' ||
-                    status === 'streaming' ||
-                    isEnhancingPrompt ||
-                    !subscription
-                  }
-                  onClick={() =>
-                    enhancePrompt({
-                      prompt: input,
-                      chatId: chat.id,
-                    })
-                  }
+              <TooltipTrigger
+                render={
+                  <Button
+                    size="icon-xs"
+                    variant="outline"
+                    className={input.length < 10 ? 'cursor-default opacity-50' : ''}
+                    disabled={
+                      status === 'submitted' ||
+                      status === 'streaming' ||
+                      isEnhancingPrompt ||
+                      !subscription
+                    }
+                    onClick={() =>
+                      enhancePrompt({
+                        prompt: input,
+                        chatId: chat.id,
+                      })
+                    }
+                  />
+                }
+              >
+                <LoadingContent
+                  loading={isEnhancingPrompt}
+                  spinner={<Spinner className="size-3" />}
                 >
-                  <LoadingContent
-                    loading={isEnhancingPrompt}
-                    spinner={<Spinner className="size-3" />}
+                  <ContentSwitch
+                    active={isEnhancingPrompt}
+                    activeContent={<RiCheckLine className="size-3 text-success" />}
                   >
-                    <ContentSwitch
-                      active={isEnhancingPrompt}
-                      activeContent={<RiCheckLine className="size-3 text-success" />}
-                    >
-                      <RiMagicLine className="size-3" />
-                    </ContentSwitch>
-                  </LoadingContent>
-                </Button>
+                    <RiMagicLine className="size-3" />
+                  </ContentSwitch>
+                </LoadingContent>
               </TooltipTrigger>
               <TooltipContent side="top">
                 {input.length < 10 ? 'Prompt is too short to enhance' : 'Enhance prompt'}

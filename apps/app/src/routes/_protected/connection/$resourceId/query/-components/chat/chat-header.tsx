@@ -1,3 +1,4 @@
+import { RiAddLine, RiDeleteBin7Line, RiHistoryLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import { CardTitle } from '@tamery/ui/components/card'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
@@ -12,7 +13,6 @@ import {
 } from '@tamery/ui/components/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
-import { RiAddLine, RiDeleteBin7Line, RiHistoryLine } from '@remixicon/react'
 import { useLiveQuery } from '@tanstack/react-db'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { getMonth, getWeek, getYear, isToday, isYesterday } from 'date-fns'
@@ -112,7 +112,11 @@ export function ChatHeader({ chatId }: { chatId: string }) {
             {chat ? (
               <>
                 {chat.title || (
-                  <span className={`block h-4 w-30 animate-pulse rounded-md bg-muted`} />
+                  <span
+                    className={`
+                        block h-4 w-30 animate-pulse rounded-md bg-muted
+                      `}
+                  />
                 )}
               </>
             ) : (
@@ -122,27 +126,44 @@ export function ChatHeader({ chatId }: { chatId: string }) {
         </CardTitle>
         <div className="flex items-center gap-2">
           {chat && (
-            <Button
-              variant="outline"
-              size="icon-sm"
-              onClick={() =>
-                store.set(
-                  state =>
-                    ({
-                      ...state,
-                      lastOpenedChatId: null,
-                    }) satisfies typeof state,
-                )
-              }
-              render={<Link to="/connection/$resourceId/query" params={{ resourceId }} />}
-            >
-              <RiAddLine className="size-4" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    aria-label="New chat"
+                    onClick={() =>
+                      store.set(
+                        state =>
+                          ({
+                            ...state,
+                            lastOpenedChatId: null,
+                          }) satisfies typeof state,
+                      )
+                    }
+                    render={<Link to="/connection/$resourceId/query" params={{ resourceId }} />}
+                  />
+                }
+              >
+                <RiAddLine className="size-4" />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">New chat</TooltipContent>
+            </Tooltip>
           )}
           <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="outline" size="icon-sm" />}>
-              <RiHistoryLine className="size-4" />
-            </DropdownMenuTrigger>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <DropdownMenuTrigger
+                    render={<Button variant="outline" size="icon-sm" aria-label="Chat history" />}
+                  />
+                }
+              >
+                <RiHistoryLine className="size-4" />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Chat history</TooltipContent>
+            </Tooltip>
             <DropdownMenuContent align="end" className="min-w-60">
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Chats</DropdownMenuLabel>
@@ -166,31 +187,44 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                                 params={{ resourceId }}
                                 search={{ chatId: chat.id }}
                                 className={cn(
-                                  `flex items-center justify-between gap-2 text-foreground`,
+                                  `
+                                      flex items-center justify-between gap-2
+                                      text-foreground
+                                    `,
                                   chat.id === chatId && `bg-accent`,
                                 )}
                               />
                             }
                           >
-                            <span className="truncate">
+                            <span data-mask className="truncate">
                               {chat.title || (
-                                <span className={`h-4 w-30 animate-pulse rounded-md bg-muted`} />
+                                <span
+                                  className={`
+                                      h-4 w-30 animate-pulse rounded-md bg-muted
+                                    `}
+                                />
                               )}
                             </span>
                             <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon-xs"
-                                  className={`-mr-1 opacity-0 transition-none group-hover:opacity-100 hover:text-destructive`}
-                                  onClick={e => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    removeChat(chat)
-                                  }}
-                                >
-                                  <RiDeleteBin7Line className="size-3.5" />
-                                </Button>
+                              <TooltipTrigger
+                                render={
+                                  <Button
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    className={`
+                                        -mr-1 opacity-0 transition-none
+                                        group-hover:opacity-100
+                                        hover:text-destructive
+                                      `}
+                                    onClick={e => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                      removeChat(chat)
+                                    }}
+                                  />
+                                }
+                              >
+                                <RiDeleteBin7Line className="size-3.5" />
                               </TooltipTrigger>
                               <TooltipContent>Delete Chat</TooltipContent>
                             </Tooltip>

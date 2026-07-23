@@ -1,36 +1,22 @@
-import { mergeProps } from '@base-ui/react/merge-props'
-import { useRender } from '@base-ui/react/use-render'
+import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import { cn } from '@tamery/ui/lib/utils'
 import type { VariantProps } from 'class-variance-authority'
-import type * as React from 'react'
 
-import { buttonVariants } from './button.variants'
+import { buttonVariants } from './button.utils'
 
-export interface ButtonProps extends useRender.ComponentProps<'button'> {
-  variant?: VariantProps<typeof buttonVariants>['variant']
-  size?: VariantProps<typeof buttonVariants>['size']
-}
-
-export function Button({
+function Button({
   className,
-  variant,
-  size,
-  render,
+  variant = 'default',
+  size = 'default',
   ...props
-}: ButtonProps): React.ReactElement {
-  const typeValue: React.ButtonHTMLAttributes<HTMLButtonElement>['type'] = render
-    ? undefined
-    : 'button'
-
-  const defaultProps = {
-    'className': cn(buttonVariants({ className, size, variant })),
-    'data-slot': 'button',
-    'type': typeValue,
-  }
-
-  return useRender({
-    defaultTagName: 'button',
-    props: mergeProps<'button'>(defaultProps, props),
-    render,
-  })
+}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+  return (
+    <ButtonPrimitive
+      data-slot="button"
+      className={cn(buttonVariants({ variant, size, className }))}
+      {...props}
+    />
+  )
 }
+
+export { Button }

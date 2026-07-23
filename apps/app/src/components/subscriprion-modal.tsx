@@ -1,3 +1,4 @@
+import { RiExternalLinkLine, RiVipCrownLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import {
   Dialog,
@@ -7,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
-import { RiExternalLinkLine, RiVipCrownLine } from '@remixicon/react'
 import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
@@ -32,13 +32,14 @@ export function SubscriptionModal() {
 
   return (
     <Dialog open={isSubscriptionDialogOpen} onOpenChange={setIsSubscriptionDialogOpen}>
-      <DialogContent
-        className={`max-w-md bg-linear-to-b from-primary/5 via-background to-background`}
-      >
+      <DialogContent className="max-w-md bg-linear-to-b from-primary/5 via-background to-background">
         <DialogHeader>
           <div className="flex items-center gap-2">
             <div
-              className={`flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10`}
+              className={`
+                flex size-7 shrink-0 items-center justify-center rounded-full
+                bg-primary/10
+              `}
             >
               <RiVipCrownLine className="size-4 text-primary" />
             </div>
@@ -58,16 +59,16 @@ export function SubscriptionModal() {
             </div>
           </div>
         </div>
-        <DialogFooter className={`flex-col gap-2 sm:flex-row`}>
+        <DialogFooter className="flex-col gap-2 sm:flex-row">
           <Button
             variant="outline"
             onClick={() => setIsSubscriptionDialogOpen(false)}
-            className={`w-full sm:w-auto`}
+            className="w-full sm:w-auto"
           >
             Maybe Later
           </Button>
           <Button
-            className={`w-full sm:w-auto`}
+            className="w-full sm:w-auto"
             render={
               <a
                 href={accountUrl}

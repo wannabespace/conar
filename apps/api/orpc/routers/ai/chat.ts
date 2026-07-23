@@ -1,16 +1,15 @@
 import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
+import { streamToEventIterator } from '@orpc/server'
 import { tools } from '@tamery/ai/tools'
 import type { AppUIMessage } from '@tamery/ai/tools/helpers'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { streamToEventIterator } from '@orpc/server'
 import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
 import { createRetryableModel } from 'ai-retry/language-model'
 import { type } from 'arktype'
 import { v7 } from 'uuid'
 
-import { withPosthog } from '~/lib/posthog'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 const model = createRetryableModel({
@@ -122,10 +121,7 @@ export const chat = orpc
       allowSystemInMessages: true,
       stopWhen: stepCountIs(Number.POSITIVE_INFINITY),
       abortSignal: signal,
-      model: withPosthog(model, {
-        chatId: input.id,
-        userId: context.user.id,
-      }),
+      model,
       experimental_transform: smoothStream(),
       tools,
     })

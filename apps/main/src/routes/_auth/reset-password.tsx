@@ -1,7 +1,6 @@
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { Field, FieldLabel } from '@tamery/ui/components/field'
-import { Fieldset } from '@tamery/ui/components/fieldset'
+import { FieldSet } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
@@ -72,7 +71,11 @@ function ResetPasswordPage() {
   return (
     <>
       <div className="space-y-2">
-        <h1 className={`flex items-center gap-2 text-2xl font-semibold tracking-tight`}>
+        <h1
+          className={`
+          flex items-center gap-2 text-2xl font-semibold tracking-tight
+        `}
+        >
           Reset your password
         </h1>
         <p className="text-sm text-muted-foreground">Enter your new password below.</p>
@@ -84,11 +87,11 @@ function ResetPasswordPage() {
           form.handleSubmit()
         }}
       >
-        <Fieldset className="flex w-full flex-col gap-6">
+        <FieldSet className="flex w-full flex-col gap-6">
           <form.AppField name="password">
             {field => (
-              <Field>
-                <FieldLabel>New Password</FieldLabel>
+              <field.Field>
+                <field.Label>New Password</field.Label>
                 <field.PasswordInput
                   autoFocus
                   autoComplete="new-password"
@@ -98,7 +101,7 @@ function ResetPasswordPage() {
                   autoCapitalize="none"
                 />
                 <field.Error />
-              </Field>
+              </field.Field>
             )}
           </form.AppField>
 
@@ -112,8 +115,8 @@ function ResetPasswordPage() {
             }}
           >
             {field => (
-              <Field>
-                <FieldLabel>Confirm Password</FieldLabel>
+              <field.Field>
+                <field.Label>Confirm Password</field.Label>
                 <field.PasswordInput
                   autoComplete="confirm-password"
                   required
@@ -122,13 +125,13 @@ function ResetPasswordPage() {
                   autoCapitalize="none"
                 />
                 <field.Error />
-              </Field>
+              </field.Field>
             )}
           </form.AppField>
           <Button className="w-full" type="submit" disabled={isSubmitting}>
             <LoadingContent loading={isSubmitting}>Reset password</LoadingContent>
           </Button>
-        </Fieldset>
+        </FieldSet>
       </form>
     </>
   )

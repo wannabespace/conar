@@ -7,21 +7,26 @@ export interface TxHandle {
   release: () => Promise<void>
 }
 
+interface OwnedTx {
+  handle: TxHandle
+  ownerId?: string
+}
+
 const ORPHAN_TX_TIMEOUT_MS = 5 * 60 * 1000
 
-const activeTransactions = new Map<string, TxHandle>()
+const activeTransactions = new Map<string, OwnedTx>()
 
-export function registerTransaction(handle: TxHandle) {
+export function registerTransaction(handle: TxHandle, ownerId?: string) {
   const txId = randomUUID()
 
   const timeout = setTimeout(() => {
     const current = activeTransactions.get(txId)
     if (!current) return
     activeTransactions.delete(txId)
-    current
+    current.handle
       .rollback()
       .catch(() => {})
-      .finally(() => current.release().catch(() => {}))
+      .finally(() => current.handle.release().catch(() => {}))
   }, ORPHAN_TX_TIMEOUT_MS)
 
   const wrapped: TxHandle = {
@@ -32,17 +37,24 @@ export function registerTransaction(handle: TxHandle) {
     },
   }
 
-  activeTransactions.set(txId, wrapped)
+  activeTransactions.set(txId, { handle: wrapped, ownerId })
   return txId
 }
 
-export function getTransaction(txId: string) {
-  return activeTransactions.get(txId)
+function checkOwner(entry: OwnedTx, ownerId?: string) {
+  if (entry.ownerId && ownerId !== entry.ownerId) return false
+  return true
 }
 
-export function disposeTransaction(txId: string) {
-  const handle = activeTransactions.get(txId)
-  if (!handle) return undefined
+export function getTransaction(txId: string, ownerId?: string) {
+  const entry = activeTransactions.get(txId)
+  if (!entry || !checkOwner(entry, ownerId)) return undefined
+  return entry.handle
+}
+
+export function disposeTransaction(txId: string, ownerId?: string) {
+  const entry = activeTransactions.get(txId)
+  if (!entry || !checkOwner(entry, ownerId)) return undefined
   activeTransactions.delete(txId)
-  return handle
+  return entry.handle
 }

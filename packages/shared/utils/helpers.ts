@@ -1,5 +1,12 @@
-export function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+export function sleep(ms: number, signal?: AbortSignal) {
+  return new Promise<void>(resolve => {
+    const timer = setTimeout(resolve, ms)
+    signal?.addEventListener('abort', () => {
+      clearTimeout(timer)
+      // oxlint-disable-next-line promise/no-multiple-resolved
+      resolve()
+    })
+  })
 }
 
 export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
@@ -52,7 +59,7 @@ export type MaybePromise<T> = T | Promise<T>
 
 export type MaybeArray<T> = T | T[]
 
-// oxlint-disable-next-line typescript/no-explicit-any
+// oxlint-disable-next-line ts/no-explicit-any
 export type AnyFunction = (...args: any[]) => any
 
 export function tryCatch<T>(fn: () => T): { data: T; error: null } | { data: null; error: Error } {

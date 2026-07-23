@@ -1,3 +1,4 @@
+import { RiExternalLinkLine, RiWalletLine } from '@remixicon/react'
 import { uppercaseFirst } from '@tamery/shared/utils/helpers'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -17,7 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from '@tamery/ui/components/table'
-import { RiExternalLinkLine, RiWalletLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
 import { format } from 'date-fns'
@@ -115,7 +115,11 @@ function RouteComponent() {
                                 href={invoice.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={`flex items-center gap-1 text-foreground hover:underline`}
+                                className={`
+                                            flex items-center gap-1
+                                            text-foreground
+                                            hover:underline
+                                          `}
                               >
                                 View
                                 <RiExternalLinkLine className="size-3" />

@@ -45,10 +45,6 @@ const structuredData = {
   ],
 }
 
-if (import.meta.env.DEV) {
-  import('react-scan').then(({ scan }) => scan())
-}
-
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
 }>()({
@@ -105,7 +101,12 @@ function RootComponent() {
       <head>
         <HeadContent />
       </head>
-      <body className={cn(`relative bg-gray-100 dark:bg-neutral-950`)}>
+      <body
+        className={cn(`
+        relative bg-gray-100
+        dark:bg-neutral-950
+      `)}
+      >
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <ThemeObserver />

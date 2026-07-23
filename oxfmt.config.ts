@@ -1,5 +1,3 @@
-import { oxfmtConfig } from '@letstri/oxc-config'
+import { config } from '@letstri/oxlint-config/oxfmt'
 
-export default oxfmtConfig({
-  ignorePatterns: ['**/migrations/**', '**/routeTree.gen.ts'],
-})
+export default config()

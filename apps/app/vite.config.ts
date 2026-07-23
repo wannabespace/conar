@@ -25,6 +25,7 @@ export default defineConfig(({ mode }) => ({
     tanstackRouter({
       routesDirectory: 'src/routes',
       generatedRouteTree: 'src/routeTree.gen.ts',
+      autoCodeSplitting: true,
     }),
     react(),
     babel({

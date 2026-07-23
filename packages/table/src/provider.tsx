@@ -108,32 +108,28 @@ export function TableProvider({
     return () => cancelAnimationFrame(rafId)
   }, [scrollRef, customColumnSizes, columns, measureDebounced])
 
-  return (
-    <TableContext.Provider
-      value={useMemo(
-        () => ({
-          scrollRef,
-          scrollDirection,
-          rows,
-          columns,
-          virtualRows,
-          virtualColumns,
-          tableHeight,
-          tableWidth,
-        }),
-        [
-          scrollRef,
-          scrollDirection,
-          rows,
-          columns,
-          virtualRows,
-          virtualColumns,
-          tableHeight,
-          tableWidth,
-        ],
-      )}
-    >
-      {children}
-    </TableContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      scrollRef,
+      scrollDirection,
+      rows,
+      columns,
+      virtualRows,
+      virtualColumns,
+      tableHeight,
+      tableWidth,
+    }),
+    [
+      scrollRef,
+      scrollDirection,
+      rows,
+      columns,
+      virtualRows,
+      virtualColumns,
+      tableHeight,
+      tableWidth,
+    ],
   )
+
+  return <TableContext.Provider value={contextValue}>{children}</TableContext.Provider>
 }

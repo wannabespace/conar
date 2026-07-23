@@ -1,3 +1,10 @@
+import {
+  RiDatabase2Line,
+  RiKey2Line,
+  RiLayoutColumnLine,
+  RiLinksLine,
+  RiTable2,
+} from '@remixicon/react'
 import { title } from '@tamery/shared/utils/title'
 import { Badge } from '@tamery/ui/components/badge'
 import { CardContent, CardTitle } from '@tamery/ui/components/card'
@@ -11,13 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
-import {
-  RiDatabase2Line,
-  RiKey2Line,
-  RiLayoutColumnLine,
-  RiLinksLine,
-  RiTable2,
-} from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -175,7 +175,11 @@ function DatabaseConstraintsPage() {
                       {filterOptions.find(option => option.value === item.type)?.label}
                     </Badge>
                   </CardTitle>
-                  <div className={`flex items-center gap-1.5 text-sm text-muted-foreground`}>
+                  <div
+                    className={`
+                    flex items-center gap-1.5 text-sm text-muted-foreground
+                  `}
+                  >
                     <Badge variant="outline">
                       <RiTable2 className="size-3" />
                       <HighlightText text={item.table} match={search} />

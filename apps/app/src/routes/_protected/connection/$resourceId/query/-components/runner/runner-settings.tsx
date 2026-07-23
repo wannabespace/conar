@@ -53,7 +53,7 @@ function PositionSelector<T extends string>({
         value={[value]}
         onValueChange={newValue => {
           if (newValue[0]) {
-            onChange(newValue[0])
+            onChange(newValue[0] as T)
           }
         }}
       >

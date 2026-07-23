@@ -52,7 +52,7 @@ export async function syncDiff<TItem>(opts: {
 
 export function createEventsEndpoint<
   O extends Type<{ type: 'insert' | 'update' | 'delete' }>,
-  // oxlint-disable-next-line typescript/no-explicit-any
+  // oxlint-disable-next-line ts/no-explicit-any
   P extends IORedisPublisher<any>,
 >(output: O, publisher: P) {
   return orpc

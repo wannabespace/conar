@@ -51,16 +51,26 @@ let mainWindow: BrowserWindow | null = null
 export function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
+  const isMac = process.platform === 'darwin'
+
   mainWindow = new BrowserWindow({
     width,
     height,
     minWidth: 500,
     minHeight: 500,
     focusable: true,
-    // titleBarStyle: 'default',
-    // vibrancy: 'fullscreen-ui', // on MacOS
-    // backgroundMaterial: 'acrylic', // on Windows 11
-    // visualEffectState: 'active',
+    // Custom topbar: hide the native title bar background on every OS.
+    titleBarStyle: 'hidden',
+    // macOS: keep native traffic lights, inset into the 40px topbar.
+    trafficLightPosition: { x: 16, y: 13 },
+    // Windows/Linux: native min/max/close via Window Controls Overlay.
+    ...(!isMac && {
+      titleBarOverlay: {
+        color: '#00000000',
+        symbolColor: '#a1a1aa',
+        height: 40,
+      },
+    }),
     webPreferences: {
       sandbox: false,
       preload: path.join(path.dirname(fileURLToPath(import.meta.url)), './preload.mjs'),
@@ -95,6 +105,16 @@ export function createWindow() {
   mainWindow.on('enter-full-screen', saveBounds)
   mainWindow.on('leave-full-screen', saveBounds)
 
+  const sendFullscreen = () =>
+    mainWindow?.webContents.send('fullscreen-changed', mainWindow.isFullScreen())
+  mainWindow.on('enter-full-screen', sendFullscreen)
+  mainWindow.on('leave-full-screen', sendFullscreen)
+  mainWindow.webContents.on('did-finish-load', sendFullscreen)
+
+  const sendFocus = () => mainWindow?.webContents.send('focus-changed', mainWindow.isFocused())
+  mainWindow.on('blur', sendFocus)
+  mainWindow.webContents.on('did-finish-load', sendFocus)
+
   mainWindow.on('close', () => {
     if (!mainWindow) return
 
@@ -113,6 +133,7 @@ export function createWindow() {
 
   mainWindow.on('focus', () => {
     buildMenu()
+    sendFocus()
   })
 
   if (app.isPackaged) {

@@ -1,3 +1,4 @@
+import { RiFileList3Line, RiKey2Line, RiLayoutColumnLine, RiTable2 } from '@remixicon/react'
 import { title } from '@tamery/shared/utils/title'
 import { Badge } from '@tamery/ui/components/badge'
 import { CardContent, CardTitle } from '@tamery/ui/components/card'
@@ -11,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
-import { RiFileList3Line, RiKey2Line, RiLayoutColumnLine, RiTable2 } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -98,25 +98,27 @@ function DatabaseIndexesPage() {
 
     const key = `${indexItem.schema}-${indexItem.table}-${indexItem.name}`
 
-    if (acc[key]) {
-      if (indexItem.column && !acc[key].columns.includes(indexItem.column)) {
-        acc[key].columns.push(indexItem.column)
-      }
-      if (
-        indexItem.customExpression &&
-        !acc[key].customExpressions.includes(indexItem.customExpression)
-      ) {
-        acc[key].customExpressions.push(indexItem.customExpression)
-      }
-    } else {
-      acc[key] = {
-        ...indexItem,
-        columns: indexItem.column ? [indexItem.column] : [],
-        customExpressions: indexItem.customExpression ? [indexItem.customExpression] : [],
-      }
+    return {
+      ...acc,
+      [key]: acc[key]
+        ? {
+            ...acc[key],
+            columns:
+              indexItem.column && !acc[key].columns.includes(indexItem.column)
+                ? [...acc[key].columns, indexItem.column]
+                : acc[key].columns,
+            customExpressions:
+              indexItem.customExpression &&
+              !acc[key].customExpressions.includes(indexItem.customExpression)
+                ? [...acc[key].customExpressions, indexItem.customExpression]
+                : acc[key].customExpressions,
+          }
+        : {
+            ...indexItem,
+            columns: indexItem.column ? [indexItem.column] : [],
+            customExpressions: indexItem.customExpression ? [indexItem.customExpression] : [],
+          },
     }
-
-    return acc
   }, {})
 
   const indexList = Object.values(groupedIndexes ?? {})
@@ -194,7 +196,11 @@ function DatabaseIndexesPage() {
                     {item.isPrimary && <Badge variant="secondary">Primary Key</Badge>}
                     {item.isUnique && !item.isPrimary && <Badge variant="secondary">Unique</Badge>}
                   </CardTitle>
-                  <div className={`flex items-center gap-1.5 text-sm text-muted-foreground`}>
+                  <div
+                    className={`
+                    flex items-center gap-1.5 text-sm text-muted-foreground
+                  `}
+                  >
                     <Badge variant="outline">
                       <RiTable2 className="size-3" />
                       <HighlightText text={item.table} match={search} />

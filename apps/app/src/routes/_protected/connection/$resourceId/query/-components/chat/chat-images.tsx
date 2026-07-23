@@ -21,11 +21,21 @@ export function ChatImages({
                 src={image.url}
                 alt={image.name}
                 className={cn(
-                  `size-10 shrink-0 cursor-pointer rounded-md border object-cover transition-all hover:ring-2 hover:ring-primary/50`,
+                  `
+                  size-10 shrink-0 rounded-md border object-cover
+                  transition-all
+                  hover:ring-2 hover:ring-primary/50
+                `,
                   imageClassName,
                 )}
               />
-              <div className="absolute inset-0 rounded-md bg-black/5 opacity-0 transition-opacity group-hover:opacity-100" />
+              <div
+                className="
+                absolute inset-0 rounded-md bg-black/5 opacity-0
+                transition-opacity
+                group-hover:opacity-100
+              "
+              />
             </TooltipTrigger>
             <TooltipContent
               side="top"
@@ -43,17 +53,31 @@ export function ChatImages({
             </TooltipContent>
           </Tooltip>
           {onRemove && (
-            <button
-              type="button"
-              aria-label={`Remove ${image.name}`}
-              className="absolute -top-2 -right-2 z-10 flex size-4 cursor-pointer items-center justify-center rounded-full border bg-background opacity-0 transition-opacity group-hover:opacity-100"
-              onClick={e => {
-                e.stopPropagation()
-                onRemove(index)
-              }}
-            >
-              <RiCloseLine className="size-3" />
-            </button>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <button
+                    type="button"
+                    aria-label={`Remove ${image.name}`}
+                    className="
+                      absolute -top-2 -right-2 z-10 flex size-4
+                      items-center justify-center rounded-full border
+                      bg-background text-muted-foreground opacity-0
+                      transition-opacity
+                      group-hover:opacity-100
+                      hover:bg-foreground/10 hover:text-foreground
+                    "
+                    onClick={e => {
+                      e.stopPropagation()
+                      onRemove(index)
+                    }}
+                  />
+                }
+              >
+                <RiCloseLine className="size-3" />
+              </TooltipTrigger>
+              <TooltipContent side="top">Remove image</TooltipContent>
+            </Tooltip>
           )}
         </div>
       ))}

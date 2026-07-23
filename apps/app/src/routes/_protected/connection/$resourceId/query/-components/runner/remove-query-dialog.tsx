@@ -1,13 +1,12 @@
 import {
   AlertDialog,
-  AlertDialogClose,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@tamery/ui/components/alert-dialog'
-import { Button } from '@tamery/ui/components/button'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -50,14 +49,18 @@ export function RemoveQueryDialog({ ref }: RemoveQueryDialogProps) {
         <AlertDialogHeader>
           <AlertDialogTitle>Remove Query</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to remove <span className="font-semibold">{query?.name}</span>?
+            Are you sure you want to remove{' '}
+            <span data-mask className="font-semibold">
+              {query?.name}
+            </span>
+            ?
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-          <AlertDialogClose render={<Button variant="destructive" />} onClick={removeQuery}>
+          <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
+          <AlertDialogCancel variant="destructive" onClick={removeQuery}>
             Remove
-          </AlertDialogClose>
+          </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

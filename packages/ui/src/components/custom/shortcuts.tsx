@@ -1,5 +1,5 @@
-import { getOS } from '@tamery/shared/utils/os'
 import { RiArrowUpLine, RiCommandLine, RiCornerDownLeftLine } from '@remixicon/react'
+import { getOS } from '@tamery/shared/utils/os'
 import type { ComponentProps } from 'react'
 
 import { Kbd } from '../kbd'

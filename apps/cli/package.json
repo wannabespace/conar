@@ -5,12 +5,12 @@
   "keywords": [
     "cli",
     "clickhouse",
-    "tamery",
     "database",
     "mssql",
     "mysql",
     "postgres",
-    "sql"
+    "sql",
+    "tamery"
   ],
   "homepage": "https://tamery.app",
   "bugs": {
@@ -53,12 +53,12 @@
     "pg": "catalog:"
   },
   "devDependencies": {
+    "@orpc/server": "catalog:",
     "@tamery/api": "workspace:*",
     "@tamery/configs": "workspace:*",
     "@tamery/connection": "workspace:*",
     "@tamery/query-proxy": "workspace:*",
     "@tamery/shared": "workspace:*",
-    "@orpc/server": "catalog:",
     "@types/bun": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",

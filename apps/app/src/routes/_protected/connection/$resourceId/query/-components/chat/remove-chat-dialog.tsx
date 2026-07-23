@@ -1,13 +1,12 @@
 import {
   AlertDialog,
-  AlertDialogClose,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@tamery/ui/components/alert-dialog'
-import { Button } from '@tamery/ui/components/button'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -57,7 +56,10 @@ export function RemoveChatDialog({ ref }: RemoveChatDialogProps) {
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete
             {chat?.title ? (
-              <span className="font-semibold"> "{chat.title}"</span>
+              <span data-mask className="font-semibold">
+                {' '}
+                "{chat.title}"
+              </span>
             ) : (
               ' this chat'
             )}{' '}
@@ -65,10 +67,10 @@ export function RemoveChatDialog({ ref }: RemoveChatDialogProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-          <AlertDialogClose render={<Button variant="destructive" />} onClick={remove}>
+          <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
+          <AlertDialogCancel variant="destructive" onClick={remove}>
             Delete
-          </AlertDialogClose>
+          </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

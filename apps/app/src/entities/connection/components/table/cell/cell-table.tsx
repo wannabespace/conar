@@ -1,53 +1,27 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { RiCornerRightUpLine } from '@remixicon/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
-import type { ColumnRenderer, TableCellProps, TableHeaderCellProps } from '@tamery/table'
+import type { ColumnRenderer } from '@tamery/table'
 import { Table, TableBody, TableHeader, TableProvider } from '@tamery/table'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
-import { RiCornerRightUpLine } from '@remixicon/react'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi, Link } from '@tanstack/react-router'
 
-import type { Column } from '~/entities/connection/components/table/cell'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
-import {
-  TableBodySkeleton,
-  TableEmpty,
-  TableError,
-  TableHeaderCell,
-  TableInfiniteLoader,
-  useTableColumnsQuery,
-} from '~/entities/connection/table'
 import { createTransformer } from '~/entities/connection/transformers'
+import { TableError } from '~/routes/_protected/connection/$resourceId/table/-components/table/table'
+import { TableEmpty } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-empty'
+import { TableHeaderCell } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-header-cell'
+import { TableInfiniteLoader } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-infinite-loader'
+import { TableBodySkeleton } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-skeleton'
+import { useTableColumnsQuery } from '~/routes/_protected/connection/$resourceId/table/-lib/columns'
 
 import { TableCellContent } from './cell-content'
 import { getColumnSize } from './utils'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
-
-function createCellRenderer(column: Column, connectionType: ConnectionType) {
-  return function CellRenderer(props: TableCellProps) {
-    const transformer = createTransformer(connectionType, column)
-    return (
-      <TableCellContent
-        column={column}
-        value={props.value}
-        position={props.position}
-        style={props.style}
-      >
-        <span className="truncate">{transformer.toDisplay(props.value, props.size)}</span>
-      </TableCellContent>
-    )
-  }
-}
-
-function createHeaderRenderer(column: Column) {
-  return function HeaderRenderer(props: TableHeaderCellProps) {
-    return <TableHeaderCell column={column} {...props} />
-  }
-}
 
 export function TableCellTable({
   schema,
@@ -90,8 +64,20 @@ export function TableCellTable({
       ({
         id: column.id,
         size: column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH,
-        cell: createCellRenderer(column, connection.type),
-        header: createHeaderRenderer(column),
+        cell: props => {
+          const transformer = createTransformer(connection.type, column)
+          return (
+            <TableCellContent
+              column={column}
+              value={props.value}
+              position={props.position}
+              style={props.style}
+            >
+              <span className="truncate">{transformer.toDisplay(props.value, props.size)}</span>
+            </TableCellContent>
+          )
+        },
+        header: props => <TableHeaderCell column={column} {...props} />,
       }) satisfies ColumnRenderer,
   )
 
@@ -99,7 +85,10 @@ export function TableCellTable({
     <TableProvider rows={rows} columns={columns}>
       <div className="relative size-full">
         <div
-          className={`flex h-8 items-center justify-between bg-background px-4 text-xs text-muted-foreground`}
+          className={`
+          flex h-8 items-center justify-between bg-background px-4 text-xs
+          text-muted-foreground
+        `}
         >
           <div>
             Showing records from{' '}
@@ -119,6 +108,7 @@ export function TableCellTable({
           <Button
             variant="outline"
             size="xs"
+            nativeButton={false}
             render={
               <Link
                 to="/connection/$resourceId/table"
@@ -131,7 +121,7 @@ export function TableCellTable({
             Open table
           </Button>
         </div>
-        <Table className={`h-[calc(100%-(--spacing(8)))] rounded-b-lg bg-background`}>
+        <Table className="h-[calc(100%-(--spacing(8)))] rounded-b-lg bg-background">
           <TableHeader />
           {isRowsPending ? (
             <TableBodySkeleton />

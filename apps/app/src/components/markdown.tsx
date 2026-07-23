@@ -1,3 +1,7 @@
+import type { ContextSelector } from '@fluentui/react-context-selector'
+import { createContext, useContextSelector } from '@fluentui/react-context-selector'
+import NumberFlow from '@number-flow/react'
+import { RiCodeLine, RiText } from '@remixicon/react'
 import {
   SingleAccordion,
   SingleAccordionContent,
@@ -12,10 +16,6 @@ import {
   TableRow,
 } from '@tamery/ui/components/table'
 import { cn } from '@tamery/ui/lib/utils'
-import type { ContextSelector } from '@fluentui/react-context-selector'
-import { createContext, useContextSelector } from '@fluentui/react-context-selector'
-import NumberFlow from '@number-flow/react'
-import { RiCodeLine, RiText } from '@remixicon/react'
 import { marked } from 'marked'
 import type { ComponentProps, ReactElement, ReactNode } from 'react'
 import { useMemo, useState } from 'react'
@@ -53,12 +53,9 @@ function useMarkdownContext<T>(selector: ContextSelector<MarkdownContextType, T>
   return useContextSelector(MarkdownContext, selector)
 }
 
-function A({ children, target, rel, ...props }: ComponentProps<'a'>) {
-  return (
-    <a {...props} target="_blank" rel="noopener noreferrer">
-      {children}
-    </a>
-  )
+function A({ target, rel, ...props }: ComponentProps<'a'>) {
+  // oxlint-disable-next-line jsx-a11y/anchor-has-content
+  return <a {...props} target="_blank" rel="noopener noreferrer" />
 }
 
 const monacoOptions = {
@@ -88,7 +85,7 @@ function Pre({ children }: { children?: ReactNode }) {
     <div
       className={cn(
         generating && 'animate-in duration-200 fade-in',
-        `typography-disabled relative my-4 first:mt-0 last:mb-0`,
+        'typography-disabled relative my-4 first:mt-0 last:mb-0',
       )}
     >
       <SingleAccordion open={opened} onOpenChange={setOpened}>
@@ -128,10 +125,6 @@ function Pre({ children }: { children?: ReactNode }) {
   )
 }
 
-function MarkdownPre({ children }: { children?: ReactNode }) {
-  return <Pre>{children}</Pre>
-}
-
 function MarkdownTable({ children, className, ...props }: ComponentProps<'div'>) {
   return (
     <div className={cn('my-4 overflow-x-auto', className)} {...props}>
@@ -166,7 +159,7 @@ function MarkdownBase({ content }: { content: string }) {
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        pre: MarkdownPre,
+        pre: ({ children }) => <Pre>{children}</Pre>,
         table: MarkdownTable,
         thead: TableHeader,
         tbody: TableBody,
@@ -200,15 +193,12 @@ export function Markdown({
   generating?: boolean
 } & ComponentProps<'div'>) {
   const blocks = parseMarkdownIntoBlocks(content)
-  const markdownContextValue = useMemo(
-    () => ({ generating, codeActions }),
-    [generating, codeActions],
-  )
+  const contextValue = useMemo(() => ({ generating, codeActions }), [generating, codeActions])
 
   return (
-    <MarkdownContext.Provider value={markdownContextValue}>
+    <MarkdownContext.Provider value={contextValue}>
       <div
-        className={cn('typography', generating && `animate-in duration-200 fade-in`, className)}
+        className={cn('typography', generating && 'animate-in duration-200 fade-in', className)}
         {...props}
       >
         {blocks.map((block, index) => (

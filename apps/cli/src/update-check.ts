@@ -48,13 +48,11 @@ async function fetchLatestVersion(): Promise<string | null> {
   }
 }
 
-function parseVersion(v: string) {
-  return v.replace(/^v/, '').split('.').map(Number)
-}
+const parse = (v: string) => v.replace(/^v/, '').split('.').map(Number)
 
 function isNewerVersion(current: string, latest: string): boolean {
-  const [cMajor = 0, cMinor = 0, cPatch = 0] = parseVersion(current)
-  const [lMajor = 0, lMinor = 0, lPatch = 0] = parseVersion(latest)
+  const [cMajor = 0, cMinor = 0, cPatch = 0] = parse(current)
+  const [lMajor = 0, lMinor = 0, lPatch = 0] = parse(latest)
 
   if (lMajor !== cMajor) return lMajor > cMajor
   if (lMinor !== cMinor) return lMinor > cMinor

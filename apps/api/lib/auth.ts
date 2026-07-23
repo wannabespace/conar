@@ -200,7 +200,12 @@ export const auth = betterAuth({
       }
     },
   },
-  trustedOrigins: ['https://tamery.app', 'https://*.tamery.app', 'file://'],
+  trustedOrigins: [
+    'https://tamery.app',
+    'https://*.tamery.app',
+    'file://',
+    ...(nodeEnv === 'development' ? ['http://localhost:*'] : []),
+  ],
   advanced: {
     cookiePrefix: AUTH_COOKIE_PREFIX,
     crossSubDomainCookies: {

@@ -1,6 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "base-mira",
+  "style": "base-rhea",
   "rsc": false,
   "tsx": true,
   "tailwind": {
@@ -12,8 +12,6 @@
   },
   "iconLibrary": "remixicon",
   "rtl": false,
-  "menuColor": "inverted-translucent",
-  "menuAccent": "subtle",
   "aliases": {
     "components": "@tamery/ui/components",
     "utils": "@tamery/ui/lib/utils",
@@ -21,7 +19,6 @@
     "lib": "@tamery/ui/lib",
     "hooks": "@tamery/ui/hooks"
   },
-  "registries": {
-    "@coss": "https://coss.com/ui/r/{name}.json"
-  }
+  "menuColor": "default",
+  "menuAccent": "subtle"
 }

@@ -11,11 +11,9 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogPanel,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
-import { Field, FieldLabel } from '@tamery/ui/components/field'
-import { Fieldset } from '@tamery/ui/components/fieldset'
+import { Field, FieldSet } from '@tamery/ui/components/field'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@tamery/ui/components/input-group'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
@@ -108,7 +106,7 @@ export function CreateApiKeyDialog({
               Name it so you can tell keys apart later, and choose what this key is allowed to do.
             </DialogDescription>
           </DialogHeader>
-          <DialogPanel>
+          <div>
             <form
               id="create-api-key-form"
               className="space-y-4"
@@ -117,7 +115,7 @@ export function CreateApiKeyDialog({
                 form.handleSubmit()
               }}
             >
-              <Fieldset className="flex w-full flex-col gap-6">
+              <FieldSet className="flex w-full flex-col gap-6">
                 <form.AppField
                   name="name"
                   validators={{
@@ -129,11 +127,11 @@ export function CreateApiKeyDialog({
                   }}
                 >
                   {field => (
-                    <Field>
-                      <FieldLabel>Name</FieldLabel>
+                    <field.Field>
+                      <field.Label>Name</field.Label>
                       <field.Input placeholder="e.g. local-mcp, ci-bot" maxLength={100} />
                       <field.Error />
-                    </Field>
+                    </field.Field>
                   )}
                 </form.AppField>
                 <form.AppField
@@ -150,14 +148,16 @@ export function CreateApiKeyDialog({
                   }}
                 >
                   {field => (
-                    <Field>
-                      <FieldLabel>Permissions</FieldLabel>
+                    <field.Field>
+                      <field.Label>Permissions</field.Label>
                       {objectEntries(API_KEY_PERMISSIONS).map(([resource, actions]) => (
                         <Field key={resource} className="gap-1">
                           {actions.map(action => (
                             <label
                               key={action}
-                              className={`flex cursor-pointer items-center gap-2 text-sm`}
+                              className={`
+                                flex cursor-pointer items-center gap-2 text-sm
+                              `}
                             >
                               <Checkbox
                                 checked={field.state.value[resource][action]}
@@ -177,12 +177,12 @@ export function CreateApiKeyDialog({
                         </Field>
                       ))}
                       <field.Error />
-                    </Field>
+                    </field.Field>
                   )}
                 </form.AppField>
-              </Fieldset>
+              </FieldSet>
             </form>
-          </DialogPanel>
+          </div>
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
             <Button type="submit" form="create-api-key-form" disabled={isSubmitting}>
@@ -207,7 +207,7 @@ export function CreateApiKeyDialog({
               This key is shown only once. Copy and store it safely.
             </DialogDescription>
           </DialogHeader>
-          <DialogPanel>
+          <div>
             {createdKey && (
               <InputGroup className="font-mono text-xs shadow-none">
                 <InputGroupInput
@@ -226,7 +226,7 @@ export function CreateApiKeyDialog({
                 </InputGroupAddon>
               </InputGroup>
             )}
-          </DialogPanel>
+          </div>
           <DialogFooter>
             <Button type="button" onClick={() => setRevealKeyDialogOpen(false)}>
               Done

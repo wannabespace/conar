@@ -1,4 +1,6 @@
+import './monaco-worker'
 import '@tamery/shared/arktype-config'
+import '@tamery/ui/globals.css'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import {
   createBrowserHistory,
@@ -9,16 +11,8 @@ import {
 import { createRoot } from 'react-dom/client'
 import { toast } from 'sonner'
 
-import './monaco-worker'
-
-import './assets/styles.css'
-import '@tamery/ui/globals.css'
-import { isSignedIn } from './lib/auth'
+import { lastLocationStorageValue } from './lib/last-location'
 import { routeTree } from './routeTree.gen'
-
-if (import.meta.env.DEV && !import.meta.env.VITE_TEST) {
-  import('react-scan').then(({ scan }) => scan())
-}
 
 window.electron?.app.onDeepLink(async url => {
   window.initialDeepLink = url
@@ -76,17 +70,24 @@ declare module '@tanstack/react-router' {
   }
 }
 
-;(async () => {
-  const isAuthPage = router.state.location.pathname.startsWith('/auth')
-  const isSigned = await isSignedIn()
-
-  if (isAuthPage && isSigned) {
-    router.navigate({ to: '/', replace: true })
-  } else if (!isAuthPage && !isSigned && navigator.onLine) {
-    router.navigate({ to: '/auth', replace: true })
+router.subscribe('onResolved', ({ toLocation }) => {
+  if (toLocation.pathname.startsWith('/auth')) {
+    return
   }
 
-  const root = createRoot(document.getElementById('root')!)
+  lastLocationStorageValue.set(toLocation.href)
+})
 
-  root.render(<RouterProvider router={router} />)
-})()
+if (router.state.location.pathname === '/') {
+  const lastLocation = lastLocationStorageValue.get()
+
+  if (lastLocation) {
+    router.navigate({ href: lastLocation, replace: true })
+  } else {
+    router.navigate({ to: '/auth', replace: true })
+  }
+}
+
+const root = createRoot(document.getElementById('root')!)
+
+root.render(<RouterProvider router={router} />)

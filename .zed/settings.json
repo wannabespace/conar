@@ -18,6 +18,12 @@
           "run": "onSave"
         }
       }
+    },
+    "vtsls": {
+      "binary": {
+        "path": "node_modules/.bin/tsc",
+        "arguments": ["--lsp", "--stdio"]
+      }
     }
   },
   "format_on_save": "on",
@@ -45,6 +51,7 @@
       ]
     },
     "TypeScript": {
+      "language_servers": ["!typescript-language-server", "..."],
       "formatter": [
         {
           "language_server": {
@@ -57,6 +64,7 @@
       ]
     },
     "TSX": {
+      "language_servers": ["!typescript-language-server", "..."],
       "formatter": [
         {
           "language_server": {
@@ -68,5 +76,6 @@
         }
       ]
     }
-  }
+  },
+  "file_scan_exclusions": ["**/*.svg", "**/pnpm-lock.yaml"]
 }

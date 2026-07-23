@@ -12,7 +12,7 @@ import { DEFAULT_PAGE_LIMIT } from '../utils/helpers'
 
 const rowType = type('Record<string, unknown>')
 
-// oxlint-disable-next-line typescript/no-explicit-any
+// oxlint-disable-next-line ts/no-explicit-any
 export function buildWhere<E extends ExpressionBuilder<any, any>>(
   eb: E,
   filters: ActiveFilter[],
@@ -78,7 +78,7 @@ export const resourceRowsQuery = memoize(
 
           let query = db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .$if(select !== undefined, qb => qb.select(select!))
             .$if(select === undefined, qb => qb.selectAll())
@@ -101,7 +101,7 @@ export const resourceRowsQuery = memoize(
 
           let query = db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .$if(select !== undefined, qb => qb.select(select!))
             .$if(select === undefined, qb => qb.selectAll())
@@ -124,7 +124,7 @@ export const resourceRowsQuery = memoize(
 
           let query = db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .$if(select !== undefined, qb => qb.select(select!))
             .$if(select === undefined, qb => qb.selectAll())
@@ -148,7 +148,7 @@ export const resourceRowsQuery = memoize(
 
           let query = db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .$if(select !== undefined, qb => qb.select(select!))
             .$if(select === undefined, qb => qb.selectAll())

@@ -1,8 +1,8 @@
 import { title } from '@tamery/shared/utils/title'
 import {
+  ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-  ResizableSeparator,
 } from '@tamery/ui/components/resizable'
 import { createFileRoute } from '@tanstack/react-router'
 import { type } from 'arktype'
@@ -118,13 +118,13 @@ function DatabaseSqlPage() {
           {chatPosition === 'left' ? (
             <>
               <ChatPanel key="chat" />
-              <ResizableSeparator className="w-1" />
+              <ResizableHandle className="w-1" />
               <RunnerPanel key="runner" />
             </>
           ) : (
             <>
               <RunnerPanel key="runner" />
-              <ResizableSeparator className="w-1" />
+              <ResizableHandle className="w-1" />
               <ChatPanel key="chat" />
             </>
           )}

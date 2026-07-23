@@ -1,10 +1,10 @@
+import { ORPCError } from '@orpc/server'
 import { db } from '@tamery/db'
 import {
   connections,
   connectionsResources,
   connectionsResourcesInsertSchema,
 } from '@tamery/db/schema'
-import { ORPCError } from '@orpc/server'
 import { type } from 'arktype'
 import { and, eq, inArray } from 'drizzle-orm'
 

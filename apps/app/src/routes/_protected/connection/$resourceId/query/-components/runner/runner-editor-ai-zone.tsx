@@ -111,10 +111,20 @@ export function RunnerEditorAIZone({
         <Popover open={!!aiSuggestion}>
           <PopoverTrigger
             nativeButton={false}
-            render={<div className="relative flex h-full w-lg flex-col rounded-md border" />}
+            render={
+              <div
+                className="
+                relative flex h-full w-lg flex-col rounded-md border
+              "
+              />
+            }
           >
             {!subscription && (
-              <div className="w-full bg-muted px-2 py-1 text-sm text-muted-foreground">
+              <div
+                className="
+                  w-full bg-muted px-2 py-1 text-sm text-muted-foreground
+                "
+              >
                 Please{' '}
                 <Button
                   variant="outline"
@@ -136,9 +146,16 @@ export function RunnerEditorAIZone({
                 setAiSuggestion(null)
               }}
               className={cn(
-                `field-sizing-content flex-1 resize-none border-none px-2 py-1.5 pb-8 text-sm`,
+                `
+                  field-sizing-content flex-1 resize-none border-none px-2
+                  py-1.5 pb-8 text-sm
+                `,
                 // Disable monaco default styles
-                `focus:border-border! focus-visible:border-border! focus-visible:ring-0! focus-visible:outline-none!`,
+                `
+                  focus:border-border!
+                  focus-visible:border-border! focus-visible:ring-0!
+                  focus-visible:outline-none!
+                `,
               )}
               placeholder={
                 isOnline
@@ -173,7 +190,10 @@ export function RunnerEditorAIZone({
               style={{
                 '--lines-height': `${Math.max(aiSuggestion.split('\n').length, originalSql.split('\n').length) * 18 * 2}px`,
               }}
-              className="h-[min(30vh,var(--lines-height))] w-lg p-0 **:data-[slot=popover-viewport]:p-0"
+              className="
+                h-[min(30vh,var(--lines-height))] w-lg p-0
+                **:data-[slot=popover-viewport]:p-0
+              "
             >
               <MonacoDiff
                 originalValue={originalSql}

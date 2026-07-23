@@ -13,6 +13,8 @@ export type ElectronPreload = typeof electron & {
       callback: (params: { status: UpdatesStatus; message?: string }) => void,
     ) => () => void
     onSendToast: (callback: (params: Parameters<typeof sendToast>[0]) => void) => () => void
+    onFullscreenChange: (callback: (isFullscreen: boolean) => void) => () => void
+    onFocusChange: (callback: (isFocused: boolean) => void) => () => void
   }
   versions: {
     node: () => string
@@ -81,6 +83,8 @@ contextBridge.exposeInMainWorld('electron', {
     onDeepLink: callback => onEvent('deep-link', callback),
     onUpdatesStatus: callback => onEvent('updates-status', callback),
     onSendToast: callback => onEvent('toast', callback),
+    onFullscreenChange: callback => onEvent('fullscreen-changed', callback),
+    onFocusChange: callback => onEvent('focus-changed', callback),
     checkForUpdates: handleElectronError(() => ipcRenderer.invoke('app.checkForUpdates')),
     quitAndInstall: handleElectronError(() => ipcRenderer.invoke('app.quitAndInstall')),
   },

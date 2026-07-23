@@ -96,7 +96,6 @@ export function getNodes({
         table,
         resourceId,
         edges,
-        // oxlint-disable-next-line oxc/no-map-spread -- `columns` originates from react-query cached data; must not mutate the original items
         columns: tableColumns.map(c => {
           const columnConstraints = tableConstraints.filter(
             constraint => constraint.column === c.id,

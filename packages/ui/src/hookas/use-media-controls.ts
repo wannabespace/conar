@@ -63,6 +63,7 @@ export function useMediaControls(
       signal: abortController.signal,
     })
 
+    // oxlint-disable-next-line react/set-state-in-effect
     setState({
       isPlaying: !media.paused,
       isMuted: media.muted,

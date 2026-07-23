@@ -18,7 +18,7 @@ export const deleteRowsQuery = memoize(
         postgres: db =>
           db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
             .where(({ or, and, eb }) =>
               or(
@@ -31,7 +31,7 @@ export const deleteRowsQuery = memoize(
         mysql: db =>
           db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
             .where(({ or, and, eb }) =>
               or(
@@ -44,7 +44,7 @@ export const deleteRowsQuery = memoize(
         mssql: db =>
           db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
             .where(({ or, and, eb }) =>
               or(
@@ -57,7 +57,7 @@ export const deleteRowsQuery = memoize(
         clickhouse: db =>
           db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
             .where(({ or, and, eb }) =>
               or(

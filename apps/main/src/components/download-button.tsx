@@ -1,3 +1,4 @@
+import { RiAppleFill, RiWindowsFill } from '@remixicon/react'
 import type { OS } from '@tamery/shared/utils/os'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -8,7 +9,6 @@ import {
 } from '@tamery/ui/components/dropdown-menu'
 import { Linux } from '@tamery/ui/components/icons/linux'
 import { cn } from '@tamery/ui/lib/utils'
-import { RiAppleFill, RiWindowsFill } from '@remixicon/react'
 
 import { DOWNLOAD_LINKS } from '~/constants'
 import { getOSIsomorphic } from '~/utils/os'
@@ -71,8 +71,8 @@ export function DownloadButton({ className }: { className?: string }) {
                 <a
                   href={asset.link}
                   download
-                  aria-label={`Download for ${os.label} (${asset.arch})`}
                   className="flex gap-2 text-foreground"
+                  aria-label={`Download ${asset.arch}`}
                 />
               }
             >

@@ -1,5 +1,5 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { faker } from '@faker-js/faker'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
 import type { Column } from '../../components/table/cell'
@@ -75,8 +75,7 @@ export function getGeneratorGroups(dialect: ConnectionType): GeneratorGroup[] {
       group.items.push(id)
       return groups
     }
-    groups.push({ value: gen.category, items: [id] })
-    return groups
+    return [...groups, { value: gen.category, items: [id] }]
   }, [])
 }
 

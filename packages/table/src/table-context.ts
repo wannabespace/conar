@@ -1,6 +1,6 @@
-import type { ScrollDirection } from '@tamery/ui/hookas/use-scroll-direction'
 import type { ContextSelector } from '@fluentui/react-context-selector'
 import { createContext, useContextSelector } from '@fluentui/react-context-selector'
+import type { ScrollDirection } from '@tamery/ui/hookas/use-scroll-direction'
 import type { VirtualItem } from '@tanstack/react-virtual'
 import type { RefObject } from 'react'
 

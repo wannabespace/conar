@@ -1,8 +1,8 @@
 import { title } from '@tamery/shared/utils/title'
 import {
+  ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-  ResizableSeparator,
 } from '@tamery/ui/components/resizable'
 import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
@@ -30,14 +30,12 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
   beforeLoad: async ({ params }) => {
     const { connectionsCollection, connectionsResourcesCollection } = getCollections()
     const connectionResource = connectionsResourcesCollection.get(params.resourceId)
+    const connection = connectionResource
+      ? connectionsCollection.get(connectionResource.connectionId)
+      : undefined
 
-    if (!connectionResource) {
-      throw redirect({ to: '/' })
-    }
-
-    const connection = connectionsCollection.get(connectionResource.connectionId)
-
-    if (!connection) {
+    if (!connectionResource || !connection) {
+      lastOpenedResourcesStorageValue.set(prev => prev.filter(id => id !== params.resourceId))
       throw redirect({ to: '/' })
     }
 
@@ -114,11 +112,14 @@ function ResourcePage() {
   }
 
   return (
-    <div className={`flex bg-gray-100 dark:bg-neutral-950/60`}>
+    <div className="flex">
       <ConnectionSidebar className="w-16" />
       <div
         className={cn(
-          `m-2 ml-0 flex h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(16))-(--spacing(2)))] flex-col`,
+          `
+            m-2 ml-0 flex h-[calc(100%-(--spacing(4)))]
+            w-[calc(100%-(--spacing(16))-(--spacing(2)))] flex-col
+          `,
         )}
       >
         <ResizablePanelGroup
@@ -132,7 +133,7 @@ function ResourcePage() {
           </ResizablePanel>
           {loggerOpened && (
             <>
-              <ResizableSeparator className="h-1" />
+              <ResizableHandle className="h-1" />
               <ResizablePanel
                 defaultSize="30%"
                 minSize="10%"

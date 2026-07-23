@@ -1,6 +1,5 @@
 import { Switch } from '@tamery/ui/components/switch'
 import { cn } from '@tamery/ui/lib/utils'
-import { useId } from 'react'
 
 export function CellSwitch({
   checked,
@@ -11,13 +10,26 @@ export function CellSwitch({
   onChange: (checked: boolean) => void
   className?: string
 }) {
-  const id = useId()
-
   return (
-    <label htmlFor={id} className={cn('flex items-center gap-2 text-sm', className)}>
-      <code className="font-mono">false</code>
-      <Switch id={id} checked={checked} onCheckedChange={onChange} />
-      <code className="font-mono">true</code>
+    // oxlint-disable-next-line jsx-a11y/label-has-associated-control
+    <label className={cn('flex items-center gap-2.5 text-sm', className)}>
+      <code
+        className={cn(
+          'font-mono transition-colors duration-150',
+          checked ? 'text-muted-foreground/60' : 'font-medium text-foreground',
+        )}
+      >
+        false
+      </code>
+      <Switch checked={checked} onCheckedChange={onChange} />
+      <code
+        className={cn(
+          'font-mono transition-colors duration-150',
+          checked ? 'font-medium text-foreground' : 'text-muted-foreground/60',
+        )}
+      >
+        true
+      </code>
     </label>
   )
 }

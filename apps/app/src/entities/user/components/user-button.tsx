@@ -1,15 +1,34 @@
+import {
+  RiBrushLine,
+  RiDiscordLine,
+  RiGithubLine,
+  RiGlobalLine,
+  RiHistoryLine,
+  RiLogoutCircleRLine,
+  RiMessageLine,
+  RiTwitterXLine,
+  RiUserLine,
+} from '@remixicon/react'
+import { RELEASES_URL, SOCIAL_LINKS } from '@tamery/shared/constants'
+import { Button } from '@tamery/ui/components/button'
 import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
-import { RiBrushLine, RiGlobalLine, RiLogoutCircleRLine, RiUserLine } from '@remixicon/react'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import type { Theme } from '@tamery/ui/theme-store'
+import { themeStore, useTheme } from '@tamery/ui/theme-store'
 import { useMutation } from '@tanstack/react-query'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
+import { SupportDialog } from '~/components/support-dialog'
 import { authClient } from '~/lib/auth'
 import { clearDb } from '~/lib/sync'
 
@@ -31,9 +50,30 @@ async function clearLocalAppCache() {
   }
 }
 
-export function UserButton() {
+const THEME_OPTIONS: { value: Theme; label: string }[] = [
+  { value: 'system', label: 'System' },
+  { value: 'dark', label: 'Dark' },
+  { value: 'light', label: 'Light' },
+]
+
+const SOCIAL_ROWS = [
+  { label: 'Website', href: 'https://tamery.app', icon: RiGlobalLine },
+  { label: 'X', href: SOCIAL_LINKS.TWITTER, icon: RiTwitterXLine },
+  { label: 'Discord', href: SOCIAL_LINKS.DISCORD, icon: RiDiscordLine },
+  { label: 'GitHub', href: SOCIAL_LINKS.GITHUB, icon: RiGithubLine },
+] as const
+
+export function UserButton({
+  side = 'right',
+  align = 'end',
+}: {
+  side?: 'top' | 'right' | 'bottom' | 'left'
+  align?: 'start' | 'center' | 'end'
+} = {}) {
   const { signOut, isSigningOut } = useSignOut()
   const { data } = authClient.useSession()
+  const theme = useTheme()
+  const [isSupportOpen, setIsSupportOpen] = useState(false)
 
   const { mutate: clearLocalCache, isPending: isClearingCache } = useMutation({
     mutationFn: clearLocalAppCache,
@@ -49,16 +89,13 @@ export function UserButton() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="size-8 cursor-pointer rounded-md">
+      <DropdownMenuTrigger className="size-5 cursor-default rounded-sm">
         <UserAvatar className="size-full" user={data?.user} />
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="min-w-56" side="right" align="end">
-        <div className="mt-1 mb-2 flex h-10 items-center gap-2 px-2">
-          <UserAvatar className="size-8" user={data?.user} />
-          <div className="flex flex-col leading-0">
-            <span className="text-sm font-medium">{data?.user.name}</span>
-            <span className="text-xs text-muted-foreground">{data?.user.email}</span>
-          </div>
+      <DropdownMenuContent className="min-w-56" side={side} align={align}>
+        <div className="flex flex-col px-2 py-1.5 leading-tight">
+          <span className="text-sm font-medium">{data?.user.name}</span>
+          <span className="text-xs text-muted-foreground">{data?.user.email}</span>
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -80,6 +117,14 @@ export function UserButton() {
             Web app
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem onClick={() => window.open(RELEASES_URL, '_blank')}>
+          <RiHistoryLine />
+          Releases
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setIsSupportOpen(true)}>
+          <RiMessageLine />
+          Support
+        </DropdownMenuItem>
         <DropdownMenuItem
           disabled={isSigningOut || isClearingCache}
           onClick={() => clearLocalCache()}
@@ -88,11 +133,48 @@ export function UserButton() {
           Clear cache
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-muted-foreground">Theme</DropdownMenuLabel>
+          {THEME_OPTIONS.map(option => (
+            <DropdownMenuItem key={option.value} onClick={() => themeStore.set(option.value)}>
+              <span aria-hidden className="flex size-4 items-center justify-center">
+                {theme === option.value && <span className="size-1.5 rounded-full bg-foreground" />}
+              </span>
+              {option.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
         <DropdownMenuItem disabled={isSigningOut} onClick={() => signOut()}>
           <RiLogoutCircleRLine />
           Sign out
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <div className="flex items-center gap-1 px-1 py-0.5">
+          {SOCIAL_ROWS.map(social => (
+            <Tooltip key={social.label}>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label={social.label}
+                    className="
+                      text-muted-foreground
+                      hover:bg-foreground/10 hover:text-foreground
+                    "
+                    onClick={() => window.open(social.href, '_blank')}
+                  />
+                }
+              >
+                <social.icon className="size-3.5" />
+              </TooltipTrigger>
+              <TooltipContent side="bottom">{social.label}</TooltipContent>
+            </Tooltip>
+          ))}
+        </div>
       </DropdownMenuContent>
+      <SupportDialog open={isSupportOpen} onOpenChange={setIsSupportOpen} />
     </DropdownMenu>
   )
 }

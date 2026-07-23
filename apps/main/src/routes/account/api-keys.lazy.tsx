@@ -1,3 +1,10 @@
+import {
+  RiDeleteBinLine,
+  RiKey2Line,
+  RiMoreLine,
+  RiPauseCircleLine,
+  RiPlayCircleLine,
+} from '@remixicon/react'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -26,13 +33,6 @@ import {
 } from '@tamery/ui/components/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
-import {
-  RiDeleteBinLine,
-  RiKey2Line,
-  RiMoreLine,
-  RiPauseCircleLine,
-  RiPlayCircleLine,
-} from '@remixicon/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { format, formatDistanceToNow } from 'date-fns'
@@ -53,17 +53,30 @@ export const Route = createLazyFileRoute('/account/api-keys')({
 function ApiKeysEmptyState({ onCreateClick }: { onCreateClick: () => void }) {
   return (
     <div
-      className={`flex flex-col items-center justify-center rounded-xl border border-dashed bg-muted/30 px-6 py-14 text-center`}
+      className={`
+        flex flex-col items-center justify-center rounded-xl border
+        border-dashed bg-muted/30 px-6 py-14 text-center
+      `}
     >
       <div
-        className={`mb-4 flex size-14 items-center justify-center rounded-full bg-muted ring-1 ring-border`}
+        className={`
+          mb-4 flex size-14 items-center justify-center rounded-full bg-muted
+          ring-1 ring-border
+        `}
       >
         <RiKey2Line className="size-7 text-muted-foreground" />
       </div>
       <h3 className="mb-2 text-base font-semibold tracking-tight">No API keys yet</h3>
       <p className="mb-6 max-w-sm text-sm text-muted-foreground">
         Key is shown only once. Use as Bearer or{' '}
-        <code className="rounded-sm bg-muted px-1 py-0.5 font-mono text-[0.7rem]">x-api-key</code>.
+        <code
+          className="
+          rounded-sm bg-muted px-1 py-0.5 font-mono text-[0.7rem]
+        "
+        >
+          x-api-key
+        </code>
+        .
       </p>
       <Button variant="outline" size="sm" onClick={onCreateClick}>
         <RiKey2Line className="size-4" />
@@ -150,10 +163,8 @@ function RouteComponent() {
                     <TableCell>
                       {key.createdAt ? (
                         <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="cursor-default">
-                              {formatDistanceToNow(new Date(key.createdAt), { addSuffix: true })}
-                            </span>
+                          <TooltipTrigger render={<span className="cursor-default" />}>
+                            {formatDistanceToNow(new Date(key.createdAt), { addSuffix: true })}
                           </TooltipTrigger>
                           <TooltipContent>
                             {format(new Date(key.createdAt), 'MMM d, yyyy h:mm a')}
@@ -163,7 +174,14 @@ function RouteComponent() {
                         'Unknown'
                       )}
                     </TableCell>
-                    <TableCell className={cn(!key.lastRequest && `text-muted-foreground`)}>
+                    <TableCell
+                      className={cn(
+                        !key.lastRequest &&
+                          `
+                            text-muted-foreground
+                          `,
+                      )}
+                    >
                       {key.lastRequest
                         ? formatDistanceToNow(new Date(key.lastRequest), { addSuffix: true })
                         : 'Never'}

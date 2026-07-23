@@ -1,10 +1,3 @@
-import { SOCIAL_LINKS } from '@tamery/shared/constants'
-import { AppLogo } from '@tamery/ui/components/brand/app-logo'
-import { Button } from '@tamery/ui/components/button'
-import { ThemeToggle } from '@tamery/ui/components/custom/theme-toggle'
-import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
-import { Separator } from '@tamery/ui/components/separator'
-import { cn } from '@tamery/ui/lib/utils'
 import NumberFlow from '@number-flow/react'
 import {
   RiDashboard3Line,
@@ -16,6 +9,13 @@ import {
   RiSettingsLine,
   RiSunLine,
 } from '@remixicon/react'
+import { SOCIAL_LINKS } from '@tamery/shared/constants'
+import { AppLogo } from '@tamery/ui/components/brand/app-logo'
+import { Button } from '@tamery/ui/components/button'
+import { ThemeToggle } from '@tamery/ui/components/custom/theme-toggle'
+import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
+import { Separator } from '@tamery/ui/components/separator'
+import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import {
   createFileRoute,
@@ -56,49 +56,93 @@ function AccountLayout() {
   const { user } = Route.useLoaderData()
 
   return (
-    <div className={`container mx-auto flex min-h-screen flex-col justify-between px-4`}>
+    <div
+      className={`
+      container mx-auto flex min-h-screen flex-col justify-between px-4
+    `}
+    >
       <header className="mb-10 flex h-15 items-center justify-between">
         <NavbarTextLogo to="/home" />
         <div className="flex flex-1 justify-center">
           <Link to="/home" className="text-primary">
-            <AppLogo className={`size-5 sm:size-6 lg:size-8`} />
+            <AppLogo
+              className={`
+                size-5
+                sm:size-6
+                lg:size-8
+              `}
+            />
           </Link>
         </div>
-        <div className={`flex flex-1 items-center justify-end gap-1 sm:gap-2`}>
+        <div
+          className={`
+          flex flex-1 items-center justify-end gap-1
+          sm:gap-2
+        `}
+        >
           <Button
             variant="ghost"
             size="sm"
-            className={`hidden gap-1 sm:flex sm:gap-2`}
+            className={`
+              hidden gap-1
+              sm:flex sm:gap-2
+            `}
             render={<Link to="/releases" />}
           >
-            <RiGitBranchLine className={`size-3 sm:size-4`} />
+            <RiGitBranchLine
+              className={`
+              size-3
+              sm:size-4
+            `}
+            />
             Releases
           </Button>
           <Button
             variant="ghost"
             size="sm"
-            className={`hidden gap-1 sm:flex sm:gap-2`}
+            className={`
+              hidden gap-1
+              sm:flex sm:gap-2
+            `}
             render={
               <a
                 href={SOCIAL_LINKS.GITHUB}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="View source on GitHub"
+                aria-label="GitHub"
               />
             }
           >
-            <RiGithubFill className={`size-3 sm:size-4`} />
+            <RiGithubFill
+              className={`
+              size-3
+              sm:size-4
+            `}
+            />
             <NumberFlow
               value={data?.stargazers_count || 0}
               className={cn(
-                `text-xs tabular-nums duration-200 sm:text-sm`,
+                `
+                text-xs tabular-nums duration-200
+                sm:text-sm
+              `,
                 !data && `animate-pulse text-muted-foreground`,
               )}
             />
           </Button>
           <ThemeToggle side="bottom" render={<Button size="icon-sm" variant="ghost" />}>
-            <RiSunLine className={`size-4 dark:hidden`} />
-            <RiMoonLine className={`hidden size-4 dark:block`} />
+            <RiSunLine
+              className={`
+              size-4
+              dark:hidden
+            `}
+            />
+            <RiMoonLine
+              className={`
+              hidden size-4
+              dark:block
+            `}
+            />
           </ThemeToggle>
           <Button
             variant="outline"
@@ -110,7 +154,10 @@ function AccountLayout() {
           </Button>
           <Button
             size="sm"
-            className={`gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm`}
+            className={`
+              gap-1 px-2 text-xs
+              sm:gap-2 sm:px-3 sm:text-sm
+            `}
             render={<Link to="/download" />}
           >
             Download

@@ -1,9 +1,9 @@
 import '@tamery/shared/arktype-config'
 import process from 'node:process'
 
-import { sanitizeLogData } from '@tamery/shared/utils/sanitize-log'
 import { ORPCError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
+import { sanitizeLogData } from '@tamery/shared/utils/sanitize-log'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 
@@ -51,6 +51,7 @@ const app = new Hono<{
     cors({
       origin(origin) {
         const allowedOrigins = ['https://tamery.app']
+        if (nodeEnv === 'development' && origin.startsWith('http://localhost:')) return origin
         return origin.endsWith('.tamery.app') || allowedOrigins.includes(origin) ? origin : null
       },
       credentials: true,

@@ -1,3 +1,4 @@
+import { RiCodeSSlashLine } from '@remixicon/react'
 import { title } from '@tamery/shared/utils/title'
 import { Badge } from '@tamery/ui/components/badge'
 import { CardContent, CardTitle } from '@tamery/ui/components/card'
@@ -11,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
-import { RiCodeSSlashLine } from '@remixicon/react'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -155,7 +155,11 @@ function DatabaseFunctionsPage() {
                       {item.type === 'function' ? 'Function' : 'Procedure'}
                     </Badge>
                   </CardTitle>
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <div
+                    className="
+                    flex items-center gap-1.5 text-sm text-muted-foreground
+                  "
+                  >
                     {item.language && (
                       <Badge variant="outline">
                         <HighlightText text={item.language} match={search} />

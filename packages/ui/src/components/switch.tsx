@@ -1,23 +1,50 @@
 import { Switch as SwitchPrimitive } from '@base-ui/react/switch'
 import { cn } from '@tamery/ui/lib/utils'
-import type * as React from 'react'
 
-export function Switch({ className, ...props }: SwitchPrimitive.Root.Props): React.ReactElement {
+function Switch({
+  className,
+  size = 'default',
+  ...props
+}: SwitchPrimitive.Root.Props & {
+  size?: 'sm' | 'default'
+}) {
   return (
     <SwitchPrimitive.Root
+      data-slot="switch"
+      data-size={size}
       className={cn(
-        `inline-flex h-[calc(var(--thumb-size)+0.125rem)] w-[calc(var(--thumb-size)*2-0.125rem)] shrink-0 items-center rounded-full p-px transition-[background-color,box-shadow] duration-200 outline-none [--thumb-size:--spacing(5)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background data-checked:bg-primary data-disabled:opacity-64 data-unchecked:bg-input sm:[--thumb-size:--spacing(4)]`,
+        `
+          peer group/switch relative inline-flex shrink-0 items-center
+          rounded-2xl border-2 transition-all outline-none
+          after:absolute after:-inset-x-3 after:-inset-y-2
+          focus-visible:border-ring focus-visible:ring-3
+          focus-visible:ring-ring/30
+          aria-invalid:border-destructive/60 aria-invalid:ring-3
+          aria-invalid:ring-destructive/30
+          data-[size=default]:h-5 data-[size=default]:w-8
+          data-[size=sm]:h-4 data-[size=sm]:w-6
+          data-checked:border-primary data-checked:bg-primary
+          data-unchecked:border-transparent data-unchecked:bg-muted
+          data-disabled:cursor-not-allowed data-disabled:opacity-50
+        `,
         className,
       )}
-      data-slot="switch"
       {...props}
     >
       <SwitchPrimitive.Thumb
-        className={cn(
-          `pointer-events-none block aspect-square h-full origin-left rounded-(--thumb-size) bg-background shadow-sm/5 will-change-transform [transition:translate_.15s,border-radius_.15s,scale_.1s_.1s,transform-origin_.15s] in-[[role=switch]:active,[data-slot=label]:active,[data-slot=field-label]:active]:rounded-[var(--thumb-size)/calc(var(--thumb-size)*1.1)] in-[[role=switch]:active,[data-slot=label]:active,[data-slot=field-label]:active]:not-data-disabled:scale-x-110 data-checked:origin-[var(--thumb-size)_50%] data-checked:translate-x-[calc(var(--thumb-size)-0.25rem)]`,
-        )}
         data-slot="switch-thumb"
+        className="
+          pointer-events-none block rounded-2xl bg-white bg-clip-padding
+          shadow-sm ring-0
+          transition-transform
+          group-data-[size=default]/switch:size-4
+          group-data-[size=sm]/switch:size-3
+          data-checked:translate-x-[calc(100%-4px)]
+          data-unchecked:translate-x-0
+        "
       />
     </SwitchPrimitive.Root>
   )
 }
+
+export { Switch }

@@ -61,17 +61,22 @@ export function TableHeader({
   return (
     <div
       className={cn(
-        `sticky top-0 z-10 h-8 w-fit min-w-full border-y bg-background has-data-footer:h-12`,
+        `
+        sticky top-0 z-10 w-fit min-w-full rounded-lg bg-background inset-ring
+        inset-ring-border
+      `,
         className,
       )}
       style={{ width: `${tableWidth}px`, ...style }}
       {...props}
     >
       {before}
-      <div className="flex h-full w-fit min-w-full items-center bg-secondary/50">
+      <div className="flex w-fit min-w-full items-center">
         <div
           aria-hidden="true"
-          className="w-(--table-scroll-left-offset) shrink-0 will-change-[height]"
+          className="
+            w-(--table-scroll-left-offset) shrink-0 will-change-[height]
+          "
           style={spacerStyle}
         />
         {virtualColumns.map(virtualColumn => (
@@ -83,7 +88,9 @@ export function TableHeader({
         ))}
         <div
           aria-hidden="true"
-          className="w-(--table-scroll-right-offset) shrink-0 will-change-[height]"
+          className="
+            w-(--table-scroll-right-offset) shrink-0 will-change-[height]
+          "
           style={spacerStyle}
         />
       </div>

@@ -9,6 +9,7 @@ export function useDebouncedMemo<T>(factory: () => T, deps: React.DependencyList
 
   const debouncedSetState = useDebouncedCallback(
     (value: T) => {
+      // oxlint-disable-next-line react/set-state-in-effect
       setState(value)
     },
     [],

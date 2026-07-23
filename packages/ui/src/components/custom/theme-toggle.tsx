@@ -1,3 +1,4 @@
+import { RiComputerLine, RiMoonLine, RiSunLine } from '@remixicon/react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -5,7 +6,6 @@ import {
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
 import { themeStore } from '@tamery/ui/theme-store'
-import { RiComputerLine, RiMoonLine, RiSunLine } from '@remixicon/react'
 import type { ComponentProps } from 'react'
 
 export function ThemeToggle({

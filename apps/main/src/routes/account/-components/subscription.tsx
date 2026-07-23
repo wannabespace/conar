@@ -1,3 +1,11 @@
+import {
+  RiErrorWarningLine,
+  RiHeart3Fill,
+  RiInformationLine,
+  RiLoader4Fill,
+  RiTimeLine,
+  RiWalletLine,
+} from '@remixicon/react'
 import { SUBSCRIPTION_PAST_DUE_MESSAGE } from '@tamery/shared/constants'
 import { Alert, AlertDescription, AlertTitle } from '@tamery/ui/components/alert'
 import { Badge } from '@tamery/ui/components/badge'
@@ -13,14 +21,6 @@ import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
-import {
-  RiErrorWarningLine,
-  RiHeart3Fill,
-  RiInformationLine,
-  RiLoader4Fill,
-  RiTimeLine,
-  RiWalletLine,
-} from '@remixicon/react'
 import { useRouter } from '@tanstack/react-router'
 import { format, formatDistanceToNow } from 'date-fns'
 import type { ReactNode } from 'react'
@@ -82,7 +82,11 @@ export function Subscription() {
               Manage Subscription
             </LoadingContent>
           </Button>
-          <span className={`flex items-center gap-1 text-xs text-muted-foreground`}>
+          <span
+            className={`
+                  flex items-center gap-1 text-xs text-muted-foreground
+                `}
+          >
             <RiTimeLine className="size-3.5" />
             {subscription.cancelAtPeriodEnd || subscription.cancelAt ? (
               subscription.cancelAt ? (
@@ -94,11 +98,8 @@ export function Subscription() {
               hasUpcomingTrialEnd &&
               subscription.trialEnd ? (
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <span>
-                    Free trial ends{' '}
-                    {formatDistanceToNow(subscription.trialEnd, { addSuffix: true })}
-                  </span>
+                <TooltipTrigger render={<span />}>
+                  Free trial ends {formatDistanceToNow(subscription.trialEnd, { addSuffix: true })}
                 </TooltipTrigger>
                 <TooltipContent>
                   <span>
@@ -145,16 +146,23 @@ export function Subscription() {
             <CardDescription className="flex items-center gap-2">
               Manage your subscription
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="focus:outline-none">
-                    <RiInformationLine className="size-4" />
-                  </span>
+                {/* Focusable so the tooltip is reachable by keyboard */}
+                {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+                <TooltipTrigger render={<span tabIndex={0} className="focus:outline-none" />}>
+                  <RiInformationLine className="size-4" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs bg-background p-0">
-                  <div className={`space-y-4 bg-linear-to-b from-primary/5 to-card p-4 text-sm`}>
+                  <div
+                    className={`
+                    space-y-4 bg-linear-to-b from-primary/5 to-card p-4 text-sm
+                  `}
+                  >
                     <div className="flex items-center gap-2">
                       <span
-                        className={`inline-flex size-6 items-center justify-center rounded-full bg-primary/20 text-primary`}
+                        className={`
+                        inline-flex size-6 items-center justify-center
+                        rounded-full bg-primary/20 text-primary
+                      `}
                       >
                         <RiHeart3Fill className="size-4" />
                       </span>
@@ -179,17 +187,28 @@ export function Subscription() {
           </div>
           {!subscription && !isPending && (
             <div className="flex items-center">
-              <div className={`inline-flex items-center rounded-full border bg-card p-1 shadow-sm`}>
+              <div
+                className={`
+                inline-flex items-center rounded-full border bg-card p-1
+                shadow-sm
+              `}
+              >
                 {['Monthly', 'Yearly'].map(period => (
                   <button
                     type="button"
                     key={period}
                     onClick={() => setIsYearly(period === 'Yearly')}
                     className={cn(
-                      `rounded-full px-3 py-1 text-sm font-medium transition-all duration-100`,
+                      `
+                        rounded-full px-3 py-1 text-sm font-medium
+                        transition-all duration-100
+                      `,
                       (period === 'Yearly') === isYearly
                         ? 'bg-primary text-primary-foreground'
-                        : `text-muted-foreground hover:text-foreground`,
+                        : `
+                          text-muted-foreground
+                          hover:text-foreground
+                        `,
                     )}
                   >
                     {period}
@@ -200,19 +219,26 @@ export function Subscription() {
           )}
         </CardHeader>
         <CardContent>
-          <div className={`grid-cols-2 gap-6 lg:grid`}>
+          <div
+            className={`
+            grid-cols-2 gap-6
+            lg:grid
+          `}
+          >
             {plans.map((plan, planIndex) => (
               <div
                 key={plan.name}
-                className={cn(
-                  `flex h-50 flex-col justify-between rounded-lg border p-4 duration-100`,
-                )}
+                className={cn(`
+                  flex h-50 flex-col justify-between rounded-lg border p-4
+                  duration-100
+                `)}
               >
                 <div className="flex flex-col gap-4">
                   <span
-                    className={cn(
-                      `flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground duration-100`,
-                    )}
+                    className={cn(`
+                    flex size-10 shrink-0 items-center justify-center rounded-md
+                    bg-muted text-muted-foreground duration-100
+                  `)}
                   >
                     <plan.icon className="size-5 duration-100" />
                   </span>
@@ -221,7 +247,11 @@ export function Subscription() {
                       <span className="font-medium">
                         {plan.name}{' '}
                         {plan.price.monthly > 0 && (
-                          <span className={`text-sm font-normal text-muted-foreground`}>
+                          <span
+                            className={`
+                            text-sm font-normal text-muted-foreground
+                          `}
+                          >
                             {subscription && subscription.plan === plan.name.toLowerCase()
                               ? formatCurrency(subscription.price)
                               : formatCurrency(isYearly ? plan.price.yearly : plan.price.monthly)}

@@ -2,8 +2,7 @@ import { RiGithubFill, RiGoogleFill } from '@remixicon/react'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { Field, FieldLabel } from '@tamery/ui/components/field'
-import { Fieldset } from '@tamery/ui/components/fieldset'
+import { FieldSet } from '@tamery/ui/components/field'
 import { Separator } from '@tamery/ui/components/separator'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
@@ -196,11 +195,11 @@ export function AuthForm({ type }: { type: Type }) {
           form.handleSubmit()
         }}
       >
-        <Fieldset className="flex w-full flex-col gap-6">
+        <FieldSet className="flex w-full flex-col gap-6">
           <form.AppField name="email">
             {field => (
-              <Field>
-                <FieldLabel>Email</FieldLabel>
+              <field.Field>
+                <field.Label>Email</field.Label>
                 <field.Input
                   placeholder="example@gmail.com"
                   type="email"
@@ -211,14 +210,14 @@ export function AuthForm({ type }: { type: Type }) {
                   autoFocus
                 />
                 <field.Error />
-              </Field>
+              </field.Field>
             )}
           </form.AppField>
           {type === 'sign-up' && (
             <form.AppField name="name">
               {field => (
-                <Field>
-                  <FieldLabel>Name</FieldLabel>
+                <field.Field>
+                  <field.Label>Name</field.Label>
                   <field.Input
                     placeholder="John Doe"
                     autoComplete="name"
@@ -226,15 +225,15 @@ export function AuthForm({ type }: { type: Type }) {
                     required
                   />
                   <field.Error />
-                </Field>
+                </field.Field>
               )}
             </form.AppField>
           )}
           <form.AppField name="password">
             {field => (
-              <Field>
+              <field.Field>
                 <div className="flex w-full items-center justify-between">
-                  <FieldLabel>Password</FieldLabel>
+                  <field.Label>Password</field.Label>
                   {type === 'sign-in' && (
                     <Button
                       variant="link"
@@ -248,7 +247,7 @@ export function AuthForm({ type }: { type: Type }) {
                 </div>
                 <field.PasswordInput autoComplete="password" placeholder="••••••••" />
                 <field.Error />
-              </Field>
+              </field.Field>
             )}
           </form.AppField>
           <Button className="w-full" type="submit" disabled={isSubmitting}>
@@ -257,12 +256,15 @@ export function AuthForm({ type }: { type: Type }) {
             </LoadingContent>
             {type === 'sign-in' && lastMethod === 'email' && <Last />}
           </Button>
-        </Fieldset>
+        </FieldSet>
       </form>
       <div className="relative">
         <Separator />
         <span
-          className={`absolute top-1/2 left-1/2 -translate-1/2 bg-background px-4 text-sm text-muted-foreground`}
+          className={`
+          absolute top-1/2 left-1/2 -translate-1/2 bg-background px-4 text-sm
+          text-muted-foreground
+        `}
         >
           Or continue with
         </span>

@@ -1,9 +1,10 @@
+import { RiArrowLeftDownLine, RiArrowRightUpLine } from '@remixicon/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { sleep } from '@tamery/shared/utils/helpers'
 import type { TableCellProps } from '@tamery/table'
 import {
   AlertDialog,
-  AlertDialogClose,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -14,7 +15,6 @@ import { Button } from '@tamery/ui/components/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
-import { RiArrowLeftDownLine, RiArrowRightUpLine } from '@remixicon/react'
 import type { ComponentProps } from 'react'
 import { useState } from 'react'
 
@@ -57,14 +57,10 @@ function SetNullAlertDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
-          <AlertDialogClose
-            render={<Button variant="warning" />}
-            onClick={setNull}
-            disabled={value === null}
-          >
+          <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
+          <AlertDialogCancel variant="warning" onClick={setNull} disabled={value === null}>
             Set to null
-          </AlertDialogClose>
+          </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -136,11 +132,11 @@ export function TableCell({
         : 'idle'
 
   const cellClassName = cn(
-    isPopoverOpen && 'bg-primary/10 ring-primary/30',
-    (isForeignOpen || isReferencesOpen) && 'bg-accent/30 ring-accent/60',
-    status === 'error' && 'bg-destructive/15 ring-destructive/50',
-    status === 'pending' && 'animate-pulse bg-primary/10',
-    status === 'draft' && 'bg-warning/15 ring-warning/50',
+    isPopoverOpen && 'bg-primary/8 inset-ring-primary/60',
+    (isForeignOpen || isReferencesOpen) && 'bg-accent/50 inset-ring-border',
+    status === 'error' && 'bg-destructive/10 inset-ring-destructive/40',
+    status === 'pending' && 'animate-pulse bg-primary/8',
+    status === 'draft' && 'bg-primary/12 italic inset-ring-primary/30',
     (column.foreign || (column.references?.length ?? 0) > 0) && 'pr-1!',
   )
 
@@ -239,26 +235,31 @@ export function TableCell({
             {!!effectiveValue && column.foreign && (
               <Popover open={isForeignOpen} onOpenChange={setIsForeignOpen}>
                 <Tooltip>
-                  <TooltipTrigger asChild>
-                    <PopoverTrigger
-                      render={
-                        <ForeignButton
-                          onDoubleClick={e => e.stopPropagation()}
-                          onClick={e => {
-                            e.stopPropagation()
+                  <TooltipTrigger
+                    render={
+                      <PopoverTrigger
+                        render={
+                          <ForeignButton
+                            onDoubleClick={e => e.stopPropagation()}
+                            onClick={e => {
+                              e.stopPropagation()
 
-                            setIsForeignOpen(true)
-                            setIsPopoverOpen(false)
-                            setIsReferencesOpen(false)
-                          }}
-                        />
-                      }
-                    />
-                  </TooltipTrigger>
+                              setIsForeignOpen(true)
+                              setIsPopoverOpen(false)
+                              setIsReferencesOpen(false)
+                            }}
+                          />
+                        }
+                      />
+                    }
+                  />
                   <TooltipContent side="right">See foreign record</TooltipContent>
                 </Tooltip>
                 <PopoverContent
-                  className="h-[45vh] w-[80vw] overflow-hidden p-0 **:data-[slot=popover-viewport]:p-0"
+                  className="
+                    h-[45vh] w-[80vw] overflow-hidden p-0
+                    **:data-[slot=popover-viewport]:p-0
+                  "
                   onDoubleClick={e => e.stopPropagation()}
                   onClick={e => e.stopPropagation()}
                 >
@@ -274,23 +275,25 @@ export function TableCell({
             {!!effectiveValue && column.references && column.references.length > 0 && (
               <Popover open={isReferencesOpen} onOpenChange={setIsReferencesOpen}>
                 <Tooltip>
-                  <TooltipTrigger asChild>
-                    <PopoverTrigger
-                      render={
-                        <ReferenceButton
-                          onDoubleClick={e => e.stopPropagation()}
-                          onClick={e => {
-                            e.stopPropagation()
+                  <TooltipTrigger
+                    render={
+                      <PopoverTrigger
+                        render={
+                          <ReferenceButton
+                            onDoubleClick={e => e.stopPropagation()}
+                            onClick={e => {
+                              e.stopPropagation()
 
-                            setIsReferencesOpen(true)
-                            setIsPopoverOpen(false)
-                            setIsForeignOpen(false)
-                          }}
-                        />
-                      }
-                    >
-                      {column.references.length}
-                    </PopoverTrigger>
+                              setIsReferencesOpen(true)
+                              setIsPopoverOpen(false)
+                              setIsForeignOpen(false)
+                            }}
+                          />
+                        }
+                      />
+                    }
+                  >
+                    {column.references.length}
                   </TooltipTrigger>
                   <TooltipContent side="right">
                     See referenced records from {column.references.length} table
@@ -298,7 +301,10 @@ export function TableCell({
                   </TooltipContent>
                 </Tooltip>
                 <PopoverContent
-                  className="h-[45vh] w-[80vw] overflow-hidden p-0 **:data-[slot=popover-viewport]:p-0"
+                  className="
+                    h-[45vh] w-[80vw] overflow-hidden p-0
+                    **:data-[slot=popover-viewport]:p-0
+                  "
                   onDoubleClick={e => e.stopPropagation()}
                   onClick={e => e.stopPropagation()}
                 >
@@ -309,7 +315,11 @@ export function TableCell({
           </PopoverTrigger>
           <PopoverContent
             className={cn(
-              `w-80 gap-0 overflow-auto p-0 duration-100 [transition:opacity_0.15s,transform_0.15s,width_0.3s] **:data-[slot=popover-viewport]:p-0`,
+              `
+              w-80 gap-0 overflow-auto p-0 duration-100
+              [transition:opacity_0.15s,transform_0.15s,width_0.3s]
+              **:data-[slot=popover-viewport]:p-0
+            `,
               isBig && `w-[min(50vw,60rem)]`,
             )}
             onAnimationEnd={disableInteractIfPossible}

@@ -1,6 +1,7 @@
+import { RiDeviceLine, RiLogoutCircleLine } from '@remixicon/react'
 import {
   AlertDialog,
-  AlertDialogClose,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -10,10 +11,15 @@ import {
 } from '@tamery/ui/components/alert-dialog'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
-import { Card, CardDescription, CardHeader, CardPanel, CardTitle } from '@tamery/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@tamery/ui/components/card'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { Skeleton } from '@tamery/ui/components/skeleton'
-import { RiDeviceLine, RiLogoutCircleLine } from '@remixicon/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -73,7 +79,12 @@ function SessionItem({
   })
 
   return (
-    <li className="flex items-center justify-between gap-4 rounded-lg border bg-muted/30 px-3 py-2">
+    <li
+      className="
+        flex items-center justify-between gap-4 rounded-lg border bg-muted/30
+        px-3 py-2
+      "
+    >
       <div className="flex items-center gap-3">
         <RiDeviceLine className="size-4 text-muted-foreground" />
         <div>
@@ -97,7 +108,9 @@ function SessionItem({
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
+              <AlertDialogCancel variant="outline" size="default">
+                Cancel
+              </AlertDialogCancel>
               <Button
                 variant="destructive"
                 disabled={revokingSession}
@@ -157,7 +170,7 @@ export function SessionsCard() {
           Manage devices where you're signed in. Revoking a session signs that device out.
         </CardDescription>
       </CardHeader>
-      <CardPanel className="space-y-2">
+      <CardContent className="space-y-2">
         {sessionsPending ? (
           <>
             <Skeleton className="h-10 w-full rounded-lg border bg-muted/30" />
@@ -194,7 +207,9 @@ export function SessionsCard() {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
+                <AlertDialogCancel variant="outline" size="default">
+                  Cancel
+                </AlertDialogCancel>
                 <Button
                   variant="destructive"
                   disabled={revokingOthers}
@@ -206,7 +221,7 @@ export function SessionsCard() {
             </AlertDialogContent>
           </AlertDialog>
         )}
-      </CardPanel>
+      </CardContent>
     </Card>
   )
 }

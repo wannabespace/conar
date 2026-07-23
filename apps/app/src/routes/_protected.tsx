@@ -1,15 +1,18 @@
+import { cn } from '@tamery/ui/lib/utils'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
+import { GlobalBanner } from '~/components/global-banner'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
 import { cleanCollections, getCollections } from '~/entities/collections'
 import { EventsProvider } from '~/events'
 import { enterAppAnimation } from '~/global-hooks'
 import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
-import { authClient } from '~/lib/auth'
+import { useLastOpenedResourcesSync } from '~/hooks/use-last-opened-resources-sync'
 import { subscriptionQueryClient } from '~/main'
 
 import { ActionsCenter } from './-components/actions-center'
+import { ProtectedTitleBar } from './_protected/-components/protected-titlebar'
 
 export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
@@ -27,9 +30,8 @@ export const Route = createFileRoute('/_protected')({
 })
 
 function ProtectedLayout() {
-  const { isPending } = authClient.useSession()
-
   useConnectionStringsSync()
+  useLastOpenedResourcesSync()
 
   useEffect(() => {
     return () => {
@@ -38,12 +40,8 @@ function ProtectedLayout() {
   }, [])
 
   useEffect(() => {
-    if (isPending) {
-      return
-    }
-
     enterAppAnimation()
-  }, [isPending])
+  }, [])
 
   useEffect(() => {
     const handleFocus = () => {
@@ -62,7 +60,20 @@ function ProtectedLayout() {
     <EventsProvider>
       <SubscriptionModal />
       <ActionsCenter />
-      <Outlet />
+      <div className="flex h-full flex-col">
+        <ProtectedTitleBar />
+        <GlobalBanner />
+        <div
+          className={cn(
+            'min-h-0 flex-1',
+            // Let route pages fill the area below the title bar, matching the
+            // full-height behavior the root layout provides to its last child.
+            '*:last:h-full *:last:min-h-[inherit] *:last:flex-1',
+          )}
+        >
+          <Outlet />
+        </div>
+      </div>
     </EventsProvider>
   )
 }

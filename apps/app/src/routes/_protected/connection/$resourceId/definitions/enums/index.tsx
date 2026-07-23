@@ -62,7 +62,6 @@ function DatabaseEnumsPage() {
             (!!enumItem.metadata?.column &&
               enumItem.metadata.column.toLowerCase().includes(search.toLowerCase()))),
       )
-      // oxlint-disable-next-line oxc/no-map-spread -- `enums` is react-query cached data; must not mutate the original items
       .map(enumItem => ({
         ...enumItem,
         values: enumItem.values.filter(value => value.toLowerCase().includes(search.toLowerCase())),
@@ -121,7 +120,10 @@ function DatabaseEnumsPage() {
                     </Badge>
                   </CardTitle>
                   <div
-                    className={`mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground`}
+                    className={`
+                    mt-2 flex flex-wrap items-center gap-2 text-sm
+                    text-muted-foreground
+                  `}
                   >
                     {enumItem.metadata?.table && (
                       <>

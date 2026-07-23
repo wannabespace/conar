@@ -5,7 +5,6 @@ import { generateText } from 'ai'
 import { type } from 'arktype'
 import { asc, eq } from 'drizzle-orm'
 
-import { withPosthog } from '~/lib/posthog'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 async function getMessages(chatId: string) {
@@ -24,15 +23,11 @@ export const enhancePrompt = orpc
       chatId: 'string.uuid.v7',
     }),
   )
-  .handler(async ({ input, signal, context }) => {
+  .handler(async ({ input, signal }) => {
     const messages = await getMessages(input.chatId)
 
     const { text } = await generateText({
-      model: withPosthog(openai('gpt-4o-mini'), {
-        chatId: input.chatId,
-        prompt: input.prompt,
-        userId: context.user.id,
-      }),
+      model: openai('gpt-4o-mini'),
       messages: [
         {
           role: 'system',

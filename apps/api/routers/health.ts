@@ -7,14 +7,6 @@ import { generateText } from 'ai'
 import { sql } from 'drizzle-orm'
 import { Hono } from 'hono'
 
-function createAnswer(status: 'error' | 'ok', service: string, message: string) {
-  return {
-    status,
-    service,
-    message,
-  }
-}
-
 export const healthRouter = new Hono().get('/', async c => {
   const hostname = c.req.header('host')
   if (hostname !== 'healthcheck.railway.app') {
@@ -25,6 +17,15 @@ export const healthRouter = new Hono().get('/', async c => {
       },
       400,
     )
+  }
+
+  // oxlint-disable-next-line unicorn/consistent-function-scoping
+  function createAnswer(status: 'error' | 'ok', service: string, message: string) {
+    return {
+      status,
+      service,
+      message,
+    }
   }
 
   const promises = await Promise.all([

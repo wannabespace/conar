@@ -1,6 +1,6 @@
 import {
   AlertDialog,
-  AlertDialogClose,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -69,7 +69,9 @@ export function RevokeApiKeyDialog({ ref, onRefetch }: RevokeApiKeyDialogProps) 
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
+          <AlertDialogCancel variant="outline" size="default">
+            Cancel
+          </AlertDialogCancel>
           <Button
             variant="destructive"
             disabled={isDeleting || !keyId}

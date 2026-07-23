@@ -1,3 +1,4 @@
+import { RiCheckLine, RiFileCopyLine, RiQuestionLine, RiSaveLine } from '@remixicon/react'
 import { CONNECTION_TYPES_WITH_EXPLAIN } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
@@ -14,7 +15,6 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
-import { RiCheckLine, RiFileCopyLine, RiQuestionLine, RiSaveLine } from '@remixicon/react'
 import { useIsFetching, useMutation } from '@tanstack/react-query'
 import { Fragment, useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -120,7 +120,11 @@ export function RunnerEditorQueryZone({
 
   return (
     <TooltipProvider>
-      <div className={cn(`flex h-full items-center justify-between gap-2 border-y px-2 py-1 pr-6`)}>
+      <div
+        className={cn(`
+        flex h-full items-center justify-between gap-2 border-y px-2 py-1 pr-6
+      `)}
+      >
         <div className="flex flex-1 items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <label className="flex items-center gap-2 text-xs">
@@ -134,29 +138,33 @@ export function RunnerEditorQueryZone({
           </div>
           <div className="flex items-center gap-1">
             <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  className="focus:outline-none!"
-                  onClick={() => onSave()}
-                >
-                  <RiSaveLine className="size-3.5" />
-                </Button>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className="focus:outline-none!"
+                    onClick={() => onSave()}
+                  />
+                }
+              >
+                <RiSaveLine className="size-3.5" />
               </TooltipTrigger>
               <TooltipContent>Save</TooltipContent>
             </Tooltip>
             <Tooltip>
-              <TooltipTrigger asChild>
-                <CopyButton
-                  variant="ghost"
-                  size="icon-xs"
-                  className="focus:outline-none!"
-                  text={getQuery}
-                  successIcon={<RiCheckLine className="text-success" />}
-                  copyIcon={<RiFileCopyLine className="size-3.5" />}
-                />
-              </TooltipTrigger>
+              <TooltipTrigger
+                render={
+                  <CopyButton
+                    variant="ghost"
+                    size="icon-xs"
+                    className="focus:outline-none!"
+                    text={getQuery}
+                    successIcon={<RiCheckLine className="text-success" />}
+                    copyIcon={<RiFileCopyLine className="size-3.5" />}
+                  />
+                }
+              ></TooltipTrigger>
               <TooltipContent>Copy</TooltipContent>
             </Tooltip>
             <Separator orientation="vertical" className="mx-1 h-4!" />
@@ -167,27 +175,29 @@ export function RunnerEditorQueryZone({
                   {CONNECTION_TYPES_WITH_EXPLAIN.includes(connectionType) && (
                     <Popover open={explainOpen} onOpenChange={setExplainOpen}>
                       <Tooltip>
-                        <TooltipTrigger asChild>
-                          <PopoverTrigger
-                            render={
-                              <Button
-                                size="xs"
-                                variant="secondary"
-                                className="focus:outline-none!"
-                                disabled={isFetching || isExplaining}
-                                onClick={() => handleExplain(idx)}
-                              />
-                            }
-                          >
-                            <LoadingContent loading={isExplaining}>
-                              <ContentSwitch
-                                active={isExplaining}
-                                activeContent={<RiCheckLine className="text-success" />}
-                              >
-                                <RiQuestionLine />
-                              </ContentSwitch>
-                            </LoadingContent>
-                          </PopoverTrigger>
+                        <TooltipTrigger
+                          render={
+                            <PopoverTrigger
+                              render={
+                                <Button
+                                  size="xs"
+                                  variant="secondary"
+                                  className="focus:outline-none!"
+                                  disabled={isFetching || isExplaining}
+                                  onClick={() => handleExplain(idx)}
+                                />
+                              }
+                            />
+                          }
+                        >
+                          <LoadingContent loading={isExplaining}>
+                            <ContentSwitch
+                              active={isExplaining}
+                              activeContent={<RiCheckLine className="text-success" />}
+                            >
+                              <RiQuestionLine />
+                            </ContentSwitch>
+                          </LoadingContent>
                         </TooltipTrigger>
                         <TooltipContent>Explain</TooltipContent>
                       </Tooltip>
@@ -218,7 +228,11 @@ export function RunnerEditorQueryZone({
                               </span>
                             </div>
                             <Separator className="my-2" />
-                            <div className="overflow-auto font-mono text-xs whitespace-pre">
+                            <div
+                              className="
+                              overflow-auto font-mono text-xs whitespace-pre
+                            "
+                            >
                               {explainData.rows
                                 .map(row => Object.values(row).join('\t'))
                                 .join('\n')}

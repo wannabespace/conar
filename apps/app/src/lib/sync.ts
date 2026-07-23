@@ -1,4 +1,5 @@
 import { GITHUB_REPO_NAME } from '@tamery/shared/constants'
+import { sleep } from '@tamery/shared/utils/helpers'
 import {
   BrowserCollectionCoordinator,
   createBrowserWASQLitePersistence,
@@ -89,10 +90,18 @@ type MutationFn<T> = (params: {
   transaction: { mutations: { key: string; modified: T; changes: Partial<T> }[] }
 }) => Promise<void>
 
+export type SyncEventsFn<T> = (params: {
+  signal: AbortSignal
+  write: (message: SyncMessage<T>) => void
+}) => void | Promise<void>
+
+const RETRY_MIN_DELAY = 1000
+const RETRY_MAX_DELAY = 30_000
+
 export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
   id: string
   getKey: (item: T) => string
-  events: (params: { signal: AbortSignal }) => Promise<AsyncIterable<SyncMessage<T>>>
+  events: SyncEventsFn<T>
   sync: (params: { rows: T[]; signal: AbortSignal }) => Promise<SyncMessage<T>[]>
   onInsert?: MutationFn<T>
   onUpdate?: MutationFn<T>
@@ -107,6 +116,7 @@ export function syncCollectionOptions<T extends { updatedAt: Date }>(
   const sync: SyncConfig<T, string> = {
     sync: ({ begin, commit, write, collection, markReady }) => {
       const abortController = new AbortController()
+      const { signal } = abortController
 
       const writeItem = (item: SyncMessage<T>) => {
         if (item.type === 'delete') {
@@ -117,35 +127,48 @@ export function syncCollectionOptions<T extends { updatedAt: Date }>(
         tracker.markSynced(config.getKey(item.value), item.value.updatedAt)
       }
 
-      config
-        .events({ signal: abortController.signal })
-        .then(async events => {
-          if (abortController.signal.aborted) return
-          markReady()
-          for await (const item of events) {
-            if (abortController.signal.aborted) break
-            begin()
-            writeItem(item)
-            commit()
-          }
-
-          return undefined
-        })
-        .catch(() => {
-          if (!abortController.signal.aborted) markReady()
-        })
-
-      collection.toArrayWhenReady().then(async rows => {
-        const items = await config.sync({ rows, signal: abortController.signal })
-        if (abortController.signal.aborted) return
+      const writeItems = (items: SyncMessage<T>[]) => {
+        if (signal.aborted) return
         begin()
         for (const item of items) {
           writeItem(item)
         }
         commit()
+      }
 
-        return undefined
-      })
+      const catchUp = async () => {
+        try {
+          const rows = await collection.toArrayWhenReady()
+          writeItems(await config.sync({ rows, signal }))
+        } catch (error) {
+          if (!signal.aborted) posthog.captureException(error)
+        }
+      }
+
+      const run = async () => {
+        let failures = 0
+
+        while (!signal.aborted) {
+          try {
+            // oxlint-disable-next-line no-await-in-loop
+            await Promise.all([
+              catchUp(),
+              config.events({ signal, write: item => writeItems([item]) }),
+            ])
+            failures = 0
+          } catch (error) {
+            if (signal.aborted) return
+            posthog.captureException(error)
+            failures++
+          }
+
+          // oxlint-disable-next-line no-await-in-loop
+          await sleep(Math.min(RETRY_MIN_DELAY * 2 ** failures, RETRY_MAX_DELAY), signal)
+        }
+      }
+
+      markReady()
+      run()
 
       return () => {
         abortController.abort(`${config.id} sync aborted`)
@@ -191,7 +214,8 @@ export async function clearDb() {
       const tableName = table.name
 
       if (tableName && !systemTables.has(tableName)) {
-        // oxlint-disable-next-line no-await-in-loop -- sequential DELETEs on a single SQLite connection, no parallelism benefit
+        // Sequential by design: statements run on a single SQLite connection
+        // oxlint-disable-next-line no-await-in-loop
         await database.execute(`DELETE FROM "${tableName}";`)
       }
     }

@@ -52,7 +52,7 @@ export const resourceTableTotalQuery = memoize(
 
           const query = await db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(db.fn.countAll().as('total'))
             .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
@@ -77,7 +77,7 @@ export const resourceTableTotalQuery = memoize(
 
           const query = await db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(db.fn.countAll().as('total'))
             .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
@@ -89,7 +89,7 @@ export const resourceTableTotalQuery = memoize(
         mssql: async db => {
           const query = await db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(db.fn.countAll().as('total'))
             .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
@@ -119,7 +119,7 @@ export const resourceTableTotalQuery = memoize(
 
           const query = await db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(db.fn.countAll().as('total'))
             .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))

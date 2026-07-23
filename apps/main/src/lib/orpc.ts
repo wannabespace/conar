@@ -1,7 +1,7 @@
-import type { ORPCRouter } from '@tamery/api/orpc/routers'
 import { createORPCClient } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
+import type { ORPCRouter } from '@tamery/api/orpc/routers'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 

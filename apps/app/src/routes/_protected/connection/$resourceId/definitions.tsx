@@ -33,13 +33,20 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/definit
 
 function DefinitionsLayout() {
   return (
-    <div className="flex size-full gap-1">
+    <div className="flex size-full min-h-0 gap-2">
       <Sidebar />
-      <ScrollArea className="h-full flex-1 rounded-lg bg-background">
-        <div className="mx-auto flex max-w-3xl flex-col px-4 py-6">
-          <Outlet />
-        </div>
-      </ScrollArea>
+      <div
+        className={`
+          flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-xl border
+          bg-background shadow-lg
+        `}
+      >
+        <ScrollArea className="h-full flex-1">
+          <div className="mx-auto flex w-full max-w-3xl flex-col px-6 py-5">
+            <Outlet />
+          </div>
+        </ScrollArea>
+      </div>
     </div>
   )
 }

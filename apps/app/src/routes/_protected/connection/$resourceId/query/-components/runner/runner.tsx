@@ -1,13 +1,3 @@
-import { Button } from '@tamery/ui/components/button'
-import { CardHeader, CardTitle } from '@tamery/ui/components/card'
-import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
-import { KbdCtrlEnter, KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
-import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
-import {
-  ResizablePanel,
-  ResizablePanelGroup,
-  ResizableSeparator,
-} from '@tamery/ui/components/resizable'
 import NumberFlow from '@number-flow/react'
 import {
   RiBrush2Line,
@@ -16,6 +6,17 @@ import {
   RiSettings3Line,
   RiStarLine,
 } from '@remixicon/react'
+import { Button } from '@tamery/ui/components/button'
+import { CardHeader, CardTitle } from '@tamery/ui/components/card'
+import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
+import { KbdCtrlEnter, KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
+import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@tamery/ui/components/resizable'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import type { ComponentRef } from 'react'
@@ -103,9 +104,7 @@ export function Runner() {
   )
   const [isFormatting, setIsFormatting] = useState(false)
   const store = getConnectionResourceStore(connectionResource.id)
-  const resultsVisible = useSubscription(store, {
-    selector: state => state.layout.resultsVisible,
-  })
+  const resultsVisible = useSubscription(store, { selector: state => state.layout.resultsVisible })
 
   function format() {
     const formatted = formatSql(store.get().query, connection.type)
@@ -156,16 +155,16 @@ export function Runner() {
     storage: localStorage,
   })
 
-  const runnerContextValue = useMemo(
+  const contextValue = useMemo(
     () => ({
       run: runQueriesWithAlert,
-      save: (query: string) => saveQueryDialogRef.current?.open(query),
+      save: (q: string) => saveQueryDialogRef.current?.open(q),
     }),
     [runQueriesWithAlert],
   )
 
   return (
-    <RunnerContext.Provider value={runnerContextValue}>
+    <RunnerContext.Provider value={contextValue}>
       <ResizablePanelGroup
         defaultLayout={defaultLayout}
         onLayoutChanged={onLayoutChanged}
@@ -177,11 +176,18 @@ export function Runner() {
             <CardTitle className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 SQL Runner
-                <RunnerSettings>
-                  <Button variant="ghost" size="icon-sm">
-                    <RiSettings3Line />
-                  </Button>
-                </RunnerSettings>
+                <Tooltip>
+                  <RunnerSettings>
+                    <TooltipTrigger
+                      render={
+                        <Button variant="ghost" size="icon-sm" aria-label="Layout settings" />
+                      }
+                    >
+                      <RiSettings3Line />
+                    </TooltipTrigger>
+                  </RunnerSettings>
+                  <TooltipContent side="bottom">Layout settings</TooltipContent>
+                </Tooltip>
               </div>
               <div className="flex gap-2">
                 <Popover>
@@ -191,12 +197,20 @@ export function Runner() {
                     <RiStarLine />
                     Saved
                     <span
-                      className={`flex h-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs`}
+                      className={`
+                      flex h-5 items-center justify-center rounded-full
+                      bg-accent px-1.5 text-xs
+                    `}
                     >
                       {queriesCount}
                     </span>
                   </PopoverTrigger>
-                  <PopoverContent className="min-w-md p-0 **:data-[slot=popover-viewport]:p-0">
+                  <PopoverContent
+                    className="
+                    min-w-md p-0
+                    **:data-[slot=popover-viewport]:p-0
+                  "
+                  >
                     <RunnerQueries />
                   </PopoverContent>
                 </Popover>
@@ -224,7 +238,10 @@ export function Runner() {
           <div className="relative h-[calc(100%-(--spacing(14)))] flex-1">
             <RunnerEditor />
             <span
-              className={`pointer-events-none absolute right-6 bottom-2 flex flex-col items-end text-xs text-muted-foreground`}
+              className={`
+              pointer-events-none absolute right-6 bottom-2 flex flex-col
+              items-end text-xs text-muted-foreground
+            `}
             >
               <span className="flex items-center gap-1">
                 <KbdCtrlLetter letter="K" userAgent={navigator.userAgent} /> to call the AI
@@ -239,7 +256,7 @@ export function Runner() {
         </ResizablePanel>
         {resultsVisible && (
           <>
-            <ResizableSeparator withHandle className="bg-border" />
+            <ResizableHandle withHandle className="bg-border" />
             <ResizablePanel minSize="20%" defaultSize="30%">
               <RunnerResults />
             </ResizablePanel>

@@ -6,8 +6,8 @@ function getBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
 
-    reader.addEventListener('load', event => resolve(event.target?.result as string))
-    reader.addEventListener('error', error => reject(error))
+    reader.addEventListener('load', () => resolve(reader.result as string))
+    reader.addEventListener('error', () => reject(reader.error))
 
     reader.readAsDataURL(file)
   })

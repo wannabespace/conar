@@ -11,6 +11,7 @@ export function useIsWindowScrolled({
       const scrollTop = window.scrollY
       const scrollLeft = window.scrollX
 
+      // oxlint-disable-next-line react/set-state-in-effect
       setIsScrolled(scrollTop > threshold || scrollLeft > threshold)
     }
 

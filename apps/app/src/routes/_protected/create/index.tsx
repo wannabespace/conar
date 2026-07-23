@@ -25,7 +25,7 @@ import { useLocalProxyAvailable } from '~/entities/connection/runtime'
 import { getConnectionStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching'
-import { generateRandomName } from '~/utils/utils'
+import { generateRandomName } from '~/utils/faker'
 
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
@@ -46,24 +46,6 @@ const createConnectionType = type({
   label: 'string | null',
   color: 'string | null',
 })
-
-function ConnectionErrorDescription({ message }: { message: string }) {
-  return (
-    <span
-      dangerouslySetInnerHTML={{
-        __html: message.toLowerCase().includes('invalid url')
-          ? 'Invalid URL, check your connection string and try again'
-          : message.replaceAll('\n', '<br />'),
-      }}
-    />
-  )
-}
-
-function handleConnectionTestError(error: Error) {
-  toast.error("We couldn't connect to the connection", {
-    description: <ConnectionErrorDescription message={error.message} />,
-  })
-}
 
 function CreateConnectionPage() {
   const collections = useCollections()
@@ -119,7 +101,6 @@ function CreateConnectionPage() {
         getConnectionStore(id).set(state => ({
           ...state,
           lastOpenedResourceName: resource,
-          pinnedResourcesNames: [resource],
         }))
       }
 
@@ -173,7 +154,19 @@ function CreateConnectionPage() {
       setStep('save')
       toast.success('Connection successful. You can save the connection.')
     },
-    onError: handleConnectionTestError,
+    onError: error => {
+      toast.error("We couldn't connect to the connection", {
+        description: (
+          <span
+            dangerouslySetInnerHTML={{
+              __html: error.message.toLowerCase().includes('invalid url')
+                ? 'Invalid URL, check your connection string and try again'
+                : error.message.replaceAll('\n', '<br />'),
+            }}
+          />
+        ),
+      })
+    },
   })
 
   const connectionString = useStore(form.store, state => state.values.connectionString)
@@ -223,10 +216,20 @@ function CreateConnectionPage() {
             Back
           </Button>
         </div>
-        <h1 className={`scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl`}>
+        <h1
+          className={`
+          scroll-m-20 text-4xl font-extrabold tracking-tight
+          lg:text-5xl
+        `}
+        >
           Create a connection
         </h1>
-        <p className={`mb-10 leading-7 text-muted-foreground not-first:mt-2`}>
+        <p
+          className={`
+          mb-10 leading-7 text-muted-foreground
+          not-first:mt-2
+        `}
+        >
           Connect to your database by providing the connection details.
         </p>
         <Stepper active={step} onChange={setStep}>

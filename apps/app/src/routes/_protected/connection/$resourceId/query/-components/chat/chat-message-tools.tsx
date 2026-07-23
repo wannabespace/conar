@@ -1,3 +1,10 @@
+import {
+  RiBook2Line,
+  RiEarthLine,
+  RiErrorWarningLine,
+  RiHammerLine,
+  RiSearchLine,
+} from '@remixicon/react'
 import type { ToolUIPart } from '@tamery/ai/tools/helpers'
 import { FaviconWithFallback } from '@tamery/ui/components/custom/favicon-with-fallback'
 import {
@@ -9,13 +16,6 @@ import {
 import { Spinner } from '@tamery/ui/components/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
-import {
-  RiBook2Line,
-  RiEarthLine,
-  RiErrorWarningLine,
-  RiHammerLine,
-  RiSearchLine,
-} from '@remixicon/react'
 import type { editor } from 'monaco-editor'
 
 import { InfoTable } from '~/components/info-table'
@@ -143,7 +143,7 @@ const TITLES: {
 }
 
 function getTitle({ part }: { part: ToolUIPart }) {
-  // oxlint-disable-next-line typescript/no-explicit-any
+  // oxlint-disable-next-line ts/no-explicit-any
   return TITLES[part.type]({ part } as any) || 'Unknown tool'
 }
 
@@ -232,18 +232,31 @@ const CONTENT: {
                   .slice(0, 5)
                   .map((result: { title: string; url: string; description?: string }) => (
                     <Tooltip key={`${part.toolCallId}-${result.url}`}>
-                      <TooltipTrigger asChild>
-                        <a
-                          href={result.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={`group flex max-w-full min-w-50 flex-1 basis-1/3 items-center gap-1 rounded-md border bg-accent/20 px-1.5 py-0.5 text-xs transition-colors hover:bg-accent/40`}
+                      <TooltipTrigger
+                        render={
+                          <a
+                            href={result.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={result.title}
+                            className={`
+                        group flex max-w-full min-w-50 flex-1 basis-1/3
+                        items-center gap-1 rounded-md border bg-accent/20 px-1.5
+                        py-0.5 text-xs transition-colors
+                        hover:bg-accent/40
+                      `}
+                          />
+                        }
+                      >
+                        <FaviconWithFallback url={result.url} className="size-3 shrink-0" />
+                        <span
+                          className={`
+                      truncate font-medium
+                      group-hover:text-primary
+                    `}
                         >
-                          <FaviconWithFallback url={result.url} className="size-3 shrink-0" />
-                          <span className={`truncate font-medium group-hover:text-primary`}>
-                            {result.title}
-                          </span>
-                        </a>
+                          {result.title}
+                        </span>
                       </TooltipTrigger>
                       <TooltipContent>
                         <div className="max-w-xs">
@@ -266,7 +279,7 @@ function ToolContent({ part }: { part: ToolUIPart }) {
   return (
     CONTENT[part.type as Exclude<ToolUIPart['type'], (typeof SKIP_CONTENT_TOOLS)[number]>]?.({
       part,
-      // oxlint-disable-next-line typescript/no-explicit-any
+      // oxlint-disable-next-line ts/no-explicit-any
     } as any) ||
     (part.errorText ? (
       <div className="text-xs text-destructive">{part.errorText}</div>
@@ -303,7 +316,10 @@ export function ChatMessageTool({ part, className }: { part: ToolUIPart; classNa
       <SingleAccordionTrigger
         className={cn(
           'min-w-0 gap-2 overflow-hidden py-1 text-xs',
-          (skipContent || error) && `cursor-auto`,
+          (skipContent || error) &&
+            `
+          cursor-auto
+        `,
         )}
       >
         <div className="flex flex-1 items-center gap-2 overflow-hidden">

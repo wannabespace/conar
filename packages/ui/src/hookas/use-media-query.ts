@@ -6,6 +6,7 @@ export function useMediaQuery(query: string, initialValue?: boolean) {
   React.useEffect(() => {
     const mediaQuery = window.matchMedia(query)
 
+    // oxlint-disable-next-line react/set-state-in-effect
     setMatches(mediaQuery.matches)
 
     const handleChange = (event: MediaQueryListEvent) => {

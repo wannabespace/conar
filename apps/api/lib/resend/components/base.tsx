@@ -1,4 +1,3 @@
-import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import {
   Body,
   Container,
@@ -13,6 +12,7 @@ import {
   Tailwind,
   Text,
 } from '@react-email/components'
+import { SOCIAL_LINKS } from '@tamery/shared/constants'
 
 import { env } from '~/env'
 

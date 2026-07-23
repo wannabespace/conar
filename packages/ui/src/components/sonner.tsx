@@ -1,53 +1,63 @@
 import {
-  RiAlertLine,
-  RiCheckLine,
-  RiErrorWarningLine,
-  RiInformationLine,
-  RiLoader4Line,
+  RiCheckboxCircleFill,
+  RiCloseCircleFill,
+  RiErrorWarningFill,
+  RiInformationFill,
+  RiLoaderLine,
 } from '@remixicon/react'
-import { createPortal } from 'react-dom'
 import { Toaster as Sonner } from 'sonner'
 
-import { useIsMounted } from '../hookas/use-is-mounted'
 import { useTheme } from '../theme-store'
 
-export function Toaster() {
+function Toaster() {
   const theme = useTheme()
-  const isMounted = useIsMounted()
 
-  if (!isMounted) {
-    return null
-  }
-
-  return createPortal(
-    <Sonner
-      theme={theme}
-      className="toaster group"
-      position="bottom-center"
-      closeButton
-      toastOptions={{
-        classNames: {
-          toast: 'cn-toast',
-        },
-        style: {
-          '--z-index': '100',
-          'zIndex': 'calc(var(--z-index) - var(--index))',
-        },
-      }}
-      icons={{
-        success: <RiCheckLine className="size-4 text-success" />,
-        info: <RiInformationLine className="size-4 text-info" />,
-        warning: <RiAlertLine className="size-4 text-warning" />,
-        error: <RiErrorWarningLine className="size-4 text-destructive" />,
-        loading: <RiLoader4Line className="size-4 animate-spin" />,
-      }}
-      style={{
-        '--normal-bg': 'var(--popover)',
-        '--normal-text': 'var(--popover-foreground)',
-        '--normal-border': 'var(--border)',
-        '--border-radius': 'var(--radius)',
-      }}
-    />,
-    document.body,
+  return (
+    <div data-mask className="contents">
+      <Sonner
+        theme={theme}
+        position="top-center"
+        className="group"
+        icons={{
+          success: <RiCheckboxCircleFill className="size-4 text-success" />,
+          info: <RiInformationFill className="size-4 text-muted-foreground" />,
+          warning: <RiErrorWarningFill className="size-4 text-warning" />,
+          error: <RiCloseCircleFill className="size-4 text-destructive" />,
+          loading: <RiLoaderLine className="size-4 animate-spin text-muted-foreground" />,
+        }}
+        toastOptions={{
+          unstyled: true,
+          classNames: {
+            toast: `
+              flex w-(--width) items-start gap-2.5 rounded-xl bg-background/80
+              p-3 shadow-lg ring-1 ring-foreground/4 backdrop-blur-xl
+              select-none
+            `,
+            content: 'flex min-w-0 flex-1 flex-col gap-0.5',
+            icon: 'mt-0.5 flex size-4 shrink-0 items-center justify-center',
+            title: 'text-sm leading-tight font-medium text-foreground',
+            description: 'text-xs leading-snug text-muted-foreground',
+            actionButton: `
+              mt-0.5 h-6 shrink-0 self-center rounded-md bg-primary px-2 text-xs
+              font-medium whitespace-nowrap text-primary-foreground
+              hover:bg-primary/90
+            `,
+            cancelButton: `
+              mt-0.5 h-6 shrink-0 self-center rounded-md bg-input px-2 text-xs
+              font-medium whitespace-nowrap text-foreground
+              hover:bg-accent
+            `,
+            closeButton: `
+              absolute -top-1.5 -left-1.5 flex size-5 items-center justify-center
+              rounded-full bg-popover text-muted-foreground shadow-xs ring-1
+              ring-foreground/4
+              hover:text-foreground
+            `,
+          },
+        }}
+      />
+    </div>
   )
 }
+
+export { Toaster }

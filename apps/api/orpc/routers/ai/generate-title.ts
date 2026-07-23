@@ -5,7 +5,6 @@ import { generateText } from 'ai'
 import { type } from 'arktype'
 import { asc, eq } from 'drizzle-orm'
 
-import { withPosthog } from '~/lib/posthog'
 import { authMiddleware, orpc } from '~/orpc'
 
 import { publisher } from '../chats/events'
@@ -43,10 +42,7 @@ export const generateTitle = orpc
     })
 
     const { text } = await generateText({
-      model: withPosthog(google('gemini-flash-latest'), {
-        chatId: input.chatId,
-        userId: context.user.id,
-      }),
+      model: google('gemini-flash-latest'),
       messages: [
         {
           role: 'system',

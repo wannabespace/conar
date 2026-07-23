@@ -79,6 +79,7 @@ export function connectionResourcesQueryOptions(connection: Connection) {
 
       return resources
     },
+    staleTime: 5 * 60 * 1000,
     throwOnError: false,
   })
 }

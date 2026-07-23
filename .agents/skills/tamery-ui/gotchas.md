@@ -1,0 +1,14 @@
+# Kit gotchas
+
+- `CommandDialog` is only a Dialog shell — wrap contents in `<Command>` or cmdk crashes (`undefined (reading 'subscribe')`).
+- `CommandItem` appends a hidden `ml-auto` check — a second `ml-auto` child splits space. Right-aligned meta goes in `CommandShortcut` (also hides the check). Name span: `min-w-0 flex-1 truncate`. Give items an explicit `value` when they can mount mid-search (textContent of a filtered-out item is unreadable → stuck hidden).
+- `PopoverContent` defaults `flex flex-col gap-4 p-4 w-72` — menu-like popovers need `gap-0 p-1`, often `w-auto`.
+- `DropdownMenuLabel` requires a `DropdownMenuGroup` parent (base-ui throws `MenuGroupContext is missing`).
+- base-ui render prop: `<Trigger render={<Button/>}>children</Trigger>` — children land inside. Non-button trigger needs `nativeButton={false}` + `aria-label`.
+- `InputGroup` addon sizes direct-child svgs only — nested icons need explicit `size-4`.
+- Router `Link` concatenates `activeProps.className` (no tw-merge) — use `data-[status=active]:` variants in one className (`sidebar-link.tsx`).
+- CSS transitions can't interpolate length↔percentage (`max-w-64 → max-w-full` snaps) — keep both endpoints in rem.
+- Selects: macOS overlay mode (`alignItemWithTrigger`) + `min-w-(--anchor-width)`; never fix-width a trigger narrower than its longest option. Sizes: set `size` on `SelectTrigger` AND `SelectContent` (popup carries `data-size`; items follow via `in-data-[size=xs]:`).
+- Hotkeys: always `e.preventDefault()` (⌘P opens print otherwise). `getOS(navigator.userAgent)` for ⌘ vs Ctrl labels.
+- Scroll-edge fades must never cover the scrollbar: masks clip it, overlay siblings paint over it. Data table puts gradients INSIDE the scroller as sticky zero-height anchors (`table-fade*`, globals.css + `packages/table/src/table.tsx`) — descendants can't paint over their own scroller's scrollbar. Shadcn `scroll-fade` (mask) only with `no-scrollbar`.
+- cmdk 1.1.1 filtering is broken for grouped palettes (groups never reorder by score; stale scrollTop when selection persists across keystrokes). The actions center bypasses it: `shouldFilter={false}` + own search — entries as `{value, keywords, node}`, scored with cmdk's `defaultFilter` (re-exported from kit command.tsx), grouped when idle, one flat score-sorted list while searching, scroll reset in the controlled input's `onValueChange`.

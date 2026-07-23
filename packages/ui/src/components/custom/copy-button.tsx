@@ -1,5 +1,5 @@
-import { copy } from '@tamery/ui/lib/copy'
 import { RiCheckLine, RiFileCopyLine } from '@remixicon/react'
+import { copy } from '@tamery/ui/lib/copy'
 import type { ComponentProps, ReactNode } from 'react'
 import { useState } from 'react'
 
@@ -13,12 +13,13 @@ export function CopyButton({
   text,
   copyIcon = defaultCopyIcon,
   successIcon = defaultSuccessIcon,
+  children,
   ...props
 }: {
   text: string | (() => string)
   copyIcon?: ReactNode
   successIcon?: ReactNode
-} & Omit<ComponentProps<typeof Button>, 'children'>) {
+} & ComponentProps<typeof Button>) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
@@ -41,6 +42,7 @@ export function CopyButton({
       >
         {copyIcon}
       </ContentSwitch>
+      {children}
     </Button>
   )
 }

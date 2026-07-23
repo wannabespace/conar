@@ -21,7 +21,7 @@ export function distinctQuery({
       postgres: db =>
         db
           .withSchema(schema)
-          .withTables<{ [table: string]: Record<string, unknown> }>()
+          .$extendTables<{ [table: string]: Record<string, unknown> }>()
           .selectFrom(table)
           .select(column)
           .distinct()
@@ -30,7 +30,7 @@ export function distinctQuery({
       mysql: db =>
         db
           .withSchema(schema)
-          .withTables<{ [table: string]: Record<string, unknown> }>()
+          .$extendTables<{ [table: string]: Record<string, unknown> }>()
           .selectFrom(table)
           .select(column)
           .distinct()
@@ -39,7 +39,7 @@ export function distinctQuery({
       mssql: db =>
         db
           .withSchema(schema)
-          .withTables<{ [table: string]: Record<string, unknown> }>()
+          .$extendTables<{ [table: string]: Record<string, unknown> }>()
           .selectFrom(table)
           .select(column)
           .distinct()
@@ -48,7 +48,7 @@ export function distinctQuery({
       clickhouse: db =>
         db
           .withSchema(schema)
-          .withTables<{ [table: string]: Record<string, unknown> }>()
+          .$extendTables<{ [table: string]: Record<string, unknown> }>()
           .selectFrom(table)
           .select(column)
           .distinct()

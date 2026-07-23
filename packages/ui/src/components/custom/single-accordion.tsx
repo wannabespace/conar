@@ -1,23 +1,39 @@
+import { Accordion as AccordionPrimitive } from '@base-ui/react/accordion'
+import { RiArrowDownSLine } from '@remixicon/react'
 import { cn } from '@tamery/ui/lib/utils'
-import * as AccordionPrimitive from '@radix-ui/react-accordion'
-import { ChevronDownIcon } from 'lucide-react'
-import type { ComponentProps } from 'react'
+import * as React from 'react'
+
+const ITEM_VALUE = 'accordion-item'
 
 export function SingleAccordionTrigger({
   children,
   className,
+  asChild,
+  render,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {
+}: AccordionPrimitive.Trigger.Props & { asChild?: boolean }) {
+  const resolvedRender =
+    asChild && React.isValidElement(children) ? (children as React.ReactElement) : render
+
   return (
     <AccordionPrimitive.Header className="flex">
       <AccordionPrimitive.Trigger
         className={cn(
-          `flex flex-1 cursor-pointer items-center justify-between gap-4 rounded-md p-2 text-left text-sm font-medium transition-all outline-none focus-visible:border-ring focus-visible:ring-[0.1875rem] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180`,
+          `
+            flex flex-1 items-center justify-between gap-4
+            rounded-md p-2 text-left text-sm font-medium transition-all
+            outline-none
+            focus-visible:border-ring focus-visible:ring-[0.1875rem]
+            focus-visible:ring-ring/50
+            disabled:pointer-events-none disabled:opacity-50
+            [&[data-panel-open]>svg]:rotate-180
+          `,
           className,
         )}
+        render={resolvedRender}
         {...props}
       >
-        {children}
+        {asChild ? undefined : children}
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
   )
@@ -25,9 +41,12 @@ export function SingleAccordionTrigger({
 
 export function SingleAccordionTriggerArrow({ className }: { className?: string }) {
   return (
-    <ChevronDownIcon
+    <RiArrowDownSLine
       className={cn(
-        `pointer-events-none size-4 shrink-0 translate-y-0.5 text-muted-foreground transition-transform duration-200`,
+        `
+      pointer-events-none size-4 shrink-0 translate-y-0.5 text-muted-foreground
+      transition-transform duration-200
+    `,
         className,
       )}
     />
@@ -38,15 +57,20 @@ export function SingleAccordionContent({
   children,
   className,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Content>) {
+}: AccordionPrimitive.Panel.Props) {
   return (
-    <AccordionPrimitive.Content
+    <AccordionPrimitive.Panel
       data-slot="accordion-content"
-      className="overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+      className="
+        h-(--accordion-panel-height) overflow-hidden text-sm transition-[height]
+        duration-200 ease-out
+        data-ending-style:h-0
+        data-starting-style:h-0
+      "
       {...props}
     >
       <div className={cn('p-2', className)}>{children}</div>
-    </AccordionPrimitive.Content>
+    </AccordionPrimitive.Panel>
   )
 }
 
@@ -57,21 +81,19 @@ export function SingleAccordion({
   className,
   ...props
 }: { open?: boolean; onOpenChange?: (open: boolean) => void } & Omit<
-  ComponentProps<typeof AccordionPrimitive.Root>,
-  'type' | 'collapsible' | 'value' | 'defaultValue' | 'onValueChange'
+  AccordionPrimitive.Root.Props,
+  'value' | 'defaultValue' | 'onValueChange'
 >) {
   return (
     <AccordionPrimitive.Root
-      type="single"
-      collapsible
       className={cn('w-full rounded-lg border bg-card text-card-foreground', className)}
-      value={open ? 'accordion-item' : onOpenChange ? '' : undefined}
+      value={open ? [ITEM_VALUE] : onOpenChange ? [] : undefined}
       onValueChange={value => {
-        onOpenChange?.(value === 'accordion-item')
+        onOpenChange?.(value.includes(ITEM_VALUE))
       }}
       {...props}
     >
-      <AccordionPrimitive.Item value="accordion-item">{children}</AccordionPrimitive.Item>
+      <AccordionPrimitive.Item value={ITEM_VALUE}>{children}</AccordionPrimitive.Item>
     </AccordionPrimitive.Root>
   )
 }

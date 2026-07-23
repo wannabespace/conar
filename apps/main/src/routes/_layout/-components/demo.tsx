@@ -43,7 +43,12 @@ function Image({
   type: 'light' | 'dark'
 }) {
   const imgClassName = cn(
-    type === 'dark' ? `hidden dark:block` : 'dark:hidden',
+    type === 'dark'
+      ? `
+        hidden
+        dark:block
+      `
+      : 'dark:hidden',
     index === 0 ? 'mx-auto' : 'absolute top-0 left-0 rounded-xl',
     className,
   )
@@ -82,7 +87,10 @@ function Images() {
         <Image key={image} image={image} index={index} type="dark" />
       ))}
       <div
-        className={`absolute inset-x-0 bottom-0 z-10 h-full bg-linear-to-t from-background to-transparent`}
+        className={`
+        absolute inset-x-0 bottom-0 z-10 h-full bg-linear-to-t from-background
+        to-transparent
+      `}
       />
     </div>
   )

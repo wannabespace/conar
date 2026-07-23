@@ -17,7 +17,7 @@ export const themeStore = createWebStorageValue({
 
 const mediaQuery = createMediaQuery({ query: '(prefers-color-scheme: dark)' })
 
-export const resolvedThemeComputed = createComputed([themeStore, mediaQuery], ([theme, isDark]) => {
+export const resolvedTheme = createComputed([themeStore, mediaQuery], ([theme, isDark]) => {
   if (theme === 'system') {
     return isDark ? 'dark' : 'light'
   }
@@ -29,16 +29,19 @@ export function useTheme() {
 }
 
 export function useResolvedTheme() {
-  return useSubscription(resolvedThemeComputed)
+  return useSubscription(resolvedTheme)
 }
 
 function toggleTheme() {
+  if (typeof window === 'undefined') {
+    return
+  }
+
   const root = window.document.documentElement
-  const resolved = resolvedThemeComputed.get()
+  const resolved = resolvedTheme.get()
 
   root.classList.toggle('dark', resolved === 'dark')
   root.classList.toggle('light', resolved === 'light')
 }
 
-mediaQuery.subscribe(toggleTheme)
-themeStore.subscribe(toggleTheme)
+resolvedTheme.subscribe(toggleTheme, { immediate: true })

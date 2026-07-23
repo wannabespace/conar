@@ -1,15 +1,20 @@
 import { RiErrorWarningLine } from '@remixicon/react'
 import { challenge } from '@tamery/shared/utils/challenge'
 import { title } from '@tamery/shared/utils/title'
-import { AppLogoSquareMotion } from '@tamery/ui/components/brand/app-logo-square'
-import { ButtonMotion } from '@tamery/ui/components/button.motion'
+import { Badge } from '@tamery/ui/components/badge'
+import { AppLogo } from '@tamery/ui/components/brand/app-logo'
+import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.utils'
+import { Button } from '@tamery/ui/components/button'
+import { DitherBackground } from '@tamery/ui/components/custom/dither-background'
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { AnimatePresence, motion } from 'motion/react'
+import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 
+import { TitleBar } from '~/components/title-bar'
 import { enterAppAnimation } from '~/global-hooks'
 import { authClient, bearerToken, successAuthToast } from '~/lib/auth'
+import { lastLocationStorageValue } from '~/lib/last-location'
 import { orpc } from '~/lib/orpc'
 import { router } from '~/main'
 
@@ -19,6 +24,35 @@ export const Route = createFileRoute('/auth')({
     meta: [{ title: title('Sign in') }],
   }),
 })
+
+function AuthSidePanel() {
+  return (
+    <div
+      className="
+        relative hidden flex-col overflow-hidden border-r bg-body p-10
+        text-foreground
+        lg:flex
+      "
+    >
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.2 }}
+      >
+        <DitherBackground />
+      </motion.div>
+      <div className="relative z-20 flex items-center gap-2 text-lg font-medium">
+        <AppLogo className="size-6" />
+        Tamery
+      </div>
+      <blockquote className="relative z-20 mt-auto leading-normal text-balance">
+        Write queries, explore data, and manage your databases with AI doing the heavy lifting.
+      </blockquote>
+    </div>
+  )
+}
 
 function AuthPage() {
   const { refetch } = authClient.useSession()
@@ -50,7 +84,7 @@ function AuthPage() {
       onSuccess: async data => {
         bearerToken.set(data.token)
         await refetch()
-        router.navigate({ to: '/' })
+        router.navigate({ href: lastLocationStorageValue.get() ?? '/' })
         successAuthToast(!!data.newUser)
       },
     }),
@@ -69,84 +103,100 @@ function AuthPage() {
   }, [data, exchange, codeChallenge, verifier])
 
   return (
-    <div className="flex flex-col bg-background px-4 py-6">
-      <div className={`m-auto flex w-full max-w-md flex-1 flex-col justify-center`}>
-        <AppLogoSquareMotion
-          className="mb-8 size-12"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        />
-        <motion.h1
-          className="text-2xl font-medium tracking-tighter text-foreground"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.23 }}
-        >
-          Tamery
-        </motion.h1>
-        <motion.p
-          className="mb-8 text-muted-foreground"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.26 }}
-        >
-          Start managing your data
-        </motion.p>
-        <ButtonMotion
-          className="mb-2 w-full"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.29 }}
-          onClick={() => signInWithChallenge()}
-        >
-          {!!codeChallenge && isPending ? (
-            <span className="animate-pulse">Waiting for sign in...</span>
-          ) : (
-            'Sign In'
-          )}
-        </ButtonMotion>
-        <motion.p
-          className="mb-4 text-center text-xs text-muted-foreground"
-          initial={{ opacity: 0, y: 5 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.33 }}
-        >
-          Tamery requires authentication to use AI features and cloud sync.
-        </motion.p>
-        <AnimatePresence mode="popLayout">
-          {!!error && (
-            <motion.div
-              layout
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="flex items-center gap-2 text-sm text-muted-foreground"
-            >
-              <RiErrorWarningLine className="size-4 text-destructive" />
-              {error.message}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-      <motion.div
-        className="mx-auto mt-auto w-full max-w-md pt-10"
-        initial={{ y: 50 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 1, delay: 0.4, type: 'spring' }}
+    <>
+      {window.electron && <TitleBar className="-mb-10" />}
+      <div
+        className="
+          relative grid flex-1 overflow-hidden
+          lg:grid-cols-2
+        "
       >
-        <ButtonMotion
-          className="w-full"
-          variant="outline"
-          disabled
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
-          transition={{ duration: 0.5, delay: 0.32 }}
-        >
-          Anonymous Sign In (soon)
-        </ButtonMotion>
-      </motion.div>
-    </div>
+        <AuthSidePanel />
+        <div className="relative flex flex-col overflow-hidden px-4 py-6">
+          <div
+            className="
+              relative m-auto flex w-full max-w-md flex-1 flex-col justify-center
+            "
+          >
+            <motion.div
+              className="
+              relative mb-8 flex size-12 items-center justify-center rounded-2xl
+              bg-primary will-change-transform
+            "
+              initial={{ opacity: 0, transform: 'translateY(10px)', filter: 'blur(4px)' }}
+              animate={{ opacity: 1, transform: 'translateY(0)', filter: 'none' }}
+              transition={{ duration: 0.4, delay: 0.5 }}
+            >
+              <AppLogoMotion
+                className="size-8.5 text-white will-change-transform"
+                initial={{ rotate: 60 }}
+                animate={{ rotate: 0 }}
+                transition={{ duration: 3, delay: 0.6, type: 'spring' }}
+              />
+            </motion.div>
+            <motion.div
+              className="will-change-transform"
+              initial={{ opacity: 0, transform: 'translateY(10px)', filter: 'blur(4px)' }}
+              animate={{ opacity: 1, transform: 'translateY(0)', filter: 'none' }}
+              transition={{ duration: 0.4, delay: 0.35 }}
+            >
+              <h1
+                className="
+              text-2xl font-semibold tracking-tight text-foreground
+            "
+              >
+                Sign in to continue
+              </h1>
+              <p className="mt-2 mb-8 text-muted-foreground">
+                Sync your connections, queries, and chats across every device.
+              </p>
+            </motion.div>
+            <motion.div
+              className="will-change-transform"
+              initial={{ opacity: 0, transform: 'translateY(10px)', filter: 'blur(4px)' }}
+              animate={{ opacity: 1, transform: 'translateY(0)', filter: 'none' }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+            >
+              <Button className="mb-2 w-full" size="lg" onClick={() => signInWithChallenge()}>
+                {!!codeChallenge && isPending ? (
+                  <span className="animate-pulse">Waiting for sign in...</span>
+                ) : (
+                  'Sign In'
+                )}
+              </Button>
+              <p className="mb-4 text-center text-xs text-muted-foreground">
+                Sign-in unlocks AI and cloud sync.
+              </p>
+            </motion.div>
+            {!!error && (
+              <div
+                className="
+              flex items-center gap-2 text-sm text-muted-foreground
+            "
+              >
+                <RiErrorWarningLine className="size-4 text-destructive" />
+                {error.message}
+              </div>
+            )}
+          </div>
+          <motion.div
+            className="
+              relative mx-auto mt-auto w-full max-w-md pt-10
+              will-change-transform
+            "
+            initial={{ opacity: 0, transform: 'translateY(10px)', filter: 'blur(4px)' }}
+            animate={{ opacity: 1, transform: 'translateY(0)', filter: 'none' }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <Button className="w-full" variant="secondary">
+              Continue without an account
+              <Badge variant="secondary" className="ml-1">
+                Soon
+              </Badge>
+            </Button>
+          </motion.div>
+        </div>
+      </div>
+    </>
   )
 }

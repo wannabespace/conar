@@ -24,11 +24,10 @@ export const list = orpc.use(authMiddleware).handler(async ({ context }) => {
   const secret = await context.getUserSecret()
 
   try {
-    return list.map(connection =>
-      Object.assign(connection, {
-        connectionString: decrypt({ encryptedText: connection.connectionString, secret }),
-      }),
-    )
+    return list.map(connection => ({
+      ...connection,
+      connectionString: decrypt({ encryptedText: connection.connectionString, secret }),
+    }))
   } catch {
     throw new ORPCError('INTERNAL_SERVER_ERROR', {
       message: 'Failed to decrypt connection string',

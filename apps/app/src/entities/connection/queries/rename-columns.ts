@@ -20,14 +20,14 @@ export const renameColumnQuery = memoize(
         postgres: db =>
           db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .schema.alterTable(table)
             .renameColumn(oldColumn, newColumn)
             .execute(),
         mysql: db =>
           db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .schema.alterTable(table)
             .renameColumn(oldColumn, newColumn)
             .execute(),
@@ -39,7 +39,7 @@ export const renameColumnQuery = memoize(
         clickhouse: db =>
           db
             .withSchema(schema)
-            .withTables<{ [table]: Record<string, unknown> }>()
+            .$extendTables<{ [table]: Record<string, unknown> }>()
             .schema.alterTable(table)
             .renameColumn(oldColumn, newColumn)
             .execute(),

@@ -7,9 +7,9 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@tamery/configs": "workspace:*",
     "@hackylabs/deep-redact": "catalog:",
     "@noble/hashes": "catalog:",
+    "@tamery/configs": "workspace:*",
     "arktype": "catalog:",
     "drizzle-orm": "catalog:",
     "nanoid": "catalog:"

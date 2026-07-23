@@ -12,10 +12,10 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@tamery/shared": "workspace:*",
-    "@tamery/ui": "workspace:*",
     "@fluentui/react-context-selector": "catalog:",
     "@remixicon/react": "catalog:",
+    "@tamery/shared": "workspace:*",
+    "@tamery/ui": "workspace:*",
     "@tanstack/react-virtual": "catalog:",
     "react": "catalog:"
   },

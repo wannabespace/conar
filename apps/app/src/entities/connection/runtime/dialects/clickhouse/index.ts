@@ -27,7 +27,15 @@ function prepareQuery(compiledQuery: CompiledQuery) {
     }
 
     if (Array.isArray(param)) {
-      return `[${param.map(v => (v === null || v === undefined ? 'NULL' : typeof v === 'number' ? `${v}` : `'${escapeSqlString(String(v))}'`)).join(', ')}]`
+      return `[${param
+        .map(v =>
+          v === null || v === undefined
+            ? 'NULL'
+            : typeof v === 'number'
+              ? `${v}`
+              : `'${escapeSqlString(String(v))}'`,
+        )
+        .join(', ')}]`
     }
 
     if (typeof param === 'number') {

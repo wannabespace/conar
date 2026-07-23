@@ -3,7 +3,6 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { generateText } from 'ai'
 import { type } from 'arktype'
 
-import { withPosthog } from '~/lib/posthog'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const updateSQL = orpc
@@ -16,11 +15,9 @@ export const updateSQL = orpc
       context: 'string',
     }),
   )
-  .handler(async ({ input, signal, context }) => {
+  .handler(async ({ input, signal }) => {
     const { text } = await generateText({
-      model: withPosthog(anthropic('claude-opus-4-6'), {
-        userId: context.user.id,
-      }),
+      model: anthropic('claude-opus-4-6'),
       messages: [
         {
           role: 'system',

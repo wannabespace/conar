@@ -1,5 +1,15 @@
 import type { UIMessage } from '@ai-sdk/react'
 import { useChat } from '@ai-sdk/react'
+import {
+  RiAlertLine,
+  RiArrowDownLine,
+  RiArrowDownSLine,
+  RiCheckLine,
+  RiFileCopyLine,
+  RiLoopLeftLine,
+  RiPlayListAddLine,
+  RiRestartLine,
+} from '@remixicon/react'
 import { isToolUIPart } from '@tamery/ai/tools/helpers'
 import { Alert, AlertDescription, AlertTitle } from '@tamery/ui/components/alert'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
@@ -17,16 +27,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/t
 import { useElementSize } from '@tamery/ui/hookas/use-element-size'
 import { copy } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
-import {
-  RiAlertLine,
-  RiArrowDownLine,
-  RiArrowDownSLine,
-  RiCheckLine,
-  RiFileCopyLine,
-  RiLoopLeftLine,
-  RiPlayListAddLine,
-  RiRestartLine,
-} from '@remixicon/react'
 import type { ChatStatus } from 'ai'
 import { regex } from 'arktype'
 import type { ComponentProps, ReactNode } from 'react'
@@ -66,10 +66,10 @@ function ChatMessageFooterButton({
 }) {
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <Button variant="ghost" size="icon-sm" onClick={onClick} disabled={disabled}>
-          {icon}
-        </Button>
+      <TooltipTrigger
+        render={<Button variant="ghost" size="icon-sm" onClick={onClick} disabled={disabled} />}
+      >
+        {icon}
       </TooltipTrigger>
       <TooltipContent>{tooltip}</TooltipContent>
     </Tooltip>
@@ -111,56 +111,66 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
   return (
     <div className="flex gap-1">
       <Tooltip>
-        <TooltipTrigger asChild>
-          <CopyButton
-            size="icon-xs"
-            variant="ghost"
-            text={content}
-            successIcon={<RiCheckLine className="text-success" />}
-            copyIcon={<RiFileCopyLine className="size-3.5" />}
-            onClick={e => {
-              e.stopPropagation()
-            }}
-          />
-        </TooltipTrigger>
+        <TooltipTrigger
+          render={
+            <CopyButton
+              size="icon-xs"
+              variant="ghost"
+              text={content}
+              successIcon={<RiCheckLine className="text-success" />}
+              copyIcon={<RiFileCopyLine className="size-3.5" />}
+              onClick={e => {
+                e.stopPropagation()
+              }}
+            />
+          }
+        ></TooltipTrigger>
         <TooltipContent>Copy to clipboard</TooltipContent>
       </Tooltip>
       {lang === 'sql' && (
         <>
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon-xs"
-                variant="ghost"
-                onClick={e => {
-                  e.stopPropagation()
-                  runnerHooks.callHook('appendToBottomAndFocus', content)
-                  setIsAppending(true)
-                }}
+            <TooltipTrigger
+              render={
+                <Button
+                  size="icon-xs"
+                  variant="ghost"
+                  onClick={e => {
+                    e.stopPropagation()
+                    runnerHooks.callHook('appendToBottomAndFocus', content)
+                    setIsAppending(true)
+                  }}
+                />
+              }
+            >
+              <ContentSwitch
+                active={isAppending}
+                activeContent={<RiCheckLine className="text-success" />}
+                onSwitchEnd={() => setIsAppending(false)}
               >
-                <ContentSwitch
-                  active={isAppending}
-                  activeContent={<RiCheckLine className="text-success" />}
-                  onSwitchEnd={() => setIsAppending(false)}
-                >
-                  <RiPlayListAddLine className="size-3.5" />
-                </ContentSwitch>
-              </Button>
+                <RiPlayListAddLine className="size-3.5" />
+              </ContentSwitch>
             </TooltipTrigger>
             <TooltipContent>Append to bottom of runner</TooltipContent>
           </Tooltip>
           <DropdownMenu>
             <Tooltip>
-              <DropdownMenuTrigger render={<TooltipTrigger asChild />}>
-                <Button size="icon-xs" variant="ghost" onClick={e => e.stopPropagation()}>
-                  <ContentSwitch
-                    active={isReplacing}
-                    activeContent={<RiCheckLine className="text-success" />}
-                    onSwitchEnd={() => setIsReplacing(false)}
-                  >
-                    <RiLoopLeftLine className="size-3.5" />
-                  </ContentSwitch>
-                </Button>
+              <DropdownMenuTrigger
+                render={
+                  <TooltipTrigger
+                    render={
+                      <Button size="icon-xs" variant="ghost" onClick={e => e.stopPropagation()} />
+                    }
+                  />
+                }
+              >
+                <ContentSwitch
+                  active={isReplacing}
+                  activeContent={<RiCheckLine className="text-success" />}
+                  onSwitchEnd={() => setIsReplacing(false)}
+                >
+                  <RiLoopLeftLine className="size-3.5" />
+                </ContentSwitch>
               </DropdownMenuTrigger>
               <TooltipContent>Replace a query in the runner</TooltipContent>
             </Tooltip>
@@ -173,7 +183,11 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
                 Replace existing query
               </div>
               {editorQueries.length === 0 && (
-                <div className={`px-3 py-2 text-xs text-muted-foreground select-none`}>
+                <div
+                  className={`
+                  px-3 py-2 text-xs text-muted-foreground select-none
+                `}
+                >
                   No queries found
                 </div>
               )}
@@ -187,7 +201,11 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
                   }}
                 >
                   <span className="text-xs font-medium">Query {getQueryNumber(index)}</span>
-                  <span className={`font-mono text-[0.625rem] text-muted-foreground/70`}>
+                  <span
+                    className={`
+                    font-mono text-[0.625rem] text-muted-foreground/70
+                  `}
+                  >
                     {q.startLineNumber === q.endLineNumber
                       ? `Line ${q.startLineNumber}`
                       : `Lines ${q.startLineNumber} - ${q.endLineNumber}`}
@@ -259,28 +277,53 @@ function UserMessage({
       <div>
         <div
           className={cn(
-            `relative inline-flex rounded-lg bg-primary px-2 py-1 text-primary-foreground`,
+            `
+              relative inline-flex rounded-lg bg-primary px-2 py-1
+              text-primary-foreground
+            `,
             canHide && !isVisible && 'max-h-25 overflow-hidden',
           )}
         >
-          <div className={`h-fit [&_a]:text-white`} ref={partsRef}>
+          <div
+            className={`
+              h-fit
+              [&_a]:text-white
+            `}
+            ref={partsRef}
+          >
             <ChatMessageParts parts={message.parts} />
           </div>
           {canHide && (
             <>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className={`-mr-1 shrink-0 text-primary-foreground! hover:bg-primary-foreground/10!`}
-                onClick={() => setIsVisible(!isVisible)}
-              >
-                <RiArrowDownSLine
-                  className={cn('duration-100', isVisible ? `rotate-180` : `rotate-0`)}
-                />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={isVisible ? 'Collapse message' : 'Expand message'}
+                      className={`
+                        -mr-1 shrink-0 text-primary-foreground!
+                        hover:bg-primary-foreground/10!
+                      `}
+                      onClick={() => setIsVisible(!isVisible)}
+                    />
+                  }
+                >
+                  <RiArrowDownSLine
+                    className={cn('duration-100', isVisible ? `rotate-180` : `rotate-0`)}
+                  />
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  {isVisible ? 'Collapse message' : 'Expand message'}
+                </TooltipContent>
+              </Tooltip>
               {!isVisible && (
                 <div
-                  className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 bg-linear-to-t from-primary to-transparent`}
+                  className={`
+                  pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16
+                  bg-linear-to-t from-primary to-transparent
+                `}
                 />
               )}
             </>
@@ -303,7 +346,12 @@ function UserMessage({
 function AssistantMessageLoader({ children, className, ...props }: ComponentProps<'div'>) {
   return (
     <div
-      className={cn(`flex animate-pulse items-center gap-2 text-muted-foreground`, className)}
+      className={cn(
+        `
+        flex animate-pulse items-center gap-2 text-muted-foreground
+      `,
+        className,
+      )}
       {...props}
     >
       <AppLogo className="size-4" />
@@ -334,7 +382,10 @@ function AssistantMessage({
         </div>
       </div>
       <div
-        className={`sticky bottom-0 z-30 mt-2 -mr-1 flex items-center justify-between gap-1 first:mt-0`}
+        className={`
+        sticky bottom-0 z-30 mt-2 -mr-1 flex items-center justify-between gap-1
+        first:mt-0
+      `}
       >
         <div
           className={cn(
@@ -347,7 +398,10 @@ function AssistantMessage({
           </AssistantMessageLoader>
         </div>
         <div
-          className={`flex items-center gap-1 opacity-0 transition-opacity duration-150 group-hover/message:opacity-100`}
+          className={`
+          flex items-center gap-1 opacity-0 transition-opacity duration-150
+          group-hover/message:opacity-100
+        `}
         >
           {isLast && (
             <ChatMessageFooterButton

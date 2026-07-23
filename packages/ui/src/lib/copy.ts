@@ -7,7 +7,6 @@ export function copy(text: string, successText?: string) {
         duration: 1500,
       })
     }
-
     return undefined
   })
 }

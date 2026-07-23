@@ -6,7 +6,6 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogPanel,
   DialogTitle,
   DialogTrigger,
 } from '@tamery/ui/components/dialog'
@@ -96,7 +95,7 @@ export function EnableTfaDialog({
           <DialogTitle>Enable 2FA</DialogTitle>
           <DialogDescription>Enter your password to continue.</DialogDescription>
         </DialogHeader>
-        <DialogPanel className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
           <Label htmlFor="enable-password">Password</Label>
           <Input
             id="enable-password"
@@ -107,18 +106,24 @@ export function EnableTfaDialog({
             autoComplete="current-password"
             autoFocus
           />
-        </DialogPanel>
+        </div>
         <DialogFooter>
           <Dialog open={setupOpen} onOpenChange={open => !open && handleClose()}>
             <DialogTrigger
-              className="w-full sm:w-auto"
+              className="
+                w-full
+                sm:w-auto
+              "
               disabled={isEnableTotpPending || password.length === 0}
               render={<Button type="submit" variant="outline" />}
             >
               <LoadingContent loading={isEnableTotpPending}>Continue</LoadingContent>
             </DialogTrigger>
             <DialogContent
-              className="flex flex-col gap-6 sm:max-w-xs"
+              className="
+                flex flex-col gap-6
+                sm:max-w-xs
+              "
               showCloseButton={false}
               onSubmit={e => {
                 e.preventDefault()
@@ -132,7 +137,7 @@ export function EnableTfaDialog({
                   Scan this QR Code with your authenticator app.
                 </DialogDescription>
               </DialogHeader>
-              <DialogPanel className="flex flex-col items-center gap-4">
+              <div className="flex flex-col items-center gap-4">
                 <div className="rounded-lg bg-white p-4">
                   {!!totpURI && <QRCode value={totpURI} size={176} />}
                 </div>
@@ -143,7 +148,7 @@ export function EnableTfaDialog({
                   onComplete={value => verifyTotp(value)}
                   disabled={isVerifyTotpPending}
                 />
-              </DialogPanel>
+              </div>
             </DialogContent>
           </Dialog>
         </DialogFooter>

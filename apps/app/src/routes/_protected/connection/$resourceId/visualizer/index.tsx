@@ -1,5 +1,7 @@
+import { RiCloseLine, RiSearchLine } from '@remixicon/react'
 import { title } from '@tamery/shared/utils/title'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
+import { Button } from '@tamery/ui/components/button'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@tamery/ui/components/input-group'
 import { ReactFlowEdge } from '@tamery/ui/components/react-flow/edge'
@@ -10,7 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
-import { RiCloseLine, RiSearchLine } from '@remixicon/react'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
@@ -82,7 +85,12 @@ function VisualizerPage() {
 
   if (!tablesAndSchemas || !constraints || columnsQueries.some(q => q.isPending)) {
     return (
-      <div className="flex size-full items-center justify-center rounded-lg border bg-background">
+      <div
+        className="
+        flex size-full items-center justify-center rounded-lg border
+        bg-background
+      "
+      >
         <AppLogo className="size-40 animate-pulse text-muted-foreground" />
       </div>
     )
@@ -94,7 +102,12 @@ function VisualizerPage() {
 
   if (columns.length === 0 || tablesAndSchemas.length === 0) {
     return (
-      <div className="flex size-full items-center justify-center rounded-lg border bg-background">
+      <div
+        className="
+        flex size-full items-center justify-center rounded-lg border
+        bg-background
+      "
+      >
         <p className="text-muted-foreground">No data to show</p>
       </div>
     )
@@ -179,7 +192,8 @@ function Visualizer({
     })
   }, [])
 
-  useEffect(() => {
+  useMountedEffect(() => {
+    // oxlint-disable-next-line react-hooks/rules-of-hooks
     recalculateLayoutEvent()
   }, [schema])
 
@@ -210,23 +224,44 @@ function Visualizer({
               }}
             />
             <InputGroupAddon>
-              <RiSearchLine className="pointer-events-none size-3.5 text-muted-foreground" />
+              <RiSearchLine
+                className="
+                pointer-events-none size-3.5 text-muted-foreground
+              "
+              />
             </InputGroupAddon>
             <InputGroupAddon align="inline-end">
               {!searchQuery && (
-                <div className="pointer-events-none flex items-center gap-1 text-xs text-muted-foreground">
+                <div
+                  className="
+                  pointer-events-none flex items-center gap-1 text-xs
+                  text-muted-foreground
+                "
+                >
                   <KbdCtrlLetter userAgent={navigator.userAgent} letter="F" />
                 </div>
               )}
 
               {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  aria-label="Clear table search"
-                >
-                  <RiCloseLine className="size-4 text-muted-foreground" />
-                </button>
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        aria-label="Clear table search"
+                        className="
+                          text-muted-foreground
+                          hover:bg-foreground/10 hover:text-foreground
+                        "
+                        onClick={() => setSearchQuery('')}
+                      />
+                    }
+                  >
+                    <RiCloseLine className="size-4" />
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">Clear</TooltipContent>
+                </Tooltip>
               )}
             </InputGroupAddon>
           </InputGroup>
@@ -240,15 +275,19 @@ function Visualizer({
             }
           }}
         >
-          <SelectTrigger className="max-w-56 min-w-45">
-            <div className="flex flex-1 items-center gap-2 overflow-hidden text-left">
+          <SelectTrigger data-mask className="max-w-56 min-w-45">
+            <div
+              className="
+              flex flex-1 items-center gap-2 overflow-hidden text-left
+            "
+            >
               <span className="shrink-0 text-muted-foreground">schema</span>
               <span className="truncate">
                 <SelectValue placeholder="Select schema" />
               </span>
             </div>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent data-mask>
             {schemas.map(schema => (
               <SelectItem key={schema} value={schema}>
                 {schema}

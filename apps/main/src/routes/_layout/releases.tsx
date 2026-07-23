@@ -10,9 +10,7 @@ import { Separator } from '@tamery/ui/components/separator'
 import { cn } from '@tamery/ui/lib/utils'
 import { createFileRoute } from '@tanstack/react-router'
 import { format } from 'date-fns'
-import type { ComponentProps } from 'react'
 import { useState } from 'react'
-import type { ExtraProps } from 'streamdown'
 import { Streamdown } from 'streamdown'
 
 import { orpc } from '~/lib/orpc'
@@ -34,31 +32,21 @@ export const Route = createFileRoute('/_layout/releases')({
   },
 })
 
-function ReleaseH2({ children }: ComponentProps<'h2'> & ExtraProps) {
-  return <h2 className="mb-2 text-2xl font-semibold not-first:mt-6">{children}</h2>
-}
-
-function ReleaseH3({ children }: ComponentProps<'h3'> & ExtraProps) {
-  return <h3 className="mb-2 text-xl font-semibold not-first:mt-6">{children}</h3>
-}
-
-function ReleaseUl({ children }: ComponentProps<'ul'> & ExtraProps) {
-  return <ul className="list-disc pl-4">{children}</ul>
-}
-
 function RouteComponent() {
   const { releases } = Route.useLoaderData()
   const [expandedReleases, setExpandedReleases] = useState<string[]>([String(releases[0]!.id)])
 
   return (
     <div className="mx-auto max-w-xl py-6">
-      <h1 className="mb-6 text-2xl leading-none font-bold lg:text-4xl">Releases</h1>
-      <Accordion
-        type="multiple"
-        value={expandedReleases}
-        onValueChange={setExpandedReleases}
-        className="space-y-6"
+      <h1
+        className="
+        mb-6 text-2xl leading-none font-bold
+        lg:text-4xl
+      "
       >
+        Releases
+      </h1>
+      <Accordion value={expandedReleases} onValueChange={setExpandedReleases} className="space-y-6">
         {releases.map((release, index) => (
           <AccordionItem
             key={release.id}
@@ -67,7 +55,14 @@ function RouteComponent() {
             disabled={!release.body}
           >
             <div className="mb-2">
-              <AccordionTrigger className={cn(`py-0 hover:no-underline`)}>
+              <AccordionTrigger
+                className={cn(
+                  `
+                    py-0
+                    hover:no-underline
+                  `,
+                )}
+              >
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     <span className="text-base font-semibold">{release.tagName}</span>
@@ -90,9 +85,27 @@ function RouteComponent() {
                       className="text-sm"
                       linkSafety={{ enabled: false }}
                       components={{
-                        h2: ReleaseH2,
-                        h3: ReleaseH3,
-                        ul: ReleaseUl,
+                        h2: ({ children }) => (
+                          <h2
+                            className="
+                            mb-2 text-2xl font-semibold
+                            not-first:mt-6
+                          "
+                          >
+                            {children}
+                          </h2>
+                        ),
+                        h3: ({ children }) => (
+                          <h3
+                            className="
+                            mb-2 text-xl font-semibold
+                            not-first:mt-6
+                          "
+                          >
+                            {children}
+                          </h3>
+                        ),
+                        ul: ({ children }) => <ul className="list-disc pl-4">{children}</ul>,
                       }}
                     >
                       {release.body || ''}

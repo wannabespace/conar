@@ -3,10 +3,16 @@ import type { LinkProps } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
 import type { ComponentProps } from 'react'
 
-const baseClasses =
-  'flex w-full items-center gap-2 rounded-md border px-2 py-1 text-sm cursor-default'
-const activeClasses = 'border-primary/20 bg-primary/10 text-primary hover:bg-primary/20'
-const inactiveClasses = 'border-transparent text-foreground hover:bg-accent/30'
+const baseClasses = `
+  flex h-7 w-full cursor-default items-center gap-2 rounded-md px-2 text-sm
+  text-foreground select-none
+  [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-primary/75
+`
+const activeClasses = `
+  bg-primary text-primary-foreground
+  [&_svg]:text-primary-foreground
+`
+const inactiveClasses = 'hover:bg-accent/50'
 
 export function SidebarButton({
   className,
@@ -16,7 +22,7 @@ export function SidebarButton({
   return (
     <button
       type="button"
-      className={cn(baseClasses, className, active ? activeClasses : inactiveClasses)}
+      className={cn(baseClasses, active ? activeClasses : inactiveClasses, className)}
       {...props}
     />
   )
@@ -28,9 +34,16 @@ export function SidebarLink({
 }: LinkProps & Omit<ComponentProps<'a'>, 'children'>) {
   return (
     <Link
-      activeProps={{ className: activeClasses }}
-      inactiveProps={{ className: inactiveClasses }}
-      className={cn(baseClasses, className)}
+      className={cn(
+        baseClasses,
+        `
+          data-[status=active]:bg-primary
+          data-[status=active]:text-primary-foreground
+          data-[status=active]:[&_svg]:text-primary-foreground
+          [&:not([data-status=active])]:hover:bg-accent/50
+        `,
+        className,
+      )}
       {...props}
     />
   )

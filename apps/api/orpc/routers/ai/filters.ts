@@ -6,7 +6,6 @@ import { type } from 'arktype'
 import { addDays, differenceInSeconds, endOfMonth, format } from 'date-fns'
 import * as z from 'zod/mini'
 
-import { withPosthog } from '~/lib/posthog'
 import { redis } from '~/lib/redis'
 import { optionalSubscriptionMiddleware, orpc } from '~/orpc'
 
@@ -83,11 +82,7 @@ export const filters = orpc
     }
 
     const { output: result } = await generateText({
-      model: withPosthog(google('gemini-flash-latest'), {
-        prompt: input.prompt,
-        context: input.context,
-        userId: context.user.id,
-      }),
+      model: google('gemini-flash-latest'),
       system: [
         'You are a filters and ordering generator that converts natural language queries into database filters and ordering instructions.',
         'You should understand the sense of the prompt as much as possible.',

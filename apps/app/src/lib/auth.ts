@@ -9,6 +9,7 @@ import { router } from '~/main'
 
 import { apiUrl } from '../utils/utils'
 import { encryptionKey } from './encryption-key'
+import { lastLocationStorageValue } from './last-location'
 import { clearDb } from './sync'
 
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
@@ -61,6 +62,7 @@ export async function isSignedIn() {
 export async function fullSignOut() {
   await authClient.signOut()
   bearerToken.clear()
+  lastLocationStorageValue.clear()
 
   if (!router.state.location.pathname.startsWith('/auth')) {
     await router.navigate({ to: '/auth' })

@@ -1,8 +1,8 @@
 import { cn } from '@tamery/ui/lib/utils'
-import TiptapPlaceholder from '@tiptap/extension-placeholder'
+import { Placeholder } from '@tiptap/extension-placeholder'
 import type { Editor } from '@tiptap/react'
 import { EditorContent, Extension, useEditor } from '@tiptap/react'
-import TiptapStarterKit from '@tiptap/starter-kit'
+import { StarterKit } from '@tiptap/starter-kit'
 import type { ComponentProps, RefObject } from 'react'
 import { useEffect, useImperativeHandle } from 'react'
 
@@ -31,8 +31,8 @@ export function TipTap({
   const editor = useEditor(
     {
       extensions: [
-        TiptapStarterKit,
-        TiptapPlaceholder.configure({
+        StarterKit,
+        Placeholder.configure({
           placeholder: () => placeholder || '',
           showOnlyWhenEditable: false,
         }),

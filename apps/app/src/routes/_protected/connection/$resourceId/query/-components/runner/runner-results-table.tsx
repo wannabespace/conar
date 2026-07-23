@@ -1,64 +1,21 @@
+import NumberFlow from '@number-flow/react'
+import { RiCloseLine, RiExportLine, RiSearchLine } from '@remixicon/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import type { ColumnRenderer, TableCellProps, TableHeaderCellProps } from '@tamery/table'
+import type { ColumnRenderer } from '@tamery/table'
 import { Table, TableBody, TableHeader, TableProvider } from '@tamery/table'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { Input } from '@tamery/ui/components/input'
 import { Separator } from '@tamery/ui/components/separator'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useDebouncedMemo } from '@tamery/ui/hookas/use-debounced-memo'
 import { cn } from '@tamery/ui/lib/utils'
-import NumberFlow from '@number-flow/react'
-import { RiCloseLine, RiExportLine, RiSearchLine } from '@remixicon/react'
 import { useMemo, useState } from 'react'
 
 import { ExportData } from '~/components/export-data'
-import { TableCell } from '~/entities/connection/components'
+import { TableCell } from '~/entities/connection/components/table/cell'
 import type { Column } from '~/entities/connection/components/table/cell'
-
-function createResultsHeaderCellRenderer(columnId: string) {
-  return function ResultsHeaderCell({ columnIndex, style }: TableHeaderCellProps) {
-    return (
-      <div
-        className={cn(
-          'flex w-full shrink-0 items-center justify-between p-2',
-          columnIndex === 0 && 'pl-4',
-        )}
-        style={style}
-      >
-        <div className="text-xs">
-          <div data-mask className="flex items-center gap-1 truncate font-medium" title={columnId}>
-            {columnId}
-          </div>
-        </div>
-      </div>
-    )
-  }
-}
-
-function createResultsCellRenderer(columnId: string, connectionType: ConnectionType) {
-  return function ResultsCell(props: TableCellProps) {
-    return (
-      <TableCell
-        column={{ id: columnId, uiType: 'raw' }}
-        connectionType={connectionType}
-        {...props}
-      />
-    )
-  }
-}
-
-function createExportTrigger(hasNoRows: boolean) {
-  return function ExportTrigger({ isExporting }: { isExporting: boolean }) {
-    return (
-      <Button variant="secondary" size="icon-sm" disabled={isExporting || hasNoRows}>
-        <LoadingContent loading={isExporting}>
-          <RiExportLine />
-        </LoadingContent>
-      </Button>
-    )
-  }
-}
 
 export function RunnerResultsTable({
   data,
@@ -90,8 +47,32 @@ export function RunnerResultsTable({
       column =>
         ({
           id: column.id,
-          header: createResultsHeaderCellRenderer(column.id),
-          cell: createResultsCellRenderer(column.id, connectionType),
+          header: ({ columnIndex, style }) => (
+            <div
+              className={cn(
+                'flex w-full shrink-0 items-center justify-between p-2',
+                columnIndex === 0 && 'pl-4',
+              )}
+              style={style}
+            >
+              <div className="text-xs">
+                <div
+                  data-mask
+                  className="flex items-center gap-1 truncate font-medium"
+                  title={column.id}
+                >
+                  {column.id}
+                </div>
+              </div>
+            </div>
+          ),
+          cell: props => (
+            <TableCell
+              column={{ id: column.id, uiType: 'raw' }}
+              connectionType={connectionType}
+              {...props}
+            />
+          ),
           size: DEFAULT_COLUMN_WIDTH,
         }) satisfies ColumnRenderer,
     )
@@ -126,24 +107,51 @@ export function RunnerResultsTable({
               className="h-8 w-full pr-8 pl-7 text-sm"
             />
             <RiSearchLine
-              className={`absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground`}
+              className={`
+              absolute top-1/2 left-2 size-3.5 -translate-y-1/2
+              text-muted-foreground
+            `}
             />
             {search && (
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                className="absolute top-1/2 right-1.5 -translate-y-1/2"
-                onClick={() => setSearch('')}
-              >
-                <RiCloseLine className="size-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      aria-label="Clear search"
+                      className="
+                        absolute top-1/2 right-1.5 -translate-y-1/2
+                        text-muted-foreground
+                        hover:bg-foreground/10 hover:text-foreground
+                      "
+                      onClick={() => setSearch('')}
+                    />
+                  }
+                >
+                  <RiCloseLine className="size-4" />
+                </TooltipTrigger>
+                <TooltipContent side="top">Clear</TooltipContent>
+              </Tooltip>
             )}
           </div>
           <Separator orientation="vertical" className="h-6!" />
           <ExportData
             getData={getData}
             filename="runner_results"
-            trigger={createExportTrigger(filteredData.length === 0)}
+            tooltip="Export results"
+            trigger={({ isExporting }) => (
+              <Button
+                variant="secondary"
+                size="icon-sm"
+                aria-label="Export results"
+                disabled={isExporting || filteredData.length === 0}
+              >
+                <LoadingContent loading={isExporting}>
+                  <RiExportLine />
+                </LoadingContent>
+              </Button>
+            )}
           />
         </div>
       </div>

@@ -54,7 +54,6 @@ function TwoFactorPage() {
         onChange={value => setCode(value)}
         onComplete={() => verifyTotp(code)}
         disabled={isPending}
-        // oxlint-disable-next-line no-autofocus
         autoFocus
       />
     </div>

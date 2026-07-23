@@ -25,7 +25,11 @@ export function createChatsCollection() {
       ...syncCollectionOptions<Chat>({
         id: 'chats',
         getKey: item => item.id,
-        events: ({ signal }) => orpc.chats.events.call({}, { signal }),
+        events: async ({ signal, write }) => {
+          for await (const message of await orpc.chats.events.call({}, { signal })) {
+            write(message)
+          }
+        },
         sync: ({ rows, signal }) => orpc.chats.sync.call(rows, { signal }),
         onInsert: async ({ transaction }) => {
           await orpc.chats.create.call(transaction.mutations.map(m => m.modified))
@@ -51,7 +55,11 @@ export function createChatsMessagesCollection() {
       ...syncCollectionOptions<ChatMessage>({
         id: 'chatsMessages',
         getKey: item => item.id,
-        events: ({ signal }) => orpc.chatsMessages.events.call({}, { signal }),
+        events: async ({ signal, write }) => {
+          for await (const message of await orpc.chatsMessages.events.call({}, { signal })) {
+            write(message)
+          }
+        },
         sync: ({ rows, signal }) => orpc.chatsMessages.sync.call(rows, { signal }),
         onInsert: async ({ transaction }) => {
           await orpc.chatsMessages.create.call(transaction.mutations.map(m => m.modified))

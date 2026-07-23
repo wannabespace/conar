@@ -1,8 +1,8 @@
 import type { MaybePromise } from './helpers'
 
-// oxlint-disable-next-line typescript/no-empty-object-type
+// oxlint-disable-next-line ts/no-empty-object-type
 type Fn<T, P extends object = {}> = (params: P) => MaybePromise<T>
-// oxlint-disable-next-line typescript/no-empty-object-type
+// oxlint-disable-next-line ts/no-empty-object-type
 type FnParam<T, P extends object = {}> = Fn<T, P> | undefined | false
 
 export async function tries<T>(
@@ -21,7 +21,7 @@ export async function tries<T>(
 
   for (const [index, fn] of filteredFn.entries()) {
     try {
-      // oxlint-disable-next-line no-await-in-loop -- must try each function sequentially, passing along the previous failure
+      // oxlint-disable-next-line no-await-in-loop
       return await fn({ firstError, previousError })
     } catch (error) {
       if (index === 0) {

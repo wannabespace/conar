@@ -23,15 +23,27 @@ export function Hero({ className }: { className?: string }) {
     <motion.section
       style={{ opacity }}
       className={cn(
-        `flex flex-col items-start justify-between gap-6 py-12 sm:gap-8 sm:py-16 md:py-20 lg:flex-row lg:items-center lg:gap-12 lg:py-24 xl:py-28`,
+        `
+          flex flex-col items-start justify-between gap-6 py-12
+          sm:gap-8 sm:py-16
+          md:py-20
+          lg:flex-row lg:items-center lg:gap-12 lg:py-24
+          xl:py-28
+        `,
         className,
       )}
     >
-      <div className={`w-full lg:w-auto lg:flex-1`}>
+      <div
+        className={`
+        w-full
+        lg:w-auto lg:flex-1
+      `}
+      >
         <h1
-          className={cn(
-            `text-[clamp(2rem,min(7vh,7vw),4rem)] leading-none font-medium text-balance`,
-          )}
+          className={cn(`
+          text-[clamp(2rem,min(7vh,7vw),4rem)] leading-none font-medium
+          text-balance
+        `)}
         >
           <motion.span
             initial={{ opacity: 0, filter: 'blur(10px)' }}
@@ -73,13 +85,21 @@ export function Hero({ className }: { className?: string }) {
         </h1>
       </div>
       <div
-        className={`flex w-full max-w-md flex-col items-start gap-4 sm:gap-6 lg:flex-1 lg:items-end`}
+        className={`
+        flex w-full max-w-md flex-col items-start gap-4
+        sm:gap-6
+        lg:flex-1 lg:items-end
+      `}
       >
         <motion.h2
           initial={{ opacity: 0, filter: 'blur(10px)' }}
           animate={{ opacity: 1, filter: 'blur(0px)' }}
           transition={{ duration: 0.5, delay: 0.25 }}
-          className={`text-left text-base text-balance text-muted-foreground sm:text-lg lg:text-right lg:text-xl`}
+          className={`
+            text-left text-base text-balance text-muted-foreground
+            sm:text-lg
+            lg:text-right lg:text-xl
+          `}
         >
           {SEO.description}
         </motion.h2>
@@ -87,13 +107,25 @@ export function Hero({ className }: { className?: string }) {
           initial={{ opacity: 0, filter: 'blur(10px)', y: 20 }}
           animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className={`flex w-full flex-col gap-3 sm:flex-row sm:gap-4 lg:w-auto`}
+          className={`
+            flex w-full flex-col gap-3
+            sm:flex-row sm:gap-4
+            lg:w-auto
+          `}
         >
-          <DownloadButton className="w-full sm:w-auto" />
+          <DownloadButton
+            className="
+            w-full
+            sm:w-auto
+          "
+          />
           <Button
             variant="secondary"
             size="lg"
-            className={`w-full sm:w-auto`}
+            className={`
+              w-full
+              sm:w-auto
+            `}
             render={<Link to="/download" />}
           >
             All platforms

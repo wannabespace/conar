@@ -5,7 +5,9 @@ import { Resend } from 'resend'
 import { env } from '~/env'
 
 import { redisMemoize } from '../redis'
-import * as templates from './templates'
+import * as templatesNamespace from './templates'
+
+const templates = { ...templatesNamespace }
 
 export const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null
 
@@ -31,7 +33,6 @@ export async function sendEmail<
     return
   }
 
-  // oxlint-disable-next-line import/namespace -- computed access is safe: `template` is constrained to `keyof typeof templates`
   const Template = templates[template] as (props?: P) => React.ReactElement
   const options: CreateEmailOptions = {
     from: `Tamery <${env.RESEND_FROM_EMAIL}>`,

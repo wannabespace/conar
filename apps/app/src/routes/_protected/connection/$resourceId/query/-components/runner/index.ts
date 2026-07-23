@@ -66,6 +66,8 @@ export function runnerQueryOptions(connectionResource: ConnectionResource) {
 
       const results: (ReturnType<typeof transformResult> | ReturnType<typeof transformError>)[] = []
 
+      const queryParams = await connectionResourceToQueryParams(connectionResource)
+
       for (const { query, startLineNumber, endLineNumber } of queries) {
         if (signal.aborted) {
           return []
@@ -73,11 +75,9 @@ export function runnerQueryOptions(connectionResource: ConnectionResource) {
 
         const startTime = performance.now()
         try {
+          // Sequential by design: queries run in order on the same connection
           // oxlint-disable-next-line no-await-in-loop
-          const rows = await customQuery({ query }).run(
-            // oxlint-disable-next-line no-await-in-loop
-            await connectionResourceToQueryParams(connectionResource),
-          )
+          const rows = await customQuery({ query }).run(queryParams)
           results.push(
             transformResult({
               rows,

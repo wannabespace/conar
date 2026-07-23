@@ -41,8 +41,8 @@
     "deps:build": "node-modules-inspector build"
   },
   "devDependencies": {
+    "@letstri/oxlint-config": "catalog:",
     "@tamery/configs": "workspace:*",
-    "@letstri/oxc-config": "catalog:",
     "@types/bun": "catalog:",
     "cross-env": "catalog:",
     "husky": "catalog:",
@@ -61,5 +61,5 @@
   "engines": {
     "bun": ">=1.3.0"
   },
-  "packageManager": "pnpm@11.10.0"
+  "packageManager": "pnpm@11.13.1"
 }
