@@ -34,7 +34,9 @@ interface DropTableDialogProps {
 
 export function DropTableDialog({ ref }: DropTableDialogProps) {
   const { connection, connectionResource } = useRouteContext()
-  const { schema: schemaFromSearch, table: tableFromSearch } = useSearch({ strict: false })
+  const { schema: schemaFromSearch, table: tableFromSearch } = useSearch({
+    from: '/_protected/connection/$resourceId/table/',
+  })
   const store = getConnectionResourceStore(connectionResource.id)
   const router = useRouter()
   const [confirmationText, setConfirmationText] = useState('')
