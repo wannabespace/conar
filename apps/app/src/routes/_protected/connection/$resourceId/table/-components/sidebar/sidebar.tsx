@@ -17,7 +17,6 @@ import { getConnectionResourceStore } from '~/entities/connection/store'
 
 import {
   SIDEBAR_DEFAULT_WIDTH,
-  SIDEBAR_FOLD_TRANSITION,
   SIDEBAR_MAX_WIDTH,
   SIDEBAR_MIN_WIDTH,
   tablesSidebarOpenValue,
@@ -84,7 +83,14 @@ export function TablesSidebar() {
       animate={{
         width: isOpen ? width : 0,
       }}
-      transition={isResizing ? { duration: 0 } : SIDEBAR_FOLD_TRANSITION}
+      transition={
+        isResizing
+          ? { duration: 0 }
+          : {
+              duration: 0.25,
+              ease: [0.32, 0.72, 0, 1],
+            }
+      }
       className="relative h-full shrink-0 overflow-hidden"
     >
       <div className="flex h-full flex-col pr-2 text-foreground" style={{ width }}>
