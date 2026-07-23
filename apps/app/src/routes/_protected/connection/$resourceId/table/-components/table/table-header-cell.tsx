@@ -327,6 +327,8 @@ export function TableHeaderCell({
               group/header-cell relative flex w-full shrink-0 cursor-default
               items-center justify-between px-2 py-1.5 outline-none
             `,
+            position === 'first' && 'pl-4',
+            position === 'last' && 'pr-4',
             className,
           )}
           style={style}
