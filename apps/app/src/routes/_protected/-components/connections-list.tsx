@@ -65,12 +65,7 @@ import { RemoveConnectionDialog } from './remove-connection-dialog'
 
 function ConnectionIconWithVersion({ connection }: { connection: Connection }) {
   const { canSend } = useFetchingConfig(connection)
-  const {
-    data: version,
-    isPending: isVersionPending,
-    refetch: refetchVersion,
-    isRefetching: isVersionRefetching,
-  } = useQuery({
+  const { data: version, isPending: isVersionPending } = useQuery({
     ...connectionVersionQueryOptions(connection),
     enabled: canSend,
   })
@@ -90,16 +85,11 @@ function ConnectionIconWithVersion({ connection }: { connection: Connection }) {
       >
         <span className="opacity-50">Version: </span>
         {!canSend ? (
-          <span className="opacity-50">Unavailable in web app</span>
+          <span className="opacity-50">Version is unavailable</span>
         ) : isVersionPending ? (
           <span className="animate-pulse">Loading version...</span>
         ) : version ? (
-          <div className="flex items-center gap-1">
-            <button type="button" onClick={() => refetchVersion()}>
-              {version}
-            </button>
-            {isVersionRefetching && <Spinner className="size-3" />}
-          </div>
+          <div className="flex items-center gap-1">{version}</div>
         ) : (
           <span className="opacity-50">Version cannot be detected</span>
         )}

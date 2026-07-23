@@ -1,5 +1,7 @@
 import {
   RiAddLine,
+  RiArrowDownLine,
+  RiArrowUpLine,
   RiComputerLine,
   RiDashboardLine,
   RiDownloadLine,
@@ -26,13 +28,14 @@ import {
   CommandPrimitive,
   CommandShortcut,
 } from '@tamery/ui/components/command'
+import { EnterIcon } from '@tamery/ui/components/custom/shortcuts'
 import { Kbd } from '@tamery/ui/components/kbd'
 import { themeStore, useResolvedTheme } from '@tamery/ui/theme-store'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
-import type { ComponentProps, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { useCollections } from '~/entities/collections'
@@ -51,11 +54,15 @@ import { appStore, setIsActionCenterOpen } from '~/store'
 import { checkForUpdates } from '~/use-updates-observer'
 
 const CONNECTION_PAGES = [
-  { label: 'SQL Runner', to: '/connection/$resourceId/query', icon: RiTerminalBoxLine },
-  { label: 'Tables', to: '/connection/$resourceId/table', icon: RiTableLine },
-  { label: 'Definitions', to: '/connection/$resourceId/definitions', icon: RiFileListLine },
-  { label: 'Visualizer', to: '/connection/$resourceId/visualizer', icon: RiNodeTree },
-] as const
+  { label: 'SQL Runner', to: '/connection/$resourceId/query' as const, icon: RiTerminalBoxLine },
+  { label: 'Tables', to: '/connection/$resourceId/table' as const, icon: RiTableLine },
+  {
+    label: 'Definitions',
+    to: '/connection/$resourceId/definitions' as const,
+    icon: RiFileListLine,
+  },
+  { label: 'Visualizer', to: '/connection/$resourceId/visualizer' as const, icon: RiNodeTree },
+]
 
 const TABLE_TYPE_ICONS = {
   'materialized view': RiEyeFill,
@@ -68,22 +75,6 @@ function run(action: () => void) {
     setIsActionCenterOpen(false)
     action()
   }
-}
-
-function Action({
-  icon: Icon,
-  children,
-  ...props
-}: ComponentProps<typeof CommandItem> & {
-  icon: typeof RiTableLine
-  children: ReactNode
-}) {
-  return (
-    <CommandItem {...props}>
-      <Icon className="text-muted-foreground" />
-      {children}
-    </CommandItem>
-  )
 }
 
 function ResourceTables({
@@ -124,18 +115,18 @@ function ResourceTables({
           const Icon = TABLE_TYPE_ICONS[table.type as keyof typeof TABLE_TYPE_ICONS] ?? RiTableLine
 
           return (
-            <Action
+            <CommandItem
               key={table.name}
-              icon={Icon}
               keywords={[schema.name, table.name]}
               value={`${schema.name}.${table.name}`}
               onSelect={() => onTableSelect(schema.name, table.name)}
             >
+              <Icon className="text-muted-foreground" />
               <span data-mask className="min-w-0 flex-1 truncate">
                 <span className="text-muted-foreground">{schema.name}.</span>
                 {table.name}
               </span>
-            </Action>
+            </CommandItem>
           )
         }),
       )}
@@ -179,11 +170,12 @@ function ConnectionResource({
   )
 }
 
-function FooterHint({ keys, label }: { keys: string[]; label: string }) {
+function FooterHint({ keys, label }: { keys: ReactNode[]; label: string }) {
   return (
     <span className="flex items-center gap-1">
-      {keys.map(key => (
-        <Kbd key={key}>{key}</Kbd>
+      {keys.map((key, index) => (
+        // oxlint-disable-next-line react/no-array-index-key
+        <Kbd key={index}>{key}</Kbd>
       ))}
       {label}
     </span>
@@ -238,19 +230,18 @@ export function ActionsCenter() {
         <CommandList className="max-h-none flex-1 scroll-fade scroll-py-2 p-1">
           <CommandEmpty>No commands found.</CommandEmpty>
           <CommandGroup heading="Navigation">
-            <Action
-              icon={RiDashboardLine}
+            <CommandItem
               value="Home"
               keywords={['dashboard']}
               onSelect={run(() => router.navigate({ to: '/' }))}
             >
+              <RiDashboardLine className="text-muted-foreground" />
               Home
-            </Action>
+            </CommandItem>
             {current &&
               CONNECTION_PAGES.map(page => (
-                <Action
+                <CommandItem
                   key={page.to}
-                  icon={page.icon}
                   value={`Go to ${page.label}`}
                   keywords={['go to', page.label]}
                   onSelect={run(() =>
@@ -260,40 +251,44 @@ export function ActionsCenter() {
                     }),
                   )}
                 >
+                  <page.icon className="text-muted-foreground" />
                   Go to {page.label}
-                </Action>
+                </CommandItem>
               ))}
-            <Action
-              icon={RiAddLine}
+            <CommandItem
               value="Add new connection"
               keywords={['new', 'create', 'database']}
               onSelect={run(() => router.navigate({ to: '/create' }))}
             >
+              <RiAddLine className="text-muted-foreground" />
               Add new connection…
-            </Action>
+            </CommandItem>
           </CommandGroup>
           <CommandGroup heading="Appearance">
-            <Action
-              icon={resolvedTheme === 'dark' ? RiSunLine : RiMoonLine}
+            <CommandItem
               value={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} theme`}
               keywords={['theme', 'dark', 'light', 'mode']}
               onSelect={run(() => themeStore.set(resolvedTheme === 'dark' ? 'light' : 'dark'))}
             >
+              {resolvedTheme === 'dark' ? (
+                <RiSunLine className="text-muted-foreground" />
+              ) : (
+                <RiMoonLine className="text-muted-foreground" />
+              )}
               Switch to {resolvedTheme === 'dark' ? 'light' : 'dark'} theme
-            </Action>
-            <Action
-              icon={RiComputerLine}
+            </CommandItem>
+            <CommandItem
               value="Use system theme"
               keywords={['theme', 'system', 'auto']}
               onSelect={run(() => themeStore.set('system'))}
             >
+              <RiComputerLine className="text-muted-foreground" />
               Use system theme
-            </Action>
+            </CommandItem>
           </CommandGroup>
           <CommandGroup heading="Application">
             {current && (
-              <Action
-                icon={RiHistoryLine}
+              <CommandItem
                 value="Toggle query logger"
                 keywords={['logs', 'queries', 'history']}
                 onSelect={run(() => {
@@ -304,27 +299,28 @@ export function ActionsCenter() {
                   )
                 })}
               >
+                <RiHistoryLine className="text-muted-foreground" />
                 Toggle query logger
-              </Action>
+              </CommandItem>
             )}
             {!!window.electron && (
-              <Action
-                icon={RiDownloadLine}
+              <CommandItem
                 value="Check for updates"
                 keywords={['update', 'version']}
                 onSelect={run(() => checkForUpdates())}
               >
+                <RiDownloadLine className="text-muted-foreground" />
                 Check for updates…
-              </Action>
+              </CommandItem>
             )}
-            <Action
-              icon={RiRefreshLine}
+            <CommandItem
               value="Reload window"
               keywords={['restart', 'refresh']}
               onSelect={() => window.location.reload()}
             >
+              <RiRefreshLine className="text-muted-foreground" />
               Reload window
-            </Action>
+            </CommandItem>
           </CommandGroup>
           {!!data.length && (
             <CommandGroup heading="Connections">
@@ -351,8 +347,14 @@ export function ActionsCenter() {
           text-muted-foreground/70
         "
       >
-        <FooterHint keys={['↑', '↓']} label="navigate" />
-        <FooterHint keys={['↵']} label="open" />
+        <FooterHint
+          keys={[
+            <RiArrowUpLine key="up" className="size-3" />,
+            <RiArrowDownLine key="down" className="size-3" />,
+          ]}
+          label="navigate"
+        />
+        <FooterHint keys={[<EnterIcon key="enter" />]} label="open" />
         <FooterHint keys={['esc']} label="close" />
       </div>
     </CommandDialog>
