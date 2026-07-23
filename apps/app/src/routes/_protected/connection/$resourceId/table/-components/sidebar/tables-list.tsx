@@ -11,7 +11,7 @@ import {
   RiTableLine,
   RiUnpinLine,
 } from '@remixicon/react'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { CONNECTION_TYPES_WITHOUT_SCHEMAS } from '@tamery/shared/constants'
 import {
   ContextMenu,
   ContextMenuContent,
@@ -283,8 +283,7 @@ export function TablesList({ className, search }: { className?: string; search?:
   const renameTableDialogRef = useRef<ComponentRef<typeof RenameTableDialog>>(null)
   const parentRef = useRef<HTMLDivElement>(null)
 
-  // ClickHouse has a single flat namespace — no schema group rows
-  const showSchemaRows = connection.type !== ConnectionType.ClickHouse
+  const showSchemaRows = !CONNECTION_TYPES_WITHOUT_SCHEMAS.includes(connection.type)
 
   useEffect(() => {
     if (!tablesAndSchemas) return
@@ -378,7 +377,6 @@ export function TablesList({ className, search }: { className?: string; search?:
 
   const hasData = rows.length > 0
 
-  // Reveal the active table once the tree is loaded (e.g. on page reload)
   useEffect(() => {
     if (hasData) scrollToActiveEvent()
   }, [hasData])
