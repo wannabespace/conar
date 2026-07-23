@@ -40,9 +40,17 @@ type Stage =
   | { step: 'operator'; column: string }
   | { step: 'value'; column: string; ref: Filter }
 
-// Unified filter field: chips live inline in an input-styled container; typing
-// suggests column filters or sends the text to AI. Backspace on an empty input
-// removes the last chip.
+function splitParts(value: string) {
+  return value
+    .split(',')
+    .map(part => part.trim())
+    .filter(part => part !== '')
+}
+
+function operatorMatches(filter: Filter, text: string) {
+  return filter.label.toLowerCase().includes(text) || filter.operator.toLowerCase().includes(text)
+}
+
 export function FilterSearchBar({ table, schema }: { table: string; schema: string }) {
   const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
   const { connectionResource } = useRouteContext()
@@ -52,25 +60,21 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
   const query = useSubscription(store, { selector: state => state.prompt })
   const [isFocused, setIsFocused] = useState(false)
   const [stage, setStage] = useState<Stage>({ step: 'idle' })
-  // cmdk keeps its highlight by item value; when the stage swaps the whole item
-  // list the old value no longer exists and nothing is highlighted — so we
-  // control it and point it at the first item on every transition
   const [highlighted, setHighlighted] = useState('')
   const [freeAiUsage, setFreeAiUsage] = useState<{
     remaining: number
     max: number
   } | null>(null)
 
-  const setQuery = (value: string) => {
+  const setPrompt = (value: string) =>
     store.set(state => ({ ...state, prompt: value }) satisfies typeof state)
+
+  const setQuery = (value: string) => {
+    setPrompt(value)
 
     const trimmed = value.trim().toLowerCase()
     if (stage.step === 'operator') {
-      const first = SQL_FILTERS_LIST.find(
-        filter =>
-          filter.label.toLowerCase().includes(trimmed) ||
-          filter.operator.toLowerCase().includes(trimmed),
-      )
+      const first = SQL_FILTERS_LIST.find(filter => operatorMatches(filter, trimmed))
       setHighlighted(first ? `operator:${first.operator.toLowerCase()}` : '')
     } else if (stage.step === 'value') {
       setHighlighted('apply-value')
@@ -81,6 +85,12 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
 
   const setFilters = (updater: (filters: ActiveFilter[]) => ActiveFilter[]) =>
     store.set(state => ({ ...state, filters: updater(state.filters) }) satisfies typeof state)
+
+  const resetStage = () => {
+    setStage({ step: 'idle' })
+    setHighlighted('')
+    setPrompt('')
+  }
 
   const { columns } = useTableColumnsContext()
   const { data: enums } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
@@ -104,7 +114,6 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
                       values: filter.values,
                     }) satisfies Omit<ActiveFilter, 'ref'> & { ref?: ActiveFilter['ref'] },
                 )
-                // For future updates if we'll have new filters
                 .filter(f => !!f.ref) as ActiveFilter[],
             }) satisfies typeof state,
         )
@@ -166,7 +175,7 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
 
   const pickColumn = (columnId: string) => {
     setStage({ step: 'operator', column: columnId })
-    store.set(state => ({ ...state, prompt: '' }) satisfies typeof state)
+    setPrompt('')
     setHighlighted(`operator:${SQL_FILTERS_LIST[0]!.operator.toLowerCase()}`)
     inputRef.current?.focus()
   }
@@ -175,45 +184,29 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
     if (stage.step !== 'operator') return
     if (ref.hasValue === false) {
       setFilters(current => [...current, { column: stage.column, ref, values: [] }])
-      setStage({ step: 'idle' })
-      setHighlighted('')
+      resetStage()
     } else {
       setStage({ step: 'value', column: stage.column, ref })
       setHighlighted('apply-value')
+      setPrompt('')
     }
-    store.set(state => ({ ...state, prompt: '' }) satisfies typeof state)
     inputRef.current?.focus()
   }
 
   const applyValue = () => {
     if (stage.step !== 'value') return
-    const values = stage.ref.isArray
-      ? query
-          .split(',')
-          .map(value => value.trim())
-          .filter(value => value !== '')
-      : [query]
+    const values = stage.ref.isArray ? splitParts(query) : [query]
     setFilters(current => [...current, { column: stage.column, ref: stage.ref, values }])
-    setStage({ step: 'idle' })
-    setHighlighted('')
-    store.set(state => ({ ...state, prompt: '' }) satisfies typeof state)
+    resetStage()
     inputRef.current?.focus()
   }
 
-  // Suggested values for the value stage — enum members, or true/false for
-  // boolean columns
   const stageColumn =
     stage.step === 'value' ? columns?.find(column => column.id === stage.column) : undefined
   const suggestedValues =
     stageColumn?.availableValues ??
     (stageColumn?.uiType === 'boolean' ? ['true', 'false'] : undefined)
-  const committedParts =
-    stage.step === 'value' && stage.ref.isArray
-      ? query
-          .split(',')
-          .map(part => part.trim())
-          .filter(part => part !== '')
-      : []
+  const committedParts = stage.step === 'value' && stage.ref.isArray ? splitParts(query) : []
   const valueFilterText = (
     stage.step === 'value' && stage.ref.isArray ? (query.split(',').at(-1) ?? '') : query
   ).trim()
@@ -224,8 +217,6 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
   const pickSuggestedValue = (value: string) => {
     if (stage.step !== 'value') return
     if (stage.ref.isArray) {
-      // Multi-value operators collect picks into the comma list (click again to
-      // remove); Enter on Apply commits the whole list
       const committed = valueFilterText ? committedParts.slice(0, -1) : committedParts
       const next = committed.includes(value)
         ? committed.filter(part => part !== value)
@@ -233,20 +224,14 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
       setQuery(next.join(', '))
     } else {
       setFilters(current => [...current, { column: stage.column, ref: stage.ref, values: [value] }])
-      setStage({ step: 'idle' })
-      setHighlighted('')
-      store.set(state => ({ ...state, prompt: '' }) satisfies typeof state)
+      resetStage()
     }
     inputRef.current?.focus()
   }
 
   const matchingOperators = SQL_FILTERS_GROUPED.map(group => ({
     ...group,
-    filters: group.filters.filter(
-      filter =>
-        filter.label.toLowerCase().includes(trimmedQuery.toLowerCase()) ||
-        filter.operator.toLowerCase().includes(trimmedQuery.toLowerCase()),
-    ),
+    filters: group.filters.filter(filter => operatorMatches(filter, trimmedQuery.toLowerCase())),
   })).filter(group => group.filters.length > 0)
 
   const placeholder =
@@ -374,7 +359,6 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
             absolute bottom-full left-0 z-30 mb-2 w-full overflow-hidden
             rounded-xl bg-popover p-1 shadow-lg ring-1 ring-foreground/4
           "
-          // Keep the input focused while clicking suggestions
           onMouseDown={e => e.preventDefault()}
         >
           <CommandList className="max-h-64">
