@@ -97,7 +97,6 @@ export function TableToolbar({ table, schema }: { table: string; schema: string 
     const queryParams = await connectionResourceToQueryParams(connectionResource)
 
     while (true) {
-      // Sequential by design: paginated fetch — each batch depends on the previous offset
       // oxlint-disable-next-line no-await-in-loop
       const batch = await resourceRowsQuery({
         schema,
