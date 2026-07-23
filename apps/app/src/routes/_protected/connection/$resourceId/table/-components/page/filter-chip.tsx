@@ -86,9 +86,9 @@ export function FilterChip({
           </PopoverTrigger>
           <PopoverContent
             className="
-            p-0
-            **:data-[slot=popover-viewport]:p-0
-          "
+              p-0
+              **:data-[slot=popover-viewport]:p-0
+            "
           >
             <FiltersColumnSelector
               onSelect={column => {
@@ -105,9 +105,9 @@ export function FilterChip({
           </PopoverTrigger>
           <PopoverContent
             className="
-            p-0
-            **:data-[slot=popover-viewport]:p-0
-          "
+              p-0
+              **:data-[slot=popover-viewport]:p-0
+            "
           >
             <FiltersSelector
               onSelect={operator => {
@@ -132,9 +132,9 @@ export function FilterChip({
               </PopoverTrigger>
               <PopoverContent
                 className="
-                max-h-[calc(100vh-10rem)] p-0
-                **:data-[slot=popover-viewport]:p-0
-              "
+                  max-h-[calc(100vh-10rem)] p-0
+                  **:data-[slot=popover-viewport]:p-0
+                "
               >
                 <FilterValueSelector
                   column={filter.column}
