@@ -1,6 +1,7 @@
 import './monaco-worker'
 import '@tamery/shared/arktype-config'
 import '@tamery/ui/globals.css'
+import { themeStore } from '@tamery/ui/theme-store'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import {
   createBrowserHistory,
@@ -13,6 +14,10 @@ import { toast } from 'sonner'
 
 import { lastLocationStorageValue } from './lib/last-location'
 import { routeTree } from './routeTree.gen'
+
+if (window.electron) {
+  themeStore.subscribe(theme => window.electron?.app.setNativeTheme(theme), { immediate: true })
+}
 
 window.electron?.app.onDeepLink(async url => {
   window.initialDeepLink = url
