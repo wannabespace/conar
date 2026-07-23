@@ -18,6 +18,9 @@
     <script>
       if (window.electron) {
         document.documentElement.classList.add('electron')
+        if (/Mac/i.test(navigator.userAgent)) {
+          document.documentElement.classList.add('mac')
+        }
       }
 
       const theme = localStorage.getItem('tamery.theme')

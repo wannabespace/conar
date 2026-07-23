@@ -201,6 +201,10 @@
       @apply select-text;
     }
   }
+
+  .electron.mac body {
+    @apply bg-body/85;
+  }
 }
 
 ::selection {

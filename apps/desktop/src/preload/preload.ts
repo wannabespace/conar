@@ -87,6 +87,9 @@ contextBridge.exposeInMainWorld('electron', {
     onFocusChange: callback => onEvent('focus-changed', callback),
     checkForUpdates: handleElectronError(() => ipcRenderer.invoke('app.checkForUpdates')),
     quitAndInstall: handleElectronError(() => ipcRenderer.invoke('app.quitAndInstall')),
+    setNativeTheme: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('app.setNativeTheme', arg),
+    ),
   },
   versions: {
     node: () => process.versions.node,
