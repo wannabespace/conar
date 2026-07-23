@@ -94,4 +94,7 @@ contextBridge.exposeInMainWorld('electron', {
     electron: () => process.versions.electron,
     app: () => ipcRenderer.invoke('versions.app'),
   },
+  menu: {
+    popup: handleElectronError((arg: unknown) => ipcRenderer.invoke('menu.popup', arg)),
+  },
 } satisfies ElectronPreload)

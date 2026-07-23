@@ -15,13 +15,6 @@ import {
 } from '@remixicon/react'
 import type { TableHeaderCellProps } from '@tamery/table'
 import { useTableContext } from '@tamery/table/hooks'
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-} from '@tamery/ui/components/context-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
@@ -31,6 +24,8 @@ import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import type { AppMenuNode } from '~/components/app-context-menu'
+import { AppContextMenu } from '~/components/app-context-menu'
 import type { Column, ColumnHandlers } from '~/entities/connection/components/table/cell'
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
 
@@ -259,159 +254,171 @@ export function TableHeaderCell({
     })
   }
 
+  const items: AppMenuNode[] = [
+    ...(isSortable
+      ? ([
+          {
+            label: 'Sort Ascending',
+            icon: <RiArrowUpLine className={cn('size-4', order === 'ASC' && 'text-primary')} />,
+            className: cn(order === 'ASC' && 'text-primary'),
+            checked: order === 'ASC' ? true : undefined,
+            onSelect: () => (order === 'ASC' ? onOrder?.(null) : onOrder?.('ASC')),
+          },
+          {
+            label: 'Sort Descending',
+            icon: <RiArrowDownLine className={cn('size-4', order === 'DESC' && 'text-primary')} />,
+            className: cn(order === 'DESC' && 'text-primary'),
+            checked: order === 'DESC' ? true : undefined,
+            onSelect: () => (order === 'DESC' ? onOrder?.(null) : onOrder?.('DESC')),
+          },
+          ...(order !== null
+            ? [
+                {
+                  label: 'Clear Sort',
+                  icon: <RiCloseLine className="size-4" />,
+                  onSelect: () => onOrder?.(null),
+                },
+              ]
+            : []),
+          { type: 'separator' },
+        ] satisfies AppMenuNode[])
+      : []),
+    ...(onRename
+      ? ([
+          {
+            label: 'Rename Column',
+            icon: <RiPencilLine className="size-4" />,
+            onSelect: onRename,
+          },
+        ] satisfies AppMenuNode[])
+      : []),
+    {
+      label: 'Copy Name',
+      icon: <RiFileCopyLine className="size-4" />,
+      onSelect: () => copyToClipboard(column.id, 'Column name copied'),
+    },
+    { type: 'separator' },
+    {
+      label: 'Hide Column',
+      icon: <RiEyeOffLine className="size-4" />,
+      onSelect: hideColumn,
+    },
+    ...(hasCustomSize && onResize
+      ? ([
+          {
+            label: 'Reset Width',
+            icon: <RiExpandLeftRightLine className="size-4" />,
+            onSelect: removeSize,
+          },
+        ] satisfies AppMenuNode[])
+      : []),
+  ]
+
   return (
-    <ContextMenu>
-      <ContextMenuTrigger
-        render={
+    <AppContextMenu
+      items={items}
+      contentProps={{ side: 'bottom', align: 'start', className: 'min-w-52' }}
+      render={
+        <div
+          ref={ref}
+          aria-label={`${column.id} column options`}
+          className={cn(
+            `
+              group/header-cell relative flex w-full shrink-0 cursor-default
+              items-center justify-between px-2 py-1.5 outline-none
+            `,
+            position === 'first' && 'pl-4',
+            position === 'last' && 'pr-4',
+            className,
+          )}
+          style={style}
+          data-position={position}
+          data-index={columnIndex}
+          data-column-id={column.id}
+        />
+      }
+    >
+      <div className="overflow-hidden text-xs">
+        <div data-mask className="flex items-center gap-1 truncate font-medium" title={column.id}>
+          {column.id}
+        </div>
+        {column?.typeLabel && (
           <div
-            ref={ref}
-            aria-label={`${column.id} column options`}
-            className={cn(
-              `
-                group/header-cell relative flex w-full shrink-0 cursor-default
-                items-center justify-between px-2 py-1.5 outline-none
-              `,
-              className,
+            data-footer={!!column.typeLabel}
+            className="flex items-center gap-0.5 text-2xs leading-4"
+          >
+            {column.primaryKey && <PrimaryKeyTooltipIcon primaryKey={column.primaryKey} />}
+            {column.isNullable && <NullableTooltipIcon />}
+            {column.unique && <UniqueTooltipIcon unique={column.unique} />}
+            {column.isEditable === false && <ReadOnlyTooltipIcon />}
+            {column.foreign && (
+              <ForeignTooltipIcon
+                name={column.foreign.name}
+                table={column.foreign.table}
+                column={column.foreign.column}
+              />
             )}
-            style={style}
-            data-position={position}
-            data-index={columnIndex}
-            data-column-id={column.id}
-          />
-        }
-      >
-        <div className="overflow-hidden text-xs">
-          <div data-mask className="flex items-center gap-1 truncate font-medium" title={column.id}>
-            {column.id}
-          </div>
-          {column?.typeLabel && (
-            <div
-              data-footer={!!column.typeLabel}
-              className="flex items-center gap-0.5 text-2xs leading-4"
-            >
-              {column.primaryKey && <PrimaryKeyTooltipIcon primaryKey={column.primaryKey} />}
-              {column.isNullable && <NullableTooltipIcon />}
-              {column.unique && <UniqueTooltipIcon unique={column.unique} />}
-              {column.isEditable === false && <ReadOnlyTooltipIcon />}
-              {column.foreign && (
-                <ForeignTooltipIcon
-                  name={column.foreign.name}
-                  table={column.foreign.table}
-                  column={column.foreign.column}
-                />
-              )}
-              {column.defaultValue && (
-                <DefaultValueTooltipIcon defaultValue={column.defaultValue} />
-              )}
-              {enumsData ? (
-                <EnumTooltipIcon values={enumsData.values}>
-                  <span
-                    className={`
+            {column.defaultValue && <DefaultValueTooltipIcon defaultValue={column.defaultValue} />}
+            {enumsData ? (
+              <EnumTooltipIcon values={enumsData.values}>
+                <span
+                  className={`
                       truncate font-mono text-muted-foreground underline
                       decoration-dotted
                     `}
-                  >
-                    {column.typeLabel}
-                  </span>
-                </EnumTooltipIcon>
-              ) : (
-                <span className="truncate font-mono text-muted-foreground">{column.typeLabel}</span>
-              )}
-            </div>
-          )}
-        </div>
-        <div className="flex shrink-0 items-center gap-1 self-stretch">
-          {order !== null && (
-            <span className="flex size-4 items-center justify-center text-primary">
-              {order === 'ASC' ? (
-                <RiArrowUpLine className="size-3 shrink-0" />
-              ) : (
-                <RiArrowDownLine className="size-3 shrink-0" />
-              )}
-            </span>
-          )}
-          {onResize && (
-            // oxlint-disable-next-line jsx-a11y/click-events-have-key-events
-            <div
-              role="separator"
-              aria-orientation="vertical"
-              aria-label="Resize column"
-              tabIndex={0}
-              className="
+                >
+                  {column.typeLabel}
+                </span>
+              </EnumTooltipIcon>
+            ) : (
+              <span className="truncate font-mono text-muted-foreground">{column.typeLabel}</span>
+            )}
+          </div>
+        )}
+      </div>
+      <div className="flex shrink-0 items-center gap-1 self-stretch">
+        {order !== null && (
+          <span className="flex size-4 items-center justify-center text-primary">
+            {order === 'ASC' ? (
+              <RiArrowUpLine className="size-3 shrink-0" />
+            ) : (
+              <RiArrowDownLine className="size-3 shrink-0" />
+            )}
+          </span>
+        )}
+        {onResize && (
+          // oxlint-disable-next-line jsx-a11y/click-events-have-key-events
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Resize column"
+            tabIndex={0}
+            className="
                 group/resize flex cursor-col-resize items-stretch self-stretch
                 p-1 select-none
               "
-              // Drag-to-resize handle; interactions are pointer-driven by design
-              onDoubleClick={removeSize}
-              onMouseDown={e => {
-                e.stopPropagation()
-                handleResize(e)
-              }}
-              onClick={e => e.stopPropagation()}
-            >
-              <span
-                className={cn(
-                  `
+            // Drag-to-resize handle; interactions are pointer-driven by design
+            onDoubleClick={removeSize}
+            onMouseDown={e => {
+              e.stopPropagation()
+              handleResize(e)
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <span
+              className={cn(
+                `
                   w-1 rounded-full bg-foreground/20 opacity-0
                   transition-opacity
                   group-hover/header-cell:opacity-100
                   group-hover/resize:bg-primary
                 `,
-                  isResizing && `bg-primary! opacity-100!`,
-                )}
-              />
-            </div>
-          )}
-        </div>
-      </ContextMenuTrigger>
-      <ContextMenuContent side="bottom" align="start" className="min-w-52">
-        {isSortable && (
-          <>
-            <ContextMenuItem
-              onClick={() => (order === 'ASC' ? onOrder?.(null) : onOrder?.('ASC'))}
-              className={cn(order === 'ASC' && 'text-primary')}
-            >
-              <RiArrowUpLine className={cn('size-4', order === 'ASC' && 'text-primary')} />
-              Sort Ascending
-            </ContextMenuItem>
-            <ContextMenuItem
-              onClick={() => (order === 'DESC' ? onOrder?.(null) : onOrder?.('DESC'))}
-              className={cn(order === 'DESC' && 'text-primary')}
-            >
-              <RiArrowDownLine className={cn('size-4', order === 'DESC' && 'text-primary')} />
-              Sort Descending
-            </ContextMenuItem>
-            {order !== null && (
-              <ContextMenuItem onClick={() => onOrder?.(null)}>
-                <RiCloseLine className="size-4" />
-                Clear Sort
-              </ContextMenuItem>
-            )}
-            <ContextMenuSeparator />
-          </>
+                isResizing && `bg-primary! opacity-100!`,
+              )}
+            />
+          </div>
         )}
-        {onRename && (
-          <ContextMenuItem onClick={onRename}>
-            <RiPencilLine className="size-4" />
-            Rename Column
-          </ContextMenuItem>
-        )}
-        <ContextMenuItem onClick={() => copyToClipboard(column.id, 'Column name copied')}>
-          <RiFileCopyLine className="size-4" />
-          Copy Name
-        </ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem onClick={hideColumn}>
-          <RiEyeOffLine className="size-4" />
-          Hide Column
-        </ContextMenuItem>
-        {hasCustomSize && onResize && (
-          <ContextMenuItem onClick={removeSize}>
-            <RiExpandLeftRightLine className="size-4" />
-            Reset Width
-          </ContextMenuItem>
-        )}
-      </ContextMenuContent>
-    </ContextMenu>
+      </div>
+    </AppContextMenu>
   )
 }

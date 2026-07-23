@@ -3,11 +3,14 @@ import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
 import * as pg from '@tamery/connection/queries/dialects/pg'
+import type { MenuPopupRequest, MenuPopupResult } from '@tamery/shared/context-menu'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { decrypt, encrypt } from '@tamery/shared/utils/crypto-node'
+import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain } from 'electron'
 
 import { autoUpdater } from '../main'
+import { popupNativeContextMenu } from './context-menu'
 
 export const electron = {
   query: {
@@ -31,11 +34,15 @@ export const electron = {
   versions: {
     app: async () => app.getVersion(),
   },
+  menu: {
+    popup: ((arg: MenuPopupRequest, event?: IpcMainInvokeEvent) =>
+      popupNativeContextMenu(arg, event)) as (arg: MenuPopupRequest) => Promise<MenuPopupResult>,
+  },
 }
 
 function registerHandlers(prefix: string, value: unknown) {
   if (typeof value === 'function') {
-    ipcMain.handle(prefix, (_event, arg) => value(arg))
+    ipcMain.handle(prefix, (event, arg) => value(arg, event))
     return
   }
   if (value && typeof value === 'object') {

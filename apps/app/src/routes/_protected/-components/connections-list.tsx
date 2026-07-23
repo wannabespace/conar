@@ -19,13 +19,6 @@ import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
 import { Button } from '@tamery/ui/components/button'
 import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-} from '@tamery/ui/components/context-menu'
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -48,6 +41,8 @@ import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 
+import type { AppMenuNode } from '~/components/app-context-menu'
+import { AppContextMenu } from '~/components/app-context-menu'
 import { useCollections } from '~/entities/collections'
 import type { Connection } from '~/entities/connection'
 import {
@@ -231,6 +226,38 @@ function ConnectionCard({
   const isResourcesShown = resources.length > 1
   const isLoadingVisible = isFetching && connectionResourcesNames.length === 0
 
+  const items: AppMenuNode[] = [
+    {
+      label: 'Refresh',
+      icon: <RiRefreshLine className="size-4" />,
+      disabled: !canSend,
+      onSelect: () => refetch(),
+    },
+    {
+      label: 'Copy connection string',
+      icon: <RiFileCopyLine className="size-4" />,
+      onSelect: () => handleCopy(),
+    },
+    ...(connection.syncType === SyncType.CloudWithoutPassword
+      ? ([
+          {
+            label: 'Clear password',
+            icon: <RiLockUnlockLine className="size-4 shrink-0" />,
+            className: 'whitespace-nowrap',
+            disabled: !connectionString?.isPasswordPopulated,
+            onSelect: () => handleClearPassword(),
+          },
+        ] satisfies AppMenuNode[])
+      : []),
+    { type: 'separator' },
+    {
+      label: 'Remove',
+      icon: <RiDeleteBinLine className="size-4" />,
+      variant: 'destructive',
+      onSelect: () => onRemove(),
+    },
+  ]
+
   return (
     <motion.div
       layout="position"
@@ -244,149 +271,124 @@ function ConnectionCard({
         last:border-b-0
       "
     >
-      <ContextMenu>
-        <ContextMenuTrigger
-          className={cn(`
-            group relative flex h-11 items-center gap-3 px-3 transition-colors
-            duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]
-            hover:bg-accent/50
-            has-[[data-resource-link]:hover]:bg-accent/50
-          `)}
-        >
-          {selectedResource && canOpenResource && (
-            <ConnectionResourceLink
-              resourceId={selectedResource.id}
-              className="absolute inset-0 cursor-default"
-              preload={false}
-              data-resource-link
-            />
-          )}
-          {connection.color && (
-            <span
-              className="
+      <AppContextMenu
+        items={items}
+        contentProps={{ className: 'min-w-44' }}
+        className={cn(`
+          group relative flex h-11 items-center gap-3 px-3 transition-colors
+          duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]
+          hover:bg-accent/50
+          has-[[data-resource-link]:hover]:bg-accent/50
+        `)}
+      >
+        {selectedResource && canOpenResource && (
+          <ConnectionResourceLink
+            resourceId={selectedResource.id}
+            className="absolute inset-0 cursor-default"
+            preload={false}
+            data-resource-link
+          />
+        )}
+        {connection.color && (
+          <span
+            className="
               pointer-events-none absolute top-1/2 left-0 h-5 w-0.5
               -translate-y-1/2 rounded-full bg-(--color)
             "
-            />
+          />
+        )}
+        <div
+          className={cn(
+            'pointer-events-none relative z-10 flex min-w-0 flex-1 items-center gap-3',
+            isLoadingVisible && 'animate-pulse',
           )}
-          <div
-            className={cn(
-              'pointer-events-none relative z-10 flex min-w-0 flex-1 items-center gap-3',
-              isLoadingVisible && 'animate-pulse',
-            )}
-          >
-            <ConnectionIconWithVersion connection={connection} />
-            <div className="flex min-w-0 items-center gap-2">
-              <span
-                data-mask
-                title={connection.name}
-                className="truncate text-sm leading-none font-medium"
-              >
-                {connection.name}
-              </span>
-              {isLoadingVisible && canSend && <Spinner className="size-3 shrink-0" />}
-              {!canSend && (
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <RiAlertLine
-                        className="
+        >
+          <ConnectionIconWithVersion connection={connection} />
+          <div className="flex min-w-0 items-center gap-2">
+            <span
+              data-mask
+              title={connection.name}
+              className="truncate text-sm leading-none font-medium"
+            >
+              {connection.name}
+            </span>
+            {isLoadingVisible && canSend && <Spinner className="size-3 shrink-0" />}
+            {!canSend && (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <RiAlertLine
+                      className="
                       pointer-events-auto size-3 shrink-0 text-muted-foreground
                     "
-                      />
-                    }
-                  />
-                  <TooltipContent className="pointer-events-auto max-w-xs">{reason}</TooltipContent>
-                </Tooltip>
-              )}
-              {error && canSend && (
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <RiAlertLine
-                        className="
+                    />
+                  }
+                />
+                <TooltipContent className="pointer-events-auto max-w-xs">{reason}</TooltipContent>
+              </Tooltip>
+            )}
+            {error && canSend && (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <RiAlertLine
+                      className="
                     pointer-events-auto size-3 shrink-0 text-warning
                   "
-                      />
-                    }
-                  />
-                  <TooltipContent className="pointer-events-auto">
-                    Failed to get resources:{' '}
-                    <p data-mask className="text-xs text-warning">
-                      {error.message}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </div>
+                    />
+                  }
+                />
+                <TooltipContent className="pointer-events-auto">
+                  Failed to get resources:{' '}
+                  <p data-mask className="text-xs text-warning">
+                    {error.message}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
-          <div
-            className="
+        </div>
+        <div
+          className="
           pointer-events-none relative z-10 flex min-w-0 shrink-0 items-center
           gap-2 text-xs text-muted-foreground
         "
-          >
-            <div
-              className="
+        >
+          <div
+            className="
                 hidden max-w-52 min-w-0 items-center font-mono
                 md:flex
               "
-            >
-              {connectionString?.displayUrl ? (
-                <span data-mask className="truncate">
-                  {connectionString?.displayUrl}
-                </span>
-              ) : (
-                <Skeleton className="h-3 w-40" />
-              )}
-            </div>
-            {isResourcesShown ? (
-              <ConnectionResourcesSelect
-                resources={resources}
-                selectedResourceName={selectedResourceName}
-                onSelectedResourceNameChange={value =>
-                  connectionStore.set(
-                    state => ({ ...state, lastOpenedResourceName: value }) satisfies typeof state,
-                  )
-                }
-                disabled={!canSend}
-              />
+          >
+            {connectionString?.displayUrl ? (
+              <span data-mask className="truncate">
+                {connectionString?.displayUrl}
+              </span>
             ) : (
-              selectedResourceName !== null && (
-                <span data-mask className="max-w-32 shrink-0 truncate text-xs">
-                  <span className="text-muted-foreground/50">/ </span>
-                  {resourceLabel(selectedResourceName)}
-                </span>
-              )
+              <Skeleton className="h-3 w-40" />
             )}
           </div>
-        </ContextMenuTrigger>
-        <ContextMenuContent className="min-w-44">
-          <ContextMenuItem disabled={!canSend} onClick={() => refetch()}>
-            <RiRefreshLine className="size-4" />
-            Refresh
-          </ContextMenuItem>
-          <ContextMenuItem onClick={() => handleCopy()}>
-            <RiFileCopyLine className="size-4" />
-            Copy connection string
-          </ContextMenuItem>
-          {connection.syncType === SyncType.CloudWithoutPassword && (
-            <ContextMenuItem
-              className="whitespace-nowrap"
-              disabled={!connectionString?.isPasswordPopulated}
-              onClick={() => handleClearPassword()}
-            >
-              <RiLockUnlockLine className="size-4 shrink-0" />
-              Clear password
-            </ContextMenuItem>
+          {isResourcesShown ? (
+            <ConnectionResourcesSelect
+              resources={resources}
+              selectedResourceName={selectedResourceName}
+              onSelectedResourceNameChange={value =>
+                connectionStore.set(
+                  state => ({ ...state, lastOpenedResourceName: value }) satisfies typeof state,
+                )
+              }
+              disabled={!canSend}
+            />
+          ) : (
+            selectedResourceName !== null && (
+              <span data-mask className="max-w-32 shrink-0 truncate text-xs">
+                <span className="text-muted-foreground/50">/ </span>
+                {resourceLabel(selectedResourceName)}
+              </span>
+            )
           )}
-          <ContextMenuSeparator />
-          <ContextMenuItem variant="destructive" onClick={() => onRemove()}>
-            <RiDeleteBinLine className="size-4" />
-            Remove
-          </ContextMenuItem>
-        </ContextMenuContent>
-      </ContextMenu>
+        </div>
+      </AppContextMenu>
     </motion.div>
   )
 }
