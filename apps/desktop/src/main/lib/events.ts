@@ -7,7 +7,7 @@ import type { MenuPopupRequest, MenuPopupResult } from '@tamery/shared/context-m
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { decrypt, encrypt } from '@tamery/shared/utils/crypto-node'
 import type { IpcMainInvokeEvent } from 'electron'
-import { app, ipcMain } from 'electron'
+import { app, ipcMain, nativeTheme } from 'electron'
 
 import { autoUpdater } from '../main'
 import { popupNativeContextMenu } from './context-menu'
@@ -29,6 +29,9 @@ export const electron = {
     },
     quitAndInstall: () => {
       autoUpdater?.restartAndInstall()
+    },
+    setNativeTheme: async (theme: 'light' | 'dark' | 'system') => {
+      nativeTheme.themeSource = theme
     },
   },
   versions: {
