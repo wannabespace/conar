@@ -7,14 +7,6 @@ import {
 } from '@remixicon/react'
 import { enabledFilters } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuShortcut,
-  ContextMenuTrigger,
-} from '@tamery/ui/components/context-menu'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
@@ -28,6 +20,8 @@ import { Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import type { AppMenuNode } from '~/components/app-context-menu'
+import { AppContextMenu } from '~/components/app-context-menu'
 import type { ConnectionResource } from '~/entities/connection/core'
 import {
   resourceConstraintsQueryOptions,
@@ -198,6 +192,24 @@ function Tab({
 
   const isActive = schemaParam === item.tab.schema && tableParam === item.tab.table
 
+  const items: AppMenuNode[] = [
+    {
+      label: 'Close',
+      accelerator: 'CmdOrCtrl+W',
+      shortcut: <KbdCtrlLetter userAgent={navigator.userAgent} letter="W" />,
+      onSelect: onClose,
+    },
+    { type: 'separator' },
+    { label: 'Close Others', disabled: totalTabs <= 1, onSelect: onCloseOthers },
+    {
+      label: 'Close to the Right',
+      disabled: currentTabIndex >= totalTabs - 1,
+      onSelect: onCloseToTheRight,
+    },
+    { type: 'separator' },
+    { label: 'Close All', disabled: totalTabs === 0, onSelect: onCloseAll },
+  ]
+
   useEffect(() => {
     if (!isVisible && isActive && ref.current) {
       ref.current.scrollIntoView({
@@ -225,57 +237,58 @@ function Tab({
         aria-pressed:z-10
       `}
     >
-      <ContextMenu open={contextMenuOpen} onOpenChange={setContextMenuOpen}>
-        <ContextMenuTrigger className="block h-full">
-          <button
-            data-mask
-            type="button"
-            aria-label={`${item.tab.schema}.${item.tab.table} tab`}
-            className={cn(
-              `
+      <AppContextMenu
+        open={contextMenuOpen}
+        onOpenChange={setContextMenuOpen}
+        className="block h-full"
+        items={items}
+      >
+        <button
+          data-mask
+          type="button"
+          aria-label={`${item.tab.schema}.${item.tab.table} tab`}
+          className={cn(
+            `
                 group relative flex h-full cursor-default items-center gap-1.5
                 border-r border-b pr-8 pl-3 text-sm whitespace-nowrap
                 text-muted-foreground transition-colors duration-100
                 hover:bg-background/50
               `,
-              isActive &&
-                `
+            isActive &&
+              `
                   border-b-transparent bg-background text-foreground
                   hover:bg-background
                 `,
-              item.tab.preview && 'italic',
-            )}
-            onDoubleClick={() => addTab(connectionResource.id, item.tab.schema, item.tab.table)}
-            onMouseOver={prefetch}
-            onFocus={prefetch}
-            onClick={() =>
-              router.navigate({
-                to: '/connection/$resourceId/table',
-                params: { resourceId: connectionResource.id },
-                search: { schema: item.tab.schema, table: item.tab.table },
-              })
-            }
-          >
-            <RiTableLine
-              className={cn(
-                'size-3.5 shrink-0 text-muted-foreground/60',
-                isActive && 'text-primary',
-              )}
-            />
-            <span>
-              {showSchema && <span className="text-muted-foreground">{item.tab.schema}.</span>}
-              {item.tab.table}
-            </span>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  // span, not button — tabs are buttons themselves and interactive
-                  // elements can't nest
-                  <span
-                    role="button"
-                    tabIndex={-1}
-                    aria-label="Close tab"
-                    className={`
+            item.tab.preview && 'italic',
+          )}
+          onDoubleClick={() => addTab(connectionResource.id, item.tab.schema, item.tab.table)}
+          onMouseOver={prefetch}
+          onFocus={prefetch}
+          onClick={() =>
+            router.navigate({
+              to: '/connection/$resourceId/table',
+              params: { resourceId: connectionResource.id },
+              search: { schema: item.tab.schema, table: item.tab.table },
+            })
+          }
+        >
+          <RiTableLine
+            className={cn('size-3.5 shrink-0 text-muted-foreground/60', isActive && 'text-primary')}
+          />
+          <span>
+            {showSchema && <span className="text-muted-foreground">{item.tab.schema}.</span>}
+            {item.tab.table}
+          </span>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                // span, not button — tabs are buttons themselves and interactive
+                // elements can't nest
+                <span
+                  role="button"
+                  tabIndex={-1}
+                  aria-label="Close tab"
+                  className={`
                       absolute right-2 flex size-4 items-center justify-center
                       rounded-sm text-muted-foreground opacity-0
                       transition-opacity duration-100
@@ -283,46 +296,26 @@ function Tab({
                       hover:bg-foreground/10 hover:text-foreground
                       hover:opacity-100!
                     `}
-                    onClick={e => {
+                  onClick={e => {
+                    e.stopPropagation()
+                    onClose()
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
                       e.stopPropagation()
                       onClose()
-                    }}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        onClose()
-                      }
-                    }}
-                  />
-                }
-              >
-                <RiCloseLine className="size-3.5" />
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Close tab</TooltipContent>
-            </Tooltip>
-          </button>
-        </ContextMenuTrigger>
-        <ContextMenuContent>
-          <ContextMenuItem onClick={onClose}>
-            Close
-            <ContextMenuShortcut>
-              <KbdCtrlLetter userAgent={navigator.userAgent} letter="W" />
-            </ContextMenuShortcut>
-          </ContextMenuItem>
-          <ContextMenuSeparator />
-          <ContextMenuItem onClick={onCloseOthers} disabled={totalTabs <= 1}>
-            Close Others
-          </ContextMenuItem>
-          <ContextMenuItem onClick={onCloseToTheRight} disabled={currentTabIndex >= totalTabs - 1}>
-            Close to the Right
-          </ContextMenuItem>
-          <ContextMenuSeparator />
-          <ContextMenuItem onClick={onCloseAll} disabled={totalTabs === 0}>
-            Close All
-          </ContextMenuItem>
-        </ContextMenuContent>
-      </ContextMenu>
+                    }
+                  }}
+                />
+              }
+            >
+              <RiCloseLine className="size-3.5" />
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Close tab</TooltipContent>
+          </Tooltip>
+        </button>
+      </AppContextMenu>
     </Reorder.Item>
   )
 }

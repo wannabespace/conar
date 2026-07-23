@@ -2,24 +2,13 @@ import type { Filter } from '@tamery/shared/filters'
 import { cellToFilterValues, FILTER_GROUPS, SQL_FILTERS_GROUPED } from '@tamery/shared/filters'
 import { formatValueForPlainCell, recordToMarkdownTable, toCSV } from '@tamery/shared/utils/files'
 import { useTableContext } from '@tamery/table/hooks'
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuGroup,
-  ContextMenuItem,
-  ContextMenuLabel,
-  ContextMenuRadioGroup,
-  ContextMenuRadioItem,
-  ContextMenuSeparator,
-  ContextMenuSub,
-  ContextMenuSubContent,
-  ContextMenuSubTrigger,
-  ContextMenuTrigger,
-} from '@tamery/ui/components/context-menu'
 import { copy } from '@tamery/ui/lib/copy'
 import type { CSSProperties, ReactNode } from 'react'
-import { Fragment, useMemo } from 'react'
+import { useMemo } from 'react'
 import { toast } from 'sonner'
+
+import type { AppMenuNode } from '~/components/app-context-menu'
+import { AppContextMenu } from '~/components/app-context-menu'
 
 import { useCellContext } from './cell-context'
 import { INTERNAL_COLUMN_IDS } from './utils'
@@ -52,131 +41,151 @@ export function TableCellContextMenu({
   )
   const rowCopyDisabled = columnKeys.length === 0
 
+  const items = useMemo<AppMenuNode[]>(() => {
+    const nodes: AppMenuNode[] = [
+      {
+        type: 'group',
+        label: 'Cell',
+        items: [
+          {
+            label: 'Copy value',
+            onSelect: () => copy(formatValueForPlainCell(value), 'Cell value copied'),
+          },
+          ...(onSetNull
+            ? [{ label: 'Set null', onSelect: onSetNull, disabled: value === null } as const]
+            : []),
+        ],
+      },
+    ]
+
+    if (onRename || onAddFilter || onOrder) {
+      const columnItems: AppMenuNode[] = []
+
+      if (onRename) {
+        columnItems.push({ label: 'Rename', onSelect: onRename })
+      }
+
+      if (onAddFilter) {
+        const filterItems: AppMenuNode[] = []
+        SQL_FILTERS_GROUPED.forEach(({ group, filters }, index) => {
+          if (index > 0) filterItems.push({ type: 'separator' })
+          filterItems.push({ type: 'label', label: FILTER_GROUPS[group] })
+          for (const filter of filters) {
+            filterItems.push({
+              label: filter.label,
+              nativeLabel: `${filter.label} (${filter.operator})`,
+              disabled: isDisabledFilter(filter, value),
+              trailing: (
+                <span className="ml-auto pl-2 text-xs text-muted-foreground">
+                  {filter.operator}
+                </span>
+              ),
+              onSelect: () => {
+                onAddFilter({
+                  column: column.id,
+                  ref: filter,
+                  values: cellToFilterValues(filter, value),
+                })
+                toast.success('Filter added')
+              },
+            })
+          }
+        })
+        columnItems.push({ type: 'sub', label: 'Add filter', items: filterItems })
+      }
+
+      if (onOrder) {
+        columnItems.push({
+          type: 'sub',
+          label: 'Sort',
+          items: [
+            {
+              type: 'radio',
+              value: order ?? 'default',
+              onValueChange: value => {
+                onOrder(value === 'default' ? null : (value as 'ASC' | 'DESC'))
+              },
+              options: [
+                { value: 'default', label: 'None' },
+                { value: 'ASC', label: 'Ascending' },
+                { value: 'DESC', label: 'Descending' },
+              ],
+            },
+          ],
+        })
+      }
+
+      nodes.push({ type: 'separator' })
+      nodes.push({ type: 'group', label: 'Column', items: columnItems })
+    }
+
+    nodes.push({ type: 'separator' })
+    nodes.push({
+      type: 'group',
+      label: 'Row',
+      items: [
+        {
+          type: 'sub',
+          label: 'Copy as',
+          disabled: rowCopyDisabled,
+          items: [
+            {
+              label: 'JSON',
+              disabled: rowCopyDisabled,
+              onSelect: () => copy(JSON.stringify(row, null, 2), 'Row copied as JSON'),
+            },
+            {
+              label: 'CSV',
+              disabled: rowCopyDisabled,
+              onSelect: () =>
+                copy(
+                  toCSV(
+                    columnKeys.map(key => ({ key })),
+                    [row],
+                  ),
+                  'Row copied as CSV',
+                ),
+            },
+            {
+              label: 'Markdown table',
+              disabled: rowCopyDisabled,
+              onSelect: () =>
+                copy(
+                  recordToMarkdownTable(
+                    row,
+                    columnKeys.map(key => ({ key })),
+                  ),
+                  'Row copied as Markdown table',
+                ),
+            },
+          ],
+        },
+      ],
+    })
+
+    return nodes
+  }, [
+    value,
+    column,
+    row,
+    columnKeys,
+    rowCopyDisabled,
+    onAddFilter,
+    onOrder,
+    order,
+    onRename,
+    onSetNull,
+  ])
+
   return (
-    <ContextMenu open={open} onOpenChange={onOpenChange}>
-      <ContextMenuTrigger className="flex h-full min-h-0 min-w-0 shrink-0" style={style}>
-        {children}
-      </ContextMenuTrigger>
-      <ContextMenuContent>
-        <ContextMenuGroup>
-          <ContextMenuLabel>Cell</ContextMenuLabel>
-          <ContextMenuItem
-            onClick={() => {
-              copy(formatValueForPlainCell(value), 'Cell value copied')
-            }}
-          >
-            Copy value
-          </ContextMenuItem>
-          {onSetNull && (
-            <ContextMenuItem onClick={onSetNull} disabled={value === null}>
-              Set null
-            </ContextMenuItem>
-          )}
-        </ContextMenuGroup>
-        {(onRename || onAddFilter || onOrder) && (
-          <>
-            <ContextMenuSeparator />
-            <ContextMenuGroup>
-              <ContextMenuLabel>Column</ContextMenuLabel>
-              {onRename && <ContextMenuItem onClick={onRename}>Rename</ContextMenuItem>}
-              {onAddFilter && (
-                <ContextMenuSub>
-                  <ContextMenuSubTrigger>Add filter</ContextMenuSubTrigger>
-                  <ContextMenuSubContent>
-                    {SQL_FILTERS_GROUPED.map(({ group, filters }, index) => (
-                      <Fragment key={group}>
-                        {index > 0 && <ContextMenuSeparator />}
-                        <ContextMenuLabel>{FILTER_GROUPS[group]}</ContextMenuLabel>
-                        {filters.map(filter => (
-                          <ContextMenuItem
-                            key={filter.operator}
-                            disabled={isDisabledFilter(filter, value)}
-                            onClick={() => {
-                              onAddFilter({
-                                column: column.id,
-                                ref: filter,
-                                values: cellToFilterValues(filter, value),
-                              })
-                              toast.success('Filter added')
-                            }}
-                          >
-                            {filter.label}
-                            <span className="ml-auto pl-2 text-xs text-muted-foreground">
-                              {filter.operator}
-                            </span>
-                          </ContextMenuItem>
-                        ))}
-                      </Fragment>
-                    ))}
-                  </ContextMenuSubContent>
-                </ContextMenuSub>
-              )}
-              {onOrder && (
-                <ContextMenuSub>
-                  <ContextMenuSubTrigger>Sort</ContextMenuSubTrigger>
-                  <ContextMenuSubContent>
-                    <ContextMenuRadioGroup
-                      value={order ?? 'default'}
-                      onValueChange={value => {
-                        onOrder(value === 'default' ? null : (value as 'ASC' | 'DESC'))
-                      }}
-                    >
-                      <ContextMenuRadioItem value="default">None</ContextMenuRadioItem>
-                      <ContextMenuRadioItem value="ASC">Ascending</ContextMenuRadioItem>
-                      <ContextMenuRadioItem value="DESC">Descending</ContextMenuRadioItem>
-                    </ContextMenuRadioGroup>
-                  </ContextMenuSubContent>
-                </ContextMenuSub>
-              )}
-            </ContextMenuGroup>
-          </>
-        )}
-        <ContextMenuSeparator />
-        <ContextMenuGroup>
-          <ContextMenuLabel>Row</ContextMenuLabel>
-          <ContextMenuSub>
-            <ContextMenuSubTrigger disabled={rowCopyDisabled}>Copy as</ContextMenuSubTrigger>
-            <ContextMenuSubContent>
-              <ContextMenuItem
-                disabled={rowCopyDisabled}
-                onClick={() => {
-                  copy(JSON.stringify(row, null, 2), 'Row copied as JSON')
-                }}
-              >
-                JSON
-              </ContextMenuItem>
-              <ContextMenuItem
-                disabled={rowCopyDisabled}
-                onClick={() => {
-                  copy(
-                    toCSV(
-                      columnKeys.map(key => ({ key })),
-                      [row],
-                    ),
-                    'Row copied as CSV',
-                  )
-                }}
-              >
-                CSV
-              </ContextMenuItem>
-              <ContextMenuItem
-                disabled={rowCopyDisabled}
-                onClick={() => {
-                  copy(
-                    recordToMarkdownTable(
-                      row,
-                      columnKeys.map(key => ({ key })),
-                    ),
-                    'Row copied as Markdown table',
-                  )
-                }}
-              >
-                Markdown table
-              </ContextMenuItem>
-            </ContextMenuSubContent>
-          </ContextMenuSub>
-        </ContextMenuGroup>
-      </ContextMenuContent>
-    </ContextMenu>
+    <AppContextMenu
+      open={open}
+      onOpenChange={onOpenChange}
+      className="flex h-full min-h-0 min-w-0 shrink-0"
+      style={style}
+      items={items}
+    >
+      {children}
+    </AppContextMenu>
   )
 }

@@ -12,13 +12,6 @@ import {
   RiUnpinLine,
 } from '@remixicon/react'
 import { CONNECTION_TYPES_WITHOUT_SCHEMAS } from '@tamery/shared/constants'
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-} from '@tamery/ui/components/context-menu'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { Indicator } from '@tamery/ui/components/custom/indicator'
 import { Separator } from '@tamery/ui/components/separator'
@@ -33,6 +26,8 @@ import type { ComponentRef } from 'react'
 import { useEffect, useEffectEvent, useMemo, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import type { AppMenuNode } from '~/components/app-context-menu'
+import { AppContextMenu } from '~/components/app-context-menu'
 import type { tablesAndSchemasType } from '~/entities/connection/queries'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import {
@@ -149,13 +144,43 @@ function TableRow({
   })
   const hasDrafts = useSubscription(store, { selector: state => state.drafts.length > 0 })
 
+  const items: AppMenuNode[] = [
+    {
+      label: 'Copy Name',
+      icon: <RiFileCopyLine className="size-4" />,
+      onSelect: () => copyToClipboard(row.table.name, 'Table name copied'),
+    },
+    {
+      label: row.pinned ? 'Unpin' : 'Pin',
+      icon: row.pinned ? (
+        <RiPushpinFill className="size-4" />
+      ) : (
+        <RiPushpinLine className="size-4" />
+      ),
+      onSelect: () => togglePinTable(connectionResource.id, row.schema, row.table.name),
+    },
+    { type: 'separator' },
+    {
+      label: 'Rename',
+      icon: <RiEditLine className="size-4" />,
+      disabled: isReadOnly,
+      onSelect: onRename,
+    },
+    {
+      label: 'Drop',
+      icon: <RiDeleteBin7Line className="size-4" />,
+      variant: 'destructive',
+      disabled: isReadOnly,
+      onSelect: onDrop,
+    },
+  ]
+
   return (
-    <ContextMenu>
-      <ContextMenuTrigger className="block h-full">
-        <SidebarMenuButton
-          isActive={isActive}
-          className={cn(
-            `
+    <AppContextMenu items={items} className="block h-full" contentProps={{ className: 'min-w-48' }}>
+      <SidebarMenuButton
+        isActive={isActive}
+        className={cn(
+          `
               h-7 cursor-default rounded-md pl-2 text-sm font-[450]
               text-foreground
               hover:text-foreground data-active:bg-primary
@@ -163,107 +188,85 @@ function TableRow({
               data-active:text-primary-foreground hover:data-active:bg-primary
               hover:data-active:text-primary-foreground
             `,
-            row.pinned && 'pr-8',
+          row.pinned && 'pr-8',
+        )}
+        render={
+          <Link
+            to="/connection/$resourceId/table"
+            params={{ resourceId: connectionResource.id }}
+            search={{ schema: row.schema, table: row.table.name }}
+            preload="intent"
+            preloadDelay={200}
+            data-mask
+            onDoubleClick={() => addTab(connectionResource.id, row.schema, row.table.name)}
+          />
+        }
+      >
+        <span className="relative shrink-0" title={tableTypeLabel[row.table.type]}>
+          <Icon
+            className={cn('size-4', isActive ? 'text-primary-foreground' : 'text-primary/75')}
+          />
+          {hasDrafts && (
+            <Indicator
+              className={cn('-top-0.5 -right-0.5 size-1.5', isActive && 'bg-primary-foreground')}
+            />
           )}
+        </span>
+        <span
+          className={cn(
+            'min-w-0 flex-1 truncate',
+            !row.pinned &&
+              `
+                group-hover/menu-item:mask-[linear-gradient(to_right,#000_calc(100%-3.5rem),transparent_calc(100%-1.25rem))]
+              `,
+          )}
+        >
+          <HighlightText text={row.table.name} match={search} />
+        </span>
+      </SidebarMenuButton>
+      <Tooltip>
+        <TooltipTrigger
           render={
-            <Link
-              to="/connection/$resourceId/table"
-              params={{ resourceId: connectionResource.id }}
-              search={{ schema: row.schema, table: row.table.name }}
-              preload="intent"
-              preloadDelay={200}
-              data-mask
-              onDoubleClick={() => addTab(connectionResource.id, row.schema, row.table.name)}
+            <SidebarMenuAction
+              showOnHover={!row.pinned}
+              aria-label={row.pinned ? 'Unpin table' : 'Pin table'}
+              className={cn(
+                'group/pin top-1! rounded-md hover:bg-foreground/10',
+                isActive && 'hover:bg-primary-foreground/20',
+              )}
+              onClick={() => togglePinTable(connectionResource.id, row.schema, row.table.name)}
             />
           }
         >
-          <span className="relative shrink-0" title={tableTypeLabel[row.table.type]}>
-            <Icon
-              className={cn('size-4', isActive ? 'text-primary-foreground' : 'text-primary/75')}
+          {row.pinned ? (
+            <>
+              <RiPushpinFill
+                className={cn(
+                  'size-3! group-hover/pin:hidden',
+                  isActive ? 'text-primary-foreground' : 'text-primary',
+                )}
+              />
+              <RiUnpinLine
+                className={cn(
+                  'hidden size-3! group-hover/pin:block',
+                  isActive ? 'text-primary-foreground' : 'text-foreground',
+                )}
+              />
+            </>
+          ) : (
+            <RiPushpinLine
+              className={cn(
+                'size-3!',
+                isActive
+                  ? 'text-primary-foreground/80 group-hover/pin:text-primary-foreground'
+                  : 'text-muted-foreground group-hover/pin:text-foreground',
+              )}
             />
-            {hasDrafts && (
-              <Indicator
-                className={cn('-top-0.5 -right-0.5 size-1.5', isActive && 'bg-primary-foreground')}
-              />
-            )}
-          </span>
-          <span
-            className={cn(
-              'min-w-0 flex-1 truncate',
-              !row.pinned &&
-                `
-                group-hover/menu-item:mask-[linear-gradient(to_right,#000_calc(100%-3.5rem),transparent_calc(100%-1.25rem))]
-              `,
-            )}
-          >
-            <HighlightText text={row.table.name} match={search} />
-          </span>
-        </SidebarMenuButton>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <SidebarMenuAction
-                showOnHover={!row.pinned}
-                aria-label={row.pinned ? 'Unpin table' : 'Pin table'}
-                className={cn(
-                  'group/pin top-1! rounded-md hover:bg-foreground/10',
-                  isActive && 'hover:bg-primary-foreground/20',
-                )}
-                onClick={() => togglePinTable(connectionResource.id, row.schema, row.table.name)}
-              />
-            }
-          >
-            {row.pinned ? (
-              <>
-                <RiPushpinFill
-                  className={cn(
-                    'size-3! group-hover/pin:hidden',
-                    isActive ? 'text-primary-foreground' : 'text-primary',
-                  )}
-                />
-                <RiUnpinLine
-                  className={cn(
-                    'hidden size-3! group-hover/pin:block',
-                    isActive ? 'text-primary-foreground' : 'text-foreground',
-                  )}
-                />
-              </>
-            ) : (
-              <RiPushpinLine
-                className={cn(
-                  'size-3!',
-                  isActive
-                    ? 'text-primary-foreground/80 group-hover/pin:text-primary-foreground'
-                    : 'text-muted-foreground group-hover/pin:text-foreground',
-                )}
-              />
-            )}
-          </TooltipTrigger>
-          <TooltipContent side="right">{row.pinned ? 'Unpin' : 'Pin'}</TooltipContent>
-        </Tooltip>
-      </ContextMenuTrigger>
-      <ContextMenuContent className="min-w-48">
-        <ContextMenuItem onClick={() => copyToClipboard(row.table.name, 'Table name copied')}>
-          <RiFileCopyLine className="size-4" />
-          Copy Name
-        </ContextMenuItem>
-        <ContextMenuItem
-          onClick={() => togglePinTable(connectionResource.id, row.schema, row.table.name)}
-        >
-          {row.pinned ? <RiPushpinFill className="size-4" /> : <RiPushpinLine className="size-4" />}
-          {row.pinned ? 'Unpin' : 'Pin'}
-        </ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem disabled={isReadOnly} onClick={onRename}>
-          <RiEditLine className="size-4" />
-          Rename
-        </ContextMenuItem>
-        <ContextMenuItem disabled={isReadOnly} variant="destructive" onClick={onDrop}>
-          <RiDeleteBin7Line className="size-4" />
-          Drop
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+          )}
+        </TooltipTrigger>
+        <TooltipContent side="right">{row.pinned ? 'Unpin' : 'Pin'}</TooltipContent>
+      </Tooltip>
+    </AppContextMenu>
   )
 }
 
