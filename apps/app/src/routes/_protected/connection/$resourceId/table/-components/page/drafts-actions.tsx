@@ -254,8 +254,6 @@ export function DraftsActions({ table, schema }: { table: string; schema: string
 
   return (
     <>
-      {/* Inline cluster in the command bar's controls row — drafts state lives
-          next to everything else, no separate floating toolbar */}
       <AnimatePresence initial={false}>
         {drafts.length > 0 && (
           <motion.div
