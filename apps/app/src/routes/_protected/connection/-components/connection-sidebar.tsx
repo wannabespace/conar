@@ -13,10 +13,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/t
 import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import type { LinkProps } from '@tanstack/react-router'
-import { Link, useLocation, useMatches, useSearch } from '@tanstack/react-router'
+import { useLocation, useMatches, useSearch } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { Link } from '~/components/link'
 import { useCollections } from '~/entities/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 

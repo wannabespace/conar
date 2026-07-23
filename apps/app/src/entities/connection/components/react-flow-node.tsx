@@ -10,9 +10,10 @@ import {
 import { Button } from '@tamery/ui/components/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
-import { Link } from '@tanstack/react-router'
 import type { Edge, Node, NodeProps } from '@xyflow/react'
 import { Handle, Position } from '@xyflow/react'
+
+import { Link } from '~/components/link'
 
 import type { Column } from './table/cell'
 

@@ -1,7 +1,8 @@
 import { cn } from '@tamery/ui/lib/utils'
 import type { LinkProps } from '@tanstack/react-router'
-import { Link } from '@tanstack/react-router'
 import type { ComponentProps } from 'react'
+
+import { Link } from '~/components/link'
 
 const baseClasses = `
   flex h-7 w-full cursor-default items-center gap-2 rounded-md px-2 text-sm

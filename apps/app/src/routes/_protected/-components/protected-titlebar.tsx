@@ -21,11 +21,12 @@ import {
 } from '@tamery/ui/components/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { eq, useLiveQuery } from '@tanstack/react-db'
-import { Link, useNavigate, useParams } from '@tanstack/react-router'
+import { useNavigate, useParams } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
+import { Link } from '~/components/link'
 import { TitleBar } from '~/components/title-bar'
 import { UpdateButton } from '~/components/update-button'
 import { useCollections } from '~/entities/collections'
@@ -84,7 +85,7 @@ function ConnectionSubMenu({
         {resources.map(resource => (
           <DropdownMenuItem
             key={resource.id}
-            render={<ConnectionResourceLink resourceId={resource.id} />}
+            render={<ConnectionResourceLink resourceId={resource.id} activateOn="click" />}
           >
             <span data-mask className="truncate">
               {resource.name || CONNECTION_RESOURCE_ROOT_LABEL}
@@ -154,7 +155,7 @@ function ConnectionsDropdown({
           )
         })}
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link to="/create" />}>
+        <DropdownMenuItem render={<Link to="/create" activateOn="click" />}>
           <RiAddLine className="size-4 shrink-0" />
           Add new connection
         </DropdownMenuItem>
@@ -184,7 +185,7 @@ function ResourcesDropdown({
         {resources.map(resource => (
           <DropdownMenuItem
             key={resource.id}
-            render={<ConnectionResourceLink resourceId={resource.id} />}
+            render={<ConnectionResourceLink resourceId={resource.id} activateOn="click" />}
           >
             <span data-mask className="truncate">
               {resource.name || CONNECTION_RESOURCE_ROOT_LABEL}
