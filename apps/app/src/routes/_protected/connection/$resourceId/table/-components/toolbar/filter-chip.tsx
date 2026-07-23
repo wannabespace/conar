@@ -5,9 +5,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/t
 import { cn } from '@tamery/ui/lib/utils'
 import { useState } from 'react'
 
-import { FiltersColumnSelector } from '../filters/filters-column-selector'
-import { FiltersSelector } from '../filters/filters-selector'
-import { FilterValueSelector } from '../filters/filters-value-selector'
+import { FiltersColumnSelector } from './filters/filters-column-selector'
+import { FiltersOperatorSelector } from './filters/filters-operator-selector'
+import { FiltersValueSelector } from './filters/filters-value-selector'
 
 function ChipSegment({ className, ...props }: React.ComponentProps<'button'>) {
   return (
@@ -109,7 +109,7 @@ export function FilterChip({
               **:data-[slot=popover-viewport]:p-0
             "
           >
-            <FiltersSelector
+            <FiltersOperatorSelector
               onSelect={operator => {
                 onEdit({ ...filter, ref: operator, values })
                 setIsOperatorOpen(false)
@@ -136,7 +136,7 @@ export function FilterChip({
                   **:data-[slot=popover-viewport]:p-0
                 "
               >
-                <FilterValueSelector
+                <FiltersValueSelector
                   column={filter.column}
                   operator={filter.ref.operator}
                   isArray={filter.ref.isArray ?? false}

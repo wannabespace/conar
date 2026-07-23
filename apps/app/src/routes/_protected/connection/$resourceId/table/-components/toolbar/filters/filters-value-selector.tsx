@@ -4,7 +4,7 @@ import { Command, CommandInput } from '@tamery/ui/components/command'
 import { Separator } from '@tamery/ui/components/separator'
 import type { RefObject } from 'react'
 
-export function FilterValueSelector({
+export function FiltersValueSelector({
   ref,
   column,
   operator,

@@ -48,8 +48,8 @@ import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { queryClient } from '~/main'
 
-import { tablePageStore } from '../../-lib/store'
-import { tablesSidebarOpenValue } from './constants'
+import { tablePageStore } from '../-lib/store'
+import { tablesSidebarOpenValue } from './sidebar/constants'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -117,7 +117,6 @@ function HistoryNav() {
   const router = useRouter()
   const canGoBack = useCanGoBack()
 
-  // Browser chrome already has back/forward — only the desktop app needs them
   if (!window.electron) return null
 
   return (

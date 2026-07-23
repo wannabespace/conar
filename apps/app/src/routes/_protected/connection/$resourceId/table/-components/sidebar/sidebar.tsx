@@ -23,14 +23,14 @@ import {
   tablesSidebarOpenValue,
   tablesSidebarWidthValue,
 } from './constants'
-import { TablesVirtualList } from './tables-virtual-list'
+import { TablesList } from './tables-list'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const resizeOverlay = document.createElement('div')
 resizeOverlay.className = 'cursor-col-resize size-full fixed top-0 left-0 z-1000'
 
-export function PageSidebar() {
+export function TablesSidebar() {
   const { connection, connectionResource } = useRouteContext()
   const isOpen = useSubscription(tablesSidebarOpenValue)
   const store = getConnectionResourceStore(connectionResource.id)
@@ -151,7 +151,7 @@ export function PageSidebar() {
             </TooltipContent>
           </Tooltip>
         </div>
-        <TablesVirtualList className="min-h-0 flex-1" search={search} />
+        <TablesList className="min-h-0 flex-1" search={search} />
       </div>
       {isOpen && (
         <div

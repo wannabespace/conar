@@ -43,8 +43,7 @@ import {
 } from '~/entities/connection/store'
 
 import { tablePageStore } from '../../-lib/store'
-import { DropTableDialog } from '../drop-table-dialog'
-import { RenameTableDialog } from '../rename-table-dialog'
+import { DropTableDialog } from './drop-table-dialog'
 import {
   SidebarContent,
   SidebarGroupLabel,
@@ -53,7 +52,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSkeleton,
-} from './sidebar-primitives'
+} from './primitives'
+import { RenameTableDialog } from './rename-table-dialog'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -267,7 +267,7 @@ function TableRow({
   )
 }
 
-export function TablesVirtualList({ className, search }: { className?: string; search?: string }) {
+export function TablesList({ className, search }: { className?: string; search?: string }) {
   const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, { selector: state => state.showSystem })

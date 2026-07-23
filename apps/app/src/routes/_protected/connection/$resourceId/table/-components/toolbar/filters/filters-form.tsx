@@ -1,10 +1,10 @@
 import type { ActiveFilter, Filter } from '@tamery/shared/filters'
 import { useEffect, useRef, useState } from 'react'
 
-import { useTableColumnsContext } from '../../-lib/columns'
+import { useTableColumnsContext } from '../../../-lib/columns'
 import { FiltersColumnSelector } from './filters-column-selector'
-import { FiltersSelector } from './filters-selector'
-import { FilterValueSelector } from './filters-value-selector'
+import { FiltersOperatorSelector } from './filters-operator-selector'
+import { FiltersValueSelector } from './filters-value-selector'
 
 export function FilterForm({ onAdd }: { onAdd: (filter: ActiveFilter) => void }) {
   const [selectedColumn, setSelectedColumn] = useState<string | null>(null)
@@ -42,7 +42,7 @@ export function FilterForm({ onAdd }: { onAdd: (filter: ActiveFilter) => void })
     <div>
       {!column && <FiltersColumnSelector onSelect={setSelectedColumn} />}
       {column && !selectedFilter && (
-        <FiltersSelector
+        <FiltersOperatorSelector
           ref={operatorRef}
           onSelect={handleFilterSelect}
           onBackspace={() => {
@@ -53,7 +53,7 @@ export function FilterForm({ onAdd }: { onAdd: (filter: ActiveFilter) => void })
         />
       )}
       {column && selectedFilter && (
-        <FilterValueSelector
+        <FiltersValueSelector
           ref={valueRef}
           column={column.id}
           operator={selectedFilter.operator}

@@ -35,7 +35,6 @@ import { FilterChip } from './filter-chip'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-// Guided add-filter flow: pick a column, then an operator, then type a value
 type Stage =
   | { step: 'idle' }
   | { step: 'operator'; column: string }

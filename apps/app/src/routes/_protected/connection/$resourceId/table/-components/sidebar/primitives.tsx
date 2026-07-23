@@ -4,12 +4,6 @@ import { Skeleton } from '@tamery/ui/components/skeleton'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
-// Minimal replacements for the shadcn sidebar parts the tables sidebar
-// actually used. The full kit component (fixed-position collapse variants,
-// mobile sheet, icon rail, cookie provider) never fit our chrome — the fold
-// here is a plain width collapse owned by PageSidebar, and the open state
-// lives in `tablesSidebarOpenValue` (constants.ts).
-
 export function SidebarContent({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div

@@ -11,7 +11,7 @@ import {
 } from '@tamery/ui/components/command'
 import type { RefObject } from 'react'
 
-export function FiltersSelector({
+export function FiltersOperatorSelector({
   ref,
   onSelect,
   onBackspace,

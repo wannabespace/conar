@@ -30,8 +30,8 @@ import {
   resourceIndexesQueryOptions,
 } from '~/entities/connection/queries'
 
-import { useTableColumnsContext } from '../../-lib/columns'
-import { useTablePageStore } from '../../-lib/store'
+import { useTableColumnsContext } from '../../../-lib/columns'
+import { useTablePageStore } from '../../../-lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 

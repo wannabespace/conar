@@ -10,7 +10,7 @@ import {
 } from '@tamery/ui/components/command'
 import type { RefObject } from 'react'
 
-import { useTableColumnsContext } from '../../-lib/columns'
+import { useTableColumnsContext } from '../../../-lib/columns'
 
 export function FiltersColumnSelector({
   ref,

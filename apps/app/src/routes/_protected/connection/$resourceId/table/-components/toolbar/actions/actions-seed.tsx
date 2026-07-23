@@ -79,15 +79,15 @@ import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 import { queryClient } from '~/main'
 import { setIsSubscriptionDialogOpen } from '~/store'
 
-import { useTableColumnsContext } from '../../-lib/columns'
-import { useTablePageStore } from '../../-lib/store'
+import { useTableColumnsContext } from '../../../-lib/columns'
+import { useTablePageStore } from '../../../-lib/store'
 import {
   DefaultValueTooltipIcon,
   NullableTooltipIcon,
   PrimaryKeyTooltipIcon,
   ReadOnlyTooltipIcon,
   UniqueTooltipIcon,
-} from '../table/table-header-cell'
+} from '../../table/table-header-cell'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 

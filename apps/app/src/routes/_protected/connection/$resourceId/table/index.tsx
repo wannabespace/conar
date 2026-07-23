@@ -14,8 +14,10 @@ import {
   prefetchConnectionResourceTableCore,
 } from '~/entities/connection/utils'
 
-import { PageSidebar, TabBar, TableToolbar } from './-components/page'
+import { TablesSidebar } from './-components/sidebar/sidebar'
+import { TabBar } from './-components/tab-bar'
 import { Table } from './-components/table/table'
+import { TableToolbar } from './-components/toolbar/toolbar'
 import { ColumnsContext, useTableColumnsQuery } from './-lib/columns'
 import { tablePageStore, TablePageStoreContext } from './-lib/store'
 
@@ -181,7 +183,7 @@ function DatabaseTablesPage() {
 
   return (
     <div className="flex h-full min-h-0 w-full">
-      <PageSidebar key={connectionResource.id} />
+      <TablesSidebar key={connectionResource.id} />
       <div
         className={`
           flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-xl border

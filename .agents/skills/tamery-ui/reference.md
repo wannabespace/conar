@@ -1,7 +1,7 @@
 # Reference implementations
 
 - Table page: `apps/app/src/routes/_protected/connection/$resourceId/table/index.tsx`
-- Command bar / filter field / tab bar / sidebar tree: `…/table/-components/page/`
+- Table page chrome: toolbar + filter field `…/table/-components/toolbar/`, sidebar tree `…/table/-components/sidebar/`, `…/table/-components/tab-bar.tsx`
 - Column header menu: `…/table/-components/table/table-header-cell.tsx`
 - Grouped list + context menu: `apps/app/src/routes/_protected/-components/connections-list.tsx`
 - Naked sidebar + pane layout: `…/$resourceId/definitions.tsx` + its `-components/sidebar.tsx`

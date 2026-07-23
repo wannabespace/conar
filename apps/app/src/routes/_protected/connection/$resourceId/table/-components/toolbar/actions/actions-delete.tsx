@@ -27,7 +27,7 @@ import {
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { queryClient } from '~/main'
 
-import { useTablePageStore } from '../../-lib/store'
+import { useTablePageStore } from '../../../-lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 

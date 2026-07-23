@@ -21,8 +21,8 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { useTableColumnsContext } from '../../-lib/columns'
-import { columnsOrder, useTablePageStore } from '../../-lib/store'
+import { useTableColumnsContext } from '../../../-lib/columns'
+import { columnsOrder, useTablePageStore } from '../../../-lib/store'
 
 function DirectionToggle({
   order,

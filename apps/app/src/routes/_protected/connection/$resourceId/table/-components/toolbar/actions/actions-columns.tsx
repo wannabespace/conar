@@ -13,8 +13,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/p
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { useSubscription } from 'seitu/react'
 
-import { useTableColumnsContext } from '../../-lib/columns'
-import { useTablePageStore } from '../../-lib/store'
+import { useTableColumnsContext } from '../../../-lib/columns'
+import { useTablePageStore } from '../../../-lib/store'
 
 export function ActionsColumns() {
   const store = useTablePageStore()
