@@ -1,12 +1,12 @@
 // oxlint-disable jsx-a11y/anchor-has-content, jsx-a11y/no-static-element-interactions
 import type { LinkComponent } from '@tanstack/react-router'
 import { createLink } from '@tanstack/react-router'
-import type { AnchorHTMLAttributes } from 'react'
+import type { ComponentProps } from 'react'
 import { forwardRef, useRef } from 'react'
 
 import { isPlainPress } from '~/lib/press-nav'
 
-interface PressAnchorProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
+interface PressAnchorProps extends ComponentProps<'a'> {
   activateOn?: 'press' | 'click'
 }
 
