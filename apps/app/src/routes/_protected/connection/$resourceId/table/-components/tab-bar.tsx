@@ -40,6 +40,7 @@ import {
 } from '~/entities/connection/store'
 import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
+import { pressNavProps } from '~/lib/press-nav'
 import { queryClient } from '~/main'
 
 import { tablePageStore } from '../-lib/store'
@@ -227,6 +228,13 @@ function Tab({
       query: getQueryOpts(connectionResource, item.tab.schema, item.tab.table),
     })
 
+  const goToTab = () =>
+    router.navigate({
+      to: '/connection/$resourceId/table',
+      params: { resourceId: connectionResource.id },
+      search: { schema: item.tab.schema, table: item.tab.table },
+    })
+
   return (
     <Reorder.Item
       value={item}
@@ -264,13 +272,7 @@ function Tab({
           onDoubleClick={() => addTab(connectionResource.id, item.tab.schema, item.tab.table)}
           onMouseOver={prefetch}
           onFocus={prefetch}
-          onClick={() =>
-            router.navigate({
-              to: '/connection/$resourceId/table',
-              params: { resourceId: connectionResource.id },
-              search: { schema: item.tab.schema, table: item.tab.table },
-            })
-          }
+          {...pressNavProps(goToTab)}
         >
           <RiTableLine
             className={cn('size-3.5 shrink-0 text-muted-foreground/60', isActive && 'text-primary')}
@@ -296,6 +298,7 @@ function Tab({
                       hover:bg-foreground/10 hover:text-foreground
                       hover:opacity-100!
                     `}
+                  onMouseDown={e => e.stopPropagation()}
                   onClick={e => {
                     e.stopPropagation()
                     onClose()

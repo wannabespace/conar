@@ -14,11 +14,12 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { useLiveQuery } from '@tanstack/react-db'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { getMonth, getWeek, getYear, isToday, isYesterday } from 'date-fns'
 import type { ComponentRef } from 'react'
 import { useRef } from 'react'
 
+import { Link } from '~/components/link'
 import type { Chat } from '~/entities/chat/sync'
 import { useCollections } from '~/entities/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
@@ -186,6 +187,7 @@ export function ChatHeader({ chatId }: { chatId: string }) {
                                 to="/connection/$resourceId/query"
                                 params={{ resourceId }}
                                 search={{ chatId: chat.id }}
+                                activateOn="click"
                                 className={cn(
                                   `
                                       flex items-center justify-between gap-2

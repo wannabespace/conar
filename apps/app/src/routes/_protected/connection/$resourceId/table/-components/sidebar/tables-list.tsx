@@ -19,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/t
 import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
-import { getRouteApi, Link, useSearch } from '@tanstack/react-router'
+import { getRouteApi, useSearch } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { motion } from 'motion/react'
 import type { ComponentRef } from 'react'
@@ -28,6 +28,7 @@ import { useSubscription } from 'seitu/react'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppContextMenu } from '~/components/app-context-menu'
+import { Link } from '~/components/link'
 import type { tablesAndSchemasType } from '~/entities/connection/queries'
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
 import {

@@ -5,8 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@tamery/ui/components/
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from '@tanstack/react-router'
 
+import { Link } from '~/components/link'
 import { Monaco } from '~/components/monaco'
 import { toggleChat } from '~/entities/connection/store'
 import { useSubscription } from '~/entities/user/hooks/use-subscription'
