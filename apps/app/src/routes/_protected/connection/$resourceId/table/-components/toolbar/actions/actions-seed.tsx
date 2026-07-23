@@ -186,15 +186,21 @@ export function ActionsSeed({
   table,
   schema,
   trigger,
+  open: openProp,
+  onOpenChange,
 }: {
   table: string
   schema: string
   trigger?: React.ReactElement
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }) {
   const { columns } = useTableColumnsContext()
   const { connection, connectionResource } = useRouteContext()
   const allGenerators = getGenerators(connection.type)
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = openProp ?? internalOpen
+  const setOpen = (next: boolean) => (onOpenChange ? onOpenChange(next) : setInternalOpen(next))
   const store = useTablePageStore()
   const seedsCount = useSubscription(store, { selector: state => state.seedsCount })
   const generators = useSubscription(store, { selector: state => state.generators })
@@ -331,7 +337,7 @@ export function ActionsSeed({
     <Drawer open={open} onOpenChange={handleOpenChange} swipeDirection="right">
       {trigger ? (
         <DrawerTrigger render={trigger} />
-      ) : (
+      ) : openProp !== undefined ? null : (
         <Tooltip>
           <TooltipTrigger
             render={

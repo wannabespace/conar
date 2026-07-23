@@ -230,7 +230,17 @@ function CopyDialogEditor({
   )
 }
 
-export function ActionsCopy({ table, trigger }: { table: string; trigger?: React.ReactElement }) {
+export function ActionsCopy({
+  table,
+  trigger,
+  open,
+  onOpenChange,
+}: {
+  table: string
+  trigger?: React.ReactElement
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}) {
   const { connection, connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const filters = useSubscription(store, { selector: state => state.filters })
@@ -267,10 +277,10 @@ export function ActionsCopy({ table, trigger }: { table: string; trigger?: React
   }, [activeFormat, table, columns, filters, enums, indexes, connection.type])
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger ? (
         <DialogTrigger render={trigger} />
-      ) : (
+      ) : open === undefined ? (
         <Tooltip>
           <TooltipTrigger
             render={<DialogTrigger render={<Button variant="secondary" size="icon" />} />}
@@ -279,7 +289,7 @@ export function ActionsCopy({ table, trigger }: { table: string; trigger?: React
           </TooltipTrigger>
           <TooltipContent side="top">Copy schema / query</TooltipContent>
         </Tooltip>
-      )}
+      ) : null}
       <DialogContent
         className={cn(
           `

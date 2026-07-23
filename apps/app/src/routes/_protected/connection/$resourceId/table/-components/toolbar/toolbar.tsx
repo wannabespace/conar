@@ -1,7 +1,6 @@
 import NumberFlow from '@number-flow/react'
 import {
   RiCodeSSlashLine,
-  RiDownloadLine,
   RiLayoutColumnLine,
   RiMenuLine,
   RiMoreLine,
@@ -10,15 +9,20 @@ import {
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { enabledFilters } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
-import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@tamery/ui/components/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
+import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { ExportData } from '~/components/export-data'
+import { ExportDataMenu } from '~/components/export-data'
 import {
   resourceRowsQuery,
   resourceRowsQueryInfiniteOptions,
@@ -40,20 +44,11 @@ import { FilterSearchBar } from './filter-search-bar'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-function OverflowButton({ className, ...props }: React.ComponentProps<typeof Button>) {
-  return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className={cn('justify-start font-normal', className)}
-      {...props}
-    />
-  )
-}
-
 export function TableToolbar({ table, schema }: { table: string; schema: string }) {
   const { connectionResource } = useRouteContext()
   const store = useTablePageStore()
+  const [seedOpen, setSeedOpen] = useState(false)
+  const [codeOpen, setCodeOpen] = useState(false)
   const connectionStore = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(connectionStore, { selector: state => state.showSystem })
   const { data: tablesAndSchemas } = useQuery(
@@ -208,58 +203,42 @@ export function TableToolbar({ table, schema }: { table: string; schema: string 
       <div className="flex shrink-0 items-center gap-1">
         <ActionsColumns />
         <ActionsOrder />
-        <Popover>
+        <DropdownMenu>
           <Tooltip>
             <TooltipTrigger
-              render={<PopoverTrigger render={<Button variant="outline" size="icon" />} />}
+              render={<DropdownMenuTrigger render={<Button variant="outline" size="icon" />} />}
             >
               <RiMoreLine />
             </TooltipTrigger>
             <TooltipContent side="top">More actions</TooltipContent>
           </Tooltip>
-          <PopoverContent
-            side="top"
-            align="end"
-            className="w-44 gap-0 p-1 **:data-[slot=popover-viewport]:p-0"
-          >
+          <DropdownMenuContent side="top" align="end" className="min-w-44">
             {tableType === 'table' && (
-              <ActionsSeed
-                table={table}
-                schema={schema}
-                trigger={
-                  <OverflowButton>
-                    <RiSeedlingLine className="size-4 text-muted-foreground" />
-                    Seed data
-                  </OverflowButton>
-                }
-              />
+              <DropdownMenuItem onClick={() => setSeedOpen(true)}>
+                <RiSeedlingLine />
+                Seed data
+              </DropdownMenuItem>
             )}
-            <ExportData
+            <ExportDataMenu
               selected={selected}
               filename={`${schema}_${table}`}
               getData={getData}
-              trigger={({ isExporting }) => (
-                <OverflowButton disabled={isExporting || rows?.length === 0 || isPending}>
-                  <LoadingContent loading={isExporting} className="size-4">
-                    <RiDownloadLine className="size-4 text-muted-foreground" />
-                  </LoadingContent>
-                  Download
-                </OverflowButton>
-              )}
+              disabled={rows?.length === 0 || isPending}
             />
             {tableType === 'table' && (
-              <ActionsCopy
-                table={table}
-                trigger={
-                  <OverflowButton>
-                    <RiCodeSSlashLine className="size-4 text-muted-foreground" />
-                    Code
-                  </OverflowButton>
-                }
-              />
+              <DropdownMenuItem onClick={() => setCodeOpen(true)}>
+                <RiCodeSSlashLine />
+                Code
+              </DropdownMenuItem>
             )}
-          </PopoverContent>
-        </Popover>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {tableType === 'table' && (
+          <ActionsSeed table={table} schema={schema} open={seedOpen} onOpenChange={setSeedOpen} />
+        )}
+        {tableType === 'table' && (
+          <ActionsCopy table={table} open={codeOpen} onOpenChange={setCodeOpen} />
+        )}
       </div>
     </div>
   )
