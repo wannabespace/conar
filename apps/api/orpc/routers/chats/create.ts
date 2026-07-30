@@ -21,6 +21,7 @@ export const create = orpc
           activeStreamId: null,
         })),
       )
+      .onConflictDoNothing()
       .returning()
 
     for (const chat of inserted) {
