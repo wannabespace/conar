@@ -26,7 +26,7 @@ export const create = orpc
       })
     }
 
-    const inserted = await db.insert(chatsMessages).values(input).returning()
+    const inserted = await db.insert(chatsMessages).values(input).onConflictDoNothing().returning()
 
     for (const message of inserted) {
       publisher.publish(context.user.id, {
