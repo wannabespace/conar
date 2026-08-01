@@ -12,17 +12,26 @@ export const create = orpc
   .use(subscriptionMiddleware)
   .input(type.or(schema, schema.array()).pipe(data => (Array.isArray(data) ? data : [data])))
   .handler(async ({ context, input }) => {
-    const inserted = await db
-      .insert(chats)
-      .values(
-        input.map(item => ({
-          ...item,
-          userId: context.user.id,
-          activeStreamId: null,
-        })),
+    const inserted = (
+      await db.transaction(tx =>
+        Promise.all(
+          input.map(item =>
+            tx
+              .insert(chats)
+              .values({
+                ...item,
+                userId: context.user.id,
+                activeStreamId: null,
+              })
+              .onConflictDoUpdate({
+                target: chats.id,
+                set: item,
+              })
+              .returning(),
+          ),
+        ),
       )
-      .onConflictDoNothing()
-      .returning()
+    ).flat()
 
     for (const chat of inserted) {
       publisher.publish(context.user.id, {

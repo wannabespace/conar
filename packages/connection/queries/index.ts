@@ -31,11 +31,11 @@ export function handleQueryError<T extends AnyFunction>(fn: T): T {
     try {
       return await handleAggregateError(fn)(...args)
     } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(uppercaseFirst(replaceErrorPrefix(error.message)), { cause: error })
+      if (!(error instanceof Error)) {
+        throw error
       }
 
-      throw error
+      throw new Error(uppercaseFirst(replaceErrorPrefix(error.message)), { cause: error })
     }
   }) as T
 }

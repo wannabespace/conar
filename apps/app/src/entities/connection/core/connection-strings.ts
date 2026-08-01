@@ -30,6 +30,8 @@ async function decryptConnectionString(encryptedConnectionString: string) {
   return decryptWithKey(await encryptionKey.get(), encryptedConnectionString)
 }
 
+// type alias required: interface lacks the implicit index signature TanStack DB needs
+// oxlint-disable-next-line typescript/consistent-type-definitions
 type ConnectionStringsUtils = {
   decrypt: (connectionId: string) => Promise<string>
   prepare: (

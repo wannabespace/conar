@@ -1,10 +1,8 @@
-import { oxlintConfig, tailwindPlugin } from '@letstri/oxc-config'
+import { config } from '@letstri/oxlint-config'
+import { tailwindConfig } from '@letstri/oxlint-config/tailwind'
 
-export default oxlintConfig(
-  {
-    plugins: ['react', 'jsx-a11y'],
-  },
-  tailwindPlugin({
+export default config(
+  tailwindConfig({
     entryPoint: 'packages/ui/src/styles/globals.css',
     ignoreClasses: [
       'toaster',
@@ -28,4 +26,21 @@ export default oxlintConfig(
       'focus-visible:ring-fd-ring',
     ],
   }),
+  {
+    plugins: ['react', 'jsx-a11y'],
+    overrides: [
+      {
+        files: ['**/e2e/**'],
+        rules: {
+          'react/rules-of-hooks': 'off',
+        },
+      },
+      {
+        files: ['**/src/routes/**'],
+        rules: {
+          'react/only-export-components': 'off',
+        },
+      },
+    ],
+  },
 )

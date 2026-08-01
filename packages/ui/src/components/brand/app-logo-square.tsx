@@ -2,6 +2,7 @@ import { motion } from 'motion/react'
 import type { ComponentProps } from 'react'
 import { useId } from 'react'
 
+// oxlint-disable-next-line react/only-export-components
 export const AppLogoSquareMotion = motion.create(AppLogoSquare)
 
 export function AppLogoSquare(props: ComponentProps<'svg'>) {
