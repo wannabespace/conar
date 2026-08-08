@@ -1,3 +1,4 @@
+import { RiAlertLine } from '@remixicon/react'
 import { CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { enabledFilters } from '@tamery/shared/filters'
@@ -5,10 +6,13 @@ import type { ColumnRenderer, TableCellProps } from '@tamery/table'
 import { Table, TableBody, TableProvider } from '@tamery/table'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 import { useShiftSelectionKeyDown, useTableContext } from '@tamery/table/hooks'
+import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
+import { cn } from '@tamery/ui/lib/utils'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
+import { motion } from 'motion/react'
 import type { ComponentRef } from 'react'
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import {
@@ -39,21 +43,90 @@ import { TableBodySkeleton, TableHeaderSkeleton } from './table-skeleton'
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export function TableError({ error }: { error: Error }) {
+  const [showDetails, setShowDetails] = useState(false)
+
+  const summary = error.message.split('\n')[0]
+  const cause =
+    error.cause && !String(error.cause).includes(error.message) ? String(error.cause) : null
+  const details = [error.message, cause].filter(Boolean).join('\n\n')
+  const hasDetails = details !== summary
+
   return (
     <div
-      className={`
-      pointer-events-none sticky left-0 flex h-full items-center justify-center
-      pb-10
-    `}
+      className="
+        pointer-events-none sticky left-0 flex h-full items-center
+        justify-center overflow-hidden p-6 pb-16
+      "
     >
-      <div
-        className={`
-        flex max-w-md flex-col items-center rounded-lg border bg-card p-4
-      `}
+      <motion.div
+        initial={{ opacity: 0, y: 6, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+        className="
+          pointer-events-auto relative flex w-full max-w-lg flex-col
+          items-center
+        "
       >
-        <div className="mb-1 text-destructive">Error occurred</div>
-        <p className="text-center font-mono text-sm text-muted-foreground">{error.message}</p>
-      </div>
+        <div
+          className="
+            mb-5 flex size-14 items-center justify-center rounded-2xl border
+            border-destructive/10 bg-destructive/10
+          "
+        >
+          <RiAlertLine className="size-7 text-destructive" />
+        </div>
+
+        <h2 className="text-base font-semibold tracking-tight">Query failed</h2>
+        <p className="mt-1.5 text-center text-sm text-muted-foreground">
+          Check your filters and try again.
+        </p>
+
+        <p
+          data-mask
+          className="
+            mt-4 max-w-md text-center font-mono text-2xs leading-relaxed
+            text-muted-foreground/70
+          "
+        >
+          {summary}
+        </p>
+
+        {hasDetails && (
+          <button
+            type="button"
+            className="
+              mt-5 cursor-default rounded-md px-1.5 py-0.5 text-xs
+              text-muted-foreground/70 outline-none
+              hover:text-foreground
+              focus-visible:text-foreground
+            "
+            onClick={() => setShowDetails(prev => !prev)}
+          >
+            {showDetails ? 'Hide details' : 'Show details'}
+          </button>
+        )}
+
+        {hasDetails && (
+          <div
+            className={cn(
+              'grid w-full transition-[grid-template-rows] duration-200',
+              showDetails ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+            )}
+          >
+            <div className="min-h-0 overflow-hidden">
+              <ScrollArea
+                data-mask
+                className="
+                  mt-4 max-h-56 border-t pt-4 text-left font-mono text-2xs
+                  leading-relaxed whitespace-pre-wrap text-muted-foreground/80
+                "
+              >
+                {details}
+              </ScrollArea>
+            </div>
+          </div>
+        )}
+      </motion.div>
     </div>
   )
 }

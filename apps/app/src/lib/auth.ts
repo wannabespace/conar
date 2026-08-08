@@ -1,5 +1,6 @@
 import { tryCatchAsync } from '@tamery/shared/utils/helpers'
 import { type } from 'arktype'
+import { organizationClient } from 'better-auth/client/plugins'
 import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { createWebStorageValue } from 'seitu/web'
@@ -36,7 +37,7 @@ export function successAuthToast(newUser: boolean) {
 export const authClient = createAuthClient({
   baseURL: apiUrl,
   basePath: '/auth',
-  plugins: window.electron ? [bearer()] : [],
+  plugins: [organizationClient(), ...(window.electron ? [bearer()] : [])],
   fetchOptions: {
     auth: {
       type: 'Bearer',

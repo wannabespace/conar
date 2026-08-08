@@ -15,7 +15,7 @@ export const update = orpc
   .use(authMiddleware)
   .input(
     type.and(
-      connectionsUpdateSchema.omit('createdAt', 'updatedAt', 'userId', 'id'),
+      connectionsUpdateSchema.omit('createdAt', 'updatedAt', 'userId', 'workspaceId', 'id'),
       connectionsUpdateSchema.pick('id').required(),
     ),
   )

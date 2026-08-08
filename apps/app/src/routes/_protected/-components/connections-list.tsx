@@ -54,6 +54,7 @@ import {
   lastOpenedResourcesStorageValue,
   useFetchingConfig,
 } from '~/entities/connection'
+import { connectionInWorkspace, useActiveWorkspace } from '~/entities/workspace'
 
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
@@ -502,7 +503,8 @@ export function ConnectionsList() {
   const { connectionsCollection } = useCollections()
   const sort = useSubscription(sortValue)
   const grouping = useSubscription(groupValue)
-  const { data } = useLiveQuery(
+  const { data: activeWorkspace } = useActiveWorkspace()
+  const { data: allData } = useLiveQuery(
     q => {
       let query = q.from({ c: connectionsCollection })
 
@@ -518,6 +520,10 @@ export function ConnectionsList() {
       return query.orderBy(({ c }) => (sortField === 'date' ? c.createdAt : c.name), sortDirection)
     },
     [connectionsCollection, sort, grouping],
+  )
+
+  const data = allData.filter(connection =>
+    connectionInWorkspace(connection.workspaceId, activeWorkspace),
   )
 
   const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)

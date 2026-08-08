@@ -21,6 +21,7 @@ function prepareConnectionStringToCloud(connectionString: string, syncType: Sync
 
 export interface Connection extends BaseTable {
   type: ConnectionType
+  workspaceId: string | null
   name: string
   label: string | null
   color: string | null

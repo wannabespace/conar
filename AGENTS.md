@@ -53,8 +53,9 @@ Tamery is an AI-powered desktop/web app for managing database connections. It st
 
 Use these terms precisely; avoid the listed synonyms.
 
-- **Connection** — a named, typed pointer to a database. Holds metadata (name, label, color, sync type) but not the raw connection string. _Avoid_: database, data source.
+- **Connection** — a named, typed pointer to a database. Holds metadata (name, label, color, sync type, `workspaceId`) but not the raw connection string. _Avoid_: database, data source.
 - **Connection String** — the full URL (including credentials) used to reach a database. Always stored encrypted; never sent to the cloud in plaintext. _Avoid_: credentials, DSN, URL.
+- **Workspace** — a named group of connections, backed by Better Auth's `organization` plugin (remapped to `workspace` in `apps/api/lib/auth.ts`; tables `workspaces`/`members`/`invitations`, and `sessions.activeWorkspaceId`). Each user gets a lazily-created default personal workspace (`ensureDefaultWorkspace` in `apps/api/lib/workspace.ts`, wired via `databaseHooks.session.create.before` and the `hooks.after` middleware). Creating additional workspaces is gated on an active subscription (`allowUserToCreateOrganization`). Sync stays per-user; the client filters connections by the active workspace (`connectionInWorkspace` in `apps/app/src/entities/workspace`). Multi-member/invites are not built yet. _Avoid_: organization (in UI copy), team, project. Note: Better Auth's API still calls the logical field `activeOrganizationId`, which the schema remap maps to the `activeWorkspaceId` column.
 - **SyncType** — controls how a connection's credentials are handled during cloud sync:
   - `Cloud` — metadata + encrypted password both synced to cloud.
   - `CloudWithoutPassword` — metadata synced; password kept local-only. Use when the user wants cross-device access without trusting the cloud with credentials.
@@ -101,7 +102,10 @@ pnpm run test               # Bun unit tests
 pnpm run test:e2e           # Playwright E2E
 pnpm run check-types        # tsc type-check across workspace
 pnpm run lint               # Oxlint
+pnpm x                      # Interactive picker: choose packages, then a script to run (scripts/run-script.ts)
 ```
+
+`pnpm x` (`scripts/run-script.ts`) discovers workspace packages with `@manypkg/get-packages`, prompts via `@clack/prompts` for packages then a script, and runs `pnpm --filter … run <script>` (`--parallel` for multiple). Flags: `-a`/`--all` (all packages), `-l`/`--last` (reuse last selection, cached in `node_modules/.cache/tamery-run.json`), `-t`/`--turbo` (run via `turbo run` instead), `-d`/`--dry-run` (print command only). A positional arg skips the script prompt; args after `--` are forwarded to the script.
 
 Local URLs (via portless, requires `pnpm run dev`):
 

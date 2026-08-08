@@ -1,7 +1,7 @@
 import { apiKey } from '@better-auth/api-key'
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { db } from '@tamery/db'
-import { users } from '@tamery/db/schema'
+import { sessions, users } from '@tamery/db/schema'
 import * as schema from '@tamery/db/schema'
 import { infisical } from '@tamery/infisical'
 import { API_KEY_PERMISSIONS, AUTH_COOKIE_PREFIX } from '@tamery/shared/constants'
@@ -17,6 +17,8 @@ import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
 
 import { redisMemoize } from './redis'
+import { getSubscription } from './subscription'
+import { ensureDefaultWorkspace } from './workspace'
 
 export const auth = betterAuth({
   appName: 'Tamery',
@@ -27,6 +29,7 @@ export const auth = betterAuth({
     bearer(),
     twoFactor(),
     organization({
+      allowUserToCreateOrganization: async user => !!(await getSubscription(user.id)),
       schema: {
         organization: {
           modelName: 'workspace',
@@ -97,6 +100,26 @@ export const auth = betterAuth({
 
       ctx.request?.headers.set('user-id', ctx.context.session.user.id)
 
+      const { session } = ctx.context.session
+
+      if (!session.activeOrganizationId) {
+        try {
+          const workspaceId = await redisMemoize(
+            () => ensureDefaultWorkspace(session.userId),
+            `ensure-workspace:${session.userId}`,
+          )
+
+          await db
+            .update(sessions)
+            .set({ activeWorkspaceId: workspaceId })
+            .where(eq(sessions.id, session.id))
+        } catch (error) {
+          console.error(
+            `Failed to ensure default workspace: ${error instanceof Error ? error.message : error}`,
+          )
+        }
+      }
+
       if (desktopVersion) {
         await redisMemoize(async () => {
           await db
@@ -110,6 +133,28 @@ export const auth = betterAuth({
     }),
   },
   databaseHooks: {
+    session: {
+      create: {
+        before: async session => {
+          try {
+            const activeOrganizationId = await ensureDefaultWorkspace(session.userId)
+
+            return {
+              data: {
+                ...session,
+                activeOrganizationId,
+              },
+            }
+          } catch (error) {
+            console.error(
+              `Failed to set active workspace on session create: ${error instanceof Error ? error.message : error}`,
+            )
+
+            return { data: session }
+          }
+        },
+      },
+    },
     user: {
       create: {
         after: async user => {

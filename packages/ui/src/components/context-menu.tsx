@@ -120,6 +120,7 @@ function ContextMenuItem({
           data-disabled:pointer-events-none data-disabled:opacity-50
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
+          *:[svg]:text-muted-foreground
           focus:*:[svg]:text-accent-foreground
           data-[variant=destructive]:*:[svg]:text-destructive
         `,
@@ -155,6 +156,7 @@ function ContextMenuSubTrigger({
           data-open:bg-accent/60 data-open:text-accent-foreground
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
+          *:[svg]:text-muted-foreground
         `,
         className,
       )}
@@ -199,6 +201,7 @@ function ContextMenuCheckboxItem({
           data-disabled:pointer-events-none data-disabled:opacity-50
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
+          *:[svg]:text-muted-foreground
         `,
         className,
       )}
@@ -240,6 +243,7 @@ function ContextMenuRadioItem({
           data-disabled:pointer-events-none data-disabled:opacity-50
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
+          *:[svg]:text-muted-foreground
         `,
         className,
       )}

@@ -51,6 +51,7 @@ import {
   resourceTablesAndSchemasQueryOptions,
   useConnectionResourceLinkParams,
 } from '~/entities/connection'
+import { connectionInWorkspace, useActiveWorkspace } from '~/entities/workspace'
 import { appStore, setIsActionCenterOpen } from '~/store'
 import { checkForUpdates } from '~/use-updates-observer'
 
@@ -139,7 +140,8 @@ function FooterHint({ keys, label }: { keys: ReactNode[]; label: string }) {
 export function ActionsCenter() {
   const { connectionsCollection, connectionsResourcesCollection } = useCollections()
   const { resourceId } = useParams({ strict: false })
-  const { data } = useLiveQuery(
+  const { data: activeWorkspace } = useActiveWorkspace()
+  const { data: allData } = useLiveQuery(
     q =>
       q
         .from({ connections: connectionsCollection })
@@ -154,6 +156,10 @@ export function ActionsCenter() {
         }))
         .orderBy(({ connections }) => connections.createdAt, 'desc'),
     [connectionsCollection, connectionsResourcesCollection],
+  )
+
+  const data = allData.filter(({ connection }) =>
+    connectionInWorkspace(connection.workspaceId, activeWorkspace),
   )
 
   const isOpen = useSubscription(appStore, { selector: state => state.isActionCenterOpen })

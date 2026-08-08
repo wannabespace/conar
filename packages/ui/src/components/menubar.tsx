@@ -124,6 +124,7 @@ function MenubarItem({
           focus:data-[variant=destructive]:text-destructive
           data-disabled:opacity-50
           [&_svg:not([class*='size-'])]:size-4
+          *:[svg]:text-muted-foreground
           data-[variant=destructive]:*:[svg]:text-destructive!
         `,
         className,
@@ -203,6 +204,7 @@ function MenubarRadioItem({
           data-disabled:pointer-events-none data-disabled:opacity-50
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
+          *:[svg]:text-muted-foreground
         `,
         className,
       )}
@@ -301,6 +303,7 @@ function MenubarSubTrigger({
           data-inset:pl-7
           data-open:bg-accent/60 data-open:text-accent-foreground
           [&_svg:not([class*='size-'])]:size-4
+          *:[svg]:text-muted-foreground
         `,
         className,
       )}

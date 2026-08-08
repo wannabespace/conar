@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { GlobalBanner } from '~/components/global-banner'
 import { SubscriptionModal } from '~/components/subscriprion-modal'
 import { cleanCollections, getCollections } from '~/entities/collections'
+import { useActiveWorkspaceSync } from '~/entities/workspace'
 import { EventsProvider } from '~/events'
 import { enterAppAnimation } from '~/global-hooks'
 import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
@@ -32,6 +33,7 @@ export const Route = createFileRoute('/_protected')({
 function ProtectedLayout() {
   useConnectionStringsSync()
   useLastOpenedResourcesSync()
+  useActiveWorkspaceSync()
 
   useEffect(() => {
     return () => {

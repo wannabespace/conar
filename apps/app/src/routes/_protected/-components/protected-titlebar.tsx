@@ -37,10 +37,12 @@ import {
   useConnectionResourceLinkParams,
 } from '~/entities/connection'
 import { UserButton } from '~/entities/user/components'
+import { connectionInWorkspace, useActiveWorkspace } from '~/entities/workspace'
 import { setIsActionCenterOpen } from '~/store'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 
 import { RemoveConnectionDialog } from './remove-connection-dialog'
+import { WorkspaceSwitcher } from './workspace-switcher'
 
 interface ConnectionGroup {
   connection: Connection
@@ -200,7 +202,8 @@ function ResourcesDropdown({
 function ConnectionsBreadcrumb({ onRemove }: { onRemove: (connection: Connection) => void }) {
   const { connectionsCollection, connectionsResourcesCollection } = useCollections()
   const { resourceId } = useParams({ strict: false })
-  const { data } = useLiveQuery(
+  const { data: activeWorkspace } = useActiveWorkspace()
+  const { data: allData } = useLiveQuery(
     q =>
       q
         .from({ c: connectionsCollection })
@@ -208,6 +211,10 @@ function ConnectionsBreadcrumb({ onRemove }: { onRemove: (connection: Connection
         .select(({ c, r }) => ({ connection: c, resource: r }))
         .orderBy(({ c }) => c.createdAt, 'desc'),
     [connectionsCollection, connectionsResourcesCollection],
+  )
+
+  const data = allData.filter(({ connection }) =>
+    connectionInWorkspace(connection.workspaceId, activeWorkspace),
   )
 
   const groups: ConnectionGroup[] = []
@@ -258,6 +265,8 @@ export function ProtectedTitleBar() {
           >
             <AppLogo className="size-4 text-primary" />
           </Link>
+          <RiArrowRightSLine aria-hidden className="size-3.5 shrink-0 text-muted-foreground/40" />
+          <WorkspaceSwitcher />
           <RiArrowRightSLine aria-hidden className="size-3.5 shrink-0 text-muted-foreground/40" />
           <ConnectionsBreadcrumb
             onRemove={connection => removeDialogRef.current?.remove(connection)}

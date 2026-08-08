@@ -7,22 +7,45 @@ import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.utils'
 import { Button } from '@tamery/ui/components/button'
 import { DitherBackground } from '@tamery/ui/components/custom/dither-background'
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 
 import { TitleBar } from '~/components/title-bar'
 import { enterAppAnimation } from '~/global-hooks'
-import { authClient, bearerToken, successAuthToast } from '~/lib/auth'
+import { authClient, bearerToken, isSignedIn, successAuthToast } from '~/lib/auth'
 import { lastLocationStorageValue } from '~/lib/last-location'
 import { orpc } from '~/lib/orpc'
 import { router } from '~/main'
+
+function signInUrl(type: 'web' | 'desktop') {
+  const verifier = challenge.noble.generateVerifier()
+  const codeChallenge = challenge.noble.generateCode(verifier)
+
+  return {
+    verifier,
+    codeChallenge,
+    url: `${import.meta.env.VITE_PUBLIC_MAIN_URL}/deep/sign-in?codeChallenge=${codeChallenge}&type=${type}`,
+  }
+}
 
 export const Route = createFileRoute('/auth')({
   component: AuthPage,
   head: () => ({
     meta: [{ title: title('Sign in') }],
   }),
+  beforeLoad: async () => {
+    // Desktop waits here for the challenge handoff; web has nothing to wait for
+    if (window.electron) {
+      return
+    }
+
+    if (await isSignedIn()) {
+      throw redirect({ to: '/' })
+    }
+
+    throw redirect({ href: signInUrl('web').url })
+  },
 })
 
 function AuthSidePanel() {
@@ -60,11 +83,11 @@ function AuthPage() {
   const [codeChallenge, setCodeChallenge] = useState<string | null>(null)
 
   const signInWithChallenge = async () => {
-    const verifier = challenge.noble.generateVerifier()
-    const codeChallenge = challenge.noble.generateCode(verifier)
+    const { verifier, codeChallenge, url } = signInUrl(window.electron ? 'desktop' : 'web')
+
     setVerifier(verifier)
     setCodeChallenge(codeChallenge)
-    const url = `${import.meta.env.VITE_PUBLIC_MAIN_URL}/deep/sign-in?codeChallenge=${codeChallenge}&type=${window.electron ? 'desktop' : 'web'}`
+
     if (window.electron) {
       window.open(url, '_blank')
     } else {
@@ -115,7 +138,7 @@ function AuthPage() {
         <div className="relative flex flex-col overflow-hidden px-4 py-6">
           <div
             className="
-              relative m-auto flex w-full max-w-md flex-1 flex-col justify-center
+              relative m-auto flex w-full max-w-87.5 flex-1 flex-col justify-center
             "
           >
             <motion.div
@@ -181,7 +204,7 @@ function AuthPage() {
           </div>
           <motion.div
             className="
-              relative mx-auto mt-auto w-full max-w-md pt-10
+              relative mx-auto mt-auto w-full max-w-87.5 pt-10
               will-change-transform
             "
             initial={{ opacity: 0, transform: 'translateY(10px)', filter: 'blur(4px)' }}

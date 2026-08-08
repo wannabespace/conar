@@ -12,6 +12,7 @@
     "postinstall": "pnpm run portless:start",
     "portless:start": "portless proxy start --tld app",
     "portless:stop": "portless proxy stop",
+    "x": "bun scripts/run-script.ts",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
@@ -32,7 +33,7 @@
     "aur:sync": "bun scripts/sync-aur-version.ts",
     "aur:sync:checksum": "bun scripts/sync-aur-version.ts --checksum",
     "drizzle:generate": "cd packages/db && pnpm run drizzle:generate",
-    "drizzle:migrate": "cd packages/db && pnpm run drizzle:migrate",
+    "drizzle:migrate": "pnpm --filter @tamery/db run drizzle:migrate && pnpm --filter @tamery/api run backfill:workspaces",
     "check-types": "turbo run check-types",
     "update": "taze -r -I major",
     "docker:start": "docker compose -f docker-compose.dev.yml up -d",
@@ -41,7 +42,9 @@
     "deps:build": "node-modules-inspector build"
   },
   "devDependencies": {
+    "@clack/prompts": "catalog:",
     "@letstri/oxlint-config": "catalog:",
+    "@manypkg/get-packages": "catalog:",
     "@tamery/configs": "workspace:*",
     "@types/bun": "catalog:",
     "cross-env": "catalog:",

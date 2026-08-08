@@ -1,19 +1,16 @@
 import { ORPCError, os } from '@orpc/server'
-import { db } from '@tamery/db'
-import { subscriptions } from '@tamery/db/schema'
 import { infisical } from '@tamery/infisical'
-import {
-  ACTIVE_SUBSCRIPTION_STATUSES,
-  LATEST_VERSION_BEFORE_SUBSCRIPTION,
-} from '@tamery/shared/constants'
-import { eq } from 'drizzle-orm'
+import { LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@tamery/shared/constants'
 import { memoize } from 'memoza'
 
 import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { auth } from '~/lib/auth'
 import { redis } from '~/lib/redis'
+import { getSubscription } from '~/lib/subscription'
 
 import type { Context } from './context'
+
+export { getSubscription }
 
 export const orpc = os.$context<Context>()
 
@@ -96,21 +93,6 @@ export const optionalAuthMiddleware = logMiddleware.concat(
     })
   }),
 )
-
-export async function getSubscription(userId: string) {
-  const userSubscriptions = await db
-    .select()
-    .from(subscriptions)
-    .where(eq(subscriptions.userId, userId))
-
-  return (
-    userSubscriptions.find(s =>
-      ACTIVE_SUBSCRIPTION_STATUSES.includes(
-        s.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number],
-      ),
-    ) ?? null
-  )
-}
 
 export const subscriptionMiddleware = logMiddleware.concat(
   orpc.middleware(async ({ context, next }) => {

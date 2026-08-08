@@ -6,26 +6,31 @@ import * as d from 'drizzle-orm/pg-core'
 
 import { baseTable } from '../base-table'
 import { encryptedText } from '../utils'
-import { users } from './auth'
+import { users, workspaces } from './auth'
 
 export const connectionType = d.pgEnum('connection_type', ConnectionType)
 
 export const syncType = d.pgEnum('sync_type', SyncType)
 
-export const connections = d.snakeCase.table('connections', {
-  ...baseTable,
-  userId: d
-    .uuid()
-    .references(() => users.id, { onDelete: 'cascade' })
-    .notNull(),
-  type: connectionType().notNull(),
-  name: d.text().notNull(),
-  connectionString: encryptedText().notNull(),
-  label: d.text(),
-  color: d.text(),
-  isPasswordExists: d.boolean('password_exists').notNull(),
-  syncType: syncType().notNull(),
-})
+export const connections = d.snakeCase.table(
+  'connections',
+  {
+    ...baseTable,
+    userId: d
+      .uuid()
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
+    workspaceId: d.uuid().references(() => workspaces.id, { onDelete: 'cascade' }),
+    type: connectionType().notNull(),
+    name: d.text().notNull(),
+    connectionString: encryptedText().notNull(),
+    label: d.text(),
+    color: d.text(),
+    isPasswordExists: d.boolean('password_exists').notNull(),
+    syncType: syncType().notNull(),
+  },
+  t => [d.index('connections_workspaceId_idx').on(t.workspaceId)],
+)
 
 export const connectionsSelectSchema = createSelectSchema(connections)
 export const connectionsUpdateSchema = createUpdateSchema(connections)

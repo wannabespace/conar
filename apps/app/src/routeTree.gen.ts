@@ -9,39 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProtectedRouteImport } from './routes/_protected'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProtectedIndexRouteImport } from './routes/_protected/index'
-import { Route as ProtectedCreateIndexRouteImport } from './routes/_protected/create/index'
 import { Route as ProtectedConnectionResourceIdRouteImport } from './routes/_protected/connection/$resourceId'
+import { Route as ProtectedCreateIndexRouteImport } from './routes/_protected/create/index'
 import { Route as ProtectedConnectionResourceIdDefinitionsRouteImport } from './routes/_protected/connection/$resourceId/definitions'
-import { Route as ProtectedConnectionResourceIdVisualizerIndexRouteImport } from './routes/_protected/connection/$resourceId/visualizer/index'
-import { Route as ProtectedConnectionResourceIdTableIndexRouteImport } from './routes/_protected/connection/$resourceId/table/index'
 import { Route as ProtectedConnectionResourceIdQueryIndexRouteImport } from './routes/_protected/connection/$resourceId/query/index'
-import { Route as ProtectedConnectionResourceIdDefinitionsTriggersIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/triggers/index'
-import { Route as ProtectedConnectionResourceIdDefinitionsPoliciesIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/policies/index'
-import { Route as ProtectedConnectionResourceIdDefinitionsIndexesIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/indexes/index'
-import { Route as ProtectedConnectionResourceIdDefinitionsFunctionsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/functions/index'
-import { Route as ProtectedConnectionResourceIdDefinitionsEnumsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/enums/index'
+import { Route as ProtectedConnectionResourceIdTableIndexRouteImport } from './routes/_protected/connection/$resourceId/table/index'
+import { Route as ProtectedConnectionResourceIdVisualizerIndexRouteImport } from './routes/_protected/connection/$resourceId/visualizer/index'
 import { Route as ProtectedConnectionResourceIdDefinitionsConstraintsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/constraints/index'
+import { Route as ProtectedConnectionResourceIdDefinitionsEnumsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/enums/index'
+import { Route as ProtectedConnectionResourceIdDefinitionsFunctionsIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/functions/index'
+import { Route as ProtectedConnectionResourceIdDefinitionsIndexesIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/indexes/index'
+import { Route as ProtectedConnectionResourceIdDefinitionsPoliciesIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/policies/index'
+import { Route as ProtectedConnectionResourceIdDefinitionsTriggersIndexRouteImport } from './routes/_protected/connection/$resourceId/definitions/triggers/index'
 
+const ProtectedRoute = ProtectedRouteImport.update({
+  id: '/_protected',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProtectedRoute = ProtectedRouteImport.update({
-  id: '/_protected',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ProtectedIndexRoute = ProtectedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => ProtectedRoute,
-} as any)
-const ProtectedCreateIndexRoute = ProtectedCreateIndexRouteImport.update({
-  id: '/create/',
-  path: '/create/',
   getParentRoute: () => ProtectedRoute,
 } as any)
 const ProtectedConnectionResourceIdRoute =
@@ -50,22 +45,15 @@ const ProtectedConnectionResourceIdRoute =
     path: '/connection/$resourceId',
     getParentRoute: () => ProtectedRoute,
   } as any)
+const ProtectedCreateIndexRoute = ProtectedCreateIndexRouteImport.update({
+  id: '/create/',
+  path: '/create/',
+  getParentRoute: () => ProtectedRoute,
+} as any)
 const ProtectedConnectionResourceIdDefinitionsRoute =
   ProtectedConnectionResourceIdDefinitionsRouteImport.update({
     id: '/definitions',
     path: '/definitions',
-    getParentRoute: () => ProtectedConnectionResourceIdRoute,
-  } as any)
-const ProtectedConnectionResourceIdVisualizerIndexRoute =
-  ProtectedConnectionResourceIdVisualizerIndexRouteImport.update({
-    id: '/visualizer/',
-    path: '/visualizer/',
-    getParentRoute: () => ProtectedConnectionResourceIdRoute,
-  } as any)
-const ProtectedConnectionResourceIdTableIndexRoute =
-  ProtectedConnectionResourceIdTableIndexRouteImport.update({
-    id: '/table/',
-    path: '/table/',
     getParentRoute: () => ProtectedConnectionResourceIdRoute,
   } as any)
 const ProtectedConnectionResourceIdQueryIndexRoute =
@@ -74,28 +62,22 @@ const ProtectedConnectionResourceIdQueryIndexRoute =
     path: '/query/',
     getParentRoute: () => ProtectedConnectionResourceIdRoute,
   } as any)
-const ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute =
-  ProtectedConnectionResourceIdDefinitionsTriggersIndexRouteImport.update({
-    id: '/triggers/',
-    path: '/triggers/',
-    getParentRoute: () => ProtectedConnectionResourceIdDefinitionsRoute,
+const ProtectedConnectionResourceIdTableIndexRoute =
+  ProtectedConnectionResourceIdTableIndexRouteImport.update({
+    id: '/table/',
+    path: '/table/',
+    getParentRoute: () => ProtectedConnectionResourceIdRoute,
   } as any)
-const ProtectedConnectionResourceIdDefinitionsPoliciesIndexRoute =
-  ProtectedConnectionResourceIdDefinitionsPoliciesIndexRouteImport.update({
-    id: '/policies/',
-    path: '/policies/',
-    getParentRoute: () => ProtectedConnectionResourceIdDefinitionsRoute,
+const ProtectedConnectionResourceIdVisualizerIndexRoute =
+  ProtectedConnectionResourceIdVisualizerIndexRouteImport.update({
+    id: '/visualizer/',
+    path: '/visualizer/',
+    getParentRoute: () => ProtectedConnectionResourceIdRoute,
   } as any)
-const ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute =
-  ProtectedConnectionResourceIdDefinitionsIndexesIndexRouteImport.update({
-    id: '/indexes/',
-    path: '/indexes/',
-    getParentRoute: () => ProtectedConnectionResourceIdDefinitionsRoute,
-  } as any)
-const ProtectedConnectionResourceIdDefinitionsFunctionsIndexRoute =
-  ProtectedConnectionResourceIdDefinitionsFunctionsIndexRouteImport.update({
-    id: '/functions/',
-    path: '/functions/',
+const ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute =
+  ProtectedConnectionResourceIdDefinitionsConstraintsIndexRouteImport.update({
+    id: '/constraints/',
+    path: '/constraints/',
     getParentRoute: () => ProtectedConnectionResourceIdDefinitionsRoute,
   } as any)
 const ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute =
@@ -104,10 +86,28 @@ const ProtectedConnectionResourceIdDefinitionsEnumsIndexRoute =
     path: '/enums/',
     getParentRoute: () => ProtectedConnectionResourceIdDefinitionsRoute,
   } as any)
-const ProtectedConnectionResourceIdDefinitionsConstraintsIndexRoute =
-  ProtectedConnectionResourceIdDefinitionsConstraintsIndexRouteImport.update({
-    id: '/constraints/',
-    path: '/constraints/',
+const ProtectedConnectionResourceIdDefinitionsFunctionsIndexRoute =
+  ProtectedConnectionResourceIdDefinitionsFunctionsIndexRouteImport.update({
+    id: '/functions/',
+    path: '/functions/',
+    getParentRoute: () => ProtectedConnectionResourceIdDefinitionsRoute,
+  } as any)
+const ProtectedConnectionResourceIdDefinitionsIndexesIndexRoute =
+  ProtectedConnectionResourceIdDefinitionsIndexesIndexRouteImport.update({
+    id: '/indexes/',
+    path: '/indexes/',
+    getParentRoute: () => ProtectedConnectionResourceIdDefinitionsRoute,
+  } as any)
+const ProtectedConnectionResourceIdDefinitionsPoliciesIndexRoute =
+  ProtectedConnectionResourceIdDefinitionsPoliciesIndexRouteImport.update({
+    id: '/policies/',
+    path: '/policies/',
+    getParentRoute: () => ProtectedConnectionResourceIdDefinitionsRoute,
+  } as any)
+const ProtectedConnectionResourceIdDefinitionsTriggersIndexRoute =
+  ProtectedConnectionResourceIdDefinitionsTriggersIndexRouteImport.update({
+    id: '/triggers/',
+    path: '/triggers/',
     getParentRoute: () => ProtectedConnectionResourceIdDefinitionsRoute,
   } as any)
 
@@ -220,18 +220,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_protected': {
       id: '/_protected'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof ProtectedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_protected/': {
@@ -241,18 +241,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedIndexRouteImport
       parentRoute: typeof ProtectedRoute
     }
-    '/_protected/create/': {
-      id: '/_protected/create/'
-      path: '/create'
-      fullPath: '/create/'
-      preLoaderRoute: typeof ProtectedCreateIndexRouteImport
-      parentRoute: typeof ProtectedRoute
-    }
     '/_protected/connection/$resourceId': {
       id: '/_protected/connection/$resourceId'
       path: '/connection/$resourceId'
       fullPath: '/connection/$resourceId'
       preLoaderRoute: typeof ProtectedConnectionResourceIdRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/create/': {
+      id: '/_protected/create/'
+      path: '/create'
+      fullPath: '/create/'
+      preLoaderRoute: typeof ProtectedCreateIndexRouteImport
       parentRoute: typeof ProtectedRoute
     }
     '/_protected/connection/$resourceId/definitions': {
@@ -262,11 +262,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsRouteImport
       parentRoute: typeof ProtectedConnectionResourceIdRoute
     }
-    '/_protected/connection/$resourceId/visualizer/': {
-      id: '/_protected/connection/$resourceId/visualizer/'
-      path: '/visualizer'
-      fullPath: '/connection/$resourceId/visualizer/'
-      preLoaderRoute: typeof ProtectedConnectionResourceIdVisualizerIndexRouteImport
+    '/_protected/connection/$resourceId/query/': {
+      id: '/_protected/connection/$resourceId/query/'
+      path: '/query'
+      fullPath: '/connection/$resourceId/query/'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdQueryIndexRouteImport
       parentRoute: typeof ProtectedConnectionResourceIdRoute
     }
     '/_protected/connection/$resourceId/table/': {
@@ -276,39 +276,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedConnectionResourceIdTableIndexRouteImport
       parentRoute: typeof ProtectedConnectionResourceIdRoute
     }
-    '/_protected/connection/$resourceId/query/': {
-      id: '/_protected/connection/$resourceId/query/'
-      path: '/query'
-      fullPath: '/connection/$resourceId/query/'
-      preLoaderRoute: typeof ProtectedConnectionResourceIdQueryIndexRouteImport
+    '/_protected/connection/$resourceId/visualizer/': {
+      id: '/_protected/connection/$resourceId/visualizer/'
+      path: '/visualizer'
+      fullPath: '/connection/$resourceId/visualizer/'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdVisualizerIndexRouteImport
       parentRoute: typeof ProtectedConnectionResourceIdRoute
     }
-    '/_protected/connection/$resourceId/definitions/triggers/': {
-      id: '/_protected/connection/$resourceId/definitions/triggers/'
-      path: '/triggers'
-      fullPath: '/connection/$resourceId/definitions/triggers/'
-      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsTriggersIndexRouteImport
-      parentRoute: typeof ProtectedConnectionResourceIdDefinitionsRoute
-    }
-    '/_protected/connection/$resourceId/definitions/policies/': {
-      id: '/_protected/connection/$resourceId/definitions/policies/'
-      path: '/policies'
-      fullPath: '/connection/$resourceId/definitions/policies/'
-      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsPoliciesIndexRouteImport
-      parentRoute: typeof ProtectedConnectionResourceIdDefinitionsRoute
-    }
-    '/_protected/connection/$resourceId/definitions/indexes/': {
-      id: '/_protected/connection/$resourceId/definitions/indexes/'
-      path: '/indexes'
-      fullPath: '/connection/$resourceId/definitions/indexes/'
-      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsIndexesIndexRouteImport
-      parentRoute: typeof ProtectedConnectionResourceIdDefinitionsRoute
-    }
-    '/_protected/connection/$resourceId/definitions/functions/': {
-      id: '/_protected/connection/$resourceId/definitions/functions/'
-      path: '/functions'
-      fullPath: '/connection/$resourceId/definitions/functions/'
-      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsFunctionsIndexRouteImport
+    '/_protected/connection/$resourceId/definitions/constraints/': {
+      id: '/_protected/connection/$resourceId/definitions/constraints/'
+      path: '/constraints'
+      fullPath: '/connection/$resourceId/definitions/constraints/'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsConstraintsIndexRouteImport
       parentRoute: typeof ProtectedConnectionResourceIdDefinitionsRoute
     }
     '/_protected/connection/$resourceId/definitions/enums/': {
@@ -318,11 +297,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsEnumsIndexRouteImport
       parentRoute: typeof ProtectedConnectionResourceIdDefinitionsRoute
     }
-    '/_protected/connection/$resourceId/definitions/constraints/': {
-      id: '/_protected/connection/$resourceId/definitions/constraints/'
-      path: '/constraints'
-      fullPath: '/connection/$resourceId/definitions/constraints/'
-      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsConstraintsIndexRouteImport
+    '/_protected/connection/$resourceId/definitions/functions/': {
+      id: '/_protected/connection/$resourceId/definitions/functions/'
+      path: '/functions'
+      fullPath: '/connection/$resourceId/definitions/functions/'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsFunctionsIndexRouteImport
+      parentRoute: typeof ProtectedConnectionResourceIdDefinitionsRoute
+    }
+    '/_protected/connection/$resourceId/definitions/indexes/': {
+      id: '/_protected/connection/$resourceId/definitions/indexes/'
+      path: '/indexes'
+      fullPath: '/connection/$resourceId/definitions/indexes/'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsIndexesIndexRouteImport
+      parentRoute: typeof ProtectedConnectionResourceIdDefinitionsRoute
+    }
+    '/_protected/connection/$resourceId/definitions/policies/': {
+      id: '/_protected/connection/$resourceId/definitions/policies/'
+      path: '/policies'
+      fullPath: '/connection/$resourceId/definitions/policies/'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsPoliciesIndexRouteImport
+      parentRoute: typeof ProtectedConnectionResourceIdDefinitionsRoute
+    }
+    '/_protected/connection/$resourceId/definitions/triggers/': {
+      id: '/_protected/connection/$resourceId/definitions/triggers/'
+      path: '/triggers'
+      fullPath: '/connection/$resourceId/definitions/triggers/'
+      preLoaderRoute: typeof ProtectedConnectionResourceIdDefinitionsTriggersIndexRouteImport
       parentRoute: typeof ProtectedConnectionResourceIdDefinitionsRoute
     }
   }

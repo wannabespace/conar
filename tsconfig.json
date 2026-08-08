@@ -1,3 +1,8 @@
 {
-  "extends": "@tamery/configs/ts/base.json"
+  "extends": "@tamery/configs/ts/base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["scripts/**/*.ts", "*.config.ts"],
+  "exclude": ["node_modules", "apps", "packages", "docs", "aur", "patches"]
 }

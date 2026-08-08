@@ -115,6 +115,7 @@ function DropdownMenuItem({
           data-disabled:pointer-events-none data-disabled:opacity-50
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
+          *:[svg]:text-muted-foreground
           data-[variant=destructive]:*:[svg]:text-destructive
         `,
         className,
@@ -151,6 +152,7 @@ function DropdownMenuSubTrigger({
           data-open:bg-accent/60 data-open:text-accent-foreground
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
+          *:[svg]:text-muted-foreground
         `,
         className,
       )}
@@ -218,6 +220,7 @@ function DropdownMenuCheckboxItem({
           data-disabled:pointer-events-none data-disabled:opacity-50
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
+          *:[svg]:text-muted-foreground
         `,
         className,
       )}
@@ -265,6 +268,7 @@ function DropdownMenuRadioItem({
           data-disabled:pointer-events-none data-disabled:opacity-50
           [&_svg]:pointer-events-none [&_svg]:shrink-0
           [&_svg:not([class*='size-'])]:size-4
+          *:[svg]:text-muted-foreground
         `,
         className,
       )}

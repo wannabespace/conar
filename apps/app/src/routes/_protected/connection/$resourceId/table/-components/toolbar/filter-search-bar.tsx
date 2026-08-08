@@ -161,9 +161,9 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
   })
 
   const trimmedQuery = query.trim()
-  const matchingColumns = (columns ?? [])
-    .filter(column => column.id.toLowerCase().includes(trimmedQuery.toLowerCase()))
-    .slice(0, 6)
+  const matchingColumns = (columns ?? []).filter(column =>
+    column.id.toLowerCase().includes(trimmedQuery.toLowerCase()),
+  )
 
   const isOpen =
     isFocused && (stage.step !== 'idle' || trimmedQuery.length > 0 || (columns?.length ?? 0) > 0)
@@ -210,9 +210,9 @@ export function FilterSearchBar({ table, schema }: { table: string; schema: stri
   const valueFilterText = (
     stage.step === 'value' && stage.ref.isArray ? (query.split(',').at(-1) ?? '') : query
   ).trim()
-  const matchingValues = (suggestedValues ?? [])
-    .filter(value => value.toLowerCase().includes(valueFilterText.toLowerCase()))
-    .slice(0, 8)
+  const matchingValues = (suggestedValues ?? []).filter(value =>
+    value.toLowerCase().includes(valueFilterText.toLowerCase()),
+  )
 
   const pickSuggestedValue = (value: string) => {
     if (stage.step !== 'value') return

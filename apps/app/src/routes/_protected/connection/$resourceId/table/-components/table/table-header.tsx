@@ -182,7 +182,7 @@ function Header({ className }: { className?: string }) {
                 <DropdownMenuSeparator />
                 {notVisibleColumns.left.map(column => (
                   <DropdownMenuItem key={column.id} onClick={() => scrollToColumn(column, 'left')}>
-                    <RiDatabase2Line className="size-4 text-muted-foreground" />
+                    <RiDatabase2Line />
                     {column.id}
                   </DropdownMenuItem>
                 ))}
@@ -232,7 +232,7 @@ function Header({ className }: { className?: string }) {
                 <DropdownMenuSeparator />
                 {notVisibleColumns.right.map(column => (
                   <DropdownMenuItem key={column.id} onClick={() => scrollToColumn(column, 'right')}>
-                    <RiDatabase2Line className="size-4 text-muted-foreground" />
+                    <RiDatabase2Line />
                     {column.id}
                   </DropdownMenuItem>
                 ))}

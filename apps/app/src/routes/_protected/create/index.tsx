@@ -25,6 +25,7 @@ import { useLocalProxyAvailable } from '~/entities/connection/runtime'
 import { getConnectionStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching'
+import { useActiveWorkspace } from '~/entities/workspace'
 import { generateRandomName } from '~/utils/faker'
 
 import { StepCredentials } from './-components/step-credentials'
@@ -49,6 +50,7 @@ const createConnectionType = type({
 
 function CreateConnectionPage() {
   const collections = useCollections()
+  const { data: activeWorkspace } = useActiveWorkspace()
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -79,6 +81,7 @@ function CreateConnectionPage() {
         }),
         connection: {
           id,
+          workspaceId: activeWorkspace?.id ?? null,
           name: data.name,
           type: data.type,
           label: data.label || null,
