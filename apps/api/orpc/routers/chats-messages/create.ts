@@ -26,12 +26,27 @@ export const create = orpc
       })
     }
 
-    const inserted = await db.insert(chatsMessages).values(input).returning()
+    const inserted = (
+      await db.transaction(tx =>
+        Promise.all(
+          input.map(item =>
+            tx
+              .insert(chatsMessages)
+              .values(item)
+              .onConflictDoUpdate({
+                target: chatsMessages.id,
+                set: item,
+              })
+              .returning(),
+          ),
+        ),
+      )
+    ).flat()
 
-    for (const message of inserted) {
+    for (const item of inserted) {
       publisher.publish(context.user.id, {
         type: 'insert',
-        value: message,
+        value: item,
       })
     }
   })
