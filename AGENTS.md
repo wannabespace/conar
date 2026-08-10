@@ -105,7 +105,7 @@ pnpm run lint               # Oxlint
 pnpm x                      # Interactive picker: choose packages, then a script to run (scripts/run-script.ts)
 ```
 
-`pnpm x` (`scripts/run-script.ts`) discovers workspace packages with `@manypkg/get-packages`, prompts via `@clack/prompts` for packages then a script, and runs `pnpm --filter … run <script>` (`--parallel` for multiple). Flags: `-a`/`--all` (all packages), `-l`/`--last` (reuse last selection, cached in `node_modules/.cache/tamery-run.json`), `-t`/`--turbo` (run via `turbo run` instead), `-d`/`--dry-run` (print command only). A positional arg skips the script prompt; args after `--` are forwarded to the script.
+`pnpm x` (`scripts/run-script.ts`) discovers workspace packages with `@manypkg/get-packages`, prompts via `@clack/prompts` for packages then a script, and runs `pnpm --filter … run <script>` (`--parallel` for multiple), or `turbo run` when the script is a `turbo.json` task. Scripts that invoke the runner itself (root `dev`, `x`) are excluded from discovery so selecting them cannot recurse. Flags: `-a`/`--all` (all packages), `-l`/`--last` (reuse last selection, cached in `node_modules/.cache/tamery-run.json`), `--no-turbo` (force pnpm), `-d`/`--dry-run` (print command only). A positional arg skips the script prompt; args after `--` are forwarded to the script.
 
 Local URLs (via portless, requires `pnpm run dev`):
 

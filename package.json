@@ -20,7 +20,7 @@
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
     "test:start": "turbo run test:start",
-    "dev": "turbo run dev",
+    "dev": "bun scripts/run-script.ts dev",
     "start:api": "cd apps/api && pnpm run start",
     "start:main": "cd apps/main && pnpm run start",
     "start:app": "cd apps/app && pnpm run start",
