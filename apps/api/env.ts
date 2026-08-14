@@ -1,5 +1,7 @@
 import process from 'node:process'
 
+import { envType as aiEnvType } from '@tamery/ai/env'
+import { envType as dbEnvType } from '@tamery/db/env'
 import { type } from 'arktype'
 
 export const nodeEnv = type('"production" | "development" | "test"').assert(
@@ -12,10 +14,6 @@ const envType = type({
   API_URL: 'string',
   BANNER_TEXT: 'string?',
   BETTER_AUTH_SECRET: 'string',
-  CONTEXT7_API_KEY: 'string',
-  DATABASE_URL: 'string',
-  ENCRYPTION_SECRET: 'string',
-  EXA_API_KEY: 'string',
   GITHUB_CLIENT_ID: 'string',
   GITHUB_CLIENT_SECRET: 'string',
   GITHUB_TOKEN: 'string',
@@ -36,6 +34,8 @@ const envType = type({
   TODESKTOP_WEBHOOK_SECRET: 'string',
   XAI_API_KEY: 'string',
 })
+  .and(dbEnvType)
+  .and(aiEnvType)
 
 const devOptionalEnvs = [
   'MIN_DESKTOP_VERSION',

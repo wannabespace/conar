@@ -3,7 +3,7 @@ import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
 import { GlobalBanner } from '~/components/global-banner'
-import { SubscriptionModal } from '~/components/subscriprion-modal'
+import { SubscriptionModal } from '~/components/subscription-modal'
 import { cleanCollections, getCollections } from '~/entities/collections'
 import { useActiveWorkspaceSync } from '~/entities/workspace'
 import { EventsProvider } from '~/events'
