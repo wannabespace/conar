@@ -8,16 +8,116 @@ import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { Input } from '@tamery/ui/components/input'
 import { Separator } from '@tamery/ui/components/separator'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useDebouncedMemo } from '@tamery/ui/hookas/use-debounced-memo'
 import { cn } from '@tamery/ui/lib/utils'
 import { useMemo, useState } from 'react'
 
+import type { ExportDataProps } from '~/components/export-data'
 import { ExportData } from '~/components/export-data'
 import { TableCell } from '~/entities/connection/components/table/cell'
 import type { Column } from '~/entities/connection/components/table/cell'
 
-export function RunnerResultsTable({
+const ResultColumnHeader = ({
+  columnId,
+  columnIndex,
+  style,
+}: {
+  columnId: string
+  columnIndex: number
+  style?: React.CSSProperties
+}) => (
+  <div
+    className={cn(
+      'flex w-full shrink-0 items-center justify-between p-2',
+      columnIndex === 0 && 'pl-4'
+    )}
+    style={style}
+  >
+    <div className="text-xs">
+      <div
+        data-mask
+        className="flex items-center gap-1 truncate font-medium"
+        title={columnId}
+      >
+        {columnId}
+      </div>
+    </div>
+  </div>
+)
+
+const ResultColumnCell = ({
+  columnId,
+  connectionType,
+  ...props
+}: {
+  columnId: string
+  connectionType: ConnectionType
+} & Omit<
+  React.ComponentProps<typeof TableCell>,
+  'column' | 'connectionType'
+>) => (
+  <TableCell
+    {...props}
+    column={{ id: columnId, uiType: 'raw' }}
+    connectionType={connectionType}
+  />
+)
+
+const createResultColumn = (
+  column: Pick<Column, 'id'>,
+  connectionType: ConnectionType
+): ColumnRenderer => ({
+  cell: (props) => (
+    <ResultColumnCell
+      columnId={column.id}
+      connectionType={connectionType}
+      {...props}
+    />
+  ),
+  header: ({ columnIndex, style }) => (
+    <ResultColumnHeader
+      columnId={column.id}
+      columnIndex={columnIndex}
+      style={style}
+    />
+  ),
+  id: column.id,
+  size: DEFAULT_COLUMN_WIDTH,
+})
+
+const ResultsExport = ({
+  getData,
+  disabled,
+}: {
+  getData: ExportDataProps['getData']
+  disabled: boolean
+}) => (
+  <ExportData
+    getData={getData}
+    filename="runner_results"
+    tooltip="Export results"
+    // oxlint-disable-next-line react/no-unstable-nested-components -- ExportData requires a render-prop trigger
+    trigger={({ isExporting }) => (
+      <Button
+        variant="secondary"
+        size="icon-sm"
+        aria-label="Export results"
+        disabled={isExporting || disabled}
+      >
+        <LoadingContent loading={isExporting}>
+          <RiExportLine />
+        </LoadingContent>
+      </Button>
+    )}
+  />
+)
+
+export const RunnerResultsTable = ({
   data,
   columns,
   duration,
@@ -27,74 +127,50 @@ export function RunnerResultsTable({
   columns: Pick<Column, 'id'>[]
   duration: number
   connectionType: ConnectionType
-}) {
+}) => {
   const [search, setSearch] = useState('')
 
   const filteredData = useDebouncedMemo(
     () => {
-      if (!search.trim()) return data
+      if (!search.trim()) {
+        return data
+      }
 
-      return data.filter(row =>
-        JSON.stringify(Object.values(row)).toLowerCase().includes(search.toLowerCase()),
+      return data.filter((row) =>
+        JSON.stringify(Object.values(row))
+          .toLowerCase()
+          .includes(search.toLowerCase())
       )
     },
     [data, search],
-    100,
+    100
   )
 
-  const tableColumns = useMemo(() => {
-    return columns.map(
-      column =>
-        ({
-          id: column.id,
-          header: ({ columnIndex, style }) => (
-            <div
-              className={cn(
-                'flex w-full shrink-0 items-center justify-between p-2',
-                columnIndex === 0 && 'pl-4',
-              )}
-              style={style}
-            >
-              <div className="text-xs">
-                <div
-                  data-mask
-                  className="flex items-center gap-1 truncate font-medium"
-                  title={column.id}
-                >
-                  {column.id}
-                </div>
-              </div>
-            </div>
-          ),
-          cell: props => (
-            <TableCell
-              column={{ id: column.id, uiType: 'raw' }}
-              connectionType={connectionType}
-              {...props}
-            />
-          ),
-          size: DEFAULT_COLUMN_WIDTH,
-        }) satisfies ColumnRenderer,
-    )
-  }, [columns, connectionType])
+  const tableColumns = useMemo(
+    () => columns.map((column) => createResultColumn(column, connectionType)),
+    [columns, connectionType]
+  )
 
-  const getData = async ({ limit }: { limit?: number }) => {
-    return limit ? filteredData.slice(0, limit) : filteredData
-  }
+  const getData: ExportDataProps['getData'] = ({ limit }) =>
+    Promise.resolve(limit ? filteredData.slice(0, limit) : filteredData)
+
+  const isEmpty = filteredData.length === 0
 
   return (
     <div className="h-full">
       <div className="flex h-10 items-center justify-between gap-2 pr-1 pl-4">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">Results</span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-muted-foreground text-xs">
             <NumberFlow value={filteredData.length} className="tabular-nums" />{' '}
             {filteredData.length === 1 ? 'row' : 'rows'}
-            {search && filteredData.length !== data.length && ` (filtered from ${data.length})`}
+            {search &&
+              filteredData.length !== data.length &&
+              ` (filtered from ${data.length})`}
           </span>
           <Separator orientation="vertical" className="h-4!" />
-          <span className="text-xs text-muted-foreground">
-            {duration.toFixed()}
+          <span className="text-muted-foreground text-xs">
+            {duration.toFixed(0)}
             ms
           </span>
         </div>
@@ -103,15 +179,10 @@ export function RunnerResultsTable({
             <Input
               placeholder="Search results..."
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               className="h-8 w-full pr-8 pl-7 text-sm"
             />
-            <RiSearchLine
-              className={`
-              absolute top-1/2 left-2 size-3.5 -translate-y-1/2
-              text-muted-foreground
-            `}
-            />
+            <RiSearchLine className="text-muted-foreground absolute top-1/2 left-2 size-3.5 -translate-y-1/2" />
             {search && (
               <Tooltip>
                 <TooltipTrigger
@@ -120,11 +191,7 @@ export function RunnerResultsTable({
                       variant="ghost"
                       size="icon-xs"
                       aria-label="Clear search"
-                      className="
-                        absolute top-1/2 right-1.5 -translate-y-1/2
-                        text-muted-foreground
-                        hover:bg-foreground/10 hover:text-foreground
-                      "
+                      className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground absolute top-1/2 right-1.5 -translate-y-1/2"
                       onClick={() => setSearch('')}
                     />
                   }
@@ -136,23 +203,7 @@ export function RunnerResultsTable({
             )}
           </div>
           <Separator orientation="vertical" className="h-6!" />
-          <ExportData
-            getData={getData}
-            filename="runner_results"
-            tooltip="Export results"
-            trigger={({ isExporting }) => (
-              <Button
-                variant="secondary"
-                size="icon-sm"
-                aria-label="Export results"
-                disabled={isExporting || filteredData.length === 0}
-              >
-                <LoadingContent loading={isExporting}>
-                  <RiExportLine />
-                </LoadingContent>
-              </Button>
-            )}
-          />
+          <ResultsExport getData={getData} disabled={isEmpty} />
         </div>
       </div>
       <TableProvider rows={filteredData} columns={tableColumns}>

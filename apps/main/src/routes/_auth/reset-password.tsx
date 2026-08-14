@@ -3,21 +3,18 @@ import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { FieldSet } from '@tamery/ui/components/field'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
-import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  getRouteApi,
+  redirect,
+  useNavigate,
+} from '@tanstack/react-router'
 import { type } from 'arktype'
 import { toast } from 'sonner'
 
 import { authClient } from '~/lib/auth'
 
-export const Route = createFileRoute('/_auth/reset-password')({
-  validateSearch: type({
-    token: 'string',
-  }),
-  onError: () => {
-    throw redirect({ to: '/forgot-password' })
-  },
-  component: ResetPasswordPage,
-})
+const routeApi = getRouteApi('/_auth/reset-password')
 
 const passwordSchema = type({
   password: type('string >= 8').configure({
@@ -28,9 +25,9 @@ const passwordSchema = type({
   }),
 })
 
-function ResetPasswordPage() {
+const ResetPasswordPage = () => {
   const navigate = useNavigate()
-  const { token } = Route.useSearch()
+  const { token } = routeApi.useSearch()
 
   const form = useAppForm({
     defaultValues: {
@@ -66,37 +63,37 @@ function ResetPasswordPage() {
     },
   })
 
-  const isSubmitting = useStore(form.store, state => state.isSubmitting)
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
 
   return (
     <>
       <div className="space-y-2">
-        <h1
-          className={`
-          flex items-center gap-2 text-2xl font-semibold tracking-tight
-        `}
-        >
+        <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
           Reset your password
         </h1>
-        <p className="text-sm text-muted-foreground">Enter your new password below.</p>
+        <p className="text-muted-foreground text-sm">
+          Enter your new password below.
+        </p>
       </div>
       <form
         className="space-y-4"
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           form.handleSubmit()
         }}
       >
         <FieldSet className="flex w-full flex-col gap-6">
           <form.AppField name="password">
-            {field => (
+            {(field) => (
               <field.Field>
                 <field.Label>New Password</field.Label>
                 <field.PasswordInput
                   autoFocus
                   autoComplete="new-password"
                   required
-                  aria-invalid={field.state.meta.isTouched && !field.state.meta.isValid}
+                  aria-invalid={
+                    field.state.meta.isTouched && !field.state.meta.isValid
+                  }
                   spellCheck={false}
                   autoCapitalize="none"
                 />
@@ -109,18 +106,20 @@ function ResetPasswordPage() {
             name="confirmPassword"
             validators={{
               onSubmit: ({ value, fieldApi }) =>
-                value !== fieldApi.form.getFieldValue('password')
-                  ? { message: 'Passwords do not match' }
-                  : undefined,
+                value === fieldApi.form.getFieldValue('password')
+                  ? undefined
+                  : { message: 'Passwords do not match' },
             }}
           >
-            {field => (
+            {(field) => (
               <field.Field>
                 <field.Label>Confirm Password</field.Label>
                 <field.PasswordInput
                   autoComplete="confirm-password"
                   required
-                  aria-invalid={field.state.meta.isTouched && !field.state.meta.isValid}
+                  aria-invalid={
+                    field.state.meta.isTouched && !field.state.meta.isValid
+                  }
                   spellCheck={false}
                   autoCapitalize="none"
                 />
@@ -129,10 +128,22 @@ function ResetPasswordPage() {
             )}
           </form.AppField>
           <Button className="w-full" type="submit" disabled={isSubmitting}>
-            <LoadingContent loading={isSubmitting}>Reset password</LoadingContent>
+            <LoadingContent loading={isSubmitting}>
+              Reset password
+            </LoadingContent>
           </Button>
         </FieldSet>
       </form>
     </>
   )
 }
+
+export const Route = createFileRoute('/_auth/reset-password')({
+  validateSearch: type({
+    token: 'string',
+  }),
+  onError: () => {
+    throw redirect({ to: '/forgot-password' })
+  },
+  component: ResetPasswordPage,
+})

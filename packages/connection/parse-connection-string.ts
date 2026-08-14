@@ -9,15 +9,18 @@ export interface Config {
   searchParams: URLSearchParams
 }
 
-export function parseConnectionString(connectionString: string): Config {
+export const parseConnectionString = (connectionString: string): Config => {
   const parsed = new SafeURL(connectionString)
 
   return {
-    user: parsed.username || undefined,
-    password: parsed.password || undefined,
+    database:
+      parsed.pathname && parsed.pathname !== '/'
+        ? parsed.pathname.slice(1)
+        : undefined,
     host: parsed.hostname,
-    port: parsed.port ? Number.parseInt(parsed.port, 10) : undefined,
-    database: parsed.pathname && parsed.pathname !== '/' ? parsed.pathname.slice(1) : undefined,
+    password: parsed.password || undefined,
+    port: parsed.port ? Math.trunc(Number(parsed.port)) : undefined,
     searchParams: parsed.searchParams,
+    user: parsed.username || undefined,
   }
 }

@@ -15,14 +15,18 @@ import { getOSIsomorphic } from '~/utils/os'
 
 const os = getOSIsomorphic()
 
-const iconsMap: Partial<Record<OS, (props: { className?: string }) => React.ReactNode>> = {
-  macos: ({ className }) => <RiAppleFill className={className} />,
+const iconsMap: Partial<
+  Record<OS, (props: { className?: string }) => React.ReactNode>
+> = {
   linux: ({ className }) => <Linux className={className} />,
+  macos: ({ className }) => <RiAppleFill className={className} />,
   windows: ({ className }) => <RiWindowsFill className={className} />,
 }
 
-export function DownloadButton({ className }: { className?: string }) {
-  const links = os ? DOWNLOAD_LINKS[os.type as keyof typeof DOWNLOAD_LINKS] : null
+export const DownloadButton = ({ className }: { className?: string }) => {
+  const links = os
+    ? DOWNLOAD_LINKS[os.type as keyof typeof DOWNLOAD_LINKS]
+    : null
 
   if (!os || !links) {
     return (
@@ -39,12 +43,19 @@ export function DownloadButton({ className }: { className?: string }) {
     link,
   }))
 
-  if (assets.length === 1) {
+  const [firstAsset] = assets
+  if (assets.length === 1 && firstAsset) {
     return (
       <Button
         size="lg"
         className={cn('flex items-center justify-center gap-2', className)}
-        render={<a href={assets[0]!.link} download aria-label={`Download for ${os.label}`} />}
+        render={
+          <a
+            href={firstAsset.link}
+            download
+            aria-label={`Download for ${os.label}`}
+          />
+        }
       >
         {Icon && <Icon className="size-4" />}
         Download for {os.label}
@@ -56,7 +67,10 @@ export function DownloadButton({ className }: { className?: string }) {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button size="lg" className={cn(`flex items-center justify-center gap-2`, className)} />
+          <Button
+            size="lg"
+            className={cn(`flex items-center justify-center gap-2`, className)}
+          />
         }
       >
         {Icon && <Icon className="size-4" />}
@@ -64,14 +78,14 @@ export function DownloadButton({ className }: { className?: string }) {
       </DropdownMenuTrigger>
       {assets.length > 1 && (
         <DropdownMenuContent>
-          {assets.map(asset => (
+          {assets.map((asset) => (
             <DropdownMenuItem
               key={asset.link}
               render={
                 <a
                   href={asset.link}
                   download
-                  className="flex gap-2 text-foreground"
+                  className="text-foreground flex gap-2"
                   aria-label={`Download ${asset.arch}`}
                 />
               }

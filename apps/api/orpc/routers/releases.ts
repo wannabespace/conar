@@ -9,12 +9,12 @@ export const releases = orpc.use(cacheMiddleware(60 * 60)).handler(async () => {
     repo: GITHUB_REPO_NAME,
   })
 
-  return data.map(release => ({
+  return data.map((release) => ({
+    body: release.body,
+    createdAt: release.created_at,
     id: release.id,
     name: release.name,
-    tagName: release.tag_name,
-    createdAt: release.created_at,
     publishedAt: release.published_at,
-    body: release.body,
+    tagName: release.tag_name,
   }))
 })

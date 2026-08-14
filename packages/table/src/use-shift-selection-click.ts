@@ -13,22 +13,22 @@ export interface UseShiftSelectionClickOptions<TItem> {
   onSelectionChange: (
     selected: TItem[],
     state: ShiftSelectionState,
-    lastClickedIndex: number,
+    lastClickedIndex: number
   ) => void
 }
 
-export function useShiftSelectionClick<TItem extends Record<string, unknown>>({
+export const useShiftSelectionClick = <TItem extends Record<string, unknown>>({
   rowKey,
   rowIndex,
   currentSelected,
   lastClickedIndex,
   getItemsInRange,
   onSelectionChange,
-}: UseShiftSelectionClickOptions<TItem>) {
+}: UseShiftSelectionClickOptions<TItem>) => {
   const shiftKeyRef = useRef(false)
 
-  const isSelected = currentSelected.some(row =>
-    Object.keys(rowKey).every(key => row[key] === rowKey[key]),
+  const isSelected = currentSelected.some((row) =>
+    Object.keys(rowKey).every((key) => row[key] === rowKey[key])
   )
 
   const handleMouseDown = (event: MouseEvent<HTMLInputElement>) => {
@@ -36,14 +36,20 @@ export function useShiftSelectionClick<TItem extends Record<string, unknown>>({
   }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === ' ' || event.key === 'Enter') shiftKeyRef.current = event.shiftKey
+    if (event.key === ' ' || event.key === 'Enter') {
+      shiftKeyRef.current = event.shiftKey
+    }
   }
 
   const handleChange = () => {
     const isShiftHeld = shiftKeyRef.current
     shiftKeyRef.current = false
 
-    if (isShiftHeld && lastClickedIndex !== null && lastClickedIndex !== rowIndex) {
+    if (
+      isShiftHeld &&
+      lastClickedIndex !== null &&
+      lastClickedIndex !== rowIndex
+    ) {
       const start = Math.min(lastClickedIndex, rowIndex)
       const end = Math.max(lastClickedIndex, rowIndex)
 
@@ -54,14 +60,14 @@ export function useShiftSelectionClick<TItem extends Record<string, unknown>>({
           focusIndex: rowIndex,
           lastExpandDirection: rowIndex > lastClickedIndex ? 'down' : 'up',
         },
-        rowIndex,
+        rowIndex
       )
       return
     }
 
     if (isSelected) {
       const newSelected = currentSelected.filter(
-        row => !Object.keys(rowKey).every(key => row[key] === rowKey[key]),
+        (row) => !Object.keys(rowKey).every((key) => row[key] === rowKey[key])
       )
       onSelectionChange(newSelected, INITIAL_SHIFT_SELECTION_STATE, rowIndex)
       return
@@ -69,10 +75,14 @@ export function useShiftSelectionClick<TItem extends Record<string, unknown>>({
 
     onSelectionChange(
       [...currentSelected, rowKey],
-      { anchorIndex: rowIndex, focusIndex: rowIndex, lastExpandDirection: null },
-      rowIndex,
+      {
+        anchorIndex: rowIndex,
+        focusIndex: rowIndex,
+        lastExpandDirection: null,
+      },
+      rowIndex
     )
   }
 
-  return { isSelected, handleMouseDown, handleKeyDown, handleChange }
+  return { handleChange, handleKeyDown, handleMouseDown, isSelected }
 }

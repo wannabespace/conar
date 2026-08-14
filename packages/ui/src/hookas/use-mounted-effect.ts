@@ -1,6 +1,9 @@
 import * as React from 'react'
 
-export function useMountedEffect(effect: React.EffectCallback, deps: React.DependencyList = []) {
+export const useMountedEffect = (
+  effect: React.EffectCallback,
+  deps: React.DependencyList = []
+) => {
   const isMountedRef = React.useRef(false)
 
   const effectEvent = React.useEffectEvent(effect)

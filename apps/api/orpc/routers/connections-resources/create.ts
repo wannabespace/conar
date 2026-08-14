@@ -16,13 +16,22 @@ const schema = connectionsResourcesInsertSchema
 
 export const create = orpc
   .use(authMiddleware)
-  .input(type.or(schema, schema.array()).pipe(data => (Array.isArray(data) ? data : [data])))
+  .input(
+    type
+      .or(schema, schema.array())
+      .pipe((data) => (Array.isArray(data) ? data : [data]))
+  )
   .handler(async ({ context, input }) => {
-    const connectionIds = input.map(item => item.connectionId)
+    const connectionIds = input.map((item) => item.connectionId)
     const foundConnections = await db
       .select({ id: connections.id })
       .from(connections)
-      .where(and(inArray(connections.id, connectionIds), eq(connections.userId, context.user.id)))
+      .where(
+        and(
+          inArray(connections.id, connectionIds),
+          eq(connections.userId, context.user.id)
+        )
+      )
 
     if (foundConnections.length === 0) {
       throw new ORPCError('NOT_FOUND', { message: 'Connections not found' })

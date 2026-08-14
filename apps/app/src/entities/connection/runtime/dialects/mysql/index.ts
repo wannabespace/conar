@@ -5,28 +5,26 @@ import { DummyDriver, MysqlAdapter, MysqlQueryCompiler } from 'kysely'
 import type { DialectOptions } from '..'
 import { createDialectProvider, createKyselyDriver } from '..'
 
-export function mysqlDialect(options: DialectOptions) {
-  return {
+export const mysqlDialect = (options: DialectOptions) =>
+  ({
+    createAdapter: () => new MysqlAdapter(),
     createDriver: () =>
       createKyselyDriver({
-        provider: createDialectProvider(ConnectionType.MySQL, options),
         logger: options.log,
+        provider: createDialectProvider(ConnectionType.MySQL, options),
       }),
-    createQueryCompiler: () => new MysqlQueryCompiler(),
-    createAdapter: () => new MysqlAdapter(),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },
-  } satisfies Dialect
-}
+    createQueryCompiler: () => new MysqlQueryCompiler(),
+  }) satisfies Dialect
 
-export function mysqlColdDialect() {
-  return {
-    createDriver: () => new DummyDriver(),
-    createQueryCompiler: () => new MysqlQueryCompiler(),
+export const mysqlColdDialect = () =>
+  ({
     createAdapter: () => new MysqlAdapter(),
+    createDriver: () => new DummyDriver(),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },
-  } satisfies Dialect
-}
+    createQueryCompiler: () => new MysqlQueryCompiler(),
+  }) satisfies Dialect

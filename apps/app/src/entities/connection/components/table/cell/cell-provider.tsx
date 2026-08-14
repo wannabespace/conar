@@ -7,7 +7,7 @@ import type { ValueTransformer } from '~/entities/connection/transformers'
 import { CellContext } from './cell-context'
 import type { Column } from './utils'
 
-export function TableCellProvider({
+export const TableCellProvider = ({
   rowIndex,
   children,
   onAddFilter,
@@ -29,25 +29,32 @@ export function TableCellProvider({
   onQueueValue?: (rowIndex: number, value: unknown) => unknown
   transformer: ValueTransformer
   children: React.ReactNode
-}) {
-  const [newValue, setNewValue] = useState(() => transformer.fromConnection(value).toUI())
-  const [rawValue, setRawValue] = useState(() => transformer.fromConnection(value).toRaw())
+}) => {
+  const [newValue, setNewValue] = useState(() =>
+    transformer.fromConnection(value).toUI()
+  )
+  const [rawValue, setRawValue] = useState(() =>
+    transformer.fromConnection(value).toRaw()
+  )
 
-  const queue = async (rawValue: unknown) => {
-    if (!onQueueValue) return
+  const queue = (queuedValue: unknown) => {
+    if (!onQueueValue) {
+      return
+    }
 
     try {
-      onQueueValue(rowIndex, rawValue)
-      setNewValue(transformer.fromConnection(rawValue).toUI())
-      setRawValue(transformer.fromConnection(rawValue).toRaw())
-    } catch (e) {
-      const error = e instanceof Error ? e : new Error(String(e))
-      console.error(error)
+      onQueueValue(rowIndex, queuedValue)
+      setNewValue(transformer.fromConnection(queuedValue).toUI())
+      setRawValue(transformer.fromConnection(queuedValue).toRaw())
+    } catch (error) {
+      const normalized =
+        error instanceof Error ? error : new Error(String(error))
+      console.error(normalized)
 
       toast.error(`Failed to queue value for "${column.id}"`, {
-        id: `queue-cell-error-${column.id}-${error.message}`,
-        description: error.message,
+        description: normalized.message,
         duration: 3000,
+        id: `queue-cell-error-${column.id}-${normalized.message}`,
       })
     }
   }
@@ -55,19 +62,19 @@ export function TableCellProvider({
   return (
     <CellContext
       value={{
-        rowIndex,
-        newValue,
-        setNewValue,
         column,
-        value,
-        onQueueValue: queue,
-        rawValue,
-        setRawValue,
-        transformer,
+        newValue,
         onAddFilter,
         onOrder,
-        order,
+        onQueueValue: queue,
         onRename,
+        order,
+        rawValue,
+        rowIndex,
+        setNewValue,
+        setRawValue,
+        transformer,
+        value,
       }}
     >
       {children}

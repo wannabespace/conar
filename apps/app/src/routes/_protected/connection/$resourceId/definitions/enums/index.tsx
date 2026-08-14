@@ -1,4 +1,9 @@
-import { RiLayoutColumnLine, RiListIndefinite, RiListUnordered, RiTable2 } from '@remixicon/react'
+import {
+  RiLayoutColumnLine,
+  RiListIndefinite,
+  RiListUnordered,
+  RiTable2,
+} from '@remixicon/react'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { title } from '@tamery/shared/utils/title'
 import { Badge } from '@tamery/ui/components/badge'
@@ -8,7 +13,7 @@ import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { SearchInput } from '@tamery/ui/components/custom/search-input'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
@@ -21,21 +26,12 @@ import { SchemaSelect } from '../-components/schema-select'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
-export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/enums/')({
-  component: DatabaseEnumsPage,
-  loader: ({ context }) => ({
-    connection: context.connection,
-    connectionResource: context.connectionResource,
-  }),
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [{ title: title('Enums', loaderData.connection.name, loaderData.connectionResource.name) }]
-      : [],
-  }),
-})
+const routeApi = getRouteApi(
+  '/_protected/connection/$resourceId/definitions/enums/'
+)
 
-function DatabaseEnumsPage() {
-  const { connection, connectionResource } = Route.useRouteContext()
+const DatabaseEnumsPage = () => {
+  const { connection, connectionResource } = routeApi.useRouteContext()
   const {
     data: enums,
     refetch,
@@ -43,28 +39,37 @@ function DatabaseEnumsPage() {
     isPending,
     dataUpdatedAt,
   } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
-  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({
-    connectionResource,
-  })
+  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
+    useDefinitionsState({
+      connectionResource,
+    })
 
   useRefreshHotkey(refetch, isFetching)
 
   const filteredEnums =
     enums
       ?.filter(
-        enumItem =>
+        (enumItem) =>
           enumItem.schema === selectedSchema &&
           (!search ||
             enumItem.name.toLowerCase().includes(search.toLowerCase()) ||
-            enumItem.values.some(value => value.toLowerCase().includes(search.toLowerCase())) ||
+            enumItem.values.some((value) =>
+              value.toLowerCase().includes(search.toLowerCase())
+            ) ||
             (!!enumItem.metadata?.table &&
-              enumItem.metadata.table.toLowerCase().includes(search.toLowerCase())) ||
+              enumItem.metadata.table
+                .toLowerCase()
+                .includes(search.toLowerCase())) ||
             (!!enumItem.metadata?.column &&
-              enumItem.metadata.column.toLowerCase().includes(search.toLowerCase()))),
+              enumItem.metadata.column
+                .toLowerCase()
+                .includes(search.toLowerCase())))
       )
-      .map(enumItem => ({
+      .map((enumItem) => ({
         ...enumItem,
-        values: enumItem.values.filter(value => value.toLowerCase().includes(search.toLowerCase())),
+        values: enumItem.values.filter((value) =>
+          value.toLowerCase().includes(search.toLowerCase())
+        ),
       })) ?? []
 
   return (
@@ -82,7 +87,7 @@ function DatabaseEnumsPage() {
           placeholder="Search enums"
           autoFocus
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
         <SchemaSelect
@@ -99,7 +104,7 @@ function DatabaseEnumsPage() {
           />
         )}
 
-        {filteredEnums.map(enumItem => (
+        {filteredEnums.map((enumItem) => (
           <CardMotion
             key={`${enumItem.schema}-${enumItem.name}-${enumItem.metadata?.table ?? ''}-${enumItem.metadata?.column ?? ''}`}
             layout
@@ -110,21 +115,16 @@ function DatabaseEnumsPage() {
                 <div>
                   <CardTitle className="flex items-center gap-2 text-base">
                     {enumItem.metadata?.isSet ? (
-                      <RiListIndefinite className="size-4 text-primary" />
+                      <RiListIndefinite className="text-primary size-4" />
                     ) : (
-                      <RiListUnordered className="size-4 text-primary" />
+                      <RiListUnordered className="text-primary size-4" />
                     )}
                     <HighlightText text={enumItem.name} match={search} />
                     <Badge variant="secondary" className="text-xs">
                       {enumItem.metadata?.isSet ? 'Set' : 'Enum'}
                     </Badge>
                   </CardTitle>
-                  <div
-                    className={`
-                    mt-2 flex flex-wrap items-center gap-2 text-sm
-                    text-muted-foreground
-                  `}
-                  >
+                  <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-2 text-sm">
                     {enumItem.metadata?.table && (
                       <>
                         <Badge variant="outline" className="text-xs">
@@ -134,7 +134,10 @@ function DatabaseEnumsPage() {
                         {enumItem.metadata.column && (
                           <>
                             <span>on</span>
-                            <Badge variant="outline" className="font-mono text-xs">
+                            <Badge
+                              variant="outline"
+                              className="font-mono text-xs"
+                            >
                               <RiLayoutColumnLine className="size-3" />
                               {enumItem.metadata.column}
                             </Badge>
@@ -143,7 +146,7 @@ function DatabaseEnumsPage() {
                       </>
                     )}
                     <AnimatePresence initial={false} mode="popLayout">
-                      {enumItem.values.map(value => (
+                      {enumItem.values.map((value) => (
                         <HighlightText
                           key={value}
                           text={value}
@@ -154,10 +157,13 @@ function DatabaseEnumsPage() {
                                 variant="outline"
                                 className={cn(
                                   'text-xs',
-                                  matched && 'border-primary/30 bg-primary/10',
+                                  matched && 'border-primary/30 bg-primary/10'
                                 )}
                               >
-                                <span dangerouslySetInnerHTML={{ __html: html }} />
+                                <span
+                                  // oxlint-disable-next-line react/no-danger -- HighlightText markup is escaped
+                                  dangerouslySetInnerHTML={{ __html: html }}
+                                />
                               </Badge>
                             </motion.div>
                           )}
@@ -174,3 +180,26 @@ function DatabaseEnumsPage() {
     </>
   )
 }
+
+export const Route = createFileRoute(
+  '/_protected/connection/$resourceId/definitions/enums/'
+)({
+  component: DatabaseEnumsPage,
+  loader: ({ context }) => ({
+    connection: context.connection,
+    connectionResource: context.connectionResource,
+  }),
+  head: ({ loaderData }) => ({
+    meta: loaderData
+      ? [
+          {
+            title: title(
+              'Enums',
+              loaderData.connection.name,
+              loaderData.connectionResource.name
+            ),
+          },
+        ]
+      : [],
+  }),
+})

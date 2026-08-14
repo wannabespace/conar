@@ -17,32 +17,32 @@ import { toast } from 'sonner'
 
 import { orpc } from '~/lib/orpc'
 
-export function SupportDialog({
+export const SupportDialog = ({
   open,
   onOpenChange,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-}) {
+}) => {
   const [message, setMessage] = useState('')
 
   const { mutate: sendSupport, isPending: loading } = useMutation(
     orpc.contact.mutationOptions({
+      onError: (err) => {
+        console.error(err)
+        toast.error('Failed to send message. Please try again later.')
+      },
       onSuccess: () => {
         toast.success(
-          'Support message sent successfully! We will get back to you as soon as possible.',
+          'Support message sent successfully! We will get back to you as soon as possible.'
         )
         onOpenChange(false)
         setMessage('')
       },
-      onError: err => {
-        console.error(err)
-        toast.error('Failed to send message. Please try again later.')
-      },
-    }),
+    })
   )
 
-  function handleSubmit(e: React.SubmitEvent) {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault()
     sendSupport({ message })
   }
@@ -53,7 +53,8 @@ export function SupportDialog({
         <DialogHeader>
           <DialogTitle>Contact Support</DialogTitle>
           <DialogDescription>
-            Have a question, suggestion, or need assistance? We're here to listen!
+            Have a question, suggestion, or need assistance? We&apos;re here to
+            listen!
           </DialogDescription>
         </DialogHeader>
         <div>
@@ -63,7 +64,7 @@ export function SupportDialog({
               <Textarea
                 id="support-message"
                 value={message}
-                onChange={e => setMessage(e.target.value)}
+                onChange={(e) => setMessage(e.target.value)}
                 required
                 placeholder="Type any message you'd like to send us"
                 className="min-h-48"
@@ -72,8 +73,14 @@ export function SupportDialog({
           </form>
         </div>
         <DialogFooter>
-          <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
-          <Button type="submit" form="support-form" disabled={loading || !message}>
+          <DialogClose render={<Button type="button" variant="outline" />}>
+            Cancel
+          </DialogClose>
+          <Button
+            type="submit"
+            form="support-form"
+            disabled={loading || !message}
+          >
             <LoadingContent loading={loading}>Send</LoadingContent>
           </Button>
         </DialogFooter>

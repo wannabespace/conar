@@ -1,4 +1,9 @@
-import { RiFileList3Line, RiKey2Line, RiLayoutColumnLine, RiTable2 } from '@remixicon/react'
+import {
+  RiFileList3Line,
+  RiKey2Line,
+  RiLayoutColumnLine,
+  RiTable2,
+} from '@remixicon/react'
 import { title } from '@tamery/shared/utils/title'
 import { Badge } from '@tamery/ui/components/badge'
 import { CardContent, CardTitle } from '@tamery/ui/components/card'
@@ -13,7 +18,7 @@ import {
   SelectValue,
 } from '@tamery/ui/components/select'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import type { indexesType } from '~/entities/connection/queries'
@@ -26,23 +31,6 @@ import { DefinitionsHeader } from '../-components/header'
 import { SchemaSelect } from '../-components/schema-select'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
-
-export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/indexes/')({
-  component: DatabaseIndexesPage,
-  loader: ({ context }) => ({
-    connection: context.connection,
-    connectionResource: context.connectionResource,
-  }),
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          {
-            title: title('Indexes', loaderData.connection.name, loaderData.connectionResource.name),
-          },
-        ]
-      : [],
-  }),
-})
 
 type IndexItem = typeof indexesType.infer
 
@@ -63,30 +51,27 @@ const filterOptions: { label: string; value: IndexType | 'all' }[] = [
   { label: 'Regular Index', value: 'regular' },
 ]
 
-function DatabaseIndexesPage() {
-  const { connectionResource } = Route.useRouteContext()
-  const {
-    data: indexes,
-    refetch,
-    isFetching,
-    isPending,
-    dataUpdatedAt,
-  } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
-  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({
-    connectionResource,
-  })
-  const [filterType, setFilterType] = useState<(typeof filterOptions)[number]['value']>('all')
+const groupIndexes = (
+  indexes: IndexItem[] | undefined,
+  selectedSchema: string | undefined,
+  filterType: (typeof filterOptions)[number]['value'],
+  search: string
+): Record<string, GroupedIndex> => {
+  const grouped: Record<string, GroupedIndex> = {}
 
-  useRefreshHotkey(refetch, isFetching)
-
-  const groupedIndexes = indexes?.reduce<Record<string, GroupedIndex>>((acc, indexItem) => {
-    if (indexItem.schema !== selectedSchema) return acc
+  for (const indexItem of indexes ?? []) {
+    if (indexItem.schema !== selectedSchema) {
+      continue
+    }
 
     const matchesFilter =
       filterType === 'all' ||
-      filterOptions.find(option => option.value === filterType)?.value === indexItem.type
+      filterOptions.find((option) => option.value === filterType)?.value ===
+        indexItem.type
 
-    if (!matchesFilter) return acc
+    if (!matchesFilter) {
+      continue
+    }
 
     const matchesSearch =
       !search ||
@@ -94,34 +79,66 @@ function DatabaseIndexesPage() {
       indexItem.table.toLowerCase().includes(search.toLowerCase()) ||
       indexItem.column?.toLowerCase().includes(search.toLowerCase())
 
-    if (!matchesSearch) return acc
+    if (!matchesSearch) {
+      continue
+    }
 
     const key = `${indexItem.schema}-${indexItem.table}-${indexItem.name}`
+    const existing = grouped[key]
 
-    return {
-      ...acc,
-      [key]: acc[key]
-        ? {
-            ...acc[key],
-            columns:
-              indexItem.column && !acc[key].columns.includes(indexItem.column)
-                ? [...acc[key].columns, indexItem.column]
-                : acc[key].columns,
-            customExpressions:
-              indexItem.customExpression &&
-              !acc[key].customExpressions.includes(indexItem.customExpression)
-                ? [...acc[key].customExpressions, indexItem.customExpression]
-                : acc[key].customExpressions,
-          }
-        : {
-            ...indexItem,
-            columns: indexItem.column ? [indexItem.column] : [],
-            customExpressions: indexItem.customExpression ? [indexItem.customExpression] : [],
-          },
+    if (existing) {
+      if (indexItem.column && !existing.columns.includes(indexItem.column)) {
+        existing.columns.push(indexItem.column)
+      }
+      if (
+        indexItem.customExpression &&
+        !existing.customExpressions.includes(indexItem.customExpression)
+      ) {
+        existing.customExpressions.push(indexItem.customExpression)
+      }
+    } else {
+      grouped[key] = {
+        ...indexItem,
+        columns: indexItem.column ? [indexItem.column] : [],
+        customExpressions: indexItem.customExpression
+          ? [indexItem.customExpression]
+          : [],
+      }
     }
-  }, {})
+  }
 
-  const indexList = Object.values(groupedIndexes ?? {})
+  return grouped
+}
+
+const routeApi = getRouteApi(
+  '/_protected/connection/$resourceId/definitions/indexes/'
+)
+
+const DatabaseIndexesPage = () => {
+  const { connectionResource } = routeApi.useRouteContext()
+  const {
+    data: indexes,
+    refetch,
+    isFetching,
+    isPending,
+    dataUpdatedAt,
+  } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
+  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
+    useDefinitionsState({
+      connectionResource,
+    })
+  const [filterType, setFilterType] =
+    useState<(typeof filterOptions)[number]['value']>('all')
+
+  useRefreshHotkey(refetch, isFetching)
+
+  const groupedIndexes = groupIndexes(
+    indexes,
+    selectedSchema,
+    filterType,
+    search
+  )
+  const indexList = Object.values(groupedIndexes)
 
   return (
     <>
@@ -137,12 +154,12 @@ function DatabaseIndexesPage() {
           placeholder="Search indexes"
           autoFocus
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
         <Select
           value={filterType}
-          onValueChange={v => {
+          onValueChange={(v) => {
             if (v) {
               setFilterType(v)
             }
@@ -150,13 +167,16 @@ function DatabaseIndexesPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Type">
-              {value =>
-                value ? filterOptions.find(option => option.value === value)?.label : 'Filter Type'
+              {(value) =>
+                value
+                  ? filterOptions.find((option) => option.value === value)
+                      ?.label
+                  : 'Filter Type'
               }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {filterOptions.map(option => (
+            {filterOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -177,7 +197,7 @@ function DatabaseIndexesPage() {
           />
         )}
 
-        {indexList.map(item => (
+        {indexList.map((item) => (
           <CardMotion
             key={`${item.schema}-${item.table}-${item.name}`}
             layout
@@ -188,32 +208,35 @@ function DatabaseIndexesPage() {
                 <div>
                   <CardTitle className="mb-2 flex items-center gap-2 text-base">
                     {item.isPrimary ? (
-                      <RiKey2Line className="size-4 text-primary" />
+                      <RiKey2Line className="text-primary size-4" />
                     ) : (
-                      <RiFileList3Line className="size-4 text-primary" />
+                      <RiFileList3Line className="text-primary size-4" />
                     )}
                     <HighlightText text={item.name} match={search} />
-                    {item.isPrimary && <Badge variant="secondary">Primary Key</Badge>}
-                    {item.isUnique && !item.isPrimary && <Badge variant="secondary">Unique</Badge>}
+                    {item.isPrimary && (
+                      <Badge variant="secondary">Primary Key</Badge>
+                    )}
+                    {item.isUnique && !item.isPrimary && (
+                      <Badge variant="secondary">Unique</Badge>
+                    )}
                   </CardTitle>
-                  <div
-                    className={`
-                    flex items-center gap-1.5 text-sm text-muted-foreground
-                  `}
-                  >
+                  <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
                     <Badge variant="outline">
                       <RiTable2 className="size-3" />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
-                    {(item.columns.length > 0 || item.customExpressions.length > 0) && (
+                    {(item.columns.length > 0 ||
+                      item.customExpressions.length > 0) && (
                       <>
                         <span>on</span>
-                        {[...item.columns, ...item.customExpressions].map(col => (
-                          <Badge key={col} variant="outline">
-                            <RiLayoutColumnLine className="size-3" />
-                            <HighlightText text={col} match={search} />
-                          </Badge>
-                        ))}
+                        {[...item.columns, ...item.customExpressions].map(
+                          (col) => (
+                            <Badge key={col} variant="outline">
+                              <RiLayoutColumnLine className="size-3" />
+                              <HighlightText text={col} match={search} />
+                            </Badge>
+                          )
+                        )}
                       </>
                     )}
                   </div>
@@ -226,3 +249,26 @@ function DatabaseIndexesPage() {
     </>
   )
 }
+
+export const Route = createFileRoute(
+  '/_protected/connection/$resourceId/definitions/indexes/'
+)({
+  component: DatabaseIndexesPage,
+  loader: ({ context }) => ({
+    connection: context.connection,
+    connectionResource: context.connectionResource,
+  }),
+  head: ({ loaderData }) => ({
+    meta: loaderData
+      ? [
+          {
+            title: title(
+              'Indexes',
+              loaderData.connection.name,
+              loaderData.connectionResource.name
+            ),
+          },
+        ]
+      : [],
+  }),
+})

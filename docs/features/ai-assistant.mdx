@@ -7,9 +7,9 @@ description: "Tamery's schema-aware AI assistant writes, explains, fixes, and op
 The AI assistant has full context of your connected database — tables, column types, relationships — so it writes accurate SQL without you pasting schema into every message. It's available in the chat panel and powers inline editor and table-browser features.
 
 <Note>
-  The assistant only runs read-only queries through its database tool. It never runs `INSERT`,
-  `UPDATE`, `DELETE`, or `DROP` on its own — data changes go through the table browser or SQL
-  editor.
+  The assistant only runs read-only queries through its database tool. It never
+  runs `INSERT`, `UPDATE`, `DELETE`, or `DROP` on its own — data changes go
+  through the table browser or SQL editor.
 </Note>
 
 ## Chat
@@ -43,13 +43,25 @@ The assistant is a subscription feature. See [Plans](/account/plans).
 ## What it can do
 
 <CardGroup cols={2}>
-  <Card title="Write SQL from English" icon="pen-nib" href="/features/sql-editor">
+  <Card
+    title="Write SQL from English"
+    icon="pen-nib"
+    href="/features/sql-editor"
+  >
     Describe the data; get a complete query using your real schema.
   </Card>
-  <Card title="Explain queries" icon="magnifying-glass" href="/features/sql-editor">
+  <Card
+    title="Explain queries"
+    icon="magnifying-glass"
+    href="/features/sql-editor"
+  >
     Paste SQL and ask for a step-by-step explanation.
   </Card>
-  <Card title="Fix errors" icon="circle-exclamation" href="/features/sql-editor">
+  <Card
+    title="Fix errors"
+    icon="circle-exclamation"
+    href="/features/sql-editor"
+  >
     Share an error (or use the inline Fix button) for a corrected query.
   </Card>
   <Card title="Optimize / refactor" icon="sliders" href="/features/sql-editor">
@@ -58,7 +70,11 @@ The assistant is a subscription feature. See [Plans](/account/plans).
   <Card title="Query your database" icon="database" href="/features/sql-editor">
     Runs SELECTs to check counts or sample data when answering.
   </Card>
-  <Card title="Filters from English" icon="filter" href="/features/table-browser">
+  <Card
+    title="Filters from English"
+    icon="filter"
+    href="/features/table-browser"
+  >
     Describe the rows you want; get structured filter conditions.
   </Card>
 </CardGroup>
@@ -75,18 +91,18 @@ Click **Enhance** before sending to rewrite a vague message into a clearer one, 
     <kbd>⌘</kbd> <kbd>F</kbd>.
   </Step>
   <Step title="Describe the filter">
-    Type, e.g. *"orders in the last 30 days over $500 that haven't shipped"*, then choose **Ask
-    AI**.
+    Type, e.g. *"orders in the last 30 days over $500 that haven't shipped"*,
+    then choose **Ask AI**.
   </Step>
   <Step title="Review and adjust">
-    The AI builds structured filter chips in the field. Edit any chip's column, operator, or value
-    directly.
+    The AI builds structured filter chips in the field. Edit any chip's column,
+    operator, or value directly.
   </Step>
 </Steps>
 
 <Note>
-  Free accounts get a limited number of AI filter uses per month. Paid plans are unlimited. See
-  [Plans](/account/plans).
+  Free accounts get a limited number of AI filter uses per month. Paid plans are
+  unlimited. See [Plans](/account/plans).
 </Note>
 
 ## AI data seeding

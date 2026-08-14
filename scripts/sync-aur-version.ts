@@ -1,13 +1,10 @@
-/* oxlint-disable no-console */
 import { Buffer } from 'node:buffer'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
-import { fileURLToPath } from 'node:url'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __dirname = import.meta.dirname
 
 const ROOT = path.join(__dirname, '..')
 const DESKTOP_PKG_JSON = path.join(ROOT, 'apps', 'desktop', 'package.json')
@@ -17,7 +14,7 @@ const SRCINFO_PATH = path.join(AUR_DIR, '.SRCINFO')
 
 const DEB_URL = 'https://download.tamery.app/linux/deb/x64'
 
-function getDesktopVersion(): string {
+const getDesktopVersion = (): string => {
   const pkg = JSON.parse(fs.readFileSync(DESKTOP_PKG_JSON, 'utf-8'))
   const v = pkg.version
   if (!v || typeof v !== 'string') {
@@ -26,12 +23,12 @@ function getDesktopVersion(): string {
   return v
 }
 
-const pkgverRe = /^(\s*pkgver = ).*$/m
+const pkgverRe = /^(?<prefix>\s*pkgver = ).*$/mu
 const sourceRe =
-  /^(\s*source_x86_64 = )tamery-[^:]+(::https:\/\/download\.tamery\.app\/linux\/deb\/x64)$/m
-const sha256Re = /^(\s*sha256sums_x86_64 = ).*$/m
+  /^(?<prefix>\s*source_x86_64 = )tamery-[^:]+(?<suffix>::https:\/\/download\.tamery\.app\/linux\/deb\/x64)$/mu
+const sha256Re = /^(?<prefix>\s*sha256sums_x86_64 = ).*$/mu
 
-function updatePkgbuild(version: string, sha256: string | null): boolean {
+const updatePkgbuild = (version: string, sha256: string | null): boolean => {
   const original = fs.readFileSync(PKGBUILD_PATH, 'utf-8')
   let content = original.replace(pkgverRe, `pkgver=${version}`)
   if (sha256) {
@@ -44,23 +41,23 @@ function updatePkgbuild(version: string, sha256: string | null): boolean {
   return changed
 }
 
-function updateSrcinfo(version: string, sha256: string | null): boolean {
+const updateSrcinfo = (version: string, sha256: string | null): boolean => {
   let content = fs.readFileSync(SRCINFO_PATH, 'utf-8')
 
   let changed = false
-  const newPkgver = `$1${version}`
+  const newPkgver = `$<prefix>${version}`
   if (content.replace(pkgverRe, newPkgver) !== content) {
     content = content.replace(pkgverRe, newPkgver)
     changed = true
   }
-  const newSource = `$1tamery-${version}.deb$2`
+  const newSource = `$<prefix>tamery-${version}.deb$<suffix>`
   if (content.replace(sourceRe, newSource) !== content) {
     content = content.replace(sourceRe, newSource)
     changed = true
   }
   const newSha256 = sha256 ?? 'SKIP'
-  if (content.replace(sha256Re, `$1${newSha256}`) !== content) {
-    content = content.replace(sha256Re, `$1${newSha256}`)
+  if (content.replace(sha256Re, `$<prefix>${newSha256}`) !== content) {
+    content = content.replace(sha256Re, `$<prefix>${newSha256}`)
     changed = true
   }
 
@@ -68,16 +65,18 @@ function updateSrcinfo(version: string, sha256: string | null): boolean {
   return changed
 }
 
-async function fetchDebSha256(): Promise<string> {
+const fetchDebSha256 = async (): Promise<string> => {
   const res = await fetch(DEB_URL, { redirect: 'follow' })
   if (!res.ok) {
-    throw new Error(`Failed to fetch ${DEB_URL}: ${res.status} ${res.statusText}`)
+    throw new Error(
+      `Failed to fetch ${DEB_URL}: ${res.status} ${res.statusText}`
+    )
   }
   const buf = Buffer.from((await res.arrayBuffer()) as ArrayBuffer)
   return crypto.createHash('sha256').update(buf).digest('hex')
 }
 
-async function main() {
+const main = async () => {
   const withChecksum = process.argv.includes('--checksum')
 
   const version = getDesktopVersion()
@@ -96,14 +95,18 @@ async function main() {
   if (pkgbuildChanged || srcinfoChanged) {
     console.log('Updated aur/PKGBUILD and/or aur/.SRCINFO to version', version)
     if (!sha256) {
-      console.log('Tip: run with --checksum to update sha256sums (recommended for releases).')
+      console.log(
+        'Tip: run with --checksum to update sha256sums (recommended for releases).'
+      )
     }
   } else {
     console.log('AUR files already in sync with version', version)
   }
 }
 
-main().catch(err => {
-  console.error(err)
+try {
+  await main()
+} catch (error) {
+  console.error(error)
   process.exit(1)
-})
+}

@@ -1,5 +1,9 @@
 import { RiInformationLine } from '@remixicon/react'
-import { Alert, AlertDescription, AlertTitle } from '@tamery/ui/components/alert'
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
@@ -33,7 +37,7 @@ interface RenameColumnDialogProps {
   } | null>
 }
 
-export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
+export const RenameColumnDialog = ({ ref }: RenameColumnDialogProps) => {
   const { connectionResource } = useRouteContext()
   const [newColumnName, setNewColumnName] = useState('')
   const [schema, setSchema] = useState('')
@@ -42,11 +46,11 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
   const [open, setOpen] = useState(false)
 
   useImperativeHandle(ref, () => ({
-    rename: (schema: string, table: string, column: string) => {
-      setSchema(schema)
-      setTable(table)
-      setColumn(column)
-      setNewColumnName(column)
+    rename: (schemaName: string, tableName: string, columnName: string) => {
+      setSchema(schemaName)
+      setTable(tableName)
+      setColumn(columnName)
+      setNewColumnName(columnName)
       setOpen(true)
     },
   }))
@@ -61,11 +65,13 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
       }).run(await connectionResourceToQueryParams(connectionResource))
     },
     onSuccess: async () => {
-      toast.success(`Column "${column}" successfully renamed to "${newColumnName}"`)
+      toast.success(
+        `Column "${column}" successfully renamed to "${newColumnName}"`
+      )
       setOpen(false)
 
       await queryClient.invalidateQueries(
-        resourceTableColumnsQueryOptions({ connectionResource, table, schema }),
+        resourceTableColumnsQueryOptions({ connectionResource, table, schema })
       )
       await queryClient.invalidateQueries({
         queryKey: resourceRowsQueryInfiniteOptions({
@@ -76,12 +82,13 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
         }).queryKey.slice(0, -1),
       })
     },
-    onError: error => {
+    onError: (error) => {
       toast.error(`Failed to rename column "${error.message}".`)
     },
   })
 
-  const canConfirm = newColumnName.trim() !== '' && newColumnName.trim() !== column && !isPending
+  const canConfirm =
+    newColumnName.trim() !== '' && newColumnName.trim() !== column && !isPending
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -92,9 +99,12 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
         <div className="space-y-4">
           <Alert>
             <RiInformationLine className="size-5 text-blue-500" />
-            <AlertTitle data-mask>Rename column "{column}"</AlertTitle>
+            <AlertTitle data-mask>
+              Rename column &quot;{column}&quot;
+            </AlertTitle>
             <AlertDescription data-mask>
-              This will rename the column from "{column}" to the new name you specify.
+              This will rename the column from &quot;{column}&quot; to the new
+              name you specify.
             </AlertDescription>
           </Alert>
           <div className="space-y-2">
@@ -105,8 +115,8 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
               placeholder="Enter new column name"
               spellCheck={false}
               autoComplete="off"
-              onChange={e => setNewColumnName(e.target.value)}
-              onKeyDown={e => {
+              onChange={(e) => setNewColumnName(e.target.value)}
+              onKeyDown={(e) => {
                 if (e.key === 'Enter' && canConfirm) {
                   renameColumn()
                 }
@@ -115,7 +125,9 @@ export function RenameColumnDialog({ ref }: RenameColumnDialogProps) {
           </div>
         </div>
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+          <DialogClose render={<Button variant="outline" />}>
+            Cancel
+          </DialogClose>
           <Button
             disabled={!canConfirm}
             onClick={() => {

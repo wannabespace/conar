@@ -14,17 +14,17 @@ const getAuthHeadersIsomorphic = createIsomorphicFn()
     const request = getRequest()
 
     return {
+      cookie: request.headers.get('cookie') ?? '',
       'user-agent': request.headers.get('user-agent') ?? '',
-      'cookie': request.headers.get('cookie') ?? '',
     }
   })
   .client(() => ({}))
 
 export const authClient = createAuthClient({
-  baseURL: import.meta.env.VITE_PUBLIC_API_URL,
   basePath: '/auth',
+  baseURL: import.meta.env.VITE_PUBLIC_API_URL,
   fetchOptions: {
-    onRequest: request => {
+    onRequest: (request) => {
       const headers = getAuthHeadersIsomorphic()
 
       for (const [key, value] of Object.entries(headers)) {
@@ -48,8 +48,14 @@ const LAST_USED_LOGIN_METHOD_COOKIE = 'better-auth.last_used_login_method'
 export const getLastUsedLoginMethod = createIsomorphicFn()
   .server(() => {
     const cookie = getRequest().headers.get('cookie') ?? ''
-    const match = cookie.match(new RegExp(`(?:^|; )${LAST_USED_LOGIN_METHOD_COOKIE}=([^;]+)`))
+    const match = cookie.match(
+      new RegExp(
+        `(?:^|; )${LAST_USED_LOGIN_METHOD_COOKIE}=(?<value>[^;]+)`,
+        'u'
+      )
+    )
 
-    return match ? decodeURIComponent(match[1]!) : null
+    const value = match?.groups?.value
+    return value ? decodeURIComponent(value) : null
   })
   .client(() => authClient.getLastUsedLoginMethod())

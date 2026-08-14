@@ -2,7 +2,11 @@ import * as React from 'react'
 
 import { useDebouncedCallback } from './use-debounced-callback'
 
-export function useDebouncedMemo<T>(factory: () => T, deps: React.DependencyList, delay: number) {
+export const useDebouncedMemo = <T>(
+  factory: () => T,
+  deps: React.DependencyList,
+  delay: number
+) => {
   const [state, setState] = React.useState<T>(() => factory())
 
   const factoryEvent = React.useEffectEvent(factory)
@@ -13,7 +17,7 @@ export function useDebouncedMemo<T>(factory: () => T, deps: React.DependencyList
       setState(value)
     },
     [],
-    delay,
+    delay
   )
 
   React.useEffect(() => {

@@ -24,20 +24,21 @@ const handler = new RPCHandler(router, {
       } catch (error) {
         context.addLogData({
           error: {
-            type: error instanceof Error ? error.constructor.name : typeof error,
-            message: error instanceof Error ? error.message : String(error),
             cause: error instanceof Error ? error.cause : undefined,
+            message: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
+            type:
+              error instanceof Error ? error.constructor.name : typeof error,
           },
         })
 
         if (error instanceof ORPCError) {
           if (error.cause instanceof ValidationError) {
             const message = error.cause.issues
-              .map(issue =>
+              .map((issue) =>
                 issue.path
                   ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
-                  : issue.message,
+                  : issue.message
               )
               .join(', ')
 
@@ -47,7 +48,9 @@ const handler = new RPCHandler(router, {
           throw error
         }
 
-        throw new ORPCError('INTERNAL_SERVER_ERROR', { message: 'An unexpected error occurred' })
+        throw new ORPCError('INTERNAL_SERVER_ERROR', {
+          message: 'An unexpected error occurred',
+        })
       }
     },
   ],
@@ -68,19 +71,28 @@ const app = new Hono<{
 }>()
   .use(
     cors({
+      credentials: true,
       origin(origin) {
         const allowedOrigins = ['https://tamery.app']
-        if (nodeEnv === 'development' && origin.startsWith('http://localhost:')) return origin
-        return origin.endsWith('.tamery.app') || allowedOrigins.includes(origin) ? origin : null
+        if (
+          nodeEnv === 'development' &&
+          origin.startsWith('http://localhost:')
+        ) {
+          return origin
+        }
+        return origin.endsWith('.tamery.app') || allowedOrigins.includes(origin)
+          ? origin
+          : null
       },
-      credentials: true,
-    }),
+    })
   )
-  .get('/', c => c.redirect(env.MAIN_URL))
+  .get('/', (c) => c.redirect(env.MAIN_URL))
   .use('*', async (c, next) => {
     const startTime = Date.now()
     const xAppVersion =
-      (c.req.header('x-app-version') || c.req.header('x-desktop-version'))?.split('.') || null
+      (
+        c.req.header('x-app-version') || c.req.header('x-desktop-version')
+      )?.split('.') || null
     c.set('logEvent', {})
     const parsedAppVersion = xAppVersion
       ? {
@@ -94,13 +106,15 @@ const app = new Hono<{
       'isAppOutdated',
       !!env.MIN_DESKTOP_VERSION &&
         !!parsedAppVersion?.minor &&
-        parsedAppVersion.minor < env.MIN_DESKTOP_VERSION,
+        parsedAppVersion.minor < env.MIN_DESKTOP_VERSION
     )
 
+    // Logging runs after the downstream handlers; must not return next().
+    // oxlint-disable-next-line node/callback-return
     await next()
 
-    const status = c.res.status
-    const method = c.req.method
+    const { status } = c.res
+    const { method } = c.req
     const path = new URL(c.req.url).pathname
     const userAgent = c.req.header('User-Agent')
     const version = c.req.header('x-app-version')
@@ -111,10 +125,10 @@ const app = new Hono<{
     }
 
     const logInfo = {
-      method,
-      status,
-      path,
       duration: `${Date.now() - startTime}ms`,
+      method,
+      path,
+      status,
       ...(version ? { version } : {}),
       ...(userAgent ? { userAgent } : {}),
       ...sanitizeLogData(logEvent),
@@ -128,17 +142,21 @@ const app = new Hono<{
       !c.req.url.includes('healthcheck.railway.app')
     ) {
       sendEmail({
-        to: env.ALERTS_EMAIL,
+        props: {
+          service: 'API',
+          text: JSON.stringify(logInfo, null, 2),
+        },
         subject: `Alert from API: ${status} ${method} ${c.req.url}`,
         template: 'Alert',
-        props: {
-          text: JSON.stringify(logInfo, null, 2),
-          service: 'API',
-        },
+        to: env.ALERTS_EMAIL,
       })
     }
 
-    const log = JSON.stringify(logInfo, null, nodeEnv === 'production' ? undefined : 2)
+    const log = JSON.stringify(
+      logInfo,
+      null,
+      nodeEnv === 'production' ? undefined : 2
+    )
 
     if (status >= 400) {
       console.error(log)
@@ -147,7 +165,7 @@ const app = new Hono<{
       console.info(log)
     }
   })
-  .on(['GET', 'POST'], '/auth/*', c => {
+  .on(['GET', 'POST'], '/auth/*', (c) => {
     const req = c.req.raw
 
     const origin = req.headers.get('origin')
@@ -160,15 +178,15 @@ const app = new Hono<{
   })
   .use('/rpc/*', async (c, next) => {
     const { matched, response } = await handler.handle(c.req.raw.clone(), {
-      prefix: '/rpc',
       context: createContext(c),
+      prefix: '/rpc',
     })
 
     if (matched) {
       return c.newResponse(response.body, response)
     }
 
-    await next()
+    return next()
   })
   .route('/health', healthRouter)
 

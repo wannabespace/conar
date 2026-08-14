@@ -6,9 +6,7 @@ import { clearToken, getToken } from '~/config'
 import { getSession } from '~/session'
 
 export const whoamiCommand = command({
-  name: 'whoami',
   desc: 'Show the currently signed-in user',
-  options: {},
   handler: async () => {
     if (!getToken()) {
       consola.info('Not signed in.')
@@ -21,10 +19,14 @@ export const whoamiCommand = command({
 
     if (!session) {
       clearToken()
-      consola.warn('Saved session is no longer valid. Run `tamery login` to sign in again.')
+      consola.warn(
+        'Saved session is no longer valid. Run `tamery login` to sign in again.'
+      )
       return
     }
 
     consola.log(session.user.email)
   },
+  name: 'whoami',
+  options: {},
 })

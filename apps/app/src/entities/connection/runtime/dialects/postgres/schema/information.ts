@@ -91,7 +91,12 @@ interface TableConstraints {
   table_catalog: string
   table_schema: string
   table_name: string
-  constraint_type: 'PRIMARY KEY' | 'UNIQUE' | 'FOREIGN KEY' | 'CHECK' | 'EXCLUSION'
+  constraint_type:
+    | 'PRIMARY KEY'
+    | 'UNIQUE'
+    | 'FOREIGN KEY'
+    | 'CHECK'
+    | 'EXCLUSION'
   is_deferrable: 'YES' | 'NO'
   initially_deferred: 'YES' | 'NO'
   enforced: 'YES' | 'NO'

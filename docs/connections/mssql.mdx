@@ -30,11 +30,11 @@ sqlserver://username:password@your-server.database.windows.net:1433/your-databas
 
 Both default to `true` when unset.
 
-| Parameter                      | Description                                                     |
-| ------------------------------ | --------------------------------------------------------------- |
-| `encrypt=true`                 | Encrypt the connection. Required for Azure SQL.                 |
-| `encrypt=false`                | No encryption. Local dev only.                                  |
-| `trustServerCertificate=true`  | Skip certificate validation. Local dev with self-signed certs.  |
+| Parameter | Description |
+| --- | --- |
+| `encrypt=true` | Encrypt the connection. Required for Azure SQL. |
+| `encrypt=false` | No encryption. Local dev only. |
+| `trustServerCertificate=true` | Skip certificate validation. Local dev with self-signed certs. |
 | `trustServerCertificate=false` | Validate against a trusted CA. Use in production and Azure SQL. |
 
 **Local with self-signed cert:**
@@ -50,6 +50,7 @@ sqlserver://username:password@hostname:1433/database?encrypt=true&trustServerCer
 ```
 
 <Tip>
-  For a named instance like `SQLEXPRESS`, URI-encode the backslash: `localhost%5CSQLEXPRESS`. When
-  in doubt, use `127.0.0.1` with the explicit port.
+  For a named instance like `SQLEXPRESS`, URI-encode the backslash:
+  `localhost%5CSQLEXPRESS`. When in doubt, use `127.0.0.1` with the explicit
+  port.
 </Tip>

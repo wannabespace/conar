@@ -1,4 +1,5 @@
-const authRegex = /^([^:]+):\/\/([^:]*)(?::(.*))?$/
+const authRegex =
+  /^(?<protocol>[^:]+):\/\/(?<user>[^:]*)(?::(?<password>.*))?$/u
 
 export class SafeURL implements URL {
   #url!: URL
@@ -20,15 +21,15 @@ export class SafeURL implements URL {
     let password = ''
 
     if (atIndex > 0) {
-      const beforeAt = url.substring(0, atIndex)
-      const afterAt = url.substring(atIndex + 1)
+      const beforeAt = url.slice(0, atIndex)
+      const afterAt = url.slice(atIndex + 1)
       const authMatch = beforeAt.match(authRegex)
 
-      if (authMatch) {
-        const [, protocol, _user, _password] = authMatch
+      if (authMatch?.groups) {
+        const { protocol, user, password: matchedPassword } = authMatch.groups
         normalizedUrl = `${protocol}://${afterAt}`
-        username = _user || ''
-        password = _password || ''
+        username = user || ''
+        password = matchedPassword || ''
       }
     }
 
@@ -117,11 +118,17 @@ export class SafeURL implements URL {
     let href = url.toString()
 
     if (originalUsername !== encodedUsername) {
-      href = href.replace(encodedUsername, originalUsername.replaceAll(' ', '%20'))
+      href = href.replace(
+        encodedUsername,
+        originalUsername.replaceAll(' ', '%20')
+      )
     }
 
     if (originalPassword !== encodedPassword) {
-      href = href.replace(encodedPassword, originalPassword.replaceAll(' ', '%20'))
+      href = href.replace(
+        encodedPassword,
+        originalPassword.replaceAll(' ', '%20')
+      )
     }
 
     return href

@@ -6,36 +6,37 @@ import { DummyDriver, MysqlQueryCompiler } from 'kysely'
 import type { DialectOptions } from '..'
 import { createDialectProvider, createKyselyDriver } from '..'
 
-const escapeSqlStringRegex = /[\\']/g
+const escapeSqlStringRegex = /[\\']/gu
 
-function escapeSqlString(v: string) {
-  return v.replace(escapeSqlStringRegex, '\\$&')
-}
+const escapeSqlString = (v: string) => v.replace(escapeSqlStringRegex, '\\$&')
 
 const dateStringType = type('string.date')
 
-const compiledSqlRegex = /\?/g
-const compiledSqlParameterRegex = /^update ((`\w+`\.)*`\w+`) set/i
+const compiledSqlRegex = /\?/gu
+const compiledSqlParameterRegex = /^update (?<table>(?:`\w+`\.)*`\w+`) set/iu
 
-function prepareQuery(compiledQuery: CompiledQuery) {
+const formatArrayValue = (value: unknown) => {
+  if (value === null || value === undefined) {
+    return 'NULL'
+  }
+  if (typeof value === 'number') {
+    return `${value}`
+  }
+  return `'${escapeSqlString(String(value))}'`
+}
+
+const prepareQuery = (compiledQuery: CompiledQuery) => {
   let i = 0
   const compiledSql = compiledQuery.sql.replace(compiledSqlRegex, () => {
-    const param = compiledQuery.parameters[i++]
+    const param = compiledQuery.parameters[i]
+    i += 1
 
     if (param === null || param === undefined) {
       return 'NULL'
     }
 
     if (Array.isArray(param)) {
-      return `[${param
-        .map(v =>
-          v === null || v === undefined
-            ? 'NULL'
-            : typeof v === 'number'
-              ? `${v}`
-              : `'${escapeSqlString(String(v))}'`,
-        )
-        .join(', ')}]`
+      return `[${param.map(formatArrayValue).join(', ')}]`
     }
 
     if (typeof param === 'number') {
@@ -57,42 +58,44 @@ function prepareQuery(compiledQuery: CompiledQuery) {
     return `'${escapeSqlString(param)}'`
   })
 
-  return compiledSql.replace(compiledSqlParameterRegex, 'alter table $1 update')
+  return compiledSql.replace(
+    compiledSqlParameterRegex,
+    'alter table $<table> update'
+  )
 }
 
-function clickhouseAdapter() {
-  return {
-    supportsCreateIfNotExists: false,
-    supportsTransactionalDdl: false,
-    supportsReturning: false,
-    acquireMigrationLock: async () => {},
-    releaseMigrationLock: async () => {},
-  }
-}
+const clickhouseAdapter = () => ({
+  acquireMigrationLock: () => Promise.resolve(),
+  releaseMigrationLock: () => Promise.resolve(),
+  supportsCreateIfNotExists: false,
+  supportsReturning: false,
+  supportsTransactionalDdl: false,
+})
 
-export function clickhouseDialect(options: DialectOptions) {
-  return {
+export const clickhouseDialect = (options: DialectOptions) =>
+  ({
     createAdapter: clickhouseAdapter,
     createDriver: () =>
       createKyselyDriver({
-        provider: createDialectProvider(ConnectionType.ClickHouse, options),
         logger: options.log,
-        transformQuery: compiledQuery => ({ query: prepareQuery(compiledQuery), values: [] }),
+        provider: createDialectProvider(ConnectionType.ClickHouse, options),
+        transformQuery: (compiledQuery) => ({
+          query: prepareQuery(compiledQuery),
+          values: [],
+        }),
       }),
-    createQueryCompiler: () => new MysqlQueryCompiler(),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },
-  } satisfies Dialect
-}
+    createQueryCompiler: () => new MysqlQueryCompiler(),
+  }) satisfies Dialect
 
-export function clickhouseColdDialect() {
-  return {
+export const clickhouseColdDialect = () =>
+  ({
     createAdapter: clickhouseAdapter,
     createDriver: () => new DummyDriver(),
-    createQueryCompiler: () => new MysqlQueryCompiler(),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },
-  } satisfies Dialect
-}
+    createQueryCompiler: () => new MysqlQueryCompiler(),
+  }) satisfies Dialect

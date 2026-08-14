@@ -4,20 +4,22 @@ import electron from 'vite-plugin-electron/simple'
 
 import packageJson from './package.json'
 
-const rolldownOptions: NonNullable<NonNullable<InlineConfig['build']>['rolldownOptions']> = {
+const rolldownOptions: NonNullable<
+  NonNullable<InlineConfig['build']>['rolldownOptions']
+> = {
+  external: [
+    ...Object.keys(packageJson.dependencies),
+    ...Object.keys(packageJson.devDependencies),
+  ].filter((dep) => !dep.startsWith('@tamery/')),
   output: {
     format: 'es',
     keepNames: true,
   },
-  external: [
-    ...Object.keys(packageJson.dependencies),
-    ...Object.keys(packageJson.devDependencies),
-  ].filter(dep => !dep.startsWith('@tamery/')),
 }
 
 export default defineConfig({
-  resolve: {
-    tsconfigPaths: true,
+  build: {
+    rolldownOptions,
   },
   plugins: [
     electron({
@@ -41,7 +43,7 @@ export default defineConfig({
       },
     }),
   ],
-  build: {
-    rolldownOptions,
+  resolve: {
+    tsconfigPaths: true,
   },
 })

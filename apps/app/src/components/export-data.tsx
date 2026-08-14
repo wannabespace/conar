@@ -7,7 +7,11 @@ import {
 } from '@remixicon/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
-import { downloadFile, recordsToMarkdownTable, toCSV } from '@tamery/shared/utils/files'
+import {
+  downloadFile,
+  recordsToMarkdownTable,
+  toCSV,
+} from '@tamery/shared/utils/files'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,7 +22,11 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { copy } from '@tamery/ui/lib/copy'
 import { useMutation } from '@tanstack/react-query'
 import { formatDate } from 'date-fns'
@@ -32,13 +40,13 @@ const EXPORT_TOAST_ID = 'export-data'
 type ContentGeneratorType = 'download' | 'copy'
 type ContentFormatType = 'csv' | 'json' | 'markdown'
 
-function generateContent({
+const generateContent = ({
   data,
   format,
 }: {
   data: Record<string, unknown>[]
   format: ContentFormatType
-}) {
+}) => {
   if (format === 'json') {
     return JSON.stringify(data, null, 2)
   }
@@ -47,9 +55,11 @@ function generateContent({
     return null
   }
 
-  const columns = Object.keys(data[0]).map(key => ({ key }))
+  const columns = Object.keys(data[0]).map((key) => ({ key }))
 
-  return format === 'csv' ? toCSV(columns, data) : recordsToMarkdownTable(columns, data)
+  return format === 'csv'
+    ? toCSV(columns, data)
+    : recordsToMarkdownTable(columns, data)
 }
 
 const FILE_META = {
@@ -65,7 +75,7 @@ interface ExportProps {
   filters?: ActiveFilter[]
 }
 
-function ExportDataDropdownMenuSubContent({
+const ExportDataDropdownMenuSubContent = ({
   format,
   type,
   onExport,
@@ -75,17 +85,27 @@ function ExportDataDropdownMenuSubContent({
   type: ContentGeneratorType
   onExport: (props: ExportProps) => void
   selected?: Record<string, unknown>[]
-}) {
-  const filters = selected?.flatMap(row =>
-    Object.entries(row).map(
-      ([column, value]) =>
-        ({
-          column,
-          ref: SQL_FILTERS_LIST.find(filter => filter.operator === '=')!,
-          values: [value],
-        }) satisfies ActiveFilter,
-    ),
-  )
+}) => {
+  const equalFilter = SQL_FILTERS_LIST.find((filter) => filter.operator === '=')
+  const filters = equalFilter
+    ? selected?.flatMap((row) =>
+        Object.entries(row).map(
+          ([column, value]) =>
+            ({
+              column,
+              ref: equalFilter,
+              values: [value],
+            }) satisfies ActiveFilter
+        )
+      )
+    : undefined
+
+  let selectedLabel = 'Selected rows'
+  if (selected && selected.length === 1) {
+    selectedLabel = '1 selected row'
+  } else if (selected && selected.length > 1) {
+    selectedLabel = `${selected.length} selected rows`
+  }
 
   return (
     <DropdownMenuSubContent>
@@ -93,60 +113,71 @@ function ExportDataDropdownMenuSubContent({
         <>
           <DropdownMenuItem
             disabled={selected.length === 0}
-            onClick={() => onExport({ type, format, filters })}
+            onClick={() => onExport({ filters, format, type })}
           >
-            {selected.length === 0
-              ? 'Selected rows'
-              : selected.length === 1
-                ? '1 selected row'
-                : `${selected.length} selected rows`}
+            {selectedLabel}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
         </>
       )}
-      {EXPORT_LIMITS.map(limit => (
-        <DropdownMenuItem key={limit} onClick={() => onExport({ type, format, limit })}>
+      {EXPORT_LIMITS.map((limit) => (
+        <DropdownMenuItem
+          key={limit}
+          onClick={() => onExport({ format, limit, type })}
+        >
           First {limit} rows
         </DropdownMenuItem>
       ))}
       <DropdownMenuSeparator />
-      <DropdownMenuItem onClick={() => onExport({ type, format })}>All rows</DropdownMenuItem>
+      <DropdownMenuItem onClick={() => onExport({ format, type })}>
+        All rows
+      </DropdownMenuItem>
     </DropdownMenuSubContent>
   )
 }
 
-function useExportMutation({
+const useExportMutation = ({
   filename,
   getData,
 }: {
   filename: string
   getData: ExportDataProps['getData']
-}) {
-  return useMutation({
+}) =>
+  useMutation({
     mutationFn: async ({ type, format, filters, limit }: ExportProps) => {
-      const data = await getData({ limit, filters })
+      const data = await getData({ filters, limit })
       const content = generateContent({ data, format })
 
       if (content === null) {
-        return { count: 0, type, format }
+        return { count: 0, format, type }
       }
 
       if (type === 'download') {
         const { extension, mime } = FILE_META[format]
         const stamp = formatDate(new Date(), 'yyyy-MM-dd_HH-mm-ss')
-        downloadFile(content, `${filename}${limit ? `_${limit}` : ''}_${stamp}.${extension}`, mime)
+        downloadFile(
+          content,
+          `${filename}${limit ? `_${limit}` : ''}_${stamp}.${extension}`,
+          mime
+        )
       } else {
         copy(content)
       }
 
-      return { count: data.length, type, format }
+      return { count: data.length, format, type }
+    },
+    onError: (error) => {
+      toast.dismiss(EXPORT_TOAST_ID)
+      handleError(error)
     },
     onMutate: () => {
       toast.loading('Preparing data…', { id: EXPORT_TOAST_ID })
     },
     onSuccess: ({ count, type, format }) => {
       if (count === 0) {
-        toast.info('Nothing to export — no rows matched', { id: EXPORT_TOAST_ID })
+        toast.info('Nothing to export — no rows matched', {
+          id: EXPORT_TOAST_ID,
+        })
         return
       }
 
@@ -155,23 +186,22 @@ function useExportMutation({
         type === 'download'
           ? `Downloaded ${count} row${count === 1 ? '' : 's'} as ${label}`
           : `Copied ${count} row${count === 1 ? '' : 's'} as ${label}`,
-        { id: EXPORT_TOAST_ID },
+        { id: EXPORT_TOAST_ID }
       )
     },
-    onError: error => {
-      toast.dismiss(EXPORT_TOAST_ID)
-      handleError(error)
-    },
   })
-}
 
 const FORMAT_ITEMS = [
-  { format: 'csv', label: 'CSV', icon: RiTableLine },
-  { format: 'json', label: 'JSON', icon: RiBracesLine },
-  { format: 'markdown', label: 'Markdown', icon: RiMarkdownLine },
-] satisfies { format: ContentFormatType; label: string; icon: typeof RiTableLine }[]
+  { format: 'csv', icon: RiTableLine, label: 'CSV' },
+  { format: 'json', icon: RiBracesLine, label: 'JSON' },
+  { format: 'markdown', icon: RiMarkdownLine, label: 'Markdown' },
+] satisfies {
+  format: ContentFormatType
+  label: string
+  icon: typeof RiTableLine
+}[]
 
-interface ExportDataProps {
+export interface ExportDataProps {
   filename: string
   getData: ({
     limit,
@@ -184,7 +214,7 @@ interface ExportDataProps {
   disabled?: boolean
 }
 
-function ExportItems({
+const ExportItems = ({
   onExport,
   selected,
   disabled,
@@ -192,45 +222,50 @@ function ExportItems({
   onExport: (props: ExportProps) => void
   selected?: Record<string, unknown>[]
   disabled?: boolean
-}) {
+}) => (
+  <>
+    {(['download', 'copy'] as const).map((type) => (
+      <DropdownMenuSub key={type}>
+        <DropdownMenuSubTrigger disabled={disabled}>
+          {type === 'download' ? <RiDownloadLine /> : <RiFileCopyLine />}
+          {type === 'download' ? 'Export' : 'Copy'}
+        </DropdownMenuSubTrigger>
+        <DropdownMenuSubContent>
+          {FORMAT_ITEMS.map(({ format, label, icon: Icon }) => (
+            <DropdownMenuSub key={format}>
+              <DropdownMenuSubTrigger>
+                <Icon />
+                {type === 'download' ? 'Export' : 'Copy'} as {label}
+              </DropdownMenuSubTrigger>
+              <ExportDataDropdownMenuSubContent
+                type={type}
+                format={format}
+                onExport={onExport}
+                selected={selected}
+              />
+            </DropdownMenuSub>
+          ))}
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+    ))}
+  </>
+)
+
+// Submenu blocks for embedding inside an existing DropdownMenuContent
+export const ExportDataMenu = ({
+  filename,
+  getData,
+  selected,
+  disabled,
+}: ExportDataProps) => {
+  const { mutate } = useExportMutation({ filename, getData })
+
   return (
-    <>
-      {(['download', 'copy'] as const).map(type => (
-        <DropdownMenuSub key={type}>
-          <DropdownMenuSubTrigger disabled={disabled}>
-            {type === 'download' ? <RiDownloadLine /> : <RiFileCopyLine />}
-            {type === 'download' ? 'Export' : 'Copy'}
-          </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            {FORMAT_ITEMS.map(({ format, label, icon: Icon }) => (
-              <DropdownMenuSub key={format}>
-                <DropdownMenuSubTrigger>
-                  <Icon />
-                  {type === 'download' ? 'Export' : 'Copy'} as {label}
-                </DropdownMenuSubTrigger>
-                <ExportDataDropdownMenuSubContent
-                  type={type}
-                  format={format}
-                  onExport={onExport}
-                  selected={selected}
-                />
-              </DropdownMenuSub>
-            ))}
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
-      ))}
-    </>
+    <ExportItems onExport={mutate} selected={selected} disabled={disabled} />
   )
 }
 
-// Submenu blocks for embedding inside an existing DropdownMenuContent
-export function ExportDataMenu({ filename, getData, selected, disabled }: ExportDataProps) {
-  const { mutate } = useExportMutation({ filename, getData })
-
-  return <ExportItems onExport={mutate} selected={selected} disabled={disabled} />
-}
-
-export function ExportData({
+export const ExportData = ({
   filename,
   getData,
   trigger,
@@ -239,7 +274,7 @@ export function ExportData({
 }: ExportDataProps & {
   trigger: (props: { isExporting: boolean }) => React.ReactElement
   tooltip?: string
-}) {
+}) => {
   const { mutate, isPending } = useExportMutation({ filename, getData })
 
   return (
@@ -247,7 +282,11 @@ export function ExportData({
       {tooltip ? (
         <Tooltip>
           <TooltipTrigger
-            render={<DropdownMenuTrigger render={trigger({ isExporting: isPending })} />}
+            render={
+              <DropdownMenuTrigger
+                render={trigger({ isExporting: isPending })}
+              />
+            }
           />
           <TooltipContent side="top">{tooltip}</TooltipContent>
         </Tooltip>

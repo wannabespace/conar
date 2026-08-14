@@ -1,9 +1,11 @@
 import { SafeURL } from '@tamery/shared/utils/safe-url'
 
 /** IPv4 addresses in 127.0.0.0/8 (often used like localhost). */
-const LOCALHOST_IPV4 = /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/
+const LOCALHOST_IPV4 = /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/u
 
-export function isLocalhostConnectionString(connectionString: string): boolean {
+export const isLocalhostConnectionString = (
+  connectionString: string
+): boolean => {
   const hostname = new SafeURL(connectionString).hostname.toLowerCase()
   return (
     hostname === 'localhost' ||
@@ -13,7 +15,9 @@ export function isLocalhostConnectionString(connectionString: string): boolean {
   )
 }
 
-export function removePasswordFromConnectionString(connectionString: string): string {
+export const removePasswordFromConnectionString = (
+  connectionString: string
+): string => {
   const url = new SafeURL(connectionString)
   url.password = ''
   return url.toString()

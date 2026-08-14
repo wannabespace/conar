@@ -12,6 +12,4 @@ export const getOSIsomorphic = createIsomorphicFn()
 
     return getOS(userAgent)
   })
-  .client(() => {
-    return getOS(navigator.userAgent)
-  })
+  .client(() => getOS(navigator.userAgent))

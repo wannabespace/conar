@@ -2,8 +2,8 @@ import { type } from 'arktype'
 import { createWebStorageValue } from 'seitu/web'
 
 export const lastLocationStorageValue = createWebStorageValue({
-  type: 'localStorage',
+  defaultValue: null,
   key: 'last-location',
   schema: type('string | null'),
-  defaultValue: null,
+  type: 'localStorage',
 })

@@ -1,5 +1,4 @@
-Tamery : https://github.com/wannabespace/tamery
-AUR   : https://aur.archlinux.org/packages/tamery
+Tamery : https://github.com/wannabespace/tamery AUR : https://aur.archlinux.org/packages/tamery
 
 If you want to help, feel free to fork & open a PR.
 

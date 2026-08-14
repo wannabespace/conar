@@ -9,12 +9,12 @@ export const railway = orpc.handler(async ({ context }) => {
   }
 
   await sendEmail({
-    to: env.ALERTS_EMAIL,
+    props: {
+      service: 'Railway',
+      text: JSON.stringify(await context.request.json(), null, 2),
+    },
     subject: 'Alert from Railway',
     template: 'Alert',
-    props: {
-      text: JSON.stringify(await context.request.json(), null, 2),
-      service: 'Railway',
-    },
+    to: env.ALERTS_EMAIL,
   })
 })

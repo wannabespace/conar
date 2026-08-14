@@ -1,4 +1,8 @@
-import { RiCheckLine, RiDatabase2Line, RiLayoutColumnLine } from '@remixicon/react'
+import {
+  RiCheckLine,
+  RiDatabase2Line,
+  RiLayoutColumnLine,
+} from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import {
   Command,
@@ -9,16 +13,26 @@ import {
   CommandList,
   CommandSeparator,
 } from '@tamery/ui/components/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@tamery/ui/components/popover'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useSubscription } from 'seitu/react'
 
 import { useTableColumnsContext } from '../../../-lib/columns'
 import { useTablePageStore } from '../../../-lib/store'
 
-export function ActionsColumns() {
+export const ActionsColumns = () => {
   const store = useTablePageStore()
-  const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
+  const hiddenColumns = useSubscription(store, {
+    selector: (state) => state.hiddenColumns,
+  })
   const { columns } = useTableColumnsContext()
 
   return (
@@ -28,20 +42,18 @@ export function ActionsColumns() {
           render={
             <PopoverTrigger
               render={
-                <Button size="icon" variant="outline" className="relative overflow-visible" />
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="relative overflow-visible"
+                />
               }
             />
           }
         >
           <RiLayoutColumnLine />
           {hiddenColumns.length > 0 && (
-            <span
-              className={`
-                absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center
-                justify-center rounded-full bg-primary px-1 text-2xs
-                font-medium text-primary-foreground tabular-nums
-              `}
-            >
+            <span className="bg-primary text-2xs text-primary-foreground absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 font-medium tabular-nums">
               {hiddenColumns.length}
             </span>
           )}
@@ -53,10 +65,7 @@ export function ActionsColumns() {
         </TooltipContent>
       </Tooltip>
       <PopoverContent
-        className="
-          w-2xs p-0
-          **:data-[slot=popover-viewport]:p-0
-        "
+        className="w-2xs p-0 **:data-[slot=popover-viewport]:p-0"
         side="bottom"
         align="end"
       >
@@ -69,38 +78,50 @@ export function ActionsColumns() {
                 value="toggle-columns"
                 onSelect={() =>
                   store.set(
-                    state =>
+                    (state) =>
                       ({
                         ...state,
                         hiddenColumns:
-                          (hiddenColumns.length === 0 && columns?.map(col => col.id)) || [],
-                      }) satisfies typeof state,
+                          (hiddenColumns.length === 0 &&
+                            columns?.map((col) => col.id)) ||
+                          [],
+                      }) satisfies typeof state
                   )
                 }
               >
                 <span className="size-4">
-                  {hiddenColumns.length === 0 && <RiCheckLine className="size-4 opacity-50" />}
+                  {hiddenColumns.length === 0 && (
+                    <RiCheckLine className="size-4 opacity-50" />
+                  )}
                 </span>
                 <RiLayoutColumnLine className="size-4 opacity-50" />
-                <span>{hiddenColumns.length === 0 ? 'Hide all columns' : 'Show all columns'}</span>
+                <span>
+                  {hiddenColumns.length === 0
+                    ? 'Hide all columns'
+                    : 'Show all columns'}
+                </span>
               </CommandItem>
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup>
-              {columns?.map(column => (
+              {columns?.map((column) => (
                 <CommandItem
                   key={column.id}
                   value={column.id}
-                  keywords={[column.id, column.type ?? '', column.typeLabel ?? '']}
+                  keywords={[
+                    column.id,
+                    column.type ?? '',
+                    column.typeLabel ?? '',
+                  ]}
                   onSelect={() =>
                     store.set(
-                      state =>
+                      (state) =>
                         ({
                           ...state,
                           hiddenColumns: hiddenColumns.includes(column.id)
-                            ? hiddenColumns.filter(id => id !== column.id)
+                            ? hiddenColumns.filter((id) => id !== column.id)
                             : [...hiddenColumns, column.id],
-                        }) satisfies typeof state,
+                        }) satisfies typeof state
                     )
                   }
                 >

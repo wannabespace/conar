@@ -21,7 +21,10 @@ interface RevokeApiKeyDialogProps {
   onRefetch: () => void
 }
 
-export function RevokeApiKeyDialog({ ref, onRefetch }: RevokeApiKeyDialogProps) {
+export const RevokeApiKeyDialog = ({
+  ref,
+  onRefetch,
+}: RevokeApiKeyDialogProps) => {
   const [open, setOpen] = useState(false)
   const [keyId, setKeyId] = useState<string | null>(null)
 
@@ -33,13 +36,15 @@ export function RevokeApiKeyDialog({ ref, onRefetch }: RevokeApiKeyDialogProps) 
         setOpen(true)
       },
     }),
-    [],
+    []
   )
 
   const { mutate: deleteApiKey, isPending: isDeleting } = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await authClient.apiKey.delete({ keyId: id })
-      if (error) throw error
+      if (error) {
+        throw error
+      }
     },
     onSuccess: () => {
       setOpen(false)
@@ -53,7 +58,7 @@ export function RevokeApiKeyDialog({ ref, onRefetch }: RevokeApiKeyDialogProps) 
   return (
     <AlertDialog
       open={open}
-      onOpenChange={nextOpen => {
+      onOpenChange={(nextOpen) => {
         setOpen(nextOpen)
         if (!nextOpen) {
           setKeyId(null)
@@ -64,8 +69,8 @@ export function RevokeApiKeyDialog({ ref, onRefetch }: RevokeApiKeyDialogProps) 
         <AlertDialogHeader>
           <AlertDialogTitle>Revoke this API key?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. Any integration using this key will stop working
-            immediately.
+            This action cannot be undone. Any integration using this key will
+            stop working immediately.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -76,7 +81,9 @@ export function RevokeApiKeyDialog({ ref, onRefetch }: RevokeApiKeyDialogProps) 
             variant="destructive"
             disabled={isDeleting || !keyId}
             onClick={() => {
-              if (keyId) deleteApiKey(keyId)
+              if (keyId) {
+                deleteApiKey(keyId)
+              }
             }}
           >
             <LoadingContent loading={isDeleting}>Revoke</LoadingContent>

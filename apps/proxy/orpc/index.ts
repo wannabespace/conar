@@ -7,7 +7,7 @@ import type { Context } from './context'
 
 export const orpc = os.$context<Context>()
 
-async function getSession(headers: Headers) {
+const getSession = async (headers: Headers) => {
   const res = await fetch(`${env.API_URL}/auth/get-session`, {
     headers: {
       authorization: headers.get('authorization') ?? '',

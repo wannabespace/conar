@@ -17,13 +17,13 @@ monaco.editor.defineTheme('sql-dark', vsPlusTheme.darkThemeData)
 monaco.editor.defineTheme('sql-light', vsPlusTheme.lightThemeData)
 
 resolvedTheme.subscribe(
-  resolvedTheme => {
-    monaco.editor.setTheme(resolvedTheme === 'dark' ? 'sql-dark' : 'sql-light')
+  (theme) => {
+    monaco.editor.setTheme(theme === 'dark' ? 'sql-dark' : 'sql-light')
   },
-  { immediate: true },
+  { immediate: true }
 )
 
-export function Monaco({
+export const Monaco = ({
   ref,
   value,
   language,
@@ -38,15 +38,22 @@ export function Monaco({
   language?: string
   onChange?: (value: string) => void
   options?: monaco.editor.IStandaloneEditorConstructionOptions
-}) {
+}) => {
   const elementRef = useRef<HTMLDivElement>(null)
-  const monacoInstanceRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null)
+  const monacoInstanceRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(
+    null
+  )
   const preventTriggerChangeEventRef = useRef(false)
 
   const onChangeEvent = useEffectEvent(onChange)
   const getOptionsEvent = useEffectEvent(
     () =>
       ({
+        automaticLayout: true,
+        fontFamily: '"Geist Mono", monospace',
+        language,
+        minimap: { enabled: false },
+        tabSize: 2,
         value: (() => {
           if (language?.includes('json')) {
             try {
@@ -66,19 +73,19 @@ export function Monaco({
 
           return value
         })(),
-        language,
-        automaticLayout: true,
-        minimap: { enabled: false },
-        fontFamily: '"Geist Mono", monospace',
-        tabSize: 2,
         ...options,
-      }) satisfies monaco.editor.IStandaloneEditorConstructionOptions,
+      }) satisfies monaco.editor.IStandaloneEditorConstructionOptions
   )
 
   useEffect(() => {
-    if (!elementRef.current) return
+    if (!elementRef.current) {
+      return
+    }
 
-    monacoInstanceRef.current = monaco.editor.create(elementRef.current, getOptionsEvent())
+    monacoInstanceRef.current = monaco.editor.create(
+      elementRef.current,
+      getOptionsEvent()
+    )
 
     if (ref) {
       ref.current = monacoInstanceRef.current
@@ -86,12 +93,14 @@ export function Monaco({
 
     monacoInstanceRef.current?.getAction('editor.action.formatDocument')?.run()
 
-    const subscription = monacoInstanceRef.current.onDidChangeModelContent(() => {
-      if (!preventTriggerChangeEventRef.current) {
-        const val = monacoInstanceRef.current?.getValue()
-        onChangeEvent(val ?? '')
+    const subscription = monacoInstanceRef.current.onDidChangeModelContent(
+      () => {
+        if (!preventTriggerChangeEventRef.current) {
+          const val = monacoInstanceRef.current?.getValue()
+          onChangeEvent(val ?? '')
+        }
       }
-    })
+    )
 
     return () => {
       subscription.dispose()
@@ -100,18 +109,24 @@ export function Monaco({
   }, [elementRef, language, ref])
 
   useMountedEffect(() => {
-    if (!monacoInstanceRef.current || !options) return
+    if (!monacoInstanceRef.current || !options) {
+      return
+    }
 
     monacoInstanceRef.current.updateOptions(options)
   }, [JSON.stringify(options)])
 
   useMountedEffect(() => {
-    if (!monacoInstanceRef.current) return
+    if (!monacoInstanceRef.current) {
+      return
+    }
 
     const editor = monacoInstanceRef.current
     const model = editor.getModel()
 
-    if (!model) return
+    if (!model) {
+      return
+    }
 
     const currentValue = editor.getValue()
 
@@ -125,9 +140,9 @@ export function Monaco({
       preventTriggerChangeEventRef.current = true
       editor.executeEdits('', [
         {
+          forceMoveMarkers: true,
           range: model.getFullModelRange(),
           text: value,
-          forceMoveMarkers: true,
         },
       ])
       editor.pushUndoStop()
@@ -138,7 +153,7 @@ export function Monaco({
   return <div ref={elementRef} {...props} />
 }
 
-export function MonacoDiff({
+export const MonacoDiff = ({
   ref,
   originalValue,
   modifiedValue,
@@ -153,38 +168,44 @@ export function MonacoDiff({
   modifiedValue: string
   language?: string
   options?: monaco.editor.IStandaloneDiffEditorConstructionOptions
-}) {
+}) => {
   const elementRef = useRef<HTMLDivElement>(null)
-  const diffEditorInstanceRef = useRef<monaco.editor.IStandaloneDiffEditor | null>(null)
+  const diffEditorInstanceRef =
+    useRef<monaco.editor.IStandaloneDiffEditor | null>(null)
 
   const getOptionsEvent = useEffectEvent(
     () =>
       ({
         automaticLayout: true,
-        minimap: { enabled: false },
         fontFamily: '"Geist Mono", monospace',
+        minimap: { enabled: false },
         readOnly: true,
         ...options,
-      }) satisfies monaco.editor.IStandaloneDiffEditorConstructionOptions,
+      }) satisfies monaco.editor.IStandaloneDiffEditorConstructionOptions
   )
 
   const getValuesEvent = useEffectEvent(() => ({
-    originalValue,
     modifiedValue,
+    originalValue,
   }))
 
   useEffect(() => {
-    if (!elementRef.current) return
+    if (!elementRef.current) {
+      return
+    }
 
     diffEditorInstanceRef.current = monaco.editor.createDiffEditor(
       elementRef.current,
-      getOptionsEvent(),
+      getOptionsEvent()
     )
 
-    const { originalValue, modifiedValue } = getValuesEvent()
+    const {
+      originalValue: nextOriginalValue,
+      modifiedValue: nextModifiedValue,
+    } = getValuesEvent()
     diffEditorInstanceRef.current.setModel({
-      original: monaco.editor.createModel(originalValue, language),
-      modified: monaco.editor.createModel(modifiedValue, language),
+      modified: monaco.editor.createModel(nextModifiedValue, language),
+      original: monaco.editor.createModel(nextOriginalValue, language),
     })
 
     if (ref) {
@@ -197,13 +218,17 @@ export function MonacoDiff({
   }, [elementRef, language, ref])
 
   useMountedEffect(() => {
-    if (!diffEditorInstanceRef.current || !options) return
+    if (!diffEditorInstanceRef.current || !options) {
+      return
+    }
 
     diffEditorInstanceRef.current.updateOptions(options)
   }, [options])
 
   useMountedEffect(() => {
-    if (!diffEditorInstanceRef.current) return
+    if (!diffEditorInstanceRef.current) {
+      return
+    }
 
     const editor = diffEditorInstanceRef.current
     const originalModel = editor.getModel()?.original

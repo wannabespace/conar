@@ -9,7 +9,7 @@ export const contact = orpc
   .input(
     type({
       message: 'string',
-    }),
+    })
   )
   .handler(async ({ input, context }) => {
     if (!resend) {
@@ -20,15 +20,15 @@ export const contact = orpc
     const { data, error } = await resend.batch.send([
       {
         from: 'Tamery <tamery@tamery.app>',
-        to: SUPPORT_EMAIL,
-        subject: `Contact request from ${context.user.email}`,
         html: `<p>From: ${context.user.email}</p><p>Message:<br>${input.message}</p>`,
+        subject: `Contact request from ${context.user.email}`,
+        to: SUPPORT_EMAIL,
       },
       {
         from: 'Tamery <tamery@tamery.app>',
-        to: context.user.email,
-        subject: 'Your contact request has been received by Tamery',
         html: `<p>Hi ${context.user.name || context.user.email},</p><p>This is an automatic reply to let you know we received your message and will answer soon.</p>`,
+        subject: 'Your contact request has been received by Tamery',
+        to: context.user.email,
       },
     ])
 
@@ -37,7 +37,7 @@ export const contact = orpc
     }
 
     context.addLogData({
-      emailSent: true,
       emailData: data.data,
+      emailSent: true,
     })
   })

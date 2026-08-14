@@ -15,51 +15,55 @@ import { clearDb } from './sync'
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
 
 export const bearerToken = createWebStorageValue({
-  type: 'localStorage',
+  defaultValue: null,
   key: BEARER_TOKEN_KEY,
   schema: type('string | null'),
-  defaultValue: null,
+  type: 'localStorage',
 })
 
-export function successAuthToast(newUser: boolean) {
+export const successAuthToast = (newUser: boolean) => {
   toast.success(
     newUser
       ? "Welcome to Tamery! We're excited to help you manage your connections with ease. Get started by creating your first connection."
       : 'Welcome back! Your connections are ready for you.',
     {
-      duration: 10000,
+      duration: 10_000,
       position: 'top-center',
-    },
+    }
   )
 }
 
 export const authClient = createAuthClient({
-  baseURL: apiUrl,
   basePath: '/auth',
-  plugins: window.electron ? [bearer()] : [],
+  baseURL: apiUrl,
   fetchOptions: {
     auth: {
-      type: 'Bearer',
       token: () => bearerToken.get() ?? undefined,
+      type: 'Bearer',
     },
     headers: {
       'x-desktop': JSON.stringify(!!window.electron),
     },
-    async onError({ error }) {
-      if (error.status === 401 && !router.state.location.pathname.startsWith('/auth')) {
+    onError({ error }) {
+      if (
+        error.status === 401 &&
+        !router.state.location.pathname.startsWith('/auth')
+      ) {
+        // oxlint-disable-next-line no-use-before-define
         fullSignOut()
       }
     },
   },
+  plugins: window.electron ? [bearer()] : [],
 })
 
-export async function isSignedIn() {
+export const isSignedIn = async () => {
   const { data } = await tryCatchAsync(authClient.getSession)
 
   return !!data?.data?.user
 }
 
-export async function fullSignOut() {
+export const fullSignOut = async () => {
   await authClient.signOut()
   bearerToken.clear()
   lastLocationStorageValue.clear()

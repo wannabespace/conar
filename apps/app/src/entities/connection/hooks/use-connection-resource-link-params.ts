@@ -4,39 +4,50 @@ import { useSubscription } from 'seitu/react'
 
 import { getConnectionResourceStore } from '~/entities/connection/store'
 
-export function useConnectionResourceLinkParams(resourceId: string) {
+export const useConnectionResourceLinkParams = (resourceId: string) => {
   const store = getConnectionResourceStore(resourceId)
   const [lastOpenedTable, lastOpenedPage, lastChatId] = useSubscription(store, {
-    selector: state => [state.lastOpenedTable, state.lastOpenedPage, state.lastOpenedChatId],
+    selector: (state) => [
+      state.lastOpenedTable,
+      state.lastOpenedPage,
+      state.lastOpenedChatId,
+    ],
   })
 
   return useMemo((): LinkProps => {
     if (lastOpenedPage) {
-      if (lastOpenedPage === '/_protected/connection/$resourceId/definitions/enums/') {
+      if (
+        lastOpenedPage ===
+        '/_protected/connection/$resourceId/definitions/enums/'
+      ) {
         return {
-          to: '/connection/$resourceId/definitions/enums',
           params: { resourceId },
+          to: '/connection/$resourceId/definitions/enums',
         }
-      } else if (lastOpenedPage === '/_protected/connection/$resourceId/query/') {
+      } else if (
+        lastOpenedPage === '/_protected/connection/$resourceId/query/'
+      ) {
         return {
-          to: '/connection/$resourceId/query',
           params: { resourceId },
           search: lastChatId ? { chatId: lastChatId } : undefined,
+          to: '/connection/$resourceId/query',
         }
-      } else if (lastOpenedPage === '/_protected/connection/$resourceId/visualizer/') {
+      } else if (
+        lastOpenedPage === '/_protected/connection/$resourceId/visualizer/'
+      ) {
         return {
-          to: '/connection/$resourceId/visualizer',
           params: { resourceId },
+          to: '/connection/$resourceId/visualizer',
         }
       }
     }
 
     return {
-      to: '/connection/$resourceId/table',
       params: { resourceId },
       search: lastOpenedTable
         ? { schema: lastOpenedTable.schema, table: lastOpenedTable.table }
         : undefined,
+      to: '/connection/$resourceId/table',
     }
   }, [resourceId, lastOpenedPage, lastOpenedTable, lastChatId])
 }

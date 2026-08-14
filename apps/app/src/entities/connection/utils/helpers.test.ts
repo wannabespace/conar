@@ -6,7 +6,9 @@ describe('hasDangerousSqlKeywords', () => {
   it('should return true for SQL queries containing DELETE keyword', () => {
     expect(hasDangerousSqlKeywords('DELETE FROM users')).toBe(true)
     expect(hasDangerousSqlKeywords('delete from users')).toBe(true)
-    expect(hasDangerousSqlKeywords('SELECT * FROM users; DELETE FROM users')).toBe(true)
+    expect(
+      hasDangerousSqlKeywords('SELECT * FROM users; DELETE FROM users')
+    ).toBe(true)
   })
 
   it('should return true for SQL queries containing UPDATE keyword', () => {
@@ -32,14 +34,20 @@ describe('hasDangerousSqlKeywords', () => {
 
 describe('wrapExplainQuery', () => {
   it('should prepend EXPLAIN to a query that does not start with it', () => {
-    expect(wrapExplainQuery('SELECT * FROM users')).toBe('EXPLAIN SELECT * FROM users')
-    expect(wrapExplainQuery('  SELECT * FROM users  ')).toBe('EXPLAIN SELECT * FROM users')
+    expect(wrapExplainQuery('SELECT * FROM users')).toBe(
+      'EXPLAIN SELECT * FROM users'
+    )
+    expect(wrapExplainQuery('  SELECT * FROM users  ')).toBe(
+      'EXPLAIN SELECT * FROM users'
+    )
   })
 
   it('should not double-wrap when query already starts with EXPLAIN', () => {
-    expect(wrapExplainQuery('EXPLAIN SELECT * FROM users')).toBe('EXPLAIN SELECT * FROM users')
+    expect(wrapExplainQuery('EXPLAIN SELECT * FROM users')).toBe(
+      'EXPLAIN SELECT * FROM users'
+    )
     expect(wrapExplainQuery('  EXPLAIN ANALYZE SELECT * FROM users')).toBe(
-      '  EXPLAIN ANALYZE SELECT * FROM users',
+      '  EXPLAIN ANALYZE SELECT * FROM users'
     )
   })
 })

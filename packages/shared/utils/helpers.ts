@@ -1,5 +1,6 @@
-export function sleep(ms: number, signal?: AbortSignal) {
-  return new Promise<void>(resolve => {
+export const sleep = (ms: number, signal?: AbortSignal) =>
+  // oxlint-disable-next-line promise/avoid-new -- timer-based delay requires Promise constructor
+  new Promise<void>((resolve) => {
     const timer = setTimeout(resolve, ms)
     signal?.addEventListener('abort', () => {
       clearTimeout(timer)
@@ -7,12 +8,11 @@ export function sleep(ms: number, signal?: AbortSignal) {
       resolve()
     })
   })
-}
 
-export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
+export const debounce = <F extends (...args: Parameters<F>) => ReturnType<F>>(
   func: F,
-  waitFor: number,
-) {
+  waitFor: number
+) => {
   let timeout: ReturnType<typeof setTimeout>
 
   const debounced = (...args: Parameters<F>) => {
@@ -23,13 +23,15 @@ export function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
   return debounced
 }
 
-const whitespaceRegex = /[.*+?^${}()|[\]\\]/g
+const whitespaceRegex = /[.*+?^${}()|[\]\\]/gu
 
-export function escapeSpecialCharacters(string: string) {
-  return string.replace(whitespaceRegex, '\\$&')
-}
+export const escapeSpecialCharacters = (string: string) =>
+  string.replace(whitespaceRegex, '\\$&')
 
-export function pick<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
+export const pick = <T extends object, K extends keyof T>(
+  obj: T,
+  keys: K[]
+): Pick<T, K> => {
   const result = {} as Pick<T, K>
   for (const key of keys) {
     if (key in obj) {
@@ -39,19 +41,26 @@ export function pick<T extends object, K extends keyof T>(obj: T, keys: K[]): Pi
   return result
 }
 
-export function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
-  return Object.fromEntries(
-    Object.entries(obj).filter(([key]) => !keys.includes(key as K)),
+export const omit = <T extends object, K extends keyof T>(
+  obj: T,
+  keys: K[]
+): Omit<T, K> =>
+  Object.fromEntries(
+    Object.entries(obj).filter(([key]) => !keys.includes(key as K))
   ) as Omit<T, K>
-}
 
-export function noop() {}
+// oxlint-disable-next-line eslint/no-empty-function -- intentional no-op callback
+export const noop = () => {}
 
-export const objectEntries = Object.entries as <T extends object>(obj: T) => [keyof T, T[keyof T]][]
+export const objectEntries = Object.entries as <T extends object>(
+  obj: T
+) => [keyof T, T[keyof T]][]
 
 export type Prettify<T> = {
   [K in keyof T]: T[K]
-} & {}
+} extends infer O
+  ? { [K in keyof O]: O[K] }
+  : never
 
 export type Satisfies<T, U extends T> = U
 
@@ -62,29 +71,36 @@ export type MaybeArray<T> = T | T[]
 // oxlint-disable-next-line ts/no-explicit-any
 export type AnyFunction = (...args: any[]) => any
 
-export function tryCatch<T>(fn: () => T): { data: T; error: null } | { data: null; error: Error } {
+export const tryCatch = <T>(
+  fn: () => T
+): { data: T; error: null } | { data: null; error: Error } => {
   try {
     return { data: fn(), error: null }
   } catch (error) {
-    return { data: null, error: error instanceof Error ? error : new Error(String(error)) }
+    return {
+      data: null,
+      error: error instanceof Error ? error : new Error(String(error)),
+    }
   }
 }
 
-export async function tryCatchAsync<T>(
-  fn: () => Promise<T>,
-): Promise<{ data: T; error: null } | { data: null; error: Error }> {
+export const tryCatchAsync = async <T>(
+  fn: () => Promise<T>
+): Promise<{ data: T; error: null } | { data: null; error: Error }> => {
   try {
     return { data: await fn(), error: null }
   } catch (error) {
-    return { data: null, error: error instanceof Error ? error : new Error(String(error)) }
+    return {
+      data: null,
+      error: error instanceof Error ? error : new Error(String(error)),
+    }
   }
 }
 
-export function uppercaseFirst(string: string) {
-  return string.charAt(0).toUpperCase() + string.slice(1)
-}
+export const uppercaseFirst = (string: string) =>
+  string.charAt(0).toUpperCase() + string.slice(1)
 
-export function tryParseJson<T>(json: string): T | null {
+export const tryParseJson = <T>(json: string): T | null => {
   try {
     return JSON.parse(json) as T
   } catch {
@@ -92,14 +108,16 @@ export function tryParseJson<T>(json: string): T | null {
   }
 }
 
-export function tryParseToJsonArray(editedValue: string): string[] {
+export const tryParseToJsonArray = (editedValue: string): string[] => {
   const parsed = tryParseJson<unknown[]>(editedValue)
-  if (Array.isArray(parsed)) return parsed.map(String)
+  if (Array.isArray(parsed)) {
+    return parsed.map(String)
+  }
   return [editedValue]
 }
 
-export function handleAggregateError<T extends AnyFunction>(fn: T): T {
-  return (async (...args: Parameters<T>) => {
+export const handleAggregateError = <T extends AnyFunction>(fn: T): T =>
+  (async (...args: Parameters<T>) => {
     try {
       return await fn(...args)
     } catch (error) {
@@ -109,4 +127,3 @@ export function handleAggregateError<T extends AnyFunction>(fn: T): T {
       throw error
     }
   }) as T
-}

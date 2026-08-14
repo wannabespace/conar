@@ -16,65 +16,77 @@ const schema = type({
     url: 'string | null',
   },
 }).pipe(({ lastOpenedResourceName, proxy }) => ({
-  lastOpenedResourceName: (lastOpenedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL.description
+  lastOpenedResourceName: (lastOpenedResourceName ===
+  CONNECTION_RESOURCE_ROOT_SYMBOL.description
     ? CONNECTION_RESOURCE_ROOT_SYMBOL
-    : lastOpenedResourceName) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
+    : lastOpenedResourceName) as
+    | string
+    | typeof CONNECTION_RESOURCE_ROOT_SYMBOL
+    | null,
   proxy,
 }))
 
 export const getConnectionStore = memoize((id: string) =>
   createWebStorageValue({
-    type: 'localStorage',
-    key: `connection-store-${id}`,
     defaultValue: {
       lastOpenedResourceName: null,
       proxy: { enabled: !window.electron, url: null },
     },
+    key: `connection-store-${id}`,
     schema,
-  }),
+    type: 'localStorage',
+  })
 )
 
 export const connectionResourceType = type({
+  lastOpenedChatId: 'string.uuid | null',
   lastOpenedPage: 'string | null' as type.cast<Extract<
     keyof FileRoutesById,
     `/_protected/connection/$resourceId/${string}`
   > | null>,
-  lastOpenedChatId: 'string.uuid | null',
   lastOpenedTable: type({
     schema: 'string',
     table: 'string',
   }).or('null'),
-  query: 'string',
-  selectedLines: 'number[]',
-  showSystem: 'boolean',
-  queriesToRun: type({
-    startLineNumber: 'number',
-    endLineNumber: 'number',
-    query: 'string',
-  }).array(),
+  layout: {
+    chatPosition: '"left" | "right"',
+    chatVisible: 'boolean',
+    resultsVisible: 'boolean',
+  },
   loggerOpened: 'boolean',
-  tabs: type({
-    table: 'string',
-    schema: 'string',
-    preview: 'boolean',
-  }).array(),
-  tablesSearch: 'string',
-  tablesTreeOpenedSchemas: 'string[] | null',
   pinnedTables: type({
     schema: 'string',
     table: 'string',
   }).array(),
-  layout: {
-    chatVisible: 'boolean',
-    resultsVisible: 'boolean',
-    chatPosition: '"left" | "right"',
-  },
+  queriesToRun: type({
+    endLineNumber: 'number',
+    query: 'string',
+    startLineNumber: 'number',
+  }).array(),
+  query: 'string',
+  selectedLines: 'number[]',
+  showSystem: 'boolean',
+  tablesSearch: 'string',
+  tablesTreeOpenedSchemas: 'string[] | null',
+  tabs: type({
+    preview: 'boolean',
+    schema: 'string',
+    table: 'string',
+  }).array(),
 })
 
 const connectionResourceDefaultState: typeof connectionResourceType.infer = {
-  lastOpenedPage: null,
   lastOpenedChatId: null,
+  lastOpenedPage: null,
   lastOpenedTable: null,
+  layout: {
+    chatPosition: 'right',
+    chatVisible: true,
+    resultsVisible: true,
+  },
+  loggerOpened: false,
+  pinnedTables: [],
+  queriesToRun: [],
   query: [
     '-- Write your SQL query here based on your database schema',
     '-- The examples below are for reference only and may not work with your database',
@@ -91,28 +103,20 @@ const connectionResourceDefaultState: typeof connectionResourceType.infer = {
     'WHERE p.published = true',
     'LIMIT 10;',
   ].join('\n'),
-  showSystem: false,
-  queriesToRun: [],
   selectedLines: [],
-  loggerOpened: false,
-  tabs: [],
+  showSystem: false,
   tablesSearch: '',
   tablesTreeOpenedSchemas: null,
-  pinnedTables: [],
-  layout: {
-    chatVisible: true,
-    chatPosition: 'right',
-    resultsVisible: true,
-  },
+  tabs: [],
 }
 
 export const getConnectionResourceStore = memoize((id: string) =>
   createWebStorageValue({
-    type: 'localStorage',
-    key: `connection-resource-store-${id}`,
     defaultValue: connectionResourceDefaultState,
+    key: `connection-resource-store-${id}`,
     schema: connectionResourceType,
-  }),
+    type: 'localStorage',
+  })
 )
 
 export const getFilesStore = memoize((_id: string) => createStore<File[]>([]))

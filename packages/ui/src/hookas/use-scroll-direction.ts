@@ -2,21 +2,29 @@ import * as React from 'react'
 
 export type ScrollDirection = 'up' | 'down' | 'left' | 'right' | null
 
-export function useScrollDirection(ref?: React.RefObject<HTMLElement | null>, delay = 500) {
-  const [scrollDirection, setScrollDirection] = React.useState<ScrollDirection>(null)
-  const lastScrollRef = React.useRef({ y: 0, x: 0 })
+export const useScrollDirection = (
+  ref?: React.RefObject<HTMLElement | null>,
+  delay = 500
+) => {
+  const [scrollDirection, setScrollDirection] =
+    React.useState<ScrollDirection>(null)
+  const lastScrollRef = React.useRef({ x: 0, y: 0 })
   const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
   React.useEffect(() => {
     const element = ref ? ref.current : window
 
-    if (!element) return
+    if (!element) {
+      return
+    }
 
-    function handleScroll() {
+    const handleScroll = () => {
       const currentScrollY =
         element === window ? window.scrollY : (element as HTMLElement).scrollTop
       const currentScrollX =
-        element === window ? window.scrollX : (element as HTMLElement).scrollLeft
+        element === window
+          ? window.scrollX
+          : (element as HTMLElement).scrollLeft
 
       let newDirection: ScrollDirection = null
 
@@ -35,8 +43,8 @@ export function useScrollDirection(ref?: React.RefObject<HTMLElement | null>, de
       }
 
       lastScrollRef.current = {
-        y: currentScrollY,
         x: currentScrollX,
+        y: currentScrollY,
       }
 
       if (timeoutRef.current) {

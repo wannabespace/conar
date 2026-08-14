@@ -14,24 +14,30 @@ import { useImperativeHandle, useRef, useState } from 'react'
 
 import { DANGEROUS_SQL_KEYWORDS } from '~/entities/connection/utils'
 
-const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(keyword => `\\b${keyword}\\b`).join('|')
+const dangerousKeywordsPattern = DANGEROUS_SQL_KEYWORDS.map(
+  (keyword) => `\\b${keyword}\\b`
+).join('|')
 
-export function RunnerAlertDialog({
+export const RunnerAlertDialog = ({
   ref,
 }: {
-  ref: React.RefObject<{ confirm: (queries: string[], callback: () => void) => void } | null>
-}) {
+  ref: React.RefObject<{
+    confirm: (queries: string[], callback: () => void) => void
+  } | null>
+}) => {
   const [open, setOpen] = useState(false)
   const [queries, setQueries] = useState<string[]>([])
   const dangerousKeywords = queries.flatMap(
-    query => query.match(new RegExp(dangerousKeywordsPattern, 'gi')) || [],
+    (query) => query.match(new RegExp(dangerousKeywordsPattern, 'giu')) || []
   )
-  const uniqueDangerousKeywords = [...new Set(dangerousKeywords.map(k => k.toUpperCase()))]
+  const uniqueDangerousKeywords = [
+    ...new Set(dangerousKeywords.map((k) => k.toUpperCase())),
+  ]
   const callbackRef = useRef<() => void>(null)
 
   useImperativeHandle(ref, () => ({
-    confirm: (queries, c) => {
-      setQueries(queries)
+    confirm: (pendingQueries, c) => {
+      setQueries(pendingQueries)
       setOpen(true)
       callbackRef.current = c
     },
@@ -47,9 +53,9 @@ export function RunnerAlertDialog({
   return (
     <AlertDialog
       open={open}
-      onOpenChange={open => {
-        setOpen(open)
-        if (!open) {
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen)
+        if (!nextOpen) {
           callbackRef.current = null
         }
       }}
@@ -57,24 +63,20 @@ export function RunnerAlertDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <RiAlertLine className="size-5 text-warning" />
+            <RiAlertLine className="text-warning size-5" />
             Potentially Dangerous SQL Query
           </AlertDialogTitle>
           <AlertDialogDescription>
-            <span
-              className="
-              mb-3 block rounded-md border border-warning/20 bg-warning/10 p-3
-            "
-            >
+            <span className="border-warning/20 bg-warning/10 mb-3 block rounded-md border p-3">
               Your query contains potentially dangerous SQL keywords:
-              <span className="font-semibold text-warning">
+              <span className="text-warning font-semibold">
                 {' '}
                 {uniqueDangerousKeywords.join(', ')}
               </span>
             </span>
             <span className="mt-2">
-              These operations could modify or delete data in your database. Proceed if you
-              understand the impact of these changes.
+              These operations could modify or delete data in your database.
+              Proceed if you understand the impact of these changes.
             </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -83,7 +85,10 @@ export function RunnerAlertDialog({
           <AlertDialogCancel variant="warning" onClick={onConfirm}>
             <span className="flex items-center gap-2">
               Run Anyway
-              <KbdShiftCtrlEnter userAgent={navigator.userAgent} className="text-white" />
+              <KbdShiftCtrlEnter
+                userAgent={navigator.userAgent}
+                className="text-white"
+              />
             </span>
           </AlertDialogCancel>
         </AlertDialogFooter>

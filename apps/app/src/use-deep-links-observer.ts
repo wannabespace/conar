@@ -1,16 +1,16 @@
 import { useEffect, useEffectEvent } from 'react'
 
-async function handleDeepLink(_url: string): Promise<{
+const handleDeepLink = (
+  _url: string
+): Promise<{
   type: 'unknown'
-}> {
-  // const { pathname, searchParams } = new URL(url.replace('tamery://', 'https://tamery.app/'))
-  return {
+}> =>
+  Promise.resolve({
     type: 'unknown',
-  }
-}
+  })
 
-export function useDeepLinksObserver() {
-  async function handle(url: string) {
+export const useDeepLinksObserver = () => {
+  const handle = async (url: string) => {
     const { type: _type } = await handleDeepLink(url)
   }
 

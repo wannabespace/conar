@@ -7,16 +7,18 @@ import { MSSQLIcon } from '~/icons/mssql'
 import { MySQLIcon } from '~/icons/mysql'
 import { PostgresIcon } from '~/icons/postgres'
 
-const iconMap: Record<ConnectionType, (props: ComponentProps<'svg'>) => ReactNode> = {
+const iconMap: Record<
+  ConnectionType,
+  (props: ComponentProps<'svg'>) => ReactNode
+> = {
   [ConnectionType.Postgres]: PostgresIcon,
   [ConnectionType.MySQL]: MySQLIcon,
   [ConnectionType.ClickHouse]: ClickHouseIcon,
   [ConnectionType.MSSQL]: MSSQLIcon,
 }
 
-export function ConnectionIcon({
+export const ConnectionIcon = ({
   type,
   ...props
-}: { type: ConnectionType } & ComponentProps<'svg'>) {
-  return createElement(iconMap[type], props)
-}
+}: { type: ConnectionType } & ComponentProps<'svg'>) =>
+  createElement(iconMap[type], props)

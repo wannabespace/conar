@@ -24,7 +24,7 @@ services:
       - '6379:6379'
       - '8001:8001'
     environment:
-      - REDIS_ARGS="--requirepass root"
+      - REDIS_ARGS=--requirepass root
     volumes:
       - redis_data:/data
     healthcheck:

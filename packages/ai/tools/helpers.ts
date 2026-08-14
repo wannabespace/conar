@@ -20,12 +20,11 @@ export type AppUIMessage = UIMessage<
   UITools
 >
 
-export function convertToAppUIMessage(message: UIMessage): AppUIMessage {
-  return message as AppUIMessage
-}
+export const convertToAppUIMessage = (message: UIMessage): AppUIMessage =>
+  message as AppUIMessage
 
 export type ToolUIPart = ToolUIPartAi<UITools> | DynamicToolUIPart
 
-export function isToolUIPart(part: UIMessage['parts'][number]): part is ToolUIPart {
-  return isToolUIPartAi(part)
-}
+export const isToolUIPart = (
+  part: UIMessage['parts'][number]
+): part is ToolUIPart => isToolUIPartAi(part)

@@ -6,16 +6,15 @@ import { fullSignOut } from '~/lib/auth'
 
 import { PROXY_ERROR_MESSAGE } from '../lib/orpc'
 
-function getErrorMessage(error: unknown) {
-  return (
-    (error instanceof ORPCError && error.message) ||
-    (error as Error)?.message ||
-    'Our server is practicing its meditation. Please, try again later.'
-  )
-}
+const getErrorMessage = (error: unknown) =>
+  (error instanceof ORPCError && error.message) ||
+  (error as Error)?.message ||
+  'Our server is practicing its meditation. Please, try again later.'
 
-export async function handleError(error: unknown) {
-  if (!error) return
+export const handleError = async (error: unknown) => {
+  if (!error) {
+    return
+  }
 
   const shouldIgnoreError =
     error instanceof Error
@@ -41,7 +40,7 @@ export async function handleError(error: unknown) {
       : message,
     {
       id: message.includes('session') ? 'session-expired' : `error-${message}`,
-    },
+    }
   )
 
   if (

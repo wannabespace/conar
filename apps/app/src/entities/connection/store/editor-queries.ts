@@ -7,23 +7,29 @@ import { getConnectionResourceStore } from '.'
 
 export const getEditorQueriesComputed = memoize((id: string) => {
   const store = getConnectionResourceStore(id)
-  const computed = createComputed(store, state => getEditorQueries(state.query))
+  const computed = createComputed(store, (state) =>
+    getEditorQueries(state.query)
+  )
 
-  computed.subscribe(editorQueries => {
+  computed.subscribe((editorQueries) => {
     const state = store.get()
-    const currentLineNumbers = new Set(editorQueries.map(query => query.startLineNumber))
-    const newSelectedLines = state.selectedLines.filter(line => currentLineNumbers.has(line))
+    const currentLineNumbers = new Set(
+      editorQueries.map((query) => query.startLineNumber)
+    )
+    const newSelectedLines = state.selectedLines.filter((line) =>
+      currentLineNumbers.has(line)
+    )
 
     if (
       newSelectedLines.length !== state.selectedLines.length ||
       newSelectedLines.some((line, i) => line !== state.selectedLines[i])
     ) {
       store.set(
-        state =>
+        (currentState) =>
           ({
-            ...state,
+            ...currentState,
             selectedLines: newSelectedLines.toSorted((a, b) => a - b),
-          }) satisfies typeof state,
+          }) satisfies typeof currentState
       )
     }
   })

@@ -11,7 +11,7 @@ const templates = { ...templatesNamespace }
 
 export const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null
 
-export async function sendEmail<
+export const sendEmail = async <
   T extends keyof typeof templates,
   P extends ComponentProps<(typeof templates)[T]>,
 >({
@@ -23,12 +23,12 @@ export async function sendEmail<
   to: string
   subject: string
   template: T
-} & (keyof P extends never ? { props?: never } : { props: P })) {
+} & (keyof P extends never ? { props?: never } : { props: P })) => {
   if (!resend) {
     console.error('Resend email service is not configured.', {
-      to,
       subject,
       template,
+      to,
     })
     return
   }
@@ -36,9 +36,9 @@ export async function sendEmail<
   const Template = templates[template] as (props?: P) => React.ReactElement
   const options: CreateEmailOptions = {
     from: `Tamery <${env.RESEND_FROM_EMAIL}>`,
-    to,
-    subject,
     react: Template(props),
+    subject,
+    to,
   }
 
   await redisMemoize(
@@ -53,11 +53,11 @@ export async function sendEmail<
         console.error(
           'Resend email service error:',
           error instanceof Error ? error.message : 'Unknown error',
-          error,
+          error
         )
       }
     },
     `resend:${JSON.stringify(options)}`,
-    10 * 60,
+    10 * 60
   )
 }

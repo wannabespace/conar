@@ -1,5 +1,9 @@
 import NumberFlow from '@number-flow/react'
-import { RiCodeSSlashLine, RiSeedlingLine, RiVipCrownLine } from '@remixicon/react'
+import {
+  RiCodeSSlashLine,
+  RiSeedlingLine,
+  RiVipCrownLine,
+} from '@remixicon/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { pick } from '@tamery/shared/utils/helpers'
 import { Badge } from '@tamery/ui/components/badge'
@@ -43,7 +47,11 @@ import {
   PopoverTrigger,
 } from '@tamery/ui/components/popover'
 import { Switch } from '@tamery/ui/components/switch'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -59,7 +67,10 @@ import {
   resourceTableTotalQueryOptions,
 } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
-import type { GeneratorGroup, GeneratorId } from '~/entities/connection/utils/seeds'
+import type {
+  GeneratorGroup,
+  GeneratorId,
+} from '~/entities/connection/utils/seeds'
 import {
   autoDetectGenerator,
   CUSTOM_GENERATOR,
@@ -81,6 +92,7 @@ import { setIsSubscriptionDialogOpen } from '~/store'
 
 import { useTableColumnsContext } from '../../../-lib/columns'
 import { useTablePageStore } from '../../../-lib/store'
+import type { tablePageType } from '../../../-lib/store'
 import {
   DefaultValueTooltipIcon,
   NullableTooltipIcon,
@@ -91,45 +103,53 @@ import {
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-function getAvailableGeneratorGroups(column: Column, dialect: ConnectionType) {
-  return getGeneratorGroups(dialect)
-    .map(group => ({
+const getAvailableGeneratorGroups = (column: Column, dialect: ConnectionType) =>
+  getGeneratorGroups(dialect)
+    .map((group) => ({
       ...group,
-      items: group.items.filter(id => {
-        if (id === REFERENCE_GENERATOR) return !!column.foreign
-        if (id === ENUM_GENERATOR) return !!column.enumName
-        if (id === 'null') return !!column.isNullable
+      items: group.items.filter((id) => {
+        if (id === REFERENCE_GENERATOR) {
+          return !!column.foreign
+        }
+        if (id === ENUM_GENERATOR) {
+          return !!column.enumName
+        }
+        if (id === 'null') {
+          return !!column.isNullable
+        }
         return true
       }),
     }))
-    .filter(group => group.items.length > 0)
-}
+    .filter((group) => group.items.length > 0)
 
-function CustomExpressionPopover({ columnId }: { columnId: string }) {
+const CustomExpressionPopover = ({ columnId }: { columnId: string }) => {
   const store = useTablePageStore()
   const customExpression = useSubscription(store, {
-    selector: state => state.generators[columnId]?.customExpression,
+    selector: (state) => state.generators[columnId]?.customExpression,
   })
 
   const updateCustomExpression = (expression?: string) => {
-    store.set(
-      state =>
-        ({
-          ...state,
-          generators: {
-            ...state.generators,
-            [columnId]: {
-              ...state.generators[columnId]!,
-              customExpression: expression,
-            },
+    store.set((state) => {
+      const existing = state.generators[columnId] ?? {
+        generatorId: CUSTOM_GENERATOR,
+        isNullable: false,
+      }
+      return {
+        ...state,
+        generators: {
+          ...state.generators,
+          [columnId]: {
+            ...existing,
+            customExpression: expression,
           },
-        }) satisfies typeof state,
-    )
+        },
+      } satisfies typeof state
+    })
   }
 
   return (
     <Popover
-      onOpenChangeComplete={open => {
+      onOpenChangeComplete={(open) => {
         if (!open && !customExpression?.trim()) {
           updateCustomExpression()
         }
@@ -140,7 +160,11 @@ function CustomExpressionPopover({ columnId }: { columnId: string }) {
           render={
             <PopoverTrigger
               render={
-                <Button variant="outline" size="icon-sm" className="relative overflow-visible" />
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  className="relative overflow-visible"
+                />
               }
             />
           }
@@ -151,11 +175,13 @@ function CustomExpressionPopover({ columnId }: { columnId: string }) {
         <TooltipContent>Edit SQL expression</TooltipContent>
       </Tooltip>
       <PopoverContent side="left" sideOffset={8} className="w-96 gap-0 p-0">
-        <PopoverTitle className="border-b p-2">Custom SQL Expression</PopoverTitle>
+        <PopoverTitle className="border-b p-2">
+          Custom SQL Expression
+        </PopoverTitle>
         <Monaco
           value={customExpression ?? 'SELECT 1'}
           language="sql"
-          onChange={value => updateCustomExpression(value)}
+          onChange={(value) => updateCustomExpression(value)}
           className="h-32"
           options={{
             lineNumbers: 'off',
@@ -170,7 +196,7 @@ function CustomExpressionPopover({ columnId }: { columnId: string }) {
             padding: { top: 8, bottom: 8 },
           }}
         />
-        <div className="border-t p-2 text-xs text-muted-foreground">
+        <div className="text-muted-foreground border-t p-2 text-xs">
           Enter a raw SQL expression, for example:
           <br /> <Badge variant="secondary">NOW()</Badge>,{' '}
           <Badge variant="secondary">gen_random_uuid()</Badge>,{' '}
@@ -182,7 +208,181 @@ function CustomExpressionPopover({ columnId }: { columnId: string }) {
   )
 }
 
-export function ActionsSeed({
+const SeedColumnRow = ({
+  column,
+  connectionType,
+  generators,
+  allGenerators,
+  store,
+  onToggleNullable,
+}: {
+  column: Column
+  connectionType: ConnectionType
+  generators: (typeof tablePageType.infer)['generators']
+  allGenerators: ReturnType<typeof getGenerators>
+  store: ReturnType<typeof useTablePageStore>
+  onToggleNullable: (columnId: string) => void
+}) => {
+  const generatorState = generators[column.id]
+  const selectedGeneratorId = generatorState?.generatorId ?? SKIP_GENERATOR
+  const hasFixedGenerator =
+    !!column.foreign ||
+    (!!column.enumName &&
+      !!column.availableValues &&
+      column.availableValues.length > 0)
+
+  return (
+    <div className="bg-muted/30 flex items-center gap-2 rounded-xl border px-3 py-2">
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <div className="flex items-center gap-1.5">
+          <span className="truncate text-sm font-medium">{column.id}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          {column.primaryKey && (
+            <PrimaryKeyTooltipIcon primaryKey={column.primaryKey} />
+          )}
+          {column.isNullable && <NullableTooltipIcon />}
+          {column.unique && <UniqueTooltipIcon unique={column.unique} />}
+          {column.isEditable === false && <ReadOnlyTooltipIcon />}
+          {column.defaultValue && (
+            <DefaultValueTooltipIcon defaultValue={column.defaultValue} />
+          )}
+          <Badge variant="secondary" className="text-muted-foreground">
+            {column.typeLabel}
+          </Badge>
+        </div>
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        {column.isNullable && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Switch
+                  checked={generatorState?.isNullable ?? false}
+                  onCheckedChange={() => onToggleNullable(column.id)}
+                />
+              }
+            />
+            <TooltipContent>Allow random NULL values</TooltipContent>
+          </Tooltip>
+        )}
+        {hasFixedGenerator ? (
+          <Button
+            variant="outline"
+            size="sm"
+            disabled
+            className="w-56 justify-start"
+          >
+            {column.foreign
+              ? `${column.foreign.schema}.${column.foreign.table}`
+              : `Random enum value${column.isArray ? 's' : ''}`}
+          </Button>
+        ) : (
+          <div className="flex w-56 gap-1">
+            <Combobox
+              items={getAvailableGeneratorGroups(column, connectionType)}
+              itemToStringLabel={(id) => allGenerators[id]?.label ?? id}
+              autoHighlight
+              value={selectedGeneratorId}
+              onValueChange={(value) => {
+                if (value && value in allGenerators) {
+                  store.set(
+                    (state) =>
+                      ({
+                        ...state,
+                        generators: {
+                          ...state.generators,
+                          [column.id]: {
+                            ...state.generators[column.id],
+                            generatorId: value,
+                            isNullable:
+                              state.generators[column.id]?.isNullable ?? false,
+                            customExpression:
+                              value === CUSTOM_GENERATOR
+                                ? state.generators[column.id]?.customExpression
+                                : undefined,
+                          },
+                        },
+                      }) satisfies typeof state
+                  )
+                }
+              }}
+            >
+              <ComboboxTrigger
+                className="flex-1 justify-start"
+                render={<Button variant="outline" size="sm" />}
+              >
+                {allGenerators[selectedGeneratorId]?.label ??
+                  'Select a generator'}
+              </ComboboxTrigger>
+              <ComboboxContent className="min-w-48">
+                <div className="border-b p-2">
+                  <ComboboxInput
+                    placeholder="Search generators..."
+                    showTrigger={false}
+                  />
+                </div>
+                <ComboboxEmpty>No generators found.</ComboboxEmpty>
+                <ComboboxList>
+                  {(group: GeneratorGroup) => (
+                    <ComboboxGroup key={group.value} items={group.items}>
+                      <ComboboxLabel>{group.value}</ComboboxLabel>
+                      <ComboboxCollection>
+                        {(id: GeneratorId) => (
+                          <ComboboxItem key={id} value={id}>
+                            {allGenerators[id]?.label}
+                          </ComboboxItem>
+                        )}
+                      </ComboboxCollection>
+                    </ComboboxGroup>
+                  )}
+                </ComboboxList>
+              </ComboboxContent>
+            </Combobox>
+            {selectedGeneratorId === CUSTOM_GENERATOR && (
+              <CustomExpressionPopover columnId={column.id} />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+const renderSeedTrigger = ({
+  trigger,
+  openProp,
+  isPending,
+}: {
+  trigger?: React.ReactElement
+  openProp?: boolean
+  isPending: boolean
+}) => {
+  if (trigger) {
+    return <DrawerTrigger render={trigger} />
+  }
+  if (openProp === undefined) {
+    return (
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <DrawerTrigger
+              render={
+                <Button variant="secondary" size="icon" disabled={isPending}>
+                  <RiSeedlingLine />
+                </Button>
+              }
+            />
+          }
+        />
+        <TooltipContent>Seed data</TooltipContent>
+      </Tooltip>
+    )
+  }
+  return null
+}
+
+export const ActionsSeed = ({
   table,
   schema,
   trigger,
@@ -194,18 +394,23 @@ export function ActionsSeed({
   trigger?: React.ReactElement
   open?: boolean
   onOpenChange?: (open: boolean) => void
-}) {
+}) => {
   const { columns } = useTableColumnsContext()
   const { connection, connectionResource } = useRouteContext()
   const allGenerators = getGenerators(connection.type)
   const [internalOpen, setInternalOpen] = useState(false)
   const open = openProp ?? internalOpen
-  const setOpen = (next: boolean) => (onOpenChange ? onOpenChange(next) : setInternalOpen(next))
+  const setOpen = (next: boolean) =>
+    onOpenChange ? onOpenChange(next) : setInternalOpen(next)
   const store = useTablePageStore()
-  const seedsCount = useSubscription(store, { selector: state => state.seedsCount })
-  const generators = useSubscription(store, { selector: state => state.generators })
+  const seedsCount = useSubscription(store, {
+    selector: (state) => state.seedsCount,
+  })
+  const generators = useSubscription(store, {
+    selector: (state) => state.generators,
+  })
   const { filters, orderBy, exact } = useSubscription(store, {
-    selector: state => pick(state, ['filters', 'orderBy', 'exact']),
+    selector: (state) => pick(state, ['filters', 'orderBy', 'exact']),
   })
 
   const { subscription } = useUserSubscription()
@@ -213,14 +418,14 @@ export function ActionsSeed({
   const remainingFreeSeeds = Math.max(0, FREE_SEED_LIMIT - seedUsageCount)
   const hasReachedFreeLimit = !subscription && remainingFreeSeeds === 0
 
-  const handleOpenChange = (open: boolean) => {
-    setOpen(open)
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen)
 
-    if (!open) {
+    if (!nextOpen) {
       return
     }
 
-    store.set(state => {
+    store.set((state) => {
       const newGenerators: typeof state.generators = {}
 
       for (const column of columns) {
@@ -249,39 +454,44 @@ export function ActionsSeed({
 
   const toggleNullableGeneration = (columnId: string) => {
     store.set(
-      state =>
+      (state) =>
         ({
           ...state,
           generators: {
             ...state.generators,
             [columnId]: {
               ...state.generators[columnId],
-              generatorId: state.generators[columnId]?.generatorId ?? SKIP_GENERATOR,
+              generatorId:
+                state.generators[columnId]?.generatorId ?? SKIP_GENERATOR,
               isNullable: !state.generators[columnId]?.isNullable,
             },
           },
-        }) satisfies typeof state,
+        }) satisfies typeof state
     )
   }
 
   const { mutate: seed, isPending } = useMutation({
     mutationFn: async () => {
-      const queryParams = await connectionResourceToQueryParams(connectionResource)
+      const queryParams =
+        await connectionResourceToQueryParams(connectionResource)
 
       const referenceData = Object.fromEntries(
         await Promise.all(
           columns
-            .filter(c => c.foreign)
-            .map(async column => {
-              const fk = column.foreign!
+            .filter((c) => c.foreign)
+            .map(async (column) => {
+              const fk = column.foreign
+              if (!fk) {
+                throw new Error(`Missing foreign key on column ${column.id}`)
+              }
               const rows = await distinctQuery({
                 schema: fk.schema,
                 table: fk.table,
                 column: fk.column,
               }).run(queryParams)
-              return [column.id, rows.map(r => r[fk.column])]
-            }),
-        ),
+              return [column.id, rows.map((r) => r[fk.column])]
+            })
+        )
       )
 
       const rows = generateRows({
@@ -304,7 +514,7 @@ export function ActionsSeed({
         incrementSeedUsage()
       }
       toast.success(
-        `Seeded ${seedsCount} row${seedsCount === 1 ? '' : 's'} into ${schema}.${table}`,
+        `Seeded ${seedsCount} row${seedsCount === 1 ? '' : 's'} into ${schema}.${table}`
       )
       queryClient.invalidateQueries(
         resourceRowsQueryInfiniteOptions({
@@ -312,7 +522,7 @@ export function ActionsSeed({
           table,
           schema,
           query: { filters, orderBy },
-        }),
+        })
       )
       queryClient.invalidateQueries(
         resourceTableTotalQueryOptions({
@@ -320,39 +530,24 @@ export function ActionsSeed({
           table,
           schema,
           query: { filters, exact },
-        }),
+        })
       )
       setOpen(false)
     },
-    onError: error => {
+    onError: (error) => {
       toast.error('Failed to seed data', { description: error.message })
     },
   })
 
   const activeCount = columns.filter(
-    c => generators[c.id]?.generatorId && generators[c.id]?.generatorId !== SKIP_GENERATOR,
+    (c) =>
+      generators[c.id]?.generatorId &&
+      generators[c.id]?.generatorId !== SKIP_GENERATOR
   ).length
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange} swipeDirection="right">
-      {trigger ? (
-        <DrawerTrigger render={trigger} />
-      ) : openProp !== undefined ? null : (
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <DrawerTrigger
-                render={
-                  <Button variant="secondary" size="icon" disabled={isPending}>
-                    <RiSeedlingLine />
-                  </Button>
-                }
-              />
-            }
-          />
-          <TooltipContent>Seed data</TooltipContent>
-        </Tooltip>
-      )}
+      {renderSeedTrigger({ trigger, openProp, isPending })}
       <DrawerContent className="max-w-xl">
         <DrawerHeader>
           <DrawerTitle>Seed Data</DrawerTitle>
@@ -362,19 +557,18 @@ export function ActionsSeed({
         </DrawerHeader>
         <div className="flex-1 overflow-auto px-4">
           {!subscription && (
-            <div
-              className="
-                mb-4 flex items-center gap-2 rounded-md border bg-muted/50 px-3
-                py-2 text-sm
-              "
-            >
-              <RiVipCrownLine className="size-4 shrink-0 text-primary" />
+            <div className="bg-muted/50 mb-4 flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
+              <RiVipCrownLine className="text-primary size-4 shrink-0" />
               <span className="flex-1">
                 {hasReachedFreeLimit
                   ? 'You have used all your free seed generations.'
                   : `${remainingFreeSeeds} of ${FREE_SEED_LIMIT} free seed generations remaining.`}
               </span>
-              <Button variant="outline" size="xs" onClick={() => setIsSubscriptionDialogOpen(true)}>
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={() => setIsSubscriptionDialogOpen(true)}
+              >
                 Upgrade
               </Button>
             </div>
@@ -382,125 +576,16 @@ export function ActionsSeed({
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <Label className="mb-1">Columns</Label>
-              {columns?.map(column => (
-                <div
+              {columns?.map((column) => (
+                <SeedColumnRow
                   key={column.id}
-                  className="
-                    flex items-center gap-2 rounded-xl border bg-muted/30 px-3
-                    py-2
-                  "
-                >
-                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <div className="flex items-center gap-1.5">
-                      <span className="truncate text-sm font-medium">{column.id}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {column.primaryKey && (
-                        <PrimaryKeyTooltipIcon primaryKey={column.primaryKey} />
-                      )}
-                      {column.isNullable && <NullableTooltipIcon />}
-                      {column.unique && <UniqueTooltipIcon unique={column.unique} />}
-                      {column.isEditable === false && <ReadOnlyTooltipIcon />}
-                      {column.defaultValue && (
-                        <DefaultValueTooltipIcon defaultValue={column.defaultValue} />
-                      )}
-                      <Badge variant="secondary" className="text-muted-foreground">
-                        {column.typeLabel}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    {column.isNullable && (
-                      <Tooltip>
-                        <TooltipTrigger
-                          render={
-                            <Switch
-                              checked={generators[column.id]?.isNullable ?? false}
-                              onCheckedChange={() => toggleNullableGeneration(column.id)}
-                            />
-                          }
-                        ></TooltipTrigger>
-                        <TooltipContent>Allow random NULL values</TooltipContent>
-                      </Tooltip>
-                    )}
-                    {column.foreign ||
-                    (column.enumName &&
-                      column.availableValues &&
-                      column.availableValues.length > 0) ? (
-                      <Button variant="outline" size="sm" disabled className="w-56 justify-start">
-                        {column.foreign
-                          ? `${column.foreign.schema}.${column.foreign.table}`
-                          : `Random enum value${column.isArray ? 's' : ''}`}
-                      </Button>
-                    ) : (
-                      <div className="flex w-56 gap-1">
-                        <Combobox
-                          items={getAvailableGeneratorGroups(column, connection.type)}
-                          itemToStringLabel={id => allGenerators[id]?.label ?? id}
-                          autoHighlight
-                          value={generators[column.id]?.generatorId ?? SKIP_GENERATOR}
-                          onValueChange={value => {
-                            if (value && value in allGenerators) {
-                              store.set(
-                                state =>
-                                  ({
-                                    ...state,
-                                    generators: {
-                                      ...state.generators,
-                                      [column.id]: {
-                                        ...state.generators[column.id],
-                                        generatorId: value,
-                                        isNullable:
-                                          state.generators[column.id]?.isNullable ?? false,
-                                        customExpression:
-                                          value === CUSTOM_GENERATOR
-                                            ? state.generators[column.id]?.customExpression
-                                            : undefined,
-                                      },
-                                    },
-                                  }) satisfies typeof state,
-                              )
-                            }
-                          }}
-                        >
-                          <ComboboxTrigger
-                            className="flex-1 justify-start"
-                            render={<Button variant="outline" size="sm" />}
-                          >
-                            {allGenerators[generators[column.id]?.generatorId ?? SKIP_GENERATOR]
-                              ?.label ?? 'Select a generator'}
-                          </ComboboxTrigger>
-                          <ComboboxContent className="min-w-48">
-                            <div className="border-b p-2">
-                              <ComboboxInput
-                                placeholder="Search generators..."
-                                showTrigger={false}
-                              />
-                            </div>
-                            <ComboboxEmpty>No generators found.</ComboboxEmpty>
-                            <ComboboxList>
-                              {(group: GeneratorGroup) => (
-                                <ComboboxGroup key={group.value} items={group.items}>
-                                  <ComboboxLabel>{group.value}</ComboboxLabel>
-                                  <ComboboxCollection>
-                                    {(id: GeneratorId) => (
-                                      <ComboboxItem key={id} value={id}>
-                                        {allGenerators[id]?.label}
-                                      </ComboboxItem>
-                                    )}
-                                  </ComboboxCollection>
-                                </ComboboxGroup>
-                              )}
-                            </ComboboxList>
-                          </ComboboxContent>
-                        </Combobox>
-                        {generators[column.id]?.generatorId === CUSTOM_GENERATOR && (
-                          <CustomExpressionPopover columnId={column.id} />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  column={column}
+                  connectionType={connection.type}
+                  generators={generators}
+                  allGenerators={allGenerators}
+                  store={store}
+                  onToggleNullable={toggleNullableGeneration}
+                />
               ))}
             </div>
           </div>
@@ -508,15 +593,15 @@ export function ActionsSeed({
         <DrawerFooter>
           <NumberField
             min={1}
-            max={10000}
+            max={10_000}
             value={seedsCount}
-            onValueChange={value =>
+            onValueChange={(value) =>
               store.set(
-                state =>
+                (state) =>
                   ({
                     ...state,
-                    seedsCount: Math.max(1, Math.min(10000, value ?? 1)),
-                  }) satisfies typeof state,
+                    seedsCount: Math.max(1, Math.min(10_000, value ?? 1)),
+                  }) satisfies typeof state
               )
             }
             className="mr-auto w-32"

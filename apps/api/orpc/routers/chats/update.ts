@@ -11,9 +11,15 @@ export const update = orpc
   .use(subscriptionMiddleware)
   .input(
     type.and(
-      chatsUpdateSchema.omit('createdAt', 'updatedAt', 'id', 'userId', 'activeStreamId'),
-      chatsUpdateSchema.pick('id').required(),
-    ),
+      chatsUpdateSchema.omit(
+        'createdAt',
+        'updatedAt',
+        'id',
+        'userId',
+        'activeStreamId'
+      ),
+      chatsUpdateSchema.pick('id').required()
+    )
   )
   .handler(async ({ context, input }) => {
     const { id, ...changes } = input
@@ -24,8 +30,12 @@ export const update = orpc
       .where(and(eq(chats.id, id), eq(chats.userId, context.user.id)))
       .returning()
 
+    if (!chat) {
+      return
+    }
+
     publisher.publish(context.user.id, {
       type: 'update',
-      value: chat!,
+      value: chat,
     })
   })

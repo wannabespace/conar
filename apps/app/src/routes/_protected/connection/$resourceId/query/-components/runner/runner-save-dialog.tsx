@@ -10,13 +10,16 @@ import {
 } from '@tamery/ui/components/dialog'
 import { Input } from '@tamery/ui/components/input'
 import { Label } from '@tamery/ui/components/label'
+import { getRouteApi } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 
 import { useCollections } from '~/entities/collections'
 
-import { Route } from '../..'
+const { useRouteContext } = getRouteApi(
+  '/_protected/connection/$resourceId/query/'
+)
 
 interface RunnerSaveDialogProps {
   ref: React.RefObject<{
@@ -24,22 +27,22 @@ interface RunnerSaveDialogProps {
   } | null>
 }
 
-export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
+export const RunnerSaveDialog = ({ ref }: RunnerSaveDialogProps) => {
   const { queriesCollection } = useCollections()
-  const { connectionResource } = Route.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const [name, setName] = useState('')
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
 
   useImperativeHandle(ref, () => ({
-    open: query => {
+    open: (queryText) => {
       setName('')
       setOpen(true)
-      setQuery(query)
+      setQuery(queryText)
     },
   }))
 
-  function createQuery() {
+  const createQuery = () => {
     queriesCollection.insert({
       id: v7(),
       createdAt: new Date(),
@@ -63,8 +66,8 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
         <div className="space-y-4">
           <Alert>
             <AlertDescription>
-              Saved queries are stored for this database and can be quickly accessed and run from
-              the "Saved queries" panel.
+              Saved queries are stored for this database and can be quickly
+              accessed and run from the Saved queries panel.
             </AlertDescription>
           </Alert>
           <Label htmlFor="name">Query name</Label>
@@ -74,8 +77,8 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
             placeholder="Enter query name"
             spellCheck={false}
             autoComplete="off"
-            onChange={e => setName(e.target.value)}
-            onKeyDown={e => {
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => {
               if (e.key === 'Enter' && canConfirm) {
                 createQuery()
               }
@@ -83,7 +86,9 @@ export function RunnerSaveDialog({ ref }: RunnerSaveDialogProps) {
           />
         </div>
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+          <DialogClose render={<Button variant="outline" />}>
+            Cancel
+          </DialogClose>
           <Button
             disabled={!canConfirm}
             onClick={() => {

@@ -10,9 +10,11 @@ export interface QueryLog {
   error: string | null
 }
 
-export const queryLogsStore = createStore<Record<string, Record<string, QueryLog>>>({})
+export const queryLogsStore = createStore<
+  Record<string, Record<string, QueryLog>>
+>({})
 
-export async function logQuery({
+export const logQuery = async ({
   resourceId,
   promise,
   query,
@@ -22,58 +24,68 @@ export async function logQuery({
   promise: Promise<{ result: unknown; duration: number }>
   query: string
   values?: unknown[]
-}) {
+}) => {
   const id = crypto.randomUUID()
 
   queryLogsStore.set(
-    state =>
+    (state) =>
       ({
         ...state,
         [resourceId]: {
           ...state[resourceId],
           [id]: {
-            id,
             createdAt: new Date(),
-            query,
-            values,
-            result: null,
             duration: null,
             error: null,
+            id,
+            query,
+            result: null,
+            values,
           },
         },
-      }) satisfies typeof state,
+      }) satisfies typeof state
   )
 
   try {
     const { result, duration } = await promise
 
-    queryLogsStore.set(
-      state =>
-        ({
-          ...state,
-          [resourceId]: {
-            ...state[resourceId],
-            [id]: {
-              ...state[resourceId]![id]!,
-              result,
-              duration,
-            },
+    queryLogsStore.set((state) => {
+      const resourceLogs = state[resourceId] ?? {}
+      const existingLog = resourceLogs[id]
+      if (!existingLog) {
+        return state
+      }
+
+      return {
+        ...state,
+        [resourceId]: {
+          ...resourceLogs,
+          [id]: {
+            ...existingLog,
+            duration,
+            result,
           },
-        }) satisfies typeof state,
-    )
+        },
+      } satisfies typeof state
+    })
   } catch (error) {
-    queryLogsStore.set(
-      state =>
-        ({
-          ...state,
-          [resourceId]: {
-            ...state[resourceId],
-            [id]: {
-              ...state[resourceId]![id]!,
-              error: error instanceof Error ? error.message : String(error),
-            },
+    queryLogsStore.set((state) => {
+      const resourceLogs = state[resourceId] ?? {}
+      const existingLog = resourceLogs[id]
+      if (!existingLog) {
+        return state
+      }
+
+      return {
+        ...state,
+        [resourceId]: {
+          ...resourceLogs,
+          [id]: {
+            ...existingLog,
+            error: error instanceof Error ? error.message : String(error),
           },
-        }) satisfies typeof state,
-    )
+        },
+      } satisfies typeof state
+    })
   }
 }

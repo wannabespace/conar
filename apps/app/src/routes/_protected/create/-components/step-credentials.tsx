@@ -7,14 +7,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@tamery/ui/components/card'
-import { Field, FieldDescription, FieldLabel } from '@tamery/ui/components/field'
+import {
+  Field,
+  FieldDescription,
+  FieldLabel,
+} from '@tamery/ui/components/field'
 import { Input } from '@tamery/ui/components/input'
 import type { RefObject } from 'react'
 import { useId } from 'react'
 
 import { useLocalProxyAvailable } from '~/entities/connection/runtime'
 
-export function StepCredentials({
+export const StepCredentials = ({
   ref,
   type,
   connectionString,
@@ -26,7 +30,7 @@ export function StepCredentials({
   connectionString: string
   setConnectionString: (connectionString: string) => void
   onEnter: () => void
-}) {
+}) => {
   const id = useId()
   const localProxyAvailable = useLocalProxyAvailable()
 
@@ -34,7 +38,9 @@ export function StepCredentials({
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Credentials</CardTitle>
-        <CardDescription>Enter the credentials of your connection.</CardDescription>
+        <CardDescription>
+          Enter the credentials of your connection.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Field className="gap-2">
@@ -45,8 +51,8 @@ export function StepCredentials({
             ref={ref}
             autoFocus
             value={connectionString}
-            onChange={e => setConnectionString(e.target.value)}
-            onKeyDown={e => {
+            onChange={(e) => setConnectionString(e.target.value)}
+            onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault()
                 onEnter()

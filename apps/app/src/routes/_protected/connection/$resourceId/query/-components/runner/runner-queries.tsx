@@ -10,34 +10,48 @@ import { CardTitle } from '@tamery/ui/components/card'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { Separator } from '@tamery/ui/components/separator'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { copy } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
+import { getRouteApi } from '@tanstack/react-router'
 import type { ComponentProps, ComponentRef } from 'react'
 import { useRef, useState } from 'react'
 
 import { useCollections } from '~/entities/collections'
 
-import { Route } from '../..'
 import { runnerHooks } from '../../-page'
 import { RemoveQueryDialog } from './remove-query-dialog'
 
-export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
-  const { connectionResource } = Route.useRouteContext()
+const { useRouteContext } = getRouteApi(
+  '/_protected/connection/$resourceId/query/'
+)
+
+export const RunnerQueries = ({
+  className,
+  ...props
+}: ComponentProps<'div'>) => {
+  const { connectionResource } = useRouteContext()
   const { queriesCollection } = useCollections()
   const { data } = useLiveQuery(
-    q =>
+    (q) =>
       q
         .from({ queries: queriesCollection })
-        .where(({ queries }) => eq(queries.connectionResourceId, connectionResource.id))
+        .where(({ queries }) =>
+          eq(queries.connectionResourceId, connectionResource.id)
+        )
         .orderBy(({ queries }) => queries.createdAt, 'desc'),
-    [queriesCollection, connectionResource.id],
+    [queriesCollection, connectionResource.id]
   )
   const [movedId, setMovedId] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
-  const removeQueryDialogRef = useRef<ComponentRef<typeof RemoveQueryDialog>>(null)
+  const removeQueryDialogRef =
+    useRef<ComponentRef<typeof RemoveQueryDialog>>(null)
 
   return (
     <div className={cn('flex h-full flex-col', className)} {...props}>
@@ -47,8 +61,11 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
       <ScrollArea className="flex-1 py-2">
         {data.length > 0 ? (
           <div className="space-y-1">
-            {data.map(query => (
-              <div key={query.id} className="flex w-full items-center gap-2 px-4 py-1">
+            {data.map((query) => (
+              <div
+                key={query.id}
+                className="flex w-full items-center gap-2 px-4 py-1"
+              >
                 <Tooltip>
                   <TooltipTrigger
                     render={
@@ -58,7 +75,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                         onClick={() => {
                           runnerHooks.callHook(
                             'appendToBottomAndFocus',
-                            `-- ${query.name}\n${query.query}`,
+                            `-- ${query.name}\n${query.query}`
                           )
                           setMovedId(query.id)
                         }}
@@ -67,7 +84,9 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                   >
                     <ContentSwitch
                       active={movedId === query.id}
-                      activeContent={<RiCheckLine className="size-4 text-success" />}
+                      activeContent={
+                        <RiCheckLine className="text-success size-4" />
+                      }
                       onSwitchEnd={() => {
                         setMovedId(null)
                       }}
@@ -75,7 +94,9 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                       <RiPlayListAddLine className="size-4" />
                     </ContentSwitch>
                   </TooltipTrigger>
-                  <TooltipContent side="left">Append to bottom of runner</TooltipContent>
+                  <TooltipContent side="left">
+                    Append to bottom of runner
+                  </TooltipContent>
                 </Tooltip>
                 <div className="flex min-w-0 flex-1 flex-col">
                   <div data-mask className="truncate text-sm font-medium">
@@ -83,9 +104,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                   </div>
                   <div
                     data-mask
-                    className={`
-                          max-w-full truncate text-xs text-muted-foreground
-                        `}
+                    className="text-muted-foreground max-w-full truncate text-xs"
                     title={query.query}
                   >
                     {query.query}
@@ -106,7 +125,9 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                   >
                     <ContentSwitch
                       active={copiedId === query.id}
-                      activeContent={<RiCheckLine className="size-4 text-success" />}
+                      activeContent={
+                        <RiCheckLine className="text-success size-4" />
+                      }
                       onSwitchEnd={() => setCopiedId(null)}
                     >
                       <RiFileCopyLine className="size-4" />
@@ -119,11 +140,7 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
                     render={
                       <Button
                         variant="ghost"
-                        className={`
-                            -mr-1 transition-none
-                            group-hover:opacity-100
-                            hover:text-destructive
-                          `}
+                        className="hover:text-destructive -mr-1 transition-none group-hover:opacity-100"
                         size="icon-sm"
                         onClick={() => {
                           removeQueryDialogRef.current?.remove(query)
@@ -140,16 +157,11 @@ export function RunnerQueries({ className, ...props }: ComponentProps<'div'>) {
             ))}
           </div>
         ) : (
-          <div
-            className={`
-                mx-auto flex h-full max-w-56 flex-col items-center
-                justify-center px-6 py-12 text-center
-              `}
-          >
+          <div className="mx-auto flex h-full max-w-56 flex-col items-center justify-center px-6 py-12 text-center">
             <span className="mb-2">No saved queries found.</span>
-            <span className="text-xs text-muted-foreground">
-              You can add a new query by pressing the <RiSaveLine className="inline-block size-4" />{' '}
-              button.
+            <span className="text-muted-foreground text-xs">
+              You can add a new query by pressing the{' '}
+              <RiSaveLine className="inline-block size-4" /> button.
             </span>
           </div>
         )}

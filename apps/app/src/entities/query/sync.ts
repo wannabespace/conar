@@ -11,27 +11,33 @@ export interface Query extends BaseTable {
   query: string
 }
 
-export function createQueriesCollection() {
-  return createCollection(
+export const createQueriesCollection = () =>
+  createCollection(
     persistedCollectionOptions<Query, string, never, SyncUtils>({
       ...syncCollectionOptions<Query>({
-        id: 'queries',
-        getKey: item => item.id,
         events: async ({ signal, write }) => {
-          for await (const message of await orpc.queries.events.call({}, { signal })) {
+          for await (const message of await orpc.queries.events.call(
+            {},
+            { signal }
+          )) {
             write(message)
           }
         },
-        sync: ({ rows, signal }) => orpc.queries.sync.call(rows, { signal }),
-        onInsert: async ({ transaction }) => {
-          await orpc.queries.create.call(transaction.mutations.map(m => m.modified))
-        },
+        getKey: (item) => item.id,
+        id: 'queries',
         onDelete: async ({ transaction }) => {
-          await orpc.queries.remove.call(transaction.mutations.map(m => ({ id: m.key })))
+          await orpc.queries.remove.call(
+            transaction.mutations.map((m) => ({ id: m.key }))
+          )
         },
+        onInsert: async ({ transaction }) => {
+          await orpc.queries.create.call(
+            transaction.mutations.map((m) => m.modified)
+          )
+        },
+        sync: ({ rows, signal }) => orpc.queries.sync.call(rows, { signal }),
       }),
       persistence,
       schemaVersion: 1,
-    }),
+    })
   )
-}

@@ -3,7 +3,11 @@ import { title } from '@tamery/shared/utils/title'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@tamery/ui/components/input-group'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@tamery/ui/components/input-group'
 import { ReactFlowEdge } from '@tamery/ui/components/react-flow/edge'
 import {
   Select,
@@ -12,11 +16,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tamery/ui/components/select'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useQueries, useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, getRouteApi } from '@tanstack/react-router'
 import {
   Background,
   BackgroundVariant,
@@ -26,6 +34,7 @@ import {
   useEdgesState,
   useNodesState,
 } from '@xyflow/react'
+import type { CSSProperties } from 'react'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
@@ -39,87 +48,15 @@ import {
 import type { columnType } from '~/entities/connection/queries/columns'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
-import { applySearchHighlight, getVisualizerLayout } from '~/entities/connection/visualizer'
+import {
+  applySearchHighlight,
+  getVisualizerLayout,
+} from '~/entities/connection/visualizer'
 import { globalHooks } from '~/global-hooks'
 
-export const Route = createFileRoute('/_protected/connection/$resourceId/visualizer/')({
-  component: VisualizerPage,
-  loader: ({ context }) => {
-    prefetchConnectionResourceCore(context.connectionResource)
-    return { connection: context.connection, connectionResource: context.connectionResource }
-  },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          {
-            title: title(
-              'Visualizer',
-              loaderData.connection.name,
-              loaderData.connectionResource.name,
-            ),
-          },
-        ]
-      : [],
-  }),
-})
-
-function VisualizerPage() {
-  const { connection } = Route.useLoaderData()
-  const { connectionResource } = Route.useRouteContext()
-  const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const { data: tablesAndSchemas } = useQuery({
-    ...resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
-    select: data =>
-      data.schemas.flatMap(({ name, tables }) =>
-        tables.map(table => ({ schema: name, table: table.name })),
-      ),
-  })
-  const columnsQueries = useQueries({
-    queries:
-      tablesAndSchemas?.flatMap(({ schema, table }) =>
-        resourceTableColumnsQueryOptions({ connectionResource, schema, table }),
-      ) ?? [],
-  })
-  const { data: constraints } = useQuery(resourceConstraintsQueryOptions({ connectionResource }))
-
-  if (!tablesAndSchemas || !constraints || columnsQueries.some(q => q.isPending)) {
-    return (
-      <div
-        className="
-        flex size-full items-center justify-center rounded-lg border
-        bg-background
-      "
-      >
-        <AppLogo className="size-40 animate-pulse text-muted-foreground" />
-      </div>
-    )
-  }
-
-  const columns = columnsQueries
-    .flatMap(item => item.data)
-    .filter((item): item is typeof columnType.infer => !!item)
-
-  if (columns.length === 0 || tablesAndSchemas.length === 0) {
-    return (
-      <div
-        className="
-        flex size-full items-center justify-center rounded-lg border
-        bg-background
-      "
-      >
-        <p className="text-muted-foreground">No data to show</p>
-      </div>
-    )
-  }
-
-  return (
-    // Need to re-render the whole visualizer when the database changes due to recalculation of sizes
-    <ReactFlowProvider key={connection.id}>
-      <Visualizer tablesAndSchemas={tablesAndSchemas} columns={columns} constraints={constraints} />
-    </ReactFlowProvider>
-  )
-}
+const { useLoaderData, useRouteContext } = getRouteApi(
+  '/_protected/connection/$resourceId/visualizer/'
+)
 
 const nodeTypes = {
   tableNode: ReactFlowNode,
@@ -128,7 +65,7 @@ const edgeTypes = {
   custom: ReactFlowEdge,
 }
 
-function Visualizer({
+const Visualizer = ({
   tablesAndSchemas,
   columns,
   constraints,
@@ -136,64 +73,69 @@ function Visualizer({
   tablesAndSchemas: { schema: string; table: string }[]
   columns: (typeof columnType.infer)[]
   constraints: (typeof constraintsType.infer)[]
-}) {
-  const { connectionResource } = Route.useRouteContext()
+}) => {
+  const { connectionResource } = useRouteContext()
   const schemas = [...new Set(tablesAndSchemas.map(({ schema }) => schema))]
-  const [schema, setSchema] = useState(schemas[0]!)
+  const initialSchema = schemas[0] ?? ''
+  const [schema, setSchema] = useState(initialSchema)
   const [searchQuery, setSearchQuery] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
 
   const trimmedSearchQuery = searchQuery.trim().toLowerCase()
   const schemaConstraints = constraints.filter(
-    c => c.schema === schema && (!c.foreignSchema || c.foreignSchema === schema),
+    (c) =>
+      c.schema === schema && (!c.foreignSchema || c.foreignSchema === schema)
   )
-  const tables = tablesAndSchemas.filter(t => t.schema === schema).map(({ table }) => table)
+  const tables = tablesAndSchemas
+    .filter((t) => t.schema === schema)
+    .map(({ table }) => table)
 
-  const { nodes: layoutNodes, edges: layoutEdges } = useMemo(() => {
-    return getVisualizerLayout({
-      resourceId: connectionResource.id,
-      schema,
-      tables,
-      columns,
-      constraints: schemaConstraints,
-    })
-  }, [connectionResource.id, schema, tables, columns, schemaConstraints])
+  const { nodes: layoutNodes, edges: layoutEdges } = useMemo(
+    () =>
+      getVisualizerLayout({
+        columns,
+        constraints: schemaConstraints,
+        resourceId: connectionResource.id,
+        schema,
+        tables,
+      }),
+    [connectionResource.id, schema, tables, columns, schemaConstraints]
+  )
 
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges)
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes)
 
   const recalculateLayout = () => {
-    const { nodes, edges } = getVisualizerLayout({
+    const { nodes: nextNodes, edges: nextEdges } = getVisualizerLayout({
+      columns,
+      constraints: schemaConstraints,
       resourceId: connectionResource.id,
       schema,
       tables,
-      columns,
-      constraints: schemaConstraints,
     })
 
     setNodes(
       applySearchHighlight({
-        nodes,
+        columns,
+        nodes: nextNodes,
         searchQuery: trimmedSearchQuery,
         tables,
-        columns,
-      }),
+      })
     )
-    setEdges(edges)
+    setEdges(nextEdges)
   }
 
   const recalculateLayoutEvent = useEffectEvent(recalculateLayout)
 
-  useEffect(() => {
-    // It's needed for fixing lines between nodes
-    // Because lines started calculation before the app loaded
-    return globalHooks.hook('animationFinished', () => {
-      recalculateLayoutEvent()
-    })
-  }, [])
+  useEffect(
+    () =>
+      globalHooks.hook('animationFinished', () => {
+        recalculateLayoutEvent()
+      }),
+    []
+  )
 
   useMountedEffect(() => {
-    // oxlint-disable-next-line react-hooks/rules-of-hooks
     recalculateLayoutEvent()
   }, [schema])
 
@@ -211,33 +153,24 @@ function Visualizer({
               placeholder="Search tables"
               value={searchQuery}
               autoFocus
-              onChange={e => {
+              onChange={(e) => {
                 setSearchQuery(e.target.value)
-                setNodes(nodes =>
+                setNodes((currentNodes) =>
                   applySearchHighlight({
-                    nodes,
+                    columns,
+                    nodes: currentNodes,
                     searchQuery: e.target.value.trim(),
                     tables,
-                    columns,
-                  }),
+                  })
                 )
               }}
             />
             <InputGroupAddon>
-              <RiSearchLine
-                className="
-                pointer-events-none size-3.5 text-muted-foreground
-              "
-              />
+              <RiSearchLine className="text-muted-foreground pointer-events-none size-3.5" />
             </InputGroupAddon>
             <InputGroupAddon align="inline-end">
               {!searchQuery && (
-                <div
-                  className="
-                  pointer-events-none flex items-center gap-1 text-xs
-                  text-muted-foreground
-                "
-                >
+                <div className="text-muted-foreground pointer-events-none flex items-center gap-1 text-xs">
                   <KbdCtrlLetter userAgent={navigator.userAgent} letter="F" />
                 </div>
               )}
@@ -250,10 +183,7 @@ function Visualizer({
                         variant="ghost"
                         size="icon-xs"
                         aria-label="Clear table search"
-                        className="
-                          text-muted-foreground
-                          hover:bg-foreground/10 hover:text-foreground
-                        "
+                        className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
                         onClick={() => setSearchQuery('')}
                       />
                     }
@@ -268,7 +198,7 @@ function Visualizer({
         </div>
         <Select
           value={schema}
-          onValueChange={v => {
+          onValueChange={(v) => {
             if (v) {
               setSchema(v)
               setSearchQuery('')
@@ -276,21 +206,17 @@ function Visualizer({
           }}
         >
           <SelectTrigger data-mask className="max-w-56 min-w-45">
-            <div
-              className="
-              flex flex-1 items-center gap-2 overflow-hidden text-left
-            "
-            >
-              <span className="shrink-0 text-muted-foreground">schema</span>
+            <div className="flex flex-1 items-center gap-2 overflow-hidden text-left">
+              <span className="text-muted-foreground shrink-0">schema</span>
               <span className="truncate">
                 <SelectValue placeholder="Select schema" />
               </span>
             </div>
           </SelectTrigger>
           <SelectContent data-mask>
-            {schemas.map(schema => (
-              <SelectItem key={schema} value={schema}>
-                {schema}
+            {schemas.map((schemaName) => (
+              <SelectItem key={schemaName} value={schemaName}>
+                {schemaName}
               </SelectItem>
             ))}
           </SelectContent>
@@ -312,13 +238,15 @@ function Visualizer({
         defaultEdgeOptions={{
           type: 'custom',
         }}
-        style={{
-          '--xy-background-pattern-dots-color-default': 'var(--color-border)',
-          '--xy-edge-stroke-width-default': 1.5,
-          '--xy-edge-stroke-default': 'var(--color-foreground)',
-          '--xy-edge-stroke-selected-default': 'var(--color-foreground)',
-          '--xy-attribution-background-color-default': 'transparent',
-        }}
+        style={
+          {
+            '--xy-attribution-background-color-default': 'transparent',
+            '--xy-background-pattern-dots-color-default': 'var(--color-border)',
+            '--xy-edge-stroke-default': 'var(--color-foreground)',
+            '--xy-edge-stroke-selected-default': 'var(--color-foreground)',
+            '--xy-edge-stroke-width-default': 1.5,
+          } as CSSProperties
+        }
         attributionPosition="bottom-left"
       >
         <Background
@@ -327,8 +255,98 @@ function Visualizer({
           gap={20}
           size={2}
         />
-        <MiniMap pannable zoomable bgColor="var(--background)" nodeColor="var(--muted)" />
+        <MiniMap
+          pannable
+          zoomable
+          bgColor="var(--background)"
+          nodeColor="var(--muted)"
+        />
       </ReactFlow>
     </div>
   )
 }
+
+const VisualizerPage = () => {
+  const { connection } = useLoaderData()
+  const { connectionResource } = useRouteContext()
+  const store = getConnectionResourceStore(connectionResource.id)
+  const showSystem = useSubscription(store, {
+    selector: (state) => state.showSystem,
+  })
+  const { data: tablesAndSchemas } = useQuery({
+    ...resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
+    select: (data) =>
+      data.schemas.flatMap(({ name, tables }) =>
+        tables.map((table) => ({ schema: name, table: table.name }))
+      ),
+  })
+  const columnsQueries = useQueries({
+    queries:
+      tablesAndSchemas?.flatMap(({ schema, table }) =>
+        resourceTableColumnsQueryOptions({ connectionResource, schema, table })
+      ) ?? [],
+  })
+  const { data: constraints } = useQuery(
+    resourceConstraintsQueryOptions({ connectionResource })
+  )
+
+  if (
+    !tablesAndSchemas ||
+    !constraints ||
+    columnsQueries.some((q) => q.isPending)
+  ) {
+    return (
+      <div className="bg-background flex size-full items-center justify-center rounded-lg border">
+        <AppLogo className="text-muted-foreground size-40 animate-pulse" />
+      </div>
+    )
+  }
+
+  const columns = columnsQueries
+    .flatMap((item) => item.data)
+    .filter((item): item is typeof columnType.infer => !!item)
+
+  if (columns.length === 0 || tablesAndSchemas.length === 0) {
+    return (
+      <div className="bg-background flex size-full items-center justify-center rounded-lg border">
+        <p className="text-muted-foreground">No data to show</p>
+      </div>
+    )
+  }
+
+  return (
+    <ReactFlowProvider key={connection.id}>
+      <Visualizer
+        tablesAndSchemas={tablesAndSchemas}
+        columns={columns}
+        constraints={constraints}
+      />
+    </ReactFlowProvider>
+  )
+}
+
+export const Route = createFileRoute(
+  '/_protected/connection/$resourceId/visualizer/'
+)({
+  component: VisualizerPage,
+  loader: ({ context }) => {
+    prefetchConnectionResourceCore(context.connectionResource)
+    return {
+      connection: context.connection,
+      connectionResource: context.connectionResource,
+    }
+  },
+  head: ({ loaderData }) => ({
+    meta: loaderData
+      ? [
+          {
+            title: title(
+              'Visualizer',
+              loaderData.connection.name,
+              loaderData.connectionResource.name
+            ),
+          },
+        ]
+      : [],
+  }),
+})

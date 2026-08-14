@@ -17,26 +17,26 @@ export const renameColumnQuery = memoize(
   }) =>
     createQuery({
       query: {
-        postgres: db =>
+        clickhouse: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .schema.alterTable(table)
             .renameColumn(oldColumn, newColumn)
             .execute(),
-        mysql: db =>
-          db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .schema.alterTable(table)
-            .renameColumn(oldColumn, newColumn)
-            .execute(),
-        mssql: async db => {
+        mssql: async (db) => {
           await sql`EXEC sp_rename ${sql.val(`${schema}.${table}.${oldColumn}`)}, ${sql.val(newColumn)}, 'COLUMN'`.execute(
-            db,
+            db
           )
         },
-        clickhouse: db =>
+        mysql: (db) =>
+          db
+            .withSchema(schema)
+            .$extendTables<{ [table]: Record<string, unknown> }>()
+            .schema.alterTable(table)
+            .renameColumn(oldColumn, newColumn)
+            .execute(),
+        postgres: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
@@ -44,5 +44,5 @@ export const renameColumnQuery = memoize(
             .renameColumn(oldColumn, newColumn)
             .execute(),
       },
-    }),
+    })
 )

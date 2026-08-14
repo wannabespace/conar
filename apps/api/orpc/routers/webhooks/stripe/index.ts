@@ -10,7 +10,10 @@ import { subscriptionDeleted } from './subscription-deleted'
 import { subscriptionUpdated } from './subscription-updated'
 import { validateRequest } from './validate'
 
-const eventMap = new Map<Stripe.Event.Type, (event: Stripe.Event) => Promise<void>>([
+const eventMap = new Map<
+  Stripe.Event.Type,
+  (event: Stripe.Event) => Promise<void>
+>([
   ['customer.subscription.created', subscriptionCreated],
   ['customer.subscription.deleted', subscriptionDeleted],
   ['customer.subscription.updated', subscriptionUpdated],
@@ -26,19 +29,19 @@ export const stripe = orpc.handler(async ({ context }) => {
       throw new ORPCError('BAD_REQUEST', { message: 'Stripe event not found' })
     }
 
-    await handler(event).catch(async error => {
+    await handler(event).catch(async (error) => {
       if (env.ALERTS_EMAIL) {
         await sendEmail({
-          to: env.ALERTS_EMAIL,
-          subject: `Alert from Stripe: ${event.type}`,
-          template: 'Alert',
           props: {
+            service: 'Stripe',
             text:
               typeof error === 'object' && error !== null
                 ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
                 : String(error),
-            service: 'Stripe',
           },
+          subject: `Alert from Stripe: ${event.type}`,
+          template: 'Alert',
+          to: env.ALERTS_EMAIL,
         })
       }
 
@@ -46,7 +49,7 @@ export const stripe = orpc.handler(async ({ context }) => {
     })
 
     context.addLogData({
-      stripeEvent: { type: event.type, id: event.id },
+      stripeEvent: { id: event.id, type: event.type },
     })
 
     return true

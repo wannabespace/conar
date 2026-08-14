@@ -7,16 +7,16 @@ import { memoize } from 'memoza'
 import { secrets } from './secrets'
 
 export const env = type({
-  INFISICAL_SITE_URL: 'string',
   INFISICAL_CLIENT_ID: 'string',
   INFISICAL_CLIENT_SECRET: 'string',
-  INFISICAL_PROJECT_ID: 'string',
   INFISICAL_ENVIRONMENT: 'string',
+  INFISICAL_PROJECT_ID: 'string',
+  INFISICAL_SITE_URL: 'string',
 }).assert(process.env)
 
 export const baseOptions = {
-  projectId: env.INFISICAL_PROJECT_ID,
   environment: env.INFISICAL_ENVIRONMENT,
+  projectId: env.INFISICAL_PROJECT_ID,
 }
 
 export const getClient = memoize(async () => {
@@ -28,30 +28,35 @@ export const getClient = memoize(async () => {
   return client
 })
 
-export function pathToString(path: string[]) {
-  return path.length === 0 ? '/' : `/${path.join('/')}`
-}
+export const pathToString = (path: string[]) =>
+  path.length === 0 ? '/' : `/${path.join('/')}`
 
-export function isFolderMissingError(error: unknown): boolean {
-  return error instanceof Error && error.message.includes('StatusCode=404')
-}
+export const isFolderMissingError = (error: unknown): boolean =>
+  error instanceof Error && error.message.includes('StatusCode=404')
 
-export async function ensureFolders(folders: string[]) {
-  if (folders.length === 0) return
+export const ensureFolders = async (folders: string[]) => {
+  if (folders.length === 0) {
+    return
+  }
 
   const client = await getClient()
 
-  for (let i = 0; i < folders.length; i++) {
+  for (let i = 0; i < folders.length; i += 1) {
+    const folderName = folders[i]
+    if (!folderName) {
+      continue
+    }
     const parent = i === 0 ? '/' : `/${folders.slice(0, i).join('/')}`
-    // oxlint-disable-next-line no-await-in-loop
-    await client
-      .folders()
-      .create({
+    try {
+      // oxlint-disable-next-line no-await-in-loop
+      await client.folders().create({
         ...baseOptions,
-        name: folders[i]!,
+        name: folderName,
         path: parent,
       })
-      .catch(() => {})
+    } catch {
+      // folder may already exist
+    }
   }
 }
 

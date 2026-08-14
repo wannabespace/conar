@@ -16,7 +16,7 @@ import { SOCIAL_LINKS } from '@tamery/shared/constants'
 
 import { env } from '~/env'
 
-export function Base({
+export const Base = ({
   children,
   preview,
   title,
@@ -24,52 +24,55 @@ export function Base({
   children: React.ReactNode
   preview: string
   title: string
-}) {
-  return (
-    <Tailwind
-      config={{
-        presets: [pixelBasedPreset],
-        theme: {
-          extend: {
-            colors: {
-              primary: '#4778ea',
-            },
+}) => (
+  <Tailwind
+    config={{
+      presets: [pixelBasedPreset],
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4778ea',
           },
         },
-      }}
-    >
-      <Html>
-        <Head />
-        <Body className="font-sans">
-          <Preview>{preview}</Preview>
-          <Container className="mx-auto max-w-120 px-0 pt-5 pb-12">
-            <Section className="mb-5">
-              <Img src={`${env.MAIN_URL}/logo.png`} width="48" height="48" alt="Tamery" />
-              <Heading className="mt-5 mb-0 text-2xl font-bold">{title}</Heading>
-            </Section>
-            {children}
-            <Section>
-              <Text className="mt-10 text-center text-xs">
-                <Link className="text-primary" href={SOCIAL_LINKS.TWITTER}>
-                  X
-                </Link>{' '}
-                ・{' '}
-                <Link className="text-primary" href={SOCIAL_LINKS.DISCORD}>
-                  Discord
-                </Link>{' '}
-                ・{' '}
-                <Link className="text-primary" href={SOCIAL_LINKS.GITHUB}>
-                  GitHub
-                </Link>{' '}
-                ・{' '}
-                <Link className="text-primary" href={env.MAIN_URL}>
-                  Website
-                </Link>
-              </Text>
-            </Section>
-          </Container>
-        </Body>
-      </Html>
-    </Tailwind>
-  )
-}
+      },
+    }}
+  >
+    <Html>
+      <Head />
+      <Body className="font-sans">
+        <Preview>{preview}</Preview>
+        <Container className="mx-auto max-w-120 px-0 pt-5 pb-12">
+          <Section className="mb-5">
+            <Img
+              src={`${env.MAIN_URL}/logo.png`}
+              width="48"
+              height="48"
+              alt="Tamery"
+            />
+            <Heading className="mt-5 mb-0 text-2xl font-bold">{title}</Heading>
+          </Section>
+          {children}
+          <Section>
+            <Text className="mt-10 text-center text-xs">
+              <Link className="text-primary" href={SOCIAL_LINKS.TWITTER}>
+                X
+              </Link>{' '}
+              ・{' '}
+              <Link className="text-primary" href={SOCIAL_LINKS.DISCORD}>
+                Discord
+              </Link>{' '}
+              ・{' '}
+              <Link className="text-primary" href={SOCIAL_LINKS.GITHUB}>
+                GitHub
+              </Link>{' '}
+              ・{' '}
+              <Link className="text-primary" href={env.MAIN_URL}>
+                Website
+              </Link>
+            </Text>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  </Tailwind>
+)

@@ -1,5 +1,8 @@
 import type { ContextSelector } from '@fluentui/react-context-selector'
-import { createContext, useContextSelector } from '@fluentui/react-context-selector'
+import {
+  createContext,
+  useContextSelector,
+} from '@fluentui/react-context-selector'
 import type { ScrollDirection } from '@tamery/ui/hookas/use-scroll-direction'
 import type { VirtualItem } from '@tanstack/react-virtual'
 import type { RefObject } from 'react'
@@ -17,8 +20,14 @@ export interface TableContextType {
   tableWidth: number
 }
 
-export const TableContext = createContext<TableContextType>(null!)
+export const TableContext = createContext<TableContextType | null>(null)
 
-export function useTableContext<T>(selector: ContextSelector<TableContextType, T>) {
-  return useContextSelector(TableContext, selector)
-}
+export const useTableContext = <T>(
+  selector: ContextSelector<TableContextType, T>
+) =>
+  useContextSelector(TableContext, (value) => {
+    if (!value) {
+      throw new Error('useTableContext must be used within a TableProvider')
+    }
+    return selector(value)
+  })

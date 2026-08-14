@@ -13,9 +13,13 @@ const input = type({
 
 export const remove = orpc
   .use(authMiddleware)
-  .input(type.or(input, input.array()).pipe(data => (Array.isArray(data) ? data : [data])))
-  .handler(async ({ context, input }) => {
-    if (input.length === 0) {
+  .input(
+    type
+      .or(input, input.array())
+      .pipe((data) => (Array.isArray(data) ? data : [data]))
+  )
+  .handler(async ({ context, input: items }) => {
+    if (items.length === 0) {
       return
     }
 
@@ -26,16 +30,16 @@ export const remove = orpc
           eq(queries.userId, context.user.id),
           inArray(
             queries.id,
-            input.map(item => item.id),
-          ),
-        ),
+            items.map((item) => item.id)
+          )
+        )
       )
       .returning()
 
-    for (const item of input) {
+    for (const item of items) {
       publisher.publish(context.user.id, {
-        type: 'delete',
         key: item.id,
+        type: 'delete',
       })
     }
   })

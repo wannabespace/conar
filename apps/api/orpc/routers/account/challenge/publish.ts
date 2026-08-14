@@ -8,14 +8,14 @@ export const publish = orpc
   .use(authMiddleware)
   .input(
     type({
-      'codeChallenge': 'string',
+      codeChallenge: 'string',
       'newUser?': 'boolean',
-    }),
+    })
   )
   .handler(async ({ input, context }) => {
     await codeChallengeRedis.set(input.codeChallenge, {
-      userId: context.user.id,
       newUser: input.newUser,
+      userId: context.user.id,
     })
     codeChallengePublisher.publish(input.codeChallenge, { ready: true })
   })

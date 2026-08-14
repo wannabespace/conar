@@ -1,27 +1,63 @@
 import { escapeSpecialCharacters } from '@tamery/shared/utils/helpers'
 import type { ReactNode } from 'react'
 
-function DefaultRender({ html }: { html: string }) {
-  return <span dangerouslySetInnerHTML={{ __html: html }} />
+const buildHighlightedParts = (
+  text: string,
+  matchText: string
+): ReactNode[] => {
+  const regex = new RegExp(escapeSpecialCharacters(matchText), 'giu')
+  const parts: ReactNode[] = []
+  let lastIndex = 0
+  let key = 0
+
+  for (const match of text.matchAll(regex)) {
+    const [matchedText] = match
+    const start = match.index ?? 0
+
+    if (start > lastIndex) {
+      parts.push(text.slice(lastIndex, start))
+    }
+
+    parts.push(
+      <mark key={key} className="bg-primary/50 text-white">
+        {matchedText}
+      </mark>
+    )
+    key += 1
+    lastIndex = start + matchedText.length
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex))
+  }
+
+  return parts
 }
 
-export function HighlightText({
+export const HighlightText = ({
   text,
-  match,
-  render = DefaultRender,
+  match: matchText,
+  render,
 }: {
   text: string
   match?: string
   render?: ({ html, matched }: { html: string; matched: boolean }) => ReactNode
-}) {
-  if (!match) return render({ html: text, matched: false })
+}) => {
+  if (!matchText) {
+    return render ? render({ html: text, matched: false }) : text
+  }
 
-  const regex = new RegExp(escapeSpecialCharacters(match), 'gi')
-
+  const regex = new RegExp(escapeSpecialCharacters(matchText), 'giu')
+  const matched = regex.test(text)
   const html = text.replace(
     regex,
-    match => `<mark class="text-white bg-primary/50">${match}</mark>`,
+    (matchedSegment) =>
+      `<mark class="text-white bg-primary/50">${matchedSegment}</mark>`
   )
 
-  return render({ html, matched: regex.test(text) })
+  if (render) {
+    return render({ html, matched })
+  }
+
+  return <span>{buildHighlightedParts(text, matchText)}</span>
 }

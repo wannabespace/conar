@@ -19,6 +19,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import {
   createFileRoute,
+  getRouteApi,
   Link,
   Outlet,
   redirect,
@@ -34,76 +35,48 @@ import { orpc } from '~/lib/orpc'
 import { SidebarButton } from './-components/sidebar-button'
 import { SupportButton } from './-components/support-button'
 
-export const Route = createFileRoute('/account')({
-  component: AccountLayout,
-  loader: async () => {
-    const { data } = await authClient.getSession()
+const routeApi = getRouteApi('/account')
 
-    if (!data?.user) {
-      throw redirect({ to: '/sign-in' })
-    }
-
-    return data
-  },
-})
-
-function AccountLayout() {
+const AccountLayout = () => {
   const router = useRouter()
   const match = useMatches({
-    select: matches => matches.map(match => match.routeId).at(-1),
+    select: (matches) => matches.map((routeMatch) => routeMatch.routeId).at(-1),
   })
   const { data } = useQuery(orpc.repo.queryOptions())
-  const { user } = Route.useLoaderData()
+  const { user } = routeApi.useLoaderData()
+  const webUrl = import.meta.env.VITE_PUBLIC_WEB_URL
+  if (!webUrl) {
+    throw new Error('VITE_PUBLIC_WEB_URL is not set')
+  }
+
+  const handleSignOut = async () => {
+    await authClient.signOut()
+    await router.invalidate()
+  }
 
   return (
-    <div
-      className={`
-      container mx-auto flex min-h-screen flex-col justify-between px-4
-    `}
-    >
+    <div className="container mx-auto flex min-h-screen flex-col justify-between px-4">
       <header className="mb-10 flex h-15 items-center justify-between">
         <NavbarTextLogo to="/home" />
         <div className="flex flex-1 justify-center">
           <Link to="/home" className="text-primary">
-            <AppLogo
-              className={`
-                size-5
-                sm:size-6
-                lg:size-8
-              `}
-            />
+            <AppLogo className="size-5 sm:size-6 lg:size-8" />
           </Link>
         </div>
-        <div
-          className={`
-          flex flex-1 items-center justify-end gap-1
-          sm:gap-2
-        `}
-        >
+        <div className="flex flex-1 items-center justify-end gap-1 sm:gap-2">
           <Button
             variant="ghost"
             size="sm"
-            className={`
-              hidden gap-1
-              sm:flex sm:gap-2
-            `}
+            className="hidden gap-1 sm:flex sm:gap-2"
             render={<Link to="/releases" />}
           >
-            <RiGitBranchLine
-              className={`
-              size-3
-              sm:size-4
-            `}
-            />
+            <RiGitBranchLine className="size-3 sm:size-4" />
             Releases
           </Button>
           <Button
             variant="ghost"
             size="sm"
-            className={`
-              hidden gap-1
-              sm:flex sm:gap-2
-            `}
+            className="hidden gap-1 sm:flex sm:gap-2"
             render={
               <a
                 href={SOCIAL_LINKS.GITHUB}
@@ -113,51 +86,33 @@ function AccountLayout() {
               />
             }
           >
-            <RiGithubFill
-              className={`
-              size-3
-              sm:size-4
-            `}
-            />
+            <RiGithubFill className="size-3 sm:size-4" />
             <NumberFlow
               value={data?.stargazers_count || 0}
               className={cn(
-                `
-                text-xs tabular-nums duration-200
-                sm:text-sm
-              `,
-                !data && `animate-pulse text-muted-foreground`,
+                `text-xs tabular-nums duration-200 sm:text-sm`,
+                !data && `text-muted-foreground animate-pulse`
               )}
             />
           </Button>
-          <ThemeToggle side="bottom" render={<Button size="icon-sm" variant="ghost" />}>
-            <RiSunLine
-              className={`
-              size-4
-              dark:hidden
-            `}
-            />
-            <RiMoonLine
-              className={`
-              hidden size-4
-              dark:block
-            `}
-            />
+          <ThemeToggle
+            side="bottom"
+            render={<Button size="icon-sm" variant="ghost" />}
+          >
+            <RiSunLine className="size-4 dark:hidden" />
+            <RiMoonLine className="hidden size-4 dark:block" />
           </ThemeToggle>
           <Button
             variant="outline"
             disabled
             size="sm"
-            render={<Link to={import.meta.env.VITE_PUBLIC_WEB_URL!} />}
+            render={<Link to={webUrl} />}
           >
             Web version
           </Button>
           <Button
             size="sm"
-            className={`
-              gap-1 px-2 text-xs
-              sm:gap-2 sm:px-3 sm:text-sm
-            `}
+            className="gap-1 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm"
             render={<Link to="/download" />}
           >
             Download
@@ -170,11 +125,16 @@ function AccountLayout() {
             <UserAvatar user={user} className="size-10" />
             <div className="flex min-w-0 flex-1 flex-col">
               <p className="truncate font-medium">{user.name}</p>
-              <p className="truncate text-sm text-muted-foreground">{user.email}</p>
+              <p className="text-muted-foreground truncate text-sm">
+                {user.email}
+              </p>
             </div>
           </div>
           <nav className="space-y-1">
-            <SidebarButton active={match === '/account/'} render={<Link to="/account" />}>
+            <SidebarButton
+              active={match === '/account/'}
+              render={<Link to="/account" />}
+            >
               <RiDashboard3Line className="size-4" />
               Dashboard
             </SidebarButton>
@@ -185,10 +145,6 @@ function AccountLayout() {
               <RiFileListLine className="size-4" />
               Billing & Invoices
             </SidebarButton>
-            {/* <SidebarButton active={match === '/account/api-keys'} render={<Link to="/account/api-keys" />}>
-              <RiKey2Line className="size-4" />
-              API Keys
-            </SidebarButton> */}
             <SidebarButton
               active={match === '/account/settings/'}
               render={<Link to="/account/settings" />}
@@ -200,8 +156,10 @@ function AccountLayout() {
             <Separator className="my-2" />
             <Button
               variant="ghost"
-              className="w-full justify-start text-foreground"
-              onClick={() => authClient.signOut().then(() => router.invalidate())}
+              className="text-foreground w-full justify-start"
+              onClick={() => {
+                void handleSignOut()
+              }}
             >
               <RiLogoutCircleLine className="size-4" />
               Sign out
@@ -216,3 +174,16 @@ function AccountLayout() {
     </div>
   )
 }
+
+export const Route = createFileRoute('/account')({
+  component: AccountLayout,
+  loader: async () => {
+    const { data } = await authClient.getSession()
+
+    if (!data?.user) {
+      throw redirect({ to: '/sign-in' })
+    }
+
+    return data
+  },
+})

@@ -7,15 +7,15 @@ import { desc, eq } from 'drizzle-orm'
 import { authMiddleware, orpc } from '~/orpc'
 
 export const list = orpc.use(authMiddleware).handler(async ({ context }) => {
-  const list = await db
+  const connectionsList = await db
     .select({
+      connectionString: connections.connectionString,
+      createdAt: connections.createdAt,
       id: connections.id,
+      isPasswordExists: connections.isPasswordExists,
       name: connections.name,
       type: connections.type,
-      isPasswordExists: connections.isPasswordExists,
-      createdAt: connections.createdAt,
       updatedAt: connections.updatedAt,
-      connectionString: connections.connectionString,
     })
     .from(connections)
     .where(eq(connections.userId, context.user.id))
@@ -24,9 +24,12 @@ export const list = orpc.use(authMiddleware).handler(async ({ context }) => {
   const secret = await context.getUserSecret()
 
   try {
-    return list.map(connection => ({
+    return connectionsList.map((connection) => ({
       ...connection,
-      connectionString: decrypt({ encryptedText: connection.connectionString, secret }),
+      connectionString: decrypt({
+        encryptedText: connection.connectionString,
+        secret,
+      }),
     }))
   } catch {
     throw new ORPCError('INTERNAL_SERVER_ERROR', {

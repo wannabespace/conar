@@ -5,12 +5,13 @@ import { fullSignOut } from '~/lib/auth'
 import { queryClient } from '~/main'
 import { handleError } from '~/utils/error'
 
-export function useSignOut() {
+export const useSignOut = () => {
   const { mutate: signOut, isPending: isSigningOut } = useMutation({
-    mutationKey: ['sign-out'],
     mutationFn: async () => {
       await fullSignOut()
     },
+    mutationKey: ['sign-out'],
+    onError: handleError,
     onSuccess: () => {
       toast.success('You have been signed out successfully.')
 
@@ -19,11 +20,10 @@ export function useSignOut() {
         queryClient.removeQueries()
       }, 1000)
     },
-    onError: handleError,
   })
 
   return {
-    signOut,
     isSigningOut,
+    signOut,
   }
 }

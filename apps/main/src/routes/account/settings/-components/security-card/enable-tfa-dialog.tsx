@@ -20,13 +20,13 @@ import { TotpCodeInput } from '~/components/totp-code-input'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-export function EnableTfaDialog({
+export const EnableTfaDialog = ({
   open,
   onOpenChange,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-}) {
+}) => {
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
   const [setupOpen, setSetupOpen] = useState(false)
@@ -36,8 +36,10 @@ export function EnableTfaDialog({
     isPending: isEnableTotpPending,
     data: totpURI,
   } = useMutation({
-    mutationFn: async (password: string) => {
-      const { data, error } = await authClient.twoFactor.enable({ password })
+    mutationFn: async (passwordValue: string) => {
+      const { data, error } = await authClient.twoFactor.enable({
+        password: passwordValue,
+      })
 
       if (error) {
         throw error
@@ -56,8 +58,11 @@ export function EnableTfaDialog({
   })
 
   const { mutate: verifyTotp, isPending: isVerifyTotpPending } = useMutation({
-    mutationFn: async (code: string) => {
-      const { error } = await authClient.twoFactor.verifyTotp({ code, trustDevice: true })
+    mutationFn: async (codeValue: string) => {
+      const { error } = await authClient.twoFactor.verifyTotp({
+        code: codeValue,
+        trustDevice: true,
+      })
 
       if (error) {
         throw error
@@ -68,13 +73,13 @@ export function EnableTfaDialog({
       onOpenChange(false)
       setSetupOpen(false)
     },
-    onError: e => {
+    onError: (e) => {
       handleError(e)
       setCode('')
     },
   })
 
-  function handleClose() {
+  const handleClose = () => {
     onOpenChange(false)
     setSetupOpen(false)
     setPassword('')
@@ -85,7 +90,7 @@ export function EnableTfaDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="sm:max-w-sm"
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           enableTotp(password)
         }}
@@ -93,7 +98,9 @@ export function EnableTfaDialog({
       >
         <DialogHeader>
           <DialogTitle>Enable 2FA</DialogTitle>
-          <DialogDescription>Enter your password to continue.</DialogDescription>
+          <DialogDescription>
+            Enter your password to continue.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2">
           <Label htmlFor="enable-password">Password</Label>
@@ -101,31 +108,30 @@ export function EnableTfaDialog({
             id="enable-password"
             type="password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             disabled={isEnableTotpPending}
             autoComplete="current-password"
             autoFocus
           />
         </div>
         <DialogFooter>
-          <Dialog open={setupOpen} onOpenChange={open => !open && handleClose()}>
+          <Dialog
+            open={setupOpen}
+            onOpenChange={(nextOpen) => !nextOpen && handleClose()}
+          >
             <DialogTrigger
-              className="
-                w-full
-                sm:w-auto
-              "
+              className="w-full sm:w-auto"
               disabled={isEnableTotpPending || password.length === 0}
               render={<Button type="submit" variant="outline" />}
             >
-              <LoadingContent loading={isEnableTotpPending}>Continue</LoadingContent>
+              <LoadingContent loading={isEnableTotpPending}>
+                Continue
+              </LoadingContent>
             </DialogTrigger>
             <DialogContent
-              className="
-                flex flex-col gap-6
-                sm:max-w-xs
-              "
+              className="flex flex-col gap-6 sm:max-w-xs"
               showCloseButton={false}
-              onSubmit={e => {
+              onSubmit={(e) => {
                 e.preventDefault()
                 verifyTotp(code)
               }}
@@ -144,8 +150,8 @@ export function EnableTfaDialog({
                 <TotpCodeInput
                   label="Verification code"
                   value={code}
-                  onChange={value => setCode(value)}
-                  onComplete={value => verifyTotp(value)}
+                  onChange={(value) => setCode(value)}
+                  onComplete={(value) => verifyTotp(value)}
                   disabled={isVerifyTotpPending}
                 />
               </div>

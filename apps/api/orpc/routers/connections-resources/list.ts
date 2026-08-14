@@ -2,14 +2,17 @@ import { db } from '@tamery/db'
 
 import { authMiddleware, orpc } from '~/orpc'
 
-export const list = orpc.use(authMiddleware).handler(async ({ context }) => {
-  return db.query.connectionsResources.findMany({
+export const list = orpc.use(authMiddleware).handler(({ context }) =>
+  db.query.connectionsResources.findMany({
     columns: {
-      id: true,
       connectionId: true,
-      name: true,
       createdAt: true,
+      id: true,
+      name: true,
       updatedAt: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
     },
     where: {
       connection: {
@@ -18,8 +21,5 @@ export const list = orpc.use(authMiddleware).handler(async ({ context }) => {
         },
       },
     },
-    orderBy: {
-      createdAt: 'desc',
-    },
   })
-})
+)

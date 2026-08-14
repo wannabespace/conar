@@ -5,28 +5,26 @@ import { DummyDriver, PostgresAdapter, PostgresQueryCompiler } from 'kysely'
 import type { DialectOptions } from '..'
 import { createDialectProvider, createKyselyDriver } from '..'
 
-export function postgresDialect(options: DialectOptions) {
-  return {
+export const postgresDialect = (options: DialectOptions) =>
+  ({
+    createAdapter: () => new PostgresAdapter(),
     createDriver: () =>
       createKyselyDriver({
-        provider: createDialectProvider(ConnectionType.Postgres, options),
         logger: options.log,
+        provider: createDialectProvider(ConnectionType.Postgres, options),
       }),
-    createQueryCompiler: () => new PostgresQueryCompiler(),
-    createAdapter: () => new PostgresAdapter(),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },
-  } satisfies Dialect
-}
+    createQueryCompiler: () => new PostgresQueryCompiler(),
+  }) satisfies Dialect
 
-export function postgresColdDialect() {
-  return {
-    createDriver: () => new DummyDriver(),
-    createQueryCompiler: () => new PostgresQueryCompiler(),
+export const postgresColdDialect = () =>
+  ({
     createAdapter: () => new PostgresAdapter(),
+    createDriver: () => new DummyDriver(),
     createIntrospector: () => {
       throw new Error('Not implemented')
     },
-  } satisfies Dialect
-}
+    createQueryCompiler: () => new PostgresQueryCompiler(),
+  }) satisfies Dialect

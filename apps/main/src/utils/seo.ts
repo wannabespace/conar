@@ -1,13 +1,13 @@
 export const SITE_URL = 'https://tamery.app'
 
-function absoluteUrl(pathOrUrl: string) {
+const absoluteUrl = (pathOrUrl: string) => {
   if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) {
     return pathOrUrl
   }
   return `${SITE_URL}${pathOrUrl.startsWith('/') ? '' : '/'}${pathOrUrl}`
 }
 
-export function seo({
+export const seo = ({
   title,
   description,
   keywords,
@@ -19,39 +19,46 @@ export function seo({
   image?: string
   keywords?: string
   path?: string
-}) {
+}) => {
   const pageUrl = absoluteUrl(path)
   const imageUrl = image ? absoluteUrl(image) : undefined
 
   const meta = [
     { title },
-    ...(description ? [{ name: 'description', content: description }] : []),
-    ...(keywords ? [{ name: 'keywords', content: keywords }] : []),
-    { name: 'twitter:card', content: imageUrl ? 'summary_large_image' : 'summary' },
-    { name: 'twitter:site', content: '@tamery_app' },
-    { name: 'twitter:creator', content: '@letstri' },
-    { name: 'twitter:url', content: pageUrl },
-    { name: 'twitter:title', content: title },
-    ...(description ? [{ name: 'twitter:description', content: description }] : []),
-    ...(imageUrl ? [{ name: 'twitter:image', content: imageUrl }] : []),
-    { property: 'og:type', content: 'website' },
-    { property: 'og:locale', content: 'en_US' },
-    { property: 'og:site_name', content: 'Tamery' },
-    { property: 'og:url', content: pageUrl },
-    { property: 'og:title', content: title },
-    ...(description ? [{ property: 'og:description', content: description }] : []),
+    ...(description ? [{ content: description, name: 'description' }] : []),
+    ...(keywords ? [{ content: keywords, name: 'keywords' }] : []),
+    {
+      content: imageUrl ? 'summary_large_image' : 'summary',
+      name: 'twitter:card',
+    },
+    { content: '@tamery_app', name: 'twitter:site' },
+    { content: '@letstri', name: 'twitter:creator' },
+    { content: pageUrl, name: 'twitter:url' },
+    { content: title, name: 'twitter:title' },
+    ...(description
+      ? [{ content: description, name: 'twitter:description' }]
+      : []),
+    ...(imageUrl ? [{ content: imageUrl, name: 'twitter:image' }] : []),
+    { content: 'website', property: 'og:type' },
+    { content: 'en_US', property: 'og:locale' },
+    { content: 'Tamery', property: 'og:site_name' },
+    { content: pageUrl, property: 'og:url' },
+    { content: title, property: 'og:title' },
+    ...(description
+      ? [{ content: description, property: 'og:description' }]
+      : []),
     ...(imageUrl
       ? [
-          { property: 'og:image', content: imageUrl },
-          { property: 'og:image:type', content: 'image/png' },
-          { property: 'og:image:width', content: '1200' },
-          { property: 'og:image:height', content: '630' },
-          { property: 'og:image:alt', content: title },
+          { content: imageUrl, property: 'og:image' },
+          { content: 'image/png', property: 'og:image:type' },
+          { content: '1200', property: 'og:image:width' },
+          { content: '630', property: 'og:image:height' },
+          { content: title, property: 'og:image:alt' },
         ]
       : []),
   ]
 
-  const links = [{ rel: 'canonical', href: pageUrl }]
+  const links = [{ href: pageUrl, rel: 'canonical' }]
 
-  return { meta, links }
+  return { links, meta }
 }

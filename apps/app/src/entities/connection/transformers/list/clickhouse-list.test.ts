@@ -7,12 +7,17 @@ describe('createClickHouseListTransformer', () => {
 
   describe('fromConnection → toUI', () => {
     it('normalizes JS array input to string[]', () => {
-      expect(t.fromConnection(['a', 'b'] as unknown as string).toUI()).toEqual(['a', 'b'])
+      expect(t.fromConnection(['a', 'b'] as unknown as string).toUI()).toEqual([
+        'a',
+        'b',
+      ])
     })
 
     it('returns [] for null, undefined, and empty string', () => {
       expect(t.fromConnection(null as unknown as string).toUI()).toEqual([])
-      expect(t.fromConnection(undefined as unknown as string).toUI()).toEqual([])
+      expect(t.fromConnection(undefined as unknown as string).toUI()).toEqual(
+        []
+      )
       expect(t.fromConnection('').toUI()).toEqual([])
     })
 
@@ -59,8 +64,12 @@ describe('createClickHouseListTransformer', () => {
     })
 
     it('throws on malformed JSON array input', () => {
-      expect(() => t.toConnection.fromRaw('["1", \'2\']')).toThrow('Invalid JSON array format')
-      expect(() => t.toConnection.fromRaw('[1, 2,]')).toThrow('Invalid JSON array format')
+      expect(() => t.toConnection.fromRaw('["1", \'2\']')).toThrow(
+        'Invalid JSON array format'
+      )
+      expect(() => t.toConnection.fromRaw('[1, 2,]')).toThrow(
+        'Invalid JSON array format'
+      )
     })
   })
 
@@ -79,7 +88,9 @@ describe('createClickHouseListTransformer', () => {
       const v = '["a","b"]'
       const raw = t.fromConnection(v).toRaw()
       expect(typeof raw).toBe('string')
-      expect(t.toConnection.fromRaw(raw as string)).toEqual(t.fromConnection(v).toUI())
+      expect(t.toConnection.fromRaw(raw as string)).toEqual(
+        t.fromConnection(v).toUI()
+      )
     })
 
     it('fromUI(toUI(v)) equals toUI(v)', () => {

@@ -2,16 +2,15 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
-import { fileURLToPath } from 'node:url'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __filename = import.meta.filename
+const __dirname = import.meta.dirname
 
-function getPnpmVersion() {
+const getPnpmVersion = () => {
   const packageJsonPath = path.join(__dirname, '..', 'package.json')
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
 
-  const packageManager = packageJson.packageManager
+  const { packageManager } = packageJson
   if (!packageManager || !packageManager.startsWith('pnpm@')) {
     throw new Error('packageManager field not found or invalid in package.json')
   }
@@ -19,8 +18,14 @@ function getPnpmVersion() {
   return packageManager.replace('pnpm@', '')
 }
 
-function updateTodesktopJson(version: string) {
-  const todesktopPath = path.join(__dirname, '..', 'apps', 'desktop', 'todesktop.json')
+const updateTodesktopJson = (version: string) => {
+  const todesktopPath = path.join(
+    __dirname,
+    '..',
+    'apps',
+    'desktop',
+    'todesktop.json'
+  )
   const todesktop = JSON.parse(fs.readFileSync(todesktopPath, 'utf-8'))
 
   if (todesktop.pnpmVersion === version) {
@@ -32,17 +37,25 @@ function updateTodesktopJson(version: string) {
   return true
 }
 
-const versionRegex = /^(\s*version:\s*)([\d.]+)$/gm
+const versionRegex = /^(?<prefix>\s*version:\s*)(?<oldVersion>[\d.]+)$/gmu
 
-function updateWorkflowYaml(filePath: string, version: string) {
+const updateWorkflowYaml = (filePath: string, version: string) => {
   const content = fs.readFileSync(filePath, 'utf-8')
 
-  const newContent = content.replace(versionRegex, (match, prefix, oldVersion) => {
-    if (oldVersion === version) {
-      return match
+  const newContent = content.replace(
+    versionRegex,
+    (match, ...args: unknown[]) => {
+      const groups = args.at(-1) as
+        | { prefix?: string; oldVersion?: string }
+        | undefined
+      const prefix = groups?.prefix ?? ''
+      const oldVersion = groups?.oldVersion ?? ''
+      if (oldVersion === version) {
+        return match
+      }
+      return `${prefix}${version}`
     }
-    return `${prefix}${version}`
-  })
+  )
 
   if (content === newContent) {
     return false
@@ -52,7 +65,7 @@ function updateWorkflowYaml(filePath: string, version: string) {
   return true
 }
 
-function syncPnpmVersion() {
+const syncPnpmVersion = () => {
   try {
     const version = getPnpmVersion()
 
@@ -61,21 +74,30 @@ function syncPnpmVersion() {
     const todesktopUpdated = updateTodesktopJson(version)
     const lintCheckUpdated = updateWorkflowYaml(
       path.join(rootDir, '.github', 'workflows', 'lint-check.yml'),
-      version,
+      version
     )
     const releaseUpdated = updateWorkflowYaml(
       path.join(rootDir, '.github', 'workflows', 'release.yml'),
-      version,
+      version
     )
 
     if (todesktopUpdated || lintCheckUpdated || releaseUpdated) {
       console.log('✓ Updated pnpm version in:')
-      if (todesktopUpdated) console.log('  - apps/desktop/todesktop.json')
-      if (lintCheckUpdated) console.log('  - .github/workflows/lint-check.yml')
-      if (releaseUpdated) console.log('  - .github/workflows/release.yml')
+      if (todesktopUpdated) {
+        console.log('  - apps/desktop/todesktop.json')
+      }
+      if (lintCheckUpdated) {
+        console.log('  - .github/workflows/lint-check.yml')
+      }
+      if (releaseUpdated) {
+        console.log('  - .github/workflows/release.yml')
+      }
     }
   } catch (error) {
-    console.error('Failed to sync pnpm version:', error instanceof Error ? error.message : error)
+    console.error(
+      'Failed to sync pnpm version:',
+      error instanceof Error ? error.message : error
+    )
     process.exit(1)
   }
 }

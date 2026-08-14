@@ -23,10 +23,10 @@ export const proxy = {
     .use(authMiddleware)
     .input(
       type({
+        'connectionId?': 'string',
         'connectionString?': 'string',
         'resourceId?': 'string',
-        'connectionId?': 'string',
-      }),
+      })
     )
     .handler(async ({ input, context }) => {
       if (input.connectionString) {
@@ -44,8 +44,8 @@ export const proxy = {
               connection: {
                 columns: {
                   connectionString: true,
-                  syncType: true,
                   isPasswordExists: true,
+                  syncType: true,
                 },
                 where: {
                   userId: { eq: context.user.id },
@@ -70,7 +70,10 @@ export const proxy = {
           })
         }
 
-        return decrypt({ encryptedText: connection.connection.connectionString, secret })
+        return decrypt({
+          encryptedText: connection.connection.connectionString,
+          secret,
+        })
       }
 
       if (input.connectionId) {
@@ -78,8 +81,8 @@ export const proxy = {
           db.query.connections.findFirst({
             columns: {
               connectionString: true,
-              syncType: true,
               isPasswordExists: true,
+              syncType: true,
             },
             where: {
               id: { eq: input.connectionId },
@@ -93,7 +96,10 @@ export const proxy = {
           throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
         }
 
-        if (connection.syncType === SyncType.CloudWithoutPassword && connection.isPasswordExists) {
+        if (
+          connection.syncType === SyncType.CloudWithoutPassword &&
+          connection.isPasswordExists
+        ) {
           throw new ORPCError('FORBIDDEN', {
             message:
               'This connection is not allowed to be used because it was created as a cloud connection without a password.',
@@ -104,7 +110,8 @@ export const proxy = {
       }
 
       throw new ORPCError('BAD_REQUEST', {
-        message: 'One of connectionString, resourceId, or connectionId is required',
+        message:
+          'One of connectionString, resourceId, or connectionId is required',
       })
     }),
 }

@@ -1,4 +1,8 @@
-export function downloadFile(content: string, fileName: string, mimeType: string) {
+export const downloadFile = (
+  content: string,
+  fileName: string,
+  mimeType: string
+) => {
   const blob = new Blob([content], { type: mimeType })
   const url = URL.createObjectURL(blob)
 
@@ -8,16 +12,18 @@ export function downloadFile(content: string, fileName: string, mimeType: string
     link.download = fileName
     link.style.display = 'none'
 
-    document.body.appendChild(link)
+    document.body.append(link)
     link.click()
-    document.body.removeChild(link)
+    link.remove()
   } finally {
     URL.revokeObjectURL(url)
   }
 }
 
-function escapeCSVValue(value: unknown): string {
-  if (value === null || value === undefined) return ''
+const escapeCSVValue = (value: unknown): string => {
+  if (value === null || value === undefined) {
+    return ''
+  }
 
   const str = String(value)
 
@@ -26,59 +32,76 @@ function escapeCSVValue(value: unknown): string {
     : str
 }
 
-export function formatValueForPlainCell(value: unknown): string {
-  if (value === null || value === undefined) return ''
-  if (typeof value === 'object') return JSON.stringify(value)
+export const formatValueForPlainCell = (value: unknown): string => {
+  if (value === null || value === undefined) {
+    return ''
+  }
+  if (typeof value === 'object') {
+    return JSON.stringify(value)
+  }
   return String(value)
 }
 
-export function toCSV(
+export const toCSV = (
   columns: {
     key: string
     header?: string
   }[],
-  data: Record<string, unknown>[],
-): string {
-  const headerRow = columns.map(c => escapeCSVValue(c.header ?? c.key)).join(',')
-  const dataRows = data.map(row => columns.map(c => escapeCSVValue(row[c.key])).join(','))
+  data: Record<string, unknown>[]
+): string => {
+  const headerRow = columns
+    .map((c) => escapeCSVValue(c.header ?? c.key))
+    .join(',')
+  const dataRows = data.map((row) =>
+    columns.map((c) => escapeCSVValue(row[c.key])).join(',')
+  )
   return [headerRow, ...dataRows].join('\n')
 }
 
-function escapeMarkdownTableCell(raw: string): string {
-  return raw
+const escapeMarkdownTableCell = (raw: string): string =>
+  raw
     .replaceAll('\\', '\\\\')
     .replaceAll('|', '\\|')
     .replaceAll('\r\n', ' ')
     .replaceAll('\n', ' ')
     .replaceAll('\r', ' ')
     .trim()
-}
 
-export function recordToMarkdownTable(
+export const recordToMarkdownTable = (
   row: Record<string, unknown>,
   columns: {
     key: string
     header?: string
-  }[],
-): string {
-  const headers = columns.map(c => escapeMarkdownTableCell(String(c.header ?? c.key)))
-  const values = columns.map(c => escapeMarkdownTableCell(formatValueForPlainCell(row[c.key])))
+  }[]
+): string => {
+  const headers = columns.map((c) =>
+    escapeMarkdownTableCell(String(c.header ?? c.key))
+  )
+  const values = columns.map((c) =>
+    escapeMarkdownTableCell(formatValueForPlainCell(row[c.key]))
+  )
   const rule = columns.map(() => '---').join(' | ')
-  return [`| ${headers.join(' | ')} |`, `| ${rule} |`, `| ${values.join(' | ')} |`].join('\n')
+  return [
+    `| ${headers.join(' | ')} |`,
+    `| ${rule} |`,
+    `| ${values.join(' | ')} |`,
+  ].join('\n')
 }
 
-export function recordsToMarkdownTable(
+export const recordsToMarkdownTable = (
   columns: {
     key: string
     header?: string
   }[],
-  data: Record<string, unknown>[],
-): string {
-  const headers = columns.map(c => escapeMarkdownTableCell(String(c.header ?? c.key)))
+  data: Record<string, unknown>[]
+): string => {
+  const headers = columns.map((c) =>
+    escapeMarkdownTableCell(String(c.header ?? c.key))
+  )
   const rule = columns.map(() => '---').join(' | ')
   const rows = data.map(
-    row =>
-      `| ${columns.map(c => escapeMarkdownTableCell(formatValueForPlainCell(row[c.key]))).join(' | ')} |`,
+    (row) =>
+      `| ${columns.map((c) => escapeMarkdownTableCell(formatValueForPlainCell(row[c.key]))).join(' | ')} |`
   )
   return [`| ${headers.join(' | ')} |`, `| ${rule} |`, ...rows].join('\n')
 }

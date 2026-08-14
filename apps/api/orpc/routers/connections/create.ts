@@ -13,7 +13,11 @@ const schema = connectionsInsertSchema.omit('userId')
 
 export const create = orpc
   .use(authMiddleware)
-  .input(type.or(schema, schema.array()).pipe(data => (Array.isArray(data) ? data : [data])))
+  .input(
+    type
+      .or(schema, schema.array())
+      .pipe((data) => (Array.isArray(data) ? data : [data]))
+  )
   .handler(async ({ context, input }) => {
     const userSecret = await context.getUserSecret()
 
@@ -21,7 +25,7 @@ export const create = orpc
       .insert(connections)
       .values(
         await Promise.all(
-          input.map(async item => {
+          input.map((item) => {
             const newConnectionString = new SafeURL(item.connectionString)
 
             if (item.syncType !== SyncType.Cloud) {
@@ -31,13 +35,13 @@ export const create = orpc
             return {
               ...item,
               connectionString: encrypt({
-                text: newConnectionString.toString(),
                 secret: userSecret,
+                text: newConnectionString.toString(),
               }),
               userId: context.user.id,
             }
-          }),
-        ),
+          })
+        )
       )
       .returning()
 

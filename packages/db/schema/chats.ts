@@ -1,6 +1,10 @@
 import type { AppUIMessage } from '@tamery/ai/tools/helpers'
 import { defineRelationsPart } from 'drizzle-orm'
-import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-orm/arktype'
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from 'drizzle-orm/arktype'
 import * as d from 'drizzle-orm/pg-core'
 
 import { baseTable } from '../base-table'
@@ -12,18 +16,18 @@ export const chats = d.snakeCase.table(
   'chats',
   {
     ...baseTable,
-    userId: d
-      .uuid()
-      .references(() => users.id, { onDelete: 'cascade' })
-      .notNull(),
+    activeStreamId: d.uuid(),
     connectionResourceId: d
       .uuid()
       .references(() => connectionsResources.id, { onDelete: 'cascade' })
       .notNull(),
     title: d.text(),
-    activeStreamId: d.uuid(),
+    userId: d
+      .uuid()
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
   },
-  t => [d.index().on(t.userId), d.index().on(t.connectionResourceId)],
+  (t) => [d.index().on(t.userId), d.index().on(t.connectionResourceId)]
 )
 
 export const chatsSelectSchema = createSelectSchema(chats)
@@ -38,11 +42,14 @@ export const chatsMessages = d.snakeCase.table(
       .uuid()
       .references(() => chats.id, { onDelete: 'cascade' })
       .notNull(),
-    parts: encryptedJson().$type<AppUIMessage['parts'][number]>().array().notNull(),
-    role: d.text().$type<AppUIMessage['role']>().notNull(),
     metadata: encryptedJson().$type<NonNullable<AppUIMessage['metadata']>>(),
+    parts: encryptedJson()
+      .$type<AppUIMessage['parts'][number]>()
+      .array()
+      .notNull(),
+    role: d.text().$type<AppUIMessage['role']>().notNull(),
   },
-  t => [d.index().on(t.chatId), d.index().on(t.role)],
+  (t) => [d.index().on(t.chatId), d.index().on(t.role)]
 )
 
 export const chatsMessagesSelectSchema = createSelectSchema(chatsMessages)
@@ -50,18 +57,18 @@ export const chatsMessagesInsertSchema = createInsertSchema(chatsMessages)
 export const chatsMessagesUpdateSchema = createUpdateSchema(chatsMessages)
 
 export const chatsRelations = defineRelationsPart(
-  { chats, chatsMessages, users, connectionsResources },
-  r => ({
+  { chats, chatsMessages, connectionsResources, users },
+  (r) => ({
     chats: {
-      user: r.one.users({
-        from: r.chats.userId,
-        to: r.users.id,
-      }),
       connectionResource: r.one.connectionsResources({
         from: r.chats.connectionResourceId,
         to: r.connectionsResources.id,
       }),
       messages: r.many.chatsMessages(),
+      user: r.one.users({
+        from: r.chats.userId,
+        to: r.users.id,
+      }),
     },
     chatsMessages: {
       chat: r.one.chats({
@@ -69,5 +76,5 @@ export const chatsRelations = defineRelationsPart(
         to: r.chats.id,
       }),
     },
-  }),
+  })
 )

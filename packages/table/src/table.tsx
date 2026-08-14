@@ -4,11 +4,19 @@ import type { ComponentProps } from 'react'
 
 import { useTableContext } from './table-context'
 
-export function Table({ className, children, ...props }: Omit<ComponentProps<'div'>, 'ref'>) {
-  const scrollRef = useTableContext(state => state.scrollRef)
+export const Table = ({
+  className,
+  children,
+  ...props
+}: Omit<ComponentProps<'div'>, 'ref'>) => {
+  const scrollRef = useTableContext((state) => state.scrollRef)
 
   return (
-    <ScrollArea ref={scrollRef} className={cn('size-full table-fade', className)} {...props}>
+    <ScrollArea
+      ref={scrollRef}
+      className={cn('table-fade size-full', className)}
+      {...props}
+    >
       <div aria-hidden className="table-fade-anchor">
         <div className="table-fade-top" />
       </div>

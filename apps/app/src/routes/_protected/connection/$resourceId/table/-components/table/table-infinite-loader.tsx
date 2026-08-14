@@ -13,7 +13,7 @@ import { TableEmpty } from './table-empty'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-export function TableInfiniteLoader({
+export const TableInfiniteLoader = ({
   table,
   schema,
   filters,
@@ -23,7 +23,7 @@ export function TableInfiniteLoader({
   schema: string
   filters: ActiveFilter[]
   orderBy: Record<string, 'ASC' | 'DESC'>
-}) {
+}) => {
   const { connectionResource } = useRouteContext()
   const { fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery(
     resourceRowsQueryInfiniteOptions({
@@ -31,7 +31,7 @@ export function TableInfiniteLoader({
       table,
       schema,
       query: { filters, orderBy },
-    }),
+    })
   )
   const loaderRef = useRef<HTMLDivElement>(null)
   const isVisible = useIsInViewport(loaderRef)
@@ -42,7 +42,7 @@ export function TableInfiniteLoader({
     }
   }, [isVisible, hasNextPage, isFetching, fetchNextPage])
 
-  const scrollRef = useTableContext(state => state.scrollRef)
+  const scrollRef = useTableContext((state) => state.scrollRef)
   useMountedEffect(() => {
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }, [scrollRef, filters, orderBy])
@@ -52,7 +52,10 @@ export function TableInfiniteLoader({
 
   return (
     <div className="pointer-events-none sticky left-0 h-80">
-      <div ref={loaderRef} className="absolute inset-x-0 bottom-0 h-[calc(50vh+50rem)]" />
+      <div
+        ref={loaderRef}
+        className="absolute inset-x-0 bottom-0 h-[calc(50vh+50rem)]"
+      />
       <div className="flex h-[inherit] items-center justify-center">
         {hasNextPage ? (
           <RiLoaderLine className="size-10 animate-spin opacity-50" />

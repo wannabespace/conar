@@ -7,50 +7,42 @@ import { useSubscription } from 'seitu/react'
 
 import { useTablePageStore } from '../../-lib/store'
 
-function IndeterminateCheckbox({
+const IndeterminateCheckbox = ({
   indeterminate,
   className,
   ...props
-}: { indeterminate?: boolean } & ComponentProps<'input'>) {
-  return (
-    <div className="relative inline-flex items-center justify-center">
-      <input
-        type="checkbox"
-        className={cn(
-          `
-            peer hit-area-2.5 size-4 appearance-none rounded-sm border
-            border-border transition-colors duration-100 outline-none
-            checked:border-primary checked:bg-primary
-            focus-visible:border-ring focus-visible:ring-[0.1875rem]
-            focus-visible:ring-ring/50
-            disabled:cursor-not-allowed disabled:opacity-50
-          `,
-          !props.checked && indeterminate && 'border-primary bg-primary',
-          className,
-        )}
-        {...props}
-      />
-      <RiCheckLine
-        className={cn(
-          `
-            pointer-events-none absolute size-3 text-primary-foreground
-            opacity-0 transition-opacity duration-100
-            peer-checked:opacity-100
-          `,
-        )}
-      />
-      <RiSubtractLine
-        className="
-          pointer-events-none absolute size-3 text-primary-foreground opacity-0
-          transition-opacity duration-100
-        "
-        style={{ opacity: !props.checked && indeterminate ? 1 : 0 }}
-      />
-    </div>
-  )
-}
+}: { indeterminate?: boolean } & ComponentProps<'input'>) => (
+  <div className="relative inline-flex items-center justify-center">
+    <input
+      type="checkbox"
+      className={cn(
+        `peer hit-area-2.5 border-border checked:border-primary checked:bg-primary focus-visible:border-ring focus-visible:ring-ring/50 size-4 appearance-none rounded-sm border transition-colors duration-100 outline-none focus-visible:ring-[0.1875rem] disabled:cursor-not-allowed disabled:opacity-50`,
+        !props.checked && indeterminate && 'border-primary bg-primary',
+        className
+      )}
+      {...props}
+    />
+    <RiCheckLine
+      className={cn(
+        `text-primary-foreground pointer-events-none absolute size-3 opacity-0 transition-opacity duration-100 peer-checked:opacity-100`
+      )}
+    />
+    <RiSubtractLine
+      className="text-primary-foreground pointer-events-none absolute size-3 opacity-0 transition-opacity duration-100"
+      style={{ opacity: !props.checked && indeterminate ? 1 : 0 }}
+    />
+  </div>
+)
 
-export function SelectionHeaderCell({
+const rowKeyFromKeys = (
+  keys: string[],
+  row: Record<string, unknown> | undefined
+) =>
+  Object.fromEntries(
+    keys.map((key) => [key, (row?.[key] ?? '') as string])
+  ) as Record<string, string>
+
+export const SelectionHeaderCell = ({
   columnIndex,
   className,
   style,
@@ -58,11 +50,11 @@ export function SelectionHeaderCell({
 }: TableHeaderCellProps & {
   keys: string[]
   className?: string
-}) {
-  const rows = useTableContext(state => state.rows)
+}) => {
+  const rows = useTableContext((state) => state.rows)
   const store = useTablePageStore()
   const [checked, indeterminate] = useSubscription(store, {
-    selector: state => [
+    selector: (state) => [
       !!rows && rows.length > 0 && state.selected.length === rows.length,
       state.selected.length > 0,
     ],
@@ -72,11 +64,8 @@ export function SelectionHeaderCell({
     <div
       className={cn(
         'flex shrink-0 items-center px-2',
-        columnIndex === 0 &&
-          `
-        pl-4
-      `,
-        className,
+        columnIndex === 0 && `pl-4`,
+        className
       )}
       style={style}
     >
@@ -87,22 +76,19 @@ export function SelectionHeaderCell({
         onChange={() => {
           if (checked) {
             store.set(
-              state =>
+              (state) =>
                 ({
                   ...state,
                   selected: [],
-                }) satisfies typeof state,
+                }) satisfies typeof state
             )
           } else {
             store.set(
-              state =>
+              (state) =>
                 ({
                   ...state,
-                  selected:
-                    rows?.map(row =>
-                      keys.reduce((acc, key) => ({ ...acc, [key]: row[key] }), {}),
-                    ) ?? [],
-                }) satisfies typeof state,
+                  selected: rows?.map((row) => rowKeyFromKeys(keys, row)) ?? [],
+                }) satisfies typeof state
             )
           }
         }}
@@ -111,7 +97,7 @@ export function SelectionHeaderCell({
   )
 }
 
-export function SelectionCell({
+export const SelectionCell = ({
   rowIndex,
   columnIndex,
   className,
@@ -120,52 +106,53 @@ export function SelectionCell({
 }: TableCellProps & {
   keys: string[]
   className?: string
-}) {
+}) => {
   const store = useTablePageStore()
-  const rows = useTableContext(state => state.rows)
-  const { isSelected, currentSelected, lastClickedIndex } = useSubscription(store, {
-    selector: state => ({
-      isSelected: state.selected.some(row => keys.every(key => row[key] === rows[rowIndex]![key])),
-      currentSelected: state.selected,
-      lastClickedIndex: state.lastClickedIndex,
-    }),
-  })
-
-  const rowKey = keys.reduce<Record<string, string>>(
-    (acc, key) => ({ ...acc, [key]: rows[rowIndex]![key] as string }),
-    {},
+  const rows = useTableContext((state) => state.rows)
+  const currentRow = rows[rowIndex]
+  const { isSelected, currentSelected, lastClickedIndex } = useSubscription(
+    store,
+    {
+      selector: (state) => ({
+        isSelected: state.selected.some((row) =>
+          keys.every((key) => row[key] === currentRow?.[key])
+        ),
+        currentSelected: state.selected,
+        lastClickedIndex: state.lastClickedIndex,
+      }),
+    }
   )
 
-  const { handleMouseDown, handleKeyDown, handleChange } = useShiftSelectionClick({
-    rowKey,
-    rowIndex,
-    currentSelected,
-    lastClickedIndex,
-    getItemsInRange: (start, end) =>
-      rows
-        .slice(start, end + 1)
-        .map(row =>
-          keys.reduce<Record<string, string>>(
-            (acc, key) => ({ ...acc, [key]: row[key] as string }),
-            {},
-          ),
-        ),
-    onSelectionChange: (selected, selectionState, newLastClickedIndex) => {
-      store.set(
-        state =>
-          ({
-            ...state,
-            selected,
-            selectionState,
-            lastClickedIndex: newLastClickedIndex,
-          }) satisfies typeof state,
-      )
-    },
-  })
+  const rowKey = rowKeyFromKeys(keys, currentRow)
+
+  const { handleMouseDown, handleKeyDown, handleChange } =
+    useShiftSelectionClick({
+      rowKey,
+      rowIndex,
+      currentSelected,
+      lastClickedIndex,
+      getItemsInRange: (start, end) =>
+        rows.slice(start, end + 1).map((row) => rowKeyFromKeys(keys, row)),
+      onSelectionChange: (selected, selectionState, newLastClickedIndex) => {
+        store.set(
+          (state) =>
+            ({
+              ...state,
+              selected,
+              selectionState,
+              lastClickedIndex: newLastClickedIndex,
+            }) satisfies typeof state
+        )
+      },
+    })
 
   return (
     <div
-      className={cn('flex items-center px-2', columnIndex === 0 && 'pl-4', className)}
+      className={cn(
+        'flex items-center px-2',
+        columnIndex === 0 && 'pl-4',
+        className
+      )}
       style={style}
     >
       <IndeterminateCheckbox

@@ -18,42 +18,55 @@ import { requireSession } from '~/session'
 type Connection = RouterOutputs['connections']['list'][number]
 
 const queryMap = {
-  postgres: pg.query,
-  mysql: mysql.query,
   clickhouse: clickhouse.query,
   mssql: mssql.query,
+  mysql: mysql.query,
+  postgres: pg.query,
 } satisfies Record<ConnectionType, QueryExecutor>
 
-function fail(message: string): never {
+const fail = (message: string): never => {
   consola.fail(message)
   process.exit(1)
 }
 
-function pickConnection(connections: Connection[], identifier: string | undefined): Connection {
+const pickConnection = (
+  connections: Connection[],
+  identifier: string | undefined
+): Connection => {
   if (connections.length === 0) {
     fail('No connections found. Create one in the Tamery app first.')
   }
 
   if (!identifier) {
-    if (connections.length === 1) {
-      return connections[0]!
+    const [onlyConnection] = connections
+    if (connections.length === 1 && onlyConnection) {
+      return onlyConnection
     }
 
-    consola.error('Multiple connections available. Specify one with --connection <id|name>.')
+    consola.error(
+      'Multiple connections available. Specify one with --connection <id|name>.'
+    )
     for (const c of connections) {
       consola.log(`  ${c.name}  (${c.type})  ${c.id}`)
     }
     return process.exit(1)
   }
 
-  const byId = connections.find(c => c.id === identifier)
-  if (byId) return byId
+  const byId = connections.find((c) => c.id === identifier)
+  if (byId) {
+    return byId
+  }
 
-  const matchesByName = connections.filter(c => c.name === identifier)
-  if (matchesByName.length === 1) return matchesByName[0]!
+  const matchesByName = connections.filter((c) => c.name === identifier)
+  const [onlyNameMatch] = matchesByName
+  if (matchesByName.length === 1 && onlyNameMatch) {
+    return onlyNameMatch
+  }
 
   if (matchesByName.length > 1) {
-    consola.error(`Multiple connections named "${identifier}". Use a connection id instead:`)
+    consola.error(
+      `Multiple connections named "${identifier}". Use a connection id instead:`
+    )
     for (const c of matchesByName) {
       consola.log(`  ${c.id}  (${c.type})`)
     }
@@ -63,53 +76,49 @@ function pickConnection(connections: Connection[], identifier: string | undefine
   return fail(`Connection not found: ${identifier}`)
 }
 
-function stringify(v: unknown): string {
-  if (v === null) return 'NULL'
-  if (v === undefined) return ''
-  if (typeof v === 'object') return JSON.stringify(v)
+const stringify = (v: unknown): string => {
+  if (v === null) {
+    return 'NULL'
+  }
+  if (v === undefined) {
+    return ''
+  }
+  if (typeof v === 'object') {
+    return JSON.stringify(v)
+  }
   return String(v)
 }
 
-function formatTable(rows: Record<string, unknown>[]): string {
+const formatTable = (rows: Record<string, unknown>[]): string => {
   if (rows.length === 0) {
     return '(no rows)'
   }
 
-  const columns = Array.from(
-    rows.reduce<Set<string>>((set, row) => {
-      Object.keys(row).forEach(k => set.add(k))
-      return set
-    }, new Set()),
+  const columnSet = new Set<string>()
+  for (const row of rows) {
+    for (const key of Object.keys(row)) {
+      columnSet.add(key)
+    }
+  }
+  const columns = [...columnSet]
+
+  const widths = columns.map((col) =>
+    Math.max(col.length, ...rows.map((r) => stringify(r[col]).length))
   )
 
-  const widths = columns.map(col =>
-    Math.max(col.length, ...rows.map(r => stringify(r[col]).length)),
-  )
-
-  const renderRow = (cells: string[]) => cells.map((cell, i) => cell.padEnd(widths[i]!)).join(' │ ')
+  const renderRow = (cells: string[]) =>
+    cells.map((cell, i) => cell.padEnd(widths[i] ?? 0)).join(' │ ')
 
   const header = renderRow(columns)
-  const separator = widths.map(w => '─'.repeat(w)).join('─┼─')
-  const body = rows.map(r => renderRow(columns.map(c => stringify(r[c]))))
+  const separator = widths.map((w) => '─'.repeat(w)).join('─┼─')
+  const body = rows.map((r) => renderRow(columns.map((c) => stringify(r[c]))))
 
   return [header, separator, ...body].join('\n')
 }
 
 export const queryCommand = command({
-  name: 'query',
   desc: 'Run a SQL query against one of your connections',
-  options: {
-    sql: positional('sql').desc('SQL query to execute (omit when using --file)'),
-    connection: string()
-      .alias('c')
-      .desc('Connection id or name. Required if you have more than one connection.'),
-    file: string()
-      .alias('f')
-      .desc('Read the SQL query from a file instead of the positional argument'),
-    json: boolean().desc('Output the result as raw JSON'),
-    list: boolean('list-connections').desc('List available connections and exit'),
-  },
-  handler: async opts => {
+  handler: async (opts) => {
     await requireSession()
 
     const loadingSpinner = ora('Loading connections...').start()
@@ -128,7 +137,9 @@ export const queryCommand = command({
         consola.info('No connections found.')
         return
       }
-      consola.info(`Found ${connections.length} connection${connections.length === 1 ? '' : 's'}:`)
+      consola.info(
+        `Found ${connections.length} connection${connections.length === 1 ? '' : 's'}:`
+      )
       for (const c of connections) {
         consola.log(`  ${c.name}  (${c.type})  ${c.id}`)
       }
@@ -142,20 +153,22 @@ export const queryCommand = command({
         sql = fs.readFileSync(opts.file, 'utf-8')
       } catch (error) {
         return fail(
-          `Failed to read SQL file: ${error instanceof Error ? error.message : String(error)}`,
+          `Failed to read SQL file: ${error instanceof Error ? error.message : String(error)}`
         )
       }
     }
 
     if (!sql || !sql.trim()) {
-      return fail('No SQL provided. Pass it as a query string argument or with --file <path>.')
+      return fail(
+        'No SQL provided. Pass it as a query string argument or with --file <path>.'
+      )
     }
 
     const connection = pickConnection(connections, opts.connection)
     const executor = queryMap[connection.type as ConnectionType]
 
     const querySpinner = ora(
-      `Executing query on ${connection.name} (${connection.type})...`,
+      `Executing query on ${connection.name} (${connection.type})...`
     ).start()
 
     const start = Date.now()
@@ -186,5 +199,25 @@ export const queryCommand = command({
       consola.fail('Query failed.')
       return fail(error instanceof Error ? error.message : String(error))
     }
+  },
+  name: 'query',
+  options: {
+    connection: string()
+      .alias('c')
+      .desc(
+        'Connection id or name. Required if you have more than one connection.'
+      ),
+    file: string()
+      .alias('f')
+      .desc(
+        'Read the SQL query from a file instead of the positional argument'
+      ),
+    json: boolean().desc('Output the result as raw JSON'),
+    list: boolean('list-connections').desc(
+      'List available connections and exit'
+    ),
+    sql: positional('sql').desc(
+      'SQL query to execute (omit when using --file)'
+    ),
   },
 })

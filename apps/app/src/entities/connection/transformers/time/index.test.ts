@@ -6,9 +6,9 @@ import type { Column } from '../../components/table/cell'
 describe('createTimeTransformer', () => {
   const column: Column = {
     id: 'start_at',
-    uiType: 'time',
-    type: 'time',
     isNullable: true,
+    type: 'time',
+    uiType: 'time',
   }
   const t = createTimeTransformer(column)
 

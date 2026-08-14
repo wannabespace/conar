@@ -4,12 +4,12 @@ import { createWebStorageValue } from 'seitu/web'
 export const FREE_SEED_LIMIT = 10
 
 export const seedUsageValue = createWebStorageValue({
-  type: 'localStorage',
+  defaultValue: 0,
   key: 'seed-usage-count',
   schema: type('number'),
-  defaultValue: 0,
+  type: 'localStorage',
 })
 
-export function incrementSeedUsage() {
-  seedUsageValue.set(state => state + 1)
+export const incrementSeedUsage = () => {
+  seedUsageValue.set((state) => state + 1)
 }

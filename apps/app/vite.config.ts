@@ -5,13 +5,7 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 export default defineConfig(({ mode }) => ({
-  resolve: {
-    tsconfigPaths: true,
-  },
   base: mode === 'desktop' ? './' : '/',
-  define: {
-    'import.meta.env.VITE_TEST': mode === 'test',
-  },
   build: {
     outDir: mode === 'desktop' ? 'dist-desktop' : 'dist',
     rolldownOptions: {
@@ -20,16 +14,22 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
+  define: {
+    'import.meta.env.VITE_TEST': mode === 'test',
+  },
   plugins: [
     tailwindcss(),
     tanstackRouter({
-      routesDirectory: 'src/routes',
-      generatedRouteTree: 'src/routeTree.gen.ts',
       autoCodeSplitting: true,
+      generatedRouteTree: 'src/routeTree.gen.ts',
+      routesDirectory: 'src/routes',
     }),
     react(),
     babel({
       presets: [reactCompilerPreset()],
     }),
   ],
+  resolve: {
+    tsconfigPaths: true,
+  },
 }))

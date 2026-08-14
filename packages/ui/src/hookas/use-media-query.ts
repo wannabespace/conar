@@ -1,24 +1,26 @@
 import * as React from 'react'
 
-export function useMediaQuery(query: string, initialValue?: boolean) {
-  const [matches, setMatches] = React.useState(initialValue ?? false)
+export const useMediaQuery = (query: string, initialValue?: boolean) => {
+  const subscribe = React.useCallback(
+    (onStoreChange: () => void) => {
+      const mediaQuery = window.matchMedia(query)
+      mediaQuery.addEventListener('change', onStoreChange)
+      return () => {
+        mediaQuery.removeEventListener('change', onStoreChange)
+      }
+    },
+    [query]
+  )
 
-  React.useEffect(() => {
-    const mediaQuery = window.matchMedia(query)
+  const getSnapshot = React.useCallback(
+    () => window.matchMedia(query).matches,
+    [query]
+  )
 
-    // oxlint-disable-next-line react/set-state-in-effect
-    setMatches(mediaQuery.matches)
+  const getServerSnapshot = React.useCallback(
+    () => initialValue ?? false,
+    [initialValue]
+  )
 
-    const handleChange = (event: MediaQueryListEvent) => {
-      setMatches(event.matches)
-    }
-
-    mediaQuery.addEventListener('change', handleChange)
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange)
-    }
-  }, [query])
-
-  return matches
+  return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 }

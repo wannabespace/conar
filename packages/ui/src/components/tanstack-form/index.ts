@@ -7,16 +7,16 @@ import { FieldError } from './field-error'
 import { FieldInput } from './field-input'
 import { FieldPasswordInput } from './field-password-input'
 
-export function formInputProps(field: AnyFieldApi) {
+export const formInputProps = (field: AnyFieldApi) => {
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
 
   return {
-    'id': field.name,
-    'aria-invalid': isInvalid ? 'true' : undefined,
     'aria-describedby': isInvalid ? `${field.name}-error` : undefined,
-    'value': field.state.value,
-    'onChange': event => field.handleChange(event.target.value),
-    'onBlur': field.handleBlur,
+    'aria-invalid': isInvalid ? 'true' : undefined,
+    id: field.name,
+    onBlur: field.handleBlur,
+    onChange: (event) => field.handleChange(event.target.value),
+    value: field.state.value,
   } satisfies ComponentProps<'input'>
 }
 
@@ -27,13 +27,13 @@ export const { fieldContext, formContext, useFieldContext, useFormContext } =
 
 export const { useAppForm } = createFormHook({
   fieldComponents: {
-    Field,
-    Label: FieldLabel,
-    Input: FieldInput,
-    PasswordInput: FieldPasswordInput,
     Error: FieldError,
+    Field,
+    Input: FieldInput,
+    Label: FieldLabel,
+    PasswordInput: FieldPasswordInput,
   },
-  formComponents: {},
   fieldContext,
+  formComponents: {},
   formContext,
 })

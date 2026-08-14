@@ -15,37 +15,32 @@ const activeClasses = `
 `
 const inactiveClasses = 'hover:bg-accent/50'
 
-export function SidebarButton({
+export const SidebarButton = ({
   className,
   active,
   ...props
-}: ComponentProps<'button'> & { active?: boolean }) {
-  return (
-    <button
-      type="button"
-      className={cn(baseClasses, active ? activeClasses : inactiveClasses, className)}
-      {...props}
-    />
-  )
-}
+}: ComponentProps<'button'> & { active?: boolean }) => (
+  <button
+    type="button"
+    className={cn(
+      baseClasses,
+      active ? activeClasses : inactiveClasses,
+      className
+    )}
+    {...props}
+  />
+)
 
-export function SidebarLink({
+export const SidebarLink = ({
   className,
   ...props
-}: LinkProps & Omit<ComponentProps<'a'>, 'children'>) {
-  return (
-    <Link
-      className={cn(
-        baseClasses,
-        `
-          data-[status=active]:bg-primary
-          data-[status=active]:text-primary-foreground
-          data-[status=active]:[&_svg]:text-primary-foreground
-          [&:not([data-status=active])]:hover:bg-accent/50
-        `,
-        className,
-      )}
-      {...props}
-    />
-  )
-}
+}: LinkProps & Omit<ComponentProps<'a'>, 'children'>) => (
+  <Link
+    className={cn(
+      baseClasses,
+      `data-[status=active]:bg-primary data-[status=active]:text-primary-foreground data-[status=active]:[&_svg]:text-primary-foreground [&:not([data-status=active])]:hover:bg-accent/50`,
+      className
+    )}
+    {...props}
+  />
+)

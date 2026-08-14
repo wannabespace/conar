@@ -1,14 +1,14 @@
 import * as React from 'react'
 
 export function useElementSize<T extends Element>(
-  ref: React.RefObject<T | null>,
+  ref: React.RefObject<T | null>
 ): { width: number | null; height: number | null }
 export function useElementSize<T extends Element>(
   ref: React.RefObject<T | null>,
   initial: {
     width: number
     height: number
-  },
+  }
 ): {
   width: number
   height: number
@@ -18,11 +18,11 @@ export function useElementSize<T extends Element = Element>(
   initial?: {
     width: number
     height: number
-  },
+  }
 ) {
   const [size, setSize] = React.useState({
-    width: initial?.width ?? null,
     height: initial?.height ?? null,
+    width: initial?.width ?? null,
   })
 
   const previousObserverRef = React.useRef<ResizeObserver | null>(null)
@@ -39,13 +39,17 @@ export function useElementSize<T extends Element = Element>(
 
     if (element?.nodeType === Node.ELEMENT_NODE) {
       observer = new ResizeObserver(([entry]) => {
-        if (entry && entry.borderBoxSize) {
-          const { inlineSize: width, blockSize: height } = entry.borderBoxSize[0]!
-
-          setSize(prev =>
-            width !== prev.width || height !== prev.height ? { width, height } : prev,
-          )
+        const boxSize = entry?.borderBoxSize?.[0]
+        if (!boxSize) {
+          return
         }
+        const { inlineSize: width, blockSize: height } = boxSize
+
+        setSize((prev) =>
+          width !== prev.width || height !== prev.height
+            ? { height, width }
+            : prev
+        )
       })
 
       observer.observe(element, { box: 'border-box' })

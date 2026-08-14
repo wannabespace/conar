@@ -24,7 +24,68 @@ import { getColumnSize } from './utils'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-export function TableCellTable({
+const equalsFilter = SQL_FILTERS_LIST.find((filter) => filter.operator === '=')
+if (!equalsFilter) {
+  throw new Error('Equals filter definition is missing')
+}
+
+const renderForeignTableBody = ({
+  isRowsPending,
+  error,
+  rowsLength,
+  columnsLength,
+  table,
+  schema,
+  filters,
+  orderBy,
+}: {
+  isRowsPending: boolean
+  error: Error | null
+  rowsLength: number
+  columnsLength: number
+  table: string
+  schema: string
+  filters: ActiveFilter[]
+  orderBy: Record<string, never>
+}) => {
+  if (isRowsPending) {
+    return <TableBodySkeleton />
+  }
+  if (error) {
+    return <TableError error={error} />
+  }
+  if (rowsLength === 0) {
+    return (
+      <TableEmpty
+        className="bottom-0 h-[calc(100%-5rem)]"
+        title="Table is empty"
+        description="There are no records to show"
+      />
+    )
+  }
+  if (columnsLength === 0) {
+    return (
+      <TableEmpty
+        className="h-[calc(100%-5rem)]"
+        title="No columns to show"
+        description="Please show at least one column"
+      />
+    )
+  }
+  return (
+    <>
+      <TableBody data-mask className="bg-background" />
+      <TableInfiniteLoader
+        table={table}
+        schema={schema}
+        filters={filters}
+        orderBy={orderBy}
+      />
+    </>
+  )
+}
+
+export const TableCellTable = ({
   schema,
   table,
   column,
@@ -34,12 +95,12 @@ export function TableCellTable({
   table: string
   column: string
   value: unknown
-}) {
+}) => {
   const { connection, connectionResource } = useRouteContext()
   const filters = [
     {
       column,
-      ref: SQL_FILTERS_LIST.find(filter => filter.operator === '=')!,
+      ref: equalsFilter,
       values: [value],
     } satisfies ActiveFilter,
   ]
@@ -51,46 +112,52 @@ export function TableCellTable({
   } = useInfiniteQuery(
     resourceRowsQueryInfiniteOptions({
       connectionResource,
-      table,
-      schema,
       query: {
         filters,
         orderBy,
       },
-    }),
+      schema,
+      table,
+    })
   )
-  const { data = [] } = useTableColumnsQuery({ connectionResource, table, schema })
+  const { data = [] } = useTableColumnsQuery({
+    connectionResource,
+    schema,
+    table,
+  })
   const columns = data.map(
-    column =>
+    (columnMeta) =>
       ({
-        id: column.id,
-        size: column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH,
-        cell: props => {
-          const transformer = createTransformer(connection.type, column)
+        // Column renderers are invoked as components by @tamery/table
+        // oxlint-disable-next-line react/no-unstable-nested-components
+        cell: (props) => {
+          const transformer = createTransformer(connection.type, columnMeta)
           return (
             <TableCellContent
-              column={column}
+              column={columnMeta}
               value={props.value}
               position={props.position}
               style={props.style}
             >
-              <span className="truncate">{transformer.toDisplay(props.value, props.size)}</span>
+              <span className="truncate">
+                {transformer.toDisplay(props.value, props.size)}
+              </span>
             </TableCellContent>
           )
         },
-        header: props => <TableHeaderCell column={column} {...props} />,
-      }) satisfies ColumnRenderer,
+        // oxlint-disable-next-line react/no-unstable-nested-components
+        header: (props) => <TableHeaderCell column={columnMeta} {...props} />,
+        id: columnMeta.id,
+        size: columnMeta.type
+          ? getColumnSize(columnMeta.type)
+          : DEFAULT_COLUMN_WIDTH,
+      }) satisfies ColumnRenderer
   )
 
   return (
     <TableProvider rows={rows} columns={columns}>
       <div className="relative size-full">
-        <div
-          className={`
-          flex h-8 items-center justify-between bg-background px-4 text-xs
-          text-muted-foreground
-        `}
-        >
+        <div className="bg-background text-muted-foreground flex h-8 items-center justify-between px-4 text-xs">
           <div>
             Showing records from{' '}
             <Badge data-mask variant="secondary">
@@ -114,7 +181,7 @@ export function TableCellTable({
               <Link
                 to="/connection/$resourceId/table"
                 params={{ resourceId: connectionResource.id }}
-                search={{ schema, table, filters, orderBy }}
+                search={{ filters, orderBy, schema, table }}
               />
             }
           >
@@ -122,35 +189,18 @@ export function TableCellTable({
             Open table
           </Button>
         </div>
-        <Table className="h-[calc(100%-(--spacing(8)))] rounded-b-lg bg-background">
+        <Table className="bg-background h-[calc(100%-(--spacing(8)))] rounded-b-lg">
           <TableHeader />
-          {isRowsPending ? (
-            <TableBodySkeleton />
-          ) : error ? (
-            <TableError error={error} />
-          ) : rows.length === 0 ? (
-            <TableEmpty
-              className="bottom-0 h-[calc(100%-5rem)]"
-              title="Table is empty"
-              description="There are no records to show"
-            />
-          ) : columns.length === 0 ? (
-            <TableEmpty
-              className="h-[calc(100%-5rem)]"
-              title="No columns to show"
-              description="Please show at least one column"
-            />
-          ) : (
-            <>
-              <TableBody data-mask className="bg-background" />
-              <TableInfiniteLoader
-                table={table}
-                schema={schema}
-                filters={filters}
-                orderBy={orderBy}
-              />
-            </>
-          )}
+          {renderForeignTableBody({
+            columnsLength: columns.length,
+            error,
+            filters,
+            isRowsPending,
+            orderBy,
+            rowsLength: rows.length,
+            schema,
+            table,
+          })}
         </Table>
       </div>
     </TableProvider>

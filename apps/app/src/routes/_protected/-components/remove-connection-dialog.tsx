@@ -21,7 +21,9 @@ interface RemoveConnectionDialogProps {
   } | null>
 }
 
-export function RemoveConnectionDialog({ ref }: RemoveConnectionDialogProps) {
+export const RemoveConnectionDialog = ({
+  ref,
+}: RemoveConnectionDialogProps) => {
   const collections = useCollections()
   const [open, setOpen] = useState(false)
   const [connection, setConnection] = useState<Connection | null>(null)
@@ -29,43 +31,48 @@ export function RemoveConnectionDialog({ ref }: RemoveConnectionDialogProps) {
   useImperativeHandle(
     ref,
     () => ({
-      remove: (connection: Connection) => {
-        setConnection(connection)
+      remove: (connectionToRemove: Connection) => {
+        setConnection(connectionToRemove)
         setOpen(true)
       },
     }),
-    [],
+    []
   )
 
-  async function remove(e: React.MouseEvent<HTMLButtonElement>) {
-    if (!connection) return
+  const remove = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!connection) {
+      return
+    }
 
     e.preventDefault()
 
-    const { connectionsCollection, connectionsResourcesCollection } = collections
-    const allConnectionsResources = await queryOnce(q =>
+    const { connectionsCollection, connectionsResourcesCollection } =
+      collections
+    const allConnectionsResources = await queryOnce((q) =>
       q
         .from({ connectionsResources: connectionsResourcesCollection })
         .select(({ connectionsResources }) => ({
           id: connectionsResources.id,
         }))
-        .where(({ connectionsResources }) => eq(connectionsResources.connectionId, connection.id)),
+        .where(({ connectionsResources }) =>
+          eq(connectionsResources.connectionId, connection.id)
+        )
     )
     const resourcesIds = allConnectionsResources.map(({ id }) => id)
 
-    lastOpenedResourcesStorageValue.set(prev =>
-      prev.filter(resource => !resourcesIds.includes(resource)),
+    lastOpenedResourcesStorageValue.set((prev) =>
+      prev.filter((resource) => !resourcesIds.includes(resource))
     )
 
     connectionsCollection.delete(connection.id)
 
     const idsToRemove = [...resourcesIds, connection.id]
 
-    Object.keys(localStorage).forEach(key => {
-      if (idsToRemove.some(id => key.includes(id))) {
+    for (const key of Object.keys(localStorage)) {
+      if (idsToRemove.some((id) => key.includes(id))) {
         localStorage.removeItem(key)
       }
-    })
+    }
 
     toast.success('Connection removed successfully')
     setOpen(false)
@@ -77,8 +84,8 @@ export function RemoveConnectionDialog({ ref }: RemoveConnectionDialogProps) {
         <AlertDialogHeader>
           <AlertDialogTitle>Remove Connection</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete this connection and remove
-            all associated data.
+            This action cannot be undone. This will permanently delete this
+            connection and remove all associated data.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -21,7 +21,6 @@ type Resource = RouterOutputs['connectionsResources']['list'][number]
 const REFRESH_INTERVAL_MS = 60_000
 
 export const proxyCommand = command({
-  name: 'proxy',
   desc: 'Start a local proxy server so the web app can query local connections',
   handler: async () => {
     const session = await requireSession()
@@ -29,8 +28,8 @@ export const proxyCommand = command({
     let connections: Connection[] = []
     let resources: Resource[] = []
 
-    async function fetchConnections() {
-      const prevIds = new Set(connections.map(c => c.id))
+    const fetchConnections = async () => {
+      const prevIds = new Set(connections.map((c) => c.id))
       const [fetchedConnections, fetchedResources] = await Promise.all([
         apiOrpc.connections.list(),
         apiOrpc.connectionsResources.list(),
@@ -49,24 +48,24 @@ export const proxyCommand = command({
       return connections.length
     }
 
-    function resolveConnectionString(input: {
+    const resolveConnectionString = (input: {
       connectionString?: string
       resourceId?: string
       connectionId?: string
-    }): string {
+    }): string => {
       if (input.connectionString) {
         return input.connectionString
       }
 
       if (input.resourceId) {
-        const resource = resources.find(r => r.id === input.resourceId)
+        const resource = resources.find((r) => r.id === input.resourceId)
         if (!resource) {
           throw new ORPCError('NOT_FOUND', {
             message: `Resource "${input.resourceId}" not found in local cache. Try restarting \`tamery proxy\`.`,
           })
         }
 
-        const conn = connections.find(c => c.id === resource.connectionId)
+        const conn = connections.find((c) => c.id === resource.connectionId)
         if (!conn) {
           throw new ORPCError('NOT_FOUND', {
             message: `Connection for resource "${input.resourceId}" not found in local cache.`,
@@ -79,7 +78,7 @@ export const proxyCommand = command({
       }
 
       if (input.connectionId) {
-        const conn = connections.find(c => c.id === input.connectionId)
+        const conn = connections.find((c) => c.id === input.connectionId)
         if (!conn) {
           throw new ORPCError('NOT_FOUND', {
             message: `Connection "${input.connectionId}" not found in local cache. Try restarting \`tamery proxy\`.`,
@@ -89,11 +88,12 @@ export const proxyCommand = command({
       }
 
       throw new ORPCError('BAD_REQUEST', {
-        message: 'One of connectionString, resourceId, or connectionId is required.',
+        message:
+          'One of connectionString, resourceId, or connectionId is required.',
       })
     }
 
-    async function verifyBrowserSession(headers: Headers): Promise<void> {
+    const verifyBrowserSession = async (headers: Headers): Promise<void> => {
       const res = await fetch(`${import.meta.env.API_URL}/auth/get-session`, {
         headers,
       })
@@ -108,7 +108,9 @@ export const proxyCommand = command({
       }
 
       if (data.user.id !== session.user.id) {
-        throw new Error('Browser session belongs to a different user than the CLI session.')
+        throw new Error(
+          'Browser session belongs to a different user than the CLI session.'
+        )
       }
     }
 
@@ -118,10 +120,12 @@ export const proxyCommand = command({
       orpc.middleware(async ({ next, context }) => {
         await verifyBrowserSession(context.headers)
         return next({})
-      }),
+      })
     )
 
-    const router = createQueryRouter(authed, input => resolveConnectionString(input))
+    const router = createQueryRouter(authed, (input) =>
+      resolveConnectionString(input)
+    )
 
     consola.start('Fetching connections...')
     const count = await fetchConnections()
@@ -132,31 +136,32 @@ export const proxyCommand = command({
         await fetchConnections()
       } catch (error) {
         consola.warn(
-          `Failed to refresh connections: ${error instanceof Error ? error.message : String(error)}`,
+          `Failed to refresh connections: ${error instanceof Error ? error.message : String(error)}`
         )
       }
     }, REFRESH_INTERVAL_MS)
 
     const handler = new RPCHandler(router, {
       interceptors: [
-        async options => {
+        async (options) => {
           try {
             return await options.next()
           } catch (error) {
             consola.error({
-              type: error instanceof Error ? error.constructor.name : typeof error,
-              message: error instanceof Error ? error.message : String(error),
               cause: error instanceof Error ? error.cause : undefined,
+              message: error instanceof Error ? error.message : String(error),
               stack: error instanceof Error ? error.stack : undefined,
+              type:
+                error instanceof Error ? error.constructor.name : typeof error,
             })
 
             if (error instanceof ORPCError) {
               if (error.cause instanceof ValidationError) {
                 const message = error.cause.issues
-                  .map(issue =>
+                  .map((issue) =>
                     issue.path
                       ? `${issue.path.join('.')}: ${issue.message.toLowerCase()}`
-                      : issue.message,
+                      : issue.message
                   )
                   .join(', ')
 
@@ -167,7 +172,10 @@ export const proxyCommand = command({
             }
 
             if (error instanceof Error) {
-              throw new ORPCError('INTERNAL_SERVER_ERROR', { message: error.message, cause: error })
+              throw new ORPCError('INTERNAL_SERVER_ERROR', {
+                cause: error,
+                message: error.message,
+              })
             }
 
             throw error
@@ -179,22 +187,23 @@ export const proxyCommand = command({
     const app = new Hono()
       .use(
         cors({
+          credentials: true,
           origin(origin) {
             const allowedOrigins = [import.meta.env.MAIN_URL]
-            return origin.endsWith(`.${new URL(import.meta.env.MAIN_URL).host}`) ||
-              allowedOrigins.includes(origin)
+            return origin.endsWith(
+              `.${new URL(import.meta.env.MAIN_URL).host}`
+            ) || allowedOrigins.includes(origin)
               ? origin
               : null
           },
-          credentials: true,
-        }),
+        })
       )
-      .get('/health', c =>
+      .get('/health', (c) =>
         c.json({
           ok: true,
-          version: import.meta.env.VERSION,
           userId: session.user.id,
-        }),
+          version: import.meta.env.VERSION,
+        })
       )
       .use('/*', async (c, next) => {
         const { matched, response } = await handler.handle(c.req.raw.clone(), {
@@ -205,7 +214,7 @@ export const proxyCommand = command({
           return c.newResponse(response.body, response)
         }
 
-        await next()
+        return next()
       })
 
     const onSigint = () => {
@@ -219,12 +228,11 @@ export const proxyCommand = command({
     serve(
       {
         fetch: app.fetch,
-        port: PORTS.LOCAL_PROXY,
         hostname: '127.0.0.1',
+        port: PORTS.LOCAL_PROXY,
       },
       () => {
         consola.box({
-          title: 'Tamery Local Proxy',
           message: [
             `Listening on http://127.0.0.1:${PORTS.LOCAL_PROXY}`,
             `Signed in as ${session.user.email}`,
@@ -233,8 +241,10 @@ export const proxyCommand = command({
             'Press Ctrl+C to stop.',
           ].join('\n'),
           style: { borderColor: 'cyan', borderStyle: 'rounded', padding: 1 },
+          title: 'Tamery Local Proxy',
         })
-      },
+      }
     )
   },
+  name: 'proxy',
 })

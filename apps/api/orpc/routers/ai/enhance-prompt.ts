@@ -7,30 +7,28 @@ import { asc, eq } from 'drizzle-orm'
 
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
-async function getMessages(chatId: string) {
-  return db
+const getMessages = (chatId: string) =>
+  db
     .select()
     .from(chatsMessages)
     .where(eq(chatsMessages.chatId, chatId))
     .orderBy(asc(chatsMessages.createdAt))
-}
 
 export const enhancePrompt = orpc
   .use(subscriptionMiddleware)
   .input(
     type({
-      prompt: 'string',
       chatId: 'string.uuid.v7',
-    }),
+      prompt: 'string',
+    })
   )
   .handler(async ({ input, signal }) => {
     const messages = await getMessages(input.chatId)
 
     const { text } = await generateText({
-      model: openai('gpt-4o-mini'),
+      abortSignal: signal,
       messages: [
         {
-          role: 'system',
           content: [
             "You are an expert at rewriting and clarifying user prompts. Your task is to rewrite the user's prompt to be as clear, specific, and unambiguous as possible.",
             '- Fix typos and grammar mistakes if needed.',
@@ -45,23 +43,24 @@ export const enhancePrompt = orpc
             '',
             'Context from current chat conversation:',
             JSON.stringify(
-              messages.map(m => ({
+              messages.map((m) => ({
+                parts: m.parts.filter((p) => p.type === 'text'),
                 role: m.role,
-                parts: m.parts.filter(p => p.type === 'text'),
               })),
               null,
-              2,
+              2
             ),
             '',
             'Please rewrite the following user prompt to be more effective:',
           ].join('\n'),
+          role: 'system',
         },
         {
-          role: 'user',
           content: input.prompt,
+          role: 'user',
         },
       ],
-      abortSignal: signal,
+      model: openai('gpt-4o-mini'),
     })
 
     return text

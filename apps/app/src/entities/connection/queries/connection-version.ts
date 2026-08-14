@@ -8,13 +8,67 @@ import { connectionToQueryParams, createQuery } from '../runtime/query'
 
 export const connectionVersionType = type({
   version: 'string',
-}).pipe(data => data.version)
+}).pipe((data) => data.version)
+
+const firstVersionRow = async (
+  result: Promise<{ rows: { version: string }[] }>
+) => {
+  const { rows } = await result
+  const [row] = rows
+  if (!row) {
+    throw new Error('Failed to read database version')
+  }
+  return row
+}
 
 export const connectionVersionQuery = createQuery({
-  type: connectionVersionType,
-  // Each query has a fallback to get a version in older versions
   query: {
-    postgres: async db => {
+    clickhouse: async (db) => {
+      try {
+        return await db
+          .selectFrom('system.one')
+          .select((eb) => eb.fn<string>('version', []).as('version'))
+          .executeTakeFirstOrThrow()
+      } catch {
+        return firstVersionRow(
+          sql<{ version: string }>`SELECT version() as version`.execute(db)
+        )
+      }
+    },
+    mssql: async (db) => {
+      try {
+        return await db
+          .selectFrom('sys.databases')
+          .select((eb) =>
+            eb
+              .fn<string>('SERVERPROPERTY', [eb.val('ProductVersion')])
+              .as('version')
+          )
+          .orderBy('name')
+          .limit(1)
+          .executeTakeFirstOrThrow()
+      } catch {
+        return firstVersionRow(
+          sql<{
+            version: string
+          }>`SELECT SERVERPROPERTY('ProductVersion') as version`.execute(db)
+        )
+      }
+    },
+    mysql: async (db) => {
+      try {
+        return await db
+          .selectFrom('performance_schema.global_variables')
+          .select('VARIABLE_VALUE as version')
+          .where('VARIABLE_NAME', '=', 'version')
+          .executeTakeFirstOrThrow()
+      } catch {
+        return firstVersionRow(
+          sql<{ version: string }>`SELECT VERSION() as version`.execute(db)
+        )
+      }
+    },
+    postgres: async (db) => {
       try {
         return await db
           .selectFrom('pg_catalog.pg_settings')
@@ -22,58 +76,21 @@ export const connectionVersionQuery = createQuery({
           .where('name', '=', 'server_version')
           .executeTakeFirstOrThrow()
       } catch {
-        return (
-          await sql<{
+        return firstVersionRow(
+          sql<{
             version: string
           }>`SELECT current_setting('server_version') as version`.execute(db)
-        ).rows[0]!
-      }
-    },
-    mysql: async db => {
-      try {
-        // for mysql >= v8.0
-        return await db
-          .selectFrom('performance_schema.global_variables')
-          .select('VARIABLE_VALUE as version')
-          .where('VARIABLE_NAME', '=', 'version')
-          .executeTakeFirstOrThrow()
-      } catch {
-        return (await sql<{ version: string }>`SELECT VERSION() as version`.execute(db)).rows[0]!
-      }
-    },
-    mssql: async db => {
-      try {
-        return await db
-          .selectFrom('sys.databases')
-          .select(eb => eb.fn<string>('SERVERPROPERTY', [eb.val('ProductVersion')]).as('version'))
-          .orderBy('name')
-          .limit(1)
-          .executeTakeFirstOrThrow()
-      } catch {
-        return (
-          await sql<{
-            version: string
-          }>`SELECT SERVERPROPERTY('ProductVersion') as version`.execute(db)
-        ).rows[0]!
-      }
-    },
-    clickhouse: async db => {
-      try {
-        return await db
-          .selectFrom('system.one')
-          .select(eb => eb.fn<string>('version', []).as('version'))
-          .executeTakeFirstOrThrow()
-      } catch {
-        return (await sql<{ version: string }>`SELECT version() as version`.execute(db)).rows[0]!
+        )
       }
     },
   },
+  type: connectionVersionType,
 })
 
-export function connectionVersionQueryOptions(connection: Connection) {
-  return queryOptions({
+export const connectionVersionQueryOptions = (connection: Connection) =>
+  queryOptions({
+    queryFn: async () =>
+      connectionVersionQuery.run(await connectionToQueryParams(connection)),
     queryKey: ['connection-resource', connection.id, 'version'],
-    queryFn: async () => connectionVersionQuery.run(await connectionToQueryParams(connection)),
     throwOnError: false,
   })
-}

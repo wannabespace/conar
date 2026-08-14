@@ -5,7 +5,12 @@ import { streamToEventIterator } from '@orpc/server'
 import { tools } from '@tamery/ai/tools'
 import type { AppUIMessage } from '@tamery/ai/tools/helpers'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { convertToModelMessages, smoothStream, stepCountIs, streamText } from 'ai'
+import {
+  convertToModelMessages,
+  smoothStream,
+  stepCountIs,
+  streamText,
+} from 'ai'
 import { createRetryableModel } from 'ai-retry/language-model'
 import { type } from 'arktype'
 import { v7 } from 'uuid'
@@ -17,8 +22,11 @@ const model = createRetryableModel({
   retries: [openai('gpt-5.3-codex'), google('gemini-pro-latest')],
 })
 
-function handleError(error: unknown) {
-  if (typeof error === 'object' && (error as { type?: string }).type === 'overloaded_error') {
+const handleError = (error: unknown) => {
+  if (
+    typeof error === 'object' &&
+    (error as { type?: string }).type === 'overloaded_error'
+  ) {
     return 'Sorry, I was unable to generate a response due to high load. Please try again later.'
   }
   if (
@@ -32,7 +40,7 @@ function handleError(error: unknown) {
 
 export const chat = orpc
   .use(subscriptionMiddleware)
-  .use(async ({ context, next }) => {
+  .use(({ context, next }) => {
     context.setHeader('Transfer-Encoding', 'chunked')
     context.setHeader('Connection', 'keep-alive')
 
@@ -40,29 +48,31 @@ export const chat = orpc
   })
   .input(
     type({
-      id: 'string.uuid.v7',
-      type: type.valueOf(ConnectionType),
       context: 'string',
       createdAt: 'Date',
-      updatedAt: 'Date',
+      id: 'string.uuid.v7',
       messages: 'object[]' as type.cast<AppUIMessage[]>,
-    }),
+      type: type.valueOf(ConnectionType),
+      updatedAt: 'Date',
+    })
   )
   .handler(async ({ input, context, signal }) => {
     context.addLogData({
       chatId: input.id,
       connectionType: input.type,
-      inputMessages: input.messages.map(message => ({
+      inputMessages: input.messages.map((message) => ({
         id: message.id,
-        role: message.role,
         partsCount: message.parts.length,
+        role: message.role,
       })),
     })
 
     const result = streamText({
+      abortSignal: signal,
+      allowSystemInMessages: true,
+      experimental_transform: smoothStream(),
       messages: [
         {
-          role: 'system',
           content: [
             '<role>',
             `You are Tamery AI, an expert ${input.type} database assistant embedded in a production database editor. You help users write, understand, debug, and optimize SQL queries. You are concise, precise, and security-conscious.`,
@@ -115,36 +125,34 @@ export const chat = orpc
             input.context,
             '</context>',
           ].join('\n'),
+          role: 'system',
         },
         ...(await convertToModelMessages(input.messages)),
       ],
-      allowSystemInMessages: true,
-      stopWhen: stepCountIs(Number.POSITIVE_INFINITY),
-      abortSignal: signal,
       model,
-      experimental_transform: smoothStream(),
+      stopWhen: stepCountIs(Number.POSITIVE_INFINITY),
       tools,
     })
 
     const stream = result.toUIMessageStream({
-      originalMessages: input.messages,
       generateMessageId: () => v7(),
-      sendSources: true,
-      onFinish: async result => {
-        context.addLogData({
-          response: {
-            ...result.responseMessage,
-            parts: result.responseMessage.parts.map(part => part.type),
-          },
-        })
-      },
-      onError: error => {
+      onError: (error) => {
         context.addLogData({
           streamError: error,
         })
 
         return handleError(error)
       },
+      onFinish: (finishResult) => {
+        context.addLogData({
+          response: {
+            ...finishResult.responseMessage,
+            parts: finishResult.responseMessage.parts.map((part) => part.type),
+          },
+        })
+      },
+      originalMessages: input.messages,
+      sendSources: true,
     })
 
     return streamToEventIterator(stream)

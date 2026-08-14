@@ -1,4 +1,7 @@
-import type { MenuPopupResult, NativeMenuNode } from '@tamery/shared/context-menu'
+import type {
+  MenuPopupResult,
+  NativeMenuNode,
+} from '@tamery/shared/context-menu'
 import {
   ContextMenu,
   ContextMenuContent,
@@ -91,20 +94,20 @@ interface AppContextMenuProps {
   }
 }
 
-function isNativeAvailable(): boolean {
-  return !!window.electron?.menu?.popup
-}
+const isNativeAvailable = (): boolean => !!window.electron?.menu?.popup
 
-function renderWebNodes(nodes: AppMenuNode[]): ReactNode {
-  return nodes.map((node, index) => {
+const renderWebNodes = (nodes: AppMenuNode[]): ReactNode =>
+  nodes.map((node, index) => {
     switch (node.type) {
-      case 'separator':
+      case 'separator': {
         // oxlint-disable-next-line react/no-array-index-key
         return <ContextMenuSeparator key={index} />
-      case 'label':
+      }
+      case 'label': {
         // oxlint-disable-next-line react/no-array-index-key
         return <ContextMenuLabel key={index}>{node.label}</ContextMenuLabel>
-      case 'group':
+      }
+      case 'group': {
         return (
           // oxlint-disable-next-line react/no-array-index-key
           <ContextMenuGroup key={index}>
@@ -112,23 +115,32 @@ function renderWebNodes(nodes: AppMenuNode[]): ReactNode {
             {renderWebNodes(node.items)}
           </ContextMenuGroup>
         )
-      case 'sub':
+      }
+      case 'sub': {
         return (
           // oxlint-disable-next-line react/no-array-index-key
           <ContextMenuSub key={index}>
-            <ContextMenuSubTrigger disabled={node.disabled}>{node.label}</ContextMenuSubTrigger>
-            <ContextMenuSubContent>{renderWebNodes(node.items)}</ContextMenuSubContent>
+            <ContextMenuSubTrigger disabled={node.disabled}>
+              {node.label}
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent>
+              {renderWebNodes(node.items)}
+            </ContextMenuSubContent>
           </ContextMenuSub>
         )
-      case 'radio':
+      }
+      case 'radio': {
+        const handleValueChange = (value: string) => {
+          node.onValueChange(value)
+        }
         return (
           <ContextMenuRadioGroup
             // oxlint-disable-next-line react/no-array-index-key
             key={index}
             value={node.value}
-            onValueChange={node.onValueChange}
+            onValueChange={handleValueChange}
           >
-            {node.options.map(option => (
+            {node.options.map((option) => (
               <ContextMenuRadioItem
                 key={option.value}
                 value={option.value}
@@ -139,7 +151,11 @@ function renderWebNodes(nodes: AppMenuNode[]): ReactNode {
             ))}
           </ContextMenuRadioGroup>
         )
-      default:
+      }
+      default: {
+        const handleSelect = () => {
+          node.onSelect()
+        }
         return (
           <ContextMenuItem
             // oxlint-disable-next-line react/no-array-index-key
@@ -147,21 +163,23 @@ function renderWebNodes(nodes: AppMenuNode[]): ReactNode {
             disabled={node.disabled}
             variant={node.variant}
             className={node.className}
-            onClick={node.onSelect}
+            onClick={handleSelect}
           >
             {node.icon}
             {node.label}
             {node.trailing}
           </ContextMenuItem>
         )
+      }
     }
   })
-}
 
-function toNativeMenu(nodes: AppMenuNode[]): {
+const toNativeMenu = (
+  nodes: AppMenuNode[]
+): {
   nativeItems: NativeMenuNode[]
   handlers: Map<string, () => void>
-} {
+} => {
   const handlers = new Map<string, () => void>()
   let counter = 0
 
@@ -170,49 +188,56 @@ function toNativeMenu(nodes: AppMenuNode[]): {
 
     for (const node of input) {
       switch (node.type) {
-        case 'separator':
+        case 'separator': {
           result.push({ type: 'separator' })
           break
-        case 'label':
-          result.push({ type: 'label', label: node.label })
+        }
+        case 'label': {
+          result.push({ label: node.label, type: 'label' })
           break
-        case 'group':
-          if (node.label) result.push({ type: 'label', label: node.label })
+        }
+        case 'group': {
+          if (node.label) {
+            result.push({ label: node.label, type: 'label' })
+          }
           result.push(...walk(node.items))
           break
-        case 'sub':
+        }
+        case 'sub': {
           result.push({
-            type: 'submenu',
-            label: node.label,
             enabled: !node.disabled,
             items: walk(node.items),
+            label: node.label,
+            type: 'submenu',
           })
           break
-        case 'radio':
+        }
+        case 'radio': {
           for (const option of node.options) {
-            const id = `n${counter++}`
+            const id = `n${(counter += 1)}`
             handlers.set(id, () => node.onValueChange(option.value))
             result.push({
-              type: 'item',
-              id,
-              label: option.label,
-              enabled: !option.disabled,
-              kind: 'radio',
               checked: option.value === node.value,
+              enabled: !option.disabled,
+              id,
+              kind: 'radio',
+              label: option.label,
+              type: 'item',
             })
           }
           break
+        }
         default: {
-          const id = `n${counter++}`
+          const id = `n${(counter += 1)}`
           handlers.set(id, node.onSelect)
           result.push({
-            type: 'item',
-            id,
-            label: node.nativeLabel ?? node.label,
-            enabled: !node.disabled,
-            kind: node.checked === undefined ? 'normal' : 'checkbox',
-            checked: node.checked,
             accelerator: node.accelerator,
+            checked: node.checked,
+            enabled: !node.disabled,
+            id,
+            kind: node.checked === undefined ? 'normal' : 'checkbox',
+            label: node.nativeLabel ?? node.label,
+            type: 'item',
           })
         }
       }
@@ -221,10 +246,10 @@ function toNativeMenu(nodes: AppMenuNode[]): {
     return result
   }
 
-  return { nativeItems: walk(nodes), handlers }
+  return { handlers, nativeItems: walk(nodes) }
 }
 
-export function AppContextMenu({
+export const AppContextMenu = ({
   items,
   children,
   open,
@@ -233,7 +258,7 @@ export function AppContextMenu({
   className,
   style,
   contentProps,
-}: AppContextMenuProps) {
+}: AppContextMenuProps) => {
   const [isNativeOpen, setIsNativeOpen] = useState(false)
 
   if (!isNativeAvailable()) {
@@ -244,7 +269,9 @@ export function AppContextMenu({
         <ContextMenuTrigger className={className} style={style} render={render}>
           {children}
         </ContextMenuTrigger>
-        <ContextMenuContent {...contentProps}>{renderWebNodes(resolved)}</ContextMenuContent>
+        <ContextMenuContent {...contentProps}>
+          {renderWebNodes(resolved)}
+        </ContextMenuContent>
       </ContextMenu>
     )
   }
@@ -253,7 +280,9 @@ export function AppContextMenu({
     e.preventDefault()
     e.stopPropagation()
 
-    if (isNativeOpen) return
+    if (isNativeOpen) {
+      return
+    }
 
     const resolved = typeof items === 'function' ? items() : items
     const { nativeItems, handlers } = toNativeMenu(resolved)
@@ -263,17 +292,23 @@ export function AppContextMenu({
 
     let clickedId: MenuPopupResult = null
     try {
-      clickedId = await window.electron!.menu!.popup({ items: nativeItems })
+      const electronMenu = window.electron?.menu
+      if (!electronMenu) {
+        throw new Error('Native menu is not available')
+      }
+      clickedId = await electronMenu.popup({ items: nativeItems })
     } finally {
-      if (clickedId !== null) handlers.get(clickedId)?.()
+      if (clickedId !== null) {
+        handlers.get(clickedId)?.()
+      }
       setIsNativeOpen(false)
       onOpenChange?.(false)
     }
   }
 
   const triggerProps = {
-    'onContextMenu': handleContextMenu,
     'data-popup-open': isNativeOpen ? '' : undefined,
+    onContextMenu: handleContextMenu,
   }
 
   if (render) {
@@ -282,7 +317,11 @@ export function AppContextMenu({
   }
 
   return (
-    <div className={cn('select-none', className)} style={style} {...triggerProps}>
+    <div
+      className={cn('select-none', className)}
+      style={style}
+      {...triggerProps}
+    >
       {children}
     </div>
   )

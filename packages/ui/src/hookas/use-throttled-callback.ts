@@ -1,11 +1,11 @@
 import * as React from 'react'
 
 // oxlint-disable-next-line ts/no-explicit-any
-export function useThrottledCallback<T extends (...args: any[]) => any>(
+export const useThrottledCallback = <T extends (...args: any[]) => any>(
   fn: T,
   deps: React.DependencyList,
-  delay: number,
-): (...args: Parameters<T>) => void {
+  delay: number
+): ((...args: Parameters<T>) => void) => {
   const lastExecutedRef = React.useRef(0)
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
   const argsRef = React.useRef<Parameters<T> | null>(null)
@@ -34,8 +34,9 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
         }, remaining)
       }
     },
-    // oxlint-disable-next-line react/exhaustive-deps
-    [fn, delay, ...deps],
+    // Dependency list includes caller-provided deps via spread (not an array literal).
+    // oxlint-disable-next-line react/react-compiler, react/exhaustive-deps
+    [fn, delay, ...deps]
   )
 
   React.useEffect(
@@ -44,7 +45,7 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
         clearTimeout(timerRef.current)
       }
     },
-    [],
+    []
   )
 
   return throttledFn

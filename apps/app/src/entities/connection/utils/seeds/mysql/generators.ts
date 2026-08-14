@@ -4,100 +4,110 @@ import { sql } from 'kysely'
 
 import type { GeneratorMap } from '..'
 
-function wkt(expr: string) {
-  return sql`ST_GeomFromText(${expr})`
-}
+const wkt = (expr: string) => sql`ST_GeomFromText(${expr})`
 
-function randomPoint() {
-  return `${faker.location.longitude()} ${faker.location.latitude()}`
-}
+const randomPoint = () =>
+  `${faker.location.longitude()} ${faker.location.latitude()}`
 
-function randomLineString() {
-  const count = faker.number.int({ min: 2, max: 5 })
+const randomLineString = () => {
+  const count = faker.number.int({ max: 5, min: 2 })
   return faker.helpers.multiple(randomPoint, { count }).join(', ')
 }
 
-function randomLinearRing() {
-  const count = faker.number.int({ min: 3, max: 6 })
+const randomLinearRing = () => {
+  const count = faker.number.int({ max: 6, min: 3 })
   const pts = faker.helpers.multiple(randomPoint, { count })
-  pts.push(pts[0]!)
+  const [first] = pts
+  if (first === undefined) {
+    throw new Error('Expected at least one point for linear ring')
+  }
+  pts.push(first)
   return pts.join(', ')
 }
 
 export const MYSQL_GENERATORS = {
-  'mysql.date': {
-    label: 'Date',
+  'mysql.binary': {
     category: 'MySQL',
-    generate: () => faker.date.recent().toISOString().slice(0, 10),
-  },
-  'mysql.datetime': {
-    label: 'Datetime',
-    category: 'MySQL',
-    generate: () => faker.date.recent().toISOString().slice(0, 19).replace('T', ' '),
-  },
-  'mysql.year': {
-    label: 'Year',
-    category: 'MySQL',
-    generate: () => faker.number.int({ min: 1901, max: 2155 }),
+    generate: () =>
+      sql`UNHEX(${faker.string.hexadecimal({ length: 32, prefix: '' })})`,
+    label: 'Binary',
   },
   'mysql.bit': {
+    category: 'MySQL',
+    generate: () => faker.number.int({ max: 1, min: 0 }),
     label: 'Bit',
+  },
+  'mysql.date': {
     category: 'MySQL',
-    generate: () => faker.number.int({ min: 0, max: 1 }),
+    generate: () => faker.date.recent().toISOString().slice(0, 10),
+    label: 'Date',
   },
-  'mysql.binary': {
-    label: 'Binary',
+  'mysql.datetime': {
     category: 'MySQL',
-    generate: () => sql`UNHEX(${faker.string.hexadecimal({ length: 32, prefix: '' })})`,
+    generate: () =>
+      faker.date.recent().toISOString().slice(0, 19).replace('T', ' '),
+    label: 'Datetime',
   },
-  'mysql.point': {
-    label: 'Point',
-    category: 'MySQL Spatial',
-    generate: () => wkt(`POINT(${randomPoint()})`),
-  },
-  'mysql.linestring': {
-    label: 'LineString',
-    category: 'MySQL Spatial',
-    generate: () => wkt(`LINESTRING(${randomLineString()})`),
-  },
-  'mysql.polygon': {
-    label: 'Polygon',
-    category: 'MySQL Spatial',
-    generate: () => wkt(`POLYGON((${randomLinearRing()}))`),
-  },
-  'mysql.multipoint': {
-    label: 'MultiPoint',
+  'mysql.geometrycollection': {
     category: 'MySQL Spatial',
     generate: () => {
-      const count = faker.number.int({ min: 2, max: 5 })
+      const items = [
+        `POINT(${randomPoint()})`,
+        `LINESTRING(${randomLineString()})`,
+      ]
+      return wkt(`GEOMETRYCOLLECTION(${items.join(', ')})`)
+    },
+    label: 'GeometryCollection',
+  },
+  'mysql.linestring': {
+    category: 'MySQL Spatial',
+    generate: () => wkt(`LINESTRING(${randomLineString()})`),
+    label: 'LineString',
+  },
+  'mysql.multilinestring': {
+    category: 'MySQL Spatial',
+    generate: () => {
+      const count = faker.number.int({ max: 3, min: 2 })
+      const lines = faker.helpers.multiple(() => `(${randomLineString()})`, {
+        count,
+      })
+      return wkt(`MULTILINESTRING(${lines.join(', ')})`)
+    },
+    label: 'MultiLineString',
+  },
+  'mysql.multipoint': {
+    category: 'MySQL Spatial',
+    generate: () => {
+      const count = faker.number.int({ max: 5, min: 2 })
       const pts = faker.helpers.multiple(() => `(${randomPoint()})`, { count })
       return wkt(`MULTIPOINT(${pts.join(', ')})`)
     },
-  },
-  'mysql.multilinestring': {
-    label: 'MultiLineString',
-    category: 'MySQL Spatial',
-    generate: () => {
-      const count = faker.number.int({ min: 2, max: 3 })
-      const lines = faker.helpers.multiple(() => `(${randomLineString()})`, { count })
-      return wkt(`MULTILINESTRING(${lines.join(', ')})`)
-    },
+    label: 'MultiPoint',
   },
   'mysql.multipolygon': {
-    label: 'MultiPolygon',
     category: 'MySQL Spatial',
     generate: () => {
-      const count = faker.number.int({ min: 2, max: 3 })
-      const polys = faker.helpers.multiple(() => `((${randomLinearRing()}))`, { count })
+      const count = faker.number.int({ max: 3, min: 2 })
+      const polys = faker.helpers.multiple(() => `((${randomLinearRing()}))`, {
+        count,
+      })
       return wkt(`MULTIPOLYGON(${polys.join(', ')})`)
     },
+    label: 'MultiPolygon',
   },
-  'mysql.geometrycollection': {
-    label: 'GeometryCollection',
+  'mysql.point': {
     category: 'MySQL Spatial',
-    generate: () => {
-      const items = [`POINT(${randomPoint()})`, `LINESTRING(${randomLineString()})`]
-      return wkt(`GEOMETRYCOLLECTION(${items.join(', ')})`)
-    },
+    generate: () => wkt(`POINT(${randomPoint()})`),
+    label: 'Point',
+  },
+  'mysql.polygon': {
+    category: 'MySQL Spatial',
+    generate: () => wkt(`POLYGON((${randomLinearRing()}))`),
+    label: 'Polygon',
+  },
+  'mysql.year': {
+    category: 'MySQL',
+    generate: () => faker.number.int({ max: 2155, min: 1901 }),
+    label: 'Year',
   },
 } satisfies GeneratorMap<ConnectionType.MySQL>

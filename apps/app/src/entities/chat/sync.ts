@@ -19,71 +19,90 @@ export interface ChatMessage extends BaseTable {
   metadata: NonNullable<AppUIMessage['metadata']> | null
 }
 
-export function createChatsCollection() {
-  return createCollection(
+export const createChatsCollection = () =>
+  createCollection(
     persistedCollectionOptions<Chat, string, never, SyncUtils>({
       ...syncCollectionOptions<Chat>({
-        id: 'chats',
-        getKey: item => item.id,
         events: async ({ signal, write }) => {
-          for await (const message of await orpc.chats.events.call({}, { signal })) {
+          for await (const message of await orpc.chats.events.call(
+            {},
+            { signal }
+          )) {
             write(message)
           }
+        },
+        getKey: (item) => item.id,
+        id: 'chats',
+        onDelete: async ({ transaction }) => {
+          await orpc.chats.remove.call(
+            transaction.mutations.map((m) => ({ id: m.key }))
+          )
+        },
+        onInsert: async ({ transaction }) => {
+          await orpc.chats.create.call(
+            transaction.mutations.map((m) => m.modified)
+          )
+        },
+        onUpdate: async ({ transaction }) => {
+          await Promise.all(
+            transaction.mutations.map((m) =>
+              orpc.chats.update.call({ id: m.key, ...m.changes })
+            )
+          )
         },
         sync: ({ rows, signal }) => orpc.chats.sync.call(rows, { signal }),
-        onInsert: async ({ transaction }) => {
-          await orpc.chats.create.call(transaction.mutations.map(m => m.modified))
-        },
-        onUpdate: async ({ transaction }) => {
-          await Promise.all(
-            transaction.mutations.map(m => orpc.chats.update.call({ id: m.key, ...m.changes })),
-          )
-        },
-        onDelete: async ({ transaction }) => {
-          await orpc.chats.remove.call(transaction.mutations.map(m => ({ id: m.key })))
-        },
       }),
       persistence,
       schemaVersion: 1,
-    }),
+    })
   )
-}
 
-export function createChatsMessagesCollection() {
-  return createCollection(
+export const createChatsMessagesCollection = () =>
+  createCollection(
     persistedCollectionOptions<ChatMessage, string, never, SyncUtils>({
       ...syncCollectionOptions<ChatMessage>({
-        id: 'chatsMessages',
-        getKey: item => item.id,
         events: async ({ signal, write }) => {
-          for await (const message of await orpc.chatsMessages.events.call({}, { signal })) {
+          for await (const message of await orpc.chatsMessages.events.call(
+            {},
+            { signal }
+          )) {
             write(message)
           }
         },
-        sync: ({ rows, signal }) => orpc.chatsMessages.sync.call(rows, { signal }),
+        getKey: (item) => item.id,
+        id: 'chatsMessages',
+        onDelete: async ({ transaction }) => {
+          await orpc.chatsMessages.remove.call(
+            transaction.mutations.map((m) => ({
+              chatId: m.modified.chatId,
+              id: m.key,
+            }))
+          )
+        },
         onInsert: async ({ transaction }) => {
-          await orpc.chatsMessages.create.call(transaction.mutations.map(m => m.modified))
+          await orpc.chatsMessages.create.call(
+            transaction.mutations.map((m) => m.modified)
+          )
         },
         onUpdate: async ({ transaction }) => {
           await Promise.all(
-            transaction.mutations.map(m =>
-              orpc.chatsMessages.update.call({ id: m.key, ...m.changes }),
-            ),
+            transaction.mutations.map((m) =>
+              orpc.chatsMessages.update.call({ id: m.key, ...m.changes })
+            )
           )
         },
-        onDelete: async ({ transaction }) => {
-          await orpc.chatsMessages.remove.call(
-            transaction.mutations.map(m => ({ id: m.key, chatId: m.modified.chatId })),
-          )
-        },
+        sync: ({ rows, signal }) =>
+          orpc.chatsMessages.sync.call(rows, { signal }),
       }),
       persistence,
       schemaVersion: 1,
-    }),
+    })
   )
-}
 
-export function createChatMessageAction(data: { chat: Chat; message: ChatMessage }) {
+export const createChatMessageAction = (data: {
+  chat: Chat
+  message: ChatMessage
+}) => {
   const { chatsCollection, chatsMessagesCollection } = getCollections()
   const isNewChat = !chatsCollection.has(data.chat.id)
 
@@ -97,7 +116,10 @@ export function createChatMessageAction(data: { chat: Chat; message: ChatMessage
       await orpc.ai.generateTitle.call({ chatId: data.chat.id })
       await Promise.all([
         chatsCollection.utils.awaitChange(data.chat.id, data.chat.updatedAt),
-        chatsMessagesCollection.utils.awaitChange(data.message.id, data.message.updatedAt),
+        chatsMessagesCollection.utils.awaitChange(
+          data.message.id,
+          data.message.updatedAt
+        ),
       ])
     },
   })

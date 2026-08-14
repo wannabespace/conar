@@ -55,20 +55,32 @@ import { appStore, setIsActionCenterOpen } from '~/store'
 import { checkForUpdates } from '~/use-updates-observer'
 
 const CONNECTION_PAGES = [
-  { label: 'SQL Runner', to: '/connection/$resourceId/query' as const, icon: RiTerminalBoxLine },
-  { label: 'Tables', to: '/connection/$resourceId/table' as const, icon: RiTableLine },
+  {
+    label: 'SQL Runner',
+    to: '/connection/$resourceId/query' as const,
+    icon: RiTerminalBoxLine,
+  },
+  {
+    label: 'Tables',
+    to: '/connection/$resourceId/table' as const,
+    icon: RiTableLine,
+  },
   {
     label: 'Definitions',
     to: '/connection/$resourceId/definitions' as const,
     icon: RiFileListLine,
   },
-  { label: 'Visualizer', to: '/connection/$resourceId/visualizer' as const, icon: RiNodeTree },
+  {
+    label: 'Visualizer',
+    to: '/connection/$resourceId/visualizer' as const,
+    icon: RiNodeTree,
+  },
 ]
 
 const TABLE_TYPE_ICONS = {
   'materialized view': RiEyeFill,
-  'view': RiEyeLine,
-  'table': RiTableLine,
+  view: RiEyeLine,
+  table: RiTableLine,
 } as const
 
 interface CommandEntry {
@@ -82,24 +94,22 @@ interface CommandSection {
   entries: CommandEntry[]
 }
 
-function run(action: () => void) {
-  return () => {
-    setIsActionCenterOpen(false)
-    action()
-  }
+const run = (action: () => void) => () => {
+  setIsActionCenterOpen(false)
+  action()
 }
 
-function ConnectionResource({
+const ConnectionResource = ({
   connection,
   connectionResource,
 }: {
   connection: Connection
   connectionResource: ConnectionResourceType
-}) {
+}) => {
   const router = useRouter()
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
-  function onResourceSelect() {
+  const onResourceSelect = () => {
     setIsActionCenterOpen(false)
     prefetchConnectionResourceCore(connectionResource)
     router.navigate(params)
@@ -113,7 +123,10 @@ function ConnectionResource({
       <ConnectionIcon type={connection.type} className="size-4 shrink-0" />
       <span data-mask className="min-w-0 flex-1 truncate">
         {connection.name}
-        <span className="text-muted-foreground"> - {connectionResource.name}</span>
+        <span className="text-muted-foreground">
+          {' '}
+          - {connectionResource.name}
+        </span>
       </span>
       {connection.label && (
         <CommandShortcut data-mask className="tracking-normal">
@@ -124,56 +137,61 @@ function ConnectionResource({
   )
 }
 
-function FooterHint({ keys, label }: { keys: ReactNode[]; label: string }) {
-  return (
-    <span className="flex items-center gap-1">
-      {keys.map((key, index) => (
-        // oxlint-disable-next-line react/no-array-index-key
-        <Kbd key={index}>{key}</Kbd>
-      ))}
-      {label}
-    </span>
-  )
-}
+const FooterHint = ({ keys, label }: { keys: ReactNode[]; label: string }) => (
+  <span className="flex items-center gap-1">
+    {keys.map((key, index) => (
+      // oxlint-disable-next-line react/no-array-index-key
+      <Kbd key={index}>{key}</Kbd>
+    ))}
+    {label}
+  </span>
+)
 
-export function ActionsCenter() {
-  const { connectionsCollection, connectionsResourcesCollection } = useCollections()
+export const ActionsCenter = () => {
+  const { connectionsCollection, connectionsResourcesCollection } =
+    useCollections()
   const { resourceId } = useParams({ strict: false })
   const { data } = useLiveQuery(
-    q =>
+    (q) =>
       q
         .from({ connections: connectionsCollection })
         .innerJoin(
           { connectionResources: connectionsResourcesCollection },
           ({ connectionResources, connections }) =>
-            eq(connectionResources.connectionId, connections.id),
+            eq(connectionResources.connectionId, connections.id)
         )
         .select(({ connections, connectionResources }) => ({
           connection: connections,
           connectionResource: connectionResources,
         }))
         .orderBy(({ connections }) => connections.createdAt, 'desc'),
-    [connectionsCollection, connectionsResourcesCollection],
+    [connectionsCollection, connectionsResourcesCollection]
   )
 
-  const isOpen = useSubscription(appStore, { selector: state => state.isActionCenterOpen })
+  const isOpen = useSubscription(appStore, {
+    selector: (state) => state.isActionCenterOpen,
+  })
   const router = useRouter()
   const resolvedTheme = useResolvedTheme()
   const [search, setSearch] = useState('')
   const listRef = useRef<ComponentRef<typeof CommandList>>(null)
 
-  useHotkey('Mod+P', e => {
+  useHotkey('Mod+P', (e) => {
     e.preventDefault()
     setIsActionCenterOpen(!isOpen)
   })
 
-  const current = data?.find(({ connectionResource }) => connectionResource.id === resourceId)
+  const current = data?.find(
+    ({ connectionResource }) => connectionResource.id === resourceId
+  )
 
   const { data: tablesAndSchemas } = useQuery({
     ...(current
       ? resourceTablesAndSchemasQueryOptions({
           connectionResource: current.connectionResource,
-          showSystem: getConnectionResourceStore(current.connectionResource.id).get().showSystem,
+          showSystem: getConnectionResourceStore(
+            current.connectionResource.id
+          ).get().showSystem,
         })
       : { queryKey: ['actions-center-tables-none'], queryFn: skipToken }),
     throwOnError: false,
@@ -185,14 +203,18 @@ export function ActionsCenter() {
         value: 'Home',
         keywords: ['dashboard'],
         node: (
-          <CommandItem key="Home" value="Home" onSelect={run(() => router.navigate({ to: '/' }))}>
+          <CommandItem
+            key="Home"
+            value="Home"
+            onSelect={run(() => router.navigate({ to: '/' }))}
+          >
             <RiDashboardLine className="text-muted-foreground" />
             Home
           </CommandItem>
         ),
       },
       ...(current
-        ? CONNECTION_PAGES.map(page => ({
+        ? CONNECTION_PAGES.map((page) => ({
             value: `Go to ${page.label}`,
             keywords: ['go to', page.label],
             node: (
@@ -203,7 +225,7 @@ export function ActionsCenter() {
                   router.navigate({
                     to: page.to,
                     params: { resourceId: current.connectionResource.id },
-                  }),
+                  })
                 )}
               >
                 <page.icon className="text-muted-foreground" />
@@ -236,7 +258,9 @@ export function ActionsCenter() {
           <CommandItem
             key="switch-theme"
             value={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} theme`}
-            onSelect={run(() => themeStore.set(resolvedTheme === 'dark' ? 'light' : 'dark'))}
+            onSelect={run(() =>
+              themeStore.set(resolvedTheme === 'dark' ? 'light' : 'dark')
+            )}
           >
             {resolvedTheme === 'dark' ? (
               <RiSunLine className="text-muted-foreground" />
@@ -274,10 +298,15 @@ export function ActionsCenter() {
                   key="query-logger"
                   value="Toggle query logger"
                   onSelect={run(() => {
-                    const store = getConnectionResourceStore(current.connectionResource.id)
+                    const store = getConnectionResourceStore(
+                      current.connectionResource.id
+                    )
                     store.set(
-                      state =>
-                        ({ ...state, loggerOpened: !state.loggerOpened }) satisfies typeof state,
+                      (state) =>
+                        ({
+                          ...state,
+                          loggerOpened: !state.loggerOpened,
+                        }) satisfies typeof state
                     )
                   })}
                 >
@@ -322,53 +351,63 @@ export function ActionsCenter() {
       },
     ]
 
-    const connections: CommandEntry[] = data.map(({ connection, connectionResource }) => ({
-      value: `${connection.name} - ${connectionResource.name}`,
-      keywords: connection.label ? [connection.label] : undefined,
-      node: (
-        <ConnectionResource
-          key={connectionResource.id}
-          connection={connection}
-          connectionResource={connectionResource}
-        />
-      ),
-    }))
+    const connections: CommandEntry[] = data.map(
+      ({ connection, connectionResource }) => ({
+        value: `${connection.name} - ${connectionResource.name}`,
+        keywords: connection.label ? [connection.label] : undefined,
+        node: (
+          <ConnectionResource
+            key={connectionResource.id}
+            connection={connection}
+            connectionResource={connectionResource}
+          />
+        ),
+      })
+    )
 
-    const tables: CommandEntry[] = (tablesAndSchemas?.schemas ?? []).flatMap(schema =>
-      schema.tables.map(table => {
-        const Icon = TABLE_TYPE_ICONS[table.type as keyof typeof TABLE_TYPE_ICONS] ?? RiTableLine
+    const tables: CommandEntry[] = (tablesAndSchemas?.schemas ?? []).flatMap(
+      (schema) =>
+        schema.tables.map((table) => {
+          const Icon =
+            TABLE_TYPE_ICONS[table.type as keyof typeof TABLE_TYPE_ICONS] ??
+            RiTableLine
 
-        return {
-          value: `${schema.name}.${table.name}`,
-          keywords: [schema.name, table.name],
-          node: (
-            <CommandItem
-              key={`${schema.name}.${table.name}`}
-              value={`${schema.name}.${table.name}`}
-              onSelect={run(() =>
-                router.navigate({
-                  to: '/connection/$resourceId/table',
-                  params: { resourceId: current!.connectionResource.id },
-                  search: { schema: schema.name, table: table.name },
-                }),
-              )}
-            >
-              <Icon className="text-muted-foreground" />
-              <span data-mask className="min-w-0 flex-1 truncate">
-                <span className="text-muted-foreground">{schema.name}.</span>
-                {table.name}
-              </span>
-            </CommandItem>
-          ),
-        }
-      }),
+          return {
+            value: `${schema.name}.${table.name}`,
+            keywords: [schema.name, table.name],
+            node: (
+              <CommandItem
+                key={`${schema.name}.${table.name}`}
+                value={`${schema.name}.${table.name}`}
+                onSelect={run(() => {
+                  if (!current) {
+                    return
+                  }
+                  router.navigate({
+                    to: '/connection/$resourceId/table',
+                    params: { resourceId: current.connectionResource.id },
+                    search: { schema: schema.name, table: table.name },
+                  })
+                })}
+              >
+                <Icon className="text-muted-foreground" />
+                <span data-mask className="min-w-0 flex-1 truncate">
+                  <span className="text-muted-foreground">{schema.name}.</span>
+                  {table.name}
+                </span>
+              </CommandItem>
+            ),
+          }
+        })
     )
 
     return [
       { heading: 'Navigation', entries: navigation },
       { heading: 'Appearance', entries: appearance },
       { heading: 'Application', entries: application },
-      ...(connections.length > 0 ? [{ heading: 'Connections', entries: connections }] : []),
+      ...(connections.length > 0
+        ? [{ heading: 'Connections', entries: connections }]
+        : []),
       ...(current && tables.length > 0
         ? [
             {
@@ -386,51 +425,56 @@ export function ActionsCenter() {
     }
 
     return sections
-      .flatMap(section => section.entries)
-      .map(entry => ({ entry, score: defaultFilter(entry.value, search, entry.keywords) }))
-      .filter(result => result.score > 0)
+      .flatMap((section) => section.entries)
+      .map((entry) => ({
+        entry,
+        score: defaultFilter(entry.value, search, entry.keywords),
+      }))
+      .filter((result) => result.score > 0)
       .toSorted((a, b) => b.score - a.score)
   }, [search, sections])
 
   return (
     <CommandDialog open={isOpen} onOpenChange={setIsActionCenterOpen}>
-      <Command loop shouldFilter={false} className="min-h-0 flex-1 bg-transparent p-0">
+      <Command
+        loop
+        shouldFilter={false}
+        className="min-h-0 flex-1 bg-transparent p-0"
+      >
         <div className="flex shrink-0 items-center gap-3 border-b px-4">
-          <RiSearchLine className="size-4 shrink-0 text-muted-foreground" />
+          <RiSearchLine className="text-muted-foreground size-4 shrink-0" />
           <CommandPrimitive.Input
             data-slot="command-input"
             placeholder="Type a command or search…"
-            className="
-              h-12 min-w-0 flex-1 bg-transparent text-base outline-hidden
-              placeholder:text-muted-foreground/60
-            "
+            className="placeholder:text-muted-foreground/60 h-12 min-w-0 flex-1 bg-transparent text-base outline-hidden"
             value={search}
-            onValueChange={value => {
+            onValueChange={(value) => {
               setSearch(value)
               listRef.current?.scrollTo({ top: 0 })
             }}
           />
         </div>
-        <CommandList ref={listRef} className="max-h-none flex-1 scroll-fade scroll-py-2 p-1">
-          {results === null ? (
-            sections.map(section => (
+        <CommandList
+          ref={listRef}
+          className="scroll-fade max-h-none flex-1 scroll-py-2 p-1"
+        >
+          {results === null &&
+            sections.map((section) => (
               <CommandGroup key={section.heading} heading={section.heading}>
-                {section.entries.map(entry => entry.node)}
+                {section.entries.map((entry) => entry.node)}
               </CommandGroup>
-            ))
-          ) : results.length === 0 ? (
+            ))}
+          {results !== null && results.length === 0 && (
             <div className="py-6 text-center text-sm">No commands found.</div>
-          ) : (
-            <CommandGroup>{results.map(result => result.entry.node)}</CommandGroup>
+          )}
+          {results !== null && results.length > 0 && (
+            <CommandGroup>
+              {results.map((result) => result.entry.node)}
+            </CommandGroup>
           )}
         </CommandList>
       </Command>
-      <div
-        className="
-          flex shrink-0 items-center gap-3 border-t px-4 py-2 text-2xs
-          text-muted-foreground/70
-        "
-      >
+      <div className="text-2xs text-muted-foreground/70 flex shrink-0 items-center gap-3 border-t px-4 py-2">
         <FooterHint
           keys={[
             <RiArrowUpLine key="up" className="size-3" />,

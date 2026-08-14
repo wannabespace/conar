@@ -5,26 +5,26 @@ import { createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 import { handleError } from './utils/error'
 
-export function getRouter() {
+export const getRouter = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
-      queries: {
-        retry: false,
-        placeholderData: keepPreviousData,
-      },
       mutations: {
         onError: handleError,
+      },
+      queries: {
+        placeholderData: keepPreviousData,
+        retry: false,
       },
     },
   })
 
   const router = createRouter({
-    routeTree,
-    scrollRestoration: true,
-    defaultPendingMinMs: 0,
     context: {
       queryClient,
     },
+    defaultPendingMinMs: 0,
+    routeTree,
+    scrollRestoration: true,
   })
 
   return router

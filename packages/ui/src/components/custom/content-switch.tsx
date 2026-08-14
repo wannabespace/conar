@@ -3,7 +3,7 @@ import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffectEvent, useState } from 'react'
 
-export function ContentSwitch({
+export const ContentSwitch = ({
   children,
   className,
   activeContent,
@@ -15,7 +15,7 @@ export function ContentSwitch({
   activeContent: React.ReactNode
   onSwitchEnd?: (active: boolean) => void
   active?: boolean
-}) {
+}) => {
   const [isActive, setIsActive] = useState(false)
 
   const onSwitchEndEvent = useEffectEvent(onSwitchEnd)
@@ -28,7 +28,6 @@ export function ContentSwitch({
 
     const timeout = setTimeout(() => {
       setIsActive(false)
-      // oxlint-disable-next-line react-hooks/rules-of-hooks
       onSwitchEndEvent(false)
     }, 3000)
 
@@ -41,9 +40,9 @@ export function ContentSwitch({
         <motion.span
           key="active"
           className={className}
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0, opacity: 0 }}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0 }}
           transition={{ duration: 0.1 }}
         >
           {activeContent}
@@ -52,9 +51,9 @@ export function ContentSwitch({
         <motion.span
           key="default"
           className={className}
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0, opacity: 0 }}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0 }}
           transition={{ duration: 0.1 }}
         >
           {children}

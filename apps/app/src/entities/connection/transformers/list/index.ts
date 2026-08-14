@@ -6,19 +6,20 @@ import { createClickHouseListTransformer } from './clickhouse'
 import { createMysqlListTransformer } from './mysql'
 import { createPostgresListTransformer } from './postgres'
 
-// oxlint-disable-next-line ts/no-explicit-any
-const listTransformers: Partial<Record<ConnectionType, (column: Column) => ValueTransformer<any>>> =
-  {
-    postgres: createPostgresListTransformer,
-    mysql: createMysqlListTransformer,
-    clickhouse: createClickHouseListTransformer,
-  }
-
-export function createListTransformer(
-  connectionType: ConnectionType,
-  column: Column,
+const listTransformers: Partial<
   // oxlint-disable-next-line ts/no-explicit-any
-): ValueTransformer<any> {
+  Record<ConnectionType, (column: Column) => ValueTransformer<any>>
+> = {
+  clickhouse: createClickHouseListTransformer,
+  mysql: createMysqlListTransformer,
+  postgres: createPostgresListTransformer,
+}
+
+export const createListTransformer = (
+  connectionType: ConnectionType,
+  column: Column
+  // oxlint-disable-next-line ts/no-explicit-any
+): ValueTransformer<any> => {
   const factory = listTransformers[connectionType]
   return factory ? factory(column) : createPostgresListTransformer(column)
 }

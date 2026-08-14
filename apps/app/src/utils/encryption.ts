@@ -1,20 +1,20 @@
 import { orpcProxy } from '../lib/orpc'
 
-export function encrypt(text: string, secret: string) {
+export const encrypt = (text: string, secret: string) => {
   if (window.electron) {
     return window.electron.encryption.encrypt({
-      text,
       secret,
+      text,
     })
   }
 
   return orpcProxy.encryption.encrypt({
-    text,
     secret,
+    text,
   })
 }
 
-export function decrypt(encryptedText: string, secret: string) {
+export const decrypt = (encryptedText: string, secret: string) => {
   if (window.electron) {
     return window.electron.encryption.decrypt({
       encryptedText,

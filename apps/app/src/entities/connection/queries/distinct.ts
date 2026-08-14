@@ -4,7 +4,7 @@ import { createQuery } from '../runtime/query'
 
 const distinctType = type('Record<string, unknown>[]')
 
-export function distinctQuery({
+export const distinctQuery = ({
   schema,
   table,
   column,
@@ -14,46 +14,45 @@ export function distinctQuery({
   table: string
   column: string
   limit?: number
-}) {
-  return createQuery({
-    type: distinctType,
+}) =>
+  createQuery({
     query: {
-      postgres: db =>
+      clickhouse: (db) =>
         db
           .withSchema(schema)
-          .$extendTables<{ [table: string]: Record<string, unknown> }>()
+          .$extendTables<Record<string, Record<string, unknown>>>()
           .selectFrom(table)
           .select(column)
           .distinct()
           .limit(limit)
           .execute(),
-      mysql: db =>
+      mssql: (db) =>
         db
           .withSchema(schema)
-          .$extendTables<{ [table: string]: Record<string, unknown> }>()
+          .$extendTables<Record<string, Record<string, unknown>>>()
           .selectFrom(table)
           .select(column)
           .distinct()
           .limit(limit)
           .execute(),
-      mssql: db =>
+      mysql: (db) =>
         db
           .withSchema(schema)
-          .$extendTables<{ [table: string]: Record<string, unknown> }>()
+          .$extendTables<Record<string, Record<string, unknown>>>()
           .selectFrom(table)
           .select(column)
           .distinct()
           .limit(limit)
           .execute(),
-      clickhouse: db =>
+      postgres: (db) =>
         db
           .withSchema(schema)
-          .$extendTables<{ [table: string]: Record<string, unknown> }>()
+          .$extendTables<Record<string, Record<string, unknown>>>()
           .selectFrom(table)
           .select(column)
           .distinct()
           .limit(limit)
           .execute(),
     },
+    type: distinctType,
   })
-}

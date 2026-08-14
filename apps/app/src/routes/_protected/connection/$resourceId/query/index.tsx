@@ -4,7 +4,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@tamery/ui/components/resizable'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, getRouteApi } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
@@ -16,7 +16,94 @@ import { getConnectionResourceStore } from '~/entities/connection/store'
 import { Chat, createChat } from './-components/chat'
 import { Runner } from './-components/runner'
 
-export const Route = createFileRoute('/_protected/connection/$resourceId/query/')({
+const routeApi = getRouteApi('/_protected/connection/$resourceId/query/')
+
+const MIN_CHAT_SIZE = '200px'
+
+const ChatPanel = () => (
+  <ResizablePanel
+    defaultSize="300px"
+    minSize={MIN_CHAT_SIZE}
+    maxSize="50%"
+    className="bg-background rounded-lg"
+  >
+    <Chat className="h-full" />
+  </ResizablePanel>
+)
+
+const RunnerPanel = ({ chatVisible = true }: { chatVisible?: boolean }) => (
+  <ResizablePanel
+    defaultSize={chatVisible ? '70%' : '100%'}
+    minSize="30%"
+    className="bg-background rounded-lg"
+  >
+    <Runner />
+  </ResizablePanel>
+)
+
+const DatabaseSqlPage = () => {
+  const { connectionResource } = routeApi.useRouteContext()
+  const { chatId } = routeApi.useSearch()
+  const store = getConnectionResourceStore(connectionResource.id)
+
+  const { chatVisible, chatPosition } = useSubscription(store, {
+    selector: (s) => ({
+      chatVisible: s.layout.chatVisible,
+      chatPosition: s.layout.chatPosition,
+    }),
+  })
+
+  useEffect(() => {
+    store.set(
+      (state) =>
+        ({
+          ...state,
+          lastOpenedChatId: chatId ?? null,
+        }) satisfies typeof state
+    )
+  }, [chatId, store])
+
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: `sql-layout-${connectionResource.id}`,
+    storage: localStorage,
+  })
+
+  let panels
+  if (!chatVisible) {
+    panels = <RunnerPanel key="runner" chatVisible={false} />
+  } else if (chatPosition === 'left') {
+    panels = (
+      <>
+        <ChatPanel key="chat" />
+        <ResizableHandle className="w-1" />
+        <RunnerPanel key="runner" />
+      </>
+    )
+  } else {
+    panels = (
+      <>
+        <RunnerPanel key="runner" />
+        <ResizableHandle className="w-1" />
+        <ChatPanel key="chat" />
+      </>
+    )
+  }
+
+  return (
+    <ResizablePanelGroup
+      defaultLayout={defaultLayout}
+      onLayoutChanged={onLayoutChanged}
+      orientation="horizontal"
+      className="flex h-full"
+    >
+      {panels}
+    </ResizablePanelGroup>
+  )
+}
+
+export const Route = createFileRoute(
+  '/_protected/connection/$resourceId/query/'
+)({
   component: DatabaseSqlPage,
   validateSearch: type({
     'chatId?': 'string.uuid.v7 | undefined',
@@ -26,7 +113,10 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/query/'
   loader: async ({ context, deps }) => {
     const { chatsCollection, chatsMessagesCollection } = context.collections
 
-    await Promise.all([chatsCollection.stateWhenReady(), chatsMessagesCollection.stateWhenReady()])
+    await Promise.all([
+      chatsCollection.stateWhenReady(),
+      chatsMessagesCollection.stateWhenReady(),
+    ])
 
     return {
       connection: context.connection,
@@ -44,94 +134,10 @@ export const Route = createFileRoute('/_protected/connection/$resourceId/query/'
             title: title(
               'SQL Runner',
               loaderData.connection.name,
-              loaderData.connectionResource.name,
+              loaderData.connectionResource.name
             ),
           },
         ]
       : [],
   }),
 })
-
-const MIN_CHAT_SIZE = '200px'
-
-function ChatPanel() {
-  return (
-    <ResizablePanel
-      defaultSize="300px"
-      minSize={MIN_CHAT_SIZE}
-      maxSize="50%"
-      className="rounded-lg bg-background"
-    >
-      <Chat className="h-full" />
-    </ResizablePanel>
-  )
-}
-
-function RunnerPanel({ chatVisible = true }: { chatVisible?: boolean }) {
-  return (
-    <ResizablePanel
-      defaultSize={chatVisible ? '70%' : '100%'}
-      minSize="30%"
-      className="rounded-lg bg-background"
-    >
-      <Runner />
-    </ResizablePanel>
-  )
-}
-
-function DatabaseSqlPage() {
-  const { connectionResource } = Route.useRouteContext()
-  const { chatId } = Route.useSearch()
-  const store = getConnectionResourceStore(connectionResource.id)
-
-  const { chatVisible, chatPosition } = useSubscription(store, {
-    selector: s => ({
-      chatVisible: s.layout.chatVisible,
-      chatPosition: s.layout.chatPosition,
-    }),
-  })
-
-  useEffect(() => {
-    store.set(
-      state =>
-        ({
-          ...state,
-          lastOpenedChatId: chatId ?? null,
-        }) satisfies typeof state,
-    )
-  }, [chatId, store])
-
-  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: `sql-layout-${connectionResource.id}`,
-    storage: localStorage,
-  })
-
-  return (
-    <ResizablePanelGroup
-      defaultLayout={defaultLayout}
-      onLayoutChanged={onLayoutChanged}
-      orientation="horizontal"
-      className="flex h-full"
-    >
-      {chatVisible ? (
-        <>
-          {chatPosition === 'left' ? (
-            <>
-              <ChatPanel key="chat" />
-              <ResizableHandle className="w-1" />
-              <RunnerPanel key="runner" />
-            </>
-          ) : (
-            <>
-              <RunnerPanel key="runner" />
-              <ResizableHandle className="w-1" />
-              <ChatPanel key="chat" />
-            </>
-          )}
-        </>
-      ) : (
-        <RunnerPanel key="runner" chatVisible={false} />
-      )}
-    </ResizablePanelGroup>
-  )
-}

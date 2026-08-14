@@ -1,13 +1,15 @@
 import type { MaybePromise } from './helpers'
 
-// oxlint-disable-next-line ts/no-empty-object-type
-type Fn<T, P extends object = {}> = (params: P) => MaybePromise<T>
-// oxlint-disable-next-line ts/no-empty-object-type
-type FnParam<T, P extends object = {}> = Fn<T, P> | undefined | false
+type EmptyParams = Record<string, never>
+type Fn<T, P extends object = EmptyParams> = (params: P) => MaybePromise<T>
+type FnParam<T, P extends object = EmptyParams> = Fn<T, P> | undefined | false
 
-export async function tries<T>(
-  ...args: [FnParam<T>, ...FnParam<T, { firstError: unknown; previousError: unknown }>[]]
-): Promise<T> {
+export const tries = async <T>(
+  ...args: [
+    FnParam<T>,
+    ...FnParam<T, { firstError: unknown; previousError: unknown }>[],
+  ]
+): Promise<T> => {
   const filteredFn = args.filter(Boolean) as Fn<
     T,
     { firstError: unknown; previousError: unknown }

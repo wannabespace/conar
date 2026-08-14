@@ -5,23 +5,25 @@ import { env } from '~/env'
 
 export const redis = new Redis(env.REDIS_URL)
 
-export async function createRedisPubSub() {
+export const createRedisPubSub = () => {
   const redisSubscriber = redis.duplicate()
   const redisPublisher = redis.duplicate()
 
   return {
-    subscriber: redisSubscriber,
     publisher: redisPublisher,
+    subscriber: redisSubscriber,
   }
 }
 
-export async function redisMemoize<T>(
+export const redisMemoize = async <T>(
   fn: () => MaybePromise<T>,
   key: string,
-  ttl: number = 60 * 60 * 24,
-) {
+  ttl: number = 60 * 60 * 24
+) => {
   const cached = await redis.get(key)
-  if (cached) return JSON.parse(cached) as T
+  if (cached) {
+    return JSON.parse(cached) as T
+  }
 
   const data = await fn()
   await redis.setex(key, ttl, JSON.stringify(data === undefined ? null : data))

@@ -112,17 +112,17 @@ Local URLs (via portless, requires `pnpm run dev`):
 
 ## Architecture constraints
 
-| Topic        | Rule                                                                                  |
-| ------------ | ------------------------------------------------------------------------------------- |
-| API layer    | oRPC (`@orpc/server`) — not REST, not tRPC. Routers live in `apps/api/orpc/routers/`. |
-| Client state | TanStack DB collections — not Zustand, not React Context for data.                    |
-| Cloud DB ORM | Drizzle (`packages/db`) — not raw SQL, not Prisma.                                    |
-| Auth         | Better Auth (`apps/api/lib/auth.ts`) — not custom JWT, not NextAuth.                  |
-| Secrets      | Infisical via `@tamery/infisical` — not `.env` files in production.                    |
-| Runtime      | Bun — not Node for server processes. Node 22+ supported as fallback.                  |
-| Testing      | Bun test for unit tests. Playwright for E2E.                                          |
-| Styles       | TailwindCSS v4 — no inline `style=` props for layout/theme values.                    |
-| Page code    | Files used by a single page live next to its route in `-`-prefixed folders (`-components/`, `-lib/`, `-utils/`), e.g. `routes/_protected/connection/$resourceId/table/-components/`. `entities/` is only for code shared across pages. |
+| Topic | Rule |
+| --- | --- |
+| API layer | oRPC (`@orpc/server`) — not REST, not tRPC. Routers live in `apps/api/orpc/routers/`. |
+| Client state | TanStack DB collections — not Zustand, not React Context for data. |
+| Cloud DB ORM | Drizzle (`packages/db`) — not raw SQL, not Prisma. |
+| Auth | Better Auth (`apps/api/lib/auth.ts`) — not custom JWT, not NextAuth. |
+| Secrets | Infisical via `@tamery/infisical` — not `.env` files in production. |
+| Runtime | Bun — not Node for server processes. Node 22+ supported as fallback. |
+| Testing | Bun test for unit tests. Playwright for E2E. |
+| Styles | TailwindCSS v4 — no inline `style=` props for layout/theme values. |
+| Page code | Files used by a single page live next to its route in `-`-prefixed folders (`-components/`, `-lib/`, `-utils/`), e.g. `routes/_protected/connection/$resourceId/table/-components/`. `entities/` is only for code shared across pages. |
 
 ## UI design rules
 

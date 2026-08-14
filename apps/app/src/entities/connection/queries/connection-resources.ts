@@ -8,19 +8,33 @@ import type { Connection } from '../core/sync'
 import { connectionToQueryParams, createQuery } from '../runtime/query'
 
 export const connectionResourcesQuery = createQuery({
-  type: type('string[]'),
   query: {
-    postgres: db =>
-      db
-        .selectFrom('pg_catalog.pg_database')
-        .select('datname')
-        .where('datistemplate', '=', false)
-        .orderBy('datname')
+    clickhouse: async (db) => {
+      const rows = await db
+        .selectFrom('system.databases')
+        .select('name')
+        .where('name', 'not in', [
+          'INFORMATION_SCHEMA',
+          'information_schema',
+          'system',
+        ])
+        .orderBy('name')
         .execute()
-        .then(rows => rows.map(r => r.datname)),
+      return rows.map((r) => r.name)
+    },
 
-    mysql: db =>
-      db
+    mssql: async (db) => {
+      const rows = await db
+        .selectFrom('sys.databases')
+        .select('name')
+        .where('name', 'not in', ['master', 'model', 'msdb', 'tempdb'])
+        .orderBy('name')
+        .execute()
+      return rows.map((r) => r.name)
+    },
+
+    mysql: async (db) => {
+      const rows = await db
         .selectFrom('information_schema.SCHEMATA')
         .select('SCHEMA_NAME')
         .where('SCHEMA_NAME', 'not in', [
@@ -31,47 +45,42 @@ export const connectionResourcesQuery = createQuery({
         ])
         .orderBy('SCHEMA_NAME')
         .execute()
-        .then(rows => rows.map(r => r.SCHEMA_NAME)),
+      return rows.map((r) => r.SCHEMA_NAME)
+    },
 
-    mssql: db =>
-      db
-        .selectFrom('sys.databases')
-        .select('name')
-        .where('name', 'not in', ['master', 'model', 'msdb', 'tempdb'])
-        .orderBy('name')
+    postgres: async (db) => {
+      const rows = await db
+        .selectFrom('pg_catalog.pg_database')
+        .select('datname')
+        .where('datistemplate', '=', false)
+        .orderBy('datname')
         .execute()
-        .then(rows => rows.map(r => r.name)),
-
-    clickhouse: db =>
-      db
-        .selectFrom('system.databases')
-        .select('name')
-        .where('name', 'not in', ['INFORMATION_SCHEMA', 'information_schema', 'system'])
-        .orderBy('name')
-        .execute()
-        .then(rows => rows.map(r => r.name)),
+      return rows.map((r) => r.datname)
+    },
   },
+  type: type('string[]'),
 })
 
-export function connectionResourcesQueryOptions(connection: Connection) {
-  return queryOptions({
-    queryKey: ['connection', connection.id, 'resources'],
+export const connectionResourcesQueryOptions = (connection: Connection) =>
+  queryOptions({
     queryFn: async () => {
       const { connectionsResourcesCollection } = getCollections()
       const resources = await connectionResourcesQuery.run(
-        await connectionToQueryParams(connection),
+        await connectionToQueryParams(connection)
       )
 
       const stored = await connectionsResourcesCollection.toArrayWhenReady()
 
       for (const name of resources) {
-        const exists = stored.some(r => r.connectionId === connection.id && r.name === name)
+        const exists = stored.some(
+          (r) => r.connectionId === connection.id && r.name === name
+        )
         if (!exists) {
           connectionsResourcesCollection.insert({
-            id: v7(),
             connectionId: connection.id,
-            name,
             createdAt: new Date(),
+            id: v7(),
+            name,
             updatedAt: new Date(),
           })
         }
@@ -79,7 +88,7 @@ export function connectionResourcesQueryOptions(connection: Connection) {
 
       return resources
     },
+    queryKey: ['connection', connection.id, 'resources'],
     staleTime: 5 * 60 * 1000,
     throwOnError: false,
   })
-}

@@ -1,5 +1,8 @@
 import type { AnyFunction } from '@tamery/shared/utils/helpers'
-import { handleAggregateError, uppercaseFirst } from '@tamery/shared/utils/helpers'
+import {
+  handleAggregateError,
+  uppercaseFirst,
+} from '@tamery/shared/utils/helpers'
 
 export interface QueryExecuteResult {
   result: unknown
@@ -23,15 +26,17 @@ export interface QueryExecutor {
     ownerId?: string
   }) => Promise<QueryExecuteResult>
   commitTransaction: (args: { txId: string; ownerId?: string }) => Promise<void>
-  rollbackTransaction: (args: { txId: string; ownerId?: string }) => Promise<void>
+  rollbackTransaction: (args: {
+    txId: string
+    ownerId?: string
+  }) => Promise<void>
 }
 
-export function replaceErrorPrefix(message: string) {
-  return message.toLowerCase().startsWith('error: ') ? message.slice(7) : message
-}
+export const replaceErrorPrefix = (message: string) =>
+  message.toLowerCase().startsWith('error: ') ? message.slice(7) : message
 
-export function handleQueryError<T extends AnyFunction>(fn: T): T {
-  return (async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
+export const handleQueryError = <T extends AnyFunction>(fn: T): T =>
+  (async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
     try {
       return await handleAggregateError(fn)(...args)
     } catch (error) {
@@ -39,7 +44,8 @@ export function handleQueryError<T extends AnyFunction>(fn: T): T {
         throw error
       }
 
-      throw new Error(uppercaseFirst(replaceErrorPrefix(error.message)), { cause: error })
+      throw new Error(uppercaseFirst(replaceErrorPrefix(error.message)), {
+        cause: error,
+      })
     }
   }) as T
-}

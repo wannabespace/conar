@@ -1,20 +1,34 @@
 import type { Filter } from './types'
 
-export function cellToFilterValues(filter: Filter, cellValue: unknown): string[] {
-  if (filter.hasValue === false) return ['']
+export const cellToFilterValues = (
+  filter: Filter,
+  cellValue: unknown
+): string[] => {
+  if (filter.hasValue === false) {
+    return ['']
+  }
 
-  const raw =
-    cellValue === null
-      ? ''
-      : typeof cellValue === 'object'
-        ? JSON.stringify(cellValue)
-        : String(cellValue)
+  let raw = ''
+  if (cellValue === null) {
+    raw = ''
+  } else if (typeof cellValue === 'object') {
+    raw = JSON.stringify(cellValue)
+  } else {
+    raw = String(cellValue)
+  }
 
-  if (filter.isArray) return raw === '' ? [''] : [raw]
+  if (filter.isArray) {
+    return raw === '' ? [''] : [raw]
+  }
 
   if (filter.operator.includes('LIKE')) {
-    if (raw === '') return ['%']
-    const escaped = raw.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_')
+    if (raw === '') {
+      return ['%']
+    }
+    const escaped = raw
+      .replaceAll('\\', '\\\\')
+      .replaceAll('%', '\\%')
+      .replaceAll('_', '\\_')
     return [`%${escaped}%`]
   }
 

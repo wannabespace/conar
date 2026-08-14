@@ -15,14 +15,35 @@ export const sync = orpc
     type({
       id: 'string.uuid.v7',
       updatedAt: 'Date',
-    }).array(),
+    }).array()
   )
   .output(output)
-  .handler(async function ({ input, context }) {
+  .handler(async ({ input, context }) => {
     const { updatedItems, newItems, missingIds } = await syncDiff({
       input,
       queries: {
-        updated: items =>
+        existing: (includeIds) =>
+          db
+            .select({ id: chats.id })
+            .from(chats)
+            .where(
+              and(
+                eq(chats.userId, context.user.id),
+                inArray(chats.id, includeIds)
+              )
+            )
+            .then((r) => r.map((i) => i.id)),
+        new: (excludeIds) =>
+          db
+            .select()
+            .from(chats)
+            .where(
+              and(
+                eq(chats.userId, context.user.id),
+                notInArray(chats.id, excludeIds)
+              )
+            ),
+        updated: (items) =>
           db
             .select()
             .from(chats)
@@ -30,50 +51,42 @@ export const sync = orpc
               and(
                 eq(chats.userId, context.user.id),
                 or(
-                  ...items.map(c =>
-                    and(eq(chats.id, c.id), gte(chats.updatedAt, addSeconds(c.updatedAt, 1))),
-                  ),
-                ),
-              ),
+                  ...items.map((c) =>
+                    and(
+                      eq(chats.id, c.id),
+                      gte(chats.updatedAt, addSeconds(c.updatedAt, 1))
+                    )
+                  )
+                )
+              )
             ),
-        new: excludeIds =>
-          db
-            .select()
-            .from(chats)
-            .where(and(eq(chats.userId, context.user.id), notInArray(chats.id, excludeIds))),
-        existing: includeIds =>
-          db
-            .select({ id: chats.id })
-            .from(chats)
-            .where(and(eq(chats.userId, context.user.id), inArray(chats.id, includeIds)))
-            .then(r => r.map(i => i.id)),
       },
     })
 
-    const sync: typeof output.infer = []
+    const result: typeof output.infer = []
 
-    updatedItems.forEach(item => {
-      sync.push({
+    for (const item of updatedItems) {
+      result.push({
         type: 'update',
         value: item,
       })
-    })
+    }
 
-    newItems.forEach(item => {
-      sync.push({
+    for (const item of newItems) {
+      result.push({
         type: 'insert',
         value: item,
       })
-    })
+    }
 
-    missingIds.forEach(item => {
-      sync.push({
-        type: 'delete',
+    for (const item of missingIds) {
+      result.push({
         key: item,
+        type: 'delete',
         // @ts-expect-error TODO: remove this in future, currently saved for backward compatibility
         value: item,
       })
-    })
+    }
 
-    return sync
+    return result
   })

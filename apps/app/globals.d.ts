@@ -10,7 +10,6 @@ declare global {
 }
 
 declare module 'react' {
-  interface CSSProperties extends React.CSSProperties {
-    [key: `--${string}`]: string | number
-  }
+  type CSSProperties = React.CSSProperties &
+    Record<`--${string}`, string | number>
 }

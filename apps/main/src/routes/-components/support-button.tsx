@@ -21,7 +21,7 @@ import { orpc } from '~/lib/orpc'
 
 import { SidebarButton } from './sidebar-button'
 
-export function SupportButton() {
+export const SupportButton = () => {
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
 
@@ -29,19 +29,19 @@ export function SupportButton() {
     orpc.contact.mutationOptions({
       onSuccess: () => {
         toast.success(
-          'Support message sent successfully! We will get back to you as soon as possible.',
+          'Support message sent successfully! We will get back to you as soon as possible.'
         )
         setOpen(false)
         setMessage('')
       },
-      onError: err => {
+      onError: (err) => {
         console.error(err)
         toast.error('Failed to send message. Please try again later.')
       },
-    }),
+    })
   )
 
-  function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     sendSupport({ message })
   }
@@ -56,7 +56,8 @@ export function SupportButton() {
         <DialogHeader>
           <DialogTitle>Contact Support</DialogTitle>
           <DialogDescription>
-            Have a question, suggestion, or need assistance? We're here to listen!
+            Have a question, suggestion, or need assistance? We&apos;re here to
+            listen!
           </DialogDescription>
         </DialogHeader>
         <div>
@@ -66,7 +67,7 @@ export function SupportButton() {
               <Textarea
                 id="support-message"
                 value={message}
-                onChange={e => setMessage(e.target.value)}
+                onChange={(e) => setMessage(e.target.value)}
                 required
                 placeholder="Type any message you'd like to send us"
                 className="min-h-48"
@@ -75,7 +76,9 @@ export function SupportButton() {
           </form>
         </div>
         <DialogFooter>
-          <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
+          <DialogClose render={<Button type="button" variant="outline" />}>
+            Cancel
+          </DialogClose>
           <Button type="submit" disabled={loading || !message}>
             <LoadingContent loading={loading}>Send</LoadingContent>
           </Button>

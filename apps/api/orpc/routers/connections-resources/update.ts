@@ -1,6 +1,9 @@
 import { ORPCError } from '@orpc/server'
 import { db } from '@tamery/db'
-import { connectionsResources, connectionsResourcesUpdateSchema } from '@tamery/db/schema'
+import {
+  connectionsResources,
+  connectionsResourcesUpdateSchema,
+} from '@tamery/db/schema'
 import { type } from 'arktype'
 import { eq } from 'drizzle-orm'
 
@@ -12,9 +15,14 @@ export const update = orpc
   .use(authMiddleware)
   .input(
     type.and(
-      connectionsResourcesUpdateSchema.omit('createdAt', 'updatedAt', 'id', 'connectionId'),
-      connectionsResourcesUpdateSchema.pick('id').required(),
-    ),
+      connectionsResourcesUpdateSchema.omit(
+        'createdAt',
+        'updatedAt',
+        'id',
+        'connectionId'
+      ),
+      connectionsResourcesUpdateSchema.pick('id').required()
+    )
   )
   .handler(async ({ context, input }) => {
     const { id, ...changes } = input
@@ -24,19 +32,21 @@ export const update = orpc
         id: true,
       },
       where: {
-        id: {
-          eq: input.id,
-        },
         connection: {
           userId: {
             eq: context.user.id,
           },
         },
+        id: {
+          eq: input.id,
+        },
       },
     })
 
     if (!found) {
-      throw new ORPCError('NOT_FOUND', { message: 'Connection resource not found' })
+      throw new ORPCError('NOT_FOUND', {
+        message: 'Connection resource not found',
+      })
     }
 
     const [resource] = await db
@@ -45,8 +55,14 @@ export const update = orpc
       .where(eq(connectionsResources.id, id))
       .returning()
 
+    if (!resource) {
+      throw new ORPCError('NOT_FOUND', {
+        message: 'Connection resource not found after update',
+      })
+    }
+
     publisher.publish(context.user.id, {
       type: 'update',
-      value: resource!,
+      value: resource,
     })
   })

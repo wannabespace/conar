@@ -2,12 +2,12 @@ import { describe, expect, it } from 'bun:test'
 
 import { SafeURL } from './safe-url'
 
-function errorMessage() {
+const errorMessage = () => {
   try {
     // oxlint-disable-next-line no-new
     new SafeURL('not-a-valid-connection-string')
-  } catch (e) {
-    return (e as Error).message
+  } catch (error) {
+    return (error as Error).message
   }
 }
 
@@ -30,57 +30,60 @@ describe('new SafeURL', () => {
     const parsed = new SafeURL(conn)
 
     expect(parsed).toMatchObject({
-      protocol: 'postgresql:',
-      origin: 'postgresql://localhost:5432',
-      host: 'localhost:5432',
-      username: 'user',
-      password: 'pass',
-      hostname: 'localhost',
-      port: '5432',
-      pathname: '/mydb',
-      search: '',
       hash: '',
+      host: 'localhost:5432',
+      hostname: 'localhost',
       href: conn,
+      origin: 'postgresql://localhost:5432',
+      password: 'pass',
+      pathname: '/mydb',
+      port: '5432',
+      protocol: 'postgresql:',
+      search: '',
+      username: 'user',
     })
     expect([...parsed.searchParams.entries()]).toEqual([])
   })
 
   it('accepts a SafeURL instance', () => {
-    const original = new SafeURL('postgresql://user:pass@localhost:5432/mydb?sslmode=require')
+    const original = new SafeURL(
+      'postgresql://user:pass@localhost:5432/mydb?sslmode=require'
+    )
     const parsed = new SafeURL(original)
 
     expect(parsed).toMatchObject({
-      protocol: 'postgresql:',
-      origin: 'postgresql://localhost:5432',
-      host: 'localhost:5432',
-      username: 'user',
-      password: 'pass',
-      hostname: 'localhost',
-      port: '5432',
-      pathname: '/mydb',
-      search: '?sslmode=require',
       hash: '',
+      host: 'localhost:5432',
+      hostname: 'localhost',
       href: 'postgresql://user:pass@localhost:5432/mydb?sslmode=require',
+      origin: 'postgresql://localhost:5432',
+      password: 'pass',
+      pathname: '/mydb',
+      port: '5432',
+      protocol: 'postgresql:',
+      search: '?sslmode=require',
+      username: 'user',
     })
     expect([...parsed.searchParams.entries()]).toEqual([['sslmode', 'require']])
   })
 
   it('parses a connection string with query parameters', () => {
-    const conn = 'postgresql://user:pass@localhost:5432/mydb?sslmode=require&application_name=myapp'
+    const conn =
+      'postgresql://user:pass@localhost:5432/mydb?sslmode=require&application_name=myapp'
     const parsed = new SafeURL(conn)
 
     expect(parsed).toMatchObject({
-      protocol: 'postgresql:',
-      origin: 'postgresql://localhost:5432',
-      host: 'localhost:5432',
-      username: 'user',
-      password: 'pass',
-      hostname: 'localhost',
-      port: '5432',
-      pathname: '/mydb',
-      search: '?sslmode=require&application_name=myapp',
       hash: '',
+      host: 'localhost:5432',
+      hostname: 'localhost',
       href: conn,
+      origin: 'postgresql://localhost:5432',
+      password: 'pass',
+      pathname: '/mydb',
+      port: '5432',
+      protocol: 'postgresql:',
+      search: '?sslmode=require&application_name=myapp',
+      username: 'user',
     })
     expect([...parsed.searchParams.entries()]).toEqual([
       ['sslmode', 'require'],
@@ -93,17 +96,17 @@ describe('new SafeURL', () => {
     const parsed = new SafeURL(conn)
 
     expect(parsed).toMatchObject({
-      protocol: 'postgresql:',
-      origin: 'postgresql://localhost:5432',
-      host: 'localhost:5432',
-      username: 'user',
-      password: 'pass',
-      hostname: 'localhost',
-      port: '5432',
-      pathname: '/',
-      search: '',
       hash: '',
+      host: 'localhost:5432',
+      hostname: 'localhost',
       href: conn,
+      origin: 'postgresql://localhost:5432',
+      password: 'pass',
+      pathname: '/',
+      port: '5432',
+      protocol: 'postgresql:',
+      search: '',
+      username: 'user',
     })
     expect([...parsed.searchParams.entries()]).toEqual([])
     expect(parsed.toString()).toBe(conn)
@@ -115,17 +118,17 @@ describe('new SafeURL', () => {
     parsed.pathname = 'mydb'
 
     expect(parsed).toMatchObject({
-      protocol: 'postgresql:',
-      origin: 'postgresql://localhost:5432',
-      host: 'localhost:5432',
-      username: 'user',
-      password: 'pass',
-      hostname: 'localhost',
-      port: '5432',
-      pathname: '/mydb',
-      search: '',
       hash: '',
+      host: 'localhost:5432',
+      hostname: 'localhost',
       href: `${conn}/mydb`,
+      origin: 'postgresql://localhost:5432',
+      password: 'pass',
+      pathname: '/mydb',
+      port: '5432',
+      protocol: 'postgresql:',
+      search: '',
+      username: 'user',
     })
     expect([...parsed.searchParams.entries()]).toEqual([])
   })
@@ -135,17 +138,17 @@ describe('new SafeURL', () => {
     const parsed = new SafeURL(conn)
 
     expect(parsed).toMatchObject({
-      protocol: 'postgresql:',
-      origin: 'postgresql://localhost:5432',
-      host: 'localhost:5432',
-      username: 'us%40er',
-      password: 'pa%3A#ss',
-      hostname: 'localhost',
-      port: '5432',
-      pathname: '/mydb',
-      search: '',
       hash: '',
+      host: 'localhost:5432',
+      hostname: 'localhost',
       href: conn,
+      origin: 'postgresql://localhost:5432',
+      password: 'pa%3A#ss',
+      pathname: '/mydb',
+      port: '5432',
+      protocol: 'postgresql:',
+      search: '',
+      username: 'us%40er',
     })
     expect([...parsed.searchParams.entries()]).toEqual([])
   })
@@ -156,17 +159,17 @@ describe('new SafeURL', () => {
     const parsed = new SafeURL(conn)
 
     expect(parsed).toMatchObject({
-      protocol: 'postgresql:',
-      origin: 'postgresql://localhost:5432',
-      host: 'localhost:5432',
-      username: 'user',
-      password: 'pass',
-      hostname: 'localhost',
-      port: '5432',
-      pathname: '/mydb',
-      search: '?ssl=true&connect_timeout=10&search_path=myschema',
       hash: '',
+      host: 'localhost:5432',
+      hostname: 'localhost',
       href: conn,
+      origin: 'postgresql://localhost:5432',
+      password: 'pass',
+      pathname: '/mydb',
+      port: '5432',
+      protocol: 'postgresql:',
+      search: '?ssl=true&connect_timeout=10&search_path=myschema',
+      username: 'user',
     })
     expect([...parsed.searchParams.entries()]).toEqual([
       ['ssl', 'true'],
@@ -176,7 +179,9 @@ describe('new SafeURL', () => {
   })
 
   it('throws on invalid connection string', () => {
-    expect(() => new SafeURL('not-a-valid-connection-string')).toThrow(errorMessage())
+    expect(() => new SafeURL('not-a-valid-connection-string')).toThrow(
+      errorMessage()
+    )
   })
 
   it('parses a connection string with empty credentials', () => {
@@ -243,7 +248,9 @@ describe('new SafeURL', () => {
 
       expect(parsed.username).toBe('newuser')
       expect(parsed.password).toBe('newpass')
-      expect(parsed.href).toBe('postgresql://newuser:newpass@localhost:5432/mydb')
+      expect(parsed.href).toBe(
+        'postgresql://newuser:newpass@localhost:5432/mydb'
+      )
     })
 
     it('should handle setting empty credentials', () => {
@@ -267,7 +274,9 @@ describe('new SafeURL', () => {
 
       expect(parsed.username).toBe('user@domain')
       expect(parsed.password).toBe('pass:word')
-      expect(parsed.href).toBe('postgresql://user@domain:pass:word@localhost:5432/mydb')
+      expect(parsed.href).toBe(
+        'postgresql://user@domain:pass:word@localhost:5432/mydb'
+      )
     })
 
     it('should maintain other properties when setting credentials', () => {
@@ -278,17 +287,17 @@ describe('new SafeURL', () => {
       parsed.password = 'newpass'
 
       expect(parsed).toMatchObject({
-        protocol: 'postgresql:',
-        origin: 'postgresql://localhost:5432',
+        hash: '#section',
         host: 'localhost:5432',
         hostname: 'localhost',
-        port: '5432',
-        pathname: '/mydb',
-        search: '?ssl=true',
-        hash: '#section',
-        username: 'newuser',
-        password: 'newpass',
         href: conn.replace('user:pass', 'newuser:newpass'),
+        origin: 'postgresql://localhost:5432',
+        password: 'newpass',
+        pathname: '/mydb',
+        port: '5432',
+        protocol: 'postgresql:',
+        search: '?ssl=true',
+        username: 'newuser',
       })
     })
 
@@ -314,7 +323,7 @@ describe('new SafeURL', () => {
       expect(parsed.username).toBe('alice')
       expect(parsed.password).toBe('wonderland')
       expect(parsed.href).toBe(
-        'mysql://alice:wonderland@db.example.com:3306/testdb?foo=bar&baz=qux#top',
+        'mysql://alice:wonderland@db.example.com:3306/testdb?foo=bar&baz=qux#top'
       )
     })
   })

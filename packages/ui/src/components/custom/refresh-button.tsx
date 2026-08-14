@@ -4,21 +4,22 @@ import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import type { ComponentProps } from 'react'
 
-export function RefreshButton({
+export const RefreshButton = ({
   refreshing,
   iconClassName,
   ...props
 }: {
   refreshing: boolean
   iconClassName?: string
-} & Omit<ComponentProps<typeof Button>, 'children'>) {
-  return (
-    <Button {...props}>
-      <LoadingContent loading={refreshing}>
-        <ContentSwitch activeContent={<RiCheckLine className="text-success" />} active={refreshing}>
-          <RiLoopLeftLine className={iconClassName} />
-        </ContentSwitch>
-      </LoadingContent>
-    </Button>
-  )
-}
+} & Omit<ComponentProps<typeof Button>, 'children'>) => (
+  <Button {...props}>
+    <LoadingContent loading={refreshing}>
+      <ContentSwitch
+        activeContent={<RiCheckLine className="text-success" />}
+        active={refreshing}
+      >
+        <RiLoopLeftLine className={iconClassName} />
+      </ContentSwitch>
+    </LoadingContent>
+  </Button>
+)

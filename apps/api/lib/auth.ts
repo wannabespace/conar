@@ -4,11 +4,20 @@ import { db } from '@tamery/db'
 import { users } from '@tamery/db/schema'
 import * as schema from '@tamery/db/schema'
 import { infisical } from '@tamery/infisical'
-import { API_KEY_PERMISSIONS, AUTH_COOKIE_PREFIX } from '@tamery/shared/constants'
+import {
+  API_KEY_PERMISSIONS,
+  AUTH_COOKIE_PREFIX,
+} from '@tamery/shared/constants'
 import { betterAuth } from 'better-auth'
 import { emailHarmony } from 'better-auth-harmony'
 import { createAuthMiddleware } from 'better-auth/api'
-import { anonymous, bearer, lastLoginMethod, organization, twoFactor } from 'better-auth/plugins'
+import {
+  anonymous,
+  bearer,
+  lastLoginMethod,
+  organization,
+  twoFactor,
+} from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
@@ -19,27 +28,187 @@ import { resend, sendEmail } from '~/lib/resend'
 import { redisMemoize } from './redis'
 
 export const auth = betterAuth({
+  advanced: {
+    cookiePrefix: AUTH_COOKIE_PREFIX,
+    crossSubDomainCookies: {
+      domain: 'tamery.app',
+      enabled: true,
+    },
+    database: {
+      generateId: 'uuid',
+    },
+  },
   appName: 'Tamery',
-  secret: env.BETTER_AUTH_SECRET,
-  baseURL: env.API_URL,
   basePath: '/auth',
+  baseURL: env.API_URL,
+  database: drizzleAdapter(db, {
+    provider: 'pg',
+    schema: {
+      ...schema,
+      api_keys: schema.apiKeys,
+    },
+    usePlural: true,
+  }) as ReturnType<typeof drizzleAdapter>,
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          await infisical.secrets
+            .set({
+              name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
+              path: ['users', user.id],
+              value: nanoid(),
+            })
+            .catch(async (error) => {
+              console.error(
+                `Failed to set user secret in Infisical: ${error instanceof Error ? error.message : error}`,
+                error instanceof Error && error.cause ? error.cause : undefined
+              )
+              await db.delete(users).where(eq(users.id, user.id))
+              throw error
+            })
+
+          if (resend) {
+            const [firstName = '', ...lastName] = user.name.split(' ')
+
+            await resend.contacts.create({
+              email: user.email,
+              firstName,
+              lastName: lastName.join(' '),
+              properties: {
+                id: user.id,
+              },
+            })
+          }
+        },
+      },
+      delete: {
+        after: async (user) => {
+          await infisical.secrets
+            .delete({
+              name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
+              path: ['users', user.id],
+            })
+            .catch((error) => {
+              console.error(
+                `Failed to delete user secret in Infisical: ${error instanceof Error ? error.message : error}`,
+                error instanceof Error && error.cause ? error.cause : undefined
+              )
+            })
+        },
+      },
+      update: {
+        after: async (user) => {
+          if (nodeEnv !== 'production' || !resend) {
+            return
+          }
+
+          const [firstName = '', ...lastName] = user.name.split(' ')
+
+          await resend.contacts.update({
+            email: user.email,
+            firstName,
+            lastName: lastName.join(' '),
+            properties: {
+              id: user.id,
+            },
+          })
+        },
+      },
+    },
+  },
+  emailAndPassword: {
+    enabled: true,
+    onPasswordReset: async ({ user: { name, email } }) => {
+      await sendEmail({
+        props: {
+          name: name || email,
+        },
+        subject: 'Your password has been reset',
+        template: 'OnPasswordReset',
+        to: email,
+      })
+    },
+    requireEmailVerification: false,
+    sendResetPassword: async ({ user: { name, email }, url }) => {
+      await sendEmail({
+        props: {
+          name: name || email,
+          url,
+        },
+        subject: 'Reset your password',
+        template: 'ResetPassword',
+        to: email,
+      })
+    },
+  },
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      const desktopVersion = ctx.headers?.get('x-desktop-version')
+
+      if (!ctx.context.session) {
+        return
+      }
+
+      const userId = ctx.context.session.user.id
+
+      ctx.request?.headers.set('user-id', userId)
+
+      if (desktopVersion) {
+        await redisMemoize(async () => {
+          await db
+            .update(users)
+            .set({
+              desktopVersion,
+            })
+            .where(eq(users.id, userId))
+        }, `desktop-version:${userId}`)
+      }
+    }),
+  },
+  onAPIError: {
+    onError: async (error) => {
+      const text =
+        typeof error === 'object' && error !== null
+          ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
+          : String(error)
+
+      if (text.includes('Invalid email')) {
+        return
+      }
+
+      if (env.ALERTS_EMAIL) {
+        await sendEmail({
+          props: {
+            service: 'Better Auth',
+            text,
+          },
+          subject: 'Alert from Better Auth',
+          template: 'Alert',
+          to: env.ALERTS_EMAIL,
+        })
+      } else {
+        console.error('Alert from Better Auth', { text })
+      }
+    },
+  },
   plugins: [
     bearer(),
     twoFactor(),
     organization({
       schema: {
-        organization: {
-          modelName: 'workspace',
+        invitation: {
+          fields: {
+            organizationId: 'workspaceId',
+          },
         },
         member: {
           fields: {
             organizationId: 'workspaceId',
           },
         },
-        invitation: {
-          fields: {
-            organizationId: 'workspaceId',
-          },
+        organization: {
+          modelName: 'workspace',
         },
         session: {
           fields: {
@@ -56,148 +225,29 @@ export const auth = betterAuth({
       permissions: {
         defaultPermissions: API_KEY_PERMISSIONS,
       },
-      startingCharactersConfig: {
-        charactersLength: nodeEnv === 'production' ? 20 : 15,
-      },
       requireName: true,
       schema: {
         apikey: {
           modelName: 'api_key',
         },
       },
+      startingCharactersConfig: {
+        charactersLength: nodeEnv === 'production' ? 20 : 15,
+      },
     }),
   ],
-  user: {
-    deleteUser: {
-      enabled: true,
+  secret: env.BETTER_AUTH_SECRET,
+  socialProviders: {
+    github: {
+      clientId: env.GITHUB_CLIENT_ID ?? '',
+      clientSecret: env.GITHUB_CLIENT_SECRET,
+      enabled: !!env.GITHUB_CLIENT_ID && !!env.GITHUB_CLIENT_SECRET,
     },
-    additionalFields: {
-      stripeCustomerId: {
-        type: 'string',
-        returned: false,
-        input: false,
-        required: false,
-        fieldName: 'stripe_customer_id',
-      },
-      desktopVersion: {
-        fieldName: 'desktop_version',
-        type: 'string',
-        input: false,
-        required: false,
-      },
-    },
-  },
-  hooks: {
-    after: createAuthMiddleware(async ctx => {
-      const desktopVersion = ctx.headers?.get('x-desktop-version')
-
-      if (!ctx.context.session) {
-        return
-      }
-
-      ctx.request?.headers.set('user-id', ctx.context.session.user.id)
-
-      if (desktopVersion) {
-        await redisMemoize(async () => {
-          await db
-            .update(users)
-            .set({
-              desktopVersion,
-            })
-            .where(eq(users.id, ctx.context.session!.user.id))
-        }, `desktop-version:${ctx.context.session.user.id}`)
-      }
-    }),
-  },
-  databaseHooks: {
-    user: {
-      create: {
-        after: async user => {
-          await infisical.secrets
-            .set({
-              path: ['users', user.id],
-              name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
-              value: nanoid(),
-            })
-            .catch(async error => {
-              console.error(
-                `Failed to set user secret in Infisical: ${error instanceof Error ? error.message : error}`,
-                error instanceof Error && error.cause ? error.cause : undefined,
-              )
-              await db.delete(users).where(eq(users.id, user.id))
-              throw error
-            })
-
-          if (resend) {
-            const [firstName, ...lastName] = user.name.split(' ')
-
-            await resend.contacts.create({
-              email: user.email,
-              firstName: firstName!,
-              lastName: lastName.join(' '),
-              properties: {
-                id: user.id,
-              },
-            })
-          }
-        },
-      },
-      delete: {
-        after: async user => {
-          await infisical.secrets
-            .delete({ path: ['users', user.id], name: INFISICAL_USER_ENCRYPTION_SECRET_NAME })
-            .catch(async error => {
-              console.error(
-                `Failed to delete user secret in Infisical: ${error instanceof Error ? error.message : error}`,
-                error instanceof Error && error.cause ? error.cause : undefined,
-              )
-            })
-        },
-      },
-      update: {
-        after: async user => {
-          if (nodeEnv !== 'production' || !resend) {
-            return
-          }
-
-          const [firstName, ...lastName] = user.name.split(' ')
-
-          await resend.contacts.update({
-            email: user.email,
-            firstName: firstName!,
-            lastName: lastName.join(' '),
-            properties: {
-              id: user.id,
-            },
-          })
-        },
-      },
-    },
-  },
-  onAPIError: {
-    onError: async error => {
-      const text =
-        typeof error === 'object' && error !== null
-          ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
-          : String(error)
-
-      if (text.includes('Invalid email')) {
-        return
-      }
-
-      if (env.ALERTS_EMAIL) {
-        await sendEmail({
-          to: env.ALERTS_EMAIL,
-          subject: 'Alert from Better Auth',
-          template: 'Alert',
-          props: {
-            text,
-            service: 'Better Auth',
-          },
-        })
-      } else {
-        console.error('Alert from Better Auth', { text })
-      }
+    google: {
+      clientId: env.GOOGLE_CLIENT_ID ?? '',
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+      enabled: !!env.GOOGLE_CLIENT_ID && !!env.GOOGLE_CLIENT_SECRET,
+      prompt: 'select_account',
     },
   },
   trustedOrigins: [
@@ -206,60 +256,24 @@ export const auth = betterAuth({
     'file://',
     ...(nodeEnv === 'development' ? ['http://localhost:*'] : []),
   ],
-  advanced: {
-    cookiePrefix: AUTH_COOKIE_PREFIX,
-    crossSubDomainCookies: {
+  user: {
+    additionalFields: {
+      desktopVersion: {
+        fieldName: 'desktop_version',
+        input: false,
+        required: false,
+        type: 'string',
+      },
+      stripeCustomerId: {
+        fieldName: 'stripe_customer_id',
+        input: false,
+        required: false,
+        returned: false,
+        type: 'string',
+      },
+    },
+    deleteUser: {
       enabled: true,
-      domain: 'tamery.app',
-    },
-    database: {
-      generateId: 'uuid',
-    },
-  },
-  database: drizzleAdapter(db, {
-    provider: 'pg',
-    usePlural: true,
-    schema: {
-      ...schema,
-      api_keys: schema.apiKeys,
-    },
-  }) as ReturnType<typeof drizzleAdapter>,
-  emailAndPassword: {
-    enabled: true,
-    requireEmailVerification: false,
-    sendResetPassword: async ({ user: { name, email }, url }) => {
-      await sendEmail({
-        to: email,
-        subject: 'Reset your password',
-        template: 'ResetPassword',
-        props: {
-          name: name || email,
-          url,
-        },
-      })
-    },
-    onPasswordReset: async ({ user: { name, email } }) => {
-      await sendEmail({
-        to: email,
-        subject: 'Your password has been reset',
-        template: 'OnPasswordReset',
-        props: {
-          name: name || email,
-        },
-      })
-    },
-  },
-  socialProviders: {
-    google: {
-      enabled: !!env.GOOGLE_CLIENT_ID && !!env.GOOGLE_CLIENT_SECRET,
-      prompt: 'select_account',
-      clientId: env.GOOGLE_CLIENT_ID!,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
-    },
-    github: {
-      enabled: !!env.GITHUB_CLIENT_ID && !!env.GITHUB_CLIENT_SECRET,
-      clientId: env.GITHUB_CLIENT_ID!,
-      clientSecret: env.GITHUB_CLIENT_SECRET,
     },
   },
 })

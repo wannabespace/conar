@@ -4,13 +4,13 @@ import type { Column } from '../../components/table/cell/utils'
 import { createPostgresListTransformer } from './postgres'
 
 const enumColumn: Column = {
-  id: 'status',
-  uiType: 'list',
-  isArray: true,
-  enumName: 'status_enum',
   availableValues: ['a', 'b', 'c'],
+  enumName: 'status_enum',
+  id: 'status',
+  isArray: true,
+  uiType: 'list',
 }
-const arrayColumn: Column = { id: 'tags', uiType: 'list', isArray: true }
+const arrayColumn: Column = { id: 'tags', isArray: true, uiType: 'list' }
 
 describe('createPostgresListTransformer (enum — brace literal)', () => {
   const t = createPostgresListTransformer(enumColumn)
@@ -18,7 +18,7 @@ describe('createPostgresListTransformer (enum — brace literal)', () => {
   describe('fromConnection → toUI', () => {
     it('returns [] for null, undefined, and empty string', () => {
       expect(t.fromConnection(null).toUI()).toEqual([])
-      expect(t.fromConnection(undefined).toUI()).toEqual([])
+      expect(t.fromConnection().toUI()).toEqual([])
       expect(t.fromConnection('').toUI()).toEqual([])
     })
 
@@ -32,11 +32,17 @@ describe('createPostgresListTransformer (enum — brace literal)', () => {
     })
 
     it('unescapes \\" and \\\\ inside quoted elements', () => {
-      expect(t.fromConnection('{"say \\"hi\\"",x}').toUI()).toEqual(['say "hi"', 'x'])
+      expect(t.fromConnection('{"say \\"hi\\"",x}').toUI()).toEqual([
+        'say "hi"',
+        'x',
+      ])
     })
 
     it('parses a JSON array string before trying brace literals', () => {
-      expect(t.fromConnection('["json","array"]').toUI()).toEqual(['json', 'array'])
+      expect(t.fromConnection('["json","array"]').toUI()).toEqual([
+        'json',
+        'array',
+      ])
     })
 
     it('wraps a non-literal, non-JSON string as a single element', () => {
@@ -94,7 +100,14 @@ describe('createPostgresListTransformer (enum — brace literal)', () => {
 
   describe('round-trip', () => {
     it('round-trips representative connection values', () => {
-      const samples = ['{a,b}', '{"a,b",c}', '{}', '["a","b","c"]', '{""}', '{"NULL"}'] as const
+      const samples = [
+        '{a,b}',
+        '{"a,b",c}',
+        '{}',
+        '["a","b","c"]',
+        '{""}',
+        '{"NULL"}',
+      ] as const
 
       for (const raw of samples) {
         const parsed = t.fromConnection(raw).toRaw()
@@ -111,7 +124,7 @@ describe('createPostgresListTransformer (plain array — JSON)', () => {
   describe('fromConnection → toUI', () => {
     it('returns [] for all inputs (plain arrays have no UI)', () => {
       expect(t.fromConnection(null).toUI()).toEqual([])
-      expect(t.fromConnection(undefined).toUI()).toEqual([])
+      expect(t.fromConnection().toUI()).toEqual([])
       expect(t.fromConnection('').toUI()).toEqual([])
       expect(t.fromConnection('{a,b,c}').toUI()).toEqual([])
       expect(t.fromConnection('["x","y"]').toUI()).toEqual([])

@@ -11,7 +11,11 @@ import {
 } from '@tamery/ui/components/card'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { Input } from '@tamery/ui/components/input'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -21,23 +25,25 @@ import { useCollections } from '~/entities/collections'
 import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 
-export function PasswordForm({
+export const PasswordForm = ({
   connection,
   connectionResource,
 }: {
   connection: Connection
   connectionResource: ConnectionResource
-}) {
+}) => {
   const { connectionStringsCollection } = useCollections()
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
   const { mutate: savePassword, status } = useMutation({
-    mutationFn: async (password: string) => {
-      const baseString = await connectionStringsCollection.utils.decrypt(connection.id)
+    mutationFn: async (passwordValue: string) => {
+      const baseString = await connectionStringsCollection.utils.decrypt(
+        connection.id
+      )
       const url = new SafeURL(baseString)
-      url.password = password
+      url.password = passwordValue
       url.pathname = connectionResource.name || ''
 
       await testConnectionQuery.run({
@@ -52,7 +58,7 @@ export function PasswordForm({
         updatedAt: connection.updatedAt,
       })
 
-      connectionStringsCollection.update(connection.id, draft => {
+      connectionStringsCollection.update(connection.id, (draft) => {
         Object.assign(draft, record)
       })
     },
@@ -60,12 +66,9 @@ export function PasswordForm({
       toast.success('Password successfully saved!')
       setPassword('')
     },
-    // oxlint-disable-next-line react/no-unstable-nested-components
-    onError: error => {
+    onError: (error) => {
       toast.error("We couldn't connect to the connection", {
-        description: (
-          <span dangerouslySetInnerHTML={{ __html: error.message.replaceAll('\n', '<br />') }} />
-        ),
+        description: error.message,
       })
     },
   })
@@ -77,7 +80,7 @@ export function PasswordForm({
           <Button
             type="button"
             variant="link"
-            className="px-0! text-muted-foreground"
+            className="text-muted-foreground px-0!"
             onClick={() => router.history.back()}
           >
             <RiArrowLeftSLine className="size-3" />
@@ -86,7 +89,7 @@ export function PasswordForm({
         </div>
         <form
           className="flex w-full items-center justify-center"
-          onSubmit={e => {
+          onSubmit={(e) => {
             e.preventDefault()
             savePassword(password)
           }}
@@ -105,7 +108,7 @@ export function PasswordForm({
                     placeholder="••••••••"
                     value={password}
                     disabled={status === 'pending'}
-                    onChange={e => setPassword(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value)}
                     type={showPassword ? 'text' : 'password'}
                     autoCapitalize="none"
                     autoFocus
@@ -121,12 +124,10 @@ export function PasswordForm({
                           type="button"
                           variant="ghost"
                           size="icon"
-                          aria-label={showPassword ? 'Hide password' : 'Show password'}
-                          className="
-                            absolute top-1/2 right-2 size-7 -translate-y-1/2
-                            text-muted-foreground
-                            hover:bg-foreground/10 hover:text-foreground
-                          "
+                          aria-label={
+                            showPassword ? 'Hide password' : 'Show password'
+                          }
+                          className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground absolute top-1/2 right-2 size-7 -translate-y-1/2"
                           onClick={() => setShowPassword(!showPassword)}
                           tabIndex={-1}
                         />
@@ -146,9 +147,15 @@ export function PasswordForm({
               </div>
             </CardContent>
             <CardFooter>
-              <Button type="submit" className="w-full" disabled={status === 'pending'}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={status === 'pending'}
+              >
                 <LoadingContent loading={status === 'pending'}>
-                  {status === 'error' ? 'Retry Saving Password' : 'Save Password'}
+                  {status === 'error'
+                    ? 'Retry Saving Password'
+                    : 'Save Password'}
                 </LoadingContent>
               </Button>
             </CardFooter>

@@ -1,7 +1,11 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { defineRelationsPart } from 'drizzle-orm'
-import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'drizzle-orm/arktype'
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from 'drizzle-orm/arktype'
 import * as d from 'drizzle-orm/pg-core'
 
 import { baseTable } from '../base-table'
@@ -14,17 +18,17 @@ export const syncType = d.pgEnum('sync_type', SyncType)
 
 export const connections = d.snakeCase.table('connections', {
   ...baseTable,
+  color: d.text(),
+  connectionString: encryptedText().notNull(),
+  isPasswordExists: d.boolean('password_exists').notNull(),
+  label: d.text(),
+  name: d.text().notNull(),
+  syncType: syncType().notNull(),
+  type: connectionType().notNull(),
   userId: d
     .uuid()
     .references(() => users.id, { onDelete: 'cascade' })
     .notNull(),
-  type: connectionType().notNull(),
-  name: d.text().notNull(),
-  connectionString: encryptedText().notNull(),
-  label: d.text(),
-  color: d.text(),
-  isPasswordExists: d.boolean('password_exists').notNull(),
-  syncType: syncType().notNull(),
 })
 
 export const connectionsSelectSchema = createSelectSchema(connections)
@@ -41,24 +45,27 @@ export const connectionsResources = d.snakeCase.table(
       .notNull(),
     name: d.text(),
   },
-  t => [d.unique().on(t.connectionId, t.name)],
+  (t) => [d.unique().on(t.connectionId, t.name)]
 )
 
-export const connectionsResourcesSelectSchema = createSelectSchema(connectionsResources)
-export const connectionsResourcesUpdateSchema = createUpdateSchema(connectionsResources)
-export const connectionsResourcesInsertSchema = createInsertSchema(connectionsResources)
+export const connectionsResourcesSelectSchema =
+  createSelectSchema(connectionsResources)
+export const connectionsResourcesUpdateSchema =
+  createUpdateSchema(connectionsResources)
+export const connectionsResourcesInsertSchema =
+  createInsertSchema(connectionsResources)
 
 export const connectionsRelations = defineRelationsPart(
   { connections, connectionsResources, users },
-  r => ({
+  (r) => ({
     connections: {
-      user: r.one.users({
-        from: r.connections.userId,
-        to: r.users.id,
-      }),
       resources: r.many.connectionsResources({
         from: r.connections.id,
         to: r.connectionsResources.connectionId,
+      }),
+      user: r.one.users({
+        from: r.connections.userId,
+        to: r.users.id,
       }),
     },
     connectionsResources: {
@@ -67,5 +74,5 @@ export const connectionsRelations = defineRelationsPart(
         to: r.connections.id,
       }),
     },
-  }),
+  })
 )

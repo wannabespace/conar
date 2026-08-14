@@ -10,12 +10,21 @@ import { Button } from '@tamery/ui/components/button'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useIsInViewport } from '@tamery/ui/hookas/use-is-in-viewport'
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useIsFetching, useQuery } from '@tanstack/react-query'
-import { getRouteApi, useCanGoBack, useRouter, useSearch } from '@tanstack/react-router'
+import {
+  getRouteApi,
+  useCanGoBack,
+  useRouter,
+  useSearch,
+} from '@tanstack/react-router'
 import { Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -48,11 +57,11 @@ import { tablesSidebarOpenValue } from './sidebar/constants'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-function TableRefresh({ schema, table }: { schema: string; table: string }) {
+const TableRefresh = ({ schema, table }: { schema: string; table: string }) => {
   const { connectionResource } = useRouteContext()
   const store = tablePageStore({ id: connectionResource.id, schema, table })
   const { filters, orderBy, exact } = useSubscription(store, {
-    selector: state => ({
+    selector: (state) => ({
       filters: enabledFilters(state.filters),
       orderBy: state.orderBy,
       exact: state.exact,
@@ -70,7 +79,7 @@ function TableRefresh({ schema, table }: { schema: string; table: string }) {
   const handleRefresh = () => {
     queryClient.invalidateQueries(rowsQueryOpts)
     queryClient.invalidateQueries(
-      resourceTableColumnsQueryOptions({ connectionResource, table, schema }),
+      resourceTableColumnsQueryOptions({ connectionResource, table, schema })
     )
     queryClient.invalidateQueries(
       resourceTableTotalQueryOptions({
@@ -78,10 +87,14 @@ function TableRefresh({ schema, table }: { schema: string; table: string }) {
         table,
         schema,
         query: { filters, exact },
-      }),
+      })
     )
-    queryClient.invalidateQueries(resourceConstraintsQueryOptions({ connectionResource }))
-    queryClient.invalidateQueries(resourceEnumsQueryOptions({ connectionResource }))
+    queryClient.invalidateQueries(
+      resourceConstraintsQueryOptions({ connectionResource })
+    )
+    queryClient.invalidateQueries(
+      resourceEnumsQueryOptions({ connectionResource })
+    )
   }
 
   useRefreshHotkey(handleRefresh, isFetching)
@@ -102,21 +115,25 @@ function TableRefresh({ schema, table }: { schema: string; table: string }) {
       />
       <TooltipContent side="bottom">
         Refresh table
-        {window.electron && <KbdCtrlLetter userAgent={navigator.userAgent} letter="R" />}
+        {window.electron && (
+          <KbdCtrlLetter userAgent={navigator.userAgent} letter="R" />
+        )}
       </TooltipContent>
     </Tooltip>
   )
 }
 
-function HistoryNav() {
+const HistoryNav = () => {
   const router = useRouter()
   const canGoBack = useCanGoBack()
 
-  if (!window.electron) return null
+  if (!window.electron) {
+    return null
+  }
 
   return (
     <>
-      <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-border" />
+      <span aria-hidden className="bg-border mx-0.5 h-4 w-px shrink-0" />
       <Tooltip>
         <TooltipTrigger
           render={
@@ -154,8 +171,16 @@ function HistoryNav() {
   )
 }
 
-function getQueryOpts(connectionResource: ConnectionResource, schema: string, tableName: string) {
-  const state = tablePageStore({ id: connectionResource.id, schema, table: tableName }).get()
+const getQueryOpts = (
+  connectionResource: ConnectionResource,
+  schema: string,
+  tableName: string
+) => {
+  const state = tablePageStore({
+    id: connectionResource.id,
+    schema,
+    table: tableName,
+  }).get()
 
   return {
     filters: state.filters,
@@ -164,7 +189,7 @@ function getQueryOpts(connectionResource: ConnectionResource, schema: string, ta
   }
 }
 
-function Tab({
+const Tab = ({
   item,
   connectionResource,
   showSchema,
@@ -175,7 +200,10 @@ function Tab({
   currentTabIndex,
   totalTabs,
 }: {
-  item: { id: string; tab: (typeof connectionResourceType.infer)['tabs'][number] }
+  item: {
+    id: string
+    tab: (typeof connectionResourceType.infer)['tabs'][number]
+  }
   showSchema: boolean
   connectionResource: ConnectionResource
   onClose: VoidFunction
@@ -184,14 +212,17 @@ function Tab({
   onCloseOthers: VoidFunction
   currentTabIndex: number
   totalTabs: number
-}) {
+}) => {
   const router = useRouter()
-  const { schema: schemaParam, table: tableParam } = useSearch({ strict: false })
+  const { schema: schemaParam, table: tableParam } = useSearch({
+    strict: false,
+  })
   const ref = useRef<HTMLDivElement>(null)
   const isVisible = useIsInViewport(ref, 'full')
   const [contextMenuOpen, setContextMenuOpen] = useState(false)
 
-  const isActive = schemaParam === item.tab.schema && tableParam === item.tab.table
+  const isActive =
+    schemaParam === item.tab.schema && tableParam === item.tab.table
 
   const items: AppMenuNode[] = [
     {
@@ -201,7 +232,11 @@ function Tab({
       onSelect: onClose,
     },
     { type: 'separator' },
-    { label: 'Close Others', disabled: totalTabs <= 1, onSelect: onCloseOthers },
+    {
+      label: 'Close Others',
+      disabled: totalTabs <= 1,
+      onSelect: onCloseOthers,
+    },
     {
       label: 'Close to the Right',
       disabled: currentTabIndex >= totalTabs - 1,
@@ -240,10 +275,7 @@ function Tab({
       value={item}
       as="div"
       ref={ref}
-      className={`
-        relative shrink-0
-        aria-pressed:z-10
-      `}
+      className="relative shrink-0 aria-pressed:z-10"
     >
       <AppContextMenu
         open={contextMenuOpen}
@@ -256,54 +288,45 @@ function Tab({
           type="button"
           aria-label={`${item.tab.schema}.${item.tab.table} tab`}
           className={cn(
-            `
-                group relative flex h-full cursor-default items-center gap-1.5
-                border-r border-b pr-8 pl-3 text-sm whitespace-nowrap
-                text-muted-foreground transition-colors duration-100
-                hover:bg-background/50
-              `,
+            `group text-muted-foreground hover:bg-background/50 relative flex h-full cursor-default items-center gap-1.5 border-r border-b pr-8 pl-3 text-sm whitespace-nowrap transition-colors duration-100`,
             isActive &&
-              `
-                  border-b-transparent bg-background text-foreground
-                  hover:bg-background
-                `,
-            item.tab.preview && 'italic',
+              `bg-background text-foreground hover:bg-background border-b-transparent`,
+            item.tab.preview && 'italic'
           )}
-          onDoubleClick={() => addTab(connectionResource.id, item.tab.schema, item.tab.table)}
+          onDoubleClick={() =>
+            addTab(connectionResource.id, item.tab.schema, item.tab.table)
+          }
           onMouseOver={prefetch}
           onFocus={prefetch}
           {...pressNavProps(goToTab)}
         >
           <RiTableLine
-            className={cn('size-3.5 shrink-0 text-muted-foreground/60', isActive && 'text-primary')}
+            className={cn(
+              'text-muted-foreground/60 size-3.5 shrink-0',
+              isActive && 'text-primary'
+            )}
           />
           <span>
-            {showSchema && <span className="text-muted-foreground">{item.tab.schema}.</span>}
+            {showSchema && (
+              <span className="text-muted-foreground">{item.tab.schema}.</span>
+            )}
             {item.tab.table}
           </span>
           <Tooltip>
             <TooltipTrigger
               render={
-                // span, not button — tabs are buttons themselves and interactive
-                // elements can't nest
+                // Nested button is invalid HTML (parent tab is already a button).
+                // oxlint-disable-next-line jsx-a11y/no-static-element-interactions
                 <span
-                  role="button"
                   tabIndex={-1}
                   aria-label="Close tab"
-                  className={`
-                      absolute right-2 flex size-4 items-center justify-center
-                      rounded-sm text-muted-foreground opacity-0
-                      transition-opacity duration-100
-                      group-hover:opacity-60
-                      hover:bg-foreground/10 hover:text-foreground
-                      hover:opacity-100!
-                    `}
-                  onMouseDown={e => e.stopPropagation()}
-                  onClick={e => {
+                  className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground absolute right-2 flex size-4 items-center justify-center rounded-sm opacity-0 transition-opacity duration-100 group-hover:opacity-60 hover:opacity-100!"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => {
                     e.stopPropagation()
                     onClose()
                   }}
-                  onKeyDown={e => {
+                  onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault()
                       e.stopPropagation()
@@ -323,28 +346,34 @@ function Tab({
   )
 }
 
-export function TabBar({ className }: { className?: string }) {
+export const TabBar = ({ className }: { className?: string }) => {
   const { connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, { selector: state => state.showSystem })
+  const showSystem = useSubscription(store, {
+    selector: (state) => state.showSystem,
+  })
   const { data: tablesAndSchemas } = useQuery(
-    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }),
+    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem })
   )
-  const { schema: schemaParam, table: tableParam } = useSearch({ strict: false })
+  const { schema: schemaParam, table: tableParam } = useSearch({
+    strict: false,
+  })
   const router = useRouter()
-  const tabs = useSubscription(store, { selector: state => state.tabs })
+  const tabs = useSubscription(store, { selector: (state) => state.tabs })
 
   const addNewTab = useEffectEvent((schema: string, table: string) => {
-    const tab = tabs.find(tab => tab.table === table && tab.schema === schema)
+    const existingTab = tabs.find(
+      (item) => item.table === table && item.schema === schema
+    )
 
-    if (tab) {
+    if (existingTab) {
       return
     }
 
     addTab(connectionResource.id, schema, table, true)
   })
 
-  async function closeAllTabs() {
+  const closeAllTabs = async () => {
     if (tabs.length === 0) {
       return
     }
@@ -356,13 +385,15 @@ export function TabBar({ className }: { className?: string }) {
       })
     }
 
-    tabs.forEach(tab => {
-      removeTab(connectionResource.id, tab.schema, tab.table)
-    })
+    for (const item of tabs) {
+      removeTab(connectionResource.id, item.schema, item.table)
+    }
   }
 
-  async function closeTabsToTheRight(schema: string, table: string) {
-    const currentIndex = tabs.findIndex(tab => tab.schema === schema && tab.table === table)
+  const closeTabsToTheRight = async (schema: string, table: string) => {
+    const currentIndex = tabs.findIndex(
+      (item) => item.schema === schema && item.table === table
+    )
 
     if (currentIndex === -1 || currentIndex >= tabs.length - 1) {
       return
@@ -370,11 +401,14 @@ export function TabBar({ className }: { className?: string }) {
 
     const tabsToClose = tabs.slice(currentIndex + 1)
     const isActiveTabOnTheRight = tabsToClose.some(
-      tab => tab.schema === schemaParam && tab.table === tableParam,
+      (item) => item.schema === schemaParam && item.table === tableParam
     )
 
     if (isActiveTabOnTheRight) {
-      const leftTab = tabs[currentIndex]!
+      const leftTab = tabs[currentIndex]
+      if (!leftTab) {
+        return
+      }
 
       await router.navigate({
         to: '/connection/$resourceId/table',
@@ -383,13 +417,15 @@ export function TabBar({ className }: { className?: string }) {
       })
     }
 
-    for (const tab of tabsToClose) {
-      removeTab(connectionResource.id, tab.schema, tab.table)
+    for (const item of tabsToClose) {
+      removeTab(connectionResource.id, item.schema, item.table)
     }
   }
 
-  async function closeOtherTabs(schema: string, table: string) {
-    const tabsToClose = tabs.filter(tab => tab.schema !== schema || tab.table !== table)
+  const closeOtherTabs = async (schema: string, table: string) => {
+    const tabsToClose = tabs.filter(
+      (item) => item.schema !== schema || item.table !== table
+    )
 
     if (tabsToClose.length === 0) {
       return
@@ -405,9 +441,9 @@ export function TabBar({ className }: { className?: string }) {
       })
     }
 
-    tabsToClose.forEach(tab => {
-      removeTab(connectionResource.id, tab.schema, tab.table)
-    })
+    for (const item of tabsToClose) {
+      removeTab(connectionResource.id, item.schema, item.table)
+    }
   }
 
   useEffect(() => {
@@ -418,39 +454,43 @@ export function TabBar({ className }: { className?: string }) {
     addNewTab(schemaParam, tableParam)
   }, [schemaParam, tableParam])
 
-  async function navigateToDifferentTabIfThisActive(schema: string, table: string) {
-    // If this tab is not opened, do not navigate
+  const navigateToDifferentTabIfThisActive = async (
+    schema: string,
+    table: string
+  ) => {
     if (schemaParam !== schema || tableParam !== table) {
       return
     }
 
-    const currentTabIndex = tabs.findIndex(tab => tab.schema === schema && tab.table === table)
-    const nextTabIndex = currentTabIndex === tabs.length - 1 ? null : currentTabIndex + 1
+    const currentTabIndex = tabs.findIndex(
+      (item) => item.schema === schema && item.table === table
+    )
+    const nextTabIndex =
+      currentTabIndex === tabs.length - 1 ? null : currentTabIndex + 1
     const prevTabIndex = currentTabIndex === 0 ? null : currentTabIndex - 1
+    const fallbackIndex = nextTabIndex ?? prevTabIndex
+    const newTab = fallbackIndex === null ? null : (tabs[fallbackIndex] ?? null)
 
-    const newTab =
-      nextTabIndex !== null || prevTabIndex !== null ? tabs[(nextTabIndex ?? prevTabIndex)!] : null
-
-    if (newTab) {
-      await router.navigate({
-        to: '/connection/$resourceId/table',
-        params: { resourceId: connectionResource.id },
-        search: { schema: newTab.schema, table: newTab.table },
-      })
-    } else {
-      await router.navigate({
-        to: '/connection/$resourceId/table',
-        params: { resourceId: connectionResource.id },
-      })
-    }
+    await router.navigate(
+      newTab
+        ? {
+            to: '/connection/$resourceId/table',
+            params: { resourceId: connectionResource.id },
+            search: { schema: newTab.schema, table: newTab.table },
+          }
+        : {
+            to: '/connection/$resourceId/table',
+            params: { resourceId: connectionResource.id },
+          }
+    )
   }
 
-  async function closeTab(schema: string, table: string) {
+  const closeTab = async (schema: string, table: string) => {
     await navigateToDifferentTabIfThisActive(schema, table)
     removeTab(connectionResource.id, schema, table)
   }
 
-  useHotkey('Mod+W', e => {
+  useHotkey('Mod+W', (e) => {
     e.preventDefault()
 
     if (schemaParam && tableParam) {
@@ -458,42 +498,53 @@ export function TabBar({ className }: { className?: string }) {
     }
   })
 
-  useHotkey('Mod+B', e => {
+  useHotkey('Mod+B', (e) => {
     e.preventDefault()
-    tablesSidebarOpenValue.set(open => !open)
+    tablesSidebarOpenValue.set((open) => !open)
   })
 
-  const cleanupTabsEvent = useEffectEvent(async (tables: { schema: string; table: string }[]) => {
-    const tabsToRemove = tabs.filter(
-      tab => !tables.some(t => t.schema === tab.schema && t.table === tab.table),
-    )
+  const cleanupTabsEvent = useEffectEvent(
+    (tables: { schema: string; table: string }[]) => {
+      const tabsToRemove = tabs.filter(
+        (tab) =>
+          !tables.some((t) => t.schema === tab.schema && t.table === tab.table)
+      )
 
-    for (const { schema, table } of tabsToRemove) {
-      closeTab(schema, table)
+      for (const { schema, table } of tabsToRemove) {
+        closeTab(schema, table)
+      }
     }
-  })
+  )
 
   useEffect(() => {
-    if (!tablesAndSchemas) return
+    if (!tablesAndSchemas) {
+      return
+    }
 
     cleanupTabsEvent(
-      tablesAndSchemas.schemas.flatMap(schema =>
-        schema.tables.map(table => ({ schema: schema.name, table: table.name })),
-      ),
+      tablesAndSchemas.schemas.flatMap((schema) =>
+        schema.tables.map((table) => ({
+          schema: schema.name,
+          table: table.name,
+        }))
+      )
     )
   }, [tablesAndSchemas])
 
   const isOneSchema = tabs.length
-    ? tabs.every(tab => tab.schema === tabs[0]?.schema) && schemaParam === tabs[0]?.schema
+    ? tabs.every((tab) => tab.schema === tabs[0]?.schema) &&
+      schemaParam === tabs[0]?.schema
     : true
 
-  const tabItems = tabs.map(tab => ({
+  const tabItems = tabs.map((tab) => ({
     id: `${tab.schema}:${tab.table}`,
     tab,
   }))
 
   return (
-    <div className={cn('flex h-8 shrink-0 items-stretch bg-body/50', className)}>
+    <div
+      className={cn('bg-body/50 flex h-8 shrink-0 items-stretch', className)}
+    >
       <div className="flex shrink-0 items-center gap-0.5 border-r border-b px-1">
         <Tooltip>
           <TooltipTrigger
@@ -503,7 +554,7 @@ export function TabBar({ className }: { className?: string }) {
                 size="icon-sm"
                 aria-label="Toggle tables sidebar"
                 className="text-muted-foreground"
-                onClick={() => tablesSidebarOpenValue.set(open => !open)}
+                onClick={() => tablesSidebarOpenValue.set((open) => !open)}
               />
             }
           >
@@ -515,7 +566,9 @@ export function TabBar({ className }: { className?: string }) {
           </TooltipContent>
         </Tooltip>
         <HistoryNav />
-        {schemaParam && tableParam && <TableRefresh schema={schemaParam} table={tableParam} />}
+        {schemaParam && tableParam && (
+          <TableRefresh schema={schemaParam} table={tableParam} />
+        )}
       </div>
       {tabItems.length > 0 ? (
         <ScrollArea className="h-full min-w-0 flex-1">
@@ -523,10 +576,10 @@ export function TabBar({ className }: { className?: string }) {
             <Reorder.Group
               axis="x"
               values={tabItems}
-              onReorder={newItems => {
+              onReorder={(newItems) => {
                 updateTabs(
                   connectionResource.id,
-                  newItems.map(item => item.tab),
+                  newItems.map((item) => item.tab)
                 )
               }}
               className="flex items-stretch"
@@ -539,8 +592,12 @@ export function TabBar({ className }: { className?: string }) {
                   showSchema={!isOneSchema}
                   onClose={() => closeTab(item.tab.schema, item.tab.table)}
                   onCloseAll={closeAllTabs}
-                  onCloseToTheRight={() => closeTabsToTheRight(item.tab.schema, item.tab.table)}
-                  onCloseOthers={() => closeOtherTabs(item.tab.schema, item.tab.table)}
+                  onCloseToTheRight={() =>
+                    closeTabsToTheRight(item.tab.schema, item.tab.table)
+                  }
+                  onCloseOthers={() =>
+                    closeOtherTabs(item.tab.schema, item.tab.table)
+                  }
                   currentTabIndex={index}
                   totalTabs={tabItems.length}
                 />

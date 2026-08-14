@@ -1,20 +1,20 @@
 import { cn } from '@tamery/ui/lib/utils'
 
-function AspectRatio({
+const AspectRatio = ({
   ratio,
   className,
   ...props
-}: React.ComponentProps<'div'> & { ratio: number }) {
-  return (
-    <div
-      data-slot="aspect-ratio"
-      style={{
+}: React.ComponentProps<'div'> & { ratio: number }) => (
+  <div
+    data-slot="aspect-ratio"
+    style={
+      {
         '--ratio': ratio,
-      }}
-      className={cn('relative aspect-(--ratio)', className)}
-      {...props}
-    />
-  )
-}
+      } as React.CSSProperties
+    }
+    className={cn('relative aspect-(--ratio)', className)}
+    {...props}
+  />
+)
 
 export { AspectRatio }

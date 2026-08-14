@@ -13,16 +13,17 @@ import { router } from './orpc/routers'
 
 const handler = new RPCHandler(router, {
   interceptors: [
-    async options => {
+    async (options) => {
       try {
         return await options.next()
       } catch (error) {
         options.context.addLogData({
           error: {
-            type: error instanceof Error ? error.constructor.name : typeof error,
-            message: error instanceof Error ? error.message : String(error),
             cause: error instanceof Error ? error.cause : undefined,
+            message: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
+            type:
+              error instanceof Error ? error.constructor.name : typeof error,
           },
         })
 
@@ -31,7 +32,10 @@ const handler = new RPCHandler(router, {
         }
 
         if (error instanceof Error) {
-          throw new ORPCError('INTERNAL_SERVER_ERROR', { message: error.message, cause: error })
+          throw new ORPCError('INTERNAL_SERVER_ERROR', {
+            cause: error,
+            message: error.message,
+          })
         }
 
         throw error
@@ -49,23 +53,32 @@ const app = new Hono<{
 }>()
   .use(
     cors({
+      credentials: true,
       origin(origin) {
         const allowedOrigins = ['https://tamery.app']
-        if (nodeEnv === 'development' && origin.startsWith('http://localhost:')) return origin
-        return origin.endsWith('.tamery.app') || allowedOrigins.includes(origin) ? origin : null
+        if (
+          nodeEnv === 'development' &&
+          origin.startsWith('http://localhost:')
+        ) {
+          return origin
+        }
+        return origin.endsWith('.tamery.app') || allowedOrigins.includes(origin)
+          ? origin
+          : null
       },
-      credentials: true,
-    }),
+    })
   )
-  .get('/', c => c.redirect(env.MAIN_URL))
+  .get('/', (c) => c.redirect(env.MAIN_URL))
   .use('*', async (c, next) => {
     const startTime = Date.now()
     c.set('logEvent', {})
 
+    // Logging runs after the downstream handlers; must not return next().
+    // oxlint-disable-next-line node/callback-return
     await next()
 
-    const status = c.res.status
-    const method = c.req.method
+    const { status } = c.res
+    const { method } = c.req
     const path = new URL(c.req.url).pathname
     const userAgent = c.req.header('User-Agent')
     const version = c.req.header('x-desktop-version')
@@ -78,17 +91,21 @@ const app = new Hono<{
     const body = status >= 400 ? await c.res.clone().text() : undefined
 
     const logInfo = {
-      method,
-      status,
-      path,
       duration: `${Date.now() - startTime}ms`,
+      method,
+      path,
+      status,
       ...(version ? { version } : {}),
       ...(userAgent ? { userAgent } : {}),
-      ...(body !== undefined ? { body } : {}),
+      ...(body === undefined ? {} : { body }),
       ...sanitizeLogData(logEvent),
     }
 
-    const log = JSON.stringify(logInfo, null, nodeEnv === 'production' ? undefined : 2)
+    const log = JSON.stringify(
+      logInfo,
+      null,
+      nodeEnv === 'production' ? undefined : 2
+    )
 
     if (status >= 400) {
       console.error(log)
@@ -99,15 +116,15 @@ const app = new Hono<{
   })
   .use('/rpc/*', async (c, next) => {
     const { matched, response } = await handler.handle(c.req.raw.clone(), {
-      prefix: '/rpc',
       context: createContext(c),
+      prefix: '/rpc',
     })
 
     if (matched) {
       return c.newResponse(response.body, response)
     }
 
-    await next()
+    return next()
   })
 
 export default {

@@ -9,18 +9,16 @@ export const fixSQL = orpc
   .use(subscriptionMiddleware)
   .input(
     type({
-      sql: 'string',
       error: 'string',
+      sql: 'string',
       type: type.valueOf(ConnectionType),
-    }),
+    })
   )
   .handler(async ({ input, signal }) => {
     const { text } = await generateText({
-      model: anthropic('claude-sonnet-4-5'),
       abortSignal: signal,
       messages: [
         {
-          role: 'system',
           content: [
             'You are an expert at fixing SQL queries based on the error message.',
             '- Fix the SQL query to be valid and correct.',
@@ -29,14 +27,18 @@ export const fixSQL = orpc
             '- Return only the fixed SQL query, do not add any explanations, greetings, or extra text.',
             '- If the SQL query is already valid and correct, return it as is. Do not add any changes.',
           ].join('\n'),
+          role: 'system',
         },
         {
+          content: [
+            '=======SQL QUERY=======',
+            input.sql,
+            '=======END OF SQL QUERY=======',
+          ].join('\n'),
           role: 'user',
-          content: ['=======SQL QUERY=======', input.sql, '=======END OF SQL QUERY======='].join(
-            '\n',
-          ),
         },
       ],
+      model: anthropic('claude-sonnet-4-5'),
     })
 
     return text

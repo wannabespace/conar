@@ -2,8 +2,8 @@ import { cn } from '@tamery/ui/lib/utils'
 import type { MotionProps } from 'motion/react'
 import { motion, useScroll, useSpring, useTransform } from 'motion/react'
 
-function transitionProps(index: number) {
-  return {
+const transitionProps = (index: number) =>
+  ({
     initial: {
       opacity: 0,
       scale: 1.1,
@@ -19,8 +19,7 @@ function transitionProps(index: number) {
       duration: 1.5,
       delay: index * 0.4 + 1,
     },
-  } satisfies MotionProps
-}
+  }) satisfies MotionProps
 
 const imagesLight = [
   '/demo-light-1.png',
@@ -29,9 +28,14 @@ const imagesLight = [
   '/demo-light-4.png',
 ]
 
-const imagesDark = ['/demo-dark-1.png', '/demo-dark-2.png', '/demo-dark-3.png', '/demo-dark-4.png']
+const imagesDark = [
+  '/demo-dark-1.png',
+  '/demo-dark-2.png',
+  '/demo-dark-3.png',
+  '/demo-dark-4.png',
+]
 
-function Image({
+const Image = ({
   className,
   image,
   index,
@@ -41,16 +45,11 @@ function Image({
   image: string
   index: number
   type: 'light' | 'dark'
-}) {
+}) => {
   const imgClassName = cn(
-    type === 'dark'
-      ? `
-        hidden
-        dark:block
-      `
-      : 'dark:hidden',
+    type === 'dark' ? `hidden dark:block` : 'dark:hidden',
     index === 0 ? 'mx-auto' : 'absolute top-0 left-0 rounded-xl',
-    className,
+    className
   )
 
   const altTexts = [
@@ -77,26 +76,19 @@ function Image({
   )
 }
 
-function Images() {
-  return (
-    <div className="relative mx-auto w-fit rounded-xl">
-      {imagesLight.map((image, index) => (
-        <Image key={image} image={image} index={index} type="light" />
-      ))}
-      {imagesDark.map((image, index) => (
-        <Image key={image} image={image} index={index} type="dark" />
-      ))}
-      <div
-        className={`
-        absolute inset-x-0 bottom-0 z-10 h-full bg-linear-to-t from-background
-        to-transparent
-      `}
-      />
-    </div>
-  )
-}
+const Images = () => (
+  <div className="relative mx-auto w-fit rounded-xl">
+    {imagesLight.map((image, index) => (
+      <Image key={image} image={image} index={index} type="light" />
+    ))}
+    {imagesDark.map((image, index) => (
+      <Image key={image} image={image} index={index} type="dark" />
+    ))}
+    <div className="from-background absolute inset-x-0 bottom-0 z-10 h-full bg-linear-to-t to-transparent" />
+  </div>
+)
 
-export function Demo({ className }: { className?: string }) {
+export const Demo = ({ className }: { className?: string }) => {
   const { scrollY } = useScroll()
 
   const rotateX = useSpring(useTransform(scrollY, [0, 600], [10, -10]), {

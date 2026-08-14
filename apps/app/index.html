@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+    <meta
+      name="robots"
+      content="noindex, nofollow, noarchive, nosnippet, noimageindex"
+    />
     <meta name="apple-mobile-web-app-title" content="Tamery" />
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -41,10 +44,10 @@
     ></div>
     <div
       id="preloader"
-      class="h-screen fixed inset-0 duration-150 pointer-events-none flex items-center justify-center gap-2 flex-col text-black/20 dark:text-white/20"
+      class="pointer-events-none fixed inset-0 flex h-screen flex-col items-center justify-center gap-2 text-black/20 duration-150 dark:text-white/20"
     >
       <svg
-        class="animate-pulse size-36"
+        class="size-36 animate-pulse"
         xmlns="http://www.w3.org/2000/svg"
         width="475"
         height="475"
@@ -58,11 +61,11 @@
           clip-rule="evenodd"
         />
       </svg>
-      <div id="preloader-text" class="font-medium text-sm animate-pulse"></div>
+      <div id="preloader-text" class="animate-pulse text-sm font-medium"></div>
     </div>
     <div
       id="root"
-      class="z-10 duration-150 scale-[1.05] opacity-0 isolate relative flex min-h-svh flex-col"
+      class="relative isolate z-10 flex min-h-svh scale-[1.05] flex-col opacity-0 duration-150"
     ></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -23,39 +23,51 @@ export interface SyncTracker {
 
 export type SyncUtils = Pick<SyncTracker, 'awaitChange'>
 
-function versionKey(key: string, updatedAt: Date) {
-  return `${key}:${updatedAt.getTime()}`
-}
+const versionKey = (key: string, updatedAt: Date) =>
+  `${key}:${updatedAt.getTime()}`
 
-export function createSyncTracker(): SyncTracker {
+export const createSyncTracker = (): SyncTracker => {
   const synced = new Set<string>()
   const listeners = new Set<() => void>()
 
   return {
-    markSynced(key, updatedAt) {
-      synced.add(versionKey(key, updatedAt))
-      listeners.forEach(listener => listener())
-    },
     awaitChange(key, updatedAt, timeout = 10_000) {
       const versioned = versionKey(key, updatedAt)
 
-      if (synced.has(versioned)) return Promise.resolve()
+      if (synced.has(versioned)) {
+        return Promise.resolve()
+      }
 
+      // Event-driven wait requires the Promise constructor; no library deferred here.
+      // oxlint-disable-next-line promise/avoid-new
       return new Promise<void>((resolve, reject) => {
-        const timer = setTimeout(() => {
-          listeners.delete(listener)
-          reject(new Error('awaitChange timed out'))
-        }, timeout)
-
-        function listener() {
-          if (!synced.has(versioned)) return
-          clearTimeout(timer)
+        const handle = {
+          timer: undefined as ReturnType<typeof setTimeout> | undefined,
+        }
+        const listener = () => {
+          if (!synced.has(versioned)) {
+            return
+          }
+          if (handle.timer !== undefined) {
+            clearTimeout(handle.timer)
+          }
           listeners.delete(listener)
           resolve()
         }
 
+        handle.timer = setTimeout(() => {
+          listeners.delete(listener)
+          reject(new Error('awaitChange timed out'))
+        }, timeout)
+
         listeners.add(listener)
       })
+    },
+    markSynced(key, updatedAt) {
+      synced.add(versionKey(key, updatedAt))
+      for (const listener of listeners) {
+        listener()
+      }
     },
   }
 }
@@ -76,8 +88,8 @@ const coordinator = new BrowserCollectionCoordinator({
 })
 
 export const persistence = createBrowserWASQLitePersistence({
-  database,
   coordinator,
+  database,
   schemaMismatchPolicy: 'reset',
 })
 
@@ -87,7 +99,9 @@ export type SyncMessage<T> =
   | { type: 'delete'; key: string }
 
 type MutationFn<T> = (params: {
-  transaction: { mutations: { key: string; modified: T; changes: Partial<T> }[] }
+  transaction: {
+    mutations: { key: string; modified: T; changes: Partial<T> }[]
+  }
 }) => Promise<void>
 
 export type SyncEventsFn<T> = (params: {
@@ -102,15 +116,18 @@ export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
   id: string
   getKey: (item: T) => string
   events: SyncEventsFn<T>
-  sync: (params: { rows: T[]; signal: AbortSignal }) => Promise<SyncMessage<T>[]>
+  sync: (params: {
+    rows: T[]
+    signal: AbortSignal
+  }) => Promise<SyncMessage<T>[]>
   onInsert?: MutationFn<T>
   onUpdate?: MutationFn<T>
   onDelete?: MutationFn<T>
 }
 
-export function syncCollectionOptions<T extends { updatedAt: Date }>(
-  config: SyncCollectionConfig<T>,
-) {
+export const syncCollectionOptions = <T extends { updatedAt: Date }>(
+  config: SyncCollectionConfig<T>
+) => {
   const tracker = createSyncTracker()
 
   const sync: SyncConfig<T, string> = {
@@ -120,7 +137,7 @@ export function syncCollectionOptions<T extends { updatedAt: Date }>(
 
       const writeItem = (item: SyncMessage<T>) => {
         if (item.type === 'delete') {
-          write({ type: 'delete', key: item.key })
+          write({ key: item.key, type: 'delete' })
           return
         }
         write({ type: item.type, value: item.value })
@@ -128,7 +145,9 @@ export function syncCollectionOptions<T extends { updatedAt: Date }>(
       }
 
       const writeItems = (items: SyncMessage<T>[]) => {
-        if (signal.aborted) return
+        if (signal.aborted) {
+          return
+        }
         begin()
         for (const item of items) {
           writeItem(item)
@@ -141,7 +160,9 @@ export function syncCollectionOptions<T extends { updatedAt: Date }>(
           const rows = await collection.toArrayWhenReady()
           writeItems(await config.sync({ rows, signal }))
         } catch (error) {
-          if (!signal.aborted) posthog.captureException(error)
+          if (!signal.aborted) {
+            posthog.captureException(error)
+          }
         }
       }
 
@@ -153,17 +174,22 @@ export function syncCollectionOptions<T extends { updatedAt: Date }>(
             // oxlint-disable-next-line no-await-in-loop
             await Promise.all([
               catchUp(),
-              config.events({ signal, write: item => writeItems([item]) }),
+              config.events({ signal, write: (item) => writeItems([item]) }),
             ])
             failures = 0
           } catch (error) {
-            if (signal.aborted) return
+            if (signal.aborted) {
+              return
+            }
             posthog.captureException(error)
-            failures++
+            failures += 1
           }
 
           // oxlint-disable-next-line no-await-in-loop
-          await sleep(Math.min(RETRY_MIN_DELAY * 2 ** failures, RETRY_MAX_DELAY), signal)
+          await sleep(
+            Math.min(RETRY_MIN_DELAY * 2 ** failures, RETRY_MAX_DELAY),
+            signal
+          )
         }
       }
 
@@ -177,19 +203,19 @@ export function syncCollectionOptions<T extends { updatedAt: Date }>(
   }
 
   return {
-    id: config.id,
-    getKey: config.getKey,
     autoIndex: 'eager' as const,
     defaultIndexType: BasicIndex,
-    utils: { awaitChange: tracker.awaitChange },
+    getKey: config.getKey,
+    id: config.id,
+    onDelete: config.onDelete,
     onInsert: config.onInsert,
     onUpdate: config.onUpdate,
-    onDelete: config.onDelete,
     sync,
+    utils: { awaitChange: tracker.awaitChange },
   }
 }
 
-export async function clearDb() {
+export const clearDb = async () => {
   try {
     await database.execute('PRAGMA foreign_keys = OFF;')
 
@@ -224,30 +250,43 @@ export async function clearDb() {
     await database.execute('VACUUM;')
   } catch (error) {
     posthog.captureException(error)
-    await database.execute('PRAGMA foreign_keys = ON;').catch(() => {})
+    try {
+      await database.execute('PRAGMA foreign_keys = ON;')
+    } catch {
+      /* empty */
+    }
   }
 }
 
 if (import.meta.env.DEV) {
-  async function getCollectionTableName(name: string) {
-    const collections = (await database.execute('SELECT * FROM collection_registry')) as {
+  const getCollectionTableName = async (name: string) => {
+    const collections = (await database.execute(
+      'SELECT * FROM collection_registry'
+    )) as {
       collection_id: string
       table_name: string
       schema_version: number
     }[]
-    const matching = collections.filter(c => c.collection_id === name)
-    if (matching.length === 0) return undefined
+    const matching = collections.filter((c) => c.collection_id === name)
+    if (matching.length === 0) {
+      return
+    }
 
-    return matching.toSorted((a, b) => b.schema_version - a.schema_version)[0]!.table_name
+    const [latest] = matching.toSorted(
+      (a, b) => b.schema_version - a.schema_version
+    )
+    return latest?.table_name
   }
 
-  async function showCollection(name: string) {
+  const showCollection = async (name: string) => {
     const tableName = await getCollectionTableName(name)
     if (!tableName) {
       return
     }
 
-    const collection = (await database.execute(`SELECT * FROM ${tableName}`)) as {
+    const collection = (await database.execute(
+      `SELECT * FROM ${tableName}`
+    )) as {
       key: string
       metadata: unknown
       row_version: number
@@ -255,7 +294,7 @@ if (import.meta.env.DEV) {
     }[]
 
     // oxlint-disable-next-line no-console
-    console.log(collection.map(c => JSON.parse(c.value)))
+    console.log(collection.map((c) => JSON.parse(c.value)))
   }
 
   // @ts-expect-error window is not typed

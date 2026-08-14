@@ -3,7 +3,10 @@ import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
 import * as mssql from '@tamery/connection/queries/dialects/mssql'
 import * as mysql from '@tamery/connection/queries/dialects/mysql'
 import * as pg from '@tamery/connection/queries/dialects/pg'
-import type { MenuPopupRequest, MenuPopupResult } from '@tamery/shared/context-menu'
+import type {
+  MenuPopupRequest,
+  MenuPopupResult,
+} from '@tamery/shared/context-menu'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { decrypt, encrypt } from '@tamery/shared/utils/crypto-node'
 import type { IpcMainInvokeEvent } from 'electron'
@@ -13,37 +16,37 @@ import { autoUpdater } from '../main'
 import { popupNativeContextMenu } from './context-menu'
 
 export const electron = {
-  query: {
-    postgres: pg.query,
-    mysql: mysql.query,
-    clickhouse: clickhouse.query,
-    mssql: mssql.query,
-  } satisfies Record<ConnectionType, QueryExecutor>,
-  encryption: {
-    encrypt: async (arg: Parameters<typeof encrypt>[0]) => encrypt(arg),
-    decrypt: async (arg: Parameters<typeof decrypt>[0]) => decrypt(arg),
-  },
   app: {
-    checkForUpdates: () => {
-      return autoUpdater?.checkForUpdates()
-    },
+    checkForUpdates: () => autoUpdater?.checkForUpdates(),
     quitAndInstall: () => {
       autoUpdater?.restartAndInstall()
     },
-    setNativeTheme: async (theme: 'light' | 'dark' | 'system') => {
+    setNativeTheme: (theme: 'light' | 'dark' | 'system') => {
       nativeTheme.themeSource = theme
     },
   },
-  versions: {
-    app: async () => app.getVersion(),
+  encryption: {
+    decrypt: (arg: Parameters<typeof decrypt>[0]) => decrypt(arg),
+    encrypt: (arg: Parameters<typeof encrypt>[0]) => encrypt(arg),
   },
   menu: {
     popup: ((arg: MenuPopupRequest, event?: IpcMainInvokeEvent) =>
-      popupNativeContextMenu(arg, event)) as (arg: MenuPopupRequest) => Promise<MenuPopupResult>,
+      popupNativeContextMenu(arg, event)) as (
+      arg: MenuPopupRequest
+    ) => Promise<MenuPopupResult>,
+  },
+  query: {
+    clickhouse: clickhouse.query,
+    mssql: mssql.query,
+    mysql: mysql.query,
+    postgres: pg.query,
+  } satisfies Record<ConnectionType, QueryExecutor>,
+  versions: {
+    app: () => app.getVersion(),
   },
 }
 
-function registerHandlers(prefix: string, value: unknown) {
+const registerHandlers = (prefix: string, value: unknown) => {
   if (typeof value === 'function') {
     ipcMain.handle(prefix, (event, arg) => value(arg, event))
     return
@@ -55,7 +58,7 @@ function registerHandlers(prefix: string, value: unknown) {
   }
 }
 
-export function initElectronEvents() {
+export const initElectronEvents = () => {
   for (const [key, value] of Object.entries(electron)) {
     registerHandlers(key, value)
   }

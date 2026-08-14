@@ -7,32 +7,43 @@ export interface ScrollInfo {
   bottom: number
 }
 
-export function useScrollInfo(ref: React.RefObject<HTMLElement | null>) {
+export const useScrollInfo = (ref: React.RefObject<HTMLElement | null>) => {
   const [scrollInfo, setScrollInfo] = React.useState<ScrollInfo>({
-    left: 0,
-    top: 0,
-    right: 0,
     bottom: 0,
+    left: 0,
+    right: 0,
+    top: 0,
   })
 
   const updateScrollInfo = React.useCallback(() => {
     const el = ref.current
-    if (!el) return
+    if (!el) {
+      return
+    }
 
-    const { scrollLeft, scrollTop, scrollWidth, scrollHeight, clientWidth, clientHeight } = el
+    const {
+      scrollLeft,
+      scrollTop,
+      scrollWidth,
+      scrollHeight,
+      clientWidth,
+      clientHeight,
+    } = el
 
     // oxlint-disable-next-line react/set-state-in-effect
     setScrollInfo({
-      left: scrollLeft,
-      top: scrollTop,
-      right: scrollWidth - (scrollLeft + clientWidth),
       bottom: scrollHeight - (scrollTop + clientHeight),
+      left: scrollLeft,
+      right: scrollWidth - (scrollLeft + clientWidth),
+      top: scrollTop,
     })
   }, [ref])
 
   React.useEffect(() => {
     const el = ref.current
-    if (!el) return
+    if (!el) {
+      return
+    }
 
     updateScrollInfo()
 

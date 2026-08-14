@@ -9,11 +9,20 @@ import {
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { Button } from '@tamery/ui/components/button'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import type { LinkProps } from '@tanstack/react-router'
-import { useLocation, useMatches, useSearch } from '@tanstack/react-router'
+import {
+  getRouteApi,
+  useLocation,
+  useMatches,
+  useSearch,
+} from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
 import { useSubscription } from 'seitu/react'
 
@@ -21,30 +30,27 @@ import { Link } from '~/components/link'
 import { useCollections } from '~/entities/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 
-import { Route } from '../$resourceId'
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-function baseClasses(isActive = false) {
-  return cn(
-    `
-      flex size-9 items-center justify-center rounded-md border
-      border-transparent text-foreground
-    `,
+const baseClasses = (isActive = false) =>
+  cn(
+    `text-foreground flex size-9 items-center justify-center rounded-md border border-transparent`,
     isActive &&
-      `
-      border-primary/20 bg-primary/10 text-primary
-      hover:bg-primary/20
-    `,
+      `border-primary/20 bg-primary/10 text-primary hover:bg-primary/20`
   )
-}
 
-function MainLinks() {
-  const { connectionResource } = Route.useRouteContext()
-  const { schema: schemaParam, table: tableParam } = useSearch({ strict: false })
+const MainLinks = () => {
+  const { connectionResource } = useRouteContext()
+  const { schema: schemaParam, table: tableParam } = useSearch({
+    strict: false,
+  })
   const match = useMatches({
-    select: matches => matches.map(match => match.routeId).at(-1),
+    select: (matches) => matches.map((routeMatch) => routeMatch.routeId).at(-1),
   })
   const store = getConnectionResourceStore(connectionResource.id)
-  const lastOpenedTable = useSubscription(store, { selector: state => state.lastOpenedTable })
+  const lastOpenedTable = useSubscription(store, {
+    selector: (state) => state.lastOpenedTable,
+  })
 
   useEffect(() => {
     if (
@@ -54,29 +60,36 @@ function MainLinks() {
       schemaParam !== lastOpenedTable?.schema
     ) {
       store.set(
-        state =>
+        (state) =>
           ({
             ...state,
             lastOpenedTable: { schema: schemaParam, table: tableParam },
-          }) satisfies typeof state,
+          }) satisfies typeof state
       )
     }
   }, [store, lastOpenedTable, tableParam, schemaParam])
 
   const isActiveSql = match === '/_protected/connection/$resourceId/query/'
   const isActiveTables = match === '/_protected/connection/$resourceId/table/'
-  const isActiveDefinitions = match?.includes('/_protected/connection/$resourceId/definitions')
-  const isActiveVisualizer = match === '/_protected/connection/$resourceId/visualizer/'
+  const isActiveDefinitions = match?.includes(
+    '/_protected/connection/$resourceId/definitions'
+  )
+  const isActiveVisualizer =
+    match === '/_protected/connection/$resourceId/visualizer/'
 
   const isCurrentTableAsLastOpened =
-    lastOpenedTable?.schema === schemaParam && lastOpenedTable?.table === tableParam
+    lastOpenedTable?.schema === schemaParam &&
+    lastOpenedTable?.table === tableParam
 
   const route = useMemo(() => {
     if (!isCurrentTableAsLastOpened && lastOpenedTable) {
       return {
         to: '/connection/$resourceId/table',
         params: { resourceId: connectionResource.id },
-        search: { schema: lastOpenedTable.schema, table: lastOpenedTable.table },
+        search: {
+          schema: lastOpenedTable.schema,
+          table: lastOpenedTable.table,
+        },
       } satisfies LinkProps
     }
 
@@ -86,19 +99,21 @@ function MainLinks() {
     } satisfies LinkProps
   }, [connectionResource.id, isCurrentTableAsLastOpened, lastOpenedTable])
 
-  function onTablesClick() {
+  const onTablesClick = () => {
     if (isCurrentTableAsLastOpened && lastOpenedTable) {
       store.set(
-        state =>
+        (state) =>
           ({
             ...state,
             lastOpenedTable: null,
-          }) satisfies typeof state,
+          }) satisfies typeof state
       )
     }
   }
 
-  const lastOpenedChatId = useSubscription(store, { selector: state => state.lastOpenedChatId })
+  const lastOpenedChatId = useSubscription(store, {
+    selector: (state) => state.lastOpenedChatId,
+  })
 
   return (
     <>
@@ -165,16 +180,19 @@ function MainLinks() {
   )
 }
 
-export function ConnectionSidebar({ className, ...props }: React.ComponentProps<'div'>) {
-  const { connection, connectionResource } = Route.useRouteContext()
+export const ConnectionSidebar = ({
+  className,
+  ...props
+}: React.ComponentProps<'div'>) => {
+  const { connection, connectionResource } = useRouteContext()
   const { connectionStringsCollection } = useCollections()
   const { data: connectionString } = useLiveQuery(
-    q =>
+    (q) =>
       q
         .from({ cs: connectionStringsCollection })
         .where(({ cs }) => eq(cs.connectionId, connection.id))
         .findOne(),
-    [connectionStringsCollection, connection.id],
+    [connectionStringsCollection, connection.id]
   )
   const store = getConnectionResourceStore(connectionResource.id)
   const location = useLocation()
@@ -200,13 +218,19 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
                 <Button
                   size="icon"
                   variant="ghost"
-                  onClick={() => window.open(import.meta.env.VITE_PUBLIC_WEB_URL + location.href)}
+                  onClick={() =>
+                    window.open(
+                      import.meta.env.VITE_PUBLIC_WEB_URL + location.href
+                    )
+                  }
                 />
               }
             >
               <RiGlobalLine className="size-4" />
             </TooltipTrigger>
-            <TooltipContent side="right">Open this connection in the web app</TooltipContent>
+            <TooltipContent side="right">
+              Open this connection in the web app
+            </TooltipContent>
           </Tooltip>
         )}
         <Tooltip>
@@ -217,8 +241,11 @@ export function ConnectionSidebar({ className, ...props }: React.ComponentProps<
                 variant="ghost"
                 onClick={() =>
                   store.set(
-                    state =>
-                      ({ ...state, loggerOpened: !state.loggerOpened }) satisfies typeof state,
+                    (state) =>
+                      ({
+                        ...state,
+                        loggerOpened: !state.loggerOpened,
+                      }) satisfies typeof state
                   )
                 }
               />

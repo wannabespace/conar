@@ -7,17 +7,19 @@ const os = getOS(navigator.userAgent)
 const isMac = os.type === 'macos'
 const isElectron = !!window.electron
 
-function useIsFullscreen() {
+const useIsFullscreen = () => {
   const [isFullscreen, setIsFullscreen] = useState(false)
 
-  useEffect(() => {
-    return window.electron?.app.onFullscreenChange(setIsFullscreen)
-  }, [])
+  useEffect(() => window.electron?.app.onFullscreenChange(setIsFullscreen), [])
 
   return isFullscreen
 }
 
-export function TitleBar({ className, children, ...props }: React.ComponentProps<'div'>) {
+export const TitleBar = ({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<'div'>) => {
   const isFullscreen = useIsFullscreen()
 
   return (
@@ -27,7 +29,7 @@ export function TitleBar({ className, children, ...props }: React.ComponentProps
         'flex h-[calc(40px+1px)] shrink-0 items-center border-b border-transparent',
         isElectron && '[-webkit-app-region:drag]',
         className,
-        isElectron && !isFullscreen && (isMac ? 'pl-20' : 'pr-34'),
+        isElectron && !isFullscreen && (isMac ? 'pl-20' : 'pr-34')
       )}
       {...props}
     >

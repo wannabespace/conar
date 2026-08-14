@@ -1,16 +1,21 @@
 import { createRequire } from 'node:module'
 
+import type * as ClickHouse from '@clickhouse/client'
 import type { AnyFunction } from '@tamery/shared/utils/helpers'
 import { tryParseJson } from '@tamery/shared/utils/helpers'
 import { memoize } from 'memoza'
 
 import type { QueryExecutor } from '..'
 import { handleQueryError } from '..'
-import { disposeTransaction, getTransaction, registerTransaction } from '../transactions'
+import {
+  disposeTransaction,
+  getTransaction,
+  registerTransaction,
+} from '../transactions'
 
 const clickhouse = createRequire(import.meta.url)(
-  '@clickhouse/client',
-) as typeof import('@clickhouse/client')
+  '@clickhouse/client'
+) as typeof ClickHouse
 
 const getClient = memoize((connectionString: string) => {
   let url = connectionString
@@ -20,93 +25,144 @@ const getClient = memoize((connectionString: string) => {
     url = connectionString.replace('clickhouse', 'http')
   }
   return clickhouse.createClient({
-    url,
     clickhouse_settings: {
       date_time_output_format: 'iso',
     },
+    url,
   })
 })
 
-export function wrapClickhouseError<T extends AnyFunction>(fn: T): T {
-  return (async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
+export const wrapClickhouseError = <T extends AnyFunction>(fn: T): T =>
+  (async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
     try {
       return await handleQueryError(fn)(...args)
     } catch (error) {
       if (error instanceof Error) {
         const parsed = tryParseJson<
-          Partial<{ message: string; status: string; code: number; request_id: string }>
+          Partial<{
+            message: string
+            status: string
+            code: number
+            request_id: string
+          }>
         >(error.message)
-        if (parsed?.message) throw new Error(parsed.message, { cause: error })
+        if (parsed?.message) {
+          throw new Error(parsed.message, { cause: error })
+        }
       }
       throw error
     }
   }) as T
-}
 
-function isSelectLikeQuery(query: string) {
-  return ['SELECT', 'SHOW', 'DESCRIBE', 'EXPLAIN', 'WITH', 'CHECK'].some(keyword =>
-    query.trim().toUpperCase().startsWith(keyword),
+const isSelectLikeQuery = (queryText: string) =>
+  ['SELECT', 'SHOW', 'DESCRIBE', 'EXPLAIN', 'WITH', 'CHECK'].some((keyword) =>
+    queryText.trim().toUpperCase().startsWith(keyword)
   )
+
+const emptyAsync = async () => {
+  /* empty */
 }
 
 export const query = {
-  execute: wrapClickhouseError(async ({ connectionString, query }) => {
-    const client = getClient(connectionString)
+  beginTransaction: handleQueryError(
+    ({
+      connectionString,
+      ownerId,
+    }: {
+      connectionString: string
+      ownerId?: string
+    }) => {
+      const txId = registerTransaction(
+        {
+          commit: emptyAsync,
+          execute: (q) => query.execute({ connectionString, query: q }),
+          release: emptyAsync,
+          rollback: emptyAsync,
+        },
+        ownerId
+      )
 
-    if (isSelectLikeQuery(query)) {
-      const start = performance.now()
-      const result = await client
-        .query({ query, format: 'JSONEachRow' })
-        .then(result => result.json())
-      return { result, duration: performance.now() - start }
+      return Promise.resolve({ txId })
     }
-
-    const start = performance.now()
-    await client.exec({ query })
-
-    return { result: [], duration: performance.now() - start }
-  }),
-
-  beginTransaction: handleQueryError(async ({ connectionString }: { connectionString: string }) => {
-    // ClickHouse does not support transactions
-    const txId = registerTransaction({
-      execute: (q, values) => query.execute({ connectionString, query: q, values }),
-      commit: async () => {},
-      rollback: async () => {},
-      release: async () => {},
-    })
-
-    return { txId }
-  }),
-
-  executeTransaction: handleQueryError(
-    async ({ txId, query, values }: { txId: string; query: string; values: unknown[] }) => {
-      const handle = getTransaction(txId)
-      if (!handle) throw new Error(`No active transaction found for id: ${txId}`)
-
-      return handle.execute(query, values)
-    },
   ),
 
   commitTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
-    if (!handle) return
+    if (!handle) {
+      return
+    }
 
     try {
       await handle.commit()
     } finally {
-      await handle.release().catch(() => {})
+      try {
+        await handle.release()
+      } catch {
+        /* empty */
+      }
     }
   }),
 
+  execute: wrapClickhouseError(
+    async ({
+      connectionString,
+      query: queryText,
+    }: {
+      connectionString: string
+      query: string
+    }) => {
+      const client = getClient(connectionString)
+
+      if (isSelectLikeQuery(queryText)) {
+        const start = performance.now()
+        const response = await client.query({
+          format: 'JSONEachRow',
+          query: queryText,
+        })
+        const rows = await response.json()
+        return { duration: performance.now() - start, result: rows }
+      }
+
+      const start = performance.now()
+      await client.exec({ query: queryText })
+
+      return { duration: performance.now() - start, result: [] }
+    }
+  ),
+
+  executeTransaction: handleQueryError(
+    ({
+      txId,
+      query: queryText,
+      values,
+    }: {
+      txId: string
+      query: string
+      values: unknown[]
+    }) => {
+      const handle = getTransaction(txId)
+      if (!handle) {
+        throw new Error(`No active transaction found for id: ${txId}`)
+      }
+
+      return handle.execute(queryText, values)
+    }
+  ),
+
   rollbackTransaction: handleQueryError(async ({ txId }: { txId: string }) => {
     const handle = disposeTransaction(txId)
-    if (!handle) return
+    if (!handle) {
+      return
+    }
 
     try {
       await handle.rollback()
     } finally {
-      await handle.release().catch(() => {})
+      try {
+        await handle.release()
+      } catch {
+        /* empty */
+      }
     }
   }),
 } satisfies QueryExecutor

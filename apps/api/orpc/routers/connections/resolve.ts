@@ -6,7 +6,7 @@ import { authMiddleware, orpc } from '~/orpc'
 
 export const resolve = orpc
   .use(authMiddleware)
-  .input(type({ 'id': 'string.uuid.v7', 'updatedAt?': 'Date' }))
+  .input(type({ id: 'string.uuid.v7', 'updatedAt?': 'Date' }))
   .handler(async ({ context, input }) => {
     const connection = await db.query.connections.findFirst({
       columns: {
@@ -23,7 +23,10 @@ export const resolve = orpc
       return { status: 'not-found' as const }
     }
 
-    if (input.updatedAt && input.updatedAt.getTime() >= connection.updatedAt.getTime()) {
+    if (
+      input.updatedAt &&
+      input.updatedAt.getTime() >= connection.updatedAt.getTime()
+    ) {
       return { status: 'unchanged' as const }
     }
 
@@ -33,8 +36,8 @@ export const resolve = orpc
     })
 
     return {
-      status: 'modified' as const,
       connectionString,
+      status: 'modified' as const,
       updatedAt: connection.updatedAt,
     }
   })

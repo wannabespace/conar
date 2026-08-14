@@ -1,18 +1,25 @@
 import { render } from '@tamery/ui/lib/render'
+import { getRouteApi } from '@tanstack/react-router'
 import type { editor, Position } from 'monaco-editor'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import type { Dispatch, RefObject, SetStateAction } from 'react'
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
+import {
+  getConnectionResourceStore,
+  getEditorQueriesComputed,
+} from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 
-import { Route } from '../..'
 import { runnerHooks } from '../../-page'
 import { RunnerEditorAIZone } from './runner-editor-ai-zone'
 
-function useTrackLineNumberChange(
+const { useRouteContext } = getRouteApi(
+  '/_protected/connection/$resourceId/query/'
+)
+
+const useTrackLineNumberChange = (
   monacoRef: RefObject<editor.IStandaloneCodeEditor | null>,
   {
     currentAIZoneLineNumber,
@@ -20,14 +27,16 @@ function useTrackLineNumberChange(
   }: {
     currentAIZoneLineNumber: number | null
     setCurrentAIZoneLineNumber: Dispatch<SetStateAction<number | null>>
-  },
-) {
+  }
+) => {
   useEffect(() => {
-    if (!monacoRef.current || currentAIZoneLineNumber === null) return
+    if (!monacoRef.current || currentAIZoneLineNumber === null) {
+      return
+    }
 
     const editor = monacoRef.current
 
-    const disposable = editor.onDidChangeModelContent(e => {
+    const disposable = editor.onDidChangeModelContent((e) => {
       for (const change of e.changes) {
         const changeStartLine = change.range.startLineNumber
         const changeEndLine = change.range.endLineNumber
@@ -38,7 +47,9 @@ function useTrackLineNumberChange(
           const lineDiff = newLineCount - removedLineCount
 
           if (lineDiff !== 0) {
-            setCurrentAIZoneLineNumber(prev => (prev === null ? null : prev + lineDiff))
+            setCurrentAIZoneLineNumber((prev) =>
+              prev === null ? null : prev + lineDiff
+            )
           }
         }
       }
@@ -48,24 +59,30 @@ function useTrackLineNumberChange(
   }, [monacoRef, currentAIZoneLineNumber, setCurrentAIZoneLineNumber])
 }
 
-export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCodeEditor | null>) {
-  const { connection, connectionResource } = Route.useRouteContext()
+export const useRunnerEditorAIZones = (
+  monacoRef: RefObject<editor.IStandaloneCodeEditor | null>
+) => {
+  const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
   const editorQueries = useSubscription(editorQueriesStore)
   const domElementRef = useRef<HTMLElement>(null)
   const { subscription } = useUserSubscription()
 
-  const [currentAIZoneLineNumber, setCurrentAIZoneLineNumber] = useState<number | null>(null)
+  const [currentAIZoneLineNumber, setCurrentAIZoneLineNumber] = useState<
+    number | null
+  >(null)
 
   const currentAIZoneQuery = useMemo(() => {
-    if (currentAIZoneLineNumber === null) return null
+    if (currentAIZoneLineNumber === null) {
+      return null
+    }
 
     return (
       editorQueries.find(
-        query =>
+        (query) =>
           currentAIZoneLineNumber >= query.startLineNumber &&
-          currentAIZoneLineNumber <= query.endLineNumber,
+          currentAIZoneLineNumber <= query.endLineNumber
       ) ?? null
     )
   }, [currentAIZoneLineNumber, editorQueries])
@@ -87,7 +104,9 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
   })
 
   useEffect(() => {
-    if (!monacoRef.current || !currentAIZoneQuery) return
+    if (!monacoRef.current || !currentAIZoneQuery) {
+      return
+    }
 
     const editor = monacoRef.current
 
@@ -108,7 +127,7 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
     let zoneId: string
 
     queueMicrotask(() => {
-      editor.changeViewZones(changeAccessor => {
+      editor.changeViewZones((changeAccessor) => {
         const domNode =
           domElementRef.current ||
           render(
@@ -119,12 +138,15 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
                 store
                   .get()
                   .query.split('\n')
-                  .slice(currentAIZoneQuery.startLineNumber - 1, currentAIZoneQuery.endLineNumber)
+                  .slice(
+                    currentAIZoneQuery.startLineNumber - 1,
+                    currentAIZoneQuery.endLineNumber
+                  )
                   .join('\n')
               }
               onClose={() => {
-                editor.changeViewZones(changeAccessor => {
-                  changeAccessor.removeZone(zoneId)
+                editor.changeViewZones((zoneAccessor) => {
+                  zoneAccessor.removeZone(zoneId)
                 })
                 editor.setPosition({
                   lineNumber: currentAIZoneQuery.startLineNumber,
@@ -134,14 +156,14 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
                 highlightCollection.clear()
                 setCurrentAIZoneLineNumber(null)
               }}
-              onUpdate={query => {
+              onUpdate={(query) => {
                 runnerHooks.callHook('replaceQuery', {
                   query,
                   startLineNumber: currentAIZoneQuery.startLineNumber,
                   endLineNumber: currentAIZoneQuery.endLineNumber,
                 })
               }}
-            />,
+            />
           )
 
         domNode.style.zIndex = '100'
@@ -157,41 +179,55 @@ export function useRunnerEditorAIZones(monacoRef: RefObject<editor.IStandaloneCo
     })
 
     return () => {
-      editor.changeViewZones(changeAccessor => {
+      editor.changeViewZones((changeAccessor) => {
         changeAccessor.removeZone(zoneId)
       })
       highlightCollection.clear()
     }
-  }, [monacoRef, connection, connectionResource, currentAIZoneQuery, store, subscription])
+  }, [
+    monacoRef,
+    connection,
+    connectionResource,
+    currentAIZoneQuery,
+    store,
+    subscription,
+  ])
 
-  const getInlineQueryEvent = useEffectEvent((position: Position) => {
-    return (
+  const getInlineQueryEvent = useEffectEvent(
+    (position: Position) =>
       editorQueries.find(
-        query =>
+        (query) =>
           position.lineNumber >= query.startLineNumber &&
-          position.lineNumber <= query.endLineNumber,
+          position.lineNumber <= query.endLineNumber
       ) ?? null
-    )
-  })
+  )
 
   useEffect(() => {
-    if (!monacoRef.current) return
+    if (!monacoRef.current) {
+      return
+    }
 
     const disposable = monacoRef.current.addAction({
       id: 'tamery.execute-on-k',
       label: 'Execute on K',
+      // Monaco keybindings combine modifiers via bitwise OR
+      // oxlint-disable-next-line no-bitwise
       keybindings: [KeyMod.CtrlCmd | KeyCode.KeyK],
-      run: e => {
+      run: (e) => {
         const position = e.getPosition()
 
-        if (!position) return
+        if (!position) {
+          return
+        }
 
         const inlineQuery = getInlineQueryEvent(position)
 
-        if (inlineQuery === null) return
+        if (inlineQuery === null) {
+          return
+        }
 
-        setCurrentAIZoneLineNumber(lineNumber =>
-          lineNumber === position.lineNumber ? null : position.lineNumber,
+        setCurrentAIZoneLineNumber((lineNumber) =>
+          lineNumber === position.lineNumber ? null : position.lineNumber
         )
       },
     })

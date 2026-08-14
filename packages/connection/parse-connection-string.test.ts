@@ -8,12 +8,12 @@ describe('parseConnectionString', () => {
     const config = parseConnectionString(connectionString)
 
     expect(config).toEqual({
-      user: 'user',
-      password: 'password',
-      host: 'localhost',
-      port: 5432,
       database: 'mydb',
+      host: 'localhost',
+      password: 'password',
+      port: 5432,
       searchParams: new URLSearchParams(),
+      user: 'user',
     })
   })
 
@@ -22,11 +22,11 @@ describe('parseConnectionString', () => {
     const config = parseConnectionString(connectionString)
 
     expect(config).toEqual({
-      user: 'user',
-      password: 'password',
-      host: 'localhost',
       database: 'mydb',
+      host: 'localhost',
+      password: 'password',
       searchParams: new URLSearchParams(),
+      user: 'user',
     })
   })
 
@@ -35,11 +35,11 @@ describe('parseConnectionString', () => {
     const config = parseConnectionString(connectionString)
 
     expect(config).toEqual({
-      user: 'user',
-      password: 'password',
       host: 'localhost',
+      password: 'password',
       port: 5432,
       searchParams: new URLSearchParams(),
+      user: 'user',
     })
   })
 
@@ -48,11 +48,11 @@ describe('parseConnectionString', () => {
     const config = parseConnectionString(connectionString)
 
     expect(config).toEqual({
-      user: 'user',
+      database: 'mydb',
       host: 'localhost',
       port: 5432,
-      database: 'mydb',
       searchParams: new URLSearchParams(),
+      user: 'user',
     })
   })
 
@@ -61,12 +61,12 @@ describe('parseConnectionString', () => {
     const config = parseConnectionString(connectionString)
 
     expect(config).toEqual({
-      user: 'user',
-      password: 'p@ssw#rd',
-      host: 'localhost',
-      port: 5432,
       database: 'mydb',
+      host: 'localhost',
+      password: 'p@ssw#rd',
+      port: 5432,
       searchParams: new URLSearchParams(),
+      user: 'user',
     })
   })
 
@@ -76,12 +76,12 @@ describe('parseConnectionString', () => {
     const config = parseConnectionString(connectionString)
 
     expect(config).toEqual({
-      user: 'user',
-      password: 'password',
-      host: 'localhost',
-      port: 5432,
       database: 'database',
+      host: 'localhost',
+      password: 'password',
+      port: 5432,
       searchParams: new URLSearchParams([['options', '-c search_path=auth']]),
+      user: 'user',
     })
   })
 })

@@ -11,7 +11,7 @@ type InputFromDB = unknown
 export interface ValueTransformer<UI = unknown> {
   // Will render in the cell
   toDisplay: (value: InputFromDB, size: number) => string
-  fromConnection: (value: InputFromDB) => {
+  fromConnection: (value?: InputFromDB) => {
     // Will render in the popover ui component
     toUI: () => UI
     // Will render in the popover raw editor
@@ -23,7 +23,7 @@ export interface ValueTransformer<UI = unknown> {
   }
 }
 
-export function getDisplayValue(value: unknown, size: number): string {
+export const getDisplayValue = (value: unknown, size: number): string => {
   let display: string
 
   if (value === null) {
@@ -43,26 +43,26 @@ export function getDisplayValue(value: unknown, size: number): string {
   return display.replaceAll('\n', ' ').slice(0, size / 6 + 5 + 50)
 }
 
-export function createTransformer(
+export const createTransformer = (
   connectionType: ConnectionType,
-  column: Column,
+  column: Column
   // oxlint-disable-next-line ts/no-explicit-any
-): ValueTransformer<any> {
+): ValueTransformer<any> => {
   switch (column.uiType) {
-    case 'list':
+    case 'list': {
       return createListTransformer(connectionType, column)
+    }
 
-    case 'boolean':
+    case 'boolean': {
       return createBooleanTransformer()
+    }
 
-    case 'time':
+    case 'time': {
       return createTimeTransformer(column)
+    }
 
-    case 'select':
-    case 'date':
-    case 'datetime':
-    case 'raw':
-    default:
+    default: {
       return createRawTransformer()
+    }
   }
 }

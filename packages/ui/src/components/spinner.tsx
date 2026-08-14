@@ -2,16 +2,13 @@ import { RiLoaderLine } from '@remixicon/react'
 import { cn } from '@tamery/ui/lib/utils'
 import type { ComponentProps } from 'react'
 
-function Spinner({ className, ...props }: ComponentProps<typeof RiLoaderLine>) {
-  return (
-    <RiLoaderLine
-      data-slot="spinner"
-      role="status"
-      aria-label="Loading"
-      className={cn(`size-4 animate-spin`, className)}
-      {...props}
-    />
-  )
-}
+const Spinner = ({
+  className,
+  ...props
+}: ComponentProps<typeof RiLoaderLine>) => (
+  <output data-slot="spinner" aria-label="Loading" className="inline-flex">
+    <RiLoaderLine className={cn(`size-4 animate-spin`, className)} {...props} />
+  </output>
+)
 
 export { Spinner }

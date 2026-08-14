@@ -1,8 +1,16 @@
 import { pick } from '@tamery/shared/utils/helpers'
 import { Label } from '@tamery/ui/components/label'
-import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@tamery/ui/components/popover'
 import { Switch } from '@tamery/ui/components/switch'
-import { ToggleGroup, ToggleGroupItem } from '@tamery/ui/components/toggle-group'
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@tamery/ui/components/toggle-group'
+import { getRouteApi } from '@tanstack/react-router'
 import type { ReactElement } from 'react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -14,9 +22,9 @@ import {
   toggleResults,
 } from '~/entities/connection/store'
 
-import { Route } from '../..'
+const { useParams } = getRouteApi('/_protected/connection/$resourceId/query/')
 
-function ToggleRow({
+const ToggleRow = ({
   label,
   checked,
   onCheckedChange,
@@ -24,16 +32,14 @@ function ToggleRow({
   label: string
   checked: boolean
   onCheckedChange: () => void
-}) {
-  return (
-    <div className="flex items-center justify-between py-0.5">
-      <Label htmlFor={label}>{label}</Label>
-      <Switch id={label} checked={checked} onCheckedChange={onCheckedChange} />
-    </div>
-  )
-}
+}) => (
+  <div className="flex items-center justify-between py-0.5">
+    <Label htmlFor={label}>{label}</Label>
+    <Switch id={label} checked={checked} onCheckedChange={onCheckedChange} />
+  </div>
+)
 
-function PositionSelector<T extends string>({
+const PositionSelector = <T extends string>({
   label,
   value,
   options,
@@ -43,37 +49,40 @@ function PositionSelector<T extends string>({
   value: T
   options: { value: T; label: string }[]
   onChange: (value: T) => void
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <Label className="text-sm font-medium text-foreground">{label}</Label>
-      <ToggleGroup
-        variant="outline"
-        size="sm"
-        value={[value]}
-        onValueChange={newValue => {
-          if (newValue[0]) {
-            onChange(newValue[0] as T)
-          }
-        }}
-      >
-        {options.map(option => (
-          <ToggleGroupItem key={option.value} value={option.value} className="text-xs">
-            {option.label}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
-    </div>
-  )
-}
+}) => (
+  <div className="flex items-center justify-between">
+    <Label className="text-foreground text-sm font-medium">{label}</Label>
+    <ToggleGroup
+      variant="outline"
+      size="sm"
+      value={[value]}
+      onValueChange={(newValue) => {
+        if (newValue[0]) {
+          onChange(newValue[0] as T)
+        }
+      }}
+    >
+      {options.map((option) => (
+        <ToggleGroupItem
+          key={option.value}
+          value={option.value}
+          className="text-xs"
+        >
+          {option.label}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
+  </div>
+)
 
-export function RunnerSettings({ children }: { children: ReactElement }) {
+export const RunnerSettings = ({ children }: { children: ReactElement }) => {
   const [open, setOpen] = useState(false)
-  const { resourceId } = Route.useParams()
+  const { resourceId } = useParams()
 
   const store = getConnectionResourceStore(resourceId)
   const { chatVisible, resultsVisible, chatPosition } = useSubscription(store, {
-    selector: s => pick(s.layout, ['chatVisible', 'resultsVisible', 'chatPosition']),
+    selector: (s) =>
+      pick(s.layout, ['chatVisible', 'resultsVisible', 'chatPosition']),
   })
 
   return (
@@ -98,7 +107,7 @@ export function RunnerSettings({ children }: { children: ReactElement }) {
               { value: 'left' as const, label: 'Left' },
               { value: 'right' as const, label: 'Right' },
             ]}
-            onChange={v => setChatPosition(resourceId, v)}
+            onChange={(v) => setChatPosition(resourceId, v)}
           />
         </div>
       </PopoverContent>

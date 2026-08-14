@@ -9,30 +9,29 @@ import { authMiddleware, orpc } from '~/orpc'
 
 import { publisher } from '../chats/events'
 
-async function getMessages(chatId: string) {
-  return db
+const getMessages = (chatId: string) =>
+  db
     .select()
     .from(chatsMessages)
     .where(eq(chatsMessages.chatId, chatId))
     .orderBy(asc(chatsMessages.createdAt))
-}
 
 export const generateTitle = orpc
   .use(authMiddleware)
   .input(
     type({
       chatId: 'string.uuid.v7',
-      messages: 'unknown?', // TODO: remove in future
-    }),
+      'messages?': 'unknown',
+    })
   )
   .handler(async ({ input, signal, context }) => {
     const messages = await getMessages(input.chatId)
     const prompt = messages
-      .map(message =>
+      .map((message) =>
         message.parts
-          .filter(part => part.type === 'text')
-          .map(part => JSON.stringify(part, null, 2))
-          .join('\n'),
+          .filter((part) => part.type === 'text')
+          .map((part) => JSON.stringify(part, null, 2))
+          .join('\n')
       )
       .join('\n')
 
@@ -42,10 +41,9 @@ export const generateTitle = orpc
     })
 
     const { text } = await generateText({
-      model: google('gemini-flash-latest'),
+      abortSignal: signal,
       messages: [
         {
-          role: 'system',
           content: [
             'You are a title generator that generates a title for a chat.',
             "The title should be in the same language as the user's message.",
@@ -55,13 +53,14 @@ export const generateTitle = orpc
             'Do not use dots, commas, etc.',
             'Generate only the text of the title, nothing else.',
           ].join('\n'),
+          role: 'system',
         },
         {
-          role: 'user',
           content: prompt,
+          role: 'user',
         },
       ],
-      abortSignal: signal,
+      model: google('gemini-flash-latest'),
     })
 
     context.addLogData({
@@ -75,11 +74,14 @@ export const generateTitle = orpc
       .where(eq(chats.id, input.chatId))
       .returning()
 
+    if (!chat) {
+      throw new Error(`Chat not found after title update: ${input.chatId}`)
+    }
+
     publisher.publish(context.user.id, {
       type: 'update',
-      value: chat!,
+      value: chat,
     })
 
-    // TODO: remove in future, left for backward compatibility
     return text
   })

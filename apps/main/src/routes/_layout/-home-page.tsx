@@ -4,22 +4,14 @@ import { Hero } from './-components/hero'
 import { Pricing } from './-components/pricing'
 import { Testimonials } from './-components/testimonials'
 
-export function HomePage() {
-  return (
-    <main
-      className={`
-      px-4
-      sm:px-6
-      lg:px-10
-    `}
-    >
-      <div>
-        <Hero className="sticky top-(--navbar-height)" />
-        <Demo />
-      </div>
-      <Features />
-      <Testimonials />
-      <Pricing />
-    </main>
-  )
-}
+export const HomePage = () => (
+  <main className="px-4 sm:px-6 lg:px-10">
+    <div>
+      <Hero className="sticky top-(--navbar-height)" />
+      <Demo />
+    </div>
+    <Features />
+    <Testimonials />
+    <Pricing />
+  </main>
+)

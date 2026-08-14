@@ -4,32 +4,42 @@ import { memoize } from 'memoza'
 import { createQuery } from '../runtime/query'
 
 export const renameTableQuery = memoize(
-  ({ schema, oldTable, newTable }: { schema: string; oldTable: string; newTable: string }) =>
+  ({
+    schema,
+    oldTable,
+    newTable,
+  }: {
+    schema: string
+    oldTable: string
+    newTable: string
+  }) =>
     createQuery({
       query: {
-        postgres: db =>
+        clickhouse: (db) =>
+          sql`RENAME TABLE ${sql.id(schema, oldTable)} TO ${sql.id(schema, newTable)}`.execute(
+            db
+          ),
+        mssql: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [oldTable]: Record<string, unknown> }>()
             .schema.alterTable(oldTable)
             .renameTo(newTable)
             .execute(),
-        mysql: db =>
+        mysql: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [oldTable]: Record<string, unknown> }>()
             .schema.alterTable(oldTable)
             .renameTo(newTable)
             .execute(),
-        mssql: db =>
+        postgres: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [oldTable]: Record<string, unknown> }>()
             .schema.alterTable(oldTable)
             .renameTo(newTable)
             .execute(),
-        clickhouse: db =>
-          sql`RENAME TABLE ${sql.id(schema, oldTable)} TO ${sql.id(schema, newTable)}`.execute(db),
       },
-    }),
+    })
 )

@@ -1,81 +1,81 @@
 {
   "lsp": {
-    "oxlint": {
-      "initialization_options": {
-        "settings": {
-          "configPath": null,
-          "run": "onType",
-          "disableNestedConfig": false,
-          "fixKind": "safe_fix",
-          "unusedDisableDirectives": "deny"
+    "vtsls": {
+      "binary": {
+        "path": "node_modules/.bin/tsc",
+        "arguments": ["--lsp", "--stdio"]
+      }
+    },
+    "typescript-language-server": {
+      "settings": {
+        "typescript": {
+          "preferences": {
+            "includePackageJsonAutoImports": "on"
+          }
         }
       }
     },
     "oxfmt": {
       "initialization_options": {
         "settings": {
+          "configPath": null,
+          "flags": {},
           "fmt.configPath": null,
-          "run": "onSave"
+          "fmt.experimental": true,
+          "run": "onSave",
+          "typeAware": false,
+          "unusedDisableDirectives": false
         }
       }
     },
-    "vtsls": {
-      "binary": {
-        "path": "node_modules/.bin/tsc",
-        "arguments": ["--lsp", "--stdio"]
+    "oxlint": {
+      "initialization_options": {
+        "settings": {
+          "disableNestedConfig": false,
+          "fixKind": "safe_fix",
+          "run": "onType",
+          "typeAware": true,
+          "unusedDisableDirectives": "deny"
+        }
+      }
+    }
+  },
+  "languages": {
+    "TSX": {
+      "language_servers": ["!typescript-language-server", "..."],
+      "code_actions_on_format": {
+        "source.fixAll.oxc": true,
+        "source.organizeImports.oxc": true
+      },
+      "formatter": {
+        "language_server": {
+          "name": "oxfmt"
+        }
+      }
+    },
+    "JavaScript": {
+      "code_actions_on_format": {
+        "source.fixAll.oxc": true,
+        "source.organizeImports.oxc": true
+      },
+      "formatter": {
+        "language_server": {
+          "name": "oxfmt"
+        }
+      }
+    },
+    "TypeScript": {
+      "code_actions_on_format": {
+        "source.fixAll.oxc": true,
+        "source.organizeImports.oxc": true
+      },
+      "formatter": {
+        "language_server": {
+          "name": "oxfmt"
+        }
       }
     }
   },
   "format_on_save": "on",
-  "prettier": {
-    "allowed": false
-  },
-  "formatter": [
-    {
-      "language_server": {
-        "name": "oxfmt"
-      }
-    }
-  ],
-  "languages": {
-    "JavaScript": {
-      "formatter": [
-        {
-          "language_server": {
-            "name": "oxfmt"
-          }
-        },
-        {
-          "code_action": "source.fixAll.oxc"
-        }
-      ]
-    },
-    "TypeScript": {
-      "language_servers": ["!typescript-language-server", "..."],
-      "formatter": [
-        {
-          "language_server": {
-            "name": "oxfmt"
-          }
-        },
-        {
-          "code_action": "source.fixAll.oxc"
-        }
-      ]
-    },
-    "TSX": {
-      "language_servers": ["!typescript-language-server", "..."],
-      "formatter": [
-        {
-          "language_server": {
-            "name": "oxfmt"
-          }
-        },
-        {
-          "code_action": "source.fixAll.oxc"
-        }
-      ]
-    }
-  },
-  "file_scan_exclusions": ["**/*.svg", "**/pnpm-lock.yaml"]
+  "formatter": "language_server"
 }
