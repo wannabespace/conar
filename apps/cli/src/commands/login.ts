@@ -10,7 +10,7 @@ import { clearToken, saveToken } from '~/config'
 import { orpc } from '~/orpc'
 import { getSession } from '~/session'
 
-const { MAIN_URL } = import.meta.env
+const { WEB_URL } = import.meta.env
 
 const AUTH_TIMEOUT_MS = 5 * 60 * 1000
 
@@ -31,7 +31,7 @@ export const loginCommand = command({
 
     const verifier = challenge.noble.generateVerifier()
     const codeChallenge = challenge.noble.generateCode(verifier)
-    const url = `${MAIN_URL}/deep/sign-in?codeChallenge=${codeChallenge}&type=cli`
+    const url = `${WEB_URL}/deep/sign-in?codeChallenge=${codeChallenge}&type=cli`
 
     const controller = new AbortController()
     const onSigint = () => controller.abort(new Error('Cancelled'))
