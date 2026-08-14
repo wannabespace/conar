@@ -4,7 +4,11 @@ import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import type { Kysely } from 'kysely'
@@ -32,17 +36,25 @@ import { DraftsReviewDrawer } from '../table/drafts-review-drawer'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-export function DraftsActions({ table, schema }: { table: string; schema: string }) {
+export const DraftsActions = ({
+  table,
+  schema,
+}: {
+  table: string
+  schema: string
+}) => {
   const { connectionResource } = useRouteContext()
   const store = useTablePageStore()
   const { columns } = useTableColumnsContext()
-  const primaryColumns = columns.filter(c => c.primaryKey).map(c => c.id)
-  const drafts = useSubscription(store, { selector: state => state.drafts })
-  const rowsWithDrafts = Map.groupBy(drafts, d => primaryKeysKey(d.primaryKeys))
+  const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
+  const drafts = useSubscription(store, { selector: (state) => state.drafts })
+  const rowsWithDrafts = Map.groupBy(drafts, (d) =>
+    primaryKeysKey(d.primaryKeys)
+  )
   const { clear, removeRow, setRowStatus } = draftsActions(store)
   const [isReviewOpen, setIsReviewOpen] = useState(false)
 
-  const errorCount = drafts.filter(d => !!d.error).length
+  const errorCount = drafts.filter((d) => !!d.error).length
   const rowCount = rowsWithDrafts.size
 
   const handleDiscard = () => {
@@ -50,8 +62,9 @@ export function DraftsActions({ table, schema }: { table: string; schema: string
     setIsReviewOpen(false)
   }
 
-  async function createDb() {
-    const queryParams = await connectionResourceToQueryParams(connectionResource)
+  const createDb = async () => {
+    const queryParams =
+      await connectionResourceToQueryParams(connectionResource)
     return dialects[queryParams.type]({
       connectionString: queryParams.connectionString,
       resourceId: queryParams.resourceId,
@@ -62,8 +75,11 @@ export function DraftsActions({ table, schema }: { table: string; schema: string
 
   const { mutate: saveDrafts, isPending: isSaving } = useMutation({
     mutationFn: async () => {
-      if (primaryColumns.length === 0)
-        throw new Error('No primary keys found. Please use SQL Runner to update rows.')
+      if (primaryColumns.length === 0) {
+        throw new Error(
+          'No primary keys found. Please use SQL Runner to update rows.'
+        )
+      }
 
       const { filters, orderBy } = store.get()
       const rowsQueryOpts = resourceRowsQueryInfiniteOptions({
@@ -75,13 +91,27 @@ export function DraftsActions({ table, schema }: { table: string; schema: string
 
       const cachedData = queryClient.getQueryData(rowsQueryOpts.queryKey)
 
-      if (!cachedData) throw new Error('No data found. Please refresh the page.')
+      if (!cachedData) {
+        throw new Error('No data found. Please refresh the page.')
+      }
 
-      const allRows = cachedData.pages.flatMap(page => page.rows)
-      const rowEntries = Array.from(rowsWithDrafts.values())
+      const allRows = cachedData.pages.flatMap((page) => page.rows)
+      const rowEntries = [...rowsWithDrafts.values()]
+
+      const equalFilter = SQL_FILTERS_LIST.find((f) => f.operator === '=')
+      if (!equalFilter) {
+        throw new Error('Equal filter operator is not configured')
+      }
 
       for (const rowDrafts of rowEntries) {
-        setRowStatus(rowDrafts[0]!.primaryKeys, { isCommitting: true, error: undefined })
+        const [firstDraft] = rowDrafts
+        if (!firstDraft) {
+          continue
+        }
+        setRowStatus(firstDraft.primaryKeys, {
+          isCommitting: true,
+          error: undefined,
+        })
       }
 
       let failedPrimaryKeys: typeof primaryKeysType.infer | null = null
@@ -89,11 +119,14 @@ export function DraftsActions({ table, schema }: { table: string; schema: string
       const db = await createDb()
 
       try {
-        const commits = await db.transaction().execute(async tx => {
+        const commits = await db.transaction().execute(async (tx) => {
           const allRowsByPrimaryKey = new Map(
-            allRows.map(row => [getRowKeyByPrimaryKeys(row, primaryColumns), row] as const),
+            allRows.map(
+              (row) =>
+                [getRowKeyByPrimaryKeys(row, primaryColumns), row] as const
+            )
           )
-          const commits: {
+          const pendingCommits: {
             primaryKeys: typeof primaryKeysType.infer
             values: Record<string, unknown>
             modifiedColumns: string[]
@@ -101,26 +134,32 @@ export function DraftsActions({ table, schema }: { table: string; schema: string
           }[] = []
 
           for (const rowDrafts of rowEntries) {
-            const { primaryKeys } = rowDrafts[0]!
+            const [firstDraft] = rowDrafts
+            if (!firstDraft) {
+              continue
+            }
+            const { primaryKeys } = firstDraft
             failedPrimaryKeys = primaryKeys
 
             const row = allRowsByPrimaryKey.get(primaryKeysKey(primaryKeys))
 
             if (!row) {
               removeRow(primaryKeys)
-              throw new Error('Row not found in cache. Discarding change for this row.')
+              throw new Error(
+                'Row not found in cache. Discarding change for this row.'
+              )
             }
 
-            const sqlFilters: ActiveFilter[] = primaryColumns.map(column => ({
+            const sqlFilters: ActiveFilter[] = primaryColumns.map((column) => ({
               column,
-              ref: SQL_FILTERS_LIST.find(f => f.operator === '=')!,
+              ref: equalFilter,
               values: [row[column]],
             }))
 
-            const values = rowDrafts.reduce<Record<string, unknown>>((acc, d) => {
-              acc[d.columnId] = d.value
-              return acc
-            }, {})
+            const values: Record<string, unknown> = {}
+            for (const draft of rowDrafts) {
+              values[draft.columnId] = draft.value
+            }
 
             // oxlint-disable-next-line no-await-in-loop
             await tx
@@ -128,39 +167,65 @@ export function DraftsActions({ table, schema }: { table: string; schema: string
               .$extendTables<{ [table]: Record<string, unknown> }>()
               .updateTable(table)
               .set(values)
-              .where(eb => buildWhere(eb, sqlFilters))
+              .where((eb) => buildWhere(eb, sqlFilters))
               .execute()
 
             const modifiedColumns = Object.keys(values)
-            const updatedFilters = sqlFilters.map(filter =>
+            const updatedFilters = sqlFilters.map((filter) =>
               modifiedColumns.includes(filter.column)
                 ? { ...filter, values: [values[filter.column]] }
-                : filter,
+                : filter
             )
 
-            commits.push({ primaryKeys, values, modifiedColumns, updatedFilters })
+            pendingCommits.push({
+              primaryKeys,
+              values,
+              modifiedColumns,
+              updatedFilters,
+            })
           }
 
           failedPrimaryKeys = null
-          return commits
+          return pendingCommits
         })
 
-        return { status: 'success' as const, commits, rowEntries, rowsQueryOpts, filters, orderBy }
+        return {
+          status: 'success' as const,
+          commits,
+          rowEntries,
+          rowsQueryOpts,
+          filters,
+          orderBy,
+        }
       } catch (error) {
-        return { status: 'error' as const, error, failedPrimaryKeys, rowEntries }
+        return {
+          status: 'error' as const,
+          error,
+          failedPrimaryKeys,
+          rowEntries,
+        }
       }
     },
-    onSuccess: async data => {
+    onSuccess: async (data) => {
       if (data.status === 'error') {
         const { error, failedPrimaryKeys, rowEntries } = data
 
         for (const rowDrafts of rowEntries) {
-          setRowStatus(rowDrafts[0]!.primaryKeys, { isCommitting: false })
+          const [firstDraft] = rowDrafts
+          if (!firstDraft) {
+            continue
+          }
+          setRowStatus(firstDraft.primaryKeys, { isCommitting: false })
         }
 
         const message = error instanceof Error ? error.message : String(error)
 
-        if (failedPrimaryKeys !== null) {
+        if (failedPrimaryKeys === null) {
+          toast.error('Failed to save changes', {
+            description: message,
+            duration: 6000,
+          })
+        } else {
           setRowStatus(failedPrimaryKeys, {
             isCommitting: false,
             error: message,
@@ -168,11 +233,6 @@ export function DraftsActions({ table, schema }: { table: string; schema: string
 
           toast.error('Failed to save changes', {
             id: `save-transaction-error-${primaryKeysKey(failedPrimaryKeys)}-${message}`,
-            description: message,
-            duration: 6000,
-          })
-        } else {
-          toast.error('Failed to save changes', {
             description: message,
             duration: 6000,
           })
@@ -187,40 +247,53 @@ export function DraftsActions({ table, schema }: { table: string; schema: string
 
       const savedValuesByRow = new Map(
         await Promise.all(
-          commits.map(async ({ primaryKeys, values, modifiedColumns, updatedFilters }) => {
-            const refreshed = await db
-              .withSchema(schema)
-              .$extendTables<{ [table]: Record<string, unknown> }>()
-              .selectFrom(table)
-              .select(modifiedColumns)
-              .where(eb => buildWhere(eb, updatedFilters))
-              .execute()
-              .then(rows => rows[0])
-              .catch(() => {
-                toast.warning('Failed to refresh row', {
-                  description: `Failed to refresh row ${primaryKeysKey(primaryKeys)}`,
+          commits.map(
+            async ({
+              primaryKeys,
+              values,
+              modifiedColumns,
+              updatedFilters,
+            }) => {
+              const refreshed = await db
+                .withSchema(schema)
+                .$extendTables<{ [table]: Record<string, unknown> }>()
+                .selectFrom(table)
+                .select(modifiedColumns)
+                .where((eb) => buildWhere(eb, updatedFilters))
+                .execute()
+                .then((rows) => rows[0])
+                .catch(() => {
+                  toast.warning('Failed to refresh row', {
+                    description: `Failed to refresh row ${primaryKeysKey(primaryKeys)}`,
+                  })
+                  return null
                 })
-                return null
-              })
 
-            return [
-              primaryKeysKey(primaryKeys),
-              { primaryKeys, values: refreshed ?? values },
-            ] as const
-          }),
-        ),
+              return [
+                primaryKeysKey(primaryKeys),
+                { primaryKeys, values: refreshed ?? values },
+              ] as const
+            }
+          )
+        )
       )
 
-      queryClient.setQueryData(rowsQueryOpts.queryKey, data => {
-        if (!data) return data
+      queryClient.setQueryData(rowsQueryOpts.queryKey, (queryData) => {
+        if (!queryData) {
+          return queryData
+        }
 
         return {
-          ...data,
-          pages: data.pages.map(page => ({
+          ...queryData,
+          pages: queryData.pages.map((page) => ({
             ...page,
-            rows: page.rows.map(row => {
-              const savedValues = savedValuesByRow.get(getRowKeyByPrimaryKeys(row, primaryColumns))
-              if (!savedValues) return row
+            rows: page.rows.map((row) => {
+              const savedValues = savedValuesByRow.get(
+                getRowKeyByPrimaryKeys(row, primaryColumns)
+              )
+              if (!savedValues) {
+                return row
+              }
               return { ...row, ...savedValues.values }
             }),
           })),
@@ -233,15 +306,18 @@ export function DraftsActions({ table, schema }: { table: string; schema: string
 
       const { filters, orderBy } = store.get()
 
-      if (filters.length > 0 || Object.keys(orderBy).length > 0)
-        queryClient.invalidateQueries({ queryKey: rowsQueryOpts.queryKey.slice(0, -1) })
+      if (filters.length > 0 || Object.keys(orderBy).length > 0) {
+        queryClient.invalidateQueries({
+          queryKey: rowsQueryOpts.queryKey.slice(0, -1),
+        })
+      }
 
       const count = savedValuesByRow.size
       toast.success(`Saved ${count} row${count === 1 ? '' : 's'}`)
 
       setIsReviewOpen(false)
     },
-    onError: error => {
+    onError: (error) => {
       toast.error(error.message)
     },
   })
@@ -280,11 +356,7 @@ export function DraftsActions({ table, schema }: { table: string; schema: string
                 {errorCount > 0 && (
                   <span
                     aria-hidden
-                    className="
-                      absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center
-                      justify-center rounded-full bg-destructive px-1 text-2xs
-                      font-medium text-white tabular-nums
-                    "
+                    className="bg-destructive text-2xs absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 font-medium text-white tabular-nums"
                   >
                     {errorCount}
                   </span>
@@ -302,8 +374,12 @@ export function DraftsActions({ table, schema }: { table: string; schema: string
               </TooltipContent>
             </Tooltip>
             <Tooltip>
-              <TooltipTrigger render={<Button onClick={handleSave} disabled={isSaving} />}>
-                <LoadingContent loading={isSaving}>Save ({drafts.length})</LoadingContent>
+              <TooltipTrigger
+                render={<Button onClick={handleSave} disabled={isSaving} />}
+              >
+                <LoadingContent loading={isSaving}>
+                  Save ({drafts.length})
+                </LoadingContent>
               </TooltipTrigger>
               <TooltipContent side="top">
                 <div className="flex flex-col gap-0.5">

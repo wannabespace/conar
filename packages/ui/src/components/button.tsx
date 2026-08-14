@@ -4,19 +4,17 @@ import type { VariantProps } from 'class-variance-authority'
 
 import { buttonVariants } from './button.utils'
 
-function Button({
+const Button = ({
   className,
   variant = 'default',
   size = 'default',
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
-  return (
-    <ButtonPrimitive
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
-  )
-}
+}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) => (
+  <ButtonPrimitive
+    data-slot="button"
+    className={cn(buttonVariants({ className, size, variant }))}
+    {...props}
+  />
+)
 
 export { Button }

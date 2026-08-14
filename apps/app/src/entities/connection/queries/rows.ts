@@ -12,36 +12,44 @@ import { DEFAULT_PAGE_LIMIT } from '../utils/helpers'
 
 const rowType = type('Record<string, unknown>')
 
+const filterValueExpression = (filter: ActiveFilter) => {
+  if (filter.ref.hasValue === false) {
+    return null
+  }
+
+  if (filter.ref.isArray) {
+    return sql.join(
+      [
+        sql.raw('('),
+        sql.join(filter.values.map((value) => sql.val(String(value).trim()))),
+        sql.raw(')'),
+      ],
+      sql.raw('')
+    )
+  }
+
+  return sql.val(filter.values[0])
+}
+
 // oxlint-disable-next-line ts/no-explicit-any
-export function buildWhere<E extends ExpressionBuilder<any, any>>(
+export const buildWhere = <E extends ExpressionBuilder<any, any>>(
   eb: E,
   filters: ActiveFilter[],
-  concatOperator: 'AND' | 'OR' = 'AND',
-) {
+  concatOperator: 'AND' | 'OR' = 'AND'
+) => {
   const concat = concatOperator === 'AND' ? eb.and : eb.or
 
   return concat(
-    filters.map(filter =>
+    filters.map((filter) =>
       sql.join(
         [
           sql.ref(filter.column),
           sql.raw(filter.ref.operator.toLowerCase()),
-          filter.ref.hasValue === false
-            ? undefined
-            : filter.ref.isArray
-              ? sql.join(
-                  [
-                    sql.raw('('),
-                    sql.join(filter.values.map(value => sql.val(String(value).trim()))),
-                    sql.raw(')'),
-                  ],
-                  sql.raw(''),
-                )
-              : sql.val(filter.values[0]),
+          filterValueExpression(filter),
         ].filter(Boolean),
-        sql.raw(' '),
-      ),
-    ),
+        sql.raw(' ')
+      )
+    )
   )
 }
 
@@ -61,6 +69,9 @@ export interface RowsQueryProps {
   }
 }
 
+const orderEntries = (orderBy: Record<string, 'ASC' | 'DESC'> | undefined) =>
+  Object.entries(orderBy ?? {}) as [string, 'ASC' | 'DESC'][]
+
 export const resourceRowsQuery = memoize(
   ({
     limit = DEFAULT_PAGE_LIMIT,
@@ -69,106 +80,144 @@ export const resourceRowsQuery = memoize(
     table,
     schema,
     query: { orderBy, filters, filtersConcatOperator },
-  }: RowsQueryProps & { offset: number }) => {
-    return createQuery({
-      type: rowType.array(),
+  }: RowsQueryProps & { offset: number }) =>
+    createQuery({
       query: {
-        postgres: db => {
-          const order = Object.entries(orderBy ?? {})
+        clickhouse: (db) => {
+          const orders = orderEntries(orderBy)
+          const selectedColumns = select
+          const activeFilters = filters
 
           let query = db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
-            .$if(select !== undefined, qb => qb.select(select!))
-            .$if(select === undefined, qb => qb.selectAll())
-            .$if(filters !== undefined, qb =>
-              qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)),
-            )
-            .limit(limit)
-            .offset(offset)
 
-          if (order.length > 0) {
-            order.forEach(([column, order]) => {
-              query = query.orderBy(column, order.toLowerCase() as Lowercase<typeof order>)
-            })
+          query =
+            selectedColumns === undefined
+              ? query.selectAll()
+              : query.select(selectedColumns)
+
+          if (activeFilters !== undefined) {
+            query = query.where((eb) =>
+              buildWhere(eb, activeFilters, filtersConcatOperator)
+            )
+          }
+
+          query = query.limit(limit).offset(offset)
+
+          for (const [column, direction] of orders) {
+            query = query.orderBy(
+              column,
+              direction.toLowerCase() as Lowercase<typeof direction>
+            )
           }
 
           return query.execute()
         },
-        mysql: db => {
-          const order = Object.entries(orderBy ?? {})
+        mssql: (db) => {
+          const orders = orderEntries(orderBy)
+          const selectedColumns = select
+          const activeFilters = filters
 
           let query = db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
-            .$if(select !== undefined, qb => qb.select(select!))
-            .$if(select === undefined, qb => qb.selectAll())
-            .$if(filters !== undefined, qb =>
-              qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)),
-            )
-            .limit(limit)
-            .offset(offset)
 
-          if (order.length > 0) {
-            order.forEach(([column, order]) => {
-              query = query.orderBy(column, order.toLowerCase() as Lowercase<typeof order>)
-            })
+          query =
+            selectedColumns === undefined
+              ? query.selectAll()
+              : query.select(selectedColumns)
+
+          if (activeFilters !== undefined) {
+            query = query.where((eb) =>
+              buildWhere(eb, activeFilters, filtersConcatOperator)
+            )
+          }
+
+          if (orders.length === 0) {
+            query = query.orderBy(sql<string>`(select null)`)
+          }
+
+          query = query.limit(limit).offset(offset)
+
+          for (const [column, direction] of orders) {
+            query = query.orderBy(
+              column,
+              direction.toLowerCase() as Lowercase<typeof direction>
+            )
           }
 
           return query.execute()
         },
-        mssql: db => {
-          const order = Object.entries(orderBy ?? {})
+        mysql: (db) => {
+          const orders = orderEntries(orderBy)
+          const selectedColumns = select
+          const activeFilters = filters
 
           let query = db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
-            .$if(select !== undefined, qb => qb.select(select!))
-            .$if(select === undefined, qb => qb.selectAll())
-            .$if(filters !== undefined, qb =>
-              qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)),
-            )
-            .$if(order.length === 0, qb => qb.orderBy(sql<string>`(select null)`))
-            .limit(limit)
-            .offset(offset)
 
-          if (order.length > 0) {
-            order.forEach(([column, order]) => {
-              query = query.orderBy(column, order.toLowerCase() as Lowercase<typeof order>)
-            })
+          query =
+            selectedColumns === undefined
+              ? query.selectAll()
+              : query.select(selectedColumns)
+
+          if (activeFilters !== undefined) {
+            query = query.where((eb) =>
+              buildWhere(eb, activeFilters, filtersConcatOperator)
+            )
+          }
+
+          query = query.limit(limit).offset(offset)
+
+          for (const [column, direction] of orders) {
+            query = query.orderBy(
+              column,
+              direction.toLowerCase() as Lowercase<typeof direction>
+            )
           }
 
           return query.execute()
         },
-        clickhouse: db => {
-          const order = Object.entries(orderBy ?? {})
+        postgres: (db) => {
+          const orders = orderEntries(orderBy)
+          const selectedColumns = select
+          const activeFilters = filters
 
           let query = db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
-            .$if(select !== undefined, qb => qb.select(select!))
-            .$if(select === undefined, qb => qb.selectAll())
-            .$if(filters !== undefined, qb =>
-              qb.where(eb => buildWhere(eb, filters!, filtersConcatOperator)),
-            )
-            .limit(limit)
-            .offset(offset)
 
-          if (order.length > 0) {
-            order.forEach(([column, order]) => {
-              query = query.orderBy(column, order.toLowerCase() as Lowercase<typeof order>)
-            })
+          query =
+            selectedColumns === undefined
+              ? query.selectAll()
+              : query.select(selectedColumns)
+
+          if (activeFilters !== undefined) {
+            query = query.where((eb) =>
+              buildWhere(eb, activeFilters, filtersConcatOperator)
+            )
+          }
+
+          query = query.limit(limit).offset(offset)
+
+          for (const [column, direction] of orders) {
+            query = query.orderBy(
+              column,
+              direction.toLowerCase() as Lowercase<typeof direction>
+            )
           }
 
           return query.execute()
         },
       },
+      type: rowType.array(),
     })
-  },
 )
 
 export const resourceRowsQueryInfiniteOptions = memoize(
@@ -180,13 +229,33 @@ export const resourceRowsQueryInfiniteOptions = memoize(
     ...props
   }: {
     connectionResource: ConnectionResource
-  } & RowsQueryProps) => {
-    return infiniteQueryOptions({
-      initialPageParam: 0,
-      getNextPageParam: (lastPage: PageResult, _allPages: PageResult[], lastPageParam: number) => {
-        return lastPage.rows.length === 0 || lastPage.rows.length < DEFAULT_PAGE_LIMIT
+  } & RowsQueryProps) =>
+    infiniteQueryOptions({
+      getNextPageParam: (
+        lastPage: PageResult,
+        _allPages: PageResult[],
+        lastPageParam: number
+      ) =>
+        lastPage.rows.length === 0 || lastPage.rows.length < DEFAULT_PAGE_LIMIT
           ? null
-          : lastPageParam + DEFAULT_PAGE_LIMIT
+          : lastPageParam + DEFAULT_PAGE_LIMIT,
+      initialPageParam: 0,
+      queryFn: async ({ pageParam: offset }) => {
+        const result = await resourceRowsQuery({
+          offset,
+          query: {
+            filters,
+            filtersConcatOperator,
+            orderBy,
+          },
+          schema,
+          table,
+          ...props,
+        }).run(await connectionResourceToQueryParams(connectionResource))
+
+        return {
+          rows: result,
+        } satisfies PageResult
       },
       queryKey: [
         'connection-resource',
@@ -197,30 +266,12 @@ export const resourceRowsQueryInfiniteOptions = memoize(
         table,
         'rows',
         {
-          orderBy,
           filters,
           filtersConcatOperator,
+          orderBy,
         },
       ],
-      queryFn: async ({ pageParam: offset }) => {
-        const result = await resourceRowsQuery({
-          offset,
-          table,
-          schema,
-          query: {
-            orderBy,
-            filters,
-            filtersConcatOperator,
-          },
-          ...props,
-        }).run(await connectionResourceToQueryParams(connectionResource))
-
-        return {
-          rows: result,
-        } satisfies PageResult
-      },
-      select: data => data.pages.flatMap(page => page.rows),
+      select: (data) => data.pages.flatMap((page) => page.rows),
       throwOnError: false,
     })
-  },
 )

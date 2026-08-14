@@ -4,7 +4,8 @@
     "paths": {
       "~/*": ["./src/*"]
     },
-    "noEmit": true
+    "noEmit": true,
+    "strictNullChecks": true
   },
   "references": [
     {

@@ -1,6 +1,14 @@
 import type { Filter } from '@tamery/shared/filters'
-import { cellToFilterValues, FILTER_GROUPS, SQL_FILTERS_GROUPED } from '@tamery/shared/filters'
-import { formatValueForPlainCell, recordToMarkdownTable, toCSV } from '@tamery/shared/utils/files'
+import {
+  cellToFilterValues,
+  FILTER_GROUPS,
+  SQL_FILTERS_GROUPED,
+} from '@tamery/shared/filters'
+import {
+  formatValueForPlainCell,
+  recordToMarkdownTable,
+  toCSV,
+} from '@tamery/shared/utils/files'
 import { useTableContext } from '@tamery/table/hooks'
 import { copy } from '@tamery/ui/lib/copy'
 import type { CSSProperties, ReactNode } from 'react'
@@ -15,11 +23,10 @@ import { INTERNAL_COLUMN_IDS } from './utils'
 
 const internalColumnIds = Object.values(INTERNAL_COLUMN_IDS)
 
-function isDisabledFilter(filter: Filter, cellValue: unknown): boolean {
-  return filter.hasValue !== false && (cellValue === null || cellValue === undefined)
-}
+const isDisabledFilter = (filter: Filter, cellValue: unknown): boolean =>
+  filter.hasValue !== false && (cellValue === null || cellValue === undefined)
 
-export function TableCellContextMenu({
+export const TableCellContextMenu = ({
   open,
   onOpenChange,
   style,
@@ -31,30 +38,41 @@ export function TableCellContextMenu({
   style?: CSSProperties
   onSetNull?: () => void
   children: ReactNode
-}) {
-  const { value, column, rowIndex, onAddFilter, onOrder, order, onRename } = useCellContext()
-  const row = useTableContext(({ rows }) => rows[rowIndex]!)
-  const columns = useTableContext(({ columns }) => columns)
+}) => {
+  const { value, column, rowIndex, onAddFilter, onOrder, order, onRename } =
+    useCellContext()
+  const row = useTableContext(({ rows }) => rows[rowIndex] ?? {})
+  const tableColumns = useTableContext(({ columns }) => columns)
   const columnKeys = useMemo(
-    () => columns.map(c => c.id).filter(id => !internalColumnIds.includes(id)),
-    [columns],
+    () =>
+      tableColumns
+        .map((c) => c.id)
+        .filter((id) => !internalColumnIds.includes(id)),
+    [tableColumns]
   )
   const rowCopyDisabled = columnKeys.length === 0
 
   const items = useMemo<AppMenuNode[]>(() => {
     const nodes: AppMenuNode[] = [
       {
-        type: 'group',
-        label: 'Cell',
         items: [
           {
             label: 'Copy value',
-            onSelect: () => copy(formatValueForPlainCell(value), 'Cell value copied'),
+            onSelect: () =>
+              copy(formatValueForPlainCell(value), 'Cell value copied'),
           },
           ...(onSetNull
-            ? [{ label: 'Set null', onSelect: onSetNull, disabled: value === null } as const]
+            ? [
+                {
+                  disabled: value === null,
+                  label: 'Set null',
+                  onSelect: onSetNull,
+                } as const,
+              ]
             : []),
         ],
+        label: 'Cell',
+        type: 'group',
       },
     ]
 
@@ -67,19 +85,19 @@ export function TableCellContextMenu({
 
       if (onAddFilter) {
         const filterItems: AppMenuNode[] = []
-        SQL_FILTERS_GROUPED.forEach(({ group, filters }, index) => {
-          if (index > 0) filterItems.push({ type: 'separator' })
-          filterItems.push({ type: 'label', label: FILTER_GROUPS[group] })
+        for (const [
+          index,
+          { group, filters },
+        ] of SQL_FILTERS_GROUPED.entries()) {
+          if (index > 0) {
+            filterItems.push({ type: 'separator' })
+          }
+          filterItems.push({ label: FILTER_GROUPS[group], type: 'label' })
           for (const filter of filters) {
             filterItems.push({
+              disabled: isDisabledFilter(filter, value),
               label: filter.label,
               nativeLabel: `${filter.label} (${filter.operator})`,
-              disabled: isDisabledFilter(filter, value),
-              trailing: (
-                <span className="ml-auto pl-2 text-xs text-muted-foreground">
-                  {filter.operator}
-                </span>
-              ),
               onSelect: () => {
                 onAddFilter({
                   column: column.id,
@@ -88,80 +106,96 @@ export function TableCellContextMenu({
                 })
                 toast.success('Filter added')
               },
+              trailing: (
+                <span className="text-muted-foreground ml-auto pl-2 text-xs">
+                  {filter.operator}
+                </span>
+              ),
             })
           }
+        }
+        columnItems.push({
+          items: filterItems,
+          label: 'Add filter',
+          type: 'sub',
         })
-        columnItems.push({ type: 'sub', label: 'Add filter', items: filterItems })
       }
 
       if (onOrder) {
         columnItems.push({
-          type: 'sub',
-          label: 'Sort',
           items: [
             {
-              type: 'radio',
-              value: order ?? 'default',
-              onValueChange: value => {
-                onOrder(value === 'default' ? null : (value as 'ASC' | 'DESC'))
+              onValueChange: (nextValue) => {
+                onOrder(
+                  nextValue === 'default' ? null : (nextValue as 'ASC' | 'DESC')
+                )
               },
               options: [
-                { value: 'default', label: 'None' },
-                { value: 'ASC', label: 'Ascending' },
-                { value: 'DESC', label: 'Descending' },
+                { label: 'None', value: 'default' },
+                { label: 'Ascending', value: 'ASC' },
+                { label: 'Descending', value: 'DESC' },
               ],
+              type: 'radio',
+              value: order ?? 'default',
             },
           ],
+          label: 'Sort',
+          type: 'sub',
         })
       }
 
-      nodes.push({ type: 'separator' })
-      nodes.push({ type: 'group', label: 'Column', items: columnItems })
+      nodes.push(
+        { type: 'separator' },
+        { items: columnItems, label: 'Column', type: 'group' }
+      )
     }
 
-    nodes.push({ type: 'separator' })
-    nodes.push({
-      type: 'group',
-      label: 'Row',
-      items: [
-        {
-          type: 'sub',
-          label: 'Copy as',
-          disabled: rowCopyDisabled,
-          items: [
-            {
-              label: 'JSON',
-              disabled: rowCopyDisabled,
-              onSelect: () => copy(JSON.stringify(row, null, 2), 'Row copied as JSON'),
-            },
-            {
-              label: 'CSV',
-              disabled: rowCopyDisabled,
-              onSelect: () =>
-                copy(
-                  toCSV(
-                    columnKeys.map(key => ({ key })),
-                    [row],
+    nodes.push(
+      { type: 'separator' },
+      {
+        items: [
+          {
+            disabled: rowCopyDisabled,
+            items: [
+              {
+                disabled: rowCopyDisabled,
+                label: 'JSON',
+                onSelect: () =>
+                  copy(JSON.stringify(row, null, 2), 'Row copied as JSON'),
+              },
+              {
+                disabled: rowCopyDisabled,
+                label: 'CSV',
+                onSelect: () =>
+                  copy(
+                    toCSV(
+                      columnKeys.map((key) => ({ key })),
+                      [row]
+                    ),
+                    'Row copied as CSV'
                   ),
-                  'Row copied as CSV',
-                ),
-            },
-            {
-              label: 'Markdown table',
-              disabled: rowCopyDisabled,
-              onSelect: () =>
-                copy(
-                  recordToMarkdownTable(
-                    row,
-                    columnKeys.map(key => ({ key })),
+              },
+              {
+                disabled: rowCopyDisabled,
+                label: 'Markdown table',
+                onSelect: () =>
+                  copy(
+                    recordToMarkdownTable(
+                      row,
+                      columnKeys.map((key) => ({ key }))
+                    ),
+                    'Row copied as Markdown table'
                   ),
-                  'Row copied as Markdown table',
-                ),
-            },
-          ],
-        },
-      ],
-    })
+              },
+            ],
+            label: 'Copy as',
+            type: 'sub',
+          },
+        ],
+        label: 'Row',
+        type: 'group',
+      }
+    )
 
     return nodes
   }, [

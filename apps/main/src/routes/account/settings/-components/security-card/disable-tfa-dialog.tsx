@@ -17,23 +17,25 @@ import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-export function DisableTfaDialog({
+export const DisableTfaDialog = ({
   open,
   onOpenChange,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-}) {
+}) => {
   const [password, setPassword] = useState('')
   const { mutate, isPending } = useMutation({
-    mutationFn: async (password: string) => {
-      const { error } = await authClient.twoFactor.disable({ password })
+    mutationFn: async (passwordValue: string) => {
+      const { error } = await authClient.twoFactor.disable({
+        password: passwordValue,
+      })
 
       if (error) {
         throw error
       }
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       toast.success('2FA disabled')
       onOpenChange(false)
     },
@@ -44,7 +46,7 @@ export function DisableTfaDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="sm:max-w-sm"
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           mutate(password)
         }}
@@ -62,7 +64,7 @@ export function DisableTfaDialog({
             id="disable-password"
             type="password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             disabled={isPending}
             autoComplete="current-password"
             autoFocus

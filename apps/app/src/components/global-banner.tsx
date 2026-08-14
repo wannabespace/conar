@@ -9,7 +9,11 @@ import {
 import type { RouterOutputs } from '@tamery/api/orpc/routers'
 import { Button } from '@tamery/ui/components/button'
 import { Spinner } from '@tamery/ui/components/spinner'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
@@ -19,86 +23,101 @@ import type { ReactNode } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 
-import { MAX_RECONNECTION_ATTEMPTS, reconnectingPromises } from '~/entities/connection/runtime'
+import {
+  MAX_RECONNECTION_ATTEMPTS,
+  reconnectingPromises,
+} from '~/entities/connection/runtime'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 
 type BannerItem = NonNullable<RouterOutputs['banner']>[number]
 
 const typeConfig = {
-  info: {
-    icon: <RiInformationLine className="size-4 shrink-0" />,
-    className: 'bg-blue-500/5 border-blue-500/20 text-blue-400',
-  },
-  warning: {
-    icon: <RiErrorWarningLine className="size-4 shrink-0" />,
-    className: 'bg-orange-500/5 border-orange-500/20 text-orange-400',
-  },
   error: {
-    icon: <RiAlertLine className="size-4 shrink-0" />,
     className: 'bg-red-500/5 border-red-500/20 text-red-400',
+    icon: <RiAlertLine className="size-4 shrink-0" />,
+  },
+  info: {
+    className: 'bg-blue-500/5 border-blue-500/20 text-blue-400',
+    icon: <RiInformationLine className="size-4 shrink-0" />,
   },
   success: {
-    icon: <RiCheckboxCircleLine className="size-4 shrink-0" />,
     className: 'bg-green-500/5 border-green-500/20 text-green-400',
+    icon: <RiCheckboxCircleLine className="size-4 shrink-0" />,
+  },
+  warning: {
+    className: 'bg-orange-500/5 border-orange-500/20 text-orange-400',
+    icon: <RiErrorWarningLine className="size-4 shrink-0" />,
   },
 } satisfies Record<BannerItem['type'], { icon: ReactNode; className: string }>
 
 const bannerDismissedValue = createWebStorageValue({
-  type: 'localStorage',
-  key: 'banner-dismissed',
   defaultValue: [],
+  key: 'banner-dismissed',
   schema: type('string[]'),
+  type: 'localStorage',
 })
 
-function Banner({ className, children }: { className?: string; children: ReactNode }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: '2rem' }}
-      exit={{ opacity: 0, height: 0 }}
-      className={cn('relative shrink-0 border-b text-sm', className)}
-    >
-      <div className="absolute inset-0 flex h-full items-center gap-2 px-4 py-1">{children}</div>
-    </motion.div>
-  )
-}
+const Banner = ({
+  className,
+  children,
+}: {
+  className?: string
+  children: ReactNode
+}) => (
+  <motion.div
+    initial={{ height: 0, opacity: 0 }}
+    animate={{ height: '2rem', opacity: 1 }}
+    exit={{ height: 0, opacity: 0 }}
+    className={cn('relative shrink-0 border-b text-sm', className)}
+  >
+    <div className="absolute inset-0 flex h-full items-center gap-2 px-4 py-1">
+      {children}
+    </div>
+  </motion.div>
+)
 
-export function GlobalBanner() {
+export const GlobalBanner = () => {
   const { resourceId } = useParams({ strict: false })
   const reconnectingData = useSubscription(reconnectingPromises, {
-    selector: state =>
-      (resourceId && Object.values(state).find(p => p.resourceId === resourceId)) || null,
+    selector: (state) =>
+      (resourceId &&
+        Object.values(state).find((p) => p.resourceId === resourceId)) ||
+      null,
   })
-  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
+  const isOnline = useSubscription(appStore, {
+    selector: (state) => state.isOnline,
+  })
   const dismissed = useSubscription(bannerDismissedValue)
 
   const { data = [] } = useQuery(
     orpc.banner.queryOptions({
-      staleTime: 1000 * 60 * 5,
       refetchInterval: 1000 * 60 * 5,
-      throwOnError: false,
-      select: data => {
-        const filtered = data?.filter(item => !dismissed.includes(item.text))
+      select: (bannerItems) => {
+        const filtered = bannerItems?.filter(
+          (item) => !dismissed.includes(item.text)
+        )
         return [
           ...(isOnline
             ? []
             : [
                 {
+                  dismissible: false,
                   text: 'You are currently offline. Some features may be unavailable until your internet connection is restored.',
                   type: 'info',
-                  dismissible: false,
                 } satisfies BannerItem,
               ]),
           ...filtered,
         ]
       },
-    }),
+      staleTime: 1000 * 60 * 5,
+      throwOnError: false,
+    })
   )
 
   return (
     <AnimatePresence initial={false} mode="popLayout">
-      {data.map(item => (
+      {data.map((item) => (
         <Banner key={item.text} className={typeConfig[item.type].className}>
           {typeConfig[item.type].icon}
           <span className="flex-1 leading-none">{item.text}</span>
@@ -111,7 +130,9 @@ export function GlobalBanner() {
                     size="icon-xs"
                     aria-label="Dismiss banner"
                     className="hover:bg-foreground/10"
-                    onClick={() => bannerDismissedValue.set(state => [...state, item.text])}
+                    onClick={() =>
+                      bannerDismissedValue.set((state) => [...state, item.text])
+                    }
                   />
                 }
               >

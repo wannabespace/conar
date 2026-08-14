@@ -15,31 +15,17 @@ import { subscriptionQueryClient } from '~/main'
 import { ActionsCenter } from './-components/actions-center'
 import { ProtectedTitleBar } from './_protected/-components/protected-titlebar'
 
-export const Route = createFileRoute('/_protected')({
-  component: ProtectedLayout,
-  beforeLoad: async () => {
-    const c = getCollections()
-
-    await Promise.all([
-      c.connectionStringsCollection.stateWhenReady(),
-      c.connectionsCollection.stateWhenReady(),
-      c.connectionsResourcesCollection.stateWhenReady(),
-    ])
-
-    return { collections: c }
-  },
-})
-
-function ProtectedLayout() {
+const ProtectedLayout = () => {
   useConnectionStringsSync()
   useLastOpenedResourcesSync()
   useActiveWorkspaceSync()
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       cleanCollections()
-    }
-  }, [])
+    },
+    []
+  )
 
   useEffect(() => {
     enterAppAnimation()
@@ -70,7 +56,7 @@ function ProtectedLayout() {
             'min-h-0 flex-1',
             // Let route pages fill the area below the title bar, matching the
             // full-height behavior the root layout provides to its last child.
-            '*:last:h-full *:last:min-h-[inherit] *:last:flex-1',
+            '*:last:h-full *:last:min-h-[inherit] *:last:flex-1'
           )}
         >
           <Outlet />
@@ -79,3 +65,18 @@ function ProtectedLayout() {
     </EventsProvider>
   )
 }
+
+export const Route = createFileRoute('/_protected')({
+  component: ProtectedLayout,
+  beforeLoad: async () => {
+    const c = getCollections()
+
+    await Promise.all([
+      c.connectionStringsCollection.stateWhenReady(),
+      c.connectionsCollection.stateWhenReady(),
+      c.connectionsResourcesCollection.stateWhenReady(),
+    ])
+
+    return { collections: c }
+  },
+})

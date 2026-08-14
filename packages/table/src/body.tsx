@@ -7,7 +7,20 @@ import type { ColumnRenderer } from './'
 import { useTableContext } from './table-context'
 import { getBaseColumnStyle } from './utils'
 
-const VirtualColumn = memo(function VirtualColumn({
+const getColumnPosition = (
+  index: number,
+  columnsLength: number
+): 'first' | 'last' | 'middle' => {
+  if (index === 0) {
+    return 'first'
+  }
+  if (index === columnsLength - 1) {
+    return 'last'
+  }
+  return 'middle'
+}
+
+const VirtualColumnBase = ({
   virtualColumn,
   column,
   value,
@@ -17,12 +30,17 @@ const VirtualColumn = memo(function VirtualColumn({
   column: ColumnRenderer
   value: unknown
   rowIndex: number
-}) {
-  const columnsLength = useTableContext(context => context.columns.length)
+}) => {
+  const columnsLength = useTableContext((context) => context.columns.length)
 
   if (!column.cell) {
     return (
-      <div style={getBaseColumnStyle({ id: column.id, defaultSize: column.size })}>
+      <div
+        style={getBaseColumnStyle({
+          defaultSize: column.size,
+          id: column.id,
+        })}
+      >
         {String(value)}
       </div>
     )
@@ -35,23 +53,20 @@ const VirtualColumn = memo(function VirtualColumn({
       size={virtualColumn.size}
       rowIndex={rowIndex}
       columnIndex={virtualColumn.index}
-      position={
-        virtualColumn.index === 0
-          ? 'first'
-          : virtualColumn.index === columnsLength - 1
-            ? 'last'
-            : 'middle'
-      }
-      style={getBaseColumnStyle({ id: column.id, defaultSize: column.size })}
+      position={getColumnPosition(virtualColumn.index, columnsLength)}
+      style={getBaseColumnStyle({ defaultSize: column.size, id: column.id })}
     />
   )
-})
+}
+VirtualColumnBase.displayName = 'VirtualColumn'
+
+const VirtualColumn = memo(VirtualColumnBase)
 
 const spacerStyle: CSSProperties = {
   contain: 'layout style size',
 }
 
-const Row = memo(function Row({
+const RowBase = ({
   size,
   rowIndex,
   zebra,
@@ -59,34 +74,34 @@ const Row = memo(function Row({
   size: number
   rowIndex: number
   zebra?: boolean
-}) {
-  const columns = useTableContext(context => context.columns)
-  const virtualColumns = useTableContext(context => context.virtualColumns)
-  const rows = useTableContext(context => context.rows)
+}) => {
+  const columns = useTableContext((context) => context.columns)
+  const virtualColumns = useTableContext((context) => context.virtualColumns)
+  const rows = useTableContext((context) => context.rows)
   const row = rows[rowIndex]
   const lastIndex = rows.length - 1
 
   return (
     <div
       className={cn(
-        `
-        flex w-fit min-w-full border-b
-        hover:bg-foreground/6
-      `,
+        `hover:bg-foreground/6 flex w-fit min-w-full border-b`,
         rowIndex === lastIndex && `border-b-0`,
         zebra && 'border-b-0',
-        zebra && rowIndex % 2 === 1 && 'bg-foreground/3',
+        zebra && rowIndex % 2 === 1 && 'bg-foreground/3'
       )}
-      style={{ height: `${size}px`, contain: 'layout style' }}
+      style={{ contain: 'layout style', height: `${size}px` }}
     >
       <div
         aria-hidden="true"
         className="w-(--table-scroll-left-offset) shrink-0 will-change-[height]"
         style={spacerStyle}
       />
-      {virtualColumns.map(virtualColumn => {
-        const column = columns[virtualColumn.index]!
-        const value = row?.[column?.id]
+      {virtualColumns.map((virtualColumn) => {
+        const column = columns[virtualColumn.index]
+        if (!column) {
+          return null
+        }
+        const value = row?.[column.id]
 
         return (
           <VirtualColumn
@@ -100,23 +115,24 @@ const Row = memo(function Row({
       })}
       <div
         aria-hidden="true"
-        className="
-          w-(--table-scroll-right-offset) shrink-0 will-change-[height]
-        "
+        className="w-(--table-scroll-right-offset) shrink-0 will-change-[height]"
         style={spacerStyle}
       />
     </div>
   )
-})
+}
+RowBase.displayName = 'Row'
 
-export function TableBody({
+const Row = memo(RowBase)
+
+export const TableBody = ({
   className,
   style,
   zebra,
   ...props
-}: ComponentProps<'div'> & { zebra?: boolean }) {
-  const virtualRows = useTableContext(context => context.virtualRows)
-  const tableWidth = useTableContext(context => context.tableWidth)
+}: ComponentProps<'div'> & { zebra?: boolean }) => {
+  const virtualRows = useTableContext((context) => context.virtualRows)
+  const tableWidth = useTableContext((context) => context.tableWidth)
 
   return (
     <div
@@ -129,7 +145,7 @@ export function TableBody({
         className="h-(--table-scroll-top-offset) shrink-0 will-change-[height]"
         style={spacerStyle}
       />
-      {virtualRows.map(virtualRow => (
+      {virtualRows.map((virtualRow) => (
         <Row
           key={virtualRow.key}
           rowIndex={virtualRow.index}
@@ -139,9 +155,7 @@ export function TableBody({
       ))}
       <div
         aria-hidden="true"
-        className="
-          h-(--table-scroll-bottom-offset) shrink-0 will-change-[height]
-        "
+        className="h-(--table-scroll-bottom-offset) shrink-0 will-change-[height]"
         style={spacerStyle}
       />
     </div>

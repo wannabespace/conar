@@ -11,7 +11,11 @@ import {
   RiRestartLine,
 } from '@remixicon/react'
 import { isToolUIPart } from '@tamery/ai/tools/helpers'
-import { Alert, AlertDescription, AlertTitle } from '@tamery/ui/components/alert'
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@tamery/ui/components/alert'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
@@ -23,10 +27,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useElementSize } from '@tamery/ui/hookas/use-element-size'
 import { copy } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
+import { getRouteApi } from '@tanstack/react-router'
 import type { ChatStatus } from 'ai'
 import { regex } from 'arktype'
 import type { ComponentProps, ReactNode } from 'react'
@@ -38,22 +47,31 @@ import { Markdown } from '~/components/markdown'
 import { getEditorQueriesComputed } from '~/entities/connection/store'
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 
-import { Route } from '../..'
 import { chatHooks, runnerHooks } from '../../-page'
 import { ChatImages } from './chat-images'
 import { ChatMessageTool } from './chat-message-tools'
 
+const { useLoaderData, useRouteContext } = getRouteApi(
+  '/_protected/connection/$resourceId/query/'
+)
+
 const COMMENT_REGEX = regex('^(?:--.*\n)+')
 
-function ChatMessage({ children, className, ...props }: ComponentProps<'div'>) {
-  return (
-    <div data-mask className={cn('flex flex-col gap-2 text-sm', className)} {...props}>
-      {children}
-    </div>
-  )
-}
+const ChatMessage = ({
+  children,
+  className,
+  ...props
+}: ComponentProps<'div'>) => (
+  <div
+    data-mask
+    className={cn('flex flex-col gap-2 text-sm', className)}
+    {...props}
+  >
+    {children}
+  </div>
+)
 
-function ChatMessageFooterButton({
+const ChatMessageFooterButton = ({
   onClick,
   icon,
   tooltip,
@@ -63,37 +81,50 @@ function ChatMessageFooterButton({
   icon: ReactNode
   tooltip: string
   disabled?: boolean
-}) {
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={<Button variant="ghost" size="icon-sm" onClick={onClick} disabled={disabled} />}
-      >
-        {icon}
-      </TooltipTrigger>
-      <TooltipContent>{tooltip}</TooltipContent>
-    </Tooltip>
-  )
-}
+}) => (
+  <Tooltip>
+    <TooltipTrigger
+      render={
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={onClick}
+          disabled={disabled}
+        />
+      }
+    >
+      {icon}
+    </TooltipTrigger>
+    <TooltipContent>{tooltip}</TooltipContent>
+  </Tooltip>
+)
 
-function ChatMessageCodeActions({ content, lang }: { content: string; lang: string }) {
-  const { connectionResource } = Route.useRouteContext()
+const ChatMessageCodeActions = ({
+  content,
+  lang,
+}: {
+  content: string
+  lang: string
+}) => {
+  const { connectionResource } = useRouteContext()
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
   const editorQueries = useSubscription(editorQueriesStore)
 
   const [isAppending, setIsAppending] = useState(false)
   const [isReplacing, setIsReplacing] = useState(false)
 
-  function getQueryNumber(index: number) {
+  const getQueryNumber = (index: number) => {
     const queriesBefore =
-      editorQueries.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
+      editorQueries
+        .slice(0, index)
+        .reduce((sum, curr) => sum + curr.queries.length, 0) + 1
     const queriesLength = editorQueries[index]?.queries.length ?? 0
     return queriesLength === 1
       ? queriesBefore
       : `${queriesBefore} - ${queriesBefore + queriesLength - 1}`
   }
 
-  function replaceQuery(query: (typeof editorQueries)[number]) {
+  const replaceQuery = (query: (typeof editorQueries)[number]) => {
     runnerHooks.callHook('replaceQuery', {
       query: content.replace(COMMENT_REGEX, ''),
       startLineNumber: query.startLineNumber,
@@ -119,12 +150,12 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
               text={content}
               successIcon={<RiCheckLine className="text-success" />}
               copyIcon={<RiFileCopyLine className="size-3.5" />}
-              onClick={e => {
+              onClick={(e) => {
                 e.stopPropagation()
               }}
             />
           }
-        ></TooltipTrigger>
+        />
         <TooltipContent>Copy to clipboard</TooltipContent>
       </Tooltip>
       {lang === 'sql' && (
@@ -135,7 +166,7 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
                 <Button
                   size="icon-xs"
                   variant="ghost"
-                  onClick={e => {
+                  onClick={(e) => {
                     e.stopPropagation()
                     runnerHooks.callHook('appendToBottomAndFocus', content)
                     setIsAppending(true)
@@ -159,7 +190,11 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
                 render={
                   <TooltipTrigger
                     render={
-                      <Button size="icon-xs" variant="ghost" onClick={e => e.stopPropagation()} />
+                      <Button
+                        size="icon-xs"
+                        variant="ghost"
+                        onClick={(e) => e.stopPropagation()}
+                      />
                     }
                   />
                 }
@@ -177,17 +212,13 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
             <DropdownMenuContent
               align="end"
               className="max-h-64 min-w-55 overflow-auto"
-              onClick={e => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-2 text-xs font-medium text-muted-foreground">
+              <div className="text-muted-foreground p-2 text-xs font-medium">
                 Replace existing query
               </div>
               {editorQueries.length === 0 && (
-                <div
-                  className={`
-                  px-3 py-2 text-xs text-muted-foreground select-none
-                `}
-                >
+                <div className="text-muted-foreground px-3 py-2 text-xs select-none">
                   No queries found
                 </div>
               )}
@@ -195,17 +226,15 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
                 <DropdownMenuItem
                   key={`${q.startLineNumber}-${q.endLineNumber}`}
                   className="flex w-full items-center justify-between gap-2"
-                  onClick={e => {
+                  onClick={(e) => {
                     e.stopPropagation()
                     replaceQuery(q)
                   }}
                 >
-                  <span className="text-xs font-medium">Query {getQueryNumber(index)}</span>
-                  <span
-                    className={`
-                    font-mono text-[0.625rem] text-muted-foreground/70
-                  `}
-                  >
+                  <span className="text-xs font-medium">
+                    Query {getQueryNumber(index)}
+                  </span>
+                  <span className="text-muted-foreground/70 font-mono text-[0.625rem]">
                     {q.startLineNumber === q.endLineNumber
                       ? `Line ${q.startLineNumber}`
                       : `Lines ${q.startLineNumber} - ${q.endLineNumber}`}
@@ -220,8 +249,14 @@ function ChatMessageCodeActions({ content, lang }: { content: string; lang: stri
   )
 }
 
-function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts']; loading?: boolean }) {
-  return parts.map((part, index) => {
+const ChatMessageParts = ({
+  parts,
+  loading,
+}: {
+  parts: UIMessage['parts']
+  loading?: boolean
+}) =>
+  parts.map((part, index) => {
     const key = `${part.type}-${index}`
 
     if (part.type === 'text') {
@@ -230,14 +265,17 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts']; loadi
           key={key}
           content={part.text}
           generating={loading}
-          codeActions={props => <ChatMessageCodeActions {...props} />}
+          codeActions={(props) => <ChatMessageCodeActions {...props} />}
         />
       )
     }
 
     if (part.type === 'reasoning') {
       return (
-        <div key={key} className={cn(loading && 'animate-in duration-200 fade-in')}>
+        <div
+          key={key}
+          className={cn(loading && 'animate-in fade-in duration-200')}
+        >
           <p className="text-xs font-medium">Reasoning</p>
           <p className="text-xs">{part.text}</p>
         </div>
@@ -248,7 +286,7 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts']; loadi
       return (
         <ChatMessageTool
           key={key}
-          className={cn(loading && 'animate-in duration-200 fade-in')}
+          className={cn(loading && 'animate-in fade-in duration-200')}
           part={part}
         />
       )
@@ -256,20 +294,21 @@ function ChatMessageParts({ parts, loading }: { parts: UIMessage['parts']; loadi
 
     return null
   })
-}
 
-function UserMessage({
+const UserMessage = ({
   message,
   className,
   ...props
-}: { message: UIMessage } & ComponentProps<'div'>) {
+}: { message: UIMessage } & ComponentProps<'div'>) => {
   const [isVisible, setIsVisible] = useState(false)
   const partsRef = useRef<HTMLDivElement>(null)
   const { height } = useElementSize(partsRef, {
     width: 0,
     height: 0,
   })
-  const images = message.parts.filter(part => part.type === 'file').map(part => part.url)
+  const images = message.parts
+    .filter((part) => part.type === 'file')
+    .map((part) => part.url)
   const canHide = height > 200
 
   return (
@@ -277,20 +316,11 @@ function UserMessage({
       <div>
         <div
           className={cn(
-            `
-              relative inline-flex rounded-lg bg-primary px-2 py-1
-              text-primary-foreground
-            `,
-            canHide && !isVisible && 'max-h-25 overflow-hidden',
+            `bg-primary text-primary-foreground relative inline-flex rounded-lg px-2 py-1`,
+            canHide && !isVisible && 'max-h-25 overflow-hidden'
           )}
         >
-          <div
-            className={`
-              h-fit
-              [&_a]:text-white
-            `}
-            ref={partsRef}
-          >
+          <div className="h-fit [&_a]:text-white" ref={partsRef}>
             <ChatMessageParts parts={message.parts} />
           </div>
           {canHide && (
@@ -301,17 +331,19 @@ function UserMessage({
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      aria-label={isVisible ? 'Collapse message' : 'Expand message'}
-                      className={`
-                        -mr-1 shrink-0 text-primary-foreground!
-                        hover:bg-primary-foreground/10!
-                      `}
+                      aria-label={
+                        isVisible ? 'Collapse message' : 'Expand message'
+                      }
+                      className="text-primary-foreground! hover:bg-primary-foreground/10! -mr-1 shrink-0"
                       onClick={() => setIsVisible(!isVisible)}
                     />
                   }
                 >
                   <RiArrowDownSLine
-                    className={cn('duration-100', isVisible ? `rotate-180` : `rotate-0`)}
+                    className={cn(
+                      'duration-100',
+                      isVisible ? `rotate-180` : `rotate-0`
+                    )}
                   />
                 </TooltipTrigger>
                 <TooltipContent side="top">
@@ -319,12 +351,7 @@ function UserMessage({
                 </TooltipContent>
               </Tooltip>
               {!isVisible && (
-                <div
-                  className={`
-                  pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16
-                  bg-linear-to-t from-primary to-transparent
-                `}
-                />
+                <div className="from-primary pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 bg-linear-to-t to-transparent" />
               )}
             </>
           )}
@@ -343,84 +370,87 @@ function UserMessage({
   )
 }
 
-function AssistantMessageLoader({ children, className, ...props }: ComponentProps<'div'>) {
-  return (
-    <div
-      className={cn(
-        `
-        flex animate-pulse items-center gap-2 text-muted-foreground
-      `,
-        className,
-      )}
-      {...props}
-    >
-      <AppLogo className="size-4" />
-      {children}
-    </div>
-  )
-}
+const AssistantMessageLoader = ({
+  children,
+  className,
+  ...props
+}: ComponentProps<'div'>) => (
+  <div
+    className={cn(
+      `text-muted-foreground flex animate-pulse items-center gap-2`,
+      className
+    )}
+    {...props}
+  >
+    <AppLogo className="size-4" />
+    {children}
+  </div>
+)
 
-function AssistantMessage({
+const AssistantMessage = ({
   message,
   isLast,
   status,
   className,
   ...props
-}: { message: UIMessage; isLast: boolean; status: ChatStatus } & ComponentProps<'div'>) {
-  const { chat } = Route.useLoaderData()
+}: {
+  message: UIMessage
+  isLast: boolean
+  status: ChatStatus
+} & ComponentProps<'div'>) => {
+  const { chat } = useLoaderData()
   const ref = useRef<HTMLDivElement>(null)
   const { height } = useElementSize(ref)
   const { subscription } = useUserSubscription()
 
-  const isLoading = isLast ? status === 'streaming' || status === 'submitted' : false
+  const isLoading = isLast
+    ? status === 'streaming' || status === 'submitted'
+    : false
 
   return (
     <ChatMessage className={cn('group/message', className)} {...props}>
-      <div style={{ height: height ? `${height}px` : undefined }} className="duration-150">
+      <div
+        style={{ height: height ? `${height}px` : undefined }}
+        className="duration-150"
+      >
         <div ref={ref}>
           <ChatMessageParts parts={message.parts} loading={isLoading} />
         </div>
       </div>
-      <div
-        className={`
-        sticky bottom-0 z-30 mt-2 -mr-1 flex items-center justify-between gap-1
-        first:mt-0
-      `}
-      >
+      <div className="sticky bottom-0 z-30 mt-2 -mr-1 flex items-center justify-between gap-1 first:mt-0">
         <div
           className={cn(
             'duration-150',
-            isLoading ? 'opacity-100' : `pointer-events-none opacity-0`,
+            isLoading ? 'opacity-100' : `pointer-events-none opacity-0`
           )}
         >
           <AssistantMessageLoader>
             {status === 'submitted' ? 'Thinking...' : 'Writing...'}
           </AssistantMessageLoader>
         </div>
-        <div
-          className={`
-          flex items-center gap-1 opacity-0 transition-opacity duration-150
-          group-hover/message:opacity-100
-        `}
-        >
+        <div className="flex items-center gap-1 opacity-0 transition-opacity duration-150 group-hover/message:opacity-100">
           {isLast && (
             <ChatMessageFooterButton
-              icon={<RiRestartLine className="size-4 text-muted-foreground" />}
+              icon={<RiRestartLine className="text-muted-foreground size-4" />}
               tooltip="Regenerate message"
-              disabled={status === 'streaming' || status === 'submitted' || !subscription}
+              disabled={
+                status === 'streaming' ||
+                status === 'submitted' ||
+                !subscription
+              }
               onClick={() => chat.regenerate({ messageId: message.id })}
             />
           )}
           <ChatMessageFooterButton
-            icon={<RiFileCopyLine className="size-4 text-muted-foreground" />}
+            icon={<RiFileCopyLine className="text-muted-foreground size-4" />}
             tooltip="Copy message"
             onClick={() =>
               copy(
                 message.parts
-                  .filter(part => part.type === 'text')
-                  .map(part => part.text)
+                  .filter((part) => part.type === 'text')
+                  .map((part) => part.text)
                   .join('\n'),
-                'Message copied to clipboard',
+                'Message copied to clipboard'
               )
             }
           />
@@ -430,15 +460,22 @@ function AssistantMessage({
   )
 }
 
-function ErrorMessage({ error, className, ...props }: { error: Error } & ComponentProps<'div'>) {
-  const { chat } = Route.useLoaderData()
+const ErrorMessage = ({
+  error,
+  className,
+  ...props
+}: { error: Error } & ComponentProps<'div'>) => {
+  const { chat } = useLoaderData()
 
   useEffect(() => {
     console.error(error)
   }, [error])
 
   return (
-    <ChatMessage className={cn('relative z-20 flex justify-center', className)} {...props}>
+    <ChatMessage
+      className={cn('relative z-20 flex justify-center', className)}
+      {...props}
+    >
       <Alert>
         <RiAlertLine />
         <AlertTitle>Error generating response</AlertTitle>
@@ -457,29 +494,34 @@ function ErrorMessage({ error, className, ...props }: { error: Error } & Compone
 
 const MESSAGES_GAP = 16
 
-export function ChatMessages({ className }: ComponentProps<'div'>) {
-  const { chat } = Route.useLoaderData()
-  const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({
-    initial: 'instant',
-  })
+export const ChatMessages = ({ className }: ComponentProps<'div'>) => {
+  const { chat } = useLoaderData()
+  const { scrollRef, contentRef, scrollToBottom, isNearBottom } =
+    useStickToBottom({
+      initial: 'instant',
+    })
   const { messages, error, status } = useChat({ chat })
   const userMessageRef = useRef<HTMLDivElement>(null)
   const [placeholderHeight, setPlaceholderHeight] = useState(0)
 
-  useEffect(() => {
-    return chatHooks.hook('scrollToBottom', () => {
-      scrollToBottom()
-    })
-  }, [scrollToBottom])
+  useEffect(
+    () =>
+      chatHooks.hook('scrollToBottom', () => {
+        scrollToBottom()
+      }),
+    [scrollToBottom]
+  )
 
   useEffect(() => {
-    if (!userMessageRef.current) return
+    if (!userMessageRef.current) {
+      return
+    }
 
     const frame = requestAnimationFrame(() => {
       setPlaceholderHeight(
         (scrollRef.current?.offsetHeight || 0) -
           (userMessageRef.current?.offsetHeight || 0) -
-          MESSAGES_GAP,
+          MESSAGES_GAP
       )
     })
 
@@ -497,7 +539,11 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
       >
         {messages.map((message, index) =>
           message.role === 'user' ? (
-            <UserMessage key={message.id} ref={userMessageRef} message={message} />
+            <UserMessage
+              key={message.id}
+              ref={userMessageRef}
+              message={message}
+            />
           ) : (
             <AssistantMessage
               key={message.id}
@@ -505,10 +551,13 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
               isLast={index === messages.length - 1}
               status={status}
               style={{
-                minHeight: index === messages.length - 1 ? `${placeholderHeight}px` : undefined,
+                minHeight:
+                  index === messages.length - 1
+                    ? `${placeholderHeight}px`
+                    : undefined,
               }}
             />
-          ),
+          )
         )}
         {isLastMessageFromUser && status === 'submitted' && (
           <ChatMessage
@@ -525,7 +574,7 @@ export function ChatMessages({ className }: ComponentProps<'div'>) {
       <div
         className={cn(
           'sticky bottom-4 z-40 transition-opacity duration-150',
-          isNearBottom ? `pointer-events-none opacity-0` : '',
+          isNearBottom ? `pointer-events-none opacity-0` : ''
         )}
       >
         <Button

@@ -19,7 +19,11 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
@@ -49,7 +53,7 @@ interface ConnectionGroup {
   resources: ConnectionResource[]
 }
 
-function ConnectionSubMenu({
+const ConnectionSubMenu = ({
   group: { connection, resources },
   firstResource,
   onRemove,
@@ -59,7 +63,7 @@ function ConnectionSubMenu({
   firstResource: ConnectionResource
   onRemove: (connection: Connection) => void
   onNavigate: () => void
-}) {
+}) => {
   const navigate = useNavigate()
   const firstResourceLink = useConnectionResourceLinkParams(firstResource.id)
 
@@ -84,10 +88,15 @@ function ConnectionSubMenu({
         )}
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent className="max-h-[60vh] min-w-48 overflow-auto">
-        {resources.map(resource => (
+        {resources.map((resource) => (
           <DropdownMenuItem
             key={resource.id}
-            render={<ConnectionResourceLink resourceId={resource.id} activateOn="click" />}
+            render={
+              <ConnectionResourceLink
+                resourceId={resource.id}
+                activateOn="click"
+              />
+            }
           >
             <span data-mask className="truncate">
               {resource.name || CONNECTION_RESOURCE_ROOT_LABEL}
@@ -95,7 +104,10 @@ function ConnectionSubMenu({
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive" onClick={() => onRemove(connection)}>
+        <DropdownMenuItem
+          variant="destructive"
+          onClick={() => onRemove(connection)}
+        >
           <RiDeleteBinLine className="size-4" />
           Remove
         </DropdownMenuItem>
@@ -104,7 +116,7 @@ function ConnectionSubMenu({
   )
 }
 
-function ConnectionsDropdown({
+const ConnectionsDropdown = ({
   groups,
   current,
   onRemove,
@@ -112,13 +124,15 @@ function ConnectionsDropdown({
   groups: ConnectionGroup[]
   current: Connection | undefined
   onRemove: (connection: Connection) => void
-}) {
+}) => {
   const [open, setOpen] = useState(false)
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
-        render={<Button variant="ghost" size="sm" className="max-w-64 gap-1.5 px-2" />}
+        render={
+          <Button variant="ghost" size="sm" className="max-w-64 gap-1.5 px-2" />
+        }
       >
         {current ? (
           <>
@@ -137,15 +151,22 @@ function ConnectionsDropdown({
         ) : (
           <span className="truncate font-medium">Connections</span>
         )}
-        <RiExpandUpDownLine className="size-3 shrink-0 text-muted-foreground/70" />
+        <RiExpandUpDownLine className="text-muted-foreground/70 size-3 shrink-0" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="max-h-[70vh] min-w-64 overflow-auto">
+      <DropdownMenuContent
+        align="start"
+        className="max-h-[70vh] min-w-64 overflow-auto"
+      >
         {groups.length === 0 && (
-          <div className="px-2 py-1.5 text-sm text-muted-foreground">No connections yet</div>
+          <div className="text-muted-foreground px-2 py-1.5 text-sm">
+            No connections yet
+          </div>
         )}
-        {groups.map(group => {
-          const firstResource = group.resources[0]
-          if (!firstResource) return null
+        {groups.map((group) => {
+          const [firstResource] = group.resources
+          if (!firstResource) {
+            return null
+          }
           return (
             <ConnectionSubMenu
               key={group.connection.id}
@@ -166,55 +187,70 @@ function ConnectionsDropdown({
   )
 }
 
-function ResourcesDropdown({
+const ResourcesDropdown = ({
   resources,
   current,
 }: {
   resources: ConnectionResource[]
   current: ConnectionResource
-}) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={<Button variant="ghost" size="sm" className="max-w-64 gap-1.5 px-2" />}
-      >
-        <span data-mask className="truncate text-muted-foreground">
-          {current.name || CONNECTION_RESOURCE_ROOT_LABEL}
-        </span>
-        <RiExpandUpDownLine className="size-3 shrink-0 text-muted-foreground/70" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="max-h-[70vh] min-w-48 overflow-auto">
-        {resources.map(resource => (
-          <DropdownMenuItem
-            key={resource.id}
-            render={<ConnectionResourceLink resourceId={resource.id} activateOn="click" />}
-          >
-            <span data-mask className="truncate">
-              {resource.name || CONNECTION_RESOURCE_ROOT_LABEL}
-            </span>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
-}
+}) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger
+      render={
+        <Button variant="ghost" size="sm" className="max-w-64 gap-1.5 px-2" />
+      }
+    >
+      <span data-mask className="text-muted-foreground truncate">
+        {current.name || CONNECTION_RESOURCE_ROOT_LABEL}
+      </span>
+      <RiExpandUpDownLine className="text-muted-foreground/70 size-3 shrink-0" />
+    </DropdownMenuTrigger>
+    <DropdownMenuContent
+      align="start"
+      className="max-h-[70vh] min-w-48 overflow-auto"
+    >
+      {resources.map((resource) => (
+        <DropdownMenuItem
+          key={resource.id}
+          render={
+            <ConnectionResourceLink
+              resourceId={resource.id}
+              activateOn="click"
+            />
+          }
+        >
+          <span data-mask className="truncate">
+            {resource.name || CONNECTION_RESOURCE_ROOT_LABEL}
+          </span>
+        </DropdownMenuItem>
+      ))}
+    </DropdownMenuContent>
+  </DropdownMenu>
+)
 
-function ConnectionsBreadcrumb({ onRemove }: { onRemove: (connection: Connection) => void }) {
-  const { connectionsCollection, connectionsResourcesCollection } = useCollections()
+const ConnectionsBreadcrumb = ({
+  onRemove,
+}: {
+  onRemove: (connection: Connection) => void
+}) => {
+  const { connectionsCollection, connectionsResourcesCollection } =
+    useCollections()
   const { resourceId } = useParams({ strict: false })
   const { data: activeWorkspace } = useActiveWorkspace()
   const { data: allData } = useLiveQuery(
-    q =>
+    (q) =>
       q
         .from({ c: connectionsCollection })
-        .innerJoin({ r: connectionsResourcesCollection }, ({ c, r }) => eq(r.connectionId, c.id))
+        .innerJoin({ r: connectionsResourcesCollection }, ({ c, r }) =>
+          eq(r.connectionId, c.id)
+        )
         .select(({ c, r }) => ({ connection: c, resource: r }))
         .orderBy(({ c }) => c.createdAt, 'desc'),
-    [connectionsCollection, connectionsResourcesCollection],
+    [connectionsCollection, connectionsResourcesCollection]
   )
 
   const data = allData.filter(({ connection }) =>
-    connectionInWorkspace(connection.workspaceId, activeWorkspace),
+    connectionInWorkspace(connection.workspaceId, activeWorkspace)
   )
 
   const groups: ConnectionGroup[] = []
@@ -234,42 +270,64 @@ function ConnectionsBreadcrumb({ onRemove }: { onRemove: (connection: Connection
 
   const current = data.find(({ resource }) => resource.id === resourceId)
   const currentGroup =
-    current && groups.find(group => group.connection.id === current.connection.id)
+    current &&
+    groups.find((group) => group.connection.id === current.connection.id)
 
   return (
     <>
-      <ConnectionsDropdown groups={groups} current={current?.connection} onRemove={onRemove} />
+      <ConnectionsDropdown
+        groups={groups}
+        current={current?.connection}
+        onRemove={onRemove}
+      />
       {current && currentGroup && (
         <>
-          <RiArrowRightSLine aria-hidden className="size-3.5 shrink-0 text-muted-foreground/40" />
-          <ResourcesDropdown resources={currentGroup.resources} current={current.resource} />
+          <RiArrowRightSLine
+            aria-hidden
+            className="text-muted-foreground/40 size-3.5 shrink-0"
+          />
+          <ResourcesDropdown
+            resources={currentGroup.resources}
+            current={current.resource}
+          />
         </>
       )}
     </>
   )
 }
 
-export function ProtectedTitleBar() {
-  const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
-  const version = useSubscription(updatesStore, { selector: state => state.version })
+export const ProtectedTitleBar = () => {
+  const removeDialogRef =
+    useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
+  const version = useSubscription(updatesStore, {
+    selector: (state) => state.version,
+  })
 
   return (
     <div className="flex shrink-0 flex-col">
-      <TitleBar className="gap-1.5 border-b-border bg-card">
+      <TitleBar className="border-b-border bg-card gap-1.5">
         <div className="flex w-full items-center px-2">
           <RemoveConnectionDialog ref={removeDialogRef} />
           <Link
             to="/"
             aria-label="Home"
-            className="shrink-0 rounded-md p-1.5 transition-colors hover:bg-foreground/5"
+            className="hover:bg-foreground/5 shrink-0 rounded-md p-1.5 transition-colors"
           >
-            <AppLogo className="size-4 text-primary" />
+            <AppLogo className="text-primary size-4" />
           </Link>
-          <RiArrowRightSLine aria-hidden className="size-3.5 shrink-0 text-muted-foreground/40" />
+          <RiArrowRightSLine
+            aria-hidden
+            className="text-muted-foreground/40 size-3.5 shrink-0"
+          />
           <WorkspaceSwitcher />
-          <RiArrowRightSLine aria-hidden className="size-3.5 shrink-0 text-muted-foreground/40" />
+          <RiArrowRightSLine
+            aria-hidden
+            className="text-muted-foreground/40 size-3.5 shrink-0"
+          />
           <ConnectionsBreadcrumb
-            onRemove={connection => removeDialogRef.current?.remove(connection)}
+            onRemove={(connection) =>
+              removeDialogRef.current?.remove(connection)
+            }
           />
           <div className="ml-auto flex h-full shrink-0 items-center gap-1">
             {window.electron && (
@@ -279,11 +337,7 @@ export function ProtectedTitleBar() {
                     <button
                       type="button"
                       aria-label="Check for updates"
-                      className="
-                        rounded-md px-1.5 py-0.5 text-2xs
-                        text-muted-foreground/60 tabular-nums
-                        hover:bg-foreground/5 hover:text-muted-foreground
-                      "
+                      className="text-2xs text-muted-foreground/60 hover:bg-foreground/5 hover:text-muted-foreground rounded-md px-1.5 py-0.5 tabular-nums"
                       onClick={() => checkForUpdates()}
                     />
                   }
@@ -312,7 +366,7 @@ export function ProtectedTitleBar() {
                 <KbdCtrlLetter userAgent={navigator.userAgent} letter="P" />
               </TooltipContent>
             </Tooltip>
-            <span className="mx-1 h-4 w-px shrink-0 self-center bg-border" />
+            <span className="bg-border mx-1 h-4 w-px shrink-0 self-center" />
             <UserButton side="bottom" align="end" />
           </div>
         </div>

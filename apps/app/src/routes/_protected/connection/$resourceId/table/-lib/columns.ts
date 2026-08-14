@@ -11,7 +11,7 @@ import {
   resourceTableColumnsQueryOptions,
 } from '~/entities/connection/queries'
 
-export function useTableColumnsQuery({
+export const useTableColumnsQuery = ({
   connectionResource,
   table,
   schema,
@@ -19,8 +19,8 @@ export function useTableColumnsQuery({
   connectionResource: ConnectionResource
   table: string
   schema: string
-}) {
-  return useQueries({
+}) =>
+  useQueries({
     queries: [
       resourceTableColumnsQueryOptions({ connectionResource, table, schema }),
       resourceConstraintsQueryOptions({ connectionResource }),
@@ -43,11 +43,18 @@ export function useTableColumnsQuery({
       const data = columns.data
         ?.map((column): Column => {
           const columnConstraints = constraintsData.filter(
-            c => c.column === column.id && c.schema === schema && c.table === table,
+            (c) =>
+              c.column === column.id && c.schema === schema && c.table === table
           )
-          const foreignConstraint = columnConstraints.find(c => c.type === 'foreignKey')
-          const uniqueConstraint = columnConstraints.find(c => c.type === 'unique')
-          const primaryConstraint = columnConstraints.find(c => c.type === 'primaryKey')
+          const foreignConstraint = columnConstraints.find(
+            (c) => c.type === 'foreignKey'
+          )
+          const uniqueConstraint = columnConstraints.find(
+            (c) => c.type === 'unique'
+          )
+          const primaryConstraint = columnConstraints.find(
+            (c) => c.type === 'primaryKey'
+          )
 
           return {
             ...column,
@@ -79,35 +86,44 @@ export function useTableColumnsQuery({
                 : undefined,
             references: constraintsData
               .filter(
-                c =>
+                (c) =>
                   c.type === 'foreignKey' &&
                   c.foreignColumn === column.id &&
                   c.foreignSchema === schema &&
                   c.foreignTable === table &&
-                  !!c.column,
+                  !!c.column
               )
-              .map(c => {
+              .map((c) => {
                 const isUnique = constraintsData.some(
-                  u =>
+                  (u) =>
                     (u.type === 'unique' || u.type === 'primaryKey') &&
                     u.schema === c.schema &&
                     u.table === c.table &&
-                    u.column === c.column,
+                    u.column === c.column
                 )
+
+                if (!c.column) {
+                  return null
+                }
 
                 return {
                   name: c.name,
                   schema: c.schema,
                   table: c.table,
-                  column: c.column!,
+                  column: c.column,
                   isUnique,
                 }
-              }),
+              })
+              .filter((ref) => ref !== null),
           } satisfies Column
         })
         .toSorted((a, b) => {
-          if (a.primaryKey && !b.primaryKey) return -1
-          if (!a.primaryKey && b.primaryKey) return 1
+          if (a.primaryKey && !b.primaryKey) {
+            return -1
+          }
+          if (!a.primaryKey && b.primaryKey) {
+            return 1
+          }
           return 0
         })
 
@@ -118,10 +134,18 @@ export function useTableColumnsQuery({
       }
     },
   })
-}
 
-export const ColumnsContext = createContext<{ columns: Column[]; isPending: boolean }>(null!)
+export const ColumnsContext = createContext<{
+  columns: Column[]
+  isPending: boolean
+} | null>(null)
 
-export function useTableColumnsContext() {
-  return use(ColumnsContext)
+export const useTableColumnsContext = () => {
+  const context = use(ColumnsContext)
+  if (!context) {
+    throw new Error(
+      'useTableColumnsContext must be used within a ColumnsContext provider'
+    )
+  }
+  return context
 }

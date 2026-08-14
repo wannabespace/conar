@@ -1,27 +1,25 @@
 import { deepRedact } from '@hackylabs/deep-redact'
 
 const redactor = deepRedact({
-  keys: [
-    /password/i,
-    /passwd/i,
-    /secret/i,
-    /token/i,
-    /api[-_]?key/i,
-    /authorization/i,
-    /cookie/i,
-    /session/i,
-    /credit[-_]?card/i,
-    /card[-_]?number/i,
-    /cvv/i,
-    /cvc/i,
-    /credentials?/i,
-    /connectionString?/i,
-  ],
-  fuzzyKeyMatch: true,
   caseSensitiveKeyMatch: false,
+  fuzzyKeyMatch: true,
+  keys: [
+    /password/iu,
+    /passwd/iu,
+    /secret/iu,
+    /token/iu,
+    /api[-_]?key/iu,
+    /authorization/iu,
+    /cookie/iu,
+    /session/iu,
+    /credit[-_]?card/iu,
+    /card[-_]?number/iu,
+    /cvv/iu,
+    /cvc/iu,
+    /credentials?/iu,
+    /connectionString?/iu,
+  ],
   serialise: false,
 })
 
-export function sanitizeLogData<T>(data: T): T {
-  return redactor(data) as T
-}
+export const sanitizeLogData = <T>(data: T): T => redactor(data) as T

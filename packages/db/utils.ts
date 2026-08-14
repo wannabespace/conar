@@ -3,30 +3,40 @@ import { customType } from 'drizzle-orm/pg-core'
 
 import { env } from './env'
 
-export function encryptedJson<TData>(name?: string) {
-  return customType<{ data: TData; driverData: string }>({
+export const encryptedJson = <TData>(name?: string) => {
+  const column = customType<{ data: TData; driverData: string }>({
     dataType() {
       return 'text'
-    },
-    toDriver(value: TData) {
-      return encrypt({ text: JSON.stringify(value), secret: env.ENCRYPTION_SECRET })
     },
     fromDriver(driverData: string): TData {
-      return JSON.parse(decrypt({ encryptedText: driverData, secret: env.ENCRYPTION_SECRET })!)
+      return JSON.parse(
+        decrypt({ encryptedText: driverData, secret: env.ENCRYPTION_SECRET })
+      )
     },
-  })(name!)
+    toDriver(value: TData) {
+      return encrypt({
+        secret: env.ENCRYPTION_SECRET,
+        text: JSON.stringify(value),
+      })
+    },
+  })
+  return name === undefined ? column() : column(name)
 }
 
-export function encryptedText(name?: string) {
-  return customType<{ data: string; driverData: string }>({
+export const encryptedText = (name?: string) => {
+  const column = customType<{ data: string; driverData: string }>({
     dataType() {
       return 'text'
     },
-    toDriver(value: string) {
-      return encrypt({ text: value, secret: env.ENCRYPTION_SECRET })
-    },
     fromDriver(driverData: string) {
-      return decrypt({ encryptedText: driverData, secret: env.ENCRYPTION_SECRET })!
+      return decrypt({
+        encryptedText: driverData,
+        secret: env.ENCRYPTION_SECRET,
+      })
     },
-  })(name!)
+    toDriver(value: string) {
+      return encrypt({ secret: env.ENCRYPTION_SECRET, text: value })
+    },
+  })
+  return name === undefined ? column() : column(name)
 }

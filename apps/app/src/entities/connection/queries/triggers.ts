@@ -7,23 +7,83 @@ import type { ConnectionResource } from '~/entities/connection/core'
 import { connectionResourceToQueryParams, createQuery } from '../runtime/query'
 
 export const triggersType = type({
-  'schema': 'string',
-  'table': 'string',
-  'name': 'string',
-  'event': 'string',
-  'timing': 'string',
   'enabled?': 'boolean',
+  event: 'string',
   'function_name?': 'string | null',
+  name: 'string',
+  schema: 'string',
+  table: 'string',
+  timing: 'string',
 }).pipe(({ function_name, enabled, ...item }) => ({
   ...item,
-  functionName: function_name || null,
   enabled: enabled ?? null,
+  functionName: function_name || null,
 }))
 
 export const resourceTriggersQuery = createQuery({
-  type: triggersType.array(),
   query: {
-    postgres: db =>
+    clickhouse: () => {
+      throw new Error('Clickhouse is not supported')
+    },
+    mssql: (db) =>
+      db
+        .selectFrom('sys.triggers as t')
+        .innerJoin('sys.objects as o', 't.parent_id', 'o.object_id')
+        .innerJoin('sys.schemas as s', 'o.schema_id', 's.schema_id')
+        .leftJoin('sys.trigger_events as te', 't.object_id', 'te.object_id')
+        .select(({ eb }) => [
+          's.name as schema',
+          'o.name as table',
+          't.name as name',
+          sql<string>`COALESCE(STRING_AGG(te.type_desc, ' OR '), 'UNKNOWN')`.as(
+            'event'
+          ),
+          eb
+            .case()
+            .when('t.is_instead_of_trigger', '=', true)
+            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
+            .then('INSTEAD OF')
+            .else('AFTER')
+            .end()
+            .as('timing'),
+          eb
+            .case()
+            .when('t.is_disabled', '=', false)
+            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
+            .then(true)
+            .else(false)
+            .end()
+            .as('enabled'),
+        ])
+        .where('t.is_ms_shipped', '=', false)
+        .where('t.parent_class', '=', 1)
+        .where('s.name', '!=', 'sys')
+        .groupBy([
+          's.name',
+          'o.name',
+          't.name',
+          't.is_instead_of_trigger',
+          't.is_disabled',
+        ])
+        .execute(),
+    mysql: (db) =>
+      db
+        .selectFrom('information_schema.TRIGGERS as t')
+        .select([
+          't.TRIGGER_SCHEMA as schema',
+          't.EVENT_OBJECT_TABLE as table',
+          't.TRIGGER_NAME as name',
+          't.EVENT_MANIPULATION as event',
+          't.ACTION_TIMING as timing',
+        ])
+        .where('t.TRIGGER_SCHEMA', 'not in', [
+          'mysql',
+          'information_schema',
+          'performance_schema',
+          'sys',
+        ])
+        .execute(),
+    postgres: (db) =>
       db
         .selectFrom('pg_catalog.pg_trigger as t')
         .innerJoin('pg_catalog.pg_class as c', 't.tgrelid', 'c.oid')
@@ -42,8 +102,10 @@ export const resourceTriggersQuery = createQuery({
           eb
             .case()
             .when(sql<boolean>`(t.tgtype::int & 2) != 0`)
+            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
             .then('BEFORE')
             .when(sql<boolean>`(t.tgtype::int & 64) != 0`)
+            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
             .then('INSTEAD OF')
             .else('AFTER')
             .end()
@@ -55,62 +117,19 @@ export const resourceTriggersQuery = createQuery({
         .where('n.nspname', 'not like', 'pg_%')
         .where('n.nspname', '!=', 'information_schema')
         .execute(),
-    mysql: db =>
-      db
-        .selectFrom('information_schema.TRIGGERS as t')
-        .select([
-          't.TRIGGER_SCHEMA as schema',
-          't.EVENT_OBJECT_TABLE as table',
-          't.TRIGGER_NAME as name',
-          't.EVENT_MANIPULATION as event',
-          't.ACTION_TIMING as timing',
-        ])
-        .where('t.TRIGGER_SCHEMA', 'not in', [
-          'mysql',
-          'information_schema',
-          'performance_schema',
-          'sys',
-        ])
-        .execute(),
-    mssql: db =>
-      db
-        .selectFrom('sys.triggers as t')
-        .innerJoin('sys.objects as o', 't.parent_id', 'o.object_id')
-        .innerJoin('sys.schemas as s', 'o.schema_id', 's.schema_id')
-        .leftJoin('sys.trigger_events as te', 't.object_id', 'te.object_id')
-        .select(({ eb }) => [
-          's.name as schema',
-          'o.name as table',
-          't.name as name',
-          sql<string>`COALESCE(STRING_AGG(te.type_desc, ' OR '), 'UNKNOWN')`.as('event'),
-          eb
-            .case()
-            .when('t.is_instead_of_trigger', '=', true)
-            .then('INSTEAD OF')
-            .else('AFTER')
-            .end()
-            .as('timing'),
-          eb.case().when('t.is_disabled', '=', false).then(true).else(false).end().as('enabled'),
-        ])
-        .where('t.is_ms_shipped', '=', false)
-        .where('t.parent_class', '=', 1)
-        .where('s.name', '!=', 'sys')
-        .groupBy(['s.name', 'o.name', 't.name', 't.is_instead_of_trigger', 't.is_disabled'])
-        .execute(),
-    clickhouse: () => {
-      throw new Error('Clickhouse is not supported')
-    },
   },
+  type: triggersType.array(),
 })
 
-export function resourceTriggersQueryOptions({
+export const resourceTriggersQueryOptions = ({
   connectionResource,
 }: {
   connectionResource: ConnectionResource
-}) {
-  return queryOptions({
+}) =>
+  queryOptions({
     queryFn: async () =>
-      resourceTriggersQuery.run(await connectionResourceToQueryParams(connectionResource)),
+      resourceTriggersQuery.run(
+        await connectionResourceToQueryParams(connectionResource)
+      ),
     queryKey: ['connection-resource', connectionResource.id, 'triggers'],
   })
-}

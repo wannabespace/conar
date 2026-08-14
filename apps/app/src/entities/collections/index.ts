@@ -1,6 +1,9 @@
 import { getRouteApi } from '@tanstack/react-router'
 
-import { createChatsCollection, createChatsMessagesCollection } from '~/entities/chat/sync'
+import {
+  createChatsCollection,
+  createChatsMessagesCollection,
+} from '~/entities/chat/sync'
 import {
   createConnectionsCollection,
   createConnectionsResourcesCollection,
@@ -10,8 +13,12 @@ import { createQueriesCollection } from '~/entities/query/sync'
 
 export interface Collections {
   connectionsCollection: ReturnType<typeof createConnectionsCollection>
-  connectionsResourcesCollection: ReturnType<typeof createConnectionsResourcesCollection>
-  connectionStringsCollection: ReturnType<typeof createConnectionStringsCollection>
+  connectionsResourcesCollection: ReturnType<
+    typeof createConnectionsResourcesCollection
+  >
+  connectionStringsCollection: ReturnType<
+    typeof createConnectionStringsCollection
+  >
   chatsCollection: ReturnType<typeof createChatsCollection>
   chatsMessagesCollection: ReturnType<typeof createChatsMessagesCollection>
   queriesCollection: ReturnType<typeof createQueriesCollection>
@@ -20,21 +27,23 @@ export interface Collections {
 let current: Collections | null = null
 const listeners = new Set<() => void>()
 
-function notify() {
-  listeners.forEach(l => l())
+const notify = () => {
+  for (const listener of listeners) {
+    listener()
+  }
 }
 
-export function getCollections(): Collections {
+export const getCollections = (): Collections => {
   if (current) {
     return current
   }
 
   current = {
-    connectionsCollection: createConnectionsCollection(),
-    connectionsResourcesCollection: createConnectionsResourcesCollection(),
-    connectionStringsCollection: createConnectionStringsCollection(),
     chatsCollection: createChatsCollection(),
     chatsMessagesCollection: createChatsMessagesCollection(),
+    connectionStringsCollection: createConnectionStringsCollection(),
+    connectionsCollection: createConnectionsCollection(),
+    connectionsResourcesCollection: createConnectionsResourcesCollection(),
     queriesCollection: createQueriesCollection(),
   }
 
@@ -42,8 +51,10 @@ export function getCollections(): Collections {
   return current
 }
 
-export function cleanCollections() {
-  if (!current) return
+export const cleanCollections = () => {
+  if (!current) {
+    return
+  }
 
   current = null
   notify()
@@ -51,6 +62,4 @@ export function cleanCollections() {
 
 const { useRouteContext } = getRouteApi('/_protected')
 
-export function useCollections(): Collections {
-  return useRouteContext().collections
-}
+export const useCollections = (): Collections => useRouteContext().collections

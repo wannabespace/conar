@@ -17,7 +17,12 @@ import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { v7 } from 'uuid'
 
-import { Stepper, StepperContent, StepperList, StepperTrigger } from '~/components/stepper'
+import {
+  Stepper,
+  StepperContent,
+  StepperList,
+  StepperTrigger,
+} from '~/components/stepper'
 import { useCollections } from '~/entities/collections'
 import { createConnectionTransaction } from '~/entities/connection/core'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
@@ -32,13 +37,6 @@ import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'
 import { StepType } from './-components/step-type'
 
-export const Route = createFileRoute('/_protected/create/')({
-  component: CreateConnectionPage,
-  head: () => ({
-    meta: [{ title: title('Create connection') }],
-  }),
-})
-
 const createConnectionType = type({
   name: 'string > 1',
   type: type.valueOf(ConnectionType).or('null'),
@@ -48,74 +46,86 @@ const createConnectionType = type({
   color: 'string | null',
 })
 
-function CreateConnectionPage() {
+const CreateConnectionPage = () => {
   const collections = useCollections()
   const { data: activeWorkspace } = useActiveWorkspace()
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const { mutate: createConnectionMutation, isPending: isCreatingConnection } = useMutation({
-    mutationFn: async (data: {
-      connectionString: string
-      name: string
-      type: ConnectionType
-      syncType: SyncType
-      label: string | null
-      color: string | null
-    }) => {
-      const id = v7()
-      const url = new SafeURL(data.connectionString.trim())
+  const { mutate: createConnectionMutation, isPending: isCreatingConnection } =
+    useMutation({
+      mutationFn: async (data: {
+        connectionString: string
+        name: string
+        type: ConnectionType
+        syncType: SyncType
+        label: string | null
+        color: string | null
+      }) => {
+        const id = v7()
+        const url = new SafeURL(data.connectionString.trim())
 
-      const resource = url.pathname === '/' || url.pathname === '' ? null : url.pathname.slice(1)
-      const resourceId = v7()
-      const updatedAt = new Date()
-      const createdAt = new Date()
-      const { connectionStringsCollection, connectionsResourcesCollection } = collections
+        const resource =
+          url.pathname === '/' || url.pathname === ''
+            ? null
+            : url.pathname.slice(1)
+        const resourceId = v7()
+        const updatedAt = new Date()
+        const createdAt = new Date()
+        const { connectionStringsCollection, connectionsResourcesCollection } =
+          collections
 
-      const tx = createConnectionTransaction({
-        connectionString: await connectionStringsCollection.utils.prepare({
-          connectionId: id,
-          connectionString: url.toString(),
-          updatedAt,
-        }),
-        connection: {
-          id,
-          workspaceId: activeWorkspace?.id ?? null,
-          name: data.name,
-          type: data.type,
-          label: data.label || null,
-          color: data.color || null,
-          isPasswordExists: !!url.password,
-          syncType: data.syncType,
-          createdAt,
-          updatedAt,
-        },
-        resource: {
-          id: resourceId,
-          connectionId: id,
-          name: resource,
-          createdAt,
-          updatedAt,
-        },
-      })
+        const tx = createConnectionTransaction({
+          connectionString: await connectionStringsCollection.utils.prepare({
+            connectionId: id,
+            connectionString: url.toString(),
+            updatedAt,
+          }),
+          connection: {
+            id,
+            workspaceId: activeWorkspace?.id ?? null,
+            name: data.name,
+            type: data.type,
+            label: data.label || null,
+            color: data.color || null,
+            isPasswordExists: !!url.password,
+            syncType: data.syncType,
+            createdAt,
+            updatedAt,
+          },
+          resource: {
+            id: resourceId,
+            connectionId: id,
+            name: resource,
+            createdAt,
+            updatedAt,
+          },
+        })
 
-      if (resource) {
-        getConnectionStore(id).set(state => ({
-          ...state,
-          lastOpenedResourceName: resource,
-        }))
-      }
+        if (resource) {
+          getConnectionStore(id).set((state) => ({
+            ...state,
+            lastOpenedResourceName: resource,
+          }))
+        }
 
-      if (!window.electron) {
-        await tx.isPersisted.promise
-      }
+        if (!window.electron) {
+          await tx.isPersisted.promise
+        }
 
-      prefetchConnectionResourceCore(connectionsResourcesCollection.get(resourceId)!)
-      router.navigate({ to: '/connection/$resourceId/table', params: { resourceId } })
-      toast.success('Connection created successfully 🎉')
-    },
-  })
+        const createdResource = connectionsResourcesCollection.get(resourceId)
+        if (!createdResource) {
+          throw new Error('Connection resource not found after create')
+        }
+        prefetchConnectionResourceCore(createdResource)
+        router.navigate({
+          to: '/connection/$resourceId/table',
+          params: { resourceId },
+        })
+        toast.success('Connection created successfully 🎉')
+      },
+    })
 
   const defaultValues: typeof createConnectionType.infer = {
     connectionString: '',
@@ -132,14 +142,28 @@ function CreateConnectionPage() {
       onChange: createConnectionType,
     },
     onSubmit(e) {
-      const { type, connectionString, name, syncType, label, color } = e.value
+      const {
+        type: connectionType,
+        connectionString: formConnectionString,
+        name: formName,
+        syncType: formSyncType,
+        label: formLabel,
+        color: formColor,
+      } = e.value
 
-      if (!type) {
+      if (!connectionType) {
         toast.error('Select a database type')
         return
       }
 
-      createConnectionMutation({ type, connectionString, name, syncType, label, color })
+      createConnectionMutation({
+        type: connectionType,
+        connectionString: formConnectionString,
+        name: formName,
+        syncType: formSyncType,
+        label: formLabel,
+        color: formColor,
+      })
     },
   })
 
@@ -148,31 +172,38 @@ function CreateConnectionPage() {
     reset,
     status: testingStatus,
   } = useMutation({
-    mutationFn: ({ type, connectionString }: { type: ConnectionType; connectionString: string }) =>
+    mutationFn: ({
+      type: connectionType,
+      connectionString: stringToTest,
+    }: {
+      type: ConnectionType
+      connectionString: string
+    }) =>
       testConnectionQuery.run({
-        type,
-        connectionString,
+        type: connectionType,
+        connectionString: stringToTest,
       }),
     onSuccess: () => {
       setStep('save')
       toast.success('Connection successful. You can save the connection.')
     },
-    onError: error => {
+    onError: (error) => {
+      const description = error.message.toLowerCase().includes('invalid url')
+        ? 'Invalid URL, check your connection string and try again'
+        : error.message
       toast.error("We couldn't connect to the connection", {
-        description: (
-          <span
-            dangerouslySetInnerHTML={{
-              __html: error.message.toLowerCase().includes('invalid url')
-                ? 'Invalid URL, check your connection string and try again'
-                : error.message.replaceAll('\n', '<br />'),
-            }}
-          />
-        ),
+        description,
+        classNames: {
+          description: 'whitespace-pre-wrap',
+        },
       })
     },
   })
 
-  const connectionString = useStore(form.store, state => state.values.connectionString)
+  const connectionString = useStore(
+    form.store,
+    (state) => state.values.connectionString
+  )
   const url = tryCatch(() => new SafeURL(connectionString.trim())).data
   const {
     name,
@@ -180,12 +211,13 @@ function CreateConnectionPage() {
     label,
     color,
     type: typeValue,
-  } = useStore(form.store, state => state.values)
-  const isValid = useStore(form.store, state => state.isValid)
+  } = useStore(form.store, (state) => state.values)
+  const isValid = useStore(form.store, (state) => state.isValid)
 
   const isLocalProxyAvailable = useLocalProxyAvailable()
   const hasPassword = !!url?.password
-  const isLocalhost = tryCatch(() => isLocalhostConnectionString(connectionString)).data === true
+  const isLocalhost =
+    tryCatch(() => isLocalhostConnectionString(connectionString)).data === true
   const { canSend } = fetchingConfig(
     {
       syncType,
@@ -195,14 +227,14 @@ function CreateConnectionPage() {
       isLocalProxyAvailable,
       isPasswordPopulated: hasPassword,
       isLocalhost,
-    },
+    }
   )
   const canSaveInCloud = !!url && canSend
 
   return (
     <ScrollArea className="py-[10vh]">
       <form
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           form.handleSubmit()
         }}
@@ -212,27 +244,17 @@ function CreateConnectionPage() {
           <Button
             type="button"
             variant="link"
-            className="px-0! text-muted-foreground"
+            className="text-muted-foreground px-0!"
             onClick={() => router.history.back()}
           >
             <RiArrowLeftSLine className="size-3" />
             Back
           </Button>
         </div>
-        <h1
-          className={`
-          scroll-m-20 text-4xl font-extrabold tracking-tight
-          lg:text-5xl
-        `}
-        >
+        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
           Create a connection
         </h1>
-        <p
-          className={`
-          mb-10 leading-7 text-muted-foreground
-          not-first:mt-2
-        `}
-        >
+        <p className="text-muted-foreground mb-10 leading-7 not-first:mt-2">
           Connect to your database by providing the connection details.
         </p>
         <Stepper active={step} onChange={setStep}>
@@ -250,83 +272,120 @@ function CreateConnectionPage() {
           <StepperContent value="type">
             <StepType
               type={typeValue}
-              setType={type => {
-                form.setFieldValue('type', type)
+              setType={(nextType) => {
+                form.setFieldValue('type', nextType)
                 setStep('credentials')
               }}
             />
           </StepperContent>
           <StepperContent value="credentials">
-            <StepCredentials
-              ref={inputRef}
-              type={typeValue!}
-              connectionString={connectionString}
-              setConnectionString={connectionString => {
-                reset()
-                form.setFieldValue('connectionString', connectionString)
-              }}
-              onEnter={() => {
-                if (canSend) {
-                  test({ type: typeValue!, connectionString })
-                }
-              }}
-            />
-            <div className="mt-auto flex justify-end gap-2 pt-4">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    form.setFieldValue('type', null as unknown as ConnectionType)
-                    setStep('type')
+            {typeValue ? (
+              <>
+                <StepCredentials
+                  ref={inputRef}
+                  type={typeValue}
+                  connectionString={connectionString}
+                  setConnectionString={(nextConnectionString) => {
+                    reset()
+                    form.setFieldValue('connectionString', nextConnectionString)
                   }}
-                >
-                  Back
-                </Button>
-                {testingStatus === 'success' ? (
-                  <Button variant="default" onClick={() => setStep('save')}>
-                    Continue
-                  </Button>
-                ) : (
-                  <Button
-                    disabled={testingStatus === 'pending' || !connectionString || !canSend}
-                    onClick={() => test({ type: typeValue!, connectionString })}
-                  >
-                    <LoadingContent loading={testingStatus === 'pending'}>
-                      {testingStatus === 'error' ? 'Try again' : 'Test connection'}
-                    </LoadingContent>
-                  </Button>
-                )}
-              </div>
-            </div>
+                  onEnter={() => {
+                    if (canSend) {
+                      test({ type: typeValue, connectionString })
+                    }
+                  }}
+                />
+                <div className="mt-auto flex justify-end gap-2 pt-4">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        form.setFieldValue(
+                          'type',
+                          null as unknown as ConnectionType
+                        )
+                        setStep('type')
+                      }}
+                    >
+                      Back
+                    </Button>
+                    {testingStatus === 'success' ? (
+                      <Button variant="default" onClick={() => setStep('save')}>
+                        Continue
+                      </Button>
+                    ) : (
+                      <Button
+                        disabled={
+                          testingStatus === 'pending' ||
+                          !connectionString ||
+                          !canSend
+                        }
+                        onClick={() =>
+                          test({ type: typeValue, connectionString })
+                        }
+                      >
+                        <LoadingContent loading={testingStatus === 'pending'}>
+                          {testingStatus === 'error'
+                            ? 'Try again'
+                            : 'Test connection'}
+                        </LoadingContent>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : null}
           </StepperContent>
           <StepperContent value="save">
-            <StepSave
-              type={typeValue!}
-              name={name}
-              connectionString={connectionString}
-              setName={name => form.setFieldValue('name', name)}
-              onRandomName={() => form.setFieldValue('name', generateRandomName())}
-              syncType={syncType}
-              setSyncType={syncType => form.setFieldValue('syncType', syncType)}
-              label={label}
-              setLabel={label => form.setFieldValue('label', label)}
-              color={color}
-              setColor={color => form.setFieldValue('color', color)}
-            />
-            <div className="mt-auto flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setStep('credentials')}>
-                Back
-              </Button>
-              <Button type="submit" disabled={!isValid || !canSaveInCloud}>
-                <LoadingContent loading={isCreatingConnection}>
-                  <AppLogo className="w-4" />
-                  Save connection
-                </LoadingContent>
-              </Button>
-            </div>
+            {typeValue ? (
+              <>
+                <StepSave
+                  type={typeValue}
+                  name={name}
+                  connectionString={connectionString}
+                  setName={(nextName) => form.setFieldValue('name', nextName)}
+                  onRandomName={() =>
+                    form.setFieldValue('name', generateRandomName())
+                  }
+                  syncType={syncType}
+                  setSyncType={(nextSyncType) =>
+                    form.setFieldValue('syncType', nextSyncType)
+                  }
+                  label={label}
+                  setLabel={(nextLabel) =>
+                    form.setFieldValue('label', nextLabel)
+                  }
+                  color={color}
+                  setColor={(nextColor) =>
+                    form.setFieldValue('color', nextColor)
+                  }
+                />
+                <div className="mt-auto flex justify-end gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setStep('credentials')}
+                  >
+                    Back
+                  </Button>
+                  <Button type="submit" disabled={!isValid || !canSaveInCloud}>
+                    <LoadingContent loading={isCreatingConnection}>
+                      <AppLogo className="w-4" />
+                      Save connection
+                    </LoadingContent>
+                  </Button>
+                </div>
+              </>
+            ) : null}
           </StepperContent>
         </Stepper>
       </form>
     </ScrollArea>
   )
 }
+
+export const Route = createFileRoute('/_protected/create/')({
+  component: CreateConnectionPage,
+  head: () => ({
+    meta: [{ title: title('Create connection') }],
+  }),
+})

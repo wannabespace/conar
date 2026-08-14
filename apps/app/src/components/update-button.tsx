@@ -1,13 +1,19 @@
 import { RiDownloadLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import { Spinner } from '@tamery/ui/components/spinner'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useSubscription } from 'seitu/react'
 
 import { updatesStore } from '~/use-updates-observer'
 
-export function UpdateButton() {
-  const status = useSubscription(updatesStore, { selector: state => state.status })
+export const UpdateButton = () => {
+  const status = useSubscription(updatesStore, {
+    selector: (state) => state.status,
+  })
 
   if (!window.electron) {
     return null
@@ -28,9 +34,11 @@ export function UpdateButton() {
   return (
     <Tooltip>
       <TooltipTrigger className="p-1">
-        {status === 'checking' && <Spinner className="size-4 text-muted-foreground" />}
+        {status === 'checking' && (
+          <Spinner className="text-muted-foreground size-4" />
+        )}
         {status === 'downloading' && (
-          <RiDownloadLine className="size-3 animate-bounce text-muted-foreground" />
+          <RiDownloadLine className="text-muted-foreground size-3 animate-bounce" />
         )}
       </TooltipTrigger>
       <TooltipContent side="bottom">

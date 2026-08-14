@@ -14,10 +14,16 @@ const input = type({
 
 export const remove = orpc
   .use(authMiddleware)
-  .input(type.or(input, input.array()).pipe(data => (Array.isArray(data) ? data : [data])))
-  .handler(async ({ context, input }) => {
-    if (input.length === 0) {
-      throw new ORPCError('BAD_REQUEST', { message: 'No connection resources to remove' })
+  .input(
+    type
+      .or(input, input.array())
+      .pipe((data) => (Array.isArray(data) ? data : [data]))
+  )
+  .handler(async ({ context, input: items }) => {
+    if (items.length === 0) {
+      throw new ORPCError('BAD_REQUEST', {
+        message: 'No connection resources to remove',
+      })
     }
 
     const resources = await db.query.connectionsResources.findMany({
@@ -25,32 +31,34 @@ export const remove = orpc
         id: true,
       },
       where: {
-        id: {
-          in: input.map(item => item.id),
-        },
         connection: {
           userId: {
             eq: context.user.id,
           },
         },
+        id: {
+          in: items.map((item) => item.id),
+        },
       },
     })
 
-    if (resources.length !== input.length) {
-      throw new ORPCError('NOT_FOUND', { message: 'Some connection resources not found' })
+    if (resources.length !== items.length) {
+      throw new ORPCError('NOT_FOUND', {
+        message: 'Some connection resources not found',
+      })
     }
 
     await db.delete(connectionsResources).where(
       inArray(
         connectionsResources.id,
-        input.map(item => item.id),
-      ),
+        items.map((item) => item.id)
+      )
     )
 
-    for (const item of input) {
+    for (const item of items) {
       publisher.publish(context.user.id, {
-        type: 'delete',
         key: item.id,
+        type: 'delete',
       })
     }
   })

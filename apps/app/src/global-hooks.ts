@@ -9,23 +9,32 @@ export const globalHooks = createHooks<{
   savePressed: () => void
 }>()
 
-export function enterAppAnimation() {
-  if (isEntered) return
+export const enterAppAnimation = () => {
+  if (isEntered) {
+    return
+  }
 
   isEntered = true
 
-  const preloader = document.getElementById('preloader')
-  const root = document.getElementById('root')!
+  const preloader = document.querySelector('#preloader')
+  const root = document.querySelector('#root')
+  if (!root) {
+    return
+  }
 
-  sleep(50).then(() => {
+  void (async () => {
+    await sleep(50)
     root.classList.remove('scale-[1.05]', 'opacity-0')
     document.body.classList.remove('overflow-hidden')
-    // 150 - transition duration
-    return sleep(150).then(() => globalHooks.callHook('animationFinished'))
-  })
+    await sleep(150)
+    await globalHooks.callHook('animationFinished')
+  })()
 
   if (preloader) {
     preloader.classList.add('scale-[0.8]', 'opacity-0', 'animate-spin')
-    sleep(250).then(() => preloader.remove())
+    void (async () => {
+      await sleep(250)
+      preloader.remove()
+    })()
   }
 }

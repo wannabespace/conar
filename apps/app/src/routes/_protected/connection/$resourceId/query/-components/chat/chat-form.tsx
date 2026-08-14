@@ -11,9 +11,13 @@ import { Button } from '@tamery/ui/components/button'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { Spinner } from '@tamery/ui/components/spinner'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useMutation } from '@tanstack/react-query'
-import { useLocation, useRouter } from '@tanstack/react-router'
+import { getRouteApi, useLocation, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import type { ChangeEvent, ComponentRef } from 'react'
 import { useEffect, useEffectEvent, useRef } from 'react'
@@ -28,11 +32,18 @@ import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 import { orpc } from '~/lib/orpc'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 
-import { Route } from '../..'
 import { chatHooks } from '../../-page'
 import { ChatImages } from './chat-images'
 
-function Images({ connectionResource }: { connectionResource: ConnectionResource }) {
+const { useLoaderData, useRouteContext, useSearch } = getRouteApi(
+  '/_protected/connection/$resourceId/query/'
+)
+
+const Images = ({
+  connectionResource,
+}: {
+  connectionResource: ConnectionResource
+}) => {
   const store = getFilesStore(connectionResource.id)
   const files = useSubscription(store)
 
@@ -40,7 +51,7 @@ function Images({ connectionResource }: { connectionResource: ConnectionResource
     return null
   }
 
-  const images = files.map(file => ({
+  const images = files.map((file) => ({
     name: file.name,
     url: URL.createObjectURL(file),
   }))
@@ -48,22 +59,24 @@ function Images({ connectionResource }: { connectionResource: ConnectionResource
   return (
     <ChatImages
       images={images}
-      onRemove={index => {
-        store.set(state => state.filter((_, i) => i !== index))
+      onRemove={(index) => {
+        store.set((state) => state.filter((_, i) => i !== index))
       }}
     />
   )
 }
 
-export function ChatForm() {
-  const isOnline = useSubscription(appStore, { selector: state => state.isOnline })
-  const { chat } = Route.useLoaderData()
-  const { error } = Route.useSearch()
+export const ChatForm = () => {
+  const isOnline = useSubscription(appStore, {
+    selector: (state) => state.isOnline,
+  })
+  const { chat } = useLoaderData()
+  const { error } = useSearch()
   const router = useRouter()
   const location = useLocation()
   const { status, stop } = useChat({ chat })
   const ref = useRef<ComponentRef<typeof TipTap>>(null)
-  const { connectionResource } = Route.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const filesStore = getFilesStore(connectionResource.id)
   const files = useSubscription(filesStore)
   const inputValue = createWebStorageValue({
@@ -86,7 +99,11 @@ export function ChatForm() {
       return
     }
 
-    if (value.trim() === '' || chat.status === 'streaming' || chat.status === 'submitted') {
+    if (
+      value.trim() === '' ||
+      chat.status === 'streaming' ||
+      chat.status === 'submitted'
+    ) {
       return
     }
 
@@ -117,20 +134,20 @@ export function ChatForm() {
             type: 'text',
             text: cachedValue,
           },
-          ...filesBase64.map(base64 => ({
+          ...filesBase64.map((base64) => ({
             type: 'file' as const,
             url: base64,
             mediaType: 'image/png',
           })),
         ],
       })
-    } catch (error) {
+    } catch (sendError) {
       inputValue.set(cachedValue)
       filesStore.set(cachedFiles)
       toast.error('Failed to send message', {
         description:
-          error instanceof Error
-            ? error.message
+          sendError instanceof Error
+            ? sendError.message
             : 'An unexpected error occurred. Please try again.',
       })
     }
@@ -153,7 +170,7 @@ export function ChatForm() {
 
   const { mutate: enhancePrompt, isPending: isEnhancingPrompt } = useMutation(
     orpc.ai.enhancePrompt.mutationOptions({
-      onSuccess: data => {
+      onSuccess: (data) => {
         if (input.length < 10) {
           return
         }
@@ -166,13 +183,15 @@ export function ChatForm() {
           inputValue.set(data)
         }
       },
-    }),
+    })
   )
 
   const handleFileAttach = (e: ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files
 
-    if (!fileList || fileList.length === 0) return
+    if (!fileList || fileList.length === 0) {
+      return
+    }
 
     const fileArr = [...fileList]
 
@@ -183,22 +202,17 @@ export function ChatForm() {
   return (
     <div className="flex flex-col gap-1">
       <Images connectionResource={connectionResource} />
-      <div
-        className={`
-        relative flex flex-col gap-2 overflow-hidden rounded-md border
-        bg-input/32
-      `}
-      >
+      <div className="bg-input/32 relative flex flex-col gap-2 overflow-hidden rounded-md border">
         {!subscription && (
-          <div
-            className="
-              z-10 flex items-center gap-2 border-b px-3 py-1.5 text-xs
-            "
-          >
-            <span className="flex-1 text-muted-foreground">
+          <div className="z-10 flex items-center gap-2 border-b px-3 py-1.5 text-xs">
+            <span className="text-muted-foreground flex-1">
               Upgrade to Pro to generate SQL queries with AI.
             </span>
-            <Button variant="outline" size="xs" onClick={() => setIsSubscriptionDialogOpen(true)}>
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={() => setIsSubscriptionDialogOpen(true)}
+            >
               Upgrade
             </Button>
           </div>
@@ -207,7 +221,7 @@ export function ChatForm() {
           ref={ref}
           data-mask
           value={input}
-          setValue={value => {
+          setValue={(value) => {
             inputValue.set(value)
           }}
           placeholder={
@@ -215,20 +229,14 @@ export function ChatForm() {
               ? 'Generate SQL queries using natural language'
               : 'Check your internet connection to generate SQL queries'
           }
-          className={`
-            max-h-62.5 min-h-12.5 overflow-y-auto p-2 text-sm outline-none
-          `}
+          className="max-h-62.5 min-h-12.5 overflow-y-auto p-2 text-sm outline-none"
           disabled={!subscription || !isOnline}
           onEnter={handleSend}
-          onImageAdd={file => {
+          onImageAdd={(file) => {
             filesStore.set([...files, file])
           }}
         />
-        <div
-          className={`
-          pointer-events-none flex items-end justify-between px-2 pb-2
-        `}
-        >
+        <div className="pointer-events-none flex items-end justify-between px-2 pb-2">
           <div className="pointer-events-auto">
             <Tooltip>
               <TooltipTrigger
@@ -237,7 +245,12 @@ export function ChatForm() {
                     nativeButton={false}
                     size="icon-xs"
                     variant="outline"
-                    render={<label htmlFor="chat-file-upload" aria-label="Attach files" />}
+                    render={
+                      <label
+                        htmlFor="chat-file-upload"
+                        aria-label="Attach files"
+                      />
+                    }
                   />
                 }
               >
@@ -263,7 +276,9 @@ export function ChatForm() {
                   <Button
                     size="icon-xs"
                     variant="outline"
-                    className={input.length < 10 ? 'cursor-default opacity-50' : ''}
+                    className={
+                      input.length < 10 ? 'cursor-default opacity-50' : ''
+                    }
                     disabled={
                       status === 'submitted' ||
                       status === 'streaming' ||
@@ -285,14 +300,18 @@ export function ChatForm() {
                 >
                   <ContentSwitch
                     active={isEnhancingPrompt}
-                    activeContent={<RiCheckLine className="size-3 text-success" />}
+                    activeContent={
+                      <RiCheckLine className="text-success size-3" />
+                    }
                   >
                     <RiMagicLine className="size-3" />
                   </ContentSwitch>
                 </LoadingContent>
               </TooltipTrigger>
               <TooltipContent side="top">
-                {input.length < 10 ? 'Prompt is too short to enhance' : 'Enhance prompt'}
+                {input.length < 10
+                  ? 'Prompt is too short to enhance'
+                  : 'Enhance prompt'}
               </TooltipContent>
             </Tooltip>
             {status === 'streaming' || status === 'submitted' ? (
@@ -301,7 +320,11 @@ export function ChatForm() {
                 Stop
               </Button>
             ) : (
-              <Button size="xs" disabled={!input.trim()} onClick={() => handleSend(input)}>
+              <Button
+                size="xs"
+                disabled={!input.trim()}
+                onClick={() => handleSend(input)}
+              >
                 Send
                 <RiCornerDownLeftLine className="size-3" />
               </Button>

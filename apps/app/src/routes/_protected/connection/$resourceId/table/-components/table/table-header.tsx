@@ -1,4 +1,8 @@
-import { RiArrowLeftSLine, RiArrowRightSLine, RiDatabase2Line } from '@remixicon/react'
+import {
+  RiArrowLeftSLine,
+  RiArrowRightSLine,
+  RiDatabase2Line,
+} from '@remixicon/react'
 import type { ColumnRenderer } from '@tamery/table'
 import { TableHeader } from '@tamery/table'
 import { useTableContext } from '@tamery/table/hooks'
@@ -12,7 +16,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useThrottledCallback } from '@tamery/ui/hookas/use-throttled-callback'
 import { cn } from '@tamery/ui/lib/utils'
 import { animate } from 'motion'
@@ -29,47 +37,55 @@ interface HeaderColumn {
   scrollLeft: number
 }
 
-function getVisibleColumns(element: HTMLElement) {
+const getVisibleColumns = (element: HTMLElement) => {
   const columns = [...element.querySelectorAll<HTMLElement>('[data-column-id]')]
-  const scrollLeft = element.scrollLeft
+  const { scrollLeft } = element
   const scrollRight = scrollLeft + element.clientWidth
+  const visible: HeaderColumn[] = []
 
-  return columns.reduce<HeaderColumn[]>((acc, el) => {
-    const id = el.getAttribute('data-column-id')
+  for (const el of columns) {
+    const id = el.dataset.columnId
 
-    if (!id) return acc
+    if (!id) {
+      continue
+    }
 
     const left = el.offsetLeft
     const right = left + el.offsetWidth
 
     if (right > scrollLeft && left < scrollRight) {
-      acc.push({ id, size: el.offsetWidth, scrollLeft: left })
+      visible.push({ id, size: el.offsetWidth, scrollLeft: left })
     }
+  }
 
-    return acc
-  }, [])
+  return visible
 }
 
-function getNotVisibleColumns(
+const getNotVisibleColumns = (
   element: HTMLElement,
   allColumns: ColumnRenderer[],
-  store: typeof tablePageType.infer,
+  store: typeof tablePageType.infer
 ): {
   left: HeaderColumn[]
   right: HeaderColumn[]
-} {
-  const notVisibleColumns: { left: HeaderColumn[]; right: HeaderColumn[] } = { left: [], right: [] }
+} => {
+  const notVisibleColumns: { left: HeaderColumn[]; right: HeaderColumn[] } = {
+    left: [],
+    right: [],
+  }
   const visibleColumns = getVisibleColumns(element)
 
   let accumulatedLeft = 0
   for (const column of allColumns) {
-    const isVisible = visibleColumns.find(v => v.id === column.id)
+    const isVisible = visibleColumns.find((v) => v.id === column.id)
     const scrollLeft = accumulatedLeft
     const size = store.columnSizes[column.id] || column.size
 
     accumulatedLeft += size
 
-    if (Object.values(INTERNAL_COLUMN_IDS).includes(column.id)) continue
+    if (Object.values(INTERNAL_COLUMN_IDS).includes(column.id)) {
+      continue
+    }
 
     if (!isVisible) {
       if (scrollLeft < element.scrollLeft) {
@@ -83,29 +99,31 @@ function getNotVisibleColumns(
   return notVisibleColumns
 }
 
-function Header({ className }: { className?: string }) {
+const Header = ({ className }: { className?: string }) => {
   const store = useTablePageStore()
-  const scrollRef = useTableContext(state => state.scrollRef)
-  const direction = useTableContext(state => state.scrollDirection)
-  const columns = useTableContext(state => state.columns)
+  const scrollRef = useTableContext((state) => state.scrollRef)
+  const direction = useTableContext((state) => state.scrollDirection)
+  const columns = useTableContext((state) => state.columns)
   const [notVisibleColumns, setNotVisibleColumns] = useState<{
     left: HeaderColumn[]
     right: HeaderColumn[]
   }>({ left: [], right: [] })
 
-  function scrollToColumn(column: HeaderColumn, direction: 'left' | 'right') {
+  const scrollToColumn = (column: HeaderColumn, side: 'left' | 'right') => {
     const scrollEl = scrollRef.current
 
-    if (!scrollEl) return
+    if (!scrollEl) {
+      return
+    }
 
-    const extraSpace = direction === 'left' ? -40 : 40
+    const extraSpace = side === 'left' ? -40 : 40
     const targetScrollLeft =
-      (direction === 'left'
+      (side === 'left'
         ? column.scrollLeft
         : column.scrollLeft + column.size - scrollEl.clientWidth) + extraSpace
 
     animate(scrollEl.scrollLeft, targetScrollLeft, {
-      onUpdate: latest => {
+      onUpdate: (latest) => {
         scrollEl.scrollLeft = latest
       },
       duration: 0.5,
@@ -117,18 +135,22 @@ function Header({ className }: { className?: string }) {
     () => {
       const el = scrollRef.current
 
-      if (!el || direction === 'up' || direction === 'down') return
+      if (!el || direction === 'up' || direction === 'down') {
+        return
+      }
 
       setNotVisibleColumns(getNotVisibleColumns(el, columns, store.get()))
     },
     [direction, columns, store],
-    200,
+    200
   )
 
   useEffect(() => {
     const el = scrollRef.current
 
-    if (!el) return
+    if (!el) {
+      return
+    }
 
     el.addEventListener('scroll', updateScrollLeft, { passive: true })
 
@@ -138,10 +160,14 @@ function Header({ className }: { className?: string }) {
   }, [scrollRef, updateScrollLeft])
 
   useEffect(() => {
-    Promise.resolve().then(() => scrollRef.current?.dispatchEvent(new Event('scroll')))
+    queueMicrotask(() => {
+      scrollRef.current?.dispatchEvent(new Event('scroll'))
+    })
   }, [scrollRef, columns])
 
-  if (columns.length === 0) return null
+  if (columns.length === 0) {
+    return null
+  }
 
   return (
     <TableHeader
@@ -159,13 +185,10 @@ function Header({ className }: { className?: string }) {
                         size="icon-sm"
                         aria-label="Columns off-screen to the left"
                         className={cn(
-                          `
-                            group absolute top-1/2 left-2 -translate-y-1/2
-                            transition-opacity duration-150
-                          `,
+                          `group absolute top-1/2 left-2 -translate-y-1/2 transition-opacity duration-150`,
                           notVisibleColumns.left.length > 0
                             ? 'opacity-100'
-                            : 'pointer-events-none opacity-0',
+                            : 'pointer-events-none opacity-0'
                         )}
                       />
                     }
@@ -176,12 +199,19 @@ function Header({ className }: { className?: string }) {
               </TooltipTrigger>
               <TooltipContent side="bottom">Columns off-screen</TooltipContent>
             </Tooltip>
-            <DropdownMenuContent side="bottom" align="start" className="min-w-48">
+            <DropdownMenuContent
+              side="bottom"
+              align="start"
+              className="min-w-48"
+            >
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {notVisibleColumns.left.map(column => (
-                  <DropdownMenuItem key={column.id} onClick={() => scrollToColumn(column, 'left')}>
+                {notVisibleColumns.left.map((column) => (
+                  <DropdownMenuItem
+                    key={column.id}
+                    onClick={() => scrollToColumn(column, 'left')}
+                  >
                     <RiDatabase2Line />
                     {column.id}
                   </DropdownMenuItem>
@@ -209,13 +239,10 @@ function Header({ className }: { className?: string }) {
                         size="icon-sm"
                         aria-label="Columns off-screen to the right"
                         className={cn(
-                          `
-                            group absolute top-1/2 right-2 -translate-y-1/2
-                            shadow-none transition-opacity duration-150
-                          `,
+                          `group absolute top-1/2 right-2 -translate-y-1/2 shadow-none transition-opacity duration-150`,
                           notVisibleColumns.right.length > 0
                             ? 'opacity-100'
-                            : `pointer-events-none opacity-0`,
+                            : `pointer-events-none opacity-0`
                         )}
                       />
                     }
@@ -230,8 +257,11 @@ function Header({ className }: { className?: string }) {
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Scroll to column</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {notVisibleColumns.right.map(column => (
-                  <DropdownMenuItem key={column.id} onClick={() => scrollToColumn(column, 'right')}>
+                {notVisibleColumns.right.map((column) => (
+                  <DropdownMenuItem
+                    key={column.id}
+                    onClick={() => scrollToColumn(column, 'right')}
+                  >
                     <RiDatabase2Line />
                     {column.id}
                   </DropdownMenuItem>

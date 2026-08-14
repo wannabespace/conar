@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@tamery/ui/components/select'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { resourceTriggersQueryOptions } from '~/entities/connection/queries'
@@ -25,27 +25,6 @@ import { DefinitionsHeader } from '../-components/header'
 import { SchemaSelect } from '../-components/schema-select'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
-
-export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/triggers/')({
-  component: DatabaseTriggersPage,
-  loader: ({ context }) => ({
-    connection: context.connection,
-    connectionResource: context.connectionResource,
-  }),
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          {
-            title: title(
-              'Triggers',
-              loaderData.connection.name,
-              loaderData.connectionResource.name,
-            ),
-          },
-        ]
-      : [],
-  }),
-})
 
 const eventFilterOptions = [
   { label: 'All Events', value: 'all' },
@@ -62,8 +41,12 @@ const timingFilterOptions = [
   { label: 'Instead Of', value: 'INSTEAD OF' },
 ]
 
-function DatabaseTriggersPage() {
-  const { connectionResource } = Route.useRouteContext()
+const routeApi = getRouteApi(
+  '/_protected/connection/$resourceId/definitions/triggers/'
+)
+
+const DatabaseTriggersPage = () => {
+  const { connectionResource } = routeApi.useRouteContext()
   const {
     data: triggers,
     refetch,
@@ -71,9 +54,10 @@ function DatabaseTriggersPage() {
     isPending,
     dataUpdatedAt,
   } = useQuery(resourceTriggersQueryOptions({ connectionResource }))
-  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({
-    connectionResource,
-  })
+  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
+    useDefinitionsState({
+      connectionResource,
+    })
   const [filterEvent, setFilterEvent] = useState('all')
   const [filterTiming, setFilterTiming] = useState('all')
 
@@ -81,14 +65,14 @@ function DatabaseTriggersPage() {
 
   const filteredTriggers =
     triggers?.filter(
-      item =>
+      (item) =>
         item.schema === selectedSchema &&
         (filterEvent === 'all' || item.event.includes(filterEvent)) &&
         (filterTiming === 'all' || filterTiming === item.timing) &&
         (!search ||
           item.name.toLowerCase().includes(search.toLowerCase()) ||
           item.table.toLowerCase().includes(search.toLowerCase()) ||
-          item.functionName?.toLowerCase().includes(search.toLowerCase())),
+          item.functionName?.toLowerCase().includes(search.toLowerCase()))
     ) ?? []
 
   return (
@@ -105,12 +89,12 @@ function DatabaseTriggersPage() {
           placeholder="Search triggers"
           autoFocus
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
         <Select
           value={filterEvent}
-          onValueChange={v => {
+          onValueChange={(v) => {
             if (v) {
               setFilterEvent(v)
             }
@@ -118,15 +102,16 @@ function DatabaseTriggersPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Event">
-              {value =>
+              {(value) =>
                 value
-                  ? eventFilterOptions.find(option => option.value === value)?.label
+                  ? eventFilterOptions.find((option) => option.value === value)
+                      ?.label
                   : 'Filter Event'
               }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {eventFilterOptions.map(option => (
+            {eventFilterOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -135,7 +120,7 @@ function DatabaseTriggersPage() {
         </Select>
         <Select
           value={filterTiming}
-          onValueChange={v => {
+          onValueChange={(v) => {
             if (v) {
               setFilterTiming(v)
             }
@@ -143,15 +128,16 @@ function DatabaseTriggersPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Timing">
-              {value =>
+              {(value) =>
                 value
-                  ? timingFilterOptions.find(option => option.value === value)?.label
+                  ? timingFilterOptions.find((option) => option.value === value)
+                      ?.label
                   : 'Filter Timing'
               }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {timingFilterOptions.map(option => (
+            {timingFilterOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -172,7 +158,7 @@ function DatabaseTriggersPage() {
           />
         )}
 
-        {filteredTriggers.map(item => (
+        {filteredTriggers.map((item) => (
           <CardMotion
             key={`${item.schema}-${item.table}-${item.name}-${item.event}`}
             layout
@@ -182,17 +168,15 @@ function DatabaseTriggersPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="mb-2 flex items-center gap-2 text-base">
-                    <RiFlashlightLine className="size-4 text-primary" />
+                    <RiFlashlightLine className="text-primary size-4" />
                     <HighlightText text={item.name} match={search} />
                     <Badge variant="secondary">{item.timing}</Badge>
                     <Badge variant="secondary">{item.event}</Badge>
-                    {!item.enabled && <Badge variant="destructive">Disabled</Badge>}
+                    {!item.enabled && (
+                      <Badge variant="destructive">Disabled</Badge>
+                    )}
                   </CardTitle>
-                  <div
-                    className="
-                    flex items-center gap-1.5 text-sm text-muted-foreground
-                  "
-                  >
+                  <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
                     <Badge variant="outline">
                       <RiTable2 className="size-3" />
                       <HighlightText text={item.table} match={search} />
@@ -201,7 +185,10 @@ function DatabaseTriggersPage() {
                       <>
                         <span>calls</span>
                         <Badge variant="outline">
-                          <HighlightText text={item.functionName} match={search} />
+                          <HighlightText
+                            text={item.functionName}
+                            match={search}
+                          />
                         </Badge>
                       </>
                     )}
@@ -215,3 +202,26 @@ function DatabaseTriggersPage() {
     </>
   )
 }
+
+export const Route = createFileRoute(
+  '/_protected/connection/$resourceId/definitions/triggers/'
+)({
+  component: DatabaseTriggersPage,
+  loader: ({ context }) => ({
+    connection: context.connection,
+    connectionResource: context.connectionResource,
+  }),
+  head: ({ loaderData }) => ({
+    meta: loaderData
+      ? [
+          {
+            title: title(
+              'Triggers',
+              loaderData.connection.name,
+              loaderData.connectionResource.name
+            ),
+          },
+        ]
+      : [],
+  }),
+})

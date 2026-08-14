@@ -2,7 +2,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 
-export function TextHoverEffect({
+export const TextHoverEffect = ({
   text,
   duration,
   className,
@@ -12,7 +12,7 @@ export function TextHoverEffect({
   duration?: number
   className?: string
   ref?: React.RefObject<SVGSVGElement | null>
-}) {
+}) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [cursor, setCursor] = useState({ x: 0, y: 0 })
   const [hovered, setHovered] = useState(false)
@@ -33,9 +33,11 @@ export function TextHoverEffect({
 
   return (
     <svg
-      ref={e => {
+      ref={(e) => {
         svgRef.current = e
-        if (ref) ref.current = e
+        if (ref) {
+          ref.current = e
+        }
       }}
       width="100%"
       height="100%"
@@ -43,11 +45,17 @@ export function TextHoverEffect({
       xmlns="http://www.w3.org/2000/svg"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onMouseMove={e => setCursor({ x: e.clientX, y: e.clientY })}
+      onMouseMove={(e) => setCursor({ x: e.clientX, y: e.clientY })}
       className={cn('select-none', className)}
     >
       <defs>
-        <linearGradient id="textGradient" gradientUnits="userSpaceOnUse" cx="50%" cy="50%" r="25%">
+        <linearGradient
+          id="textGradient"
+          gradientUnits="userSpaceOnUse"
+          cx="50%"
+          cy="50%"
+          r="25%"
+        >
           {hovered && (
             <>
               <stop offset="0%" stopColor="#eab308" />
@@ -71,7 +79,13 @@ export function TextHoverEffect({
           <stop offset="100%" stopColor="black" />
         </motion.radialGradient>
         <mask id="textMask">
-          <rect x="0" y="0" width="100%" height="100%" fill="url(#revealMask)" />
+          <rect
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
+            fill="url(#revealMask)"
+          />
         </mask>
       </defs>
       <text
@@ -80,7 +94,7 @@ export function TextHoverEffect({
         textAnchor="middle"
         dominantBaseline="middle"
         strokeWidth="0.3"
-        className="fill-transparent stroke-muted font-[helvetica] text-7xl font-bold"
+        className="stroke-muted fill-transparent font-[helvetica] text-7xl font-bold"
         style={{ opacity: hovered ? 0.7 : 0 }}
       >
         {text}
@@ -91,11 +105,11 @@ export function TextHoverEffect({
         textAnchor="middle"
         dominantBaseline="middle"
         strokeWidth="0.3"
-        className="fill-transparent stroke-muted font-[helvetica] text-7xl font-bold"
-        initial={{ strokeDashoffset: 1000, strokeDasharray: 1000 }}
+        className="stroke-muted fill-transparent font-[helvetica] text-7xl font-bold"
+        initial={{ strokeDasharray: 1000, strokeDashoffset: 1000 }}
         animate={{
-          strokeDashoffset: 0,
           strokeDasharray: 1000,
+          strokeDashoffset: 0,
         }}
         transition={{
           duration: 4,

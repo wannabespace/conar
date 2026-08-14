@@ -1,10 +1,15 @@
 import type { QueryParams, SchemaParams } from '..'
 import * as templates from '../templates'
-import { formatEnumAsUnionType, formatValue, getColumnType, toLiteralKey } from '../utils'
+import {
+  formatEnumAsUnionType,
+  formatValue,
+  getColumnType,
+  toLiteralKey,
+} from '../utils'
 
-export function generateQueryKysely({ table, filters }: QueryParams) {
+export const generateQueryKysely = ({ table, filters }: QueryParams) => {
   const conditions = filters
-    .map(f => {
+    .map((f) => {
       const col = f.column
       if (f.ref.hasValue === false) {
         return `'${col}', '${f.ref.operator.toLowerCase()}'`
@@ -20,21 +25,32 @@ export function generateQueryKysely({ table, filters }: QueryParams) {
   return templates.kyselyQueryTemplate(table, conditions)
 }
 
-export function generateSchemaKysely({ table, columns, dialect }: SchemaParams) {
+export const generateSchemaKysely = ({
+  table,
+  columns,
+  dialect,
+}: SchemaParams) => {
   const body = columns
-    .filter(c => c.type)
-    .map(c => {
-      let tsType = getColumnType(c.type!, 'ts', dialect)
+    .filter((c) => c.type)
+    .map((c) => {
+      const columnType = c.type
+      if (!columnType) {
+        return null
+      }
+      let tsType = getColumnType(columnType, 'ts', dialect)
       if (c.enumName && c.availableValues?.length) {
         tsType = formatEnumAsUnionType(c.availableValues, c.type)
       }
 
       const isGenerated = c.primaryKey
       let typeDef = isGenerated ? `Generated<${tsType}>` : tsType
-      if (c.isNullable) typeDef += ' | null'
+      if (c.isNullable) {
+        typeDef += ' | null'
+      }
       const safeKey = toLiteralKey(c.id)
       return `  ${safeKey}: ${typeDef};`
     })
+    .filter((line) => line !== null)
     .join('\n')
 
   return templates.kyselySchemaTemplate(table, body)

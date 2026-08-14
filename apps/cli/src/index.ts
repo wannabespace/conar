@@ -13,29 +13,40 @@ import { checkForUpdate } from '~/update-check'
 
 const currentVersion: string = import.meta.env.VERSION
 
-const commands = [loginCommand, logoutCommand, proxyCommand, queryCommand, whoamiCommand]
+const commands = [
+  loginCommand,
+  logoutCommand,
+  proxyCommand,
+  queryCommand,
+  whoamiCommand,
+]
 
 const updateCheck = checkForUpdate(currentVersion)
 
-run(commands, {
-  name: 'tamery',
-  description: 'Tamery CLI – manage and query your connections from the terminal.',
-  version: currentVersion,
-})
-  .catch((error: unknown) => {
+const main = async () => {
+  try {
+    await run(commands, {
+      description:
+        'Tamery CLI – manage and query your connections from the terminal.',
+      name: 'tamery',
+      version: currentVersion,
+    })
+  } catch (error: unknown) {
     consola.error(error instanceof Error ? error.message : String(error))
     process.exit(1)
-  })
-  .finally(async () => {
+  } finally {
     const latestVersion = await updateCheck
 
     if (latestVersion) {
       consola.box({
-        title: 'Update available',
         message: `${currentVersion} → ${latestVersion}\nRun \`npm i -g tamery\` to update`,
         style: {
           borderColor: 'yellow',
         },
+        title: 'Update available',
       })
     }
-  })
+  }
+}
+
+void main()

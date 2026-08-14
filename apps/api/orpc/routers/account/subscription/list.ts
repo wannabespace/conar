@@ -4,21 +4,21 @@ import { eq } from 'drizzle-orm'
 
 import { authMiddleware, orpc } from '~/orpc'
 
-export const list = orpc.use(authMiddleware).handler(async ({ context }) =>
+export const list = orpc.use(authMiddleware).handler(({ context }) =>
   db
     .select({
-      id: subscriptions.id,
-      plan: subscriptions.plan,
-      status: subscriptions.status,
-      period: subscriptions.period,
-      price: subscriptions.price,
-      periodStart: subscriptions.periodStart,
-      periodEnd: subscriptions.periodEnd,
-      trialStart: subscriptions.trialStart,
-      trialEnd: subscriptions.trialEnd,
-      cancelAtPeriodEnd: subscriptions.cancelAtPeriodEnd,
       cancelAt: subscriptions.cancelAt,
+      cancelAtPeriodEnd: subscriptions.cancelAtPeriodEnd,
+      id: subscriptions.id,
+      period: subscriptions.period,
+      periodEnd: subscriptions.periodEnd,
+      periodStart: subscriptions.periodStart,
+      plan: subscriptions.plan,
+      price: subscriptions.price,
+      status: subscriptions.status,
+      trialEnd: subscriptions.trialEnd,
+      trialStart: subscriptions.trialStart,
     })
     .from(subscriptions)
-    .where(eq(subscriptions.userId, context.user.id)),
+    .where(eq(subscriptions.userId, context.user.id))
 )

@@ -5,19 +5,19 @@ import type { VariantProps } from 'class-variance-authority'
 
 import { badgeVariants } from './badge.utils'
 
-function Badge({
+const Badge = ({
   className,
   variant = 'default',
   render,
   ...props
-}: useRender.ComponentProps<'span'> & VariantProps<typeof badgeVariants>) {
-  return useRender({
+}: useRender.ComponentProps<'span'> & VariantProps<typeof badgeVariants>) =>
+  useRender({
     defaultTagName: 'span',
     props: mergeProps<'span'>(
       {
         className: cn(badgeVariants({ variant }), className),
       },
-      props,
+      props
     ),
     render,
     state: {
@@ -25,6 +25,5 @@ function Badge({
       variant,
     },
   })
-}
 
 export { Badge }

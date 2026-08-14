@@ -8,7 +8,7 @@ import type { Column } from './utils'
 
 export type SaveStatus = 'idle' | 'pending' | 'draft' | 'error'
 
-export const CellContext = createContext<{
+export interface CellContextValue {
   rowIndex: number
   newValue: unknown
   setNewValue: Dispatch<SetStateAction<unknown>>
@@ -22,8 +22,14 @@ export const CellContext = createContext<{
   onOrder?: (order: 'ASC' | 'DESC' | null) => void
   order?: 'ASC' | 'DESC' | null
   onRename?: () => void
-}>(null!)
+}
 
-export function useCellContext() {
-  return use(CellContext)
+export const CellContext = createContext<CellContextValue | null>(null)
+
+export const useCellContext = () => {
+  const context = use(CellContext)
+  if (!context) {
+    throw new Error('useCellContext must be used within a CellContext provider')
+  }
+  return context
 }

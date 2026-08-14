@@ -6,11 +6,12 @@ const NAME = faker.person.fullName()
 const PASSWORD = faker.internet.password()
 
 export const testWithSignUp = test.extend({
-  page: async ({ page }, use) => {
+  page: async ({ page }, providePage) => {
     await page.goto('/')
 
-    await page.waitForRequest(r => r.url().includes('/auth/get-session'))
-    await page.waitForTimeout(300) // Loader animation
+    await page.waitForRequest((r) => r.url().includes('/auth/get-session'))
+    // Loader animation
+    await page.waitForTimeout(300)
 
     await page.getByText('Sign up').click()
 
@@ -35,10 +36,12 @@ export const testWithSignUp = test.extend({
 
     const submitButton = page.locator('button[type="submit"]')
     expect(submitButton).toContainText('Get started')
-    const requestPromise = page.waitForRequest(r => r.url().includes('/auth/sign-up'))
+    const requestPromise = page.waitForRequest((r) =>
+      r.url().includes('/auth/sign-up')
+    )
     submitButton.click()
     await requestPromise
 
-    await use(page)
+    await providePage(page)
   },
 })

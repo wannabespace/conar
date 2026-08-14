@@ -16,7 +16,11 @@ import { bearerToken } from './auth'
 export const orpc = createTanstackQueryUtils(
   createORPCClient(
     new RPCLink({
-      url: `${apiUrl}/rpc`,
+      fetch: (request, init) =>
+        globalThis.fetch(request, {
+          ...init,
+          credentials: 'include',
+        }),
       headers: async () => {
         const token = bearerToken.get()
 
@@ -30,31 +34,38 @@ export const orpc = createTanstackQueryUtils(
             : {}),
         }
       },
-      fetch: (request, init) => {
-        return globalThis.fetch(request, {
-          ...init,
-          credentials: 'include',
-        })
-      },
       interceptors: [onError(handleError)],
       plugins: [
         new ClientRetryPlugin({
           default: {
             retry: 3,
             retryDelay: 2000,
-            shouldRetry: ({ error }) => error instanceof TypeError && !navigator.onLine,
+            shouldRetry: ({ error }) =>
+              error instanceof TypeError && !navigator.onLine,
           },
         }),
       ],
-    }),
-  ) satisfies apiOrpc.ORPCRouter,
+      url: `${apiUrl}/rpc`,
+    })
+  ) satisfies apiOrpc.ORPCRouter
 )
 
 export const orpcProxy = createORPCClient(
   new RPCLink({
-    url: `${proxyUrl}/rpc`,
+    fetch: (request, init) =>
+      globalThis.fetch(request, {
+        ...init,
+        credentials: 'include',
+      }),
+    headers: () => {
+      const token = bearerToken.get()
+
+      return {
+        Authorization: token ? `Bearer ${token}` : undefined,
+      }
+    },
     interceptors: [
-      async options => {
+      async (options) => {
         try {
           return await options.next()
         } catch (error) {
@@ -65,7 +76,7 @@ export const orpcProxy = createORPCClient(
           if (error instanceof Error && isConnectionError(error)) {
             throw new Error(
               "We can't connect to the proxy, please check your connection and try again.",
-              { cause: error },
+              { cause: error }
             )
           }
 
@@ -73,20 +84,8 @@ export const orpcProxy = createORPCClient(
         }
       },
     ],
-    headers: async () => {
-      const token = bearerToken.get()
-
-      return {
-        Authorization: token ? `Bearer ${token}` : undefined,
-      }
-    },
-    fetch: (request, init) => {
-      return globalThis.fetch(request, {
-        ...init,
-        credentials: 'include',
-      })
-    },
-  }),
+    url: `${proxyUrl}/rpc`,
+  })
 ) satisfies proxyOrpc.ORPCRouter
 
 export type ORPCInputs = InferRouterInputs<typeof apiOrpc.router>
@@ -95,12 +94,22 @@ export type ORPCOutputs = InferRouterOutputs<typeof apiOrpc.router>
 export const PROXY_ERROR_MESSAGE =
   "We can't connect to the proxy, please check your connection and try again."
 
-export const createProxyClient = memoize((url: string): queryProxy.ORPCRouter => {
-  return createORPCClient(
+export const createProxyClient = memoize((url: string): queryProxy.ORPCRouter =>
+  createORPCClient(
     new RPCLink({
-      url,
+      fetch: (request, init) =>
+        globalThis.fetch(request, {
+          ...init,
+          credentials: 'include',
+        }),
+      headers: () => {
+        const token = bearerToken.get()
+        return {
+          Authorization: token ? `Bearer ${token}` : undefined,
+        }
+      },
       interceptors: [
-        async options => {
+        async (options) => {
           try {
             return await options.next()
           } catch (error) {
@@ -116,18 +125,7 @@ export const createProxyClient = memoize((url: string): queryProxy.ORPCRouter =>
           }
         },
       ],
-      headers: async () => {
-        const token = bearerToken.get()
-        return {
-          Authorization: token ? `Bearer ${token}` : undefined,
-        }
-      },
-      fetch: (request, init) => {
-        return globalThis.fetch(request, {
-          ...init,
-          credentials: 'include',
-        })
-      },
-    }),
+      url,
+    })
   )
-})
+)

@@ -1,10 +1,10 @@
 import * as React from 'react'
 
-export function useToggle(initialValue = false) {
+export const useToggle = (initialValue = false) => {
   const [value, setValue] = React.useState(initialValue)
 
-  const toggle = React.useCallback((value?: boolean) => {
-    setValue(prev => value ?? !prev)
+  const toggle = React.useCallback((nextValue?: boolean) => {
+    setValue((prev) => nextValue ?? !prev)
   }, [])
 
   return [value, toggle] as const

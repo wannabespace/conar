@@ -13,7 +13,7 @@ export interface Session {
   }
 }
 
-export async function getSession(): Promise<Session | null> {
+export const getSession = async (): Promise<Session | null> => {
   const token = getToken()
 
   if (!token) {
@@ -41,7 +41,7 @@ export async function getSession(): Promise<Session | null> {
   }
 }
 
-export async function requireSession(): Promise<Session> {
+export const requireSession = async (): Promise<Session> => {
   if (!getToken()) {
     consola.error('You are not signed in. Run `tamery login` first.')
     process.exit(1)
@@ -53,18 +53,16 @@ export async function requireSession(): Promise<Session> {
 
   if (!session) {
     clearToken()
-    consola.fail('Your session has expired. Run `tamery login` to sign in again.')
+    consola.fail(
+      'Your session has expired. Run `tamery login` to sign in again.'
+    )
     process.exit(1)
   }
 
   return session
 }
 
-/**
- * Best-effort sign out on the server. Always succeeds locally even if the
- * server call fails so the user is never stuck with a stale token.
- */
-export async function serverSignOut(): Promise<void> {
+export const serverSignOut = async (): Promise<void> => {
   const token = getToken()
 
   if (!token) {
@@ -73,8 +71,8 @@ export async function serverSignOut(): Promise<void> {
 
   try {
     await fetch(`${import.meta.env.API_URL}/auth/sign-out`, {
-      method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
+      method: 'POST',
     })
   } catch {
     // ignore – we still clear local state

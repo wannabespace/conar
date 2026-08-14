@@ -3,32 +3,40 @@ import type { ValueTransformer } from '../create-transformer'
 import { getDisplayValue } from '../create-transformer'
 import { parseToArray } from './shared'
 
-const PG_ARRAY_LITERAL_RE = /^\{.*\}$/
+const PG_ARRAY_LITERAL_RE = /^\{.*\}$/u
 // quoted element (handles \" and \\) OR bare element up to next comma
-const PG_ARRAY_ELEMENT_RE = /"(?:[^"\\]|\\.)*"|[^,]+/g
+const PG_ARRAY_ELEMENT_RE = /"(?:[^"\\]|\\.)*"|[^,]+/gu
 // \" → " , \\ → \
-const PG_UNESCAPE_RE = /\\(.)/g
-const PG_NEEDS_QUOTING_RE = /[{},"\\\s]/
-const BACKSLASH_RE = /\\/g
-const DOUBLE_QUOTE_RE = /"/g
+const PG_UNESCAPE_RE = /\\(?<char>.)/gu
+const PG_NEEDS_QUOTING_RE = /[{},"\\\s]/u
+const BACKSLASH_RE = /\\/gu
+const DOUBLE_QUOTE_RE = /"/gu
 
-export function parsePgArrayLiteral(value: string): string[] | undefined {
-  if (!PG_ARRAY_LITERAL_RE.test(value)) return undefined
+export const parsePgArrayLiteral = (value: string): string[] | undefined => {
+  if (!PG_ARRAY_LITERAL_RE.test(value)) {
+    return undefined
+  }
 
   const inner = value.slice(1, -1)
-  if (inner === '') return []
+  if (inner === '') {
+    return []
+  }
 
   return Array.from(inner.matchAll(PG_ARRAY_ELEMENT_RE), ([m]) =>
-    m[0] === '"' ? m.slice(1, -1).replace(PG_UNESCAPE_RE, '$1') : m.trim(),
+    m[0] === '"' ? m.slice(1, -1).replace(PG_UNESCAPE_RE, '$1') : m.trim()
   )
 }
 
-export function toPgArrayLiteral(items: string[], separator = ','): string {
-  const escaped = items.map(item => {
-    if (item === '') return '""'
+export const toPgArrayLiteral = (items: string[], separator = ','): string => {
+  const escaped = items.map((item) => {
+    if (item === '') {
+      return '""'
+    }
 
     if (PG_NEEDS_QUOTING_RE.test(item) || item.toUpperCase() === 'NULL') {
-      const quoted = item.replace(BACKSLASH_RE, '\\\\').replace(DOUBLE_QUOTE_RE, '\\"')
+      const quoted = item
+        .replace(BACKSLASH_RE, '\\\\')
+        .replace(DOUBLE_QUOTE_RE, '\\"')
       return `"${quoted}"`
     }
 
@@ -39,30 +47,38 @@ export function toPgArrayLiteral(items: string[], separator = ','): string {
 }
 
 // Possible values: null, string[], string {enum1,enum2}
-export function createPostgresListTransformer(column: Column): ValueTransformer<string[]> {
+export const createPostgresListTransformer = (
+  column: Column
+): ValueTransformer<string[]> => {
   const isEnum = !!column.enumName && !!column.availableValues
   return {
-    toDisplay: getDisplayValue,
-    fromConnection: value => ({
+    fromConnection: (value) => ({
+      toRaw: () => {
+        if (isEnum && typeof value === 'string') {
+          return value
+        }
+        if (value === null) {
+          return ''
+        }
+        return JSON.stringify(value)
+      },
       toUI: () => {
-        if (isEnum && typeof value === 'string') return parseToArray(value, parsePgArrayLiteral)
+        if (isEnum && typeof value === 'string') {
+          return parseToArray(value, parsePgArrayLiteral)
+        }
 
         return []
       },
-      toRaw: () =>
-        isEnum && typeof value === 'string' ? value : value === null ? '' : JSON.stringify(value),
     }),
     toConnection: {
-      fromUI: value => {
-        if (isEnum) return toPgArrayLiteral(value)
+      fromRaw: (value) => {
+        if (isEnum) {
+          return value
+        }
 
-        // Only enums can have a UI
-        throw new Error('Invalid array value')
-      },
-      fromRaw: value => {
-        if (isEnum) return value
-
-        if (Array.isArray(value)) return value.map(String)
+        if (Array.isArray(value)) {
+          return value.map(String)
+        }
 
         if (value === 'null') {
           throw new Error('Press set null button to clear the value')
@@ -78,6 +94,15 @@ export function createPostgresListTransformer(column: Column): ValueTransformer<
 
         throw new Error('Invalid array value')
       },
+      fromUI: (value) => {
+        if (isEnum) {
+          return toPgArrayLiteral(value)
+        }
+
+        // Only enums can have a UI
+        throw new Error('Invalid array value')
+      },
     },
+    toDisplay: getDisplayValue,
   }
 }

@@ -1,4 +1,8 @@
-import type { InferRouterInputs, InferRouterOutputs, RouterClient } from '@orpc/server'
+import type {
+  InferRouterInputs,
+  InferRouterOutputs,
+  RouterClient,
+} from '@orpc/server'
 
 import * as account from './account'
 import * as ai from './ai'
@@ -15,21 +19,20 @@ import { repo } from './repo'
 import * as webhooks from './webhooks'
 
 export const router = {
-  contact,
+  account,
   ai,
+  banner,
   chats,
   chatsMessages,
-  queries,
   connections,
   connectionsResources,
-  // TODO: remove this in the future
+  contact,
   databases: connections,
-  banner,
-  account,
-  webhooks,
-  repo,
-  releases,
   internal,
+  queries,
+  releases,
+  repo,
+  webhooks,
 }
 
 export type ORPCRouter = RouterClient<typeof router>

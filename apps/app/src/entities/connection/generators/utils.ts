@@ -2,7 +2,13 @@ import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { Column } from '../components/table/cell'
 
-export type GeneratorFormat = 'ts' | 'zod' | 'prisma' | 'sql' | 'drizzle' | 'kysely'
+export type GeneratorFormat =
+  | 'ts'
+  | 'zod'
+  | 'prisma'
+  | 'sql'
+  | 'drizzle'
+  | 'kysely'
 
 export interface Index {
   type?: string
@@ -15,47 +21,79 @@ export interface Index {
   isPrimary: boolean
 }
 
-export interface GroupedIndex extends Pick<Index, 'type' | 'name' | 'isUnique' | 'isPrimary'> {
+export interface GroupedIndex extends Pick<
+  Index,
+  'type' | 'name' | 'isUnique' | 'isPrimary'
+> {
   columns: string[]
   customExpressions: string[]
 }
 
-export function isValidIdentifier(name: string): boolean {
-  return /^[a-z_$][\w$]*$/i.test(name)
-}
+export const isValidIdentifier = (name: string): boolean =>
+  /^[a-z_$][\w$]*$/iu.test(name)
 
-export function toLiteralKey(name: string) {
-  return isValidIdentifier(name) ? name : `'${name}'`
-}
+export const toLiteralKey = (name: string) =>
+  isValidIdentifier(name) ? name : `'${name}'`
 
-export function formatEnumAsUnionType(values: string[], columnType?: string): string {
-  const union = values.map(v => `'${v}'`).join(' | ')
+export const formatEnumAsUnionType = (
+  values: string[],
+  columnType?: string
+): string => {
+  const union = values.map((v) => `'${v}'`).join(' | ')
   return columnType === 'set' ? `(${union})[]` : union
 }
 
-function tsMapper(t: string) {
-  if (/int|float|decimal|number|double|numeric/i.test(t)) return 'number'
-  if (/bool|bit/i.test(t)) return 'boolean'
-  if (/date|time/i.test(t)) return 'Date'
-  if (/json/i.test(t)) return 'unknown'
+const tsMapper = (t: string) => {
+  if (/int|float|decimal|number|double|numeric/iu.test(t)) {
+    return 'number'
+  }
+  if (/bool|bit/iu.test(t)) {
+    return 'boolean'
+  }
+  if (/date|time/iu.test(t)) {
+    return 'Date'
+  }
+  if (/json/iu.test(t)) {
+    return 'unknown'
+  }
   return 'string'
 }
 
-function zodMapper(t: string) {
-  if (/int|float|decimal|number|double|numeric/i.test(t)) return 'z.number()'
-  if (/bool|bit/i.test(t)) return 'z.boolean()'
-  if (/date|time/i.test(t)) return 'z.date()'
-  if (/json/i.test(t)) return 'z.record(z.string(), z.any())'
+const zodMapper = (t: string) => {
+  if (/int|float|decimal|number|double|numeric/iu.test(t)) {
+    return 'z.number()'
+  }
+  if (/bool|bit/iu.test(t)) {
+    return 'z.boolean()'
+  }
+  if (/date|time/iu.test(t)) {
+    return 'z.date()'
+  }
+  if (/json/iu.test(t)) {
+    return 'z.record(z.string(), z.any())'
+  }
   return 'z.string()'
 }
 
-function prismaScalarMapper(t: string) {
-  if (/decimal|numeric/i.test(t)) return 'Decimal'
-  if (/bool/i.test(t)) return 'Boolean'
-  if (/date|timestamp/i.test(t)) return 'DateTime'
-  if (/json/i.test(t)) return 'Json'
-  if (/int/i.test(t)) return 'Int'
-  if (/float/i.test(t)) return 'Float'
+const prismaScalarMapper = (t: string) => {
+  if (/decimal|numeric/iu.test(t)) {
+    return 'Decimal'
+  }
+  if (/bool/iu.test(t)) {
+    return 'Boolean'
+  }
+  if (/date|timestamp/iu.test(t)) {
+    return 'DateTime'
+  }
+  if (/json/iu.test(t)) {
+    return 'Json'
+  }
+  if (/int/iu.test(t)) {
+    return 'Int'
+  }
+  if (/float/iu.test(t)) {
+    return 'Float'
+  }
   return 'String'
 }
 
@@ -63,126 +101,229 @@ export const TYPE_MAPPINGS: Record<
   GeneratorFormat,
   Record<ConnectionType, (type: string) => string>
 > = {
-  ts: {
-    postgres: tsMapper,
-    mysql: tsMapper,
-    mssql: tsMapper,
-    clickhouse: tsMapper,
-  },
-  zod: {
-    postgres: zodMapper,
-    mysql: zodMapper,
-    mssql: zodMapper,
-    clickhouse: zodMapper,
-  },
-  prisma: {
-    postgres: prismaScalarMapper,
-    mysql: prismaScalarMapper,
-    mssql: t => (/^date$/i.test(t) ? 'DateTime @db.Date' : prismaScalarMapper(t)),
-    clickhouse: () => '',
-  },
   drizzle: {
-    postgres: t => {
-      if (/serial/i.test(t)) return 'serial'
-      if (/int/i.test(t)) return 'integer'
-      if (/text/i.test(t)) return 'text'
-      if (/varchar|character varying/i.test(t)) return 'varchar'
-      if (/bool/i.test(t)) return 'boolean'
-      if (/timestamp/i.test(t)) return 'timestamp'
-      if (/date/i.test(t)) return 'date'
-      if (/decimal|numeric/i.test(t)) return 'decimal'
-      if (/double|float|real/i.test(t)) return 'doublePrecision'
-      if (/json/i.test(t)) return 'json'
+    clickhouse: (t) => {
+      if (/int/iu.test(t)) {
+        return 'integer'
+      }
+      if (/text/iu.test(t)) {
+        return 'text'
+      }
+      if (/bool/iu.test(t)) {
+        return 'boolean'
+      }
+      if (/date/iu.test(t)) {
+        return 'date'
+      }
+      if (/decimal/iu.test(t)) {
+        return 'decimal'
+      }
+      if (/real|float/iu.test(t)) {
+        return 'real'
+      }
+      if (/json/iu.test(t)) {
+        return 'json'
+      }
       return 'text'
     },
-    mysql: t => {
-      if (/serial/i.test(t)) return 'serial'
-      if (/tinyint/i.test(t)) return 'tinyint'
-      if (/int/i.test(t)) return 'int'
-      if (/text/i.test(t)) return 'text'
-      if (/varchar/i.test(t)) return 'varchar'
-      if (/bool/i.test(t)) return 'boolean'
-      if (/timestamp/i.test(t)) return 'timestamp'
-      if (/datetime/i.test(t)) return 'datetime'
-      if (/date/i.test(t)) return 'date'
-      if (/decimal|numeric/i.test(t)) return 'decimal'
-      if (/double|float|real/i.test(t)) return 'double'
-      if (/json/i.test(t)) return 'json'
+    mssql: (t) => {
+      if (/datetime2/iu.test(t)) {
+        return 'datetime2'
+      }
+      if (/datetime/iu.test(t)) {
+        return 'datetime'
+      }
+      if (/date/iu.test(t)) {
+        return 'date'
+      }
+      if (/int/iu.test(t)) {
+        return 'integer'
+      }
+      if (/bit/iu.test(t)) {
+        return 'bit'
+      }
+      if (/bool/iu.test(t)) {
+        return 'boolean'
+      }
+      if (/text/iu.test(t)) {
+        return 'text'
+      }
+      if (/nvarchar/iu.test(t)) {
+        return 'nvarchar'
+      }
+      if (/varchar/iu.test(t)) {
+        return 'varchar'
+      }
+      if (/decimal|numeric/iu.test(t)) {
+        return 'decimal'
+      }
+      if (/float|real/iu.test(t)) {
+        return 'float'
+      }
       return 'text'
     },
-    mssql: t => {
-      if (/datetime2/i.test(t)) return 'datetime2'
-      if (/datetime/i.test(t)) return 'datetime'
-      if (/date/i.test(t)) return 'date'
-      if (/int/i.test(t)) return 'integer'
-      if (/bit/i.test(t)) return 'bit'
-      if (/bool/i.test(t)) return 'boolean'
-      if (/text/i.test(t)) return 'text'
-      if (/nvarchar/i.test(t)) return 'nvarchar'
-      if (/varchar/i.test(t)) return 'varchar'
-      if (/decimal|numeric/i.test(t)) return 'decimal'
-      if (/float|real/i.test(t)) return 'float'
+    mysql: (t) => {
+      if (/serial/iu.test(t)) {
+        return 'serial'
+      }
+      if (/tinyint/iu.test(t)) {
+        return 'tinyint'
+      }
+      if (/int/iu.test(t)) {
+        return 'int'
+      }
+      if (/text/iu.test(t)) {
+        return 'text'
+      }
+      if (/varchar/iu.test(t)) {
+        return 'varchar'
+      }
+      if (/bool/iu.test(t)) {
+        return 'boolean'
+      }
+      if (/timestamp/iu.test(t)) {
+        return 'timestamp'
+      }
+      if (/datetime/iu.test(t)) {
+        return 'datetime'
+      }
+      if (/date/iu.test(t)) {
+        return 'date'
+      }
+      if (/decimal|numeric/iu.test(t)) {
+        return 'decimal'
+      }
+      if (/double|float|real/iu.test(t)) {
+        return 'double'
+      }
+      if (/json/iu.test(t)) {
+        return 'json'
+      }
       return 'text'
     },
-    clickhouse: t => {
-      if (/int/i.test(t)) return 'integer'
-      if (/text/i.test(t)) return 'text'
-      if (/bool/i.test(t)) return 'boolean'
-      if (/date/i.test(t)) return 'date'
-      if (/decimal/i.test(t)) return 'decimal'
-      if (/real|float/i.test(t)) return 'real'
-      if (/json/i.test(t)) return 'json'
+    postgres: (t) => {
+      if (/serial/iu.test(t)) {
+        return 'serial'
+      }
+      if (/int/iu.test(t)) {
+        return 'integer'
+      }
+      if (/text/iu.test(t)) {
+        return 'text'
+      }
+      if (/varchar|character varying/iu.test(t)) {
+        return 'varchar'
+      }
+      if (/bool/iu.test(t)) {
+        return 'boolean'
+      }
+      if (/timestamp/iu.test(t)) {
+        return 'timestamp'
+      }
+      if (/date/iu.test(t)) {
+        return 'date'
+      }
+      if (/decimal|numeric/iu.test(t)) {
+        return 'decimal'
+      }
+      if (/double|float|real/iu.test(t)) {
+        return 'doublePrecision'
+      }
+      if (/json/iu.test(t)) {
+        return 'json'
+      }
       return 'text'
     },
-  },
-  sql: {
-    postgres: t => {
-      if (/datetime2/i.test(t)) return 'timestamp'
-      if (/nvarchar/i.test(t)) return 'varchar'
-      if (/int32/i.test(t)) return 'integer'
-      return t
-    },
-    mysql: t => t,
-    mssql: t => t,
-    clickhouse: t => t,
   },
   kysely: {
-    postgres: t => t,
-    mysql: t => t,
-    mssql: t => t,
-    clickhouse: t => t,
+    clickhouse: (t) => t,
+    mssql: (t) => t,
+    mysql: (t) => t,
+    postgres: (t) => t,
+  },
+  prisma: {
+    clickhouse: () => '',
+    mssql: (t) =>
+      /^date$/iu.test(t) ? 'DateTime @db.Date' : prismaScalarMapper(t),
+    mysql: prismaScalarMapper,
+    postgres: prismaScalarMapper,
+  },
+  sql: {
+    clickhouse: (t) => t,
+    mssql: (t) => t,
+    mysql: (t) => t,
+    postgres: (t) => {
+      if (/datetime2/iu.test(t)) {
+        return 'timestamp'
+      }
+      if (/nvarchar/iu.test(t)) {
+        return 'varchar'
+      }
+      if (/int32/iu.test(t)) {
+        return 'integer'
+      }
+      return t
+    },
+  },
+  ts: {
+    clickhouse: tsMapper,
+    mssql: tsMapper,
+    mysql: tsMapper,
+    postgres: tsMapper,
+  },
+  zod: {
+    clickhouse: zodMapper,
+    mssql: zodMapper,
+    mysql: zodMapper,
+    postgres: zodMapper,
   },
 }
 
-export function getColumnType(type: string, format: GeneratorFormat, dialect: ConnectionType) {
-  return TYPE_MAPPINGS[format][dialect](type)
-}
+export const getColumnType = (
+  type: string,
+  format: GeneratorFormat,
+  dialect: ConnectionType
+) => TYPE_MAPPINGS[format][dialect](type)
 
-export function formatValue(value: unknown) {
-  if (value === null) return 'NULL'
-  if (typeof value === 'string') return `'${value.replace(/'/g, "''")}'`
-  if (typeof value === 'number') return String(value)
-  if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE'
-  if (value instanceof Date) return `'${value.toISOString()}'`
+export const formatValue = (value: unknown) => {
+  if (value === null) {
+    return 'NULL'
+  }
+  if (typeof value === 'string') {
+    return `'${value.replaceAll("'", "''")}'`
+  }
+  if (typeof value === 'number') {
+    return String(value)
+  }
+  if (typeof value === 'boolean') {
+    return value ? 'TRUE' : 'FALSE'
+  }
+  if (value instanceof Date) {
+    return `'${value.toISOString()}'`
+  }
   return `'${String(value)}'`
 }
 
 const QUOTE_IDENTIFIER_MAP: Record<ConnectionType, (name: string) => string> = {
-  mysql: (name: string) => `\`${name}\``,
   clickhouse: (name: string) => `\`${name}\``,
   mssql: (name: string) => `[${name}]`,
+  mysql: (name: string) => `\`${name}\``,
   postgres: (name: string) => `"${name}"`,
 }
 
-export function quoteIdentifier(name: string, dialect: ConnectionType) {
-  return QUOTE_IDENTIFIER_MAP[dialect](name)
-}
+export const quoteIdentifier = (name: string, dialect: ConnectionType) =>
+  QUOTE_IDENTIFIER_MAP[dialect](name)
 
-export function groupIndexes(indexes: Index[] = [], table: string): GroupedIndex[] {
+export const groupIndexes = (
+  indexes: Index[],
+  table: string
+): GroupedIndex[] => {
   const grouped = new Map<string, GroupedIndex>()
 
   for (const idx of indexes) {
-    if (idx.table !== table) continue
+    if (idx.table !== table) {
+      continue
+    }
 
     const existing = grouped.get(idx.name)
     if (existing) {
@@ -194,12 +335,12 @@ export function groupIndexes(indexes: Index[] = [], table: string): GroupedIndex
       }
     } else {
       grouped.set(idx.name, {
-        type: idx.type,
-        name: idx.name,
-        isUnique: idx.isUnique,
-        isPrimary: idx.isPrimary,
         columns: idx.column ? [idx.column] : [],
         customExpressions: idx.customExpression ? [idx.customExpression] : [],
+        isPrimary: idx.isPrimary,
+        isUnique: idx.isUnique,
+        name: idx.name,
+        type: idx.type,
       })
     }
   }
@@ -207,19 +348,24 @@ export function groupIndexes(indexes: Index[] = [], table: string): GroupedIndex
   return [...grouped.values()]
 }
 
-export function filterExplicitIndexes(
+export const filterExplicitIndexes = (
   grouped: GroupedIndex[],
   columns: Column[],
-  dialect?: ConnectionType,
-): GroupedIndex[] {
-  return grouped.filter(idx => {
-    if (idx.isPrimary) return false
-    if (dialect === 'clickhouse') return false
+  dialect?: ConnectionType
+): GroupedIndex[] =>
+  grouped.filter((idx) => {
+    if (idx.isPrimary) {
+      return false
+    }
+    if (dialect === 'clickhouse') {
+      return false
+    }
     const isRedundantUnique =
       idx.isUnique &&
       idx.columns.length === 1 &&
-      columns.some(c => c.id === idx.columns[0] && c.unique)
-    if (isRedundantUnique) return false
+      columns.some((c) => c.id === idx.columns[0] && c.unique)
+    if (isRedundantUnique) {
+      return false
+    }
     return true
   })
-}

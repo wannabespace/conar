@@ -6,14 +6,24 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { electron } from '../main/lib/events'
 import type { sendToast } from '../main/main'
 
-export type ElectronPreload = typeof electron & {
+type Promisified<T> = {
+  [K in keyof T]: T[K] extends (...args: infer A) => infer R
+    ? (...args: A) => Promise<Awaited<R>>
+    : Promisified<T[K]>
+}
+
+export type ElectronPreload = Promisified<typeof electron> & {
   app: {
     onDeepLink: (callback: (url: string) => void) => () => void
     onUpdatesStatus: (
-      callback: (params: { status: UpdatesStatus; message?: string }) => void,
+      callback: (params: { status: UpdatesStatus; message?: string }) => void
     ) => () => void
-    onSendToast: (callback: (params: Parameters<typeof sendToast>[0]) => void) => () => void
-    onFullscreenChange: (callback: (isFullscreen: boolean) => void) => () => void
+    onSendToast: (
+      callback: (params: Parameters<typeof sendToast>[0]) => void
+    ) => () => void
+    onFullscreenChange: (
+      callback: (isFullscreen: boolean) => void
+    ) => () => void
     onFocusChange: (callback: (isFocused: boolean) => void) => () => void
   }
   versions: {
@@ -23,16 +33,17 @@ export type ElectronPreload = typeof electron & {
   }
 }
 
-function handleElectronError<T extends AnyFunction>(
-  fn: T,
-): (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>>> {
-  return async (...args: Parameters<T>) => {
+const handleElectronError =
+  <T extends AnyFunction>(
+    fn: T
+  ): ((...args: Parameters<T>) => Promise<Awaited<ReturnType<T>>>) =>
+  async (...args: Parameters<T>) => {
     try {
       return await fn(...args)
     } catch (error) {
       if (error instanceof Error) {
         const message = replaceErrorPrefix(
-          error.message.replace(/^Error invoking remote method '[^']+': /, ''),
+          error.message.replace(/^Error invoking remote method '[^']+': /u, '')
         )
 
         throw new Error(message, { cause: error })
@@ -40,64 +51,76 @@ function handleElectronError<T extends AnyFunction>(
       throw error
     }
   }
-}
 
-function onEvent<T>(channel: string, callback: (params: T) => void): () => void {
-  const listener = (_event: Electron.IpcRendererEvent, params: T) => callback(params)
+const onEvent = <T>(
+  channel: string,
+  onMessage: (params: T) => void
+): (() => void) => {
+  const listener = (_event: Electron.IpcRendererEvent, params: T) => {
+    onMessage(params)
+  }
   ipcRenderer.on(channel, listener)
   return () => ipcRenderer.off(channel, listener)
 }
 
-function dialectQueryBridge(dialect: string) {
-  return {
-    execute: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke(`query.${dialect}.execute`, arg),
-    ),
-    beginTransaction: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke(`query.${dialect}.beginTransaction`, arg),
-    ),
-    executeTransaction: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke(`query.${dialect}.executeTransaction`, arg),
-    ),
-    commitTransaction: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke(`query.${dialect}.commitTransaction`, arg),
-    ),
-    rollbackTransaction: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke(`query.${dialect}.rollbackTransaction`, arg),
-    ),
-  }
-}
+const dialectQueryBridge = (dialect: string) => ({
+  beginTransaction: handleElectronError((arg: unknown) =>
+    ipcRenderer.invoke(`query.${dialect}.beginTransaction`, arg)
+  ),
+  commitTransaction: handleElectronError((arg: unknown) =>
+    ipcRenderer.invoke(`query.${dialect}.commitTransaction`, arg)
+  ),
+  execute: handleElectronError((arg: unknown) =>
+    ipcRenderer.invoke(`query.${dialect}.execute`, arg)
+  ),
+  executeTransaction: handleElectronError((arg: unknown) =>
+    ipcRenderer.invoke(`query.${dialect}.executeTransaction`, arg)
+  ),
+  rollbackTransaction: handleElectronError((arg: unknown) =>
+    ipcRenderer.invoke(`query.${dialect}.rollbackTransaction`, arg)
+  ),
+})
 
 contextBridge.exposeInMainWorld('electron', {
-  query: {
-    postgres: dialectQueryBridge('postgres'),
-    mysql: dialectQueryBridge('mysql'),
-    clickhouse: dialectQueryBridge('clickhouse'),
-    mssql: dialectQueryBridge('mssql'),
-  },
-  encryption: {
-    encrypt: handleElectronError((arg: unknown) => ipcRenderer.invoke('encryption.encrypt', arg)),
-    decrypt: handleElectronError((arg: unknown) => ipcRenderer.invoke('encryption.decrypt', arg)),
-  },
   app: {
-    onDeepLink: callback => onEvent('deep-link', callback),
-    onUpdatesStatus: callback => onEvent('updates-status', callback),
-    onSendToast: callback => onEvent('toast', callback),
-    onFullscreenChange: callback => onEvent('fullscreen-changed', callback),
-    onFocusChange: callback => onEvent('focus-changed', callback),
-    checkForUpdates: handleElectronError(() => ipcRenderer.invoke('app.checkForUpdates')),
-    quitAndInstall: handleElectronError(() => ipcRenderer.invoke('app.quitAndInstall')),
+    checkForUpdates: handleElectronError(() =>
+      ipcRenderer.invoke('app.checkForUpdates')
+    ),
+    onDeepLink: (onMessage) => onEvent('deep-link', onMessage),
+    onFocusChange: (onMessage) => onEvent('focus-changed', onMessage),
+    onFullscreenChange: (onMessage) => onEvent('fullscreen-changed', onMessage),
+    onSendToast: (onMessage) => onEvent('toast', onMessage),
+    onUpdatesStatus: (onMessage) => onEvent('updates-status', onMessage),
+    quitAndInstall: handleElectronError(() =>
+      ipcRenderer.invoke('app.quitAndInstall')
+    ),
     setNativeTheme: handleElectronError((arg: unknown) =>
-      ipcRenderer.invoke('app.setNativeTheme', arg),
+      ipcRenderer.invoke('app.setNativeTheme', arg)
     ),
   },
-  versions: {
-    node: () => process.versions.node,
-    chrome: () => process.versions.chrome,
-    electron: () => process.versions.electron,
-    app: () => ipcRenderer.invoke('versions.app'),
+  encryption: {
+    decrypt: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('encryption.decrypt', arg)
+    ),
+    encrypt: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('encryption.encrypt', arg)
+    ),
   },
   menu: {
-    popup: handleElectronError((arg: unknown) => ipcRenderer.invoke('menu.popup', arg)),
+    popup: handleElectronError((arg: unknown) =>
+      ipcRenderer.invoke('menu.popup', arg)
+    ),
+  },
+  query: {
+    clickhouse: dialectQueryBridge('clickhouse'),
+    mssql: dialectQueryBridge('mssql'),
+    mysql: dialectQueryBridge('mysql'),
+    postgres: dialectQueryBridge('postgres'),
+  },
+  versions: {
+    app: () => ipcRenderer.invoke('versions.app'),
+    chrome: () => process.versions.chrome,
+    electron: () => process.versions.electron,
+    node: () => process.versions.node,
   },
 } satisfies ElectronPreload)

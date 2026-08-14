@@ -9,7 +9,7 @@ import { Toaster as Sonner } from 'sonner'
 
 import { useTheme } from '../theme-store'
 
-function Toaster() {
+const Toaster = () => {
   const theme = useTheme()
 
   return (
@@ -19,24 +19,16 @@ function Toaster() {
         position="top-center"
         className="group"
         icons={{
-          success: <RiCheckboxCircleFill className="size-4 text-success" />,
-          info: <RiInformationFill className="size-4 text-muted-foreground" />,
-          warning: <RiErrorWarningFill className="size-4 text-warning" />,
-          error: <RiCloseCircleFill className="size-4 text-destructive" />,
-          loading: <RiLoaderLine className="size-4 animate-spin text-muted-foreground" />,
+          error: <RiCloseCircleFill className="text-destructive size-4" />,
+          info: <RiInformationFill className="text-muted-foreground size-4" />,
+          loading: (
+            <RiLoaderLine className="text-muted-foreground size-4 animate-spin" />
+          ),
+          success: <RiCheckboxCircleFill className="text-success size-4" />,
+          warning: <RiErrorWarningFill className="text-warning size-4" />,
         }}
         toastOptions={{
-          unstyled: true,
           classNames: {
-            toast: `
-              flex w-(--width) items-start gap-2.5 rounded-xl bg-background/80
-              p-3 shadow-lg ring-1 ring-foreground/4 backdrop-blur-xl
-              select-none
-            `,
-            content: 'flex min-w-0 flex-1 flex-col gap-0.5',
-            icon: 'mt-0.5 flex size-4 shrink-0 items-center justify-center',
-            title: 'text-sm leading-tight font-medium text-foreground',
-            description: 'text-xs leading-snug text-muted-foreground',
             actionButton: `
               mt-0.5 h-6 shrink-0 self-center rounded-md bg-primary px-2 text-xs
               font-medium whitespace-nowrap text-primary-foreground
@@ -53,7 +45,17 @@ function Toaster() {
               ring-foreground/4
               hover:text-foreground
             `,
+            content: 'flex min-w-0 flex-1 flex-col gap-0.5',
+            description: 'text-xs leading-snug text-muted-foreground',
+            icon: 'mt-0.5 flex size-4 shrink-0 items-center justify-center',
+            title: 'text-sm leading-tight font-medium text-foreground',
+            toast: `
+              flex w-(--width) items-start gap-2.5 rounded-xl bg-background/80
+              p-3 shadow-lg ring-1 ring-foreground/4 backdrop-blur-xl
+              select-none
+            `,
           },
+          unstyled: true,
         }}
       />
     </div>

@@ -7,9 +7,9 @@ import { Button } from '../button'
 import { ContentSwitch } from './content-switch'
 
 const defaultCopyIcon = <RiFileCopyLine className="size-4" />
-const defaultSuccessIcon = <RiCheckLine className="size-4 text-success" />
+const defaultSuccessIcon = <RiCheckLine className="text-success size-4" />
 
-export function CopyButton({
+export const CopyButton = ({
   text,
   copyIcon = defaultCopyIcon,
   successIcon = defaultSuccessIcon,
@@ -19,7 +19,7 @@ export function CopyButton({
   text: string | (() => string)
   copyIcon?: ReactNode
   successIcon?: ReactNode
-} & ComponentProps<typeof Button>) {
+} & ComponentProps<typeof Button>) => {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = () => {
@@ -30,7 +30,7 @@ export function CopyButton({
   return (
     <Button
       {...props}
-      onClick={e => {
+      onClick={(e) => {
         props.onClick?.(e)
         handleCopy()
       }}

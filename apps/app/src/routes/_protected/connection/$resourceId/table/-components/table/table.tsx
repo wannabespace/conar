@@ -20,11 +20,17 @@ import {
   getColumnSize,
   INTERNAL_COLUMN_IDS,
 } from '~/entities/connection/components/table/cell'
-import type { Column, ColumnHandlers } from '~/entities/connection/components/table/cell'
+import type {
+  Column,
+  ColumnHandlers,
+} from '~/entities/connection/components/table/cell'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
 
 import { useTableColumnsContext } from '../../-lib/columns'
-import { useClearDraftsOnQueryChange, useSyncSelectionWithRows } from '../../-lib/hooks'
+import {
+  useClearDraftsOnQueryChange,
+  useSyncSelectionWithRows,
+} from '../../-lib/hooks'
 import {
   columnsOrder,
   draftKey,
@@ -42,51 +48,37 @@ import { TableBodySkeleton, TableHeaderSkeleton } from './table-skeleton'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-export function TableError({ error }: { error: Error }) {
+export const TableError = ({ error }: { error: Error }) => {
   const [showDetails, setShowDetails] = useState(false)
 
-  const summary = error.message.split('\n')[0]
+  const [summary] = error.message.split('\n')
   const cause =
-    error.cause && !String(error.cause).includes(error.message) ? String(error.cause) : null
+    error.cause && !String(error.cause).includes(error.message)
+      ? String(error.cause)
+      : null
   const details = [error.message, cause].filter(Boolean).join('\n\n')
   const hasDetails = details !== summary
 
   return (
-    <div
-      className="
-        pointer-events-none sticky left-0 flex h-full items-center
-        justify-center overflow-hidden p-6 pb-16
-      "
-    >
+    <div className="pointer-events-none sticky left-0 flex h-full items-center justify-center overflow-hidden p-6 pb-16">
       <motion.div
         initial={{ opacity: 0, y: 6, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-        className="
-          pointer-events-auto relative flex w-full max-w-lg flex-col
-          items-center
-        "
+        className="pointer-events-auto relative flex w-full max-w-lg flex-col items-center"
       >
-        <div
-          className="
-            mb-5 flex size-14 items-center justify-center rounded-2xl border
-            border-destructive/10 bg-destructive/10
-          "
-        >
-          <RiAlertLine className="size-7 text-destructive" />
+        <div className="border-destructive/10 bg-destructive/10 mb-5 flex size-14 items-center justify-center rounded-2xl border">
+          <RiAlertLine className="text-destructive size-7" />
         </div>
 
         <h2 className="text-base font-semibold tracking-tight">Query failed</h2>
-        <p className="mt-1.5 text-center text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-1.5 text-center text-sm">
           Check your filters and try again.
         </p>
 
         <p
           data-mask
-          className="
-            mt-4 max-w-md text-center font-mono text-2xs leading-relaxed
-            text-muted-foreground/70
-          "
+          className="text-2xs text-muted-foreground/70 mt-4 max-w-md text-center font-mono leading-relaxed"
         >
           {summary}
         </p>
@@ -94,13 +86,8 @@ export function TableError({ error }: { error: Error }) {
         {hasDetails && (
           <button
             type="button"
-            className="
-              mt-5 cursor-default rounded-md px-1.5 py-0.5 text-xs
-              text-muted-foreground/70 outline-none
-              hover:text-foreground
-              focus-visible:text-foreground
-            "
-            onClick={() => setShowDetails(prev => !prev)}
+            className="text-muted-foreground/70 hover:text-foreground focus-visible:text-foreground mt-5 cursor-default rounded-md px-1.5 py-0.5 text-xs outline-none"
+            onClick={() => setShowDetails((prev) => !prev)}
           >
             {showDetails ? 'Hide details' : 'Show details'}
           </button>
@@ -110,16 +97,13 @@ export function TableError({ error }: { error: Error }) {
           <div
             className={cn(
               'grid w-full transition-[grid-template-rows] duration-200',
-              showDetails ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+              showDetails ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
             )}
           >
             <div className="min-h-0 overflow-hidden">
               <ScrollArea
                 data-mask
-                className="
-                  mt-4 max-h-56 border-t pt-4 text-left font-mono text-2xs
-                  leading-relaxed whitespace-pre-wrap text-muted-foreground/80
-                "
+                className="text-2xs text-muted-foreground/80 mt-4 max-h-56 border-t pt-4 text-left font-mono leading-relaxed whitespace-pre-wrap"
               >
                 {details}
               </ScrollArea>
@@ -138,7 +122,7 @@ const ACTIONS_COLUMN: ColumnRenderer = {
   header: () => <div />,
 }
 
-function BodyCellRenderer({
+const BodyCellRenderer = ({
   column,
   connectionType,
   primaryColumns,
@@ -152,21 +136,25 @@ function BodyCellRenderer({
     column: Column
     connectionType: ConnectionType
     primaryColumns: string[]
-  }) {
+  }) => {
   const store = useTablePageStore()
-  const row = useTableContext(ctx => ctx.rows[props.rowIndex])
+  const row = useTableContext((ctx) => ctx.rows[props.rowIndex])
   const rowDraftKey =
     row && primaryColumns.length > 0
       ? draftKey(getRowPrimaryKeysValues(row, primaryColumns), column.id)
       : null
 
   const draft = useSubscription(store, {
-    selector: state =>
+    selector: (state) =>
       rowDraftKey
-        ? state.drafts.find(d => draftKey(d.primaryKeys, d.columnId) === rowDraftKey)
+        ? state.drafts.find(
+            (d) => draftKey(d.primaryKeys, d.columnId) === rowDraftKey
+          )
         : undefined,
   })
-  const order = useSubscription(store, { selector: state => state.orderBy[column.id] ?? null })
+  const order = useSubscription(store, {
+    selector: (state) => state.orderBy[column.id] ?? null,
+  })
 
   return (
     <TableCell
@@ -183,17 +171,29 @@ function BodyCellRenderer({
   )
 }
 
-function TableComponent({ table, schema }: { table: string; schema: string }) {
+const TableComponent = ({
+  table,
+  schema,
+}: {
+  table: string
+  schema: string
+}) => {
   const { connection, connectionResource } = useRouteContext()
   const { columns, isPending: isColumnsPending } = useTableColumnsContext()
   const store = useTablePageStore()
-  const hiddenColumns = useSubscription(store, { selector: state => state.hiddenColumns })
-  const columnSizes = useSubscription(store, { selector: state => state.columnSizes })
+  const hiddenColumns = useSubscription(store, {
+    selector: (state) => state.hiddenColumns,
+  })
+  const columnSizes = useSubscription(store, {
+    selector: (state) => state.columnSizes,
+  })
   const filters = useSubscription(store, {
-    selector: state => enabledFilters(state.filters),
+    selector: (state) => enabledFilters(state.filters),
     isEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
   })
-  const orderBy = useSubscription(store, { selector: state => state.orderBy })
+  const orderBy = useSubscription(store, {
+    selector: (state) => state.orderBy,
+  })
   const {
     data: rows = [],
     error,
@@ -204,9 +204,12 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
       table,
       schema,
       query: { filters, orderBy },
-    }),
+    })
   )
-  const primaryColumns = useMemo(() => columns.filter(c => c.primaryKey).map(c => c.id), [columns])
+  const primaryColumns = useMemo(
+    () => columns.filter((c) => c.primaryKey).map((c) => c.id),
+    [columns]
+  )
   const renameColumnRef = useRef<ComponentRef<typeof RenameColumnDialog>>(null)
 
   useSyncSelectionWithRows(rows, primaryColumns)
@@ -214,12 +217,17 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
 
   const getHandlers = useCallback(
     (column: Column): ColumnHandlers => ({
-      onQueueValue: async (rowIndex, newValue) => {
-        if (primaryColumns.length === 0)
-          throw new Error('No primary keys found. Please use SQL Runner to update this row.')
+      onQueueValue: (rowIndex, newValue) => {
+        if (primaryColumns.length === 0) {
+          throw new Error(
+            'No primary keys found. Please use SQL Runner to update this row.'
+          )
+        }
 
         const row = rows[rowIndex]
-        if (!row) throw new Error('Row not found. Please refresh the page.')
+        if (!row) {
+          throw new Error('Row not found. Please refresh the page.')
+        }
 
         draftsActions(store).upsert({
           primaryKeys: getRowPrimaryKeysValues(row, primaryColumns),
@@ -229,96 +237,122 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
           isCommitting: false,
         })
       },
-      onAddFilter: filter => {
+      onAddFilter: (filter) => {
         store.set(
-          state =>
+          (state) =>
             ({
               ...state,
               filters: [...state.filters, filter],
-            }) satisfies typeof state,
+            }) satisfies typeof state
         )
       },
-      onOrder: order => {
+      onOrder: (order) => {
         const actions = columnsOrder(store)
-        if (order === undefined) return actions.toggleOrder(column.id)
-        if (order) return actions.setOrder(column.id, order)
+        if (order === undefined) {
+          return actions.toggleOrder(column.id)
+        }
+        if (order) {
+          return actions.setOrder(column.id, order)
+        }
         return actions.removeOrder(column.id)
       },
-      onResize: newWidth => {
+      onResize: (newWidth) => {
         store.set(
-          state =>
+          (state) =>
             ({
               ...state,
               columnSizes: {
                 ...state.columnSizes,
                 [column.id]: newWidth,
               },
-            }) satisfies typeof state,
+            }) satisfies typeof state
         )
       },
       onRename:
-        !column.primaryKey && !CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME.includes(connection.type)
+        !column.primaryKey &&
+        !CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME.includes(connection.type)
           ? () => {
               renameColumnRef.current?.rename(schema, table, column.id)
             }
           : undefined,
     }),
-    [store, rows, primaryColumns, schema, table, connection.type],
+    [store, rows, primaryColumns, schema, table, connection.type]
   )
 
-  const tableColumns = useMemo<ColumnRenderer[]>(() => {
-    return columns
-      .filter(c => !hiddenColumns.includes(c.id))
-      .map(column => {
-        const handlers = getHandlers(column)
-        return {
-          id: column.id,
-          size:
-            (column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH) +
-            // 25 it's a ~size of the button, 6 it's a ~size of the number
-            (column.references?.length ? 25 + 6 : 0) +
-            (column.foreign ? 25 : 0),
-          header: props => <TableHeaderCell column={column} {...handlers} {...props} />,
-          cell: props => (
-            <BodyCellRenderer
-              column={column}
-              connectionType={connection.type}
-              primaryColumns={primaryColumns}
-              {...handlers}
-              {...props}
-            />
-          ),
-        } satisfies ColumnRenderer
-      })
-  }, [columns, hiddenColumns, connection.type, primaryColumns, getHandlers])
+  const tableColumns = useMemo<ColumnRenderer[]>(
+    () =>
+      columns
+        .filter((c) => !hiddenColumns.includes(c.id))
+        .map((column) => {
+          const handlers = getHandlers(column)
+          return {
+            id: column.id,
+            size:
+              (column.type
+                ? getColumnSize(column.type)
+                : DEFAULT_COLUMN_WIDTH) +
+              // 25 it's a ~size of the button, 6 it's a ~size of the number
+              (column.references?.length ? 25 + 6 : 0) +
+              (column.foreign ? 25 : 0),
+            // Column renderers are invoked as components by @tamery/table
+            // oxlint-disable-next-line react/no-unstable-nested-components
+            header: (props) => (
+              <TableHeaderCell column={column} {...handlers} {...props} />
+            ),
+            // oxlint-disable-next-line react/no-unstable-nested-components
+            cell: (props) => (
+              <BodyCellRenderer
+                column={column}
+                connectionType={connection.type}
+                primaryColumns={primaryColumns}
+                {...handlers}
+                {...props}
+              />
+            ),
+          } satisfies ColumnRenderer
+        }),
+    [columns, hiddenColumns, connection.type, primaryColumns, getHandlers]
+  )
 
   const providerColumns = useMemo<ColumnRenderer[]>(() => {
     const result: ColumnRenderer[] = []
     if (primaryColumns.length > 0) {
       result.push({
         id: INTERNAL_COLUMN_IDS.SELECT,
-        cell: props => <SelectionCell keys={primaryColumns} {...props} />,
-        header: props => <SelectionHeaderCell keys={primaryColumns} {...props} />,
+        // oxlint-disable-next-line react/no-unstable-nested-components
+        cell: (props) => <SelectionCell keys={primaryColumns} {...props} />,
+        // oxlint-disable-next-line react/no-unstable-nested-components
+        header: (props) => (
+          <SelectionHeaderCell keys={primaryColumns} {...props} />
+        ),
         size: 40,
       })
     }
-    result.push(...tableColumns)
-    result.push(ACTIONS_COLUMN)
+    result.push(...tableColumns, ACTIONS_COLUMN)
     return result
   }, [primaryColumns, tableColumns])
 
   const handleShiftSelectionKeyDown = useShiftSelectionKeyDown({
     rowCount: rows.length,
     getItemsInRange: (start, end) =>
-      rows.slice(start, end + 1).map(row => getRowPrimaryKeysValues(row, primaryColumns)),
+      rows
+        .slice(start, end + 1)
+        .map((row) => getRowPrimaryKeysValues(row, primaryColumns)),
     getSelectionState: () => store.get().selectionState,
     onSelectionChange: (selected, selectionState) => {
-      store.set(state => ({ ...state, selected, selectionState }) satisfies typeof state)
+      store.set(
+        (state) =>
+          ({ ...state, selected, selectionState }) satisfies typeof state
+      )
     },
   })
 
   return (
-    <TableProvider rows={rows} columns={providerColumns} customColumnSizes={columnSizes}>
+    <TableProvider
+      rows={rows}
+      columns={providerColumns}
+      customColumnSizes={columnSizes}
+    >
       <div
         role="grid"
         className="relative size-full outline-none"
@@ -327,44 +361,51 @@ function TableComponent({ table, schema }: { table: string; schema: string }) {
       >
         <Table>
           {tableColumns.length > 0 ? (
-            <TableHeader
-              className="
-                rounded-none bg-background inset-shadow-[0_-1px_0_0_var(--color-border)]
-                inset-ring-0
-              "
-            />
+            <TableHeader className="bg-background rounded-none inset-shadow-[0_-1px_0_0_var(--color-border)] inset-ring-0" />
           ) : (
             (isRowsPending || isColumnsPending) && (
               <TableHeaderSkeleton selectable={primaryColumns.length > 0} />
             )
           )}
-          {isRowsPending || isColumnsPending ? (
-            <TableBodySkeleton selectable={primaryColumns.length > 0} />
-          ) : error ? (
-            <TableError error={error} />
-          ) : rows?.length === 0 ? (
-            <TableEmpty
-              className="bottom-0 h-[calc(100%-5rem)]"
-              title="Table is empty"
-              description="There are no records to show"
-            />
-          ) : tableColumns.length === 0 ? (
-            <TableEmpty
-              className="h-[calc(100%-5rem)]"
-              title="No columns to show"
-              description="Please show at least one column"
-            />
-          ) : (
-            <>
-              <TableBody data-mask zebra className="bg-transparent" />
-              <TableInfiniteLoader
-                table={table}
-                schema={schema}
-                filters={filters}
-                orderBy={orderBy}
-              />
-            </>
-          )}
+          {(() => {
+            if (isRowsPending || isColumnsPending) {
+              return (
+                <TableBodySkeleton selectable={primaryColumns.length > 0} />
+              )
+            }
+            if (error) {
+              return <TableError error={error} />
+            }
+            if (rows?.length === 0) {
+              return (
+                <TableEmpty
+                  className="bottom-0 h-[calc(100%-5rem)]"
+                  title="Table is empty"
+                  description="There are no records to show"
+                />
+              )
+            }
+            if (tableColumns.length === 0) {
+              return (
+                <TableEmpty
+                  className="h-[calc(100%-5rem)]"
+                  title="No columns to show"
+                  description="Please show at least one column"
+                />
+              )
+            }
+            return (
+              <>
+                <TableBody data-mask zebra className="bg-transparent" />
+                <TableInfiniteLoader
+                  table={table}
+                  schema={schema}
+                  filters={filters}
+                  orderBy={orderBy}
+                />
+              </>
+            )
+          })()}
         </Table>
       </div>
       <RenameColumnDialog ref={renameColumnRef} />

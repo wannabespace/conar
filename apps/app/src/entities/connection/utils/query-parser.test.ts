@@ -5,14 +5,32 @@ import { getEditorQueries } from './query-parser'
 describe('getEditorQueries', () => {
   it('should parse single and multiple queries', () => {
     expect(getEditorQueries('SELECT * FROM users;')).toEqual([
-      { startLineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users'] },
+      {
+        endLineNumber: 1,
+        queries: ['SELECT * FROM users'],
+        startLineNumber: 1,
+      },
     ])
     expect(getEditorQueries('SELECT * FROM users')).toEqual([
-      { startLineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users'] },
+      {
+        endLineNumber: 1,
+        queries: ['SELECT * FROM users'],
+        startLineNumber: 1,
+      },
     ])
-    expect(getEditorQueries('SELECT * FROM users;\nSELECT * FROM posts;')).toEqual([
-      { startLineNumber: 1, endLineNumber: 1, queries: ['SELECT * FROM users'] },
-      { startLineNumber: 2, endLineNumber: 2, queries: ['SELECT * FROM posts'] },
+    expect(
+      getEditorQueries('SELECT * FROM users;\nSELECT * FROM posts;')
+    ).toEqual([
+      {
+        endLineNumber: 1,
+        queries: ['SELECT * FROM users'],
+        startLineNumber: 1,
+      },
+      {
+        endLineNumber: 2,
+        queries: ['SELECT * FROM posts'],
+        startLineNumber: 2,
+      },
     ])
   })
 
@@ -20,16 +38,24 @@ describe('getEditorQueries', () => {
     expect(
       getEditorQueries(`SELECT *
 FROM users
-WHERE id = 1;`),
+WHERE id = 1;`)
     ).toEqual([
-      { startLineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1'] },
+      {
+        endLineNumber: 3,
+        queries: ['SELECT * FROM users WHERE id = 1'],
+        startLineNumber: 1,
+      },
     ])
     expect(
       getEditorQueries(`SELECT *
 FROM users
-WHERE id = 1`),
+WHERE id = 1`)
     ).toEqual([
-      { startLineNumber: 1, endLineNumber: 3, queries: ['SELECT * FROM users WHERE id = 1'] },
+      {
+        endLineNumber: 3,
+        queries: ['SELECT * FROM users WHERE id = 1'],
+        startLineNumber: 1,
+      },
     ])
   })
 
@@ -38,26 +64,46 @@ WHERE id = 1`),
       getEditorQueries(`-- This is a comment
 SELECT * FROM users;
 -- Another comment
-SELECT * FROM posts;`),
+SELECT * FROM posts;`)
     ).toEqual([
-      { startLineNumber: 2, endLineNumber: 2, queries: ['SELECT * FROM users'] },
-      { startLineNumber: 4, endLineNumber: 4, queries: ['SELECT * FROM posts'] },
+      {
+        endLineNumber: 2,
+        queries: ['SELECT * FROM users'],
+        startLineNumber: 2,
+      },
+      {
+        endLineNumber: 4,
+        queries: ['SELECT * FROM posts'],
+        startLineNumber: 4,
+      },
     ])
     expect(
       getEditorQueries(`SELECT * FROM users -- get all users
-WHERE id = 1;`),
+WHERE id = 1;`)
     ).toEqual([
-      { startLineNumber: 1, endLineNumber: 2, queries: ['SELECT * FROM users WHERE id = 1'] },
+      {
+        endLineNumber: 2,
+        queries: ['SELECT * FROM users WHERE id = 1'],
+        startLineNumber: 1,
+      },
     ])
     expect(
       getEditorQueries(`/* This is a
 multi-line comment */
 SELECT * FROM users;
 /* Another comment */
-SELECT * FROM posts;`),
+SELECT * FROM posts;`)
     ).toEqual([
-      { startLineNumber: 3, endLineNumber: 3, queries: ['SELECT * FROM users'] },
-      { startLineNumber: 5, endLineNumber: 5, queries: ['SELECT * FROM posts'] },
+      {
+        endLineNumber: 3,
+        queries: ['SELECT * FROM users'],
+        startLineNumber: 3,
+      },
+      {
+        endLineNumber: 5,
+        queries: ['SELECT * FROM posts'],
+        startLineNumber: 5,
+      },
     ])
   })
 
@@ -66,7 +112,7 @@ SELECT * FROM posts;`),
     expect(getEditorQueries('   \n  \n  ')).toEqual([])
     expect(
       getEditorQueries(`-- Just a comment
-/* Another comment */`),
+/* Another comment */`)
     ).toEqual([])
   })
 
@@ -74,28 +120,36 @@ SELECT * FROM posts;`),
     expect(
       getEditorQueries(`INSERT INTO users (name, email) VALUES ('John', 'john@example.com');
 UPDATE users SET active = true WHERE id = 1;
-DELETE FROM users WHERE id = 2;`),
+DELETE FROM users WHERE id = 2;`)
     ).toEqual([
       {
-        startLineNumber: 1,
         endLineNumber: 1,
-        queries: ["INSERT INTO users (name, email) VALUES ('John', 'john@example.com')"],
+        queries: [
+          "INSERT INTO users (name, email) VALUES ('John', 'john@example.com')",
+        ],
+        startLineNumber: 1,
       },
       {
-        startLineNumber: 2,
         endLineNumber: 2,
         queries: ['UPDATE users SET active = true WHERE id = 1'],
+        startLineNumber: 2,
       },
-      { startLineNumber: 3, endLineNumber: 3, queries: ['DELETE FROM users WHERE id = 2'] },
+      {
+        endLineNumber: 3,
+        queries: ['DELETE FROM users WHERE id = 2'],
+        startLineNumber: 3,
+      },
     ])
   })
 
   it('should handle multiple queries on the same line', () => {
-    expect(getEditorQueries('SELECT * FROM users; SELECT * FROM posts;')).toEqual([
+    expect(
+      getEditorQueries('SELECT * FROM users; SELECT * FROM posts;')
+    ).toEqual([
       {
-        startLineNumber: 1,
         endLineNumber: 1,
         queries: ['SELECT * FROM users', 'SELECT * FROM posts'],
+        startLineNumber: 1,
       },
     ])
   })
@@ -104,12 +158,12 @@ DELETE FROM users WHERE id = 2;`),
     expect(
       getEditorQueries(`SELECT *
 FROM users
-WHERE id = 1; SELECT * FROM posts;`),
+WHERE id = 1; SELECT * FROM posts;`)
     ).toEqual([
       {
-        startLineNumber: 1,
         endLineNumber: 3,
         queries: ['SELECT * FROM users WHERE id = 1', 'SELECT * FROM posts'],
+        startLineNumber: 1,
       },
     ])
   })
@@ -117,15 +171,15 @@ WHERE id = 1; SELECT * FROM posts;`),
   it('should handle CREATE FUNCTION/procedure queries with $$...$$ bodies', () => {
     expect(
       getEditorQueries(
-        `CREATE OR REPLACE FUNCTION limpar_sessoes_expiradas () RETURNS void AS $$ BEGIN DELETE FROM public.sessions WHERE "expires" < NOW() - INTERVAL '1 day'; END; $$ LANGUAGE plpgsql;`,
-      ),
+        `CREATE OR REPLACE FUNCTION limpar_sessoes_expiradas () RETURNS void AS $$ BEGIN DELETE FROM public.sessions WHERE "expires" < NOW() - INTERVAL '1 day'; END; $$ LANGUAGE plpgsql;`
+      )
     ).toEqual([
       {
-        startLineNumber: 1,
         endLineNumber: 1,
         queries: [
           `CREATE OR REPLACE FUNCTION limpar_sessoes_expiradas () RETURNS void AS $$ BEGIN DELETE FROM public.sessions WHERE "expires" < NOW() - INTERVAL '1 day'; END; $$ LANGUAGE plpgsql`,
         ],
+        startLineNumber: 1,
       },
     ])
   })
@@ -135,14 +189,14 @@ WHERE id = 1; SELECT * FROM posts;`),
       getEditorQueries(`BEGIN
         UPDATE users SET active = false WHERE id = 1;
         INSERT INTO audit_log (user_id, action) VALUES (1, 'deactivate');
-      END;`),
+      END;`)
     ).toEqual([
       {
-        startLineNumber: 1,
         endLineNumber: 4,
         queries: [
           `BEGIN UPDATE users SET active = false WHERE id = 1; INSERT INTO audit_log (user_id, action) VALUES (1, 'deactivate'); END`,
         ],
+        startLineNumber: 1,
       },
     ])
   })
@@ -166,12 +220,14 @@ WHERE id = 1; SELECT * FROM posts;`),
     COMMIT;`
     const result = getEditorQueries(sql)
     expect(result).toHaveLength(1)
-    expect(result[0]!.startLineNumber).toBe(1)
-    expect(result[0]!.endLineNumber).toBeGreaterThan(1)
-    expect(result[0]!.queries).toHaveLength(1)
-    expect(result[0]!.queries[0]).toContain('BEGIN')
-    expect(result[0]!.queries[0]).toContain('COMMIT')
-    expect(result[0]!.queries[0]).toContain('DO $$')
-    expect(result[0]!.queries[0]).toContain('END $$')
+    const [firstQuery] = result
+    expect(firstQuery).toBeDefined()
+    expect(firstQuery?.startLineNumber).toBe(1)
+    expect(firstQuery?.endLineNumber).toBeGreaterThan(1)
+    expect(firstQuery?.queries).toHaveLength(1)
+    expect(firstQuery?.queries[0]).toContain('BEGIN')
+    expect(firstQuery?.queries[0]).toContain('COMMIT')
+    expect(firstQuery?.queries[0]).toContain('DO $$')
+    expect(firstQuery?.queries[0]).toContain('END $$')
   })
 })

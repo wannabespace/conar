@@ -12,16 +12,18 @@ export const create = orpc
       permissions: {
         '[string]': 'string[]',
       } as type.cast<{
-        [K in keyof typeof API_KEY_PERMISSIONS]: (typeof API_KEY_PERMISSIONS)[K][number][]
+        [
+          K in keyof typeof API_KEY_PERMISSIONS
+        ]: (typeof API_KEY_PERMISSIONS)[K][number][]
       }>,
-    }),
+    })
   )
   .handler(async ({ context, input }) => {
     const created = await auth.api.createApiKey({
       body: {
         name: input.name,
-        userId: context.user.id,
         permissions: input.permissions,
+        userId: context.user.id,
       },
     })
 

@@ -10,7 +10,7 @@ import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
 
 export * from './runner'
 
-function transformResult({
+const transformResult = ({
   rows,
   query,
   startLineNumber,
@@ -22,18 +22,16 @@ function transformResult({
 } & Pick<
   (typeof connectionResourceType.infer)['queriesToRun'][number],
   'query' | 'startLineNumber' | 'endLineNumber'
->) {
-  return {
-    data: rows as Record<string, unknown>[],
-    error: null,
-    query,
-    startLineNumber,
-    endLineNumber,
-    duration,
-  }
-}
+>) => ({
+  data: rows as Record<string, unknown>[],
+  error: null,
+  query,
+  startLineNumber,
+  endLineNumber,
+  duration,
+})
 
-function transformError({
+const transformError = ({
   error,
   query,
   startLineNumber,
@@ -45,18 +43,16 @@ function transformError({
 } & Pick<
   (typeof connectionResourceType.infer)['queriesToRun'][number],
   'query' | 'startLineNumber' | 'endLineNumber'
->) {
-  return {
-    data: null,
-    error: error instanceof Error ? error.message : String(error),
-    query,
-    startLineNumber,
-    endLineNumber,
-    duration,
-  }
-}
+>) => ({
+  data: null,
+  error: error instanceof Error ? error.message : String(error),
+  query,
+  startLineNumber,
+  endLineNumber,
+  duration,
+})
 
-export function runnerQueryOptions(connectionResource: ConnectionResource) {
+export const runnerQueryOptions = (connectionResource: ConnectionResource) => {
   const store = getConnectionResourceStore(connectionResource.id)
 
   return queryOptions({
@@ -64,9 +60,13 @@ export function runnerQueryOptions(connectionResource: ConnectionResource) {
     queryFn: async ({ signal }) => {
       const queries = store.get().queriesToRun
 
-      const results: (ReturnType<typeof transformResult> | ReturnType<typeof transformError>)[] = []
+      const results: (
+        | ReturnType<typeof transformResult>
+        | ReturnType<typeof transformError>
+      )[] = []
 
-      const queryParams = await connectionResourceToQueryParams(connectionResource)
+      const queryParams =
+        await connectionResourceToQueryParams(connectionResource)
 
       for (const { query, startLineNumber, endLineNumber } of queries) {
         if (signal.aborted) {
@@ -85,16 +85,24 @@ export function runnerQueryOptions(connectionResource: ConnectionResource) {
               startLineNumber,
               endLineNumber,
               duration: performance.now() - startTime,
-            }),
+            })
           )
         } catch (error) {
           const duration = performance.now() - startTime
-          results.push(transformError({ error, query, startLineNumber, endLineNumber, duration }))
+          results.push(
+            transformError({
+              error,
+              query,
+              startLineNumber,
+              endLineNumber,
+              duration,
+            })
+          )
         }
       }
 
       const queriesWithDangerousSqlKeywords = queries.filter(({ query }) =>
-        hasDangerousSqlKeywords(query),
+        hasDangerousSqlKeywords(query)
       )
 
       if (queriesWithDangerousSqlKeywords.length > 0) {
@@ -104,19 +112,19 @@ export function runnerQueryOptions(connectionResource: ConnectionResource) {
           toast.success(
             queriesWithDangerousSqlKeywords.length > 1
               ? 'All queries executed successfully!'
-              : 'Query executed successfully!',
+              : 'Query executed successfully!'
           )
-        } else if (errors.length !== results.length) {
-          toast.warning(
-            queriesWithDangerousSqlKeywords.length > 1
-              ? 'Some queries failed to execute!'
-              : 'Query failed to execute!',
-          )
-        } else {
+        } else if (errors.length === results.length) {
           toast.error(
             queriesWithDangerousSqlKeywords.length > 1
               ? 'All queries failed to execute!'
-              : 'Query failed to execute!',
+              : 'Query failed to execute!'
+          )
+        } else {
+          toast.warning(
+            queriesWithDangerousSqlKeywords.length > 1
+              ? 'Some queries failed to execute!'
+              : 'Query failed to execute!'
           )
         }
       }

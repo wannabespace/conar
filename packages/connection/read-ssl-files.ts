@@ -6,10 +6,15 @@ export interface BaseSSLConfig {
   ca?: unknown
 }
 
-export function readSSLFiles<T extends BaseSSLConfig>(ssl: T): T {
-  const cert = typeof ssl.cert === 'string' ? fs.readFileSync(ssl.cert).toString() : ssl.cert
-  const key = typeof ssl.key === 'string' ? fs.readFileSync(ssl.key).toString() : ssl.key
-  const ca = typeof ssl.ca === 'string' ? fs.readFileSync(ssl.ca).toString() : ssl.ca
+export const readSSLFiles = <T extends BaseSSLConfig>(ssl: T): T => {
+  const cert =
+    typeof ssl.cert === 'string'
+      ? fs.readFileSync(ssl.cert).toString()
+      : ssl.cert
+  const key =
+    typeof ssl.key === 'string' ? fs.readFileSync(ssl.key).toString() : ssl.key
+  const ca =
+    typeof ssl.ca === 'string' ? fs.readFileSync(ssl.ca).toString() : ssl.ca
 
   return {
     ...ssl,

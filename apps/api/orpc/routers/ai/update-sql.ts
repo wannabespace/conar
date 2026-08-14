@@ -9,18 +9,17 @@ export const updateSQL = orpc
   .use(subscriptionMiddleware)
   .input(
     type({
-      sql: 'string',
-      prompt: 'string',
-      type: type.valueOf(ConnectionType),
       context: 'string',
-    }),
+      prompt: 'string',
+      sql: 'string',
+      type: type.valueOf(ConnectionType),
+    })
   )
   .handler(async ({ input, signal }) => {
     const { text } = await generateText({
-      model: anthropic('claude-opus-4-6'),
+      abortSignal: signal,
       messages: [
         {
-          role: 'system',
           content: [
             'You are an assistant that helps update SQL queries.',
             `The database type is "${input.type}".`,
@@ -35,21 +34,26 @@ export const updateSQL = orpc
             'Database context:',
             input.context,
           ].join('\n'),
+          role: 'system',
         },
         {
-          role: 'user',
           content: [
             '=======SELECTED SQL QUERY=======',
             input.sql,
             '=======END OF SELECTED SQL QUERY=======',
           ].join('\n'),
+          role: 'user',
         },
         {
+          content: [
+            '=======PROMPT=======',
+            input.prompt,
+            '=======END OF PROMPT=======',
+          ].join('\n'),
           role: 'user',
-          content: ['=======PROMPT=======', input.prompt, '=======END OF PROMPT======='].join('\n'),
         },
       ],
-      abortSignal: signal,
+      model: anthropic('claude-opus-4-6'),
     })
 
     return text

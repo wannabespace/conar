@@ -1,12 +1,17 @@
 import * as React from 'react'
 
 // oxlint-disable-next-line ts/no-explicit-any
-export function useDebouncedCallback<T extends (...args: any[]) => any>(
+export const useDebouncedCallback = <T extends (...args: any[]) => any>(
   fn: T,
-  deps: React.DependencyList,
-  delay: number,
-): (...args: Parameters<T>) => void {
+  _deps: React.DependencyList,
+  delay: number
+): ((...args: Parameters<T>) => void) => {
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+  const fnRef = React.useRef(fn)
+
+  React.useEffect(() => {
+    fnRef.current = fn
+  })
 
   const debouncedFn = React.useCallback(
     (...args: Parameters<T>) => {
@@ -15,15 +20,10 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
       }
 
       timerRef.current = setTimeout(() => {
-        fn(...args)
+        fnRef.current(...args)
       }, delay)
     },
-    [
-      fn,
-      delay,
-      // oxlint-disable-next-line react/exhaustive-deps
-      ...deps,
-    ],
+    [delay]
   )
 
   React.useEffect(
@@ -32,7 +32,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
         clearTimeout(timerRef.current)
       }
     },
-    [],
+    []
   )
 
   return debouncedFn

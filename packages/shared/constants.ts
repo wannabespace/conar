@@ -3,9 +3,9 @@ import { ConnectionType } from './enums/connection-type'
 export { PORTS } from './ports'
 
 export const SOCIAL_LINKS = {
+  DISCORD: 'https://discord.gg/XweDPUVadR',
   GITHUB: 'https://github.com/wannabespace/tamery',
   TWITTER: 'https://x.com/tamery_app',
-  DISCORD: 'https://discord.gg/XweDPUVadR',
 } as const
 
 export const RELEASES_URL = 'https://tamery.app/releases' as const
@@ -36,17 +36,25 @@ export const LATEST_VERSION_BEFORE_SUBSCRIPTION = 26 as const
 
 export const SUBSCRIPTION_PAST_DUE_MESSAGE =
   "We couldn't process your recent payment. Please update your payment method to avoid any interruption to your subscription." as const
-export const ACTIVE_SUBSCRIPTION_STATUSES = ['active', 'trialing', 'past_due'] as const
+export const ACTIVE_SUBSCRIPTION_STATUSES = [
+  'active',
+  'trialing',
+  'past_due',
+] as const
 
 export const FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT = 50 as const
 
-export const CONNECTION_RESOURCE_ROOT_SYMBOL = Symbol('CONNECTION_RESOURCE_ROOT')
+export const CONNECTION_RESOURCE_ROOT_SYMBOL = Symbol(
+  'CONNECTION_RESOURCE_ROOT'
+)
 export const CONNECTION_RESOURCE_ROOT_LABEL = 'root' as const
 export const CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES: ConnectionType[] = [
   ConnectionType.MSSQL,
   ConnectionType.ClickHouse,
 ]
-export const CONNECTION_TYPES_WITHOUT_SCHEMAS: ConnectionType[] = [ConnectionType.ClickHouse]
+export const CONNECTION_TYPES_WITHOUT_SCHEMAS: ConnectionType[] = [
+  ConnectionType.ClickHouse,
+]
 export const CONNECTION_TYPES_WITH_EXPLAIN: ConnectionType[] = [
   ConnectionType.Postgres,
   ConnectionType.MySQL,
@@ -61,7 +69,9 @@ export const CONNECTION_TYPES_WITH_FUNCTIONS: ConnectionType[] = [
   ConnectionType.MySQL,
   ConnectionType.MSSQL,
 ]
-export const CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME: ConnectionType[] = [ConnectionType.ClickHouse]
+export const CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME: ConnectionType[] = [
+  ConnectionType.ClickHouse,
+]
 
 export const RECONNECT_ERROR_PATTERNS = [
   'econnreset',

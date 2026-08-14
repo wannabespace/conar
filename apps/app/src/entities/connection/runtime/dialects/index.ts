@@ -1,7 +1,12 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { PORTS } from '@tamery/shared/ports'
 import type { AnyFunction } from '@tamery/shared/utils/helpers'
-import type { CompiledQuery, DatabaseConnection, Driver, QueryResult } from 'kysely'
+import type {
+  CompiledQuery,
+  DatabaseConnection,
+  Driver,
+  QueryResult,
+} from 'kysely'
 import { Kysely } from 'kysely'
 import { memoize } from 'memoza'
 
@@ -33,9 +38,13 @@ export interface DialectOptions {
   }) => void
 }
 
-function resolveProxyIdParams(options: DialectOptions) {
-  if (options.resourceId) return { resourceId: options.resourceId }
-  if (options.connectionId) return { connectionId: options.connectionId }
+const resolveProxyIdParams = (options: DialectOptions) => {
+  if (options.resourceId) {
+    return { resourceId: options.resourceId }
+  }
+  if (options.connectionId) {
+    return { connectionId: options.connectionId }
+  }
   return { connectionString: options.connectionString }
 }
 
@@ -48,57 +57,72 @@ interface TxQueryPayload extends QueryPayload {
   txId: string
 }
 
-export function createDialectProvider(type: ConnectionType, options: DialectOptions) {
-  const { connectionsCollection, connectionsResourcesCollection } = getCollections()
+export const createDialectProvider = (
+  type: ConnectionType,
+  options: DialectOptions
+) => {
+  const { connectionsCollection, connectionsResourcesCollection } =
+    getCollections()
   const resource = options.resourceId
     ? connectionsResourcesCollection.get(options.resourceId)
     : null
   const connectionId = options.connectionId || resource?.connectionId
-  const connection = connectionId ? connectionsCollection.get(connectionId) : null
+  const connection = connectionId
+    ? connectionsCollection.get(connectionId)
+    : null
 
-  function resolveTransport() {
+  const resolveTransport = () => {
     const proxy = connectionId
       ? getConnectionStore(connectionId).get().proxy
       : { enabled: false, url: null }
     const config = connection ? fetchingConfig(connection, { proxy }) : null
 
     if (config?.type === 'proxy') {
-      const client = createProxyClient(proxy.url || `http://localhost:${PORTS.LOCAL_PROXY}`)
+      const client = createProxyClient(
+        proxy.url || `http://localhost:${PORTS.LOCAL_PROXY}`
+      )
       return { kind: 'proxy' as const, proxy: client[type] }
     }
 
     const electron = window.electron?.query[type]
     if (electron) {
-      return { kind: 'electron' as const, electron }
+      return { electron, kind: 'electron' as const }
     }
 
     return { kind: 'cloud-proxy' as const, proxy: orpcProxy.query[type] }
   }
 
   return {
-    execute(payload: QueryPayload) {
-      const t = resolveTransport()
-      if (t.kind === 'electron')
-        return t.electron.execute({ connectionString: options.connectionString, ...payload })
-      return t.proxy.execute({ ...resolveProxyIdParams(options), ...payload })
-    },
     beginTransaction() {
       const t = resolveTransport()
-      if (t.kind === 'electron')
-        return t.electron.beginTransaction({ connectionString: options.connectionString })
+      if (t.kind === 'electron') {
+        return t.electron.beginTransaction({
+          connectionString: options.connectionString,
+        })
+      }
       return t.proxy.beginTransaction(resolveProxyIdParams(options))
-    },
-    executeTransaction(params: TxQueryPayload) {
-      const t = resolveTransport()
-      return t.kind === 'electron'
-        ? t.electron.executeTransaction(params)
-        : t.proxy.executeTransaction(params)
     },
     commitTransaction(params: { txId: string }) {
       const t = resolveTransport()
       return t.kind === 'electron'
         ? t.electron.commitTransaction(params)
         : t.proxy.commitTransaction(params)
+    },
+    execute(payload: QueryPayload) {
+      const t = resolveTransport()
+      if (t.kind === 'electron') {
+        return t.electron.execute({
+          connectionString: options.connectionString,
+          ...payload,
+        })
+      }
+      return t.proxy.execute({ ...resolveProxyIdParams(options), ...payload })
+    },
+    executeTransaction(params: TxQueryPayload) {
+      const t = resolveTransport()
+      return t.kind === 'electron'
+        ? t.electron.executeTransaction(params)
+        : t.proxy.executeTransaction(params)
     },
     rollbackTransaction(params: { txId: string }) {
       const t = resolveTransport()
@@ -109,10 +133,10 @@ export function createDialectProvider(type: ConnectionType, options: DialectOpti
   }
 }
 
-export function createKyselyDriver({
+export const createKyselyDriver = ({
   provider,
   logger,
-  transformQuery = compiledQuery => ({
+  transformQuery = (compiledQuery) => ({
     query: compiledQuery.sql,
     values: compiledQuery.parameters as unknown[],
   }),
@@ -120,29 +144,38 @@ export function createKyselyDriver({
   provider: ReturnType<typeof createDialectProvider>
   logger?: DialectOptions['log']
   transformQuery?: (compiledQuery: CompiledQuery) => QueryPayload
-}) {
+}) => {
   const txStates = new WeakMap<DatabaseConnection, { txId: string | null }>()
 
-  function executeAndLog(compiledQuery: CompiledQuery) {
+  const executeAndLog = (compiledQuery: CompiledQuery) => {
     const payload = transformQuery(compiledQuery)
     const promise = provider.execute(payload)
-    logger?.({ promise, query: compiledQuery.sql, values: compiledQuery.parameters as unknown[] })
+    logger?.({
+      promise,
+      query: compiledQuery.sql,
+      values: compiledQuery.parameters as unknown[],
+    })
     return promise
   }
 
-  function executeInTxAndLog(txId: string, compiledQuery: CompiledQuery) {
+  const executeInTxAndLog = (txId: string, compiledQuery: CompiledQuery) => {
     const payload = transformQuery(compiledQuery)
     const promise = provider.executeTransaction({ txId, ...payload })
-    logger?.({ promise, query: compiledQuery.sql, values: compiledQuery.parameters as unknown[] })
+    logger?.({
+      promise,
+      query: compiledQuery.sql,
+      values: compiledQuery.parameters as unknown[],
+    })
     return promise
   }
 
   return {
-    async init() {},
-    async acquireConnection() {
+    acquireConnection() {
       const state: { txId: string | null } = { txId: null }
       const connection: DatabaseConnection = {
-        executeQuery: async <R>(compiledQuery: CompiledQuery): Promise<QueryResult<R>> => {
+        executeQuery: async <R>(
+          compiledQuery: CompiledQuery
+        ): Promise<QueryResult<R>> => {
           const { result } = state.txId
             ? await executeInTxAndLog(state.txId, compiledQuery)
             : await executeAndLog(compiledQuery)
@@ -153,61 +186,79 @@ export function createKyselyDriver({
         },
       }
       txStates.set(connection, state)
-      return connection
+      return Promise.resolve(connection)
     },
     async beginTransaction(connection) {
       const state = txStates.get(connection)
-      if (!state) throw new Error('Transaction state missing for acquired connection')
+      if (!state) {
+        throw new Error('Transaction state missing for acquired connection')
+      }
 
       const { txId } = await provider.beginTransaction()
       state.txId = txId
     },
     async commitTransaction(connection) {
       const state = txStates.get(connection)
-      if (!state?.txId) return
+      if (!state?.txId) {
+        return
+      }
       const { txId } = state
       state.txId = null
       await provider.commitTransaction({ txId })
     },
+    destroy() {
+      return Promise.resolve()
+    },
+    init() {
+      return Promise.resolve()
+    },
+    async releaseConnection(connection) {
+      const state = txStates.get(connection)
+      if (!state?.txId) {
+        return
+      }
+      const { txId } = state
+      state.txId = null
+      try {
+        await provider.rollbackTransaction({ txId })
+      } catch {
+        void 0
+      }
+    },
     async rollbackTransaction(connection) {
       const state = txStates.get(connection)
-      if (!state?.txId) return
+      if (!state?.txId) {
+        return
+      }
       const { txId } = state
       state.txId = null
       await provider.rollbackTransaction({ txId })
     },
-    async releaseConnection(connection) {
-      const state = txStates.get(connection)
-      if (!state?.txId) return
-      // Edge case: tx was never committed/rolled back explicitly.
-      const { txId } = state
-      state.txId = null
-      await provider.rollbackTransaction({ txId }).catch(() => {})
-    },
-    async destroy() {},
   } satisfies Driver
 }
 
 export const dialects = {
-  postgres: memoize(
-    (options: DialectOptions) =>
-      new Kysely<PostgresDatabase>({ dialect: postgresDialect(options) }),
-  ),
-  mysql: memoize(
-    (options: DialectOptions) => new Kysely<MysqlDatabase>({ dialect: mysqlDialect(options) }),
-  ),
   clickhouse: memoize(
     (options: DialectOptions) =>
-      new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(options) }),
+      new Kysely<ClickhouseDatabase>({ dialect: clickhouseDialect(options) })
   ),
   mssql: memoize(
-    (options: DialectOptions) => new Kysely<MssqlDatabase>({ dialect: mssqlDialect(options) }),
+    (options: DialectOptions) =>
+      new Kysely<MssqlDatabase>({ dialect: mssqlDialect(options) })
+  ),
+  mysql: memoize(
+    (options: DialectOptions) =>
+      new Kysely<MysqlDatabase>({ dialect: mysqlDialect(options) })
+  ),
+  postgres: memoize(
+    (options: DialectOptions) =>
+      new Kysely<PostgresDatabase>({ dialect: postgresDialect(options) })
   ),
 } satisfies Record<ConnectionType, AnyFunction>
 
 export const coldDialects = {
-  postgres: memoize(() => new Kysely({ dialect: postgresColdDialect() })),
-  mysql: memoize(() => new Kysely({ dialect: mysqlColdDialect() })),
   clickhouse: memoize(() => new Kysely({ dialect: clickhouseColdDialect() })),
   mssql: memoize(() => new Kysely({ dialect: mssqlColdDialect() })),
+  mysql: memoize(() => new Kysely({ dialect: mysqlColdDialect() })),
+  postgres: memoize(() => new Kysely({ dialect: postgresColdDialect() })),
 } satisfies Record<ConnectionType, AnyFunction>

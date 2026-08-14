@@ -1,6 +1,6 @@
 import { createQuery } from '../runtime/query'
 
-export function insertQuery({
+export const insertQuery = ({
   schema,
   table,
   rows,
@@ -8,37 +8,36 @@ export function insertQuery({
   schema: string
   table: string
   rows: Record<string, unknown>[]
-}) {
-  return createQuery({
+}) =>
+  createQuery({
     query: {
-      postgres: db =>
+      clickhouse: (db) =>
         db
           .withSchema(schema)
-          .$extendTables<{ [table: string]: Record<string, unknown> }>()
+          .$extendTables<Record<string, Record<string, unknown>>>()
           .insertInto(table)
           .values(rows)
           .execute(),
-      mysql: db =>
+      mssql: (db) =>
         db
           .withSchema(schema)
-          .$extendTables<{ [table: string]: Record<string, unknown> }>()
+          .$extendTables<Record<string, Record<string, unknown>>>()
           .insertInto(table)
           .values(rows)
           .execute(),
-      mssql: db =>
+      mysql: (db) =>
         db
           .withSchema(schema)
-          .$extendTables<{ [table: string]: Record<string, unknown> }>()
+          .$extendTables<Record<string, Record<string, unknown>>>()
           .insertInto(table)
           .values(rows)
           .execute(),
-      clickhouse: db =>
+      postgres: (db) =>
         db
           .withSchema(schema)
-          .$extendTables<{ [table: string]: Record<string, unknown> }>()
+          .$extendTables<Record<string, Record<string, unknown>>>()
           .insertInto(table)
           .values(rows)
           .execute(),
     },
   })
-}

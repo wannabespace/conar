@@ -6,7 +6,7 @@ const IV_LENGTH = 12
 const KEY_LENGTH = 32
 const SALT_LENGTH = 16
 
-export function encrypt({ text, secret }: { text: string; secret: string }) {
+export const encrypt = ({ text, secret }: { text: string; secret: string }) => {
   const iv = crypto.randomBytes(IV_LENGTH)
   const salt = crypto.randomBytes(SALT_LENGTH)
 
@@ -14,7 +14,7 @@ export function encrypt({ text, secret }: { text: string; secret: string }) {
 
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv)
   const encrypted = Buffer.concat([
-    cipher.update(text, 'utf8'),
+    cipher.update(text, 'utf-8'),
     cipher.final(),
     cipher.getAuthTag(),
   ])
@@ -22,7 +22,13 @@ export function encrypt({ text, secret }: { text: string; secret: string }) {
   return `${iv.toString('hex')}.${encrypted.toString('hex')}.${salt.toString('hex')}`
 }
 
-export function decrypt({ encryptedText, secret }: { encryptedText: string; secret: string }) {
+export const decrypt = ({
+  encryptedText,
+  secret,
+}: {
+  encryptedText: string
+  secret: string
+}) => {
   try {
     const [ivBase64, encryptedBase64, saltBase64] = encryptedText.split('.')
 
@@ -34,14 +40,17 @@ export function decrypt({ encryptedText, secret }: { encryptedText: string; secr
     const encrypted = Buffer.from(encryptedBase64, 'hex')
     const salt = Buffer.from(saltBase64, 'hex')
 
-    const authTag = encrypted.subarray(encrypted.length - 16)
-    const ciphertext = encrypted.subarray(0, encrypted.length - 16)
+    const authTag = encrypted.subarray(-16)
+    const ciphertext = encrypted.subarray(0, -16)
 
     const key = crypto.pbkdf2Sync(secret, salt, 1, KEY_LENGTH, 'sha256')
     const decipher = crypto.createDecipheriv(ALGORITHM, key, iv)
     decipher.setAuthTag(authTag)
 
-    return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8')
+    return Buffer.concat([
+      decipher.update(ciphertext),
+      decipher.final(),
+    ]).toString('utf-8')
   } catch {
     throw new Error('Failed to decrypt text')
   }

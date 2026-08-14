@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@tamery/ui/components/select'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import type { functionsType } from '~/entities/connection/queries'
@@ -27,26 +27,9 @@ import { SchemaSelect } from '../-components/schema-select'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
-export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/functions/')({
-  component: DatabaseFunctionsPage,
-  loader: ({ context }) => ({
-    connection: context.connection,
-    connectionResource: context.connectionResource,
-  }),
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          {
-            title: title(
-              'Functions',
-              loaderData.connection.name,
-              loaderData.connectionResource.name,
-            ),
-          },
-        ]
-      : [],
-  }),
-})
+const functionsRouteApi = getRouteApi(
+  '/_protected/connection/$resourceId/definitions/functions/'
+)
 
 type FunctionType = (typeof functionsType.infer)['type']
 
@@ -56,8 +39,8 @@ const typeFilterOptions: { label: string; value: FunctionType | 'all' }[] = [
   { label: 'Procedure', value: 'procedure' },
 ]
 
-function DatabaseFunctionsPage() {
-  const { connectionResource } = Route.useRouteContext()
+const DatabaseFunctionsPage = () => {
+  const { connectionResource } = functionsRouteApi.useRouteContext()
   const {
     data: functions,
     refetch,
@@ -65,22 +48,25 @@ function DatabaseFunctionsPage() {
     isPending,
     dataUpdatedAt,
   } = useQuery(resourceFunctionsQueryOptions({ connectionResource }))
-  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({
-    connectionResource,
-  })
-  const [filterType, setFilterType] = useState<(typeof typeFilterOptions)[number]['value']>('all')
+  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
+    useDefinitionsState({
+      connectionResource,
+    })
+  const [filterType, setFilterType] =
+    useState<(typeof typeFilterOptions)[number]['value']>('all')
 
   useRefreshHotkey(refetch, isFetching)
 
   const filteredFunctions =
     functions?.filter(
-      item =>
+      (item) =>
         item.schema === selectedSchema &&
         (filterType === 'all' || filterType === item.type) &&
         (!search ||
           item.name.toLowerCase().includes(search.toLowerCase()) ||
           item.language?.toLowerCase().includes(search.toLowerCase()) ||
-          (item.return_type && item.return_type.toLowerCase().includes(search.toLowerCase()))),
+          (item.return_type &&
+            item.return_type.toLowerCase().includes(search.toLowerCase())))
     ) ?? []
 
   return (
@@ -97,12 +83,12 @@ function DatabaseFunctionsPage() {
           placeholder="Search functions"
           autoFocus
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
         <Select
           value={filterType}
-          onValueChange={v => {
+          onValueChange={(v) => {
             if (v) {
               setFilterType(v)
             }
@@ -110,15 +96,16 @@ function DatabaseFunctionsPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Type">
-              {value =>
+              {(value) =>
                 value
-                  ? typeFilterOptions.find(option => option.value === value)?.label
+                  ? typeFilterOptions.find((option) => option.value === value)
+                      ?.label
                   : 'Filter Type'
               }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {typeFilterOptions.map(option => (
+            {typeFilterOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -139,7 +126,7 @@ function DatabaseFunctionsPage() {
           />
         )}
 
-        {filteredFunctions.map(item => (
+        {filteredFunctions.map((item) => (
           <CardMotion
             key={`${item.schema}-${item.name}-${item.type}`}
             layout
@@ -149,17 +136,13 @@ function DatabaseFunctionsPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="mb-2 flex items-center gap-2 text-base">
-                    <RiCodeSSlashLine className="size-4 text-primary" />
+                    <RiCodeSSlashLine className="text-primary size-4" />
                     <HighlightText text={item.name} match={search} />
                     <Badge variant="secondary">
                       {item.type === 'function' ? 'Function' : 'Procedure'}
                     </Badge>
                   </CardTitle>
-                  <div
-                    className="
-                    flex items-center gap-1.5 text-sm text-muted-foreground
-                  "
-                  >
+                  <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
                     {item.language && (
                       <Badge variant="outline">
                         <HighlightText text={item.language} match={search} />
@@ -169,13 +152,17 @@ function DatabaseFunctionsPage() {
                       <>
                         <span>returns</span>
                         <Badge variant="outline">
-                          <HighlightText text={item.return_type} match={search} />
+                          <HighlightText
+                            text={item.return_type}
+                            match={search}
+                          />
                         </Badge>
                       </>
                     )}
                     {!!item.argumentCount && (
                       <span>
-                        {item.argumentCount} {item.argumentCount === 1 ? 'arg' : 'args'}
+                        {item.argumentCount}{' '}
+                        {item.argumentCount === 1 ? 'arg' : 'args'}
                       </span>
                     )}
                   </div>
@@ -188,3 +175,26 @@ function DatabaseFunctionsPage() {
     </>
   )
 }
+
+export const Route = createFileRoute(
+  '/_protected/connection/$resourceId/definitions/functions/'
+)({
+  component: DatabaseFunctionsPage,
+  loader: ({ context }) => ({
+    connection: context.connection,
+    connectionResource: context.connectionResource,
+  }),
+  head: ({ loaderData }) => ({
+    meta: loaderData
+      ? [
+          {
+            title: title(
+              'Functions',
+              loaderData.connection.name,
+              loaderData.connectionResource.name
+            ),
+          },
+        ]
+      : [],
+  }),
+})

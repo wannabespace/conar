@@ -2,7 +2,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { AnimatePresence, motion } from 'motion/react'
 import { useCallback, useEffect, useState } from 'react'
 
-export function FlipWords({
+export const FlipWords = ({
   words,
   duration = 3000,
   className,
@@ -10,13 +10,13 @@ export function FlipWords({
   words: string[]
   duration?: number
   className?: string
-}) {
-  const [currentWord, setCurrentWord] = useState(words[0]!)
+}) => {
+  const [currentWord, setCurrentWord] = useState(() => words[0] ?? '')
   const [isAnimating, setIsAnimating] = useState(false)
 
   const startAnimation = useCallback(() => {
-    const word = words[words.indexOf(currentWord) + 1] || words[0]
-    setCurrentWord(word!)
+    const word = words[words.indexOf(currentWord) + 1] ?? words[0] ?? ''
+    setCurrentWord(word)
     setIsAnimating(true)
   }, [currentWord, words])
 
@@ -40,33 +40,36 @@ export function FlipWords({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{
-          opacity: 0,
           filter: 'blur(4px)',
-          scale: 0.8,
+          opacity: 0,
           position: 'absolute',
+          scale: 0.8,
         }}
         transition={{ duration: 0.5 }}
-        className={cn(`relative z-10 inline-block px-2 text-left text-foreground`, className)}
+        className={cn(
+          `text-foreground relative z-10 inline-block px-2 text-left`,
+          className
+        )}
         key={currentWord}
       >
         {currentWord.split(' ').map((word, wordIndex) => (
           <motion.span
             // oxlint-disable-next-line react/no-array-index-key
             key={word + wordIndex}
-            initial={{ opacity: 0, y: 10, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            initial={{ filter: 'blur(8px)', opacity: 0, y: 10 }}
+            animate={{ filter: 'blur(0px)', opacity: 1, y: 0 }}
             transition={{
               delay: wordIndex * 0.3,
               duration: 0.3,
             }}
             className="inline-block whitespace-nowrap"
           >
-            {word.split('').map((letter, letterIndex) => (
+            {[...word].map((letter, letterIndex) => (
               <motion.span
                 // oxlint-disable-next-line react/no-array-index-key
                 key={word + letterIndex}
-                initial={{ opacity: 0, y: 10, filter: 'blur(8px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                initial={{ filter: 'blur(8px)', opacity: 0, y: 10 }}
+                animate={{ filter: 'blur(0px)', opacity: 1, y: 0 }}
                 transition={{
                   delay: wordIndex * 0.3 + letterIndex * 0.05,
                   duration: 0.2,

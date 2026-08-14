@@ -1,45 +1,47 @@
 import { AnimatePresence } from 'motion/react'
 import type { ReactNode } from 'react'
 
-function Skeleton() {
-  return (
-    <div className="space-y-4">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div
-          // oxlint-disable-next-line react/no-array-index-key
-          key={i}
-          className={`flex w-full flex-col gap-3 rounded-xl border border-border/40 bg-muted/10 p-4`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="size-5 animate-pulse rounded-md bg-muted/20" />
-              <div className="h-5 w-48 animate-pulse rounded-md bg-muted/20" />
-              <div className="h-5 w-20 animate-pulse rounded-full bg-muted/20" />
-            </div>
-            <div className="h-5 w-24 animate-pulse rounded-full bg-muted/20" />
+const Skeleton = () => (
+  <div className="space-y-4">
+    {Array.from({ length: 3 }).map((_, i) => (
+      <div
+        // oxlint-disable-next-line react/no-array-index-key
+        key={i}
+        className="border-border/40 bg-muted/10 flex w-full flex-col gap-3 rounded-xl border p-4"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-muted/20 size-5 animate-pulse rounded-md" />
+            <div className="bg-muted/20 h-5 w-48 animate-pulse rounded-md" />
+            <div className="bg-muted/20 h-5 w-20 animate-pulse rounded-full" />
           </div>
-          <div className="pl-8">
-            <div className="flex gap-2">
-              <div className="h-5 w-16 animate-pulse rounded-md bg-muted/20" />
-              <div className="h-5 w-24 animate-pulse rounded-md bg-muted/20" />
-            </div>
+          <div className="bg-muted/20 h-5 w-24 animate-pulse rounded-full" />
+        </div>
+        <div className="pl-8">
+          <div className="flex gap-2">
+            <div className="bg-muted/20 h-5 w-16 animate-pulse rounded-md" />
+            <div className="bg-muted/20 h-5 w-24 animate-pulse rounded-md" />
           </div>
         </div>
-      ))}
-    </div>
-  )
-}
+      </div>
+    ))}
+  </div>
+)
 
-export function DefinitionsGrid({ loading, children }: { loading: boolean; children: ReactNode }) {
-  return (
-    <div data-mask className="mt-2 grid grid-cols-1 gap-4">
-      {loading ? (
-        <Skeleton />
-      ) : (
-        <AnimatePresence initial={false} mode="popLayout">
-          {children}
-        </AnimatePresence>
-      )}
-    </div>
-  )
-}
+export const DefinitionsGrid = ({
+  loading,
+  children,
+}: {
+  loading: boolean
+  children: ReactNode
+}) => (
+  <div data-mask className="mt-2 grid grid-cols-1 gap-4">
+    {loading ? (
+      <Skeleton />
+    ) : (
+      <AnimatePresence initial={false} mode="popLayout">
+        {children}
+      </AnimatePresence>
+    )}
+  </div>
+)

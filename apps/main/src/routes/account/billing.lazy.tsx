@@ -25,19 +25,16 @@ import { format } from 'date-fns'
 import { useBillingPortal } from '~/hooks/use-subscription'
 import { orpc } from '~/lib/orpc'
 
-export const Route = createLazyFileRoute('/account/billing')({
-  component: RouteComponent,
-})
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-US', {
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
   }).format(amount / 100)
-}
 
-function RouteComponent() {
-  const { data: invoices = [], isPending } = useQuery(orpc.account.invoices.queryOptions())
+const RouteComponent = () => {
+  const { data: invoices = [], isPending } = useQuery(
+    orpc.account.invoices.queryOptions()
+  )
   const router = useRouter()
   const returnHref = router.buildLocation({ to: '/account/billing' }).href
   const { openBillingPortal, isOpening } = useBillingPortal({ returnHref })
@@ -45,7 +42,9 @@ function RouteComponent() {
   return (
     <>
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-semibold tracking-tight">Billing & Invoices</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">
+          Billing & Invoices
+        </h2>
         <Button
           variant="outline"
           size="sm"
@@ -65,7 +64,9 @@ function RouteComponent() {
         </CardHeader>
         <CardContent>
           {!isPending && invoices.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground">No invoices found</div>
+            <div className="text-muted-foreground py-8 text-center">
+              No invoices found
+            </div>
           ) : (
             <Table>
               <TableHeader>
@@ -97,7 +98,7 @@ function RouteComponent() {
                         </TableCell>
                       </TableRow>
                     ))
-                  : invoices.map(invoice => (
+                  : invoices.map((invoice) => (
                       <TableRow key={invoice.id}>
                         <TableCell style={{ width: '35%' }}>
                           {format(invoice.createdAt, 'MMMM d, yyyy')}
@@ -115,11 +116,7 @@ function RouteComponent() {
                                 href={invoice.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={`
-                                            flex items-center gap-1
-                                            text-foreground
-                                            hover:underline
-                                          `}
+                                className="text-foreground flex items-center gap-1 hover:underline"
                               >
                                 View
                                 <RiExternalLinkLine className="size-3" />
@@ -137,3 +134,7 @@ function RouteComponent() {
     </>
   )
 }
+
+export const Route = createLazyFileRoute('/account/billing')({
+  component: RouteComponent,
+})

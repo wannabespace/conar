@@ -12,19 +12,23 @@ import {
   CONNECTION_TYPES_WITH_TRIGGERS,
 } from '@tamery/shared/constants'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { getRouteApi } from '@tanstack/react-router'
 
 import { SidebarLink } from '~/components/sidebar-link'
 import type { Connection } from '~/entities/connection/core'
 import type { FileRoutesByTo } from '~/routeTree.gen'
 
-import { Route } from '../../definitions'
+const { useRouteContext } = getRouteApi(
+  '/_protected/connection/$resourceId/definitions'
+)
 
-function sidebarItems(connection: Connection) {
-  return [
+const sidebarItems = (connection: Connection) =>
+  [
     {
       to: '/connection/$resourceId/definitions/enums',
       Icon: RiListUnordered,
-      label: connection.type === ConnectionType.MySQL ? 'Enums & Sets' : 'Enums',
+      label:
+        connection.type === ConnectionType.MySQL ? 'Enums & Sets' : 'Enums',
     },
     {
       to: '/connection/$resourceId/definitions/indexes',
@@ -59,25 +63,27 @@ function sidebarItems(connection: Connection) {
           },
         ]
       : []),
-  ] satisfies { Icon: RemixiconComponentType; label: string; to: keyof FileRoutesByTo }[]
-}
+  ] satisfies {
+    Icon: RemixiconComponentType
+    label: string
+    to: keyof FileRoutesByTo
+  }[]
 
-export function Sidebar() {
-  const { connection, connectionResource } = Route.useRouteContext()
+export const Sidebar = () => {
+  const { connection, connectionResource } = useRouteContext()
 
   return (
     <aside className="flex h-full w-52 shrink-0 flex-col">
-      <div
-        className="
-          px-3 pt-3 pb-1.5 text-2xs font-semibold tracking-wider
-          text-muted-foreground uppercase select-none
-        "
-      >
+      <div className="text-2xs text-muted-foreground px-3 pt-3 pb-1.5 font-semibold tracking-wider uppercase select-none">
         Definitions
       </div>
       <nav className="flex flex-col gap-0.5 px-2">
         {sidebarItems(connection).map(({ to, Icon, label }) => (
-          <SidebarLink key={to} to={to} params={{ resourceId: connectionResource.id }}>
+          <SidebarLink
+            key={to}
+            to={to}
+            params={{ resourceId: connectionResource.id }}
+          >
             <Icon />
             {label}
           </SidebarLink>

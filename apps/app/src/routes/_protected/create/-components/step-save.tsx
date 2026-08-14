@@ -14,15 +14,20 @@ import { Checkbox } from '@tamery/ui/components/checkbox'
 import { Group } from '@tamery/ui/components/group'
 import { Input } from '@tamery/ui/components/input'
 import { Label } from '@tamery/ui/components/label'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { useLiveQuery } from '@tanstack/react-db'
+import type { CSSProperties } from 'react'
 import { useId } from 'react'
 
 import { ConnectionDetails } from '~/components/connection-details'
 import { useCollections } from '~/entities/collections'
 
-export function StepSave({
+export const StepSave = ({
   type,
   name,
   connectionString,
@@ -46,18 +51,21 @@ export function StepSave({
   setLabel: (label: string | null) => void
   color: string | null
   setColor: (color: string | null) => void
-}) {
+}) => {
   const { connectionsCollection } = useCollections()
   const { data: connections } = useLiveQuery(
-    q =>
+    (q) =>
       q
         .from({ connections: connectionsCollection })
-        .orderBy(({ connections }) => connections.createdAt, 'desc'),
-    [connectionsCollection],
+        .orderBy(
+          ({ connections: connectionRows }) => connectionRows.createdAt,
+          'desc'
+        ),
+    [connectionsCollection]
   )
   const existingLabels = connections
-    .map(connection => connection.label)
-    .filter((label): label is string => label !== null)
+    .map((connection) => connection.label)
+    .filter((existingLabel): existingLabel is string => existingLabel !== null)
   const labels = [...new Set([...LABEL_OPTIONS, ...existingLabels])].toSorted()
   const nameId = useId()
   const labelId = useId()
@@ -69,7 +77,11 @@ export function StepSave({
         <CardDescription>Save the connection to your account.</CardDescription>
       </CardHeader>
       <CardContent>
-        <ConnectionDetails className="mb-6" type={type} connectionString={connectionString} />
+        <ConnectionDetails
+          className="mb-6"
+          type={type}
+          connectionString={connectionString}
+        />
         <div className="flex flex-col gap-6">
           <div>
             <Label htmlFor={nameId} className="mb-2">
@@ -83,24 +95,34 @@ export function StepSave({
                 placeholder="My connection"
                 autoFocus
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={(e) => setName(e.target.value)}
               />
               <Tooltip>
                 <TooltipTrigger
                   render={
-                    <Button type="button" variant="outline" size="icon" onClick={onRandomName} />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={onRandomName}
+                    />
                   }
                 >
                   <RiLoopLeftLine />
                 </TooltipTrigger>
-                <TooltipContent sideOffset={8}>Generate a random connection name</TooltipContent>
+                <TooltipContent sideOffset={8}>
+                  Generate a random connection name
+                </TooltipContent>
               </Tooltip>
             </div>
           </div>
 
           <div>
             <Label htmlFor={labelId} className="mb-2">
-              Label <span className="text-xs text-muted-foreground/50">(optional)</span>
+              Label{' '}
+              <span className="text-muted-foreground/50 text-xs">
+                (optional)
+              </span>
             </Label>
             <div className="flex flex-col gap-2">
               <Input
@@ -108,10 +130,10 @@ export function StepSave({
                 data-mask
                 placeholder="Development, Production, Staging, etc."
                 value={label ?? ''}
-                onChange={e => setLabel(e.target.value)}
+                onChange={(e) => setLabel(e.target.value)}
               />
               <Group>
-                {labels.map(option => (
+                {labels.map((option) => (
                   <Button
                     key={option}
                     variant={label === option ? 'default' : 'outline'}
@@ -128,30 +150,31 @@ export function StepSave({
 
           <div>
             <Label className="mb-2">
-              Color <span className="text-xs text-muted-foreground/50">(optional)</span>
+              Color{' '}
+              <span className="text-muted-foreground/50 text-xs">
+                (optional)
+              </span>
             </Label>
             <div className="flex flex-col gap-2">
               <div className="mt-1 flex flex-wrap gap-2">
-                {COLOR_OPTIONS.map(colorOption => (
+                {COLOR_OPTIONS.map((colorOption) => (
                   <button
                     key={colorOption}
                     type="button"
                     aria-label={`Select ${colorOption} color`}
                     className={cn(
-                      `
-                        size-6 rounded-full bg-(--color)
-                        transition-all
-                      `,
+                      `size-6 rounded-full bg-(--color) transition-all`,
                       color === colorOption &&
-                        `
-                        ring-2 ring-(--color) ring-offset-2
-                        ring-offset-background
-                      `,
+                        `ring-offset-background ring-2 ring-(--color) ring-offset-2`
                     )}
-                    style={{
-                      '--color': colorOption,
-                    }}
-                    onClick={() => setColor(color === colorOption ? null : colorOption)}
+                    style={
+                      {
+                        '--color': colorOption,
+                      } as CSSProperties
+                    }
+                    onClick={() =>
+                      setColor(color === colorOption ? null : colorOption)
+                    }
                   />
                 ))}
               </div>
@@ -163,17 +186,20 @@ export function StepSave({
                 checked={syncType === SyncType.Cloud}
                 onCheckedChange={() =>
                   setSyncType(
-                    syncType === SyncType.Cloud ? SyncType.CloudWithoutPassword : SyncType.Cloud,
+                    syncType === SyncType.Cloud
+                      ? SyncType.CloudWithoutPassword
+                      : SyncType.Cloud
                   )
                 }
               />
               Do you want to sync the password in our cloud?
             </Label>
-            <div className="text-xs text-balance text-muted-foreground/50">
-              Syncing passwords in our cloud allows access from any device without re-entering the
-              password.
+            <div className="text-muted-foreground/50 text-xs text-balance">
+              Syncing passwords in our cloud allows access from any device
+              without re-entering the password.
               <br />
-              If not synced, we will store the connection string without the password.
+              If not synced, we will store the connection string without the
+              password.
             </div>
           </div>
         </div>

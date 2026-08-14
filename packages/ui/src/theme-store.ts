@@ -9,30 +9,29 @@ export type Theme = ResolvedTheme | 'system'
 export const THEME_STORAGE_KEY = 'tamery.theme'
 
 export const themeStore = createWebStorageValue({
-  type: 'localStorage',
+  defaultValue: 'system',
   key: THEME_STORAGE_KEY,
   schema: type('"dark" | "light" | "system"'),
-  defaultValue: 'system',
+  type: 'localStorage',
 })
 
 const mediaQuery = createMediaQuery({ query: '(prefers-color-scheme: dark)' })
 
-export const resolvedTheme = createComputed([themeStore, mediaQuery], ([theme, isDark]) => {
-  if (theme === 'system') {
-    return isDark ? 'dark' : 'light'
+export const resolvedTheme = createComputed(
+  [themeStore, mediaQuery],
+  ([theme, isDark]) => {
+    if (theme === 'system') {
+      return isDark ? 'dark' : 'light'
+    }
+    return theme
   }
-  return theme
-})
+)
 
-export function useTheme() {
-  return useSubscription(themeStore)
-}
+export const useTheme = () => useSubscription(themeStore)
 
-export function useResolvedTheme() {
-  return useSubscription(resolvedTheme)
-}
+export const useResolvedTheme = () => useSubscription(resolvedTheme)
 
-function toggleTheme() {
+const toggleTheme = () => {
   if (typeof window === 'undefined') {
     return
   }

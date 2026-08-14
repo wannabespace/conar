@@ -15,58 +15,74 @@ export const deleteRowsQuery = memoize(
   }) =>
     createQuery({
       query: {
-        postgres: db =>
+        clickhouse: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
             .where(({ or, and, eb }) =>
               or(
-                primaryKeys.map(pk =>
-                  and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))),
-                ),
-              ),
+                primaryKeys.map((pk) =>
+                  and(
+                    Object.entries(pk).map(([key, value]) =>
+                      eb(key, '=', value)
+                    )
+                  )
+                )
+              )
             )
             .execute(),
-        mysql: db =>
+        mssql: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
             .where(({ or, and, eb }) =>
               or(
-                primaryKeys.map(pk =>
-                  and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))),
-                ),
-              ),
+                primaryKeys.map((pk) =>
+                  and(
+                    Object.entries(pk).map(([key, value]) =>
+                      eb(key, '=', value)
+                    )
+                  )
+                )
+              )
             )
             .execute(),
-        mssql: db =>
+        mysql: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
             .where(({ or, and, eb }) =>
               or(
-                primaryKeys.map(pk =>
-                  and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))),
-                ),
-              ),
+                primaryKeys.map((pk) =>
+                  and(
+                    Object.entries(pk).map(([key, value]) =>
+                      eb(key, '=', value)
+                    )
+                  )
+                )
+              )
             )
             .execute(),
-        clickhouse: db =>
+        postgres: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .deleteFrom(table)
             .where(({ or, and, eb }) =>
               or(
-                primaryKeys.map(pk =>
-                  and(Object.entries(pk).map(([key, value]) => eb(key, '=', value))),
-                ),
-              ),
+                primaryKeys.map((pk) =>
+                  and(
+                    Object.entries(pk).map(([key, value]) =>
+                      eb(key, '=', value)
+                    )
+                  )
+                )
+              )
             )
             .execute(),
       },
-    }),
+    })
 )

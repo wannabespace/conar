@@ -3,17 +3,23 @@ import { useSubscription } from 'seitu/react'
 
 import { draftsActions, useTablePageStore } from './store'
 
-export function useClearDraftsOnQueryChange() {
+export const useClearDraftsOnQueryChange = () => {
   const store = useTablePageStore()
-  const filters = useSubscription(store, { selector: state => state.filters })
-  const orderBy = useSubscription(store, { selector: state => state.orderBy })
+  const filters = useSubscription(store, {
+    selector: (state) => state.filters,
+  })
+  const orderBy = useSubscription(store, {
+    selector: (state) => state.orderBy,
+  })
   const previousRef = useRef({ store, filters, orderBy })
 
   useEffect(() => {
     const previous = previousRef.current
     previousRef.current = { store, filters, orderBy }
 
-    if (previous.store !== store) return
+    if (previous.store !== store) {
+      return
+    }
 
     if (previous.filters !== filters || previous.orderBy !== orderBy) {
       draftsActions(store).clear()
@@ -21,21 +27,23 @@ export function useClearDraftsOnQueryChange() {
   }, [store, filters, orderBy])
 }
 
-export function useSyncSelectionWithRows(
+export const useSyncSelectionWithRows = (
   rows: Record<string, unknown>[],
-  primaryColumns: string[],
-) {
+  primaryColumns: string[]
+) => {
   const store = useTablePageStore()
 
   useEffect(() => {
     store.set(
-      state =>
+      (state) =>
         ({
           ...state,
-          selected: state.selected.filter(selectedRow =>
-            rows.some(row => primaryColumns.every(key => row[key] === selectedRow[key])),
+          selected: state.selected.filter((selectedRow) =>
+            rows.some((row) =>
+              primaryColumns.every((key) => row[key] === selectedRow[key])
+            )
           ),
-        }) satisfies typeof state,
+        }) satisfies typeof state
     )
   }, [store, rows, primaryColumns])
 }

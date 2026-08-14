@@ -18,18 +18,20 @@ import { setIsSubscriptionDialogOpen } from '~/store'
 
 import { CreateWorkspaceDialog } from './create-workspace-dialog'
 
-function WorkspaceGlyph({ workspace }: { workspace: Pick<Workspace, 'name'> }) {
-  return (
-    <span
-      aria-hidden
-      className="flex size-4 shrink-0 items-center justify-center rounded bg-accent text-2xs font-medium text-accent-foreground"
-    >
-      {workspace.name.charAt(0).toUpperCase()}
-    </span>
-  )
-}
+const WorkspaceGlyph = ({
+  workspace,
+}: {
+  workspace: Pick<Workspace, 'name'>
+}) => (
+  <span
+    aria-hidden
+    className="bg-accent text-2xs text-accent-foreground flex size-4 shrink-0 items-center justify-center rounded font-medium"
+  >
+    {workspace.name.charAt(0).toUpperCase()}
+  </span>
+)
 
-export function WorkspaceSwitcher() {
+export const WorkspaceSwitcher = () => {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
@@ -37,7 +39,7 @@ export function WorkspaceSwitcher() {
   const { data: activeWorkspace } = useActiveWorkspace()
   const { subscription } = useSubscription()
 
-  function handleOpenChange(next: boolean) {
+  const handleOpenChange = (next: boolean) => {
     setOpen(next)
 
     if (next) {
@@ -45,7 +47,7 @@ export function WorkspaceSwitcher() {
     }
   }
 
-  async function switchWorkspace(id: string) {
+  const switchWorkspace = async (id: string) => {
     setOpen(false)
 
     if (id === activeWorkspace?.id) {
@@ -56,7 +58,7 @@ export function WorkspaceSwitcher() {
     await navigate({ to: '/' })
   }
 
-  function handleCreate() {
+  const handleCreate = () => {
     setOpen(false)
 
     if (subscription) {
@@ -87,18 +89,28 @@ export function WorkspaceSwitcher() {
               </span>
             </>
           ) : (
-            <span className="truncate font-medium text-muted-foreground">Workspace</span>
+            <span className="text-muted-foreground truncate font-medium">
+              Workspace
+            </span>
           )}
-          <RiExpandUpDownLine className="size-3 shrink-0 text-muted-foreground/70" />
+          <RiExpandUpDownLine className="text-muted-foreground/70 size-3 shrink-0" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="max-h-[70vh] min-w-56 overflow-auto">
-          {workspaces?.map(workspace => (
-            <DropdownMenuItem key={workspace.id} onClick={() => switchWorkspace(workspace.id)}>
+        <DropdownMenuContent
+          align="start"
+          className="max-h-[70vh] min-w-56 overflow-auto"
+        >
+          {workspaces?.map((workspace) => (
+            <DropdownMenuItem
+              key={workspace.id}
+              onClick={() => switchWorkspace(workspace.id)}
+            >
               <WorkspaceGlyph workspace={workspace} />
               <span data-mask className="truncate">
                 {workspace.name}
               </span>
-              {workspace.id === activeWorkspace?.id && <RiCheckLine className="ml-auto" />}
+              {workspace.id === activeWorkspace?.id && (
+                <RiCheckLine className="ml-auto" />
+              )}
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />

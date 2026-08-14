@@ -1,16 +1,12 @@
 import * as React from 'react'
 
-export function useIsMounted() {
-  const [isMounted, setIsMounted] = React.useState(false)
-
-  React.useEffect(() => {
-    // oxlint-disable-next-line react/set-state-in-effect
-    setIsMounted(true)
-
-    return () => {
-      setIsMounted(false)
-    }
-  }, [])
-
-  return isMounted
+const emptySubscribe = () => () => {
+  /* no-op */
 }
+
+export const useIsMounted = () =>
+  React.useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  )

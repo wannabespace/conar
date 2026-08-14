@@ -8,26 +8,37 @@ import { getColumnUiType } from '~/entities/connection/components/table/cell'
 import type { constraintsType } from '~/entities/connection/queries'
 import type { columnType } from '~/entities/connection/queries/columns'
 
-export function getEdges({
+type ForeignKeyConstraint = typeof constraintsType.infer & {
+  column: string
+  foreignColumn: string
+  foreignTable: string
+  table: string
+}
+
+const isForeignKeyConstraint = (
+  constraint: typeof constraintsType.infer
+): constraint is ForeignKeyConstraint =>
+  constraint.type === 'foreignKey' &&
+  !!constraint.foreignTable &&
+  !!constraint.foreignColumn &&
+  !!constraint.table &&
+  !!constraint.column
+
+export const getEdges = ({
   constraints,
 }: {
   constraints: (typeof constraintsType.infer)[]
-}): Edge[] {
-  return constraints
-    .filter(
-      c => c.type === 'foreignKey' && c.foreignTable && c.foreignColumn && c.table && c.column,
-    )
-    .map(c => ({
-      id: `${c.table}_${c.column}_${c.foreignTable}_${c.foreignColumn}`,
-      type: 'custom',
-      source: c.table,
-      target: c.foreignTable!,
-      sourceHandle: c.column!,
-      targetHandle: c.foreignColumn!,
-    }))
-}
+}): Edge[] =>
+  constraints.filter(isForeignKeyConstraint).map((c) => ({
+    id: `${c.table}_${c.column}_${c.foreignTable}_${c.foreignColumn}`,
+    source: c.table,
+    sourceHandle: c.column,
+    target: c.foreignTable,
+    targetHandle: c.foreignColumn,
+    type: 'custom',
+  }))
 
-export function applySearchHighlight<TNode extends NodeType>({
+export const applySearchHighlight = <TNode extends NodeType>({
   nodes,
   searchQuery,
   tables,
@@ -37,35 +48,39 @@ export function applySearchHighlight<TNode extends NodeType>({
   searchQuery: string
   tables: string[]
   columns: (typeof columnType.infer)[]
-}): TNode[] {
+}): TNode[] => {
   const matchedTables = searchQuery
-    ? [...new Set(tables.filter(table => table.toLowerCase().includes(searchQuery)))]
+    ? [
+        ...new Set(
+          tables.filter((table) => table.toLowerCase().includes(searchQuery))
+        ),
+      ]
     : []
   const matchedColumns = searchQuery
     ? [
         ...new Set(
           columns
-            .filter(column => column.id.toLowerCase().includes(searchQuery))
-            .map(column => column.id),
+            .filter((column) => column.id.toLowerCase().includes(searchQuery))
+            .map((column) => column.id)
         ),
       ]
     : []
 
-  return nodes.map(node => ({
+  return nodes.map((node) => ({
     ...node,
     data: {
       ...node.data,
-      searchActive: !!searchQuery,
-      tableSearchMatched: matchedTables.includes(node.data.table),
-      columns: node.data.columns.map(col => ({
+      columns: node.data.columns.map((col) => ({
         ...col,
         searchMatched: matchedColumns.includes(col.id),
       })),
+      searchActive: !!searchQuery,
+      tableSearchMatched: matchedTables.includes(node.data.table),
     },
   }))
 }
 
-export function getNodes({
+export const getNodes = ({
   resourceId,
   schema,
   tables,
@@ -79,57 +94,117 @@ export function getNodes({
   columns: (typeof columnType.infer)[]
   edges: Edge[]
   constraints: (typeof constraintsType.infer)[]
-}): NodeType[] {
-  return tables.map(table => {
-    const tableColumns = columns.filter(c => c.table === table && c.schema === schema)
-    const tableConstraints = constraints.filter(c => c.table === table && c.schema === schema)
+}): NodeType[] =>
+  tables.map((table) => {
+    const tableColumns = columns.filter(
+      (c) => c.table === table && c.schema === schema
+    )
+    const tableConstraints = constraints.filter(
+      (c) => c.table === table && c.schema === schema
+    )
     const tableForeignKeys = tableConstraints.filter(
-      c => c.type === 'foreignKey' && c.table === table && c.schema === schema,
+      (c) => c.type === 'foreignKey' && c.table === table && c.schema === schema
     )
 
     return {
-      id: table,
-      type: 'tableNode',
-      position: { x: 0, y: 0 },
       data: {
-        schema,
-        table,
-        resourceId,
-        edges,
-        columns: tableColumns.map(c => {
+        columns: tableColumns.map((c) => {
           const columnConstraints = tableConstraints.filter(
-            constraint => constraint.column === c.id,
+            (constraint) => constraint.column === c.id
           )
           const foreign = tableForeignKeys.find(
-            foreignKey =>
+            (foreignKey) =>
               foreignKey.column === c.id &&
               foreignKey.schema === schema &&
-              foreignKey.table === table,
+              foreignKey.table === table
           )
 
           return {
             ...c,
-            uiType: getColumnUiType(c),
             foreign:
-              foreign && foreign.foreignSchema && foreign.foreignTable && foreign.foreignColumn
+              foreign &&
+              foreign.foreignSchema &&
+              foreign.foreignTable &&
+              foreign.foreignColumn
                 ? {
+                    column: foreign.foreignColumn,
                     name: foreign.name,
                     schema: foreign.foreignSchema,
                     table: foreign.foreignTable,
-                    column: foreign.foreignColumn,
                   }
                 : undefined,
-            primaryKey: columnConstraints.find(constraint => constraint.type === 'primaryKey')
-              ?.name,
-            unique: columnConstraints.find(constraint => constraint.type === 'unique')?.name,
+            primaryKey: columnConstraints.find(
+              (constraint) => constraint.type === 'primaryKey'
+            )?.name,
+            uiType: getColumnUiType(c),
+            unique: columnConstraints.find(
+              (constraint) => constraint.type === 'unique'
+            )?.name,
           } satisfies Column
         }),
+        edges,
+        resourceId,
+        schema,
+        table,
       },
+      id: table,
+      position: { x: 0, y: 0 },
+      type: 'tableNode',
     } satisfies NodeType
   })
+
+const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}))
+
+const nodeWidth = 264
+const columnRowHeight = 33
+const nodeVerticalPadding = 8 * 2
+const nodeHeaderHeight = 45
+
+const getNodeSize = (columns: NodeType['data']['columns']) => ({
+  height:
+    columns.length * columnRowHeight + nodeVerticalPadding + nodeHeaderHeight,
+  width: nodeWidth,
+})
+
+export const getLayoutElements = (
+  nodes: NodeType[],
+  edges: Edge[],
+  direction = 'LR'
+) => {
+  const isHorizontal = direction === 'LR'
+  dagreGraph.setGraph({ rankdir: direction })
+
+  for (const node of nodes) {
+    const { width, height } = getNodeSize(node.data.columns)
+    dagreGraph.setNode(node.id, { height, width })
+  }
+
+  for (const edge of edges) {
+    dagreGraph.setEdge(edge.source, edge.target)
+  }
+
+  dagre.layout(dagreGraph)
+
+  const newNodes = nodes.map((node) => {
+    const { width, height } = getNodeSize(node.data.columns)
+    const nodeWithPosition = dagreGraph.node(node.id)
+    const newNode = {
+      ...node,
+      position: {
+        x: nodeWithPosition.x - width / 2,
+        y: nodeWithPosition.y - height / 2,
+      },
+      sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
+      targetPosition: isHorizontal ? Position.Left : Position.Top,
+    } satisfies NodeType
+
+    return newNode
+  })
+
+  return { edges, nodes: newNodes }
 }
 
-export function getVisualizerLayout({
+export const getVisualizerLayout = ({
   resourceId,
   schema,
   tables,
@@ -141,66 +216,19 @@ export function getVisualizerLayout({
   tables: string[]
   columns: (typeof columnType.infer)[]
   constraints: (typeof constraintsType.infer)[]
-}) {
+}) => {
   const edges = getEdges({ constraints }).filter(
-    edge => tables.includes(edge.source) && tables.includes(edge.target),
+    (edge) => tables.includes(edge.source) && tables.includes(edge.target)
   )
   return getLayoutElements(
     getNodes({
+      columns,
+      constraints,
+      edges,
       resourceId,
       schema,
       tables,
-      columns,
-      edges,
-      constraints,
     }),
-    edges,
+    edges
   )
-}
-
-const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}))
-
-const nodeWidth = 264
-
-function getNodeSize(columns: NodeType['data']['columns']) {
-  return {
-    width: nodeWidth,
-    height: columns.length * 33 + 8 * 2 + 45, // 8 is padding, 45 is header height
-  }
-}
-
-export function getLayoutElements(nodes: NodeType[], edges: Edge[], direction = 'LR') {
-  const isHorizontal = direction === 'LR'
-  dagreGraph.setGraph({ rankdir: direction })
-
-  nodes.forEach(node => {
-    const { width, height } = getNodeSize(node.data.columns)
-    dagreGraph.setNode(node.id, { width, height })
-  })
-
-  edges.forEach(edge => {
-    dagreGraph.setEdge(edge.source, edge.target)
-  })
-
-  dagre.layout(dagreGraph)
-
-  const newNodes = nodes.map(node => {
-    const { width, height } = getNodeSize(node.data.columns)
-    const nodeWithPosition = dagreGraph.node(node.id)
-    const newNode = {
-      ...node,
-      targetPosition: isHorizontal ? Position.Left : Position.Top,
-      sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
-      // We are shifting the dagre node position (anchor=center center) to the top left
-      // so it matches the React Flow node anchor point (top left).
-      position: {
-        x: nodeWithPosition.x - width / 2,
-        y: nodeWithPosition.y - height / 2,
-      },
-    } satisfies NodeType
-
-    return newNode
-  })
-
-  return { nodes: newNodes, edges }
 }

@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'bun:test'
 
-import { decryptWithPrivateKey, encryptWithPublicKey, generateEncryptionKeyPair } from './pair-keys'
+import {
+  decryptWithPrivateKey,
+  encryptWithPublicKey,
+  generateEncryptionKeyPair,
+} from './pair-keys'
 
 describe('pair-keys', () => {
   it('round-trips a connection string', async () => {
     const text = 'postgresql://user:p@ss@localhost:5432/db'
     const { publicKey, privateKey } = await generateEncryptionKeyPair()
-    const encrypted = await encryptWithPublicKey({ text, publicKey })
+    const encrypted = await encryptWithPublicKey({ publicKey, text })
     const decrypted = await decryptWithPrivateKey(privateKey, encrypted)
 
     expect(decrypted).toBe(text)
@@ -15,7 +19,7 @@ describe('pair-keys', () => {
   it('round-trips long connection strings', async () => {
     const text = `postgresql://admin:${'x'.repeat(400)}@db.example.com:5432/very_long_db_name?sslmode=require`
     const { publicKey, privateKey } = await generateEncryptionKeyPair()
-    const encrypted = await encryptWithPublicKey({ text, publicKey })
+    const encrypted = await encryptWithPublicKey({ publicKey, text })
     const decrypted = await decryptWithPrivateKey(privateKey, encrypted)
 
     expect(decrypted).toBe(text)
@@ -24,7 +28,7 @@ describe('pair-keys', () => {
   it('round-trips unicode characters', async () => {
     const text = 'mysql://用户:пароль@127.0.0.1:3306/テスト'
     const { publicKey, privateKey } = await generateEncryptionKeyPair()
-    const encrypted = await encryptWithPublicKey({ text, publicKey })
+    const encrypted = await encryptWithPublicKey({ publicKey, text })
     const decrypted = await decryptWithPrivateKey(privateKey, encrypted)
 
     expect(decrypted).toBe(text)
@@ -33,8 +37,8 @@ describe('pair-keys', () => {
   it('produces different ciphertext for the same input', async () => {
     const text = 'postgresql://user@localhost:5432/db'
     const { publicKey, privateKey } = await generateEncryptionKeyPair()
-    const first = await encryptWithPublicKey({ text, publicKey })
-    const second = await encryptWithPublicKey({ text, publicKey })
+    const first = await encryptWithPublicKey({ publicKey, text })
+    const second = await encryptWithPublicKey({ publicKey, text })
 
     expect(first).not.toBe(second)
     expect(await decryptWithPrivateKey(privateKey, first)).toBe(text)
@@ -45,7 +49,7 @@ describe('pair-keys', () => {
     const text = 'postgresql://user@localhost:5432/db'
     const { publicKey } = await generateEncryptionKeyPair()
     const { privateKey: wrongPrivateKey } = await generateEncryptionKeyPair()
-    const encrypted = await encryptWithPublicKey({ text, publicKey })
+    const encrypted = await encryptWithPublicKey({ publicKey, text })
 
     expect(decryptWithPrivateKey(wrongPrivateKey, encrypted)).rejects.toThrow()
   })
@@ -53,6 +57,8 @@ describe('pair-keys', () => {
   it('fails decryption with corrupted payload', async () => {
     const { privateKey } = await generateEncryptionKeyPair()
 
-    expect(decryptWithPrivateKey(privateKey, 'invalid.payload')).rejects.toThrow()
+    expect(
+      decryptWithPrivateKey(privateKey, 'invalid.payload')
+    ).rejects.toThrow()
   })
 })

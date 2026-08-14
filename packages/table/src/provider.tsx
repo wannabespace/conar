@@ -11,7 +11,7 @@ import { prepareColumnId } from './utils'
 
 export type { TableContextType } from './table-context'
 
-export function TableProvider({
+export const TableProvider = ({
   rows,
   columns,
   children,
@@ -25,30 +25,39 @@ export function TableProvider({
   estimatedRowSize?: number
   estimatedColumnSize?: number
   customColumnSizes?: Record<string, number>
-}) {
+}) => {
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const scrollDirection = useScrollDirection(scrollRef)
 
   const verticalScroll = scrollDirection === 'up' || scrollDirection === 'down'
-  const horizontalScroll = scrollDirection === 'left' || scrollDirection === 'right'
+  const horizontalScroll =
+    scrollDirection === 'left' || scrollDirection === 'right'
 
-  const { getVirtualItems: getVirtualRows, getTotalSize: getTableHeight } = useVirtualizer({
-    count: rows.length,
-    getScrollElement: () => scrollRef.current,
-    estimateSize: () => estimatedRowSize,
-    overscan: verticalScroll || scrollDirection === null ? 10 : 0,
-  })
+  const { getVirtualItems: getVirtualRows, getTotalSize: getTableHeight } =
+    useVirtualizer({
+      count: rows.length,
+      estimateSize: () => estimatedRowSize,
+      getScrollElement: () => scrollRef.current,
+      overscan: verticalScroll || scrollDirection === null ? 10 : 0,
+    })
 
   const {
     getVirtualItems: getVirtualColumns,
     getTotalSize: getTableWidth,
     measure,
   } = useVirtualizer({
-    horizontal: true,
     count: columns.length,
+    estimateSize: (index) => {
+      const column = columns[index]
+      if (!column) {
+        return estimatedColumnSize
+      }
+      return (
+        customColumnSizes?.[column.id] ?? column.size ?? estimatedColumnSize
+      )
+    },
     getScrollElement: () => scrollRef.current,
-    estimateSize: index =>
-      customColumnSizes?.[columns[index]!.id] ?? columns[index]!.size ?? estimatedColumnSize,
+    horizontal: true,
     overscan: horizontalScroll || scrollDirection === null ? 3 : 0,
   })
 
@@ -64,44 +73,49 @@ export function TableProvider({
 
     scrollRef.current.style.setProperty(
       '--table-scroll-left-offset',
-      `${virtualColumns[0]?.start ?? 0}px`,
+      `${virtualColumns[0]?.start ?? 0}px`
     )
     scrollRef.current.style.setProperty(
       '--table-scroll-right-offset',
-      `${tableWidth - (virtualColumns.at(-1)?.end ?? 0)}px`,
+      `${tableWidth - (virtualColumns.at(-1)?.end ?? 0)}px`
     )
     scrollRef.current.style.setProperty(
       '--table-scroll-top-offset',
-      `${virtualRows[0]?.start ?? 0}px`,
+      `${virtualRows[0]?.start ?? 0}px`
     )
     scrollRef.current.style.setProperty(
       '--table-scroll-bottom-offset',
-      `${tableHeight - (virtualRows.at(-1)?.end ?? 0)}px`,
+      `${tableHeight - (virtualRows.at(-1)?.end ?? 0)}px`
     )
   }, [scrollRef, virtualColumns, virtualRows, tableWidth, tableHeight])
 
   const measureDebounced = useDebouncedCallback(measure, [], 250)
 
   useEffect(() => {
-    if (!scrollRef.current || !customColumnSizes) return
+    const scrollElement = scrollRef.current
+    if (!scrollElement || !customColumnSizes) {
+      return
+    }
 
     const customColumnsSizesMap = new Map(Object.entries(customColumnSizes))
-    const columnsToRemove = columns.filter(column => !customColumnsSizesMap.has(column.id))
+    const columnsToRemove = columns.filter(
+      (column) => !customColumnsSizesMap.has(column.id)
+    )
 
     const rafId = requestAnimationFrame(() => {
-      columnsToRemove.forEach(column => {
+      for (const column of columnsToRemove) {
         const id = `--table-column-width-${prepareColumnId(column.id)}`
 
-        if (scrollRef.current!.style.getPropertyValue(id)) {
-          scrollRef.current!.style.removeProperty(id)
+        if (scrollElement.style.getPropertyValue(id)) {
+          scrollElement.style.removeProperty(id)
         }
-      })
-      customColumnsSizesMap.forEach((size, id) => {
-        scrollRef.current!.style.setProperty(
+      }
+      for (const [id, size] of customColumnsSizesMap) {
+        scrollElement.style.setProperty(
           `--table-column-width-${prepareColumnId(id)}`,
-          `${size}px`,
+          `${size}px`
         )
-      })
+      }
       measureDebounced()
     })
 
@@ -110,14 +124,14 @@ export function TableProvider({
 
   const contextValue = useMemo(
     () => ({
-      scrollRef,
-      scrollDirection,
-      rows,
       columns,
-      virtualRows,
-      virtualColumns,
+      rows,
+      scrollDirection,
+      scrollRef,
       tableHeight,
       tableWidth,
+      virtualColumns,
+      virtualRows,
     }),
     [
       scrollRef,
@@ -128,8 +142,12 @@ export function TableProvider({
       virtualColumns,
       tableHeight,
       tableWidth,
-    ],
+    ]
   )
 
-  return <TableContext.Provider value={contextValue}>{children}</TableContext.Provider>
+  return (
+    <TableContext.Provider value={contextValue}>
+      {children}
+    </TableContext.Provider>
+  )
 }

@@ -13,7 +13,10 @@ export interface TableCellProps extends Pick<ColumnRenderer, 'size' | 'id'> {
   position: 'first' | 'last' | 'middle'
 }
 
-export interface TableHeaderCellProps extends Pick<ColumnRenderer, 'size' | 'id'> {
+export interface TableHeaderCellProps extends Pick<
+  ColumnRenderer,
+  'size' | 'id'
+> {
   style: CSSProperties
   columnIndex: number
   position: 'first' | 'last' | 'middle'

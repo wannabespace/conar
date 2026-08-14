@@ -19,26 +19,30 @@ interface RemoveChatDialogProps {
   } | null>
 }
 
-export function RemoveChatDialog({ ref }: RemoveChatDialogProps) {
+export const RemoveChatDialog = ({ ref }: RemoveChatDialogProps) => {
   const { chatsCollection } = useCollections()
   const [open, setOpen] = useState(false)
   const [chat, setChat] = useState<Chat | null>(null)
-  const [onRemoveCallback, setOnRemoveCallback] = useState<(() => void) | null>(null)
+  const [onRemoveCallback, setOnRemoveCallback] = useState<(() => void) | null>(
+    null
+  )
 
   useImperativeHandle(
     ref,
     () => ({
-      remove: (chat: Chat, onRemove?: () => void) => {
-        setChat(chat)
+      remove: (chatToRemove: Chat, onRemove?: () => void) => {
+        setChat(chatToRemove)
         setOnRemoveCallback(() => onRemove ?? null)
         setOpen(true)
       },
     }),
-    [],
+    []
   )
 
-  function remove(e: React.MouseEvent<HTMLButtonElement>) {
-    if (!chat) return
+  const remove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!chat) {
+      return
+    }
 
     e.preventDefault()
     const chatTitle = chat.title?.trim()
@@ -58,7 +62,7 @@ export function RemoveChatDialog({ ref }: RemoveChatDialogProps) {
             {chat?.title ? (
               <span data-mask className="font-semibold">
                 {' '}
-                "{chat.title}"
+                &quot;{chat.title}&quot;
               </span>
             ) : (
               ' this chat'

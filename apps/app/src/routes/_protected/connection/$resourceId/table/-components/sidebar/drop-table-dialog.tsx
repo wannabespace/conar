@@ -1,6 +1,10 @@
 import { RiAlertLine } from '@remixicon/react'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { Alert, AlertDescription, AlertTitle } from '@tamery/ui/components/alert'
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@tamery/ui/components/alert'
 import { Button } from '@tamery/ui/components/button'
 import { Checkbox } from '@tamery/ui/components/checkbox'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
@@ -19,9 +23,15 @@ import { getRouteApi, useRouter, useSearch } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
-import { dropTableQuery, resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
+import {
+  dropTableQuery,
+  resourceTablesAndSchemasQueryOptions,
+} from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
-import { getConnectionResourceStore, removeTab } from '~/entities/connection/store'
+import {
+  getConnectionResourceStore,
+  removeTab,
+} from '~/entities/connection/store'
 import { queryClient } from '~/main'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -32,7 +42,7 @@ interface DropTableDialogProps {
   } | null>
 }
 
-export function DropTableDialog({ ref }: DropTableDialogProps) {
+export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
   const { connection, connectionResource } = useRouteContext()
   const { schema: schemaFromSearch, table: tableFromSearch } = useSearch({
     from: '/_protected/connection/$resourceId/table/',
@@ -44,24 +54,28 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
   const [table, setTable] = useState('')
   const [open, setOpen] = useState(false)
   const [cascade, setCascade] = useState(false)
-  const isCurrentTable = schema === schemaFromSearch && table === tableFromSearch
+  const isCurrentTable =
+    schema === schemaFromSearch && table === tableFromSearch
 
   useImperativeHandle(ref, () => ({
-    drop: (schema, table) => {
-      setSchema(schema)
-      setTable(table)
+    drop: (nextSchema, nextTable) => {
+      setSchema(nextSchema)
+      setTable(nextTable)
       setConfirmationText('')
       setCascade(false)
       setOpen(true)
-      const lastOpenedTable = store.get().lastOpenedTable
+      const { lastOpenedTable } = store.get()
 
-      if (lastOpenedTable?.schema === schema && lastOpenedTable?.table === table) {
+      if (
+        lastOpenedTable?.schema === nextSchema &&
+        lastOpenedTable?.table === nextTable
+      ) {
         store.set(
-          state =>
+          (state) =>
             ({
               ...state,
               lastOpenedTable: null,
-            }) satisfies typeof state,
+            }) satisfies typeof state
         )
       }
     },
@@ -70,7 +84,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
   const { mutate: dropTable, isPending } = useMutation({
     mutationFn: async () => {
       await dropTableQuery({ table, schema, cascade }).run(
-        await connectionResourceToQueryParams(connectionResource),
+        await connectionResourceToQueryParams(connectionResource)
       )
     },
     onSuccess: async () => {
@@ -83,7 +97,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
         resourceTablesAndSchemasQueryOptions({
           connectionResource,
           showSystem: store.get().showSystem,
-        }),
+        })
       )
 
       if (isCurrentTable) {
@@ -94,7 +108,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
       }
       removeTab(connectionResource.id, schema, table)
     },
-    onError: error => {
+    onError: (error) => {
       toast.error(`Failed to drop table "${error.message}".`)
     },
   })
@@ -109,10 +123,11 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
         </DialogHeader>
         <div className="space-y-4">
           <Alert variant="destructive">
-            <RiAlertLine className="size-5 text-destructive" />
+            <RiAlertLine className="text-destructive size-5" />
             <AlertTitle>This action cannot be undone.</AlertTitle>
             <AlertDescription>
-              This will permanently delete the table and all its data from the database.
+              This will permanently delete the table and all its data from the
+              database.
             </AlertDescription>
           </Alert>
           <div className="space-y-2">
@@ -128,7 +143,7 @@ export function DropTableDialog({ ref }: DropTableDialogProps) {
             <Input
               id="confirmation"
               value={confirmationText}
-              onChange={e => setConfirmationText(e.target.value)}
+              onChange={(e) => setConfirmationText(e.target.value)}
               placeholder={table}
               spellCheck={false}
               autoComplete="off"

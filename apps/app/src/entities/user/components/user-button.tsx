@@ -21,7 +21,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import type { Theme } from '@tamery/ui/theme-store'
 import { themeStore, useTheme } from '@tamery/ui/theme-store'
 import { useMutation } from '@tanstack/react-query'
@@ -34,7 +38,7 @@ import { clearDb } from '~/lib/sync'
 
 import { useSignOut } from '../hooks/use-sign-out'
 
-async function clearLocalAppCache() {
+const clearLocalAppCache = async () => {
   const dbs = await indexedDB.databases()
   for (const db of dbs) {
     if (db.name) {
@@ -51,25 +55,25 @@ async function clearLocalAppCache() {
 }
 
 const THEME_OPTIONS: { value: Theme; label: string }[] = [
-  { value: 'system', label: 'System' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'light', label: 'Light' },
+  { label: 'System', value: 'system' },
+  { label: 'Dark', value: 'dark' },
+  { label: 'Light', value: 'light' },
 ]
 
 const SOCIAL_ROWS = [
-  { label: 'Website', href: 'https://tamery.app', icon: RiGlobalLine },
-  { label: 'X', href: SOCIAL_LINKS.TWITTER, icon: RiTwitterXLine },
-  { label: 'Discord', href: SOCIAL_LINKS.DISCORD, icon: RiDiscordLine },
-  { label: 'GitHub', href: SOCIAL_LINKS.GITHUB, icon: RiGithubLine },
+  { href: 'https://tamery.app', icon: RiGlobalLine, label: 'Website' },
+  { href: SOCIAL_LINKS.TWITTER, icon: RiTwitterXLine, label: 'X' },
+  { href: SOCIAL_LINKS.DISCORD, icon: RiDiscordLine, label: 'Discord' },
+  { href: SOCIAL_LINKS.GITHUB, icon: RiGithubLine, label: 'GitHub' },
 ] as const
 
-export function UserButton({
+export const UserButton = ({
   side = 'right',
   align = 'end',
 }: {
   side?: 'top' | 'right' | 'bottom' | 'left'
   align?: 'start' | 'center' | 'end'
-} = {}) {
+} = {}) => {
   const { signOut, isSigningOut } = useSignOut()
   const { data } = authClient.useSession()
   const theme = useTheme()
@@ -77,13 +81,13 @@ export function UserButton({
 
   const { mutate: clearLocalCache, isPending: isClearingCache } = useMutation({
     mutationFn: clearLocalAppCache,
+    onError: (err) => {
+      console.error(err)
+      toast.error('Failed to clear cache')
+    },
     onSuccess: () => {
       toast.success('Local cache cleared. Reloading...')
       window.location.reload()
-    },
-    onError: err => {
-      console.error(err)
-      toast.error('Failed to clear cache')
     },
   })
 
@@ -95,14 +99,16 @@ export function UserButton({
       <DropdownMenuContent className="min-w-56" side={side} align={align}>
         <div className="flex flex-col px-2 py-1.5 leading-tight">
           <span className="text-sm font-medium">{data?.user.name}</span>
-          <span className="text-xs text-muted-foreground">{data?.user.email}</span>
+          <span className="text-muted-foreground text-xs">
+            {data?.user.email}
+          </span>
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() =>
             window.open(
               `${import.meta.env.VITE_PUBLIC_MAIN_URL}/account`,
-              window.electron ? '_blank' : '_self',
+              window.electron ? '_blank' : '_self'
             )
           }
         >
@@ -111,7 +117,9 @@ export function UserButton({
         </DropdownMenuItem>
         {window.electron && (
           <DropdownMenuItem
-            onClick={() => window.open(import.meta.env.VITE_PUBLIC_WEB_URL, '_blank')}
+            onClick={() =>
+              window.open(import.meta.env.VITE_PUBLIC_WEB_URL, '_blank')
+            }
           >
             <RiGlobalLine />
             Web app
@@ -134,11 +142,21 @@ export function UserButton({
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuLabel className="text-muted-foreground">Theme</DropdownMenuLabel>
-          {THEME_OPTIONS.map(option => (
-            <DropdownMenuItem key={option.value} onClick={() => themeStore.set(option.value)}>
-              <span aria-hidden className="flex size-4 items-center justify-center">
-                {theme === option.value && <span className="size-1.5 rounded-full bg-foreground" />}
+          <DropdownMenuLabel className="text-muted-foreground">
+            Theme
+          </DropdownMenuLabel>
+          {THEME_OPTIONS.map((option) => (
+            <DropdownMenuItem
+              key={option.value}
+              onClick={() => themeStore.set(option.value)}
+            >
+              <span
+                aria-hidden
+                className="flex size-4 items-center justify-center"
+              >
+                {theme === option.value && (
+                  <span className="bg-foreground size-1.5 rounded-full" />
+                )}
               </span>
               {option.label}
             </DropdownMenuItem>
@@ -151,7 +169,7 @@ export function UserButton({
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <div className="flex items-center gap-1 px-1 py-0.5">
-          {SOCIAL_ROWS.map(social => (
+          {SOCIAL_ROWS.map((social) => (
             <Tooltip key={social.label}>
               <TooltipTrigger
                 render={
@@ -159,10 +177,7 @@ export function UserButton({
                     variant="ghost"
                     size="icon-xs"
                     aria-label={social.label}
-                    className="
-                      text-muted-foreground
-                      hover:bg-foreground/10 hover:text-foreground
-                    "
+                    className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
                     onClick={() => window.open(social.href, '_blank')}
                   />
                 }

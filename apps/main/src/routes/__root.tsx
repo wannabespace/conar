@@ -6,7 +6,13 @@ import { ThemeObserver } from '@tamery/ui/theme-observer'
 import type { QueryClient } from '@tanstack/react-query'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
+import {
+  createRootRouteWithContext,
+  HeadContent,
+  Outlet,
+  Scripts,
+  useRouter,
+} from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 
 import { SEO } from '~/constants'
@@ -21,28 +27,55 @@ const structuredData = {
     {
       '@type': 'SoftwareApplication',
       '@id': `${SITE_URL}/#app`,
-      'name': 'Tamery',
-      'url': SITE_URL,
-      'image': `${SITE_URL}/og-image.png`,
-      'description': SEO.description,
-      'applicationCategory': 'DeveloperApplication',
-      'operatingSystem': 'macOS, Windows, Linux',
-      'offers': {
+      name: 'Tamery',
+      url: SITE_URL,
+      image: `${SITE_URL}/og-image.png`,
+      description: SEO.description,
+      applicationCategory: 'DeveloperApplication',
+      operatingSystem: 'macOS, Windows, Linux',
+      offers: {
         '@type': 'Offer',
-        'price': '0',
-        'priceCurrency': 'USD',
+        price: '0',
+        priceCurrency: 'USD',
       },
-      'sameAs': [SOCIAL_LINKS.GITHUB, SOCIAL_LINKS.TWITTER, SOCIAL_LINKS.DISCORD],
+      sameAs: [SOCIAL_LINKS.GITHUB, SOCIAL_LINKS.TWITTER, SOCIAL_LINKS.DISCORD],
     },
     {
       '@type': 'Organization',
       '@id': `${SITE_URL}/#org`,
-      'name': 'Tamery',
-      'url': SITE_URL,
-      'logo': `${SITE_URL}/logo.png`,
-      'sameAs': [SOCIAL_LINKS.GITHUB, SOCIAL_LINKS.TWITTER, SOCIAL_LINKS.DISCORD],
+      name: 'Tamery',
+      url: SITE_URL,
+      logo: `${SITE_URL}/logo.png`,
+      sameAs: [SOCIAL_LINKS.GITHUB, SOCIAL_LINKS.TWITTER, SOCIAL_LINKS.DISCORD],
     },
   ],
+}
+
+const RootComponent = () => {
+  const router = useRouter()
+  const { queryClient } = router.options.context as {
+    queryClient: QueryClient
+  }
+
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <HeadContent />
+      </head>
+      <body className={cn(`relative bg-gray-100 dark:bg-neutral-950`)}>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <ThemeObserver />
+            <Outlet />
+          </TooltipProvider>
+          <ReactQueryDevtools buttonPosition="bottom-left" />
+        </QueryClientProvider>
+        <Toaster />
+        <TanStackRouterDevtools position="bottom-right" />
+        <Scripts />
+      </body>
+    </html>
+  )
 }
 
 export const Route = createRootRouteWithContext<{
@@ -66,10 +99,19 @@ export const Route = createRootRouteWithContext<{
       ],
       links: [
         { rel: 'stylesheet', href: appCss },
-        { rel: 'icon', type: 'image/png', href: '/favicon-96x96.png', sizes: '96x96' },
+        {
+          rel: 'icon',
+          type: 'image/png',
+          href: '/favicon-96x96.png',
+          sizes: '96x96',
+        },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'shortcut icon', href: '/favicon.ico' },
-        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
+        {
+          rel: 'apple-touch-icon',
+          href: '/apple-touch-icon.png',
+          sizes: '180x180',
+        },
         { rel: 'manifest', href: '/site.webmanifest' },
         ...links,
       ],
@@ -90,34 +132,5 @@ export const Route = createRootRouteWithContext<{
     }
   },
   component: RootComponent,
-  errorComponent: props => <ErrorPage {...props} />,
+  errorComponent: (props) => <ErrorPage {...props} />,
 })
-
-function RootComponent() {
-  const { queryClient } = Route.useRouteContext()
-
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <HeadContent />
-      </head>
-      <body
-        className={cn(`
-        relative bg-gray-100
-        dark:bg-neutral-950
-      `)}
-      >
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <ThemeObserver />
-            <Outlet />
-          </TooltipProvider>
-          <ReactQueryDevtools buttonPosition="bottom-left" />
-        </QueryClientProvider>
-        <Toaster />
-        <TanStackRouterDevtools position="bottom-right" />
-        <Scripts />
-      </body>
-    </html>
-  )
-}

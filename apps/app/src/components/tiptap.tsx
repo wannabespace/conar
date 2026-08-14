@@ -8,7 +8,7 @@ import { useEffect, useImperativeHandle } from 'react'
 
 import './tiptap.css'
 
-export function TipTap({
+export const TipTap = ({
   value,
   setValue,
   placeholder,
@@ -27,9 +27,11 @@ export function TipTap({
   ref: RefObject<{
     editor: Editor
   } | null>
-} & Omit<ComponentProps<typeof EditorContent>, 'editor' | 'ref'>) {
+} & Omit<ComponentProps<typeof EditorContent>, 'editor' | 'ref'>) => {
   const editor = useEditor(
     {
+      content: value,
+      editable: !disabled,
       extensions: [
         StarterKit,
         Placeholder.configure({
@@ -39,10 +41,6 @@ export function TipTap({
         Extension.create({
           addKeyboardShortcuts() {
             return {
-              'Enter': () => {
-                onEnter?.(this.editor.getText())
-                return true
-              },
               'Cmd-Enter': () => {
                 onEnter?.(this.editor.getText())
                 return true
@@ -51,18 +49,21 @@ export function TipTap({
                 onEnter?.(this.editor.getText())
                 return true
               },
+              Enter: () => {
+                onEnter?.(this.editor.getText())
+                return true
+              },
             }
           },
         }),
       ],
+      onUpdate: ({ editor: updatedEditor }) =>
+        setValue(updatedEditor.getText()),
       parseOptions: {
         preserveWhitespace: 'full',
       },
-      editable: !disabled,
-      content: value,
-      onUpdate: ({ editor }) => setValue(editor.getText()),
     },
-    [onEnter, disabled, placeholder, setValue],
+    [onEnter, disabled, placeholder, setValue]
   )
 
   useEffect(() => {
@@ -82,14 +83,16 @@ export function TipTap({
     () => ({
       editor,
     }),
-    [editor],
+    [editor]
   )
 
   const addImage = (
     e: React.ClipboardEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement>,
-    data: DataTransfer,
+    data: DataTransfer
   ) => {
-    if (!onImageAdd) return
+    if (!onImageAdd) {
+      return
+    }
 
     const { files } = data
 
@@ -113,10 +116,10 @@ export function TipTap({
     <EditorContent
       editor={editor}
       className="w-full"
-      onPaste={e => {
+      onPaste={(e) => {
         addImage(e, e.clipboardData)
       }}
-      onDrop={e => {
+      onDrop={(e) => {
         addImage(e, e.dataTransfer)
       }}
       {...props}

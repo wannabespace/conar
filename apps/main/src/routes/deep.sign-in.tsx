@@ -6,9 +6,9 @@ import { orpc } from '~/lib/orpc'
 
 export const Route = createFileRoute('/deep/sign-in')({
   validateSearch: type({
-    'codeChallenge': 'string',
+    codeChallenge: 'string',
     'newUser?': 'boolean',
-    'type': '"web" | "desktop" | "cli" = "desktop"',
+    type: '"web" | "desktop" | "cli" = "desktop"',
   }),
   loaderDeps: ({ search }) => search,
   loader: async ({ deps }) => {
@@ -24,7 +24,9 @@ export const Route = createFileRoute('/deep/sign-in')({
 
     throw redirect({
       to: '/sign-in',
-      search: { redirectPath: `/deep/sign-in?codeChallenge=${codeChallenge}&type=${deps.type}` },
+      search: {
+        redirectPath: `/deep/sign-in?codeChallenge=${codeChallenge}&type=${deps.type}`,
+      },
     })
   },
 })

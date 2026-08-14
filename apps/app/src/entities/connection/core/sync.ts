@@ -11,7 +11,10 @@ import { persistence, syncCollectionOptions } from '~/lib/sync'
 
 import type { ConnectionString } from './connection-strings'
 
-function prepareConnectionStringToCloud(connectionString: string, syncType: SyncType) {
+const prepareConnectionStringToCloud = (
+  connectionString: string,
+  syncType: SyncType
+) => {
   const url = new SafeURL(connectionString.trim())
   if (syncType !== SyncType.Cloud) {
     url.password = ''
@@ -29,14 +32,19 @@ export interface Connection extends BaseTable {
   syncType: SyncType
 }
 
-export async function prepareConnectionToCloud(connection: Connection) {
+export const prepareConnectionToCloud = async (connection: Connection) => {
   const { connectionStringsCollection } = getCollections()
-  const connectionString = await connectionStringsCollection.utils.decrypt(connection.id)
+  const connectionString = await connectionStringsCollection.utils.decrypt(
+    connection.id
+  )
 
   return {
     ...connection,
+    connectionString: prepareConnectionStringToCloud(
+      connectionString,
+      connection.syncType
+    ),
     isPasswordExists: connection.isPasswordExists,
-    connectionString: prepareConnectionStringToCloud(connectionString, connection.syncType),
   }
 }
 
@@ -45,96 +53,118 @@ export interface ConnectionResource extends BaseTable {
   name: string | null
 }
 
-export function createConnectionsCollection() {
-  return createCollection(
+export const createConnectionsCollection = () =>
+  createCollection(
     persistedCollectionOptions<Connection, string, never, SyncUtils>({
       ...syncCollectionOptions<Connection>({
-        id: 'connections',
-        getKey: item => item.id,
         events: async ({ signal, write }) => {
-          for await (const message of await orpc.connections.events.call({}, { signal })) {
+          for await (const message of await orpc.connections.events.call(
+            {},
+            { signal }
+          )) {
             write(message)
           }
         },
-        sync: ({ rows, signal }) => orpc.connections.sync.call(rows, { signal }),
+        getKey: (item) => item.id,
+        id: 'connections',
+        onDelete: async ({ transaction }) => {
+          await orpc.connections.remove.call(
+            transaction.mutations.map((m) => ({ id: m.key }))
+          )
+        },
         onInsert: async ({ transaction }) => {
           await orpc.connections.create.call(
-            await Promise.all(transaction.mutations.map(m => prepareConnectionToCloud(m.modified))),
+            await Promise.all(
+              transaction.mutations.map((m) =>
+                prepareConnectionToCloud(m.modified)
+              )
+            )
           )
         },
         onUpdate: async ({ transaction }) => {
           await Promise.all(
-            transaction.mutations.map(m =>
+            transaction.mutations.map((m) =>
               orpc.connections.update.call({
                 id: m.key,
                 ...m.changes,
-              }),
-            ),
+              })
+            )
           )
         },
-        onDelete: async ({ transaction }) => {
-          await orpc.connections.remove.call(transaction.mutations.map(m => ({ id: m.key })))
-        },
+        sync: ({ rows, signal }) =>
+          orpc.connections.sync.call(rows, { signal }),
       }),
       persistence,
       schemaVersion: 1,
-    }),
+    })
   )
-}
 
-export function createConnectionsResourcesCollection() {
-  return createCollection(
+export const createConnectionsResourcesCollection = () =>
+  createCollection(
     persistedCollectionOptions<ConnectionResource, string, never, SyncUtils>({
       ...syncCollectionOptions<ConnectionResource>({
-        id: 'connections-resources',
-        getKey: item => item.id,
         events: async ({ signal, write }) => {
-          for await (const message of await orpc.connectionsResources.events.call({}, { signal })) {
+          for await (const message of await orpc.connectionsResources.events.call(
+            {},
+            { signal }
+          )) {
             write(message)
           }
         },
-        sync: ({ rows, signal }) => orpc.connectionsResources.sync.call(rows, { signal }),
+        getKey: (item) => item.id,
+        id: 'connections-resources',
+        onDelete: async ({ transaction }) => {
+          await orpc.connectionsResources.remove.call(
+            transaction.mutations.map((m) => ({ id: m.key }))
+          )
+        },
         onInsert: async ({ transaction }) => {
-          await orpc.connectionsResources.create.call(transaction.mutations.map(m => m.modified))
+          await orpc.connectionsResources.create.call(
+            transaction.mutations.map((m) => m.modified)
+          )
         },
         onUpdate: async ({ transaction }) => {
           await Promise.all(
-            transaction.mutations.map(m =>
-              orpc.connectionsResources.update.call({ id: m.key, ...m.changes }),
-            ),
+            transaction.mutations.map((m) =>
+              orpc.connectionsResources.update.call({ id: m.key, ...m.changes })
+            )
           )
         },
-        onDelete: async ({ transaction }) => {
-          await orpc.connectionsResources.remove.call(
-            transaction.mutations.map(m => ({ id: m.key })),
-          )
-        },
+        sync: ({ rows, signal }) =>
+          orpc.connectionsResources.sync.call(rows, { signal }),
       }),
       persistence,
       schemaVersion: 1,
-    }),
+    })
   )
-}
 
-export function createConnectionTransaction(data: {
+export const createConnectionTransaction = (data: {
   connection: Connection
   resource: ConnectionResource
   connectionString: ConnectionString
-}) {
-  const { connectionsCollection, connectionsResourcesCollection, connectionStringsCollection } =
-    getCollections()
+}) => {
+  const {
+    connectionsCollection,
+    connectionsResourcesCollection,
+    connectionStringsCollection,
+  } = getCollections()
 
   const tx = createTransaction({
     mutationFn: async () => {
-      await orpc.connections.create.call(await prepareConnectionToCloud(data.connection))
+      await orpc.connections.create.call(
+        await prepareConnectionToCloud(data.connection)
+      )
       await orpc.connectionsResources.create.call(data.resource)
 
       if (!window.electron) {
         await Promise.all([
-          connectionsCollection.utils.awaitChange(data.connection.id, data.connection.updatedAt),
+          connectionsCollection.utils.awaitChange(
+            data.connection.id,
+            data.connection.updatedAt
+          ),
           connectionsResourcesCollection.utils.awaitChange(
             data.resource.id,
-            data.resource.updatedAt,
+            data.resource.updatedAt
           ),
         ])
       }

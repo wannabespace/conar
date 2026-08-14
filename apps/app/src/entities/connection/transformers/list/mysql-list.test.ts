@@ -16,7 +16,7 @@ describe('createMysqlListTransformer', () => {
 
     it('returns [] for null, undefined, and empty string', () => {
       expect(t.fromConnection(null).toUI()).toEqual([])
-      expect(t.fromConnection(undefined).toUI()).toEqual([])
+      expect(t.fromConnection().toUI()).toEqual([])
       expect(t.fromConnection('').toUI()).toEqual([])
     })
 

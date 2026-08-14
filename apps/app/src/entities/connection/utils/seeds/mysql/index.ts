@@ -12,36 +12,45 @@ const DATE_FORMATS: Record<string, string> = {
   timestamp: 'yyyy-MM-dd HH:mm:ss',
 }
 
-function mysqlTransformArray(items: unknown[]): unknown {
-  return items
-    .map(v => (typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)))
+const mysqlTransformArray = (items: unknown[]): unknown =>
+  items
+    .map((v) =>
+      typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)
+    )
     .join(',')
-}
 
-function formatMysqlDate(value: string, type: string): string | null {
+const formatMysqlDate = (value: string, type: string): string | null => {
   const pattern = DATE_FORMATS[type]
-  if (!pattern) return null
+  if (!pattern) {
+    return null
+  }
 
   const parsed = parseISO(value)
   return isValid(parsed) ? format(parsed, pattern) : null
 }
 
-function mysqlTransformValue(value: unknown, column: Column): unknown {
+const mysqlTransformValue = (value: unknown, column: Column): unknown => {
   const type = column.type?.toLowerCase() ?? ''
 
-  if (type === 'json' && typeof value === 'object' && value !== null) return JSON.stringify(value)
+  if (type === 'json' && typeof value === 'object' && value !== null) {
+    return JSON.stringify(value)
+  }
 
-  if (typeof value !== 'string') return value
+  if (typeof value !== 'string') {
+    return value
+  }
 
   const formatted = formatMysqlDate(value, type)
-  if (formatted !== null) return formatted
+  if (formatted !== null) {
+    return formatted
+  }
 
   return value
 }
 
 export const mysqlSeedConfig = {
-  generators: MYSQL_GENERATORS,
   autoDetect: mysqlAutoDetect,
+  generators: MYSQL_GENERATORS,
   transformArray: mysqlTransformArray,
   transformValue: mysqlTransformValue,
 } satisfies DialectSeedConfig

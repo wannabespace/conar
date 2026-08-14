@@ -1,6 +1,12 @@
 import { Result } from 'better-result'
 
-import { baseOptions, ensureFolders, getClient, isFolderMissingError, pathToString } from '.'
+import {
+  baseOptions,
+  ensureFolders,
+  getClient,
+  isFolderMissingError,
+  pathToString,
+} from '.'
 
 interface SecretLocation {
   path: string[]
@@ -8,6 +14,16 @@ interface SecretLocation {
 }
 
 export const secrets = {
+  async delete(opts: SecretLocation) {
+    const client = await getClient()
+    const secretPath = pathToString(opts.path)
+
+    await client.secrets().deleteSecret(opts.name, {
+      ...baseOptions,
+      secretPath,
+    })
+  },
+
   async get(opts: SecretLocation) {
     const client = await getClient()
     const secretPath = pathToString(opts.path)
@@ -26,29 +42,33 @@ export const secrets = {
 
     const result = await Result.tryPromise(
       {
+        catch: async (error: unknown) => {
+          if (isFolderMissingError(error)) {
+            await ensureFolders(opts.path)
+          }
+
+          return error
+        },
         try: () =>
           client.secrets().createSecret(opts.name, {
             ...baseOptions,
             secretPath,
             secretValue: opts.value,
           }),
-        catch: async (error: unknown) => {
-          if (isFolderMissingError(error)) await ensureFolders(opts.path)
-
-          return error
-        },
       },
       {
         retry: {
-          times: 1,
-          delayMs: 0,
           backoff: 'constant',
+          delayMs: 0,
           shouldRetry: isFolderMissingError,
+          times: 1,
         },
-      },
+      }
     )
 
-    if (Result.isError(result)) throw result.error
+    if (Result.isError(result)) {
+      throw result.error
+    }
   },
 
   async update(opts: SecretLocation & { value: string }) {
@@ -59,16 +79,6 @@ export const secrets = {
       ...baseOptions,
       secretPath,
       secretValue: opts.value,
-    })
-  },
-
-  async delete(opts: SecretLocation) {
-    const client = await getClient()
-    const secretPath = pathToString(opts.path)
-
-    await client.secrets().deleteSecret(opts.name, {
-      ...baseOptions,
-      secretPath,
     })
   },
 }

@@ -5,8 +5,10 @@ import type Stripe from 'stripe'
 
 import { env } from '~/env'
 
-export async function subscriptionUpdated(event: Stripe.Event) {
-  if (event.type !== 'customer.subscription.updated') return
+export const subscriptionUpdated = async (event: Stripe.Event) => {
+  if (event.type !== 'customer.subscription.updated') {
+    return
+  }
 
   const subscription = event.data.object
 
@@ -21,7 +23,9 @@ export async function subscriptionUpdated(event: Stripe.Event) {
   }
 
   const period =
-    subscription.items.data[0]?.price.id === env.STRIPE_ANNUAL_PRICE_ID ? 'yearly' : 'monthly'
+    subscription.items.data[0]?.price.id === env.STRIPE_ANNUAL_PRICE_ID
+      ? 'yearly'
+      : 'monthly'
   const price = subscription.items.data[0]?.price.unit_amount
     ? subscription.items.data[0].price.unit_amount / 100
     : 0
@@ -35,15 +39,21 @@ export async function subscriptionUpdated(event: Stripe.Event) {
   await db
     .update(subscriptions)
     .set({
-      status: subscription.status,
-      periodStart,
-      periodEnd,
-      trialStart: subscription.trial_start ? new Date(subscription.trial_start * 1000) : null,
-      trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+      cancelAt: subscription.cancel_at
+        ? new Date(subscription.cancel_at * 1000)
+        : null,
       cancelAtPeriodEnd: subscription.cancel_at_period_end || false,
-      cancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
       period,
+      periodEnd,
+      periodStart,
       price,
+      status: subscription.status,
+      trialEnd: subscription.trial_end
+        ? new Date(subscription.trial_end * 1000)
+        : null,
+      trialStart: subscription.trial_start
+        ? new Date(subscription.trial_start * 1000)
+        : null,
     })
     .where(eq(subscriptions.id, existing.id))
 }

@@ -14,7 +14,11 @@ import { CardTitle } from '@tamery/ui/components/card'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
 import { Group, GroupSeparator } from '@tamery/ui/components/group'
 import { Label } from '@tamery/ui/components/label'
-import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@tamery/ui/components/popover'
 import { cn } from '@tamery/ui/lib/utils'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import type { ComponentProps } from 'react'
@@ -33,77 +37,77 @@ import { queryLogsStore } from '../runtime/log'
 
 type QueryStatus = 'error' | 'success' | 'pending'
 
-function getStatusIcon(status: QueryStatus) {
+const getStatusIcon = (status: QueryStatus) => {
   if (status === 'success') {
-    return <RiCheckboxCircleLine className="size-4 text-success" />
+    return <RiCheckboxCircleLine className="text-success size-4" />
   } else if (status === 'error') {
-    return <RiCloseCircleLine className="size-4 text-destructive" />
+    return <RiCloseCircleLine className="text-destructive size-4" />
   }
 
-  return <RiTimeLine className="size-4 text-warning" />
+  return <RiTimeLine className="text-warning size-4" />
 }
 
-function getQueryStatus(query: QueryLog) {
-  if (query.error) return 'error'
-  if (query.result !== null) return 'success'
+const getQueryStatus = (query: QueryLog) => {
+  if (query.error) {
+    return 'error'
+  }
+  if (query.result !== null) {
+    return 'success'
+  }
   return 'pending'
 }
 
-function LogTrigger({
+const LogTrigger = ({
   query,
   className,
   ...props
-}: { query: QueryLog } & ComponentProps<'button'>) {
+}: { query: QueryLog } & ComponentProps<'button'>) => {
   const status = getQueryStatus(query)
   const truncatedQuery = query.query.replaceAll('\n', ' ')
   const shortQuery =
-    truncatedQuery.length > 500 ? `${truncatedQuery.substring(0, 500)}...` : truncatedQuery
+    truncatedQuery.length > 500
+      ? `${truncatedQuery.slice(0, 500)}...`
+      : truncatedQuery
 
   return (
     <button
       type="button"
       className={cn(
-        `
-          flex w-full items-center justify-between gap-2 border-t
-          px-4 py-1.5
-          hover:bg-accent/50
-        `,
-        className,
+        `hover:bg-accent/50 flex w-full items-center justify-between gap-2 border-t px-4 py-1.5`,
+        className
       )}
       {...props}
     >
-      <span className="text-left text-xs text-muted-foreground tabular-nums">
+      <span className="text-muted-foreground text-left text-xs tabular-nums">
         {query.createdAt.toLocaleString('en-US', {
-          month: 'short',
           day: 'numeric',
           hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
           hour12: false,
+          minute: '2-digit',
+          month: 'short',
+          second: '2-digit',
         })}
       </span>
       {getStatusIcon(status)}
-      <span
-        className={`
-        w-12 text-left text-xs text-muted-foreground tabular-nums
-      `}
-      >
-        {query.duration ? `${query.duration.toFixed()}ms` : ''}
+      <span className="text-muted-foreground w-12 text-left text-xs tabular-nums">
+        {query.duration ? `${query.duration.toFixed(0)}ms` : ''}
       </span>
-      <code className="flex-1 truncate text-left font-mono text-xs">{shortQuery}</code>
+      <code className="flex-1 truncate text-left font-mono text-xs">
+        {shortQuery}
+      </code>
     </button>
   )
 }
 
 const monacoOptions = {
-  readOnly: true,
-  scrollBeyondLastLine: false,
+  folding: false,
   lineNumbers: 'off' as const,
   minimap: { enabled: false },
-  folding: false,
+  readOnly: true,
+  scrollBeyondLastLine: false,
 }
 
-function Log({
+const Log = ({
   query,
   className,
   connectionResource,
@@ -111,21 +115,30 @@ function Log({
   query: QueryLog
   className?: string
   connectionResource: ConnectionResource
-}) {
+}) => {
   const [isOpen, setIsOpen] = useState(false)
   const [canInteract, setCanInteract] = useState(false)
   const { connectionsCollection } = useCollections()
-  const connection = connectionsCollection.get(connectionResource.connectionId)!
+  const connection = connectionsCollection.get(connectionResource.connectionId)
+
+  if (!connection) {
+    return null
+  }
 
   if (!canInteract) {
     return (
-      <LogTrigger query={query} className={className} onMouseEnter={() => setCanInteract(true)} />
+      <LogTrigger
+        query={query}
+        className={className}
+        onMouseEnter={() => setCanInteract(true)}
+      />
     )
   }
 
-  function closePopover() {
+  const closePopover = async () => {
     if (!isOpen) {
-      sleep(200).then(() => setCanInteract(false))
+      await sleep(200)
+      setCanInteract(false)
     }
   }
 
@@ -140,7 +153,10 @@ function Log({
           />
         }
       />
-      <PopoverContent className="flex w-[95vw] flex-row gap-4" onAnimationEnd={closePopover}>
+      <PopoverContent
+        className="flex w-[95vw] flex-row gap-4"
+        onAnimationEnd={closePopover}
+      >
         <div className="min-w-0 flex-1 space-y-2">
           <div className="space-y-2">
             <Label>Query</Label>
@@ -154,11 +170,7 @@ function Log({
           {query.values && query.values.length > 0 && (
             <div className="space-y-2">
               <Label>Values</Label>
-              <pre
-                className={`
-                overflow-x-auto rounded-sm bg-accent/50 p-2 font-mono text-xs
-              `}
-              >
+              <pre className="bg-accent/50 overflow-x-auto rounded-sm p-2 font-mono text-xs">
                 {JSON.stringify(query.values)}
               </pre>
             </div>
@@ -179,12 +191,7 @@ function Log({
           {query.error && (
             <div className="space-y-2">
               <Label className="text-destructive">Error</Label>
-              <pre
-                className={`
-                overflow-x-auto rounded-sm bg-destructive/10 p-2 font-mono text-xs
-                whitespace-break-spaces text-destructive
-              `}
-              >
+              <pre className="bg-destructive/10 text-destructive overflow-x-auto rounded-sm p-2 font-mono text-xs whitespace-break-spaces">
                 {query.error}
               </pre>
             </div>
@@ -195,20 +202,21 @@ function Log({
   )
 }
 
-export function QueryLogger({
+export const QueryLogger = ({
   connectionResource,
   className,
 }: {
   connectionResource: ConnectionResource
   className?: string
-}) {
-  const { scrollRef, contentRef, scrollToBottom, isNearBottom } = useStickToBottom({
-    initial: 'instant',
-  })
+}) => {
+  const { scrollRef, contentRef, scrollToBottom, isNearBottom } =
+    useStickToBottom({
+      initial: 'instant',
+    })
   const queries = useSubscription(queryLogsStore, {
-    selector: state =>
+    selector: (state) =>
       Object.values(state[connectionResource.id] || {}).toSorted(
-        (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+        (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
       ),
   })
   const [statusGroup, setStatusGroup] = useState<QueryStatus>()
@@ -217,46 +225,43 @@ export function QueryLogger({
 
   const filteredQueries = useMemo(() => {
     if (statusGroup) {
-      return queries.filter(query => getQueryStatus(query) === statusGroup)
+      return queries.filter((query) => getQueryStatus(query) === statusGroup)
     }
     return queries
   }, [queries, statusGroup])
 
-  const statusCounts = queries.reduce(
-    (counts, query) => {
-      if (query.error) {
-        counts.error++
-      } else if (query.result) {
-        counts.success++
-      } else {
-        counts.pending++
-      }
-      return counts
-    },
-    { success: 0, error: 0, pending: 0 },
-  )
+  const statusCounts = { error: 0, pending: 0, success: 0 }
+  for (const query of queries) {
+    if (query.error) {
+      statusCounts.error += 1
+    } else if (query.result) {
+      statusCounts.success += 1
+    } else {
+      statusCounts.pending += 1
+    }
+  }
 
   const clearQueries = () => {
     setIsClearing(true)
     queryLogsStore.set(
-      state =>
+      (state) =>
         ({
           ...state,
           [connectionResource.id]: {},
-        }) satisfies typeof state,
+        }) satisfies typeof state
     )
   }
 
   const toggleGroup = (status: QueryStatus) => {
-    setStatusGroup(prev => (prev === status ? undefined : status))
+    setStatusGroup((prev) => (prev === status ? undefined : status))
   }
 
   const { getVirtualItems, getTotalSize } = useVirtualizer({
-    useFlushSync: false,
     count: filteredQueries.length,
-    getScrollElement: () => scrollRef.current,
     estimateSize: () => 29,
+    getScrollElement: () => scrollRef.current,
     overscan: 5,
+    useFlushSync: false,
   })
 
   const virtualItems = getVirtualItems()
@@ -264,16 +269,22 @@ export function QueryLogger({
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.style.setProperty('--scroll-top-offset', `${virtualItems[0]?.start ?? 0}px`)
+      scrollRef.current.style.setProperty(
+        '--scroll-top-offset',
+        `${virtualItems[0]?.start ?? 0}px`
+      )
       scrollRef.current.style.setProperty(
         '--scroll-bottom-offset',
-        `${totalSize - (virtualItems.at(-1)?.end ?? 0)}px`,
+        `${totalSize - (virtualItems.at(-1)?.end ?? 0)}px`
       )
     }
   }, [scrollRef, virtualItems, totalSize])
 
   return (
-    <div data-mask className={cn('flex h-full flex-col justify-between', className)}>
+    <div
+      data-mask
+      className={cn('flex h-full flex-col justify-between', className)}
+    >
       <div className="flex items-center justify-between px-4 py-2">
         <div className="flex items-center gap-2">
           <CardTitle>Query Logger</CardTitle>
@@ -281,7 +292,10 @@ export function QueryLogger({
             <Button
               size="xs"
               variant="outline"
-              className={cn('text-success!', statusGroup === 'success' && 'bg-accent!')}
+              className={cn(
+                'text-success!',
+                statusGroup === 'success' && 'bg-accent!'
+              )}
               onClick={() => toggleGroup('success')}
             >
               <RiCheckboxCircleLine className="size-3" />
@@ -291,7 +305,10 @@ export function QueryLogger({
             <Button
               size="xs"
               variant="outline"
-              className={cn('text-destructive!', statusGroup === 'error' && 'bg-accent!')}
+              className={cn(
+                'text-destructive!',
+                statusGroup === 'error' && 'bg-accent!'
+              )}
               onClick={() => toggleGroup('error')}
             >
               <RiCloseCircleLine className="size-3" />
@@ -301,7 +318,10 @@ export function QueryLogger({
             <Button
               size="xs"
               variant="outline"
-              className={cn('text-warning!', statusGroup === 'pending' && 'bg-accent!')}
+              className={cn(
+                'text-warning!',
+                statusGroup === 'pending' && 'bg-accent!'
+              )}
               onClick={() => toggleGroup('pending')}
             >
               <RiTimeLine className="size-3" />
@@ -312,49 +332,63 @@ export function QueryLogger({
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon-sm" onClick={clearQueries}>
             <ContentSwitch
-              activeContent={<RiCheckLine className="size-4 text-success" />}
+              activeContent={<RiCheckLine className="text-success size-4" />}
               active={isClearing}
               onSwitchEnd={setIsClearing}
             >
-              <RiDeleteBinLine className="size-4 text-destructive" />
+              <RiDeleteBinLine className="text-destructive size-4" />
             </ContentSwitch>
           </Button>
           <Button
             variant="outline"
             size="icon-sm"
             onClick={() =>
-              store.set(state => ({ ...state, loggerOpened: false }) satisfies typeof state)
+              store.set(
+                (state) =>
+                  ({ ...state, loggerOpened: false }) satisfies typeof state
+              )
             }
           >
             <RiCloseLine className="size-4" />
           </Button>
         </div>
       </div>
-      <div ref={scrollRef} className="relative no-scrollbar min-h-0 scroll-fade overflow-auto">
+      <div
+        ref={scrollRef}
+        className="no-scrollbar scroll-fade relative min-h-0 overflow-auto"
+      >
         {filteredQueries.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="mb-3">
-              <RiFileListLine className="size-10 text-muted-foreground/30" />
+              <RiFileListLine className="text-muted-foreground/30 size-10" />
             </div>
-            <p className="mb-1 text-base font-medium text-muted-foreground">No queries yet</p>
+            <p className="text-muted-foreground mb-1 text-base font-medium">
+              No queries yet
+            </p>
           </div>
         )}
         <div ref={contentRef} style={{ height: `${totalSize}px` }}>
           <div className="h-(--scroll-top-offset)" />
-          {virtualItems.map(virtualItem => (
-            <Log
-              key={virtualItem.key}
-              query={filteredQueries[virtualItem.index]!}
-              connectionResource={connectionResource}
-            />
-          ))}
+          {virtualItems.map((virtualItem) => {
+            const logQuery = filteredQueries[virtualItem.index]
+            if (!logQuery) {
+              return null
+            }
+            return (
+              <Log
+                key={virtualItem.key}
+                query={logQuery}
+                connectionResource={connectionResource}
+              />
+            )
+          })}
           <div className="h-(--scroll-bottom-offset)" />
         </div>
         <div className="sticky bottom-0 h-0">
           <Button
             className={cn(
               'absolute bottom-2 left-1/2 -translate-x-1/2',
-              isNearBottom ? `pointer-events-none opacity-0` : '',
+              isNearBottom ? `pointer-events-none opacity-0` : ''
             )}
             variant="secondary"
             size="icon-sm"

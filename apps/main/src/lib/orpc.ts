@@ -9,19 +9,18 @@ const getClientLink = createIsomorphicFn()
   .client(
     () =>
       new RPCLink({
-        url: `${import.meta.env.VITE_PUBLIC_API_URL}/rpc`,
         fetch(request, init) {
           return fetch(request, {
             ...init,
             credentials: 'include',
           })
         },
-      }),
+        url: `${import.meta.env.VITE_PUBLIC_API_URL}/rpc`,
+      })
   )
   .server(
     () =>
       new RPCLink({
-        url: `${import.meta.env.VITE_PUBLIC_API_URL}/rpc`,
         headers: () => {
           const request = getRequest()
 
@@ -29,7 +28,10 @@ const getClientLink = createIsomorphicFn()
             cookie: request.headers.get('cookie') ?? '',
           }
         },
-      }),
+        url: `${import.meta.env.VITE_PUBLIC_API_URL}/rpc`,
+      })
   )
 
-export const orpc = createTanstackQueryUtils(createORPCClient<ORPCRouter>(getClientLink()))
+export const orpc = createTanstackQueryUtils(
+  createORPCClient<ORPCRouter>(getClientLink())
+)

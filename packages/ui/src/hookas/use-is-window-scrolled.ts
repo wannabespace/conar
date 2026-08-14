@@ -1,9 +1,9 @@
 import * as React from 'react'
 
-export function useIsWindowScrolled({
+export const useIsWindowScrolled = ({
   threshold = 10,
   initial = false,
-}: { threshold?: number; initial?: boolean } = {}) {
+}: { threshold?: number; initial?: boolean } = {}) => {
   const [isScrolled, setIsScrolled] = React.useState(initial)
 
   React.useLayoutEffect(() => {

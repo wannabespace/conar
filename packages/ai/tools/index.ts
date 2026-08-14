@@ -9,33 +9,35 @@ import { env } from '../env'
 
 export const tools = {
   columns: tool({
-    description: 'Use this tool if you need to get the list of columns in a table.',
+    description:
+      'Use this tool if you need to get the list of columns in a table.',
     inputSchema: z.object({
       tableAndSchema: z.object({
-        tableName: z.string(),
         schemaName: z.string(),
+        tableName: z.string(),
       }),
     }),
     outputSchema: z.array(
       z.object({
+        default: z.union([z.string(), z.null()]),
+        id: z.string(),
         isEditable: z.boolean(),
         isNullable: z.boolean(),
         table: z.string(),
-        id: z.string(),
         type: z.string(),
-        default: z.union([z.string(), z.null()]),
-      }),
+      })
     ),
   }),
   enums: tool({
-    description: 'Use this tool if you need to get the list of enums in a database',
+    description:
+      'Use this tool if you need to get the list of enums in a database',
     inputSchema: z.object({}),
     outputSchema: z.array(
       z.object({
-        schema: z.string(),
         name: z.string(),
+        schema: z.string(),
         value: z.string(),
-      }),
+      })
     ),
   }),
   select: tool({
@@ -49,31 +51,37 @@ export const tools = {
       'For tableName use only table without schema prefix.',
     ].join('\n'),
     inputSchema: z.object({
+      limit: z.number(),
+      offset: z.number(),
+      orderBy: z.union([
+        z.record(z.string(), z.enum(['ASC', 'DESC'])),
+        z.null(),
+      ]),
+      select: z.array(z.string()),
+      tableAndSchema: z.object({
+        schemaName: z.string(),
+        tableName: z.string(),
+      }),
       whereConcatOperator: z.enum(['AND', 'OR']),
       whereFilters: z.array(
         z.object({
           column: z.string(),
           operator: z.enum(
-            SQL_FILTERS_LIST.map(filter => filter.operator) as [string, ...string[]],
+            SQL_FILTERS_LIST.map((filter) => filter.operator) as [
+              string,
+              ...string[],
+            ]
           ),
           values: z.array(z.string()),
-        }),
+        })
       ),
-      select: z.array(z.string()),
-      limit: z.number(),
-      offset: z.number(),
-      orderBy: z.union([z.record(z.string(), z.enum(['ASC', 'DESC'])), z.null()]),
-      tableAndSchema: z.object({
-        tableName: z.string(),
-        schemaName: z.string(),
-      }),
     }),
     outputSchema: z.unknown(),
   }),
   ...(env.EXA_API_KEY && { webSearch: webSearch({ apiKey: env.EXA_API_KEY }) }),
   ...(env.CONTEXT7_API_KEY && {
-    resolveLibraryId: resolveLibraryId({ apiKey: env.CONTEXT7_API_KEY }),
     queryDocs: queryDocs({ apiKey: env.CONTEXT7_API_KEY }),
+    resolveLibraryId: resolveLibraryId({ apiKey: env.CONTEXT7_API_KEY }),
   }),
 }
 

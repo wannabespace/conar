@@ -14,12 +14,14 @@ export const exchange = orpc
   .input(
     type({
       codeChallenge: 'string',
-      verifier: 'string',
       type: '"crypto" | "noble" = "crypto"',
-    }),
+      verifier: 'string',
+    })
   )
-  .handler(async function ({ input, context: { headers } }) {
-    const generatedCodeChallenge = await challenge[input.type].generateCode(input.verifier)
+  .handler(async ({ input, context: { headers } }) => {
+    const generatedCodeChallenge = await challenge[input.type].generateCode(
+      input.verifier
+    )
 
     if (generatedCodeChallenge !== input.codeChallenge) {
       throw new ORPCError('NOT_ACCEPTABLE', {
@@ -36,14 +38,16 @@ export const exchange = orpc
     }
 
     const context = await auth.$context
-    const { token, id } = await context.internalAdapter.createSession(data.userId)
+    const { token, id } = await context.internalAdapter.createSession(
+      data.userId
+    )
     await codeChallengeRedis.delete(input.codeChallenge)
     await db
       .update(sessions)
       .set({
-        userAgent: headers.get('User-Agent'),
         ipAddress: headers.get('X-Forwarded-For'),
+        userAgent: headers.get('User-Agent'),
       })
       .where(eq(sessions.id, id))
-    return { token, newUser: data.newUser }
+    return { newUser: data.newUser, token }
   })

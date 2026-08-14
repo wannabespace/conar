@@ -4,6 +4,8 @@ import { authClient } from '~/lib/auth'
 
 import { AuthForm } from './-components/auth-form'
 
+const SignInPage = () => <AuthForm type="sign-in" />
+
 export const Route = createFileRoute('/_auth/sign-in')({
   component: SignInPage,
   loader: async () => {
@@ -14,7 +16,3 @@ export const Route = createFileRoute('/_auth/sign-in')({
     }
   },
 })
-
-function SignInPage() {
-  return <AuthForm type="sign-in" />
-}

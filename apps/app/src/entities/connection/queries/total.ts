@@ -20,88 +20,10 @@ export const resourceTableTotalQuery = memoize(
       filters: ActiveFilter[]
       exact: boolean
     }
-  }) => {
-    return createQuery({
-      type: type({
-        count: 'number',
-        isEstimated: 'boolean',
-      }),
+  }) =>
+    createQuery({
       query: {
-        postgres: async db => {
-          if (!exact && !filters?.length) {
-            const estimate = await db
-              .withSchema('pg_catalog')
-              .selectFrom('pg_catalog.pg_class')
-              .innerJoin(
-                'pg_catalog.pg_namespace',
-                'pg_catalog.pg_namespace.oid',
-                'pg_catalog.pg_class.relnamespace',
-              )
-              .select('pg_catalog.pg_class.reltuples as count')
-              .where('pg_catalog.pg_namespace.nspname', '=', schema)
-              .where('pg_catalog.pg_class.relname', '=', table)
-              .executeTakeFirst()
-
-            if (estimate && estimate.count !== null && estimate.count >= 0) {
-              return {
-                count: Math.round(estimate.count),
-                isEstimated: true,
-              }
-            }
-          }
-
-          const query = await db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .selectFrom(table)
-            .select(db.fn.countAll().as('total'))
-            .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
-            .executeTakeFirst()
-
-          return { count: Number(query?.total ?? 0), isEstimated: false }
-        },
-        mysql: async db => {
-          if (!exact && !filters?.length) {
-            const estimate = await db
-              .withSchema('information_schema')
-              .selectFrom('information_schema.TABLES')
-              .select('TABLE_ROWS as count')
-              .where('TABLE_SCHEMA', '=', schema)
-              .where('TABLE_NAME', '=', table)
-              .executeTakeFirst()
-
-            if (estimate && estimate.count !== null && estimate.count >= 0) {
-              return { count: estimate.count, isEstimated: true }
-            }
-          }
-
-          const query = await db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .selectFrom(table)
-            .select(db.fn.countAll().as('total'))
-            .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
-            .executeTakeFirst()
-
-          return { count: Number(query?.total ?? 0), isEstimated: false }
-        },
-
-        mssql: async db => {
-          const query = await db
-            .withSchema(schema)
-            .$extendTables<{ [table]: Record<string, unknown> }>()
-            .selectFrom(table)
-            .select(db.fn.countAll().as('total'))
-            .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
-            .executeTakeFirst()
-
-          return {
-            count: Number(query?.total ?? 0),
-            isEstimated: false,
-          }
-        },
-
-        clickhouse: async db => {
+        clickhouse: async (db) => {
           if (!exact && !filters?.length) {
             const estimate = await db
               .withSchema('system')
@@ -122,17 +44,92 @@ export const resourceTableTotalQuery = memoize(
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(db.fn.countAll().as('total'))
-            .$if(filters !== undefined, qb => qb.where(eb => buildWhere(eb, filters!)))
+            .where((eb) => buildWhere(eb, filters))
+            .executeTakeFirst()
+
+          return { count: Number(query?.total ?? 0), isEstimated: false }
+        },
+        mssql: async (db) => {
+          const query = await db
+            .withSchema(schema)
+            .$extendTables<{ [table]: Record<string, unknown> }>()
+            .selectFrom(table)
+            .select(db.fn.countAll().as('total'))
+            .where((eb) => buildWhere(eb, filters))
+            .executeTakeFirst()
+
+          return {
+            count: Number(query?.total ?? 0),
+            isEstimated: false,
+          }
+        },
+        mysql: async (db) => {
+          if (!exact && !filters?.length) {
+            const estimate = await db
+              .withSchema('information_schema')
+              .selectFrom('information_schema.TABLES')
+              .select('TABLE_ROWS as count')
+              .where('TABLE_SCHEMA', '=', schema)
+              .where('TABLE_NAME', '=', table)
+              .executeTakeFirst()
+
+            if (estimate && estimate.count !== null && estimate.count >= 0) {
+              return { count: estimate.count, isEstimated: true }
+            }
+          }
+
+          const query = await db
+            .withSchema(schema)
+            .$extendTables<{ [table]: Record<string, unknown> }>()
+            .selectFrom(table)
+            .select(db.fn.countAll().as('total'))
+            .where((eb) => buildWhere(eb, filters))
+            .executeTakeFirst()
+
+          return { count: Number(query?.total ?? 0), isEstimated: false }
+        },
+        postgres: async (db) => {
+          if (!exact && !filters?.length) {
+            const estimate = await db
+              .withSchema('pg_catalog')
+              .selectFrom('pg_catalog.pg_class')
+              .innerJoin(
+                'pg_catalog.pg_namespace',
+                'pg_catalog.pg_namespace.oid',
+                'pg_catalog.pg_class.relnamespace'
+              )
+              .select('pg_catalog.pg_class.reltuples as count')
+              .where('pg_catalog.pg_namespace.nspname', '=', schema)
+              .where('pg_catalog.pg_class.relname', '=', table)
+              .executeTakeFirst()
+
+            if (estimate && estimate.count !== null && estimate.count >= 0) {
+              return {
+                count: Math.round(estimate.count),
+                isEstimated: true,
+              }
+            }
+          }
+
+          const query = await db
+            .withSchema(schema)
+            .$extendTables<{ [table]: Record<string, unknown> }>()
+            .selectFrom(table)
+            .select(db.fn.countAll().as('total'))
+            .where((eb) => buildWhere(eb, filters))
             .executeTakeFirst()
 
           return { count: Number(query?.total ?? 0), isEstimated: false }
         },
       },
+      type: type({
+        count: 'number',
+        isEstimated: 'boolean',
+      }),
     })
-  },
 )
 
-export function resourceTableTotalQueryOptions({
+export const resourceTableTotalQueryOptions = ({
   connectionResource,
   table,
   schema,
@@ -142,11 +139,11 @@ export function resourceTableTotalQueryOptions({
   table: string
   schema: string
   query: { filters: ActiveFilter[]; exact: boolean }
-}) {
-  return queryOptions({
+}) =>
+  queryOptions({
     queryFn: async () =>
-      resourceTableTotalQuery({ table, schema, query: { filters, exact } }).run(
-        await connectionResourceToQueryParams(connectionResource),
+      resourceTableTotalQuery({ query: { exact, filters }, schema, table }).run(
+        await connectionResourceToQueryParams(connectionResource)
       ),
     queryKey: [
       'connection-resource',
@@ -157,10 +154,9 @@ export function resourceTableTotalQueryOptions({
       table,
       'total',
       {
-        filters,
         exact,
+        filters,
       },
     ],
     throwOnError: false,
   })
-}

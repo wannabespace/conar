@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@tamery/ui/components/select'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import type { constraintsType } from '~/entities/connection/queries'
@@ -33,29 +33,6 @@ import { SchemaSelect } from '../-components/schema-select'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
-export const Route = createFileRoute('/_protected/connection/$resourceId/definitions/constraints/')(
-  {
-    component: DatabaseConstraintsPage,
-    loader: ({ context }) => ({
-      connection: context.connection,
-      connectionResource: context.connectionResource,
-    }),
-    head: ({ loaderData }) => ({
-      meta: loaderData
-        ? [
-            {
-              title: title(
-                'Constraints',
-                loaderData.connection.name,
-                loaderData.connectionResource.name,
-              ),
-            },
-          ]
-        : [],
-    }),
-  },
-)
-
 type ConstraintType = (typeof constraintsType.infer)['type']
 
 const filterOptions: { label: string; value: ConstraintType | 'all' }[] = [
@@ -65,20 +42,27 @@ const filterOptions: { label: string; value: ConstraintType | 'all' }[] = [
   { label: 'Unique', value: 'unique' },
 ]
 
-function getIcon(type: ConstraintType) {
+const getIcon = (type: ConstraintType) => {
   switch (type) {
     case 'primaryKey':
-    case 'unique':
-      return <RiKey2Line className="size-4 text-primary" />
-    case 'foreignKey':
-      return <RiLinksLine className="size-4 text-primary" />
-    default:
-      return <RiDatabase2Line className="size-4 text-primary" />
+    case 'unique': {
+      return <RiKey2Line className="text-primary size-4" />
+    }
+    case 'foreignKey': {
+      return <RiLinksLine className="text-primary size-4" />
+    }
+    default: {
+      return <RiDatabase2Line className="text-primary size-4" />
+    }
   }
 }
 
-function DatabaseConstraintsPage() {
-  const { connectionResource } = Route.useRouteContext()
+const routeApi = getRouteApi(
+  '/_protected/connection/$resourceId/definitions/constraints/'
+)
+
+const DatabaseConstraintsPage = () => {
+  const { connectionResource } = routeApi.useRouteContext()
   const {
     data: constraints,
     refetch,
@@ -86,23 +70,26 @@ function DatabaseConstraintsPage() {
     isPending,
     dataUpdatedAt,
   } = useQuery(resourceConstraintsQueryOptions({ connectionResource }))
-  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } = useDefinitionsState({
-    connectionResource,
-  })
-  const [filterType, setFilterType] = useState<(typeof filterOptions)[number]['value']>('all')
+  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
+    useDefinitionsState({
+      connectionResource,
+    })
+  const [filterType, setFilterType] =
+    useState<(typeof filterOptions)[number]['value']>('all')
 
   useRefreshHotkey(refetch, isFetching)
 
   const filteredConstraints =
     constraints?.filter(
-      item =>
+      (item) =>
         item.schema === selectedSchema &&
         (filterType === 'all' || filterType === item.type) &&
         (!search ||
           item.name.toLowerCase().includes(search.toLowerCase()) ||
           item.table.toLowerCase().includes(search.toLowerCase()) ||
-          (item.column && item.column.toLowerCase().includes(search.toLowerCase())) ||
-          (item.type && item.type.toLowerCase().includes(search.toLowerCase()))),
+          (item.column &&
+            item.column.toLowerCase().includes(search.toLowerCase())) ||
+          (item.type && item.type.toLowerCase().includes(search.toLowerCase())))
     ) ?? []
 
   return (
@@ -119,12 +106,12 @@ function DatabaseConstraintsPage() {
           placeholder="Search constraints"
           autoFocus
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           onClear={() => setSearch('')}
         />
         <Select
           value={filterType}
-          onValueChange={v => {
+          onValueChange={(v) => {
             if (v) {
               setFilterType(v)
             }
@@ -132,13 +119,16 @@ function DatabaseConstraintsPage() {
         >
           <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter Type">
-              {value =>
-                value ? filterOptions.find(option => option.value === value)?.label : 'Filter Type'
+              {(value) =>
+                value
+                  ? filterOptions.find((option) => option.value === value)
+                      ?.label
+                  : 'Filter Type'
               }
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {filterOptions.map(option => (
+            {filterOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -159,7 +149,7 @@ function DatabaseConstraintsPage() {
           />
         )}
 
-        {filteredConstraints.map(item => (
+        {filteredConstraints.map((item) => (
           <CardMotion
             key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
             layout
@@ -172,14 +162,14 @@ function DatabaseConstraintsPage() {
                     {getIcon(item.type)}
                     <HighlightText text={item.name} match={search} />
                     <Badge variant="secondary">
-                      {filterOptions.find(option => option.value === item.type)?.label}
+                      {
+                        filterOptions.find(
+                          (option) => option.value === item.type
+                        )?.label
+                      }
                     </Badge>
                   </CardTitle>
-                  <div
-                    className={`
-                    flex items-center gap-1.5 text-sm text-muted-foreground
-                  `}
-                  >
+                  <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
                     <Badge variant="outline">
                       <RiTable2 className="size-3" />
                       <HighlightText text={item.table} match={search} />
@@ -198,7 +188,7 @@ function DatabaseConstraintsPage() {
               </div>
             </CardContent>
             {item.type === 'foreignKey' && (
-              <CardContent className="border-t bg-muted/10 px-4 py-3 text-sm">
+              <CardContent className="bg-muted/10 border-t px-4 py-3 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">References:</span>
                   <Badge variant="outline">
@@ -215,3 +205,26 @@ function DatabaseConstraintsPage() {
     </>
   )
 }
+
+export const Route = createFileRoute(
+  '/_protected/connection/$resourceId/definitions/constraints/'
+)({
+  component: DatabaseConstraintsPage,
+  loader: ({ context }) => ({
+    connection: context.connection,
+    connectionResource: context.connectionResource,
+  }),
+  head: ({ loaderData }) => ({
+    meta: loaderData
+      ? [
+          {
+            title: title(
+              'Constraints',
+              loaderData.connection.name,
+              loaderData.connectionResource.name
+            ),
+          },
+        ]
+      : [],
+  }),
+})

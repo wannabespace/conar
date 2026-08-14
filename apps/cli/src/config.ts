@@ -11,7 +11,7 @@ interface CliConfig {
   token: string | null
 }
 
-function readConfig(): CliConfig {
+const readConfig = (): CliConfig => {
   try {
     const raw = fs.readFileSync(CONFIG_FILE, 'utf-8')
     return JSON.parse(raw) as CliConfig
@@ -20,8 +20,8 @@ function readConfig(): CliConfig {
   }
 }
 
-function writeConfig(config: CliConfig) {
-  fs.mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 })
+const writeConfig = (config: CliConfig) => {
+  fs.mkdirSync(CONFIG_DIR, { mode: 0o700, recursive: true })
   tryCatch(() => fs.chmodSync(CONFIG_DIR, 0o700))
 
   fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), {
@@ -32,14 +32,12 @@ function writeConfig(config: CliConfig) {
   tryCatch(() => fs.chmodSync(CONFIG_FILE, 0o600))
 }
 
-export function getToken(): string | null {
-  return readConfig().token
-}
+export const getToken = (): string | null => readConfig().token
 
-export function saveToken(token: string) {
+export const saveToken = (token: string) => {
   writeConfig({ ...readConfig(), token })
 }
 
-export function clearToken() {
+export const clearToken = () => {
   writeConfig({ ...readConfig(), token: null })
 }

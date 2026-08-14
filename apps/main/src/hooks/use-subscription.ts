@@ -5,59 +5,58 @@ import { useRouter } from '@tanstack/react-router'
 import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
-export function useSubscription() {
+export const useSubscription = () => {
   const { data } = authClient.useSession()
   const { data: list, isPending } = useQuery(
     orpc.account.subscription.list.queryOptions({
       enabled: !!data?.user.id,
-    }),
+    })
   )
 
   const subscription =
-    list?.find(s =>
+    list?.find((s) =>
       ACTIVE_SUBSCRIPTION_STATUSES.includes(
-        s.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number],
-      ),
+        s.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number]
+      )
     ) ?? null
 
-  return { subscription, isPending }
+  return { isPending, subscription }
 }
 
-export function useUpgradeSubscription() {
+export const useUpgradeSubscription = () => {
   const router = useRouter()
   const returnHref = router.buildLocation({ to: '/account' }).href
   const successHref = router.buildLocation({
-    to: '/account',
     search: { subscription: 'success' },
+    to: '/account',
   }).href
   const cancelHref = router.buildLocation({
-    to: '/account',
     search: { subscription: 'cancel' },
+    to: '/account',
   }).href
 
   const { mutate: upgrade, isPending: isUpgrading } = useMutation({
-    mutationKey: ['subscription', 'upgrade'],
-    mutationFn: async (isYearly: boolean = false) => {
+    mutationFn: async (isYearly: boolean) => {
       const result = await orpc.account.subscription.upgrade.call({
-        returnUrl: location.origin + returnHref,
-        successUrl: location.origin + successHref,
         cancelUrl: location.origin + cancelHref,
         isYearly,
+        returnUrl: location.origin + returnHref,
+        successUrl: location.origin + successHref,
       })
 
       location.assign(result.url)
     },
+    mutationKey: ['subscription', 'upgrade'],
   })
 
   return {
-    upgrade,
     isUpgrading,
+    upgrade,
   }
 }
 
-export function useBillingPortal({ returnHref }: { returnHref: string }) {
+export const useBillingPortal = ({ returnHref }: { returnHref: string }) => {
   const { mutate: openBillingPortal, isPending: isOpening } = useMutation({
-    mutationKey: ['subscription', 'billingPortal'],
     mutationFn: async () => {
       const result = await orpc.account.subscription.billingPortal.call({
         returnUrl: location.origin + returnHref,
@@ -65,10 +64,11 @@ export function useBillingPortal({ returnHref }: { returnHref: string }) {
 
       location.assign(result.url)
     },
+    mutationKey: ['subscription', 'billingPortal'],
   })
 
   return {
-    openBillingPortal,
     isOpening,
+    openBillingPortal,
   }
 }

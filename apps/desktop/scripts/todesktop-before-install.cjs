@@ -1,12 +1,16 @@
 const { rm, writeFile } = require('node:fs/promises')
-const { join } = require('node:path')
+const path = require('node:path')
 
 // Runs on ToDesktop's build servers right before `pnpm install`. By this point
 // the CLI has already resolved every `catalog:` reference from the root
 // pnpm-workspace.yaml into a concrete version, so versions are read straight off
 // pkgJson rather than duplicated here. Add/remove a runtime dependency in
 // package.json and it flows through automatically.
-module.exports = async ({ pkgJsonPath, pkgJson, appDir }) => {
+module.exports = async function toDesktopBeforeInstall({
+  pkgJsonPath,
+  pkgJson,
+  appDir,
+}) {
   // Treat the app as a standalone single-package workspace so install doesn't
   // try to reach back into the monorepo root (which isn't uploaded). electron
   // is the only allowed build — its install script must run to fetch the binary.
@@ -18,26 +22,31 @@ module.exports = async ({ pkgJsonPath, pkgJson, appDir }) => {
   // `conf`), throwing ERR_MODULE_NOT_FOUND at runtime. A flat tree resolves
   // every dependency by plain directory lookup, which asar handles correctly.
   await writeFile(
-    join(appDir, 'pnpm-workspace.yaml'),
+    path.join(appDir, 'pnpm-workspace.yaml'),
     `packages:
   - .
 nodeLinker: hoisted
 allowBuilds:
   electron: true
-`,
+`
   )
 
   // The renderer and main process are already compiled into dist-electron, so
   // the workspace packages the CLI copied into bundledPackages aren't needed.
-  await rm(join(appDir, 'bundledPackages'), { recursive: true, force: true })
+  await rm(path.join(appDir, 'bundledPackages'), {
+    force: true,
+    recursive: true,
+  })
 
   const unresolved = Object.entries(pkgJson.dependencies ?? {})
-    .filter(([, spec]) => typeof spec === 'string' && spec.startsWith('catalog:'))
+    .filter(
+      ([, spec]) => typeof spec === 'string' && spec.startsWith('catalog:')
+    )
     .map(([name]) => name)
 
   if (unresolved.length > 0) {
     throw new Error(
-      `Expected the ToDesktop CLI to resolve catalog: versions before this hook, but these are still unresolved: ${unresolved.join(', ')}`,
+      `Expected the ToDesktop CLI to resolve catalog: versions before this hook, but these are still unresolved: ${unresolved.join(', ')}`
     )
   }
 

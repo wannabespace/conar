@@ -11,9 +11,9 @@ import type { GeneratorId } from '~/entities/connection/utils/seeds'
 export const primaryKeysType = type('Record<string, unknown>')
 
 export const draftType = type({
-  'primaryKeys': primaryKeysType,
-  'columnId': 'string',
-  'value': 'unknown',
+  primaryKeys: primaryKeysType,
+  columnId: 'string',
+  value: 'unknown',
   'error?': 'string',
   'isCommitting?': 'boolean',
 })
@@ -21,9 +21,9 @@ export const draftType = type({
 export const tablePageType = type({
   selected: primaryKeysType.array(),
   filters: type({
-    'column': 'string',
-    'ref': 'object' as type.cast<Filter>,
-    'values': 'unknown[]',
+    column: 'string',
+    ref: 'object' as type.cast<Filter>,
+    values: 'unknown[]',
     'disabled?': 'boolean',
   }).array() as type.cast<ActiveFilter[]>,
   exact: 'boolean',
@@ -35,8 +35,8 @@ export const tablePageType = type({
   columnSizes: 'Record<string, number>',
   generators: {
     '[string]': {
-      'generatorId': 'string' as type.cast<GeneratorId>,
-      'isNullable': 'boolean',
+      generatorId: 'string' as type.cast<GeneratorId>,
+      isNullable: 'boolean',
       'customExpression?': 'string',
     },
   },
@@ -72,38 +72,42 @@ export const tablePageStore = memoize(
       key: `${id}.${schema}-${table}.store`,
       defaultValue: defaultState,
       schema: tablePageType,
-    }),
+    })
 )
 
 type TablePageStore = ReturnType<typeof tablePageStore>
 
-export const TablePageStoreContext = createContext<TablePageStore>(null!)
+export const TablePageStoreContext = createContext<TablePageStore | null>(null)
 
-export function useTablePageStore() {
-  return use(TablePageStoreContext)
+export const useTablePageStore = () => {
+  const store = use(TablePageStoreContext)
+  if (!store) {
+    throw new Error('TablePageStoreContext is not provided')
+  }
+  return store
 }
 
-export function columnsOrder(store: TablePageStore) {
+export const columnsOrder = (store: TablePageStore) => {
   const setOrder = (columnId: string, order: 'ASC' | 'DESC') => {
     store.set(
-      state =>
+      (state) =>
         ({
           ...state,
           orderBy: {
             ...state.orderBy,
             [columnId]: order,
           },
-        }) satisfies typeof state,
+        }) satisfies typeof state
     )
   }
 
   const removeOrder = (columnId: string) => {
     store.set(
-      state =>
+      (state) =>
         ({
           ...state,
           orderBy: omit(state.orderBy, [columnId]),
-        }) satisfies typeof state,
+        }) satisfies typeof state
     )
   }
 
@@ -126,39 +130,46 @@ export function columnsOrder(store: TablePageStore) {
   }
 }
 
-export function primaryKeysKey(primaryKeys: typeof primaryKeysType.infer) {
-  return Object.entries(primaryKeys)
+export const primaryKeysKey = (primaryKeys: typeof primaryKeysType.infer) =>
+  Object.entries(primaryKeys)
     .toSorted()
     .map(([key, value]) => `${key}=${value}`)
     .join('|')
-}
 
-export function getRowPrimaryKeysValues(
+export const getRowPrimaryKeysValues = (
   row: Record<string, unknown>,
-  primaryKeys: string[],
-): typeof primaryKeysType.infer {
-  return primaryKeys.reduce<typeof primaryKeysType.infer>((acc, key) => {
-    acc[key] = row[key]
-    return acc
-  }, {})
+  primaryKeys: string[]
+): typeof primaryKeysType.infer => {
+  const values: typeof primaryKeysType.infer = {}
+  for (const key of primaryKeys) {
+    values[key] = row[key]
+  }
+  return values
 }
 
-export function getRowKeyByPrimaryKeys(row: Record<string, unknown>, primaryKeys: string[]) {
-  return primaryKeysKey(getRowPrimaryKeysValues(row, primaryKeys))
-}
+export const getRowKeyByPrimaryKeys = (
+  row: Record<string, unknown>,
+  primaryKeys: string[]
+) => primaryKeysKey(getRowPrimaryKeysValues(row, primaryKeys))
 
-export function draftKey(primaryKeys: typeof primaryKeysType.infer, columnId: string) {
-  return `${primaryKeysKey(primaryKeys)}:${columnId}`
-}
+export const draftKey = (
+  primaryKeys: typeof primaryKeysType.infer,
+  columnId: string
+) => `${primaryKeysKey(primaryKeys)}:${columnId}`
 
-export function draftsActions(store: TablePageStore) {
+export const draftsActions = (store: TablePageStore) => {
   const upsert = (draft: (typeof tablePageType.infer)['drafts'][number]) => {
-    store.set(state => {
+    store.set((state) => {
       const key = draftKey(draft.primaryKeys, draft.columnId)
-      const existingIndex = state.drafts.findIndex(d => draftKey(d.primaryKeys, d.columnId) === key)
+      const existingIndex = state.drafts.findIndex(
+        (d) => draftKey(d.primaryKeys, d.columnId) === key
+      )
 
       if (existingIndex === -1) {
-        return { ...state, drafts: [...state.drafts, draft] } satisfies typeof state
+        return {
+          ...state,
+          drafts: [...state.drafts, draft],
+        } satisfies typeof state
       }
 
       const next = [...state.drafts]
@@ -167,46 +178,58 @@ export function draftsActions(store: TablePageStore) {
     })
   }
 
-  const remove = (primaryKeys: typeof primaryKeysType.infer, columnId: string) => {
+  const remove = (
+    primaryKeys: typeof primaryKeysType.infer,
+    columnId: string
+  ) => {
     store.set(
-      state =>
+      (state) =>
         ({
           ...state,
           drafts: state.drafts.filter(
-            d => draftKey(d.primaryKeys, d.columnId) !== draftKey(primaryKeys, columnId),
+            (d) =>
+              draftKey(d.primaryKeys, d.columnId) !==
+              draftKey(primaryKeys, columnId)
           ),
-        }) satisfies typeof state,
+        }) satisfies typeof state
     )
   }
 
   const clear = () => {
-    store.set(state => ({ ...state, drafts: [] }) satisfies typeof state)
+    store.set((state) => ({ ...state, drafts: [] }) satisfies typeof state)
   }
 
   const setRowStatus = (
     primaryKeys: typeof primaryKeysType.infer,
-    patch: Partial<Pick<(typeof tablePageType.infer)['drafts'][number], 'error' | 'isCommitting'>>,
+    patch: Partial<
+      Pick<
+        (typeof tablePageType.infer)['drafts'][number],
+        'error' | 'isCommitting'
+      >
+    >
   ) => {
     store.set(
-      state =>
+      (state) =>
         ({
           ...state,
-          drafts: state.drafts.map(d =>
-            primaryKeysKey(d.primaryKeys) === primaryKeysKey(primaryKeys) ? { ...d, ...patch } : d,
+          drafts: state.drafts.map((d) =>
+            primaryKeysKey(d.primaryKeys) === primaryKeysKey(primaryKeys)
+              ? { ...d, ...patch }
+              : d
           ),
-        }) satisfies typeof state,
+        }) satisfies typeof state
     )
   }
 
   const removeRow = (primaryKeys: typeof primaryKeysType.infer) => {
     store.set(
-      state =>
+      (state) =>
         ({
           ...state,
           drafts: state.drafts.filter(
-            d => primaryKeysKey(d.primaryKeys) !== primaryKeysKey(primaryKeys),
+            (d) => primaryKeysKey(d.primaryKeys) !== primaryKeysKey(primaryKeys)
           ),
-        }) satisfies typeof state,
+        }) satisfies typeof state
     )
   }
 

@@ -7,14 +7,15 @@ import { Separator } from '@tamery/ui/components/separator'
 import { useAppForm } from '@tamery/ui/components/tanstack-form'
 import { useStore } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
-import { Link, useRouter } from '@tanstack/react-router'
+import { getRouteApi, Link, useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { BASE_ERROR_CODES } from 'better-auth'
 import { toast } from 'sonner'
 
 import { authClient, getLastUsedLoginMethod } from '~/lib/auth'
-import { Route } from '~/routes/_auth'
 import { handleError } from '~/utils/error'
+
+const { useSearch } = getRouteApi('/_auth')
 
 type Type = 'sign-up' | 'sign-in'
 
@@ -35,10 +36,10 @@ const signUpSchema = baseAuthSchema.and({
   name: type('string').configure({ message: 'Name is required' }),
 })
 
-function useSocialMutation(provider: 'google' | 'github') {
-  const { redirectPath } = Route.useSearch()
+const useSocialMutation = (provider: 'google' | 'github') => {
+  const { redirectPath } = useSearch()
   const router = useRouter()
-  const href = router.buildLocation({ to: '/account' }).href
+  const { href } = router.buildLocation({ to: '/account' })
 
   return useMutation({
     mutationKey: ['social', provider],
@@ -61,65 +62,68 @@ function useSocialMutation(provider: 'google' | 'github') {
   })
 }
 
-function Last() {
-  return (
-    <Badge variant="secondary" className="pointer-events-none absolute -top-2 -right-2">
-      Last
-    </Badge>
-  )
-}
+const Last = () => (
+  <Badge
+    variant="secondary"
+    className="pointer-events-none absolute -top-2 -right-2"
+  >
+    Last
+  </Badge>
+)
 
-function SocialAuthForm() {
+const SocialAuthForm = () => {
   const lastMethod = getLastUsedLoginMethod()
-  const { mutate: googleSignIn, isPending: isGoogleSignInPending } = useSocialMutation('google')
-  const { mutate: githubSignIn, isPending: isGithubSignInPending } = useSocialMutation('github')
+  const { mutate: googleSignIn, isPending: isGoogleSignInPending } =
+    useSocialMutation('google')
+  const { mutate: githubSignIn, isPending: isGithubSignInPending } =
+    useSocialMutation('github')
 
   return (
-    <>
-      <div className="grid grid-cols-2 gap-4">
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => googleSignIn()}
-          disabled={isGoogleSignInPending || isGithubSignInPending}
-        >
-          <LoadingContent loading={isGoogleSignInPending}>
-            <RiGoogleFill className="size-4" />
-            Google
-          </LoadingContent>
-          {lastMethod === 'google' && <Last />}
-        </Button>
-        <Button
-          variant="outline"
-          className="w-full"
-          disabled={isGithubSignInPending || isGoogleSignInPending}
-          onClick={() => githubSignIn()}
-        >
-          <LoadingContent loading={isGithubSignInPending}>
-            <RiGithubFill className="size-4" />
-            GitHub
-          </LoadingContent>
-          {lastMethod === 'github' && <Last />}
-        </Button>
-      </div>
-    </>
+    <div className="grid grid-cols-2 gap-4">
+      <Button
+        variant="outline"
+        className="w-full"
+        onClick={() => googleSignIn()}
+        disabled={isGoogleSignInPending || isGithubSignInPending}
+      >
+        <LoadingContent loading={isGoogleSignInPending}>
+          <RiGoogleFill className="size-4" />
+          Google
+        </LoadingContent>
+        {lastMethod === 'google' && <Last />}
+      </Button>
+      <Button
+        variant="outline"
+        className="w-full"
+        disabled={isGithubSignInPending || isGoogleSignInPending}
+        onClick={() => githubSignIn()}
+      >
+        <LoadingContent loading={isGithubSignInPending}>
+          <RiGithubFill className="size-4" />
+          GitHub
+        </LoadingContent>
+        {lastMethod === 'github' && <Last />}
+      </Button>
+    </div>
   )
 }
 
-export function AuthForm({ type }: { type: Type }) {
-  const search = Route.useSearch()
+export const AuthForm = ({ type: authType }: { type: Type }) => {
+  const search = useSearch()
   const lastMethod = getLastUsedLoginMethod()
   const router = useRouter()
 
   const form = useAppForm({
     defaultValues:
-      type === 'sign-up' ? { email: '', password: '', name: '' } : { email: '', password: '' },
+      authType === 'sign-up'
+        ? { email: '', password: '', name: '' }
+        : { email: '', password: '' },
     validators: {
-      onSubmit: type === 'sign-up' ? signUpSchema : signInSchema,
+      onSubmit: authType === 'sign-up' ? signUpSchema : signInSchema,
     },
     onSubmit: async ({ value }) => {
       const { error, data } =
-        type === 'sign-up'
+        authType === 'sign-up'
           ? await authClient.signUp.email({
               email: value.email,
               password: value.password,
@@ -130,30 +134,36 @@ export function AuthForm({ type }: { type: Type }) {
               password: value.password,
             })
 
-      if (type === 'sign-in' && twoFactorRedirectSchema.allows(data)) {
+      if (authType === 'sign-in' && twoFactorRedirectSchema.allows(data)) {
         await router.navigate({ to: '/two-factor', search })
         return
       }
 
       if (error || !(data && data.token)) {
         if (data && !data.token) {
-          toast.error('For some reason, we were not able to sign you in. Please try again later.')
+          toast.error(
+            'For some reason, we were not able to sign you in. Please try again later.'
+          )
           return
         }
 
-        if (
-          type === 'sign-up' &&
-          (error!.code === BASE_ERROR_CODES.USER_ALREADY_EXISTS.code ||
-            error!.code === BASE_ERROR_CODES.USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL.code)
-        ) {
-          toast.error('User already exists. Please sign in or use a different email address.', {
-            action: {
-              label: 'Sign in',
-              onClick: () => {
-                router.navigate({ to: '/sign-in', search })
+        const isUserExistsError =
+          error?.code === BASE_ERROR_CODES.USER_ALREADY_EXISTS.code ||
+          error?.code ===
+            BASE_ERROR_CODES.USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL.code
+
+        if (authType === 'sign-up' && isUserExistsError) {
+          toast.error(
+            'User already exists. Please sign in or use a different email address.',
+            {
+              action: {
+                label: 'Sign in',
+                onClick: () => {
+                  router.navigate({ to: '/sign-in', search })
+                },
               },
-            },
-          })
+            }
+          )
         } else {
           handleError(error)
         }
@@ -162,7 +172,7 @@ export function AuthForm({ type }: { type: Type }) {
       if (search.redirectPath) {
         const url = new URL(location.origin + search.redirectPath)
 
-        if (type === 'sign-up') {
+        if (authType === 'sign-up') {
           url.searchParams.set('newUser', 'true')
         }
 
@@ -173,31 +183,38 @@ export function AuthForm({ type }: { type: Type }) {
     },
   })
 
-  const isSubmitting = useStore(form.store, state => state.isSubmitting)
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting)
 
   return (
     <>
       <div className="flex flex-col gap-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">
-          {type === 'sign-up' ? 'Create an account' : 'Sign in to your account'}
+          {authType === 'sign-up'
+            ? 'Create an account'
+            : 'Sign in to your account'}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          {type === 'sign-up' ? 'Already have an account?' : "Don't have an account?"}{' '}
-          <Link to={type === 'sign-up' ? '/sign-in' : '/sign-up'} search={search}>
-            {type === 'sign-up' ? 'Sign in' : 'Sign up'}
+        <p className="text-muted-foreground text-sm">
+          {authType === 'sign-up'
+            ? 'Already have an account?'
+            : "Don't have an account?"}{' '}
+          <Link
+            to={authType === 'sign-up' ? '/sign-in' : '/sign-up'}
+            search={search}
+          >
+            {authType === 'sign-up' ? 'Sign in' : 'Sign up'}
           </Link>
         </p>
       </div>
       <form
         className="space-y-4"
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           form.handleSubmit()
         }}
       >
         <FieldSet className="flex w-full flex-col gap-6">
           <form.AppField name="email">
-            {field => (
+            {(field) => (
               <field.Field>
                 <field.Label>Email</field.Label>
                 <field.Input
@@ -213,9 +230,9 @@ export function AuthForm({ type }: { type: Type }) {
               </field.Field>
             )}
           </form.AppField>
-          {type === 'sign-up' && (
+          {authType === 'sign-up' && (
             <form.AppField name="name">
-              {field => (
+              {(field) => (
                 <field.Field>
                   <field.Label>Name</field.Label>
                   <field.Input
@@ -230,11 +247,11 @@ export function AuthForm({ type }: { type: Type }) {
             </form.AppField>
           )}
           <form.AppField name="password">
-            {field => (
+            {(field) => (
               <field.Field>
                 <div className="flex w-full items-center justify-between">
                   <field.Label>Password</field.Label>
-                  {type === 'sign-in' && (
+                  {authType === 'sign-in' && (
                     <Button
                       variant="link"
                       size="xs"
@@ -245,27 +262,25 @@ export function AuthForm({ type }: { type: Type }) {
                     </Button>
                   )}
                 </div>
-                <field.PasswordInput autoComplete="password" placeholder="••••••••" />
+                <field.PasswordInput
+                  autoComplete="password"
+                  placeholder="••••••••"
+                />
                 <field.Error />
               </field.Field>
             )}
           </form.AppField>
           <Button className="w-full" type="submit" disabled={isSubmitting}>
             <LoadingContent loading={isSubmitting}>
-              {type === 'sign-up' ? 'Get started' : 'Sign in'}
+              {authType === 'sign-up' ? 'Get started' : 'Sign in'}
             </LoadingContent>
-            {type === 'sign-in' && lastMethod === 'email' && <Last />}
+            {authType === 'sign-in' && lastMethod === 'email' && <Last />}
           </Button>
         </FieldSet>
       </form>
       <div className="relative">
         <Separator />
-        <span
-          className={`
-          absolute top-1/2 left-1/2 -translate-1/2 bg-background px-4 text-sm
-          text-muted-foreground
-        `}
-        >
+        <span className="bg-background text-muted-foreground absolute top-1/2 left-1/2 -translate-1/2 px-4 text-sm">
           Or continue with
         </span>
       </div>

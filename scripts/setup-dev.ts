@@ -2,17 +2,11 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
-import { fileURLToPath } from 'node:url'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __filename = import.meta.filename
+const __dirname = import.meta.dirname
 
-/**
- * Recursively search for .env.example files in a directory
- * @param {string} dir - Directory to search in
- * @param {string[]} r - Array to collect found files
- */
-function findEnvExampleFiles(dir: string, r: string[] = []) {
+const findEnvExampleFiles = (dir: string, r: string[] = []) => {
   const items = fs.readdirSync(dir)
 
   for (const item of items) {
@@ -33,11 +27,7 @@ function findEnvExampleFiles(dir: string, r: string[] = []) {
   return r
 }
 
-/**
- * Copy .env.example to .env in the same directory
- * @param {string} envExamplePath - Path to .env.example file
- */
-function createEnvFile(envExamplePath: string) {
+const createEnvFile = (envExamplePath: string) => {
   const envPath = path.join(path.dirname(envExamplePath), '.env')
 
   if (fs.existsSync(envPath)) {
@@ -50,16 +40,13 @@ function createEnvFile(envExamplePath: string) {
   } catch (error) {
     console.error(
       `Failed to create .env file: ${envPath}`,
-      error instanceof Error ? error.message : error,
+      error instanceof Error ? error.message : error
     )
     return false
   }
 }
 
-/**
- * Main function to setup development environment
- */
-function setupDev() {
+const setupDev = () => {
   const repoRoot = path.join(__dirname, '..')
   const appsDir = path.join(repoRoot, 'apps')
 

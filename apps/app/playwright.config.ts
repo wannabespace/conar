@@ -1,17 +1,17 @@
 import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
-  testDir: './e2e',
   fullyParallel: true,
-  reporter: [['html', { open: 'never' }]],
-  use: {
-    baseURL: 'https://app.tamery.localhost',
-    trace: 'on-first-retry',
-  },
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
   ],
+  reporter: [['html', { open: 'never' }]],
+  testDir: './e2e',
+  use: {
+    baseURL: 'https://app.tamery.localhost',
+    trace: 'on-first-retry',
+  },
 })

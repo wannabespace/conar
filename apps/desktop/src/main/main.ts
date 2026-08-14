@@ -1,9 +1,9 @@
 import { createRequire } from 'node:module'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 import { isConnectionError } from '@tamery/shared/utils/connections'
 import type { UpdatesStatus } from '@tamery/shared/utils/updates'
+import type todesktopRuntime from '@todesktop/runtime'
 import type { Rectangle } from 'electron'
 import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
@@ -13,8 +13,8 @@ import { initElectronEvents } from './lib/events'
 import { buildMenu } from './lib/menu'
 
 const todesktop = createRequire(import.meta.url)(
-  '@todesktop/runtime',
-) as typeof import('@todesktop/runtime')
+  '@todesktop/runtime'
+) as typeof todesktopRuntime
 
 todesktop.init()
 
@@ -22,7 +22,7 @@ export const { autoUpdater } = todesktop
 
 initElectronEvents()
 
-process.on('uncaughtException', error => {
+process.on('uncaughtException', (error) => {
   if (isConnectionError(error)) {
     console.error('[Suppressed Connection Error]', error.message)
     return
@@ -30,11 +30,11 @@ process.on('uncaughtException', error => {
   throw error
 })
 
-process.on('unhandledRejection', reason => {
+process.on('unhandledRejection', (reason) => {
   if (isConnectionError(reason)) {
     console.error(
       '[Suppressed Connection Rejection]',
-      reason instanceof Error ? reason.message : reason,
+      reason instanceof Error ? reason.message : reason
     )
     return
   }
@@ -48,40 +48,42 @@ export const store = new Store<{
 
 let mainWindow: BrowserWindow | null = null
 
-export function createWindow() {
+export const createWindow = () => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
   const isMac = process.platform === 'darwin'
 
   mainWindow = new BrowserWindow({
-    width,
-    height,
-    minWidth: 500,
-    minHeight: 500,
     focusable: true,
+    height,
+    minHeight: 500,
+    minWidth: 500,
     titleBarStyle: 'hidden',
     trafficLightPosition: { x: 16, y: 13 },
+    width,
     ...(!isMac && {
       titleBarOverlay: {
         color: '#00000000',
-        symbolColor: '#a1a1aa',
         height: 40,
+        symbolColor: '#a1a1aa',
       },
     }),
     ...(isMac && {
+      backgroundColor: '#00000000',
       vibrancy: 'under-window',
       visualEffectState: 'active',
-      backgroundColor: '#00000000',
     }),
     webPreferences: {
+      preload: path.join(import.meta.dirname, './preload.mjs'),
       sandbox: false,
-      preload: path.join(path.dirname(fileURLToPath(import.meta.url)), './preload.mjs'),
     },
   })
 
   const bounds = store.get('bounds')
 
-  if (bounds) mainWindow.setBounds(bounds)
+  if (bounds) {
+    mainWindow.setBounds(bounds)
+  }
 
   const isFullscreen = store.get('fullscreen', false)
   if (isFullscreen) {
@@ -90,10 +92,14 @@ export function createWindow() {
 
   let saveBoundsTimeout: NodeJS.Timeout | null = null
   const saveBounds = () => {
-    if (saveBoundsTimeout) clearTimeout(saveBoundsTimeout)
+    if (saveBoundsTimeout) {
+      clearTimeout(saveBoundsTimeout)
+    }
 
     saveBoundsTimeout = setTimeout(() => {
-      if (!mainWindow || mainWindow.isDestroyed()) return
+      if (!mainWindow || mainWindow.isDestroyed()) {
+        return
+      }
 
       if (!mainWindow.isFullScreen() && !mainWindow.isMinimized()) {
         store.set('bounds', mainWindow.getNormalBounds())
@@ -108,19 +114,27 @@ export function createWindow() {
   mainWindow.on('leave-full-screen', saveBounds)
 
   const sendFullscreen = () =>
-    mainWindow?.webContents.send('fullscreen-changed', mainWindow.isFullScreen())
+    mainWindow?.webContents.send(
+      'fullscreen-changed',
+      mainWindow.isFullScreen()
+    )
   mainWindow.on('enter-full-screen', sendFullscreen)
   mainWindow.on('leave-full-screen', sendFullscreen)
   mainWindow.webContents.on('did-finish-load', sendFullscreen)
 
-  const sendFocus = () => mainWindow?.webContents.send('focus-changed', mainWindow.isFocused())
+  const sendFocus = () =>
+    mainWindow?.webContents.send('focus-changed', mainWindow.isFocused())
   mainWindow.on('blur', sendFocus)
   mainWindow.webContents.on('did-finish-load', sendFocus)
 
   mainWindow.on('close', () => {
-    if (!mainWindow) return
+    if (!mainWindow) {
+      return
+    }
 
-    if (saveBoundsTimeout) clearTimeout(saveBoundsTimeout)
+    if (saveBoundsTimeout) {
+      clearTimeout(saveBoundsTimeout)
+    }
 
     if (!mainWindow.isFullScreen() && !mainWindow.isMinimized()) {
       store.set('bounds', mainWindow.getNormalBounds())
@@ -139,9 +153,7 @@ export function createWindow() {
   })
 
   if (app.isPackaged) {
-    mainWindow.loadFile(
-      path.join(path.dirname(fileURLToPath(import.meta.url)), './renderer/index.html'),
-    )
+    mainWindow.loadFile(path.join(import.meta.dirname, './renderer/index.html'))
   } else {
     mainWindow.webContents.openDevTools()
     mainWindow.loadURL('https://app.local.tamery.app')
@@ -154,7 +166,6 @@ app.on('ready', () => {
   const win = createWindow()
 
   win.webContents.setWindowOpenHandler(({ url }) => {
-    // TODO: recheck internal router links
     const { protocol } = new URL(url)
     if (protocol === 'http:' || protocol === 'https:') {
       shell.openExternal(url)
@@ -184,7 +195,7 @@ app.on('activate', () => {
   }
 })
 
-export function sendToast({
+export const sendToast = ({
   message,
   description,
   type,
@@ -194,12 +205,17 @@ export function sendToast({
   description?: string
   type: 'success' | 'error' | 'info' | 'warning'
   duration?: number
-}) {
-  mainWindow?.webContents.send('toast', { message, description, type, duration })
+}) => {
+  mainWindow?.webContents.send('toast', {
+    description,
+    duration,
+    message,
+    type,
+  })
 }
 
-function sendUpdatesStatus(status: UpdatesStatus, message?: string) {
-  mainWindow?.webContents.send('updates-status', { status, message })
+const sendUpdatesStatus = (status: UpdatesStatus, message?: string) => {
+  mainWindow?.webContents.send('updates-status', { message, status })
 }
 
 autoUpdater?.on('checking-for-update', () => {
@@ -211,7 +227,7 @@ autoUpdater?.on('update-available', () => {
 autoUpdater?.on('update-not-available', () => {
   sendUpdatesStatus('no-updates')
 })
-autoUpdater?.on('error', e => {
+autoUpdater?.on('error', (e) => {
   sendUpdatesStatus('error', e.message.split('\n')[0])
 })
 autoUpdater?.on('download-progress', () => {

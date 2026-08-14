@@ -4,7 +4,7 @@ import { Spinner } from '../spinner'
 
 const defaultSpinner = <Spinner />
 
-export function LoadingContent({
+export const LoadingContent = ({
   children,
   className,
   loading,
@@ -16,31 +16,29 @@ export function LoadingContent({
   loading: boolean
   spinner?: React.ReactNode
   contentClassName?: string
-}) {
-  return (
+}) => (
+  <span
+    className={cn(
+      'relative flex items-center justify-center gap-2 overflow-hidden duration-150',
+      className
+    )}
+  >
     <span
       className={cn(
-        'relative flex items-center justify-center gap-2 overflow-hidden duration-150',
-        className,
+        loading ? '-translate-y-1/2' : 'translate-y-5',
+        'absolute top-1/2 left-1/2 -translate-x-1/2 duration-150'
       )}
     >
-      <span
-        className={cn(
-          loading ? '-translate-y-1/2' : 'translate-y-5',
-          'absolute top-1/2 left-1/2 -translate-x-1/2 duration-150',
-        )}
-      >
-        {spinner}
-      </span>
-      <span
-        className={cn(
-          'flex items-center gap-2 duration-150',
-          loading ? '-translate-y-5' : 'translate-y-0',
-          contentClassName,
-        )}
-      >
-        {children}
-      </span>
+      {spinner}
     </span>
-  )
-}
+    <span
+      className={cn(
+        'flex items-center gap-2 duration-150',
+        loading ? '-translate-y-5' : 'translate-y-0',
+        contentClassName
+      )}
+    >
+      {children}
+    </span>
+  </span>
+)

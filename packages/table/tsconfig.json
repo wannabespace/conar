@@ -1,6 +1,7 @@
 {
   "extends": "@tamery/configs/ts/react.json",
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": true,
+    "strictNullChecks": true
   }
 }

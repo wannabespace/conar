@@ -9,33 +9,33 @@ import { connectionsResources } from './connections'
 
 export const queries = d.snakeCase.table('queries', {
   ...baseTable,
-  userId: d
-    .uuid()
-    .references(() => users.id, { onDelete: 'cascade' })
-    .notNull(),
   connectionResourceId: d
     .uuid()
     .references(() => connectionsResources.id, { onDelete: 'cascade' })
     .notNull(),
   name: d.text().notNull(),
   query: encryptedText().notNull(),
+  userId: d
+    .uuid()
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
 })
 
 export const queriesSelectSchema = createSelectSchema(queries)
 export const queriesInsertSchema = createInsertSchema(queries)
 
 export const queriesRelations = defineRelationsPart(
-  { queries, users, connectionsResources },
-  r => ({
+  { connectionsResources, queries, users },
+  (r) => ({
     queries: {
-      user: r.one.users({
-        from: r.queries.userId,
-        to: r.users.id,
-      }),
       connectionResource: r.one.connectionsResources({
         from: r.queries.connectionResourceId,
         to: r.connectionsResources.id,
       }),
+      user: r.one.users({
+        from: r.queries.userId,
+        to: r.users.id,
+      }),
     },
-  }),
+  })
 )

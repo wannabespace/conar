@@ -18,40 +18,40 @@ export const selectQuery = memoize(
     filters: ActiveFilter[]
   }) =>
     createQuery({
-      type: type('Record<string, unknown>[]'),
       query: {
-        postgres: db =>
+        clickhouse: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(select)
-            .where(eb => buildWhere(eb, filters))
+            .where((eb) => buildWhere(eb, filters))
             .execute(),
-        mysql: db =>
+        mssql: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(select)
-            .where(eb => buildWhere(eb, filters))
+            .where((eb) => buildWhere(eb, filters))
             .execute(),
-        mssql: db =>
+        mysql: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(select)
-            .where(eb => buildWhere(eb, filters))
+            .where((eb) => buildWhere(eb, filters))
             .execute(),
-        clickhouse: db =>
+        postgres: (db) =>
           db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .selectFrom(table)
             .select(select)
-            .where(eb => buildWhere(eb, filters))
+            .where((eb) => buildWhere(eb, filters))
             .execute(),
       },
-    }),
+      type: type('Record<string, unknown>[]'),
+    })
 )

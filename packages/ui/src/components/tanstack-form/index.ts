@@ -1,39 +1,29 @@
-import type { AnyFieldApi } from '@tanstack/react-form'
-import { createFormHook, createFormHookContexts } from '@tanstack/react-form'
-import type { ComponentProps } from 'react'
+import { createFormHook } from '@tanstack/react-form'
 
+import { fieldContext, formContext } from './context'
 import { Field, FieldLabel } from './field'
 import { FieldError } from './field-error'
 import { FieldInput } from './field-input'
 import { FieldPasswordInput } from './field-password-input'
 
-export function formInputProps(field: AnyFieldApi) {
-  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-
-  return {
-    'id': field.name,
-    'aria-invalid': isInvalid ? 'true' : undefined,
-    'aria-describedby': isInvalid ? `${field.name}-error` : undefined,
-    'value': field.state.value,
-    'onChange': event => field.handleChange(event.target.value),
-    'onBlur': field.handleBlur,
-  } satisfies ComponentProps<'input'>
-}
-
-export type FormInputProps = ReturnType<typeof formInputProps>
-
-export const { fieldContext, formContext, useFieldContext, useFormContext } =
-  createFormHookContexts()
+export type { FormInputProps } from './context'
+export {
+  fieldContext,
+  formContext,
+  formInputProps,
+  useFieldContext,
+  useFormContext,
+} from './context'
 
 export const { useAppForm } = createFormHook({
   fieldComponents: {
-    Field,
-    Label: FieldLabel,
-    Input: FieldInput,
-    PasswordInput: FieldPasswordInput,
     Error: FieldError,
+    Field,
+    Input: FieldInput,
+    Label: FieldLabel,
+    PasswordInput: FieldPasswordInput,
   },
-  formComponents: {},
   fieldContext,
+  formComponents: {},
   formContext,
 })

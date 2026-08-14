@@ -8,20 +8,10 @@ import { users } from '@tamery/db/schema'
 
 import { ensureDefaultWorkspace } from '~/lib/workspace'
 
-/**
- * One-off pre-deploy backfill.
- *
- * Gives every existing user a default personal workspace and assigns their
- * connections to it. New users get this automatically on sign-in; this script
- * covers users that already exist when the workspace feature ships.
- *
- * Safe to run multiple times: `ensureDefaultWorkspace` returns the existing
- * workspace when the user already has one, so re-runs are no-ops.
- *
- * Run:  cd apps/api && bun run scripts/backfill-workspaces.ts
- */
-async function main() {
-  const allUsers = await db.select({ id: users.id, email: users.email }).from(users)
+const main = async () => {
+  const allUsers = await db
+    .select({ email: users.email, id: users.id })
+    .from(users)
 
   console.log(`Backfilling workspaces for ${allUsers.length} user(s)…`)
 
@@ -30,19 +20,26 @@ async function main() {
   for (const user of allUsers) {
     try {
       await ensureDefaultWorkspace(user.id)
-      created++
+      created += 1
       console.log(`  ✓ ${user.email}`)
     } catch (error) {
-      console.error(`  ✗ ${user.email}: ${error instanceof Error ? error.message : error}`)
+      console.error(
+        `  ✗ ${user.email}: ${error instanceof Error ? error.message : error}`
+      )
     }
   }
 
   console.log(`Done. Processed ${created}/${allUsers.length} user(s).`)
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch(error => {
+const run = async () => {
+  try {
+    await main()
+    process.exit(0)
+  } catch (error) {
     console.error(error)
     process.exit(1)
-  })
+  }
+}
+
+void run()

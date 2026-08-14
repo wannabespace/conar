@@ -27,12 +27,17 @@ import {
 } from '@tamery/ui/components/select'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import { Spinner } from '@tamery/ui/components/spinner'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { copy } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { caseWhen, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { type } from 'arktype'
+import type { MotionStyle } from 'motion/react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { ComponentRef } from 'react'
 import { useRef } from 'react'
@@ -59,7 +64,32 @@ import { connectionInWorkspace, useActiveWorkspace } from '~/entities/workspace'
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 
-function ConnectionIconWithVersion({ connection }: { connection: Connection }) {
+const VersionTooltipContent = ({
+  canSend,
+  isVersionPending,
+  version,
+}: {
+  canSend: boolean
+  isVersionPending: boolean
+  version: string | undefined
+}) => {
+  if (!canSend) {
+    return <span className="opacity-50">Version is unavailable</span>
+  }
+  if (isVersionPending) {
+    return <span className="animate-pulse">Loading version...</span>
+  }
+  if (version) {
+    return <div className="flex items-center gap-1">{version}</div>
+  }
+  return <span className="opacity-50">Version cannot be detected</span>
+}
+
+const ConnectionIconWithVersion = ({
+  connection,
+}: {
+  connection: Connection
+}) => {
   const { canSend } = useFetchingConfig(connection)
   const { data: version, isPending: isVersionPending } = useQuery({
     ...connectionVersionQueryOptions(connection),
@@ -70,7 +100,10 @@ function ConnectionIconWithVersion({ connection }: { connection: Connection }) {
     <Tooltip>
       <TooltipTrigger
         render={
-          <ConnectionIcon type={connection.type} className="pointer-events-auto size-6 shrink-0" />
+          <ConnectionIcon
+            type={connection.type}
+            className="pointer-events-auto size-6 shrink-0"
+          />
         }
       />
 
@@ -80,31 +113,32 @@ function ConnectionIconWithVersion({ connection }: { connection: Connection }) {
         sideOffset={10}
       >
         <span className="opacity-50">Version: </span>
-        {!canSend ? (
-          <span className="opacity-50">Version is unavailable</span>
-        ) : isVersionPending ? (
-          <span className="animate-pulse">Loading version...</span>
-        ) : version ? (
-          <div className="flex items-center gap-1">{version}</div>
-        ) : (
-          <span className="opacity-50">Version cannot be detected</span>
-        )}
+        <VersionTooltipContent
+          canSend={canSend}
+          isVersionPending={isVersionPending}
+          version={version}
+        />
       </TooltipContent>
     </Tooltip>
   )
 }
 
-function resourceValue(resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL) {
-  return resource === CONNECTION_RESOURCE_ROOT_SYMBOL
-    ? CONNECTION_RESOURCE_ROOT_SYMBOL.description!
+const ROOT_RESOURCE_VALUE =
+  CONNECTION_RESOURCE_ROOT_SYMBOL.description ?? 'CONNECTION_RESOURCE_ROOT'
+
+const resourceValue = (
+  resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL
+) =>
+  resource === CONNECTION_RESOURCE_ROOT_SYMBOL ? ROOT_RESOURCE_VALUE : resource
+
+const resourceLabel = (
+  resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL
+) =>
+  resource === CONNECTION_RESOURCE_ROOT_SYMBOL
+    ? CONNECTION_RESOURCE_ROOT_LABEL
     : resource
-}
 
-function resourceLabel(resource: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL) {
-  return resource === CONNECTION_RESOURCE_ROOT_SYMBOL ? CONNECTION_RESOURCE_ROOT_LABEL : resource
-}
-
-function ConnectionResourcesSelect({
+const ConnectionResourcesSelect = ({
   resources,
   selectedResourceName,
   onSelectedResourceNameChange,
@@ -114,58 +148,213 @@ function ConnectionResourcesSelect({
   selectedResourceName: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null
   onSelectedResourceNameChange: (resource: string | null) => void
   disabled: boolean
-}) {
-  return (
-    <Select
-      value={selectedResourceName === null ? undefined : resourceValue(selectedResourceName)}
-      onValueChange={value => onSelectedResourceNameChange(value ?? null)}
-      disabled={disabled}
-    >
-      <SelectTrigger data-mask size="xs" className="pointer-events-auto">
-        <SelectValue>
-          {selectedResourceName === null ? null : resourceLabel(selectedResourceName)}
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent data-mask size="xs">
-        {resources.map(resource => (
-          <SelectItem key={resourceValue(resource)} value={resourceValue(resource)}>
-            {resourceLabel(resource)}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  )
+}) => (
+  <Select
+    value={
+      selectedResourceName === null
+        ? undefined
+        : resourceValue(selectedResourceName)
+    }
+    onValueChange={(value) => onSelectedResourceNameChange(value ?? null)}
+    disabled={disabled}
+  >
+    <SelectTrigger data-mask size="xs" className="pointer-events-auto">
+      <SelectValue>
+        {selectedResourceName === null
+          ? null
+          : resourceLabel(selectedResourceName)}
+      </SelectValue>
+    </SelectTrigger>
+    <SelectContent data-mask size="xs">
+      {resources.map((resource) => (
+        <SelectItem
+          key={resourceValue(resource)}
+          value={resourceValue(resource)}
+        >
+          {resourceLabel(resource)}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+)
+
+const buildConnectionMenuItems = ({
+  canSend,
+  connection,
+  isPasswordPopulated,
+  onClearPassword,
+  onCopy,
+  onRefresh,
+  onRemove,
+}: {
+  canSend: boolean
+  connection: Connection
+  isPasswordPopulated?: boolean
+  onClearPassword: () => void
+  onCopy: () => void
+  onRefresh: () => void
+  onRemove: VoidFunction
+}): AppMenuNode[] => [
+  {
+    label: 'Refresh',
+    icon: <RiRefreshLine className="size-4" />,
+    disabled: !canSend,
+    onSelect: onRefresh,
+  },
+  {
+    label: 'Copy connection string',
+    icon: <RiFileCopyLine className="size-4" />,
+    onSelect: onCopy,
+  },
+  ...(connection.syncType === SyncType.CloudWithoutPassword
+    ? ([
+        {
+          label: 'Clear password',
+          icon: <RiLockUnlockLine className="size-4 shrink-0" />,
+          className: 'whitespace-nowrap',
+          disabled: !isPasswordPopulated,
+          onSelect: onClearPassword,
+        },
+      ] satisfies AppMenuNode[])
+    : []),
+  { type: 'separator' },
+  {
+    label: 'Remove',
+    icon: <RiDeleteBinLine className="size-4" />,
+    variant: 'destructive',
+    onSelect: onRemove,
+  },
+]
+
+const ConnectionCardStatus = ({
+  canSend,
+  error,
+  isLoadingVisible,
+  reason,
+}: {
+  canSend: boolean
+  error: Error | null
+  isLoadingVisible: boolean
+  reason: string | null
+}) => {
+  if (isLoadingVisible && canSend) {
+    return <Spinner className="size-3 shrink-0" />
+  }
+  if (!canSend) {
+    return (
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <RiAlertLine className="text-muted-foreground pointer-events-auto size-3 shrink-0" />
+          }
+        />
+        <TooltipContent className="pointer-events-auto max-w-xs">
+          {reason}
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
+  if (error) {
+    return (
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <RiAlertLine className="text-warning pointer-events-auto size-3 shrink-0" />
+          }
+        />
+        <TooltipContent className="pointer-events-auto">
+          Failed to get resources:{' '}
+          <p data-mask className="text-warning text-xs">
+            {error.message}
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
+  return null
 }
 
-function ConnectionCard({
+const ConnectionCardMeta = ({
+  canSend,
+  connectionStore,
+  displayUrl,
+  isResourcesShown,
+  resources,
+  selectedResourceName,
+}: {
+  canSend: boolean
+  connectionStore: ReturnType<typeof getConnectionStore>
+  displayUrl: string | undefined
+  isResourcesShown: boolean
+  resources: (string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL)[]
+  selectedResourceName: string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null
+}) => (
+  <div className="text-muted-foreground pointer-events-none relative z-10 flex min-w-0 shrink-0 items-center gap-2 text-xs">
+    <div className="hidden max-w-52 min-w-0 items-center font-mono md:flex">
+      {displayUrl ? (
+        <span data-mask className="truncate">
+          {displayUrl}
+        </span>
+      ) : (
+        <Skeleton className="h-3 w-40" />
+      )}
+    </div>
+    {isResourcesShown ? (
+      <ConnectionResourcesSelect
+        resources={resources}
+        selectedResourceName={selectedResourceName}
+        onSelectedResourceNameChange={(value) =>
+          connectionStore.set(
+            (state) =>
+              ({
+                ...state,
+                lastOpenedResourceName: value,
+              }) satisfies typeof state
+          )
+        }
+        disabled={!canSend}
+      />
+    ) : (
+      selectedResourceName !== null && (
+        <span data-mask className="max-w-32 shrink-0 truncate text-xs">
+          <span className="text-muted-foreground/50">/ </span>
+          {resourceLabel(selectedResourceName)}
+        </span>
+      )
+    )}
+  </div>
+)
+
+const ConnectionCard = ({
   connection,
   onRemove,
 }: {
   connection: Connection
   onRemove: VoidFunction
-}) {
-  const { connectionStringsCollection, connectionsResourcesCollection } = useCollections()
+}) => {
+  const { connectionStringsCollection, connectionsResourcesCollection } =
+    useCollections()
   const { data: connectionString } = useLiveQuery(
-    q =>
+    (q) =>
       q
         .from({ cs: connectionStringsCollection })
         .where(({ cs }) => eq(cs.connectionId, connection.id))
         .findOne(),
-    [connectionStringsCollection, connection.id],
+    [connectionStringsCollection, connection.id]
   )
   const { data: connectionResources } = useLiveQuery(
-    q =>
+    (q) =>
       q
         .from({ cr: connectionsResourcesCollection })
         .where(({ cr }) => eq(cr.connectionId, connection.id))
         .orderBy(({ cr }) => cr.name, 'asc'),
-    [connectionsResourcesCollection, connection.id],
+    [connectionsResourcesCollection, connection.id]
   )
 
   const connectionResourcesNames = connectionResources.map(
-    r => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL,
+    (r) => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL
   )
-  const { type, canSend, reason } = useFetchingConfig(connection)
+  const { type: fetchType, canSend, reason } = useFetchingConfig(connection)
 
   const {
     data: resources = connectionResourcesNames,
@@ -181,23 +370,31 @@ function ConnectionCard({
 
   const connectionStore = getConnectionStore(connection.id)
   const selectedResourceName = useSubscription(connectionStore, {
-    selector: state =>
-      (state.lastOpenedResourceName || defaultResourceName || resources[0] || null) as
-        | string
-        | typeof CONNECTION_RESOURCE_ROOT_SYMBOL
-        | null,
+    selector: (state) =>
+      (state.lastOpenedResourceName ||
+        defaultResourceName ||
+        resources[0] ||
+        null) as string | typeof CONNECTION_RESOURCE_ROOT_SYMBOL | null,
   })
   const resolvedSelectedResourceName =
-    selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ? null : selectedResourceName
-  const selectedResource = connectionResources.find(r => r.name === resolvedSelectedResourceName)
-  const canOpenResource = canSend || (type === 'waiting-for-password' && !!window.electron)
+    selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL
+      ? null
+      : selectedResourceName
+  const selectedResource = connectionResources.find(
+    (r) => r.name === resolvedSelectedResourceName
+  )
+  const canOpenResource =
+    canSend || (fetchType === 'waiting-for-password' && !!window.electron)
 
   const handleCopy = async () => {
-    const connectionString = await connectionStringsCollection.utils.decrypt(connection.id)
+    const decryptedString = await connectionStringsCollection.utils.decrypt(
+      connection.id
+    )
 
-    const connectionStringToCopy = new SafeURL(connectionString)
+    const connectionStringToCopy = new SafeURL(decryptedString)
     connectionStringToCopy.pathname =
-      selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL || selectedResourceName === null
+      selectedResourceName === CONNECTION_RESOURCE_ROOT_SYMBOL ||
+      selectedResourceName === null
         ? ''
         : selectedResourceName
 
@@ -206,18 +403,23 @@ function ConnectionCard({
 
   const handleClearPassword = async () => {
     const record = connectionStringsCollection.get(connection.id)
-    if (!record) return
+    if (!record) {
+      return
+    }
 
-    const url = new SafeURL(await connectionStringsCollection.utils.decrypt(connection.id))
+    const url = new SafeURL(
+      await connectionStringsCollection.utils.decrypt(connection.id)
+    )
     url.password = ''
 
-    const connectionStringRecord = await connectionStringsCollection.utils.prepare({
-      connectionId: connection.id,
-      connectionString: url.toString(),
-      updatedAt: record.updatedAt,
-    })
+    const connectionStringRecord =
+      await connectionStringsCollection.utils.prepare({
+        connectionId: connection.id,
+        connectionString: url.toString(),
+        updatedAt: record.updatedAt,
+      })
 
-    connectionStringsCollection.update(connection.id, draft => {
+    connectionStringsCollection.update(connection.id, (draft) => {
       Object.assign(draft, connectionStringRecord)
     })
 
@@ -227,37 +429,15 @@ function ConnectionCard({
   const isResourcesShown = resources.length > 1
   const isLoadingVisible = isFetching && connectionResourcesNames.length === 0
 
-  const items: AppMenuNode[] = [
-    {
-      label: 'Refresh',
-      icon: <RiRefreshLine className="size-4" />,
-      disabled: !canSend,
-      onSelect: () => refetch(),
-    },
-    {
-      label: 'Copy connection string',
-      icon: <RiFileCopyLine className="size-4" />,
-      onSelect: () => handleCopy(),
-    },
-    ...(connection.syncType === SyncType.CloudWithoutPassword
-      ? ([
-          {
-            label: 'Clear password',
-            icon: <RiLockUnlockLine className="size-4 shrink-0" />,
-            className: 'whitespace-nowrap',
-            disabled: !connectionString?.isPasswordPopulated,
-            onSelect: () => handleClearPassword(),
-          },
-        ] satisfies AppMenuNode[])
-      : []),
-    { type: 'separator' },
-    {
-      label: 'Remove',
-      icon: <RiDeleteBinLine className="size-4" />,
-      variant: 'destructive',
-      onSelect: () => onRemove(),
-    },
-  ]
+  const items = buildConnectionMenuItems({
+    canSend,
+    connection,
+    isPasswordPopulated: connectionString?.isPasswordPopulated,
+    onClearPassword: handleClearPassword,
+    onCopy: handleCopy,
+    onRefresh: () => refetch(),
+    onRemove,
+  })
 
   return (
     <motion.div
@@ -266,21 +446,17 @@ function ConnectionCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-      style={connection.color ? { '--color': connection.color } : {}}
-      className="
-        relative flex flex-col border-b
-        last:border-b-0
-      "
+      style={
+        (connection.color ? { '--color': connection.color } : {}) as MotionStyle
+      }
+      className="relative flex flex-col border-b last:border-b-0"
     >
       <AppContextMenu
         items={items}
         contentProps={{ className: 'min-w-44' }}
-        className={cn(`
-          group relative flex h-11 items-center gap-3 px-3 transition-colors
-          duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]
-          hover:bg-accent/50
-          has-[[data-resource-link]:hover]:bg-accent/50
-        `)}
+        className={cn(
+          `group hover:bg-accent/50 has-[[data-resource-link]:hover]:bg-accent/50 relative flex h-11 items-center gap-3 px-3 transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]`
+        )}
       >
         {selectedResource && canOpenResource && (
           <ConnectionResourceLink
@@ -291,17 +467,12 @@ function ConnectionCard({
           />
         )}
         {connection.color && (
-          <span
-            className="
-              pointer-events-none absolute top-1/2 left-0 h-5 w-0.5
-              -translate-y-1/2 rounded-full bg-(--color)
-            "
-          />
+          <span className="pointer-events-none absolute top-1/2 left-0 h-5 w-0.5 -translate-y-1/2 rounded-full bg-(--color)" />
         )}
         <div
           className={cn(
             'pointer-events-none relative z-10 flex min-w-0 flex-1 items-center gap-3',
-            isLoadingVisible && 'animate-pulse',
+            isLoadingVisible && 'animate-pulse'
           )}
         >
           <ConnectionIconWithVersion connection={connection} />
@@ -313,88 +484,28 @@ function ConnectionCard({
             >
               {connection.name}
             </span>
-            {isLoadingVisible && canSend && <Spinner className="size-3 shrink-0" />}
-            {!canSend && (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <RiAlertLine
-                      className="
-                      pointer-events-auto size-3 shrink-0 text-muted-foreground
-                    "
-                    />
-                  }
-                />
-                <TooltipContent className="pointer-events-auto max-w-xs">{reason}</TooltipContent>
-              </Tooltip>
-            )}
-            {error && canSend && (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <RiAlertLine
-                      className="
-                    pointer-events-auto size-3 shrink-0 text-warning
-                  "
-                    />
-                  }
-                />
-                <TooltipContent className="pointer-events-auto">
-                  Failed to get resources:{' '}
-                  <p data-mask className="text-xs text-warning">
-                    {error.message}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </div>
-        </div>
-        <div
-          className="
-          pointer-events-none relative z-10 flex min-w-0 shrink-0 items-center
-          gap-2 text-xs text-muted-foreground
-        "
-        >
-          <div
-            className="
-                hidden max-w-52 min-w-0 items-center font-mono
-                md:flex
-              "
-          >
-            {connectionString?.displayUrl ? (
-              <span data-mask className="truncate">
-                {connectionString?.displayUrl}
-              </span>
-            ) : (
-              <Skeleton className="h-3 w-40" />
-            )}
-          </div>
-          {isResourcesShown ? (
-            <ConnectionResourcesSelect
-              resources={resources}
-              selectedResourceName={selectedResourceName}
-              onSelectedResourceNameChange={value =>
-                connectionStore.set(
-                  state => ({ ...state, lastOpenedResourceName: value }) satisfies typeof state,
-                )
-              }
-              disabled={!canSend}
+            <ConnectionCardStatus
+              canSend={canSend}
+              error={error}
+              isLoadingVisible={isLoadingVisible}
+              reason={reason}
             />
-          ) : (
-            selectedResourceName !== null && (
-              <span data-mask className="max-w-32 shrink-0 truncate text-xs">
-                <span className="text-muted-foreground/50">/ </span>
-                {resourceLabel(selectedResourceName)}
-              </span>
-            )
-          )}
+          </div>
         </div>
+        <ConnectionCardMeta
+          canSend={canSend}
+          connectionStore={connectionStore}
+          displayUrl={connectionString?.displayUrl}
+          isResourcesShown={isResourcesShown}
+          resources={resources}
+          selectedResourceName={selectedResourceName}
+        />
       </AppContextMenu>
     </motion.div>
   )
 }
 
-function GhostRow({
+const GhostRow = ({
   nameWidth,
   urlWidth,
   lit = false,
@@ -404,73 +515,65 @@ function GhostRow({
   urlWidth: string
   lit?: boolean
   className?: string
-}) {
-  return (
-    <div
+}) => (
+  <div
+    className={cn(
+      'border-border/40 flex h-11 items-center gap-3 border-b px-3 last:border-b-0',
+      className
+    )}
+  >
+    <span
       className={cn(
-        'flex h-11 items-center gap-3 border-b border-border/40 px-3 last:border-b-0',
-        className,
+        'h-5 w-0.5 shrink-0 rounded-full',
+        lit ? 'bg-primary' : 'bg-muted-foreground/20'
       )}
+    />
+    <span className="bg-muted-foreground/15 size-5 shrink-0 rounded-md" />
+    <span
+      className={cn('bg-muted-foreground/15 h-2.5 rounded-full', nameWidth)}
+    />
+    <span className="flex-1" />
+    <span
+      className={cn(
+        `bg-muted-foreground/10 hidden h-2 rounded-full md:block`,
+        urlWidth
+      )}
+    />
+  </div>
+)
+
+export const Empty = () => (
+  <div className="flex flex-col items-center py-10 text-center">
+    <div
+      className="border-border/50 bg-card/40 pointer-events-none w-full max-w-md overflow-hidden rounded-xl border mask-[linear-gradient(to_bottom,black,transparent)]"
+      aria-hidden
     >
-      <span
-        className={cn(
-          'h-5 w-0.5 shrink-0 rounded-full',
-          lit ? 'bg-primary' : 'bg-muted-foreground/20',
-        )}
-      />
-      <span className="size-5 shrink-0 rounded-md bg-muted-foreground/15" />
-      <span className={cn('h-2.5 rounded-full bg-muted-foreground/15', nameWidth)} />
-      <span className="flex-1" />
-      <span
-        className={cn(
-          `
-        hidden h-2 rounded-full bg-muted-foreground/10
-        md:block
-      `,
-          urlWidth,
-        )}
-      />
+      <GhostRow nameWidth="w-32" urlWidth="w-28" lit />
+      <GhostRow nameWidth="w-24" urlWidth="w-36" className="opacity-70" />
+      <GhostRow nameWidth="w-36" urlWidth="w-24" className="opacity-40" />
     </div>
-  )
-}
 
-export function Empty() {
-  return (
-    <div className="flex flex-col items-center py-10 text-center">
-      <div
-        className="
-          pointer-events-none w-full max-w-md overflow-hidden rounded-xl border
-          border-border/50 bg-card/40
-          mask-[linear-gradient(to_bottom,black,transparent)]
-        "
-        aria-hidden
-      >
-        <GhostRow nameWidth="w-32" urlWidth="w-28" lit />
-        <GhostRow nameWidth="w-24" urlWidth="w-36" className="opacity-70" />
-        <GhostRow nameWidth="w-36" urlWidth="w-24" className="opacity-40" />
-      </div>
-
-      <div
-        className="
-        -mt-6 flex size-12 items-center justify-center rounded-xl border
-        border-border/50 bg-card shadow-xs
-      "
-      >
-        <RiDatabase2Line className="size-5 text-muted-foreground" />
-      </div>
-
-      <h2 className="mt-5 text-base font-medium text-foreground">No connections yet</h2>
-      <p className="mt-1 max-w-xs text-sm text-muted-foreground">
-        Add a database and it shows up here — open it in one click.
-      </p>
-
-      <Button className="mt-5" render={<Link to="/create" />}>
-        <RiAddLine className="size-4" />
-        New connection
-      </Button>
+    <div className="border-border/50 bg-card -mt-6 flex size-12 items-center justify-center rounded-xl border shadow-xs">
+      <RiDatabase2Line className="text-muted-foreground size-5" />
     </div>
-  )
-}
+
+    <h2 className="text-foreground mt-5 text-base font-medium">
+      No connections yet
+    </h2>
+    <p className="text-muted-foreground mt-1 max-w-xs text-sm">
+      Add a database and it shows up here — open it in one click.
+    </p>
+
+    <Button
+      className="mt-5"
+      nativeButton={false}
+      render={<Link to="/create" />}
+    >
+      <RiAddLine className="size-4" />
+      New connection
+    </Button>
+  </div>
+)
 
 const sortOptions = [
   { value: 'date-desc', label: 'Date (newest first)' },
@@ -499,39 +602,53 @@ const groupValue = createWebStorageValue({
   defaultValue: 'label',
 })
 
-export function ConnectionsList() {
+export const ConnectionsList = () => {
   const { connectionsCollection } = useCollections()
   const sort = useSubscription(sortValue)
   const grouping = useSubscription(groupValue)
   const { data: activeWorkspace } = useActiveWorkspace()
   const { data: allData } = useLiveQuery(
-    q => {
+    (q) => {
       let query = q.from({ c: connectionsCollection })
 
       if (grouping === 'label') {
-        query = query.orderBy(({ c }) => caseWhen(eq(c.label, ''), null, c.label), {
-          nulls: 'last',
-        })
+        query = query.orderBy(
+          ({ c }) => caseWhen(eq(c.label, ''), null, c.label),
+          {
+            nulls: 'last',
+          }
+        )
       } else if (grouping === 'type') {
         query = query.orderBy(({ c }) => c.type)
       }
 
-      const [sortField, sortDirection] = sort.split('-') as ['date' | 'name', 'asc' | 'desc']
-      return query.orderBy(({ c }) => (sortField === 'date' ? c.createdAt : c.name), sortDirection)
+      const [sortField, sortDirection] = sort.split('-') as [
+        'date' | 'name',
+        'asc' | 'desc',
+      ]
+      return query.orderBy(
+        ({ c }) => (sortField === 'date' ? c.createdAt : c.name),
+        sortDirection
+      )
     },
-    [connectionsCollection, sort, grouping],
+    [connectionsCollection, sort, grouping]
   )
 
-  const data = allData.filter(connection =>
-    connectionInWorkspace(connection.workspaceId, activeWorkspace),
+  const data = allData.filter((connection) =>
+    connectionInWorkspace(connection.workspaceId, activeWorkspace)
   )
 
-  const removeDialogRef = useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
+  const removeDialogRef =
+    useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
 
   const groupTitle = (connection: Connection): string | null => {
-    if (grouping === 'label') return connection.label || null
-    if (grouping === 'type') return connectionLabels[connection.type]
+    if (grouping === 'label') {
+      return connection.label || null
+    }
+    if (grouping === 'type') {
+      return connectionLabels[connection.type]
+    }
     return null
   }
   const groups: { label: string | null; connections: Connection[] }[] = []
@@ -544,7 +661,7 @@ export function ConnectionsList() {
       groups.push({ label, connections: [connection] })
     }
   }
-  const showHeaders = groups.some(group => group.label !== null)
+  const showHeaders = groups.some((group) => group.label !== null)
 
   const showLastOpened = lastOpenedResources.length > 0 && data.length > 1
 
@@ -554,39 +671,50 @@ export function ConnectionsList() {
       {showLastOpened && <LastOpenedResources />}
       {data.length > 1 && (
         <div className="flex items-center justify-between gap-4">
-          <span
-            className="
-              px-2 text-2xs font-semibold tracking-wider
-              text-muted-foreground uppercase
-            "
-          >
+          <span className="text-2xs text-muted-foreground px-2 font-semibold tracking-wider uppercase">
             {data.length} connection{data.length === 1 ? '' : 's'}
           </span>
           <div className="flex items-center gap-2">
-            <Select value={grouping} onValueChange={value => groupValue.set(value!)}>
+            <Select
+              value={grouping}
+              onValueChange={(value) => {
+                if (value) {
+                  groupValue.set(value)
+                }
+              }}
+            >
               <SelectTrigger size="sm" className="shrink-0">
                 <RiStackLine />
                 <SelectValue>
-                  {groupOptions.find(option => option.value === grouping)!.label}
+                  {groupOptions.find((option) => option.value === grouping)
+                    ?.label ?? grouping}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {groupOptions.map(option => (
+                {groupOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={sort} onValueChange={value => sortValue.set(value!)}>
+            <Select
+              value={sort}
+              onValueChange={(value) => {
+                if (value) {
+                  sortValue.set(value)
+                }
+              }}
+            >
               <SelectTrigger size="sm" className="shrink-0">
                 {sort.includes('asc') ? <RiSortAsc /> : <RiSortDesc />}
                 <SelectValue>
-                  {sortOptions.find(option => option.value === sort)!.label}
+                  {sortOptions.find((option) => option.value === sort)?.label ??
+                    sort}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {sortOptions.map(option => (
+                {sortOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
@@ -600,7 +728,7 @@ export function ConnectionsList() {
               className="text-foreground"
               render={<Link to="/create" />}
             >
-              <RiAddLine className="size-4 text-muted-foreground" />
+              <RiAddLine className="text-muted-foreground size-4" />
               New
             </Button>
           </div>
@@ -608,25 +736,16 @@ export function ConnectionsList() {
       )}
       {data.length > 0 ? (
         <div className="flex flex-col gap-5">
-          {groups.map(group => (
+          {groups.map((group) => (
             <div key={group.label ?? '__other__'} className="flex flex-col">
               {showHeaders && (
-                <h3
-                  className="
-                    mb-1.5 px-2 text-2xs font-semibold tracking-wider
-                    text-muted-foreground uppercase
-                  "
-                >
+                <h3 className="text-2xs text-muted-foreground mb-1.5 px-2 font-semibold tracking-wider uppercase">
                   {group.label ?? 'Other'}
                 </h3>
               )}
-              <div
-                className="
-                  overflow-hidden rounded-xl border bg-card shadow-xs
-                "
-              >
+              <div className="bg-card overflow-hidden rounded-xl border shadow-xs">
                 <AnimatePresence initial={false} mode="popLayout">
-                  {group.connections.map(connection => (
+                  {group.connections.map((connection) => (
                     <ConnectionCard
                       key={connection.id}
                       connection={connection}
@@ -641,12 +760,7 @@ export function ConnectionsList() {
           ))}
           <Link
             to="/create"
-            className="
-              flex h-10 cursor-default items-center justify-center gap-2
-              rounded-xl border border-dashed text-sm text-muted-foreground
-              transition-colors duration-150
-              hover:bg-card hover:text-foreground
-            "
+            className="text-muted-foreground hover:bg-card hover:text-foreground flex h-10 cursor-default items-center justify-center gap-2 rounded-xl border border-dashed text-sm transition-colors duration-150"
           >
             <RiAddLine className="size-4" />
             New connection

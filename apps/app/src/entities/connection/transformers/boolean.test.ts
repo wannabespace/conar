@@ -8,7 +8,7 @@ describe('createBooleanTransformer', () => {
   describe('fromConnection → toUI', () => {
     it('returns false for null and undefined', () => {
       expect(t.fromConnection(null).toUI()).toBe(false)
-      expect(t.fromConnection(undefined).toUI()).toBe(false)
+      expect(t.fromConnection().toUI()).toBe(false)
     })
 
     it('returns boolean primitives as-is', () => {

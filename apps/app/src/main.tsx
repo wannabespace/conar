@@ -16,25 +16,30 @@ import { lastLocationStorageValue } from './lib/last-location'
 import { routeTree } from './routeTree.gen'
 
 if (window.electron) {
-  themeStore.subscribe(theme => window.electron?.app.setNativeTheme(theme), { immediate: true })
+  themeStore.subscribe((theme) => window.electron?.app.setNativeTheme(theme), {
+    immediate: true,
+  })
 }
 
-window.electron?.app.onDeepLink(async url => {
+window.electron?.app.onDeepLink((url) => {
   window.initialDeepLink = url
 })
 
 window.electron?.app.onSendToast(({ message, type, description, duration }) => {
   toast[type](message, {
-    id: `${type}-${message}-${description}`,
     description,
-    position: 'bottom-center',
     duration,
+    id: `${type}-${message}-${description}`,
+    position: 'bottom-center',
   })
 })
 
 if (window.electron) {
-  window.addEventListener('keydown', event => {
-    if (((event.ctrlKey || event.metaKey) && event.key === 'r') || event.key === 'F5') {
+  window.addEventListener('keydown', (event) => {
+    if (
+      ((event.ctrlKey || event.metaKey) && event.key === 'r') ||
+      event.key === 'F5'
+    ) {
       event.preventDefault()
     }
   })
@@ -43,10 +48,10 @@ if (window.electron) {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 0,
-      throwOnError: true,
-      staleTime: Number.POSITIVE_INFINITY,
       placeholderData: keepPreviousData,
+      retry: 0,
+      staleTime: Number.POSITIVE_INFINITY,
+      throwOnError: true,
     },
   },
 })
@@ -54,19 +59,21 @@ export const queryClient = new QueryClient({
 export const subscriptionQueryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 0,
-      refetchOnWindowFocus: 'always',
       placeholderData: keepPreviousData,
+      refetchOnWindowFocus: 'always',
+      retry: 0,
     },
   },
 })
 
 export const router = createRouter({
-  history:
-    import.meta.env.VITE_TEST || !window.electron ? createBrowserHistory() : createHashHistory(),
-  routeTree,
-  defaultPreload: 'intent',
   defaultPendingMinMs: 0,
+  defaultPreload: 'intent',
+  history:
+    import.meta.env.VITE_TEST || !window.electron
+      ? createBrowserHistory()
+      : createHashHistory(),
+  routeTree,
 })
 
 declare module '@tanstack/react-router' {
@@ -89,10 +96,15 @@ if (router.state.location.pathname === '/') {
   if (lastLocation) {
     router.navigate({ href: lastLocation, replace: true })
   } else {
-    router.navigate({ to: '/auth', replace: true })
+    router.navigate({ replace: true, to: '/auth' })
   }
 }
 
-const root = createRoot(document.getElementById('root')!)
+const rootElement = document.querySelector('#root')
+if (!rootElement) {
+  throw new Error('Root element #root not found')
+}
+
+const root = createRoot(rootElement)
 
 root.render(<RouterProvider router={router} />)

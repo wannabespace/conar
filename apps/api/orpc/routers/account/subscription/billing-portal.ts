@@ -12,14 +12,20 @@ export const billingPortal = orpc
   .input(
     type({
       returnUrl: 'string',
-    }),
+    })
   )
   .handler(async ({ context, input }) => {
     if (!stripe) {
-      throw new ORPCError('INTERNAL_SERVER_ERROR', { message: 'Stripe is not configured' })
+      throw new ORPCError('INTERNAL_SERVER_ERROR', {
+        message: 'Stripe is not configured',
+      })
     }
 
-    const [user] = await db.select().from(users).where(eq(users.id, context.user.id)).limit(1)
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, context.user.id))
+      .limit(1)
 
     if (!user?.stripeCustomerId) {
       throw new ORPCError('NOT_FOUND', { message: 'No customer found' })

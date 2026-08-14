@@ -1,8 +1,12 @@
 import { RiCloseLine } from '@remixicon/react'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 
-export function ChatImages({
+export const ChatImages = ({
   images,
   imageClassName,
   onRemove,
@@ -10,77 +14,58 @@ export function ChatImages({
   images: { name: string; url: string }[]
   imageClassName?: string
   onRemove?: (index: number) => void
-}) {
-  return (
-    <div className="flex flex-wrap gap-3 rounded-md border bg-muted/50 p-2">
-      {images.map((image, index) => (
-        <div className="group relative" key={`${image.name}-${image.url}`}>
-          <Tooltip>
-            <TooltipTrigger className="align-middle">
+}) => (
+  <div className="bg-muted/50 flex flex-wrap gap-3 rounded-md border p-2">
+    {images.map((image, index) => (
+      <div className="group relative" key={`${image.name}-${image.url}`}>
+        <Tooltip>
+          <TooltipTrigger className="align-middle">
+            <img
+              src={image.url}
+              alt={image.name}
+              className={cn(
+                `hover:ring-primary/50 size-10 shrink-0 rounded-md border object-cover transition-all hover:ring-2`,
+                imageClassName
+              )}
+            />
+            <div className="absolute inset-0 rounded-md bg-black/5 opacity-0 transition-opacity group-hover:opacity-100" />
+          </TooltipTrigger>
+          <TooltipContent
+            side="top"
+            align="center"
+            sideOffset={15}
+            className="w-auto p-1 shadow-lg"
+          >
+            <div className="flex flex-col gap-2">
               <img
                 src={image.url}
                 alt={image.name}
-                className={cn(
-                  `
-                  size-10 shrink-0 rounded-md border object-cover
-                  transition-all
-                  hover:ring-2 hover:ring-primary/50
-                `,
-                  imageClassName,
-                )}
+                className="max-h-100 max-w-100 rounded-md object-contain"
               />
-              <div
-                className="
-                absolute inset-0 rounded-md bg-black/5 opacity-0
-                transition-opacity
-                group-hover:opacity-100
-              "
-              />
-            </TooltipTrigger>
-            <TooltipContent
-              side="top"
-              align="center"
-              sideOffset={15}
-              className="w-auto p-1 shadow-lg"
-            >
-              <div className="flex flex-col gap-2">
-                <img
-                  src={image.url}
-                  alt={image.name}
-                  className="max-h-100 max-w-100 rounded-md object-contain"
+            </div>
+          </TooltipContent>
+        </Tooltip>
+        {onRemove && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  type="button"
+                  aria-label={`Remove ${image.name}`}
+                  className="bg-background text-muted-foreground hover:bg-foreground/10 hover:text-foreground absolute -top-2 -right-2 z-10 flex size-4 items-center justify-center rounded-full border opacity-0 transition-opacity group-hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onRemove(index)
+                  }}
                 />
-              </div>
-            </TooltipContent>
+              }
+            >
+              <RiCloseLine className="size-3" />
+            </TooltipTrigger>
+            <TooltipContent side="top">Remove image</TooltipContent>
           </Tooltip>
-          {onRemove && (
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <button
-                    type="button"
-                    aria-label={`Remove ${image.name}`}
-                    className="
-                      absolute -top-2 -right-2 z-10 flex size-4
-                      items-center justify-center rounded-full border
-                      bg-background text-muted-foreground opacity-0
-                      transition-opacity
-                      group-hover:opacity-100
-                      hover:bg-foreground/10 hover:text-foreground
-                    "
-                    onClick={e => {
-                      e.stopPropagation()
-                      onRemove(index)
-                    }}
-                  />
-                }
-              >
-                <RiCloseLine className="size-3" />
-              </TooltipTrigger>
-              <TooltipContent side="top">Remove image</TooltipContent>
-            </Tooltip>
-          )}
-        </div>
-      ))}
-    </div>
-  )
-}
+        )}
+      </div>
+    ))}
+  </div>
+)

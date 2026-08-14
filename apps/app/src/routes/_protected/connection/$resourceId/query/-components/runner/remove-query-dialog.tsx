@@ -19,7 +19,7 @@ interface RemoveQueryDialogProps {
   } | null>
 }
 
-export function RemoveQueryDialog({ ref }: RemoveQueryDialogProps) {
+export const RemoveQueryDialog = ({ ref }: RemoveQueryDialogProps) => {
   const { queriesCollection } = useCollections()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState<Query | null>(null)
@@ -32,11 +32,13 @@ export function RemoveQueryDialog({ ref }: RemoveQueryDialogProps) {
         setOpen(true)
       },
     }),
-    [],
+    []
   )
 
-  function removeQuery() {
-    if (!query) return
+  const removeQuery = () => {
+    if (!query) {
+      return
+    }
 
     queriesCollection.delete(query.id)
     toast.success('Query removed successfully')

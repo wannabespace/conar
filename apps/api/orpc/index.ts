@@ -10,21 +10,21 @@ import { getSubscription } from '~/lib/subscription'
 
 import type { Context } from './context'
 
-export { getSubscription }
+export { getSubscription } from '~/lib/subscription'
 
 export const orpc = os.$context<Context>()
 
+// 5 minutes
 export const getUserSecret = memoize(
-  (userId: string) => {
-    return infisical.secrets.get({
-      path: ['users', userId],
+  (userId: string) =>
+    infisical.secrets.get({
       name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
-    })
-  },
-  { maxAge: 5 * 60 * 1000 },
-) // 5 minutes
+      path: ['users', userId],
+    }),
+  { maxAge: 5 * 60 * 1000 }
+)
 
-async function getSession(headers: Headers) {
+const getSession = async (headers: Headers) => {
   const session = await auth.api.getSession({ headers })
 
   if (!session) {
@@ -36,32 +36,37 @@ async function getSession(headers: Headers) {
   return session
 }
 
-export const logMiddleware = orpc.middleware(async ({ context, next }, input) => {
-  const result = await next()
+export const logMiddleware = orpc.middleware(
+  async ({ context, next }, input) => {
+    // oxlint-disable-next-line node/callback-return -- middleware post-processes next()
+    const result = await next()
 
-  if (
-    !context.request.url.endsWith('/sync') &&
-    !context.request.url.endsWith('/resolveConnectionString')
-  ) {
-    context.addLogData({
-      input,
-      output:
-        (Array.isArray(result.output) && result.output.length > 0) ||
-        (typeof result.output === 'object' &&
-          result.output !== null &&
-          Object.keys(result.output).length > 0) ||
-        (!Array.isArray(result.output) &&
-          typeof result.output !== 'object' &&
-          result.output !== null &&
-          !!result.output)
-          ? result.output
-          : undefined,
-    })
+    if (
+      !context.request.url.endsWith('/sync') &&
+      !context.request.url.endsWith('/resolveConnectionString')
+    ) {
+      context.addLogData({
+        input,
+        output:
+          (Array.isArray(result.output) && result.output.length > 0) ||
+          (typeof result.output === 'object' &&
+            result.output !== null &&
+            Object.keys(result.output).length > 0) ||
+          (!Array.isArray(result.output) &&
+            typeof result.output !== 'object' &&
+            result.output !== null &&
+            !!result.output)
+            ? result.output
+            : undefined,
+      })
+    }
+
+    return result
   }
+)
 
-  return result
-})
-
+// oRPC Middleware.concat chains middlewares (not Array#concat)
+// oxlint-disable-next-line unicorn/prefer-spread
 export const authMiddleware = logMiddleware.concat(
   orpc.middleware(async ({ context, next }) => {
     const session = await getSession(context.headers)
@@ -74,9 +79,10 @@ export const authMiddleware = logMiddleware.concat(
         getUserSecret: () => getUserSecret(session.user.id),
       },
     })
-  }),
+  })
 )
 
+// oxlint-disable-next-line unicorn/prefer-spread
 export const optionalAuthMiddleware = logMiddleware.concat(
   orpc.middleware(async ({ context, next }) => {
     const session = await getSession(context.headers).catch(() => null)
@@ -91,9 +97,10 @@ export const optionalAuthMiddleware = logMiddleware.concat(
         user: session?.user ?? null,
       },
     })
-  }),
+  })
 )
 
+// oxlint-disable-next-line unicorn/prefer-spread
 export const subscriptionMiddleware = logMiddleware.concat(
   orpc.middleware(async ({ context, next }) => {
     const session = await getSession(context.headers)
@@ -121,13 +128,14 @@ export const subscriptionMiddleware = logMiddleware.concat(
     return next({
       context: {
         ...session,
-        subscription,
         getUserSecret: () => getUserSecret(session.user.id),
+        subscription,
       },
     })
-  }),
+  })
 )
 
+// oxlint-disable-next-line unicorn/prefer-spread
 export const optionalSubscriptionMiddleware = logMiddleware.concat(
   orpc.middleware(async ({ context, next }) => {
     const session = await getSession(context.headers)
@@ -138,15 +146,16 @@ export const optionalSubscriptionMiddleware = logMiddleware.concat(
     return next({
       context: {
         ...session,
-        subscription,
         getUserSecret: () => getUserSecret(session.user.id),
+        subscription,
       },
     })
-  }),
+  })
 )
 
-export function cacheMiddleware(ttl: number = 60 * 60 * 24) {
-  return logMiddleware.concat(
+export const cacheMiddleware = (ttl: number = 60 * 60 * 24) =>
+  // oxlint-disable-next-line unicorn/prefer-spread
+  logMiddleware.concat(
     orpc.middleware(async ({ next, path }, input, output) => {
       const cacheKey = path.join('/') + JSON.stringify(input)
       const cached = await redis.get(cacheKey)
@@ -154,11 +163,11 @@ export function cacheMiddleware(ttl: number = 60 * 60 * 24) {
         return output(JSON.parse(cached))
       }
 
+      // oxlint-disable-next-line node/callback-return -- middleware caches after next()
       const result = await next()
 
       await redis.setex(cacheKey, ttl, JSON.stringify(result.output))
 
       return result
-    }),
+    })
   )
-}

@@ -6,7 +6,13 @@ import {
 } from '@tamery/ui/components/resizable'
 import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
-import { createFileRoute, Outlet, redirect, useMatches } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  getRouteApi,
+  Outlet,
+  redirect,
+  useMatches,
+} from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
@@ -25,79 +31,56 @@ import type { FileRoutesById } from '~/routeTree.gen'
 import { ConnectionSidebar } from './-components/connection-sidebar'
 import { PasswordForm } from './-components/password-form'
 
-export const Route = createFileRoute('/_protected/connection/$resourceId')({
-  component: ResourcePage,
-  beforeLoad: async ({ params }) => {
-    const { connectionsCollection, connectionsResourcesCollection } = getCollections()
-    const connectionResource = connectionsResourcesCollection.get(params.resourceId)
-    const connection = connectionResource
-      ? connectionsCollection.get(connectionResource.connectionId)
-      : undefined
+const resourceRouteApi = getRouteApi('/_protected/connection/$resourceId')
 
-    if (!connectionResource || !connection) {
-      lastOpenedResourcesStorageValue.set(prev => prev.filter(id => id !== params.resourceId))
-      throw redirect({ to: '/' })
-    }
-
-    return { connection, connectionResource }
-  },
-  loader: async ({ context }) => {
-    prefetchConnectionResourceCore(context.connectionResource)
-
-    return { connection: context.connection, connectionResource: context.connectionResource }
-  },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [{ title: title(loaderData.connection.name, loaderData.connectionResource.name) }]
-      : [],
-  }),
-})
-
-function getDatabasePageId(routesIds: (keyof FileRoutesById)[]) {
-  return routesIds.findLast(route =>
-    route.includes('/_protected/connection/$resourceId'),
+const getDatabasePageId = (routesIds: (keyof FileRoutesById)[]) =>
+  routesIds.findLast((route) =>
+    route.includes('/_protected/connection/$resourceId')
   ) as (typeof connectionResourceType.infer)['lastOpenedPage']
-}
 
-function ResourcePage() {
-  const { connection, connectionResource } = Route.useRouteContext()
+const ResourcePage = () => {
+  const { connection, connectionResource } = resourceRouteApi.useRouteContext()
   const { connectionStringsCollection } = useCollections()
   const currentPageId = useMatches({
-    select: matches => getDatabasePageId(matches.map(match => match.routeId)),
+    select: (matches) =>
+      getDatabasePageId(matches.map((match) => match.routeId)),
   })
   const store = getConnectionResourceStore(connectionResource.id)
-  const loggerOpened = useSubscription(store, { selector: state => state.loggerOpened })
+  const loggerOpened = useSubscription(store, {
+    selector: (state) => state.loggerOpened,
+  })
   const { data: connectionString } = useLiveQuery(
-    q =>
+    (q) =>
       q
         .from({ cs: connectionStringsCollection })
         .where(({ cs }) => eq(cs.connectionId, connection.id))
         .findOne(),
-    [connectionStringsCollection, connection.id],
+    [connectionStringsCollection, connection.id]
   )
   const isPasswordPopulated = connectionString?.isPasswordPopulated
 
   useEffect(() => {
     if (currentPageId) {
       store.set(
-        state =>
+        (state) =>
           ({
             ...state,
             lastOpenedPage: currentPageId,
-          }) satisfies typeof state,
+          }) satisfies typeof state
       )
     }
   }, [currentPageId, store])
 
   useEffect(() => {
     const last = lastOpenedResourcesStorageValue.get()
-    if (!last.includes(connectionResource.id))
+    if (!last.includes(connectionResource.id)) {
       lastOpenedResourcesStorageValue.set(
         [
           connectionResource.id,
-          ...last.filter(resourceId => resourceId !== connectionResource.id),
-        ].slice(0, 3),
+          ...last.filter((resourceId) => resourceId !== connectionResource.id),
+        ].slice(0, 3)
       )
+    }
   }, [connectionResource.id])
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
@@ -108,7 +91,12 @@ function ResourcePage() {
   const { type } = useFetchingConfig(connection)
 
   if (type === 'waiting-for-password' && !isPasswordPopulated) {
-    return <PasswordForm connection={connection} connectionResource={connectionResource} />
+    return (
+      <PasswordForm
+        connection={connection}
+        connectionResource={connectionResource}
+      />
+    )
   }
 
   return (
@@ -116,10 +104,7 @@ function ResourcePage() {
       <ConnectionSidebar className="w-16" />
       <div
         className={cn(
-          `
-            m-2 ml-0 flex h-[calc(100%-(--spacing(4)))]
-            w-[calc(100%-(--spacing(16))-(--spacing(2)))] flex-col
-          `,
+          `m-2 ml-0 flex h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(16))-(--spacing(2)))] flex-col`
         )}
       >
         <ResizablePanelGroup
@@ -138,7 +123,7 @@ function ResourcePage() {
                 defaultSize="30%"
                 minSize="10%"
                 maxSize="50%"
-                className="overflow-auto rounded-lg bg-background"
+                className="bg-background overflow-auto rounded-lg"
               >
                 <QueryLogger connectionResource={connectionResource} />
               </ResizablePanel>
@@ -149,3 +134,46 @@ function ResourcePage() {
     </div>
   )
 }
+
+export const Route = createFileRoute('/_protected/connection/$resourceId')({
+  component: ResourcePage,
+  beforeLoad: ({ params }) => {
+    const { connectionsCollection, connectionsResourcesCollection } =
+      getCollections()
+    const connectionResource = connectionsResourcesCollection.get(
+      params.resourceId
+    )
+    const connection = connectionResource
+      ? connectionsCollection.get(connectionResource.connectionId)
+      : undefined
+
+    if (!connectionResource || !connection) {
+      lastOpenedResourcesStorageValue.set((prev) =>
+        prev.filter((id) => id !== params.resourceId)
+      )
+      throw redirect({ to: '/' })
+    }
+
+    return { connection, connectionResource }
+  },
+  loader: ({ context }) => {
+    prefetchConnectionResourceCore(context.connectionResource)
+
+    return {
+      connection: context.connection,
+      connectionResource: context.connectionResource,
+    }
+  },
+  head: ({ loaderData }) => ({
+    meta: loaderData
+      ? [
+          {
+            title: title(
+              loaderData.connection.name,
+              loaderData.connectionResource.name
+            ),
+          },
+        ]
+      : [],
+  }),
+})

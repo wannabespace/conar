@@ -4,30 +4,31 @@ import { app, BrowserWindow, Menu, shell } from 'electron'
 
 import { autoUpdater, createWindow } from '../main'
 
-function getFocusedWindow() {
-  return BrowserWindow.getAllWindows().find(window => window.isFocused())
-}
+const getFocusedWindow = () =>
+  BrowserWindow.getAllWindows().find((window) => window.isFocused())
 
-function setupDevelopmentEnvironment(): void {
+const setupDevelopmentEnvironment = (): void => {
   const mainWindow = getFocusedWindow()
 
-  if (!mainWindow) return
+  if (!mainWindow) {
+    return
+  }
 
   mainWindow.webContents.on('context-menu', (_, props) => {
     const { x, y } = props
 
     Menu.buildFromTemplate([
       {
-        label: 'Inspect element',
         click: () => {
           mainWindow.webContents.inspectElement(x, y)
         },
+        label: 'Inspect element',
       },
     ]).popup({ window: mainWindow })
   })
 }
 
-function buildTemplate(): MenuItemConstructorOptions[] {
+const buildTemplate = (): MenuItemConstructorOptions[] => {
   const isMac = process.platform === 'darwin'
   const cmdOrCtrl = isMac ? 'Command' : 'Ctrl'
 
@@ -35,115 +36,115 @@ function buildTemplate(): MenuItemConstructorOptions[] {
 
   if (isMac) {
     const appMenu = {
-      role: 'appMenu',
       label: 'Tamery',
+      role: 'appMenu',
       submenu: [
         {
           label: 'About Tamery',
           selector: 'orderFrontStandardAboutPanel:',
         },
         {
-          label: 'Check for Updates...',
           click: () => {
             autoUpdater?.checkForUpdates()
           },
+          label: 'Check for Updates...',
         },
         { type: 'separator' },
         {
-          label: 'Hide Tamery',
           accelerator: 'Command+H',
+          label: 'Hide Tamery',
           selector: 'hide:',
         },
         {
-          label: 'Hide Others',
           accelerator: 'Command+Shift+H',
+          label: 'Hide Others',
           selector: 'hideOtherApplications:',
         },
         { label: 'Show All', selector: 'unhideAllApplications:' },
         { type: 'separator' },
         {
-          label: 'Quit',
           accelerator: 'Command+Q',
           click: () => {
             app.quit()
           },
+          label: 'Quit',
         },
       ],
     } as MenuItemConstructorOptions
     template.push(appMenu)
   }
 
-  template.push({
-    role: 'fileMenu',
-    submenu: [
-      {
-        label: 'New Window',
-        accelerator: `${cmdOrCtrl}+Shift+N`,
-        click: () => {
-          createWindow()
+  template.push(
+    {
+      role: 'fileMenu',
+      submenu: [
+        {
+          accelerator: `${cmdOrCtrl}+Shift+N`,
+          click: () => {
+            createWindow()
+          },
+          label: 'New Window',
         },
-      },
-      { type: 'separator' },
-      {
-        label: 'Close Window',
-        accelerator: `${cmdOrCtrl}+W`,
-        click: () => {
-          const win = getFocusedWindow()
-          if (!win) return
+        { type: 'separator' },
+        {
+          accelerator: `${cmdOrCtrl}+W`,
+          click: () => {
+            const win = getFocusedWindow()
+            if (!win) {
+              return
+            }
 
-          win.close()
+            win.close()
+          },
+          label: 'Close Window',
         },
-      },
-    ],
-  })
-
-  template.push({
-    role: 'editMenu',
-  })
-
-  template.push({
-    role: 'viewMenu',
-  })
-
-  template.push({
-    role: 'windowMenu',
-  })
-
-  template.push({
-    label: 'Help',
-    submenu: [
-      {
-        label: 'Tamery Website',
-        click() {
-          shell.openExternal('https://tamery.app')
+      ],
+    },
+    {
+      role: 'editMenu',
+    },
+    {
+      role: 'viewMenu',
+    },
+    {
+      role: 'windowMenu',
+    },
+    {
+      label: 'Help',
+      submenu: [
+        {
+          click() {
+            shell.openExternal('https://tamery.app')
+          },
+          label: 'Tamery Website',
         },
-      },
-      {
-        label: 'Documentation',
-        click() {
-          shell.openExternal(`${SOCIAL_LINKS.GITHUB}#readme`)
+        {
+          click() {
+            shell.openExternal(`${SOCIAL_LINKS.GITHUB}#readme`)
+          },
+          label: 'Documentation',
         },
-      },
-      { type: 'separator' },
-      {
-        label: 'Give us a Star on GitHub',
-        click() {
-          shell.openExternal(SOCIAL_LINKS.GITHUB)
+        { type: 'separator' },
+        {
+          click() {
+            shell.openExternal(SOCIAL_LINKS.GITHUB)
+          },
+          label: 'Give us a Star on GitHub',
         },
-      },
-      {
-        label: 'Report Issue',
-        click() {
-          shell.openExternal(`${SOCIAL_LINKS.GITHUB}/issues/new/choose`)
+        {
+          click() {
+            shell.openExternal(`${SOCIAL_LINKS.GITHUB}/issues/new/choose`)
+          },
+          label: 'Report Issue',
         },
-      },
-    ],
-  })
+      ],
+    }
+  )
 
   return template
 }
 
-export function buildMenu(): Menu {
+export const buildMenu = (): Menu => {
   if (!app.isPackaged) {
     setupDevelopmentEnvironment()
   }

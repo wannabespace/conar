@@ -1,60 +1,42 @@
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
 import { DitherBackground } from '@tamery/ui/components/custom/dither-background'
-import { createFileRoute, Link, Outlet, useMatches } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useMatches,
+} from '@tanstack/react-router'
 import { type } from 'arktype'
 
 import { SEO } from '~/constants'
 
-export const Route = createFileRoute('/_auth')({
-  component: AuthLayout,
-  validateSearch: type({
-    'redirectPath?': 'string',
-  }),
-})
-
-function AuthLayout() {
+const AuthLayout = () => {
   const match = useMatches({
-    select: matches => matches.map(match => match.routeId).at(-1),
+    select: (matches) => matches.map((routeMatch) => routeMatch.routeId).at(-1),
   })
   const isSignIn = match === '/_auth/sign-in'
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <div
-        className={`
-        relative grid flex-1 shrink-0 items-center justify-center
-        lg:grid-cols-2
-      `}
-      >
-        <div
-          className={`
-          relative hidden h-full flex-col border-r bg-body p-10
-          text-foreground
-          lg:flex
-        `}
-        >
+    <div className="bg-background flex min-h-screen flex-col">
+      <div className="relative grid flex-1 shrink-0 items-center justify-center lg:grid-cols-2">
+        <div className="bg-body text-foreground relative hidden h-full flex-col border-r p-10 lg:flex">
           <DitherBackground />
-          <Link to="/" className="relative z-20 flex items-center text-lg font-medium">
+          <Link
+            to="/"
+            className="relative z-20 flex items-center text-lg font-medium"
+          >
             <AppLogo className="mr-2 size-6" />
             Tamery
           </Link>
           <div className="relative z-20 mt-auto">
-            <blockquote className="leading-normal text-balance">{SEO.description}</blockquote>
+            <blockquote className="leading-normal text-balance">
+              {SEO.description}
+            </blockquote>
           </div>
         </div>
-        <div
-          className={`
-          flex items-center justify-center p-4
-          lg:p-8
-        `}
-        >
-          <div
-            className={`
-            absolute top-4 right-4
-            md:top-8 md:right-8
-          `}
-          >
+        <div className="flex items-center justify-center p-4 lg:p-8">
+          <div className="absolute top-4 right-4 md:top-8 md:right-8">
             {isSignIn ? (
               <Button variant="link" render={<Link to="/" />}>
                 Home
@@ -65,32 +47,21 @@ function AuthLayout() {
               </Button>
             )}
           </div>
-          <div
-            className={`
-            mx-auto flex w-full flex-col justify-center gap-6
-            sm:w-87.5
-          `}
-          >
+          <div className="mx-auto flex w-full flex-col justify-center gap-6 sm:w-87.5">
             <Outlet />
             {isSignIn && (
-              <p className="px-6 text-center text-xs text-muted-foreground">
+              <p className="text-muted-foreground px-6 text-center text-xs">
                 By clicking continue, you agree to our{' '}
                 <Link
                   to="/terms-of-service"
-                  className={`
-                    underline underline-offset-4
-                    hover:text-primary
-                  `}
+                  className="hover:text-primary underline underline-offset-4"
                 >
                   Terms of Service
                 </Link>{' '}
                 and{' '}
                 <Link
                   to="/privacy-policy"
-                  className={`
-                    underline underline-offset-4
-                    hover:text-primary
-                  `}
+                  className="hover:text-primary underline underline-offset-4"
                 >
                   Privacy Policy
                 </Link>
@@ -103,3 +74,10 @@ function AuthLayout() {
     </div>
   )
 }
+
+export const Route = createFileRoute('/_auth')({
+  component: AuthLayout,
+  validateSearch: type({
+    'redirectPath?': 'string',
+  }),
+})

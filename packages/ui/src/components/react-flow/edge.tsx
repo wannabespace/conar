@@ -1,7 +1,7 @@
 import type { EdgeProps } from '@xyflow/react'
 import { BaseEdge, getSmoothStepPath, Position } from '@xyflow/react'
 
-export function ReactFlowEdge({
+export const ReactFlowEdge = ({
   sourceX,
   sourceY,
   targetX,
@@ -10,23 +10,23 @@ export function ReactFlowEdge({
   targetPosition,
   style,
   markerEnd,
-}: EdgeProps) {
+}: EdgeProps) => {
   const [edgePath] = getSmoothStepPath({
+    borderRadius: 15,
+    sourcePosition: sourcePosition || Position.Bottom,
     sourceX,
     sourceY,
-    sourcePosition: sourcePosition || Position.Bottom,
+    targetPosition: targetPosition || Position.Top,
     targetX,
     targetY,
-    targetPosition: targetPosition || Position.Top,
-    borderRadius: 15,
   })
 
   const animatedStyle = {
     ...style,
+    animation: 'dash 1s linear infinite',
     opacity: 0.2,
     strokeDasharray: '5,5',
     strokeDashoffset: '0',
-    animation: 'dash 1s linear infinite',
   }
 
   return (
@@ -42,7 +42,12 @@ export function ReactFlowEdge({
           `}
         </style>
       </defs>
-      <BaseEdge type="smoothstep" path={edgePath} style={animatedStyle} markerEnd={markerEnd} />
+      <BaseEdge
+        type="smoothstep"
+        path={edgePath}
+        style={animatedStyle}
+        markerEnd={markerEnd}
+      />
     </>
   )
 }

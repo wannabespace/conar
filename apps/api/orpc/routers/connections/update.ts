@@ -15,16 +15,24 @@ export const update = orpc
   .use(authMiddleware)
   .input(
     type.and(
-      connectionsUpdateSchema.omit('createdAt', 'updatedAt', 'userId', 'workspaceId', 'id'),
-      connectionsUpdateSchema.pick('id').required(),
-    ),
+      connectionsUpdateSchema.omit(
+        'createdAt',
+        'updatedAt',
+        'userId',
+        'workspaceId',
+        'id'
+      ),
+      connectionsUpdateSchema.pick('id').required()
+    )
   )
   .handler(async ({ context, input }) => {
     const { id, ...changes } = input
     const [found] = await db
       .select()
       .from(connections)
-      .where(and(eq(connections.id, id), eq(connections.userId, context.user.id)))
+      .where(
+        and(eq(connections.id, id), eq(connections.userId, context.user.id))
+      )
       .limit(1)
 
     if (!found) {
@@ -34,7 +42,8 @@ export const update = orpc
     const secret = await context.getUserSecret()
 
     const newConnectionString = new SafeURL(
-      changes.connectionString ?? decrypt({ encryptedText: found.connectionString, secret }),
+      changes.connectionString ??
+        decrypt({ encryptedText: found.connectionString, secret })
     )
 
     if ((changes.syncType ?? found.syncType) !== SyncType.Cloud) {
@@ -45,13 +54,24 @@ export const update = orpc
       .update(connections)
       .set({
         ...changes,
-        connectionString: encrypt({ text: newConnectionString.toString(), secret }),
+        connectionString: encrypt({
+          secret,
+          text: newConnectionString.toString(),
+        }),
       })
-      .where(and(eq(connections.userId, context.user.id), eq(connections.id, id)))
+      .where(
+        and(eq(connections.userId, context.user.id), eq(connections.id, id))
+      )
       .returning()
+
+    if (!connection) {
+      throw new ORPCError('NOT_FOUND', {
+        message: 'Connection not found',
+      })
+    }
 
     publisher.publish(context.user.id, {
       type: 'update',
-      value: connection!,
+      value: connection,
     })
   })

@@ -3,23 +3,22 @@ import { connections, members, users, workspaces } from '@tamery/db/schema'
 import { and, asc, eq, isNull, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
-function slugify(value: string) {
-  return value
+const slugify = (value: string) =>
+  value
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    .replaceAll(/[^a-z0-9]+/gu, '-')
+    .replaceAll(/^-+|-+$/gu, '')
     .slice(0, 32)
-}
 
-export function workspaceSlug(name: string) {
+export const workspaceSlug = (name: string) => {
   const base = slugify(name) || 'workspace'
 
   return `${base}-${nanoid(8)}`
 }
 
-export async function ensureDefaultWorkspace(userId: string) {
-  return db.transaction(async tx => {
+export const ensureDefaultWorkspace = (userId: string) =>
+  db.transaction(async (tx) => {
     // Serialize concurrent calls for the same user so racing requests (e.g. parallel
     // session reads on sign-in) can't each create a duplicate default workspace. The
     // lock is released at transaction end; the membership re-check below happens under it.
@@ -37,7 +36,7 @@ export async function ensureDefaultWorkspace(userId: string) {
     }
 
     const [user] = await tx
-      .select({ name: users.name, email: users.email })
+      .select({ email: users.email, name: users.name })
       .from(users)
       .where(eq(users.id, userId))
       .limit(1)
@@ -48,23 +47,28 @@ export async function ensureDefaultWorkspace(userId: string) {
     const [workspace] = await tx
       .insert(workspaces)
       .values({
+        metadata: JSON.stringify({ default: true }),
         name: workspaceName,
         slug: workspaceSlug(workspaceName),
-        metadata: JSON.stringify({ default: true }),
       })
       .returning({ id: workspaces.id })
 
+    if (!workspace) {
+      throw new Error('Failed to create default workspace')
+    }
+
     await tx.insert(members).values({
-      workspaceId: workspace!.id,
-      userId,
       role: 'owner',
+      userId,
+      workspaceId: workspace.id,
     })
 
     await tx
       .update(connections)
-      .set({ workspaceId: workspace!.id })
-      .where(and(eq(connections.userId, userId), isNull(connections.workspaceId)))
+      .set({ workspaceId: workspace.id })
+      .where(
+        and(eq(connections.userId, userId), isNull(connections.workspaceId))
+      )
 
-    return workspace!.id
+    return workspace.id
   })
-}

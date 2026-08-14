@@ -26,13 +26,13 @@ import { toast } from 'sonner'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-function DeleteAccountDialog({
+const DeleteAccountDialog = ({
   open,
   onOpenChange,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-}) {
+}) => {
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
@@ -40,7 +40,9 @@ function DeleteAccountDialog({
   const { data: hasCredentialAccount = false } = useQuery({
     queryKey: ['accounts'],
     queryFn: () => authClient.listAccounts(),
-    select: data => data.data?.some(account => account.providerId === 'credential') ?? false,
+    select: (data) =>
+      data.data?.some((account) => account.providerId === 'credential') ??
+      false,
   })
 
   const { mutate, isPending } = useMutation({
@@ -62,9 +64,10 @@ function DeleteAccountDialog({
   })
 
   const isConfirmed = confirmation === 'delete'
-  const canSubmit = isConfirmed && (!hasCredentialAccount || password.length > 0)
+  const canSubmit =
+    isConfirmed && (!hasCredentialAccount || password.length > 0)
 
-  function handleOpenChange(nextOpen: boolean) {
+  const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
       setPassword('')
       setConfirmation('')
@@ -76,7 +79,7 @@ function DeleteAccountDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className="sm:max-w-sm"
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           mutate()
         }}
@@ -85,8 +88,9 @@ function DeleteAccountDialog({
         <DialogHeader>
           <DialogTitle>Delete account</DialogTitle>
           <DialogDescription>
-            This action is permanent and cannot be undone. All your data, including your
-            subscription, settings, and sessions will be permanently removed.
+            This action is permanent and cannot be undone. All your data,
+            including your subscription, settings, and sessions will be
+            permanently removed.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">
@@ -98,7 +102,7 @@ function DeleteAccountDialog({
                 type="password"
                 placeholder="Enter your password"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 disabled={isPending}
                 autoComplete="current-password"
                 // oxlint-disable-next-line no-autofocus
@@ -109,14 +113,15 @@ function DeleteAccountDialog({
 
           <div className="space-y-2">
             <Label htmlFor="delete-confirmation">
-              Type <span className="font-mono font-semibold">delete</span> to confirm
+              Type <span className="font-mono font-semibold">delete</span> to
+              confirm
             </Label>
             <Input
               id="delete-confirmation"
               type="text"
               placeholder="delete"
               value={confirmation}
-              onChange={e => setConfirmation(e.target.value)}
+              onChange={(e) => setConfirmation(e.target.value)}
               disabled={isPending}
               autoComplete="off"
               // oxlint-disable-next-line no-autofocus
@@ -151,7 +156,7 @@ function DeleteAccountDialog({
   )
 }
 
-export function DeleteAccountCard() {
+export const DeleteAccountCard = () => {
   const [open, setOpen] = useState(false)
 
   return (

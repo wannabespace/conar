@@ -2,8 +2,16 @@ import { RiDatabase2Line, RiSearchLine } from '@remixicon/react'
 import { CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES } from '@tamery/shared/constants'
 import { Button } from '@tamery/ui/components/button'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@tamery/ui/components/input-group'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@tamery/ui/components/tooltip'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@tamery/ui/components/input-group'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -27,21 +35,30 @@ import { TablesList } from './tables-list'
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const resizeOverlay = document.createElement('div')
-resizeOverlay.className = 'cursor-col-resize size-full fixed top-0 left-0 z-1000'
+resizeOverlay.className =
+  'cursor-col-resize size-full fixed top-0 left-0 z-1000'
 
-export function TablesSidebar() {
+export const TablesSidebar = () => {
   const { connection, connectionResource } = useRouteContext()
   const isOpen = useSubscription(tablesSidebarOpenValue)
   const store = getConnectionResourceStore(connectionResource.id)
-  const showSystem = useSubscription(store, { selector: state => state.showSystem })
-  const search = useSubscription(store, { selector: state => state.tablesSearch })
+  const showSystem = useSubscription(store, {
+    selector: (state) => state.showSystem,
+  })
+  const search = useSubscription(store, {
+    selector: (state) => state.tablesSearch,
+  })
   const {
     refetch: refetchTablesAndSchemas,
     isFetching: isRefreshingTablesAndSchemas,
     dataUpdatedAt,
-  } = useQuery(resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem }))
+  } = useQuery(
+    resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem })
+  )
 
-  const canToggleSystem = !CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES.includes(connection.type)
+  const canToggleSystem = !CONNECTION_TYPES_WITHOUT_SYSTEM_TABLES.includes(
+    connection.type
+  )
 
   const width = useSubscription(tablesSidebarWidthValue)
   const [isResizing, setIsResizing] = useState(false)
@@ -54,13 +71,13 @@ export function TablesSidebar() {
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       if (!resizeOverlay.parentElement) {
-        document.body.appendChild(resizeOverlay)
+        document.body.append(resizeOverlay)
       }
       tablesSidebarWidthValue.set(
         Math.min(
           SIDEBAR_MAX_WIDTH,
-          Math.max(SIDEBAR_MIN_WIDTH, startWidth + moveEvent.clientX - startX),
-        ),
+          Math.max(SIDEBAR_MIN_WIDTH, startWidth + moveEvent.clientX - startX)
+        )
       )
     }
 
@@ -69,7 +86,7 @@ export function TablesSidebar() {
       document.removeEventListener('mouseup', handleMouseUp)
       setIsResizing(false)
       if (resizeOverlay.parentElement) {
-        document.body.removeChild(resizeOverlay)
+        resizeOverlay.remove()
       }
     }
 
@@ -93,19 +110,26 @@ export function TablesSidebar() {
       }
       className="relative h-full shrink-0 overflow-hidden"
     >
-      <div className="flex h-full flex-col pr-2 text-foreground" style={{ width }}>
+      <div
+        className="text-foreground flex h-full flex-col pr-2"
+        style={{ width }}
+      >
         <div className="flex shrink-0 items-center gap-1 p-2 pb-1.5">
-          <InputGroup className="h-7 flex-1 rounded-md bg-input/60">
+          <InputGroup className="bg-input/60 h-7 flex-1 rounded-md">
             <InputGroupAddon>
-              <RiSearchLine className="size-3.5 text-muted-foreground/70" />
+              <RiSearchLine className="text-muted-foreground/70 size-3.5" />
             </InputGroupAddon>
             <InputGroupInput
               placeholder="Search"
               className="text-sm"
               value={search}
-              onChange={e =>
+              onChange={(e) =>
                 store.set(
-                  state => ({ ...state, tablesSearch: e.target.value }) satisfies typeof state,
+                  (state) =>
+                    ({
+                      ...state,
+                      tablesSearch: e.target.value,
+                    }) satisfies typeof state
                 )
               }
             />
@@ -118,10 +142,17 @@ export function TablesSidebar() {
                     variant="ghost"
                     size="icon-sm"
                     aria-pressed={showSystem}
-                    className={cn('text-muted-foreground', showSystem && 'bg-accent text-primary')}
+                    className={cn(
+                      'text-muted-foreground',
+                      showSystem && 'bg-accent text-primary'
+                    )}
                     onClick={() =>
                       store.set(
-                        state => ({ ...state, showSystem: !showSystem }) satisfies typeof state,
+                        (state) =>
+                          ({
+                            ...state,
+                            showSystem: !showSystem,
+                          }) satisfies typeof state
                       )
                     }
                   />
@@ -151,7 +182,9 @@ export function TablesSidebar() {
                 <span>Refresh tables and schemas</span>
                 <span className="opacity-70">
                   Last updated:{' '}
-                  {dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : 'never'}
+                  {dataUpdatedAt
+                    ? new Date(dataUpdatedAt).toLocaleTimeString()
+                    : 'never'}
                 </span>
               </div>
             </TooltipContent>
@@ -161,18 +194,21 @@ export function TablesSidebar() {
       </div>
       {isOpen && (
         <div
+          // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- interactive resize handle
           role="separator"
           aria-orientation="vertical"
           aria-label="Resize sidebar"
           tabIndex={0}
           className="group absolute inset-y-0 right-0 z-10 cursor-col-resize px-2 duration-150 select-none"
           onMouseDown={handleResize}
-          onDoubleClick={() => tablesSidebarWidthValue.set(SIDEBAR_DEFAULT_WIDTH)}
+          onDoubleClick={() =>
+            tablesSidebarWidthValue.set(SIDEBAR_DEFAULT_WIDTH)
+          }
         >
           <div
             className={cn(
-              'h-full w-1 rounded-xs transition-colors group-hover:bg-border',
-              isResizing && 'bg-primary/40',
+              'group-hover:bg-border h-full w-1 rounded-xs transition-colors',
+              isResizing && 'bg-primary/40'
             )}
           />
         </div>

@@ -18,26 +18,26 @@ import { toast } from 'sonner'
 
 import { authClient } from '~/lib/auth'
 
-function workspaceSlug(name: string) {
+const workspaceSlug = (name: string) => {
   const base =
     name
       .toLowerCase()
       .trim()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
+      .replaceAll(/[^a-z0-9]+/gu, '-')
+      .replaceAll(/^-+|-+$/gu, '')
       .slice(0, 32) || 'workspace'
   const suffix = Math.random().toString(36).slice(2, 10)
 
   return `${base}-${suffix}`
 }
 
-export function CreateWorkspaceDialog({
+export const CreateWorkspaceDialog = ({
   open,
   onOpenChange,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-}) {
+}) => {
   const navigate = useNavigate()
   const [name, setName] = useState('')
 
@@ -64,11 +64,13 @@ export function CreateWorkspaceDialog({
     },
     onError: (err: Error) => {
       console.error(err)
-      toast.error(err.message || 'Failed to create workspace. Please try again later.')
+      toast.error(
+        err.message || 'Failed to create workspace. Please try again later.'
+      )
     },
   })
 
-  function handleSubmit(e: React.SubmitEvent) {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault()
     createWorkspace(name.trim())
   }
@@ -88,7 +90,7 @@ export function CreateWorkspaceDialog({
             <Input
               id="workspace-name"
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)}
               required
               autoFocus
               placeholder="My workspace"
@@ -97,8 +99,14 @@ export function CreateWorkspaceDialog({
           </Field>
         </form>
         <DialogFooter>
-          <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
-          <Button type="submit" form="create-workspace-form" disabled={loading || !name.trim()}>
+          <DialogClose render={<Button type="button" variant="outline" />}>
+            Cancel
+          </DialogClose>
+          <Button
+            type="submit"
+            form="create-workspace-form"
+            disabled={loading || !name.trim()}
+          >
             <LoadingContent loading={loading}>Create</LoadingContent>
           </Button>
         </DialogFooter>

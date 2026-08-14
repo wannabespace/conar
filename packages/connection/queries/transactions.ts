@@ -1,7 +1,10 @@
 import { randomUUID } from 'node:crypto'
 
 export interface TxHandle {
-  execute: (query: string, values: unknown[]) => Promise<{ result: unknown; duration: number }>
+  execute: (
+    query: string,
+    values: unknown[]
+  ) => Promise<{ result: unknown; duration: number }>
   commit: () => Promise<void>
   rollback: () => Promise<void>
   release: () => Promise<void>
@@ -16,17 +19,27 @@ const ORPHAN_TX_TIMEOUT_MS = 5 * 60 * 1000
 
 const activeTransactions = new Map<string, OwnedTx>()
 
-export function registerTransaction(handle: TxHandle, ownerId?: string) {
+const silently = async (fn: () => Promise<void>) => {
+  try {
+    await fn()
+  } catch {
+    // empty
+  }
+}
+
+export const registerTransaction = (handle: TxHandle, ownerId?: string) => {
   const txId = randomUUID()
 
   const timeout = setTimeout(() => {
-    const current = activeTransactions.get(txId)
-    if (!current) return
-    activeTransactions.delete(txId)
-    current.handle
-      .rollback()
-      .catch(() => {})
-      .finally(() => current.handle.release().catch(() => {}))
+    void (async () => {
+      const current = activeTransactions.get(txId)
+      if (!current) {
+        return
+      }
+      activeTransactions.delete(txId)
+      await silently(() => current.handle.rollback())
+      await silently(() => current.handle.release())
+    })()
   }, ORPHAN_TX_TIMEOUT_MS)
 
   const wrapped: TxHandle = {
@@ -41,20 +54,26 @@ export function registerTransaction(handle: TxHandle, ownerId?: string) {
   return txId
 }
 
-function checkOwner(entry: OwnedTx, ownerId?: string) {
-  if (entry.ownerId && ownerId !== entry.ownerId) return false
+const checkOwner = (entry: OwnedTx, ownerId?: string) => {
+  if (entry.ownerId && ownerId !== entry.ownerId) {
+    return false
+  }
   return true
 }
 
-export function getTransaction(txId: string, ownerId?: string) {
+export const getTransaction = (txId: string, ownerId?: string) => {
   const entry = activeTransactions.get(txId)
-  if (!entry || !checkOwner(entry, ownerId)) return undefined
+  if (!entry || !checkOwner(entry, ownerId)) {
+    return
+  }
   return entry.handle
 }
 
-export function disposeTransaction(txId: string, ownerId?: string) {
+export const disposeTransaction = (txId: string, ownerId?: string) => {
   const entry = activeTransactions.get(txId)
-  if (!entry || !checkOwner(entry, ownerId)) return undefined
+  if (!entry || !checkOwner(entry, ownerId)) {
+    return
+  }
   activeTransactions.delete(txId)
   return entry.handle
 }

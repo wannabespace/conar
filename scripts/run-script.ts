@@ -8,7 +8,12 @@ import { getPackages } from '@manypkg/get-packages'
 
 const __dirname = import.meta.dirname
 const rootDir = path.join(__dirname, '..')
-const cacheFile = path.join(rootDir, 'node_modules', '.cache', 'tamery-run.json')
+const cacheFile = path.join(
+  rootDir,
+  'node_modules',
+  '.cache',
+  'tamery-run.json'
+)
 
 const ROOT_ID = '<root>'
 
@@ -25,9 +30,15 @@ interface Selection {
 }
 
 const readTurboTasks = () => {
-  const turboJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'turbo.json'), 'utf-8'))
+  const turboJson = JSON.parse(
+    fs.readFileSync(path.join(rootDir, 'turbo.json'), 'utf-8')
+  )
 
-  return new Set(Object.keys(turboJson.tasks ?? {}).map(task => task.split('#').at(-1) as string))
+  return new Set(
+    Object.keys(turboJson.tasks ?? {}).map(
+      (task) => task.split('#').at(-1) as string
+    )
+  )
 }
 
 const runnerFile = path.basename(import.meta.filename)
@@ -35,12 +46,15 @@ const runnerFile = path.basename(import.meta.filename)
 const discoverPackages = async (): Promise<WorkspacePackage[]> => {
   const { packages, rootPackage } = await getPackages(rootDir)
 
-  const toWorkspacePackage = (pkg: (typeof packages)[number], isRoot: boolean) => ({
+  const toWorkspacePackage = (
+    pkg: (typeof packages)[number],
+    isRoot: boolean
+  ) => ({
     dir: pkg.relativeDir,
     id: isRoot ? ROOT_ID : pkg.packageJson.name,
     name: pkg.packageJson.name,
     scripts: Object.entries(
-      ('scripts' in pkg.packageJson ? pkg.packageJson.scripts : undefined) ?? {},
+      ('scripts' in pkg.packageJson ? pkg.packageJson.scripts : undefined) ?? {}
     )
       .filter(([, command]) => !command.includes(runnerFile))
       .map(([name]) => name),
@@ -49,12 +63,12 @@ const discoverPackages = async (): Promise<WorkspacePackage[]> => {
   return [
     ...(rootPackage ? [toWorkspacePackage(rootPackage, true)] : []),
     ...packages
-      .filter(pkg => pkg.dir !== rootPackage?.dir)
-      .map(pkg => toWorkspacePackage(pkg, false)),
-  ].filter(pkg => pkg.scripts.length > 0)
+      .filter((pkg) => pkg.dir !== rootPackage?.dir)
+      .map((pkg) => toWorkspacePackage(pkg, false)),
+  ].filter((pkg) => pkg.scripts.length > 0)
 }
 
-function readCache(): Selection | null {
+const readCache = (): Selection | null => {
   try {
     return JSON.parse(fs.readFileSync(cacheFile, 'utf-8'))
   } catch {
@@ -62,16 +76,16 @@ function readCache(): Selection | null {
   }
 }
 
-function writeCache(selection: Selection) {
+const writeCache = (selection: Selection) => {
   fs.mkdirSync(path.dirname(cacheFile), { recursive: true })
   fs.writeFileSync(cacheFile, JSON.stringify(selection, null, 2))
 }
 
-function parseArgs(argv: string[]) {
+const parseArgs = (argv: string[]) => {
   const separator = argv.indexOf('--')
   const own = separator === -1 ? argv : argv.slice(0, separator)
   const forwarded = separator === -1 ? [] : argv.slice(separator + 1)
-  const flags = new Set(own.filter(arg => arg.startsWith('-')))
+  const flags = new Set(own.filter((arg) => arg.startsWith('-')))
 
   return {
     all: flags.has('--all') || flags.has('-a'),
@@ -79,11 +93,11 @@ function parseArgs(argv: string[]) {
     forwarded,
     last: flags.has('--last') || flags.has('-l'),
     noTurbo: flags.has('--no-turbo'),
-    script: own.find(arg => !arg.startsWith('-')),
+    script: own.find((arg) => !arg.startsWith('-')),
   }
 }
 
-function run(command: string, args: string[]) {
+const run = (command: string, args: string[]) => {
   p.log.step(`${command} ${args.join(' ')}`)
 
   const child = spawn(command, args, {
@@ -95,24 +109,24 @@ function run(command: string, args: string[]) {
   child.on('exit', (code, signal) => {
     process.exit(signal ? 1 : (code ?? 0))
   })
-  child.on('error', error => {
+  child.on('error', (error) => {
     p.log.error(error.message)
     process.exit(1)
   })
 }
 
-function buildCommand(
+const buildCommand = (
   selected: WorkspacePackage[],
   script: string,
-  options: { turbo: boolean; forwarded: string[] },
-) {
-  const onlyRoot = selected.length === 1 && selected[0]!.id === ROOT_ID
+  options: { turbo: boolean; forwarded: string[] }
+) => {
+  const onlyRoot = selected.length === 1 && selected[0]?.id === ROOT_ID
 
   if (onlyRoot) {
     return { args: ['run', script, ...options.forwarded], command: 'pnpm' }
   }
 
-  const filters = selected.filter(pkg => pkg.id !== ROOT_ID)
+  const filters = selected.filter((pkg) => pkg.id !== ROOT_ID)
 
   if (options.turbo) {
     return {
@@ -121,7 +135,7 @@ function buildCommand(
         'turbo',
         'run',
         script,
-        ...filters.map(pkg => `--filter=${pkg.name}`),
+        ...filters.map((pkg) => `--filter=${pkg.name}`),
         ...(options.forwarded.length > 0 ? ['--', ...options.forwarded] : []),
       ],
       command: 'pnpm',
@@ -130,7 +144,7 @@ function buildCommand(
 
   return {
     args: [
-      ...filters.flatMap(pkg => ['--filter', pkg.name]),
+      ...filters.flatMap((pkg) => ['--filter', pkg.name]),
       ...(filters.length > 1 ? ['--parallel'] : []),
       'run',
       script,
@@ -140,11 +154,114 @@ function buildCommand(
   }
 }
 
-async function main() {
+const rememberedPackageIds = (packages: WorkspacePackage[]) =>
+  readCache()?.packages.filter((id) => packages.some((pkg) => pkg.id === id)) ??
+  []
+
+const defaultMultiselectValues = (
+  packages: WorkspacePackage[],
+  script: string | undefined,
+  remembered: string[]
+) => {
+  if (remembered.length > 0) {
+    return remembered
+  }
+  if (script) {
+    return packages.filter((pkg) => pkg.id !== ROOT_ID).map((pkg) => pkg.id)
+  }
+  return []
+}
+
+const selectPackageIds = async (
+  packages: WorkspacePackage[],
+  args: ReturnType<typeof parseArgs>,
+  cached: Selection | null
+): Promise<string[] | null> => {
+  if (args.all) {
+    return packages.filter((pkg) => pkg.id !== ROOT_ID).map((pkg) => pkg.id)
+  }
+
+  if (cached) {
+    return cached.packages.filter((id) => packages.some((pkg) => pkg.id === id))
+  }
+
+  const remembered = rememberedPackageIds(packages)
+  const answer = await p.multiselect({
+    initialValues: defaultMultiselectValues(packages, args.script, remembered),
+    message: args.script
+      ? `Select packages to run "${args.script}" in`
+      : 'Select packages',
+    options: packages.map((pkg) => ({
+      hint: pkg.dir,
+      label: pkg.id === ROOT_ID ? 'root' : pkg.name,
+      value: pkg.id,
+    })),
+    required: true,
+  })
+
+  if (p.isCancel(answer)) {
+    p.cancel('Cancelled')
+    process.exit(0)
+    return null
+  }
+
+  return answer
+}
+
+const resolveScript = async (
+  selected: WorkspacePackage[],
+  args: ReturnType<typeof parseArgs>,
+  cached: Selection | null
+): Promise<string | null> => {
+  const scriptCounts = new Map<string, number>()
+
+  for (const pkg of selected) {
+    for (const name of pkg.scripts) {
+      scriptCounts.set(name, (scriptCounts.get(name) ?? 0) + 1)
+    }
+  }
+
+  const preferredScript =
+    args.script ??
+    (cached?.script && scriptCounts.has(cached.script)
+      ? cached.script
+      : undefined)
+
+  if (preferredScript && !scriptCounts.has(preferredScript)) {
+    p.cancel(`No selected package has a script named "${preferredScript}"`)
+    process.exit(1)
+    return null
+  }
+
+  if (preferredScript) {
+    return preferredScript
+  }
+
+  const answer = await p.select({
+    initialValue: cached?.script,
+    message: 'Select script',
+    options: [...scriptCounts.keys()].toSorted().map((name) => ({
+      hint: `${scriptCounts.get(name)}/${selected.length} packages`,
+      label: name,
+      value: name,
+    })),
+  })
+
+  if (p.isCancel(answer)) {
+    p.cancel('Cancelled')
+    process.exit(0)
+    return null
+  }
+
+  return answer
+}
+
+const main = async () => {
   const args = parseArgs(process.argv.slice(2))
   const discovered = await discoverPackages()
-  const packages = args.script
-    ? discovered.filter(pkg => pkg.scripts.includes(args.script!))
+  const scriptFilter = args.script
+  const packages = scriptFilter
+    ? discovered.filter((pkg) => pkg.scripts.includes(scriptFilter))
     : discovered
   const cached = args.last ? readCache() : null
 
@@ -155,94 +272,40 @@ async function main() {
     return process.exit(1)
   }
 
-  let selectedIds: string[]
-
-  if (args.all) {
-    selectedIds = packages.filter(pkg => pkg.id !== ROOT_ID).map(pkg => pkg.id)
-  } else if (cached) {
-    selectedIds = cached.packages.filter(id => packages.some(pkg => pkg.id === id))
-  } else {
-    const remembered = readCache()?.packages.filter(id => packages.some(pkg => pkg.id === id)) ?? []
-
-    const answer = await p.multiselect({
-      initialValues:
-        remembered.length > 0
-          ? remembered
-          : args.script
-            ? packages.filter(pkg => pkg.id !== ROOT_ID).map(pkg => pkg.id)
-            : [],
-      message: args.script ? `Select packages to run "${args.script}" in` : 'Select packages',
-      options: packages.map(pkg => ({
-        hint: pkg.dir,
-        label: pkg.id === ROOT_ID ? 'root' : pkg.name,
-        value: pkg.id,
-      })),
-      required: true,
-    })
-
-    if (p.isCancel(answer)) {
-      p.cancel('Cancelled')
-      return process.exit(0)
-    }
-
-    selectedIds = answer
+  const selectedIds = await selectPackageIds(packages, args, cached)
+  if (!selectedIds) {
+    return
   }
 
-  const selected = packages.filter(pkg => selectedIds.includes(pkg.id))
+  const selected = packages.filter((pkg) => selectedIds.includes(pkg.id))
 
   if (selected.length === 0) {
     p.cancel('No packages selected')
     return process.exit(1)
   }
 
-  const scriptCounts = new Map<string, number>()
-
-  for (const pkg of selected) {
-    for (const name of pkg.scripts) {
-      scriptCounts.set(name, (scriptCounts.get(name) ?? 0) + 1)
-    }
-  }
-
-  let script =
-    args.script ?? (cached?.script && scriptCounts.has(cached.script) ? cached.script : undefined)
-
-  if (script && !scriptCounts.has(script)) {
-    p.cancel(`No selected package has a script named "${script}"`)
-    return process.exit(1)
-  }
-
+  const script = await resolveScript(selected, args, cached)
   if (!script) {
-    const answer = await p.select({
-      initialValue: cached?.script,
-      message: 'Select script',
-      options: [...scriptCounts.keys()].toSorted().map(name => ({
-        hint: `${scriptCounts.get(name)}/${selected.length} packages`,
-        label: name,
-        value: name,
-      })),
-    })
-
-    if (p.isCancel(answer)) {
-      p.cancel('Cancelled')
-      return process.exit(0)
-    }
-
-    script = answer
+    return
   }
 
-  const targets = selected.filter(pkg => pkg.scripts.includes(script))
-  const skipped = selected.filter(pkg => !pkg.scripts.includes(script))
+  const targets = selected.filter((pkg) => pkg.scripts.includes(script))
+  const skipped = selected.filter((pkg) => !pkg.scripts.includes(script))
 
   if (skipped.length > 0) {
-    p.log.warn(`Skipping (no "${script}" script): ${skipped.map(pkg => pkg.name).join(', ')}`)
+    p.log.warn(
+      `Skipping (no "${script}" script): ${skipped.map((pkg) => pkg.name).join(', ')}`
+    )
   }
 
-  writeCache({ packages: targets.map(pkg => pkg.id), script })
+  writeCache({ packages: targets.map((pkg) => pkg.id), script })
 
   const isTurboTask = readTurboTasks().has(script)
 
   if (!isTurboTask && !args.noTurbo) {
-    p.log.warn(`"${script}" is not a turbo.json task — running through pnpm instead`)
+    p.log.warn(
+      `"${script}" is not a turbo.json task — running through pnpm instead`
+    )
   }
 
   const { command, args: commandArgs } = buildCommand(targets, script, {
@@ -250,7 +313,9 @@ async function main() {
     turbo: isTurboTask && !args.noTurbo,
   })
 
-  p.outro(`Running "${script}" in ${targets.length} package${targets.length === 1 ? '' : 's'}`)
+  p.outro(
+    `Running "${script}" in ${targets.length} package${targets.length === 1 ? '' : 's'}`
+  )
 
   if (args.dryRun) {
     console.log(`${command} ${commandArgs.join(' ')}`)

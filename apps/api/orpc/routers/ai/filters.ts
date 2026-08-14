@@ -11,24 +11,26 @@ import { optionalSubscriptionMiddleware, orpc } from '~/orpc'
 
 // Arktype doesn't work here, so we use Zod
 const schema = z.object({
+  filters: z.array(
+    z.object({
+      column: z.string(),
+      operator: z.enum(SQL_FILTERS_LIST.map((filter) => filter.operator)),
+      values: z.array(z.string()),
+    })
+  ),
   orderBy: z.array(
     z.object({
       column: z.string(),
       direction: z.enum(['ASC', 'DESC']),
-    }),
-  ),
-  filters: z.array(
-    z.object({
-      column: z.string(),
-      operator: z.enum(SQL_FILTERS_LIST.map(filter => filter.operator)),
-      values: z.array(z.string()),
-    }),
+    })
   ),
 })
 
 const redisUsage = {
   get: async (userId: string) => {
-    const value = await redis.get(`ai:usage:${userId}:filters:${format(new Date(), 'yyyy-MM')}`)
+    const value = await redis.get(
+      `ai:usage:${userId}:filters:${format(new Date(), 'yyyy-MM')}`
+    )
     return value ? Number(value) : 0
   },
   increment: async (userId: string) => {
@@ -44,18 +46,18 @@ export const filters = orpc
   .use(optionalSubscriptionMiddleware)
   .input(
     type({
-      prompt: 'string',
       context: 'string',
-    }),
+      prompt: 'string',
+    })
   )
   .errors({
     FORBIDDEN: {
-      message: 'string',
       data: type({
-        remaining: 'number',
         max: 'number',
+        remaining: 'number',
         resetAt: 'Date',
       }),
+      message: 'string',
     },
   })
   .handler(async ({ input, signal, context, errors }) => {
@@ -70,19 +72,26 @@ export const filters = orpc
 
       if (usage >= FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT) {
         throw errors.FORBIDDEN({
-          message:
-            'You have reached the free AI usage limit. Please subscribe to a Pro plan to continue using AI features.',
           data: {
-            remaining: 0,
             max: FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT,
+            remaining: 0,
             resetAt: addDays(endOfMonth(new Date()), 1),
           },
+          message:
+            'You have reached the free AI usage limit. Please subscribe to a Pro plan to continue using AI features.',
         })
       }
     }
 
     const { output: result } = await generateText({
+      abortSignal: signal,
       model: google('gemini-flash-latest'),
+      output: Output.object({
+        description:
+          'An object with filters array and orderBy array; each filter has column, operator, and values; each orderBy entry has column and direction.',
+        schema,
+      }),
+      prompt: input.prompt,
       system: [
         'You are a filters and ordering generator that converts natural language queries into database filters and ordering instructions.',
         'You should understand the sense of the prompt as much as possible.',
@@ -112,17 +121,13 @@ export const filters = orpc
         'Table context:',
         input.context,
       ].join('\n'),
-      prompt: input.prompt,
-      abortSignal: signal,
-      output: Output.object({
-        schema,
-        description:
-          'An object with filters array and orderBy array; each filter has column, operator, and values; each orderBy entry has column and direction.',
-      }),
     })
 
     const orderBy = Object.fromEntries(
-      (result?.orderBy ?? []).map(({ column, direction }) => [column, direction]),
+      (result?.orderBy ?? []).map(({ column, direction }) => [
+        column,
+        direction,
+      ])
     )
 
     if (!context.subscription && result.filters.length > 0) {
@@ -139,12 +144,12 @@ export const filters = orpc
     })
 
     return {
-      orderBy,
       filters: result?.filters ?? [],
+      orderBy,
       ...(remainingFreeAiUsage !== null && {
         freeAiUsage: {
-          remaining: remainingFreeAiUsage,
           max: FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT,
+          remaining: remainingFreeAiUsage,
           resetAt: addDays(endOfMonth(new Date()), 1),
         },
       }),

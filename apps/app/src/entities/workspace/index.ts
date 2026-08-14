@@ -11,29 +11,26 @@ export interface Workspace {
   createdAt: Date | string
 }
 
-export function useWorkspaces() {
-  return authClient.useListOrganizations()
-}
+export const useWorkspaces = () => authClient.useListOrganizations()
 
-export function useActiveWorkspace() {
-  return authClient.useActiveOrganization()
-}
+export const useActiveWorkspace = () => authClient.useActiveOrganization()
 
-function workspaceCreatedAt(workspace: Pick<Workspace, 'createdAt'>) {
-  return new Date(workspace.createdAt).getTime()
-}
+const workspaceCreatedAt = (workspace: Pick<Workspace, 'createdAt'>) =>
+  new Date(workspace.createdAt).getTime()
 
-/**
- * When a user has workspaces but none is active (never chose one), pick the oldest
- * — their default workspace — and persist it to the session via `setActive`.
- */
-export function useActiveWorkspaceSync() {
+export const useActiveWorkspaceSync = () => {
   const { data: workspaces, isPending: workspacesPending } = useWorkspaces()
-  const { data: activeWorkspace, isPending: activePending } = useActiveWorkspace()
+  const { data: activeWorkspace, isPending: activePending } =
+    useActiveWorkspace()
   const settingRef = useRef(false)
 
   useEffect(() => {
-    if (workspacesPending || activePending || activeWorkspace || settingRef.current) {
+    if (
+      workspacesPending ||
+      activePending ||
+      activeWorkspace ||
+      settingRef.current
+    ) {
       return
     }
 
@@ -47,13 +44,17 @@ export function useActiveWorkspaceSync() {
 
     settingRef.current = true
 
-    authClient.organization.setActive({ organizationId: first.id }).finally(() => {
-      settingRef.current = false
-    })
+    void (async () => {
+      try {
+        await authClient.organization.setActive({ organizationId: first.id })
+      } finally {
+        settingRef.current = false
+      }
+    })()
   }, [workspaces, activeWorkspace, workspacesPending, activePending])
 }
 
-function workspaceMetadata(workspace: Pick<Workspace, 'metadata'>) {
+const workspaceMetadata = (workspace: Pick<Workspace, 'metadata'>) => {
   if (!workspace.metadata) {
     return null
   }
@@ -69,14 +70,13 @@ function workspaceMetadata(workspace: Pick<Workspace, 'metadata'>) {
   return workspace.metadata
 }
 
-export function isDefaultWorkspace(workspace: Pick<Workspace, 'metadata'>) {
-  return workspaceMetadata(workspace)?.default === true
-}
+export const isDefaultWorkspace = (workspace: Pick<Workspace, 'metadata'>) =>
+  workspaceMetadata(workspace)?.default === true
 
-export function connectionInWorkspace(
+export const connectionInWorkspace = (
   connectionWorkspaceId: string | null | undefined,
-  activeWorkspace: Pick<Workspace, 'id' | 'metadata'> | null | undefined,
-) {
+  activeWorkspace: Pick<Workspace, 'id' | 'metadata'> | null | undefined
+) => {
   if (!activeWorkspace) {
     return true
   }

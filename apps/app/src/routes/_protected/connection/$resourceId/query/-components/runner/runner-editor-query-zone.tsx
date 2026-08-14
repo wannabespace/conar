@@ -1,4 +1,9 @@
-import { RiCheckLine, RiFileCopyLine, RiQuestionLine, RiSaveLine } from '@remixicon/react'
+import {
+  RiCheckLine,
+  RiFileCopyLine,
+  RiQuestionLine,
+  RiSaveLine,
+} from '@remixicon/react'
 import { CONNECTION_TYPES_WITH_EXPLAIN } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
@@ -6,7 +11,11 @@ import { Checkbox } from '@tamery/ui/components/checkbox'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { Popover, PopoverContent, PopoverTrigger } from '@tamery/ui/components/popover'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@tamery/ui/components/popover'
 import { Separator } from '@tamery/ui/components/separator'
 import {
   Tooltip,
@@ -22,13 +31,16 @@ import { useSubscription } from 'seitu/react'
 import type { ConnectionResource } from '~/entities/connection/core'
 import { customQuery } from '~/entities/connection/queries/custom'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
-import { getConnectionResourceStore, getEditorQueriesComputed } from '~/entities/connection/store'
+import {
+  getConnectionResourceStore,
+  getEditorQueriesComputed,
+} from '~/entities/connection/store'
 import { wrapExplainQuery } from '~/entities/connection/utils/helpers'
 import { queryClient } from '~/main'
 
 import { runnerQueryOptions } from '.'
 
-export function RunnerEditorQueryZone({
+export const RunnerEditorQueryZone = ({
   connectionResource,
   connectionType,
   onRun,
@@ -42,9 +54,10 @@ export function RunnerEditorQueryZone({
   onSave: () => void
   getQuery: () => string
   lineNumber: number
-}) {
+}) => {
   const [explainOpen, setExplainOpen] = useState(false)
-  const isFetching = useIsFetching(runnerQueryOptions(connectionResource), queryClient) > 0
+  const isFetching =
+    useIsFetching(runnerQueryOptions(connectionResource), queryClient) > 0
 
   const {
     mutate: explain,
@@ -58,7 +71,7 @@ export function RunnerEditorQueryZone({
       mutationFn: async (query: string) => {
         const startTime = performance.now()
         const rows = await customQuery({ query: wrapExplainQuery(query) }).run(
-          await connectionResourceToQueryParams(connectionResource),
+          await connectionResourceToQueryParams(connectionResource)
         )
         const duration = performance.now() - startTime
         return { rows, duration, query }
@@ -67,53 +80,63 @@ export function RunnerEditorQueryZone({
         setExplainOpen(true)
       },
     },
-    queryClient,
+    queryClient
   )
 
   const store = getConnectionResourceStore(connectionResource.id)
   const isChecked = useSubscription(store, {
-    selector: state => state.selectedLines.includes(lineNumber),
+    selector: (state) => state.selectedLines.includes(lineNumber),
   })
 
   const editorQueriesStore = getEditorQueriesComputed(connectionResource.id)
   const { queriesLength, queryNumber } = useSubscription(editorQueriesStore, {
-    selector: state => {
-      const index = state.findIndex(query => query.startLineNumber === lineNumber)
+    selector: (state) => {
+      const index = state.findIndex(
+        (query) => query.startLineNumber === lineNumber
+      )
       const queriesBefore =
-        state.slice(0, index).reduce((sum, curr) => sum + curr.queries.length, 0) + 1
-      const queriesLength = state[index]?.queries.length ?? 0
+        state
+          .slice(0, index)
+          .reduce((sum, curr) => sum + curr.queries.length, 0) + 1
+      const currentQueriesLength = state[index]?.queries.length ?? 0
 
       return {
-        queriesLength,
+        queriesLength: currentQueriesLength,
         queryNumber:
-          queriesLength === 1
+          currentQueriesLength === 1
             ? queriesBefore
-            : `${queriesBefore} - ${queriesBefore + queriesLength - 1}`,
+            : `${queriesBefore} - ${queriesBefore + currentQueriesLength - 1}`,
       }
     },
   })
 
   const onCheckedChange = () => {
     store.set(
-      state =>
+      (state) =>
         ({
           ...state,
           selectedLines: isChecked
-            ? state.selectedLines.filter(l => l !== lineNumber)
+            ? state.selectedLines.filter((l) => l !== lineNumber)
             : [...state.selectedLines, lineNumber].toSorted((a, b) => a - b),
-        }) satisfies typeof state,
+        }) satisfies typeof state
     )
   }
 
   const handleExplain = (index: number) => {
     const editorQueries = editorQueriesStore.get()
-    const editorQuery = editorQueries.find(query => query.startLineNumber === lineNumber)
+    const editorQuery = editorQueries.find(
+      (query) => query.startLineNumber === lineNumber
+    )
 
-    if (!editorQuery) return
+    if (!editorQuery) {
+      return
+    }
 
     const query = editorQuery.queries.at(index)
 
-    if (!query) return
+    if (!query) {
+      return
+    }
 
     explain(query)
   }
@@ -121,9 +144,9 @@ export function RunnerEditorQueryZone({
   return (
     <TooltipProvider>
       <div
-        className={cn(`
-        flex h-full items-center justify-between gap-2 border-y px-2 py-1 pr-6
-      `)}
+        className={cn(
+          `flex h-full items-center justify-between gap-2 border-y px-2 py-1 pr-6`
+        )}
       >
         <div className="flex flex-1 items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -164,7 +187,7 @@ export function RunnerEditorQueryZone({
                     copyIcon={<RiFileCopyLine className="size-3.5" />}
                   />
                 }
-              ></TooltipTrigger>
+              />
               <TooltipContent>Copy</TooltipContent>
             </Tooltip>
             <Separator orientation="vertical" className="mx-1 h-4!" />
@@ -193,7 +216,9 @@ export function RunnerEditorQueryZone({
                           <LoadingContent loading={isExplaining}>
                             <ContentSwitch
                               active={isExplaining}
-                              activeContent={<RiCheckLine className="text-success" />}
+                              activeContent={
+                                <RiCheckLine className="text-success" />
+                              }
                             >
                               <RiQuestionLine />
                             </ContentSwitch>
@@ -206,7 +231,7 @@ export function RunnerEditorQueryZone({
                         side="top"
                       >
                         {isExplainError && (
-                          <div className="text-xs text-destructive">
+                          <div className="text-destructive text-xs">
                             {explainError instanceof Error
                               ? explainError.message
                               : String(explainError)}
@@ -215,26 +240,30 @@ export function RunnerEditorQueryZone({
                         {isExplainSuccess && (
                           <div className="flex flex-col">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-medium">EXPLAIN</span>
-                              <Separator orientation="vertical" className="h-3!" />
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-xs font-medium">
+                                EXPLAIN
+                              </span>
+                              <Separator
+                                orientation="vertical"
+                                className="h-3!"
+                              />
+                              <span className="text-muted-foreground text-xs">
                                 {explainData.rows.length}{' '}
                                 {explainData.rows.length === 1 ? 'row' : 'rows'}
                               </span>
-                              <Separator orientation="vertical" className="h-3!" />
-                              <span className="text-xs text-muted-foreground">
-                                {explainData.duration.toFixed()}
+                              <Separator
+                                orientation="vertical"
+                                className="h-3!"
+                              />
+                              <span className="text-muted-foreground text-xs">
+                                {explainData.duration.toFixed(0)}
                                 ms
                               </span>
                             </div>
                             <Separator className="my-2" />
-                            <div
-                              className="
-                              overflow-auto font-mono text-xs whitespace-pre
-                            "
-                            >
+                            <div className="overflow-auto font-mono text-xs whitespace-pre">
                               {explainData.rows
-                                .map(row => Object.values(row).join('\t'))
+                                .map((row) => Object.values(row).join('\t'))
                                 .join('\n')}
                             </div>
                           </div>

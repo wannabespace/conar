@@ -4,129 +4,19 @@ import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { GeneratorMap } from '..'
 
 export const PG_GENERATORS = {
-  'postgres.point': {
-    label: 'Point (x,y)',
-    category: 'Postgres',
-    generate: () => `(${faker.location.longitude()},${faker.location.latitude()})`,
-  },
-  'postgres.line': {
-    label: 'Line {A,B,C}',
-    category: 'Postgres',
-    generate: () =>
-      `{${faker.number.float({ min: -100, max: 100, fractionDigits: 4 })},${faker.number.float({ min: -100, max: 100, fractionDigits: 4 })},${faker.number.float({ min: -100, max: 100, fractionDigits: 4 })}}`,
-  },
-  'postgres.lseg': {
-    label: 'Line Segment',
-    category: 'Postgres',
-    generate: () =>
-      `[(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})]`,
-  },
   'postgres.box': {
-    label: 'Box',
     category: 'Postgres',
     generate: () =>
       `(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})`,
-  },
-  'postgres.path': {
-    label: 'Path',
-    category: 'Postgres',
-    generate: () => {
-      const pts = faker.helpers.multiple(
-        () => `(${faker.location.longitude()},${faker.location.latitude()})`,
-        { count: faker.number.int({ min: 2, max: 5 }) },
-      )
-      return `[${pts.join(',')}]`
-    },
-  },
-  'postgres.polygon': {
-    label: 'Polygon',
-    category: 'Postgres',
-    generate: () => {
-      const pts = faker.helpers.multiple(
-        () => `(${faker.location.longitude()},${faker.location.latitude()})`,
-        { count: faker.number.int({ min: 3, max: 6 }) },
-      )
-      return `(${pts.join(',')})`
-    },
+    label: 'Box',
   },
   'postgres.circle': {
+    category: 'Postgres',
+    generate: () =>
+      `<(${faker.location.longitude()},${faker.location.latitude()}),${faker.number.float({ fractionDigits: 2, max: 100, min: 0.1 })}>`,
     label: 'Circle',
-    category: 'Postgres',
-    generate: () =>
-      `<(${faker.location.longitude()},${faker.location.latitude()}),${faker.number.float({ min: 0.1, max: 100, fractionDigits: 2 })}>`,
-  },
-  'postgres.interval': {
-    label: 'Interval',
-    category: 'Postgres',
-    generate: () =>
-      `${faker.number.int({ min: 0, max: 99 })} ${faker.helpers.arrayElement(['seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'years'])}`,
-  },
-  'postgres.intrange': {
-    label: 'Int Range',
-    category: 'Postgres',
-    generate: () => {
-      const a = faker.number.int({ min: -10000, max: 10000 })
-      const b = faker.number.int({ min: a + 1, max: a + 10000 })
-      return `[${a},${b})`
-    },
-  },
-  'postgres.numrange': {
-    label: 'Numeric Range',
-    category: 'Postgres',
-    generate: () => {
-      const a = faker.number.float({ min: -10000, max: 10000, fractionDigits: 2 })
-      const b = faker.number.float({ min: a + 0.01, max: a + 10000, fractionDigits: 2 })
-      return `[${a},${b})`
-    },
-  },
-  'postgres.daterange': {
-    label: 'Date Range',
-    category: 'Postgres',
-    generate: () => {
-      const a = faker.date.past()
-      const b = faker.date.future({ refDate: a })
-      return `[${a.toISOString().slice(0, 10)},${b.toISOString().slice(0, 10)})`
-    },
-  },
-  'postgres.tsrange': {
-    label: 'Timestamp Range',
-    category: 'Postgres',
-    generate: () => {
-      const a = faker.date.past()
-      const b = faker.date.future({ refDate: a })
-      return `[${a.toISOString()},${b.toISOString()})`
-    },
-  },
-  'postgres.intmultirange': {
-    label: 'Int Multirange',
-    category: 'Postgres',
-    generate: () => {
-      const ranges = faker.helpers.multiple(
-        () => {
-          const a = faker.number.int({ min: -10000, max: 10000 })
-          return `[${a},${faker.number.int({ min: a + 1, max: a + 10000 })})`
-        },
-        { count: faker.number.int({ min: 1, max: 3 }) },
-      )
-      return `{${ranges.join(',')}}`
-    },
-  },
-  'postgres.nummultirange': {
-    label: 'Numeric Multirange',
-    category: 'Postgres',
-    generate: () => {
-      const ranges = faker.helpers.multiple(
-        () => {
-          const a = faker.number.float({ min: -10000, max: 10000, fractionDigits: 2 })
-          return `[${a},${faker.number.float({ min: a + 0.01, max: a + 10000, fractionDigits: 2 })})`
-        },
-        { count: faker.number.int({ min: 1, max: 3 }) },
-      )
-      return `{${ranges.join(',')}}`
-    },
   },
   'postgres.datemultirange': {
-    label: 'Date Multirange',
     category: 'Postgres',
     generate: () => {
       const ranges = faker.helpers.multiple(
@@ -135,13 +25,126 @@ export const PG_GENERATORS = {
           const b = faker.date.future({ refDate: a })
           return `[${a.toISOString().slice(0, 10)},${b.toISOString().slice(0, 10)})`
         },
-        { count: faker.number.int({ min: 1, max: 3 }) },
+        { count: faker.number.int({ max: 3, min: 1 }) }
       )
       return `{${ranges.join(',')}}`
     },
+    label: 'Date Multirange',
+  },
+  'postgres.daterange': {
+    category: 'Postgres',
+    generate: () => {
+      const a = faker.date.past()
+      const b = faker.date.future({ refDate: a })
+      return `[${a.toISOString().slice(0, 10)},${b.toISOString().slice(0, 10)})`
+    },
+    label: 'Date Range',
+  },
+  'postgres.interval': {
+    category: 'Postgres',
+    generate: () =>
+      `${faker.number.int({ max: 99, min: 0 })} ${faker.helpers.arrayElement(['seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'years'])}`,
+    label: 'Interval',
+  },
+  'postgres.intmultirange': {
+    category: 'Postgres',
+    generate: () => {
+      const ranges = faker.helpers.multiple(
+        () => {
+          const a = faker.number.int({ max: 10_000, min: -10_000 })
+          return `[${a},${faker.number.int({ max: a + 10_000, min: a + 1 })})`
+        },
+        { count: faker.number.int({ max: 3, min: 1 }) }
+      )
+      return `{${ranges.join(',')}}`
+    },
+    label: 'Int Multirange',
+  },
+  'postgres.intrange': {
+    category: 'Postgres',
+    generate: () => {
+      const a = faker.number.int({ max: 10_000, min: -10_000 })
+      const b = faker.number.int({ max: a + 10_000, min: a + 1 })
+      return `[${a},${b})`
+    },
+    label: 'Int Range',
+  },
+  'postgres.line': {
+    category: 'Postgres',
+    generate: () =>
+      `{${faker.number.float({ fractionDigits: 4, max: 100, min: -100 })},${faker.number.float({ fractionDigits: 4, max: 100, min: -100 })},${faker.number.float({ fractionDigits: 4, max: 100, min: -100 })}}`,
+    label: 'Line {A,B,C}',
+  },
+  'postgres.lseg': {
+    category: 'Postgres',
+    generate: () =>
+      `[(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})]`,
+    label: 'Line Segment',
+  },
+  'postgres.nummultirange': {
+    category: 'Postgres',
+    generate: () => {
+      const ranges = faker.helpers.multiple(
+        () => {
+          const a = faker.number.float({
+            fractionDigits: 2,
+            max: 10_000,
+            min: -10_000,
+          })
+          return `[${a},${faker.number.float({ fractionDigits: 2, max: a + 10_000, min: a + 0.01 })})`
+        },
+        { count: faker.number.int({ max: 3, min: 1 }) }
+      )
+      return `{${ranges.join(',')}}`
+    },
+    label: 'Numeric Multirange',
+  },
+  'postgres.numrange': {
+    category: 'Postgres',
+    generate: () => {
+      const a = faker.number.float({
+        fractionDigits: 2,
+        max: 10_000,
+        min: -10_000,
+      })
+      const b = faker.number.float({
+        fractionDigits: 2,
+        max: a + 10_000,
+        min: a + 0.01,
+      })
+      return `[${a},${b})`
+    },
+    label: 'Numeric Range',
+  },
+  'postgres.path': {
+    category: 'Postgres',
+    generate: () => {
+      const pts = faker.helpers.multiple(
+        () => `(${faker.location.longitude()},${faker.location.latitude()})`,
+        { count: faker.number.int({ max: 5, min: 2 }) }
+      )
+      return `[${pts.join(',')}]`
+    },
+    label: 'Path',
+  },
+  'postgres.point': {
+    category: 'Postgres',
+    generate: () =>
+      `(${faker.location.longitude()},${faker.location.latitude()})`,
+    label: 'Point (x,y)',
+  },
+  'postgres.polygon': {
+    category: 'Postgres',
+    generate: () => {
+      const pts = faker.helpers.multiple(
+        () => `(${faker.location.longitude()},${faker.location.latitude()})`,
+        { count: faker.number.int({ max: 6, min: 3 }) }
+      )
+      return `(${pts.join(',')})`
+    },
+    label: 'Polygon',
   },
   'postgres.tsmultirange': {
-    label: 'Timestamp Multirange',
     category: 'Postgres',
     generate: () => {
       const ranges = faker.helpers.multiple(
@@ -150,9 +153,19 @@ export const PG_GENERATORS = {
           const b = faker.date.future({ refDate: a })
           return `[${a.toISOString()},${b.toISOString()})`
         },
-        { count: faker.number.int({ min: 1, max: 3 }) },
+        { count: faker.number.int({ max: 3, min: 1 }) }
       )
       return `{${ranges.join(',')}}`
     },
+    label: 'Timestamp Multirange',
+  },
+  'postgres.tsrange': {
+    category: 'Postgres',
+    generate: () => {
+      const a = faker.date.past()
+      const b = faker.date.future({ refDate: a })
+      return `[${a.toISOString()},${b.toISOString()})`
+    },
+    label: 'Timestamp Range',
   },
 } satisfies GeneratorMap<ConnectionType.Postgres>

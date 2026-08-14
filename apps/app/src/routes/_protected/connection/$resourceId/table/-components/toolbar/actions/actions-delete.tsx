@@ -31,47 +31,61 @@ import { useTablePageStore } from '../../../-lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-export function ActionsDelete({ table, schema }: { table: string; schema: string }) {
+export const ActionsDelete = ({
+  table,
+  schema,
+}: {
+  table: string
+  schema: string
+}) => {
   const { connectionResource } = useRouteContext()
   const [isOpened, setIsOpened] = useState(false)
   const store = useTablePageStore()
-  const selected = useSubscription(store, { selector: state => state.selected })
+  const selected = useSubscription(store, {
+    selector: (state) => state.selected,
+  })
 
   const { mutate: deleteRows, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
       await deleteRowsQuery({ table, schema, primaryKeys: selected }).run(
-        await connectionResourceToQueryParams(connectionResource),
+        await connectionResourceToQueryParams(connectionResource)
       )
     },
     onSuccess: () => {
       toast.success(
-        `${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`,
+        `${selected.length} row${selected.length === 1 ? '' : 's'} successfully deleted`
       )
       queryClient.invalidateQueries(
         resourceRowsQueryInfiniteOptions({
           connectionResource,
           table,
           schema,
-          query: { filters: enabledFilters(store.get().filters), orderBy: store.get().orderBy },
-        }),
+          query: {
+            filters: enabledFilters(store.get().filters),
+            orderBy: store.get().orderBy,
+          },
+        })
       )
       queryClient.invalidateQueries(
         resourceTableTotalQueryOptions({
           connectionResource,
           table,
           schema,
-          query: { filters: enabledFilters(store.get().filters), exact: store.get().exact },
-        }),
+          query: {
+            filters: enabledFilters(store.get().filters),
+            exact: store.get().exact,
+          },
+        })
       )
       store.set(
-        state =>
+        (state) =>
           ({
             ...state,
             selected: [],
-          }) satisfies typeof state,
+          }) satisfies typeof state
       )
     },
-    onError: error => {
+    onError: (error) => {
       toast.error('Failed to delete rows', {
         description: error.message,
       })
@@ -88,13 +102,17 @@ export function ActionsDelete({ table, schema }: { table: string; schema: string
               {selected.length === 1 ? '' : 's'} deletion
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the selected{' '}
-              {selected.length} {selected.length === 1 ? 'row' : 'rows'} from the database.
+              This action cannot be undone. This will permanently delete the
+              selected {selected.length}{' '}
+              {selected.length === 1 ? 'row' : 'rows'} from the database.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
-            <AlertDialogCancel variant="destructive" onClick={() => deleteRows()}>
+            <AlertDialogCancel
+              variant="destructive"
+              onClick={() => deleteRows()}
+            >
               <LoadingContent loading={isDeleting}>
                 Delete {selected.length} selected row
                 {selected.length === 1 ? '' : 's'}

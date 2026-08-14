@@ -6,7 +6,7 @@ describe('tries', () => {
   it('should return the result of the first function when it succeeds', async () => {
     const result = await tries(
       () => 'success',
-      () => 'fallback success',
+      () => 'fallback success'
     )
 
     expect(result).toBe('success')
@@ -17,13 +17,13 @@ describe('tries', () => {
       () => {
         throw new Error('first failed')
       },
-      () => 'fallback success',
+      () => 'fallback success'
     )
 
     expect(result).toBe('fallback success')
   })
 
-  it('should throw the last error when all functions fail', async () => {
+  it('should throw the last error when all functions fail', () => {
     const lastError = new Error('last error')
 
     expect(
@@ -36,20 +36,20 @@ describe('tries', () => {
         },
         () => {
           throw lastError
-        },
-      ),
+        }
+      )
     ).rejects.toThrow('last error')
   })
 
   it('should work with async functions', async () => {
     const result = await tries(
-      async () => {
+      () => {
         throw new Error('first failed')
       },
       async () => {
-        await new Promise(resolve => setTimeout(resolve, 10))
+        await Bun.sleep(10)
         return 'async success'
-      },
+      }
     )
 
     expect(result).toBe('async success')
@@ -60,7 +60,7 @@ describe('tries', () => {
       () => {
         throw new Error('failed')
       },
-      () => 'string',
+      () => 'string'
     )
     expect(result1).toBe('string')
 
@@ -68,7 +68,7 @@ describe('tries', () => {
       () => {
         throw new Error('failed')
       },
-      () => 123,
+      () => 123
     )
     expect(result2).toBe(123)
 
@@ -76,12 +76,12 @@ describe('tries', () => {
       () => {
         throw new Error('failed')
       },
-      () => true,
+      () => true
     )
     expect(result3).toBe(true)
   })
 
-  it('should preserve error types', async () => {
+  it('should preserve error types', () => {
     class CustomError extends Error {
       constructor(message: string) {
         super(message)
@@ -98,8 +98,8 @@ describe('tries', () => {
         },
         () => {
           throw customError
-        },
-      ),
+        }
+      )
     ).rejects.toThrow(CustomError)
   })
 
@@ -123,7 +123,7 @@ describe('tries', () => {
         () => {
           throw new Error('first valid failed')
         },
-        () => 'second valid success',
+        () => 'second valid success'
       )
 
       expect(result).toBe('second valid success')
@@ -147,18 +147,17 @@ describe('tries', () => {
           throw new Error('first failed')
         },
         undefined,
-        () => 'success',
-        undefined,
+        () => 'success'
       )
 
       expect(result).toBe('success')
     })
 
-    it('should throw error when all functions are optional (undefined/false)', async () => {
-      expect(tries(undefined, false, undefined)).rejects.toThrow('No functions to try')
+    it('should throw error when all functions are optional (undefined/false)', () => {
+      expect(tries(undefined, false)).rejects.toThrow('No functions to try')
     })
 
-    it('should handle mixed optional and valid functions with errors', async () => {
+    it('should handle mixed optional and valid functions with errors', () => {
       const lastError = new Error('last error')
 
       expect(
@@ -170,8 +169,8 @@ describe('tries', () => {
           false,
           () => {
             throw lastError
-          },
-        ),
+          }
+        )
       ).rejects.toThrow('last error')
     })
   })

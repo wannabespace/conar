@@ -1,20 +1,23 @@
 import { useChat } from '@ai-sdk/react'
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey } from '@tanstack/react-hotkeys'
-import { useRouter } from '@tanstack/react-router'
+import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 
 import { useSubscription } from '~/entities/user/hooks'
 
-import { Route } from '../..'
 import { ChatForm } from './chat-form'
 import { ChatHeader } from './chat-header'
 import { ChatMessages } from './chat-messages'
 import { ChatPlaceholder } from './chat-placeholder'
 
-export function Chat({ className }: { className?: string }) {
-  const { chat } = Route.useLoaderData()
-  const { connectionResource } = Route.useRouteContext()
+const { useLoaderData, useRouteContext } = getRouteApi(
+  '/_protected/connection/$resourceId/query/'
+)
+
+export const Chat = ({ className }: { className?: string }) => {
+  const { chat } = useLoaderData()
+  const { connectionResource } = useRouteContext()
   const { messages, error } = useChat({ chat })
   const { subscription } = useSubscription()
   const router = useRouter()
@@ -41,19 +44,22 @@ export function Chat({ className }: { className?: string }) {
         search: { chatId: undefined },
       })
     },
-    { enabled: isFocused },
+    { enabled: isFocused }
   )
 
   return (
     <div
       key={chat.id}
-      className={cn('relative flex flex-col justify-between gap-4 p-4', className)}
+      className={cn(
+        'relative flex flex-col justify-between gap-4 p-4',
+        className
+      )}
       ref={elementRef}
       // Focusable container for chat focus/blur management
       // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex
       tabIndex={0}
       onFocusCapture={() => setIsFocused(true)}
-      onBlurCapture={event => {
+      onBlurCapture={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
           setIsFocused(false)
         }

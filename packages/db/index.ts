@@ -13,6 +13,6 @@ export const relations = {
   ...queriesRelations,
 }
 
-export const db = drizzle(env.DATABASE_URL!, {
+export const db = drizzle(env.DATABASE_URL, {
   relations,
 })

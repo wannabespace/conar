@@ -1,14 +1,13 @@
 import { cpSync, existsSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import path from 'node:path'
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const appDist = resolve(root, '../app/dist-desktop')
-const rendererDest = resolve(root, 'dist-electron/renderer')
+const root = path.resolve(import.meta.dirname, '..')
+const appDist = path.resolve(root, '../app/dist-desktop')
+const rendererDest = path.resolve(root, 'dist-electron/renderer')
 
 if (!existsSync(appDist)) {
-  console.error('[@tamery/desktop] Renderer source missing: ', appDist)
+  console.error('[@tamery/desktop] Renderer source missing:', appDist)
   process.exit(1)
 }
 
-cpSync(appDist, rendererDest, { recursive: true, force: true })
+cpSync(appDist, rendererDest, { force: true, recursive: true })
