@@ -24,7 +24,7 @@ const prepareConnectionStringToCloud = (
 
 export interface Connection extends BaseTable {
   type: ConnectionType
-  workspaceId: string | null
+  workspaceId: string
   name: string
   label: string | null
   color: string | null

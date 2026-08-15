@@ -63,6 +63,10 @@ const CreateConnectionPage = () => {
         label: string | null
         color: string | null
       }) => {
+        if (!activeWorkspace) {
+          throw new Error('Workspace is still loading. Please try again.')
+        }
+
         const id = v7()
         const url = new SafeURL(data.connectionString.trim())
 
@@ -84,7 +88,7 @@ const CreateConnectionPage = () => {
           }),
           connection: {
             id,
-            workspaceId: activeWorkspace?.id ?? null,
+            workspaceId: activeWorkspace.id,
             name: data.name,
             type: data.type,
             label: data.label || null,
@@ -367,8 +371,13 @@ const CreateConnectionPage = () => {
                   >
                     Back
                   </Button>
-                  <Button type="submit" disabled={!isValid || !canSaveInCloud}>
-                    <LoadingContent loading={isCreatingConnection}>
+                  <Button
+                    type="submit"
+                    disabled={!isValid || !canSaveInCloud || !activeWorkspace}
+                  >
+                    <LoadingContent
+                      loading={isCreatingConnection || !activeWorkspace}
+                    >
                       <AppLogo className="w-4" />
                       Save connection
                     </LoadingContent>
