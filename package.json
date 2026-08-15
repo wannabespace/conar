@@ -32,7 +32,7 @@
     "aur:sync:checksum": "bun scripts/sync-aur-version.ts --checksum",
     "drizzle:generate": "cd packages/db && pnpm run drizzle:generate",
     "drizzle:migrate": "pnpm --filter @tamery/db run drizzle:migrate",
-    "check-types": "turbo run check-types",
+    "check-types": "tsc --noEmit && turbo run check-types",
     "update": "taze -r -I major",
     "docker:start": "docker compose -f docker-compose.dev.yml up -d",
     "docker:stop": "docker compose -f docker-compose.dev.yml down",

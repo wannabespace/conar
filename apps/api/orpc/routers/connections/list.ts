@@ -16,21 +16,22 @@ export const list = orpc.use(authMiddleware).handler(async ({ context }) => {
       name: connections.name,
       type: connections.type,
       updatedAt: connections.updatedAt,
+      workspaceId: connections.workspaceId,
     })
     .from(connections)
     .where(eq(connections.userId, context.user.id))
     .orderBy(desc(connections.createdAt))
 
-  const secret = await context.getUserSecret()
-
   try {
-    return connectionsList.map((connection) => ({
-      ...connection,
-      connectionString: decrypt({
-        encryptedText: connection.connectionString,
-        secret,
-      }),
-    }))
+    return await Promise.all(
+      connectionsList.map(async ({ workspaceId, ...connection }) => ({
+        ...connection,
+        connectionString: decrypt({
+          encryptedText: connection.connectionString,
+          secret: await context.getWorkspaceSecret(workspaceId),
+        }),
+      }))
+    )
   } catch {
     throw new ORPCError('INTERNAL_SERVER_ERROR', {
       message: 'Failed to decrypt connection string',

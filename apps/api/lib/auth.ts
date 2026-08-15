@@ -1,7 +1,7 @@
 import { apiKey } from '@better-auth/api-key'
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2'
 import { db } from '@tamery/db'
-import { sessions, users } from '@tamery/db/schema'
+import { users } from '@tamery/db/schema'
 import * as schema from '@tamery/db/schema'
 import { infisical } from '@tamery/infisical'
 import {
@@ -20,6 +20,7 @@ import {
 } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
+import { v7 } from 'uuid'
 
 import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { env, nodeEnv } from '~/env'
@@ -37,7 +38,7 @@ export const auth = betterAuth({
       enabled: true,
     },
     database: {
-      generateId: 'uuid',
+      generateId: () => v7(),
     },
   },
   appName: 'Tamery',
@@ -56,23 +57,14 @@ export const auth = betterAuth({
       create: {
         before: async (session) => {
           try {
-            const activeOrganizationId = await ensureDefaultWorkspace(
-              session.userId
-            )
-
-            return {
-              data: {
-                ...session,
-                activeOrganizationId,
-              },
-            }
+            await ensureDefaultWorkspace(session.userId)
           } catch (error) {
             console.error(
-              `Failed to set active workspace on session create: ${error instanceof Error ? error.message : error}`
+              `Failed to ensure default workspace on session create: ${error instanceof Error ? error.message : error}`
             )
-
-            return { data: session }
           }
+
+          return { data: session }
         },
       },
     },
@@ -180,24 +172,6 @@ export const auth = betterAuth({
 
       const { session } = ctx.context.session
 
-      if (!session.activeOrganizationId) {
-        try {
-          const workspaceId = await redisMemoize(
-            () => ensureDefaultWorkspace(session.userId),
-            `ensure-workspace:${session.userId}`
-          )
-
-          await db
-            .update(sessions)
-            .set({ activeWorkspaceId: workspaceId })
-            .where(eq(sessions.id, session.id))
-        } catch (error) {
-          console.error(
-            `Failed to ensure default workspace: ${error instanceof Error ? error.message : error}`
-          )
-        }
-      }
-
       if (desktopVersion) {
         const { userId } = session
         await redisMemoize(async () => {
@@ -243,6 +217,7 @@ export const auth = betterAuth({
     organization({
       allowUserToCreateOrganization: async (user) =>
         !!(await getSubscription(user.id)),
+      disableOrganizationDeletion: true,
       schema: {
         invitation: {
           fields: {

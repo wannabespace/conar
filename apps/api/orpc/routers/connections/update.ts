@@ -39,7 +39,7 @@ export const update = orpc
       throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
     }
 
-    const secret = await context.getUserSecret()
+    const secret = await context.getWorkspaceSecret(found.workspaceId)
 
     const newConnectionString = new SafeURL(
       changes.connectionString ??

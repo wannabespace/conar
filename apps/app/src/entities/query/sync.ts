@@ -31,8 +31,10 @@ export const createQueriesCollection = () =>
           )
         },
         onInsert: async ({ transaction }) => {
-          await orpc.queries.create.call(
-            transaction.mutations.map((m) => m.modified)
+          await Promise.all(
+            transaction.mutations.map((m) =>
+              orpc.queries.create.call(m.modified)
+            )
           )
         },
         sync: ({ rows, signal }) => orpc.queries.sync.call(rows, { signal }),

@@ -27,7 +27,7 @@ import {
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { Link } from '~/components/link'
@@ -41,7 +41,7 @@ import {
   useConnectionResourceLinkParams,
 } from '~/entities/connection'
 import { UserButton } from '~/entities/user/components'
-import { connectionInWorkspace, useActiveWorkspace } from '~/entities/workspace'
+import { useConnectionWorkspaceFilter } from '~/entities/workspace'
 import { setIsActionCenterOpen } from '~/store'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 
@@ -236,7 +236,7 @@ const ConnectionsBreadcrumb = ({
   const { connectionsCollection, connectionsResourcesCollection } =
     useCollections()
   const { resourceId } = useParams({ strict: false })
-  const { data: activeWorkspace } = useActiveWorkspace()
+  const inActiveWorkspace = useConnectionWorkspaceFilter()
   const { data: allData } = useLiveQuery(
     (q) =>
       q
@@ -249,8 +249,12 @@ const ConnectionsBreadcrumb = ({
     [connectionsCollection, connectionsResourcesCollection]
   )
 
-  const data = allData.filter(({ connection }) =>
-    connectionInWorkspace(connection.workspaceId, activeWorkspace)
+  const data = useMemo(
+    () =>
+      allData.filter(({ connection }) =>
+        inActiveWorkspace(connection.workspaceId)
+      ),
+    [allData, inActiveWorkspace]
   )
 
   const groups: ConnectionGroup[] = []

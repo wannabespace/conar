@@ -16,6 +16,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
+import { useCollections } from '~/entities/collections'
 import { setActiveWorkspace } from '~/entities/workspace'
 import { orpc } from '~/lib/orpc'
 
@@ -27,6 +28,7 @@ export const CreateWorkspaceDialog = ({
   onOpenChange: (open: boolean) => void
 }) => {
   const navigate = useNavigate()
+  const { workspacesCollection } = useCollections()
   const [name, setName] = useState('')
 
   const { mutate: createWorkspace, isPending: loading } = useMutation({
@@ -36,6 +38,17 @@ export const CreateWorkspaceDialog = ({
       })
 
       setActiveWorkspace(workspace.id)
+
+      try {
+        // The row lands through the events stream; without it the switcher
+        // resolves the new id to another workspace until the insert arrives.
+        await workspacesCollection.utils.awaitChange(
+          workspace.id,
+          new Date(workspace.updatedAt)
+        )
+      } catch {
+        // Stream may be reconnecting; the next sync pass catches up.
+      }
 
       return workspace
     },

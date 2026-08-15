@@ -176,8 +176,11 @@ const selectPackageIds = async (
   packages: WorkspacePackage[],
   args: ReturnType<typeof parseArgs>,
   cached: Selection | null
-): Promise<string[] | null> => {
-  if (args.all) {
+): Promise<string[]> => {
+  if (args.all || !process.stdin.isTTY) {
+    if (!args.all) {
+      p.log.info('Non-interactive shell — selecting all packages')
+    }
     return packages.filter((pkg) => pkg.id !== ROOT_ID).map((pkg) => pkg.id)
   }
 
@@ -202,7 +205,6 @@ const selectPackageIds = async (
   if (p.isCancel(answer)) {
     p.cancel('Cancelled')
     process.exit(0)
-    return null
   }
 
   return answer
@@ -212,7 +214,7 @@ const resolveScript = async (
   selected: WorkspacePackage[],
   args: ReturnType<typeof parseArgs>,
   cached: Selection | null
-): Promise<string | null> => {
+): Promise<string> => {
   const scriptCounts = new Map<string, number>()
 
   for (const pkg of selected) {
@@ -230,7 +232,6 @@ const resolveScript = async (
   if (preferredScript && !scriptCounts.has(preferredScript)) {
     p.cancel(`No selected package has a script named "${preferredScript}"`)
     process.exit(1)
-    return null
   }
 
   if (preferredScript) {
@@ -250,7 +251,6 @@ const resolveScript = async (
   if (p.isCancel(answer)) {
     p.cancel('Cancelled')
     process.exit(0)
-    return null
   }
 
   return answer
@@ -273,10 +273,6 @@ const main = async () => {
   }
 
   const selectedIds = await selectPackageIds(packages, args, cached)
-  if (!selectedIds) {
-    return
-  }
-
   const selected = packages.filter((pkg) => selectedIds.includes(pkg.id))
 
   if (selected.length === 0) {
@@ -285,16 +281,18 @@ const main = async () => {
   }
 
   const script = await resolveScript(selected, args, cached)
-  if (!script) {
-    return
-  }
-
   const targets = selected.filter((pkg) => pkg.scripts.includes(script))
   const skipped = selected.filter((pkg) => !pkg.scripts.includes(script))
 
   if (skipped.length > 0) {
     p.log.warn(
       `Skipping (no "${script}" script): ${skipped.map((pkg) => pkg.name).join(', ')}`
+    )
+  }
+
+  if (targets.length > 1 && targets.some((pkg) => pkg.id === ROOT_ID)) {
+    p.log.warn(
+      `Root "${script}" runs only when root is selected alone — skipping root`
     )
   }
 

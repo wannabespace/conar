@@ -14,6 +14,7 @@ import { ConnectionIcon } from '~/entities/connection/components'
 import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
+import { useConnectionWorkspaceFilter } from '~/entities/workspace'
 
 const LastOpenedResource = ({
   connectionResource,
@@ -72,6 +73,7 @@ export const LastOpenedResources = () => {
   const { connectionsCollection, connectionsResourcesCollection } =
     useCollections()
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
+  const inActiveWorkspace = useConnectionWorkspaceFilter()
 
   const { data } = useLiveQuery(
     (q) =>
@@ -89,8 +91,10 @@ export const LastOpenedResources = () => {
     [connectionsResourcesCollection, connectionsCollection]
   )
   const toShow = data
-    .filter(({ connectionResource }) =>
-      lastOpenedResources.includes(connectionResource.id)
+    .filter(
+      ({ connectionResource, connection }) =>
+        lastOpenedResources.includes(connectionResource.id) &&
+        inActiveWorkspace(connection.workspaceId)
     )
     .toSorted(
       (a, b) =>

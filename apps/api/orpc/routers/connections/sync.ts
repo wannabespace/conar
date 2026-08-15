@@ -63,33 +63,25 @@ export const sync = orpc
             ),
       },
     })
-    const secret = await context.getUserSecret()
+    const decryptItem = async (item: (typeof updatedItems)[number]) => ({
+      ...item,
+      connectionString: decrypt({
+        encryptedText: item.connectionString,
+        secret: await context.getWorkspaceSecret(item.workspaceId),
+      }),
+    })
+    const [updatedValues, newValues] = await Promise.all([
+      Promise.all(updatedItems.map(decryptItem)),
+      Promise.all(newItems.map(decryptItem)),
+    ])
     const syncResult: typeof output.infer = []
 
-    for (const item of updatedItems) {
-      syncResult.push({
-        type: 'update',
-        value: {
-          ...item,
-          connectionString: decrypt({
-            encryptedText: item.connectionString,
-            secret,
-          }),
-        },
-      })
+    for (const value of updatedValues) {
+      syncResult.push({ type: 'update', value })
     }
 
-    for (const item of newItems) {
-      syncResult.push({
-        type: 'insert',
-        value: {
-          ...item,
-          connectionString: decrypt({
-            encryptedText: item.connectionString,
-            secret,
-          }),
-        },
-      })
+    for (const value of newValues) {
+      syncResult.push({ type: 'insert', value })
     }
 
     for (const item of missingIds) {

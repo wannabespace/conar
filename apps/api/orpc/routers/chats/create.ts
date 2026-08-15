@@ -1,45 +1,33 @@
 import { db } from '@tamery/db'
 import { chats, chatsInsertSchema } from '@tamery/db/schema'
-import { type } from 'arktype'
 
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 import { publisher } from './events'
 
-const schema = chatsInsertSchema.omit('userId', 'activeStreamId', 'title')
-
 export const create = orpc
   .use(subscriptionMiddleware)
-  .input(
-    type
-      .or(schema, schema.array())
-      .pipe((data) => (Array.isArray(data) ? data : [data]))
-  )
+  .input(chatsInsertSchema.omit('userId', 'activeStreamId', 'title'))
   .handler(async ({ context, input }) => {
-    const rows = await db.transaction((tx) =>
-      Promise.all(
-        input.map((item) =>
-          tx
-            .insert(chats)
-            .values({
-              ...item,
-              activeStreamId: null,
-              userId: context.user.id,
-            })
-            .onConflictDoUpdate({
-              set: item,
-              target: chats.id,
-            })
-            .returning()
-        )
-      )
-    )
-    const inserted = rows.flat()
-
-    for (const chat of inserted) {
-      publisher.publish(context.user.id, {
-        type: 'insert',
-        value: chat,
+    const [inserted] = await db
+      .insert(chats)
+      .values({
+        ...input,
+        activeStreamId: null,
+        userId: context.user.id,
       })
+      .onConflictDoUpdate({
+        set: input,
+        target: chats.id,
+      })
+      .returning()
+
+    if (!inserted) {
+      throw new Error('Failed to create chat')
     }
+
+    publisher.publish(context.user.id, {
+      type: 'insert',
+      value: inserted,
+    })
   })

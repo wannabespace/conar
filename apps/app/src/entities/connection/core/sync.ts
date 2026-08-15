@@ -73,10 +73,10 @@ export const createConnectionsCollection = () =>
           )
         },
         onInsert: async ({ transaction }) => {
-          await orpc.connections.create.call(
-            await Promise.all(
-              transaction.mutations.map((m) =>
-                prepareConnectionToCloud(m.modified)
+          await Promise.all(
+            transaction.mutations.map(async (m) =>
+              orpc.connections.create.call(
+                await prepareConnectionToCloud(m.modified)
               )
             )
           )
@@ -119,8 +119,10 @@ export const createConnectionsResourcesCollection = () =>
           )
         },
         onInsert: async ({ transaction }) => {
-          await orpc.connectionsResources.create.call(
-            transaction.mutations.map((m) => m.modified)
+          await Promise.all(
+            transaction.mutations.map((m) =>
+              orpc.connectionsResources.create.call(m.modified)
+            )
           )
         },
         onUpdate: async ({ transaction }) => {

@@ -14,6 +14,7 @@ if (existsSync(envPath)) {
 
 const env = {
   API_URL: process.env.API_URL,
+  MAIN_URL: process.env.MAIN_URL,
   VERSION: pkg.version,
   WEB_URL: process.env.WEB_URL,
 }
@@ -27,7 +28,6 @@ export default defineConfig(({ watch }) => ({
     alwaysBundle: [/^@tamery\//u],
   },
   entry: ['./src/index.ts'],
-  env,
   outExtensions: () => ({ js: '.js' }),
   target: 'node20',
 }))

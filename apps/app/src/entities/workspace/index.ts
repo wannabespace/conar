@@ -1,5 +1,7 @@
+import { isDefaultWorkspaceMetadata } from '@tamery/shared/workspace'
 import { useLiveQuery } from '@tanstack/react-db'
 import { type } from 'arktype'
+import { useCallback } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 
@@ -29,40 +31,30 @@ export const useWorkspaces = () => {
   )
 }
 
+const resolveActiveWorkspace = (
+  workspaces: Workspace[],
+  activeId: string | null
+) =>
+  workspaces.find((workspace) => workspace.id === activeId) ??
+  workspaces.at(0) ??
+  null
+
 export const useActiveWorkspace = () => {
   const { data: workspaces } = useWorkspaces()
   const activeId = useSubscription(activeWorkspaceIdStorageValue)
 
-  const data =
-    workspaces.find((workspace) => workspace.id === activeId) ??
-    workspaces.at(0) ??
-    null
-
-  return { data }
+  return { data: resolveActiveWorkspace(workspaces, activeId), workspaces }
 }
+
+export const getActiveWorkspace = (workspaces: Workspace[]) =>
+  resolveActiveWorkspace(workspaces, activeWorkspaceIdStorageValue.get())
 
 export const setActiveWorkspace = (workspaceId: string) => {
   activeWorkspaceIdStorageValue.set(workspaceId)
 }
 
-const workspaceMetadata = (workspace: Pick<Workspace, 'metadata'>) => {
-  if (!workspace.metadata) {
-    return null
-  }
-
-  if (typeof workspace.metadata === 'string') {
-    try {
-      return JSON.parse(workspace.metadata) as Record<string, unknown>
-    } catch {
-      return null
-    }
-  }
-
-  return workspace.metadata
-}
-
 export const isDefaultWorkspace = (workspace: Pick<Workspace, 'metadata'>) =>
-  workspaceMetadata(workspace)?.default === true
+  isDefaultWorkspaceMetadata(workspace.metadata)
 
 export const connectionInWorkspace = (
   connectionWorkspaceId: string | null | undefined,
@@ -77,4 +69,23 @@ export const connectionInWorkspace = (
   }
 
   return connectionWorkspaceId === activeWorkspace.id
+}
+
+export const useConnectionWorkspaceFilter = () => {
+  const { data: activeWorkspace } = useActiveWorkspace()
+  const activeWorkspaceId = activeWorkspace?.id ?? null
+  const isDefault = activeWorkspace ? isDefaultWorkspace(activeWorkspace) : true
+
+  return useCallback(
+    (connectionWorkspaceId: string | null | undefined) => {
+      if (!activeWorkspaceId) {
+        return true
+      }
+
+      return connectionWorkspaceId
+        ? connectionWorkspaceId === activeWorkspaceId
+        : isDefault
+    },
+    [activeWorkspaceId, isDefault]
+  )
 }

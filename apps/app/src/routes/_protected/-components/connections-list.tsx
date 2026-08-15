@@ -40,7 +40,7 @@ import { type } from 'arktype'
 import type { MotionStyle } from 'motion/react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { ComponentRef } from 'react'
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
@@ -59,7 +59,7 @@ import {
   lastOpenedResourcesStorageValue,
   useFetchingConfig,
 } from '~/entities/connection'
-import { connectionInWorkspace, useActiveWorkspace } from '~/entities/workspace'
+import { useConnectionWorkspaceFilter } from '~/entities/workspace'
 
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
@@ -606,7 +606,7 @@ export const ConnectionsList = () => {
   const { connectionsCollection } = useCollections()
   const sort = useSubscription(sortValue)
   const grouping = useSubscription(groupValue)
-  const { data: activeWorkspace } = useActiveWorkspace()
+  const inActiveWorkspace = useConnectionWorkspaceFilter()
   const { data: allData } = useLiveQuery(
     (q) => {
       let query = q.from({ c: connectionsCollection })
@@ -634,8 +634,10 @@ export const ConnectionsList = () => {
     [connectionsCollection, sort, grouping]
   )
 
-  const data = allData.filter((connection) =>
-    connectionInWorkspace(connection.workspaceId, activeWorkspace)
+  const data = useMemo(
+    () =>
+      allData.filter((connection) => inActiveWorkspace(connection.workspaceId)),
+    [allData, inActiveWorkspace]
   )
 
   const removeDialogRef =

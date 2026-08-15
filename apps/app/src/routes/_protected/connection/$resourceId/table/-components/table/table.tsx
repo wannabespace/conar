@@ -7,7 +7,6 @@ import { Table, TableBody, TableProvider } from '@tamery/table'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 import { useShiftSelectionKeyDown, useTableContext } from '@tamery/table/hooks'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
-import { cn } from '@tamery/ui/lib/utils'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { motion } from 'motion/react'
@@ -48,13 +47,34 @@ import { TableBodySkeleton, TableHeaderSkeleton } from './table-skeleton'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
+const errorCauseText = (cause: unknown) => {
+  if (cause === null || cause === undefined) {
+    return null
+  }
+
+  if (cause instanceof Error) {
+    return cause.message
+  }
+
+  if (typeof cause === 'object') {
+    try {
+      return JSON.stringify(cause, null, 2)
+    } catch {
+      return String(cause)
+    }
+  }
+
+  return String(cause)
+}
+
 export const TableError = ({ error }: { error: Error }) => {
   const [showDetails, setShowDetails] = useState(false)
 
   const [summary] = error.message.split('\n')
+  const rawCause = errorCauseText(error.cause)
   const cause =
-    error.cause && !String(error.cause).includes(error.message)
-      ? String(error.cause)
+    rawCause && !(error.message && rawCause.includes(error.message))
+      ? rawCause
       : null
   const details = [error.message, cause].filter(Boolean).join('\n\n')
   const hasDetails = details !== summary
@@ -64,7 +84,7 @@ export const TableError = ({ error }: { error: Error }) => {
       <motion.div
         initial={{ opacity: 0, y: 6, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+        transition={{ duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
         className="pointer-events-auto relative flex w-full max-w-lg flex-col items-center"
       >
         <div className="border-destructive/10 bg-destructive/10 mb-5 flex size-14 items-center justify-center rounded-2xl border">
@@ -94,11 +114,11 @@ export const TableError = ({ error }: { error: Error }) => {
         )}
 
         {hasDetails && (
-          <div
-            className={cn(
-              'grid w-full transition-[grid-template-rows] duration-200',
-              showDetails ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-            )}
+          <motion.div
+            initial={false}
+            animate={{ gridTemplateRows: showDetails ? '1fr' : '0fr' }}
+            transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+            className="grid w-full"
           >
             <div className="min-h-0 overflow-hidden">
               <ScrollArea
@@ -108,7 +128,7 @@ export const TableError = ({ error }: { error: Error }) => {
                 {details}
               </ScrollArea>
             </div>
-          </div>
+          </motion.div>
         )}
       </motion.div>
     </div>

@@ -12,11 +12,7 @@ import { useState } from 'react'
 
 import { useSubscription } from '~/entities/user/hooks'
 import type { Workspace } from '~/entities/workspace'
-import {
-  setActiveWorkspace,
-  useActiveWorkspace,
-  useWorkspaces,
-} from '~/entities/workspace'
+import { setActiveWorkspace, useActiveWorkspace } from '~/entities/workspace'
 import { setIsSubscriptionDialogOpen } from '~/store'
 
 import { CreateWorkspaceDialog } from './create-workspace-dialog'
@@ -31,7 +27,7 @@ const WorkspaceGlyph = ({
     data-mask
     className="bg-accent text-2xs text-accent-foreground flex size-4 shrink-0 items-center justify-center rounded font-medium"
   >
-    {workspace.name.charAt(0).toUpperCase()}
+    {[...workspace.name][0]?.toUpperCase() ?? ''}
   </span>
 )
 
@@ -39,9 +35,8 @@ export const WorkspaceSwitcher = () => {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
-  const { data: workspaces } = useWorkspaces()
-  const { data: activeWorkspace } = useActiveWorkspace()
-  const { subscription } = useSubscription()
+  const { data: activeWorkspace, workspaces } = useActiveWorkspace()
+  const { subscription, isPending: isSubscriptionPending } = useSubscription()
 
   const switchWorkspace = async (id: string) => {
     setOpen(false)
@@ -57,7 +52,7 @@ export const WorkspaceSwitcher = () => {
   const handleCreate = () => {
     setOpen(false)
 
-    if (subscription) {
+    if (subscription || isSubscriptionPending) {
       setCreateOpen(true)
     } else {
       setIsSubscriptionDialogOpen(true)
@@ -111,7 +106,7 @@ export const WorkspaceSwitcher = () => {
           ))}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleCreate}>
-            <RiAddLine className="size-4 shrink-0" />
+            <RiAddLine />
             Create workspace
           </DropdownMenuItem>
         </DropdownMenuContent>

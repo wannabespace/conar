@@ -51,7 +51,7 @@ import {
   resourceTablesAndSchemasQueryOptions,
   useConnectionResourceLinkParams,
 } from '~/entities/connection'
-import { connectionInWorkspace, useActiveWorkspace } from '~/entities/workspace'
+import { useConnectionWorkspaceFilter } from '~/entities/workspace'
 import { appStore, setIsActionCenterOpen } from '~/store'
 import { checkForUpdates } from '~/use-updates-observer'
 
@@ -152,7 +152,7 @@ export const ActionsCenter = () => {
   const { connectionsCollection, connectionsResourcesCollection } =
     useCollections()
   const { resourceId } = useParams({ strict: false })
-  const { data: activeWorkspace } = useActiveWorkspace()
+  const inActiveWorkspace = useConnectionWorkspaceFilter()
   const { data: allData } = useLiveQuery(
     (q) =>
       q
@@ -170,8 +170,12 @@ export const ActionsCenter = () => {
     [connectionsCollection, connectionsResourcesCollection]
   )
 
-  const data = allData.filter(({ connection }) =>
-    connectionInWorkspace(connection.workspaceId, activeWorkspace)
+  const data = useMemo(
+    () =>
+      allData.filter(({ connection }) =>
+        inActiveWorkspace(connection.workspaceId)
+      ),
+    [allData, inActiveWorkspace]
   )
 
   const isOpen = useSubscription(appStore, {

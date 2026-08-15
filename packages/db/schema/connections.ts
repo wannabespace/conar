@@ -33,7 +33,8 @@ export const connections = d.snakeCase.table(
       .notNull(),
     workspaceId: d
       .uuid()
-      .references(() => workspaces.id, { onDelete: 'cascade' }),
+      .references(() => workspaces.id, { onDelete: 'cascade' })
+      .notNull(),
   },
   (t) => [d.index('connections_workspaceId_idx').on(t.workspaceId)]
 )

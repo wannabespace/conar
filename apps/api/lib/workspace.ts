@@ -1,6 +1,10 @@
 import { db } from '@tamery/db'
-import { connections, members, users, workspaces } from '@tamery/db/schema'
-import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm'
+import { members, users, workspaces } from '@tamery/db/schema'
+import {
+  isDefaultWorkspaceMetadata,
+  serializeWorkspaceMetadata,
+} from '@tamery/shared/workspace'
+import { and, asc, eq, inArray, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
 const slugify = (value: string) =>
@@ -17,61 +21,73 @@ export const workspaceSlug = (name: string) => {
   return `${base}-${nanoid(8)}`
 }
 
-export const ensureDefaultWorkspace = (userId: string) =>
-  db.transaction(async (tx) => {
+const userDefaultWorkspaceId = async (userId: string) => {
+  const rows = await db
+    .select({ id: workspaces.id, metadata: workspaces.metadata })
+    .from(members)
+    .innerJoin(workspaces, eq(workspaces.id, members.workspaceId))
+    .where(eq(members.userId, userId))
+    .orderBy(asc(members.createdAt))
+
+  return (
+    rows.find((row) => isDefaultWorkspaceMetadata(row.metadata))?.id ?? null
+  )
+}
+
+export const ensureDefaultWorkspace = async (userId: string) => {
+  const existingId = await userDefaultWorkspaceId(userId)
+
+  if (existingId) {
+    return existingId
+  }
+
+  return db.transaction(async (tx) => {
     // Serialize concurrent calls for the same user so racing requests (e.g. parallel
     // session reads on sign-in) can't each create a duplicate default workspace. The
-    // lock is released at transaction end; the membership re-check below happens under it.
+    // lock is released at transaction end; the re-check below happens under it.
     await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${userId}))`)
 
-    const [existing] = await tx
-      .select({ workspaceId: members.workspaceId })
-      .from(members)
-      .where(eq(members.userId, userId))
-      .orderBy(asc(members.createdAt))
-      .limit(1)
+    // The advisory xact lock is only released when its holder commits, so a
+    // plain `db` read here already sees a competitor's created workspace.
+    const lockedId = await userDefaultWorkspaceId(userId)
+    const workspaceId =
+      lockedId ??
+      (await (async () => {
+        const [user] = await tx
+          .select({ email: users.email, name: users.name })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1)
 
-    if (existing) {
-      return existing.workspaceId
-    }
+        const displayName =
+          user?.name?.trim() || user?.email?.split('@')[0] || 'My'
+        const workspaceName = `${displayName}'s workspace`
 
-    const [user] = await tx
-      .select({ email: users.email, name: users.name })
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1)
+        const [workspace] = await tx
+          .insert(workspaces)
+          .values({
+            metadata: serializeWorkspaceMetadata({ default: true }),
+            name: workspaceName,
+            slug: workspaceSlug(workspaceName),
+          })
+          .returning({ id: workspaces.id })
 
-    const displayName = user?.name?.trim() || user?.email?.split('@')[0] || 'My'
-    const workspaceName = `${displayName}'s workspace`
+        if (!workspace) {
+          throw new Error('Failed to create default workspace')
+        }
 
-    const [workspace] = await tx
-      .insert(workspaces)
-      .values({
-        metadata: JSON.stringify({ default: true }),
-        name: workspaceName,
-        slug: workspaceSlug(workspaceName),
-      })
-      .returning({ id: workspaces.id })
+        await tx.insert(members).values({
+          role: 'owner',
+          userId,
+          workspaceId: workspace.id,
+        })
 
-    if (!workspace) {
-      throw new Error('Failed to create default workspace')
-    }
+        return workspace.id
+      })())
 
-    await tx.insert(members).values({
-      role: 'owner',
-      userId,
-      workspaceId: workspace.id,
-    })
-
-    await tx
-      .update(connections)
-      .set({ workspaceId: workspace.id })
-      .where(
-        and(eq(connections.userId, userId), isNull(connections.workspaceId))
-      )
-
-    return workspace.id
+    return workspaceId
   })
+}
 
 export const memberWorkspaceIds = async (
   userId: string,

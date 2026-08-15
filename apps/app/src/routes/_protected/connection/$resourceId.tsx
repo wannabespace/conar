@@ -26,6 +26,7 @@ import {
   prefetchConnectionResourceCore,
 } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
+import { connectionInWorkspace, getActiveWorkspace } from '~/entities/workspace'
 import type { FileRoutesById } from '~/routeTree.gen'
 
 import { ConnectionSidebar } from './-components/connection-sidebar'
@@ -138,8 +139,11 @@ const ResourcePage = () => {
 export const Route = createFileRoute('/_protected/connection/$resourceId')({
   component: ResourcePage,
   beforeLoad: ({ params }) => {
-    const { connectionsCollection, connectionsResourcesCollection } =
-      getCollections()
+    const {
+      connectionsCollection,
+      connectionsResourcesCollection,
+      workspacesCollection,
+    } = getCollections()
     const connectionResource = connectionsResourcesCollection.get(
       params.resourceId
     )
@@ -151,6 +155,12 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
       lastOpenedResourcesStorageValue.set((prev) =>
         prev.filter((id) => id !== params.resourceId)
       )
+      throw redirect({ to: '/' })
+    }
+
+    const activeWorkspace = getActiveWorkspace(workspacesCollection.toArray)
+
+    if (!connectionInWorkspace(connection.workspaceId, activeWorkspace)) {
       throw redirect({ to: '/' })
     }
 

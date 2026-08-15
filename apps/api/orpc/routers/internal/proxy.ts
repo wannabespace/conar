@@ -34,27 +34,25 @@ export const proxy = {
       }
 
       if (input.resourceId) {
-        const [connection, secret] = await Promise.all([
-          db.query.connectionsResources.findFirst({
-            columns: {},
-            where: {
-              id: { eq: input.resourceId },
-            },
-            with: {
-              connection: {
-                columns: {
-                  connectionString: true,
-                  isPasswordExists: true,
-                  syncType: true,
-                },
-                where: {
-                  userId: { eq: context.user.id },
-                },
+        const connection = await db.query.connectionsResources.findFirst({
+          columns: {},
+          where: {
+            id: { eq: input.resourceId },
+          },
+          with: {
+            connection: {
+              columns: {
+                connectionString: true,
+                isPasswordExists: true,
+                syncType: true,
+                workspaceId: true,
+              },
+              where: {
+                userId: { eq: context.user.id },
               },
             },
-          }),
-          context.getUserSecret(),
-        ])
+          },
+        })
 
         if (!connection || !connection.connection) {
           throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
@@ -72,25 +70,25 @@ export const proxy = {
 
         return decrypt({
           encryptedText: connection.connection.connectionString,
-          secret,
+          secret: await context.getWorkspaceSecret(
+            connection.connection.workspaceId
+          ),
         })
       }
 
       if (input.connectionId) {
-        const [connection, secret] = await Promise.all([
-          db.query.connections.findFirst({
-            columns: {
-              connectionString: true,
-              isPasswordExists: true,
-              syncType: true,
-            },
-            where: {
-              id: { eq: input.connectionId },
-              userId: { eq: context.user.id },
-            },
-          }),
-          context.getUserSecret(),
-        ])
+        const connection = await db.query.connections.findFirst({
+          columns: {
+            connectionString: true,
+            isPasswordExists: true,
+            syncType: true,
+            workspaceId: true,
+          },
+          where: {
+            id: { eq: input.connectionId },
+            userId: { eq: context.user.id },
+          },
+        })
 
         if (!connection) {
           throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
@@ -106,7 +104,10 @@ export const proxy = {
           })
         }
 
-        return decrypt({ encryptedText: connection.connectionString, secret })
+        return decrypt({
+          encryptedText: connection.connectionString,
+          secret: await context.getWorkspaceSecret(connection.workspaceId),
+        })
       }
 
       throw new ORPCError('BAD_REQUEST', {
