@@ -10,9 +10,7 @@ const workspaceMetadataParser = type('string.json.parse').to(
   workspaceMetadataSchema
 )
 
-export const parseWorkspaceMetadata = (
-  metadata?: string | null
-): WorkspaceMetadata => {
+const parseWorkspaceMetadata = (metadata: string | null): WorkspaceMetadata => {
   if (!metadata) {
     return {}
   }
@@ -25,5 +23,5 @@ export const parseWorkspaceMetadata = (
 export const serializeWorkspaceMetadata = (metadata: WorkspaceMetadata) =>
   JSON.stringify(metadata)
 
-export const isDefaultWorkspaceMetadata = (metadata?: string | null) =>
+export const isDefaultWorkspaceMetadata = (metadata: string | null) =>
   parseWorkspaceMetadata(metadata).default === true
