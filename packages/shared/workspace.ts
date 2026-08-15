@@ -1,16 +1,16 @@
 import { type } from 'arktype'
 
-export const workspaceMetadataSchema = type({
+const workspaceMetadataSchema = type({
   'default?': 'boolean',
 }).narrow((value) => !Array.isArray(value))
-
-export type WorkspaceMetadata = typeof workspaceMetadataSchema.infer
 
 const workspaceMetadataParser = type('string.json.parse').to(
   workspaceMetadataSchema
 )
 
-const parseWorkspaceMetadata = (metadata: string | null): WorkspaceMetadata => {
+const parseWorkspaceMetadata = (
+  metadata: string | null
+): typeof workspaceMetadataSchema.infer => {
   if (!metadata) {
     return {}
   }
@@ -20,8 +20,9 @@ const parseWorkspaceMetadata = (metadata: string | null): WorkspaceMetadata => {
   return parsed instanceof type.errors ? {} : parsed
 }
 
-export const serializeWorkspaceMetadata = (metadata: WorkspaceMetadata) =>
-  JSON.stringify(metadata)
+export const serializeWorkspaceMetadata = (
+  metadata: typeof workspaceMetadataSchema.infer
+) => JSON.stringify(metadata)
 
 export const isDefaultWorkspaceMetadata = (metadata: string | null) =>
   parseWorkspaceMetadata(metadata).default === true

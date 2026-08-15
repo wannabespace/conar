@@ -122,7 +122,7 @@ const TableStats = ({
   return (
     <Tooltip>
       <TooltipTrigger
-        className="bg-input text-2xs text-muted-foreground ring-foreground/4 flex h-8 shrink-0 cursor-default items-center justify-between gap-4 overflow-hidden rounded-xl px-2.5 whitespace-nowrap tabular-nums shadow-xs ring-[0.5px]"
+        className="bg-input text-2xs text-muted-foreground ring-foreground/4 flex h-8 shrink-0 cursor-default items-center gap-4 rounded-xl px-2.5 whitespace-nowrap tabular-nums shadow-xs ring-[0.5px]"
         onClick={onRequestExact}
       >
         <span className="flex items-center gap-1">
