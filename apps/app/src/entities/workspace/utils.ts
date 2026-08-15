@@ -1,4 +1,3 @@
-import { isDefaultWorkspaceMetadata } from '@tamery/shared/workspace'
 import { type } from 'arktype'
 import { createWebStorageValue } from 'seitu/web'
 
@@ -25,6 +24,3 @@ export const resolveActiveWorkspace = (
 
 export const getActiveWorkspace = (workspaces: Workspace[]) =>
   resolveActiveWorkspace(workspaces, activeWorkspaceIdStorageValue.get())
-
-export const isDefaultWorkspace = (workspace: Pick<Workspace, 'metadata'>) =>
-  isDefaultWorkspaceMetadata(workspace.metadata)
