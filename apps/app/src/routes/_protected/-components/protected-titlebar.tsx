@@ -27,7 +27,7 @@ import {
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { Link } from '~/components/link'
@@ -41,7 +41,7 @@ import {
   useConnectionResourceLinkParams,
 } from '~/entities/connection'
 import { UserButton } from '~/entities/user/components'
-import { useConnectionWorkspaceFilter } from '~/entities/workspace'
+import { useActiveWorkspace } from '~/entities/workspace'
 import { setIsActionCenterOpen } from '~/store'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 
@@ -236,25 +236,23 @@ const ConnectionsBreadcrumb = ({
   const { connectionsCollection, connectionsResourcesCollection } =
     useCollections()
   const { resourceId } = useParams({ strict: false })
-  const inActiveWorkspace = useConnectionWorkspaceFilter()
-  const { data: allData } = useLiveQuery(
-    (q) =>
-      q
-        .from({ c: connectionsCollection })
+  const { data: activeWorkspace } = useActiveWorkspace()
+  const { data } = useLiveQuery(
+    (q) => {
+      const query = activeWorkspace
+        ? q
+            .from({ c: connectionsCollection })
+            .where(({ c }) => eq(c.workspaceId, activeWorkspace.id))
+        : q.from({ c: connectionsCollection })
+
+      return query
         .innerJoin({ r: connectionsResourcesCollection }, ({ c, r }) =>
           eq(r.connectionId, c.id)
         )
         .select(({ c, r }) => ({ connection: c, resource: r }))
-        .orderBy(({ c }) => c.createdAt, 'desc'),
-    [connectionsCollection, connectionsResourcesCollection]
-  )
-
-  const data = useMemo(
-    () =>
-      allData.filter(({ connection }) =>
-        inActiveWorkspace(connection.workspaceId)
-      ),
-    [allData, inActiveWorkspace]
+        .orderBy(({ c }) => c.createdAt, 'desc')
+    },
+    [connectionsCollection, connectionsResourcesCollection, activeWorkspace?.id]
   )
 
   const groups: ConnectionGroup[] = []

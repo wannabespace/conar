@@ -30,16 +30,6 @@ export const isDefaultWorkspace = (workspace: Pick<Workspace, 'metadata'>) =>
   isDefaultWorkspaceMetadata(workspace.metadata)
 
 export const connectionInWorkspace = (
-  connectionWorkspaceId: string | null | undefined,
-  activeWorkspace: Pick<Workspace, 'id' | 'metadata'> | null | undefined
-) => {
-  if (!activeWorkspace) {
-    return true
-  }
-
-  if (!connectionWorkspaceId) {
-    return isDefaultWorkspace(activeWorkspace)
-  }
-
-  return connectionWorkspaceId === activeWorkspace.id
-}
+  connectionWorkspaceId: string,
+  activeWorkspace: Pick<Workspace, 'id'> | null | undefined
+) => !activeWorkspace || connectionWorkspaceId === activeWorkspace.id

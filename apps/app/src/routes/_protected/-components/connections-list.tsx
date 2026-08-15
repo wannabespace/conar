@@ -40,7 +40,7 @@ import { type } from 'arktype'
 import type { MotionStyle } from 'motion/react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { ComponentRef } from 'react'
-import { useMemo, useRef } from 'react'
+import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
@@ -59,7 +59,7 @@ import {
   lastOpenedResourcesStorageValue,
   useFetchingConfig,
 } from '~/entities/connection'
-import { useConnectionWorkspaceFilter } from '~/entities/workspace'
+import { useActiveWorkspace } from '~/entities/workspace'
 
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
@@ -606,10 +606,14 @@ export const ConnectionsList = () => {
   const { connectionsCollection } = useCollections()
   const sort = useSubscription(sortValue)
   const grouping = useSubscription(groupValue)
-  const inActiveWorkspace = useConnectionWorkspaceFilter()
-  const { data: allData } = useLiveQuery(
+  const { data: activeWorkspace } = useActiveWorkspace()
+  const { data } = useLiveQuery(
     (q) => {
-      let query = q.from({ c: connectionsCollection })
+      let query = activeWorkspace
+        ? q
+            .from({ c: connectionsCollection })
+            .where(({ c }) => eq(c.workspaceId, activeWorkspace.id))
+        : q.from({ c: connectionsCollection })
 
       if (grouping === 'label') {
         query = query.orderBy(
@@ -631,13 +635,7 @@ export const ConnectionsList = () => {
         sortDirection
       )
     },
-    [connectionsCollection, sort, grouping]
-  )
-
-  const data = useMemo(
-    () =>
-      allData.filter((connection) => inActiveWorkspace(connection.workspaceId)),
-    [allData, inActiveWorkspace]
+    [connectionsCollection, sort, grouping, activeWorkspace?.id]
   )
 
   const removeDialogRef =

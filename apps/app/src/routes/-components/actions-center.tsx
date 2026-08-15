@@ -51,7 +51,7 @@ import {
   resourceTablesAndSchemasQueryOptions,
   useConnectionResourceLinkParams,
 } from '~/entities/connection'
-import { useConnectionWorkspaceFilter } from '~/entities/workspace'
+import { useActiveWorkspace } from '~/entities/workspace'
 import { appStore, setIsActionCenterOpen } from '~/store'
 import { checkForUpdates } from '~/use-updates-observer'
 
@@ -152,11 +152,18 @@ export const ActionsCenter = () => {
   const { connectionsCollection, connectionsResourcesCollection } =
     useCollections()
   const { resourceId } = useParams({ strict: false })
-  const inActiveWorkspace = useConnectionWorkspaceFilter()
-  const { data: allData } = useLiveQuery(
-    (q) =>
-      q
-        .from({ connections: connectionsCollection })
+  const { data: activeWorkspace } = useActiveWorkspace()
+  const { data } = useLiveQuery(
+    (q) => {
+      const query = activeWorkspace
+        ? q
+            .from({ connections: connectionsCollection })
+            .where(({ connections }) =>
+              eq(connections.workspaceId, activeWorkspace.id)
+            )
+        : q.from({ connections: connectionsCollection })
+
+      return query
         .innerJoin(
           { connectionResources: connectionsResourcesCollection },
           ({ connectionResources, connections }) =>
@@ -166,16 +173,9 @@ export const ActionsCenter = () => {
           connection: connections,
           connectionResource: connectionResources,
         }))
-        .orderBy(({ connections }) => connections.createdAt, 'desc'),
-    [connectionsCollection, connectionsResourcesCollection]
-  )
-
-  const data = useMemo(
-    () =>
-      allData.filter(({ connection }) =>
-        inActiveWorkspace(connection.workspaceId)
-      ),
-    [allData, inActiveWorkspace]
+        .orderBy(({ connections }) => connections.createdAt, 'desc')
+    },
+    [connectionsCollection, connectionsResourcesCollection, activeWorkspace?.id]
   )
 
   const isOpen = useSubscription(appStore, {
