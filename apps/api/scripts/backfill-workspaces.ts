@@ -15,12 +15,12 @@ const main = async () => {
 
   console.log(`Backfilling workspaces for ${allUsers.length} user(s)…`)
 
-  let created = 0
+  let processed = 0
 
   for (const user of allUsers) {
     try {
       await ensureDefaultWorkspace(user.id)
-      created += 1
+      processed += 1
       console.log(`  ✓ ${user.email}`)
     } catch (error) {
       console.error(
@@ -29,7 +29,7 @@ const main = async () => {
     }
   }
 
-  console.log(`Done. Processed ${created}/${allUsers.length} user(s).`)
+  console.log(`Done. Processed ${processed}/${allUsers.length} user(s).`)
 }
 
 const run = async () => {

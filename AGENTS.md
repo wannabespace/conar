@@ -97,7 +97,7 @@ The **proxy app** (`apps/proxy`) is a separate Hono process that executes DB que
 pnpm run docker:start       # Start local Postgres (tamery DB), Redis, and Infisical (secrets) via docker-compose.dev.yml
 pnpm run drizzle:migrate    # Apply DB migrations (packages/db)
 pnpm run drizzle:generate   # Generate migration from schema changes
-pnpm run dev                # Start all apps via Turbo
+pnpm run dev                # Package picker (all pre-selected — Enter accepts), then runs their dev script; `-a` skips the prompt
 pnpm run test               # Bun unit tests
 pnpm run test:e2e           # Playwright E2E
 pnpm run check-types        # tsc type-check across workspace
