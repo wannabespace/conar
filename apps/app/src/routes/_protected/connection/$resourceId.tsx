@@ -26,7 +26,7 @@ import {
   prefetchConnectionResourceCore,
 } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
-import { connectionInWorkspace, getActiveWorkspace } from '~/entities/workspace'
+import { getActiveWorkspace } from '~/entities/workspace'
 import type { FileRoutesById } from '~/routeTree.gen'
 
 import { ConnectionSidebar } from './-components/connection-sidebar'
@@ -160,7 +160,7 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
 
     const activeWorkspace = getActiveWorkspace(workspacesCollection.toArray)
 
-    if (!connectionInWorkspace(connection.workspaceId, activeWorkspace)) {
+    if (activeWorkspace && connection.workspaceId !== activeWorkspace.id) {
       throw redirect({ to: '/' })
     }
 
