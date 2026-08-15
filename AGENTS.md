@@ -101,7 +101,8 @@ pnpm run dev                # Start all apps via Turbo
 pnpm run test               # Bun unit tests
 pnpm run test:e2e           # Playwright E2E
 pnpm run check-types        # tsc type-check across workspace
-pnpm run lint               # Oxlint
+pnpm run check              # Ultracite check (Oxlint + Oxfmt), read-only
+pnpm run fix                # Ultracite fix (autofix lint + format)
 pnpm x                      # Interactive picker: choose packages, then a script to run (scripts/run-script.ts)
 ```
 
