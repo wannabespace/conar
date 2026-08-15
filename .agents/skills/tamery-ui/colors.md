@@ -32,3 +32,7 @@ Blue/neutral family only (yellow and faint-neutral both rejected). Strokes use t
 - Draft: `bg-primary/12 inset-ring-primary/30 italic` (italic = unsaved/preview cue, same as preview tabs)
 - Editing: `bg-primary/8 inset-ring-primary/60`
 - Error: `bg-destructive/10 inset-ring-destructive/40`
+
+## Sidebar rows on `bg-body`
+
+Sidebar sits directly on level-1 canvas, so full `bg-accent` hover reads too light in dark mode (dark `--accent` L 0.37 vs `--body` L 0.2175). Sidebar menu rows hover/active with **`bg-accent/50`** (table-sidebar `primitives.tsx`), matching schema group labels. Full `bg-accent` stays for rows on level-2 surfaces (`bg-card`).
