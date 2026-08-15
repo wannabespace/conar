@@ -94,6 +94,11 @@ const fetchAllRows = async ({
   return data
 }
 
+const COMPACT_COUNT_FORMAT = {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+} as const
+
 const TableStats = ({
   columnCount,
   exact,
@@ -112,12 +117,12 @@ const TableStats = ({
   const rowLabel =
     total?.count === undefined
       ? '… rows'
-      : `${total.isEstimated ? '~' : ''}${total.count} row${total.count === 1 ? '' : 's'}`
+      : `${total.isEstimated ? '~' : ''}${total.count.toLocaleString()} row${total.count === 1 ? '' : 's'}`
 
   return (
     <Tooltip>
       <TooltipTrigger
-        className="bg-input text-2xs text-muted-foreground ring-foreground/4 flex h-8 shrink-0 cursor-default items-center gap-2 rounded-xl px-2.5 whitespace-nowrap tabular-nums shadow-xs ring-[0.5px]"
+        className="bg-input text-2xs text-muted-foreground ring-foreground/4 flex h-8 w-30 shrink-0 cursor-default items-center justify-between overflow-hidden rounded-xl px-2.5 whitespace-nowrap tabular-nums shadow-xs ring-[0.5px]"
         onClick={onRequestExact}
       >
         <span className="flex items-center gap-1">
@@ -131,6 +136,7 @@ const TableStats = ({
           ) : (
             <NumberFlow
               value={total.count}
+              format={COMPACT_COUNT_FORMAT}
               className={cn(
                 'tabular-nums',
                 isTotalLoading && 'text-muted-foreground/50 animate-pulse'
