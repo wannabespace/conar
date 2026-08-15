@@ -1,0 +1,33 @@
+import { isDefaultWorkspaceMetadata } from '@tamery/shared/workspace'
+
+import type { Workspace } from './sync'
+import { activeWorkspaceIdStorageValue } from './sync'
+
+export const resolveActiveWorkspace = (
+  workspaces: Workspace[],
+  activeId: string | null
+) =>
+  workspaces.find((workspace) => workspace.id === activeId) ??
+  workspaces.at(0) ??
+  null
+
+export const getActiveWorkspace = (workspaces: Workspace[]) =>
+  resolveActiveWorkspace(workspaces, activeWorkspaceIdStorageValue.get())
+
+export const isDefaultWorkspace = (workspace: Pick<Workspace, 'metadata'>) =>
+  isDefaultWorkspaceMetadata(workspace.metadata)
+
+export const connectionInWorkspace = (
+  connectionWorkspaceId: string | null | undefined,
+  activeWorkspace: Pick<Workspace, 'id' | 'metadata'> | null | undefined
+) => {
+  if (!activeWorkspace) {
+    return true
+  }
+
+  if (!connectionWorkspaceId) {
+    return isDefaultWorkspace(activeWorkspace)
+  }
+
+  return connectionWorkspaceId === activeWorkspace.id
+}

@@ -16,9 +16,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { useCollections } from '~/entities/collections'
-import { setActiveWorkspace } from '~/entities/workspace'
-import { orpc } from '~/lib/orpc'
+import { createWorkspace } from '~/entities/workspace'
 
 export const CreateWorkspaceDialog = ({
   open,
@@ -28,30 +26,10 @@ export const CreateWorkspaceDialog = ({
   onOpenChange: (open: boolean) => void
 }) => {
   const navigate = useNavigate()
-  const { workspacesCollection } = useCollections()
   const [name, setName] = useState('')
 
-  const { mutate: createWorkspace, isPending: loading } = useMutation({
-    mutationFn: async (workspaceName: string) => {
-      const workspace = await orpc.workspaces.create.call({
-        name: workspaceName,
-      })
-
-      setActiveWorkspace(workspace.id)
-
-      try {
-        // The row lands through the events stream; without it the switcher
-        // resolves the new id to another workspace until the insert arrives.
-        await workspacesCollection.utils.awaitChange(
-          workspace.id,
-          new Date(workspace.updatedAt)
-        )
-      } catch {
-        // Stream may be reconnecting; the next sync pass catches up.
-      }
-
-      return workspace
-    },
+  const { mutate, isPending: loading } = useMutation({
+    mutationFn: createWorkspace,
     onSuccess: async () => {
       toast.success('Workspace created')
       onOpenChange(false)
@@ -68,7 +46,7 @@ export const CreateWorkspaceDialog = ({
 
   const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault()
-    createWorkspace(name.trim())
+    mutate(name.trim())
   }
 
   return (

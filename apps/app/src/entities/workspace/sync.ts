@@ -1,6 +1,9 @@
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import { createCollection } from '@tanstack/react-db'
+import { type } from 'arktype'
+import { createWebStorageValue } from 'seitu/web'
 
+import { getCollections } from '~/entities/collections'
 import { orpc } from '~/lib/orpc'
 import type { BaseTable, SyncUtils } from '~/lib/sync'
 import { persistence, syncCollectionOptions } from '~/lib/sync'
@@ -32,3 +35,29 @@ export const createWorkspacesCollection = () =>
       schemaVersion: 1,
     })
   )
+
+export const activeWorkspaceIdStorageValue = createWebStorageValue({
+  defaultValue: null,
+  key: 'tamery.active-workspace-id',
+  schema: type('string | null'),
+  type: 'localStorage',
+})
+
+export const setActiveWorkspace = (workspaceId: string) => {
+  activeWorkspaceIdStorageValue.set(workspaceId)
+}
+
+export const createWorkspace = async (name: string) => {
+  const { workspacesCollection } = getCollections()
+
+  const workspace = await orpc.workspaces.create.call({ name })
+
+  setActiveWorkspace(workspace.id)
+
+  await workspacesCollection.utils.awaitChange(
+    workspace.id,
+    new Date(workspace.updatedAt)
+  )
+
+  return workspace
+}

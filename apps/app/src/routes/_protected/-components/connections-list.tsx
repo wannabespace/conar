@@ -561,7 +561,7 @@ export const Empty = () => (
       No connections yet
     </h2>
     <p className="text-muted-foreground mt-1 max-w-xs text-sm">
-      Add a database and it shows up here — open it in one click.
+      Add a connection and it shows up here — open it in one click.
     </p>
 
     <Button
