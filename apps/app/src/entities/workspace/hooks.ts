@@ -4,8 +4,11 @@ import { useSubscription } from 'seitu/react'
 
 import { useCollections } from '~/entities/collections'
 
-import { activeWorkspaceIdStorageValue } from './sync'
-import { isDefaultWorkspace, resolveActiveWorkspace } from './utils'
+import {
+  activeWorkspaceIdStorageValue,
+  isDefaultWorkspace,
+  resolveActiveWorkspace,
+} from './utils'
 
 export const useActiveWorkspace = () => {
   const { workspacesCollection } = useCollections()

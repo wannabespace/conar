@@ -1,7 +1,19 @@
 import { isDefaultWorkspaceMetadata } from '@tamery/shared/workspace'
+import { type } from 'arktype'
+import { createWebStorageValue } from 'seitu/web'
 
 import type { Workspace } from './sync'
-import { activeWorkspaceIdStorageValue } from './sync'
+
+export const activeWorkspaceIdStorageValue = createWebStorageValue({
+  defaultValue: null,
+  key: 'tamery.active-workspace-id',
+  schema: type('string | null'),
+  type: 'localStorage',
+})
+
+export const setActiveWorkspace = (workspaceId: string) => {
+  activeWorkspaceIdStorageValue.set(workspaceId)
+}
 
 export const resolveActiveWorkspace = (
   workspaces: Workspace[],
