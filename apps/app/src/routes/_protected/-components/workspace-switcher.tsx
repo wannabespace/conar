@@ -12,8 +12,11 @@ import { useState } from 'react'
 
 import { useSubscription } from '~/entities/user/hooks'
 import type { Workspace } from '~/entities/workspace'
-import { useActiveWorkspace, useWorkspaces } from '~/entities/workspace'
-import { authClient } from '~/lib/auth'
+import {
+  setActiveWorkspace,
+  useActiveWorkspace,
+  useWorkspaces,
+} from '~/entities/workspace'
 import { setIsSubscriptionDialogOpen } from '~/store'
 
 import { CreateWorkspaceDialog } from './create-workspace-dialog'
@@ -36,17 +39,9 @@ export const WorkspaceSwitcher = () => {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
-  const { data: workspaces, refetch } = useWorkspaces()
+  const { data: workspaces } = useWorkspaces()
   const { data: activeWorkspace } = useActiveWorkspace()
   const { subscription } = useSubscription()
-
-  const handleOpenChange = (next: boolean) => {
-    setOpen(next)
-
-    if (next) {
-      refetch()
-    }
-  }
 
   const switchWorkspace = async (id: string) => {
     setOpen(false)
@@ -55,7 +50,7 @@ export const WorkspaceSwitcher = () => {
       return
     }
 
-    await authClient.organization.setActive({ organizationId: id })
+    setActiveWorkspace(id)
     await navigate({ to: '/' })
   }
 
@@ -71,7 +66,7 @@ export const WorkspaceSwitcher = () => {
 
   return (
     <>
-      <DropdownMenu open={open} onOpenChange={handleOpenChange}>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger
           render={
             <Button
@@ -100,7 +95,7 @@ export const WorkspaceSwitcher = () => {
           align="start"
           className="max-h-[70vh] min-w-56 overflow-auto"
         >
-          {workspaces?.map((workspace) => (
+          {workspaces.map((workspace) => (
             <DropdownMenuItem
               key={workspace.id}
               onClick={() => switchWorkspace(workspace.id)}

@@ -10,6 +10,7 @@ import {
   createConnectionStringsCollection,
 } from '~/entities/connection/core'
 import { createQueriesCollection } from '~/entities/query/sync'
+import { createWorkspacesCollection } from '~/entities/workspace/sync'
 
 export interface Collections {
   connectionsCollection: ReturnType<typeof createConnectionsCollection>
@@ -22,6 +23,7 @@ export interface Collections {
   chatsCollection: ReturnType<typeof createChatsCollection>
   chatsMessagesCollection: ReturnType<typeof createChatsMessagesCollection>
   queriesCollection: ReturnType<typeof createQueriesCollection>
+  workspacesCollection: ReturnType<typeof createWorkspacesCollection>
 }
 
 let current: Collections | null = null
@@ -45,6 +47,7 @@ export const getCollections = (): Collections => {
     connectionsCollection: createConnectionsCollection(),
     connectionsResourcesCollection: createConnectionsResourcesCollection(),
     queriesCollection: createQueriesCollection(),
+    workspacesCollection: createWorkspacesCollection(),
   }
 
   notify()

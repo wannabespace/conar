@@ -1,4 +1,5 @@
 import { defineRelationsPart } from 'drizzle-orm'
+import { createSelectSchema } from 'drizzle-orm/arktype'
 import * as d from 'drizzle-orm/pg-core'
 
 import { baseTable } from '../base-table'
@@ -94,6 +95,8 @@ export const workspaces = d.snakeCase.table(
   },
   (table) => [d.uniqueIndex('workspaces_slug_uidx').on(table.slug)]
 )
+
+export const workspacesSelectSchema = createSelectSchema(workspaces)
 
 export const members = d.snakeCase.table(
   'members',

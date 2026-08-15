@@ -16,20 +16,8 @@ import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { authClient } from '~/lib/auth'
-
-const workspaceSlug = (name: string) => {
-  const base =
-    name
-      .toLowerCase()
-      .trim()
-      .replaceAll(/[^a-z0-9]+/gu, '-')
-      .replaceAll(/^-+|-+$/gu, '')
-      .slice(0, 32) || 'workspace'
-  const suffix = Math.random().toString(36).slice(2, 10)
-
-  return `${base}-${suffix}`
-}
+import { setActiveWorkspace } from '~/entities/workspace'
+import { orpc } from '~/lib/orpc'
 
 export const CreateWorkspaceDialog = ({
   open,
@@ -43,18 +31,13 @@ export const CreateWorkspaceDialog = ({
 
   const { mutate: createWorkspace, isPending: loading } = useMutation({
     mutationFn: async (workspaceName: string) => {
-      const { data, error } = await authClient.organization.create({
+      const workspace = await orpc.workspaces.create.call({
         name: workspaceName,
-        slug: workspaceSlug(workspaceName),
       })
 
-      if (error) {
-        throw new Error(error.message ?? 'Failed to create workspace')
-      }
+      setActiveWorkspace(workspace.id)
 
-      await authClient.organization.setActive({ organizationId: data.id })
-
-      return data
+      return workspace
     },
     onSuccess: async () => {
       toast.success('Workspace created')

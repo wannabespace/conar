@@ -5,12 +5,12 @@ import { encrypt } from '@tamery/shared/utils/crypto-node'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
 import { type } from 'arktype'
 
-import { ensureDefaultWorkspace } from '~/lib/workspace'
+import { ensureDefaultWorkspace, memberWorkspaceIds } from '~/lib/workspace'
 import { authMiddleware, orpc } from '~/orpc'
 
 import { publisher } from './events'
 
-const schema = connectionsInsertSchema.omit('userId', 'workspaceId')
+const schema = connectionsInsertSchema.omit('userId')
 
 export const create = orpc
   .use(authMiddleware)
@@ -21,9 +21,21 @@ export const create = orpc
   )
   .handler(async ({ context, input }) => {
     const userSecret = await context.getUserSecret()
-    const activeWorkspaceId =
+    const fallbackWorkspaceId =
       context.session.activeOrganizationId ??
       (await ensureDefaultWorkspace(context.user.id))
+    // A connection created offline carries the workspace that was active on the
+    // device, which can differ from the workspace the session points at now.
+    const allowedWorkspaceIds = await memberWorkspaceIds(
+      context.user.id,
+      input
+        .map((item) => item.workspaceId)
+        .filter((id): id is string => typeof id === 'string')
+    )
+    const workspaceIdFor = (workspaceId: string | null | undefined) =>
+      workspaceId && allowedWorkspaceIds.has(workspaceId)
+        ? workspaceId
+        : fallbackWorkspaceId
 
     const inserted = await db
       .insert(connections)
@@ -43,7 +55,7 @@ export const create = orpc
                 text: newConnectionString.toString(),
               }),
               userId: context.user.id,
-              workspaceId: activeWorkspaceId,
+              workspaceId: workspaceIdFor(item.workspaceId),
             }
           })
         )

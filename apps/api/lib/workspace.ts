@@ -1,6 +1,6 @@
 import { db } from '@tamery/db'
 import { connections, members, users, workspaces } from '@tamery/db/schema'
-import { and, asc, eq, isNull, sql } from 'drizzle-orm'
+import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
 const slugify = (value: string) =>
@@ -72,3 +72,24 @@ export const ensureDefaultWorkspace = (userId: string) =>
 
     return workspace.id
   })
+
+export const memberWorkspaceIds = async (
+  userId: string,
+  workspaceIds: string[]
+) => {
+  if (workspaceIds.length === 0) {
+    return new Set<string>()
+  }
+
+  const rows = await db
+    .select({ workspaceId: members.workspaceId })
+    .from(members)
+    .where(
+      and(
+        eq(members.userId, userId),
+        inArray(members.workspaceId, workspaceIds)
+      )
+    )
+
+  return new Set(rows.map((row) => row.workspaceId))
+}

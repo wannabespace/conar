@@ -1,57 +1,48 @@
-import { useEffect, useRef } from 'react'
+import { useLiveQuery } from '@tanstack/react-db'
+import { type } from 'arktype'
+import { useSubscription } from 'seitu/react'
+import { createWebStorageValue } from 'seitu/web'
 
-import { authClient } from '~/lib/auth'
+import { useCollections } from '~/entities/collections'
 
-export interface Workspace {
-  id: string
-  name: string
-  slug: string
-  logo?: string | null
-  metadata?: string | Record<string, unknown> | null
-  createdAt: Date | string
+import type { Workspace } from './sync'
+
+export type { Workspace } from './sync'
+export { createWorkspacesCollection } from './sync'
+
+const activeWorkspaceIdStorageValue = createWebStorageValue({
+  defaultValue: null,
+  key: 'tamery.active-workspace-id',
+  schema: type('string | null'),
+  type: 'localStorage',
+})
+
+export const useWorkspaces = () => {
+  const { workspacesCollection } = useCollections()
+
+  return useLiveQuery(
+    (q) =>
+      q
+        .from({ w: workspacesCollection })
+        .orderBy(({ w }) => w.createdAt, 'asc'),
+    [workspacesCollection]
+  )
 }
 
-export const useWorkspaces = () => authClient.useListOrganizations()
+export const useActiveWorkspace = () => {
+  const { data: workspaces } = useWorkspaces()
+  const activeId = useSubscription(activeWorkspaceIdStorageValue)
 
-export const useActiveWorkspace = () => authClient.useActiveOrganization()
+  const data =
+    workspaces.find((workspace) => workspace.id === activeId) ??
+    workspaces.at(0) ??
+    null
 
-const workspaceCreatedAt = (workspace: Pick<Workspace, 'createdAt'>) =>
-  new Date(workspace.createdAt).getTime()
+  return { data }
+}
 
-export const useActiveWorkspaceSync = () => {
-  const { data: workspaces, isPending: workspacesPending } = useWorkspaces()
-  const { data: activeWorkspace, isPending: activePending } =
-    useActiveWorkspace()
-  const settingRef = useRef(false)
-
-  useEffect(() => {
-    if (
-      workspacesPending ||
-      activePending ||
-      activeWorkspace ||
-      settingRef.current
-    ) {
-      return
-    }
-
-    const first = workspaces
-      ?.toSorted((a, b) => workspaceCreatedAt(a) - workspaceCreatedAt(b))
-      .at(0)
-
-    if (!first) {
-      return
-    }
-
-    settingRef.current = true
-
-    void (async () => {
-      try {
-        await authClient.organization.setActive({ organizationId: first.id })
-      } finally {
-        settingRef.current = false
-      }
-    })()
-  }, [workspaces, activeWorkspace, workspacesPending, activePending])
+export const setActiveWorkspace = (workspaceId: string) => {
+  activeWorkspaceIdStorageValue.set(workspaceId)
 }
 
 const workspaceMetadata = (workspace: Pick<Workspace, 'metadata'>) => {

@@ -5,7 +5,6 @@ import { useEffect } from 'react'
 import { GlobalBanner } from '~/components/global-banner'
 import { SubscriptionModal } from '~/components/subscription-modal'
 import { cleanCollections, getCollections } from '~/entities/collections'
-import { useActiveWorkspaceSync } from '~/entities/workspace'
 import { EventsProvider } from '~/events'
 import { enterAppAnimation } from '~/global-hooks'
 import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
@@ -18,7 +17,6 @@ import { ProtectedTitleBar } from './_protected/-components/protected-titlebar'
 const ProtectedLayout = () => {
   useConnectionStringsSync()
   useLastOpenedResourcesSync()
-  useActiveWorkspaceSync()
 
   useEffect(
     () => () => {
@@ -75,6 +73,7 @@ export const Route = createFileRoute('/_protected')({
       c.connectionStringsCollection.stateWhenReady(),
       c.connectionsCollection.stateWhenReady(),
       c.connectionsResourcesCollection.stateWhenReady(),
+      c.workspacesCollection.stateWhenReady(),
     ])
 
     return { collections: c }
