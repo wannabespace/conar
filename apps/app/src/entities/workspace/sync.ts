@@ -41,12 +41,12 @@ export const createWorkspace = async (name: string) => {
 
   const workspace = await orpc.workspaces.create.call({ name })
 
-  setActiveWorkspace(workspace.id)
-
   await workspacesCollection.utils.awaitChange(
     workspace.id,
-    new Date(workspace.updatedAt)
+    workspace.updatedAt
   )
+
+  setActiveWorkspace(workspace.id)
 
   return workspace
 }

@@ -217,7 +217,7 @@ const MenubarSubTrigger = ({
     data-slot="menubar-sub-trigger"
     data-inset={inset}
     className={cn(
-      `focus:bg-accent/60 focus:text-accent-foreground data-open:bg-accent/60 data-open:text-accent-foreground *:[svg]:text-muted-foreground min-h-7 gap-2 rounded-xl px-2 py-1.5 text-sm data-inset:pl-7 [&_svg:not([class*='size-'])]:size-4`,
+      `focus:bg-accent/60 focus:text-accent-foreground data-open:bg-accent/60 data-open:text-accent-foreground *:[svg]:text-muted-foreground focus:*:[svg]:text-accent-foreground data-open:*:[svg]:text-accent-foreground min-h-7 gap-2 rounded-xl px-2 py-1.5 text-sm data-inset:pl-7 [&_svg:not([class*='size-'])]:size-4`,
       className
     )}
     {...props}

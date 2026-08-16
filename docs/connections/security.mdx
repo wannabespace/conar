@@ -8,11 +8,11 @@ Every connection string is encrypted before it leaves your device. The sync type
 
 ## Encryption at rest
 
-All connection strings are encrypted with a **per-user secret key**, unique to your account. Without that key, stored strings are unreadable. Encryption is automatic — nothing to configure.
+All connection strings are encrypted with a **per-workspace secret key**, unique to the workspace the connection belongs to. Without that key, stored strings are unreadable. Encryption is automatic — nothing to configure.
 
 ## Encryption in transit
 
-When your device fetches a connection string, it's decrypted server-side and sent over HTTPS (TLS). The plaintext exists only briefly in server memory during the request; it's never persisted unencrypted, and the per-user secret is held in Infisical, accessible only to the Tamery backend.
+When your device fetches a connection string, it's decrypted server-side and sent over HTTPS (TLS). The plaintext exists only briefly in server memory during the request; it's never persisted unencrypted, and the workspace secret is held in Infisical, accessible only to the Tamery backend.
 
 To keep the server from ever handling your plaintext password, use **Cloud (without password)** — then only metadata is stored and returned.
 
@@ -22,7 +22,7 @@ Both modes sync the connection across your devices.
 
 <Tabs>
   <Tab title="Cloud (with password)">
-    Stores the full connection string, including the password, encrypted with your per-user key.
+    Stores the full connection string, including the password, encrypted with your workspace key.
 
     - Synced to every device you sign in on.
     - No password re-entry when switching devices.
@@ -35,7 +35,7 @@ Both modes sync the connection across your devices.
     Stores only metadata (host, port, database, username). The password is **never** uploaded.
 
     - You enter the password the first time you use the connection.
-    - It's kept on that device only, encrypted with your per-user key.
+    - It's kept on that device only, encrypted with your workspace key.
     - Clear it anytime via the connection menu (**⋯ → Clear password**).
     - A compromised account exposes no stored password.
 

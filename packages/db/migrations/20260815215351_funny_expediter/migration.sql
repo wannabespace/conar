@@ -31,7 +31,8 @@ SELECT
   now()
 FROM _default_workspaces;--> statement-breakpoint
 UPDATE connections c
-SET workspace_id = dw.workspace_id
+SET workspace_id = dw.workspace_id,
+    updated_at = now()
 FROM (
   SELECT DISTINCT ON (m.user_id) m.user_id, m.workspace_id
   FROM members m

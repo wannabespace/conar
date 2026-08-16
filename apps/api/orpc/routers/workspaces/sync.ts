@@ -40,9 +40,17 @@ export const sync = orpc
       input,
       queries: {
         existing: (includeIds) =>
-          memberWorkspaces(userId, inArray(workspaces.id, includeIds)).then(
-            (rows) => rows.map((row) => row.id)
-          ),
+          db
+            .select({ id: workspaces.id })
+            .from(workspaces)
+            .innerJoin(members, eq(members.workspaceId, workspaces.id))
+            .where(
+              and(
+                eq(members.userId, userId),
+                inArray(workspaces.id, includeIds)
+              )
+            )
+            .then((rows) => rows.map((row) => row.id)),
         new: (excludeIds) =>
           memberWorkspaces(userId, notInArray(workspaces.id, excludeIds)),
         updated: (items) =>

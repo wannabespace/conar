@@ -21,8 +21,11 @@ export const workspaceSlug = (name: string) => {
   return `${base}-${nanoid(8)}`
 }
 
-const userDefaultWorkspaceId = async (userId: string) => {
-  const rows = await db
+const userDefaultWorkspaceId = async (
+  userId: string,
+  executor: Pick<typeof db, 'select'> = db
+) => {
+  const rows = await executor
     .select({ id: workspaces.id, metadata: workspaces.metadata })
     .from(members)
     .innerJoin(workspaces, eq(workspaces.id, members.workspaceId))
@@ -47,45 +50,43 @@ export const ensureDefaultWorkspace = async (userId: string) => {
     // lock is released at transaction end; the re-check below happens under it.
     await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${userId}))`)
 
-    // The advisory xact lock is only released when its holder commits, so a
-    // plain `db` read here already sees a competitor's created workspace.
-    const lockedId = await userDefaultWorkspaceId(userId)
-    const workspaceId =
-      lockedId ??
-      (await (async () => {
-        const [user] = await tx
-          .select({ email: users.email, name: users.name })
-          .from(users)
-          .where(eq(users.id, userId))
-          .limit(1)
+    // The lock is only released when its holder commits, and this read runs
+    // under READ COMMITTED, so it already sees a competitor's created workspace.
+    const lockedId = await userDefaultWorkspaceId(userId, tx)
 
-        const displayName =
-          user?.name?.trim() || user?.email?.split('@')[0] || 'My'
-        const workspaceName = `${displayName}'s workspace`
+    if (lockedId) {
+      return lockedId
+    }
 
-        const [workspace] = await tx
-          .insert(workspaces)
-          .values({
-            metadata: serializeWorkspaceMetadata({ default: true }),
-            name: workspaceName,
-            slug: workspaceSlug(workspaceName),
-          })
-          .returning({ id: workspaces.id })
+    const [user] = await tx
+      .select({ email: users.email, name: users.name })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1)
 
-        if (!workspace) {
-          throw new Error('Failed to create default workspace')
-        }
+    const displayName = user?.name?.trim() || user?.email?.split('@')[0] || 'My'
+    const workspaceName = `${displayName}'s workspace`
 
-        await tx.insert(members).values({
-          role: 'owner',
-          userId,
-          workspaceId: workspace.id,
-        })
+    const [workspace] = await tx
+      .insert(workspaces)
+      .values({
+        metadata: serializeWorkspaceMetadata({ default: true }),
+        name: workspaceName,
+        slug: workspaceSlug(workspaceName),
+      })
+      .returning({ id: workspaces.id })
 
-        return workspace.id
-      })())
+    if (!workspace) {
+      throw new Error('Failed to create default workspace')
+    }
 
-    return workspaceId
+    await tx.insert(members).values({
+      role: 'owner',
+      userId,
+      workspaceId: workspace.id,
+    })
+
+    return workspace.id
   })
 }
 
