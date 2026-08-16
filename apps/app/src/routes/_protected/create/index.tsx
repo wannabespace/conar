@@ -30,6 +30,7 @@ import { useLocalProxyAvailable } from '~/entities/connection/runtime'
 import { getConnectionStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching'
+import { useActiveWorkspace } from '~/entities/workspace'
 import { generateRandomName } from '~/utils/faker'
 
 import { StepCredentials } from './-components/step-credentials'
@@ -47,6 +48,7 @@ const createConnectionType = type({
 
 const CreateConnectionPage = () => {
   const collections = useCollections()
+  const { data: activeWorkspace } = useActiveWorkspace()
   const [step, setStep] = useState<'type' | 'credentials' | 'save'>('type')
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -61,6 +63,10 @@ const CreateConnectionPage = () => {
         label: string | null
         color: string | null
       }) => {
+        if (!activeWorkspace) {
+          throw new Error('Workspace is still loading. Please try again.')
+        }
+
         const id = v7()
         const url = new SafeURL(data.connectionString.trim())
 
@@ -82,6 +88,7 @@ const CreateConnectionPage = () => {
           }),
           connection: {
             id,
+            workspaceId: activeWorkspace.id,
             name: data.name,
             type: data.type,
             label: data.label || null,
@@ -364,8 +371,13 @@ const CreateConnectionPage = () => {
                   >
                     Back
                   </Button>
-                  <Button type="submit" disabled={!isValid || !canSaveInCloud}>
-                    <LoadingContent loading={isCreatingConnection}>
+                  <Button
+                    type="submit"
+                    disabled={!isValid || !canSaveInCloud || !activeWorkspace}
+                  >
+                    <LoadingContent
+                      loading={isCreatingConnection || !activeWorkspace}
+                    >
                       <AppLogo className="w-4" />
                       Save connection
                     </LoadingContent>

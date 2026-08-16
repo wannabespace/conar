@@ -1,5 +1,5 @@
-import { useFieldContext } from '.'
 import { FieldError as FieldErrorPrimitive } from '../field'
+import { useFieldContext } from './context'
 
 export const FieldError = () => {
   const field = useFieldContext()

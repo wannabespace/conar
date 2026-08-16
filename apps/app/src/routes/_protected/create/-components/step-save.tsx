@@ -20,12 +20,13 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
-import { useLiveQuery } from '@tanstack/react-db'
+import { eq, useLiveQuery } from '@tanstack/react-db'
 import type { CSSProperties } from 'react'
 import { useId } from 'react'
 
 import { ConnectionDetails } from '~/components/connection-details'
 import { useCollections } from '~/entities/collections'
+import { useActiveWorkspace } from '~/entities/workspace'
 
 export const StepSave = ({
   type,
@@ -53,15 +54,23 @@ export const StepSave = ({
   setColor: (color: string | null) => void
 }) => {
   const { connectionsCollection } = useCollections()
+  const { data: activeWorkspace } = useActiveWorkspace()
   const { data: connections } = useLiveQuery(
-    (q) =>
-      q
-        .from({ connections: connectionsCollection })
-        .orderBy(
-          ({ connections: connectionRows }) => connectionRows.createdAt,
-          'desc'
-        ),
-    [connectionsCollection]
+    (q) => {
+      const query = activeWorkspace
+        ? q
+            .from({ connections: connectionsCollection })
+            .where(({ connections: connectionRows }) =>
+              eq(connectionRows.workspaceId, activeWorkspace.id)
+            )
+        : q.from({ connections: connectionsCollection })
+
+      return query.orderBy(
+        ({ connections: connectionRows }) => connectionRows.createdAt,
+        'desc'
+      )
+    },
+    [connectionsCollection, activeWorkspace?.id]
   )
   const existingLabels = connections
     .map((connection) => connection.label)

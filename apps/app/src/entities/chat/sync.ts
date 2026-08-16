@@ -39,8 +39,8 @@ export const createChatsCollection = () =>
           )
         },
         onInsert: async ({ transaction }) => {
-          await orpc.chats.create.call(
-            transaction.mutations.map((m) => m.modified)
+          await Promise.all(
+            transaction.mutations.map((m) => orpc.chats.create.call(m.modified))
           )
         },
         onUpdate: async ({ transaction }) => {
@@ -80,8 +80,10 @@ export const createChatsMessagesCollection = () =>
           )
         },
         onInsert: async ({ transaction }) => {
-          await orpc.chatsMessages.create.call(
-            transaction.mutations.map((m) => m.modified)
+          await Promise.all(
+            transaction.mutations.map((m) =>
+              orpc.chatsMessages.create.call(m.modified)
+            )
           )
         },
         onUpdate: async ({ transaction }) => {

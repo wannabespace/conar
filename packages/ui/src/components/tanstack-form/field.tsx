@@ -1,10 +1,10 @@
 import type { ComponentProps } from 'react'
 
-import { useFieldContext } from '.'
 import {
   Field as FieldPrimitive,
   FieldLabel as FieldLabelPrimitive,
 } from '../field'
+import { useFieldContext } from './context'
 
 export const Field = (props: ComponentProps<typeof FieldPrimitive>) => {
   const field = useFieldContext()

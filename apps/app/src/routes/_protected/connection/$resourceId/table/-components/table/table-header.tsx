@@ -212,7 +212,7 @@ const Header = ({ className }: { className?: string }) => {
                     key={column.id}
                     onClick={() => scrollToColumn(column, 'left')}
                   >
-                    <RiDatabase2Line className="text-muted-foreground size-4" />
+                    <RiDatabase2Line />
                     {column.id}
                   </DropdownMenuItem>
                 ))}
@@ -262,7 +262,7 @@ const Header = ({ className }: { className?: string }) => {
                     key={column.id}
                     onClick={() => scrollToColumn(column, 'right')}
                   >
-                    <RiDatabase2Line className="text-muted-foreground size-4" />
+                    <RiDatabase2Line />
                     {column.id}
                   </DropdownMenuItem>
                 ))}

@@ -31,6 +31,7 @@
           {
             "group": "Features",
             "pages": [
+              "features/workspaces",
               "features/table-browser",
               "features/sql-editor",
               "features/ai-assistant",

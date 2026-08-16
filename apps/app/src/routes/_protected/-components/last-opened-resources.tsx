@@ -14,6 +14,7 @@ import { ConnectionIcon } from '~/entities/connection/components'
 import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
+import { useActiveWorkspace } from '~/entities/workspace'
 
 const LastOpenedResource = ({
   connectionResource,
@@ -72,21 +73,30 @@ export const LastOpenedResources = () => {
   const { connectionsCollection, connectionsResourcesCollection } =
     useCollections()
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
+  const { data: activeWorkspace } = useActiveWorkspace()
 
   const { data } = useLiveQuery(
-    (q) =>
-      q
+    (q) => {
+      const query = q
         .from({ connectionsResources: connectionsResourcesCollection })
         .innerJoin(
           { connections: connectionsCollection },
           ({ connectionsResources, connections }) =>
             eq(connectionsResources.connectionId, connections.id)
         )
-        .select(({ connectionsResources, connections }) => ({
-          connectionResource: connectionsResources,
-          connection: connections,
-        })),
-    [connectionsResourcesCollection, connectionsCollection]
+
+      return (
+        activeWorkspace
+          ? query.where(({ connections }) =>
+              eq(connections.workspaceId, activeWorkspace.id)
+            )
+          : query
+      ).select(({ connectionsResources, connections }) => ({
+        connectionResource: connectionsResources,
+        connection: connections,
+      }))
+    },
+    [connectionsResourcesCollection, connectionsCollection, activeWorkspace?.id]
   )
   const toShow = data
     .filter(({ connectionResource }) =>

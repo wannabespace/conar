@@ -1,0 +1,5 @@
+{
+  "formatters": {
+    "ts,tsx": ["./node_modules/.bin/oxfmt"]
+  }
+}

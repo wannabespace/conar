@@ -41,10 +41,12 @@ import {
   useConnectionResourceLinkParams,
 } from '~/entities/connection'
 import { UserButton } from '~/entities/user/components'
+import { useActiveWorkspace } from '~/entities/workspace'
 import { setIsActionCenterOpen } from '~/store'
 import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 
 import { RemoveConnectionDialog } from './remove-connection-dialog'
+import { WorkspaceSwitcher } from './workspace-switcher'
 
 interface ConnectionGroup {
   connection: Connection
@@ -234,16 +236,23 @@ const ConnectionsBreadcrumb = ({
   const { connectionsCollection, connectionsResourcesCollection } =
     useCollections()
   const { resourceId } = useParams({ strict: false })
+  const { data: activeWorkspace } = useActiveWorkspace()
   const { data } = useLiveQuery(
-    (q) =>
-      q
-        .from({ c: connectionsCollection })
+    (q) => {
+      const query = activeWorkspace
+        ? q
+            .from({ c: connectionsCollection })
+            .where(({ c }) => eq(c.workspaceId, activeWorkspace.id))
+        : q.from({ c: connectionsCollection })
+
+      return query
         .innerJoin({ r: connectionsResourcesCollection }, ({ c, r }) =>
           eq(r.connectionId, c.id)
         )
         .select(({ c, r }) => ({ connection: c, resource: r }))
-        .orderBy(({ c }) => c.createdAt, 'desc'),
-    [connectionsCollection, connectionsResourcesCollection]
+        .orderBy(({ c }) => c.createdAt, 'desc')
+    },
+    [connectionsCollection, connectionsResourcesCollection, activeWorkspace?.id]
   )
 
   const groups: ConnectionGroup[] = []
@@ -308,6 +317,11 @@ export const ProtectedTitleBar = () => {
           >
             <AppLogo className="text-primary size-4" />
           </Link>
+          <RiArrowRightSLine
+            aria-hidden
+            className="text-muted-foreground/40 size-3.5 shrink-0"
+          />
+          <WorkspaceSwitcher />
           <RiArrowRightSLine
             aria-hidden
             className="text-muted-foreground/40 size-3.5 shrink-0"

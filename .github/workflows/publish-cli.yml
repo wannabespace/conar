@@ -18,9 +18,10 @@ jobs:
           node-version: latest
           registry-url: 'https://registry.npmjs.org'
       - run: pnpm i --frozen-lockfile
-      - run: pnpm run lint
+      - run: pnpm run check
       - run: cd apps/cli && pnpm publish
         env:
           NPM_CONFIG_PROVENANCE: true
           API_URL: ${{ secrets.API_URL }}
           MAIN_URL: ${{ secrets.MAIN_URL }}
+          WEB_URL: ${{ secrets.WEB_URL }}

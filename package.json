@@ -12,16 +12,13 @@
     "postinstall": "pnpm run portless:start",
     "portless:start": "portless proxy start --tld app",
     "portless:stop": "portless proxy stop",
-    "lint": "oxlint",
-    "lint:fix": "oxlint --fix",
-    "format": "oxfmt",
-    "format:check": "oxfmt --check",
+    "x": "bun scripts/run-script.ts",
     "check": "ultracite check",
     "fix": "ultracite fix",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
     "test:start": "turbo run test:start",
-    "dev": "turbo run dev",
+    "dev": "bun scripts/run-script.ts dev",
     "start:api": "cd apps/api && pnpm run start",
     "start:main": "cd apps/main && pnpm run start",
     "start:app": "cd apps/app && pnpm run start",
@@ -34,8 +31,8 @@
     "aur:sync": "bun scripts/sync-aur-version.ts",
     "aur:sync:checksum": "bun scripts/sync-aur-version.ts --checksum",
     "drizzle:generate": "cd packages/db && pnpm run drizzle:generate",
-    "drizzle:migrate": "cd packages/db && pnpm run drizzle:migrate",
-    "check-types": "turbo run check-types",
+    "drizzle:migrate": "pnpm --filter @tamery/db run drizzle:migrate",
+    "check-types": "tsc --noEmit && turbo run check-types",
     "update": "taze -r -I major",
     "docker:start": "docker compose -f docker-compose.dev.yml up -d",
     "docker:stop": "docker compose -f docker-compose.dev.yml down",
@@ -43,6 +40,8 @@
     "deps:build": "node-modules-inspector build"
   },
   "devDependencies": {
+    "@clack/prompts": "catalog:",
+    "@manypkg/get-packages": "catalog:",
     "@tamery/configs": "workspace:*",
     "@types/bun": "catalog:",
     "cross-env": "catalog:",
@@ -63,5 +62,5 @@
   "engines": {
     "bun": ">=1.3.0"
   },
-  "packageManager": "pnpm@11.13.1"
+  "packageManager": "pnpm@11.21.0"
 }

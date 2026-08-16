@@ -3,17 +3,22 @@ import { challenge } from '@tamery/shared/utils/challenge'
 import { title } from '@tamery/shared/utils/title'
 import { Badge } from '@tamery/ui/components/badge'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
-import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.utils'
+import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.motion'
 import { Button } from '@tamery/ui/components/button'
 import { DitherBackground } from '@tamery/ui/components/custom/dither-background'
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 
 import { TitleBar } from '~/components/title-bar'
 import { enterAppAnimation } from '~/global-hooks'
-import { authClient, bearerToken, successAuthToast } from '~/lib/auth'
+import {
+  authClient,
+  bearerToken,
+  isSignedIn,
+  successAuthToast,
+} from '~/lib/auth'
 import { lastLocationStorageValue } from '~/lib/last-location'
 import { orpc } from '~/lib/orpc'
 import { router } from '~/main'
@@ -109,7 +114,7 @@ const AuthPage = () => {
       <div className="relative grid flex-1 overflow-hidden lg:grid-cols-2">
         <AuthSidePanel />
         <div className="relative flex flex-col overflow-hidden px-4 py-6">
-          <div className="relative m-auto flex w-full max-w-md flex-1 flex-col justify-center">
+          <div className="relative m-auto flex w-full max-w-87.5 flex-1 flex-col justify-center">
             <motion.div
               className="bg-primary relative mb-8 flex size-12 items-center justify-center rounded-2xl will-change-transform"
               initial={{
@@ -189,7 +194,7 @@ const AuthPage = () => {
             )}
           </div>
           <motion.div
-            className="relative mx-auto mt-auto w-full max-w-md pt-10 will-change-transform"
+            className="relative mx-auto mt-auto w-full max-w-87.5 pt-10 will-change-transform"
             initial={{
               opacity: 0,
               transform: 'translateY(10px)',
@@ -216,4 +221,16 @@ export const Route = createFileRoute('/auth')({
   head: () => ({
     meta: [{ title: title('Sign in') }],
   }),
+  beforeLoad: async () => {
+    // Desktop waits here for the challenge handoff; web has nothing to wait for
+    if (window.electron) {
+      return
+    }
+
+    if (await isSignedIn()) {
+      throw redirect({ to: '/' })
+    }
+
+    throw redirect({ href: signInUrl('web').url })
+  },
 })

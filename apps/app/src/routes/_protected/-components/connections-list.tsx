@@ -59,6 +59,7 @@ import {
   lastOpenedResourcesStorageValue,
   useFetchingConfig,
 } from '~/entities/connection'
+import { useActiveWorkspace } from '~/entities/workspace'
 
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
@@ -560,7 +561,7 @@ export const Empty = () => (
       No connections yet
     </h2>
     <p className="text-muted-foreground mt-1 max-w-xs text-sm">
-      Add a database and it shows up here — open it in one click.
+      Add a connection and it shows up here — open it in one click.
     </p>
 
     <Button
@@ -605,9 +606,14 @@ export const ConnectionsList = () => {
   const { connectionsCollection } = useCollections()
   const sort = useSubscription(sortValue)
   const grouping = useSubscription(groupValue)
+  const { data: activeWorkspace } = useActiveWorkspace()
   const { data } = useLiveQuery(
     (q) => {
-      let query = q.from({ c: connectionsCollection })
+      let query = activeWorkspace
+        ? q
+            .from({ c: connectionsCollection })
+            .where(({ c }) => eq(c.workspaceId, activeWorkspace.id))
+        : q.from({ c: connectionsCollection })
 
       if (grouping === 'label') {
         query = query.orderBy(
@@ -629,7 +635,7 @@ export const ConnectionsList = () => {
         sortDirection
       )
     },
-    [connectionsCollection, sort, grouping]
+    [connectionsCollection, sort, grouping, activeWorkspace?.id]
   )
 
   const removeDialogRef =

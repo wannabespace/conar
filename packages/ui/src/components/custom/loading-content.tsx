@@ -26,7 +26,7 @@ export const LoadingContent = ({
     <span
       className={cn(
         loading ? '-translate-y-1/2' : 'translate-y-5',
-        'absolute top-1/2 left-1/2 -translate-x-1/2 duration-150'
+        'absolute top-1/2 left-1/2 flex -translate-x-1/2 items-center justify-center duration-150'
       )}
     >
       {spinner}

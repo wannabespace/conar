@@ -8,3 +8,4 @@
 - **Filter strip is persistent** (hover-reveal rejected): animates only on mount/exit — `opacity 0→1, y 8→0, scale 0.98→1`, 200ms. Chip anatomy `[eye | column | op | value | ✕]`; eye disables (content dims to `opacity-45`, eye/✕ stay full).
 - No layout shifts on hover — reserve space, animate opacity/transform only.
 - Scroll-edge cues: never JS scroll listeners. Plain scrollers use shadcn `scroll-fade` (CSS scroll-driven mask). The data table uses `table-fade` overlay gradients instead (mask would clip the scrollbar) — see gotchas.
+- **Collapse/disclosure**: animate CSS grid rows with motion, not a Tailwind transition — `motion.div` `initial={false} animate={{ gridTemplateRows: open ? '1fr' : '0fr' }}` (house curve) wrapping a `min-h-0 overflow-hidden` child. Ref: `TableError` in `table/-components/table/table.tsx`.

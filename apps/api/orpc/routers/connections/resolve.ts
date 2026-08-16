@@ -12,6 +12,7 @@ export const resolve = orpc
       columns: {
         connectionString: true,
         updatedAt: true,
+        workspaceId: true,
       },
       where: {
         id: { eq: input.id },
@@ -32,7 +33,7 @@ export const resolve = orpc
 
     const connectionString = decrypt({
       encryptedText: connection.connectionString,
-      secret: await context.getUserSecret(),
+      secret: await context.getWorkspaceSecret(connection.workspaceId),
     })
 
     return {

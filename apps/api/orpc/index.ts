@@ -1,29 +1,45 @@
 import { ORPCError, os } from '@orpc/server'
 import { db } from '@tamery/db'
-import { subscriptions } from '@tamery/db/schema'
+import { members } from '@tamery/db/schema'
 import { infisical } from '@tamery/infisical'
-import {
-  ACTIVE_SUBSCRIPTION_STATUSES,
-  LATEST_VERSION_BEFORE_SUBSCRIPTION,
-} from '@tamery/shared/constants'
-import { eq } from 'drizzle-orm'
+import { LATEST_VERSION_BEFORE_SUBSCRIPTION } from '@tamery/shared/constants'
+import { and, asc, eq } from 'drizzle-orm'
 import { memoize } from 'memoza'
 
 import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { auth } from '~/lib/auth'
 import { redis } from '~/lib/redis'
+import { getSubscription } from '~/lib/subscription'
 
 import type { Context } from './context'
 
+export { getSubscription } from '~/lib/subscription'
+
 export const orpc = os.$context<Context>()
 
-// 5 minutes
-export const getUserSecret = memoize(
-  (userId: string) =>
-    infisical.secrets.get({
+export const getWorkspaceSecret = memoize(
+  async (workspaceId: string) => {
+    const [owner] = await db
+      .select({ userId: members.userId })
+      .from(members)
+      .where(
+        and(eq(members.workspaceId, workspaceId), eq(members.role, 'owner'))
+      )
+      .orderBy(asc(members.createdAt))
+      .limit(1)
+
+    if (!owner) {
+      throw new ORPCError('NOT_FOUND', { message: 'Workspace not found' })
+    }
+
+    // The secret still lives at the owner's Infisical user path; moving it to
+    // ['workspaces', workspaceId] later only changes this lookup.
+    return infisical.secrets.get({
       name: INFISICAL_USER_ENCRYPTION_SECRET_NAME,
-      path: ['users', userId],
-    }),
+      path: ['users', owner.userId],
+    })
+  },
+  // 5 minutes
   { maxAge: 5 * 60 * 1000 }
 )
 
@@ -79,7 +95,7 @@ export const authMiddleware = logMiddleware.concat(
     return next({
       context: {
         ...session,
-        getUserSecret: () => getUserSecret(session.user.id),
+        getWorkspaceSecret,
       },
     })
   })
@@ -102,21 +118,6 @@ export const optionalAuthMiddleware = logMiddleware.concat(
     })
   })
 )
-
-export const getSubscription = async (userId: string) => {
-  const userSubscriptions = await db
-    .select()
-    .from(subscriptions)
-    .where(eq(subscriptions.userId, userId))
-
-  return (
-    userSubscriptions.find((s) =>
-      ACTIVE_SUBSCRIPTION_STATUSES.includes(
-        s.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number]
-      )
-    ) ?? null
-  )
-}
 
 // oxlint-disable-next-line unicorn/prefer-spread
 export const subscriptionMiddleware = logMiddleware.concat(
@@ -146,7 +147,7 @@ export const subscriptionMiddleware = logMiddleware.concat(
     return next({
       context: {
         ...session,
-        getUserSecret: () => getUserSecret(session.user.id),
+        getWorkspaceSecret,
         subscription,
       },
     })
@@ -164,7 +165,7 @@ export const optionalSubscriptionMiddleware = logMiddleware.concat(
     return next({
       context: {
         ...session,
-        getUserSecret: () => getUserSecret(session.user.id),
+        getWorkspaceSecret,
         subscription,
       },
     })

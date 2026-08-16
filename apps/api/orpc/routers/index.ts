@@ -17,6 +17,7 @@ import * as queries from './queries'
 import { releases } from './releases'
 import { repo } from './repo'
 import * as webhooks from './webhooks'
+import * as workspaces from './workspaces'
 
 export const router = {
   account,
@@ -33,6 +34,7 @@ export const router = {
   releases,
   repo,
   webhooks,
+  workspaces,
 }
 
 export type ORPCRouter = RouterClient<typeof router>

@@ -189,9 +189,9 @@ export const proxyCommand = command({
         cors({
           credentials: true,
           origin(origin) {
-            const allowedOrigins = [import.meta.env.MAIN_URL]
+            const allowedOrigins = [import.meta.env.WEB_URL]
             return origin.endsWith(
-              `.${new URL(import.meta.env.MAIN_URL).host}`
+              `.${new URL(import.meta.env.WEB_URL).host}`
             ) || allowedOrigins.includes(origin)
               ? origin
               : null

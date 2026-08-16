@@ -1,4 +1,6 @@
 import { Dithering } from '@paper-design/shaders-react'
+import { useIsMounted } from '@tamery/ui/hookas/use-is-mounted'
+import { useMediaQuery } from '@tamery/ui/hookas/use-media-query'
 import { cn } from '@tamery/ui/lib/utils'
 
 import { useResolvedTheme } from '../../theme-store'
@@ -16,9 +18,8 @@ export const DitherBackground = ({
   shape?: 'warp' | 'ripple'
 }) => {
   const theme = useResolvedTheme()
-  const prefersReducedMotion = window.matchMedia(
-    '(prefers-reduced-motion: reduce)'
-  ).matches
+  const isMounted = useIsMounted()
+  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
   const colors = DITHER_COLORS[theme]
 
   return (
@@ -29,15 +30,17 @@ export const DitherBackground = ({
         className
       )}
     >
-      <Dithering
-        colorBack={colors.back}
-        colorFront={colors.front}
-        shape={shape}
-        type="8x8"
-        size={4}
-        speed={prefersReducedMotion ? 0 : 0.1}
-        style={{ height: '100%', width: '100%' }}
-      />
+      {isMounted && (
+        <Dithering
+          colorBack={colors.back}
+          colorFront={colors.front}
+          shape={shape}
+          type="8x8"
+          size={4}
+          speed={prefersReducedMotion ? 0 : 0.1}
+          style={{ height: '100%', width: '100%' }}
+        />
+      )}
     </div>
   )
 }

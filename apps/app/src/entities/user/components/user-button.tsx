@@ -148,6 +148,7 @@ export const UserButton = ({
           {THEME_OPTIONS.map((option) => (
             <DropdownMenuItem
               key={option.value}
+              closeOnClick={false}
               onClick={() => themeStore.set(option.value)}
             >
               <span

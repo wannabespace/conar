@@ -20,12 +20,15 @@ import {
 } from 'better-auth/plugins'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
+import { v7 } from 'uuid'
 
 import { INFISICAL_USER_ENCRYPTION_SECRET_NAME } from '~/constants'
 import { env, nodeEnv } from '~/env'
 import { resend, sendEmail } from '~/lib/resend'
 
 import { redisMemoize } from './redis'
+import { getSubscription } from './subscription'
+import { ensureDefaultWorkspace } from './workspace'
 
 export const auth = betterAuth({
   advanced: {
@@ -35,7 +38,7 @@ export const auth = betterAuth({
       enabled: true,
     },
     database: {
-      generateId: 'uuid',
+      generateId: () => v7(),
     },
   },
   appName: 'Tamery',
@@ -50,6 +53,21 @@ export const auth = betterAuth({
     usePlural: true,
   }) as ReturnType<typeof drizzleAdapter>,
   databaseHooks: {
+    session: {
+      create: {
+        before: async (session) => {
+          try {
+            await ensureDefaultWorkspace(session.userId)
+          } catch (error) {
+            console.error(
+              `Failed to ensure default workspace on session create: ${error instanceof Error ? error.message : error}`
+            )
+          }
+
+          return { data: session }
+        },
+      },
+    },
     user: {
       create: {
         after: async (user) => {
@@ -150,11 +168,12 @@ export const auth = betterAuth({
         return
       }
 
-      const userId = ctx.context.session.user.id
+      ctx.request?.headers.set('user-id', ctx.context.session.user.id)
 
-      ctx.request?.headers.set('user-id', userId)
+      const { session } = ctx.context.session
 
       if (desktopVersion) {
+        const { userId } = session
         await redisMemoize(async () => {
           await db
             .update(users)
@@ -196,6 +215,9 @@ export const auth = betterAuth({
     bearer(),
     twoFactor(),
     organization({
+      allowUserToCreateOrganization: async (user) =>
+        !!(await getSubscription(user.id)),
+      disableOrganizationDeletion: true,
       schema: {
         invitation: {
           fields: {
@@ -240,12 +262,12 @@ export const auth = betterAuth({
   socialProviders: {
     github: {
       clientId: env.GITHUB_CLIENT_ID ?? '',
-      clientSecret: env.GITHUB_CLIENT_SECRET,
+      clientSecret: env.GITHUB_CLIENT_SECRET ?? '',
       enabled: !!env.GITHUB_CLIENT_ID && !!env.GITHUB_CLIENT_SECRET,
     },
     google: {
       clientId: env.GOOGLE_CLIENT_ID ?? '',
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
+      clientSecret: env.GOOGLE_CLIENT_SECRET ?? '',
       enabled: !!env.GOOGLE_CLIENT_ID && !!env.GOOGLE_CLIENT_SECRET,
       prompt: 'select_account',
     },

@@ -5,50 +5,56 @@ import { encrypt } from '@tamery/shared/utils/crypto-node'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
 import { type } from 'arktype'
 
+import { ensureDefaultWorkspace, memberWorkspaceIds } from '~/lib/workspace'
 import { authMiddleware, orpc } from '~/orpc'
 
 import { publisher } from './events'
 
-const schema = connectionsInsertSchema.omit('userId')
-
 export const create = orpc
   .use(authMiddleware)
   .input(
-    type
-      .or(schema, schema.array())
-      .pipe((data) => (Array.isArray(data) ? data : [data]))
+    connectionsInsertSchema
+      .omit('userId', 'workspaceId')
+      .and(type({ 'workspaceId?': 'string | null' }))
   )
   .handler(async ({ context, input }) => {
-    const userSecret = await context.getUserSecret()
+    // The client sends the workspace that was active on the device; it is
+    // membership-checked, and anything else falls back to the default workspace.
+    const allowedWorkspaceIds = await memberWorkspaceIds(
+      context.user.id,
+      typeof input.workspaceId === 'string' ? [input.workspaceId] : []
+    )
+    const workspaceId =
+      input.workspaceId && allowedWorkspaceIds.has(input.workspaceId)
+        ? input.workspaceId
+        : await ensureDefaultWorkspace(context.user.id)
+    const workspaceSecret = await context.getWorkspaceSecret(workspaceId)
 
-    const inserted = await db
+    const connectionString = new SafeURL(input.connectionString)
+
+    if (input.syncType !== SyncType.Cloud) {
+      connectionString.password = ''
+    }
+
+    const [inserted] = await db
       .insert(connections)
-      .values(
-        await Promise.all(
-          input.map((item) => {
-            const newConnectionString = new SafeURL(item.connectionString)
-
-            if (item.syncType !== SyncType.Cloud) {
-              newConnectionString.password = ''
-            }
-
-            return {
-              ...item,
-              connectionString: encrypt({
-                secret: userSecret,
-                text: newConnectionString.toString(),
-              }),
-              userId: context.user.id,
-            }
-          })
-        )
-      )
+      .values({
+        ...input,
+        connectionString: encrypt({
+          secret: workspaceSecret,
+          text: connectionString.toString(),
+        }),
+        userId: context.user.id,
+        workspaceId,
+      })
       .returning()
 
-    for (const connection of inserted) {
-      publisher.publish(context.user.id, {
-        type: 'insert',
-        value: connection,
-      })
+    if (!inserted) {
+      throw new Error('Failed to create connection')
     }
+
+    publisher.publish(context.user.id, {
+      type: 'insert',
+      value: inserted,
+    })
   })

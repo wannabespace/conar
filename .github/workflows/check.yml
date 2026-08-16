@@ -1,4 +1,4 @@
-name: Lint Check
+name: Check
 
 on:
   pull_request:
@@ -34,5 +34,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Lint
-        run: pnpm run lint
+      - name: Check
+        run: pnpm run check

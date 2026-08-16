@@ -15,7 +15,13 @@ export const update = orpc
   .use(authMiddleware)
   .input(
     type.and(
-      connectionsUpdateSchema.omit('createdAt', 'updatedAt', 'userId', 'id'),
+      connectionsUpdateSchema.omit(
+        'createdAt',
+        'updatedAt',
+        'userId',
+        'workspaceId',
+        'id'
+      ),
       connectionsUpdateSchema.pick('id').required()
     )
   )
@@ -33,7 +39,7 @@ export const update = orpc
       throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
     }
 
-    const secret = await context.getUserSecret()
+    const secret = await context.getWorkspaceSecret(found.workspaceId)
 
     const newConnectionString = new SafeURL(
       changes.connectionString ??

@@ -78,7 +78,7 @@ Tamery is an AI-powered open-source project that simplifies database interaction
 
 - **🚀 Run the Project**
 
-  This starts all development servers through [portless](https://portless.sh) (HTTPS on `.local.tamery.app` domains):
+  This opens a package picker (all packages pre-selected — press Enter to accept) and starts the selected development servers through [portless](https://portless.sh) (HTTPS on `.local.tamery.app` domains):
 
   | Service | URL                            |
   | ------- | ------------------------------ |
@@ -91,7 +91,7 @@ Tamery is an AI-powered open-source project that simplifies database interaction
   pnpm run dev
   ```
 
-  To run a single app without Turbo, `cd` into its directory (e.g. `apps/api`) and run `pnpm run dev`.
+  Pass `-a` to skip the prompt and start everything. To run a subset, deselect the rest in the picker, or `cd` into a single app's directory (e.g. `apps/api`) and run `pnpm run dev`.
 
 ## Testing
 

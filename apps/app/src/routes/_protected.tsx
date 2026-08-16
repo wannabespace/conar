@@ -3,7 +3,7 @@ import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
 import { GlobalBanner } from '~/components/global-banner'
-import { SubscriptionModal } from '~/components/subscriprion-modal'
+import { SubscriptionModal } from '~/components/subscription-modal'
 import { cleanCollections, getCollections } from '~/entities/collections'
 import { EventsProvider } from '~/events'
 import { enterAppAnimation } from '~/global-hooks'
@@ -73,6 +73,7 @@ export const Route = createFileRoute('/_protected')({
       c.connectionStringsCollection.stateWhenReady(),
       c.connectionsCollection.stateWhenReady(),
       c.connectionsResourcesCollection.stateWhenReady(),
+      c.workspacesCollection.stateWhenReady(),
     ])
 
     return { collections: c }

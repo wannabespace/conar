@@ -180,11 +180,9 @@ const getStageSuggestions = ({
       ? (query.split(',').at(-1) ?? '')
       : query
   ).trim()
-  const matchingValues = (suggestedValues ?? [])
-    .filter((value) =>
-      value.toLowerCase().includes(valueFilterText.toLowerCase())
-    )
-    .slice(0, 8)
+  const matchingValues = (suggestedValues ?? []).filter((value) =>
+    value.toLowerCase().includes(valueFilterText.toLowerCase())
+  )
 
   return { committedParts, matchingValues, valueFilterText }
 }
@@ -538,11 +536,9 @@ export const FilterSearchBar = ({
   })
 
   const trimmedQuery = query.trim()
-  const matchingColumns = (columns ?? [])
-    .filter((column) =>
-      column.id.toLowerCase().includes(trimmedQuery.toLowerCase())
-    )
-    .slice(0, 6)
+  const matchingColumns = (columns ?? []).filter((column) =>
+    column.id.toLowerCase().includes(trimmedQuery.toLowerCase())
+  )
 
   const isOpen =
     isFocused &&

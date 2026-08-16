@@ -5,55 +5,43 @@ import {
   chatsMessages,
   chatsMessagesInsertSchema,
 } from '@tamery/db/schema'
-import { type } from 'arktype'
-import { and, eq, inArray } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 import { publisher } from './events'
 
-const schema = chatsMessagesInsertSchema
-
 export const create = orpc
   .use(subscriptionMiddleware)
-  .input(
-    type
-      .or(schema, schema.array())
-      .pipe((data) => (Array.isArray(data) ? data : [data]))
-  )
+  .input(chatsMessagesInsertSchema)
   .handler(async ({ context, input }) => {
-    const chatIds = input.map((item) => item.chatId)
-    const foundChats = await db
+    const [chat] = await db
       .select({ id: chats.id })
       .from(chats)
-      .where(and(inArray(chats.id, chatIds), eq(chats.userId, context.user.id)))
+      .where(and(eq(chats.id, input.chatId), eq(chats.userId, context.user.id)))
+      .limit(1)
 
-    if (foundChats.length !== chatIds.length) {
+    if (!chat) {
       throw new ORPCError('NOT_FOUND', {
         message: 'Chat not found',
       })
     }
 
-    const insertedRows = await db.transaction((tx) =>
-      Promise.all(
-        input.map((item) =>
-          tx
-            .insert(chatsMessages)
-            .values(item)
-            .onConflictDoUpdate({
-              set: item,
-              target: chatsMessages.id,
-            })
-            .returning()
-        )
-      )
-    )
-    const inserted = insertedRows.flat()
-
-    for (const item of inserted) {
-      publisher.publish(context.user.id, {
-        type: 'insert',
-        value: item,
+    const [inserted] = await db
+      .insert(chatsMessages)
+      .values(input)
+      .onConflictDoUpdate({
+        set: input,
+        target: chatsMessages.id,
       })
+      .returning()
+
+    if (!inserted) {
+      throw new Error('Failed to create chat message')
     }
+
+    publisher.publish(context.user.id, {
+      type: 'insert',
+      value: inserted,
+    })
   })

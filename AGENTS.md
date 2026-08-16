@@ -53,14 +53,15 @@ Tamery is an AI-powered desktop/web app for managing database connections. It st
 
 Use these terms precisely; avoid the listed synonyms.
 
-- **Connection** — a named, typed pointer to a database. Holds metadata (name, label, color, sync type) but not the raw connection string. _Avoid_: database, data source.
+- **Connection** — a named, typed pointer to a database. Holds metadata (name, label, color, sync type, `workspaceId`) but not the raw connection string. _Avoid_: database, data source.
 - **Connection String** — the full URL (including credentials) used to reach a database. Always stored encrypted; never sent to the cloud in plaintext. _Avoid_: credentials, DSN, URL.
+- **Workspace** — a named group of connections, backed by Better Auth's `organization` plugin (remapped to `workspace` in `apps/api/lib/auth.ts`; tables `workspaces`/`members`/`invitations`, and `sessions.activeWorkspaceId`). Each user gets a default personal workspace (marked `{"default":true}` in `workspaces.metadata`, helpers in `@tamery/shared/workspace`): existing users got one via the `20260815215351_funny_expediter` data migration, which also backfilled `connections.workspaceId` and set it `NOT NULL`; new users get one lazily via `ensureDefaultWorkspace` in `apps/api/lib/workspace.ts` (wired through `databaseHooks.session.create.before`, with `connections.create` calling it as a fallback so the `NOT NULL` column always resolves). Creating additional workspaces goes through `orpc.workspaces.create` (gated by `subscriptionMiddleware`, publishing the insert like every other collection); Better Auth's own org-create endpoint stays gated by `allowUserToCreateOrganization`; org deletion is disabled (`disableOrganizationDeletion`) because the `connections.workspaceId` FK cascades — no delete flow exists yet. Sync stays per-user; the client scopes connections to the active workspace inside each `useLiveQuery` (`.where(eq(c.workspaceId, activeWorkspace.id))` — never a post-query `.filter()`, which would allocate a new array every render and break downstream memos). Non-React guards (`$resourceId`'s `beforeLoad`) compare against `getActiveWorkspace(workspacesCollection.toArray)` inline. Workspaces reach the client through `workspacesCollection` (SQLite + `orpc.workspaces.events`/`orpc.workspaces.sync`), not Better Auth's `useListOrganizations`, so the list survives going offline; the workspace entity splits into `sync.ts` (collection + `createWorkspace`, which sets the active id and awaits the row through `awaitChange`), `utils.ts` (storage value, `setActiveWorkspace`, pure resolvers) and `hooks.ts` (`useActiveWorkspace`), with `index.ts` a pure barrel; the active workspace is a per-device `localStorage` value (`tamery.active-workspace-id`, resolved against the collection in `useActiveWorkspace`) and is never pushed back to the session — the server does not read `sessions.activeWorkspaceId` at all; the column exists only because Better Auth's `organization` plugin requires the field (its own `setActive` endpoints may write it). Better Auth supports client-only active-organization management: its team endpoints resolve `body.organizationId || session.activeOrganizationId`, so invites and member lists just pass the active id explicitly (only `getActiveMember` is session-bound). `connections.create` accepts the client's `workspaceId` (membership-checked; anything else falls back to the user's default workspace) so connections created offline land in the workspace that was active on the device. Multi-member/invites are not built yet. _Avoid_: organization (in UI copy), team, project. Note: Better Auth's API still calls the logical field `activeOrganizationId`, which the schema remap maps to the `activeWorkspaceId` column.
 - **SyncType** — controls how a connection's credentials are handled during cloud sync:
   - `Cloud` — metadata + encrypted password both synced to cloud.
   - `CloudWithoutPassword` — metadata synced; password kept local-only. Use when the user wants cross-device access without trusting the cloud with credentials.
   - `Local` — nothing leaves the device.
   - _Avoid_: sync mode, cloud mode.
-- **Collections** — client data lives in TanStack DB collections, defined in `apps/app/src/entities/collections/index.ts`. There are six: `connectionsCollection`, `connectionsResourcesCollection`, `connectionStringsCollection`, `chatsCollection`, `chatsMessagesCollection`, `queriesCollection`. All persist to SQLite (OPFS via `@tanstack/browser-db-sqlite-persistence`); the synced ones also stream from the cloud via oRPC event iterators (`syncCollectionOptions` in `~/lib/sync`).
+- **Collections** — client data lives in TanStack DB collections, defined in `apps/app/src/entities/collections/index.ts`. There are seven: `connectionsCollection`, `connectionsResourcesCollection`, `connectionStringsCollection`, `chatsCollection`, `chatsMessagesCollection`, `queriesCollection`, `workspacesCollection`. All persist to SQLite (OPFS via `@tanstack/browser-db-sqlite-persistence`); the synced ones also stream from the cloud via oRPC event iterators (`syncCollectionOptions` in `~/lib/sync`).
 - **Connections Collection** (`connectionsCollection`) — holds `Connection` rows. Backed by SQLite persistence plus a cloud sync stream (`orpc.connections.events` / `orpc.connections.sync`).
 - **Connection Strings Collection** (`connectionStringsCollection`) — holds one `ConnectionString` row per `Connection`. Persisted to SQLite, no cloud sync. Populated on demand: `useConnectionStringsSync` runs a `createEffect` whose `onEnter` fires when a `Connection` enters `connectionsCollection`, resolves the string via `connectionStringsCollection.utils.resolve(id)` (cloud, else local decrypt), and inserts/updates the row.
 - **Collections lifecycle** — `getCollections()` lazily creates the singleton set of collections and caches it in `current`; `cleanCollections()` drops it (`current = null`). `_protected` route's `beforeLoad` calls `getCollections()` and awaits `stateWhenReady()` for the core collections; `ProtectedLayout` calls `cleanCollections()` on unmount. TanStack DB GCs a collection's in-memory data when `activeSubscribersCount` stays at zero longer than `gcTime` (status becomes `cleaned-up`).
@@ -96,12 +97,16 @@ The **proxy app** (`apps/proxy`) is a separate Hono process that executes DB que
 pnpm run docker:start       # Start local Postgres (tamery DB), Redis, and Infisical (secrets) via docker-compose.dev.yml
 pnpm run drizzle:migrate    # Apply DB migrations (packages/db)
 pnpm run drizzle:generate   # Generate migration from schema changes
-pnpm run dev                # Start all apps via Turbo
+pnpm run dev                # Package picker (all pre-selected — Enter accepts), then runs their dev script; `-a` skips the prompt
 pnpm run test               # Bun unit tests
 pnpm run test:e2e           # Playwright E2E
-pnpm run check-types        # tsc type-check across workspace
-pnpm run lint               # Oxlint
+pnpm run check-types        # tsc on root scripts/ + configs, then turbo run check-types across workspace
+pnpm run check              # Ultracite check (Oxlint + Oxfmt), read-only
+pnpm run fix                # Ultracite fix (autofix lint + format)
+pnpm x                      # Interactive picker: choose packages, then a script to run (scripts/run-script.ts)
 ```
+
+`pnpm x` (`scripts/run-script.ts`) discovers workspace packages with `@manypkg/get-packages`, prompts via `@clack/prompts` for packages then a script, and runs `pnpm --filter … run <script>` (`--parallel` for multiple), or `turbo run` when the script is a `turbo.json` task. Scripts that invoke the runner itself (root `dev`, `x`) are excluded from discovery so selecting them cannot recurse. Flags: `-a`/`--all` (all packages), `-l`/`--last` (reuse last selection, cached in `node_modules/.cache/tamery-run.json`), `--no-turbo` (force pnpm), `-d`/`--dry-run` (print command only). A positional arg skips the script prompt; args after `--` are forwarded to the script.
 
 Local URLs (via portless, requires `pnpm run dev`):
 
@@ -169,6 +174,8 @@ Then register in `apps/api/orpc/routers/index.ts`:
 export const router = { ..., myFeature: { myProcedure } }
 ```
 
+`create` procedures take **exactly one item** — never `type.or(schema, schema.array())`. Collection `onInsert` handlers fan out with `Promise.all(transaction.mutations.map(...))`, matching `onUpdate`/`onDelete`.
+
 Available middlewares: `logMiddleware`, `authMiddleware`, `subscriptionMiddleware`, `optionalAuthMiddleware`, `optionalSubscriptionMiddleware`, `cacheMiddleware(ttl)`.
 
 Clients call procedures via the generated `ORPCRouter` type — no manual fetch calls.
@@ -176,5 +183,132 @@ Clients call procedures via the generated `ORPCRouter` type — no manual fetch 
 ## Secrets / environment
 
 - `apps/api/env.ts`, `apps/proxy/env.ts` etc. validate env vars with ArkType.
-- Per-user encryption secrets stored in Infisical at path `['users', userId]`.
-- `getUserSecret(userId)` is memoized (5 min TTL) and available on context after `authMiddleware`.
+- Encryption secrets are stored in Infisical at path `['users', userId]` and created in `databaseHooks.user.create.after`.
+- Connection strings are encrypted per **workspace**, not per requester: `getWorkspaceSecret(workspaceId)` (memoized 5 min, on context after `authMiddleware`) resolves the workspace's owner member and reads that owner's secret. Every decrypt path passes the row's own `workspaceId` (`connections` list/sync/resolve/update/create, `internal/proxy`), so a shared workspace will decrypt with one key once invites ship. Moving the secret itself to `['workspaces', workspaceId]` only changes that lookup — no call site moves.
+
+# Ultracite Code Standards
+
+This project uses **Ultracite**, a zero-config preset that enforces strict code quality standards through automated formatting and linting.
+
+## Quick Reference
+
+- **Format code**: `pnpm dlx ultracite fix`
+- **Check for issues**: `pnpm dlx ultracite check`
+- **Diagnose setup**: `pnpm dlx ultracite doctor`
+
+Oxlint + Oxfmt (the underlying engine) provides robust linting and formatting. Most issues are automatically fixable.
+
+---
+
+## Core Principles
+
+Write code that is **accessible, performant, type-safe, and maintainable**. Focus on clarity and explicit intent over brevity.
+
+### Type Safety & Explicitness
+
+- Use explicit types for function parameters and return values when they enhance clarity
+- Prefer `unknown` over `any` when the type is genuinely unknown
+- Use const assertions (`as const`) for immutable values and literal types
+- Leverage TypeScript's type narrowing instead of type assertions
+- Use meaningful variable names instead of magic numbers - extract constants with descriptive names
+
+### Modern JavaScript/TypeScript
+
+- Use arrow functions for callbacks and short functions
+- Prefer `for...of` loops over `.forEach()` and indexed `for` loops
+- Use optional chaining (`?.`) and nullish coalescing (`??`) for safer property access
+- Prefer template literals over string concatenation
+- Use destructuring for object and array assignments
+- Use `const` by default, `let` only when reassignment is needed, never `var`
+
+### Async & Promises
+
+- Always `await` promises in async functions - don't forget to use the return value
+- Use `async/await` syntax instead of promise chains for better readability
+- Handle errors appropriately in async code with try-catch blocks
+- Don't use async functions as Promise executors
+
+### React & JSX
+
+- Use function components over class components
+- Call hooks at the top level only, never conditionally
+- Specify all dependencies in hook dependency arrays correctly
+- Use the `key` prop for elements in iterables (prefer unique IDs over array indices)
+- Nest children between opening and closing tags instead of passing as props
+- Don't define components inside other components
+- Use semantic HTML and ARIA attributes for accessibility:
+  - Provide meaningful alt text for images
+  - Use proper heading hierarchy
+  - Add labels for form inputs
+  - Include keyboard event handlers alongside mouse events
+  - Use semantic elements (`<button>`, `<nav>`, etc.) instead of divs with roles
+
+### Error Handling & Debugging
+
+- Remove `console.log`, `debugger`, and `alert` statements from production code
+- Throw `Error` objects with descriptive messages, not strings or other values
+- Use `try-catch` blocks meaningfully - don't catch errors just to rethrow them
+- Prefer early returns over nested conditionals for error cases
+
+### Code Organization
+
+- Keep functions focused and under reasonable cognitive complexity limits
+- Extract complex conditions into well-named boolean variables
+- Use early returns to reduce nesting
+- Prefer simple conditionals over nested ternary operators
+- Group related code together and separate concerns
+
+### Security
+
+- Add `rel="noopener"` when using `target="_blank"` on links
+- Avoid `dangerouslySetInnerHTML` unless absolutely necessary
+- Don't use `eval()` or assign directly to `document.cookie`
+- Validate and sanitize user input
+
+### Performance
+
+- Avoid spread syntax in accumulators within loops
+- Use top-level regex literals instead of creating them in loops
+- Prefer specific imports over namespace imports
+- Avoid barrel files (index files that re-export everything)
+- Use proper image components (e.g., Next.js `<Image>`) over `<img>` tags
+
+### Framework-Specific Guidance
+
+**Next.js:**
+
+- Use Next.js `<Image>` component for images
+- Use `next/head` or App Router metadata API for head elements
+- Use Server Components for async data fetching instead of async Client Components
+
+**React 19+:**
+
+- Use ref as a prop instead of `React.forwardRef`
+
+**Solid/Svelte/Vue/Qwik:**
+
+- Use `class` and `for` attributes (not `className` or `htmlFor`)
+
+---
+
+## Testing
+
+- Write assertions inside `it()` or `test()` blocks
+- Avoid done callbacks in async tests - use async/await instead
+- Don't use `.only` or `.skip` in committed code
+- Keep test suites reasonably flat - avoid excessive `describe` nesting
+
+## When Oxlint + Oxfmt Can't Help
+
+Oxlint + Oxfmt's linter will catch most issues automatically. Focus your attention on:
+
+1. **Business logic correctness** - Oxlint + Oxfmt can't validate your algorithms
+2. **Meaningful naming** - Use descriptive names for functions, variables, and types
+3. **Architecture decisions** - Component structure, data flow, and API design
+4. **Edge cases** - Handle boundary conditions and error states
+5. **User experience** - Accessibility, performance, and usability considerations
+6. **Documentation** - Add comments for complex logic, but prefer self-documenting code
+
+---
+
+Most formatting and common issues are automatically fixed by Oxlint + Oxfmt. Run `pnpm dlx ultracite fix` before committing to ensure compliance.
