@@ -1,19 +1,12 @@
 import { db } from '@tamery/db'
 import { members, users, workspaces } from '@tamery/db/schema'
+import { slugify } from '@tamery/shared/utils/slugify'
 import {
   isDefaultWorkspaceMetadata,
   serializeWorkspaceMetadata,
 } from '@tamery/shared/workspace'
 import { and, asc, eq, inArray, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
-
-const slugify = (value: string) =>
-  value
-    .toLowerCase()
-    .trim()
-    .replaceAll(/[^a-z0-9]+/gu, '-')
-    .replaceAll(/^-+|-+$/gu, '')
-    .slice(0, 32)
 
 export const workspaceSlug = (name: string) => {
   const base = slugify(name) || 'workspace'
