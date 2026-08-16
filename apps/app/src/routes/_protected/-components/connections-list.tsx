@@ -455,7 +455,10 @@ const ConnectionCard = ({
         items={items}
         contentProps={{ className: 'min-w-44' }}
         className={cn(
-          `group hover:bg-accent/50 has-[[data-resource-link]:hover]:bg-accent/50 relative flex h-11 items-center gap-3 px-3 transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]`
+          'group relative flex h-11 items-center gap-3 px-3 transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]',
+          selectedResource &&
+            canOpenResource &&
+            'hover:bg-accent/20 has-[[data-resource-link]:hover]:bg-accent/20'
         )}
       >
         {selectedResource && canOpenResource && (
