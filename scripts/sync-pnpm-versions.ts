@@ -73,7 +73,7 @@ const syncPnpmVersion = () => {
 
     const todesktopUpdated = updateTodesktopJson(version)
     const lintCheckUpdated = updateWorkflowYaml(
-      path.join(rootDir, '.github', 'workflows', 'lint-check.yml'),
+      path.join(rootDir, '.github', 'workflows', 'check.yml'),
       version
     )
     const releaseUpdated = updateWorkflowYaml(
@@ -87,7 +87,7 @@ const syncPnpmVersion = () => {
         console.log('  - apps/desktop/todesktop.json')
       }
       if (lintCheckUpdated) {
-        console.log('  - .github/workflows/lint-check.yml')
+        console.log('  - .github/workflows/check.yml')
       }
       if (releaseUpdated) {
         console.log('  - .github/workflows/release.yml')
