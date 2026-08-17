@@ -6,11 +6,12 @@ import { type } from 'arktype'
 import { useEffect } from 'react'
 import { v7 } from 'uuid'
 
+import type { ConnectionTab } from '~/entities/connection/store'
 import {
-  DEFINITIONS_TITLES,
   ensureTab,
   parseTabId,
   setActiveTab,
+  tabTitle,
 } from '~/entities/connection/store'
 import {
   prefetchConnectionResourceCore,
@@ -53,18 +54,8 @@ const TabPage = () => {
   )
 }
 
-const tabTitle = (
-  tab: NonNullable<ReturnType<typeof parseTabId>>,
-  section: string | null
-) => {
-  if (tab.type === 'table') {
-    return `${tab.schema}.${tab.table}`
-  }
-  if (tab.type === 'definitions') {
-    return section ?? 'Definitions'
-  }
-  return tab.type === 'runner' ? 'SQL Runner' : 'Visualizer'
-}
+const documentTitle = (tab: ConnectionTab) =>
+  tab.type === 'table' ? `${tab.schema}.${tabTitle(tab)}` : tabTitle(tab)
 
 export const Route = createFileRoute(
   '/_protected/connection/$resourceId/$tabId'
@@ -98,8 +89,6 @@ export const Route = createFileRoute(
       chat: null as Awaited<ReturnType<typeof createChat>> | null,
       connection,
       connectionResource,
-      section:
-        tab.type === 'definitions' ? DEFINITIONS_TITLES[tab.section] : null,
       tab,
     }
 
@@ -165,7 +154,7 @@ export const Route = createFileRoute(
       ? [
           {
             title: title(
-              tabTitle(loaderData.tab, loaderData.section),
+              documentTitle(loaderData.tab),
               loaderData.connection.name,
               loaderData.connectionResource.name
             ),

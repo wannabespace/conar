@@ -17,7 +17,7 @@ import {
 import { Input } from '@tamery/ui/components/input'
 import { Label } from '@tamery/ui/components/label'
 import { useMutation } from '@tanstack/react-query'
-import { getRouteApi, useRouter } from '@tanstack/react-router'
+import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -43,12 +43,14 @@ interface RenameTableDialogProps {
 
 export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
   const { connectionResource } = useRouteContext()
+  const { tabId: activeTabId } = useParams({ strict: false })
   const store = getConnectionResourceStore(connectionResource.id)
   const router = useRouter()
   const [newTableName, setNewTableName] = useState('')
   const [schema, setSchema] = useState('')
   const [table, setTable] = useState('')
   const [open, setOpen] = useState(false)
+  const isCurrentTable = activeTabId === tableTabId(schema, table)
 
   useImperativeHandle(ref, () => ({
     rename: (schemaName: string, tableName: string) => {
@@ -81,14 +83,16 @@ export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
       )
       renameTableTab(connectionResource.id, schema, table, newTableName)
 
-      router.navigate({
-        replace: true,
-        to: '/connection/$resourceId/$tabId',
-        params: {
-          resourceId: connectionResource.id,
-          tabId: tableTabId(schema, newTableName),
-        },
-      })
+      if (isCurrentTable) {
+        router.navigate({
+          replace: true,
+          to: '/connection/$resourceId/$tabId',
+          params: {
+            resourceId: connectionResource.id,
+            tabId: tableTabId(schema, newTableName),
+          },
+        })
+      }
     },
     onError: (error) => {
       toast.error(`Failed to rename table "${error.message}".`)

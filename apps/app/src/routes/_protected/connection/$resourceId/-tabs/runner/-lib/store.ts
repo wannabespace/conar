@@ -4,6 +4,7 @@ import { createContext, use } from 'react'
 import { createComputed } from 'seitu'
 import { createWebStorageValue } from 'seitu/web'
 
+import { runnerStoreKey } from '~/entities/connection/store'
 import { getEditorQueries } from '~/entities/connection/utils'
 
 export const runnerPageType = type({
@@ -55,7 +56,7 @@ export const runnerPageStore = memoize(
   ({ resourceId, tabId }: { resourceId: string; tabId: string }) =>
     createWebStorageValue({
       defaultValue: defaultState,
-      key: `${resourceId}.${tabId}.store`,
+      key: runnerStoreKey(resourceId, tabId),
       schema: runnerPageType,
       type: 'localStorage',
     })

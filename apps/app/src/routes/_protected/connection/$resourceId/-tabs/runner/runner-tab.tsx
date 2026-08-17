@@ -8,6 +8,8 @@ import { useEffect, useMemo } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 
+import { runnerLayoutKey } from '~/entities/connection/store'
+
 import { Chat } from './-components/chat'
 import { Runner } from './-components/runner'
 import {
@@ -51,7 +53,7 @@ const RunnerLayout = () => {
   }, [chatId, store])
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: `sql-layout-${resourceId}-${tabId}`,
+    id: runnerLayoutKey(resourceId, tabId),
     storage: localStorage,
   })
 

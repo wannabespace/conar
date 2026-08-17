@@ -6,6 +6,9 @@ import type { ConnectionTab, DefinitionsSection } from './tabs'
 import {
   definitionsTabId,
   isPreviewTab,
+  parseTabId,
+  runnerLayoutKey,
+  runnerStoreKey,
   runnerTabId,
   tableTabId,
   VISUALIZER_TAB_ID,
@@ -43,9 +46,15 @@ export const setNavigator = (id: string, navigator: NavigatorList) => {
 }
 
 export const ensureTab = (id: string, tab: ConnectionTab) => {
-  setTabs(id, (tabs) =>
-    tabs.some((item) => item.id === tab.id) ? tabs : [...tabs, tab]
-  )
+  setTabs(id, (tabs) => {
+    if (tabs.some((item) => item.id === tab.id)) {
+      return tabs
+    }
+
+    const previewIndex = tabs.findIndex(isPreviewTab)
+
+    return previewIndex === -1 ? [...tabs, tab] : tabs.with(previewIndex, tab)
+  })
 }
 
 export const renameTab = (id: string, tabId: string, title: string | null) => {
@@ -150,8 +159,18 @@ export const renameTableTab = (
   )
 }
 
+const clearTabStorage = (id: string, tabId: string) => {
+  if (parseTabId(tabId)?.type !== 'runner') {
+    return
+  }
+
+  localStorage.removeItem(runnerStoreKey(id, tabId))
+  localStorage.removeItem(runnerLayoutKey(id, tabId))
+}
+
 export const removeTab = (id: string, tabId: string) => {
   setTabs(id, (tabs) => tabs.filter((tab) => tab.id !== tabId))
+  clearTabStorage(id, tabId)
 }
 
 export const removeTableTab = (id: string, schema: string, table: string) => {

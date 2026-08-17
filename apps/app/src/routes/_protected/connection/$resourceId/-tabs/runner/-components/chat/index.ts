@@ -277,6 +277,7 @@ export const createChat = memoize(
     return chat
   },
   {
-    cacheKey: ({ id, connectionResource }) => `${id}-${connectionResource.id}`,
+    cacheKey: ({ id, connectionResource, tabId }) =>
+      `${id}-${connectionResource.id}-${tabId}`,
   }
 )

@@ -64,6 +64,12 @@ export const definitionsTabId = (section: DefinitionsSection) =>
 
 export const runnerTabId = () => `runner:${nanoid(10)}`
 
+export const runnerStoreKey = (resourceId: string, tabId: string) =>
+  `${resourceId}.${tabId}.store`
+
+export const runnerLayoutKey = (resourceId: string, tabId: string) =>
+  `sql-layout-${resourceId}-${tabId}`
+
 export const VISUALIZER_TAB_ID = 'visualizer'
 
 const isDefinitionsSection = (value: string): value is DefinitionsSection =>

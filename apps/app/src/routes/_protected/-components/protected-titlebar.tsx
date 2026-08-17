@@ -301,16 +301,11 @@ const ConnectionsBreadcrumb = ({
   )
 }
 
-const QueryLoggerToggle = () => {
-  const { resourceId } = useParams({ strict: false })
-  const store = getConnectionResourceStore(resourceId ?? '')
+const QueryLoggerButton = ({ resourceId }: { resourceId: string }) => {
+  const store = getConnectionResourceStore(resourceId)
   const loggerOpened = useSubscription(store, {
     selector: (state) => state.loggerOpened,
   })
-
-  if (!resourceId) {
-    return null
-  }
 
   return (
     <Tooltip>
@@ -339,6 +334,12 @@ const QueryLoggerToggle = () => {
       <TooltipContent side="bottom">Query logger</TooltipContent>
     </Tooltip>
   )
+}
+
+const QueryLoggerToggle = () => {
+  const { resourceId } = useParams({ strict: false })
+
+  return resourceId ? <QueryLoggerButton resourceId={resourceId} /> : null
 }
 
 export const ProtectedTitleBar = () => {
