@@ -28,7 +28,7 @@ const LastOpenedResource = ({
   const params = useConnectionResourceLinkParams(connectionResource.id)
 
   return (
-    <div className="group hover:bg-accent/50 flex h-8 items-center gap-1 rounded-md pr-1 pl-2 text-sm">
+    <div className="group hover:bg-accent flex h-8 items-center gap-1 rounded-md pr-1 pl-2 text-sm">
       <Link
         className="text-foreground hover:text-foreground flex min-w-0 flex-1 cursor-default items-center gap-2.5"
         preload={false}

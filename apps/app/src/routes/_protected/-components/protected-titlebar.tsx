@@ -4,6 +4,7 @@ import {
   RiCommandLine,
   RiDeleteBinLine,
   RiExpandUpDownLine,
+  RiFileListLine,
 } from '@remixicon/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
@@ -24,6 +25,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
@@ -40,6 +42,7 @@ import {
   ConnectionResourceLink,
   useConnectionResourceLinkParams,
 } from '~/entities/connection'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { UserButton } from '~/entities/user/components'
 import { useActiveWorkspace } from '~/entities/workspace'
 import { setIsActionCenterOpen } from '~/store'
@@ -137,6 +140,9 @@ const ConnectionsDropdown = ({
         {current ? (
           <>
             <ConnectionIcon type={current.type} className="size-4 shrink-0" />
+            <span data-mask className="truncate font-medium">
+              {current.name}
+            </span>
             {current.color && (
               <span
                 aria-hidden
@@ -144,9 +150,6 @@ const ConnectionsDropdown = ({
                 style={{ backgroundColor: current.color }}
               />
             )}
-            <span data-mask className="truncate font-medium">
-              {current.name}
-            </span>
           </>
         ) : (
           <span className="truncate font-medium">Connections</span>
@@ -298,6 +301,46 @@ const ConnectionsBreadcrumb = ({
   )
 }
 
+const QueryLoggerToggle = () => {
+  const { resourceId } = useParams({ strict: false })
+  const store = getConnectionResourceStore(resourceId ?? '')
+  const loggerOpened = useSubscription(store, {
+    selector: (state) => state.loggerOpened,
+  })
+
+  if (!resourceId) {
+    return null
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            aria-label="Query logger"
+            aria-pressed={loggerOpened}
+            className={cn(loggerOpened && 'bg-foreground/10 text-primary')}
+            onClick={() =>
+              store.set(
+                (state) =>
+                  ({
+                    ...state,
+                    loggerOpened: !state.loggerOpened,
+                  }) satisfies typeof state
+              )
+            }
+          />
+        }
+      >
+        <RiFileListLine className="size-4" />
+      </TooltipTrigger>
+      <TooltipContent side="bottom">Query logger</TooltipContent>
+    </Tooltip>
+  )
+}
+
 export const ProtectedTitleBar = () => {
   const removeDialogRef =
     useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
@@ -350,6 +393,7 @@ export const ProtectedTitleBar = () => {
               </Tooltip>
             )}
             <UpdateButton />
+            <QueryLoggerToggle />
             <Tooltip>
               <TooltipTrigger
                 render={

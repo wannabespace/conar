@@ -18,6 +18,7 @@ import type { Edge, Node, NodeProps } from '@xyflow/react'
 import { Handle, Position } from '@xyflow/react'
 
 import { Link } from '~/components/link'
+import { tableTabId } from '~/entities/connection/store'
 
 import type { Column } from './table/cell'
 
@@ -67,9 +68,11 @@ export const ReactFlowNode = ({ data }: NodeProps<NodeType>) => (
               nativeButton={false}
               render={
                 <Link
-                  to="/connection/$resourceId/table"
-                  params={{ resourceId: data.resourceId }}
-                  search={{ schema: data.schema, table: data.table }}
+                  to="/connection/$resourceId/$tabId"
+                  params={{
+                    resourceId: data.resourceId,
+                    tabId: tableTabId(data.schema, data.table),
+                  }}
                 />
               }
             />

@@ -74,9 +74,33 @@ export const createSyncTracker = (): SyncTracker => {
 
 const DATABASE_NAME = `${GITHUB_REPO_NAME}.sqlite`
 
-export const database = await openBrowserWASQLiteOPFSDatabase({
-  databaseName: DATABASE_NAME,
-})
+const OPEN_DATABASE_MAX_ATTEMPTS = 3
+const OPEN_DATABASE_RETRY_DELAY = 500
+
+// wa-sqlite's OPFS VFS deletes stale temp dirs left by a crashed/reloaded tab
+// on init. If another tab still holds a sync access handle on that dir, the
+// delete throws (surfaces as OPFSWorkerRequestError) even though the retry
+// itself is safe — the stale lock clears within a beat. Retry before giving up.
+const openDatabase = async () => {
+  for (let attempt = 1; attempt <= OPEN_DATABASE_MAX_ATTEMPTS; attempt += 1) {
+    try {
+      // oxlint-disable-next-line no-await-in-loop
+      return await openBrowserWASQLiteOPFSDatabase({
+        databaseName: DATABASE_NAME,
+      })
+    } catch (error) {
+      if (attempt === OPEN_DATABASE_MAX_ATTEMPTS) {
+        throw error
+      }
+      posthog.captureException(error)
+      // oxlint-disable-next-line no-await-in-loop
+      await sleep(OPEN_DATABASE_RETRY_DELAY * attempt)
+    }
+  }
+  throw new Error('Unreachable')
+}
+
+export const database = await openDatabase()
 
 if (import.meta.env.DEV) {
   // @ts-expect-error window is not typed

@@ -1,8 +1,14 @@
+import { readFileSync } from 'node:fs'
+
 import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+
+const { version } = JSON.parse(
+  readFileSync(new URL('../desktop/package.json', import.meta.url), 'utf-8')
+)
 
 export default defineConfig(({ mode }) => ({
   base: mode === 'desktop' ? './' : '/',
@@ -15,6 +21,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   define: {
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(version),
     'import.meta.env.VITE_TEST': mode === 'test',
   },
   plugins: [

@@ -1,0 +1,204 @@
+import {
+  RiDatabase2Line,
+  RiKey2Line,
+  RiLayoutColumnLine,
+  RiLinksLine,
+  RiTable2,
+} from '@remixicon/react'
+import { Badge } from '@tamery/ui/components/badge'
+import { CardContent, CardTitle } from '@tamery/ui/components/card'
+import { CardMotion } from '@tamery/ui/components/card.motion'
+import { HighlightText } from '@tamery/ui/components/custom/highlight'
+import { SearchInput } from '@tamery/ui/components/custom/search-input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@tamery/ui/components/select'
+import { useQuery } from '@tanstack/react-query'
+import { getRouteApi } from '@tanstack/react-router'
+import { useState } from 'react'
+
+import type { constraintsType } from '~/entities/connection/queries'
+import { resourceConstraintsQueryOptions } from '~/entities/connection/queries'
+import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
+
+import { DefinitionsEmptyState } from '../-components/empty-state'
+import { DefinitionsGrid } from '../-components/grid'
+import { DefinitionsHeader } from '../-components/header'
+import { SchemaSelect } from '../-components/schema-select'
+import { MOTION_BLOCK_PROPS } from '../-constants'
+import { useDefinitionsState } from '../-hooks/use-definitions-state'
+
+type ConstraintType = (typeof constraintsType.infer)['type']
+
+const filterOptions: { label: string; value: ConstraintType | 'all' }[] = [
+  { label: 'All Types', value: 'all' },
+  { label: 'Primary Key', value: 'primaryKey' },
+  { label: 'Foreign Key', value: 'foreignKey' },
+  { label: 'Unique', value: 'unique' },
+]
+
+const getIcon = (type: ConstraintType) => {
+  switch (type) {
+    case 'primaryKey':
+    case 'unique': {
+      return <RiKey2Line className="text-primary size-4" />
+    }
+    case 'foreignKey': {
+      return <RiLinksLine className="text-primary size-4" />
+    }
+    default: {
+      return <RiDatabase2Line className="text-primary size-4" />
+    }
+  }
+}
+
+const routeApi = getRouteApi('/_protected/connection/$resourceId')
+
+export const Constraints = () => {
+  const { connectionResource } = routeApi.useRouteContext()
+  const {
+    data: constraints,
+    refetch,
+    isFetching,
+    isPending,
+    dataUpdatedAt,
+  } = useQuery(resourceConstraintsQueryOptions({ connectionResource }))
+  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
+    useDefinitionsState({
+      connectionResource,
+    })
+  const [filterType, setFilterType] =
+    useState<(typeof filterOptions)[number]['value']>('all')
+
+  useRefreshHotkey(refetch, isFetching)
+
+  const filteredConstraints =
+    constraints?.filter(
+      (item) =>
+        item.schema === selectedSchema &&
+        (filterType === 'all' || filterType === item.type) &&
+        (!search ||
+          item.name.toLowerCase().includes(search.toLowerCase()) ||
+          item.table.toLowerCase().includes(search.toLowerCase()) ||
+          (item.column &&
+            item.column.toLowerCase().includes(search.toLowerCase())) ||
+          (item.type && item.type.toLowerCase().includes(search.toLowerCase())))
+    ) ?? []
+
+  return (
+    <>
+      <DefinitionsHeader
+        onRefresh={() => refetch()}
+        isRefreshing={isFetching}
+        dataUpdatedAt={dataUpdatedAt}
+      >
+        Constraints
+      </DefinitionsHeader>
+      <div className="mb-4 flex items-center gap-2">
+        <SearchInput
+          placeholder="Search constraints"
+          autoFocus
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onClear={() => setSearch('')}
+        />
+        <Select
+          value={filterType}
+          onValueChange={(v) => {
+            if (v) {
+              setFilterType(v)
+            }
+          }}
+        >
+          <SelectTrigger className="w-45">
+            <SelectValue placeholder="Filter Type">
+              {(value) =>
+                value
+                  ? filterOptions.find((option) => option.value === value)
+                      ?.label
+                  : 'Filter Type'
+              }
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {filterOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <SchemaSelect
+          schemas={schemas}
+          selectedSchema={selectedSchema}
+          setSelectedSchema={setSelectedSchema}
+        />
+      </div>
+      <DefinitionsGrid loading={isPending}>
+        {filteredConstraints.length === 0 && (
+          <DefinitionsEmptyState
+            title="No constraints found"
+            description="This schema doesn't have any constraints matching your filter."
+          />
+        )}
+
+        {filteredConstraints.map((item) => (
+          <CardMotion
+            key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
+            layout
+            {...MOTION_BLOCK_PROPS}
+          >
+            <CardContent className="px-4 py-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="mb-2 flex items-center gap-2 text-base">
+                    {getIcon(item.type)}
+                    <HighlightText text={item.name} match={search} />
+                    <Badge variant="secondary">
+                      {
+                        filterOptions.find(
+                          (option) => option.value === item.type
+                        )?.label
+                      }
+                    </Badge>
+                  </CardTitle>
+                  <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
+                    <Badge variant="outline">
+                      <RiTable2 className="size-3" />
+                      <HighlightText text={item.table} match={search} />
+                    </Badge>
+                    {item.column && (
+                      <>
+                        <span>on</span>
+                        <Badge variant="outline">
+                          <RiLayoutColumnLine className="size-3" />
+                          <HighlightText text={item.column} match={search} />
+                        </Badge>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            {item.type === 'foreignKey' && (
+              <CardContent className="bg-muted/10 border-t px-4 py-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">References:</span>
+                  <Badge variant="outline">
+                    {item.foreignSchema}.{item.foreignTable}
+                  </Badge>
+                  column
+                  <Badge variant="outline">{item.foreignColumn}</Badge>
+                </div>
+              </CardContent>
+            )}
+          </CardMotion>
+        ))}
+      </DefinitionsGrid>
+    </>
+  )
+}

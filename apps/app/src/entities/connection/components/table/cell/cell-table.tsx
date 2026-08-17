@@ -11,13 +11,14 @@ import { getRouteApi } from '@tanstack/react-router'
 
 import { Link } from '~/components/link'
 import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
+import { tableTabId } from '~/entities/connection/store'
 import { createTransformer } from '~/entities/connection/transformers'
-import { TableError } from '~/routes/_protected/connection/$resourceId/table/-components/table/table'
-import { TableEmpty } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-empty'
-import { TableHeaderCell } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-header-cell'
-import { TableInfiniteLoader } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-infinite-loader'
-import { TableBodySkeleton } from '~/routes/_protected/connection/$resourceId/table/-components/table/table-skeleton'
-import { useTableColumnsQuery } from '~/routes/_protected/connection/$resourceId/table/-lib/columns'
+import { TableError } from '~/routes/_protected/connection/$resourceId/-tabs/table/-components/table/table'
+import { TableEmpty } from '~/routes/_protected/connection/$resourceId/-tabs/table/-components/table/table-empty'
+import { TableHeaderCell } from '~/routes/_protected/connection/$resourceId/-tabs/table/-components/table/table-header-cell'
+import { TableInfiniteLoader } from '~/routes/_protected/connection/$resourceId/-tabs/table/-components/table/table-infinite-loader'
+import { TableBodySkeleton } from '~/routes/_protected/connection/$resourceId/-tabs/table/-components/table/table-skeleton'
+import { useTableColumnsQuery } from '~/routes/_protected/connection/$resourceId/-tabs/table/-lib/columns'
 
 import { TableCellContent } from './cell-content'
 import { getColumnSize } from './utils'
@@ -179,9 +180,12 @@ export const TableCellTable = ({
             nativeButton={false}
             render={
               <Link
-                to="/connection/$resourceId/table"
-                params={{ resourceId: connectionResource.id }}
-                search={{ filters, orderBy, schema, table }}
+                to="/connection/$resourceId/$tabId"
+                params={{
+                  resourceId: connectionResource.id,
+                  tabId: tableTabId(schema, table),
+                }}
+                search={{ filters, orderBy }}
               />
             }
           >

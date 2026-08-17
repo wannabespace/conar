@@ -4,10 +4,10 @@ import { memoize } from 'memoza'
 import { createStore } from 'seitu'
 import { createWebStorageValue } from 'seitu/web'
 
-import type { FileRoutesById } from '~/routeTree.gen'
+import { connectionTabType } from './tabs'
 
-export * from './editor-queries'
 export * from './helpers'
+export * from './tabs'
 
 const schema = type({
   lastOpenedResourceName: 'string | null',
@@ -16,6 +16,8 @@ const schema = type({
     url: 'string | null',
   },
 }).pipe(({ lastOpenedResourceName, proxy }) => ({
+  // SAFETY: the ternary yields the symbol on the sentinel description and the
+  // validated `string | null` otherwise, which is exactly the asserted union.
   lastOpenedResourceName: (lastOpenedResourceName ===
   CONNECTION_RESOURCE_ROOT_SYMBOL.description
     ? CONNECTION_RESOURCE_ROOT_SYMBOL
@@ -39,71 +41,22 @@ export const getConnectionStore = memoize((id: string) =>
 )
 
 export const connectionResourceType = type({
-  lastOpenedChatId: 'string.uuid | null',
-  lastOpenedPage: 'string | null' as type.cast<Extract<
-    keyof FileRoutesById,
-    `/_protected/connection/$resourceId/${string}`
-  > | null>,
-  lastOpenedTable: type({
-    schema: 'string',
-    table: 'string',
-  }).or('null'),
-  layout: {
-    chatPosition: '"left" | "right"',
-    chatVisible: 'boolean',
-    resultsVisible: 'boolean',
-  },
+  activeTabId: 'string | null',
   loggerOpened: 'boolean',
   pinnedTables: type({
     schema: 'string',
     table: 'string',
   }).array(),
-  queriesToRun: type({
-    endLineNumber: 'number',
-    query: 'string',
-    startLineNumber: 'number',
-  }).array(),
-  query: 'string',
-  selectedLines: 'number[]',
   showSystem: 'boolean',
   tablesSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
-  tabs: type({
-    preview: 'boolean',
-    schema: 'string',
-    table: 'string',
-  }).array(),
+  tabs: connectionTabType.array(),
 })
 
 const connectionResourceDefaultState: typeof connectionResourceType.infer = {
-  lastOpenedChatId: null,
-  lastOpenedPage: null,
-  lastOpenedTable: null,
-  layout: {
-    chatPosition: 'right',
-    chatVisible: true,
-    resultsVisible: true,
-  },
+  activeTabId: null,
   loggerOpened: false,
   pinnedTables: [],
-  queriesToRun: [],
-  query: [
-    '-- Write your SQL query here based on your database schema',
-    '-- The examples below are for reference only and may not work with your database',
-    '',
-    '-- Example: Basic query with limit',
-    'SELECT * FROM users LIMIT 10;',
-    '',
-    '-- Example: Query with filtering',
-    "SELECT id, name, email FROM users WHERE created_at > '2025-01-01' ORDER BY name;",
-    '',
-    '-- Example: Join example',
-    'SELECT u.id, u.name, p.title FROM users u',
-    'JOIN posts p ON u.id = p.user_id',
-    'WHERE p.published = true',
-    'LIMIT 10;',
-  ].join('\n'),
-  selectedLines: [],
   showSystem: false,
   tablesSearch: '',
   tablesTreeOpenedSchemas: null,
@@ -120,3 +73,9 @@ export const getConnectionResourceStore = memoize((id: string) =>
 )
 
 export const getFilesStore = memoize((_id: string) => createStore<File[]>([]))
+
+export type NavigatorList = 'tables' | 'definitions'
+
+export const getNavigatorStore = memoize((_id: string) =>
+  createStore<NavigatorList>('tables')
+)

@@ -1,67 +1,126 @@
 import { toast } from 'sonner'
 
-import type { connectionResourceType } from '.'
-import { getConnectionResourceStore } from '.'
+import type { NavigatorList } from '.'
+import { getConnectionResourceStore, getNavigatorStore } from '.'
+import type { ConnectionTab, DefinitionsSection } from './tabs'
+import {
+  definitionsTabId,
+  isPreviewTab,
+  runnerTabId,
+  tableTabId,
+  VISUALIZER_TAB_ID,
+} from './tabs'
 
-export const addTab = (
+const setTabs = (
+  id: string,
+  update: (tabs: ConnectionTab[]) => ConnectionTab[]
+) => {
+  const store = getConnectionResourceStore(id)
+
+  store.set(
+    (state) =>
+      ({
+        ...state,
+        tabs: update(state.tabs),
+      }) satisfies typeof state
+  )
+}
+
+export const setActiveTab = (id: string, tabId: string | null) => {
+  const store = getConnectionResourceStore(id)
+
+  store.set(
+    (state) =>
+      ({
+        ...state,
+        activeTabId: tabId,
+      }) satisfies typeof state
+  )
+}
+
+export const setNavigator = (id: string, navigator: NavigatorList) => {
+  getNavigatorStore(id).set(navigator)
+}
+
+export const ensureTab = (id: string, tab: ConnectionTab) => {
+  setTabs(id, (tabs) =>
+    tabs.some((item) => item.id === tab.id) ? tabs : [...tabs, tab]
+  )
+}
+
+export const renameTab = (id: string, tabId: string, title: string | null) => {
+  setTabs(id, (tabs) =>
+    tabs.map((tab) => {
+      if (tab.id !== tabId) {
+        return tab
+      }
+
+      const { title: _, ...rest } = tab
+
+      return title ? { ...rest, title } : rest
+    })
+  )
+}
+
+export const openTab = (id: string, tab: ConnectionTab) => {
+  setTabs(id, (tabs) => {
+    const existingIndex = tabs.findIndex((item) => item.id === tab.id)
+
+    if (existingIndex !== -1) {
+      const existing = tabs[existingIndex]
+
+      if (!existing || !isPreviewTab(existing) || isPreviewTab(tab)) {
+        return tabs
+      }
+
+      return tabs.with(existingIndex, { ...existing, preview: false })
+    }
+
+    if (!isPreviewTab(tab)) {
+      return [...tabs, tab]
+    }
+
+    const previewIndex = tabs.findIndex(isPreviewTab)
+
+    return previewIndex === -1 ? [...tabs, tab] : tabs.with(previewIndex, tab)
+  })
+
+  return tab.id
+}
+
+export const openTableTab = (
   id: string,
   schema: string,
   table: string,
-  preview?: boolean
-) => {
-  const store = getConnectionResourceStore(id)
-  const state = store.get()
+  preview = false
+) =>
+  openTab(id, {
+    id: tableTabId(schema, table),
+    preview,
+    schema,
+    table,
+    type: 'table',
+  })
 
-  if (preview) {
-    const existingPreviewTabIndex = state.tabs.findIndex((tab) => tab.preview)
+export const openDefinitionsTab = (
+  id: string,
+  section: DefinitionsSection,
+  preview = false
+) =>
+  openTab(id, {
+    id: definitionsTabId(section),
+    preview,
+    section,
+    type: 'definitions',
+  })
 
-    if (existingPreviewTabIndex !== -1) {
-      store.set(
-        (prev) =>
-          ({
-            ...prev,
-            tabs:
-              prev.tabs.map((tab, index) =>
-                index === existingPreviewTabIndex
-                  ? { preview: true, schema, table }
-                  : tab
-              ) ?? [],
-          }) satisfies typeof state
-      )
-      return
-    }
+export const openRunnerTab = (id: string) =>
+  openTab(id, { id: runnerTabId(), type: 'runner' })
 
-    store.set(
-      (prev) =>
-        ({
-          ...prev,
-          tabs: [...prev.tabs, { preview: true, schema, table }],
-        }) satisfies typeof state
-    )
-    return
-  }
+export const openVisualizerTab = (id: string) =>
+  openTab(id, { id: VISUALIZER_TAB_ID, type: 'visualizer' })
 
-  if (
-    !state.tabs.some(
-      (tab) => tab.table === table && tab.schema === schema && !tab.preview
-    )
-  ) {
-    store.set(
-      (prev) =>
-        ({
-          ...prev,
-          tabs:
-            prev.tabs.map((tab) =>
-              tab.table === table && tab.schema === schema
-                ? { preview: false, schema, table }
-                : tab
-            ) ?? [],
-        }) satisfies typeof state
-    )
-  }
-}
-
-export const renameTab = (
+export const renameTableTab = (
   id: string,
   schema: string,
   table: string,
@@ -69,50 +128,49 @@ export const renameTab = (
 ) => {
   const store = getConnectionResourceStore(id)
 
-  const rename = <T extends { table: string; schema: string }>(tab: T) =>
-    tab.table === table && tab.schema === schema
-      ? { ...tab, table: newTableName }
-      : tab
-
   store.set(
     (state) =>
       ({
         ...state,
-        pinnedTables: state.pinnedTables.map(rename),
-        tabs: state.tabs.map(rename),
+        pinnedTables: state.pinnedTables.map((pinned) =>
+          pinned.table === table && pinned.schema === schema
+            ? { ...pinned, table: newTableName }
+            : pinned
+        ),
+        tabs: state.tabs.map((tab) =>
+          tab.type === 'table' && tab.table === table && tab.schema === schema
+            ? {
+                ...tab,
+                id: tableTabId(schema, newTableName),
+                table: newTableName,
+              }
+            : tab
+        ),
       }) satisfies typeof state
   )
 }
 
-export const removeTab = (id: string, schema: string, table: string) => {
-  const store = getConnectionResourceStore(id)
-
-  const remove = <T extends { table: string; schema: string }>(tab: T) =>
-    tab.table !== table || tab.schema !== schema
-
-  store.set(
-    (state) =>
-      ({
-        ...state,
-        pinnedTables: state.pinnedTables.filter(remove),
-        tabs: state.tabs.filter(remove) ?? [],
-      }) satisfies typeof state
-  )
+export const removeTab = (id: string, tabId: string) => {
+  setTabs(id, (tabs) => tabs.filter((tab) => tab.id !== tabId))
 }
 
-export const updateTabs = (
-  id: string,
-  newTabs: (typeof connectionResourceType.infer)['tabs']
-) => {
+export const removeTableTab = (id: string, schema: string, table: string) => {
   const store = getConnectionResourceStore(id)
 
   store.set(
     (state) =>
       ({
         ...state,
-        tabs: newTabs,
+        pinnedTables: state.pinnedTables.filter(
+          (pinned) => pinned.table !== table || pinned.schema !== schema
+        ),
+        tabs: state.tabs.filter((tab) => tab.id !== tableTabId(schema, table)),
       }) satisfies typeof state
   )
+}
+
+export const updateTabs = (id: string, tabs: ConnectionTab[]) => {
+  setTabs(id, () => tabs)
 }
 
 const MAX_PINNED_TABLES = 10
@@ -172,49 +230,4 @@ export const cleanupPinnedTables = (
 
     return state
   })
-}
-
-export const toggleChat = (id: string, isVisible?: boolean) => {
-  const store = getConnectionResourceStore(id)
-  store.set(
-    (state) =>
-      ({
-        ...state,
-        layout: {
-          ...state.layout,
-          chatVisible: isVisible ?? !state.layout.chatVisible,
-        } satisfies typeof state.layout,
-      }) satisfies typeof state
-  )
-}
-
-export const toggleResults = (id: string) => {
-  const store = getConnectionResourceStore(id)
-  store.set(
-    (state) =>
-      ({
-        ...state,
-        layout: {
-          ...state.layout,
-          resultsVisible: !state.layout.resultsVisible,
-        } satisfies typeof state.layout,
-      }) satisfies typeof state
-  )
-}
-
-export const setChatPosition = (
-  id: string,
-  position: (typeof connectionResourceType.infer)['layout']['chatPosition']
-) => {
-  const store = getConnectionResourceStore(id)
-  store.set(
-    (state) =>
-      ({
-        ...state,
-        layout: {
-          ...state.layout,
-          chatPosition: position,
-        } satisfies typeof state.layout,
-      }) satisfies typeof state
-  )
 }

@@ -33,6 +33,7 @@ export const createContext = (c: HonoContext<{ Variables: AppVariables }>) => {
     clientId: c.req.header('x-client-id'),
     headers: c.req.raw.headers,
     isAppOutdated,
+    isDesktop: c.req.header('x-desktop') === 'true',
     os,
     parsedAppVersion,
     request: c.req.raw,

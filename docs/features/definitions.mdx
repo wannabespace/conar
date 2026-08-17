@@ -1,10 +1,10 @@
 ---
-title: 'Definitions'
-sidebarTitle: 'Definitions'
-description: "Browse enums, indexes, constraints, functions, triggers, and policies in Tamery's Definitions view."
+title: 'Schema'
+sidebarTitle: 'Schema'
+description: "Browse enums, indexes, constraints, functions, triggers, and policies in Tamery's Schema list."
 ---
 
-The Definitions view lists schema objects beyond tables — enums, indexes, constraints, functions, triggers, and policies. It adapts to the database engine, showing only the object types that engine supports.
+The **Schema** list in the sidebar covers everything about your database except the table data itself — enums, indexes, constraints, functions, triggers, policies, and the [schema visualizer](/features/schema-visualizer). It adapts to the database engine, showing only the object types that engine supports.
 
 ## Definition types
 
@@ -42,15 +42,17 @@ The Definitions view lists schema objects beyond tables — enums, indexes, cons
 ## Navigating
 
 <Steps>
-  <Step title="Open the Definitions tab">
-    The sidebar shows the categories available for your database type.
+  <Step title="Click Schema at the top of the sidebar">
+    The sidebar slides to the schema list, grouped by kind and filterable. The
+    same row turns into **Tables** to take you back.
   </Step>
   <Step title="Choose a category">
-    Click a category (e.g. **Indexes**) to list that object type for the
-    selected schema.
+    Click a category (e.g. **Indexes**) to open it as a tab, listing that object
+    type for the selected schema. The **Overview** group at the top holds the
+    [schema visualizer](/features/schema-visualizer).
   </Step>
   <Step title="Switch schemas">
-    Use the **Schema** dropdown at the top of the sidebar.
+    Use the **Schema** dropdown at the top of the list.
   </Step>
   <Step title="Inspect an object">
     Click an item to expand its details inline — index columns, function bodies,
