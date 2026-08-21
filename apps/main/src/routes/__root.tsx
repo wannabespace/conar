@@ -8,9 +8,11 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { useEffect } from 'react'
 
 import { SEO } from '~/constants'
 import { ErrorPage } from '~/error-page'
+import { datafast } from '~/lib/datafast'
 import { seo, SITE_URL } from '~/utils/seo'
 
 import appCss from '@conar/ui/globals.css?url'
@@ -99,6 +101,10 @@ export const Route = createRootRouteWithContext<{
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext()
+
+  useEffect(() => {
+    datafast()
+  }, [])
 
   return (
     <html lang="en" suppressHydrationWarning>

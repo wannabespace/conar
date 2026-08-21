@@ -237,6 +237,9 @@ catalogs:
     cross-env:
       specifier: ^10.1.0
       version: 10.1.0
+    datafast:
+      specifier: ^3.0.18
+      version: 3.0.18
     date-fns:
       specifier: ^4.4.0
       version: 4.4.0
@@ -1037,6 +1040,9 @@ importers:
       better-auth:
         specifier: https://pkg.pr.new/better-auth@5a40d12
         version: https://pkg.pr.new/better-auth@5a40d12(@opentelemetry/api@1.9.1)(@tanstack/react-start@1.168.27(crossws@0.4.9(srvx@0.11.21))(esbuild@0.25.12)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(rolldown@1.1.5)(vite@8.1.4(@types/node@26.1.1)(esbuild@0.25.12)(jiti@2.7.0)(yaml@2.9.0)))(drizzle-kit@1.0.0-rc.4)(drizzle-orm@1.0.0-rc.4(@opentelemetry/api@1.9.1)(@types/pg@8.20.0)(arktype@2.2.3)(bun-types@1.3.14)(mysql2@3.22.6(@types/node@26.1.1))(pg@8.22.0)(valibot@1.4.2(typescript@7.0.2))(zod@4.4.3))(mysql2@3.22.6(@types/node@26.1.1))(pg@8.22.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(solid-js@1.9.14)
+      datafast:
+        specifier: 'catalog:'
+        version: 3.0.18(react@19.2.7)
       date-fns:
         specifier: 'catalog:'
         version: 4.4.0
@@ -6511,6 +6517,32 @@ packages:
 
   dagre-d3-es@7.0.14:
     resolution: {integrity: sha512-P4rFMVq9ESWqmOgK+dlXvOtLwYg0i7u0HBGJER0LZDJT2VHIPAMZ/riPxqJceWMStH5+E61QxFra9kIS3AqdMg==}
+
+  datafast@3.0.18:
+    resolution: {integrity: sha512-tlt2fmZ2xYfV66/i4UCd7c1eZWKrSOqiYOqrBCDWXBNgqvsmJg7c2tyMJgXJ2vYtu7+NA9VRiN8FVkyCxSy4ig==}
+    peerDependencies:
+      '@react-native-async-storage/async-storage': '>=1.0.0'
+      '@react-native-community/netinfo': '>=9.0.0'
+      '@react-navigation/native': '>=6.0.0'
+      expo-constants: '>=14.0.0'
+      expo-device: '>=5.0.0'
+      react: '>=17.0.0'
+      react-native: '>=0.64.0'
+    peerDependenciesMeta:
+      '@react-native-async-storage/async-storage':
+        optional: true
+      '@react-native-community/netinfo':
+        optional: true
+      '@react-navigation/native':
+        optional: true
+      expo-constants:
+        optional: true
+      expo-device:
+        optional: true
+      react:
+        optional: true
+      react-native:
+        optional: true
 
   date-fns@4.4.0:
     resolution: {integrity: sha512-+1UMbeh68lH1SegH83CGWwpb6OHHbpSgr3+s5Eww5M4CAgswBpoWS0AjTOfEJ33HiYKz1hdj/KTFprzXHmq/6w==}
@@ -15636,6 +15668,10 @@ snapshots:
     dependencies:
       d3: 7.9.0
       lodash-es: 4.18.1
+
+  datafast@3.0.18(react@19.2.7):
+    optionalDependencies:
+      react: 19.2.7
 
   date-fns@4.4.0: {}
 
