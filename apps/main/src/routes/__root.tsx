@@ -8,11 +8,9 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { useEffect } from 'react'
 
 import { SEO } from '~/constants'
 import { ErrorPage } from '~/error-page'
-import { datafast } from '~/lib/datafast'
 import { seo, SITE_URL } from '~/utils/seo'
 
 import appCss from '@conar/ui/globals.css?url'
@@ -46,6 +44,19 @@ const structuredData = {
     },
   ],
 }
+
+const analyticsScripts = [
+  {
+    defer: true,
+    src: 'https://assets.onedollarstats.com/stonks.js',
+  },
+  {
+    'defer': true,
+    'src': 'https://datafa.st/js/script.js',
+    'data-website-id': 'dfid_vIscqqXu4BxAFu9ObaBYl',
+    'data-domain': 'tamery.app',
+  },
+]
 
 if (import.meta.env.DEV) {
   import('react-scan').then(({ scan }) => scan())
@@ -84,14 +95,7 @@ export const Route = createRootRouteWithContext<{
           type: 'application/ld+json',
           children: JSON.stringify(structuredData),
         },
-        ...(import.meta.env.DEV
-          ? []
-          : [
-              {
-                defer: true,
-                src: 'https://assets.onedollarstats.com/stonks.js',
-              },
-            ]),
+        ...(import.meta.env.DEV ? [] : analyticsScripts),
       ],
     }
   },
@@ -101,10 +105,6 @@ export const Route = createRootRouteWithContext<{
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext()
-
-  useEffect(() => {
-    datafast()
-  }, [])
 
   return (
     <html lang="en" suppressHydrationWarning>
