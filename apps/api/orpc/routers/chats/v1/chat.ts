@@ -2,8 +2,6 @@ import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
 import { streamToEventIterator } from '@orpc/server'
-import { tools } from '@tamery/ai/tools'
-import type { AppUIMessage } from '@tamery/ai/tools/helpers'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import {
   convertToModelMessages,
@@ -16,6 +14,9 @@ import { type } from 'arktype'
 import { v7 } from 'uuid'
 
 import { orpc, subscriptionMiddleware } from '~/orpc'
+
+import type { AppUIMessage } from './message'
+import { tools } from './tools'
 
 const model = createRetryableModel({
   model: anthropic('claude-opus-4-8'),

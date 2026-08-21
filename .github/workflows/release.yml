@@ -9,17 +9,17 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Install Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
-          version: 11.21.0
+          version: 11.22.0
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile

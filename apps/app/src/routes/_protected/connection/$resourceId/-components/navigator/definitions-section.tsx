@@ -69,7 +69,7 @@ const sectionItem = (
   tabId: definitionsTabId(section),
 })
 
-const groups = (connection: Connection): SchemaGroup[] =>
+export const schemaGroups = (connection: Connection): SchemaGroup[] =>
   [
     {
       items: [
@@ -122,7 +122,7 @@ export const DefinitionsPanel = () => {
   const [search, setSearch] = useState('')
 
   const query = search.trim().toLowerCase()
-  const filtered = groups(connection)
+  const filtered = schemaGroups(connection)
     .map((group) => ({
       ...group,
       items: group.items.filter(({ label }) =>

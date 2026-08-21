@@ -2,7 +2,7 @@ import { useDebouncedCallback } from '@tamery/ui/hookas/use-debounced-callback'
 import { useScrollDirection } from '@tamery/ui/hookas/use-scroll-direction'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import type { ReactNode } from 'react'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import type { ColumnRenderer } from './'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from './constants'
@@ -122,28 +122,16 @@ export const TableProvider = ({
     return () => cancelAnimationFrame(rafId)
   }, [scrollRef, customColumnSizes, columns, measureDebounced])
 
-  const contextValue = useMemo(
-    () => ({
-      columns,
-      rows,
-      scrollDirection,
-      scrollRef,
-      tableHeight,
-      tableWidth,
-      virtualColumns,
-      virtualRows,
-    }),
-    [
-      scrollRef,
-      scrollDirection,
-      rows,
-      columns,
-      virtualRows,
-      virtualColumns,
-      tableHeight,
-      tableWidth,
-    ]
-  )
+  const contextValue = {
+    columns,
+    rows,
+    scrollDirection,
+    scrollRef,
+    tableHeight,
+    tableWidth,
+    virtualColumns,
+    virtualRows,
+  }
 
   return (
     <TableContext.Provider value={contextValue}>

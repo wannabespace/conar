@@ -37,7 +37,7 @@ export const NumberField = ({
 }): React.ReactElement => {
   const generatedId = React.useId()
   const fieldId = id ?? generatedId
-  const contextValue = React.useMemo(() => ({ fieldId }), [fieldId])
+  const contextValue = { fieldId }
 
   return (
     <NumberFieldContext.Provider value={contextValue}>

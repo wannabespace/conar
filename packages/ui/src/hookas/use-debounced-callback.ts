@@ -13,18 +13,15 @@ export const useDebouncedCallback = <T extends (...args: any[]) => any>(
     fnRef.current = fn
   })
 
-  const debouncedFn = React.useCallback(
-    (...args: Parameters<T>) => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current)
-      }
+  const debouncedFn = (...args: Parameters<T>) => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+    }
 
-      timerRef.current = setTimeout(() => {
-        fnRef.current(...args)
-      }, delay)
-    },
-    [delay]
-  )
+    timerRef.current = setTimeout(() => {
+      fnRef.current(...args)
+    }, delay)
+  }
 
   React.useEffect(
     () => () => {

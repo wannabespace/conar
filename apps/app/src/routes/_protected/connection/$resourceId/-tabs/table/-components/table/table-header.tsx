@@ -161,9 +161,12 @@ const Header = ({ className }: { className?: string }) => {
 
   useEffect(() => {
     queueMicrotask(() => {
-      scrollRef.current?.dispatchEvent(new Event('scroll'))
+      const el = scrollRef.current
+      if (el) {
+        setNotVisibleColumns(getNotVisibleColumns(el, columns, store.get()))
+      }
     })
-  }, [scrollRef, columns])
+  }, [columns, store, scrollRef])
 
   if (columns.length === 0) {
     return null

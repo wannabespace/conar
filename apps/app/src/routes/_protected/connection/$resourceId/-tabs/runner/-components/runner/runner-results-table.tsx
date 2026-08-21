@@ -15,7 +15,7 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { useDebouncedMemo } from '@tamery/ui/hookas/use-debounced-memo'
 import { cn } from '@tamery/ui/lib/utils'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import type { ExportDataProps } from '~/components/export-data'
 import { ExportData } from '~/components/export-data'
@@ -146,9 +146,8 @@ export const RunnerResultsTable = ({
     100
   )
 
-  const tableColumns = useMemo(
-    () => columns.map((column) => createResultColumn(column, connectionType)),
-    [columns, connectionType]
+  const tableColumns = columns.map((column) =>
+    createResultColumn(column, connectionType)
   )
 
   const getData: ExportDataProps['getData'] = ({ limit }) =>

@@ -15,34 +15,29 @@ export const useScrollInfo = (ref: React.RefObject<HTMLElement | null>) => {
     top: 0,
   })
 
-  const updateScrollInfo = React.useCallback(() => {
+  React.useEffect(() => {
     const el = ref.current
     if (!el) {
       return
     }
 
-    const {
-      scrollLeft,
-      scrollTop,
-      scrollWidth,
-      scrollHeight,
-      clientWidth,
-      clientHeight,
-    } = el
+    const updateScrollInfo = () => {
+      const {
+        scrollLeft,
+        scrollTop,
+        scrollWidth,
+        scrollHeight,
+        clientWidth,
+        clientHeight,
+      } = el
 
-    // oxlint-disable-next-line react/set-state-in-effect
-    setScrollInfo({
-      bottom: scrollHeight - (scrollTop + clientHeight),
-      left: scrollLeft,
-      right: scrollWidth - (scrollLeft + clientWidth),
-      top: scrollTop,
-    })
-  }, [ref])
-
-  React.useEffect(() => {
-    const el = ref.current
-    if (!el) {
-      return
+      // oxlint-disable-next-line react/set-state-in-effect
+      setScrollInfo({
+        bottom: scrollHeight - (scrollTop + clientHeight),
+        left: scrollLeft,
+        right: scrollWidth - (scrollLeft + clientWidth),
+        top: scrollTop,
+      })
     }
 
     updateScrollInfo()
@@ -54,7 +49,7 @@ export const useScrollInfo = (ref: React.RefObject<HTMLElement | null>) => {
       el.removeEventListener('scroll', updateScrollInfo)
       window.removeEventListener('resize', updateScrollInfo)
     }
-  }, [ref, updateScrollInfo])
+  }, [ref])
 
   return scrollInfo
 }

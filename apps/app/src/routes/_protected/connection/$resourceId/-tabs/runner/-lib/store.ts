@@ -8,10 +8,7 @@ import { runnerStoreKey } from '~/entities/connection/store'
 import { getEditorQueries } from '~/entities/connection/utils'
 
 export const runnerPageType = type({
-  chatId: 'string.uuid | null',
   layout: {
-    chatPosition: '"left" | "right"',
-    chatVisible: 'boolean',
     resultsVisible: 'boolean',
   },
   queriesToRun: type({
@@ -41,10 +38,7 @@ const DEFAULT_QUERY = [
 ].join('\n')
 
 const defaultState: typeof runnerPageType.infer = {
-  chatId: null,
   layout: {
-    chatPosition: 'right',
-    chatVisible: true,
     resultsVisible: true,
   },
   queriesToRun: [],
@@ -118,19 +112,6 @@ export const useRunnerPageStore = () => runnerPageStore(useRunnerTab())
 export const useEditorQueriesComputed = () =>
   getEditorQueriesComputed(useRunnerTab())
 
-export const toggleChat = (store: RunnerPageStore, isVisible?: boolean) => {
-  store.set(
-    (state) =>
-      ({
-        ...state,
-        layout: {
-          ...state.layout,
-          chatVisible: isVisible ?? !state.layout.chatVisible,
-        } satisfies typeof state.layout,
-      }) satisfies typeof state
-  )
-}
-
 export const toggleResults = (store: RunnerPageStore) => {
   store.set(
     (state) =>
@@ -139,22 +120,6 @@ export const toggleResults = (store: RunnerPageStore) => {
         layout: {
           ...state.layout,
           resultsVisible: !state.layout.resultsVisible,
-        } satisfies typeof state.layout,
-      }) satisfies typeof state
-  )
-}
-
-export const setChatPosition = (
-  store: RunnerPageStore,
-  chatPosition: (typeof runnerPageType.infer)['layout']['chatPosition']
-) => {
-  store.set(
-    (state) =>
-      ({
-        ...state,
-        layout: {
-          ...state.layout,
-          chatPosition,
         } satisfies typeof state.layout,
       }) satisfies typeof state
   )

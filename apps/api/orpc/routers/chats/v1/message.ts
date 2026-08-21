@@ -7,7 +7,7 @@ import type {
 } from 'ai'
 import { isToolUIPart as isToolUIPartAi } from 'ai'
 
-import type { tools } from '.'
+import type { tools } from './tools'
 
 export type UITools = InferUITools<typeof tools>
 

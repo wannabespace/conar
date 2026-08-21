@@ -36,7 +36,7 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 import { skipToken, useQuery } from '@tanstack/react-query'
 import { useParams, useRouter } from '@tanstack/react-router'
 import type { ComponentRef, ReactNode } from 'react'
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { useCollections } from '~/entities/collections'
@@ -149,6 +149,228 @@ const FooterHint = ({ keys, label }: { keys: ReactNode[]; label: string }) => (
   </span>
 )
 
+type TablesAndSchemas = Awaited<
+  ReturnType<
+    NonNullable<
+      ReturnType<typeof resourceTablesAndSchemasQueryOptions>['queryFn']
+    >
+  >
+>
+
+interface CurrentResource {
+  connection: Connection
+  connectionResource: ConnectionResourceType
+}
+
+const navigationEntries = (
+  router: ReturnType<typeof useRouter>,
+  current: CurrentResource | undefined
+): CommandEntry[] => [
+  {
+    value: 'Home',
+    keywords: ['dashboard'],
+    node: (
+      <CommandItem
+        key="Home"
+        value="Home"
+        onSelect={run(() => router.navigate({ to: '/' }))}
+      >
+        <RiDashboardLine className="text-muted-foreground" />
+        Home
+      </CommandItem>
+    ),
+  },
+  ...(current
+    ? CONNECTION_PAGES.map((page) => ({
+        value: `Open ${page.label}`,
+        keywords: ['open', 'go to', page.label],
+        node: (
+          <CommandItem
+            key={page.label}
+            value={`Open ${page.label}`}
+            onSelect={run(() =>
+              router.navigate({
+                to: '/connection/$resourceId/$tabId',
+                params: {
+                  resourceId: current.connectionResource.id,
+                  tabId: page.openTab(current.connectionResource.id),
+                },
+              })
+            )}
+          >
+            <page.icon className="text-muted-foreground" />
+            Open {page.label}
+          </CommandItem>
+        ),
+      }))
+    : []),
+  {
+    value: 'Add new connection',
+    keywords: ['new', 'create', 'database'],
+    node: (
+      <CommandItem
+        key="Add new connection"
+        value="Add new connection"
+        onSelect={run(() => router.navigate({ to: '/create' }))}
+      >
+        <RiAddLine className="text-muted-foreground" />
+        Add new connection…
+      </CommandItem>
+    ),
+  },
+]
+
+const appearanceEntries = (
+  resolvedTheme: ReturnType<typeof useResolvedTheme>
+): CommandEntry[] => [
+  {
+    value: `Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} theme`,
+    keywords: ['theme', 'dark', 'light', 'mode'],
+    node: (
+      <CommandItem
+        key="switch-theme"
+        value={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} theme`}
+        onSelect={run(() =>
+          themeStore.set(resolvedTheme === 'dark' ? 'light' : 'dark')
+        )}
+      >
+        {resolvedTheme === 'dark' ? (
+          <RiSunLine className="text-muted-foreground" />
+        ) : (
+          <RiMoonLine className="text-muted-foreground" />
+        )}
+        Switch to {resolvedTheme === 'dark' ? 'light' : 'dark'} theme
+      </CommandItem>
+    ),
+  },
+  {
+    value: 'Use system theme',
+    keywords: ['theme', 'system', 'auto'],
+    node: (
+      <CommandItem
+        key="system-theme"
+        value="Use system theme"
+        onSelect={run(() => themeStore.set('system'))}
+      >
+        <RiComputerLine className="text-muted-foreground" />
+        Use system theme
+      </CommandItem>
+    ),
+  },
+]
+
+const applicationEntries = (
+  current: CurrentResource | undefined
+): CommandEntry[] => [
+  ...(current
+    ? [
+        {
+          value: 'Toggle query logger',
+          keywords: ['logs', 'queries', 'history'],
+          node: (
+            <CommandItem
+              key="query-logger"
+              value="Toggle query logger"
+              onSelect={run(() => {
+                const store = getConnectionResourceStore(
+                  current.connectionResource.id
+                )
+                store.set(
+                  (state) =>
+                    ({
+                      ...state,
+                      loggerOpened: !state.loggerOpened,
+                    }) satisfies typeof state
+                )
+              })}
+            >
+              <RiHistoryLine className="text-muted-foreground" />
+              Toggle query logger
+            </CommandItem>
+          ),
+        },
+      ]
+    : []),
+  ...(window.electron
+    ? [
+        {
+          value: 'Check for updates',
+          keywords: ['update', 'version'],
+          node: (
+            <CommandItem
+              key="check-updates"
+              value="Check for updates"
+              onSelect={run(() => checkForUpdates())}
+            >
+              <RiDownloadLine className="text-muted-foreground" />
+              Check for updates…
+            </CommandItem>
+          ),
+        },
+      ]
+    : []),
+  {
+    value: 'Reload window',
+    keywords: ['restart', 'refresh'],
+    node: (
+      <CommandItem
+        key="reload-window"
+        value="Reload window"
+        onSelect={() => window.location.reload()}
+      >
+        <RiRefreshLine className="text-muted-foreground" />
+        Reload window
+      </CommandItem>
+    ),
+  },
+]
+
+const tableEntries = (
+  router: ReturnType<typeof useRouter>,
+  current: CurrentResource | undefined,
+  tablesAndSchemas: TablesAndSchemas | undefined
+): CommandEntry[] =>
+  (tablesAndSchemas?.schemas ?? []).flatMap((schema) =>
+    schema.tables.map((table) => {
+      const Icon =
+        TABLE_TYPE_ICONS[table.type as keyof typeof TABLE_TYPE_ICONS] ??
+        RiTableLine
+
+      return {
+        value: `${schema.name}.${table.name}`,
+        keywords: [schema.name, table.name],
+        node: (
+          <CommandItem
+            key={`${schema.name}.${table.name}`}
+            value={`${schema.name}.${table.name}`}
+            onSelect={run(() => {
+              if (!current) {
+                return
+              }
+              router.navigate({
+                to: '/connection/$resourceId/$tabId',
+                params: {
+                  resourceId: current.connectionResource.id,
+                  tabId: openTableTab(
+                    current.connectionResource.id,
+                    schema.name,
+                    table.name
+                  ),
+                },
+              })
+            })}
+          >
+            <Icon className="text-muted-foreground" />
+            <span data-mask className="min-w-0 flex-1 truncate">
+              <span className="text-muted-foreground">{schema.name}.</span>
+              {table.name}
+            </span>
+          </CommandItem>
+        ),
+      }
+    })
+  )
+
 export const ActionsCenter = () => {
   const { connectionsCollection, connectionsResourcesCollection } =
     useCollections()
@@ -208,251 +430,52 @@ export const ActionsCenter = () => {
     throwOnError: false,
   })
 
-  const sections = useMemo<CommandSection[]>(() => {
-    const navigation: CommandEntry[] = [
-      {
-        value: 'Home',
-        keywords: ['dashboard'],
-        node: (
-          <CommandItem
-            key="Home"
-            value="Home"
-            onSelect={run(() => router.navigate({ to: '/' }))}
-          >
-            <RiDashboardLine className="text-muted-foreground" />
-            Home
-          </CommandItem>
-        ),
-      },
-      ...(current
-        ? CONNECTION_PAGES.map((page) => ({
-            value: `Open ${page.label}`,
-            keywords: ['open', 'go to', page.label],
-            node: (
-              <CommandItem
-                key={page.label}
-                value={`Open ${page.label}`}
-                onSelect={run(() =>
-                  router.navigate({
-                    to: '/connection/$resourceId/$tabId',
-                    params: {
-                      resourceId: current.connectionResource.id,
-                      tabId: page.openTab(current.connectionResource.id),
-                    },
-                  })
-                )}
-              >
-                <page.icon className="text-muted-foreground" />
-                Open {page.label}
-              </CommandItem>
-            ),
-          }))
-        : []),
-      {
-        value: 'Add new connection',
-        keywords: ['new', 'create', 'database'],
-        node: (
-          <CommandItem
-            key="Add new connection"
-            value="Add new connection"
-            onSelect={run(() => router.navigate({ to: '/create' }))}
-          >
-            <RiAddLine className="text-muted-foreground" />
-            Add new connection…
-          </CommandItem>
-        ),
-      },
-    ]
+  const navigation = navigationEntries(router, current)
+  const appearance = appearanceEntries(resolvedTheme)
+  const application = applicationEntries(current)
+  const connections: CommandEntry[] = data.map(
+    ({ connection, connectionResource }) => ({
+      value: `${connection.name} - ${connectionResource.name}`,
+      keywords: connection.label ? [connection.label] : undefined,
+      node: (
+        <ConnectionResource
+          key={connectionResource.id}
+          connection={connection}
+          connectionResource={connectionResource}
+        />
+      ),
+    })
+  )
 
-    const appearance: CommandEntry[] = [
-      {
-        value: `Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} theme`,
-        keywords: ['theme', 'dark', 'light', 'mode'],
-        node: (
-          <CommandItem
-            key="switch-theme"
-            value={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} theme`}
-            onSelect={run(() =>
-              themeStore.set(resolvedTheme === 'dark' ? 'light' : 'dark')
-            )}
-          >
-            {resolvedTheme === 'dark' ? (
-              <RiSunLine className="text-muted-foreground" />
-            ) : (
-              <RiMoonLine className="text-muted-foreground" />
-            )}
-            Switch to {resolvedTheme === 'dark' ? 'light' : 'dark'} theme
-          </CommandItem>
-        ),
-      },
-      {
-        value: 'Use system theme',
-        keywords: ['theme', 'system', 'auto'],
-        node: (
-          <CommandItem
-            key="system-theme"
-            value="Use system theme"
-            onSelect={run(() => themeStore.set('system'))}
-          >
-            <RiComputerLine className="text-muted-foreground" />
-            Use system theme
-          </CommandItem>
-        ),
-      },
-    ]
+  const tables = tableEntries(router, current, tablesAndSchemas)
 
-    const application: CommandEntry[] = [
-      ...(current
-        ? [
-            {
-              value: 'Toggle query logger',
-              keywords: ['logs', 'queries', 'history'],
-              node: (
-                <CommandItem
-                  key="query-logger"
-                  value="Toggle query logger"
-                  onSelect={run(() => {
-                    const store = getConnectionResourceStore(
-                      current.connectionResource.id
-                    )
-                    store.set(
-                      (state) =>
-                        ({
-                          ...state,
-                          loggerOpened: !state.loggerOpened,
-                        }) satisfies typeof state
-                    )
-                  })}
-                >
-                  <RiHistoryLine className="text-muted-foreground" />
-                  Toggle query logger
-                </CommandItem>
-              ),
-            },
-          ]
-        : []),
-      ...(window.electron
-        ? [
-            {
-              value: 'Check for updates',
-              keywords: ['update', 'version'],
-              node: (
-                <CommandItem
-                  key="check-updates"
-                  value="Check for updates"
-                  onSelect={run(() => checkForUpdates())}
-                >
-                  <RiDownloadLine className="text-muted-foreground" />
-                  Check for updates…
-                </CommandItem>
-              ),
-            },
-          ]
-        : []),
-      {
-        value: 'Reload window',
-        keywords: ['restart', 'refresh'],
-        node: (
-          <CommandItem
-            key="reload-window"
-            value="Reload window"
-            onSelect={() => window.location.reload()}
-          >
-            <RiRefreshLine className="text-muted-foreground" />
-            Reload window
-          </CommandItem>
-        ),
-      },
-    ]
+  const sections: CommandSection[] = [
+    { heading: 'Navigation', entries: navigation },
+    { heading: 'Appearance', entries: appearance },
+    { heading: 'Application', entries: application },
+    ...(connections.length > 0
+      ? [{ heading: 'Connections', entries: connections }]
+      : []),
+    ...(current && tables.length > 0
+      ? [
+          {
+            heading: `${current.connection.name} - ${current.connectionResource.name || CONNECTION_RESOURCE_ROOT_LABEL} Tables`,
+            entries: tables,
+          },
+        ]
+      : []),
+  ]
 
-    const connections: CommandEntry[] = data.map(
-      ({ connection, connectionResource }) => ({
-        value: `${connection.name} - ${connectionResource.name}`,
-        keywords: connection.label ? [connection.label] : undefined,
-        node: (
-          <ConnectionResource
-            key={connectionResource.id}
-            connection={connection}
-            connectionResource={connectionResource}
-          />
-        ),
-      })
-    )
-
-    const tables: CommandEntry[] = (tablesAndSchemas?.schemas ?? []).flatMap(
-      (schema) =>
-        schema.tables.map((table) => {
-          const Icon =
-            TABLE_TYPE_ICONS[table.type as keyof typeof TABLE_TYPE_ICONS] ??
-            RiTableLine
-
-          return {
-            value: `${schema.name}.${table.name}`,
-            keywords: [schema.name, table.name],
-            node: (
-              <CommandItem
-                key={`${schema.name}.${table.name}`}
-                value={`${schema.name}.${table.name}`}
-                onSelect={run(() => {
-                  if (!current) {
-                    return
-                  }
-                  router.navigate({
-                    to: '/connection/$resourceId/$tabId',
-                    params: {
-                      resourceId: current.connectionResource.id,
-                      tabId: openTableTab(
-                        current.connectionResource.id,
-                        schema.name,
-                        table.name
-                      ),
-                    },
-                  })
-                })}
-              >
-                <Icon className="text-muted-foreground" />
-                <span data-mask className="min-w-0 flex-1 truncate">
-                  <span className="text-muted-foreground">{schema.name}.</span>
-                  {table.name}
-                </span>
-              </CommandItem>
-            ),
-          }
-        })
-    )
-
-    return [
-      { heading: 'Navigation', entries: navigation },
-      { heading: 'Appearance', entries: appearance },
-      { heading: 'Application', entries: application },
-      ...(connections.length > 0
-        ? [{ heading: 'Connections', entries: connections }]
-        : []),
-      ...(current && tables.length > 0
-        ? [
-            {
-              heading: `${current.connection.name} - ${current.connectionResource.name || CONNECTION_RESOURCE_ROOT_LABEL} Tables`,
-              entries: tables,
-            },
-          ]
-        : []),
-    ]
-  }, [current, data, tablesAndSchemas, resolvedTheme, router])
-
-  const results = useMemo(() => {
-    if (!search.trim()) {
-      return null
-    }
-
-    return sections
-      .flatMap((section) => section.entries)
-      .map((entry) => ({
-        entry,
-        score: defaultFilter(entry.value, search, entry.keywords),
-      }))
-      .filter((result) => result.score > 0)
-      .toSorted((a, b) => b.score - a.score)
-  }, [search, sections])
+  const results = search.trim()
+    ? sections
+        .flatMap((section) => section.entries)
+        .map((entry) => ({
+          entry,
+          score: defaultFilter(entry.value, search, entry.keywords),
+        }))
+        .filter((result) => result.score > 0)
+        .toSorted((a, b) => b.score - a.score)
+    : null
 
   return (
     <CommandDialog open={isOpen} onOpenChange={setIsActionCenterOpen}>

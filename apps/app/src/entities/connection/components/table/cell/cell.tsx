@@ -83,7 +83,7 @@ const SetNullAlertDialog = ({
 }
 
 const ForeignButton = (props: ComponentProps<'button'>) => (
-  <Button variant="outline" size="icon-xs" {...props}>
+  <Button variant="ghost" size="icon-xs" {...props}>
     <RiArrowRightUpLine className="text-muted-foreground size-3" />
   </Button>
 )
@@ -94,7 +94,7 @@ const ReferenceButton = ({
   ...props
 }: ComponentProps<typeof Button>) => (
   <Button
-    variant="outline"
+    variant="ghost"
     size="xs"
     className={cn('px-1.5!', className)}
     {...props}

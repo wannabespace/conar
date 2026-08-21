@@ -174,6 +174,30 @@ const renderWebNodes = (nodes: AppMenuNode[]): ReactNode =>
     }
   })
 
+const popupNativeMenu = async ({
+  nativeItems,
+  handlers,
+  onClose,
+}: {
+  nativeItems: NativeMenuNode[]
+  handlers: Map<string, () => void>
+  onClose: () => void
+}) => {
+  let clickedId: MenuPopupResult = null
+  try {
+    const electronMenu = window.electron?.menu
+    if (!electronMenu) {
+      throw new Error('Native menu is not available')
+    }
+    clickedId = await electronMenu.popup({ items: nativeItems })
+  } finally {
+    if (clickedId !== null) {
+      handlers.get(clickedId)?.()
+    }
+    onClose()
+  }
+}
+
 const toNativeMenu = (
   nodes: AppMenuNode[]
 ): {
@@ -290,20 +314,14 @@ export const AppContextMenu = ({
     setIsNativeOpen(true)
     onOpenChange?.(true)
 
-    let clickedId: MenuPopupResult = null
-    try {
-      const electronMenu = window.electron?.menu
-      if (!electronMenu) {
-        throw new Error('Native menu is not available')
-      }
-      clickedId = await electronMenu.popup({ items: nativeItems })
-    } finally {
-      if (clickedId !== null) {
-        handlers.get(clickedId)?.()
-      }
-      setIsNativeOpen(false)
-      onOpenChange?.(false)
-    }
+    await popupNativeMenu({
+      handlers,
+      nativeItems,
+      onClose: () => {
+        setIsNativeOpen(false)
+        onOpenChange?.(false)
+      },
+    })
   }
 
   const triggerProps = {

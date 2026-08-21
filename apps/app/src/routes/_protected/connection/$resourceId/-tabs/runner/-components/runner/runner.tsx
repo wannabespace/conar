@@ -32,7 +32,7 @@ import { count, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 
@@ -157,50 +157,41 @@ export const Runner = () => {
     runnerQueryOptions({ connectionResource, tabId })
   )
 
-  const runQueries = useCallback(
-    (queries: QueryToRun[]) => {
-      store.set(
-        (state) =>
-          ({
-            ...state,
-            queriesToRun: queries,
-          }) satisfies typeof state
-      )
-      refetchRunner()
-    },
-    [store, refetchRunner]
-  )
+  const runQueries = (queries: QueryToRun[]) => {
+    store.set(
+      (state) =>
+        ({
+          ...state,
+          queriesToRun: queries,
+        }) satisfies typeof state
+    )
+    refetchRunner()
+  }
 
-  const runQueriesWithAlert = useCallback(
-    (editorQueries: QueryToRun[]) => {
-      const hasDangerousKeywords = editorQueries.some(({ query }) =>
-        hasDangerousSqlKeywords(query)
-      )
+  const runQueriesWithAlert = (editorQueries: QueryToRun[]) => {
+    const hasDangerousKeywords = editorQueries.some(({ query }) =>
+      hasDangerousSqlKeywords(query)
+    )
 
-      if (hasDangerousKeywords) {
-        alertDialogRef.current?.confirm(
-          editorQueries.map(({ query }) => query),
-          () => runQueries(editorQueries)
-        )
-      } else {
-        runQueries(editorQueries)
-      }
-    },
-    [runQueries]
-  )
+    if (hasDangerousKeywords) {
+      alertDialogRef.current?.confirm(
+        editorQueries.map(({ query }) => query),
+        () => runQueries(editorQueries)
+      )
+    } else {
+      runQueries(editorQueries)
+    }
+  }
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
     id: `runner-layout-${connectionResource.id}-${tabId}`,
     storage: localStorage,
   })
 
-  const contextValue = useMemo(
-    () => ({
-      run: runQueriesWithAlert,
-      save: (q: string) => saveQueryDialogRef.current?.open(q),
-    }),
-    [runQueriesWithAlert]
-  )
+  const contextValue = {
+    run: runQueriesWithAlert,
+    save: (q: string) => saveQueryDialogRef.current?.open(q),
+  }
 
   return (
     <RunnerContext.Provider value={contextValue}>

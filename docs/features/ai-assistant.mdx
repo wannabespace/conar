@@ -1,83 +1,78 @@
 ---
 title: 'AI assistant'
 sidebarTitle: 'AI assistant'
-description: "Tamery's schema-aware AI assistant writes, explains, fixes, and optimizes SQL, and powers natural-language filters and data seeding."
+description: "Tamery's schema-aware AI assistant explores your database, writes and runs SQL, drives the app, and powers natural-language filters and data seeding."
 ---
 
-The AI assistant has full context of your connected database — tables, column types, relationships — so it writes accurate SQL without you pasting schema into every message. It's available in the chat panel and powers inline editor and table-browser features.
+The assistant has full context of your connected database — schemas, tables, column types, relationships — so it writes accurate SQL without you pasting schema into every message. It lives in its own panel beside whatever you have open, and it can act on the app: opening tables, filling a SQL runner, applying filters.
 
-<Note>
-  The assistant only runs read-only queries through its database tool. It never
-  runs `INSERT`, `UPDATE`, `DELETE`, or `DROP` on its own — data changes go
-  through the table browser or SQL editor.
-</Note>
+## Opening the panel
 
-## Chat
+Click the **sparkle** icon at the end of the tab strip, or press <kbd>⌘</kbd> <kbd>L</kbd> (<kbd>Ctrl</kbd> <kbd>L</kbd> on Windows and Linux). Drag the panel's left edge to resize it; double-click that edge to reset the width.
 
-Open the chat panel from the connection toolbar. Ask in plain English:
+The panel belongs to the connection, not to a tab — it stays open while you move between tables, runners, the schema browser, and the diagram. Each connection keeps its own chats; use **＋** for a new one and the **history** icon to reopen an earlier one.
+
+## Asking
+
+Ask in plain English:
 
 - _"Which tables store customer order data?"_
 - _"Explain this query and whether it can be optimized."_
 - _"Find users who signed up in the last 7 days but haven't ordered."_
 
-It keeps conversation context within a session, so follow-ups like _"now only EU users"_ work.
+Follow-ups like _"now only EU users"_ work — the conversation keeps its context.
+
+## What it can do
+
+<CardGroup cols={2}>
+  <Card title="Explore the schema" icon="magnifying-glass">
+    List schemas, tables, columns, indexes, constraints, enums, triggers,
+    functions, and policies — and search across them by name.
+  </Card>
+  <Card title="Read your data" icon="database">
+    Run SELECTs, count rows, sample distinct values, and read query plans to
+    check its own answers.
+  </Card>
+  <Card title="Write and run SQL" icon="pen-nib">
+    Describe the data; get a complete query against your real schema, opened in
+    a SQL runner you can edit and run.
+  </Card>
+  <Card title="Drive the app" icon="table">
+    Open a table, filter and sort it, open the schema browser or the diagram —
+    so the answer lands on screen, not only in chat.
+  </Card>
+  <Card title="Change data" icon="circle-exclamation">
+    Insert, update, delete, and schema changes — each one pauses for your
+    approval first.
+  </Card>
+  <Card title="Generate code" icon="code">
+    Turn a table into a Drizzle, Kysely, Prisma, Zod, TypeScript, or SQL model.
+  </Card>
+</CardGroup>
+
+## Approving changes
+
+Reads run on their own. Anything that changes data or schema — `INSERT`, `UPDATE`, `DELETE`, `CREATE INDEX`, `RENAME`, `DROP` — stops and shows you a card with the exact statement, the assistant's reason, and a warning when a write has no filter and would touch every row. Nothing runs until you choose **Run it**.
+
+<Note>
+  Your credentials never leave your device: the assistant's database tools run
+  in the app, against your connection, exactly like a query you type yourself.
+</Note>
 
 ## Models
 
 The assistant runs on a frontier model automatically — nothing to pick or configure. If the primary model is overloaded, Tamery falls back to another top model to stay responsive.
 
-<CardGroup cols={3}>
+<CardGroup cols={2}>
   <Card title="Claude" icon="robot" href="/account/plans">
     Anthropic's Claude (Opus) is the default.
   </Card>
   <Card title="GPT" icon="robot" href="/account/plans">
-    OpenAI's GPT is an automatic fallback.
-  </Card>
-  <Card title="Gemini" icon="robot" href="/account/plans">
-    Google's Gemini is also a fallback.
+    OpenAI's GPT is the automatic fallback.
   </Card>
 </CardGroup>
 
 The assistant is a subscription feature. See [Plans](/account/plans).
-
-## What it can do
-
-<CardGroup cols={2}>
-  <Card
-    title="Write SQL from English"
-    icon="pen-nib"
-    href="/features/sql-editor"
-  >
-    Describe the data; get a complete query using your real schema.
-  </Card>
-  <Card
-    title="Explain queries"
-    icon="magnifying-glass"
-    href="/features/sql-editor"
-  >
-    Paste SQL and ask for a step-by-step explanation.
-  </Card>
-  <Card
-    title="Fix errors"
-    icon="circle-exclamation"
-    href="/features/sql-editor"
-  >
-    Share an error (or use the inline Fix button) for a corrected query.
-  </Card>
-  <Card title="Optimize / refactor" icon="sliders" href="/features/sql-editor">
-    Add a JOIN, introduce a CTE, rewrite a subquery as a window function.
-  </Card>
-  <Card title="Query your database" icon="database" href="/features/sql-editor">
-    Runs SELECTs to check counts or sample data when answering.
-  </Card>
-  <Card
-    title="Filters from English"
-    icon="filter"
-    href="/features/table-browser"
-  >
-    Describe the rows you want; get structured filter conditions.
-  </Card>
-</CardGroup>
 
 ## Enhance prompt
 
@@ -113,7 +108,7 @@ Open a table, click **Seed**, set a row count. Tamery picks generators from colu
 
 | Feature                  | Free    | Subscription |
 | ------------------------ | ------- | ------------ |
-| AI chat                  | —       | ✓            |
+| AI assistant             | —       | ✓            |
 | Inline SQL generation    | —       | ✓            |
 | Fix SQL                  | —       | ✓            |
 | Modify SQL               | —       | ✓            |

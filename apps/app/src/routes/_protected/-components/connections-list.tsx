@@ -458,7 +458,7 @@ const ConnectionCard = ({
           'group relative flex h-11 items-center gap-3 px-3 transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]',
           selectedResource &&
             canOpenResource &&
-            'hover:bg-accent has-[[data-resource-link]:hover]:bg-accent'
+            'hover:bg-popover has-[[data-resource-link]:hover]:bg-popover'
         )}
       >
         {selectedResource && canOpenResource && (

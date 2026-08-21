@@ -47,15 +47,15 @@ export const Monaco = ({
 
   const onChangeEvent = useEffectEvent(onChange)
   const getOptionsEvent = useEffectEvent(
-    () =>
+    (editorLanguage?: string) =>
       ({
         automaticLayout: true,
         fontFamily: '"Geist Mono", monospace',
-        language,
+        language: editorLanguage,
         minimap: { enabled: false },
         tabSize: 2,
         value: (() => {
-          if (language?.includes('json')) {
+          if (editorLanguage?.includes('json')) {
             try {
               return JSON.stringify(JSON.parse(value), null, 2)
             } catch {
@@ -63,7 +63,7 @@ export const Monaco = ({
             }
           }
 
-          if (language?.includes('xml')) {
+          if (editorLanguage?.includes('xml')) {
             try {
               return formatXml(value)
             } catch {
@@ -84,7 +84,7 @@ export const Monaco = ({
 
     monacoInstanceRef.current = monaco.editor.create(
       elementRef.current,
-      getOptionsEvent()
+      getOptionsEvent(language)
     )
 
     if (ref) {
@@ -106,7 +106,7 @@ export const Monaco = ({
       subscription.dispose()
       monacoInstanceRef.current?.dispose()
     }
-  }, [elementRef, language, ref])
+  }, [language, ref])
 
   useMountedEffect(() => {
     if (!monacoInstanceRef.current || !options) {

@@ -1,29 +1,26 @@
-import { google } from '@ai-sdk/google'
 import { FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT } from '@tamery/shared/constants'
 import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@tamery/shared/filters'
-import { generateText, Output } from 'ai'
+import { abortControllerFrom } from '@tamery/shared/utils/helpers'
+import { chat } from '@tanstack/ai'
 import { type } from 'arktype'
 import { addDays, differenceInSeconds, endOfMonth, format } from 'date-fns'
-import * as z from 'zod/mini'
 
+import { fastAdapter } from '~/lib/ai'
 import { redis } from '~/lib/redis'
 import { optionalSubscriptionMiddleware, orpc } from '~/orpc'
 
-// Arktype doesn't work here, so we use Zod
-const schema = z.object({
-  filters: z.array(
-    z.object({
-      column: z.string(),
-      operator: z.enum(SQL_FILTERS_LIST.map((filter) => filter.operator)),
-      values: z.array(z.string()),
-    })
-  ),
-  orderBy: z.array(
-    z.object({
-      column: z.string(),
-      direction: z.enum(['ASC', 'DESC']),
-    })
-  ),
+const schema = type({
+  filters: type({
+    column: 'string',
+    operator: type.enumerated(
+      ...SQL_FILTERS_LIST.map((filter) => filter.operator)
+    ),
+    values: 'string[]',
+  }).array(),
+  orderBy: type({
+    column: 'string',
+    direction: "'ASC' | 'DESC'",
+  }).array(),
 })
 
 const redisUsage = {
@@ -83,44 +80,42 @@ export const filters = orpc
       }
     }
 
-    const { output: result } = await generateText({
-      abortSignal: signal,
-      model: google('gemini-flash-latest'),
-      output: Output.object({
-        description:
-          'An object with filters array and orderBy array; each filter has column, operator, and values; each orderBy entry has column and direction.',
-        schema,
-      }),
-      prompt: input.prompt,
-      system: [
-        'You are a filters and ordering generator that converts natural language queries into database filters and ordering instructions.',
-        'You should understand the sense of the prompt as much as possible.',
-        'Each of your filters or ordering responses will replace the previous ones.',
-        '',
-        'Guidelines:',
-        '- Create multiple filters when the query has multiple conditions',
-        '- Use exact column names as provided in the context',
-        '- Choose the most appropriate operator for each condition',
-        '- Format values correctly based on column types (strings, numbers, dates, etc.)',
-        '- For enum columns, ensure values match the available options',
-        '- For exact days use >= and <= operators',
-        "- If user asks 'empty' and the column is a string, use empty string as item in values array",
-        '- If context already contains a filter, you can use it as reference to generate a new filter',
-        '- User can paste only the value, you should try to understand to which column the value belongs',
-        '- Try to generate at least one filter unless the prompt is completely unclear',
-        '',
-        'Ordering:',
-        '- If the user requests sorting or ordering (e.g., "sort by date descending", "order by name ascending"), generate an orderBy array.',
-        '- Use the exact column names from the context for ordering.',
-        '- Each orderBy entry should have "column" (the column name) and "direction" ("ASC" or "DESC").',
-        '- If no ordering is specified in the prompt, return an empty orderBy array.',
-        '',
-        `Current time: ${new Date().toISOString()}`,
-        `Available operators: ${JSON.stringify(SQL_FILTERS_GROUPED, null, 2)}`,
-        '',
-        'Table context:',
-        input.context,
-      ].join('\n'),
+    const result = await chat({
+      abortController: abortControllerFrom(signal),
+      adapter: fastAdapter,
+      messages: [{ content: input.prompt, role: 'user' }],
+      outputSchema: schema,
+      systemPrompts: [
+        [
+          'You are a filters and ordering generator that converts natural language queries into database filters and ordering instructions.',
+          'You should understand the sense of the prompt as much as possible.',
+          'Each of your filters or ordering responses will replace the previous ones.',
+          '',
+          'Guidelines:',
+          '- Create multiple filters when the query has multiple conditions',
+          '- Use exact column names as provided in the context',
+          '- Choose the most appropriate operator for each condition',
+          '- Format values correctly based on column types (strings, numbers, dates, etc.)',
+          '- For enum columns, ensure values match the available options',
+          '- For exact days use >= and <= operators',
+          "- If user asks 'empty' and the column is a string, use empty string as item in values array",
+          '- If context already contains a filter, you can use it as reference to generate a new filter',
+          '- User can paste only the value, you should try to understand to which column the value belongs',
+          '- Try to generate at least one filter unless the prompt is completely unclear',
+          '',
+          'Ordering:',
+          '- If the user requests sorting or ordering (e.g., "sort by date descending", "order by name ascending"), generate an orderBy array.',
+          '- Use the exact column names from the context for ordering.',
+          '- Each orderBy entry should have "column" (the column name) and "direction" ("ASC" or "DESC").',
+          '- If no ordering is specified in the prompt, return an empty orderBy array.',
+          '',
+          `Current time: ${new Date().toISOString()}`,
+          `Available operators: ${JSON.stringify(SQL_FILTERS_GROUPED, null, 2)}`,
+          '',
+          'Table context:',
+          input.context,
+        ].join('\n'),
+      ],
     })
 
     const orderBy = Object.fromEntries(

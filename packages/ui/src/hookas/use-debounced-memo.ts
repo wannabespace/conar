@@ -1,6 +1,7 @@
 import * as React from 'react'
 
 import { useDebouncedCallback } from './use-debounced-callback'
+import { areDepsEqual } from './use-mounted-effect'
 
 export const useDebouncedMemo = <T>(
   factory: () => T,
@@ -8,6 +9,7 @@ export const useDebouncedMemo = <T>(
   delay: number
 ) => {
   const [state, setState] = React.useState<T>(() => factory())
+  const previousDepsRef = React.useRef<React.DependencyList | null>(null)
 
   const factoryEvent = React.useEffectEvent(factory)
 
@@ -21,12 +23,15 @@ export const useDebouncedMemo = <T>(
   )
 
   React.useEffect(() => {
+    const previousDeps = previousDepsRef.current
+    previousDepsRef.current = deps
+
+    if (areDepsEqual(previousDeps, deps)) {
+      return
+    }
+
     debouncedSetState(factoryEvent())
-  }, [
-    debouncedSetState,
-    // oxlint-disable-next-line react/exhaustive-deps
-    ...deps,
-  ])
+  })
 
   return state
 }

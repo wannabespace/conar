@@ -120,7 +120,7 @@ const ChartContainer = ({
 }) => {
   const uniqueId = React.useId()
   const chartId = `chart-${id ?? uniqueId.replaceAll(':', '')}`
-  const contextValue = React.useMemo(() => ({ config }), [config])
+  const contextValue = { config }
 
   return (
     <ChartContext.Provider value={contextValue}>
@@ -260,6 +260,55 @@ const ChartTooltipItem = ({
   )
 }
 
+type TooltipContentProps = RechartsPrimitive.DefaultTooltipContentProps<
+  TooltipValueType,
+  TooltipNameType
+>
+
+const renderTooltipLabel = ({
+  config,
+  hideLabel,
+  label,
+  labelClassName,
+  labelFormatter,
+  labelKey,
+  payload,
+}: {
+  config: ChartConfig
+  hideLabel: boolean
+  label: TooltipContentProps['label']
+  labelClassName?: string
+  labelFormatter?: TooltipContentProps['labelFormatter']
+  labelKey?: string
+  payload: TooltipContentProps['payload']
+}) => {
+  if (hideLabel || !payload?.length) {
+    return null
+  }
+
+  const [item] = payload
+  const key = `${labelKey ?? item?.dataKey ?? item?.name ?? 'value'}`
+  const itemConfig = getPayloadConfigFromPayload(config, item, key)
+  const value =
+    !labelKey && typeof label === 'string'
+      ? (config[label]?.label ?? label)
+      : itemConfig?.label
+
+  if (labelFormatter) {
+    return (
+      <div className={cn('font-medium', labelClassName)}>
+        {labelFormatter(value, payload)}
+      </div>
+    )
+  }
+
+  if (!value) {
+    return null
+  }
+
+  return <div className={cn('font-medium', labelClassName)}>{value}</div>
+}
+
 const ChartTooltipContent = ({
   active,
   payload,
@@ -290,41 +339,15 @@ const ChartTooltipContent = ({
   >) => {
   const { config } = useChart()
 
-  const tooltipLabel = React.useMemo(() => {
-    if (hideLabel || !payload?.length) {
-      return null
-    }
-
-    const [item] = payload
-    const key = `${labelKey ?? item?.dataKey ?? item?.name ?? 'value'}`
-    const itemConfig = getPayloadConfigFromPayload(config, item, key)
-    const value =
-      !labelKey && typeof label === 'string'
-        ? (config[label]?.label ?? label)
-        : itemConfig?.label
-
-    if (labelFormatter) {
-      return (
-        <div className={cn('font-medium', labelClassName)}>
-          {labelFormatter(value, payload)}
-        </div>
-      )
-    }
-
-    if (!value) {
-      return null
-    }
-
-    return <div className={cn('font-medium', labelClassName)}>{value}</div>
-  }, [
-    label,
-    labelFormatter,
-    payload,
-    hideLabel,
-    labelClassName,
+  const tooltipLabel = renderTooltipLabel({
     config,
+    hideLabel,
+    label,
+    labelClassName,
+    labelFormatter,
     labelKey,
-  ])
+    payload,
+  })
 
   if (!active || !payload?.length) {
     return null

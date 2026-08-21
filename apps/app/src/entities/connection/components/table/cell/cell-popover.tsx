@@ -36,7 +36,7 @@ import { useHotkey } from '@tanstack/react-hotkeys'
 import type { editor } from 'monaco-editor'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import type { Dispatch, SetStateAction } from 'react'
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import type { StickToBottomInstance } from 'use-stick-to-bottom'
 import { useStickToBottom } from 'use-stick-to-bottom'
@@ -316,6 +316,52 @@ const CellPopoverToolbar = ({
   </div>
 )
 
+const renderCellEditor = ({
+  canEdit,
+  column,
+  contentRef,
+  newValue,
+  scrollRef,
+  setNewValue,
+}: {
+  canEdit: boolean
+  column: ReturnType<typeof useCellContext>['column']
+  contentRef: StickToBottomInstance['contentRef']
+  newValue: unknown
+  scrollRef: StickToBottomInstance['scrollRef']
+  setNewValue: (value: unknown) => void
+}) => {
+  if (column.uiType === 'boolean') {
+    return <BooleanCellEditor newValue={newValue} setNewValue={setNewValue} />
+  }
+
+  if (column.uiType === 'list' && column.isArray && !!column.availableValues) {
+    return (
+      <ListCellEditor
+        availableValues={column.availableValues}
+        canEdit={canEdit}
+        newValue={newValue}
+        setNewValue={setNewValue}
+        scrollRef={scrollRef}
+        contentRef={contentRef}
+      />
+    )
+  }
+
+  if (column.uiType === 'select') {
+    return (
+      <SelectCellEditor
+        availableValues={column.availableValues}
+        canEdit={canEdit}
+        newValue={newValue}
+        setNewValue={setNewValue}
+      />
+    )
+  }
+
+  return null
+}
+
 export const CellPopoverContent = ({
   isBig,
   setIsBig,
@@ -344,41 +390,14 @@ export const CellPopoverContent = ({
 
   const canEdit = !!column?.isEditable && hasUpdateFn
 
-  const uiRender = useMemo(() => {
-    if (column.uiType === 'boolean') {
-      return <BooleanCellEditor newValue={newValue} setNewValue={setNewValue} />
-    }
-
-    if (
-      column.uiType === 'list' &&
-      column.isArray &&
-      !!column.availableValues
-    ) {
-      return (
-        <ListCellEditor
-          availableValues={column.availableValues}
-          canEdit={canEdit}
-          newValue={newValue}
-          setNewValue={setNewValue}
-          scrollRef={scrollRef}
-          contentRef={contentRef}
-        />
-      )
-    }
-
-    if (column.uiType === 'select') {
-      return (
-        <SelectCellEditor
-          availableValues={column.availableValues}
-          canEdit={canEdit}
-          newValue={newValue}
-          setNewValue={setNewValue}
-        />
-      )
-    }
-
-    return null
-  }, [canEdit, column, contentRef, newValue, scrollRef, setNewValue])
+  const uiRender = renderCellEditor({
+    canEdit,
+    column,
+    contentRef,
+    newValue,
+    scrollRef,
+    setNewValue,
+  })
 
   const [isRaw, setIsRaw] = useState(!uiRender)
 
@@ -445,7 +464,7 @@ export const CellPopoverContent = ({
     })
 
     return () => disposable.dispose()
-  }, [monacoRef, isRaw])
+  }, [monacoRef])
 
   useHotkey('Mod+Enter', () => queue(), { enabled: canEdit })
 

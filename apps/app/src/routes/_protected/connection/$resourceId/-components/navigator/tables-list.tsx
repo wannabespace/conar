@@ -27,7 +27,7 @@ import { getRouteApi, useParams } from '@tanstack/react-router'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { motion } from 'motion/react'
 import type { ComponentRef, ReactNode } from 'react'
-import { useEffect, useEffectEvent, useMemo, useRef } from 'react'
+import { useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
@@ -373,77 +373,69 @@ export const TablesList = ({
     )
   }, [connectionResource, tablesAndSchemas])
 
-  const rows = useMemo<TreeRow[]>(() => {
-    if (!tablesAndSchemas) {
-      return []
+  const pinnedSet = new Set(pinnedTables.map((t) => `${t.schema}:${t.table}`))
+  const rows: TreeRow[] = []
+
+  for (const schema of tablesAndSchemas?.schemas ?? []) {
+    const tables = schema.tables
+      .filter(
+        (table) =>
+          !search || table.name.toLowerCase().includes(search.toLowerCase())
+      )
+      .toSorted((a, b) => a.name.localeCompare(b.name))
+
+    if (tables.length === 0) {
+      continue
     }
 
-    const pinnedSet = new Set(pinnedTables.map((t) => `${t.schema}:${t.table}`))
-    const result: TreeRow[] = []
+    const open =
+      !showSchemaRows || !!search || openedSchemas.includes(schema.name)
 
-    for (const schema of tablesAndSchemas.schemas) {
-      const tables = schema.tables
-        .filter(
-          (table) =>
-            !search || table.name.toLowerCase().includes(search.toLowerCase())
-        )
-        .toSorted((a, b) => a.name.localeCompare(b.name))
-
-      if (tables.length === 0) {
-        continue
-      }
-
-      const open =
-        !showSchemaRows || !!search || openedSchemas.includes(schema.name)
-
-      if (showSchemaRows) {
-        result.push({
-          kind: 'schema',
-          id: `schema:${schema.name}`,
-          name: schema.name,
-          open,
-          tablesCount: tables.length,
-        })
-      }
-
-      if (!open) {
-        continue
-      }
-
-      const pinned = tables.filter((table) =>
-        pinnedSet.has(`${schema.name}:${table.name}`)
-      )
-      const unpinned = tables.filter(
-        (table) => !pinnedSet.has(`${schema.name}:${table.name}`)
-      )
-
-      for (const table of pinned) {
-        result.push({
-          kind: 'table',
-          id: `table:${schema.name}:${table.name}`,
-          schema: schema.name,
-          table,
-          pinned: true,
-        })
-      }
-
-      if (pinned.length > 0 && unpinned.length > 0) {
-        result.push({ kind: 'separator', id: `separator:${schema.name}` })
-      }
-
-      for (const table of unpinned) {
-        result.push({
-          kind: 'table',
-          id: `table:${schema.name}:${table.name}`,
-          schema: schema.name,
-          table,
-          pinned: false,
-        })
-      }
+    if (showSchemaRows) {
+      rows.push({
+        kind: 'schema',
+        id: `schema:${schema.name}`,
+        name: schema.name,
+        open,
+        tablesCount: tables.length,
+      })
     }
 
-    return result
-  }, [tablesAndSchemas, search, pinnedTables, openedSchemas, showSchemaRows])
+    if (!open) {
+      continue
+    }
+
+    const pinned = tables.filter((table) =>
+      pinnedSet.has(`${schema.name}:${table.name}`)
+    )
+    const unpinned = tables.filter(
+      (table) => !pinnedSet.has(`${schema.name}:${table.name}`)
+    )
+
+    for (const table of pinned) {
+      rows.push({
+        kind: 'table',
+        id: `table:${schema.name}:${table.name}`,
+        schema: schema.name,
+        table,
+        pinned: true,
+      })
+    }
+
+    if (pinned.length > 0 && unpinned.length > 0) {
+      rows.push({ kind: 'separator', id: `separator:${schema.name}` })
+    }
+
+    for (const table of unpinned) {
+      rows.push({
+        kind: 'table',
+        id: `table:${schema.name}:${table.name}`,
+        schema: schema.name,
+        table,
+        pinned: false,
+      })
+    }
+  }
 
   const virtualizer = useVirtualizer({
     count: rows.length,
@@ -483,6 +475,13 @@ export const TablesList = ({
       scrollToActiveEvent()
     }
   }, [hasData])
+
+  const previousSearchRef = useRef(search)
+  const isSearchSettled = previousSearchRef.current === search
+
+  useEffect(() => {
+    previousSearchRef.current = search
+  }, [search])
 
   const toggleSchema = (name: string) => {
     store.set(
@@ -581,7 +580,11 @@ export const TablesList = ({
               key={virtualRow.key}
               initial={false}
               animate={{ y: virtualRow.start }}
-              transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+              transition={
+                search || !isSearchSettled
+                  ? { duration: 0 }
+                  : { duration: 0.25, ease: [0.32, 0.72, 0, 1] }
+              }
               className="group/menu-item absolute inset-x-0 top-0"
               style={{ height: `${virtualRow.size}px` }}
             >

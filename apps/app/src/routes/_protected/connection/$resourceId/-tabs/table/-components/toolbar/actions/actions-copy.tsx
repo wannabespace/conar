@@ -26,7 +26,7 @@ import {
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { Monaco } from '~/components/monaco'
@@ -264,44 +264,14 @@ export const ActionsCopy = ({
   const [activeFormatType, setActiveFormatType] =
     useState<GeneratorFormat>('sql')
 
-  const compatibleFormats = useMemo(
-    () =>
-      FORMATS[activeCategory].filter((f) =>
-        isFormatCompatible(f, connection.type)
-      ),
-    [activeCategory, connection.type]
+  const compatibleFormats = FORMATS[activeCategory].filter((f) =>
+    isFormatCompatible(f, connection.type)
   )
 
   const matchedFormat = compatibleFormats.find(
     (f) => f.type === activeFormatType
   )
   const activeFormat = matchedFormat ?? compatibleFormats[0]
-
-  const codeContent = useMemo(() => {
-    if (!activeFormat) {
-      return ''
-    }
-
-    if (activeFormat.kind === 'schema') {
-      return activeFormat.generator({
-        table,
-        columns,
-        enums: enums ?? [],
-        dialect: connection.type,
-        indexes: indexes ?? [],
-      })
-    }
-
-    if (activeFormat.kind === 'query') {
-      return activeFormat.generator({
-        table,
-        filters,
-        dialect: connection.type,
-      })
-    }
-
-    return ''
-  }, [activeFormat, table, columns, filters, enums, indexes, connection.type])
 
   const defaultTrigger =
     open === undefined ? (
@@ -322,6 +292,21 @@ export const ActionsCopy = ({
   if (!activeFormat) {
     return null
   }
+
+  const codeContent =
+    activeFormat.kind === 'schema'
+      ? activeFormat.generator({
+          table,
+          columns,
+          enums: enums ?? [],
+          dialect: connection.type,
+          indexes: indexes ?? [],
+        })
+      : activeFormat.generator({
+          table,
+          filters,
+          dialect: connection.type,
+        })
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

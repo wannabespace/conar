@@ -34,7 +34,7 @@ import {
   useNodesState,
 } from '@xyflow/react'
 import type { CSSProperties } from 'react'
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { ReactFlowNode } from '~/entities/connection/components'
@@ -90,17 +90,13 @@ const Visualizer = ({
     .filter((t) => t.schema === schema)
     .map(({ table }) => table)
 
-  const { nodes: layoutNodes, edges: layoutEdges } = useMemo(
-    () =>
-      getVisualizerLayout({
-        columns,
-        constraints: schemaConstraints,
-        resourceId: connectionResource.id,
-        schema,
-        tables,
-      }),
-    [connectionResource.id, schema, tables, columns, schemaConstraints]
-  )
+  const { nodes: layoutNodes, edges: layoutEdges } = getVisualizerLayout({
+    columns,
+    constraints: schemaConstraints,
+    resourceId: connectionResource.id,
+    schema,
+    tables,
+  })
 
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges)
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes)

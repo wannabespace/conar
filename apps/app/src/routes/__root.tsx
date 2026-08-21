@@ -21,6 +21,7 @@ import { queryClient } from '~/main'
 import { useDeepLinksObserver } from '~/use-deep-links-observer'
 import { useUpdatesObserver } from '~/use-updates-observer'
 import { useWindowFocusObserver } from '~/use-window-focus-observer'
+import { useWindowFullscreenObserver } from '~/use-window-fullscreen-observer'
 
 const isElectron = !!window.electron
 
@@ -35,6 +36,7 @@ const RootDocument = () => {
   })
   useDeepLinksObserver()
   useWindowFocusObserver()
+  useWindowFullscreenObserver()
 
   useHotkey('Mod+S', () => globalHooks.callHook('savePressed'))
 

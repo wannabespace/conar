@@ -1,13 +1,14 @@
 import { webSearch } from '@exalabs/ai-sdk'
 import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
-import type { InferUITools } from 'ai'
+import type { InferUITools, ToolSet } from 'ai'
 import { tool } from 'ai'
 import * as z from 'zod/mini'
 
-import { env } from '../env'
+import { env } from '~/env'
 
-export const tools = {
+// Frozen with chat v1: shipped desktop builds parse this exact tool surface.
+export const tools: ToolSet = {
   columns: tool({
     description:
       'Use this tool if you need to get the list of columns in a table.',

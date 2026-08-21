@@ -3,7 +3,6 @@ import { Separator } from '@tamery/ui/components/separator'
 import { cn } from '@tamery/ui/lib/utils'
 import type { VariantProps } from 'class-variance-authority'
 import { cva } from 'class-variance-authority'
-import { useMemo } from 'react'
 
 const FieldSet = ({
   className,
@@ -160,6 +159,39 @@ const FieldSeparator = ({
   </div>
 )
 
+type FieldErrorItem = { message?: string } | undefined
+
+const fieldErrorContent = (
+  children: React.ReactNode,
+  errors: FieldErrorItem[] | undefined
+) => {
+  if (children) {
+    return children
+  }
+
+  if (!errors?.length) {
+    return null
+  }
+
+  const uniqueErrors = [
+    ...new Map(errors.map((error) => [error?.message, error])).values(),
+  ]
+
+  if (uniqueErrors.length === 1) {
+    return uniqueErrors[0]?.message
+  }
+
+  return (
+    <ul className="ml-4 flex list-disc flex-col gap-1">
+      {uniqueErrors.map(
+        (error, index) =>
+          // oxlint-disable-next-line react/no-array-index-key
+          error?.message && <li key={index}>{error.message}</li>
+      )}
+    </ul>
+  )
+}
+
 const FieldError = ({
   className,
   children,
@@ -168,33 +200,7 @@ const FieldError = ({
 }: React.ComponentProps<'div'> & {
   errors?: ({ message?: string } | undefined)[]
 }) => {
-  const content = useMemo(() => {
-    if (children) {
-      return children
-    }
-
-    if (!errors?.length) {
-      return null
-    }
-
-    const uniqueErrors = [
-      ...new Map(errors.map((error) => [error?.message, error])).values(),
-    ]
-
-    if (uniqueErrors?.length === 1) {
-      return uniqueErrors[0]?.message
-    }
-
-    return (
-      <ul className="ml-4 flex list-disc flex-col gap-1">
-        {uniqueErrors.map(
-          (error, index) =>
-            // oxlint-disable-next-line react/no-array-index-key
-            error?.message && <li key={index}>{error.message}</li>
-        )}
-      </ul>
-    )
-  }, [children, errors])
+  const content = fieldErrorContent(children, errors)
 
   if (!content) {
     return null

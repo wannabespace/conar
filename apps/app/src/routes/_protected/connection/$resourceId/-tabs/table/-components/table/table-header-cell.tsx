@@ -359,7 +359,9 @@ export const TableHeaderCell = ({
 
   const removeSize = () => {
     store.set((state) => {
-      const { [column.id]: _removed, ...columnSizes } = state.columnSizes
+      const columnSizes = Object.fromEntries(
+        Object.entries(state.columnSizes).filter(([id]) => id !== column.id)
+      )
       return {
         ...state,
         columnSizes,
@@ -391,6 +393,7 @@ export const TableHeaderCell = ({
             `group/header-cell relative flex w-full shrink-0 cursor-default items-center justify-between px-2 py-1.5 outline-none`,
             position === 'first' && 'pl-4',
             position === 'last' && 'pr-4',
+            order !== null && 'bg-foreground/4',
             className
           )}
           style={style}

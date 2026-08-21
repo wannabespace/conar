@@ -4,7 +4,6 @@ import { title } from '@tamery/shared/utils/title'
 import { createFileRoute, getRouteApi, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'
-import { v7 } from 'uuid'
 
 import type { ConnectionTab } from '~/entities/connection/store'
 import {
@@ -19,7 +18,6 @@ import {
 } from '~/entities/connection/utils'
 
 import { DefinitionsTab } from './-tabs/definitions/definitions-tab'
-import { createChat } from './-tabs/runner/-components/chat'
 import { RunnerTab } from './-tabs/runner/runner-tab'
 import { tablePageStore } from './-tabs/table/-lib/store'
 import { TableTab } from './-tabs/table/table-tab'
@@ -62,8 +60,6 @@ export const Route = createFileRoute(
 )({
   component: TabPage,
   validateSearch: type({
-    'chatId?': 'string.uuid.v7 | undefined',
-    'error?': 'string | undefined',
     'filters?': 'object[]' as type.cast<ActiveFilter[]>,
     'orderBy?': 'object' as type.cast<Record<string, 'ASC' | 'DESC'>>,
   }),
@@ -80,13 +76,12 @@ export const Route = createFileRoute(
     return { tab }
   },
   loaderDeps: ({ search }) => search,
-  loader: async ({ context, deps }) => {
+  loader: ({ context, deps }) => {
     const { connection, connectionResource, tab } = context
 
     prefetchConnectionResourceCore(connectionResource)
 
     const base = {
-      chat: null as Awaited<ReturnType<typeof createChat>> | null,
       connection,
       connectionResource,
       tab,
@@ -127,24 +122,6 @@ export const Route = createFileRoute(
       })
 
       return base
-    }
-
-    if (tab.type === 'runner') {
-      const { chatsCollection, chatsMessagesCollection } = context.collections
-
-      await Promise.all([
-        chatsCollection.stateWhenReady(),
-        chatsMessagesCollection.stateWhenReady(),
-      ])
-
-      return {
-        ...base,
-        chat: await createChat({
-          connectionResource,
-          id: deps.chatId ?? v7(),
-          tabId: tab.id,
-        }),
-      }
     }
 
     return base

@@ -11,7 +11,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import type { ComponentRef } from 'react'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import {
@@ -226,131 +226,123 @@ const TableComponent = ({
       query: { filters, orderBy },
     })
   )
-  const primaryColumns = useMemo(
-    () => columns.filter((c) => c.primaryKey).map((c) => c.id),
-    [columns]
-  )
+  const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
   const renameColumnRef = useRef<ComponentRef<typeof RenameColumnDialog>>(null)
 
   useSyncSelectionWithRows(rows, primaryColumns)
   useClearDraftsOnQueryChange()
 
-  const getHandlers = useCallback(
-    (column: Column): ColumnHandlers => ({
-      onQueueValue: (rowIndex, newValue) => {
-        if (primaryColumns.length === 0) {
-          throw new Error(
-            'No primary keys found. Please use SQL Runner to update this row.'
-          )
-        }
-
-        const row = rows[rowIndex]
-        if (!row) {
-          throw new Error('Row not found. Please refresh the page.')
-        }
-
-        draftsActions(store).upsert({
-          primaryKeys: getRowPrimaryKeysValues(row, primaryColumns),
-          columnId: column.id,
-          value: newValue,
-          error: undefined,
-          isCommitting: false,
-        })
-      },
-      onAddFilter: (filter) => {
-        store.set(
-          (state) =>
-            ({
-              ...state,
-              filters: [...state.filters, filter],
-            }) satisfies typeof state
+  const getHandlers = (column: Column): ColumnHandlers => ({
+    onQueueValue: (rowIndex, newValue) => {
+      if (primaryColumns.length === 0) {
+        throw new Error(
+          'No primary keys found. Please use SQL Runner to update this row.'
         )
-      },
-      onOrder: (order) => {
-        const actions = columnsOrder(store)
-        if (order === undefined) {
-          return actions.toggleOrder(column.id)
-        }
-        if (order) {
-          return actions.setOrder(column.id, order)
-        }
-        return actions.removeOrder(column.id)
-      },
-      onResize: (newWidth) => {
-        store.set(
-          (state) =>
-            ({
-              ...state,
-              columnSizes: {
-                ...state.columnSizes,
-                [column.id]: newWidth,
-              },
-            }) satisfies typeof state
-        )
-      },
-      onRename:
-        !column.primaryKey &&
-        !CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME.includes(connection.type)
-          ? () => {
-              renameColumnRef.current?.rename(schema, table, column.id)
-            }
-          : undefined,
-    }),
-    [store, rows, primaryColumns, schema, table, connection.type]
-  )
+      }
 
-  const tableColumns = useMemo<ColumnRenderer[]>(
-    () =>
-      columns
-        .filter((c) => !hiddenColumns.includes(c.id))
-        .map((column) => {
-          const handlers = getHandlers(column)
-          return {
-            id: column.id,
-            size:
-              (column.type
-                ? getColumnSize(column.type)
-                : DEFAULT_COLUMN_WIDTH) +
-              // 25 it's a ~size of the button, 6 it's a ~size of the number
-              (column.references?.length ? 25 + 6 : 0) +
-              (column.foreign ? 25 : 0),
-            // Column renderers are invoked as components by @tamery/table
-            // oxlint-disable-next-line react/no-unstable-nested-components
-            header: (props) => (
-              <TableHeaderCell column={column} {...handlers} {...props} />
-            ),
-            // oxlint-disable-next-line react/no-unstable-nested-components
-            cell: (props) => (
-              <BodyCellRenderer
-                column={column}
-                connectionType={connection.type}
-                primaryColumns={primaryColumns}
-                {...handlers}
-                {...props}
-              />
-            ),
-          } satisfies ColumnRenderer
-        }),
-    [columns, hiddenColumns, connection.type, primaryColumns, getHandlers]
-  )
+      const row = rows[rowIndex]
+      if (!row) {
+        throw new Error('Row not found. Please refresh the page.')
+      }
 
-  const providerColumns = useMemo<ColumnRenderer[]>(() => {
-    const result: ColumnRenderer[] = []
-    if (primaryColumns.length > 0) {
-      result.push({
-        id: INTERNAL_COLUMN_IDS.SELECT,
-        // oxlint-disable-next-line react/no-unstable-nested-components
-        cell: (props) => <SelectionCell keys={primaryColumns} {...props} />,
+      draftsActions(store).upsert({
+        primaryKeys: getRowPrimaryKeysValues(row, primaryColumns),
+        columnId: column.id,
+        value: newValue,
+        error: undefined,
+        isCommitting: false,
+      })
+    },
+    onAddFilter: (filter) => {
+      store.set(
+        (state) =>
+          ({
+            ...state,
+            filters: [...state.filters, filter],
+          }) satisfies typeof state
+      )
+    },
+    onOrder: (order) => {
+      const actions = columnsOrder(store)
+      if (order === undefined) {
+        return actions.toggleOrder(column.id)
+      }
+      if (order) {
+        return actions.setOrder(column.id, order)
+      }
+      return actions.removeOrder(column.id)
+    },
+    onResize: (newWidth) => {
+      store.set(
+        (state) =>
+          ({
+            ...state,
+            columnSizes: {
+              ...state.columnSizes,
+              [column.id]: newWidth,
+            },
+          }) satisfies typeof state
+      )
+    },
+    onRename:
+      !column.primaryKey &&
+      !CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME.includes(connection.type)
+        ? () => {
+            renameColumnRef.current?.rename(schema, table, column.id)
+          }
+        : undefined,
+  })
+
+  const tableColumns: ColumnRenderer[] = columns
+    .filter((c) => !hiddenColumns.includes(c.id))
+    .map((column) => {
+      const handlers = getHandlers(column)
+      return {
+        id: column.id,
+        size:
+          (column.type ? getColumnSize(column.type) : DEFAULT_COLUMN_WIDTH) +
+          // 25 it's a ~size of the button, 6 it's a ~size of the number
+          (column.references?.length ? 25 + 6 : 0) +
+          (column.foreign ? 25 : 0),
+        // Column renderers are invoked as components by @tamery/table
         // oxlint-disable-next-line react/no-unstable-nested-components
         header: (props) => (
-          <SelectionHeaderCell keys={primaryColumns} {...props} />
+          <TableHeaderCell column={column} {...handlers} {...props} />
         ),
-        size: 40,
-      })
-    }
-    result.push(...tableColumns, ACTIONS_COLUMN)
-    return result
-  }, [primaryColumns, tableColumns])
+        // oxlint-disable-next-line react/no-unstable-nested-components
+        cell: (props) => (
+          <BodyCellRenderer
+            column={column}
+            connectionType={connection.type}
+            primaryColumns={primaryColumns}
+            {...handlers}
+            {...props}
+          />
+        ),
+      } satisfies ColumnRenderer
+    })
+
+  const selectionColumns: ColumnRenderer[] =
+    primaryColumns.length > 0
+      ? [
+          {
+            id: INTERNAL_COLUMN_IDS.SELECT,
+            // oxlint-disable-next-line react/no-unstable-nested-components
+            cell: (props) => <SelectionCell keys={primaryColumns} {...props} />,
+            // oxlint-disable-next-line react/no-unstable-nested-components
+            header: (props) => (
+              <SelectionHeaderCell keys={primaryColumns} {...props} />
+            ),
+            size: 40,
+          },
+        ]
+      : []
+
+  const providerColumns: ColumnRenderer[] = [
+    ...selectionColumns,
+    ...tableColumns,
+    ACTIONS_COLUMN,
+  ]
 
   const handleShiftSelectionKeyDown = useShiftSelectionKeyDown({
     rowCount: rows.length,

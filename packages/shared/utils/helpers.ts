@@ -9,6 +9,14 @@ export const sleep = (ms: number, signal?: AbortSignal) =>
     })
   })
 
+export const abortControllerFrom = (signal?: AbortSignal) => {
+  const controller = new AbortController()
+
+  signal?.addEventListener('abort', () => controller.abort(), { once: true })
+
+  return controller
+}
+
 export const debounce = <F extends (...args: Parameters<F>) => ReturnType<F>>(
   func: F,
   waitFor: number

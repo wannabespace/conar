@@ -22,6 +22,8 @@ import { orpc } from '~/lib/orpc'
 import { queryClient } from '~/main'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 
+const FOCUS_DELAY_MS = 100
+
 export const RunnerEditorAIZone = ({
   connection,
   connectionResource,
@@ -50,31 +52,21 @@ export const RunnerEditorAIZone = ({
     setPrompt('')
   }
 
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null)
-
-  const timeoutFocus = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      ref.current?.focus()
-      timeoutRef.current = null
-    }, 100)
-  }
-
   useEffect(() => {
-    timeoutFocus()
+    const timeout = setTimeout(() => ref.current?.focus(), FOCUS_DELAY_MS)
+    return () => clearTimeout(timeout)
   }, [])
 
+  useEffect(() => {
+    if (!aiSuggestion) {
+      return
+    }
+    const timeout = setTimeout(() => ref.current?.focus(), FOCUS_DELAY_MS)
+    return () => clearTimeout(timeout)
+  }, [aiSuggestion])
+
   const { mutate: updateSQL, isPending } = useMutation(
-    // oxlint-disable-next-line react/react-compiler -- timeoutFocus only used in effects/handlers
-    orpc.ai.updateSQL.mutationOptions({
-      onSuccess: (data) => {
-        setAiSuggestion(data)
-        timeoutFocus()
-      },
-    }),
+    orpc.ai.updateSQL.mutationOptions({ onSuccess: setAiSuggestion }),
     queryClient
   )
 

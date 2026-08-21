@@ -1,4 +1,4 @@
-import { RiChatAiLine, RiStopLine, RiVipCrownLine } from '@remixicon/react'
+import { RiStopLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import { Spinner } from '@tamery/ui/components/spinner'
 import {
@@ -16,87 +16,39 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 
-import { Link } from '~/components/link'
 import { Monaco } from '~/components/monaco'
-import { useSubscription } from '~/entities/user/hooks/use-subscription'
 import { queryClient } from '~/main'
-import { setIsSubscriptionDialogOpen } from '~/store'
 import { formatSql } from '~/utils/formatter'
 
 import { runnerQueryOptions } from '.'
-import { toggleChat, useRunnerPageStore, useRunnerTab } from '../../-lib/store'
+import { useRunnerTab } from '../../-lib/store'
 import { RunnerResultsTable } from './runner-results-table'
 
-const { useRouteContext, useSearch } = getRouteApi(
+const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
 )
 
 const RunnerResultContent = ({
-  chatId,
-  connectionResourceId,
   connectionType,
   data,
   duration,
-  endLineNumber,
   error,
-  startLineNumber,
-  subscription,
 }: {
-  chatId?: string
-  connectionResourceId: string
   connectionType: Parameters<typeof formatSql>[1]
   data?: Record<string, unknown>[] | null
   duration: number
-  endLineNumber: number
   error?: string | null
-  startLineNumber: number
-  subscription: unknown
 }) => {
-  const store = useRunnerPageStore()
-  const { tabId } = useRunnerTab()
-
   if (error) {
     return (
       <div className="mx-auto flex h-full max-w-2/3 flex-col items-center justify-center gap-2">
         Error executing query
         <div
           data-mask
-          className="bg-destructive/10 text-destructive mb-2 max-h-1/2 max-w-full overflow-auto rounded-sm px-2 py-1 font-mono text-xs text-balance"
+          className="bg-destructive/10 text-destructive max-h-1/2 max-w-full overflow-auto rounded-sm px-2 py-1 font-mono text-xs text-balance"
         >
           {error}
         </div>
-        {subscription ? (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => toggleChat(store, true)}
-            render={
-              <Link
-                to="/connection/$resourceId/$tabId"
-                params={{ resourceId: connectionResourceId, tabId }}
-                search={{
-                  chatId,
-                  error: [
-                    `Fix the following SQL error by correcting the SQL query on the lines ${startLineNumber} - ${endLineNumber}:`,
-                    error,
-                  ].join('\n'),
-                }}
-              />
-            }
-          >
-            <RiChatAiLine />
-            Fix in chat
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setIsSubscriptionDialogOpen(true)}
-          >
-            Fix in chat
-            <RiVipCrownLine className="size-4" />
-          </Button>
-        )}
       </div>
     )
   }
@@ -125,8 +77,6 @@ const RunnerResultContent = ({
 }
 
 export const RunnerResults = () => {
-  const { chatId } = useSearch()
-  const { subscription } = useSubscription()
   const { connection, connectionResource } = useRouteContext()
   const { tabId } = useRunnerTab()
   const { data: results, fetchStatus: queryStatus } = useQuery(
@@ -198,30 +148,20 @@ export const RunnerResults = () => {
             ))}
           </TabsList>
         </div>
-        {results.map(
-          (
-            { data, error, startLineNumber, endLineNumber, duration },
-            index
-          ) => (
-            <TabsContent
-              key={`result-${data?.length ?? 'error'}-${startLineNumber}`}
-              value={`table-${index}`}
-              className="h-[calc(100%-(--spacing(8)))]"
-            >
-              <RunnerResultContent
-                chatId={chatId}
-                connectionResourceId={connectionResource.id}
-                connectionType={connection.type}
-                data={data}
-                duration={duration}
-                endLineNumber={endLineNumber}
-                error={error}
-                startLineNumber={startLineNumber}
-                subscription={subscription}
-              />
-            </TabsContent>
-          )
-        )}
+        {results.map(({ data, error, startLineNumber, duration }, index) => (
+          <TabsContent
+            key={`result-${data?.length ?? 'error'}-${startLineNumber}`}
+            value={`table-${index}`}
+            className="h-[calc(100%-(--spacing(8)))]"
+          >
+            <RunnerResultContent
+              connectionType={connection.type}
+              data={data}
+              duration={duration}
+              error={error}
+            />
+          </TabsContent>
+        ))}
       </Tabs>
     )
   }

@@ -1,5 +1,5 @@
 import { cn } from '@tamery/ui/lib/utils'
-import { createContext, use, useMemo } from 'react'
+import { createContext, use } from 'react'
 
 const StepperContext = createContext<{
   active: string
@@ -20,11 +20,7 @@ export const Stepper = <T extends string>({
   active: T
   onChange: (active: T) => void
   children: React.ReactNode
-}) => (
-  <StepperContext value={useMemo(() => ({ active }), [active])}>
-    {children}
-  </StepperContext>
-)
+}) => <StepperContext value={{ active }}>{children}</StepperContext>
 
 export const StepperList = ({ children }: { children: React.ReactNode }) => (
   <div className="relative -mx-4 mb-6 flex h-10 justify-between before:absolute before:inset-0 before:top-1/2 before:-z-10 before:h-0.5 before:w-full before:-translate-y-1/2 before:bg-linear-to-r before:from-transparent before:via-slate-300 before:to-transparent">

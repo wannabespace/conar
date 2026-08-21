@@ -13,6 +13,15 @@ import { enabledFilters } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@tamery/ui/components/dropdown-menu'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
 import {
   Tooltip,
@@ -35,7 +44,7 @@ import { useSubscription } from 'seitu/react'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppContextMenu } from '~/components/app-context-menu'
-import type { ConnectionResource } from '~/entities/connection/core'
+import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import {
   resourceConstraintsQueryOptions,
   resourceEnumsQueryOptions,
@@ -50,7 +59,9 @@ import {
   isPreviewTab,
   openRunnerTab,
   openTab,
+  openTableTab,
   parseTabId,
+  tableTabId,
   removeTab,
   renameTab,
   setActiveTab,
@@ -64,6 +75,11 @@ import { queryClient } from '~/main'
 
 import { tablePageStore } from '../-tabs/table/-lib/store'
 import { navigatorOpenValue } from './navigator/constants'
+import { schemaGroups } from './navigator/definitions-section'
+
+interface TablesAndSchemas {
+  schemas: { name: string; tables: { name: string }[] }[]
+}
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -203,26 +219,103 @@ const HistoryNav = () => {
   )
 }
 
-const NewQueryButton = ({ onOpen }: { onOpen: VoidFunction }) => (
-  <div className="flex shrink-0 items-center border-b border-l px-1">
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="New query"
-            className="text-muted-foreground"
-            onClick={onOpen}
-          />
-        }
-      >
-        <RiAddLine />
-      </TooltipTrigger>
-      <TooltipContent side="bottom">New query</TooltipContent>
-    </Tooltip>
-  </div>
-)
+const NewTabMenu = ({
+  connection,
+  connectionResource,
+  tablesAndSchemas,
+  onNewQuery,
+}: {
+  connection: Connection
+  connectionResource: ConnectionResource
+  tablesAndSchemas: TablesAndSchemas | undefined
+  onNewQuery: VoidFunction
+}) => {
+  const router = useRouter()
+  const schemas = tablesAndSchemas?.schemas ?? []
+  const showSchema = schemas.length > 1
+
+  const goToTab = (tabId: string) =>
+    router.navigate({
+      to: '/connection/$resourceId/$tabId',
+      params: { resourceId: connectionResource.id, tabId },
+    })
+
+  return (
+    <div className="flex shrink-0 items-center border-b border-l px-1">
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="New tab"
+              className="text-muted-foreground"
+            />
+          }
+        >
+          <RiAddLine />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className="max-h-[70vh] min-w-48 overflow-auto"
+        >
+          <DropdownMenuItem onClick={onNewQuery}>
+            <RiPlayLargeLine />
+            New query
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Schema</DropdownMenuLabel>
+            {schemaGroups(connection)
+              .flatMap((group) => group.items)
+              .map(({ Icon, label, onOpen, onPromote, tabId }) => (
+                <DropdownMenuItem
+                  key={tabId}
+                  onClick={() => {
+                    ;(onPromote ?? onOpen)(connectionResource.id)
+                    goToTab(tabId)
+                  }}
+                >
+                  <Icon />
+                  {label}
+                </DropdownMenuItem>
+              ))}
+          </DropdownMenuGroup>
+          {schemas.some((schema) => schema.tables.length > 0) && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Tables</DropdownMenuLabel>
+                {schemas.flatMap((schema) =>
+                  schema.tables.map((table) => (
+                    <DropdownMenuItem
+                      key={tableTabId(schema.name, table.name)}
+                      onClick={() => {
+                        openTableTab(
+                          connectionResource.id,
+                          schema.name,
+                          table.name
+                        )
+                        goToTab(tableTabId(schema.name, table.name))
+                      }}
+                    >
+                      <RiTableLine />
+                      <span data-mask className="truncate">
+                        {showSchema
+                          ? `${schema.name}.${table.name}`
+                          : table.name}
+                      </span>
+                    </DropdownMenuItem>
+                  ))
+                )}
+              </DropdownMenuGroup>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  )
+}
 
 const getQueryOpts = (
   connectionResource: ConnectionResource,
@@ -513,7 +606,7 @@ const tabLabels = (tabs: ConnectionTab[]) => {
 }
 
 export const TabBar = ({ className }: { className?: string }) => {
-  const { connectionResource } = useRouteContext()
+  const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const showSystem = useSubscription(store, {
     selector: (state) => state.showSystem,
@@ -607,6 +700,8 @@ export const TabBar = ({ className }: { className?: string }) => {
     removeTab(connectionResource.id, tabId)
   }
 
+  const closeTabEvent = useEffectEvent(closeTab)
+
   useHotkey('Mod+W', (e) => {
     e.preventDefault()
 
@@ -620,14 +715,10 @@ export const TabBar = ({ className }: { className?: string }) => {
     navigatorOpenValue.set((open) => !open)
   })
 
-  const pruneUnparseableTabsEvent = useEffectEvent(() => {
-    for (const tab of tabs.filter((item) => !parseTabId(item.id))) {
-      closeTab(tab.id)
-    }
-  })
-
   useEffect(() => {
-    pruneUnparseableTabsEvent()
+    for (const tab of tabs.filter((item) => !parseTabId(item.id))) {
+      closeTabEvent(tab.id)
+    }
   }, [tabs])
 
   const cleanupTabsEvent = useEffectEvent(
@@ -741,7 +832,12 @@ export const TabBar = ({ className }: { className?: string }) => {
           </div>
         </ScrollArea>
       )}
-      <NewQueryButton onOpen={openNewQuery} />
+      <NewTabMenu
+        connection={connection}
+        connectionResource={connectionResource}
+        tablesAndSchemas={tablesAndSchemas}
+        onNewQuery={openNewQuery}
+      />
       <div aria-hidden className="min-w-0 flex-1 border-b" />
     </div>
   )

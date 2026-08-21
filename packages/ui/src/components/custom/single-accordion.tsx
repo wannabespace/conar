@@ -16,10 +16,15 @@ export const SingleAccordionTrigger = ({
     asChild && React.isValidElement(children)
       ? (children as React.ReactElement)
       : render
+  // base-ui warns when a trigger renders anything but a real <button>; every
+  // `asChild` call site here hands it a div.
+  const isNativeButton =
+    !React.isValidElement(resolvedRender) || resolvedRender.type === 'button'
 
   return (
     <AccordionPrimitive.Header className="flex">
       <AccordionPrimitive.Trigger
+        nativeButton={isNativeButton}
         className={cn(
           `focus-visible:border-ring focus-visible:ring-ring/50 flex flex-1 items-center justify-between gap-4 rounded-md p-2 text-left text-sm font-medium transition-all outline-none focus-visible:ring-[0.1875rem] disabled:pointer-events-none disabled:opacity-50 [&[data-panel-open]>svg]:rotate-180`,
           className

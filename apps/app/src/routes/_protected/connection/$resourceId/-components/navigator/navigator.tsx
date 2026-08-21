@@ -167,7 +167,7 @@ export const Navigator = () => {
       className="relative h-full shrink-0 overflow-hidden"
     >
       <div
-        className="text-foreground flex h-full flex-col pr-2.5"
+        className="text-foreground flex h-full flex-col pr-1.5"
         style={{ width }}
       >
         <div className="shrink-0 px-2 pt-0.5 pb-1.5">
@@ -195,7 +195,7 @@ export const Navigator = () => {
           aria-orientation="vertical"
           aria-label="Resize sidebar"
           tabIndex={0}
-          className="group absolute inset-y-0 right-0 z-10 cursor-col-resize px-2 duration-150 select-none"
+          className="group absolute inset-y-0 right-0 z-10 cursor-col-resize px-1.5 duration-150 select-none"
           onMouseDown={handleResize}
           onDoubleClick={() => navigatorWidthValue.set(SIDEBAR_DEFAULT_WIDTH)}
         >
