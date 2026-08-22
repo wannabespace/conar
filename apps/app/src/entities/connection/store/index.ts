@@ -4,13 +4,15 @@ import { memoize } from 'memoza'
 import { createStore } from 'seitu'
 import { createWebStorageValue } from 'seitu/web'
 
-import { connectionTabType } from './tabs'
+import { connectionTabType } from './tabs/types'
 
 export * from './helpers/navigator'
 export * from './helpers/tables'
 export * from './helpers/tabs'
 export * from './helpers/visualizer'
-export * from './tabs'
+export * from './tabs/ids'
+export * from './tabs/title'
+export * from './tabs/types'
 
 const schema = type({
   lastOpenedResourceName: 'string | null',

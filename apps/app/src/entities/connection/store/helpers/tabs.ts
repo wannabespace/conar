@@ -1,15 +1,15 @@
 import { getConnectionResourceStore } from '..'
-import type { ConnectionTab, DefinitionsSection } from '../tabs'
 import {
   definitionsTabId,
-  isPreviewTab,
   parseTabId,
   runnerLayoutKey,
   runnerStoreKey,
   runnerTabId,
   tableTabId,
   VISUALIZER_TAB_ID,
-} from '../tabs'
+} from '../tabs/ids'
+import type { ConnectionTab, DefinitionsSection } from '../tabs/types'
+import { isPreviewTab } from '../tabs/types'
 
 const setTabs = (
   id: string,

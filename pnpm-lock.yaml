@@ -271,8 +271,8 @@ catalogs:
       specifier: ^18.0.9
       version: 18.0.9
     memoza:
-      specifier: ^1.1.0
-      version: 1.1.0
+      specifier: ^1.2.0
+      version: 1.2.0
     monaco-editor:
       specifier: ^0.54.0
       version: 0.54.0
@@ -576,7 +576,7 @@ importers:
         version: 6.0.0(supports-color@7.2.0)
       memoza:
         specifier: 'catalog:'
-        version: 1.1.0
+        version: 1.2.0
       nanoid:
         specifier: 'catalog:'
         version: 6.0.1
@@ -745,7 +745,7 @@ importers:
         version: 18.0.9
       memoza:
         specifier: 'catalog:'
-        version: 1.1.0
+        version: 1.2.0
       monaco-editor:
         specifier: 'catalog:'
         version: 0.54.0
@@ -918,7 +918,7 @@ importers:
         version: 8.21.0
       memoza:
         specifier: 'catalog:'
-        version: 1.1.0
+        version: 1.2.0
       tsdown:
         specifier: 'catalog:'
         version: 0.22.14(oxc-resolver@11.24.2)(publint@0.3.23)(typescript@7.0.2)
@@ -1024,7 +1024,7 @@ importers:
         version: 0.13.1
       memoza:
         specifier: 'catalog:'
-        version: 1.1.0
+        version: 1.2.0
       motion:
         specifier: 'catalog:'
         version: 13.1.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -1130,7 +1130,7 @@ importers:
         version: 4.13.2
       memoza:
         specifier: 'catalog:'
-        version: 1.1.0
+        version: 1.2.0
       ua-parser-js:
         specifier: 'catalog:'
         version: 2.0.10
@@ -1175,7 +1175,7 @@ importers:
         version: link:../shared
       memoza:
         specifier: 'catalog:'
-        version: 1.1.0
+        version: 1.2.0
       pg:
         specifier: 'catalog:'
         version: 8.23.0
@@ -1252,7 +1252,7 @@ importers:
         version: 3.0.1
       memoza:
         specifier: 'catalog:'
-        version: 1.1.0
+        version: 1.2.0
 
   packages/query-proxy:
     dependencies:
@@ -7886,8 +7886,8 @@ packages:
     resolution: {integrity: sha512-S3UwM3yj5mtUSEfP41UZmt/0SCoVYUcU1rkXv+BQ5Ig8ndL4sPoJNBUJERafdPb5jjHJGuMgytgKvKIf58XNBw==}
     engines: {node: '>= 0.10.0'}
 
-  memoza@1.1.0:
-    resolution: {integrity: sha512-+ZwJOme65V+ZmoZWkWjeMKNhQLi6NPgEF7YqnHTS98pVlWapmdZF2Z3NhqTcV7aRe8fHKiqjfutwduokTYu85Q==}
+  memoza@1.2.0:
+    resolution: {integrity: sha512-8asTBdaaKnSti1Czx75hSHOEoZ78OoHvzoz1gRYgyhqgQzo7wGPVV2HseCzn209yBuNUN8EPhzkBvpssgwc0/w==}
 
   merge-descriptors@2.0.0:
     resolution: {integrity: sha512-Snk314V5ayFLhp3fkUREub6WtjBfPdCPY1Ln8/8munuLuiYhsABgBVWsozAG+MWMbVEvcdcpbi9R7ww22l9Q3g==}
@@ -17375,7 +17375,7 @@ snapshots:
 
   memorystream@0.3.1: {}
 
-  memoza@1.1.0:
+  memoza@1.2.0:
     dependencies:
       devalue: 5.8.1
 

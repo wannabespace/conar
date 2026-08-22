@@ -1,7 +1,7 @@
 import { toast } from 'sonner'
 
 import { getConnectionResourceStore } from '..'
-import { tableTabId } from '../tabs'
+import { tableTabId } from '../tabs/ids'
 
 const MAX_PINNED_TABLES = 10
 

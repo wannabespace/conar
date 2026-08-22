@@ -7,6 +7,7 @@ minimumReleaseAgeExclude:
   - '@tanstack/router-generator@1.167.25'
   - '@tanstack/start-server-core@1.169.22'
   - '@tanstack/start-storage-context@1.167.21'
+  - memoza@1.2.0
 shellEmulator: true
 blockExoticSubdeps: false
 packages:
@@ -112,7 +113,7 @@ catalog:
   js-confetti: ^0.13.1
   kysely: ^0.29.5
   marked: ^18.0.9
-  memoza: ^1.1.0
+  memoza: ^1.2.0
   monaco-editor: ^0.54.0
   monaco-sql-languages: ^0.15.1
   motion: ^13.1.0

@@ -1,36 +1,7 @@
-import { type } from 'arktype'
 import { nanoid } from 'nanoid'
 
-const definitionsSectionType = type(
-  "'enums' | 'constraints' | 'indexes' | 'policies' | 'triggers' | 'functions'"
-)
-
-export type DefinitionsSection = typeof definitionsSectionType.infer
-
-export const connectionTabType = type({
-  id: 'string',
-  'title?': 'string',
-}).and(
-  type({
-    preview: 'boolean',
-    schema: 'string',
-    table: 'string',
-    type: '"table"',
-  })
-    .or({
-      preview: 'boolean',
-      section: definitionsSectionType,
-      type: '"definitions"',
-    })
-    .or({ type: '"runner" | "visualizer"' })
-)
-
-export type ConnectionTab = typeof connectionTabType.infer
-
-export const isPreviewTab = (
-  tab: ConnectionTab
-): tab is Extract<ConnectionTab, { preview: boolean }> =>
-  'preview' in tab && tab.preview
+import type { ConnectionTab, DefinitionsSection } from './types'
+import { definitionsSectionType } from './types'
 
 export const tableTabId = (schema: string, table: string) =>
   `table:${encodeURIComponent(schema)}:${encodeURIComponent(table)}`
@@ -82,27 +53,4 @@ export const parseTabId = (id: string): ConnectionTab | null => {
   }
 
   return null
-}
-
-const capitalize = (value: string) =>
-  value.charAt(0).toUpperCase() + value.slice(1)
-
-export const tabTitle = (tab: ConnectionTab) => {
-  switch (tab.type) {
-    case 'table': {
-      return tab.table
-    }
-    case 'definitions': {
-      return capitalize(tab.section)
-    }
-    case 'runner': {
-      return 'SQL Runner'
-    }
-    case 'visualizer': {
-      return 'Visualizer'
-    }
-    default: {
-      return ''
-    }
-  }
 }
