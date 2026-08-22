@@ -45,7 +45,7 @@ export const setNavigator = (id: string, navigator: NavigatorList) => {
   getNavigatorStore(id).set(navigator)
 }
 
-export const setSchemaViewport = (
+export const setVisualizerViewport = (
   id: string,
   schema: string,
   viewport: typeof viewportType.infer
@@ -56,7 +56,10 @@ export const setSchemaViewport = (
     (state) =>
       ({
         ...state,
-        viewports: { ...state.viewports, [schema]: viewport },
+        visualizerViewports: {
+          ...state.visualizerViewports,
+          [schema]: viewport,
+        },
       }) satisfies typeof state
   )
 }

@@ -47,7 +47,7 @@ import {
 import type { columnType } from '~/entities/connection/queries/columns'
 import {
   getConnectionResourceStore,
-  setSchemaViewport,
+  setVisualizerViewport,
 } from '~/entities/connection/store'
 import {
   applySearchHighlight,
@@ -78,7 +78,7 @@ const Visualizer = ({
   const schemas = [...new Set(tablesAndSchemas.map(({ schema }) => schema))]
   const initialSchema = schemas[0] ?? ''
   const [schema, setSchema] = useState(initialSchema)
-  const savedViewport = store.get().viewports?.[schema]
+  const savedViewport = store.get().visualizerViewports?.[schema]
   const [searchQuery, setSearchQuery] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -230,7 +230,7 @@ const Visualizer = ({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onMoveEnd={(_, viewport) =>
-          setSchemaViewport(connectionResource.id, schema, viewport)
+          setVisualizerViewport(connectionResource.id, schema, viewport)
         }
         panOnScroll
         selectionOnDrag
