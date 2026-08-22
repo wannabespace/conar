@@ -5,12 +5,11 @@ import { createFileRoute, getRouteApi, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { useEffect } from 'react'
 
-import type { ConnectionTab } from '~/entities/connection/store'
 import {
   ensureTab,
   parseTabId,
   setActiveTab,
-  tabTitle,
+  tabFullTitle,
 } from '~/entities/connection/store'
 import {
   prefetchConnectionResourceCore,
@@ -51,9 +50,6 @@ const TabPage = () => {
     </div>
   )
 }
-
-const documentTitle = (tab: ConnectionTab) =>
-  tab.type === 'table' ? `${tab.schema}.${tabTitle(tab)}` : tabTitle(tab)
 
 export const Route = createFileRoute(
   '/_protected/connection/$resourceId/$tabId'
@@ -131,7 +127,7 @@ export const Route = createFileRoute(
       ? [
           {
             title: title(
-              documentTitle(loaderData.tab),
+              tabFullTitle(loaderData.tab),
               loaderData.connection.name,
               loaderData.connectionResource.name
             ),

@@ -44,42 +44,38 @@ import {
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-interface SchemaItem {
+interface NavigatorItem {
   Icon: RemixiconComponentType
   label: string
-  onOpen: (resourceId: string) => void
-  onPromote?: (resourceId: string) => void
+  open: (resourceId: string, preview: boolean) => void
   tabId: string
-}
-
-interface SchemaGroup {
-  items: SchemaItem[]
-  label: string
 }
 
 const sectionItem = (
   Icon: RemixiconComponentType,
   label: string,
   section: DefinitionsSection
-): SchemaItem => ({
+): NavigatorItem => ({
   Icon,
   label,
-  onOpen: (resourceId) => openDefinitionsTab(resourceId, section, true),
-  onPromote: (resourceId) => openDefinitionsTab(resourceId, section),
+  open: (resourceId, preview) =>
+    openDefinitionsTab(resourceId, section, preview),
   tabId: definitionsTabId(section),
 })
 
-export const schemaGroups = (connection: Connection): SchemaGroup[] =>
+const visualizerItem: NavigatorItem = {
+  Icon: RiNodeTree,
+  label: 'Visualizer',
+  open: openVisualizerTab,
+  tabId: VISUALIZER_TAB_ID,
+}
+
+export const schemaGroups = (
+  connection: Connection
+): { items: NavigatorItem[]; label: string }[] =>
   [
     {
-      items: [
-        {
-          Icon: RiNodeTree,
-          label: 'Visualizer',
-          onOpen: openVisualizerTab,
-          tabId: VISUALIZER_TAB_ID,
-        },
-      ],
+      items: [visualizerItem],
       label: 'Overview',
     },
     {
@@ -157,7 +153,7 @@ export const DefinitionsPanel = () => {
             <SidebarGroupLabel className="text-muted-foreground h-6 px-2 text-xs font-[450]">
               {group.label}
             </SidebarGroupLabel>
-            {group.items.map(({ Icon, label, onOpen, onPromote, tabId }) => {
+            {group.items.map(({ Icon, label, open, tabId }) => {
               const isActive = activeTabId === tabId
 
               return (
@@ -174,8 +170,8 @@ export const DefinitionsPanel = () => {
                         }}
                         preload="intent"
                         preloadDelay={200}
-                        onClick={() => onOpen(connectionResource.id)}
-                        onDoubleClick={() => onPromote?.(connectionResource.id)}
+                        onClick={() => open(connectionResource.id, true)}
+                        onDoubleClick={() => open(connectionResource.id, false)}
                       />
                     }
                   >

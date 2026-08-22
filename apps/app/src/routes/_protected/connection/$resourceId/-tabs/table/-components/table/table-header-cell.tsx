@@ -15,6 +15,7 @@ import {
 } from '@remixicon/react'
 import type { TableHeaderCellProps } from '@tamery/table'
 import { useTableContext } from '@tamery/table/hooks'
+import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
 import {
   Tooltip,
   TooltipContent,
@@ -24,8 +25,8 @@ import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
-import { useRef, useState } from 'react'
+import type { ReactNode } from 'react'
+import { useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
@@ -179,10 +180,6 @@ const EnumTooltipIcon = ({
   </Tooltip>
 )
 
-const resizeOverlay = document.createElement('div')
-resizeOverlay.className =
-  'cursor-col-resize size-full fixed top-0 left-0 z-1000'
-
 const buildSortMenuItems = (
   order: 'ASC' | 'DESC' | null,
   onOrder: (order: 'ASC' | 'DESC' | null) => void
@@ -300,7 +297,6 @@ export const TableHeaderCell = ({
   ColumnHandlers) => {
   const { connectionResource } = useRouteContext()
   const store = useTablePageStore()
-  const [isResizing, setIsResizing] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const order = useSubscription(store, {
     selector: (state) => state.orderBy?.[column.id] ?? null,
@@ -325,36 +321,6 @@ export const TableHeaderCell = ({
           hiddenColumns: [...state.hiddenColumns, column.id],
         }) satisfies typeof state
     )
-  }
-
-  const handleResize = (e: ReactMouseEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsResizing(true)
-    const startWidth = ref.current?.getBoundingClientRect().width ?? 0
-
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      if (!scrollRef?.current) {
-        return
-      }
-      if (!resizeOverlay.parentElement) {
-        document.body.append(resizeOverlay)
-      }
-      const newWidth = Math.max(
-        100,
-        startWidth + (moveEvent.clientX - e.clientX)
-      )
-      onResize?.(newWidth)
-    }
-
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-      setIsResizing(false)
-      resizeOverlay.remove()
-    }
-
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
   }
 
   const removeSize = () => {
@@ -457,28 +423,23 @@ export const TableHeaderCell = ({
           </span>
         )}
         {onResize && (
-          // oxlint-disable-next-line jsx-a11y/click-events-have-key-events -- resize handle is pointer-driven
-          <div
-            // oxlint-disable-next-line prefer-tag-over-role -- interactive column resize handle
-            role="separator"
-            aria-orientation="vertical"
+          <ResizeHandle
             aria-label="Resize column"
-            tabIndex={0}
-            className="group/resize flex cursor-col-resize items-stretch self-stretch p-1 select-none"
-            onDoubleClick={removeSize}
-            onMouseDown={(e) => {
-              e.stopPropagation()
-              handleResize(e)
+            min={100}
+            getValue={() => ref.current?.getBoundingClientRect().width ?? 0}
+            onResize={(width) => {
+              if (!scrollRef?.current) {
+                return
+              }
+              onResize(width)
             }}
+            className="flex items-stretch self-stretch p-1"
+            onDoubleClick={removeSize}
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
           >
-            <span
-              className={cn(
-                `bg-foreground/20 group-hover/resize:bg-primary w-1 rounded-full opacity-0 transition-opacity group-hover/header-cell:opacity-100`,
-                isResizing && `bg-primary! opacity-100!`
-              )}
-            />
-          </div>
+            <span className="bg-foreground/20 group-hover/resize-handle:bg-primary group-data-resizing/resize-handle:bg-primary! w-1 rounded-full opacity-0 transition-opacity group-hover/header-cell:opacity-100 group-data-resizing/resize-handle:opacity-100!" />
+          </ResizeHandle>
         )}
       </div>
     </AppContextMenu>

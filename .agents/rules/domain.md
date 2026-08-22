@@ -33,7 +33,12 @@ Backed by Better Auth's `organization` plugin, remapped to `workspace` in `apps/
 
 ## Tabs
 
-Tabs live in `connectionResourceStore.tabs` (discriminated union on `type`, `entities/connection/store/tabs.ts`), ordered by the tab strip and persisted per resource in `localStorage`. Helpers are in `entities/connection/store/helpers.ts` and return the tab id so callers can navigate straight to it.
+Tabs live in `connectionResourceStore.tabs` (discriminated union on `type`, `entities/connection/store/tabs/types.ts`), ordered by the tab strip and persisted per resource in `localStorage`. Helpers return the tab id so callers can navigate straight to it.
+
+Both modules split by the slice they own, and `store/index.ts` re-exports every part, so call sites still import from `~/entities/connection/store`:
+
+- `store/helpers/` — `tabs.ts` (the `tabs` array + `activeTabId`), `tables.ts` (`pinnedTables` plus the table-tab mutations that keep pins in sync), `navigator.ts` (the in-memory navigator list), `visualizer.ts` (`visualizerViewports`).
+- `store/tabs/` — `types.ts` (schema, `ConnectionTab`, `isPreviewTab`), `ids.ts` (the id builders, the runner `localStorage` keys, and `parseTabId`, which stays beside the builders it must round-trip with), `title.ts` (`tabTitle`, `tabFullTitle`, and `tabLabels`, which derives the whole strip's labels at once because schema qualification and runner numbering both depend on the other open tabs).
 
 - A tab's id is readable, self-describing, and the single route path param: `table:<schema>:<table>` (percent-encoded parts), `definitions:<section>`, `visualizer`, `runner:<nanoid>`. Runner is the **only** multi-instance type; singleton ids are constants/derivations so `openTab` finds the existing tab instead of adding a second one.
 - `parseTabId` turns an id back into a tab, so a deep link to a never-opened table works: `$tabId`'s `beforeLoad` parses it and must stay **pure** — `beforeLoad` also runs on hover preload, so it must not touch the store. The component's effect calls `ensureTab` + `setActiveTab`.
@@ -42,7 +47,7 @@ Tabs live in `connectionResourceStore.tabs` (discriminated union on `type`, `ent
 
 ## Navigator
 
-Carries no action icons of its own: new tabs open from the tab strip's trailing `+` menu, the query logger toggle lives in the app title bar (only on resource routes), and open-in-web is a globe button beside the search field (desktop + cloud non-localhost only). Its only chrome is the list switcher pinned above search — one full-width row morphing between `Schema ›` and `‹ Tables`, body crossfading with a 12px slide.
+Carries no action icons of its own: new tabs open from the tab strip's trailing `+` menu, and the query logger toggle and open-in-web both live in the app title bar's trailing cluster (`_protected/-components/protected-titlebar.tsx`) — both only while a resource route is active, open-in-web additionally desktop + cloud non-localhost only. Its only chrome is the list switcher pinned above search — one full-width row morphing between `Schema ›` and `‹ Tables`, body crossfading with a 12px slide.
 
 Which list is up is **deliberately not persisted** — it lives in an in-memory `getNavigatorStore(resourceId)`, so every reload opens on Tables. "Schema" is the user-facing name for that list; tab ids and the store value stay `definitions`/`visualizer`. Open/width live in `navigatorOpenValue`/`navigatorWidthValue`; <kbd>Mod+B</kbd> toggles it.
 

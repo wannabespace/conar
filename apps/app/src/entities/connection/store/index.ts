@@ -4,10 +4,15 @@ import { memoize } from 'memoza'
 import { createStore } from 'seitu'
 import { createWebStorageValue } from 'seitu/web'
 
-import { connectionTabType } from './tabs'
+import { connectionTabType } from './tabs/types'
 
-export * from './helpers'
-export * from './tabs'
+export * from './helpers/navigator'
+export * from './helpers/tables'
+export * from './helpers/tabs'
+export * from './helpers/visualizer'
+export * from './tabs/ids'
+export * from './tabs/title'
+export * from './tabs/types'
 
 const schema = type({
   lastOpenedResourceName: 'string | null',
@@ -40,6 +45,12 @@ export const getConnectionStore = memoize((id: string) =>
   })
 )
 
+export const viewportType = type({
+  x: 'number',
+  y: 'number',
+  zoom: 'number',
+})
+
 export const connectionResourceType = type({
   activeTabId: 'string | null',
   loggerOpened: 'boolean',
@@ -51,6 +62,9 @@ export const connectionResourceType = type({
   tablesSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
   tabs: connectionTabType.array(),
+  'visualizerViewports?': {
+    '[string]': viewportType,
+  },
 })
 
 const connectionResourceDefaultState: typeof connectionResourceType.infer = {
@@ -61,6 +75,7 @@ const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   tablesSearch: '',
   tablesTreeOpenedSchemas: null,
   tabs: [],
+  visualizerViewports: {},
 }
 
 export const getConnectionResourceStore = memoize((id: string) =>
@@ -74,8 +89,6 @@ export const getConnectionResourceStore = memoize((id: string) =>
 
 export const getFilesStore = memoize((_id: string) => createStore<File[]>([]))
 
-export type NavigatorList = 'tables' | 'definitions'
-
 export const getNavigatorStore = memoize((_id: string) =>
-  createStore<NavigatorList>('tables')
+  createStore<'tables' | 'definitions'>('tables')
 )
