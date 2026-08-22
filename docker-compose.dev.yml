@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     ports:
       - '5432:5432'
     environment:
@@ -9,7 +9,7 @@ services:
       - POSTGRES_DB=tamery
     command: [postgres, -c, wal_level=logical]
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     restart: unless-stopped
     healthcheck:
       test: [CMD-SHELL, pg_isready -U postgres]
@@ -18,7 +18,7 @@ services:
       retries: 5
 
   redis:
-    image: redis/redis-stack:7.2.0-v19
+    image: redis/redis-stack:7.4.0-v8
     restart: always
     ports:
       - '6379:6379'
@@ -34,7 +34,7 @@ services:
       retries: 5
 
   infisical-db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     ports:
       - '5433:5432'
     environment:
@@ -42,7 +42,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=infisical
     volumes:
-      - infisical_postgres_data:/var/lib/postgresql/data
+      - infisical_postgres_data:/var/lib/postgresql
     restart: unless-stopped
     networks:
       - infisical
@@ -53,7 +53,7 @@ services:
       retries: 5
 
   infisical-redis:
-    image: redis/redis-stack:7.2.0-v19
+    image: redis/redis-stack:7.4.0-v8
     restart: unless-stopped
     volumes:
       - infisical_redis_data:/data
@@ -61,7 +61,7 @@ services:
       - infisical
 
   infisical:
-    image: infisical/infisical:v0.159.28
+    image: infisical/infisical:v0.162.24
     restart: unless-stopped
     depends_on:
       infisical-db:
