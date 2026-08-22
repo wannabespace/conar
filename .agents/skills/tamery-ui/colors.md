@@ -43,25 +43,25 @@ Blue/neutral family only (yellow and faint-neutral both rejected). Strokes use t
 Every color token is a **literal `oklch()`** — never `var(--another-token)`. Two tokens that happen to share a value (`--card` vs `--background`, `--input` vs `--popover`, the three status foregrounds) each keep their own literal. Aliasing was tried and rejected on two counts:
 
 1. **It stops reading like a shadcn palette.** The value of a token should be visible on its own line; chasing `var()` hops to learn what `--card` actually is makes the block unreviewable at a glance.
-2. **Aliases capture things you didn't mean to inherit.** `--card: var(--background)` looks value-identical, but `--background` carries `var(--surface-alpha)`, so `bg-card` silently went translucent on macOS. A pure-looking dedupe changed rendered output.
+2. **Aliases capture things you didn't mean to inherit.** `--card: var(--background)` looked value-identical, but `--background` carried `var(--surface-alpha)` at the time, so `bg-card` silently went translucent on macOS. A pure-looking dedupe changed rendered output.
 
-The one permitted `var()` inside a color is `--surface-alpha` (below), and it appears only on the two tokens that are meant to be translucent.
+The one permitted `var()` inside a color is `--surface-alpha` (below), and it appears only on `--body` — the one token that is meant to be translucent.
 
 `.dark` still carries **only the tokens whose values actually differ** — `--primary`, `--primary-foreground`, and `--chart-1…4` are identical in both themes and live in `:root` alone. That's the safe kind of dedupe: what remains is still a literal, and a token restated in both blocks is a token that drifts.
 
 ## Window translucency (`--surface-alpha`)
 
-macOS vibrancy is one knob, not a second palette: `--body` and `--background` carry their alpha as `oklch(L C H / var(--surface-alpha))`, and only the alpha is overridden per platform.
+macOS vibrancy is one knob, not a second palette: only `--body` (the level-1 canvas) carries its alpha as `oklch(L C H / var(--surface-alpha))`, and only the alpha is overridden per platform.
 
 ```css
 :root { --surface-alpha: 1; }
-.electron.mac:not(.window-fullscreen) { --surface-alpha: 0.6; }
+.electron.mac:not(.window-fullscreen) { --surface-alpha: 0.5; }
 .electron.mac.dark:not(.window-fullscreen) { --surface-alpha: 0.7; }
 ```
 
 Dark needs the higher value (0.7) — the same transparency reads much muddier over a dark backdrop. Never re-declare the color values in the `.electron.mac*` blocks, and don't add per-call-site `bg-body/85`-style softeners (the old approach): the token already carries the translucency, so a modifier multiplies alphas and the window goes see-through twice.
 
-**`--background` is only for surfaces sitting on the window** — never as a text or icon color. On inverted chrome (tooltip: `bg-foreground`), `text-background` renders at the surface alpha on desktop (50–75% gray instead of white), and any `opacity-*` on a child multiplies it further. Use `text-card` — same lightness, opaque literal (kit tooltip and its embedded `Kbd` were bitten by exactly this).
+**`--background` is opaque; `--body` alone is translucent** (owner call). `--background` carried the alpha too, but the alpha leaked everywhere the token was reused as paint rather than surface — `text-background` on inverted tooltip chrome (50–75% gray text instead of white), avatar `ring-background` cut-outs letting the overlapped neighbor bleed through, `bg-background/80` toasts multiplying down to 0.4 — so it was made opaque and vibrancy now shows only through the canvas. Don't reintroduce `var(--surface-alpha)` on other tokens, and don't reuse `--body` as a text/ring/border color or behind `/N` modifiers: the alpha bakes in at `:root` where the token is declared, so no descendant `--surface-alpha` reset can undo it.
 
 **Modals are opaque too.** `backdrop-filter` only samples the *page's* composited pixels, while the vibrancy material lives outside the page — so blurring semi-transparent surfaces smears their alpha and leaves the sharp OS-blurred desktop showing through underneath. No backdrop color or blur radius fixes it; you either drop the blur or drop the translucency for the duration. The translucency rules opt out with `:not(:has([data-slot$='-overlay']))`, which matches the kit's four modal overlays (dialog, alert-dialog, sheet, drawer) and nothing else in the repo — no marker class, no observer, both of which were tried and removed.
 

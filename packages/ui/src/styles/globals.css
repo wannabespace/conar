@@ -75,7 +75,7 @@
 :root {
   --surface-alpha: 1;
   --body: oklch(0.9651 0.0013 282.73 / var(--surface-alpha));
-  --background: oklch(0.986 0.0013 282.73 / var(--surface-alpha));
+  --background: oklch(0.986 0.0013 282.73);
   --foreground: oklch(0.18 0 0);
   --card: oklch(0.986 0.0013 282.73);
   --card-foreground: oklch(0.18 0 0);
@@ -109,7 +109,7 @@
 
 .dark {
   --body: oklch(0.2175 0.0042 259.64 / var(--surface-alpha));
-  --background: oklch(0.2437 0.0059 259.64 / var(--surface-alpha));
+  --background: oklch(0.2437 0.0059 259.64);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.2437 0.0059 259.64);
   --card-foreground: oklch(0.985 0 0);
