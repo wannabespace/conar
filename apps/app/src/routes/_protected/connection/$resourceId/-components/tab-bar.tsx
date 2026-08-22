@@ -54,8 +54,7 @@ import {
   removeTab,
   renameTab,
   setActiveTab,
-  tabFullTitle,
-  tabTitle,
+  tabLabels,
   updateTabs,
 } from '~/entities/connection/store'
 import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
@@ -94,40 +93,38 @@ const TableRefresh = ({ schema, table }: { schema: string; table: string }) => {
   })
   const isFetching = useIsFetching({ queryKey: rowsQueryOpts.queryKey }) > 0
   const [isUserRefreshing, setIsUserRefreshing] = useState(false)
-  const sawFetchRef = useRef(false)
 
-  useEffect(() => {
-    if (isFetching) {
-      sawFetchRef.current = true
-      return
-    }
+  const handleRefresh = async () => {
+    setIsUserRefreshing(true)
 
-    if (sawFetchRef.current) {
-      sawFetchRef.current = false
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries(rowsQueryOpts),
+        queryClient.invalidateQueries(
+          resourceTableColumnsQueryOptions({
+            connectionResource,
+            table,
+            schema,
+          })
+        ),
+        queryClient.invalidateQueries(
+          resourceTableTotalQueryOptions({
+            connectionResource,
+            table,
+            schema,
+            query: { filters, exact },
+          })
+        ),
+        queryClient.invalidateQueries(
+          resourceConstraintsQueryOptions({ connectionResource })
+        ),
+        queryClient.invalidateQueries(
+          resourceEnumsQueryOptions({ connectionResource })
+        ),
+      ])
+    } finally {
       setIsUserRefreshing(false)
     }
-  }, [isFetching])
-
-  const handleRefresh = () => {
-    setIsUserRefreshing(true)
-    queryClient.invalidateQueries(rowsQueryOpts)
-    queryClient.invalidateQueries(
-      resourceTableColumnsQueryOptions({ connectionResource, table, schema })
-    )
-    queryClient.invalidateQueries(
-      resourceTableTotalQueryOptions({
-        connectionResource,
-        table,
-        schema,
-        query: { filters, exact },
-      })
-    )
-    queryClient.invalidateQueries(
-      resourceConstraintsQueryOptions({ connectionResource })
-    )
-    queryClient.invalidateQueries(
-      resourceEnumsQueryOptions({ connectionResource })
-    )
   }
 
   useRefreshHotkey(handleRefresh, isFetching)
@@ -355,16 +352,14 @@ const Tab = ({
   }, [isActive, isVisible])
 
   const prefetch = () => {
-    if (tab.type !== 'table') {
-      return
+    if (tab.type === 'table') {
+      prefetchConnectionResourceTableCore({
+        connectionResource,
+        schema: tab.schema,
+        table: tab.table,
+        query: getQueryOpts(connectionResource, tab.schema, tab.table),
+      })
     }
-
-    prefetchConnectionResourceTableCore({
-      connectionResource,
-      schema: tab.schema,
-      table: tab.table,
-      query: getQueryOpts(connectionResource, tab.schema, tab.table),
-    })
   }
 
   const goToTab = () =>
@@ -490,29 +485,6 @@ const Tab = ({
   )
 }
 
-const ordinal = (ids: string[], id: string) =>
-  ids.length > 1 ? ` ${ids.indexOf(id) + 1}` : ''
-
-const tabLabels = (tabs: ConnectionTab[]) => {
-  const tableTabs = tabs.filter((tab) => tab.type === 'table')
-  const withSchema = new Set(tableTabs.map((tab) => tab.schema)).size > 1
-  const runnerIds = tabs.filter((tab) => tab.type === 'runner').map((t) => t.id)
-
-  return tabs.map((tab) => {
-    let defaultLabel: string
-
-    if (tab.type === 'table') {
-      defaultLabel = withSchema ? tabFullTitle(tab) : tabTitle(tab)
-    } else if (tab.type === 'runner') {
-      defaultLabel = `${tabTitle(tab)}${ordinal(runnerIds, tab.id)}`
-    } else {
-      defaultLabel = tabTitle(tab)
-    }
-
-    return { defaultLabel, label: tab.title ?? defaultLabel }
-  })
-}
-
 export const TabBar = ({ className }: { className?: string }) => {
   const { connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
@@ -621,14 +593,14 @@ export const TabBar = ({ className }: { className?: string }) => {
     navigatorOpenValue.set((open) => !open)
   })
 
-  const pruneUnparseableTabsEvent = useEffectEvent(() => {
+  const pruneUnparsableTabsEvent = useEffectEvent(() => {
     for (const tab of tabs.filter((item) => !parseTabId(item.id))) {
       closeTab(tab.id)
     }
   })
 
   useEffect(() => {
-    pruneUnparseableTabsEvent()
+    pruneUnparsableTabsEvent()
   }, [tabs])
 
   const cleanupTabsEvent = useEffectEvent(
