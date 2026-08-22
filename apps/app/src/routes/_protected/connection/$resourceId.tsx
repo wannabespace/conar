@@ -115,20 +115,33 @@ const ResourcePage = () => {
 
 export const Route = createFileRoute('/_protected/connection/$resourceId')({
   component: ResourcePage,
-  beforeLoad: ({ params }) => {
+  beforeLoad: async ({ params }) => {
     const {
       connectionsCollection,
       connectionsResourcesCollection,
       workspacesCollection,
     } = getCollections()
-    const connectionResource = connectionsResourcesCollection.get(
+
+    let connectionResource = connectionsResourcesCollection.get(
       params.resourceId
     )
-    const connection = connectionResource
+    let connection = connectionResource
       ? connectionsCollection.get(connectionResource.connectionId)
       : undefined
 
-    if (!connectionResource || !connection) {
+    if (!(connectionResource && connection)) {
+      await Promise.all([
+        connectionsResourcesCollection.utils.whenSynced(),
+        connectionsCollection.utils.whenSynced(),
+      ])
+
+      connectionResource = connectionsResourcesCollection.get(params.resourceId)
+      connection = connectionResource
+        ? connectionsCollection.get(connectionResource.connectionId)
+        : undefined
+    }
+
+    if (!(connectionResource && connection)) {
       lastOpenedResourcesStorageValue.set((prev) =>
         prev.filter((id) => id !== params.resourceId)
       )

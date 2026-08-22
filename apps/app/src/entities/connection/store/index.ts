@@ -40,6 +40,12 @@ export const getConnectionStore = memoize((id: string) =>
   })
 )
 
+export const viewportType = type({
+  x: 'number',
+  y: 'number',
+  zoom: 'number',
+})
+
 export const connectionResourceType = type({
   activeTabId: 'string | null',
   loggerOpened: 'boolean',
@@ -51,6 +57,11 @@ export const connectionResourceType = type({
   tablesSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
   tabs: connectionTabType.array(),
+  // Optional so state persisted before viewports existed still validates —
+  // a failed validation repairs against the defaults and drops activeTabId.
+  'viewports?': {
+    '[string]': viewportType,
+  },
 })
 
 const connectionResourceDefaultState: typeof connectionResourceType.infer = {
@@ -61,6 +72,7 @@ const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   tablesSearch: '',
   tablesTreeOpenedSchemas: null,
   tabs: [],
+  viewports: {},
 }
 
 export const getConnectionResourceStore = memoize((id: string) =>

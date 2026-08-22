@@ -45,14 +45,15 @@ import {
   resourceTablesAndSchemasQueryOptions,
 } from '~/entities/connection/queries'
 import type { columnType } from '~/entities/connection/queries/columns'
-import { getConnectionResourceStore } from '~/entities/connection/store'
+import {
+  getConnectionResourceStore,
+  setSchemaViewport,
+} from '~/entities/connection/store'
 import {
   applySearchHighlight,
   getVisualizerLayout,
 } from '~/entities/connection/visualizer'
 import { globalHooks } from '~/global-hooks'
-
-import { setSchemaViewport, visualizerPageStore } from './-lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -73,11 +74,11 @@ const Visualizer = ({
   constraints: (typeof constraintsType.infer)[]
 }) => {
   const { connectionResource } = useRouteContext()
-  const store = visualizerPageStore(connectionResource.id)
+  const store = getConnectionResourceStore(connectionResource.id)
   const schemas = [...new Set(tablesAndSchemas.map(({ schema }) => schema))]
   const initialSchema = schemas[0] ?? ''
   const [schema, setSchema] = useState(initialSchema)
-  const savedViewport = store.get().viewports[schema]
+  const savedViewport = store.get().viewports?.[schema]
   const [searchQuery, setSearchQuery] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -228,7 +229,9 @@ const Visualizer = ({
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onMoveEnd={(_, viewport) => setSchemaViewport(store, schema, viewport)}
+        onMoveEnd={(_, viewport) =>
+          setSchemaViewport(connectionResource.id, schema, viewport)
+        }
         panOnScroll
         selectionOnDrag
         nodeTypes={nodeTypes}

@@ -1,6 +1,6 @@
 import { toast } from 'sonner'
 
-import type { NavigatorList } from '.'
+import type { NavigatorList, viewportType } from '.'
 import { getConnectionResourceStore, getNavigatorStore } from '.'
 import type { ConnectionTab, DefinitionsSection } from './tabs'
 import {
@@ -43,6 +43,22 @@ export const setActiveTab = (id: string, tabId: string | null) => {
 
 export const setNavigator = (id: string, navigator: NavigatorList) => {
   getNavigatorStore(id).set(navigator)
+}
+
+export const setSchemaViewport = (
+  id: string,
+  schema: string,
+  viewport: typeof viewportType.infer
+) => {
+  const store = getConnectionResourceStore(id)
+
+  store.set(
+    (state) =>
+      ({
+        ...state,
+        viewports: { ...state.viewports, [schema]: viewport },
+      }) satisfies typeof state
+  )
 }
 
 export const ensureTab = (id: string, tab: ConnectionTab) => {

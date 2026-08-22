@@ -1,5 +1,6 @@
 import { RiSearchLine } from '@remixicon/react'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
+import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
 import {
   InputGroup,
   InputGroupAddon,
@@ -10,11 +11,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import type { MouseEvent as ReactMouseEvent } from 'react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
@@ -32,15 +31,10 @@ import {
   SIDEBAR_MIN_WIDTH,
 } from './constants'
 import { DefinitionsPanel } from './definitions-section'
-import { NavigatorMenu } from './navigator-menu'
 import { NavigatorSwitcher } from './navigator-switcher'
 import { TablesList } from './tables-list'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
-
-const resizeOverlay = document.createElement('div')
-resizeOverlay.className =
-  'cursor-col-resize size-full fixed top-0 left-0 z-1000'
 
 const TablesPanel = () => {
   const { connectionResource } = useRouteContext()
@@ -105,7 +99,6 @@ const TablesPanel = () => {
             </div>
           </TooltipContent>
         </Tooltip>
-        <NavigatorMenu />
       </div>
       <TablesList className="min-h-0 flex-1" search={search} />
     </>
@@ -118,37 +111,6 @@ export const Navigator = () => {
   const width = useSubscription(navigatorWidthValue)
   const navigator = useSubscription(getNavigatorStore(connectionResource.id))
   const [isResizing, setIsResizing] = useState(false)
-
-  const handleResize = (e: ReactMouseEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsResizing(true)
-    const startX = e.clientX
-    const startWidth = navigatorWidthValue.get()
-
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      if (!resizeOverlay.parentElement) {
-        document.body.append(resizeOverlay)
-      }
-      navigatorWidthValue.set(
-        Math.min(
-          SIDEBAR_MAX_WIDTH,
-          Math.max(SIDEBAR_MIN_WIDTH, startWidth + moveEvent.clientX - startX)
-        )
-      )
-    }
-
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-      setIsResizing(false)
-      if (resizeOverlay.parentElement) {
-        resizeOverlay.remove()
-      }
-    }
-
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
-  }
 
   return (
     <motion.div
@@ -189,23 +151,18 @@ export const Navigator = () => {
         </div>
       </div>
       {isOpen && (
-        <div
-          // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- interactive resize handle
-          role="separator"
-          aria-orientation="vertical"
+        <ResizeHandle
           aria-label="Resize sidebar"
-          tabIndex={0}
-          className="group absolute inset-y-0 right-0 z-10 cursor-col-resize px-2 duration-150 select-none"
-          onMouseDown={handleResize}
+          className="absolute inset-y-0 right-0 z-10 px-2"
+          getValue={navigatorWidthValue.get}
+          min={SIDEBAR_MIN_WIDTH}
+          max={SIDEBAR_MAX_WIDTH}
+          onResize={(value) => navigatorWidthValue.set(value)}
+          onResizingChange={setIsResizing}
           onDoubleClick={() => navigatorWidthValue.set(SIDEBAR_DEFAULT_WIDTH)}
         >
-          <div
-            className={cn(
-              'group-hover:bg-border h-full w-px rounded-xs transition-colors',
-              isResizing && 'bg-primary/40'
-            )}
-          />
-        </div>
+          <div className="group-hover/resize-handle:bg-border group-data-resizing/resize-handle:bg-primary/40 h-full w-px rounded-xs transition-colors" />
+        </ResizeHandle>
       )}
     </motion.div>
   )
