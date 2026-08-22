@@ -1,3 +1,4 @@
+import { eq, queryOnce } from '@tanstack/react-db'
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { v7 } from 'uuid'
@@ -69,13 +70,18 @@ export const connectionResourcesQueryOptions = (connection: Connection) =>
         await connectionToQueryParams(connection)
       )
 
-      const stored = await connectionsResourcesCollection.toArrayWhenReady()
+      await connectionsResourcesCollection.utils.whenSynced()
+
+      const stored = await queryOnce((q) =>
+        q
+          .from({ resource: connectionsResourcesCollection })
+          .where(({ resource }) => eq(resource.connectionId, connection.id))
+          .select(({ resource }) => ({ name: resource.name }))
+      )
+      const storedNames = new Set(stored.map((resource) => resource.name))
 
       for (const name of resources) {
-        const exists = stored.some(
-          (r) => r.connectionId === connection.id && r.name === name
-        )
-        if (!exists) {
+        if (!storedNames.has(name)) {
           connectionsResourcesCollection.insert({
             connectionId: connection.id,
             createdAt: new Date(),

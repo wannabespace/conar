@@ -21,11 +21,11 @@ Topic files — read the ones your task touches; record new decisions in the mat
 ## Hard rules
 
 1. **No `dark:` selectors.** Use theme tokens that resolve in both themes. No new theme-pair vars either (rejected). Cross-theme constructions when a token pair lacks contrast:
-   - neutral tints: `bg-foreground/5` (groove), `bg-foreground/3` (zebra); elevation: `bg-input` sits above `bg-background` in both themes
+   - `bg-accent` and `border` are already alpha tints (black in light, white in dark) — use them plain, never with a per-surface alpha
+   - neutral tints: `bg-foreground/5` (groove), `bg-foreground/10` (latched), `bg-foreground/3` (zebra); elevation: `bg-input` sits above `bg-background` in both themes
    - alpha over a resolving token: `ring-destructive/30`, `bg-destructive/15`
-   - `bg-input/N`: white in light, translucent lift in dark
-   - dual hairline: `shadow-[0_1px_--theme(--color-black/6%),0_-1px_--theme(--color-white/6%)]`
-   - `color-mix` with `--background` for tinted fills; plain `bg-white`/`border-white/10` where both themes want white
+   - `color-mix` with `--input`/`--background` for tinted fills
+   - **If several call sites each dial their own alpha on one token, the token is wrong** — fix it in globals, don't add a seventh variant ([colors.md](colors.md))
 2. **No pixel font sizes.** Tokens only: `text-2xs`/`text-xs`/`text-sm`/`text-base`+. Missing size → add rem token to `@theme`.
 3. **No `cursor-pointer`.** `cursor-default` on link-based controls; I-beam and col-resize are the only exceptions.
 4. **Kit-level fixes** in `packages/ui` for systemic sizing/color problems; page overrides only for page-specific design.

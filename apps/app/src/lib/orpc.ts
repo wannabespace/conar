@@ -31,7 +31,7 @@ export const orpc = createTanstackQueryUtils(
                 'x-desktop': 'true',
                 'x-desktop-version': await window.electron.versions.app(),
               }
-            : {}),
+            : { 'x-app-version': import.meta.env.VITE_APP_VERSION }),
         }
       },
       interceptors: [onError(handleError)],

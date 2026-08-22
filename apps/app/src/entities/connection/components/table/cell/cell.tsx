@@ -141,7 +141,7 @@ const getCellClassName = ({
 }) =>
   cn(
     isPopoverOpen && 'bg-primary/8 inset-ring-primary/60',
-    (isForeignOpen || isReferencesOpen) && 'bg-accent/50 inset-ring-border',
+    (isForeignOpen || isReferencesOpen) && 'bg-accent inset-ring-border',
     status === 'error' && 'bg-destructive/10 inset-ring-destructive/40',
     status === 'pending' && 'bg-primary/8 animate-pulse',
     status === 'draft' && 'bg-primary/12 inset-ring-primary/30 italic',

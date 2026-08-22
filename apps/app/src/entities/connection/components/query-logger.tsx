@@ -73,7 +73,7 @@ const LogTrigger = ({
     <button
       type="button"
       className={cn(
-        `hover:bg-accent/50 flex w-full items-center justify-between gap-2 border-t px-4 py-1.5`,
+        `hover:bg-accent flex w-full items-center justify-between gap-2 border-t px-4 py-1.5`,
         className
       )}
       {...props}
@@ -148,7 +148,7 @@ const Log = ({
         render={
           <LogTrigger
             query={query}
-            className={cn(className, isOpen && 'bg-accent/30')}
+            className={cn(className, isOpen && 'bg-accent')}
             onMouseLeave={closePopover}
           />
         }
@@ -170,7 +170,7 @@ const Log = ({
           {query.values && query.values.length > 0 && (
             <div className="space-y-2">
               <Label>Values</Label>
-              <pre className="bg-accent/50 overflow-x-auto rounded-sm p-2 font-mono text-xs">
+              <pre className="bg-muted overflow-x-auto rounded-sm p-2 font-mono text-xs">
                 {JSON.stringify(query.values)}
               </pre>
             </div>

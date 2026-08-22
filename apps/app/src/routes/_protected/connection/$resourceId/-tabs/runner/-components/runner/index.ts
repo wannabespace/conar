@@ -1,0 +1,144 @@
+import { queryOptions } from '@tanstack/react-query'
+import { toast } from 'sonner'
+
+import type { ConnectionResource } from '~/entities/connection/core'
+import { customQuery } from '~/entities/connection/queries/custom'
+import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
+import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
+
+import type { runnerPageType } from '../../-lib/store'
+import { runnerPageStore } from '../../-lib/store'
+
+export * from './runner'
+
+const transformResult = ({
+  rows,
+  query,
+  startLineNumber,
+  endLineNumber,
+  duration,
+}: {
+  rows: unknown[]
+  duration: number
+} & Pick<
+  (typeof runnerPageType.infer)['queriesToRun'][number],
+  'query' | 'startLineNumber' | 'endLineNumber'
+>) => ({
+  data: rows as Record<string, unknown>[],
+  error: null,
+  query,
+  startLineNumber,
+  endLineNumber,
+  duration,
+})
+
+const transformError = ({
+  error,
+  query,
+  startLineNumber,
+  endLineNumber,
+  duration,
+}: {
+  error: unknown
+  duration: number
+} & Pick<
+  (typeof runnerPageType.infer)['queriesToRun'][number],
+  'query' | 'startLineNumber' | 'endLineNumber'
+>) => ({
+  data: null,
+  error: error instanceof Error ? error.message : String(error),
+  query,
+  startLineNumber,
+  endLineNumber,
+  duration,
+})
+
+export const runnerQueryOptions = ({
+  connectionResource,
+  tabId,
+}: {
+  connectionResource: ConnectionResource
+  tabId: string
+}) => {
+  const store = runnerPageStore({ resourceId: connectionResource.id, tabId })
+
+  return queryOptions({
+    queryKey: ['query-runner', connectionResource.id, tabId],
+    queryFn: async ({ signal }) => {
+      const queries = store.get().queriesToRun
+
+      const results: (
+        | ReturnType<typeof transformResult>
+        | ReturnType<typeof transformError>
+      )[] = []
+
+      const queryParams =
+        await connectionResourceToQueryParams(connectionResource)
+
+      for (const { query, startLineNumber, endLineNumber } of queries) {
+        if (signal.aborted) {
+          return []
+        }
+
+        const startTime = performance.now()
+        try {
+          // Sequential by design: queries run in order on the same connection
+          // oxlint-disable-next-line no-await-in-loop
+          const rows = await customQuery({ query }).run(queryParams)
+          results.push(
+            transformResult({
+              rows,
+              query,
+              startLineNumber,
+              endLineNumber,
+              duration: performance.now() - startTime,
+            })
+          )
+        } catch (error) {
+          const duration = performance.now() - startTime
+          results.push(
+            transformError({
+              error,
+              query,
+              startLineNumber,
+              endLineNumber,
+              duration,
+            })
+          )
+        }
+      }
+
+      const queriesWithDangerousSqlKeywords = queries.filter(({ query }) =>
+        hasDangerousSqlKeywords(query)
+      )
+
+      if (queriesWithDangerousSqlKeywords.length > 0) {
+        const errors = results.filter(({ error }) => error !== null)
+
+        if (errors.length === 0) {
+          toast.success(
+            queriesWithDangerousSqlKeywords.length > 1
+              ? 'All queries executed successfully!'
+              : 'Query executed successfully!'
+          )
+        } else if (errors.length === results.length) {
+          toast.error(
+            queriesWithDangerousSqlKeywords.length > 1
+              ? 'All queries failed to execute!'
+              : 'Query failed to execute!'
+          )
+        } else {
+          toast.warning(
+            queriesWithDangerousSqlKeywords.length > 1
+              ? 'Some queries failed to execute!'
+              : 'Query failed to execute!'
+          )
+        }
+      }
+
+      return results
+    },
+    throwOnError: false,
+    enabled: false,
+  })
+}

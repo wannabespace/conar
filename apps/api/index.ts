@@ -66,6 +66,13 @@ export interface AppVariables {
   logEvent?: Record<string, unknown>
 }
 
+const isDesktopVersionOutdated = (
+  parsedAppVersion: AppVariables['parsedAppVersion']
+) =>
+  !!env.MIN_DESKTOP_VERSION &&
+  !!parsedAppVersion?.minor &&
+  parsedAppVersion.minor < env.MIN_DESKTOP_VERSION
+
 const app = new Hono<{
   Variables: AppVariables
 }>()
@@ -104,9 +111,8 @@ const app = new Hono<{
     c.set('parsedAppVersion', parsedAppVersion)
     c.set(
       'isAppOutdated',
-      !!env.MIN_DESKTOP_VERSION &&
-        !!parsedAppVersion?.minor &&
-        parsedAppVersion.minor < env.MIN_DESKTOP_VERSION
+      c.req.header('x-desktop') === 'true' &&
+        isDesktopVersionOutdated(parsedAppVersion)
     )
 
     // Logging runs after the downstream handlers; must not return next().

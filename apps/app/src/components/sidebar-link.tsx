@@ -13,7 +13,7 @@ const activeClasses = `
   bg-primary text-primary-foreground
   [&_svg]:text-primary-foreground
 `
-const inactiveClasses = 'hover:bg-accent/50'
+const inactiveClasses = 'hover:bg-accent'
 
 export const SidebarButton = ({
   className,
@@ -38,7 +38,7 @@ export const SidebarLink = ({
   <Link
     className={cn(
       baseClasses,
-      `data-[status=active]:bg-primary data-[status=active]:text-primary-foreground data-[status=active]:[&_svg]:text-primary-foreground [&:not([data-status=active])]:hover:bg-accent/50`,
+      `data-[status=active]:bg-primary data-[status=active]:text-primary-foreground data-[status=active]:[&_svg]:text-primary-foreground [&:not([data-status=active])]:hover:bg-accent`,
       className
     )}
     {...props}

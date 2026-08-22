@@ -45,8 +45,8 @@ export const banner = orpc
     }
 
     if (
-      context.parsedAppVersion?.minor &&
-      context.parsedAppVersion.minor === 25 &&
+      context.isDesktop &&
+      context.parsedAppVersion?.minor === 25 &&
       context.os === 'linux'
     ) {
       items.push({

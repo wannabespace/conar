@@ -4,14 +4,12 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@tamery/ui/components/resizable'
-import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import {
   createFileRoute,
   getRouteApi,
   Outlet,
   redirect,
-  useMatches,
 } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
@@ -19,7 +17,6 @@ import { useSubscription } from 'seitu/react'
 
 import { getCollections, useCollections } from '~/entities/collections'
 import { QueryLogger } from '~/entities/connection/components'
-import type { connectionResourceType } from '~/entities/connection/store'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import {
   lastOpenedResourcesStorageValue,
@@ -27,25 +24,16 @@ import {
 } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { getActiveWorkspace } from '~/entities/workspace'
-import type { FileRoutesById } from '~/routeTree.gen'
 
-import { ConnectionSidebar } from './-components/connection-sidebar'
+import { Navigator } from './$resourceId/-components/navigator/navigator'
+import { TabBar } from './$resourceId/-components/tab-bar'
 import { PasswordForm } from './-components/password-form'
 
 const resourceRouteApi = getRouteApi('/_protected/connection/$resourceId')
 
-const getDatabasePageId = (routesIds: (keyof FileRoutesById)[]) =>
-  routesIds.findLast((route) =>
-    route.includes('/_protected/connection/$resourceId')
-  ) as (typeof connectionResourceType.infer)['lastOpenedPage']
-
 const ResourcePage = () => {
   const { connection, connectionResource } = resourceRouteApi.useRouteContext()
   const { connectionStringsCollection } = useCollections()
-  const currentPageId = useMatches({
-    select: (matches) =>
-      getDatabasePageId(matches.map((match) => match.routeId)),
-  })
   const store = getConnectionResourceStore(connectionResource.id)
   const loggerOpened = useSubscription(store, {
     selector: (state) => state.loggerOpened,
@@ -59,18 +47,6 @@ const ResourcePage = () => {
     [connectionStringsCollection, connection.id]
   )
   const isPasswordPopulated = connectionString?.isPasswordPopulated
-
-  useEffect(() => {
-    if (currentPageId) {
-      store.set(
-        (state) =>
-          ({
-            ...state,
-            lastOpenedPage: currentPageId,
-          }) satisfies typeof state
-      )
-    }
-  }, [currentPageId, store])
 
   useEffect(() => {
     const last = lastOpenedResourcesStorageValue.get()
@@ -102,12 +78,7 @@ const ResourcePage = () => {
 
   return (
     <div className="flex">
-      <ConnectionSidebar className="w-16" />
-      <div
-        className={cn(
-          `m-2 ml-0 flex h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(16))-(--spacing(2)))] flex-col`
-        )}
-      >
+      <div className="m-2 flex h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(4)))] flex-col">
         <ResizablePanelGroup
           orientation="vertical"
           className="min-h-0 flex-1"
@@ -115,7 +86,13 @@ const ResourcePage = () => {
           onLayoutChanged={onLayoutChanged}
         >
           <ResizablePanel defaultSize="70%" minSize="50%">
-            <Outlet />
+            <div className="flex h-full min-h-0 w-full">
+              <Navigator />
+              <div className="bg-background flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg">
+                <TabBar />
+                <Outlet />
+              </div>
+            </div>
           </ResizablePanel>
           {loggerOpened && (
             <>
@@ -138,20 +115,33 @@ const ResourcePage = () => {
 
 export const Route = createFileRoute('/_protected/connection/$resourceId')({
   component: ResourcePage,
-  beforeLoad: ({ params }) => {
+  beforeLoad: async ({ params }) => {
     const {
       connectionsCollection,
       connectionsResourcesCollection,
       workspacesCollection,
     } = getCollections()
-    const connectionResource = connectionsResourcesCollection.get(
+
+    let connectionResource = connectionsResourcesCollection.get(
       params.resourceId
     )
-    const connection = connectionResource
+    let connection = connectionResource
       ? connectionsCollection.get(connectionResource.connectionId)
       : undefined
 
-    if (!connectionResource || !connection) {
+    if (!(connectionResource && connection)) {
+      await Promise.all([
+        connectionsResourcesCollection.utils.whenSynced(),
+        connectionsCollection.utils.whenSynced(),
+      ])
+
+      connectionResource = connectionsResourcesCollection.get(params.resourceId)
+      connection = connectionResource
+        ? connectionsCollection.get(connectionResource.connectionId)
+        : undefined
+    }
+
+    if (!(connectionResource && connection)) {
       lastOpenedResourcesStorageValue.set((prev) =>
         prev.filter((id) => id !== params.resourceId)
       )

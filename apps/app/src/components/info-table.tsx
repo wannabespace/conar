@@ -13,7 +13,7 @@ export const InfoTable = ({
           <span className="text-muted-foreground min-w-15 font-medium">
             {name}
           </span>
-          <span className="bg-accent/40 text-foreground rounded-sm px-1.5 py-0.5 font-mono">
+          <span className="bg-muted text-foreground rounded-sm px-1.5 py-0.5 font-mono">
             {value}
           </span>
         </div>

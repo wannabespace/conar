@@ -4,8 +4,11 @@ import {
   RiCommandLine,
   RiDeleteBinLine,
   RiExpandUpDownLine,
+  RiFileListLine,
+  RiGlobalLine,
 } from '@remixicon/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
+import { SyncType } from '@tamery/shared/enums/sync-type'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
@@ -24,8 +27,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
-import { useNavigate, useParams } from '@tanstack/react-router'
+import { useLocation, useNavigate, useParams } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
 import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -40,6 +44,7 @@ import {
   ConnectionResourceLink,
   useConnectionResourceLinkParams,
 } from '~/entities/connection'
+import { getConnectionResourceStore } from '~/entities/connection/store'
 import { UserButton } from '~/entities/user/components'
 import { useActiveWorkspace } from '~/entities/workspace'
 import { setIsActionCenterOpen } from '~/store'
@@ -137,6 +142,9 @@ const ConnectionsDropdown = ({
         {current ? (
           <>
             <ConnectionIcon type={current.type} className="size-4 shrink-0" />
+            <span data-mask className="truncate font-medium">
+              {current.name}
+            </span>
             {current.color && (
               <span
                 aria-hidden
@@ -144,9 +152,6 @@ const ConnectionsDropdown = ({
                 style={{ backgroundColor: current.color }}
               />
             )}
-            <span data-mask className="truncate font-medium">
-              {current.name}
-            </span>
           </>
         ) : (
           <span className="truncate font-medium">Connections</span>
@@ -298,6 +303,113 @@ const ConnectionsBreadcrumb = ({
   )
 }
 
+const QueryLoggerButton = ({ resourceId }: { resourceId: string }) => {
+  const store = getConnectionResourceStore(resourceId)
+  const loggerOpened = useSubscription(store, {
+    selector: (state) => state.loggerOpened,
+  })
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            aria-label="Query logger"
+            aria-pressed={loggerOpened}
+            className={cn(loggerOpened && 'bg-foreground/10 text-primary')}
+            onClick={() =>
+              store.set(
+                (state) =>
+                  ({
+                    ...state,
+                    loggerOpened: !state.loggerOpened,
+                  }) satisfies typeof state
+              )
+            }
+          />
+        }
+      >
+        <RiFileListLine className="size-4" />
+      </TooltipTrigger>
+      <TooltipContent side="bottom">Query logger</TooltipContent>
+    </Tooltip>
+  )
+}
+
+const QueryLoggerToggle = () => {
+  const { resourceId } = useParams({ strict: false })
+
+  return resourceId ? <QueryLoggerButton resourceId={resourceId} /> : null
+}
+
+const OpenInWebButton = ({ resourceId }: { resourceId: string }) => {
+  const {
+    connectionsCollection,
+    connectionsResourcesCollection,
+    connectionStringsCollection,
+  } = useCollections()
+  const location = useLocation()
+
+  const { data: connection } = useLiveQuery(
+    (q) =>
+      q
+        .from({ r: connectionsResourcesCollection })
+        .where(({ r }) => eq(r.id, resourceId))
+        .innerJoin({ c: connectionsCollection }, ({ r, c }) =>
+          eq(c.id, r.connectionId)
+        )
+        .select(({ c }) => ({ id: c.id, syncType: c.syncType }))
+        .findOne(),
+    [connectionsResourcesCollection, connectionsCollection, resourceId]
+  )
+
+  const { data: connectionString } = useLiveQuery(
+    (q) =>
+      q
+        .from({ cs: connectionStringsCollection })
+        .where(({ cs }) => eq(cs.connectionId, connection?.id ?? ''))
+        .findOne(),
+    [connectionStringsCollection, connection?.id]
+  )
+
+  if (
+    connection?.syncType !== SyncType.Cloud ||
+    connectionString?.isLocalhost
+  ) {
+    return null
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            aria-label="Open in web app"
+            onClick={() =>
+              window.open(import.meta.env.VITE_PUBLIC_WEB_URL + location.href)
+            }
+          />
+        }
+      >
+        <RiGlobalLine className="size-4" />
+      </TooltipTrigger>
+      <TooltipContent side="bottom">Open in web app</TooltipContent>
+    </Tooltip>
+  )
+}
+
+const OpenInWeb = () => {
+  const { resourceId } = useParams({ strict: false })
+
+  return window.electron && resourceId ? (
+    <OpenInWebButton resourceId={resourceId} />
+  ) : null
+}
+
 export const ProtectedTitleBar = () => {
   const removeDialogRef =
     useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)
@@ -350,6 +462,8 @@ export const ProtectedTitleBar = () => {
               </Tooltip>
             )}
             <UpdateButton />
+            <OpenInWeb />
+            <QueryLoggerToggle />
             <Tooltip>
               <TooltipTrigger
                 render={

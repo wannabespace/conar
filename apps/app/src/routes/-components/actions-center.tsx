@@ -51,6 +51,12 @@ import {
   resourceTablesAndSchemasQueryOptions,
   useConnectionResourceLinkParams,
 } from '~/entities/connection'
+import {
+  openDefinitionsTab,
+  openRunnerTab,
+  openTableTab,
+  openVisualizerTab,
+} from '~/entities/connection/store'
 import { useActiveWorkspace } from '~/entities/workspace'
 import { appStore, setIsActionCenterOpen } from '~/store'
 import { checkForUpdates } from '~/use-updates-observer'
@@ -58,23 +64,18 @@ import { checkForUpdates } from '~/use-updates-observer'
 const CONNECTION_PAGES = [
   {
     label: 'SQL Runner',
-    to: '/connection/$resourceId/query' as const,
     icon: RiTerminalBoxLine,
-  },
-  {
-    label: 'Tables',
-    to: '/connection/$resourceId/table' as const,
-    icon: RiTableLine,
+    openTab: openRunnerTab,
   },
   {
     label: 'Definitions',
-    to: '/connection/$resourceId/definitions' as const,
     icon: RiFileListLine,
+    openTab: (resourceId: string) => openDefinitionsTab(resourceId, 'enums'),
   },
   {
     label: 'Visualizer',
-    to: '/connection/$resourceId/visualizer' as const,
     icon: RiNodeTree,
+    openTab: openVisualizerTab,
   },
 ]
 
@@ -225,21 +226,24 @@ export const ActionsCenter = () => {
       },
       ...(current
         ? CONNECTION_PAGES.map((page) => ({
-            value: `Go to ${page.label}`,
-            keywords: ['go to', page.label],
+            value: `Open ${page.label}`,
+            keywords: ['open', 'go to', page.label],
             node: (
               <CommandItem
-                key={page.to}
-                value={`Go to ${page.label}`}
+                key={page.label}
+                value={`Open ${page.label}`}
                 onSelect={run(() =>
                   router.navigate({
-                    to: page.to,
-                    params: { resourceId: current.connectionResource.id },
+                    to: '/connection/$resourceId/$tabId',
+                    params: {
+                      resourceId: current.connectionResource.id,
+                      tabId: page.openTab(current.connectionResource.id),
+                    },
                   })
                 )}
               >
                 <page.icon className="text-muted-foreground" />
-                Go to {page.label}
+                Open {page.label}
               </CommandItem>
             ),
           }))
@@ -394,9 +398,15 @@ export const ActionsCenter = () => {
                     return
                   }
                   router.navigate({
-                    to: '/connection/$resourceId/table',
-                    params: { resourceId: current.connectionResource.id },
-                    search: { schema: schema.name, table: table.name },
+                    to: '/connection/$resourceId/$tabId',
+                    params: {
+                      resourceId: current.connectionResource.id,
+                      tabId: openTableTab(
+                        current.connectionResource.id,
+                        schema.name,
+                        table.name
+                      ),
+                    },
                   })
                 })}
               >

@@ -7,6 +7,7 @@ import {
 } from '@tanstack/browser-db-sqlite-persistence'
 import type { SyncConfig } from '@tanstack/react-db'
 import { BasicIndex } from '@tanstack/react-db'
+import { Result } from 'better-result'
 
 import { posthog } from './posthog'
 
@@ -21,7 +22,9 @@ export interface SyncTracker {
   awaitChange: (key: string, updatedAt: Date, timeout?: number) => Promise<void>
 }
 
-export type SyncUtils = Pick<SyncTracker, 'awaitChange'>
+export type SyncUtils = Pick<SyncTracker, 'awaitChange'> & {
+  whenSynced: () => Promise<void>
+}
 
 const versionKey = (key: string, updatedAt: Date) =>
   `${key}:${updatedAt.getTime()}`
@@ -38,29 +41,23 @@ export const createSyncTracker = (): SyncTracker => {
         return Promise.resolve()
       }
 
-      // Event-driven wait requires the Promise constructor; no library deferred here.
-      // oxlint-disable-next-line promise/avoid-new
-      return new Promise<void>((resolve, reject) => {
-        const handle = {
-          timer: undefined as ReturnType<typeof setTimeout> | undefined,
-        }
-        const listener = () => {
-          if (!synced.has(versioned)) {
-            return
-          }
-          if (handle.timer !== undefined) {
-            clearTimeout(handle.timer)
-          }
-          listeners.delete(listener)
+      const { promise, resolve, reject } = Promise.withResolvers<undefined>()
+
+      const listener = () => {
+        if (synced.has(versioned)) {
           resolve()
         }
+      }
 
-        handle.timer = setTimeout(() => {
-          listeners.delete(listener)
-          reject(new Error('awaitChange timed out'))
-        }, timeout)
+      const timer = setTimeout(() => {
+        reject(new Error('awaitChange timed out'))
+      }, timeout)
 
-        listeners.add(listener)
+      listeners.add(listener)
+
+      return promise.finally(() => {
+        clearTimeout(timer)
+        listeners.delete(listener)
       })
     },
     markSynced(key, updatedAt) {
@@ -74,9 +71,37 @@ export const createSyncTracker = (): SyncTracker => {
 
 const DATABASE_NAME = `${GITHUB_REPO_NAME}.sqlite`
 
-export const database = await openBrowserWASQLiteOPFSDatabase({
-  databaseName: DATABASE_NAME,
-})
+const OPEN_DATABASE_RETRIES = 2
+const OPEN_DATABASE_RETRY_DELAY = 500
+
+// OPFSCoopSyncVFS init deletes `.ahp-*` temp dirs whose Web Lock is free, i.e.
+// those left by a crashed or reloaded tab. The lock drops before the browser
+// reclaims that tab's sync access handles, so `removeEntry` can still throw
+// NoModificationAllowedError (INTERNAL -> OPFSWorkerRequestError) on a dir it
+// was right to delete. The handles are released within a beat: retry.
+const databaseResult = await Result.tryPromise(
+  {
+    catch: (error) => error,
+    try: () => openBrowserWASQLiteOPFSDatabase({ databaseName: DATABASE_NAME }),
+  },
+  {
+    retry: {
+      backoff: 'linear',
+      delayMs: OPEN_DATABASE_RETRY_DELAY,
+      shouldRetry: (error) => {
+        posthog.captureException(error)
+        return true
+      },
+      times: OPEN_DATABASE_RETRIES,
+    },
+  }
+)
+
+if (databaseResult.isErr()) {
+  throw databaseResult.error
+}
+
+export const database = databaseResult.value
 
 if (import.meta.env.DEV) {
   // @ts-expect-error window is not typed
@@ -129,6 +154,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
   config: SyncCollectionConfig<T>
 ) => {
   const tracker = createSyncTracker()
+  const firstSync = Promise.withResolvers<undefined>()
 
   const sync: SyncConfig<T, string> = {
     sync: ({ begin, commit, write, collection, markReady }) => {
@@ -156,32 +182,41 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
       }
 
       const catchUp = async () => {
-        try {
-          const rows = await collection.toArrayWhenReady()
-          writeItems(await config.sync({ rows, signal }))
-        } catch (error) {
-          if (!signal.aborted) {
-            posthog.captureException(error)
-          }
+        const result = await Result.tryPromise({
+          catch: (error) => error,
+          try: async () => {
+            const rows = await collection.toArrayWhenReady()
+            writeItems(await config.sync({ rows, signal }))
+          },
+        })
+
+        if (result.isErr() && !signal.aborted) {
+          posthog.captureException(result.error)
         }
+
+        firstSync.resolve()
       }
 
       const run = async () => {
         let failures = 0
 
         while (!signal.aborted) {
-          try {
-            // oxlint-disable-next-line no-await-in-loop
-            await Promise.all([
-              catchUp(),
-              config.events({ signal, write: (item) => writeItems([item]) }),
-            ])
+          // oxlint-disable-next-line no-await-in-loop
+          const result = await Result.tryPromise({
+            catch: (error) => error,
+            try: () =>
+              Promise.all([
+                catchUp(),
+                config.events({ signal, write: (item) => writeItems([item]) }),
+              ]),
+          })
+
+          if (result.isOk()) {
             failures = 0
-          } catch (error) {
-            if (signal.aborted) {
-              return
-            }
-            posthog.captureException(error)
+          } else if (signal.aborted) {
+            return
+          } else {
+            posthog.captureException(result.error)
             failures += 1
           }
 
@@ -198,6 +233,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
 
       return () => {
         abortController.abort(`${config.id} sync aborted`)
+        firstSync.resolve()
       }
     },
   }
@@ -211,50 +247,54 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
     onInsert: config.onInsert,
     onUpdate: config.onUpdate,
     sync,
-    utils: { awaitChange: tracker.awaitChange },
+    utils: {
+      awaitChange: tracker.awaitChange,
+      whenSynced: () => firstSync.promise,
+    },
   }
 }
 
 export const clearDb = async () => {
-  try {
-    await database.execute('PRAGMA foreign_keys = OFF;')
+  const result = await Result.tryPromise({
+    catch: (error) => error,
+    try: async () => {
+      await database.execute('PRAGMA foreign_keys = OFF;')
 
-    const tablesResult = await database.execute(`
-      SELECT name
-      FROM sqlite_master
-      WHERE type='table' AND name NOT LIKE 'sqlite_%';
-    `)
+      const tablesResult = await database.execute(`
+        SELECT name
+        FROM sqlite_master
+        WHERE type='table' AND name NOT LIKE 'sqlite_%';
+      `)
 
-    const systemTables = new Set([
-      'collection_registry',
-      'persisted_index_registry',
-      'applied_tx',
-      'collection_version',
-      'collection_metadata',
-      'leader_term',
-      'schema_version',
-      'collection_reset_epoch',
-    ])
+      const systemTables = new Set([
+        'collection_registry',
+        'persisted_index_registry',
+        'applied_tx',
+        'collection_version',
+        'collection_metadata',
+        'leader_term',
+        'schema_version',
+        'collection_reset_epoch',
+      ])
 
-    for (const table of tablesResult as { name: string }[]) {
-      const tableName = table.name
+      for (const table of tablesResult as { name: string }[]) {
+        const tableName = table.name
 
-      if (tableName && !systemTables.has(tableName)) {
-        // Sequential by design: statements run on a single SQLite connection
-        // oxlint-disable-next-line no-await-in-loop
-        await database.execute(`DELETE FROM "${tableName}";`)
+        if (tableName && !systemTables.has(tableName)) {
+          // Sequential by design: statements run on a single SQLite connection
+          // oxlint-disable-next-line no-await-in-loop
+          await database.execute(`DELETE FROM "${tableName}";`)
+        }
       }
-    }
 
-    await database.execute('PRAGMA foreign_keys = ON;')
-    await database.execute('VACUUM;')
-  } catch (error) {
-    posthog.captureException(error)
-    try {
       await database.execute('PRAGMA foreign_keys = ON;')
-    } catch {
-      /* empty */
-    }
+      await database.execute('VACUUM;')
+    },
+  })
+
+  if (result.isErr()) {
+    posthog.captureException(result.error)
+    await Result.tryPromise(() => database.execute('PRAGMA foreign_keys = ON;'))
   }
 }
 

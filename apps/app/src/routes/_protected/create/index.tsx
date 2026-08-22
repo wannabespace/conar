@@ -27,7 +27,7 @@ import { useCollections } from '~/entities/collections'
 import { createConnectionTransaction } from '~/entities/connection/core'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 import { useLocalProxyAvailable } from '~/entities/connection/runtime'
-import { getConnectionStore } from '~/entities/connection/store'
+import { getConnectionStore, openRunnerTab } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching'
 import { useActiveWorkspace } from '~/entities/workspace'
@@ -124,8 +124,8 @@ const CreateConnectionPage = () => {
         }
         prefetchConnectionResourceCore(createdResource)
         router.navigate({
-          to: '/connection/$resourceId/table',
-          params: { resourceId },
+          to: '/connection/$resourceId/$tabId',
+          params: { resourceId, tabId: openRunnerTab(resourceId) },
         })
         toast.success('Connection created successfully 🎉')
       },

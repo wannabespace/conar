@@ -73,6 +73,7 @@ export const router = createRouter({
     import.meta.env.VITE_TEST || !window.electron
       ? createBrowserHistory()
       : createHashHistory(),
+  pathParamsAllowedCharacters: [':'],
   routeTree,
 })
 
