@@ -85,8 +85,6 @@ export const getConnectionResourceStore = memoize((id: string) =>
 
 export const getFilesStore = memoize((_id: string) => createStore<File[]>([]))
 
-export type NavigatorList = 'tables' | 'definitions'
-
 export const getNavigatorStore = memoize((_id: string) =>
-  createStore<NavigatorList>('tables')
+  createStore<'tables' | 'definitions'>('tables')
 )
