@@ -6,7 +6,10 @@ import { createWebStorageValue } from 'seitu/web'
 
 import { connectionTabType } from './tabs'
 
-export * from './helpers'
+export * from './helpers/navigator'
+export * from './helpers/tables'
+export * from './helpers/tabs'
+export * from './helpers/visualizer'
 export * from './tabs'
 
 const schema = type({
