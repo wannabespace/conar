@@ -21,10 +21,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { useThrottledCallback } from '@tamery/ui/hookas/use-throttled-callback'
 import { cn } from '@tamery/ui/lib/utils'
 import { animate } from 'motion'
 import { useEffect, useState } from 'react'
+import { createThrottledFn } from 'seitu'
 
 import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell'
 
@@ -131,19 +131,13 @@ const Header = ({ className }: { className?: string }) => {
     })
   }
 
-  const updateScrollLeft = useThrottledCallback(
-    () => {
-      const el = scrollRef.current
+  const updateScrollLeft = createThrottledFn((el: HTMLElement) => {
+    if (direction === 'up' || direction === 'down') {
+      return
+    }
 
-      if (!el || direction === 'up' || direction === 'down') {
-        return
-      }
-
-      setNotVisibleColumns(getNotVisibleColumns(el, columns, store.get()))
-    },
-    [direction, columns, store],
-    200
-  )
+    setNotVisibleColumns(getNotVisibleColumns(el, columns, store.get()))
+  }, 200)
 
   useEffect(() => {
     const el = scrollRef.current
@@ -152,10 +146,12 @@ const Header = ({ className }: { className?: string }) => {
       return
     }
 
-    el.addEventListener('scroll', updateScrollLeft, { passive: true })
+    const handleScroll = () => updateScrollLeft(el)
+
+    el.addEventListener('scroll', handleScroll, { passive: true })
 
     return () => {
-      el.removeEventListener('scroll', updateScrollLeft)
+      el.removeEventListener('scroll', handleScroll)
     }
   }, [scrollRef, updateScrollLeft])
 

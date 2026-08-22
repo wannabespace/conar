@@ -17,11 +17,6 @@ export default defineConfig({
     // ~21 large barrels need a dedicated debarrel pass before re-enabling.
     'oxc/no-barrel-file': 'off',
 
-    // @tanstack/react-virtual's useVirtualizer returns unmemoizable functions;
-    // react-compiler already skips those components, and 'use no memo' does not
-    // silence this diagnostic, so the tables' virtualization would never pass.
-    'react/incompatible-library': 'off',
-
     // react-compiler memoizes context values; manual useMemo is redundant here.
     'react/jsx-no-constructed-context-values': 'off',
 

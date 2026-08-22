@@ -17,7 +17,8 @@
     "@tamery/shared": "workspace:*",
     "@tamery/ui": "workspace:*",
     "@tanstack/react-virtual": "catalog:",
-    "react": "catalog:"
+    "react": "catalog:",
+    "seitu": "catalog:"
   },
   "devDependencies": {
     "@tamery/configs": "workspace:*",

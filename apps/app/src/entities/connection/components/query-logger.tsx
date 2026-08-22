@@ -19,8 +19,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@tamery/ui/components/popover'
+import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { cn } from '@tamery/ui/lib/utils'
-import { useVirtualizer } from '@tanstack/react-virtual'
 import type { ComponentProps } from 'react'
 import { useEffect, useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -253,16 +253,13 @@ export const QueryLogger = ({
     setStatusGroup((prev) => (prev === status ? undefined : status))
   }
 
-  const { getVirtualItems, getTotalSize } = useVirtualizer({
+  const { virtualItems, totalSize } = useVirtualizer({
     count: filteredQueries.length,
     estimateSize: () => 29,
     getScrollElement: () => scrollRef.current,
     overscan: 5,
     useFlushSync: false,
   })
-
-  const virtualItems = getVirtualItems()
-  const totalSize = getTotalSize()
 
   useEffect(() => {
     if (scrollRef.current) {

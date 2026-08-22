@@ -1287,6 +1287,9 @@ importers:
       react:
         specifier: 'catalog:'
         version: 19.2.8
+      seitu:
+        specifier: 'catalog:'
+        version: 0.16.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(solid-js@1.9.14)
     devDependencies:
       '@tamery/configs':
         specifier: workspace:*

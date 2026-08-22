@@ -1,8 +1,8 @@
-import { useDebouncedCallback } from '@tamery/ui/hookas/use-debounced-callback'
 import { useScrollDirection } from '@tamery/ui/hookas/use-scroll-direction'
-import { useVirtualizer } from '@tanstack/react-virtual'
+import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import type { ReactNode } from 'react'
 import { useEffect, useRef } from 'react'
+import { createDebouncedFn } from 'seitu'
 
 import type { ColumnRenderer } from './'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from './constants'
@@ -33,17 +33,16 @@ export const TableProvider = ({
   const horizontalScroll =
     scrollDirection === 'left' || scrollDirection === 'right'
 
-  const { getVirtualItems: getVirtualRows, getTotalSize: getTableHeight } =
-    useVirtualizer({
-      count: rows.length,
-      estimateSize: () => estimatedRowSize,
-      getScrollElement: () => scrollRef.current,
-      overscan: verticalScroll || scrollDirection === null ? 10 : 0,
-    })
+  const { virtualItems: virtualRows, totalSize: tableHeight } = useVirtualizer({
+    count: rows.length,
+    estimateSize: () => estimatedRowSize,
+    getScrollElement: () => scrollRef.current,
+    overscan: verticalScroll || scrollDirection === null ? 10 : 0,
+  })
 
   const {
-    getVirtualItems: getVirtualColumns,
-    getTotalSize: getTableWidth,
+    virtualItems: virtualColumns,
+    totalSize: tableWidth,
     measure,
   } = useVirtualizer({
     count: columns.length,
@@ -60,11 +59,6 @@ export const TableProvider = ({
     horizontal: true,
     overscan: horizontalScroll || scrollDirection === null ? 3 : 0,
   })
-
-  const virtualRows = getVirtualRows()
-  const virtualColumns = getVirtualColumns()
-  const tableHeight = getTableHeight()
-  const tableWidth = getTableWidth()
 
   useEffect(() => {
     if (!scrollRef.current) {
@@ -89,7 +83,7 @@ export const TableProvider = ({
     )
   }, [scrollRef, virtualColumns, virtualRows, tableWidth, tableHeight])
 
-  const measureDebounced = useDebouncedCallback(measure, [], 250)
+  const measureDebounced = createDebouncedFn(measure, 250)
 
   useEffect(() => {
     const scrollElement = scrollRef.current

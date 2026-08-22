@@ -20,14 +20,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
+import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, useParams } from '@tanstack/react-router'
-import { useVirtualizer } from '@tanstack/react-virtual'
 import { motion } from 'motion/react'
 import type { ComponentRef, ReactNode } from 'react'
-import { useEffect, useEffectEvent, useRef } from 'react'
+import { useDeferredValue, useEffect, useEffectEvent, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
@@ -437,7 +437,7 @@ export const TablesList = ({
     }
   }
 
-  const virtualizer = useVirtualizer({
+  const { virtualItems, totalSize, scrollToIndex } = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: (index) => {
@@ -464,7 +464,7 @@ export const TablesList = ({
     )
 
     if (index !== -1) {
-      virtualizer.scrollToIndex(index, { align: 'auto' })
+      scrollToIndex(index, { align: 'auto' })
     }
   })
 
@@ -476,12 +476,8 @@ export const TablesList = ({
     }
   }, [hasData])
 
-  const previousSearchRef = useRef(search)
-  const isSearchSettled = previousSearchRef.current === search
-
-  useEffect(() => {
-    previousSearchRef.current = search
-  }, [search])
+  const deferredSearch = useDeferredValue(search)
+  const isSearchSettled = deferredSearch === search
 
   const toggleSchema = (name: string) => {
     store.set(
@@ -534,9 +530,9 @@ export const TablesList = ({
       <SidebarMenu
         data-mask
         className="relative w-full gap-0"
-        style={{ height: virtualizer.getTotalSize() }}
+        style={{ height: totalSize }}
       >
-        {virtualizer.getVirtualItems().map((virtualRow) => {
+        {virtualItems.map((virtualRow) => {
           const row = rows[virtualRow.index]
           if (!row) {
             return null
