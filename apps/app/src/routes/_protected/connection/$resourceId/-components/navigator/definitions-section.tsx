@@ -44,28 +44,38 @@ import {
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const item = (
-  Icon: RemixiconComponentType,
-  label: string,
-  tabId: string,
+interface NavigatorItem {
+  Icon: RemixiconComponentType
+  label: string
   open: (resourceId: string, preview: boolean) => void
-) => ({ Icon, label, open, tabId })
+  tabId: string
+}
 
 const sectionItem = (
   Icon: RemixiconComponentType,
   label: string,
   section: DefinitionsSection
-) =>
-  item(Icon, label, definitionsTabId(section), (resourceId, preview) =>
-    openDefinitionsTab(resourceId, section, preview)
-  )
+): NavigatorItem => ({
+  Icon,
+  label,
+  open: (resourceId, preview) =>
+    openDefinitionsTab(resourceId, section, preview),
+  tabId: definitionsTabId(section),
+})
 
-const groups = (connection: Connection) =>
+const visualizerItem: NavigatorItem = {
+  Icon: RiNodeTree,
+  label: 'Visualizer',
+  open: openVisualizerTab,
+  tabId: VISUALIZER_TAB_ID,
+}
+
+const groups = (
+  connection: Connection
+): { items: NavigatorItem[]; label: string }[] =>
   [
     {
-      items: [
-        item(RiNodeTree, 'Visualizer', VISUALIZER_TAB_ID, openVisualizerTab),
-      ],
+      items: [visualizerItem],
       label: 'Overview',
     },
     {

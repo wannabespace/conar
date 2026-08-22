@@ -21,3 +21,6 @@ export const tabTitle = (tab: ConnectionTab) => {
     }
   }
 }
+
+export const tabFullTitle = (tab: ConnectionTab) =>
+  tab.type === 'table' ? `${tab.schema}.${tab.table}` : tabTitle(tab)

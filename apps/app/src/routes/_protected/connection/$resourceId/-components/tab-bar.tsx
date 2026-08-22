@@ -54,6 +54,7 @@ import {
   removeTab,
   renameTab,
   setActiveTab,
+  tabFullTitle,
   tabTitle,
   updateTabs,
 } from '~/entities/connection/store'
@@ -494,14 +495,14 @@ const ordinal = (ids: string[], id: string) =>
 
 const tabLabels = (tabs: ConnectionTab[]) => {
   const tableTabs = tabs.filter((tab) => tab.type === 'table')
-  const showSchema = new Set(tableTabs.map((tab) => tab.schema)).size > 1
+  const withSchema = new Set(tableTabs.map((tab) => tab.schema)).size > 1
   const runnerIds = tabs.filter((tab) => tab.type === 'runner').map((t) => t.id)
 
   return tabs.map((tab) => {
     let defaultLabel: string
 
     if (tab.type === 'table') {
-      defaultLabel = showSchema ? `${tab.schema}.${tab.table}` : tab.table
+      defaultLabel = withSchema ? tabFullTitle(tab) : tabTitle(tab)
     } else if (tab.type === 'runner') {
       defaultLabel = `${tabTitle(tab)}${ordinal(runnerIds, tab.id)}`
     } else {
