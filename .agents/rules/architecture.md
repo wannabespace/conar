@@ -1,26 +1,24 @@
 # Architecture constraints
 
 > **When to read:** Before picking a library, adding state, writing a query, or building machinery a dependency already owns.
->
-> Part of the Tamery rule set indexed in `AGENTS.md`. Keep this file accurate when you change what it describes.
 
 | Topic | Rule |
 | --- | --- |
-| API layer | oRPC (`@orpc/server`) — not REST, not tRPC. Routers in `apps/api/orpc/routers/`. |
+| API layer | oRPC (`@orpc/server`) — not REST, not tRPC. |
 | Client state | TanStack DB collections — not Zustand, not React Context for data. |
 | Cloud DB ORM | Drizzle (`packages/db`) — not raw SQL, not Prisma. |
-| Auth | Better Auth (`apps/api/lib/auth.ts`) — not custom JWT, not NextAuth. |
+| Auth | Better Auth — not custom JWT, not NextAuth. |
 | Secrets | Infisical via `@tamery/infisical` — not `.env` files in production. |
 | Runtime | Bun — not Node for server processes. Node 22+ supported as fallback. |
 | Testing | Bun test for unit tests. Playwright for E2E. |
-| Schemas | ArkType everywhere — oRPC inputs, env validation, stores. Zod is legacy: it survives only inside frozen chat v1 (`apps/api/orpc/routers/chats/v1/tools.ts`). |
-| UI components | The shadcn registry first — search it (`pnpm dlx shadcn@latest search @shadcn -q <term>`) before writing markup, and vendor what is missing into `packages/ui` in kit style. Hand-rolled `div`s that re-implement `Item`, `Empty`, `InputGroup`, `Field` or `ButtonGroup` are rejected in review. |
-| Markdown | `Response` (`packages/ui/src/components/response.tsx`, streamdown) — never react-markdown or a bespoke pipeline. It repairs unterminated fences mid-stream, memoizes blocks, fades in per word, and renders fences through the kit's `CodeBlock`. |
+| Schemas | ArkType everywhere — oRPC inputs, env validation, stores. Zod is legacy and survives only inside frozen chat v1 (`api.md`). |
+| UI components | The shadcn registry first — search it before writing markup, vendor what is missing into `packages/ui` in kit style. Hand-rolled re-implementations are rejected in review; details in the `tamery-ui` skill (hard rule 0). |
+| Markdown | The kit `Response` (streamdown) — never react-markdown or a bespoke pipeline. Behavior and setup traps in the `tamery-ui` skill. |
 | Ids | uuid v7 everywhere (`baseTable.id`). When a library mints its own id format, map it in the persistence layer — never widen a column to accommodate it. |
 | Styles | TailwindCSS v4 — no inline `style=` props for layout/theme values. |
-| Memoization | React Compiler is on (`reactCompilerPreset()` in the `apps/app` + `apps/main` vite configs; it reaches `packages/*` because workspace sources resolve outside `node_modules`). Do not write `useMemo`/`useCallback` — derive inline; `react/jsx-no-constructed-context-values` is off for the same reason. Sole exception: `packages/ui/src/hookas/use-throttled-callback.ts`, whose dep list spreads caller deps the compiler cannot analyse. |
+| Memoization | React Compiler is on in the `apps/app` + `apps/main` vite configs, and reaches `packages/*` (workspace sources resolve outside `node_modules`). Do not write `useMemo`/`useCallback` — derive inline; `react/jsx-no-constructed-context-values` is off for the same reason. Sole exception: `use-throttled-callback.ts`, whose dep list spreads caller deps the compiler cannot analyse. |
 | Page code | Files used by a single page live next to its route in `-`-prefixed folders (`-components/`, `-lib/`, `-utils/`). `entities/` is only for code shared across pages. |
-| Connection routes | A connection resource has exactly two routes: `$resourceId/index.tsx` (empty state; redirects to `activeTabId` when that tab still exists) and `$resourceId/$tabId.tsx`, which switches on the parsed tab type. The layout `$resourceId.tsx` owns the navigator, tab bar, and query logger. Runner state (query text, selection, results, layout) is per tab in `runnerPageStore({ resourceId, tabId })`, reached through `RunnerTabContext` — never off the resource store. The visualizer keeps pan/zoom per schema in `connectionResourceStore.visualizerViewports` (`setVisualizerViewport(resourceId, schema, viewport)`), restored via `defaultViewport` with `fitView` only as the first-visit fallback — it has no page store of its own, because its state is keyed by resource id alone, exactly like the resource store (the table and runner stores are keyed finer, so they stay separate). `visualizerViewports` is an **optional** key: seitu repairs a schema-invalid stored value against the defaults, and that repair drops any key whose stored `typeof` differs from the default's (`activeTabId`, a string over a `null` default), so adding a required key to `connectionResourceType` silently resets tabs state for existing users. |
+| Connection routes | A connection resource has exactly two routes: `$resourceId/index.tsx` (empty state, redirects to the active tab when it still exists) and `$resourceId/$tabId.tsx`, which switches on the parsed tab type; the layout owns navigator, tab bar, and query logger. Runner state is per **tab** in `runnerPageStore({ resourceId, tabId })` reached through `RunnerTabContext` — never off the resource store. The visualizer has no page store because its state is keyed by resource id alone: pan/zoom lives in `connectionResourceStore.visualizerViewports`, restored via `defaultViewport` with `fitView` only as the first-visit fallback. **Keep `visualizerViewports` optional** — seitu repairs a schema-invalid stored value against the defaults and drops any key whose stored `typeof` differs from the default's, so adding a *required* key to `connectionResourceType` silently resets tabs state for existing users. |
 
 ## Reach for the library before writing machinery
 
