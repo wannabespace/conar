@@ -19,8 +19,6 @@ const schema = type({
     url: 'string | null',
   },
 }).pipe(({ lastOpenedResourceName, proxy }) => ({
-  // SAFETY: the ternary yields the symbol on the sentinel description and the
-  // validated `string | null` otherwise, which is exactly the asserted union.
   lastOpenedResourceName: (lastOpenedResourceName ===
   CONNECTION_RESOURCE_ROOT_SYMBOL.description
     ? CONNECTION_RESOURCE_ROOT_SYMBOL
@@ -60,9 +58,6 @@ export const connectionResourceType = type({
   tablesSearch: 'string',
   tablesTreeOpenedSchemas: 'string[] | null',
   tabs: connectionTabType.array(),
-  // Optional so state persisted before visualizerViewports existed still
-  // validates — a failed validation repairs against the defaults and drops
-  // activeTabId.
   'visualizerViewports?': {
     '[string]': viewportType,
   },
