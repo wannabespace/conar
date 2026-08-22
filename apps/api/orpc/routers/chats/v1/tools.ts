@@ -7,7 +7,6 @@ import * as z from 'zod/mini'
 
 import { env } from '~/env'
 
-// Frozen with chat v1: shipped desktop builds parse this exact tool surface.
 export const tools: ToolSet = {
   columns: tool({
     description:

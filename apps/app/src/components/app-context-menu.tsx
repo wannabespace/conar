@@ -94,7 +94,7 @@ interface AppContextMenuProps {
   }
 }
 
-const isNativeAvailable = (): boolean => !!window.electron?.menu?.popup
+const isNativeAvailable = () => !!window.electron?.menu?.popup
 
 const renderWebNodes = (nodes: AppMenuNode[]): ReactNode =>
   nodes.map((node, index) => {
