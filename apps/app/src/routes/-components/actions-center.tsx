@@ -142,14 +142,15 @@ const ConnectionItem = ({
 const tableEntries = (
   router: ReturnType<typeof useRouter>,
   resourceId: string,
-  schemas: { name: string; tables: { name: string; type: string }[] }[]
+  schemas: {
+    name: string
+    tables: { name: string; type: keyof typeof TABLE_TYPE_ICONS }[]
+  }[]
 ) =>
   schemas.flatMap((schema) =>
     schema.tables.map((table) => {
       const value = `${schema.name}.${table.name}`
-      const Icon =
-        TABLE_TYPE_ICONS[table.type as keyof typeof TABLE_TYPE_ICONS] ??
-        RiTableLine
+      const Icon = TABLE_TYPE_ICONS[table.type]
 
       return {
         value,
