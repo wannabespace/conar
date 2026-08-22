@@ -53,9 +53,6 @@ const structuredData = {
 
 const RootComponent = () => {
   const router = useRouter()
-  const { queryClient } = router.options.context as {
-    queryClient: QueryClient
-  }
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -63,7 +60,7 @@ const RootComponent = () => {
         <HeadContent />
       </head>
       <body className={cn(`relative bg-gray-100 dark:bg-neutral-950`)}>
-        <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={router.options.context.queryClient}>
           <TooltipProvider>
             <ThemeObserver />
             <Outlet />
@@ -126,6 +123,12 @@ export const Route = createRootRouteWithContext<{
               {
                 defer: true,
                 src: 'https://assets.onedollarstats.com/stonks.js',
+              },
+              {
+                defer: true,
+                src: 'https://datafa.st/js/script.js',
+                'data-website-id': 'dfid_vIscqqXu4BxAFu9ObaBYl',
+                'data-domain': 'tamery.app',
               },
             ]),
       ],
