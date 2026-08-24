@@ -18,6 +18,7 @@ import { connectionLabels } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
 import { Button } from '@tamery/ui/components/button'
+import { DitherBackground } from '@tamery/ui/components/custom/dither-background'
 import {
   Select,
   SelectContent,
@@ -544,7 +545,8 @@ const GhostRow = ({
 )
 
 export const Empty = () => (
-  <div className="flex flex-col items-center py-10 text-center">
+  <div className="relative isolate flex flex-col items-center overflow-hidden py-10 text-center">
+    <DitherBackground className="-z-10 opacity-60" mask="radial" speed={0.05} />
     <div
       className="border-border/50 bg-card/40 pointer-events-none w-full max-w-md overflow-hidden rounded-xl border mask-[linear-gradient(to_bottom,black,transparent)]"
       aria-hidden

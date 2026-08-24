@@ -1,4 +1,5 @@
 import { RiTable2 } from '@remixicon/react'
+import { DitherBackground } from '@tamery/ui/components/custom/dither-background'
 import {
   Empty,
   EmptyDescription,
@@ -15,7 +16,8 @@ import {
 } from '~/entities/connection/store'
 
 const EmptyPane = () => (
-  <Empty className="min-h-0 flex-1 p-4 md:p-4">
+  <Empty className="relative isolate min-h-0 flex-1 overflow-hidden p-4 md:p-4">
+    <DitherBackground className="-z-10 opacity-20" mask="radial" speed={0} />
     <motion.div
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -24,7 +26,7 @@ const EmptyPane = () => (
       <EmptyHeader className="gap-1">
         <EmptyMedia
           variant="icon"
-          className="bg-muted/60 text-muted-foreground/70 mb-3 size-14 rounded-2xl [&_svg]:size-7"
+          className="bg-muted/60 text-muted-foreground/70 texture-dither mb-3 size-14 rounded-2xl [&_svg]:size-7"
         >
           <RiTable2 />
         </EmptyMedia>

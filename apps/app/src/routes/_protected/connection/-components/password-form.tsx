@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@tamery/ui/components/card'
+import { DitherBackground } from '@tamery/ui/components/custom/dither-background'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import { Input } from '@tamery/ui/components/input'
 import {
@@ -18,6 +19,7 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { useMutation } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
+import { motion } from 'motion/react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -74,7 +76,16 @@ export const PasswordForm = ({
   })
 
   return (
-    <div className="flex h-screen min-h-[inherit] flex-col justify-center">
+    <div className="relative isolate flex h-screen min-h-[inherit] flex-col justify-center overflow-hidden">
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.2 }}
+      >
+        <DitherBackground className="opacity-60" />
+      </motion.div>
       <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-6 py-10">
         <div className="flex w-full items-center gap-2">
           <Button

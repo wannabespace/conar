@@ -380,3 +380,18 @@
   --hit-area-b: --spacing(--value(number) * -1);
   --hit-area-b: calc(--value([*]) * -1);
 }
+
+@utility texture-dither {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background-color: color-mix(in oklch, var(--foreground) 6%, transparent);
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Cpath d='M0 0h1v1H0zM2 0h1v1H2zM1 1h1v1H1zM0 2h1v1H0zM2 2h1v1H2zM3 3h1v1H3z'/%3E%3C/svg%3E");
+    mask-size: 4px 4px;
+  }
+}

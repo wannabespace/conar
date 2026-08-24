@@ -1,6 +1,7 @@
 import { RiAlertLine, RiCheckLine, RiFileCopyLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
+import { DitherBackground } from '@tamery/ui/components/custom/dither-background'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { Toaster } from '@tamery/ui/components/sonner'
 import { cn } from '@tamery/ui/lib/utils'
@@ -91,7 +92,21 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
     <EventsProvider>
       <ThemeObserver />
       <Toaster />
-      <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden p-6">
+      <div className="relative isolate flex min-h-screen flex-col items-center justify-center overflow-hidden p-6">
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.2 }}
+        >
+          <DitherBackground
+            shape="ripple"
+            mask="edges"
+            speed={0.05}
+            className="opacity-40"
+          />
+        </motion.div>
         <motion.div
           initial={{ opacity: 0, scale: 0.98, y: 6 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}

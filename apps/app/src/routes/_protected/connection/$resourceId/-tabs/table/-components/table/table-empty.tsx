@@ -17,7 +17,7 @@ export const TableEmpty = ({
     )}
   >
     <div className="flex h-32 w-full flex-col items-center justify-center">
-      <div className="bg-muted/60 mb-4 flex items-center justify-center rounded-full p-3">
+      <div className="bg-muted/60 texture-dither mb-4 flex items-center justify-center rounded-full p-3">
         <RiMoreLine className="text-muted-foreground size-6" />
       </div>
       <span className="text-muted-foreground font-medium">{title}</span>

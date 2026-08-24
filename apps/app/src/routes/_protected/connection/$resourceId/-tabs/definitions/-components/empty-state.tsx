@@ -13,7 +13,7 @@ export const DefinitionsEmptyState = ({
 }) => (
   <CardMotion layout {...MOTION_BLOCK_PROPS}>
     <CardContent className="flex flex-col items-center justify-center p-10 text-center">
-      <div className="bg-muted/60 mb-4 flex size-12 items-center justify-center rounded-2xl">
+      <div className="bg-muted/60 texture-dither mb-4 flex size-12 items-center justify-center rounded-2xl">
         <RiInformationLine className="text-muted-foreground/70 size-6" />
       </div>
       <h3 className="text-sm font-medium">{title}</h3>
