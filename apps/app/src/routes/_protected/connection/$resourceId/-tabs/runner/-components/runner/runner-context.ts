@@ -1,8 +1,4 @@
-import type { ContextSelector } from '@fluentui/react-context-selector'
-import {
-  createContext,
-  useContextSelector,
-} from '@fluentui/react-context-selector'
+import { createContext, use } from 'react'
 
 export interface QueryToRun {
   startLineNumber: number
@@ -17,12 +13,10 @@ interface RunnerContextType {
 
 export const RunnerContext = createContext<RunnerContextType | null>(null)
 
-export const useRunnerContext = <T>(
-  selector: ContextSelector<RunnerContextType, T>
-) =>
-  useContextSelector(RunnerContext, (context) => {
-    if (!context) {
-      throw new Error('RunnerContext is not provided')
-    }
-    return selector(context)
-  })
+export const useRunnerContext = () => {
+  const context = use(RunnerContext)
+  if (!context) {
+    throw new Error('RunnerContext is not provided')
+  }
+  return context
+}

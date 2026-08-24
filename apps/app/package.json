@@ -16,7 +16,6 @@
     "@dagrejs/dagre": "catalog:",
     "@date-fns/tz": "catalog:",
     "@faker-js/faker": "catalog:",
-    "@fluentui/react-context-selector": "catalog:",
     "@orpc/client": "catalog:",
     "@orpc/server": "catalog:",
     "@orpc/tanstack-query": "catalog:",

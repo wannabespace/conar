@@ -45,9 +45,6 @@ catalogs:
     '@faker-js/faker':
       specifier: ^10.6.0
       version: 10.6.0
-    '@fluentui/react-context-selector':
-      specifier: ^9.2.19
-      version: 9.2.19
     '@fontsource-variable/geist':
       specifier: ^5.3.0
       version: 5.3.0
@@ -644,9 +641,6 @@ importers:
       '@faker-js/faker':
         specifier: 'catalog:'
         version: 10.6.0
-      '@fluentui/react-context-selector':
-        specifier: 'catalog:'
-        version: 9.2.19(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(scheduler@0.27.0)
       '@orpc/client':
         specifier: 'catalog:'
         version: 1.15.0(@opentelemetry/api@1.9.1)
@@ -1266,9 +1260,6 @@ importers:
 
   packages/table:
     dependencies:
-      '@fluentui/react-context-selector':
-        specifier: 'catalog:'
-        version: 9.2.19(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(scheduler@0.27.0)
       '@remixicon/react':
         specifier: 'catalog:'
         version: 4.9.0(react@19.2.8)
@@ -2401,36 +2392,6 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
-
-  '@fluentui/keyboard-keys@9.0.9':
-    resolution: {integrity: sha512-DjX4z+dDCB49rsmyDuOwtD28Zbe9CUf86JKi8aUEvO5/TetsiuGPokgJiFIR0S9SGeFbquj5CUmAslk1RpgMzw==}
-
-  '@fluentui/react-context-selector@9.2.19':
-    resolution: {integrity: sha512-NfBKjtaWxXGFI4ZC75aPeQRTKPJOSQDwpdsiX6L4miewLnEwBKtK7+8Tbj2eTLh6fKY0aRwBfHwGqydF2kXVzQ==}
-    peerDependencies:
-      '@types/react': '>=16.14.0 <20.0.0'
-      '@types/react-dom': '>=16.9.0 <20.0.0'
-      react: '>=16.14.0 <20.0.0'
-      react-dom: '>=16.14.0 <20.0.0'
-      scheduler: '>=0.19.0'
-
-  '@fluentui/react-shared-contexts@9.26.3':
-    resolution: {integrity: sha512-+FvkVJqX9yuZaZ//FWtNA4O0V33UA8Q82/5shp2fCox6HItENn87E5QecUobsodeYJ6xCAbTHccMh+LRiZhHJA==}
-    peerDependencies:
-      '@types/react': '>=16.14.0 <20.0.0'
-      react: '>=16.14.0 <20.0.0'
-
-  '@fluentui/react-theme@9.2.2':
-    resolution: {integrity: sha512-yUQMQkMLGvo6+Q/RITxpLh00STvI299gnk1IV/QHc2DW5EKiCcmIp9xma7+lJzfLACfDkwJDy5hZSl+7MIYf9w==}
-
-  '@fluentui/react-utilities@9.26.6':
-    resolution: {integrity: sha512-a14Iihg2MmRSq1fxqr/4ffMl8VO0gYWRHAYKENz2PoL+oWnCtkMz4PDglIY8rVa7RADwXYI65XOjui0BjIFMvQ==}
-    peerDependencies:
-      '@types/react': '>=16.14.0 <20.0.0'
-      react: '>=16.14.0 <20.0.0'
-
-  '@fluentui/tokens@1.0.0-alpha.24':
-    resolution: {integrity: sha512-YrjGQfnxBR+9o8wXyTflON3Ohsv7OrZWYLVRU+7RaiFO1gcu36iDm3WjudlVmYuWRLDO0Gmxotm6RQNhbZuEQQ==}
 
   '@fontsource-variable/geist-mono@5.3.0':
     resolution: {integrity: sha512-vBbuwDEo9AkrqADMXOrlAR3DFcJi4/JxeuU43FoiQERnNwsfXNnvxvReZG02cQKmyk4DZkZdBZX3oTDvy2zBAw==}
@@ -4066,9 +4027,6 @@ packages:
     resolution: {integrity: sha512-i7HTNuDgZWb+VdrNVOam9gQhIc5MSSDXKWXgbUrn/4vSRaSMM+Rtl10MQj4wLWPNpF7p80waJsAqFP8HZfb0Jg==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
-
-  '@swc/helpers@0.5.23':
-    resolution: {integrity: sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw==}
 
   '@szmarczak/http-timer@1.1.2':
     resolution: {integrity: sha512-XIB2XbzHTN6ieIjfIMV9hlVcfPU26s2vafYWQcZHWXHOxiaRZYEDKEwdl129Zyg50+foYV2jCgtrqSA6qNuNSA==}
@@ -11951,44 +11909,6 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@fluentui/keyboard-keys@9.0.9':
-    dependencies:
-      '@swc/helpers': 0.5.23
-
-  '@fluentui/react-context-selector@9.2.19(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(scheduler@0.27.0)':
-    dependencies:
-      '@fluentui/react-utilities': 9.26.6(@types/react@19.2.18)(react@19.2.8)
-      '@swc/helpers': 0.5.23
-      '@types/react': 19.2.18
-      '@types/react-dom': 19.2.4(@types/react@19.2.18)
-      react: 19.2.8
-      react-dom: 19.2.8(react@19.2.8)
-      scheduler: 0.27.0
-
-  '@fluentui/react-shared-contexts@9.26.3(@types/react@19.2.18)(react@19.2.8)':
-    dependencies:
-      '@fluentui/react-theme': 9.2.2
-      '@swc/helpers': 0.5.23
-      '@types/react': 19.2.18
-      react: 19.2.8
-
-  '@fluentui/react-theme@9.2.2':
-    dependencies:
-      '@fluentui/tokens': 1.0.0-alpha.24
-      '@swc/helpers': 0.5.23
-
-  '@fluentui/react-utilities@9.26.6(@types/react@19.2.18)(react@19.2.8)':
-    dependencies:
-      '@fluentui/keyboard-keys': 9.0.9
-      '@fluentui/react-shared-contexts': 9.26.3(@types/react@19.2.18)(react@19.2.8)
-      '@swc/helpers': 0.5.23
-      '@types/react': 19.2.18
-      react: 19.2.8
-
-  '@fluentui/tokens@1.0.0-alpha.24':
-    dependencies:
-      '@swc/helpers': 0.5.23
-
   '@fontsource-variable/geist-mono@5.3.0': {}
 
   '@fontsource-variable/geist@5.3.0': {}
@@ -13402,10 +13322,6 @@ snapshots:
     dependencies:
       react: 19.2.8
       shiki: 3.23.0
-
-  '@swc/helpers@0.5.23':
-    dependencies:
-      tslib: 2.8.1
 
   '@szmarczak/http-timer@1.1.2':
     dependencies:

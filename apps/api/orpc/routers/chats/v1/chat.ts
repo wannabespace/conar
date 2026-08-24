@@ -4,6 +4,7 @@ import { openai } from '@ai-sdk/openai'
 import { streamToEventIterator } from '@orpc/server'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import {
+  toUIMessageStream,
   convertToModelMessages,
   smoothStream,
   stepCountIs,
@@ -135,7 +136,7 @@ export const chat = orpc
       tools,
     })
 
-    const stream = result.toUIMessageStream({
+    const stream = toUIMessageStream({
       generateMessageId: () => v7(),
       onError: (error) => {
         context.addLogData({
@@ -154,6 +155,7 @@ export const chat = orpc
       },
       originalMessages: input.messages,
       sendSources: true,
+      stream: result.stream,
     })
 
     return streamToEventIterator(stream)

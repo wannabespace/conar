@@ -1,8 +1,8 @@
 import { useScrollDirection } from '@tamery/ui/hookas/use-scroll-direction'
 import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import type { ReactNode } from 'react'
-import { useEffect, useRef } from 'react'
-import { createDebouncedFn } from 'seitu'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createDebouncedFn, createStore } from 'seitu'
 
 import type { ColumnRenderer } from './'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from './constants'
@@ -127,9 +127,12 @@ export const TableProvider = ({
     virtualRows,
   }
 
-  return (
-    <TableContext.Provider value={contextValue}>
-      {children}
-    </TableContext.Provider>
-  )
+  // oxlint-disable-next-line react/hook-use-state, react/refs
+  const [store] = useState(() => createStore(contextValue))
+
+  useLayoutEffect(() => {
+    store.set(contextValue)
+  })
+
+  return <TableContext.Provider value={store}>{children}</TableContext.Provider>
 }

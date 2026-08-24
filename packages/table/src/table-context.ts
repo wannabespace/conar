@@ -1,11 +1,9 @@
-import type { ContextSelector } from '@fluentui/react-context-selector'
-import {
-  createContext,
-  useContextSelector,
-} from '@fluentui/react-context-selector'
 import type { ScrollDirection } from '@tamery/ui/hookas/use-scroll-direction'
 import type { VirtualItem } from '@tanstack/react-virtual'
 import type { RefObject } from 'react'
+import { createContext, use } from 'react'
+import type { Store } from 'seitu'
+import { useSubscription } from 'seitu/react'
 
 import type { ColumnRenderer } from './'
 
@@ -20,14 +18,14 @@ export interface TableContextType {
   tableWidth: number
 }
 
-export const TableContext = createContext<TableContextType | null>(null)
+export const TableContext = createContext<Store<TableContextType> | null>(null)
 
 export const useTableContext = <T>(
-  selector: ContextSelector<TableContextType, T>
-) =>
-  useContextSelector(TableContext, (value) => {
-    if (!value) {
-      throw new Error('useTableContext must be used within a TableProvider')
-    }
-    return selector(value)
-  })
+  selector: (value: TableContextType) => T
+) => {
+  const store = use(TableContext)
+  if (!store) {
+    throw new Error('useTableContext must be used within a TableProvider')
+  }
+  return useSubscription(store, { selector })
+}
