@@ -23,7 +23,6 @@ import { useState } from 'react'
 
 import type { policyType } from '~/entities/connection/queries'
 import { resourcePoliciesQuery } from '~/entities/connection/queries'
-import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { DefinitionsEmptyState } from '~/routes/_protected/connection/$resourceId/-tabs/definitions/-components/empty-state'
 import { DefinitionsGrid } from '~/routes/_protected/connection/$resourceId/-tabs/definitions/-components/grid'
 import { DefinitionsHeader } from '~/routes/_protected/connection/$resourceId/-tabs/definitions/-components/header'
@@ -53,20 +52,14 @@ const getIcon = (type: PolicyType) => {
 
 export const Policies = () => {
   const { connectionResource } = routeApi.useRouteContext()
-  const {
-    data: policies,
-    refetch,
-    isFetching,
-    isPending,
-    dataUpdatedAt,
-  } = useQuery(resourcePoliciesQuery({ connectionResource }))
+  const { data: policies, isPending } = useQuery(
+    resourcePoliciesQuery({ connectionResource })
+  )
   const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
     useDefinitionsState({
       connectionResource,
     })
   const [filterType, setFilterType] = useState<PolicyType | 'all'>('all')
-
-  useRefreshHotkey(refetch, isFetching)
 
   const filteredPolicies =
     policies?.filter(
@@ -82,13 +75,7 @@ export const Policies = () => {
 
   return (
     <>
-      <DefinitionsHeader
-        onRefresh={() => refetch()}
-        isRefreshing={isFetching}
-        dataUpdatedAt={dataUpdatedAt}
-      >
-        Policies
-      </DefinitionsHeader>
+      <DefinitionsHeader>Policies</DefinitionsHeader>
       <div className="mb-4 flex items-center gap-2">
         <SearchInput
           placeholder="Search policies"

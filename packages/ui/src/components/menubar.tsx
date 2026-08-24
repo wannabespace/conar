@@ -90,7 +90,7 @@ const MenubarItem = ({
     data-inset={inset}
     data-variant={variant}
     className={cn(
-      `group/menubar-item focus:bg-accent focus:text-accent-foreground focus:not-data-[variant=destructive]:**:text-accent-foreground data-[variant=destructive]:text-destructive focus:data-[variant=destructive]:bg-destructive/15 focus:data-[variant=destructive]:text-destructive *:[svg]:text-muted-foreground data-[variant=destructive]:*:[svg]:text-destructive! min-h-7 gap-2 rounded-xl px-2 py-1.5 text-sm data-disabled:opacity-50 data-inset:pl-7 [&_svg:not([class*='size-'])]:size-4`,
+      `group/menubar-item focus:bg-accent focus:text-accent-foreground focus:not-data-[variant=destructive]:**:text-accent-foreground data-[variant=destructive]:text-destructive focus:data-[variant=destructive]:bg-destructive/15 focus:data-[variant=destructive]:text-destructive *:[svg]:text-muted-foreground/60 data-[variant=destructive]:*:[svg]:text-destructive! min-h-7 gap-2 rounded-lg px-2 py-1.5 text-sm data-disabled:opacity-50 data-inset:pl-7 [&_svg:not([class*='size-'])]:size-4`,
       className
     )}
     {...props}
@@ -110,7 +110,7 @@ const MenubarCheckboxItem = ({
     data-slot="menubar-checkbox-item"
     data-inset={inset}
     className={cn(
-      `focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground relative flex min-h-7 cursor-default items-center gap-2 rounded-xl py-1.5 pr-1.5 pl-7 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0`,
+      `focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground relative flex min-h-7 cursor-default items-center gap-2 rounded-lg py-1.5 pr-1.5 pl-7 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0`,
       className
     )}
     checked={checked}
@@ -143,7 +143,7 @@ const MenubarRadioItem = ({
     data-slot="menubar-radio-item"
     data-inset={inset}
     className={cn(
-      `focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground *:[svg]:text-muted-foreground relative flex min-h-7 cursor-default items-center gap-2 rounded-xl py-1.5 pr-1.5 pl-7 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
+      `focus:bg-accent focus:text-accent-foreground focus:**:text-accent-foreground *:[svg]:text-muted-foreground/60 relative flex min-h-7 cursor-default items-center gap-2 rounded-lg py-1.5 pr-1.5 pl-7 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-inset:pl-7 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
       className
     )}
     {...props}
@@ -181,7 +181,7 @@ const MenubarSeparator = ({
 }: React.ComponentProps<typeof DropdownMenuSeparator>) => (
   <DropdownMenuSeparator
     data-slot="menubar-separator"
-    className={cn('bg-border/50 -mx-1 my-1 h-px', className)}
+    className={cn('bg-border/50 -mx-1 my-0.5 h-px', className)}
     {...props}
   />
 )
@@ -217,7 +217,7 @@ const MenubarSubTrigger = ({
     data-slot="menubar-sub-trigger"
     data-inset={inset}
     className={cn(
-      `focus:bg-accent focus:text-accent-foreground data-open:bg-accent data-open:text-accent-foreground *:[svg]:text-muted-foreground focus:*:[svg]:text-accent-foreground data-open:*:[svg]:text-accent-foreground min-h-7 gap-2 rounded-xl px-2 py-1.5 text-sm data-inset:pl-7 [&_svg:not([class*='size-'])]:size-4`,
+      `focus:bg-accent focus:text-accent-foreground data-open:bg-accent data-open:text-accent-foreground *:[svg]:text-muted-foreground/60 focus:*:[svg]:text-accent-foreground data-open:*:[svg]:text-accent-foreground min-h-7 gap-2 rounded-lg px-2 py-1.5 text-sm data-inset:pl-7 [&_svg:not([class*='size-'])]:size-4`,
       className
     )}
     {...props}

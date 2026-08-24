@@ -1,3 +1,4 @@
+import { ORPCError } from '@orpc/client'
 import { GITHUB_REPO_NAME } from '@tamery/shared/constants'
 import { sleep } from '@tamery/shared/utils/helpers'
 import {
@@ -137,6 +138,9 @@ export type SyncEventsFn<T> = (params: {
 const RETRY_MIN_DELAY = 1000
 const RETRY_MAX_DELAY = 30_000
 
+const isUnauthorizedError = (error: unknown) =>
+  error instanceof ORPCError && error.code === 'UNAUTHORIZED'
+
 export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
   id: string
   getKey: (item: T) => string
@@ -191,7 +195,11 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         })
 
         if (result.isErr() && !signal.aborted) {
-          posthog.captureException(result.error)
+          if (isUnauthorizedError(result.error)) {
+            abortController.abort(`${config.id} sync unauthorized`)
+          } else {
+            posthog.captureException(result.error)
+          }
         }
 
         firstSync.resolve()
@@ -214,6 +222,9 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
           if (result.isOk()) {
             failures = 0
           } else if (signal.aborted) {
+            return
+          } else if (isUnauthorizedError(result.error)) {
+            abortController.abort(`${config.id} sync unauthorized`)
             return
           } else {
             posthog.captureException(result.error)

@@ -9,6 +9,15 @@ const getErrorMessage = (error: unknown) =>
   (error as Error)?.message ||
   'Our server is practicing its meditation. Please, try again later.'
 
+const isSessionExpiredError = (error: unknown) =>
+  (typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    'code' in error &&
+    error.status === 401 &&
+    error.code !== BASE_ERROR_CODES.INVALID_EMAIL_OR_PASSWORD.code) ||
+  (error instanceof ORPCError && error.code === 'UNAUTHORIZED')
+
 export const handleError = async (error: unknown) => {
   if (!error) {
     return
@@ -22,25 +31,19 @@ export const handleError = async (error: unknown) => {
         error.message.toLowerCase().includes('cannot parse response body')
       : false
 
-  if (!shouldIgnoreError) {
-    const message = getErrorMessage(error)
-
-    toast.error(message, {
-      id: message.includes('session') ? 'session-expired' : `error-${message}`,
-    })
+  if (shouldIgnoreError) {
+    return
   }
 
-  if (
-    (typeof error === 'object' &&
-      'status' in error &&
-      'code' in error &&
-      error.status === 401 &&
-      error.code !== BASE_ERROR_CODES.INVALID_EMAIL_OR_PASSWORD.code) ||
-    (error instanceof ORPCError && error.code === 'UNAUTHORIZED')
-  ) {
-    await authClient.signOut()
+  if (isSessionExpiredError(error)) {
     toast.info('Your session has expired. Please, sign in again.', {
       id: 'session-expired',
     })
+    await authClient.signOut()
+    return
   }
+
+  const message = getErrorMessage(error)
+
+  toast.error(message, { id: `error-${message}` })
 }

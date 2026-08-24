@@ -61,17 +61,20 @@ import { checkForUpdates } from '~/use-updates-observer'
 
 const CONNECTION_PAGES = [
   {
-    label: 'SQL Runner',
+    label: 'New Query',
+    keywords: ['sql', 'runner'],
     icon: RiTerminalBoxLine,
     openTab: openRunnerTab,
   },
   {
-    label: 'Definitions',
+    label: 'Open Definitions',
+    keywords: [],
     icon: RiFileListLine,
     openTab: (resourceId: string) => openDefinitionsTab(resourceId, 'enums'),
   },
   {
-    label: 'Visualizer',
+    label: 'Open Visualizer',
+    keywords: [],
     icon: RiNodeTree,
     openTab: openVisualizerTab,
   },
@@ -98,7 +101,7 @@ const actionEntry = (
   keywords,
   node: (
     <CommandItem key={value} value={value} onSelect={run(action)}>
-      <Icon className="text-muted-foreground" />
+      <Icon />
       {value}
     </CommandItem>
   ),
@@ -169,7 +172,7 @@ const tableEntries = (
               })
             )}
           >
-            <Icon className="text-muted-foreground" />
+            <Icon />
             <span data-mask className="min-w-0 flex-1 truncate">
               <span className="text-muted-foreground">{schema.name}.</span>
               {table.name}
@@ -284,8 +287,8 @@ export const ActionsCenter = () => {
         ...(current
           ? CONNECTION_PAGES.map((page) =>
               actionEntry(
-                `Open ${page.label}`,
-                ['open', 'go to', page.label],
+                page.label,
+                ['open', 'go to', ...page.keywords, page.label],
                 page.icon,
                 () =>
                   router.navigate({

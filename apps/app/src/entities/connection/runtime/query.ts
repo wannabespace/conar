@@ -1,5 +1,6 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { isConnectionError } from '@tamery/shared/utils/connections'
+import { sleep } from '@tamery/shared/utils/helpers'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
 import type { Type } from 'arktype'
 import { Result } from 'better-result'
@@ -118,54 +119,57 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
         ? location.href.includes(queryParams.resourceId)
         : false
 
-    const result = await Result.tryPromise(
-      {
-        catch: (error) => {
-          if (isConnectionError(error)) {
-            attempt += 1
+    const [result] = await Promise.all([
+      Result.tryPromise(
+        {
+          catch: (error) => {
+            if (isConnectionError(error)) {
+              attempt += 1
 
-            reconnectingPromises.set((state) => {
-              const existing = state[queryParams.connectionString]
+              reconnectingPromises.set((state) => {
+                const existing = state[queryParams.connectionString]
 
-              return {
-                ...state,
-                [queryParams.connectionString]: existing
-                  ? {
-                      ...existing,
-                      attempt,
-                    }
-                  : {
-                      attempt,
-                      promise: resolvers.promise,
-                      resourceId: queryParams.resourceId,
-                    },
-              }
-            })
-          }
+                return {
+                  ...state,
+                  [queryParams.connectionString]: existing
+                    ? {
+                        ...existing,
+                        attempt,
+                      }
+                    : {
+                        attempt,
+                        promise: resolvers.promise,
+                        resourceId: queryParams.resourceId,
+                      },
+                }
+              })
+            }
 
-          return error
+            return error
+          },
+          try: async () => {
+            const retryPromise =
+              reconnectingPromises.get()[queryParams.connectionString]
+
+            if (attempt === 0 && retryPromise) {
+              await retryPromise.promise
+            }
+
+            // oxlint-disable-next-line ts/no-explicit-any
+            return queryFn(instance as any)
+          },
         },
-        try: async () => {
-          const retryPromise =
-            reconnectingPromises.get()[queryParams.connectionString]
-
-          if (attempt === 0 && retryPromise) {
-            await retryPromise.promise
-          }
-
-          // oxlint-disable-next-line ts/no-explicit-any
-          return queryFn(instance as any)
-        },
-      },
-      {
-        retry: {
-          backoff: 'constant',
-          delayMs: RECONNECTION_DELAY,
-          shouldRetry: isConnectionError,
-          times: MAX_RECONNECTION_ATTEMPTS,
-        },
-      }
-    )
+        {
+          retry: {
+            backoff: 'constant',
+            delayMs: RECONNECTION_DELAY,
+            shouldRetry: isConnectionError,
+            times: MAX_RECONNECTION_ATTEMPTS,
+          },
+        }
+      ),
+      sleep(300),
+    ])
 
     if (Result.isOk(result)) {
       resolvers.resolve()

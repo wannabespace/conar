@@ -142,7 +142,7 @@ const SelectItem = ({
   <SelectPrimitive.Item
     data-slot="select-item"
     className={cn(
-      `focus:bg-accent focus:text-accent-foreground focus:not-data-[variant=destructive]:**:text-accent-foreground relative flex min-h-7 w-full cursor-default items-center gap-2 rounded-md py-1.5 pr-8 pl-2 text-sm outline-hidden select-none in-data-[size=xs]:min-h-6 in-data-[size=xs]:gap-1.5 in-data-[size=xs]:rounded-sm in-data-[size=xs]:py-1 in-data-[size=xs]:pr-7 in-data-[size=xs]:text-xs data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 in-data-[size=xs]:[&_svg:not([class*='size-'])]:size-3 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2`,
+      `focus:bg-accent focus:text-accent-foreground focus:not-data-[variant=destructive]:**:text-accent-foreground relative flex min-h-7 w-full cursor-default items-center gap-2 rounded-lg py-1.5 pr-8 pl-2 text-sm outline-hidden select-none in-data-[size=xs]:min-h-6 in-data-[size=xs]:gap-1.5 in-data-[size=xs]:rounded-sm in-data-[size=xs]:py-1 in-data-[size=xs]:pr-7 in-data-[size=xs]:text-xs data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 in-data-[size=xs]:[&_svg:not([class*='size-'])]:size-3 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2`,
       className
     )}
     {...props}
@@ -166,7 +166,7 @@ const SelectSeparator = ({
 }: SelectPrimitive.Separator.Props) => (
   <SelectPrimitive.Separator
     data-slot="select-separator"
-    className={cn('bg-border pointer-events-none -mx-1 my-1 h-px', className)}
+    className={cn('bg-border pointer-events-none -mx-1 my-0.5 h-px', className)}
     {...props}
   />
 )

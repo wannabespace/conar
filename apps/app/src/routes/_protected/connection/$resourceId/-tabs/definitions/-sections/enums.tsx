@@ -16,7 +16,6 @@ import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
-import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
@@ -29,19 +28,13 @@ const routeApi = getRouteApi('/_protected/connection/$resourceId')
 
 export const Enums = () => {
   const { connection, connectionResource } = routeApi.useRouteContext()
-  const {
-    data: enums,
-    refetch,
-    isFetching,
-    isPending,
-    dataUpdatedAt,
-  } = useQuery(resourceEnumsQueryOptions({ connectionResource }))
+  const { data: enums, isPending } = useQuery(
+    resourceEnumsQueryOptions({ connectionResource })
+  )
   const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
     useDefinitionsState({
       connectionResource,
     })
-
-  useRefreshHotkey(refetch, isFetching)
 
   const filteredEnums =
     enums
@@ -71,11 +64,7 @@ export const Enums = () => {
 
   return (
     <>
-      <DefinitionsHeader
-        onRefresh={() => refetch()}
-        isRefreshing={isFetching}
-        dataUpdatedAt={dataUpdatedAt}
-      >
+      <DefinitionsHeader>
         Enums
         {connection.type === ConnectionType.MySQL && ' & Sets'}
       </DefinitionsHeader>

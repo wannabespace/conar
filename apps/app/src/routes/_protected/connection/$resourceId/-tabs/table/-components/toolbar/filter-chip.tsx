@@ -102,7 +102,7 @@ export const FilterChip = ({
           <PopoverTrigger
             render={<ChipSegment className="text-muted-foreground" />}
           >
-            {filter.ref.operator}
+            {filter.ref.label}
           </PopoverTrigger>
           <PopoverContent className="p-0 **:data-[slot=popover-viewport]:p-0">
             <FiltersOperatorSelector

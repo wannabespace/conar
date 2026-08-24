@@ -110,7 +110,7 @@ const SchemaRow = ({
   row,
   onToggle,
 }: {
-  row: TreeRow & { kind: 'schema' }
+  row: Extract<TreeRow, { kind: 'schema' }>
   onToggle: () => void
 }) => {
   const schemaParam = useActiveTable()?.schema
@@ -124,7 +124,7 @@ const SchemaRow = ({
           onClick={onToggle}
         />
       }
-      className="group hover:bg-accent h-full w-full cursor-default gap-1 px-1.5"
+      className="group hover:bg-accent h-full w-full gap-1 px-1.5"
     >
       <RiArrowRightSLine
         className={cn(
@@ -153,7 +153,7 @@ const TableRow = ({
   onRename,
   onDrop,
 }: {
-  row: TreeRow & { kind: 'table' }
+  row: Extract<TreeRow, { kind: 'table' }>
   search?: string
   onRename: () => void
   onDrop: () => void

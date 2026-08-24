@@ -22,7 +22,6 @@ import { useState } from 'react'
 
 import type { indexesType } from '~/entities/connection/queries'
 import { resourceIndexesQueryOptions } from '~/entities/connection/queries'
-import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
@@ -113,21 +112,15 @@ const routeApi = getRouteApi('/_protected/connection/$resourceId')
 
 export const Indexes = () => {
   const { connectionResource } = routeApi.useRouteContext()
-  const {
-    data: indexes,
-    refetch,
-    isFetching,
-    isPending,
-    dataUpdatedAt,
-  } = useQuery(resourceIndexesQueryOptions({ connectionResource }))
+  const { data: indexes, isPending } = useQuery(
+    resourceIndexesQueryOptions({ connectionResource })
+  )
   const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
     useDefinitionsState({
       connectionResource,
     })
   const [filterType, setFilterType] =
     useState<(typeof filterOptions)[number]['value']>('all')
-
-  useRefreshHotkey(refetch, isFetching)
 
   const groupedIndexes = groupIndexes(
     indexes,
@@ -139,13 +132,7 @@ export const Indexes = () => {
 
   return (
     <>
-      <DefinitionsHeader
-        onRefresh={() => refetch()}
-        isRefreshing={isFetching}
-        dataUpdatedAt={dataUpdatedAt}
-      >
-        Indexes
-      </DefinitionsHeader>
+      <DefinitionsHeader>Indexes</DefinitionsHeader>
       <div className="mb-4 flex items-center gap-2">
         <SearchInput
           placeholder="Search indexes"

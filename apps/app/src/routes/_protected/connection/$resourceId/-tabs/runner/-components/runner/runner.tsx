@@ -208,7 +208,7 @@ export const Runner = () => {
           <CardHeader className="h-14 py-3">
             <CardTitle className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                SQL Runner
+                Query
                 <Tooltip>
                   <RunnerSettings>
                     <TooltipTrigger

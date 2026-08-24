@@ -319,6 +319,12 @@ const resourceTableColumnsQuery = memoize(
     })
 )
 
+export const resourceColumnsQueryKey = ({
+  connectionResource,
+}: {
+  connectionResource: ConnectionResource
+}) => ['connection-resource', connectionResource.id, 'columns']
+
 export const resourceTableColumnsQueryOptions = ({
   connectionResource,
   table,
@@ -334,9 +340,7 @@ export const resourceTableColumnsQueryOptions = ({
         await connectionResourceToQueryParams(connectionResource)
       ),
     queryKey: [
-      'connection-resource',
-      connectionResource.id,
-      'columns',
+      ...resourceColumnsQueryKey({ connectionResource }),
       schema,
       table,
     ],

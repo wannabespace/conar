@@ -77,7 +77,7 @@ export const DraftsActions = ({
     mutationFn: async () => {
       if (primaryColumns.length === 0) {
         throw new Error(
-          'No primary keys found. Please use SQL Runner to update rows.'
+          'No primary keys found. Please use a query to update rows.'
         )
       }
 

@@ -25,7 +25,8 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { useRef, useState } from 'react'
+import { motion } from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
@@ -156,6 +157,26 @@ const mapGeneratedFilters = (
         }
     )
     .filter((f) => !!f.ref) as ActiveFilter[]
+
+const generatedSummary = (
+  filters: { column: string }[],
+  orderBy: Record<string, 'ASC' | 'DESC'>
+) => {
+  const parts: string[] = []
+
+  if (filters.length > 0) {
+    const columns = [...new Set(filters.map((filter) => filter.column))]
+    parts.push(
+      `${filters.length} filter${filters.length > 1 ? 's' : ''} on ${columns.join(', ')}`
+    )
+  }
+
+  for (const [column, direction] of Object.entries(orderBy)) {
+    parts.push(`sorted by ${column} ${direction.toLowerCase()}`)
+  }
+
+  return parts.length > 0 ? `Applied ${parts.join(' · ')}` : null
+}
 
 const getStageSuggestions = ({
   columns,
@@ -289,6 +310,7 @@ const applySuggestedValue = ({
 }
 
 const FilterCommandList = ({
+  aiSummary,
   applyValue,
   askAi,
   committedParts,
@@ -307,6 +329,7 @@ const FilterCommandList = ({
   stage,
   trimmedQuery,
 }: {
+  aiSummary: string | null
   applyValue: () => void
   askAi: () => void
   committedParts: string[]
@@ -328,6 +351,23 @@ const FilterCommandList = ({
   <CommandList className="max-h-64">
     {stage.step === 'idle' && (
       <CommandGroup>
+        {matchingColumns.map((column) => (
+          <CommandItem
+            key={column.id}
+            value={`column:${column.id}`}
+            onSelect={() => pickColumn(column.id)}
+          >
+            <RiFilterLine />
+            <span data-mask className="min-w-0 flex-1 truncate">
+              Filter by {column.id}
+            </span>
+            {column.type && (
+              <CommandShortcut className="tracking-normal">
+                {column.typeLabel || column.type}
+              </CommandShortcut>
+            )}
+          </CommandItem>
+        ))}
         {trimmedQuery.length > 0 && (
           <CommandItem
             value={`ai:${trimmedQuery.toLowerCase()}`}
@@ -345,26 +385,9 @@ const FilterCommandList = ({
             )}
           </CommandItem>
         )}
-        {matchingColumns.map((column) => (
-          <CommandItem
-            key={column.id}
-            value={`column:${column.id}`}
-            onSelect={() => pickColumn(column.id)}
-          >
-            <RiFilterLine className="text-muted-foreground size-4" />
-            <span data-mask className="min-w-0 flex-1 truncate">
-              Filter by {column.id}
-            </span>
-            {column.type && (
-              <CommandShortcut className="tracking-normal">
-                {column.typeLabel || column.type}
-              </CommandShortcut>
-            )}
-          </CommandItem>
-        ))}
         {trimmedQuery.length === 0 && filtersCount > 0 && (
           <CommandItem value="clear-filters" onSelect={onClearFilters}>
-            <RiCloseCircleLine className="text-muted-foreground size-4" />
+            <RiCloseCircleLine />
             Clear all filters
           </CommandItem>
         )}
@@ -414,7 +437,7 @@ const FilterCommandList = ({
         )}
         <CommandGroup>
           <CommandItem value="apply-value" onSelect={applyValue}>
-            <RiCheckLine className="text-muted-foreground size-4" />
+            <RiCheckLine />
             <span data-mask className="min-w-0 flex-1 truncate">
               Apply: {stage.column} {stage.ref.operator}{' '}
               {query === '' ? '(empty)' : query}
@@ -423,6 +446,18 @@ const FilterCommandList = ({
           </CommandItem>
         </CommandGroup>
       </>
+    )}
+    {aiSummary && (
+      <motion.div
+        data-mask
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+        className="text-muted-foreground m-1 flex items-center gap-2 px-2 py-1.5 text-xs"
+      >
+        <RiCheckLine className="text-success size-3.5 shrink-0" />
+        <span className="min-w-0 flex-1 truncate">{aiSummary}</span>
+      </motion.div>
     )}
   </CommandList>
 )
@@ -451,6 +486,7 @@ export const FilterSearchBar = ({
     remaining: number
     max: number
   } | null>(null)
+  const [aiSummary, setAiSummary] = useState<string | null>(null)
 
   const setPrompt = (value: string) =>
     store.set((state) => ({ ...state, prompt: value }) satisfies typeof state)
@@ -458,7 +494,18 @@ export const FilterSearchBar = ({
   const setQuery = (value: string) => {
     setPrompt(value)
     setHighlighted(highlightForStage(stage, value))
+    setAiSummary(null)
   }
+
+  useEffect(() => {
+    if (!aiSummary) {
+      return
+    }
+
+    const timer = setTimeout(() => setAiSummary(null), 6000)
+
+    return () => clearTimeout(timer)
+  }, [aiSummary])
 
   const setFilters = (updater: (filters: ActiveFilter[]) => ActiveFilter[]) =>
     store.set(
@@ -498,6 +545,7 @@ export const FilterSearchBar = ({
           )
         }
 
+        setAiSummary(generatedSummary(data.filters, data.orderBy))
         setFreeAiUsage(data.freeAiUsage || null)
 
         setTimeout(() => {
@@ -536,9 +584,19 @@ export const FilterSearchBar = ({
   })
 
   const trimmedQuery = query.trim()
-  const matchingColumns = (columns ?? []).filter((column) =>
-    column.id.toLowerCase().includes(trimmedQuery.toLowerCase())
-  )
+  const columnQuery = trimmedQuery.toLowerCase()
+  const columnRank = (id: string) => {
+    if (id === columnQuery) {
+      return 0
+    }
+
+    return id.startsWith(columnQuery) ? 1 : 2
+  }
+  const matchingColumns = (columns ?? [])
+    .filter((column) => column.id.toLowerCase().includes(columnQuery))
+    .toSorted(
+      (a, b) => columnRank(a.id.toLowerCase()) - columnRank(b.id.toLowerCase())
+    )
 
   const isOpen =
     isFocused &&
@@ -708,10 +766,11 @@ export const FilterSearchBar = ({
       {isOpen && (
         <div
           role="presentation"
-          className="bg-popover ring-foreground/4 absolute bottom-full left-0 z-30 mb-2 w-full overflow-hidden rounded-xl p-1 shadow-lg ring-1"
+          className="bg-popover ring-foreground/4 absolute bottom-full left-0 z-30 mb-2 w-full overflow-hidden rounded-xl shadow-lg ring-1"
           onMouseDown={(e) => e.preventDefault()}
         >
           <FilterCommandList
+            aiSummary={aiSummary}
             applyValue={applyValue}
             askAi={askAi}
             committedParts={committedParts}

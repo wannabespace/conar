@@ -46,14 +46,22 @@ import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppContextMenu } from '~/components/app-context-menu'
 import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import {
+  resourceColumnsQueryKey,
   resourceConstraintsQueryOptions,
   resourceEnumsQueryOptions,
+  resourceFunctionsQueryOptions,
+  resourceIndexesQueryOptions,
+  resourcePoliciesQuery,
   resourceRowsQueryInfiniteOptions,
   resourceTableColumnsQueryOptions,
   resourceTablesAndSchemasQueryOptions,
   resourceTableTotalQueryOptions,
+  resourceTriggersQueryOptions,
 } from '~/entities/connection/queries'
-import type { ConnectionTab } from '~/entities/connection/store'
+import type {
+  ConnectionTab,
+  DefinitionsSection,
+} from '~/entities/connection/store'
 import {
   getConnectionResourceStore,
   isPreviewTab,
@@ -88,6 +96,119 @@ const TAB_ICONS = {
   runner: RiPlayLargeLine,
   table: RiTableLine,
   visualizer: RiNodeTree,
+}
+
+const TabRefreshButton = ({
+  label,
+  refreshing,
+  onRefresh,
+}: {
+  label: string
+  refreshing: boolean
+  onRefresh: () => void
+}) => (
+  <Tooltip>
+    <TooltipTrigger
+      render={
+        <RefreshButton
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Refresh"
+          className="text-muted-foreground"
+          iconClassName="size-3.5"
+          refreshing={refreshing}
+          onClick={onRefresh}
+        />
+      }
+    />
+    <TooltipContent side="bottom">
+      {label}
+      {window.electron && (
+        <KbdCtrlLetter userAgent={navigator.userAgent} letter="R" />
+      )}
+    </TooltipContent>
+  </Tooltip>
+)
+
+const DEFINITIONS_QUERY_OPTIONS: Record<
+  DefinitionsSection,
+  (params: { connectionResource: ConnectionResource }) => { queryKey: string[] }
+> = {
+  constraints: resourceConstraintsQueryOptions,
+  enums: resourceEnumsQueryOptions,
+  functions: resourceFunctionsQueryOptions,
+  indexes: resourceIndexesQueryOptions,
+  policies: resourcePoliciesQuery,
+  triggers: resourceTriggersQueryOptions,
+}
+
+const DefinitionsRefresh = ({ section }: { section: DefinitionsSection }) => {
+  const { connectionResource } = useRouteContext()
+  const { queryKey } = DEFINITIONS_QUERY_OPTIONS[section]({
+    connectionResource,
+  })
+  const isFetching = useIsFetching({ queryKey }) > 0
+  const [isUserRefreshing, setIsUserRefreshing] = useState(false)
+
+  const handleRefresh = () => {
+    setIsUserRefreshing(true)
+
+    return queryClient
+      .invalidateQueries({ queryKey })
+      .finally(() => setIsUserRefreshing(false))
+  }
+
+  useRefreshHotkey(handleRefresh, isFetching)
+
+  return (
+    <TabRefreshButton
+      label={`Refresh ${section}`}
+      refreshing={isUserRefreshing}
+      onRefresh={handleRefresh}
+    />
+  )
+}
+
+const VisualizerRefresh = () => {
+  const { connectionResource } = useRouteContext()
+  const store = getConnectionResourceStore(connectionResource.id)
+  const showSystem = useSubscription(store, {
+    selector: (state) => state.showSystem,
+  })
+  const tablesAndSchemasKey = resourceTablesAndSchemasQueryOptions({
+    connectionResource,
+    showSystem,
+  }).queryKey
+  const columnsKey = resourceColumnsQueryKey({ connectionResource })
+  const constraintsKey = resourceConstraintsQueryOptions({
+    connectionResource,
+  }).queryKey
+  const isFetching =
+    useIsFetching({ queryKey: tablesAndSchemasKey }) +
+      useIsFetching({ queryKey: columnsKey }) +
+      useIsFetching({ queryKey: constraintsKey }) >
+    0
+  const [isUserRefreshing, setIsUserRefreshing] = useState(false)
+
+  const handleRefresh = () => {
+    setIsUserRefreshing(true)
+
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey: tablesAndSchemasKey }),
+      queryClient.invalidateQueries({ queryKey: columnsKey }),
+      queryClient.invalidateQueries({ queryKey: constraintsKey }),
+    ]).finally(() => setIsUserRefreshing(false))
+  }
+
+  useRefreshHotkey(handleRefresh, isFetching)
+
+  return (
+    <TabRefreshButton
+      label="Refresh diagram"
+      refreshing={isUserRefreshing}
+      onRefresh={handleRefresh}
+    />
+  )
 }
 
 const TableRefresh = ({ schema, table }: { schema: string; table: string }) => {
@@ -142,26 +263,37 @@ const TableRefresh = ({ schema, table }: { schema: string; table: string }) => {
   useRefreshHotkey(handleRefresh, isFetching)
 
   return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <RefreshButton
-            variant="ghost"
-            size="icon-sm"
-            className="text-muted-foreground"
-            iconClassName="size-3.5"
-            refreshing={isUserRefreshing}
-            onClick={handleRefresh}
-          />
-        }
-      />
-      <TooltipContent side="bottom">
-        Refresh table
-        {window.electron && (
-          <KbdCtrlLetter userAgent={navigator.userAgent} letter="R" />
-        )}
-      </TooltipContent>
-    </Tooltip>
+    <TabRefreshButton
+      label="Refresh table"
+      refreshing={isUserRefreshing}
+      onRefresh={handleRefresh}
+    />
+  )
+}
+
+const TabRefresh = ({ tab }: { tab: ConnectionTab | null }) => {
+  if (tab?.type === 'table') {
+    return <TableRefresh schema={tab.schema} table={tab.table} />
+  }
+
+  if (tab?.type === 'definitions') {
+    return <DefinitionsRefresh section={tab.section} />
+  }
+
+  if (tab?.type === 'visualizer') {
+    return <VisualizerRefresh />
+  }
+
+  return (
+    <RefreshButton
+      variant="ghost"
+      size="icon-sm"
+      aria-label="Refresh"
+      className="text-muted-foreground"
+      iconClassName="size-3.5"
+      refreshing={false}
+      disabled
+    />
   )
 }
 
@@ -341,7 +473,6 @@ const Tab = ({
   connectionResource,
   isActive,
   isDragging,
-  isLast,
   onDragStateChange,
   onClose,
   onCloseAll,
@@ -355,7 +486,6 @@ const Tab = ({
   defaultLabel: string
   isActive: boolean
   isDragging: boolean
-  isLast: boolean
   onDragStateChange: (dragging: boolean) => void
   connectionResource: ConnectionResource
   onClose: VoidFunction
@@ -458,8 +588,7 @@ const Tab = ({
     })
 
   const tabClasses = cn(
-    `group text-muted-foreground hover:bg-background/50 relative flex h-full cursor-default items-center gap-1.5 border-b pr-8 pl-3 text-sm font-[450] whitespace-nowrap transition-colors duration-100`,
-    !isLast && 'border-r',
+    `group text-muted-foreground hover:bg-background/50 relative flex h-full cursor-default items-center gap-1.5 border-r border-b pr-8 pl-3 text-sm font-[450] whitespace-nowrap transition-colors duration-100`,
     isActive &&
       `bg-background text-foreground hover:bg-background border-b-transparent font-medium`,
     isPreview && 'italic'
@@ -748,19 +877,7 @@ export const TabBar = ({ className }: { className?: string }) => {
           </TooltipContent>
         </Tooltip>
         <HistoryNav />
-        {activeTab?.type === 'table' ? (
-          <TableRefresh schema={activeTab.schema} table={activeTab.table} />
-        ) : (
-          <RefreshButton
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Refresh"
-            className="text-muted-foreground"
-            iconClassName="size-3.5"
-            refreshing={false}
-            disabled
-          />
-        )}
+        <TabRefresh tab={activeTab} />
       </div>
       {tabs.length > 0 && (
         <ScrollArea className="h-full w-fit min-w-0">
@@ -786,7 +903,6 @@ export const TabBar = ({ className }: { className?: string }) => {
                   defaultLabel={labels[index]?.defaultLabel ?? ''}
                   isActive={tab.id === activeTabId}
                   isDragging={isDragging}
-                  isLast={index === tabs.length - 1}
                   onDragStateChange={setIsDragging}
                   connectionResource={connectionResource}
                   onClose={() => closeTab(tab.id)}
@@ -801,13 +917,13 @@ export const TabBar = ({ className }: { className?: string }) => {
           </div>
         </ScrollArea>
       )}
+      <div aria-hidden className="min-w-0 flex-1 border-b" />
       <NewTabMenu
         connection={connection}
         connectionResource={connectionResource}
         tablesAndSchemas={tablesAndSchemas}
         onNewQuery={openNewQuery}
       />
-      <div aria-hidden className="min-w-0 flex-1 border-b" />
     </div>
   )
 }
