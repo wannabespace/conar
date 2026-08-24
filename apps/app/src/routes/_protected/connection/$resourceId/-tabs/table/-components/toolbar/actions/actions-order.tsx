@@ -15,6 +15,7 @@ import {
   CommandList,
   CommandShortcut,
 } from '@tamery/ui/components/command'
+import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import {
   Popover,
   PopoverContent,
@@ -119,22 +120,15 @@ export const ActionsOrder = () => {
         <TooltipTrigger
           render={
             <PopoverTrigger
-              render={
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="relative overflow-visible"
-                />
-              }
+              render={<Button variant="outline" className="gap-1.5 px-2.5" />}
             />
           }
         >
-          <RiArrowUpDownLine />
-          {activeCount > 0 && (
-            <span className="bg-primary text-2xs text-primary-foreground absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 font-medium tabular-nums">
-              {activeCount}
-            </span>
-          )}
+          <RiArrowUpDownLine className="text-muted-foreground/60" />
+          <NumberFlow
+            value={activeCount}
+            className="text-2xs font-normal tabular-nums"
+          />
         </TooltipTrigger>
         <TooltipContent side="top">
           {activeCount > 0
