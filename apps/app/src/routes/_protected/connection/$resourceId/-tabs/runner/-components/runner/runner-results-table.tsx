@@ -1,4 +1,3 @@
-import NumberFlow from '@number-flow/react'
 import { RiCloseLine, RiExportLine, RiSearchLine } from '@remixicon/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { ColumnRenderer } from '@tamery/table'
@@ -6,6 +5,7 @@ import { Table, TableBody, TableHeader, TableProvider } from '@tamery/table'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { Input } from '@tamery/ui/components/input'
 import { Separator } from '@tamery/ui/components/separator'
 import {

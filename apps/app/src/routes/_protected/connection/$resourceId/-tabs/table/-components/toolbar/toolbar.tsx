@@ -1,4 +1,3 @@
-import NumberFlow from '@number-flow/react'
 import {
   RiCodeSSlashLine,
   RiHashtag,
@@ -8,6 +7,7 @@ import {
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { enabledFilters } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
+import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import {
   DropdownMenu,
   DropdownMenuContent,

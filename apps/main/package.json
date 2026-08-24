@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@better-auth/api-key": "catalog:",
-    "@number-flow/react": "catalog:",
     "@orpc/client": "catalog:",
     "@orpc/tanstack-query": "catalog:",
     "@tanstack/react-form": "catalog:",

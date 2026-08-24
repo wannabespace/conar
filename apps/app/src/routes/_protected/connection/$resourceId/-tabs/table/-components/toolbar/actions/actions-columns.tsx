@@ -1,4 +1,3 @@
-import NumberFlow from '@number-flow/react'
 import {
   RiCheckLine,
   RiDatabase2Line,
@@ -14,6 +13,7 @@ import {
   CommandList,
   CommandSeparator,
 } from '@tamery/ui/components/command'
+import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import {
   Popover,
   PopoverContent,

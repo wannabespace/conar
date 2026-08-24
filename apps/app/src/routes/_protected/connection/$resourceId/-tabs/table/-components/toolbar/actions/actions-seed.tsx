@@ -1,4 +1,3 @@
-import NumberFlow from '@number-flow/react'
 import {
   RiCodeSSlashLine,
   RiSeedlingLine,
@@ -22,6 +21,7 @@ import {
 } from '@tamery/ui/components/combobox'
 import { Indicator } from '@tamery/ui/components/custom/indicator'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import {
   Drawer,
   DrawerClose,

@@ -1,4 +1,3 @@
-import NumberFlow from '@number-flow/react'
 import {
   RiAlertLine,
   RiCheckboxCircleLine,
@@ -8,6 +7,7 @@ import {
 } from '@remixicon/react'
 import type { RouterOutputs } from '@tamery/api/orpc/routers'
 import { Button } from '@tamery/ui/components/button'
+import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { Spinner } from '@tamery/ui/components/spinner'
 import {
   Tooltip,

@@ -1,4 +1,3 @@
-import NumberFlow from '@number-flow/react'
 import {
   RiBrush2Line,
   RiCheckLine,
@@ -9,6 +8,7 @@ import {
 import { Button } from '@tamery/ui/components/button'
 import { CardHeader, CardTitle } from '@tamery/ui/components/card'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
+import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import {
   KbdCtrlEnter,
   KbdCtrlLetter,

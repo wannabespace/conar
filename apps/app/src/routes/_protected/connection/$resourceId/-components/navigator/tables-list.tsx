@@ -140,7 +140,7 @@ const SchemaRow = ({
       >
         {row.name}
       </span>
-      <span className="text-2xs text-muted-foreground/50 ml-auto pr-1 tabular-nums opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+      <span className="text-2xs text-muted-foreground/50 ml-auto pr-1 tabular-nums opacity-0 group-hover:opacity-100">
         {row.tablesCount}
       </span>
     </SidebarGroupLabel>

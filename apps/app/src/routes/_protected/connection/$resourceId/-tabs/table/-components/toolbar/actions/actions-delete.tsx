@@ -1,4 +1,3 @@
-import NumberFlow from '@number-flow/react'
 import { RiDeleteBin7Line } from '@remixicon/react'
 import { enabledFilters } from '@tamery/shared/filters'
 import {
@@ -12,6 +11,7 @@ import {
 } from '@tamery/ui/components/alert-dialog'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'

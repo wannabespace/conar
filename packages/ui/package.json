@@ -24,6 +24,7 @@
     "@blobatar/react": "catalog:",
     "@fontsource-variable/geist": "catalog:",
     "@fontsource-variable/geist-mono": "catalog:",
+    "@number-flow/react": "catalog:",
     "@paper-design/shaders-react": "catalog:",
     "@remixicon/react": "catalog:",
     "@shadcn/react": "catalog:",
