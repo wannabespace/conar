@@ -25,7 +25,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { motion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
@@ -451,17 +451,22 @@ const AiSummaryRow = ({
   summary: string
 }) => (
   <motion.div
-    data-mask
-    initial={{ opacity: 0, y: -4 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
-    className={cn(
-      'text-muted-foreground flex items-center gap-2 px-3 py-1.5 text-xs',
-      hasList && 'border-b'
-    )}
+    initial={{ height: 0, opacity: 0, y: 8 }}
+    animate={{ height: 'auto', opacity: 1, y: 0 }}
+    exit={{ height: 0, opacity: 0, y: 8 }}
+    transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+    className="overflow-hidden"
   >
-    <RiCheckLine className="text-success size-3.5 shrink-0" />
-    <span className="min-w-0 flex-1 truncate">{summary}</span>
+    <div
+      data-mask
+      className={cn(
+        'text-muted-foreground flex items-center gap-2 px-3 py-1.5 text-xs',
+        hasList && 'border-b'
+      )}
+    >
+      <RiCheckLine className="text-success size-3.5 shrink-0" />
+      <span className="min-w-0 flex-1 truncate">{summary}</span>
+    </div>
   </motion.div>
 )
 
@@ -778,36 +783,47 @@ export const FilterSearchBar = ({
           )}
         />
       </div>
-      {(isOpen || aiSummary) && (
-        <div
-          role="presentation"
-          className="bg-popover ring-foreground/4 absolute bottom-full left-0 z-30 mb-2 w-full overflow-hidden rounded-xl shadow-lg ring-1"
-          onMouseDown={(e) => e.preventDefault()}
-        >
-          {aiSummary && <AiSummaryRow hasList={isOpen} summary={aiSummary} />}
-          {isOpen && (
-            <FilterCommandList
-              applyValue={applyValue}
-              askAi={askAi}
-              committedParts={committedParts}
-              filtersCount={filters.length}
-              freeAiUsage={freeAiUsage}
-              isOnline={isOnline}
-              isPending={isPending}
-              matchingColumns={matchingColumns}
-              matchingOperators={matchingOperators}
-              matchingValues={matchingValues}
-              onClearFilters={() => setFilters(() => [])}
-              pickColumn={pickColumn}
-              pickOperator={pickOperator}
-              pickSuggestedValue={pickSuggestedValue}
-              query={query}
-              stage={stage}
-              trimmedQuery={trimmedQuery}
-            />
-          )}
-        </div>
-      )}
+      <AnimatePresence>
+        {(isOpen || aiSummary) && (
+          <motion.div
+            key="suggestion-panel"
+            role="presentation"
+            initial={false}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+            className="bg-popover ring-foreground/4 absolute bottom-full left-0 z-30 mb-2 w-full overflow-hidden rounded-xl shadow-lg ring-1"
+            onMouseDown={(e) => e.preventDefault()}
+          >
+            <AnimatePresence>
+              {aiSummary && (
+                <AiSummaryRow hasList={isOpen} summary={aiSummary} />
+              )}
+            </AnimatePresence>
+            {isOpen && (
+              <FilterCommandList
+                applyValue={applyValue}
+                askAi={askAi}
+                committedParts={committedParts}
+                filtersCount={filters.length}
+                freeAiUsage={freeAiUsage}
+                isOnline={isOnline}
+                isPending={isPending}
+                matchingColumns={matchingColumns}
+                matchingOperators={matchingOperators}
+                matchingValues={matchingValues}
+                onClearFilters={() => setFilters(() => [])}
+                pickColumn={pickColumn}
+                pickOperator={pickOperator}
+                pickSuggestedValue={pickSuggestedValue}
+                query={query}
+                stage={stage}
+                trimmedQuery={trimmedQuery}
+              />
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </CommandPrimitive>
   )
 }

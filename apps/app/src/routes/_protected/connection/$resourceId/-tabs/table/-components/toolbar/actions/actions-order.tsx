@@ -74,7 +74,7 @@ const SortedItem = ({
             size="icon-xs"
             aria-label={`Remove sort from ${columnId}`}
             tabIndex={-1}
-            className="text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive absolute top-1/2 right-1 -translate-y-1/2"
+            className="text-muted-foreground/60 hover:bg-destructive/10 hover:text-destructive absolute inset-y-0 right-1 my-auto"
             onPointerDown={(event) => {
               event.preventDefault()
               event.stopPropagation()

@@ -127,7 +127,7 @@ export const PasswordForm = ({
                           aria-label={
                             showPassword ? 'Hide password' : 'Show password'
                           }
-                          className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground absolute top-1/2 right-2 size-7 -translate-y-1/2"
+                          className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground absolute inset-y-0 right-2 my-auto size-7"
                           onClick={() => setShowPassword(!showPassword)}
                           tabIndex={-1}
                         />

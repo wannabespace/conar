@@ -6,6 +6,7 @@
 - `DropdownMenuLabel` requires a `DropdownMenuGroup` parent (base-ui throws `MenuGroupContext is missing`).
 - base-ui render prop: `<Trigger render={<Button/>}>children</Trigger>` — children land inside. Non-button trigger needs `nativeButton={false}` + `aria-label`. Same for `<Button render={<Link/>}>` — no auto-inference in the kit, set at call site.
 - `InputGroup` addon sizes direct-child svgs only — nested icons need explicit `size-4`.
+- Never center a kit `Button` with `top-1/2 -translate-y-1/2`: the base has `active:not-aria-[haspopup]:translate-y-px` press-nudge, and the active `translate-y` replaces the centering one — button jumps half its height down on press (bit the sort-popover ✕, password eye, runner clear-search). Center absolutes with `inset-y-0 my-auto` instead. Popup triggers (`aria-haspopup`) are exempt from the nudge but use the same margin centering anyway.
 - Router `Link` concatenates `activeProps.className` (no tw-merge) — use `data-[status=active]:` variants in one className (`sidebar-link.tsx`).
 - CSS transitions can't interpolate length↔percentage (`max-w-64 → max-w-full` snaps) — keep both endpoints in rem.
 - Selects: macOS overlay mode (`alignItemWithTrigger`) + `min-w-(--anchor-width)`; never fix-width a trigger narrower than its longest option. Sizes: `size` on `SelectTrigger` AND `SelectContent` (popup carries `data-size`; items follow via `in-data-[size=xs]:`).
