@@ -112,7 +112,7 @@ Local URLs (via portless, requires `pnpm run dev`):
 
 | Topic        | Rule                                                                                  |
 | ------------ | ------------------------------------------------------------------------------------- |
-| API layer    | oRPC (`@orpc/server`) — not REST, not tRPC. Routers live in `apps/api/orpc/routers/`. |
+| API layer    | oRPC (`@orpc/server`) — not REST, not tRPC. Routers live in `apps/api/orpc/routers/`. Exception: the table-browser AI chat streams over a plain WebSocket route (`/v2/ai/chat`, `apps/api/routers/ai-chat-v2.ts`) built on TanStack AI (`@tanstack/ai` + `@tanstack/ai-anthropic` server-side, `@tanstack/ai-react` + `@tanstack/ai-client` in `apps/app`). |
 | Client state | TanStack DB collections — not Zustand, not React Context for data.                    |
 | Cloud DB ORM | Drizzle (`packages/db`) — not raw SQL, not Prisma.                                    |
 | Auth         | Better Auth (`apps/api/lib/auth.ts`) — not custom JWT, not NextAuth.                  |

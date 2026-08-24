@@ -28,6 +28,8 @@ import {
   prefetchConnectionResourceTableCore,
 } from '~/entities/connection/utils'
 
+import { AiChat } from './-components/ai-chat'
+
 export const Route = createFileRoute('/_protected/connection/$resourceId/table/')({
   validateSearch: type({
     'schema?': 'string',
@@ -109,7 +111,10 @@ function TableContent({ table, schema }: { table: string; schema: string }) {
 
   return (
     <ColumnsContext value={data}>
-      <TablesTabs className="h-9" />
+      <div className="flex h-9 items-center gap-1 pr-1">
+        <TablesTabs className="min-w-0 flex-1" />
+        <AiChat />
+      </div>
       <div
         // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- cannot be a real <button>: this element wraps nested interactive content (table cells, inputs, buttons), which is invalid inside a native button
         role="button"

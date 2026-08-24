@@ -13,6 +13,7 @@ import { auth } from './lib/auth'
 import { sendEmail } from './lib/resend'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
+import { aiChatV2Router, websocket } from './routers/ai-chat-v2'
 import { healthRouter } from './routers/health'
 
 const handler = new RPCHandler(router, {
@@ -170,8 +171,10 @@ const app = new Hono<{
     await next()
   })
   .route('/health', healthRouter)
+  .route('/v2/ai', aiChatV2Router)
 
 export default {
   fetch: app.fetch,
+  websocket,
   port: Number(process.env.PORT || 3000),
 }

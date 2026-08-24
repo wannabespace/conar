@@ -28,6 +28,8 @@
     "@orpc/tanstack-query": "catalog:",
     "@remixicon/react": "catalog:",
     "@tailwindcss/vite": "catalog:",
+    "@tanstack/ai-client": "catalog:",
+    "@tanstack/ai-react": "catalog:",
     "@tanstack/browser-db-sqlite-persistence": "catalog:",
     "@tanstack/offline-transactions": "catalog:",
     "@tanstack/react-db": "catalog:",
