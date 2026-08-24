@@ -70,7 +70,7 @@ const visualizerItem: NavigatorItem = {
   tabId: VISUALIZER_TAB_ID,
 }
 
-const groups = (
+export const schemaGroups = (
   connection: Connection
 ): { items: NavigatorItem[]; label: string }[] =>
   [
@@ -118,7 +118,7 @@ export const DefinitionsPanel = () => {
   const [search, setSearch] = useState('')
 
   const query = search.trim().toLowerCase()
-  const filtered = groups(connection)
+  const filtered = schemaGroups(connection)
     .map((group) => ({
       ...group,
       items: group.items.filter(({ label }) =>

@@ -17,7 +17,6 @@ import { useState } from 'react'
 
 import type { functionsType } from '~/entities/connection/queries'
 import { resourceFunctionsQueryOptions } from '~/entities/connection/queries'
-import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
@@ -38,21 +37,15 @@ const typeFilterOptions: { label: string; value: FunctionType | 'all' }[] = [
 
 export const Functions = () => {
   const { connectionResource } = functionsRouteApi.useRouteContext()
-  const {
-    data: functions,
-    refetch,
-    isFetching,
-    isPending,
-    dataUpdatedAt,
-  } = useQuery(resourceFunctionsQueryOptions({ connectionResource }))
+  const { data: functions, isPending } = useQuery(
+    resourceFunctionsQueryOptions({ connectionResource })
+  )
   const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
     useDefinitionsState({
       connectionResource,
     })
   const [filterType, setFilterType] =
     useState<(typeof typeFilterOptions)[number]['value']>('all')
-
-  useRefreshHotkey(refetch, isFetching)
 
   const filteredFunctions =
     functions?.filter(
@@ -68,13 +61,7 @@ export const Functions = () => {
 
   return (
     <>
-      <DefinitionsHeader
-        onRefresh={() => refetch()}
-        isRefreshing={isFetching}
-        dataUpdatedAt={dataUpdatedAt}
-      >
-        Functions
-      </DefinitionsHeader>
+      <DefinitionsHeader>Functions</DefinitionsHeader>
       <div className="mb-4 flex items-center gap-2">
         <SearchInput
           placeholder="Search functions"

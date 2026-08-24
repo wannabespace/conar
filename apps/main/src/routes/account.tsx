@@ -1,4 +1,3 @@
-import NumberFlow from '@number-flow/react'
 import {
   RiDashboard3Line,
   RiFileListLine,
@@ -12,6 +11,7 @@ import {
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
+import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { ThemeToggle } from '@tamery/ui/components/custom/theme-toggle'
 import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
 import { Separator } from '@tamery/ui/components/separator'

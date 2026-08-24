@@ -38,14 +38,13 @@ const ResourcePage = () => {
   const loggerOpened = useSubscription(store, {
     selector: (state) => state.loggerOpened,
   })
-  const { data: connectionString } = useLiveQuery(
-    (q) =>
+  const { data: connectionString } = useLiveQuery({
+    query: (q) =>
       q
         .from({ cs: connectionStringsCollection })
         .where(({ cs }) => eq(cs.connectionId, connection.id))
         .findOne(),
-    [connectionStringsCollection, connection.id]
-  )
+  })
   const isPasswordPopulated = connectionString?.isPasswordPopulated
 
   useEffect(() => {

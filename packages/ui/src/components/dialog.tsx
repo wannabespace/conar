@@ -22,12 +22,15 @@ const DialogClose = ({ ...props }: DialogPrimitive.Close.Props) => (
 
 const DialogOverlay = ({
   className,
+  animated = true,
   ...props
-}: DialogPrimitive.Backdrop.Props) => (
+}: DialogPrimitive.Backdrop.Props & { animated?: boolean }) => (
   <DialogPrimitive.Backdrop
     data-slot="dialog-overlay"
     className={cn(
-      `data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 isolate z-50 bg-black/30 duration-100 supports-backdrop-filter:backdrop-blur-sm`,
+      `fixed inset-0 isolate z-50 bg-black/30 duration-100 supports-backdrop-filter:backdrop-blur-sm`,
+      animated &&
+        `data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0`,
       className
     )}
     {...props}
@@ -38,16 +41,20 @@ const DialogContent = ({
   className,
   children,
   showCloseButton = true,
+  animated = true,
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean
+  animated?: boolean
 }) => (
   <DialogPortal>
-    <DialogOverlay />
+    <DialogOverlay animated={animated} />
     <DialogPrimitive.Popup
       data-slot="dialog-content"
       className={cn(
-        `bg-background text-foreground ring-foreground/4 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-1/2 gap-6 rounded-[min(var(--radius-4xl),24px)] p-6 text-sm shadow-xl ring-1 duration-100 outline-none sm:max-w-md`,
+        `bg-card text-foreground ring-foreground/4 fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-1/2 gap-6 rounded-[min(var(--radius-4xl),24px)] p-6 text-sm shadow-xl ring-1 duration-100 outline-none sm:max-w-md`,
+        animated &&
+          `data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95`,
         className
       )}
       {...props}

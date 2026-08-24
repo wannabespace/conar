@@ -3,7 +3,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import type { editor, Position } from 'monaco-editor'
 import { KeyCode, KeyMod } from 'monaco-editor'
 import type { Dispatch, RefObject, SetStateAction } from 'react'
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
@@ -70,19 +70,14 @@ export const useRunnerEditorAIZones = (
     number | null
   >(null)
 
-  const currentAIZoneQuery = useMemo(() => {
-    if (currentAIZoneLineNumber === null) {
-      return null
-    }
-
-    return (
-      editorQueries.find(
-        (query) =>
-          currentAIZoneLineNumber >= query.startLineNumber &&
-          currentAIZoneLineNumber <= query.endLineNumber
-      ) ?? null
-    )
-  }, [currentAIZoneLineNumber, editorQueries])
+  const currentAIZoneQuery =
+    currentAIZoneLineNumber === null
+      ? null
+      : (editorQueries.find(
+          (query) =>
+            currentAIZoneLineNumber >= query.startLineNumber &&
+            currentAIZoneLineNumber <= query.endLineNumber
+        ) ?? null)
 
   if (currentAIZoneLineNumber && !currentAIZoneQuery) {
     setCurrentAIZoneLineNumber(null)

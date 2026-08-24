@@ -334,22 +334,20 @@ const ConnectionCard = ({
 }) => {
   const { connectionStringsCollection, connectionsResourcesCollection } =
     useCollections()
-  const { data: connectionString } = useLiveQuery(
-    (q) =>
+  const { data: connectionString } = useLiveQuery({
+    query: (q) =>
       q
         .from({ cs: connectionStringsCollection })
         .where(({ cs }) => eq(cs.connectionId, connection.id))
         .findOne(),
-    [connectionStringsCollection, connection.id]
-  )
-  const { data: connectionResources } = useLiveQuery(
-    (q) =>
+  })
+  const { data: connectionResources } = useLiveQuery({
+    query: (q) =>
       q
         .from({ cr: connectionsResourcesCollection })
         .where(({ cr }) => eq(cr.connectionId, connection.id))
         .orderBy(({ cr }) => cr.name, 'asc'),
-    [connectionsResourcesCollection, connection.id]
-  )
+  })
 
   const connectionResourcesNames = connectionResources.map(
     (r) => r.name || CONNECTION_RESOURCE_ROOT_SYMBOL
@@ -458,7 +456,7 @@ const ConnectionCard = ({
           'group relative flex h-11 items-center gap-3 px-3 transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]',
           selectedResource &&
             canOpenResource &&
-            'hover:bg-accent has-[[data-resource-link]:hover]:bg-accent'
+            'hover:bg-popover has-[[data-resource-link]:hover]:bg-popover'
         )}
       >
         {selectedResource && canOpenResource && (
@@ -610,8 +608,8 @@ export const ConnectionsList = () => {
   const sort = useSubscription(sortValue)
   const grouping = useSubscription(groupValue)
   const { data: activeWorkspace } = useActiveWorkspace()
-  const { data } = useLiveQuery(
-    (q) => {
+  const { data } = useLiveQuery({
+    query: (q) => {
       let query = activeWorkspace
         ? q
             .from({ c: connectionsCollection })
@@ -638,8 +636,7 @@ export const ConnectionsList = () => {
         sortDirection
       )
     },
-    [connectionsCollection, sort, grouping, activeWorkspace?.id]
-  )
+  })
 
   const removeDialogRef =
     useRef<ComponentRef<typeof RemoveConnectionDialog>>(null)

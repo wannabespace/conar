@@ -43,7 +43,7 @@ Tamery is an AI-powered open-source project that simplifies database interaction
 - oRPC
 - Drizzle ORM
 - Better Auth
-- AI SDK with Anthropic, OpenAI, Gemini and XAI
+- TanStack AI with Anthropic
 - Railway
 - PostHog
 - Resend

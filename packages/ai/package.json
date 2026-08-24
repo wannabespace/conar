@@ -5,11 +5,6 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@exalabs/ai-sdk": "catalog:",
-    "@tamery/shared": "workspace:*",
-    "@upstash/context7-tools-ai-sdk": "catalog:",
-    "ai": "catalog:",
-    "arktype": "catalog:",
-    "zod": "catalog:"
+    "@tanstack/ai": "catalog:"
   }
 }

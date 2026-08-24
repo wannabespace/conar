@@ -1,4 +1,3 @@
-export { chat } from './chat'
 export { enhancePrompt } from './enhance-prompt'
 export { filters } from './filters'
 export { fixSQL } from './fix-sql'

@@ -6,6 +6,7 @@ import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import type * as apiOrpc from '@tamery/api/orpc/routers'
 import type * as proxyOrpc from '@tamery/proxy/orpc/routers'
 import type * as queryProxy from '@tamery/query-proxy'
+import { PROXY_ERROR_MESSAGE } from '@tamery/shared/constants'
 import { isConnectionError } from '@tamery/shared/utils/connections'
 import { memoize } from 'memoza'
 
@@ -90,9 +91,6 @@ export const orpcProxy = createORPCClient(
 
 export type ORPCInputs = InferRouterInputs<typeof apiOrpc.router>
 export type ORPCOutputs = InferRouterOutputs<typeof apiOrpc.router>
-
-export const PROXY_ERROR_MESSAGE =
-  "We can't connect to the proxy, please check your connection and try again."
 
 export const createProxyClient = memoize((url: string): queryProxy.ORPCRouter =>
   createORPCClient(

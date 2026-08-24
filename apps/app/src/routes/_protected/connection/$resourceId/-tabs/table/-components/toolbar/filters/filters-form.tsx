@@ -1,5 +1,5 @@
 import type { ActiveFilter, Filter } from '@tamery/shared/filters'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { useTableColumnsContext } from '../../../-lib/columns'
 import { FiltersColumnSelector } from './filters-column-selector'
@@ -15,22 +15,6 @@ export const FilterForm = ({
   const [selectedFilter, setSelectedFilter] = useState<Filter | null>(null)
   const [values, setValues] = useState<string[]>([''])
   const { columns } = useTableColumnsContext()
-
-  const operatorRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (operatorRef.current) {
-      operatorRef.current.focus()
-    }
-  }, [operatorRef, selectedColumn, selectedFilter])
-
-  const valueRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (valueRef.current) {
-      valueRef.current.focus()
-    }
-  }, [valueRef, selectedFilter])
 
   const column = columns.find((col) => col.id === selectedColumn)
 
@@ -50,7 +34,7 @@ export const FilterForm = ({
       {!column && <FiltersColumnSelector onSelect={setSelectedColumn} />}
       {column && !selectedFilter && (
         <FiltersOperatorSelector
-          ref={operatorRef}
+          ref={(element) => element?.focus()}
           onSelect={handleFilterSelect}
           onBackspace={() => {
             if (values.length === 0) {
@@ -61,7 +45,7 @@ export const FilterForm = ({
       )}
       {column && selectedFilter && (
         <FiltersValueSelector
-          ref={valueRef}
+          ref={(element) => element?.focus()}
           column={column.id}
           operator={selectedFilter.operator}
           isArray={selectedFilter.isArray ?? false}

@@ -1,10 +1,6 @@
 import { getRouteApi } from '@tanstack/react-router'
 
 import {
-  createChatsCollection,
-  createChatsMessagesCollection,
-} from '~/entities/chat/sync'
-import {
   createConnectionsCollection,
   createConnectionsResourcesCollection,
   createConnectionStringsCollection,
@@ -20,8 +16,6 @@ export interface Collections {
   connectionStringsCollection: ReturnType<
     typeof createConnectionStringsCollection
   >
-  chatsCollection: ReturnType<typeof createChatsCollection>
-  chatsMessagesCollection: ReturnType<typeof createChatsMessagesCollection>
   queriesCollection: ReturnType<typeof createQueriesCollection>
   workspacesCollection: ReturnType<typeof createWorkspacesCollection>
 }
@@ -41,8 +35,6 @@ export const getCollections = (): Collections => {
   }
 
   current = {
-    chatsCollection: createChatsCollection(),
-    chatsMessagesCollection: createChatsMessagesCollection(),
     connectionStringsCollection: createConnectionStringsCollection(),
     connectionsCollection: createConnectionsCollection(),
     connectionsResourcesCollection: createConnectionsResourcesCollection(),

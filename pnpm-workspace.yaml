@@ -24,14 +24,14 @@ patchedDependencies:
   '@better-auth/kysely-adapter@1.7.0-beta.9': patches/@better-auth__kysely-adapter@1.7.0-beta.9.patch
 catalog:
   '@paper-design/shaders-react': ^0.0.80
-  '@ai-sdk/anthropic': ^4.0.38
-  '@ai-sdk/google': ^4.0.43
-  '@ai-sdk/openai': ^4.0.41
-  '@ai-sdk/react': ^4.0.67
-  '@ai-sdk/xai': ^4.0.38
+  '@ai-sdk/anthropic': ^4.0.40
+  '@ai-sdk/google': ^4.0.47
+  '@ai-sdk/openai': ^4.0.44
+  '@ai-sdk/xai': ^4.0.41
   '@base-ui/react': ^1.7.0
-  '@better-auth/api-key': ^1.6.27
-  '@better-auth/drizzle-adapter': ^1.6.27
+  '@blobatar/react': ^2.4.0
+  '@better-auth/api-key': ^1.7.1
+  '@better-auth/drizzle-adapter': ^1.7.1
   '@clack/prompts': ^1.7.0
   '@clickhouse/client': ^1.23.1
   '@manypkg/get-packages': ^3.1.0
@@ -39,10 +39,9 @@ catalog:
   '@date-fns/tz': ^1.5.0
   '@drizzle-team/brocli': ^0.12.0
   '@exalabs/ai-sdk': ^2.1.0
-  '@faker-js/faker': ^10.5.0
-  '@fluentui/react-context-selector': ^9.2.19
+  '@faker-js/faker': ^10.6.0
   '@hackylabs/deep-redact': ^4.0.2
-  '@hono/node-server': ^2.1.0
+  '@hono/node-server': ^2.1.1
   '@infisical/sdk': ^5.0.2
   '@noble/hashes': ^2.3.0
   '@number-flow/react': ^0.6.2
@@ -57,41 +56,45 @@ catalog:
   '@rolldown/plugin-babel': ^0.2.3
   '@shadcn/react': ^0.3.0
   '@standard-schema/spec': ^1.1.0
+  '@streamdown/code': ^1.1.1
   '@tailwindcss/typography': ^0.5.20
   '@tailwindcss/vite': ^4.3.3
-  '@tanstack/browser-db-sqlite-persistence': ^0.2.10
-  '@tanstack/react-db': ^0.1.96
-  '@tanstack/react-devtools': ^0.10.10
+  '@tanstack/ai': ^0.46.0
+  '@tanstack/ai-anthropic': ^0.16.7
+  '@tanstack/browser-db-sqlite-persistence': ^0.2.13
+  '@tanstack/react-db': ^0.3.0
+  '@tanstack/react-devtools': ^0.10.12
   '@tanstack/react-form': ^1.33.5
   '@tanstack/react-hotkeys': ^0.10.0
   '@tanstack/react-query': ^5.101.4
   '@tanstack/react-query-devtools': ^5.101.4
-  '@tanstack/react-router': ^1.170.27
+  '@tanstack/react-router': ^1.170.31
   '@tanstack/react-router-devtools': ^1.167.1
-  '@tanstack/react-start': ^1.168.44
-  '@tanstack/react-virtual': ^3.14.9
-  '@tanstack/router-plugin': ^1.168.30
-  '@tiptap/extension-placeholder': ^3.30.1
-  '@tiptap/react': ^3.30.1
-  '@tiptap/starter-kit': ^3.30.1
+  '@tanstack/react-start': ^1.168.48
+  '@tanstack/react-virtual': ^3.14.10
+  '@tanstack/router-plugin': ^1.168.34
+  '@tiptap/extension-placeholder': ^3.30.2
+  '@tiptap/react': ^3.30.2
+  '@tiptap/starter-kit': ^3.30.2
   '@todesktop/cli': ^1.28.0
   '@todesktop/runtime': ^2.1.4
   '@types/bun': ^1.3.14
   '@types/mssql': ^12.3.0
-  '@types/pg': ^8.21.0
+  '@types/pg': ^8.23.1
   '@types/react': ^19.2.18
   '@types/react-dom': ^19.2.4
   'typescript': ^7.0.2
   '@upstash/context7-tools-ai-sdk': ^0.2.5
-  '@vitejs/plugin-react': ^6.0.5
+  '@vitejs/plugin-react': ^6.1.0
   '@xyflow/react': ^12.11.3
-  ai: ^7.0.64
-  ai-retry: ^2.3.0
+  ai: ^7.0.70
+  ai-retry: ^2.4.0
   arktype: ^2.2.3
   babel-plugin-react-compiler: ^1.0.0
-  better-auth: ^1.6.27
+  better-auth: ^1.7.1
   better-auth-harmony: ^1.3.2
   better-result: ^3.0.1
+  blobatar: ^2.4.0
   change-case: ^5.4.4
   class-variance-authority: ^0.7.1
   cmdk: ^1.1.1
@@ -103,68 +106,65 @@ catalog:
   drizzle-orm: ^1.0.0-rc.4
   electron: 38.7.2
   electron-store: ^11.0.2
-  facehash: ^0.1.0
-  hono: ^4.13.2
+  hono: ^4.13.3
   hookable: ^6.1.1
   husky: ^9.1.7
-  input-otp: ^1.4.2
+  input-otp: ^1.5.0
   ioredis: ^6.0.0
-  js-base64: ^3.9.2
+  js-base64: ^3.9.3
   js-confetti: ^0.13.1
   kysely: ^0.29.5
-  marked: ^18.0.9
   memoza: ^1.2.0
   monaco-editor: ^0.54.0
   monaco-sql-languages: ^0.15.1
-  motion: ^13.1.0
+  motion: ^13.1.1
   mssql: ^12.7.0
-  mysql2: ^3.23.3
+  mysql2: ^3.23.4
   nanoid: ^6.0.1
   nitro: 3.0.260311-beta
-  node-modules-inspector: ^2.3.3
+  node-modules-inspector: ^2.4.0
   npm-run-all2: ^9.0.3
-  open: ^11.0.0
+  open: ^11.0.1
   ora: ^9.4.1
   pg: ^8.23.0
   playwright: ^1.62.1
   portless: ^0.15.5
-  posthog-js: ^1.416.1
+  posthog-js: ^1.418.6
   react: ^19.2.8
   react-day-picker: ^10.0.1
   react-dom: ^19.2.8
   react-markdown: ^10.1.0
   react-qr-code: ^2.2.0
-  react-resizable-panels: ^4.12.2
+  react-resizable-panels: ^4.12.3
   recharts: 3.8.0
   redis: ^6.2.1
-  remark-gfm: ^4.0.1
-  resend: ^6.19.0
+  resend: ^6.21.0
   seitu: ^0.16.1
   serve: ^14.2.6
-  shadcn: ^4.17.0
+  shadcn: ^4.18.0
   sonner: ^2.0.8
   sql-formatter: ^15.8.2
   streamdown: ^2.5.0
   stripe: ^22.5.0
   tailwind-scrollbar: ^4.0.2
   tailwindcss: ^4.3.3
-  taze: ^20.0.1
+  taze: ^21.1.0
   tsdown: ^0.22.14
-  turbo: ^2.10.9
+  turbo: ^2.10.11
   tw-animate-css: ^1.4.0
   ua-parser-js: ^2.0.10
   use-stick-to-bottom: ^1.1.6
-  uuid: ^14.0.1
+  uuid: ^14.0.2
   vaul: ^1.1.2
-  vite: ^8.2.1
-  oxfmt: '^0.63.0'
-  oxlint: '^1.78.0'
+  vite: ^8.2.2
+  oxfmt: '^0.64.0'
+  oxlint: '^1.79.0'
   vite-plugin-electron: ^1.1.1
   zod: ^4.4.3
-  oxlint-tailwindcss: ^1.9.0
+  oxlint-tailwindcss: ^1.10.0
   '@fontsource-variable/geist': ^5.3.0
   '@fontsource-variable/geist-mono': ^5.3.0
-  ultracite: ^7.10.5
+  ultracite: ^7.10.6
 allowBuilds:
   '@firebase/util': false
   '@google/genai': false

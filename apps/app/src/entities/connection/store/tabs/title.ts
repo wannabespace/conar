@@ -11,7 +11,7 @@ export const tabTitle = (tab: ConnectionTab) => {
       return uppercaseFirst(tab.section)
     }
     case 'runner': {
-      return 'SQL Runner'
+      return 'Query'
     }
     case 'visualizer': {
       return 'Visualizer'

@@ -2,7 +2,7 @@ name: Check
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [ opened, synchronize ]
     branches:
       - main
 
@@ -12,24 +12,24 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
 
       - name: Install Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
-          version: 11.21.0
+          version: 11.22.0
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts

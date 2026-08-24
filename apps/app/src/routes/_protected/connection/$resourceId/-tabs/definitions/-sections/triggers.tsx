@@ -16,7 +16,6 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { resourceTriggersQueryOptions } from '~/entities/connection/queries'
-import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
@@ -44,21 +43,15 @@ const routeApi = getRouteApi('/_protected/connection/$resourceId')
 
 export const Triggers = () => {
   const { connectionResource } = routeApi.useRouteContext()
-  const {
-    data: triggers,
-    refetch,
-    isFetching,
-    isPending,
-    dataUpdatedAt,
-  } = useQuery(resourceTriggersQueryOptions({ connectionResource }))
+  const { data: triggers, isPending } = useQuery(
+    resourceTriggersQueryOptions({ connectionResource })
+  )
   const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
     useDefinitionsState({
       connectionResource,
     })
   const [filterEvent, setFilterEvent] = useState('all')
   const [filterTiming, setFilterTiming] = useState('all')
-
-  useRefreshHotkey(refetch, isFetching)
 
   const filteredTriggers =
     triggers?.filter(
@@ -74,13 +67,7 @@ export const Triggers = () => {
 
   return (
     <>
-      <DefinitionsHeader
-        onRefresh={() => refetch()}
-        isRefreshing={isFetching}
-        dataUpdatedAt={dataUpdatedAt}
-      >
-        Triggers
-      </DefinitionsHeader>
+      <DefinitionsHeader>Triggers</DefinitionsHeader>
       <div className="mb-4 flex items-center gap-2">
         <SearchInput
           placeholder="Search triggers"

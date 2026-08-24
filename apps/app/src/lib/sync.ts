@@ -9,6 +9,7 @@ import type { SyncConfig } from '@tanstack/react-db'
 import { BasicIndex } from '@tanstack/react-db'
 import { Result } from 'better-result'
 
+import { isUnauthorizedError } from '../utils/error'
 import { posthog } from './posthog'
 
 export interface BaseTable {
@@ -191,7 +192,11 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         })
 
         if (result.isErr() && !signal.aborted) {
-          posthog.captureException(result.error)
+          if (isUnauthorizedError(result.error)) {
+            abortController.abort(`${config.id} sync unauthorized`)
+          } else {
+            posthog.captureException(result.error)
+          }
         }
 
         firstSync.resolve()
@@ -214,6 +219,9 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
           if (result.isOk()) {
             failures = 0
           } else if (signal.aborted) {
+            return
+          } else if (isUnauthorizedError(result.error)) {
+            abortController.abort(`${config.id} sync unauthorized`)
             return
           } else {
             posthog.captureException(result.error)

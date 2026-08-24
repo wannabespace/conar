@@ -1,4 +1,5 @@
-import { RiSearchLine } from '@remixicon/react'
+import { RiAddLine, RiSearchLine, RiSettings3Line } from '@remixicon/react'
+import { Button } from '@tamery/ui/components/button'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
 import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
 import {
@@ -12,7 +13,7 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 import { useQuery } from '@tanstack/react-query'
-import { getRouteApi } from '@tanstack/react-router'
+import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
@@ -21,7 +22,9 @@ import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/quer
 import {
   getConnectionResourceStore,
   getNavigatorStore,
+  openRunnerTab,
 } from '~/entities/connection/store'
+import { pressNavProps } from '~/lib/press-nav'
 
 import {
   navigatorOpenValue,
@@ -105,6 +108,43 @@ const TablesPanel = () => {
   )
 }
 
+const NavigatorFooter = () => {
+  const { connectionResource } = useRouteContext()
+  const router = useRouter()
+
+  const openNewQuery = () =>
+    router.navigate({
+      to: '/connection/$resourceId/$tabId',
+      params: {
+        resourceId: connectionResource.id,
+        tabId: openRunnerTab(connectionResource.id),
+      },
+    })
+
+  return (
+    <div className="flex shrink-0 flex-col gap-0.5 px-2 pt-1.5 pb-0.5">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="text-foreground hover:bg-accent h-7 w-full justify-start gap-2 rounded-md px-2 font-[450]"
+        {...pressNavProps(openNewQuery)}
+      >
+        <RiAddLine className="text-muted-foreground size-4 shrink-0" />
+        New query
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled
+        className="text-foreground h-7 w-full justify-start gap-2 rounded-md px-2 font-[450]"
+      >
+        <RiSettings3Line className="text-muted-foreground size-4 shrink-0" />
+        Settings
+      </Button>
+    </div>
+  )
+}
+
 export const Navigator = () => {
   const { connectionResource } = useRouteContext()
   const isOpen = useSubscription(navigatorOpenValue)
@@ -149,6 +189,7 @@ export const Navigator = () => {
             </motion.div>
           </AnimatePresence>
         </div>
+        <NavigatorFooter />
       </div>
       {isOpen && (
         <ResizeHandle

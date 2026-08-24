@@ -8,6 +8,38 @@ import { useEffect, useImperativeHandle } from 'react'
 
 import './tiptap.css'
 
+const extensions = ({
+  placeholder,
+  onEnter,
+}: {
+  placeholder?: string
+  onEnter?: (value: string) => void
+}) => [
+  StarterKit,
+  Placeholder.configure({
+    placeholder: () => placeholder || '',
+    showOnlyWhenEditable: false,
+  }),
+  Extension.create({
+    addKeyboardShortcuts() {
+      return {
+        'Cmd-Enter': () => {
+          onEnter?.(this.editor.getText())
+          return true
+        },
+        'Ctrl-Enter': () => {
+          onEnter?.(this.editor.getText())
+          return true
+        },
+        Enter: () => {
+          onEnter?.(this.editor.getText())
+          return true
+        },
+      }
+    },
+  }),
+]
+
 export const TipTap = ({
   value,
   setValue,
@@ -32,31 +64,7 @@ export const TipTap = ({
     {
       content: value,
       editable: !disabled,
-      extensions: [
-        StarterKit,
-        Placeholder.configure({
-          placeholder: () => placeholder || '',
-          showOnlyWhenEditable: false,
-        }),
-        Extension.create({
-          addKeyboardShortcuts() {
-            return {
-              'Cmd-Enter': () => {
-                onEnter?.(this.editor.getText())
-                return true
-              },
-              'Ctrl-Enter': () => {
-                onEnter?.(this.editor.getText())
-                return true
-              },
-              Enter: () => {
-                onEnter?.(this.editor.getText())
-                return true
-              },
-            }
-          },
-        }),
-      ],
+      extensions: extensions({ onEnter, placeholder }),
       onUpdate: ({ editor: updatedEditor }) =>
         setValue(updatedEditor.getText()),
       parseOptions: {

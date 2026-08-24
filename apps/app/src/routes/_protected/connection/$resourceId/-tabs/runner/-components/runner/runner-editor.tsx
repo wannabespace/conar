@@ -141,7 +141,7 @@ export const RunnerEditor = () => {
   const store = useRunnerPageStore()
   const editorQueriesStore = useEditorQueriesComputed()
   const monacoRef = useRef<editor.IStandaloneCodeEditor>(null)
-  const run = useRunnerContext(({ run: runQuery }) => runQuery)
+  const { run } = useRunnerContext()
 
   const runEvent = useEffectEvent(run)
 

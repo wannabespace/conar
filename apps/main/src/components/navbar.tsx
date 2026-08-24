@@ -1,4 +1,3 @@
-import NumberFlow from '@number-flow/react'
 import {
   RiGitBranchLine,
   RiGithubFill,
@@ -8,6 +7,7 @@ import {
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
+import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { ThemeToggle } from '@tamery/ui/components/custom/theme-toggle'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'

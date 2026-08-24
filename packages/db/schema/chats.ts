@@ -1,4 +1,4 @@
-import type { AppUIMessage } from '@tamery/ai/tools/helpers'
+import type { AppUIMessage } from '@tamery/ai/message'
 import { defineRelationsPart } from 'drizzle-orm'
 import {
   createInsertSchema,
@@ -42,7 +42,7 @@ export const chatsMessages = d.snakeCase.table(
       .uuid()
       .references(() => chats.id, { onDelete: 'cascade' })
       .notNull(),
-    metadata: encryptedJson().$type<NonNullable<AppUIMessage['metadata']>>(),
+    metadata: encryptedJson().$type<Record<string, unknown>>(),
     parts: encryptedJson()
       .$type<AppUIMessage['parts'][number]>()
       .array()

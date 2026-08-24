@@ -2,7 +2,7 @@ import { RiCornerDownLeftLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import { Command, CommandInput } from '@tamery/ui/components/command'
 import { Separator } from '@tamery/ui/components/separator'
-import type { RefObject } from 'react'
+import type { Ref } from 'react'
 
 export const FiltersValueSelector = ({
   ref,
@@ -14,7 +14,7 @@ export const FiltersValueSelector = ({
   onApply,
   onBackspace,
 }: {
-  ref?: RefObject<HTMLInputElement | null>
+  ref?: Ref<HTMLInputElement>
   column: string
   operator: string
   isArray: boolean

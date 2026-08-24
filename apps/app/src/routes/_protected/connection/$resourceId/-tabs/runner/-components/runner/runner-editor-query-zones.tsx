@@ -31,9 +31,8 @@ export const useRunnerEditorQueryZones = (
       .find((query) => query.startLineNumber === lineNumber)
   )
 
-  const run = useRunnerContext((ctx) => ctx.run)
+  const { run, save } = useRunnerContext()
   const runEvent = useEffectEvent(run)
-  const save = useRunnerContext((ctx) => ctx.save)
   const saveEvent = useEffectEvent(save)
 
   const createZoneHandlers = useEffectEvent((lineNumber: number) => ({

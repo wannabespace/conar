@@ -1,9 +1,5 @@
 import { createHooks } from 'hookable'
 
-export const chatHooks = createHooks<{
-  scrollToBottom: () => void
-}>()
-
 export const runnerHooks = createHooks<{
   focus: (lineNumber?: number) => void
   scrollToLine: (lineNumber: number) => void

@@ -1,4 +1,3 @@
-import NumberFlow from '@number-flow/react'
 import { RiCloseLine, RiExportLine, RiSearchLine } from '@remixicon/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { ColumnRenderer } from '@tamery/table'
@@ -6,6 +5,7 @@ import { Table, TableBody, TableHeader, TableProvider } from '@tamery/table'
 import { DEFAULT_COLUMN_WIDTH } from '@tamery/table/constants'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
+import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { Input } from '@tamery/ui/components/input'
 import { Separator } from '@tamery/ui/components/separator'
 import {
@@ -15,7 +15,7 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { useDebouncedMemo } from '@tamery/ui/hookas/use-debounced-memo'
 import { cn } from '@tamery/ui/lib/utils'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import type { ExportDataProps } from '~/components/export-data'
 import { ExportData } from '~/components/export-data'
@@ -146,9 +146,8 @@ export const RunnerResultsTable = ({
     100
   )
 
-  const tableColumns = useMemo(
-    () => columns.map((column) => createResultColumn(column, connectionType)),
-    [columns, connectionType]
+  const tableColumns = columns.map((column) =>
+    createResultColumn(column, connectionType)
   )
 
   const getData: ExportDataProps['getData'] = ({ limit }) =>
@@ -191,7 +190,7 @@ export const RunnerResultsTable = ({
                       variant="ghost"
                       size="icon-xs"
                       aria-label="Clear search"
-                      className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground absolute top-1/2 right-1.5 -translate-y-1/2"
+                      className="text-muted-foreground hover:bg-foreground/10 hover:text-foreground absolute inset-y-0 right-1.5 my-auto"
                       onClick={() => setSearch('')}
                     />
                   }

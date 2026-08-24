@@ -23,7 +23,6 @@ import { useState } from 'react'
 
 import type { constraintsType } from '~/entities/connection/queries'
 import { resourceConstraintsQueryOptions } from '~/entities/connection/queries'
-import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'
@@ -60,21 +59,15 @@ const routeApi = getRouteApi('/_protected/connection/$resourceId')
 
 export const Constraints = () => {
   const { connectionResource } = routeApi.useRouteContext()
-  const {
-    data: constraints,
-    refetch,
-    isFetching,
-    isPending,
-    dataUpdatedAt,
-  } = useQuery(resourceConstraintsQueryOptions({ connectionResource }))
+  const { data: constraints, isPending } = useQuery(
+    resourceConstraintsQueryOptions({ connectionResource })
+  )
   const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
     useDefinitionsState({
       connectionResource,
     })
   const [filterType, setFilterType] =
     useState<(typeof filterOptions)[number]['value']>('all')
-
-  useRefreshHotkey(refetch, isFetching)
 
   const filteredConstraints =
     constraints?.filter(
@@ -91,13 +84,7 @@ export const Constraints = () => {
 
   return (
     <>
-      <DefinitionsHeader
-        onRefresh={() => refetch()}
-        isRefreshing={isFetching}
-        dataUpdatedAt={dataUpdatedAt}
-      >
-        Constraints
-      </DefinitionsHeader>
+      <DefinitionsHeader>Constraints</DefinitionsHeader>
       <div className="mb-4 flex items-center gap-2">
         <SearchInput
           placeholder="Search constraints"

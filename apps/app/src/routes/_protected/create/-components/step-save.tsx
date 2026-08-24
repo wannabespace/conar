@@ -55,8 +55,8 @@ export const StepSave = ({
 }) => {
   const { connectionsCollection } = useCollections()
   const { data: activeWorkspace } = useActiveWorkspace()
-  const { data: connections } = useLiveQuery(
-    (q) => {
+  const { data: connections } = useLiveQuery({
+    query: (q) => {
       const query = activeWorkspace
         ? q
             .from({ connections: connectionsCollection })
@@ -70,8 +70,7 @@ export const StepSave = ({
         'desc'
       )
     },
-    [connectionsCollection, activeWorkspace?.id]
-  )
+  })
   const existingLabels = connections
     .map((connection) => connection.label)
     .filter((existingLabel): existingLabel is string => existingLabel !== null)

@@ -4,7 +4,9 @@ import { useSubscription } from 'seitu/react'
 
 import { getConnectionResourceStore } from '~/entities/connection/store'
 
-export const useConnectionResourceLinkParams = (resourceId: string) => {
+export const useConnectionResourceLinkParams = (
+  resourceId: string
+): LinkProps => {
   const store = getConnectionResourceStore(resourceId)
   const [activeTabId, tabs] = useSubscription(store, {
     selector: (state) => [state.activeTabId, state.tabs] as const,

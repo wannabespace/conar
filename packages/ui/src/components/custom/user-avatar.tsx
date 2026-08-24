@@ -1,5 +1,10 @@
+import { Blobatar } from '@blobatar/react'
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '@tamery/ui/components/avatar'
 import { cn } from '@tamery/ui/lib/utils'
-import { Avatar, AvatarFallback, AvatarImage } from 'facehash'
 
 export const UserAvatar = ({
   user,
@@ -15,21 +20,14 @@ export const UserAvatar = ({
   className?: string
 }) => (
   <Avatar
-    className={cn(`size-6 shrink-0 overflow-hidden rounded-lg`, className)}
+    className={cn(
+      `size-6 shrink-0 overflow-hidden rounded-lg after:rounded-lg`,
+      className
+    )}
   >
-    <AvatarImage src={user?.image} />
-    <AvatarFallback
-      name={user?.email}
-      facehashProps={{
-        colorClasses: [
-          'bg-slate-900',
-          'bg-slate-800',
-          'bg-sky-500',
-          'bg-indigo-500',
-          'bg-cyan-500',
-          'bg-zinc-800',
-        ],
-      }}
-    />
+    <AvatarImage src={user?.image ?? undefined} />
+    <AvatarFallback className="rounded-lg bg-transparent">
+      <Blobatar className="size-full" name={user?.email ?? ''} />
+    </AvatarFallback>
   </Avatar>
 )

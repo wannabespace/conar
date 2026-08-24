@@ -242,8 +242,8 @@ const ConnectionsBreadcrumb = ({
     useCollections()
   const { resourceId } = useParams({ strict: false })
   const { data: activeWorkspace } = useActiveWorkspace()
-  const { data } = useLiveQuery(
-    (q) => {
+  const { data } = useLiveQuery({
+    query: (q) => {
       const query = activeWorkspace
         ? q
             .from({ c: connectionsCollection })
@@ -257,8 +257,7 @@ const ConnectionsBreadcrumb = ({
         .select(({ c, r }) => ({ connection: c, resource: r }))
         .orderBy(({ c }) => c.createdAt, 'desc')
     },
-    [connectionsCollection, connectionsResourcesCollection, activeWorkspace?.id]
-  )
+  })
 
   const groups: ConnectionGroup[] = []
   const groupById = new Map<string, ConnectionGroup>()
@@ -352,8 +351,8 @@ const OpenInWebButton = ({ resourceId }: { resourceId: string }) => {
   } = useCollections()
   const location = useLocation()
 
-  const { data: connection } = useLiveQuery(
-    (q) =>
+  const { data: connection } = useLiveQuery({
+    query: (q) =>
       q
         .from({ r: connectionsResourcesCollection })
         .where(({ r }) => eq(r.id, resourceId))
@@ -362,17 +361,15 @@ const OpenInWebButton = ({ resourceId }: { resourceId: string }) => {
         )
         .select(({ c }) => ({ id: c.id, syncType: c.syncType }))
         .findOne(),
-    [connectionsResourcesCollection, connectionsCollection, resourceId]
-  )
+  })
 
-  const { data: connectionString } = useLiveQuery(
-    (q) =>
+  const { data: connectionString } = useLiveQuery({
+    query: (q) =>
       q
         .from({ cs: connectionStringsCollection })
         .where(({ cs }) => eq(cs.connectionId, connection?.id ?? ''))
         .findOne(),
-    [connectionStringsCollection, connection?.id]
-  )
+  })
 
   if (
     connection?.syncType !== SyncType.Cloud ||

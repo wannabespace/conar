@@ -9,7 +9,7 @@ import type { ErrorComponentProps } from '@tanstack/react-router'
 import { useRouter } from '@tanstack/react-router'
 import { TraversalError } from 'arktype'
 import { motion } from 'motion/react'
-import posthog from 'posthog-js'
+import { posthog } from 'posthog-js'
 import { useEffect, useState } from 'react'
 
 import { EventsProvider } from '~/events'

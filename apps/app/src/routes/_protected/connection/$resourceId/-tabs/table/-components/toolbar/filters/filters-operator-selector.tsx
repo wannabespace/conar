@@ -9,14 +9,14 @@ import {
   CommandShortcut,
   CommandList,
 } from '@tamery/ui/components/command'
-import type { RefObject } from 'react'
+import type { Ref } from 'react'
 
 export const FiltersOperatorSelector = ({
   ref,
   onSelect,
   onBackspace,
 }: {
-  ref?: RefObject<HTMLInputElement | null>
+  ref?: Ref<HTMLInputElement>
   onSelect: (filter: Filter) => void
   onBackspace?: () => void
 }) => (

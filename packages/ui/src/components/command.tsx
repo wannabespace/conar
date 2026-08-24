@@ -20,7 +20,7 @@ export const Command = ({
   <CommandPrimitive
     data-slot="command"
     className={cn(
-      `bg-popover text-popover-foreground flex size-full flex-col overflow-hidden rounded-xl p-1`,
+      `bg-popover text-popover-foreground flex size-full flex-col overflow-hidden rounded-xl`,
       className
     )}
     {...props}
@@ -47,8 +47,9 @@ export const CommandDialog = ({
       <DialogDescription>{description}</DialogDescription>
     </DialogHeader>
     <DialogContent
+      animated={false}
       className={cn(
-        `top-[16svh] flex max-h-[min(35rem,calc(84svh-2rem))] translate-y-0 flex-col gap-0 overflow-hidden rounded-3xl! p-0 data-closed:animate-none data-open:animate-none sm:max-w-xl`,
+        `top-[16svh] flex max-h-[min(35rem,calc(84svh-2rem))] translate-y-0 flex-col gap-0 overflow-hidden rounded-3xl! p-0 sm:max-w-xl`,
         className
       )}
       showCloseButton={showCloseButton}
@@ -63,7 +64,7 @@ export const CommandInput = ({
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Input>) => (
   <div data-slot="command-input-wrapper" className="p-1 pb-0">
-    <InputGroup className="h-8! bg-[color-mix(in_oklch,var(--input),var(--foreground)_4%)]">
+    <InputGroup className="h-7! rounded-lg bg-[color-mix(in_oklch,var(--input),var(--foreground)_4%)]">
       <CommandPrimitive.Input
         data-slot="command-input"
         className={cn(
@@ -99,7 +100,7 @@ export const CommandEmpty = ({
 }: React.ComponentProps<typeof CommandPrimitive.Empty>) => (
   <CommandPrimitive.Empty
     data-slot="command-empty"
-    className={cn('py-6 text-center text-sm', className)}
+    className={cn('py-4 text-center text-sm', className)}
     {...props}
   />
 )
@@ -137,7 +138,7 @@ export const CommandItem = ({
   <CommandPrimitive.Item
     data-slot="command-item"
     className={cn(
-      `group/command-item data-selected:bg-accent data-selected:text-accent-foreground data-selected:*:[svg]:text-foreground relative flex min-h-7 cursor-default items-center gap-2 rounded-md px-2 py-1 text-sm outline-hidden select-none in-data-[slot=dialog-content]:rounded-2xl data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
+      `group/command-item data-selected:bg-accent data-selected:text-accent-foreground *:[svg]:text-muted-foreground/60 data-selected:*:[svg]:text-foreground relative flex min-h-7 cursor-default items-center gap-2 rounded-lg px-2 py-1 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
       className
     )}
     {...props}

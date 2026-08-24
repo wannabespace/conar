@@ -19,10 +19,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@tamery/ui/components/popover'
+import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { cn } from '@tamery/ui/lib/utils'
-import { useVirtualizer } from '@tanstack/react-virtual'
 import type { ComponentProps } from 'react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
@@ -223,12 +223,9 @@ export const QueryLogger = ({
   const [isClearing, setIsClearing] = useState(false)
   const store = getConnectionResourceStore(connectionResource.id)
 
-  const filteredQueries = useMemo(() => {
-    if (statusGroup) {
-      return queries.filter((query) => getQueryStatus(query) === statusGroup)
-    }
-    return queries
-  }, [queries, statusGroup])
+  const filteredQueries = statusGroup
+    ? queries.filter((query) => getQueryStatus(query) === statusGroup)
+    : queries
 
   const statusCounts = { error: 0, pending: 0, success: 0 }
   for (const query of queries) {
@@ -256,16 +253,13 @@ export const QueryLogger = ({
     setStatusGroup((prev) => (prev === status ? undefined : status))
   }
 
-  const { getVirtualItems, getTotalSize } = useVirtualizer({
+  const { virtualItems, totalSize } = useVirtualizer({
     count: filteredQueries.length,
     estimateSize: () => 29,
     getScrollElement: () => scrollRef.current,
     overscan: 5,
     useFlushSync: false,
   })
-
-  const virtualItems = getVirtualItems()
-  const totalSize = getTotalSize()
 
   useEffect(() => {
     if (scrollRef.current) {

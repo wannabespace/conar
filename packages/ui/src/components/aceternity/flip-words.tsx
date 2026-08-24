@@ -1,6 +1,6 @@
 import { cn } from '@tamery/ui/lib/utils'
 import { AnimatePresence, motion } from 'motion/react'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useEffectEvent, useState } from 'react'
 
 export const FlipWords = ({
   words,
@@ -14,11 +14,11 @@ export const FlipWords = ({
   const [currentWord, setCurrentWord] = useState(() => words[0] ?? '')
   const [isAnimating, setIsAnimating] = useState(false)
 
-  const startAnimation = useCallback(() => {
+  const startAnimation = useEffectEvent(() => {
     const word = words[words.indexOf(currentWord) + 1] ?? words[0] ?? ''
     setCurrentWord(word)
     setIsAnimating(true)
-  }, [currentWord, words])
+  })
 
   useEffect(() => {
     if (!isAnimating) {
@@ -28,7 +28,7 @@ export const FlipWords = ({
 
       return () => clearTimeout(timeout)
     }
-  }, [isAnimating, duration, startAnimation])
+  }, [isAnimating, duration])
 
   return (
     <AnimatePresence

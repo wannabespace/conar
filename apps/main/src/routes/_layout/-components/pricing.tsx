@@ -1,7 +1,10 @@
-import NumberFlow, { NumberFlowGroup } from '@number-flow/react'
 import { RiArrowRightLine, RiCheckLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import { Card } from '@tamery/ui/components/card'
+import {
+  NumberFlow,
+  NumberFlowGroup,
+} from '@tamery/ui/components/custom/number-flow'
 import { cn } from '@tamery/ui/lib/utils'
 import type { LinkProps } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
