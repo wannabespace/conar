@@ -93,9 +93,12 @@ const ConnectionSubMenu = ({
 }) => {
   const navigate = useNavigate()
   const [firstResource] = resources
-  const firstResourceLink = useConnectionResourceLinkParams(
-    firstResource?.id ?? ''
-  )
+
+  if (!firstResource) {
+    throw new Error(`Connection ${connection.id} has no resources`)
+  }
+
+  const firstResourceLink = useConnectionResourceLinkParams(firstResource.id)
 
   if (!firstResource) {
     return null
