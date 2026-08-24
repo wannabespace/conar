@@ -26,7 +26,6 @@ export const tablePageType = type({
     values: 'unknown[]',
     'disabled?': 'boolean',
   }).array() as type.cast<ActiveFilter[]>,
-  exact: 'boolean',
   hiddenColumns: 'string[]',
   orderBy: {
     '[string]': '"ASC" | "DESC"',
@@ -53,7 +52,6 @@ export const tablePageType = type({
 const defaultState: typeof tablePageType.infer = {
   selected: [],
   filters: [],
-  exact: false,
   prompt: '',
   hiddenColumns: [],
   orderBy: {},

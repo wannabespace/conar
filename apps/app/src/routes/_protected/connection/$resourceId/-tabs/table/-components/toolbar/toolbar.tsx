@@ -1,8 +1,7 @@
 import NumberFlow from '@number-flow/react'
 import {
   RiCodeSSlashLine,
-  RiLayoutColumnLine,
-  RiMenuLine,
+  RiHashtag,
   RiMoreLine,
   RiSeedlingLine,
 } from '@remixicon/react'
@@ -36,7 +35,6 @@ import {
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 
-import { useTableColumnsContext } from '../../-lib/columns'
 import { useTablePageStore } from '../../-lib/store'
 import { ActionsColumns } from './actions/actions-columns'
 import { ActionsCopy } from './actions/actions-copy'
@@ -100,14 +98,12 @@ const COMPACT_COUNT_FORMAT = {
 } as const
 
 const TableStats = ({
-  columnCount,
   exact,
   isTotalLoading,
   onRequestExact,
   total,
   totalUpdatedAt,
 }: {
-  columnCount: number
   exact: boolean
   isTotalLoading: boolean
   onRequestExact: () => void
@@ -118,39 +114,48 @@ const TableStats = ({
     total?.count === undefined
       ? '… rows'
       : `${total.isEstimated ? '~' : ''}${total.count.toLocaleString()} row${total.count === 1 ? '' : 's'}`
+  const canRequestExact = !exact && total?.isEstimated === true
+  const rowCount =
+    total?.count === undefined ? (
+      '…'
+    ) : (
+      <NumberFlow
+        value={total.count}
+        format={COMPACT_COUNT_FORMAT}
+        className={cn(
+          'tabular-nums',
+          isTotalLoading && 'text-muted-foreground/50 animate-pulse'
+        )}
+        prefix={total.isEstimated ? '~' : ''}
+      />
+    )
 
   return (
     <Tooltip>
-      <TooltipTrigger
-        className="bg-input text-2xs text-muted-foreground ring-foreground/4 flex h-8 shrink-0 cursor-default items-center gap-4 rounded-xl px-2.5 whitespace-nowrap tabular-nums shadow-xs ring-[0.5px]"
-        onClick={onRequestExact}
-      >
-        <span className="flex items-center gap-1">
-          <RiLayoutColumnLine className="text-muted-foreground/60 size-3" />
-          {columnCount}
-        </span>
-        <span className="flex items-center gap-1">
-          <RiMenuLine className="text-muted-foreground/60 size-3" />
-          {total?.count === undefined ? (
-            '…'
-          ) : (
-            <NumberFlow
-              value={total.count}
-              format={COMPACT_COUNT_FORMAT}
-              className={cn(
-                'tabular-nums',
-                isTotalLoading && 'text-muted-foreground/50 animate-pulse'
-              )}
-              prefix={total.isEstimated ? '~' : ''}
-            />
-          )}
-        </span>
+      <TooltipTrigger render={<span className="flex" />}>
+        <Button
+          variant="outline"
+          disabled={!canRequestExact}
+          className="gap-1.5 px-2.5 disabled:opacity-100"
+          onClick={onRequestExact}
+        >
+          <RiHashtag className="text-muted-foreground/60" />
+          <span
+            className={cn(
+              'text-2xs font-normal tabular-nums',
+              canRequestExact &&
+                'decoration-muted-foreground/50 underline decoration-dotted underline-offset-2'
+            )}
+          >
+            {rowCount}
+          </span>
+        </Button>
       </TooltipTrigger>
       <TooltipContent side="top">
         <div className="flex flex-col gap-0.5">
           <span>
-            {columnCount} columns · {rowLabel}
-            {!exact && total?.isEstimated && '. Click to get the exact count.'}
+            {rowLabel}
+            {canRequestExact && '. Click to get the exact count.'}
           </span>
           <span className="opacity-70">
             Updated:{' '}
@@ -186,16 +191,15 @@ export const TableToolbar = ({
     tablesAndSchemas?.schemas
       .find((s) => s.name === schema)
       ?.tables?.find((t) => t.name === table)?.type ?? 'table'
-  const { filters, exact, orderBy, selected } = useSubscription(store, {
+  const { filters, orderBy, selected } = useSubscription(store, {
     selector: (state) => ({
       orderBy: state.orderBy,
-      exact: state.exact,
       selected: state.selected,
       filters: enabledFilters(state.filters),
     }),
   })
+  const [exact, setExact] = useState(false)
 
-  const { columns } = useTableColumnsContext()
   const {
     data: total,
     isLoading: isTotalLoading,
@@ -252,14 +256,9 @@ export const TableToolbar = ({
   return (
     <div className="pointer-events-none flex w-full max-w-3xl items-end gap-2 *:pointer-events-auto">
       <TableStats
-        columnCount={columns.length}
         exact={exact}
         isTotalLoading={isTotalLoading}
-        onRequestExact={() =>
-          store.set(
-            (state) => ({ ...state, exact: true }) satisfies typeof state
-          )
-        }
+        onRequestExact={() => setExact(true)}
         total={total}
         totalUpdatedAt={totalUpdatedAt}
       />

@@ -22,7 +22,7 @@ import { toast } from 'sonner'
 import {
   deleteRowsQuery,
   resourceRowsQueryInfiniteOptions,
-  resourceTableTotalQueryOptions,
+  resourceTableTotalQueryKey,
 } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { queryClient } from '~/main'
@@ -66,17 +66,13 @@ export const ActionsDelete = ({
           },
         })
       )
-      queryClient.invalidateQueries(
-        resourceTableTotalQueryOptions({
+      queryClient.invalidateQueries({
+        queryKey: resourceTableTotalQueryKey({
           connectionResource,
           table,
           schema,
-          query: {
-            filters: enabledFilters(store.get().filters),
-            exact: store.get().exact,
-          },
-        })
-      )
+        }),
+      })
       store.set(
         (state) =>
           ({

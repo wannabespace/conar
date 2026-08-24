@@ -20,7 +20,7 @@ AI conversation history is stored both locally on your device and synced to our 
 
 ### Analytics
 
-Anonymized usage events collected via PostHog (EU servers). Session recording is enabled with all database inputs and data masked. Our marketing website additionally uses DataFast for aggregated traffic analytics (page views, referrers, campaign sources).
+Anonymized usage events collected via PostHog (EU servers). Session recording is enabled with all database inputs and data masked.
 
 ## 3. What We Never Store
 
@@ -45,7 +45,6 @@ AI requests are routed to **Anthropic** (primary), **OpenAI**, and **Google** as
 | Anthropic, OpenAI, Google  | AI-powered SQL generation and assistance    |
 | Stripe                     | Subscription billing and payment processing |
 | PostHog (EU)               | Usage analytics (inputs masked)             |
-| DataFast                   | Website traffic analytics (marketing site)  |
 | Resend                     | Transactional email delivery                |
 | Infisical                  | Secure per-user encryption key management   |
 | Exa                        | Web search for AI features                  |

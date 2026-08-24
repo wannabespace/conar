@@ -129,6 +129,24 @@ export const resourceTableTotalQuery = memoize(
     })
 )
 
+export const resourceTableTotalQueryKey = ({
+  connectionResource,
+  table,
+  schema,
+}: {
+  connectionResource: ConnectionResource
+  table: string
+  schema: string
+}) => [
+  'connection-resource',
+  connectionResource.id,
+  'schema',
+  schema,
+  'table',
+  table,
+  'total',
+]
+
 export const resourceTableTotalQueryOptions = ({
   connectionResource,
   table,
@@ -146,13 +164,7 @@ export const resourceTableTotalQueryOptions = ({
         await connectionResourceToQueryParams(connectionResource)
       ),
     queryKey: [
-      'connection-resource',
-      connectionResource.id,
-      'schema',
-      schema,
-      'table',
-      table,
-      'total',
+      ...resourceTableTotalQueryKey({ connectionResource, schema, table }),
       {
         exact,
         filters,

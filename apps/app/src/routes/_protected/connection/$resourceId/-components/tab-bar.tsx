@@ -55,7 +55,7 @@ import {
   resourceRowsQueryInfiniteOptions,
   resourceTableColumnsQueryOptions,
   resourceTablesAndSchemasQueryOptions,
-  resourceTableTotalQueryOptions,
+  resourceTableTotalQueryKey,
   resourceTriggersQueryOptions,
 } from '~/entities/connection/queries'
 import type {
@@ -214,11 +214,10 @@ const VisualizerRefresh = () => {
 const TableRefresh = ({ schema, table }: { schema: string; table: string }) => {
   const { connectionResource } = useRouteContext()
   const store = tablePageStore({ id: connectionResource.id, schema, table })
-  const { filters, orderBy, exact } = useSubscription(store, {
+  const { filters, orderBy } = useSubscription(store, {
     selector: (state) => ({
       filters: enabledFilters(state.filters),
       orderBy: state.orderBy,
-      exact: state.exact,
     }),
   })
 
@@ -243,14 +242,13 @@ const TableRefresh = ({ schema, table }: { schema: string; table: string }) => {
           schema,
         })
       ),
-      queryClient.invalidateQueries(
-        resourceTableTotalQueryOptions({
+      queryClient.invalidateQueries({
+        queryKey: resourceTableTotalQueryKey({
           connectionResource,
           table,
           schema,
-          query: { filters, exact },
-        })
-      ),
+        }),
+      }),
       queryClient.invalidateQueries(
         resourceConstraintsQueryOptions({ connectionResource })
       ),
@@ -457,7 +455,7 @@ const getQueryOpts = (
   return {
     filters: state.filters,
     orderBy: state.orderBy,
-    exact: state.exact,
+    exact: false,
   }
 }
 

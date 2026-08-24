@@ -124,12 +124,6 @@ export const Route = createRootRouteWithContext<{
                 defer: true,
                 src: 'https://assets.onedollarstats.com/stonks.js',
               },
-              {
-                defer: true,
-                src: 'https://datafa.st/js/script.js',
-                'data-website-id': 'dfid_vIscqqXu4BxAFu9ObaBYl',
-                'data-domain': 'tamery.app',
-              },
             ]),
       ],
     }

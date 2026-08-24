@@ -109,7 +109,7 @@ export const Route = createFileRoute(
       prefetchConnectionResourceTableCore({
         connectionResource,
         query: {
-          exact: pageState.exact,
+          exact: false,
           filters: enabledFilters(pageState.filters),
           orderBy: pageState.orderBy,
         },

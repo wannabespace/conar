@@ -64,7 +64,7 @@ import {
   distinctQuery,
   insertQuery,
   resourceRowsQueryInfiniteOptions,
-  resourceTableTotalQueryOptions,
+  resourceTableTotalQueryKey,
 } from '~/entities/connection/queries'
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import type {
@@ -409,8 +409,8 @@ export const ActionsSeed = ({
   const generators = useSubscription(store, {
     selector: (state) => state.generators,
   })
-  const { filters, orderBy, exact } = useSubscription(store, {
-    selector: (state) => pick(state, ['filters', 'orderBy', 'exact']),
+  const { filters, orderBy } = useSubscription(store, {
+    selector: (state) => pick(state, ['filters', 'orderBy']),
   })
 
   const { subscription } = useUserSubscription()
@@ -524,14 +524,13 @@ export const ActionsSeed = ({
           query: { filters, orderBy },
         })
       )
-      queryClient.invalidateQueries(
-        resourceTableTotalQueryOptions({
+      queryClient.invalidateQueries({
+        queryKey: resourceTableTotalQueryKey({
           connectionResource,
           table,
           schema,
-          query: { filters, exact },
-        })
-      )
+        }),
+      })
       setOpen(false)
     },
     onError: (error) => {

@@ -56,11 +56,9 @@ const operatorMatches = (filter: Filter, text: string) =>
   filter.operator.toLowerCase().includes(text)
 
 const getFilterPlaceholder = ({
-  filtersCount,
   isOnline,
   stage,
 }: {
-  filtersCount: number
   isOnline: boolean
   stage: Stage
 }) => {
@@ -73,10 +71,7 @@ const getFilterPlaceholder = ({
   if (!isOnline) {
     return 'Offline — AI unavailable'
   }
-  if (filtersCount > 0) {
-    return 'Filter or ask AI…'
-  }
-  return 'Search, filter, or ask AI…'
+  return 'Filter or ask AI…'
 }
 
 const firstFilterOperator = SQL_FILTERS_LIST[0]?.operator.toLowerCase() ?? ''
@@ -158,7 +153,7 @@ const mapGeneratedFilters = (
     )
     .filter((f) => !!f.ref) as ActiveFilter[]
 
-const generatedSummary = (
+const generateSummary = (
   filters: { column: string }[],
   orderBy: Record<string, 'ASC' | 'DESC'>
 ) => {
@@ -310,7 +305,6 @@ const applySuggestedValue = ({
 }
 
 const FilterCommandList = ({
-  aiSummary,
   applyValue,
   askAi,
   committedParts,
@@ -329,7 +323,6 @@ const FilterCommandList = ({
   stage,
   trimmedQuery,
 }: {
-  aiSummary: string | null
   applyValue: () => void
   askAi: () => void
   committedParts: string[]
@@ -447,19 +440,29 @@ const FilterCommandList = ({
         </CommandGroup>
       </>
     )}
-    {aiSummary && (
-      <motion.div
-        data-mask
-        initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
-        className="text-muted-foreground m-1 flex items-center gap-2 px-2 py-1.5 text-xs"
-      >
-        <RiCheckLine className="text-success size-3.5 shrink-0" />
-        <span className="min-w-0 flex-1 truncate">{aiSummary}</span>
-      </motion.div>
-    )}
   </CommandList>
+)
+
+const AiSummaryRow = ({
+  hasList,
+  summary,
+}: {
+  hasList: boolean
+  summary: string
+}) => (
+  <motion.div
+    data-mask
+    initial={{ opacity: 0, y: -4 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+    className={cn(
+      'text-muted-foreground flex items-center gap-2 px-3 py-1.5 text-xs',
+      hasList && 'border-b'
+    )}
+  >
+    <RiCheckLine className="text-success size-3.5 shrink-0" />
+    <span className="min-w-0 flex-1 truncate">{summary}</span>
+  </motion.div>
 )
 
 export const FilterSearchBar = ({
@@ -474,6 +477,7 @@ export const FilterSearchBar = ({
   })
   const { connectionResource } = useRouteContext()
   const inputRef = useRef<HTMLInputElement>(null)
+  const chipsRef = useRef<HTMLDivElement>(null)
   const store = useTablePageStore()
   const filters = useSubscription(store, {
     selector: (state) => state.filters,
@@ -496,6 +500,14 @@ export const FilterSearchBar = ({
     setHighlighted(highlightForStage(stage, value))
     setAiSummary(null)
   }
+
+  useEffect(() => {
+    const chips = chipsRef.current
+
+    if (chips && filters.length > 0) {
+      chips.scrollTop = chips.scrollHeight
+    }
+  }, [filters.length])
 
   useEffect(() => {
     if (!aiSummary) {
@@ -545,7 +557,7 @@ export const FilterSearchBar = ({
           )
         }
 
-        setAiSummary(generatedSummary(data.filters, data.orderBy))
+        setAiSummary(generateSummary(data.filters, data.orderBy))
         setFreeAiUsage(data.freeAiUsage || null)
 
         setTimeout(() => {
@@ -609,7 +621,12 @@ export const FilterSearchBar = ({
   }
 
   const askAi = () => {
-    if (!trimmedQuery || !isOnline || isPending) {
+    if (
+      !trimmedQuery ||
+      !isOnline ||
+      isPending ||
+      freeAiUsage?.remaining === 0
+    ) {
       return
     }
     generateFilter({ prompt: trimmedQuery, context })
@@ -668,11 +685,7 @@ export const FilterSearchBar = ({
     ),
   })).filter((group) => group.filters.length > 0)
 
-  const placeholder = getFilterPlaceholder({
-    filtersCount: filters.length,
-    isOnline,
-    stage,
-  })
+  const placeholder = getFilterPlaceholder({ isOnline, stage })
 
   return (
     <CommandPrimitive
@@ -682,78 +695,80 @@ export const FilterSearchBar = ({
       onValueChange={setHighlighted}
       className="relative min-w-0 flex-1"
     >
-      <div className="bg-input ring-foreground/4 has-[input:focus]:border-ring has-[input:focus]:ring-ring/30 flex min-h-8 w-full flex-wrap items-center gap-1 rounded-xl border border-transparent py-0.75 pr-1.5 pl-2 shadow-xs ring-[0.5px] transition-[color,box-shadow] duration-200 has-[input:focus]:ring-3">
+      <div className="bg-input ring-foreground/4 has-[input:focus]:border-ring has-[input:focus]:ring-ring/30 flex min-h-8 w-full items-center gap-1 rounded-xl border border-transparent py-0.75 pr-1.5 pl-2 shadow-xs ring-[0.5px] transition-[color,box-shadow] duration-200 has-[input:focus]:ring-3">
         <LoadingContent
           className="text-muted-foreground pointer-events-none mr-1 size-4 shrink-0"
           loading={isPending}
         >
           <RiSearchLine className="size-4" />
         </LoadingContent>
-        {filters.map((filter, index) => (
-          <FilterChip
-            // oxlint-disable-next-line react/no-array-index-key
-            key={`${filter.column}-${filter.ref.operator}-${filter.values.join(',')}-${index}`}
-            filter={filter}
-            onRemove={() =>
-              setFilters((current) => current.filter((_, i) => i !== index))
-            }
-            onEdit={(next) =>
-              setFilters((current) =>
-                current.map((f, i) => (i === index ? { ...f, ...next } : f))
-              )
-            }
-            onToggleDisabled={() =>
-              setFilters((current) =>
-                current.map((f, i) =>
-                  i === index ? { ...f, disabled: !f.disabled } : f
+        <div
+          ref={chipsRef}
+          className="scroll-fade no-scrollbar flex max-h-32 min-w-0 flex-1 flex-wrap items-center gap-1 overflow-y-auto"
+        >
+          {filters.map((filter, index) => (
+            <FilterChip
+              // oxlint-disable-next-line react/no-array-index-key
+              key={`${filter.column}-${filter.ref.operator}-${filter.values.join(',')}-${index}`}
+              filter={filter}
+              onRemove={() =>
+                setFilters((current) => current.filter((_, i) => i !== index))
+              }
+              onEdit={(next) =>
+                setFilters((current) =>
+                  current.map((f, i) => (i === index ? { ...f, ...next } : f))
                 )
-              )
+              }
+              onToggleDisabled={() =>
+                setFilters((current) =>
+                  current.map((f, i) =>
+                    i === index ? { ...f, disabled: !f.disabled } : f
+                  )
+                )
+              }
+            />
+          ))}
+          {stage.step !== 'idle' && (
+            <span className="ring-foreground/4 flex h-5 shrink-0 items-stretch overflow-hidden rounded-md bg-[color-mix(in_oklch,var(--input),var(--foreground)_4%)] shadow-2xs ring-[0.5px]">
+              <span
+                data-mask
+                className="flex items-center px-1.5 text-xs font-medium"
+              >
+                {stage.column}
+              </span>
+              {stage.step === 'value' && (
+                <>
+                  <span aria-hidden className="bg-border w-px shrink-0" />
+                  <span className="text-muted-foreground flex items-center px-1.5 text-xs">
+                    {stage.ref.operator}
+                  </span>
+                </>
+              )}
+            </span>
+          )}
+          <CommandPrimitive.Input
+            ref={inputRef}
+            data-filter-search-input=""
+            value={query}
+            onValueChange={setQuery}
+            placeholder={placeholder}
+            disabled={isPending}
+            className="placeholder:text-muted-foreground h-6 min-w-32 flex-1 bg-transparent text-sm outline-none"
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
+              handleFilterInputKeyDown({
+                e,
+                filtersLength: filters.length,
+                query,
+                setFilters,
+                setQuery,
+                setStage,
+                stage,
+              })
             }
           />
-        ))}
-        {stage.step !== 'idle' && (
-          <span className="ring-foreground/4 flex h-5 shrink-0 items-stretch overflow-hidden rounded-md bg-[color-mix(in_oklch,var(--input),var(--foreground)_4%)] shadow-2xs ring-[0.5px]">
-            <span
-              data-mask
-              className="flex items-center px-1.5 text-xs font-medium"
-            >
-              {stage.column}
-            </span>
-            {stage.step === 'value' && (
-              <>
-                <span aria-hidden className="bg-border w-px shrink-0" />
-                <span className="text-muted-foreground flex items-center px-1.5 text-xs">
-                  {stage.ref.operator}
-                </span>
-              </>
-            )}
-          </span>
-        )}
-        <CommandPrimitive.Input
-          ref={inputRef}
-          data-filter-search-input=""
-          value={query}
-          onValueChange={setQuery}
-          placeholder={placeholder}
-          disabled={isPending || freeAiUsage?.remaining === 0}
-          className="placeholder:text-muted-foreground h-6 min-w-32 flex-1 bg-transparent text-sm outline-none"
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => {
-            setIsFocused(false)
-            setStage({ step: 'idle' })
-          }}
-          onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>
-            handleFilterInputKeyDown({
-              e,
-              filtersLength: filters.length,
-              query,
-              setFilters,
-              setQuery,
-              setStage,
-              stage,
-            })
-          }
-        />
+        </div>
         <KbdCtrlLetter
           userAgent={navigator.userAgent}
           letter="F"
@@ -763,32 +778,34 @@ export const FilterSearchBar = ({
           )}
         />
       </div>
-      {isOpen && (
+      {(isOpen || aiSummary) && (
         <div
           role="presentation"
           className="bg-popover ring-foreground/4 absolute bottom-full left-0 z-30 mb-2 w-full overflow-hidden rounded-xl shadow-lg ring-1"
           onMouseDown={(e) => e.preventDefault()}
         >
-          <FilterCommandList
-            aiSummary={aiSummary}
-            applyValue={applyValue}
-            askAi={askAi}
-            committedParts={committedParts}
-            filtersCount={filters.length}
-            freeAiUsage={freeAiUsage}
-            isOnline={isOnline}
-            isPending={isPending}
-            matchingColumns={matchingColumns}
-            matchingOperators={matchingOperators}
-            matchingValues={matchingValues}
-            onClearFilters={() => setFilters(() => [])}
-            pickColumn={pickColumn}
-            pickOperator={pickOperator}
-            pickSuggestedValue={pickSuggestedValue}
-            query={query}
-            stage={stage}
-            trimmedQuery={trimmedQuery}
-          />
+          {aiSummary && <AiSummaryRow hasList={isOpen} summary={aiSummary} />}
+          {isOpen && (
+            <FilterCommandList
+              applyValue={applyValue}
+              askAi={askAi}
+              committedParts={committedParts}
+              filtersCount={filters.length}
+              freeAiUsage={freeAiUsage}
+              isOnline={isOnline}
+              isPending={isPending}
+              matchingColumns={matchingColumns}
+              matchingOperators={matchingOperators}
+              matchingValues={matchingValues}
+              onClearFilters={() => setFilters(() => [])}
+              pickColumn={pickColumn}
+              pickOperator={pickOperator}
+              pickSuggestedValue={pickSuggestedValue}
+              query={query}
+              stage={stage}
+              trimmedQuery={trimmedQuery}
+            />
+          )}
         </div>
       )}
     </CommandPrimitive>

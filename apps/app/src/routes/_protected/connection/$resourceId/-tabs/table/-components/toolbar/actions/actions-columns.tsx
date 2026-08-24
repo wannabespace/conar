@@ -1,3 +1,4 @@
+import NumberFlow from '@number-flow/react'
 import {
   RiCheckLine,
   RiDatabase2Line,
@@ -34,6 +35,9 @@ export const ActionsColumns = () => {
     selector: (state) => state.hiddenColumns,
   })
   const { columns } = useTableColumnsContext()
+  const hiddenCount = hiddenColumns.filter((id) =>
+    columns.some((column) => column.id === id)
+  ).length
 
   return (
     <Popover>
@@ -41,27 +45,21 @@ export const ActionsColumns = () => {
         <TooltipTrigger
           render={
             <PopoverTrigger
-              render={
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="relative overflow-visible"
-                />
-              }
+              render={<Button variant="outline" className="gap-1.5 px-2.5" />}
             />
           }
         >
-          <RiLayoutColumnLine />
-          {hiddenColumns.length > 0 && (
-            <span className="bg-primary text-2xs text-primary-foreground absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 font-medium tabular-nums">
-              {hiddenColumns.length}
-            </span>
-          )}
+          <RiLayoutColumnLine className="text-muted-foreground/60" />
+          <NumberFlow
+            value={columns.length - hiddenCount}
+            suffix={hiddenCount > 0 ? `/${columns.length}` : undefined}
+            className="text-2xs font-normal tabular-nums"
+          />
         </TooltipTrigger>
         <TooltipContent side="top">
-          {hiddenColumns.length > 0
-            ? `${hiddenColumns.length} hidden column${hiddenColumns.length === 1 ? '' : 's'}`
-            : 'Columns visibility'}
+          {hiddenCount > 0
+            ? `${columns.length} columns · ${hiddenCount} hidden`
+            : `${columns.length} column${columns.length === 1 ? '' : 's'}`}
         </TooltipContent>
       </Tooltip>
       <PopoverContent

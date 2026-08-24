@@ -1,4 +1,4 @@
-import { messageText } from '@tamery/ai/v2/message'
+import { messageText } from '@tamery/ai/message'
 import { db } from '@tamery/db'
 import { chats, chatsMessages } from '@tamery/db/schema'
 import { abortControllerFrom } from '@tamery/shared/utils/helpers'
