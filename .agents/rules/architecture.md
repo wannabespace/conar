@@ -5,7 +5,7 @@
 | Topic | Rule |
 | --- | --- |
 | API layer | oRPC (`@orpc/server`) — not REST, not tRPC. |
-| Client state | TanStack DB collections — not Zustand, not React Context for data. |
+| Client state | TanStack DB collections — not Zustand, not React Context for data. Live queries: `useLiveQuery({ query })` — identity is derived from structured IR, so drop the deprecated `(fn, deps)` form. `queryKey` only for `.fn.where`/opaque queries or a measured hot path. |
 | Cloud DB ORM | Drizzle (`packages/db`) — not raw SQL, not Prisma. |
 | Auth | Better Auth — not custom JWT, not NextAuth. |
 | Secrets | Infisical via `@tamery/infisical` — not `.env` files in production. |

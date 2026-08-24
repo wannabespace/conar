@@ -1,16 +1,20 @@
 import { ORPCError } from '@orpc/client'
+import type { CommonORPCErrorCode } from '@orpc/client'
+import { PROXY_ERROR_MESSAGE } from '@tamery/shared/constants'
 import { BASE_ERROR_CODES } from 'better-auth'
 import { toast } from 'sonner'
 
 import { fullSignOut } from '~/lib/auth'
 import { router } from '~/main'
 
-import { PROXY_ERROR_MESSAGE } from '../lib/orpc'
-
 const getErrorMessage = (error: unknown) =>
   (error instanceof ORPCError && error.message) ||
   (error as Error)?.message ||
   'Our server is practicing its meditation. Please, try again later.'
+
+export const isUnauthorizedError = (error: unknown) =>
+  error instanceof ORPCError &&
+  error.code === ('UNAUTHORIZED' satisfies CommonORPCErrorCode)
 
 const isSessionExpiredError = (error: unknown) =>
   (typeof error === 'object' &&
@@ -19,7 +23,7 @@ const isSessionExpiredError = (error: unknown) =>
     'code' in error &&
     error.status === 401 &&
     error.code !== BASE_ERROR_CODES.INVALID_EMAIL_OR_PASSWORD.code) ||
-  (error instanceof ORPCError && error.code === 'UNAUTHORIZED')
+  isUnauthorizedError(error)
 
 export const handleError = async (error: unknown) => {
   if (!error) {

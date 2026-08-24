@@ -1,4 +1,3 @@
-import { ORPCError } from '@orpc/client'
 import { GITHUB_REPO_NAME } from '@tamery/shared/constants'
 import { sleep } from '@tamery/shared/utils/helpers'
 import {
@@ -10,6 +9,7 @@ import type { SyncConfig } from '@tanstack/react-db'
 import { BasicIndex } from '@tanstack/react-db'
 import { Result } from 'better-result'
 
+import { isUnauthorizedError } from '../utils/error'
 import { posthog } from './posthog'
 
 export interface BaseTable {
@@ -137,9 +137,6 @@ export type SyncEventsFn<T> = (params: {
 
 const RETRY_MIN_DELAY = 1000
 const RETRY_MAX_DELAY = 30_000
-
-const isUnauthorizedError = (error: unknown) =>
-  error instanceof ORPCError && error.code === 'UNAUTHORIZED'
 
 export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
   id: string

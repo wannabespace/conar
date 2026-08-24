@@ -1,4 +1,5 @@
 import { ORPCError } from '@orpc/client'
+import type { CommonORPCErrorCode } from '@orpc/client'
 import { BASE_ERROR_CODES } from 'better-auth'
 import { toast } from 'sonner'
 
@@ -9,6 +10,10 @@ const getErrorMessage = (error: unknown) =>
   (error as Error)?.message ||
   'Our server is practicing its meditation. Please, try again later.'
 
+const isUnauthorizedError = (error: unknown) =>
+  error instanceof ORPCError &&
+  error.code === ('UNAUTHORIZED' satisfies CommonORPCErrorCode)
+
 const isSessionExpiredError = (error: unknown) =>
   (typeof error === 'object' &&
     error !== null &&
@@ -16,7 +21,7 @@ const isSessionExpiredError = (error: unknown) =>
     'code' in error &&
     error.status === 401 &&
     error.code !== BASE_ERROR_CODES.INVALID_EMAIL_OR_PASSWORD.code) ||
-  (error instanceof ORPCError && error.code === 'UNAUTHORIZED')
+  isUnauthorizedError(error)
 
 export const handleError = async (error: unknown) => {
   if (!error) {

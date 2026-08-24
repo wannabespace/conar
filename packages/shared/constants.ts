@@ -73,6 +73,9 @@ export const CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME: ConnectionType[] = [
   ConnectionType.ClickHouse,
 ]
 
+export const PROXY_ERROR_MESSAGE =
+  "We can't connect to the proxy, please check your connection and try again."
+
 export const RECONNECT_ERROR_PATTERNS = [
   'econnreset',
   'etimedout',

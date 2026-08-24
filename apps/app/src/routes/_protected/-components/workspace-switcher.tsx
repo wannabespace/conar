@@ -52,41 +52,34 @@ const WorkspaceGlyph = ({
 const useConnectionsByWorkspace = () => {
   const { connectionsCollection, connectionsResourcesCollection } =
     useCollections()
-  const { data } = useLiveQuery(
-    (q) =>
+  const { data } = useLiveQuery({
+    query: (q) =>
       q
         .from({ c: connectionsCollection })
         .innerJoin({ r: connectionsResourcesCollection }, ({ c, r }) =>
           eq(r.connectionId, c.id)
         )
         .select(({ c, r }) => ({ connection: c, resource: r }))
-        .orderBy(({ c }) => c.createdAt, 'desc'),
-    [connectionsCollection, connectionsResourcesCollection]
-  )
+        .orderBy(({ c }) => c.createdAt, 'desc')
+        .orderBy(({ r }) => r.name, 'asc'),
+  })
 
-  const byWorkspace = new Map<string, WorkspaceConnection[]>()
+  const byConnection = new Map<string, WorkspaceConnection>()
+
   for (const { connection, resource } of data) {
-    const connections = byWorkspace.get(connection.workspaceId) ?? []
-    const existing = connections.find(
-      (item) => item.connection.id === connection.id
-    )
+    const existing = byConnection.get(connection.id)
 
     if (existing) {
       existing.resources.push(resource)
     } else {
-      connections.push({ connection, resources: [resource] })
-    }
-
-    byWorkspace.set(connection.workspaceId, connections)
-  }
-
-  for (const connections of byWorkspace.values()) {
-    for (const { resources } of connections) {
-      resources.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+      byConnection.set(connection.id, { connection, resources: [resource] })
     }
   }
 
-  return byWorkspace
+  return Map.groupBy(
+    byConnection.values(),
+    ({ connection }) => connection.workspaceId
+  )
 }
 
 const ConnectionSubMenu = ({

@@ -8,10 +8,9 @@ import { activeWorkspaceIdStorageValue, resolveActiveWorkspace } from './utils'
 export const useActiveWorkspace = () => {
   const { workspacesCollection } = useCollections()
 
-  const { data: workspaces } = useLiveQuery(
-    (q) => q.from({ w: workspacesCollection }),
-    [workspacesCollection]
-  )
+  const { data: workspaces } = useLiveQuery({
+    query: (q) => q.from({ w: workspacesCollection }),
+  })
   const activeId = useSubscription(activeWorkspaceIdStorageValue)
 
   return { data: resolveActiveWorkspace(workspaces, activeId), workspaces }

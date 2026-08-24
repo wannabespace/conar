@@ -75,8 +75,8 @@ export const LastOpenedResources = () => {
   const lastOpenedResources = useSubscription(lastOpenedResourcesStorageValue)
   const { data: activeWorkspace } = useActiveWorkspace()
 
-  const { data } = useLiveQuery(
-    (q) => {
+  const { data } = useLiveQuery({
+    query: (q) => {
       const query = q
         .from({ connectionsResources: connectionsResourcesCollection })
         .innerJoin(
@@ -96,8 +96,7 @@ export const LastOpenedResources = () => {
         connection: connections,
       }))
     },
-    [connectionsResourcesCollection, connectionsCollection, activeWorkspace?.id]
-  )
+  })
   const toShow = data
     .filter(({ connectionResource }) =>
       lastOpenedResources.includes(connectionResource.id)

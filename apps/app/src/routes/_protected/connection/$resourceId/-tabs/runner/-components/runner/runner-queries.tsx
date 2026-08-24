@@ -37,16 +37,15 @@ export const RunnerQueries = ({
 }: ComponentProps<'div'>) => {
   const { connectionResource } = useRouteContext()
   const { queriesCollection } = useCollections()
-  const { data } = useLiveQuery(
-    (q) =>
+  const { data } = useLiveQuery({
+    query: (q) =>
       q
         .from({ queries: queriesCollection })
         .where(({ queries }) =>
           eq(queries.connectionResourceId, connectionResource.id)
         )
         .orderBy(({ queries }) => queries.createdAt, 'desc'),
-    [queriesCollection, connectionResource.id]
-  )
+  })
   const [movedId, setMovedId] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
 

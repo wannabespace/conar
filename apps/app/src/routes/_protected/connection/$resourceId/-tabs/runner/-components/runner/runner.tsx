@@ -124,8 +124,8 @@ export const Runner = () => {
   const alertDialogRef = useRef<ComponentRef<typeof RunnerAlertDialog>>(null)
   const saveQueryDialogRef = useRef<ComponentRef<typeof RunnerSaveDialog>>(null)
   const { queriesCollection } = useCollections()
-  const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery(
-    (q) =>
+  const { data: { queriesCount } = { queriesCount: 0 } } = useLiveQuery({
+    query: (q) =>
       q
         .from({ queries: queriesCollection })
         .where(({ queries }) =>
@@ -133,8 +133,7 @@ export const Runner = () => {
         )
         .select(({ queries }) => ({ queriesCount: count(queries.id) }))
         .findOne(),
-    [queriesCollection, connectionResource.id]
-  )
+  })
   const [isFormatting, setIsFormatting] = useState(false)
   const store = useRunnerPageStore()
   const resultsVisible = useSubscription(store, {

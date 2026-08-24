@@ -201,8 +201,8 @@ export const ActionsCenter = () => {
     useCollections()
   const { resourceId } = useParams({ strict: false })
   const { data: activeWorkspace } = useActiveWorkspace()
-  const { data } = useLiveQuery(
-    (q) => {
+  const { data } = useLiveQuery({
+    query: (q) => {
       const query = activeWorkspace
         ? q
             .from({ connections: connectionsCollection })
@@ -223,8 +223,7 @@ export const ActionsCenter = () => {
         }))
         .orderBy(({ connections }) => connections.createdAt, 'desc')
     },
-    [connectionsCollection, connectionsResourcesCollection, activeWorkspace?.id]
-  )
+  })
 
   const isOpen = useSubscription(appStore, {
     selector: (state) => state.isActionCenterOpen,
