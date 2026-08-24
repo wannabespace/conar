@@ -82,19 +82,24 @@ const useConnectionsByWorkspace = () => {
   )
 }
 
-const ConnectionSubMenuContent = ({
+const ConnectionSubMenu = ({
   connection,
-  firstResource,
   resources,
   onSelect,
 }: {
   connection: Connection
-  firstResource: ConnectionResource
   resources: ConnectionResource[]
   onSelect: () => void
 }) => {
   const navigate = useNavigate()
-  const firstResourceLink = useConnectionResourceLinkParams(firstResource.id)
+  const [firstResource] = resources
+  const firstResourceLink = useConnectionResourceLinkParams(
+    firstResource?.id ?? ''
+  )
+
+  if (!firstResource) {
+    return null
+  }
 
   return (
     <DropdownMenuSub>
@@ -135,31 +140,6 @@ const ConnectionSubMenuContent = ({
         ))}
       </DropdownMenuSubContent>
     </DropdownMenuSub>
-  )
-}
-
-const ConnectionSubMenu = ({
-  connection,
-  resources,
-  onSelect,
-}: {
-  connection: Connection
-  resources: ConnectionResource[]
-  onSelect: () => void
-}) => {
-  const [firstResource] = resources
-
-  if (!firstResource) {
-    throw new Error('No resources found for connection')
-  }
-
-  return (
-    <ConnectionSubMenuContent
-      connection={connection}
-      firstResource={firstResource}
-      resources={resources}
-      onSelect={onSelect}
-    />
   )
 }
 
