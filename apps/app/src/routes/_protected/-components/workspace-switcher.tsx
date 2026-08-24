@@ -100,10 +100,6 @@ const ConnectionSubMenu = ({
 
   const firstResourceLink = useConnectionResourceLinkParams(firstResource.id)
 
-  if (!firstResource) {
-    return null
-  }
-
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger
