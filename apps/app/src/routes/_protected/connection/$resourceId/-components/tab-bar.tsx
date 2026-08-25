@@ -586,7 +586,7 @@ const Tab = ({
     })
 
   const tabClasses = cn(
-    `group text-muted-foreground hover:bg-background/50 relative flex h-full cursor-default items-center gap-1.5 border-r border-b pr-8 pl-3 text-sm font-[450] whitespace-nowrap transition-colors duration-100`,
+    `group text-muted-foreground hover:bg-background/50 relative flex h-full w-full min-w-0 cursor-default items-center gap-1.5 border-r border-b pr-8 pl-3 text-sm font-[450] whitespace-nowrap transition-colors duration-100`,
     isActive &&
       `bg-background text-foreground hover:bg-background border-b-transparent font-medium`,
     isPreview && 'italic'
@@ -610,7 +610,7 @@ const Tab = ({
         drag={false}
         layout="position"
         transition={{ layout: { duration: 0 } }}
-        className="relative shrink-0"
+        className="relative min-w-24 flex-1"
       >
         <div data-mask className={tabClasses}>
           {icon}
@@ -647,12 +647,12 @@ const Tab = ({
       transition={{ layout: isDragging ? REORDER_TRANSITION : { duration: 0 } }}
       onDragStart={() => onDragStateChange(true)}
       onDragEnd={() => onDragStateChange(false)}
-      className="relative shrink-0 aria-pressed:z-10"
+      className="relative min-w-24 flex-1 aria-pressed:z-10"
     >
       <AppContextMenu
         open={contextMenuOpen}
         onOpenChange={setContextMenuOpen}
-        className="block h-full"
+        className="block h-full w-full min-w-0"
         items={items}
       >
         <button
@@ -666,7 +666,7 @@ const Tab = ({
           {...pressNavProps(goToTab)}
         >
           {icon}
-          <span>{label}</span>
+          <span className="truncate">{label}</span>
           <Tooltip>
             <TooltipTrigger
               render={
@@ -878,8 +878,8 @@ export const TabBar = ({ className }: { className?: string }) => {
         <TabRefresh tab={activeTab} />
       </div>
       {tabs.length > 0 && (
-        <ScrollArea className="h-full w-fit min-w-0">
-          <div className="flex h-8 items-stretch">
+        <ScrollArea className="h-full min-w-0 flex-1">
+          <div className="flex h-8 w-full items-stretch">
             <Reorder.Group
               axis="x"
               values={tabIds}
@@ -891,7 +891,7 @@ export const TabBar = ({ className }: { className?: string }) => {
                     .filter((tab) => !!tab)
                 )
               }
-              className="flex items-stretch"
+              className="flex w-full items-stretch"
             >
               {tabs.map((tab, index) => (
                 <Tab
@@ -915,7 +915,9 @@ export const TabBar = ({ className }: { className?: string }) => {
           </div>
         </ScrollArea>
       )}
-      <div aria-hidden className="min-w-0 flex-1 border-b" />
+      {tabs.length === 0 && (
+        <div aria-hidden className="min-w-0 flex-1 border-b" />
+      )}
       <NewTabMenu
         connection={connection}
         connectionResource={connectionResource}
