@@ -1,5 +1,5 @@
 import { db } from '@tamery/db'
-import { members, users, workspaces } from '@tamery/db/schema'
+import { members, workspaces } from '@tamery/db/schema'
 import { slugify } from '@tamery/shared/utils/slugify'
 import {
   isDefaultWorkspaceMetadata,
@@ -7,6 +7,8 @@ import {
 } from '@tamery/shared/workspace'
 import { and, asc, eq, inArray, sql } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
+
+const DEFAULT_WORKSPACE_NAME = 'Personal'
 
 export const workspaceSlug = (name: string) => {
   const base = slugify(name) || 'workspace'
@@ -51,21 +53,12 @@ export const ensureDefaultWorkspace = async (userId: string) => {
       return lockedId
     }
 
-    const [user] = await tx
-      .select({ email: users.email, name: users.name })
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1)
-
-    const displayName = user?.name?.trim() || user?.email?.split('@')[0] || 'My'
-    const workspaceName = `${displayName}'s workspace`
-
     const [workspace] = await tx
       .insert(workspaces)
       .values({
         metadata: serializeWorkspaceMetadata({ default: true }),
-        name: workspaceName,
-        slug: workspaceSlug(workspaceName),
+        name: DEFAULT_WORKSPACE_NAME,
+        slug: workspaceSlug(DEFAULT_WORKSPACE_NAME),
       })
       .returning({ id: workspaces.id })
 
