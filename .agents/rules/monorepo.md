@@ -24,4 +24,6 @@ Root `package.json` holds the full list. Not obvious:
 
 Drive the **user's own Chrome** for any `*.local.tamery.app` URL (trusts the portless CA). In Claude Code: `mcp__claude-in-chrome__*` tools.
 
+`agent-browser` MCP server is wired in `.mcp.json` (`core,debug` tool profiles) for headless driving, console/error reads and a11y audits (add `network`, `react`, `mobile`, `state`, `tabs` or `all` to `--tools` when needed). One-time `pnpm run browser:install` downloads its Chrome for Testing; that Chrome is a separate binary from the user's Chrome, so prefer `mcp__claude-in-chrome__*` for portless HTTPS hosts until agent-browser is confirmed to trust the portless CA.
+
 **Embedded/sandboxed browser pane cannot run them**: document returns 200, then every subresource (`/@vite/client`, `/src/main.tsx`, images, same-origin `fetch('/')`) is cancelled with `net::ERR_BLOCKED_BY_CLIENT` — SPA never boots, blank page with misleading 200. Don't re-debug: ruled out dev server, portless CA/TLS, app CSP, service workers, stale pane state, tab-open method. Block sits in the pane's own request layer, not configurable. Bare `http://localhost:<port>` **does** work there — portless HTTPS hosts specifically fail.

@@ -195,6 +195,9 @@ catalogs:
     '@xyflow/react':
       specifier: ^12.11.3
       version: 12.11.3
+    agent-browser:
+      specifier: ^0.35.0
+      version: 0.35.0
     ai:
       specifier: ^7.0.70
       version: 7.0.70
@@ -451,6 +454,9 @@ importers:
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.14
+      agent-browser:
+        specifier: 'catalog:'
+        version: 0.35.0
       cross-env:
         specifier: 'catalog:'
         version: 10.1.0
@@ -5161,6 +5167,11 @@ packages:
   agent-base@7.1.4:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
+
+  agent-browser@0.35.0:
+    resolution: {integrity: sha512-F09TmwbZPNR4PldK3hROrX6b6Q4KfvjDi1OTWlLSCQbbm2ujQcmuOzn/NXk/ilzM4INR+eeaEYpm6y3f/28j+w==}
+    engines: {node: '>=24.0.0', pnpm: '>=11.0.0'}
+    hasBin: true
 
   aggregate-error@3.1.0:
     resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
@@ -14760,6 +14771,8 @@ snapshots:
       - supports-color
 
   agent-base@7.1.4: {}
+
+  agent-browser@0.35.0: {}
 
   aggregate-error@3.1.0:
     dependencies:

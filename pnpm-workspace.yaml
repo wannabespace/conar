@@ -8,6 +8,7 @@ minimumReleaseAgeExclude:
   - '@tanstack/start-server-core@1.169.22'
   - '@tanstack/start-storage-context@1.167.21'
   - memoza@1.2.0
+  - agent-browser@0.35.0
 shellEmulator: true
 blockExoticSubdeps: false
 packages:
@@ -87,6 +88,7 @@ catalog:
   '@upstash/context7-tools-ai-sdk': ^0.2.5
   '@vitejs/plugin-react': ^6.1.0
   '@xyflow/react': ^12.11.3
+  agent-browser: ^0.35.0
   ai: ^7.0.70
   ai-retry: ^2.4.0
   arktype: ^2.2.3
@@ -169,6 +171,7 @@ allowBuilds:
   '@firebase/util': false
   '@google/genai': false
   '@journeyapps/wa-sqlite': true
+  agent-browser: true
   core-js: false
   dtrace-provider: false
   electron: true
