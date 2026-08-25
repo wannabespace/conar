@@ -51,6 +51,19 @@ const structuredData = {
   ],
 }
 
+const analyticsScripts = [
+  {
+    defer: true,
+    src: 'https://assets.onedollarstats.com/stonks.js',
+  },
+  {
+    defer: true,
+    src: 'https://datafa.st/js/script.js',
+    'data-website-id': 'dfid_vIscqqXu4BxAFu9ObaBYl',
+    'data-domain': 'tamery.app',
+  },
+]
+
 const RootComponent = () => {
   const router = useRouter()
 
@@ -117,14 +130,7 @@ export const Route = createRootRouteWithContext<{
           type: 'application/ld+json',
           children: JSON.stringify(structuredData),
         },
-        ...(import.meta.env.DEV
-          ? []
-          : [
-              {
-                defer: true,
-                src: 'https://assets.onedollarstats.com/stonks.js',
-              },
-            ]),
+        ...(import.meta.env.DEV ? [] : analyticsScripts),
       ],
     }
   },
