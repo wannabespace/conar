@@ -296,7 +296,7 @@ export const VisualizerTab = () => {
     columnsQueries.some((q) => q.isPending)
   ) {
     return (
-      <div className="bg-background flex size-full items-center justify-center rounded-lg border">
+      <div className="bg-background flex size-full items-center justify-center">
         <AppLogo className="text-muted-foreground size-40 animate-pulse" />
       </div>
     )
