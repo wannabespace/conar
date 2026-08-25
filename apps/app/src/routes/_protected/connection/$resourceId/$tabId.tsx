@@ -33,7 +33,7 @@ const TabPage = () => {
   }, [connectionResource.id, tab])
 
   if (tab.type === 'table') {
-    return <TableTab schema={tab.schema} table={tab.table} />
+    return <TableTab key={tab.id} schema={tab.schema} table={tab.table} />
   }
 
   if (tab.type === 'runner') {
