@@ -17,7 +17,8 @@ Root `package.json` holds the full list. Not obvious:
 
 - `pnpm run docker:start` (local Postgres, Redis, Infisical) **required before** `pnpm run dev`.
 - `pnpm run dev` = package picker (all pre-selected, Enter accepts); `-a` skips prompt. `pnpm x` picks package + script (`scripts/run-script.ts`), excludes `dev`/`x` (no recursion).
-- Local URLs portless, live only while `dev` runs: `https://{api,app,main,proxy}.local.tamery.app`.
+- Local URLs portless, live only while `dev` runs: `https://{api,app,main,proxy}.local.tamery.app`. In a linked git worktree, portless prefixes the branch name (`https://<branch>.api.local.tamery.app`), so worktrees run alongside the main checkout without collisions.
+- Cross-service dev URLs are not in `.env` — `setupPortlessEnvs({ API_URL: 'api.local.tamery', … })` (`packages/shared/utils/portless-env.ts`) fills them at startup via `portless get`, worktree-aware. Each app declares its own env-key → portless-name map in its `env.ts` (api, proxy) or `vite.config.ts` (app, main); the helper holds no service names. Precedence: existing env var > portless > optional `.defaults({ … })` chained on the call.
 
 ## Opening the running app in a browser
 

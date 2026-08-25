@@ -2,7 +2,7 @@ import type { InlineConfig } from 'vite'
 import { defineConfig } from 'vite'
 import electron from 'vite-plugin-electron/simple'
 
-import packageJson from './package.json'
+import packageJson from './package.json' with { type: 'json' }
 
 const rolldownOptions: NonNullable<
   NonNullable<InlineConfig['build']>['rolldownOptions']
