@@ -878,8 +878,8 @@ export const TabBar = ({ className }: { className?: string }) => {
         <TabRefresh tab={activeTab} />
       </div>
       {tabs.length > 0 && (
-        <ScrollArea className="h-full w-fit min-w-0">
-          <div className="flex h-8 items-stretch">
+        <ScrollArea className="h-full min-w-0 flex-1">
+          <div className="flex h-8 w-max min-w-full items-stretch">
             <Reorder.Group
               axis="x"
               values={tabIds}
@@ -912,10 +912,13 @@ export const TabBar = ({ className }: { className?: string }) => {
                 />
               ))}
             </Reorder.Group>
+            <div aria-hidden className="flex-1 border-b" />
           </div>
         </ScrollArea>
       )}
-      <div aria-hidden className="min-w-0 flex-1 border-b" />
+      {tabs.length === 0 && (
+        <div aria-hidden className="min-w-0 flex-1 border-b" />
+      )}
       <NewTabMenu
         connection={connection}
         connectionResource={connectionResource}

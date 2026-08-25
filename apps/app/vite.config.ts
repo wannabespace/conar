@@ -1,14 +1,18 @@
-import { readFileSync } from 'node:fs'
-
 import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
+import { setupPortlessEnvs } from '@tamery/shared/utils/portless-env'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-const { version } = JSON.parse(
-  readFileSync(new URL('../desktop/package.json', import.meta.url), 'utf-8')
-)
+import { version } from '../desktop/package.json' with { type: 'json' }
+
+setupPortlessEnvs({
+  VITE_PUBLIC_API_URL: 'api.local.tamery',
+  VITE_PUBLIC_MAIN_URL: 'main.local.tamery',
+  VITE_PUBLIC_PROXY_URL: 'proxy.local.tamery',
+  VITE_PUBLIC_WEB_URL: 'app.local.tamery',
+})
 
 export default defineConfig(({ mode }) => ({
   base: mode === 'desktop' ? './' : '/',

@@ -380,3 +380,26 @@
   --hit-area-b: --spacing(--value(number) * -1);
   --hit-area-b: calc(--value([*]) * -1);
 }
+
+@keyframes dither-in {
+  0% {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Cpath d='M0 0h1v1h-1zM2 0h1v1h-1zM2 2h1v1h-1z'/%3E%3C/svg%3E");
+  }
+  25% {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Cpath d='M0 0h1v1h-1zM2 0h1v1h-1zM1 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM3 3h1v1h-1z'/%3E%3C/svg%3E");
+  }
+  50% {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Cpath d='M0 0h3v1h-3zM1 1h1v1h-1zM3 1h1v1h-1zM0 2h1v1h-1zM2 2h2v1h-2zM1 3h1v1h-1zM3 3h1v1h-1z'/%3E%3C/svg%3E");
+  }
+  75% {
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Cpath d='M0 0h4v1h-4zM0 1h2v1h-2zM3 1h1v1h-1zM0 2h4v1h-4zM1 3h1v1h-1zM3 3h1v1h-1z'/%3E%3C/svg%3E");
+  }
+  100% {
+    mask-image: none;
+  }
+}
+
+@utility dither-in {
+  animation: dither-in 320ms steps(1, end) both;
+  mask-size: 4px 4px;
+}

@@ -16,6 +16,6 @@ Every other AI procedure runs on `@tanstack/ai` through adapters in `apps/api/li
 
 ## Secrets / environment
 
-- Each app's `env.ts` validates env vars with ArkType.
+- Each app's `env.ts` validates env vars with ArkType. In development, service URL vars default dynamically via portless (see `monorepo.md` dev commands) — don't add them back to `.env`.
 - Encryption secrets in Infisical at path `['users', userId]`, created in `databaseHooks.user.create.after`.
 - Connection strings encrypted per **workspace**, not per requester: `getWorkspaceSecret(workspaceId)` (memoized 5 min, on context after `authMiddleware`) resolves the workspace's owner member and reads that owner's secret. Every decrypt path passes the row's own `workspaceId`, so a shared workspace decrypts with one key once invites ship. Moving the secret to `['workspaces', workspaceId]` only changes that lookup — no call site moves.

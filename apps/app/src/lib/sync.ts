@@ -81,10 +81,7 @@ const OPEN_DATABASE_RETRY_DELAY = 500
 // NoModificationAllowedError (INTERNAL -> OPFSWorkerRequestError) on a dir it
 // was right to delete. The handles are released within a beat: retry.
 const databaseResult = await Result.tryPromise(
-  {
-    catch: (error) => error,
-    try: () => openBrowserWASQLiteOPFSDatabase({ databaseName: DATABASE_NAME }),
-  },
+  () => openBrowserWASQLiteOPFSDatabase({ databaseName: DATABASE_NAME }),
   {
     retry: {
       backoff: 'linear',
