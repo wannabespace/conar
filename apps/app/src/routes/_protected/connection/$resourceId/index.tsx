@@ -7,7 +7,6 @@ import {
   EmptyTitle,
 } from '@tamery/ui/components/empty'
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { motion } from 'motion/react'
 
 import {
   getConnectionResourceStore,
@@ -16,11 +15,7 @@ import {
 
 const EmptyPane = () => (
   <Empty className="min-h-0 flex-1 p-4 md:p-4">
-    <motion.div
-      initial={{ opacity: 0, scale: 0.97 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-    >
+    <div className="dither-in">
       <EmptyHeader className="gap-1">
         <EmptyMedia
           variant="icon"
@@ -35,7 +30,7 @@ const EmptyPane = () => (
           Choose a table from the sidebar, or open a new query to get started.
         </EmptyDescription>
       </EmptyHeader>
-    </motion.div>
+    </div>
   </Empty>
 )
 
