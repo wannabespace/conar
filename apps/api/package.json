@@ -26,7 +26,6 @@
     "@tamery/infisical": "workspace:*",
     "@tamery/shared": "workspace:*",
     "@tanstack/ai": "catalog:",
-    "@tanstack/ai-anthropic": "catalog:",
     "@upstash/context7-tools-ai-sdk": "catalog:",
     "ai": "catalog:",
     "ai-retry": "catalog:",

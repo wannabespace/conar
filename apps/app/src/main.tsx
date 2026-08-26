@@ -91,12 +91,20 @@ router.subscribe('onResolved', ({ toLocation }) => {
   lastLocationStorageValue.set(toLocation.href)
 })
 
+const isRoutableHref = (href: string) => {
+  const pathname = href.split(/[?#]/u)[0] ?? href
+  const [, rawParams, foundRoute] = router.getMatchedRoutes(pathname)
+
+  return !!foundRoute && !(foundRoute.path !== '/' && rawParams['**'])
+}
+
 if (router.state.location.pathname === '/') {
   const lastLocation = lastLocationStorageValue.get()
 
-  if (lastLocation) {
+  if (lastLocation && isRoutableHref(lastLocation)) {
     router.navigate({ href: lastLocation, replace: true })
   } else {
+    lastLocationStorageValue.clear()
     router.navigate({ replace: true, to: '/auth' })
   }
 }

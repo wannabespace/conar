@@ -2,7 +2,7 @@ import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persiste
 import { createCollection } from '@tanstack/react-db'
 
 import { orpc } from '~/lib/orpc'
-import type { BaseTable, SyncUtils } from '~/lib/sync'
+import type { BaseTable } from '~/lib/sync'
 import { persistence, syncCollectionOptions } from '~/lib/sync'
 
 export interface Query extends BaseTable {
@@ -13,7 +13,7 @@ export interface Query extends BaseTable {
 
 export const createQueriesCollection = () =>
   createCollection(
-    persistedCollectionOptions<Query, string, never, SyncUtils>({
+    persistedCollectionOptions({
       ...syncCollectionOptions<Query>({
         events: async ({ signal, write }) => {
           for await (const message of await orpc.queries.events.call(

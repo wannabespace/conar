@@ -51,6 +51,8 @@ export const viewportType = type({
 
 export const connectionResourceType = type({
   activeTabId: 'string | null',
+  chatId: 'string | null',
+  chatOpened: 'boolean',
   loggerOpened: 'boolean',
   pinnedTables: type({
     schema: 'string',
@@ -67,6 +69,8 @@ export const connectionResourceType = type({
 
 const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   activeTabId: null,
+  chatId: null,
+  chatOpened: false,
   loggerOpened: false,
   pinnedTables: [],
   showSystem: false,
