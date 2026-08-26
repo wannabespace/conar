@@ -12,10 +12,10 @@ import { useEffect, useState } from 'react'
 import { Subscription } from './-components/subscription'
 
 const confetti = typeof window === 'undefined' ? null : new JSConfetti()
-const accountRouteApi = getRouteApi('/account/')
+const { useSearch } = getRouteApi('/account/')
 
 const RouteComponent = () => {
-  const { subscription } = accountRouteApi.useSearch()
+  const { subscription } = useSearch()
   const router = useRouter()
   const [isSuccess, setIsSuccess] = useState(() => subscription === 'success')
   void setIsSuccess

@@ -11,11 +11,11 @@ import { TotpCodeInput } from '~/components/totp-code-input'
 import { authClient } from '~/lib/auth'
 import { handleError } from '~/utils/error'
 
-const routeApi = getRouteApi('/_auth/two-factor')
+const { useSearch } = getRouteApi('/_auth/two-factor')
 
 const TwoFactorPage = () => {
   const router = useRouter()
-  const search = routeApi.useSearch()
+  const search = useSearch()
   const [code, setCode] = useState('')
 
   const { mutate: verifyTotp, isPending } = useMutation({

@@ -39,10 +39,10 @@ const timingFilterOptions = [
   { label: 'Instead Of', value: 'INSTEAD OF' },
 ]
 
-const routeApi = getRouteApi('/_protected/connection/$resourceId')
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export const Triggers = () => {
-  const { connectionResource } = routeApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const { data: triggers, isPending } = useQuery(
     resourceTriggersQueryOptions({ connectionResource })
   )

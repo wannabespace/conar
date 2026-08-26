@@ -86,6 +86,14 @@ export const createConnectionStringsCollection =
               getCollections().connectionStringsCollection.get(connectionId)
 
             if (!record) {
+              const result = await orpc.connections.resolve.call({
+                id: connectionId,
+              })
+
+              if (result.status === 'modified') {
+                return result.connectionString
+              }
+
               throw new Error(
                 `No connection string found for connection "${connectionId}"`
               )

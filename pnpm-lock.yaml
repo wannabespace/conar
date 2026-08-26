@@ -115,11 +115,14 @@ catalogs:
       specifier: ^4.3.3
       version: 4.3.3
     '@tanstack/ai':
-      specifier: ^0.46.0
-      version: 0.46.0
+      specifier: ^0.49.1
+      version: 0.49.1
     '@tanstack/ai-anthropic':
-      specifier: ^0.16.7
-      version: 0.16.7
+      specifier: ^0.18.0
+      version: 0.18.0
+    '@tanstack/ai-react':
+      specifier: ^0.22.1
+      version: 0.22.1
     '@tanstack/browser-db-sqlite-persistence':
       specifier: ^0.2.13
       version: 0.2.13
@@ -195,9 +198,6 @@ catalogs:
     '@xyflow/react':
       specifier: ^12.11.3
       version: 12.11.3
-    agent-browser:
-      specifier: ^0.35.0
-      version: 0.35.0
     ai:
       specifier: ^7.0.70
       version: 7.0.70
@@ -454,9 +454,6 @@ importers:
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.14
-      agent-browser:
-        specifier: 'catalog:'
-        version: 0.35.0
       cross-env:
         specifier: 'catalog:'
         version: 10.1.0
@@ -520,9 +517,6 @@ importers:
       '@better-auth/drizzle-adapter':
         specifier: https://pkg.pr.new/@better-auth/drizzle-adapter@5a40d12
         version: https://pkg.pr.new/@better-auth/drizzle-adapter@5a40d12(@better-auth/core@1.7.0-beta.9(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.1)(better-call@1.3.6(zod@4.4.3))(jose@6.2.3)(kysely@0.29.3)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(drizzle-orm@1.0.0-rc.4(@opentelemetry/api@1.9.1)(@types/pg@8.23.1)(arktype@2.2.3)(bun-types@1.3.14)(mysql2@3.23.4(@types/node@26.1.1))(pg@8.23.0)(valibot@1.4.2(typescript@7.0.2))(zod@4.4.3))
-      '@exalabs/ai-sdk':
-        specifier: 'catalog:'
-        version: 2.1.0(ai@7.0.70(zod@4.4.3))
       '@octokit/rest':
         specifier: 'catalog:'
         version: 22.0.1
@@ -552,19 +546,10 @@ importers:
         version: link:../../packages/shared
       '@tanstack/ai':
         specifier: 'catalog:'
-        version: 0.46.0(@opentelemetry/api@1.9.1)(zod@4.4.3)
-      '@tanstack/ai-anthropic':
-        specifier: 'catalog:'
-        version: 0.16.7(@tanstack/ai@0.46.0(@opentelemetry/api@1.9.1)(zod@4.4.3))(zod@4.4.3)
-      '@upstash/context7-tools-ai-sdk':
-        specifier: 'catalog:'
-        version: 0.2.5(@upstash/context7-sdk@0.3.1)(ai@7.0.70(zod@4.4.3))(zod@4.4.3)
+        version: 0.49.1(@opentelemetry/api@1.9.1)(zod@4.4.3)
       ai:
         specifier: 'catalog:'
         version: 7.0.70(zod@4.4.3)
-      ai-retry:
-        specifier: 'catalog:'
-        version: 2.4.0(@ai-sdk/provider-utils@5.0.28(zod@4.4.3))(@ai-sdk/provider@4.0.7)(@opentelemetry/api@1.9.1)(ai@7.0.70(zod@4.4.3))(zod@4.4.3)
       arktype:
         specifier: 'catalog:'
         version: 2.2.3
@@ -613,9 +598,6 @@ importers:
       uuid:
         specifier: 'catalog:'
         version: 14.0.2
-      zod:
-        specifier: 'catalog:'
-        version: 4.4.3
     devDependencies:
       '@playwright/test':
         specifier: 'catalog:'
@@ -665,6 +647,9 @@ importers:
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.3.3(vite@8.2.2(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0))
+      '@tamery/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@tamery/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -674,6 +659,12 @@ importers:
       '@tamery/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@tanstack/ai':
+        specifier: 'catalog:'
+        version: 0.49.1(@opentelemetry/api@1.9.1)(zod@4.4.3)
+      '@tanstack/ai-react':
+        specifier: 'catalog:'
+        version: 0.22.1(@opentelemetry/api@1.9.1)(@tanstack/ai@0.49.1(@opentelemetry/api@1.9.1)(zod@4.4.3))(@types/react@19.2.18)(react@19.2.8)(zod@4.4.3)
       '@tanstack/browser-db-sqlite-persistence':
         specifier: 'catalog:'
         version: 0.2.13(@journeyapps/wa-sqlite@1.7.2)(typescript@7.0.2)
@@ -1129,9 +1120,39 @@ importers:
 
   packages/ai:
     dependencies:
+      '@ai-sdk/anthropic':
+        specifier: 'catalog:'
+        version: 4.0.40(zod@4.4.3)
+      '@ai-sdk/google':
+        specifier: 'catalog:'
+        version: 4.0.47(zod@4.4.3)
+      '@ai-sdk/openai':
+        specifier: 'catalog:'
+        version: 4.0.44(zod@4.4.3)
+      '@exalabs/ai-sdk':
+        specifier: 'catalog:'
+        version: 2.1.0(ai@7.0.70(zod@4.4.3))
+      '@tamery/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@tanstack/ai':
         specifier: 'catalog:'
-        version: 0.46.0(@opentelemetry/api@1.9.1)(zod@4.4.3)
+        version: 0.49.1(@opentelemetry/api@1.9.1)(zod@4.4.3)
+      '@tanstack/ai-anthropic':
+        specifier: 'catalog:'
+        version: 0.18.0(@tanstack/ai@0.49.1(@opentelemetry/api@1.9.1)(zod@4.4.3))(zod@4.4.3)
+      '@upstash/context7-tools-ai-sdk':
+        specifier: 'catalog:'
+        version: 0.2.5(@upstash/context7-sdk@0.3.1)(ai@7.0.70(zod@4.4.3))(zod@4.4.3)
+      ai:
+        specifier: 'catalog:'
+        version: 7.0.70(zod@4.4.3)
+      ai-retry:
+        specifier: 'catalog:'
+        version: 2.4.0(@ai-sdk/provider-utils@5.0.28(zod@4.4.3))(@ai-sdk/provider@4.0.7)(@opentelemetry/api@1.9.1)(ai@7.0.70(zod@4.4.3))(zod@4.4.3)
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
 
   packages/configs: {}
 
@@ -4141,20 +4162,38 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
 
-  '@tanstack/ai-anthropic@0.16.7':
-    resolution: {integrity: sha512-Ku76Ww1OEx1+jouCXFCo3zRRrvyg/R0p1q/wWflhp4t2gM1t+QPJwGSrqTimrldR+c3DoEEgZ3jeikNPEPR7sw==}
+  '@tanstack/ai-anthropic@0.18.0':
+    resolution: {integrity: sha512-hLV9DR/gXcafqRSC7YPYi3mIxn8SYnxMD9mNOSuggs7yhPteufbyjf3SChtICeOLMAbFenAzhVtoXOGoCLHnBQ==}
     peerDependencies:
-      '@tanstack/ai': ^0.46.0
+      '@anthropic-ai/vertex-sdk': ^0.19.0
+      '@tanstack/ai': ^0.49.1
       zod: ^4.0.0
+    peerDependenciesMeta:
+      '@anthropic-ai/vertex-sdk':
+        optional: true
 
-  '@tanstack/ai-event-client@0.9.0':
-    resolution: {integrity: sha512-R4jd8Gt6ZGFezteh9nH3E2Zii5b2x6Pv6Y3Gk3MoU8f9vMxCLckm3rohkC6JqYY1zESiS9ZG0mxrkJAZc+p+GA==}
+  '@tanstack/ai-client@0.28.0':
+    resolution: {integrity: sha512-KkOLqw4d2MkzhmqFiHGANjmhpvBWHlKDSSCdZA/o57d+Sc/dS+1fJBqRO5tKGI2m8Y9q3+TINGGo4pNUUFyfTQ==}
+
+  '@tanstack/ai-event-client@0.10.0':
+    resolution: {integrity: sha512-grvlmM0z4rMLvjwPKBfT4/sL4D97yqocSzyaTvUa+2wZmXESCf/uR/7ZAldOKBasEx6qO5EJ31hdKDEDjnrnDg==}
+
+  '@tanstack/ai-react@0.22.1':
+    resolution: {integrity: sha512-3v2MJ4V11RDAxQ3JUaOp33ET0nobckQgPKnxdaqWexCqdaHZox0xGu4/w1u3bmQqjm5w73+9lOnRgp+fUfu4Fw==}
+    peerDependencies:
+      '@mcp-ui/client': ^7
+      '@tanstack/ai': ^0.49.1
+      '@types/react': '>=18.0.0'
+      react: '>=18.0.0'
+    peerDependenciesMeta:
+      '@mcp-ui/client':
+        optional: true
 
   '@tanstack/ai-utils@0.4.0':
     resolution: {integrity: sha512-xqvAgPJkIuGk1m+jZKyb7vBTQIaBmUD9EVzlPkDWWMp80n69uwL0TnBZCVk+OwL9goTQiFy648dnBfLsiJgl6A==}
 
-  '@tanstack/ai@0.46.0':
-    resolution: {integrity: sha512-c0L9MssuCEdVTxNlWQ8R39v1sTqvahDA3OsFfUSWIFwtE39fc3SKY5osOElkPs5/UpwsCvhVmMOHDFA2PrdtzQ==}
+  '@tanstack/ai@0.49.1':
+    resolution: {integrity: sha512-tOyeMiegTztxLReWpdlzcjAvQ1RutGXwONniixErozeLiErNyNo9fbgTOwdKX9sGM9Gp3HvvXvB5zwGkintxbg==}
     engines: {node: '>=18'}
     peerDependencies:
       '@opentelemetry/api': '>=1.9.0'
@@ -5167,11 +5206,6 @@ packages:
   agent-base@7.1.4:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
     engines: {node: '>= 14'}
-
-  agent-browser@0.35.0:
-    resolution: {integrity: sha512-F09TmwbZPNR4PldK3hROrX6b6Q4KfvjDi1OTWlLSCQbbm2ujQcmuOzn/NXk/ilzM4INR+eeaEYpm6y3f/28j+w==}
-    engines: {node: '>=24.0.0', pnpm: '>=11.0.0'}
-    hasBin: true
 
   aggregate-error@3.1.0:
     resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
@@ -13415,24 +13449,43 @@ snapshots:
       tailwindcss: 4.3.3
       vite: 8.2.2(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0)
 
-  '@tanstack/ai-anthropic@0.16.7(@tanstack/ai@0.46.0(@opentelemetry/api@1.9.1)(zod@4.4.3))(zod@4.4.3)':
+  '@tanstack/ai-anthropic@0.18.0(@tanstack/ai@0.49.1(@opentelemetry/api@1.9.1)(zod@4.4.3))(zod@4.4.3)':
     dependencies:
       '@anthropic-ai/sdk': 0.97.1(zod@4.4.3)
-      '@tanstack/ai': 0.46.0(@opentelemetry/api@1.9.1)(zod@4.4.3)
+      '@tanstack/ai': 0.49.1(@opentelemetry/api@1.9.1)(zod@4.4.3)
       '@tanstack/ai-utils': 0.4.0
       zod: 4.4.3
 
-  '@tanstack/ai-event-client@0.9.0':
+  '@tanstack/ai-client@0.28.0(@opentelemetry/api@1.9.1)(zod@4.4.3)':
+    dependencies:
+      '@tanstack/ai': 0.49.1(@opentelemetry/api@1.9.1)(zod@4.4.3)
+      '@tanstack/ai-event-client': 0.10.0
+      '@tanstack/ai-utils': 0.4.0
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+      - zod
+
+  '@tanstack/ai-event-client@0.10.0':
     dependencies:
       '@tanstack/devtools-event-client': 0.4.4
 
+  '@tanstack/ai-react@0.22.1(@opentelemetry/api@1.9.1)(@tanstack/ai@0.49.1(@opentelemetry/api@1.9.1)(zod@4.4.3))(@types/react@19.2.18)(react@19.2.8)(zod@4.4.3)':
+    dependencies:
+      '@tanstack/ai': 0.49.1(@opentelemetry/api@1.9.1)(zod@4.4.3)
+      '@tanstack/ai-client': 0.28.0(@opentelemetry/api@1.9.1)(zod@4.4.3)
+      '@types/react': 19.2.18
+      react: 19.2.8
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+      - zod
+
   '@tanstack/ai-utils@0.4.0': {}
 
-  '@tanstack/ai@0.46.0(@opentelemetry/api@1.9.1)(zod@4.4.3)':
+  '@tanstack/ai@0.49.1(@opentelemetry/api@1.9.1)(zod@4.4.3)':
     dependencies:
       '@ag-ui/core': 0.1.1-canary.beta.0(zod@4.4.3)
       '@standard-schema/spec': 1.1.0
-      '@tanstack/ai-event-client': 0.9.0
+      '@tanstack/ai-event-client': 0.10.0
       '@tanstack/ai-utils': 0.4.0
       partial-json: 0.1.7
     optionalDependencies:
@@ -14771,8 +14824,6 @@ snapshots:
       - supports-color
 
   agent-base@7.1.4: {}
-
-  agent-browser@0.35.0: {}
 
   aggregate-error@3.1.0:
     dependencies:

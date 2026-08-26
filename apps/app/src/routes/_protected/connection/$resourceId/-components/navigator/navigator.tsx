@@ -202,7 +202,7 @@ export const Navigator = () => {
           onResizingChange={setIsResizing}
           onDoubleClick={() => navigatorWidthValue.set(SIDEBAR_DEFAULT_WIDTH)}
         >
-          <div className="group-hover/resize-handle:bg-border group-data-resizing/resize-handle:bg-primary/40 h-full w-px rounded-xs transition-colors" />
+          <div className="group-hover/resize-handle:bg-border group-data-resizing/resize-handle:bg-primary/40 h-full w-[2px] rounded-xs transition-colors" />
         </ResizeHandle>
       )}
     </motion.div>

@@ -2,6 +2,7 @@ import {
   RiAddLine,
   RiArrowLeftSLine,
   RiArrowRightSLine,
+  RiChatAiLine,
   RiCloseLine,
   RiNodeTree,
   RiPlayLargeLine,
@@ -41,6 +42,7 @@ import {
 import { Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
+import { v7 } from 'uuid'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppContextMenu } from '~/components/app-context-menu'
@@ -365,79 +367,125 @@ const NewTabMenu = ({
     })
 
   return (
-    <div className="flex shrink-0 items-center border-b border-l px-1">
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="New tab"
-              className="text-muted-foreground"
-            />
-          }
-        >
-          <RiAddLine />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="max-h-[70vh] min-w-48 overflow-auto"
-        >
-          <DropdownMenuItem onClick={onNewQuery}>
-            <RiPlayLargeLine />
-            New query
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Schema</DropdownMenuLabel>
-            {schemaGroups(connection)
-              .flatMap((group) => group.items)
-              .map(({ Icon, label, open, tabId }) => (
-                <DropdownMenuItem
-                  key={tabId}
-                  onClick={() => {
-                    open(connectionResource.id, false)
-                    goToTab(tabId)
-                  }}
-                >
-                  <Icon />
-                  {label}
-                </DropdownMenuItem>
-              ))}
-          </DropdownMenuGroup>
-          {schemas.some((schema) => schema.tables.length > 0) && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Tables</DropdownMenuLabel>
-                {schemas.flatMap((schema) =>
-                  schema.tables.map((table) => (
-                    <DropdownMenuItem
-                      key={tableTabId(schema.name, table.name)}
-                      onClick={() => {
-                        openTableTab(
-                          connectionResource.id,
-                          schema.name,
-                          table.name
-                        )
-                        goToTab(tableTabId(schema.name, table.name))
-                      }}
-                    >
-                      <RiTableLine />
-                      <span data-mask className="truncate">
-                        {showSchema
-                          ? `${schema.name}.${table.name}`
-                          : table.name}
-                      </span>
-                    </DropdownMenuItem>
-                  ))
-                )}
-              </DropdownMenuGroup>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="New tab"
+            className="text-muted-foreground"
+          />
+        }
+      >
+        <RiAddLine />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="max-h-[70vh] min-w-48 overflow-auto"
+      >
+        <DropdownMenuItem onClick={onNewQuery}>
+          <RiPlayLargeLine />
+          New query
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Schema</DropdownMenuLabel>
+          {schemaGroups(connection)
+            .flatMap((group) => group.items)
+            .map(({ Icon, label, open, tabId }) => (
+              <DropdownMenuItem
+                key={tabId}
+                onClick={() => {
+                  open(connectionResource.id, false)
+                  goToTab(tabId)
+                }}
+              >
+                <Icon />
+                {label}
+              </DropdownMenuItem>
+            ))}
+        </DropdownMenuGroup>
+        {schemas.some((schema) => schema.tables.length > 0) && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Tables</DropdownMenuLabel>
+              {schemas.flatMap((schema) =>
+                schema.tables.map((table) => (
+                  <DropdownMenuItem
+                    key={tableTabId(schema.name, table.name)}
+                    onClick={() => {
+                      openTableTab(
+                        connectionResource.id,
+                        schema.name,
+                        table.name
+                      )
+                      goToTab(tableTabId(schema.name, table.name))
+                    }}
+                  >
+                    <RiTableLine />
+                    <span data-mask className="truncate">
+                      {showSchema ? `${schema.name}.${table.name}` : table.name}
+                    </span>
+                  </DropdownMenuItem>
+                ))
+              )}
+            </DropdownMenuGroup>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+const ChatToggle = ({ resourceId }: { resourceId: string }) => {
+  const store = getConnectionResourceStore(resourceId)
+  const chatOpened = useSubscription(store, {
+    selector: (state) => state.chatOpened,
+  })
+
+  const toggleChat = () =>
+    store.set(
+      (state) =>
+        ({
+          ...state,
+          // Minted here, not in an effect: the panel must have a chat
+          // on its first opening frame or it animates open empty.
+          chatId: state.chatId ?? v7(),
+          chatOpened: !state.chatOpened,
+        }) satisfies typeof state
+    )
+
+  useHotkey('Mod+L', (e) => {
+    e.preventDefault()
+    toggleChat()
+  })
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="AI chat"
+            aria-pressed={chatOpened}
+            className={cn(
+              'text-muted-foreground',
+              chatOpened && 'bg-foreground/10 text-primary'
+            )}
+            onClick={toggleChat}
+          />
+        }
+      >
+        <RiChatAiLine />
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        AI chat
+        <KbdCtrlLetter userAgent={navigator.userAgent} letter="L" />
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -919,12 +967,15 @@ export const TabBar = ({ className }: { className?: string }) => {
       {tabs.length === 0 && (
         <div aria-hidden className="min-w-0 flex-1 border-b" />
       )}
-      <NewTabMenu
-        connection={connection}
-        connectionResource={connectionResource}
-        tablesAndSchemas={tablesAndSchemas}
-        onNewQuery={openNewQuery}
-      />
+      <div className="flex shrink-0 items-center gap-0.5 border-b border-l px-1">
+        <NewTabMenu
+          connection={connection}
+          connectionResource={connectionResource}
+          tablesAndSchemas={tablesAndSchemas}
+          onNewQuery={openNewQuery}
+        />
+        <ChatToggle resourceId={connectionResource.id} />
+      </div>
     </div>
   )
 }

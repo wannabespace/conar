@@ -140,7 +140,7 @@ export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
   getKey: (item: T) => string
   events: SyncEventsFn<T>
   sync: (params: {
-    rows: T[]
+    rows: { id: string; updatedAt: Date }[]
     signal: AbortSignal
   }) => Promise<SyncMessage<T>[]>
   onInsert?: MutationFn<T>
@@ -183,7 +183,14 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         const result = await Result.tryPromise({
           catch: (error) => error,
           try: async () => {
-            const rows = await collection.toArrayWhenReady()
+            // Only the diff keys: the server declares `{ id, updatedAt }`, and
+            // whole rows carry the payload itself (message parts, connection
+            // strings) plus the collection's internal `$` fields.
+            const items = await collection.toArrayWhenReady()
+            const rows = items.map((item) => ({
+              id: config.getKey(item),
+              updatedAt: item.updatedAt,
+            }))
             writeItems(await config.sync({ rows, signal }))
           },
         })

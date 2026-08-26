@@ -46,17 +46,15 @@ const VirtualColumnBase = ({
     )
   }
 
-  return (
-    <column.cell
-      value={value}
-      id={column.id}
-      size={virtualColumn.size}
-      rowIndex={rowIndex}
-      columnIndex={virtualColumn.index}
-      position={getColumnPosition(virtualColumn.index, columnsLength)}
-      style={getBaseColumnStyle({ defaultSize: column.size, id: column.id })}
-    />
-  )
+  return column.cell({
+    columnIndex: virtualColumn.index,
+    id: column.id,
+    position: getColumnPosition(virtualColumn.index, columnsLength),
+    rowIndex,
+    size: virtualColumn.size,
+    style: getBaseColumnStyle({ defaultSize: column.size, id: column.id }),
+    value,
+  })
 }
 VirtualColumnBase.displayName = 'VirtualColumn'
 

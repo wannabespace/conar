@@ -13,6 +13,11 @@ export const list = orpc.use(authMiddleware).handler(({ context }) =>
     with: {
       messages: {
         orderBy: { createdAt: 'desc' },
+        with: {
+          parts: {
+            orderBy: { order: 'asc' },
+          },
+        },
       },
     },
   })

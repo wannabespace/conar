@@ -1,4 +1,4 @@
-import type { AppUIMessage } from '@tamery/ai/message'
+import type { AppMessagePart, AppUIMessage } from '@tamery/ai/v2/message'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import { createCollection } from '@tanstack/react-db'
 
@@ -13,9 +13,14 @@ export interface Chat extends BaseTable {
 
 export interface ChatMessage extends BaseTable {
   chatId: string
-  parts: AppUIMessage['parts']
   role: AppUIMessage['role']
   metadata: NonNullable<AppUIMessage['metadata']> | null
+}
+
+export interface ChatMessagePart extends BaseTable {
+  messageId: string
+  order: number
+  part: AppMessagePart
 }
 
 export const createChatsCollection = () =>
@@ -55,6 +60,28 @@ export const createChatsMessagesCollection = () =>
         id: 'chatsMessages',
         sync: ({ rows, signal }) =>
           orpc.chatsMessages.sync.call(rows, { signal }),
+      }),
+      persistence,
+      schemaVersion: 2,
+    })
+  )
+
+export const createChatsMessagesPartsCollection = () =>
+  createCollection(
+    persistedCollectionOptions({
+      ...syncCollectionOptions<ChatMessagePart>({
+        events: async ({ signal, write }) => {
+          for await (const message of await orpc.chatsMessagesParts.events.call(
+            {},
+            { signal }
+          )) {
+            write(message)
+          }
+        },
+        getKey: (item) => item.id,
+        id: 'chatsMessagesParts',
+        sync: ({ rows, signal }) =>
+          orpc.chatsMessagesParts.sync.call(rows, { signal }),
       }),
       persistence,
       schemaVersion: 1,

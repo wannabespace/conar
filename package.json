@@ -37,15 +37,13 @@
     "docker:start": "docker compose -f docker-compose.dev.yml up -d",
     "docker:stop": "docker compose -f docker-compose.dev.yml down",
     "deps:inspect": "node-modules-inspector",
-    "deps:build": "node-modules-inspector build",
-    "browser:install": "agent-browser install"
+    "deps:build": "node-modules-inspector build"
   },
   "devDependencies": {
     "@clack/prompts": "catalog:",
     "@manypkg/get-packages": "catalog:",
     "@tamery/configs": "workspace:*",
     "@types/bun": "catalog:",
-    "agent-browser": "catalog:",
     "cross-env": "catalog:",
     "husky": "catalog:",
     "node-modules-inspector": "catalog:",

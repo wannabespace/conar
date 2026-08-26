@@ -9,6 +9,7 @@ import * as ai from './ai'
 import { banner } from './banner'
 import * as chats from './chats'
 import * as chatsMessages from './chats-messages'
+import * as chatsMessagesParts from './chats-messages-parts'
 import * as connections from './connections'
 import * as connectionsResources from './connections-resources'
 import { contact } from './contact'
@@ -26,6 +27,7 @@ export const router = {
   banner,
   chats,
   chatsMessages,
+  chatsMessagesParts,
   connections,
   connectionsResources,
   contact,

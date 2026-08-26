@@ -1,3 +1,4 @@
+import { ORPCError } from '@orpc/server'
 import { db } from '@tamery/db'
 import { chats, chatsInsertSchema } from '@tamery/db/schema'
 
@@ -7,23 +8,28 @@ import { publisher } from './events'
 
 export const create = orpc
   .use(subscriptionMiddleware)
-  .input(chatsInsertSchema.omit('userId', 'activeStreamId', 'title'))
+  .input(chatsInsertSchema.omit('userId', 'title'))
   .handler(async ({ context, input }) => {
     const [inserted] = await db
       .insert(chats)
       .values({
         ...input,
-        activeStreamId: null,
         userId: context.user.id,
       })
-      .onConflictDoUpdate({
-        set: input,
-        target: chats.id,
-      })
+      .onConflictDoNothing()
       .returning()
 
     if (!inserted) {
-      throw new Error('Failed to create chat')
+      const existing = input.id
+        ? await db.query.chats.findFirst({
+            columns: { id: true },
+            where: { id: { eq: input.id }, userId: { eq: context.user.id } },
+          })
+        : undefined
+      if (!existing) {
+        throw new ORPCError('NOT_FOUND', { message: 'Chat not found' })
+      }
+      return
     }
 
     publisher.publish(context.user.id, {

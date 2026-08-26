@@ -24,10 +24,10 @@ import { SchemaSelect } from '../-components/schema-select'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
-const routeApi = getRouteApi('/_protected/connection/$resourceId')
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export const Enums = () => {
-  const { connection, connectionResource } = routeApi.useRouteContext()
+  const { connection, connectionResource } = useRouteContext()
   const { data: enums, isPending } = useQuery(
     resourceEnumsQueryOptions({ connectionResource })
   )

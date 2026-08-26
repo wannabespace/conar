@@ -14,7 +14,7 @@ import { toast } from 'sonner'
 
 import { authClient } from '~/lib/auth'
 
-const routeApi = getRouteApi('/_auth/reset-password')
+const { useSearch } = getRouteApi('/_auth/reset-password')
 
 const passwordSchema = type({
   password: type('string >= 8').configure({
@@ -27,7 +27,7 @@ const passwordSchema = type({
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate()
-  const { token } = routeApi.useSearch()
+  const { token } = useSearch()
 
   const form = useAppForm({
     defaultValues: {

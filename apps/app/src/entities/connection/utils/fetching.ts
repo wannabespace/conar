@@ -218,10 +218,17 @@ export const useFetchingConfig = (
     selector: (s) => s.proxy,
   })
 
-  return fetchingConfig(connection, {
-    isLocalProxyAvailable: localProxyAvailable,
-    isLocalhost: connectionString?.isLocalhost,
-    isPasswordPopulated: connectionString?.isPasswordPopulated,
-    proxy,
-  })
+  return {
+    ...fetchingConfig(connection, {
+      isLocalProxyAvailable: localProxyAvailable,
+      isLocalhost: connectionString?.isLocalhost,
+      isPasswordPopulated: connectionString?.isPasswordPopulated,
+      proxy,
+    }),
+    // The record is local-only and rebuilt by a server round-trip, so a missing
+    // row means "not resolved yet", never "no stored password" — a connection
+    // that truly needs one has a row saying `isPasswordPopulated: false`.
+    // Without this, `waiting-for-password` is a verdict drawn from ignorance.
+    isPasswordStateKnown: !!connectionString,
+  }
 }

@@ -208,6 +208,10 @@
       @apply select-text;
     }
   }
+
+  .dark [data-slot='code-block'] span[style*='--shiki-dark'] {
+    color: var(--shiki-dark) !important;
+  }
 }
 
 ::selection {
@@ -215,7 +219,12 @@
 }
 
 .bg-primary::selection,
-.bg-primary *::selection {
+.bg-primary *::selection,
+[data-slot='bubble'][data-variant='default']
+  [data-slot='bubble-content']::selection,
+[data-slot='bubble'][data-variant='default']
+  [data-slot='bubble-content']
+  *::selection {
   @apply text-primary bg-white/90;
 }
 

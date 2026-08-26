@@ -4,7 +4,6 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@tamery/ui/components/resizable'
-import { eq, useLiveQuery } from '@tanstack/react-db'
 import {
   createFileRoute,
   getRouteApi,
@@ -15,7 +14,7 @@ import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 
-import { getCollections, useCollections } from '~/entities/collections'
+import { getCollections } from '~/entities/collections'
 import { QueryLogger } from '~/entities/connection/components'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import {
@@ -25,28 +24,19 @@ import {
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { getActiveWorkspace } from '~/entities/workspace'
 
+import { ChatPanel } from './$resourceId/-components/chat/chat-panel'
 import { Navigator } from './$resourceId/-components/navigator/navigator'
 import { TabBar } from './$resourceId/-components/tab-bar'
 import { PasswordForm } from './-components/password-form'
 
-const resourceRouteApi = getRouteApi('/_protected/connection/$resourceId')
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const ResourcePage = () => {
-  const { connection, connectionResource } = resourceRouteApi.useRouteContext()
-  const { connectionStringsCollection } = useCollections()
+  const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const loggerOpened = useSubscription(store, {
     selector: (state) => state.loggerOpened,
   })
-  const { data: connectionString } = useLiveQuery({
-    query: (q) =>
-      q
-        .from({ cs: connectionStringsCollection })
-        .where(({ cs }) => eq(cs.connectionId, connection.id))
-        .findOne(),
-  })
-  const isPasswordPopulated = connectionString?.isPasswordPopulated
-
   useEffect(() => {
     const last = lastOpenedResourcesStorageValue.get()
     if (!last.includes(connectionResource.id)) {
@@ -64,9 +54,9 @@ const ResourcePage = () => {
     storage: localStorage,
   })
 
-  const { type } = useFetchingConfig(connection)
+  const { type, isPasswordStateKnown } = useFetchingConfig(connection)
 
-  if (type === 'waiting-for-password' && !isPasswordPopulated) {
+  if (isPasswordStateKnown && type === 'waiting-for-password') {
     return (
       <PasswordForm
         connection={connection}
@@ -77,36 +67,39 @@ const ResourcePage = () => {
 
   return (
     <div className="flex">
-      <div className="m-2 flex h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(4)))] flex-col">
-        <ResizablePanelGroup
-          orientation="vertical"
-          className="min-h-0 flex-1"
-          defaultLayout={defaultLayout}
-          onLayoutChanged={onLayoutChanged}
-        >
-          <ResizablePanel defaultSize="70%" minSize="50%">
-            <div className="flex h-full min-h-0 w-full">
-              <Navigator />
-              <div className="bg-background flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg">
-                <TabBar />
-                <Outlet />
+      <div className="m-2 flex h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(4)))]">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <ResizablePanelGroup
+            orientation="vertical"
+            className="min-h-0 flex-1"
+            defaultLayout={defaultLayout}
+            onLayoutChanged={onLayoutChanged}
+          >
+            <ResizablePanel defaultSize="70%" minSize="50%">
+              <div className="flex h-full min-h-0 w-full">
+                <Navigator />
+                <div className="bg-background flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg">
+                  <TabBar />
+                  <Outlet />
+                </div>
               </div>
-            </div>
-          </ResizablePanel>
-          {loggerOpened && (
-            <>
-              <ResizableHandle className="h-1" />
-              <ResizablePanel
-                defaultSize="30%"
-                minSize="10%"
-                maxSize="50%"
-                className="bg-background overflow-auto rounded-lg"
-              >
-                <QueryLogger connectionResource={connectionResource} />
-              </ResizablePanel>
-            </>
-          )}
-        </ResizablePanelGroup>
+            </ResizablePanel>
+            {loggerOpened && (
+              <>
+                <ResizableHandle className="h-1" />
+                <ResizablePanel
+                  defaultSize="30%"
+                  minSize="10%"
+                  maxSize="50%"
+                  className="bg-background overflow-auto rounded-lg"
+                >
+                  <QueryLogger connectionResource={connectionResource} />
+                </ResizablePanel>
+              </>
+            )}
+          </ResizablePanelGroup>
+        </div>
+        <ChatPanel />
       </div>
     </div>
   )

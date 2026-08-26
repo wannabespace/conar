@@ -30,7 +30,7 @@ import { MOTION_BLOCK_PROPS } from '~/routes/_protected/connection/$resourceId/-
 
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
-const routeApi = getRouteApi('/_protected/connection/$resourceId')
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 type PolicyType = (typeof policyType.infer)['type']
 
@@ -51,7 +51,7 @@ const getIcon = (type: PolicyType) => {
 }
 
 export const Policies = () => {
-  const { connectionResource } = routeApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const { data: policies, isPending } = useQuery(
     resourcePoliciesQuery({ connectionResource })
   )

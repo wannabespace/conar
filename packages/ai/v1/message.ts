@@ -7,9 +7,9 @@ import type {
 } from 'ai'
 import { isToolUIPart as isToolUIPartAi } from 'ai'
 
-import type { tools } from './tools'
+import type { createTools } from './tools'
 
-export type UITools = InferUITools<typeof tools>
+export type UITools = InferUITools<ReturnType<typeof createTools>>
 
 export type AppUIMessage = UIMessage<
   {
@@ -19,9 +19,6 @@ export type AppUIMessage = UIMessage<
   UIDataTypes,
   UITools
 >
-
-export const convertToAppUIMessage = (message: UIMessage): AppUIMessage =>
-  message as AppUIMessage
 
 export type ToolUIPart = ToolUIPartAi<UITools> | DynamicToolUIPart
 

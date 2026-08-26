@@ -1,13 +1,14 @@
 import { webSearch } from '@exalabs/ai-sdk'
 import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
-import type { InferUITools, ToolSet } from 'ai'
+import type { ToolSet } from 'ai'
 import { tool } from 'ai'
 import * as z from 'zod/mini'
 
-import { env } from '~/env'
-
-export const tools: ToolSet = {
+export const createTools = (keys: {
+  context7ApiKey?: string
+  exaApiKey?: string
+}): ToolSet => ({
   columns: tool({
     description:
       'Use this tool if you need to get the list of columns in a table.',
@@ -78,11 +79,9 @@ export const tools: ToolSet = {
     }),
     outputSchema: z.unknown(),
   }),
-  ...(env.EXA_API_KEY && { webSearch: webSearch({ apiKey: env.EXA_API_KEY }) }),
-  ...(env.CONTEXT7_API_KEY && {
-    queryDocs: queryDocs({ apiKey: env.CONTEXT7_API_KEY }),
-    resolveLibraryId: resolveLibraryId({ apiKey: env.CONTEXT7_API_KEY }),
+  ...(keys.exaApiKey && { webSearch: webSearch({ apiKey: keys.exaApiKey }) }),
+  ...(keys.context7ApiKey && {
+    queryDocs: queryDocs({ apiKey: keys.context7ApiKey }),
+    resolveLibraryId: resolveLibraryId({ apiKey: keys.context7ApiKey }),
   }),
-}
-
-export type AITools = InferUITools<typeof tools>
+})

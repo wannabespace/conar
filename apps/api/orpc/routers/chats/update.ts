@@ -11,13 +11,7 @@ export const update = orpc
   .use(subscriptionMiddleware)
   .input(
     type.and(
-      chatsUpdateSchema.omit(
-        'createdAt',
-        'updatedAt',
-        'id',
-        'userId',
-        'activeStreamId'
-      ),
+      chatsUpdateSchema.omit('createdAt', 'updatedAt', 'id', 'userId'),
       chatsUpdateSchema.pick('id').required()
     )
   )
