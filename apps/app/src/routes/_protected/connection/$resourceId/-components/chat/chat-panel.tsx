@@ -4,7 +4,7 @@ import {
   RiCloseLine,
   RiHistoryLine,
 } from '@remixicon/react'
-import { messagePartsFromRows } from '@tamery/ai/v2/message'
+import { messagesFromRows } from '@tamery/ai/v2/message'
 import { Button } from '@tamery/ui/components/button'
 import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
 import {
@@ -21,13 +21,13 @@ import {
 import type { UIMessage } from '@tanstack/ai-react'
 import { stream, useChat } from '@tanstack/ai-react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
+import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { v7 } from 'uuid'
 
-import type { ChatMessage, ChatMessagePart } from '~/entities/chat/sync'
 import { useCollections } from '~/entities/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { orpc } from '~/lib/orpc'
@@ -42,46 +42,6 @@ import {
 } from './store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
-
-interface TranscriptRow {
-  messageId: string
-  metadata: ChatMessage['metadata']
-  order: number
-  part: ChatMessagePart['part']
-  role: ChatMessage['role']
-}
-
-const groupTranscript = (rows: TranscriptRow[]): UIMessage[] =>
-  Object.values(Object.groupBy(rows, (row) => row.messageId)).flatMap(
-    (group) => {
-      const parts = group ?? []
-      const [first] = parts
-      if (!first) {
-        return []
-      }
-      return {
-        id: first.messageId,
-        metadata: first.metadata ?? undefined,
-        parts: messagePartsFromRows(parts),
-        role: first.role,
-      }
-    }
-  )
-
-const createChatConnection = (data: {
-  chatId: string
-  connectionResourceId: string
-}) =>
-  stream(async function* runTurn(messages, _forwarded, signal) {
-    yield* await orpc.chats.v2.stream.call(
-      {
-        chatId: data.chatId,
-        connectionResourceId: data.connectionResourceId,
-        messages,
-      },
-      { signal }
-    )
-  })
 
 const ChatHeader = ({
   activeChatId,
@@ -154,36 +114,72 @@ const ChatHeader = ({
   </div>
 )
 
+const createChatConnection = (data: {
+  chatId: string
+  connectionResourceId: string
+}) =>
+  stream(
+    async function* runTurn(messages, _forwarded, signal) {
+      yield* await orpc.chats.v2.stream.call(
+        {
+          chatId: data.chatId,
+          connectionResourceId: data.connectionResourceId,
+          messages,
+        },
+        { signal }
+      )
+    },
+    {
+      async *joinRun(runId: string, signal?: AbortSignal) {
+        yield* await orpc.chats.v2.join.call({ streamId: runId }, { signal })
+      },
+    }
+  )
+
 const ChatSession = ({
   chatId,
   collectionMessages,
   connectionResourceId,
-  hasTitle,
+  resumeRunId,
 }: {
   chatId: string
   collectionMessages: UIMessage[]
   connectionResourceId: string
-  hasTitle: boolean
+  resumeRunId: string | null
 }) => {
+  const { chatsCollection } = useCollections()
   // oxlint-disable-next-line react/hook-use-state -- built once per mount, never replaced
   const [connection] = useState(() =>
     createChatConnection({ chatId, connectionResourceId })
   )
-  const { error, isLoading, messages, reload, sendMessage, stop } = useChat({
-    connection,
-    initialMessages: collectionMessages,
-    onFinish: async () => {
-      if (hasTitle) {
-        return
-      }
-      try {
-        await orpc.ai.generateTitle.call({ chatId })
-      } catch {
-        // Title generation is best-effort; the chat stays usable untitled.
-      }
-    },
-    threadId: chatId,
-  })
+  const { error, isLoading, messages, reload, sendMessage, setMessages, stop } =
+    useChat({
+      connection,
+      initialMessages: collectionMessages,
+      ...(resumeRunId && {
+        initialResumeSnapshot: {
+          resumeState: { runId: resumeRunId, threadId: chatId },
+        },
+      }),
+      onFinish: async () => {
+        if (chatsCollection.get(chatId)?.title) {
+          return
+        }
+
+        try {
+          await orpc.ai.generateTitle.call({ chatId })
+        } catch {
+          // nothing
+        }
+      },
+      threadId: chatId,
+    })
+
+  useEffect(() => {
+    if (!isLoading && collectionMessages.length > messages.length) {
+      setMessages(collectionMessages)
+    }
+  }, [collectionMessages, isLoading, messages.length, setMessages])
 
   return (
     <>
@@ -235,6 +231,11 @@ const Chat = ({
     chatsMessagesCollection,
     chatsMessagesPartsCollection,
   } = useCollections()
+  const { data: resume } = useQuery(
+    orpc.chats.v2.resume.queryOptions({
+      input: { chatId },
+    })
+  )
   const { data: chat } = useLiveQuery({
     query: (q) =>
       q
@@ -270,6 +271,8 @@ const Chat = ({
         })),
   })
 
+  const resumeRunId = resume?.streamId ?? null
+
   return (
     <>
       <ChatHeader
@@ -293,10 +296,11 @@ const Chat = ({
         }
       />
       <ChatSession
+        key={resumeRunId ?? chatId}
         chatId={chatId}
-        collectionMessages={groupTranscript(transcriptRows)}
+        collectionMessages={messagesFromRows(transcriptRows)}
         connectionResourceId={connectionResourceId}
-        hasTitle={!!chat?.title}
+        resumeRunId={resumeRunId}
       />
     </>
   )

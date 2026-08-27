@@ -85,6 +85,31 @@ const driveStream = async (data: {
   }
 }
 
+export const beginStream = (data: {
+  chatId: string
+  messages: UIMessage[]
+  userId: string
+}) => {
+  const streamId = uuidv7()
+  const controller = new AbortController()
+  registerStream({
+    chatId: data.chatId,
+    controller,
+    streamId,
+    userId: data.userId,
+  })
+
+  void driveStream({
+    chatId: data.chatId,
+    controller,
+    messages: data.messages,
+    streamId,
+    userId: data.userId,
+  })
+
+  return streamId
+}
+
 // Chunks come out tagged with their log offset so a reconnect's `lastEventId`
 // names both the stream and the position to resume from.
 export const joinStream = async function* joinStream(data: {
@@ -140,20 +165,9 @@ export const startStream = async function* startStream(data: {
     })
   }
 
-  const streamId = uuidv7()
-  const controller = new AbortController()
-  registerStream({
+  const streamId = beginStream({
     chatId: data.chatId,
-    controller,
-    streamId,
-    userId: data.userId,
-  })
-
-  void driveStream({
-    chatId: data.chatId,
-    controller,
     messages,
-    streamId,
     userId: data.userId,
   })
 
