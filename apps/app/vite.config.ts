@@ -32,6 +32,15 @@ export default defineConfig(({ mode }) => ({
     tailwindcss(),
     tanstackRouter({
       autoCodeSplitting: true,
+      codeSplittingOptions: {
+        defaultBehavior: [
+          ['loader'],
+          ['component'],
+          ['pendingComponent'],
+          ['errorComponent'],
+          ['notFoundComponent'],
+        ],
+      },
       generatedRouteTree: 'src/routeTree.gen.ts',
       routesDirectory: 'src/routes',
     }),
