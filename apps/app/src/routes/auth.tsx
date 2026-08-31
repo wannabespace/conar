@@ -36,15 +36,7 @@ const signInUrl = (type: 'web' | 'desktop') => {
 
 const AuthSidePanel = () => (
   <div className="bg-body text-foreground relative hidden flex-col overflow-hidden border-r p-10 lg:flex">
-    <motion.div
-      aria-hidden
-      className="pointer-events-none absolute inset-0"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1.2 }}
-    >
-      <DitherBackground />
-    </motion.div>
+    <DitherBackground />
     <div className="relative z-20 flex items-center gap-2 text-lg font-medium">
       <AppLogo className="size-6" />
       Tamery

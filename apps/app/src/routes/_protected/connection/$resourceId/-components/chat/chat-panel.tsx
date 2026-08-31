@@ -61,7 +61,7 @@ const ChatHeader = ({
   onSelectChat: (chatId: string) => void
   title: string | null
 }) => (
-  <div className="flex h-10 shrink-0 items-center gap-0.5 border-b pr-1.5 pl-3">
+  <div className="flex h-8 shrink-0 items-center gap-0.5 border-b pr-1 pl-3">
     <span data-mask className="min-w-0 flex-1 truncate text-sm font-medium">
       {title || 'New Chat'}
     </span>
@@ -69,10 +69,10 @@ const ChatHeader = ({
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <Button size="icon-sm" variant="ghost" aria-label="Chat history" />
+            <Button size="icon-xs" variant="ghost" aria-label="Chat history" />
           }
         >
-          <RiHistoryLine className="size-4" />
+          <RiHistoryLine className="size-3.5" />
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
@@ -102,14 +102,14 @@ const ChatHeader = ({
         <TooltipTrigger
           render={
             <Button
-              size="icon-sm"
+              size="icon-xs"
               variant="ghost"
               aria-label={label}
               onClick={onClick}
             />
           }
         >
-          <Icon className="size-4" />
+          <Icon className="size-3.5" />
         </TooltipTrigger>
         <TooltipContent side="bottom">{label}</TooltipContent>
       </Tooltip>
@@ -287,7 +287,7 @@ export const ChatPanel = () => {
       }
       className="relative h-full shrink-0 overflow-hidden"
     >
-      <div className="flex h-full flex-col pl-2.5" style={{ width }}>
+      <div className="flex h-full flex-col pl-2" style={{ width }}>
         <div className="bg-background flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg">
           <Chat
             key={activeChatId}
@@ -308,7 +308,7 @@ export const ChatPanel = () => {
         <ResizeHandle
           aria-label="Resize chat"
           side="left"
-          className="absolute inset-y-0 left-0 z-10 flex w-2.5 justify-center"
+          className="absolute inset-y-0 left-0 z-10 flex w-2 justify-center"
           getValue={chatWidthValue.get}
           min={CHAT_MIN_WIDTH}
           max={CHAT_MAX_WIDTH}

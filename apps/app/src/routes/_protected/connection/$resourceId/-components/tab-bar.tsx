@@ -113,7 +113,7 @@ const TabRefreshButton = ({
       render={
         <RefreshButton
           variant="ghost"
-          size="icon-sm"
+          size="icon-xs"
           aria-label="Refresh"
           className="text-muted-foreground"
           iconClassName="size-3.5"
@@ -286,7 +286,7 @@ const TabRefresh = ({ tab }: { tab: ConnectionTab | null }) => {
   return (
     <RefreshButton
       variant="ghost"
-      size="icon-sm"
+      size="icon-xs"
       aria-label="Refresh"
       className="text-muted-foreground"
       iconClassName="size-3.5"
@@ -312,7 +312,7 @@ const HistoryNav = () => {
           render={
             <Button
               variant="ghost"
-              size="icon-sm"
+              size="icon-xs"
               aria-label="Go back"
               className="text-muted-foreground"
               disabled={!canGoBack}
@@ -320,7 +320,7 @@ const HistoryNav = () => {
             />
           }
         >
-          <RiArrowLeftSLine />
+          <RiArrowLeftSLine className="size-3.5" />
         </TooltipTrigger>
         <TooltipContent side="bottom">Back</TooltipContent>
       </Tooltip>
@@ -329,14 +329,14 @@ const HistoryNav = () => {
           render={
             <Button
               variant="ghost"
-              size="icon-sm"
+              size="icon-xs"
               aria-label="Go forward"
               className="text-muted-foreground"
               onClick={() => router.history.forward()}
             />
           }
         >
-          <RiArrowRightSLine />
+          <RiArrowRightSLine className="size-3.5" />
         </TooltipTrigger>
         <TooltipContent side="bottom">Forward</TooltipContent>
       </Tooltip>
@@ -371,13 +371,13 @@ const NewTabMenu = ({
         render={
           <Button
             variant="ghost"
-            size="icon-sm"
+            size="icon-xs"
             aria-label="New tab"
             className="text-muted-foreground"
           />
         }
       >
-        <RiAddLine />
+        <RiAddLine className="size-3.5" />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
@@ -461,7 +461,7 @@ const ChatToggle = ({ resourceId }: { resourceId: string }) => {
         render={
           <Button
             variant="ghost"
-            size="icon-sm"
+            size="icon-xs"
             aria-label="AI chat"
             aria-pressed={chatOpened}
             className={cn(
@@ -472,7 +472,7 @@ const ChatToggle = ({ resourceId }: { resourceId: string }) => {
           />
         }
       >
-        <RiChatAiLine />
+        <RiChatAiLine className="size-3.5" />
       </TooltipTrigger>
       <TooltipContent side="bottom">
         AI chat
@@ -895,20 +895,20 @@ export const TabBar = ({ className }: { className?: string }) => {
     <div
       className={cn('bg-body/50 flex h-8 shrink-0 items-stretch', className)}
     >
-      <div className="flex shrink-0 items-center gap-0.5 border-r border-b pr-1 pl-0.5">
+      <div className="flex shrink-0 items-center gap-0.5 border-r border-b px-1">
         <Tooltip>
           <TooltipTrigger
             render={
               <Button
                 variant="ghost"
-                size="icon-sm"
+                size="icon-xs"
                 aria-label="Toggle sidebar"
                 className="text-muted-foreground"
                 onClick={() => navigatorOpenValue.set((open) => !open)}
               />
             }
           >
-            <RiSideBarLine />
+            <RiSideBarLine className="size-3.5" />
           </TooltipTrigger>
           <TooltipContent side="bottom">
             Toggle sidebar

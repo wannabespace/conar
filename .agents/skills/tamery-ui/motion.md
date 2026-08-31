@@ -9,3 +9,4 @@
 - **Reorderable strips**: `Reorder.Group`, `layout="position"`, animate layout only while dragging (snap otherwise — no drift when labels change width). Value identity rules in gotchas.md.
 - Scroll-edge cues: never JS scroll listeners — `scroll-fade` (CSS mask) for plain scrollers, `table-fade` overlay for the data table (mask would clip the scrollbar).
 - **Popup enter/exit** (all kit menu/popover/select content): tw-animate-css `animate-in/out` + fade/zoom/slide, `data-open:duration-150 data-closed:duration-100` on the house curve — the shipped defaults read as no animation. Exits stay shorter than entries.
+- **`DitherBackground` mounts its shader late.** The paper-design `Dithering` shader compiles and starts a continuous render loop on mount, which competes with the sign-in page's entrance animations; the component holds it back ~700ms and fades it in over 1.2s itself. Call sites render `<DitherBackground />` bare — no wrapper fade.

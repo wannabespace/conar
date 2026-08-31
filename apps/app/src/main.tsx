@@ -1,4 +1,4 @@
-import './monaco-worker'
+import './warmup'
 import '@tamery/shared/arktype-config'
 import '@tamery/ui/globals.css'
 import { themeStore } from '@tamery/ui/theme-store'

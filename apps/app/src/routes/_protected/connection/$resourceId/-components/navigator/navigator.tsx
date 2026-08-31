@@ -58,7 +58,7 @@ const TablesPanel = () => {
 
   return (
     <>
-      <div className="flex shrink-0 items-center gap-1 px-2 pb-1.5">
+      <div className="flex shrink-0 items-center gap-1 pb-1.5 pl-2">
         <InputGroup className="bg-input/60 h-7 flex-1 rounded-md">
           <InputGroupAddon>
             <RiSearchLine className="text-muted-foreground/70 size-3.5" />
@@ -82,9 +82,9 @@ const TablesPanel = () => {
           <TooltipTrigger
             render={
               <RefreshButton
-                variant="ghost"
+                variant="outline"
                 size="icon-sm"
-                className="text-muted-foreground"
+                className="text-muted-foreground rounded-md"
                 onClick={() => refetchTablesAndSchemas()}
                 refreshing={isRefreshingTablesAndSchemas}
               />
@@ -122,7 +122,7 @@ const NavigatorFooter = () => {
     })
 
   return (
-    <div className="flex shrink-0 flex-col gap-0.5 px-2 pt-1.5 pb-0.5">
+    <div className="flex shrink-0 flex-col gap-0.5 pt-1.5 pb-0.5 pl-2">
       <Button
         variant="ghost"
         size="sm"
@@ -169,10 +169,10 @@ export const Navigator = () => {
       className="relative h-full shrink-0 overflow-hidden"
     >
       <div
-        className="text-foreground flex h-full flex-col pr-2.5"
+        className="text-foreground flex h-full flex-col pr-2"
         style={{ width }}
       >
-        <div className="shrink-0 px-2 pt-0.5 pb-1.5">
+        <div className="shrink-0 pt-0.5 pb-1.5 pl-2">
           <NavigatorSwitcher />
         </div>
         <div className="relative flex min-h-0 flex-1 flex-col">
@@ -194,7 +194,7 @@ export const Navigator = () => {
       {isOpen && (
         <ResizeHandle
           aria-label="Resize sidebar"
-          className="absolute inset-y-0 right-0 z-10 px-2"
+          className="absolute inset-y-0 right-0 z-10 flex w-2 justify-center"
           getValue={navigatorWidthValue.get}
           min={SIDEBAR_MIN_WIDTH}
           max={SIDEBAR_MAX_WIDTH}

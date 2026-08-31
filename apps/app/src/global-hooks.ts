@@ -26,7 +26,7 @@ export const enterAppAnimation = () => {
     await sleep(50)
     root.classList.remove('scale-[1.05]', 'opacity-0')
     document.body.classList.remove('overflow-hidden')
-    await sleep(150)
+    await sleep(75)
     await globalHooks.callHook('animationFinished')
   })()
 

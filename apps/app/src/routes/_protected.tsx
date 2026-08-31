@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 
 import { GlobalBanner } from '~/components/global-banner'
 import { SubscriptionModal } from '~/components/subscription-modal'
-import { cleanCollections, getCollections } from '~/entities/collections'
+import { cleanCollections } from '~/entities/collections'
 import { EventsProvider } from '~/events'
 import { enterAppAnimation } from '~/global-hooks'
 import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
@@ -67,6 +67,7 @@ const ProtectedLayout = () => {
 export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
   beforeLoad: async () => {
+    const { getCollections } = await import('~/entities/collections')
     const c = getCollections()
 
     await Promise.all([

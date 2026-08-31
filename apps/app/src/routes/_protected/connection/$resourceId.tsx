@@ -14,15 +14,12 @@ import { useEffect } from 'react'
 import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 
-import { getCollections } from '~/entities/collections'
 import { QueryLogger } from '~/entities/connection/components'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import {
-  lastOpenedResourcesStorageValue,
-  prefetchConnectionResourceCore,
-} from '~/entities/connection/utils'
+import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
-import { getActiveWorkspace } from '~/entities/workspace'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
+import { getActiveWorkspace } from '~/entities/workspace/utils'
 
 import { ChatPanel } from './$resourceId/-components/chat/chat-panel'
 import { Navigator } from './$resourceId/-components/navigator/navigator'
@@ -104,12 +101,12 @@ const ResourcePage = () => {
 
 export const Route = createFileRoute('/_protected/connection/$resourceId')({
   component: ResourcePage,
-  beforeLoad: async ({ params }) => {
+  beforeLoad: async ({ context, params }) => {
     const {
       connectionsCollection,
       connectionsResourcesCollection,
       workspacesCollection,
-    } = getCollections()
+    } = context.collections
 
     let connectionResource = connectionsResourcesCollection.get(
       params.resourceId

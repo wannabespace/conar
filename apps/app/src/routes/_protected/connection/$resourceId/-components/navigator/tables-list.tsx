@@ -493,7 +493,7 @@ export const TablesList = ({
 
   if (isPending) {
     return (
-      <SidebarContent className={cn('overflow-hidden px-2', className)}>
+      <SidebarContent className={cn('overflow-hidden pl-2', className)}>
         <SidebarMenu>
           {Array.from({ length: 12 }).map((_, index) => (
             // oxlint-disable-next-line react/no-array-index-key
@@ -523,7 +523,7 @@ export const TablesList = ({
   return (
     <SidebarContent
       ref={parentRef}
-      className={cn('scroll-fade block overflow-y-auto px-2 pb-2', className)}
+      className={cn('scroll-fade block overflow-y-auto pb-2 pl-2', className)}
     >
       <DropTableDialog ref={dropTableDialogRef} />
       <RenameTableDialog ref={renameTableDialogRef} />

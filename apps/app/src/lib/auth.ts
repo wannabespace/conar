@@ -1,7 +1,7 @@
 import { tryCatchAsync } from '@tamery/shared/utils/helpers'
 import { type } from 'arktype'
 import { organizationClient } from 'better-auth/client/plugins'
-import { bearer } from 'better-auth/plugins'
+import { bearer } from 'better-auth/plugins/bearer'
 import { createAuthClient } from 'better-auth/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
@@ -11,7 +11,6 @@ import { router } from '~/main'
 import { apiUrl } from '../utils/utils'
 import { encryptionKey } from './encryption-key'
 import { lastLocationStorageValue } from './last-location'
-import { clearDb } from './sync'
 
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
 
@@ -72,6 +71,8 @@ export const fullSignOut = async () => {
   if (!router.state.location.pathname.startsWith('/auth')) {
     await router.navigate({ to: '/auth' })
   }
+
+  const { clearDb } = await import('./sync')
 
   await clearDb()
   await encryptionKey.reset()

@@ -1,4 +1,3 @@
-import { PostHogProvider } from 'posthog-js/react'
 import { useEffect } from 'react'
 
 import { authClient } from '~/lib/auth'
@@ -37,5 +36,5 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [userId])
 
-  return <PostHogProvider client={posthog}>{children}</PostHogProvider>
+  return children
 }
