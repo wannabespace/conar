@@ -102,7 +102,7 @@ const ConnectionIconWithVersion = ({
         render={
           <ConnectionIcon
             type={connection.type}
-            className="pointer-events-auto size-6 shrink-0"
+            className="pointer-events-auto size-5 shrink-0"
           />
         }
       />
@@ -262,11 +262,9 @@ const ConnectionCardStatus = ({
             <RiAlertLine className="text-warning pointer-events-auto size-3 shrink-0" />
           }
         />
-        <TooltipContent className="pointer-events-auto">
-          Failed to get resources:{' '}
-          <p data-mask className="text-warning text-xs">
-            {error.message}
-          </p>
+        <TooltipContent className="pointer-events-auto block max-w-3xs">
+          <span className="opacity-50">Failed to get resources: </span>
+          <span data-mask>{error.message}</span>
         </TooltipContent>
       </Tooltip>
     )
@@ -453,7 +451,7 @@ const ConnectionCard = ({
         items={items}
         contentProps={{ className: 'min-w-44' }}
         className={cn(
-          'group relative flex h-11 items-center gap-3 px-3 transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]',
+          'group relative flex h-9 items-center gap-3 pr-2 pl-3 transition-colors duration-150 ease-[cubic-bezier(0.23,1,0.32,1)]',
           selectedResource &&
             canOpenResource &&
             'hover:bg-popover has-[[data-resource-link]:hover]:bg-popover'
@@ -468,7 +466,7 @@ const ConnectionCard = ({
           />
         )}
         {connection.color && (
-          <span className="pointer-events-none absolute top-1/2 left-0 h-5 w-0.5 -translate-y-1/2 rounded-full bg-(--color)" />
+          <span className="pointer-events-none absolute top-1/2 left-0 h-4 w-0.5 -translate-y-1/2 rounded-full bg-(--color)" />
         )}
         <div
           className={cn(
@@ -519,17 +517,17 @@ const GhostRow = ({
 }) => (
   <div
     className={cn(
-      'border-border/40 flex h-11 items-center gap-3 border-b px-3 last:border-b-0',
+      'border-border/40 flex h-9 items-center gap-3 border-b px-3 last:border-b-0',
       className
     )}
   >
     <span
       className={cn(
-        'h-5 w-0.5 shrink-0 rounded-full',
+        'h-4 w-0.5 shrink-0 rounded-full',
         lit ? 'bg-primary' : 'bg-muted-foreground/20'
       )}
     />
-    <span className="bg-muted-foreground/15 size-5 shrink-0 rounded-md" />
+    <span className="bg-muted-foreground/15 size-4 shrink-0 rounded-md" />
     <span
       className={cn('bg-muted-foreground/15 h-2.5 rounded-full', nameWidth)}
     />
@@ -760,7 +758,7 @@ export const ConnectionsList = () => {
           ))}
           <Link
             to="/create"
-            className="text-muted-foreground hover:bg-card hover:text-foreground flex h-10 cursor-default items-center justify-center gap-2 rounded-xl border border-dashed text-sm transition-colors duration-150"
+            className="text-muted-foreground hover:bg-card hover:text-foreground flex h-9 cursor-default items-center justify-center gap-2 rounded-xl border border-dashed text-sm transition-colors duration-150"
           >
             <RiAddLine className="size-4" />
             New connection

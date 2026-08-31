@@ -84,6 +84,10 @@ declare module '@tanstack/react-router' {
 }
 
 router.subscribe('onResolved', ({ toLocation }) => {
+  for (const shell of document.querySelectorAll('[data-shell]')) {
+    requestAnimationFrame(() => shell.remove())
+  }
+
   if (toLocation.pathname.startsWith('/auth')) {
     return
   }

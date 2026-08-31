@@ -29,7 +29,7 @@ import { testConnectionQuery } from '~/entities/connection/queries/test-connecti
 import { useLocalProxyAvailable } from '~/entities/connection/runtime'
 import { getConnectionStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
-import { fetchingConfig } from '~/entities/connection/utils/fetching'
+import { fetchingConfig } from '~/entities/connection/utils/fetching-config'
 import { useActiveWorkspace } from '~/entities/workspace'
 import { generateRandomName } from '~/utils/faker'
 

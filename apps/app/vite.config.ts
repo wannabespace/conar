@@ -6,6 +6,7 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 import { version } from '../desktop/package.json' with { type: 'json' }
+import { prerenderShell } from './vite-plugins/prerender-shell'
 
 setupPortlessEnvs({
   VITE_PUBLIC_API_URL: 'api.local.tamery',
@@ -44,6 +45,7 @@ export default defineConfig(({ mode }) => ({
       generatedRouteTree: 'src/routeTree.gen.ts',
       routesDirectory: 'src/routes',
     }),
+    prerenderShell(),
     react(),
     babel({
       presets: [reactCompilerPreset()],

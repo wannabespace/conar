@@ -26,6 +26,11 @@
         }
       }
 
+      const lastLocation = localStorage.getItem('last-location')
+      document.documentElement.classList.add(
+        lastLocation && lastLocation !== 'null' ? 'shell-app' : 'shell-auth'
+      )
+
       const theme = localStorage.getItem('tamery.theme')
       if (
         theme === 'dark' ||
@@ -42,6 +47,7 @@
       class="fixed inset-x-0 top-0 h-10"
       style="-webkit-app-region: drag"
     ></div>
+    <!--shell-->
     <div id="root" class="relative isolate z-10 flex min-h-svh flex-col"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
