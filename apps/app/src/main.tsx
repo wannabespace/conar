@@ -1,5 +1,5 @@
-import './warmup'
 import '@tamery/shared/arktype-config'
+import './warmup'
 import '@tamery/ui/globals.css'
 import { themeStore } from '@tamery/ui/theme-store'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
