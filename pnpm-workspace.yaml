@@ -9,6 +9,7 @@ minimumReleaseAgeExclude:
   - '@tanstack/start-storage-context@1.167.21'
   - memoza@1.2.0
   - agent-browser@0.35.0
+  - electron@43.5.0
 shellEmulator: true
 blockExoticSubdeps: false
 packages:
@@ -106,7 +107,7 @@ catalog:
   date-fns: ^4.4.0
   drizzle-kit: ^1.0.0-rc.4
   drizzle-orm: ^1.0.0-rc.4
-  electron: 38.7.2
+  electron: 43.5.0
   electron-store: ^11.0.2
   hono: ^4.13.3
   hookable: ^6.1.1

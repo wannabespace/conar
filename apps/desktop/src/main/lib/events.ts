@@ -1,8 +1,4 @@
 import type { QueryExecutor } from '@tamery/connection/queries'
-import * as clickhouse from '@tamery/connection/queries/dialects/clickhouse'
-import * as mssql from '@tamery/connection/queries/dialects/mssql'
-import * as mysql from '@tamery/connection/queries/dialects/mysql'
-import * as pg from '@tamery/connection/queries/dialects/pg'
 import type {
   MenuPopupRequest,
   MenuPopupResult,
@@ -14,6 +10,44 @@ import { app, ipcMain, nativeTheme } from 'electron'
 
 import { autoUpdater } from '../main'
 import { popupNativeContextMenu } from './context-menu'
+
+const lazyQueryExecutor = (
+  load: () => Promise<{ query: QueryExecutor }>
+): QueryExecutor => {
+  const loadQuery = async () => {
+    const dialect = await load()
+
+    return dialect.query
+  }
+
+  return {
+    beginTransaction: async (args) => {
+      const query = await loadQuery()
+
+      return query.beginTransaction(args)
+    },
+    commitTransaction: async (args) => {
+      const query = await loadQuery()
+
+      return query.commitTransaction(args)
+    },
+    execute: async (args) => {
+      const query = await loadQuery()
+
+      return query.execute(args)
+    },
+    executeTransaction: async (args) => {
+      const query = await loadQuery()
+
+      return query.executeTransaction(args)
+    },
+    rollbackTransaction: async (args) => {
+      const query = await loadQuery()
+
+      return query.rollbackTransaction(args)
+    },
+  }
+}
 
 export const electron = {
   app: {
@@ -36,10 +70,18 @@ export const electron = {
     ) => Promise<MenuPopupResult>,
   },
   query: {
-    clickhouse: clickhouse.query,
-    mssql: mssql.query,
-    mysql: mysql.query,
-    postgres: pg.query,
+    clickhouse: lazyQueryExecutor(
+      () => import('@tamery/connection/queries/dialects/clickhouse')
+    ),
+    mssql: lazyQueryExecutor(
+      () => import('@tamery/connection/queries/dialects/mssql')
+    ),
+    mysql: lazyQueryExecutor(
+      () => import('@tamery/connection/queries/dialects/mysql')
+    ),
+    postgres: lazyQueryExecutor(
+      () => import('@tamery/connection/queries/dialects/pg')
+    ),
   } satisfies Record<ConnectionType, QueryExecutor>,
   versions: {
     app: () => app.getVersion(),
