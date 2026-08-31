@@ -1,4 +1,8 @@
+export { abortStream } from './abort-stream'
+export { attachStream } from './attach-stream'
+export { chat } from './chat-legacy'
 export { filters } from './filters'
 export { fixSQL } from './fix-sql'
 export { generateTitle } from './generate-title'
+export { stream } from './stream'
 export { updateSQL } from './update-sql'

@@ -5,16 +5,6 @@ import { env } from '~/env'
 
 export const redis = new Redis(env.REDIS_URL)
 
-export const createRedisPubSub = () => {
-  const redisSubscriber = redis.duplicate()
-  const redisPublisher = redis.duplicate()
-
-  return {
-    publisher: redisPublisher,
-    subscriber: redisSubscriber,
-  }
-}
-
 export const redisMemoize = async <T>(
   fn: () => MaybePromise<T>,
   key: string,

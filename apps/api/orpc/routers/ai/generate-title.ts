@@ -1,33 +1,21 @@
 import { ORPCError } from '@orpc/server'
-import { fastAdapter } from '@tamery/ai/adapters'
-import { TITLE_SYSTEM_PROMPT } from '@tamery/ai/prompts/title'
-import { messageTextFromRows } from '@tamery/ai/v2/message'
+import { generateChatTitle } from '@tamery/ai/title'
 import { db } from '@tamery/db'
 import { chats } from '@tamery/db/schema'
-import { abortControllerFrom } from '@tamery/shared/utils/helpers'
-import { chat } from '@tanstack/ai'
 import { type } from 'arktype'
 import { and, eq } from 'drizzle-orm'
 
+import { loadChatMessages } from '~/lib/chat-persist'
 import { authMiddleware, orpc } from '~/orpc'
 
 import { publisher } from '../chats/events'
 
-const getMessages = (chatId: string) =>
-  db.query.chatsMessages.findMany({
-    orderBy: { createdAt: 'asc' },
-    where: { chatId },
-    with: { parts: { orderBy: { order: 'asc' } } },
-  })
-
+// Legacy surface: shipped desktop builds call this from the old client's
+// message action. The current client never does — titles generate server-side
+// inside `ai.stream`.
 export const generateTitle = orpc
   .use(authMiddleware)
-  .input(
-    type({
-      chatId: 'string.uuid.v7',
-      'messages?': 'unknown',
-    })
-  )
+  .input(type({ chatId: 'string.uuid.v7' }))
   .handler(async ({ input, signal, context }) => {
     const ownedChat = await db.query.chats.findFirst({
       columns: { id: true },
@@ -37,33 +25,30 @@ export const generateTitle = orpc
       throw new ORPCError('NOT_FOUND', { message: 'Chat not found' })
     }
 
-    const messages = await getMessages(input.chatId)
-    const prompt = messages
-      .map((message) => messageTextFromRows(message.parts))
-      .filter(Boolean)
-      .join('\n')
-
-    context.addLogData({
+    const messages = await loadChatMessages({
       chatId: input.chatId,
-      prompt,
-    })
-
-    const text = await chat({
-      abortController: abortControllerFrom(signal),
-      adapter: fastAdapter,
-      messages: [{ content: prompt, role: 'user' }],
-      stream: false,
-      systemPrompts: [TITLE_SYSTEM_PROMPT],
+      userId: context.user.id,
     })
 
     context.addLogData({
       chatId: input.chatId,
-      generatedTitle: text,
+      messagesCount: messages.length,
+    })
+
+    const title = await generateChatTitle({ messages, signal })
+
+    if (!title) {
+      throw new ORPCError('BAD_GATEWAY', { message: 'Empty title generated' })
+    }
+
+    context.addLogData({
+      chatId: input.chatId,
+      generatedTitle: title,
     })
 
     const [chatRecord] = await db
       .update(chats)
-      .set({ title: text })
+      .set({ title })
       .where(and(eq(chats.id, input.chatId), eq(chats.userId, context.user.id)))
       .returning()
 
@@ -76,5 +61,5 @@ export const generateTitle = orpc
       value: chatRecord,
     })
 
-    return text
+    return title
   })

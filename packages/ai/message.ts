@@ -1,31 +1,25 @@
-import type { MessagePart, UIMessage } from '@tanstack/ai'
+import type { UIMessage } from 'ai'
+import { isTextUIPart } from 'ai'
 
-export type AppUIMessage = UIMessage
-export type AppMessagePart = MessagePart
-
-export const isTextPart = (
-  part: AppMessagePart
-): part is Extract<AppMessagePart, { type: 'text' }> => part.type === 'text'
+export type AppUIMessage = UIMessage<Record<string, unknown>>
+export type AppMessagePart = AppUIMessage['parts'][number]
 
 export const messageText = (message: Pick<AppUIMessage, 'parts'>) =>
   message.parts
-    .filter((part) => isTextPart(part))
-    .map((part) => part.content)
+    .filter((part) => isTextUIPart(part))
+    .map((part) => part.text)
     .join('\n')
     .trim()
 
-export interface MessagePartRow {
+interface MessagePartRow {
   order: number
   part: AppMessagePart
 }
 
-export const messagePartsFromRows = (rows: MessagePartRow[]) =>
+const messagePartsFromRows = (rows: MessagePartRow[]) =>
   rows.toSorted((a, b) => a.order - b.order).map(({ part }) => part)
 
-export const messageTextFromRows = (rows: MessagePartRow[]) =>
-  messageText({ parts: messagePartsFromRows(rows) })
-
-export interface MessageRow extends MessagePartRow {
+interface MessageRow extends MessagePartRow {
   messageId: string
   metadata: Record<string, unknown> | null
   role: AppUIMessage['role']
@@ -47,3 +41,14 @@ export const messagesFromRows = (rows: MessageRow[]): AppUIMessage[] =>
       }
     }
   )
+
+export const mergeMessages = (
+  persisted: AppUIMessage[],
+  live: AppUIMessage[]
+): AppUIMessage[] => {
+  const persistedIds = new Set(persisted.map((message) => message.id))
+  return [
+    ...persisted,
+    ...live.filter((message) => !persistedIds.has(message.id)),
+  ]
+}

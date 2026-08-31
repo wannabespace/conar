@@ -1,6 +1,10 @@
-import { SQL_FILTERS_GROUPED } from '@tamery/shared/filters'
+import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@tamery/shared/filters'
+import { generateObject } from 'ai'
+import { type } from 'arktype'
 
-export const filtersSystemPrompt = (tableContext: string) =>
+import { fastModel } from './models'
+
+const filtersSystemPrompt = (tableContext: string) =>
   [
     'You are a filters and ordering generator that converts natural language queries into database filters and ordering instructions.',
     'You should understand the sense of the prompt as much as possible.',
@@ -30,3 +34,41 @@ export const filtersSystemPrompt = (tableContext: string) =>
     'Table context:',
     tableContext,
   ].join('\n')
+
+const filtersOutputSchema = type({
+  filters: type({
+    column: 'string',
+    operator: type.enumerated(
+      ...SQL_FILTERS_LIST.map((filter) => filter.operator)
+    ),
+    values: 'string[]',
+  }).array(),
+  orderBy: type({
+    column: 'string',
+    direction: "'ASC' | 'DESC'",
+  }).array(),
+})
+
+export const generateFilters = async (data: {
+  context: string
+  prompt: string
+  signal?: AbortSignal
+}) => {
+  const { object: result } = await generateObject({
+    abortSignal: data.signal,
+    instructions: filtersSystemPrompt(data.context),
+    model: fastModel,
+    prompt: data.prompt,
+    schema: filtersOutputSchema,
+  })
+
+  return {
+    filters: result?.filters ?? [],
+    orderBy: Object.fromEntries(
+      (result?.orderBy ?? []).map(({ column, direction }) => [
+        column,
+        direction,
+      ])
+    ),
+  }
+}

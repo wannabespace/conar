@@ -29,8 +29,8 @@ export const ResizeHandle = ({
   getValue: () => number
   onResize: (value: number) => void
   onResizingChange?: (resizing: boolean) => void
-  min?: number
-  max?: number
+  min?: number | (() => number)
+  max?: number | (() => number)
   side?: 'left' | 'right'
 } & Omit<ComponentProps<'div'>, 'onResize'>) => {
   const [isResizing, setIsResizing] = useState(false)
@@ -46,14 +46,19 @@ export const ResizeHandle = ({
 
     const startX = event.clientX
     const startValue = getValue()
+    const minValue = typeof min === 'function' ? min() : min
+    const maxValue = typeof max === 'function' ? max() : max
     const direction = side === 'right' ? 1 : -1
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       showDragOverlay()
       onResize(
         Math.min(
-          max,
-          Math.max(min, startValue + direction * (moveEvent.clientX - startX))
+          maxValue,
+          Math.max(
+            minValue,
+            startValue + direction * (moveEvent.clientX - startX)
+          )
         )
       )
     }

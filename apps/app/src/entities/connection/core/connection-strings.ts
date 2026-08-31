@@ -10,7 +10,7 @@ import { getCollections } from '~/entities/collections'
 import { fullSignOut } from '~/lib/auth'
 import { encryptionKey } from '~/lib/encryption-key'
 import { orpc } from '~/lib/orpc'
-import { persistence } from '~/lib/sync'
+import { PERSISTED_SCHEMA_VERSION, persistence } from '~/lib/sync'
 
 export interface ConnectionString {
   connectionId: string
@@ -79,7 +79,7 @@ export const createConnectionStringsCollection =
         getKey: (item) => item.connectionId,
         id: 'connection-strings',
         persistence,
-        schemaVersion: 1,
+        schemaVersion: PERSISTED_SCHEMA_VERSION,
         utils: {
           async decrypt(connectionId: string) {
             const record =

@@ -20,12 +20,14 @@ import { useParams } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { AnimatePresence, motion } from 'motion/react'
 import type { ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 
 import {
   MAX_RECONNECTION_ATTEMPTS,
   reconnectingPromises,
+  slowQueries,
 } from '~/entities/connection/runtime'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
@@ -77,6 +79,25 @@ const Banner = ({
   </motion.div>
 )
 
+const useElapsedSeconds = (since: number | null) => {
+  const [seconds, setSeconds] = useState(0)
+
+  useEffect(() => {
+    if (since === null) {
+      return
+    }
+
+    const update = () => setSeconds(Math.round((Date.now() - since) / 1000))
+
+    update()
+    const interval = setInterval(update, 1000)
+
+    return () => clearInterval(interval)
+  }, [since])
+
+  return seconds
+}
+
 export const GlobalBanner = () => {
   const { resourceId } = useParams({ strict: false })
   const reconnectingData = useSubscription(reconnectingPromises, {
@@ -85,6 +106,15 @@ export const GlobalBanner = () => {
         Object.values(state).find((p) => p.resourceId === resourceId)) ||
       null,
   })
+  const waitingSince = useSubscription(slowQueries, {
+    selector: (state) => {
+      const startTimes = Object.values(state)
+        .filter((query) => resourceId && query.resourceId === resourceId)
+        .map((query) => query.startedAt)
+      return startTimes.length > 0 ? Math.min(...startTimes) : null
+    },
+  })
+  const waitingSeconds = useElapsedSeconds(waitingSince)
   const isOnline = useSubscription(appStore, {
     selector: (state) => state.isOnline,
   })
@@ -143,6 +173,20 @@ export const GlobalBanner = () => {
           )}
         </Banner>
       ))}
+      {!reconnectingData && waitingSince !== null && (
+        <Banner key="slow-query" className={typeConfig.info.className}>
+          {typeConfig.info.icon}
+          <span className="flex flex-1 items-center gap-2 leading-none">
+            <span>The database is taking longer than usual to respond.</span>
+            <NumberFlow
+              value={waitingSeconds}
+              suffix="s"
+              className="tabular-nums opacity-70"
+            />
+            <Spinner className="size-3.5" />
+          </span>
+        </Banner>
+      )}
       {reconnectingData && (
         <Banner className={typeConfig.warning.className}>
           {typeConfig.warning.icon}

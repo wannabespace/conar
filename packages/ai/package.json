@@ -8,13 +8,14 @@
     "@ai-sdk/anthropic": "catalog:",
     "@ai-sdk/google": "catalog:",
     "@ai-sdk/openai": "catalog:",
-    "@exalabs/ai-sdk": "catalog:",
+    "@ai-sdk/xai": "catalog:",
     "@tamery/shared": "workspace:*",
-    "@tanstack/ai": "catalog:",
-    "@tanstack/ai-anthropic": "catalog:",
-    "@upstash/context7-tools-ai-sdk": "catalog:",
     "ai": "catalog:",
+    "ai-resumable-stream": "catalog:",
     "ai-retry": "catalog:",
-    "zod": "catalog:"
+    "arktype": "catalog:",
+    "ioredis": "catalog:",
+    "redis": "catalog:",
+    "uuid": "catalog:"
   }
 }

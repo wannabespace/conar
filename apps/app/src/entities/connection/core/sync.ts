@@ -7,7 +7,11 @@ import { createCollection, createTransaction } from '@tanstack/react-db'
 import { getCollections } from '~/entities/collections'
 import { orpc } from '~/lib/orpc'
 import type { BaseTable } from '~/lib/sync'
-import { persistence, syncCollectionOptions } from '~/lib/sync'
+import {
+  PERSISTED_SCHEMA_VERSION,
+  persistence,
+  syncCollectionOptions,
+} from '~/lib/sync'
 
 import type { ConnectionString } from './connection-strings'
 
@@ -95,7 +99,7 @@ export const createConnectionsCollection = () =>
           orpc.connections.sync.call(rows, { signal }),
       }),
       persistence,
-      schemaVersion: 1,
+      schemaVersion: PERSISTED_SCHEMA_VERSION,
     })
   )
 
@@ -136,7 +140,7 @@ export const createConnectionsResourcesCollection = () =>
           orpc.connectionsResources.sync.call(rows, { signal }),
       }),
       persistence,
-      schemaVersion: 1,
+      schemaVersion: PERSISTED_SCHEMA_VERSION,
     })
   )
 

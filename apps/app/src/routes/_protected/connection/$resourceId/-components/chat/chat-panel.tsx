@@ -1,10 +1,15 @@
+import { useChat } from '@ai-sdk/react'
 import {
   RiChatNewLine,
   RiCheckLine,
   RiCloseLine,
   RiHistoryLine,
 } from '@remixicon/react'
-import { messagesFromRows } from '@tamery/ai/v2/message'
+import {
+  messageText,
+  messagesFromRows,
+  mergeMessages,
+} from '@tamery/ai/message'
 import { Button } from '@tamery/ui/components/button'
 import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
 import {
@@ -18,13 +23,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import type { UIMessage } from '@tanstack/ai-react'
-import { stream, useChat } from '@tanstack/ai-react'
 import { eq, useLiveQuery } from '@tanstack/react-db'
-import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { v7 } from 'uuid'
 
@@ -33,13 +35,14 @@ import { getConnectionResourceStore } from '~/entities/connection/store'
 import { orpc } from '~/lib/orpc'
 
 import { ChatInput } from './chat-input'
+import { getChatInstance } from './chat-instance'
 import { ChatMessages } from './chat-messages'
 import {
   CHAT_DEFAULT_WIDTH,
   CHAT_MAX_WIDTH,
   CHAT_MIN_WIDTH,
-  chatStore,
-} from './store'
+  chatWidthValue,
+} from './constants'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -60,7 +63,7 @@ const ChatHeader = ({
 }) => (
   <div className="flex h-10 shrink-0 items-center gap-0.5 border-b pr-1.5 pl-3">
     <span data-mask className="min-w-0 flex-1 truncate text-sm font-medium">
-      {title ?? 'New Chat'}
+      {title || 'New Chat'}
     </span>
     {history.length > 0 && (
       <DropdownMenu>
@@ -81,7 +84,7 @@ const ChatHeader = ({
               onClick={() => onSelectChat(chat.id)}
             >
               <span data-mask className="truncate">
-                {chat.title ?? 'New Chat'}
+                {chat.title || 'New Chat'}
               </span>
               {chat.id === activeChatId && (
                 <RiCheckLine className="text-muted-foreground ml-auto size-4" />
@@ -114,116 +117,20 @@ const ChatHeader = ({
   </div>
 )
 
-const createChatConnection = (data: {
-  chatId: string
-  connectionResourceId: string
-}) =>
-  stream(
-    async function* runTurn(messages, _forwarded, signal) {
-      yield* await orpc.chats.v2.stream.call(
-        {
-          chatId: data.chatId,
-          connectionResourceId: data.connectionResourceId,
-          messages,
-        },
-        { signal }
-      )
-    },
-    {
-      async *joinRun(runId: string, signal?: AbortSignal) {
-        yield* await orpc.chats.v2.join.call({ streamId: runId }, { signal })
-      },
-    }
-  )
-
-const ChatSession = ({
-  chatId,
-  collectionMessages,
-  connectionResourceId,
-  resumeRunId,
-}: {
-  chatId: string
-  collectionMessages: UIMessage[]
-  connectionResourceId: string
-  resumeRunId: string | null
-}) => {
-  const { chatsCollection } = useCollections()
-  // oxlint-disable-next-line react/hook-use-state -- built once per mount, never replaced
-  const [connection] = useState(() =>
-    createChatConnection({ chatId, connectionResourceId })
-  )
-  const { error, isLoading, messages, reload, sendMessage, setMessages, stop } =
-    useChat({
-      connection,
-      initialMessages: collectionMessages,
-      ...(resumeRunId && {
-        initialResumeSnapshot: {
-          resumeState: { runId: resumeRunId, threadId: chatId },
-        },
-      }),
-      onFinish: async () => {
-        if (chatsCollection.get(chatId)?.title) {
-          return
-        }
-
-        try {
-          await orpc.ai.generateTitle.call({ chatId })
-        } catch {
-          // nothing
-        }
-      },
-      threadId: chatId,
-    })
-
-  useEffect(() => {
-    if (!isLoading && collectionMessages.length > messages.length) {
-      setMessages(collectionMessages)
-    }
-  }, [collectionMessages, isLoading, messages.length, setMessages])
-
-  return (
-    <>
-      <ChatMessages
-        isPending={!error && (isLoading || messages.at(-1)?.role === 'user')}
-        messages={messages}
-      />
-      {error && (
-        <div className="flex shrink-0 items-center gap-2 px-3 pb-1">
-          <p className="text-destructive min-w-0 flex-1 truncate text-xs">
-            {error.message}
-          </p>
-          <Button
-            size="xs"
-            variant="outline"
-            onClick={() => {
-              void reload()
-            }}
-          >
-            Retry
-          </Button>
-        </div>
-      )}
-      <ChatInput
-        isStreaming={isLoading}
-        onSend={(text) => {
-          sendMessage(text)
-        }}
-        onStop={() => {
-          // Leaving only detaches; the stream belongs to the server until told.
-          void orpc.chats.v2.abortStream.call({ chatId })
-          stop()
-        }}
-      />
-    </>
-  )
-}
-
 const Chat = ({
   chatId,
   connectionResourceId,
+  isNew,
+  onNewChat,
+  onSelectChat,
+  onStart,
 }: {
   chatId: string
   connectionResourceId: string
+  isNew: boolean
+  onNewChat: () => void
+  onSelectChat: (chatId: string) => void
+  onStart: () => void
 }) => {
   const store = getConnectionResourceStore(connectionResourceId)
   const {
@@ -231,18 +138,6 @@ const Chat = ({
     chatsMessagesCollection,
     chatsMessagesPartsCollection,
   } = useCollections()
-  const { data: resume } = useQuery(
-    orpc.chats.v2.resume.queryOptions({
-      input: { chatId },
-    })
-  )
-  const { data: chat } = useLiveQuery({
-    query: (q) =>
-      q
-        .from({ chats: chatsCollection })
-        .where(({ chats }) => eq(chats.id, chatId))
-        .findOne(),
-  })
   const { data: chatHistory } = useLiveQuery({
     query: (q) =>
       q
@@ -252,7 +147,7 @@ const Chat = ({
         )
         .orderBy(({ chats }) => chats.createdAt, 'desc'),
   })
-  const { data: transcriptRows } = useLiveQuery({
+  const { data: transcriptRows, isReady: isTranscriptReady } = useLiveQuery({
     query: (q) =>
       q
         .from({ messages: chatsMessagesCollection })
@@ -271,36 +166,80 @@ const Chat = ({
         })),
   })
 
-  const resumeRunId = resume?.streamId ?? null
+  const chat = chatHistory.find((row) => row.id === chatId)
+  const collectionMessages = messagesFromRows(transcriptRows)
+
+  // oxlint-disable-next-line react/hook-use-state
+  const [resume] = useState(
+    () => !isNew && collectionMessages.at(-1)?.role !== 'assistant'
+  )
+  const { error, messages, regenerate, sendMessage, status, stop } = useChat({
+    chat: getChatInstance({ chatId, connectionResourceId }),
+    resume,
+  })
+  const isStreaming = status === 'submitted' || status === 'streaming'
+  const displayMessages = mergeMessages(collectionMessages, messages)
+  const firstMessage = displayMessages.at(0)
+  const pendingTitle = firstMessage ? messageText(firstMessage) : null
+  const sentHereIds = new Set(
+    messages
+      .filter((message) => message.role === 'user')
+      .map((message) => message.id)
+  )
 
   return (
     <>
       <ChatHeader
         activeChatId={chatId}
         history={chatHistory}
-        title={chat?.title ?? null}
+        title={chat?.title || pendingTitle}
         onClose={() =>
           store.set(
             (state) => ({ ...state, chatOpened: false }) satisfies typeof state
           )
         }
-        onNewChat={() =>
-          store.set(
-            (state) => ({ ...state, chatId: v7() }) satisfies typeof state
-          )
-        }
-        onSelectChat={(nextChatId) =>
-          store.set(
-            (state) => ({ ...state, chatId: nextChatId }) satisfies typeof state
-          )
-        }
+        onNewChat={onNewChat}
+        onSelectChat={onSelectChat}
       />
-      <ChatSession
-        key={resumeRunId ?? chatId}
-        chatId={chatId}
-        collectionMessages={messagesFromRows(transcriptRows)}
-        connectionResourceId={connectionResourceId}
-        resumeRunId={resumeRunId}
+      <ChatMessages
+        isPending={
+          !error &&
+          (status === 'streaming' || displayMessages.at(-1)?.role === 'user')
+        }
+        isReady={isTranscriptReady}
+        messages={displayMessages}
+        sentHereIds={sentHereIds}
+      />
+      {error && (
+        <div className="flex shrink-0 items-center gap-2 px-3 pb-1">
+          <p className="text-destructive min-w-0 flex-1 truncate text-xs">
+            {error.message}
+          </p>
+          <Button
+            size="xs"
+            variant="outline"
+            onClick={() => {
+              void regenerate()
+            }}
+          >
+            Retry
+          </Button>
+        </div>
+      )}
+      <ChatInput
+        isStreaming={isStreaming}
+        onSend={(text) => {
+          onStart()
+          void sendMessage({
+            id: v7(),
+            parts: [{ text, type: 'text' }],
+            role: 'user',
+          })
+        }}
+        onStop={() => {
+          void orpc.ai.abortStream.call({ chatId })
+          stop()
+        }}
       />
     </>
   )
@@ -309,24 +248,30 @@ const Chat = ({
 export const ChatPanel = () => {
   const { connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
-  const chatOpened = useSubscription(store, {
-    selector: (state) => state.chatOpened ?? false,
-  })
   const chatId = useSubscription(store, {
     selector: (state) => state.chatId ?? null,
   })
-  const width = useSubscription(chatStore, {
-    selector: (state) => state.width,
+  const chatOpened = useSubscription(store, {
+    selector: (state) => state.chatOpened ?? false,
   })
+  const width = useSubscription(chatWidthValue)
   const [isResizing, setIsResizing] = useState(false)
+  const [draftId, setDraftId] = useState(() => v7())
+  const activeChatId = chatId ?? draftId
 
-  // Fallback only: the toggle mints the id so the panel opens with content on
-  // its first frame. This catches a stored `chatOpened` with no id.
-  useEffect(() => {
-    if (chatOpened && !chatId) {
-      store.set((state) => ({ ...state, chatId: v7() }) satisfies typeof state)
+  const startDraft = () =>
+    store.set(
+      (state) =>
+        ({ ...state, chatId: state.chatId ?? draftId }) satisfies typeof state
+    )
+
+  const openBlankChat = () => {
+    if (!chatId) {
+      return
     }
-  }, [chatOpened, chatId, store])
+    setDraftId(v7())
+    store.set((state) => ({ ...state, chatId: null }) satisfies typeof state)
+  }
 
   return (
     <motion.div
@@ -335,41 +280,41 @@ export const ChatPanel = () => {
       transition={
         isResizing
           ? { duration: 0 }
-          : { duration: 0.25, ease: [0.32, 0.72, 0, 1] }
+          : {
+              duration: 0.25,
+              ease: [0.32, 0.72, 0, 1],
+            }
       }
       className="relative h-full shrink-0 overflow-hidden"
     >
-      <div className="h-full pl-2" style={{ width }}>
-        <div className="bg-background flex h-full min-w-0 flex-col overflow-hidden rounded-xl border shadow-lg">
-          {chatId && (
-            <Chat
-              key={chatId}
-              chatId={chatId}
-              connectionResourceId={connectionResource.id}
-            />
-          )}
+      <div className="flex h-full flex-col pl-2.5" style={{ width }}>
+        <div className="bg-background flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg">
+          <Chat
+            key={activeChatId}
+            chatId={activeChatId}
+            connectionResourceId={connectionResource.id}
+            isNew={activeChatId === draftId}
+            onNewChat={openBlankChat}
+            onStart={startDraft}
+            onSelectChat={(id) =>
+              store.set(
+                (state) => ({ ...state, chatId: id }) satisfies typeof state
+              )
+            }
+          />
         </div>
       </div>
       {chatOpened && (
         <ResizeHandle
+          aria-label="Resize chat"
           side="left"
-          aria-label="Resize chat panel"
-          className="absolute inset-y-0 -left-0.5 z-10 flex w-3 justify-center"
-          getValue={() => chatStore.get().width}
+          className="absolute inset-y-0 left-0 z-10 flex w-2.5 justify-center"
+          getValue={chatWidthValue.get}
           min={CHAT_MIN_WIDTH}
           max={CHAT_MAX_WIDTH}
-          onResize={(value) =>
-            chatStore.set(
-              (state) => ({ ...state, width: value }) satisfies typeof state
-            )
-          }
+          onResize={(value) => chatWidthValue.set(value)}
           onResizingChange={setIsResizing}
-          onDoubleClick={() =>
-            chatStore.set(
-              (state) =>
-                ({ ...state, width: CHAT_DEFAULT_WIDTH }) satisfies typeof state
-            )
-          }
+          onDoubleClick={() => chatWidthValue.set(CHAT_DEFAULT_WIDTH)}
         >
           <div className="group-hover/resize-handle:bg-border group-data-resizing/resize-handle:bg-primary/40 h-full w-[2px] rounded-xs transition-colors" />
         </ResizeHandle>

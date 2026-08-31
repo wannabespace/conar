@@ -21,6 +21,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@tamery/ui/components/popover'
+import { Skeleton } from '@tamery/ui/components/skeleton'
 import {
   Tooltip,
   TooltipContent,
@@ -98,7 +99,7 @@ export const ActionsOrder = () => {
   const orderEntries = useSubscription(store, {
     selector: (state) => Object.entries(state.orderBy || {}),
   })
-  const { columns } = useTableColumnsContext()
+  const { columns, isPending } = useTableColumnsContext()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [highlighted, setHighlighted] = useState('')
@@ -125,15 +126,21 @@ export const ActionsOrder = () => {
           }
         >
           <RiArrowUpDownLine className="text-muted-foreground/60" />
-          <NumberFlow
-            value={activeCount}
-            className="text-2xs font-normal tabular-nums"
-          />
+          {isPending ? (
+            <Skeleton className="h-2.5 w-3 rounded-full" />
+          ) : (
+            <NumberFlow
+              value={activeCount}
+              className="text-2xs font-normal tabular-nums"
+            />
+          )}
         </TooltipTrigger>
         <TooltipContent side="top">
-          {activeCount > 0
-            ? `Sorted by ${activeCount} column${activeCount === 1 ? '' : 's'}`
-            : 'Sort order'}
+          {isPending && 'Loading columns…'}
+          {!isPending &&
+            (activeCount > 0
+              ? `Sorted by ${activeCount} column${activeCount === 1 ? '' : 's'}`
+              : 'Sort order')}
         </TooltipContent>
       </Tooltip>
       <PopoverContent className="w-72 gap-0 p-0" side="bottom" align="end">

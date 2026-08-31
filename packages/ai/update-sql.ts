@@ -1,4 +1,8 @@
-export const updateSqlSystemPrompt = (data: {
+import { generateText } from 'ai'
+
+import { chatModel } from './models'
+
+const updateSqlSystemPrompt = (data: {
   connectionType: string
   context: string
 }) =>
@@ -17,7 +21,7 @@ export const updateSqlSystemPrompt = (data: {
     data.context,
   ].join('\n')
 
-export const updateSqlPrompts = (data: { prompt: string; sql: string }) => [
+const updateSqlPrompt = (data: { prompt: string; sql: string }) =>
   [
     '=======SELECTED SQL QUERY=======',
     data.sql,
@@ -25,5 +29,20 @@ export const updateSqlPrompts = (data: { prompt: string; sql: string }) => [
     '=======PROMPT=======',
     data.prompt,
     '=======END OF PROMPT=======',
-  ].join('\n'),
-]
+  ].join('\n')
+
+export const updateSql = async (data: {
+  connectionType: string
+  context: string
+  prompt: string
+  signal?: AbortSignal
+  sql: string
+}) => {
+  const { text } = await generateText({
+    abortSignal: data.signal,
+    instructions: updateSqlSystemPrompt(data),
+    messages: [{ content: updateSqlPrompt(data), role: 'user' as const }],
+    model: chatModel,
+  })
+  return text
+}

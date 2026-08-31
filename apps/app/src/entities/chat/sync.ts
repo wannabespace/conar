@@ -1,10 +1,14 @@
-import type { AppMessagePart, AppUIMessage } from '@tamery/ai/v2/message'
+import type { AppMessagePart, AppUIMessage } from '@tamery/ai/message'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import { createCollection } from '@tanstack/react-db'
 
 import { orpc } from '~/lib/orpc'
 import type { BaseTable } from '~/lib/sync'
-import { persistence, syncCollectionOptions } from '~/lib/sync'
+import {
+  PERSISTED_SCHEMA_VERSION,
+  persistence,
+  syncCollectionOptions,
+} from '~/lib/sync'
 
 export interface Chat extends BaseTable {
   connectionResourceId: string
@@ -40,7 +44,7 @@ export const createChatsCollection = () =>
         sync: ({ rows, signal }) => orpc.chats.sync.call(rows, { signal }),
       }),
       persistence,
-      schemaVersion: 1,
+      schemaVersion: PERSISTED_SCHEMA_VERSION,
     })
   )
 
@@ -62,7 +66,7 @@ export const createChatsMessagesCollection = () =>
           orpc.chatsMessages.sync.call(rows, { signal }),
       }),
       persistence,
-      schemaVersion: 2,
+      schemaVersion: PERSISTED_SCHEMA_VERSION,
     })
   )
 
@@ -84,6 +88,6 @@ export const createChatsMessagesPartsCollection = () =>
           orpc.chatsMessagesParts.sync.call(rows, { signal }),
       }),
       persistence,
-      schemaVersion: 1,
+      schemaVersion: PERSISTED_SCHEMA_VERSION,
     })
   )

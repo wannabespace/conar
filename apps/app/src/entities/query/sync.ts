@@ -3,7 +3,11 @@ import { createCollection } from '@tanstack/react-db'
 
 import { orpc } from '~/lib/orpc'
 import type { BaseTable } from '~/lib/sync'
-import { persistence, syncCollectionOptions } from '~/lib/sync'
+import {
+  PERSISTED_SCHEMA_VERSION,
+  persistence,
+  syncCollectionOptions,
+} from '~/lib/sync'
 
 export interface Query extends BaseTable {
   connectionResourceId: string
@@ -40,6 +44,6 @@ export const createQueriesCollection = () =>
         sync: ({ rows, signal }) => orpc.queries.sync.call(rows, { signal }),
       }),
       persistence,
-      schemaVersion: 1,
+      schemaVersion: PERSISTED_SCHEMA_VERSION,
     })
   )

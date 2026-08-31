@@ -1,4 +1,4 @@
-import type { AppMessagePart, AppUIMessage } from '@tamery/ai/v2/message'
+import type { AppMessagePart, AppUIMessage } from '@tamery/ai/message'
 import { defineRelationsPart } from 'drizzle-orm'
 import {
   createInsertSchema,

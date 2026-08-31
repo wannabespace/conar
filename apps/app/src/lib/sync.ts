@@ -116,6 +116,11 @@ export const persistence = createBrowserWASQLitePersistence({
   schemaMismatchPolicy: 'reset',
 })
 
+// The coordinator keeps one adapter per schema version but a single leader-side
+// slot, so collections declaring different versions reset each other's tables on
+// every boot. Every persisted collection passes this; bump it to wipe local data.
+export const PERSISTED_SCHEMA_VERSION = 2
+
 export type SyncMessage<T> =
   | { type: 'insert'; value: T }
   | { type: 'update'; value: T }
@@ -169,9 +174,6 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
       }
 
       const writeItems = (items: SyncMessage<T>[]) => {
-        if (signal.aborted) {
-          return
-        }
         begin()
         for (const item of items) {
           writeItem(item)
@@ -183,9 +185,10 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         const result = await Result.tryPromise({
           catch: (error) => error,
           try: async () => {
-            // Only the diff keys: the server declares `{ id, updatedAt }`, and
-            // whole rows carry the payload itself (message parts, connection
-            // strings) plus the collection's internal `$` fields.
+            if (signal.aborted) {
+              return
+            }
+
             const items = await collection.toArrayWhenReady()
             const rows = items.map((item) => ({
               id: config.getKey(item),

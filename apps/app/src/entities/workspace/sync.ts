@@ -4,7 +4,11 @@ import { createCollection } from '@tanstack/react-db'
 import { getCollections } from '~/entities/collections'
 import { orpc } from '~/lib/orpc'
 import type { BaseTable } from '~/lib/sync'
-import { persistence, syncCollectionOptions } from '~/lib/sync'
+import {
+  PERSISTED_SCHEMA_VERSION,
+  persistence,
+  syncCollectionOptions,
+} from '~/lib/sync'
 
 import { setActiveWorkspace } from './utils'
 
@@ -32,7 +36,7 @@ export const createWorkspacesCollection = () =>
         sync: ({ rows, signal }) => orpc.workspaces.sync.call(rows, { signal }),
       }),
       persistence,
-      schemaVersion: 1,
+      schemaVersion: PERSISTED_SCHEMA_VERSION,
     })
   )
 

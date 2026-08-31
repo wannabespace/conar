@@ -1,33 +1,30 @@
 import { ORPCError } from '@orpc/server'
+import type { AppUIMessage } from '@tamery/ai/message'
+import { messagesFromRows } from '@tamery/ai/message'
+import { generateChatTitle } from '@tamery/ai/title'
 import { db } from '@tamery/db'
 import { chats, chatsMessages, chatsMessagesParts } from '@tamery/db/schema'
-import type { UIMessage } from '@tanstack/ai'
-import { type } from 'arktype'
-import { eq } from 'drizzle-orm'
-import { v7 as uuidv7 } from 'uuid'
+import { and, asc, eq, isNull } from 'drizzle-orm'
 
 import { publisher as chatsMessagesPartsPublisher } from '~/orpc/routers/chats-messages-parts/events'
 import { publisher as chatsMessagesPublisher } from '~/orpc/routers/chats-messages/events'
 import { publisher as chatsPublisher } from '~/orpc/routers/chats/events'
-
-const uuidV7 = type('string.uuid.v7')
 
 export const ensureChat = async (data: {
   chatId: string
   connectionResourceId: string
   userId: string
 }) => {
-  const [existing] = await db
-    .select({ id: chats.id, userId: chats.userId })
-    .from(chats)
-    .where(eq(chats.id, data.chatId))
-    .limit(1)
+  const existing = await db.query.chats.findFirst({
+    columns: { title: true, userId: true },
+    where: { id: { eq: data.chatId } },
+  })
 
   if (existing) {
     if (existing.userId !== data.userId) {
       throw new ORPCError('NOT_FOUND', { message: 'Chat not found' })
     }
-    return
+    return { title: existing.title }
   }
 
   const resource = await db.query.connectionsResources.findFirst({
@@ -56,24 +53,82 @@ export const ensureChat = async (data: {
   if (inserted) {
     chatsPublisher.publish(data.userId, { type: 'insert', value: inserted })
   }
+
+  return { title: null }
+}
+
+export const persistChatTitle = async (data: {
+  chatId: string
+  messages: AppUIMessage[]
+  userId: string
+}) => {
+  try {
+    const title = await generateChatTitle({ messages: data.messages })
+    if (!title) {
+      return
+    }
+
+    const [updated] = await db
+      .update(chats)
+      .set({ title })
+      .where(
+        and(
+          eq(chats.id, data.chatId),
+          eq(chats.userId, data.userId),
+          isNull(chats.title)
+        )
+      )
+      .returning()
+
+    if (updated) {
+      chatsPublisher.publish(data.userId, { type: 'update', value: updated })
+    }
+  } catch {
+    // The title is best-effort; the chat works untitled.
+  }
+}
+
+export const loadChatMessages = async (data: {
+  chatId: string
+  userId: string
+}) => {
+  const rows = await db
+    .select({
+      messageId: chatsMessages.id,
+      metadata: chatsMessages.metadata,
+      order: chatsMessagesParts.order,
+      part: chatsMessagesParts.part,
+      role: chatsMessages.role,
+    })
+    .from(chatsMessages)
+    .innerJoin(chats, eq(chatsMessages.chatId, chats.id))
+    .innerJoin(
+      chatsMessagesParts,
+      eq(chatsMessagesParts.messageId, chatsMessages.id)
+    )
+    .where(
+      and(eq(chatsMessages.chatId, data.chatId), eq(chats.userId, data.userId))
+    )
+    .orderBy(asc(chatsMessages.createdAt), asc(chatsMessagesParts.order))
+
+  return messagesFromRows(rows)
 }
 
 export const persistMessage = async (data: {
   chatId: string
-  message: UIMessage
+  message: AppUIMessage
   userId: string
 }) => {
   if (data.message.parts.length === 0) {
     return
   }
 
-  const id = uuidV7.allows(data.message.id) ? data.message.id : uuidv7()
   const { inserted, parts } = await db.transaction(async (tx) => {
     const [insertedMessage] = await tx
       .insert(chatsMessages)
       .values({
         chatId: data.chatId,
-        id,
+        id: data.message.id,
         metadata: data.message.metadata ?? null,
         role: data.message.role,
       })

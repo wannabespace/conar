@@ -1,5 +1,6 @@
 import { RiChatAiLine } from '@remixicon/react'
-import { messageText } from '@tamery/ai/v2/message'
+import type { AppUIMessage } from '@tamery/ai/message'
+import { messageText } from '@tamery/ai/message'
 import { Bubble, BubbleContent } from '@tamery/ui/components/bubble'
 import {
   Empty,
@@ -18,7 +19,6 @@ import {
   MessageScrollerViewport,
 } from '@tamery/ui/components/message-scroller'
 import { Spinner } from '@tamery/ui/components/spinner'
-import type { UIMessage } from '@tanstack/ai-react'
 
 import { MessagePart } from './chat-message-part'
 
@@ -43,12 +43,22 @@ const ChatEmpty = () => (
 
 export const ChatMessages = ({
   isPending,
+  isReady,
   messages,
+  sentHereIds,
 }: {
   isPending: boolean
-  messages: UIMessage[]
+  isReady: boolean
+  messages: AppUIMessage[]
+  sentHereIds: Set<string>
 }) => {
   if (messages.length === 0) {
+    // An unloaded transcript and an empty chat both read as zero messages, so
+    // neither the empty state nor the spinner can be trusted until sync lands.
+    if (!isReady) {
+      return <div className="min-h-0 flex-1" />
+    }
+
     return isPending ? (
       <div className="flex min-h-0 flex-1 items-center justify-center">
         <Spinner className="text-muted-foreground size-4" />
@@ -59,7 +69,7 @@ export const ChatMessages = ({
   }
 
   return (
-    <MessageScrollerProvider>
+    <MessageScrollerProvider autoScroll>
       <MessageScroller>
         <MessageScrollerViewport className="px-3">
           <MessageScrollerContent
@@ -71,7 +81,7 @@ export const ChatMessages = ({
               <MessageScrollerItem
                 key={message.id}
                 messageId={message.id}
-                scrollAnchor={message.role === 'user'}
+                scrollAnchor={sentHereIds.has(message.id)}
               >
                 {message.role === 'user' ? (
                   <Message align="end">

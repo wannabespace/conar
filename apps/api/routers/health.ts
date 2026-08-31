@@ -1,11 +1,14 @@
-import { anthropic } from '@ai-sdk/anthropic'
-import { google } from '@ai-sdk/google'
-import { openai } from '@ai-sdk/openai'
-import { xai } from '@ai-sdk/xai'
+import { aiProviders, probeProvider } from '@tamery/ai/health'
 import { db } from '@tamery/db'
-import { generateText } from 'ai'
 import { sql } from 'drizzle-orm'
 import { Hono } from 'hono'
+
+const providerLabels = {
+  anthropic: 'Anthropic',
+  google: 'Google',
+  openai: 'OpenAI',
+  xai: 'XAI',
+}
 
 export const healthRouter = new Hono().get('/', async (c) => {
   const hostname = c.req.header('host')
@@ -41,82 +44,22 @@ export const healthRouter = new Hono().get('/', async (c) => {
           error instanceof Error ? error.message : 'Database connection failed'
         )
       ),
-    generateText({
-      model: openai('gpt-5-nano'),
-      prompt: 'Hello, how are you?',
-    })
-      .then((result) => {
-        if (!result.text) {
-          return createAnswer('error', 'openai', 'OpenAI connection failed')
-        }
-
-        return createAnswer('ok', 'openai', result.text)
-      })
-      .catch((error) =>
-        createAnswer(
-          'error',
-          'openai',
-          error instanceof Error ? error.message : 'OpenAI connection failed'
+    ...aiProviders.map((provider) => {
+      const failed = `${providerLabels[provider]} connection failed`
+      return probeProvider(provider)
+        .then((text) =>
+          text
+            ? createAnswer('ok', provider, text)
+            : createAnswer('error', provider, failed)
         )
-      ),
-    generateText({
-      model: google('gemini-flash-latest'),
-      prompt: 'Hello, how are you?',
-    })
-      .then((result) => {
-        if (!result.text) {
-          return createAnswer('error', 'google', 'Google connection failed')
-        }
-
-        return createAnswer('ok', 'google', result.text)
-      })
-      .catch((error) =>
-        createAnswer(
-          'error',
-          'google',
-          error instanceof Error ? error.message : 'Google connection failed'
-        )
-      ),
-    generateText({
-      model: anthropic('claude-opus-4-6'),
-      prompt: 'Hello, how are you?',
-    })
-      .then((result) => {
-        if (!result.text) {
-          return createAnswer(
+        .catch((error) =>
+          createAnswer(
             'error',
-            'anthropic',
-            'Anthropic connection failed'
+            provider,
+            error instanceof Error ? error.message : failed
           )
-        }
-
-        return createAnswer('ok', 'anthropic', result.text)
-      })
-      .catch((error) =>
-        createAnswer(
-          'error',
-          'anthropic',
-          error instanceof Error ? error.message : 'Anthropic connection failed'
         )
-      ),
-    generateText({
-      model: xai('grok-4-latest'),
-      prompt: 'Hello, how are you?',
-    })
-      .then((result) => {
-        if (!result.text) {
-          return createAnswer('error', 'xai', 'XAI connection failed')
-        }
-
-        return createAnswer('ok', 'xai', result.text)
-      })
-      .catch((error) =>
-        createAnswer(
-          'error',
-          'xai',
-          error instanceof Error ? error.message : 'XAI connection failed'
-        )
-      ),
+    }),
   ])
 
   const error = promises.find((promise) => promise.status === 'error')

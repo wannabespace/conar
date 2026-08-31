@@ -53,7 +53,6 @@ const ResourcePage = () => {
     id: `database-layout-${connectionResource.id}`,
     storage: localStorage,
   })
-
   const { type, isPasswordStateKnown } = useFetchingConfig(connection)
 
   if (isPasswordStateKnown && type === 'waiting-for-password') {
@@ -66,41 +65,39 @@ const ResourcePage = () => {
   }
 
   return (
-    <div className="flex">
-      <div className="m-2 flex h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(4)))]">
-        <div className="flex min-w-0 flex-1 flex-col">
-          <ResizablePanelGroup
-            orientation="vertical"
-            className="min-h-0 flex-1"
-            defaultLayout={defaultLayout}
-            onLayoutChanged={onLayoutChanged}
-          >
-            <ResizablePanel defaultSize="70%" minSize="50%">
-              <div className="flex h-full min-h-0 w-full">
-                <Navigator />
-                <div className="bg-background flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg">
-                  <TabBar />
-                  <Outlet />
-                </div>
+    <div className="flex p-2">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <ResizablePanelGroup
+          orientation="vertical"
+          className="min-h-0 flex-1"
+          defaultLayout={defaultLayout}
+          onLayoutChanged={onLayoutChanged}
+        >
+          <ResizablePanel defaultSize="70%" minSize="20%">
+            <div className="flex h-full min-h-0 w-full">
+              <Navigator />
+              <div className="bg-background flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg">
+                <TabBar />
+                <Outlet />
               </div>
-            </ResizablePanel>
-            {loggerOpened && (
-              <>
-                <ResizableHandle className="h-1" />
-                <ResizablePanel
-                  defaultSize="30%"
-                  minSize="10%"
-                  maxSize="50%"
-                  className="bg-background overflow-auto rounded-lg"
-                >
-                  <QueryLogger connectionResource={connectionResource} />
-                </ResizablePanel>
-              </>
-            )}
-          </ResizablePanelGroup>
-        </div>
-        <ChatPanel />
+            </div>
+          </ResizablePanel>
+          {loggerOpened && (
+            <>
+              <ResizableHandle className="h-1" />
+              <ResizablePanel
+                defaultSize="30%"
+                minSize="10%"
+                maxSize="50%"
+                className="bg-background overflow-auto rounded-lg"
+              >
+                <QueryLogger connectionResource={connectionResource} />
+              </ResizablePanel>
+            </>
+          )}
+        </ResizablePanelGroup>
       </div>
+      <ChatPanel />
     </div>
   )
 }

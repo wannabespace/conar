@@ -42,7 +42,6 @@ import {
 import { Reorder } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
-import { v7 } from 'uuid'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppContextMenu } from '~/components/app-context-menu'
@@ -448,13 +447,7 @@ const ChatToggle = ({ resourceId }: { resourceId: string }) => {
   const toggleChat = () =>
     store.set(
       (state) =>
-        ({
-          ...state,
-          // Minted here, not in an effect: the panel must have a chat
-          // on its first opening frame or it animates open empty.
-          chatId: state.chatId ?? v7(),
-          chatOpened: !state.chatOpened,
-        }) satisfies typeof state
+        ({ ...state, chatOpened: !state.chatOpened }) satisfies typeof state
     )
 
   useHotkey('Mod+L', (e) => {

@@ -1,11 +1,5 @@
-import { chatAdapter } from '@tamery/ai/adapters'
-import {
-  updateSqlPrompts,
-  updateSqlSystemPrompt,
-} from '@tamery/ai/prompts/update-sql'
+import { updateSql } from '@tamery/ai/update-sql'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { abortControllerFrom } from '@tamery/shared/utils/helpers'
-import { chat } from '@tanstack/ai'
 import { type } from 'arktype'
 
 import { orpc, subscriptionMiddleware } from '~/orpc'
@@ -21,19 +15,11 @@ export const updateSQL = orpc
     })
   )
   .handler(({ input, signal }) =>
-    chat({
-      abortController: abortControllerFrom(signal),
-      adapter: chatAdapter,
-      messages: updateSqlPrompts(input).map((content) => ({
-        content,
-        role: 'user' as const,
-      })),
-      stream: false,
-      systemPrompts: [
-        updateSqlSystemPrompt({
-          connectionType: input.type,
-          context: input.context,
-        }),
-      ],
+    updateSql({
+      connectionType: input.type,
+      context: input.context,
+      prompt: input.prompt,
+      signal,
+      sql: input.sql,
     })
   )

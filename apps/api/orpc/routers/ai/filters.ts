@@ -1,28 +1,10 @@
-import { fastAdapter } from '@tamery/ai/adapters'
-import { filtersSystemPrompt } from '@tamery/ai/prompts/filters'
+import { generateFilters } from '@tamery/ai/filters'
 import { FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT } from '@tamery/shared/constants'
-import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
-import { abortControllerFrom } from '@tamery/shared/utils/helpers'
-import { chat } from '@tanstack/ai'
 import { type } from 'arktype'
 import { addDays, differenceInSeconds, endOfMonth, format } from 'date-fns'
 
 import { redis } from '~/lib/redis'
 import { optionalSubscriptionMiddleware, orpc } from '~/orpc'
-
-const filtersOutputSchema = type({
-  filters: type({
-    column: 'string',
-    operator: type.enumerated(
-      ...SQL_FILTERS_LIST.map((filter) => filter.operator)
-    ),
-    values: 'string[]',
-  }).array(),
-  orderBy: type({
-    column: 'string',
-    direction: "'ASC' | 'DESC'",
-  }).array(),
-})
 
 const redisUsage = {
   get: async (userId: string) => {
@@ -81,20 +63,11 @@ export const filters = orpc
       }
     }
 
-    const result = await chat({
-      abortController: abortControllerFrom(signal),
-      adapter: fastAdapter,
-      messages: [{ content: input.prompt, role: 'user' }],
-      outputSchema: filtersOutputSchema,
-      systemPrompts: [filtersSystemPrompt(input.context)],
+    const result = await generateFilters({
+      context: input.context,
+      prompt: input.prompt,
+      signal,
     })
-
-    const orderBy = Object.fromEntries(
-      (result?.orderBy ?? []).map(({ column, direction }) => [
-        column,
-        direction,
-      ])
-    )
 
     if (!context.subscription && result.filters.length > 0) {
       usage = await redisUsage.increment(context.user.id)
@@ -110,8 +83,7 @@ export const filters = orpc
     })
 
     return {
-      filters: result?.filters ?? [],
-      orderBy,
+      ...result,
       ...(remainingFreeAiUsage !== null && {
         freeAiUsage: {
           max: FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT,

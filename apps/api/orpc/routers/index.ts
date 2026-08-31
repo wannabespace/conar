@@ -22,8 +22,7 @@ import * as workspaces from './workspaces'
 
 export const router = {
   account,
-  // Remove v1 later when most clients are migrated to v2
-  ai: { ...ai, ...chats.v1 },
+  ai,
   banner,
   chats,
   chatsMessages,
@@ -31,7 +30,6 @@ export const router = {
   connections,
   connectionsResources,
   contact,
-  databases: connections,
   internal,
   queries,
   releases,

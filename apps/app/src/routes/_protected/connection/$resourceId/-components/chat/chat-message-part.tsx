@@ -1,6 +1,6 @@
 import { RiArrowRightSLine, RiBrainLine, RiToolsLine } from '@remixicon/react'
 import type { RemixiconComponentType } from '@remixicon/react'
-import type { AppMessagePart } from '@tamery/ai/v2/message'
+import type { AppMessagePart } from '@tamery/ai/message'
 import { CodeBlock } from '@tamery/ui/components/code-block'
 import {
   Collapsible,
@@ -9,10 +9,9 @@ import {
 } from '@tamery/ui/components/collapsible'
 import { Response } from '@tamery/ui/components/response'
 import { Spinner } from '@tamery/ui/components/spinner'
-import type { ToolCallState } from '@tanstack/ai'
+import { getToolOrDynamicToolName, isDynamicToolUIPart, isToolUIPart } from 'ai'
+import type { DynamicToolUIPart, ToolUIPart } from 'ai'
 import type * as React from 'react'
-
-const TERMINAL_TOOL_STATES = new Set<ToolCallState>(['complete', 'error'])
 
 const jsonText = (value: unknown) => JSON.stringify(value, null, 2)
 
@@ -40,55 +39,42 @@ const Disclosure = ({
   </Collapsible>
 )
 
-const ToolCall = ({
-  part,
-}: {
-  part: Extract<AppMessagePart, { type: 'tool-call' }>
-}) => (
+const ToolPart = ({ part }: { part: DynamicToolUIPart | ToolUIPart }) => (
   <Disclosure
     icon={RiToolsLine}
-    label={part.name}
+    label={getToolOrDynamicToolName(part)}
     status={
-      TERMINAL_TOOL_STATES.has(part.state) ? null : (
+      part.state === 'output-available' ||
+      part.state === 'output-error' ? null : (
         <Spinner className="size-3" />
       )
     }
   >
-    <CodeBlock
-      code={part.input === undefined ? part.arguments : jsonText(part.input)}
-      language="json"
-    />
-    {part.output !== undefined && (
+    {part.input !== undefined && (
+      <CodeBlock code={jsonText(part.input)} language="json" />
+    )}
+    {part.state === 'output-available' && part.output !== undefined && (
       <CodeBlock code={jsonText(part.output)} language="json" />
+    )}
+    {part.state === 'output-error' && (
+      <CodeBlock code={part.errorText} language="text" />
     )}
   </Disclosure>
 )
 
 export const MessagePart = ({ part }: { part: AppMessagePart }) => {
+  if (isToolUIPart(part) || isDynamicToolUIPart(part)) {
+    return <ToolPart part={part} />
+  }
+
   switch (part.type) {
     case 'text': {
-      return part.content.trim() ? <Response>{part.content}</Response> : null
+      return part.text.trim() ? <Response>{part.text}</Response> : null
     }
-    case 'thinking': {
+    case 'reasoning': {
       return (
         <Disclosure icon={RiBrainLine} label="Reasoning">
-          <Response className="text-muted-foreground">{part.content}</Response>
-        </Disclosure>
-      )
-    }
-    case 'tool-call': {
-      return <ToolCall part={part} />
-    }
-    case 'tool-result': {
-      return (
-        <Disclosure icon={RiToolsLine} label={part.error ?? 'Tool result'}>
-          {typeof part.content === 'string' ? (
-            <CodeBlock code={part.content} language="text" />
-          ) : (
-            part.content.map((entry, index) => (
-              <MessagePart key={index} part={entry} />
-            ))
-          )}
+          <Response className="text-muted-foreground">{part.text}</Response>
         </Disclosure>
       )
     }
