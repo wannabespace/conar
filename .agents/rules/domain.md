@@ -45,4 +45,6 @@ No action icons (see `tamery-ui` patterns). Which list is up is deliberately **n
 
 ## Collections lifecycle
 
-`getCollections()` lazily creates the singleton set; `cleanCollections()` drops it. `_protected` `beforeLoad` awaits `stateWhenReady()` for core collections; `ProtectedLayout` cleans on unmount. TanStack DB GCs in-memory data when a collection has no subscribers longer than `gcTime`.
+`getCollections()` lazily creates the singleton set; `cleanCollections()` drops it. `_protected` `beforeLoad` awaits `stateWhenReady()` for core collections and puts them in route context. TanStack DB GCs in-memory data when a collection has no subscribers longer than `gcTime`.
+
+**Only `fullSignOut` may call `cleanCollections()`.** Components read collections from route context, everything else from `getCollections()` — dropping the singleton while a `_protected` match is alive splits the two apart: the router keeps the old set in the cached context (UI keeps working) while the next `getCollections()` mints an empty one (every query throws). It was previously cleaned on `ProtectedLayout` unmount, which the root `errorComponent` triggers — one error then made every later query fail with "Connection not found for connection resource".

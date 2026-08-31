@@ -4,9 +4,7 @@ import { useEffect } from 'react'
 
 import { GlobalBanner } from '~/components/global-banner'
 import { SubscriptionModal } from '~/components/subscription-modal'
-import { cleanCollections } from '~/entities/collections'
 import { EventsProvider } from '~/events'
-import { enterAppAnimation } from '~/global-hooks'
 import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
 import { useLastOpenedResourcesSync } from '~/hooks/use-last-opened-resources-sync'
 import { subscriptionQueryClient } from '~/main'
@@ -17,17 +15,6 @@ import { ProtectedTitleBar } from './_protected/-components/protected-titlebar'
 const ProtectedLayout = () => {
   useConnectionStringsSync()
   useLastOpenedResourcesSync()
-
-  useEffect(
-    () => () => {
-      cleanCollections()
-    },
-    []
-  )
-
-  useEffect(() => {
-    enterAppAnimation()
-  }, [])
 
   useEffect(() => {
     const handleFocus = () => {

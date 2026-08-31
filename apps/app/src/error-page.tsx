@@ -14,8 +14,6 @@ import { useEffect, useState } from 'react'
 import { EventsProvider } from '~/events'
 import { posthog } from '~/lib/posthog'
 
-import { enterAppAnimation } from './global-hooks'
-
 // User specific errors that we don't want to track
 const CONNECTION_ERRORS = [
   'ERR_TIMED_OUT',
@@ -47,10 +45,6 @@ const isReadableMessage = (message: string) => {
 export const ErrorPage = ({ error }: ErrorComponentProps) => {
   const router = useRouter()
   const [showDetails, setShowDetails] = useState(false)
-
-  useEffect(() => {
-    enterAppAnimation()
-  }, [])
 
   useEffect(() => {
     if (CONNECTION_ERRORS.some((e) => error.message.includes(e))) {

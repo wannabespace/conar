@@ -12,7 +12,6 @@ import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 
 import { TitleBar } from '~/components/title-bar'
-import { enterAppAnimation } from '~/global-hooks'
 import {
   authClient,
   bearerToken,
@@ -87,10 +86,6 @@ const AuthPage = () => {
       },
     })
   )
-
-  useEffect(() => {
-    enterAppAnimation()
-  }, [])
 
   useEffect(() => {
     if (!data?.ready || !codeChallenge || !verifier) {

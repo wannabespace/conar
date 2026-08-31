@@ -72,8 +72,12 @@ export const fullSignOut = async () => {
     await router.navigate({ to: '/auth' })
   }
 
-  const { clearDb } = await import('./sync')
+  const [{ cleanCollections }, { clearDb }] = await Promise.all([
+    import('~/entities/collections'),
+    import('./sync'),
+  ])
 
+  cleanCollections()
   await clearDb()
   await encryptionKey.reset()
 }
