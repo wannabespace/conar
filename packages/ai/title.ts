@@ -1,7 +1,7 @@
 import { generateText } from 'ai'
 
 import type { AppUIMessage } from './message'
-import { messageText } from './message'
+import { textFromMessage } from './message'
 import { fastModel } from './models'
 
 const TITLE_SYSTEM_PROMPT = [
@@ -18,11 +18,8 @@ export const generateChatTitle = async (data: {
   messages: AppUIMessage[]
   signal?: AbortSignal
 }) => {
-  // Flattened to a single prompt on purpose: the transcript ends on an
-  // assistant turn, and Anthropic treats a trailing assistant message as a
-  // prefill to continue — it stops immediately and returns an empty title.
   const prompt = data.messages
-    .map((message) => messageText(message))
+    .map((message) => textFromMessage(message))
     .filter(Boolean)
     .join('\n')
 
@@ -32,5 +29,6 @@ export const generateChatTitle = async (data: {
     model: fastModel,
     prompt,
   })
+
   return text
 }

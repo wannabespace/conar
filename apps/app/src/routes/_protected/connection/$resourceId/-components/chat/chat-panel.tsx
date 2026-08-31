@@ -6,7 +6,7 @@ import {
   RiHistoryLine,
 } from '@remixicon/react'
 import {
-  messageText,
+  textFromMessage,
   messagesFromRows,
   mergeMessages,
 } from '@tamery/ai/message'
@@ -180,7 +180,7 @@ const Chat = ({
   const isStreaming = status === 'submitted' || status === 'streaming'
   const displayMessages = mergeMessages(collectionMessages, messages)
   const firstMessage = displayMessages.at(0)
-  const pendingTitle = firstMessage ? messageText(firstMessage) : null
+  const pendingTitle = firstMessage ? textFromMessage(firstMessage) : null
   const sentHereIds = new Set(
     messages
       .filter((message) => message.role === 'user')

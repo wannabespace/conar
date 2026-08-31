@@ -9,7 +9,7 @@
 
 ## Chat
 
-- `routers/ai/chat-legacy.ts` (`ai.chat`) and `ai.generateTitle` are **frozen** — shipped desktop builds parse their wire format; never change them, never import from them. No v1/v2 split anywhere; don't reintroduce one — a frozen file marked legacy says the same thing without versioning every module.
+- `routers/ai/chat-legacy.ts` (`ai.chat`) is **frozen** — shipped desktop builds parse its wire format; never change it, never import from it. No v1/v2 split anywhere; don't reintroduce one — a frozen file marked legacy says the same thing without versioning every module.
 - Stack: AI SDK (`ai` v7 + `@ai-sdk/react`) + `ai-retry` (cross-provider fallbacks) + `ai-resumable-stream` (Redis). `@tanstack/ai` is gone; do not reach for it.
 - `ai.stream`: the wire carries only the new turn; the stored transcript is the model context, so a client can never send stale history. Titles generate server-side beside the first answer; the client never asks.
 - `ai.attachStream`: answers "what should be streaming into this chat right now" — the live stream when one exists (pointer per chat, not per device), else a fresh stream when the transcript ends on a user turn (the decision is made once, on the server). Empty = nothing to stream, never an error. Deliberately not named `resume` — it can spend a model call.

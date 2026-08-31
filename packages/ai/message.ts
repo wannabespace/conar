@@ -4,22 +4,16 @@ import { isTextUIPart } from 'ai'
 export type AppUIMessage = UIMessage<Record<string, unknown>>
 export type AppMessagePart = AppUIMessage['parts'][number]
 
-export const messageText = (message: Pick<AppUIMessage, 'parts'>) =>
+export const textFromMessage = (message: Pick<AppUIMessage, 'parts'>) =>
   message.parts
     .filter((part) => isTextUIPart(part))
     .map((part) => part.text)
     .join('\n')
     .trim()
 
-interface MessagePartRow {
+interface MessageRow {
   order: number
   part: AppMessagePart
-}
-
-const messagePartsFromRows = (rows: MessagePartRow[]) =>
-  rows.toSorted((a, b) => a.order - b.order).map(({ part }) => part)
-
-interface MessageRow extends MessagePartRow {
   messageId: string
   metadata: Record<string, unknown> | null
   role: AppUIMessage['role']
@@ -36,7 +30,9 @@ export const messagesFromRows = (rows: MessageRow[]): AppUIMessage[] =>
       return {
         id: first.messageId,
         metadata: first.metadata ?? undefined,
-        parts: messagePartsFromRows(parts),
+        parts: parts
+          .toSorted((a, b) => a.order - b.order)
+          .map(({ part }) => part),
         role: first.role,
       }
     }

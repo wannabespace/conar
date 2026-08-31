@@ -1,6 +1,6 @@
 import { RiChatAiLine } from '@remixicon/react'
 import type { AppUIMessage } from '@tamery/ai/message'
-import { messageText } from '@tamery/ai/message'
+import { textFromMessage } from '@tamery/ai/message'
 import { Bubble, BubbleContent } from '@tamery/ui/components/bubble'
 import {
   Empty,
@@ -88,7 +88,7 @@ export const ChatMessages = ({
                     <MessageContent>
                       <Bubble align="end">
                         <BubbleContent data-mask>
-                          {messageText(message)}
+                          {textFromMessage(message)}
                         </BubbleContent>
                       </Bubble>
                     </MessageContent>
