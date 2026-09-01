@@ -18,37 +18,12 @@
       content="script-src 'self' 'unsafe-inline' https://eu.i.posthog.com https://eu-assets.i.posthog.com 'wasm-unsafe-eval'; worker-src 'self' blob: file: http://localhost:*;"
     />
     <title>Tamery</title>
-    <script>
-      if (window.electron) {
-        document.documentElement.classList.add('electron')
-        if (/Mac/i.test(navigator.userAgent)) {
-          document.documentElement.classList.add('mac')
-        }
-      }
-
-      const lastLocation = localStorage.getItem('last-location')
-      document.documentElement.classList.add(
-        lastLocation && lastLocation !== 'null' ? 'shell-app' : 'shell-auth'
-      )
-
-      const theme = localStorage.getItem('tamery.theme')
-      if (
-        theme === 'dark' ||
-        ((theme === null || JSON.parse(theme) === 'system') &&
-          window.matchMedia('(prefers-color-scheme: dark)').matches)
-      ) {
-        document.documentElement.classList.add('dark')
-      }
-    </script>
+    <link rel="stylesheet" href="/src/globals.css?direct" />
+    <!--boot-->
   </head>
   <body>
-    <div
-      id="static-titlebar"
-      class="fixed inset-x-0 top-0 h-10"
-      style="-webkit-app-region: drag"
-    ></div>
     <!--shell-->
     <div id="root" class="relative isolate z-10 flex min-h-svh flex-col"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/entry.ts"></script>
   </body>
 </html>

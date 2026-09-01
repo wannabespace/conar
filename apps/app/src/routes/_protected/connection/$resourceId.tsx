@@ -20,6 +20,7 @@ import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
 import { getActiveWorkspace } from '~/entities/workspace/utils'
+import { resourcePanelClassName } from '~/shell'
 
 import { ChatPanel } from './$resourceId/-components/chat/chat-panel'
 import { Navigator } from './$resourceId/-components/navigator/navigator'
@@ -27,6 +28,8 @@ import { TabBar } from './$resourceId/-components/tab-bar'
 import { PasswordForm } from './-components/password-form'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
+const visibleOverflow = { overflow: 'visible' } as const
 
 const ResourcePage = () => {
   const { connection, connectionResource } = useRouteContext()
@@ -67,13 +70,18 @@ const ResourcePage = () => {
         <ResizablePanelGroup
           orientation="vertical"
           className="min-h-0 flex-1"
+          style={visibleOverflow}
           defaultLayout={defaultLayout}
           onLayoutChanged={onLayoutChanged}
         >
-          <ResizablePanel defaultSize="70%" minSize="20%">
+          <ResizablePanel
+            defaultSize="70%"
+            minSize="20%"
+            style={visibleOverflow}
+          >
             <div className="flex h-full min-h-0 w-full">
               <Navigator />
-              <div className="bg-background flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg">
+              <div className={resourcePanelClassName}>
                 <TabBar />
                 <Outlet />
               </div>

@@ -134,7 +134,7 @@
 }
 
 .electron.mac:not(.window-fullscreen):not(:has([data-slot$='-overlay'])) {
-  --surface-alpha: 0.5;
+  --surface-alpha: 0.6;
 }
 
 .electron.mac.dark:not(.window-fullscreen):not(:has([data-slot$='-overlay'])) {
@@ -162,12 +162,21 @@
   }
 }
 
-.shell-app #shell-auth,
-.shell-auth #shell-app {
+[data-shell] {
   display: none;
 }
 
-.electron.mac:not(.window-fullscreen) #shell-titlebar {
+.shell-auth #shell-auth,
+.shell-dashboard #shell-dashboard,
+.shell-connection #shell-connection {
+  display: revert-layer;
+}
+
+[data-shell-navigator] {
+  width: var(--shell-navigator-width, 256px);
+}
+
+.electron.mac:not(.window-fullscreen) [data-shell-titlebar] {
   padding-left: calc(var(--spacing) * 20);
 }
 

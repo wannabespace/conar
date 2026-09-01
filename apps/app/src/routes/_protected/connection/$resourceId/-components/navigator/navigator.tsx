@@ -59,7 +59,7 @@ const TablesPanel = () => {
   return (
     <>
       <div className="flex shrink-0 items-center gap-1 pb-1.5 pl-2">
-        <InputGroup className="bg-input/60 h-7 flex-1 rounded-md">
+        <InputGroup className="h-7 flex-1 rounded-md">
           <InputGroupAddon>
             <RiSearchLine className="text-muted-foreground/70 size-3.5" />
           </InputGroupAddon>

@@ -798,6 +798,9 @@ importers:
       '@tamery/query-proxy':
         specifier: workspace:*
         version: link:../../packages/query-proxy
+      '@tamery/vite-prerender':
+        specifier: workspace:*
+        version: link:../../packages/vite-prerender
       '@tanstack/react-devtools':
         specifier: 'catalog:'
         version: 0.10.12(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(csstype@3.2.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(solid-js@1.9.14)
@@ -1442,6 +1445,31 @@ importers:
       shadcn:
         specifier: 'catalog:'
         version: 4.19.0(supports-color@7.2.0)(typescript@7.0.2)
+
+  packages/vite-prerender:
+    dependencies:
+      vite:
+        specifier: 'catalog:'
+        version: 8.2.2(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0)
+    devDependencies:
+      '@tamery/configs':
+        specifier: workspace:*
+        version: link:../configs
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.5(@types/react@19.2.18)
+      react:
+        specifier: 'catalog:'
+        version: 19.2.8
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.8(react@19.2.8)
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
 
 packages:
 

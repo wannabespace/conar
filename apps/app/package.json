@@ -74,6 +74,7 @@
     "@tamery/connection": "workspace:*",
     "@tamery/proxy": "workspace:*",
     "@tamery/query-proxy": "workspace:*",
+    "@tamery/vite-prerender": "workspace:*",
     "@tanstack/react-devtools": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",

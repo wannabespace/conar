@@ -53,7 +53,7 @@ export const PrimaryKeyTooltipIcon = ({
     <TooltipTrigger>
       <RiKey2Line className="text-primary size-2.5 shrink-0" />
     </TooltipTrigger>
-    <TooltipContent className="max-w-none">
+    <TooltipContent className="max-w-none flex-col items-start gap-0.5">
       <div className="flex items-center gap-1">
         <RiKey2Line className="text-primary size-3" />
         Primary key
@@ -84,7 +84,7 @@ export const UniqueTooltipIcon = ({ unique }: { unique: string }) => (
     <TooltipTrigger>
       <RiFingerprintLine className="size-2.5 shrink-0 opacity-70" />
     </TooltipTrigger>
-    <TooltipContent className="max-w-none">
+    <TooltipContent className="max-w-none flex-col items-start gap-0.5">
       <div className="flex items-center gap-1">
         <RiFingerprintLine className="size-3 opacity-70" />
         Unique
@@ -119,7 +119,7 @@ export const DefaultValueTooltipIcon = ({
     <TooltipTrigger>
       <RiCharacterRecognitionLine className="size-2.5 shrink-0 opacity-70" />
     </TooltipTrigger>
-    <TooltipContent className="max-w-none">
+    <TooltipContent className="max-w-none flex-col items-start gap-0.5">
       <div className="flex items-center gap-1">
         <RiCharacterRecognitionLine className="size-3 opacity-70" />
         Default
@@ -147,7 +147,7 @@ const ForeignTooltipIcon = ({
     <TooltipTrigger
       render={<RiLinksLine className="size-2.5 shrink-0 opacity-70" />}
     />
-    <TooltipContent className="max-w-none">
+    <TooltipContent className="max-w-none flex-col items-start gap-0.5">
       <div className="flex items-center gap-1">
         <RiLinksLine className="size-3 opacity-70" />
         Foreign key
@@ -168,8 +168,8 @@ const EnumTooltipIcon = ({
 }) => (
   <Tooltip>
     <TooltipTrigger>{children}</TooltipTrigger>
-    <TooltipContent>
-      <div className="mb-1 text-xs opacity-70">Available values:</div>
+    <TooltipContent className="flex-col items-start">
+      <div className="text-xs opacity-70">Available values:</div>
       <div
         data-mask
         className="flex max-w-sm flex-wrap gap-1 font-mono text-xs font-medium"

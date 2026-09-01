@@ -4,16 +4,28 @@ import { cn } from '@tamery/ui/lib/utils'
 export const titleBarClassName =
   'flex h-[calc(40px+1px)] shrink-0 items-center border-b border-transparent'
 
-export const AppShell = () => (
+export const resourcePanelClassName =
+  'bg-background flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg'
+
+export const centeredPageClassName =
+  'mx-auto flex min-h-full w-full max-w-2xl flex-col px-6 py-12'
+
+const ShellFrame = ({
+  children,
+  id,
+}: {
+  children: React.ReactNode
+  id: string
+}) => (
   <div
     aria-hidden
     className="pointer-events-none fixed inset-0 flex flex-col"
     data-shell
-    id="shell-app"
+    id={id}
   >
     <div
       className={cn(titleBarClassName, 'border-b-border bg-card gap-1.5')}
-      id="shell-titlebar"
+      data-shell-titlebar
     >
       <div className="flex w-full items-center px-2">
         <div className="shrink-0 p-1.5">
@@ -21,10 +33,28 @@ export const AppShell = () => (
         </div>
       </div>
     </div>
+    {children}
   </div>
 )
 
-export const AuthShell = () => (
+const ConnectionShell = () => (
+  <ShellFrame id="shell-connection">
+    <div className="flex min-h-0 flex-1 p-2">
+      <div className="h-full shrink-0" data-shell-navigator />
+      <div className={resourcePanelClassName}>
+        <div className="h-8 shrink-0" />
+      </div>
+    </div>
+  </ShellFrame>
+)
+
+const DashboardShell = () => (
+  <ShellFrame id="shell-dashboard">
+    <div className={centeredPageClassName} />
+  </ShellFrame>
+)
+
+const AuthShell = () => (
   <div
     aria-hidden
     className="pointer-events-none fixed inset-0 grid lg:grid-cols-2"
@@ -33,4 +63,17 @@ export const AuthShell = () => (
   >
     <div className="bg-body border-r-border hidden border-r lg:block" />
   </div>
+)
+
+const StaticTitleBar = () => (
+  <div className="fixed inset-x-0 top-0 h-10 [-webkit-app-region:drag]" />
+)
+
+export const Shells = () => (
+  <>
+    <StaticTitleBar />
+    <AuthShell />
+    <DashboardShell />
+    <ConnectionShell />
+  </>
 )

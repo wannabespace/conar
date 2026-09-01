@@ -44,6 +44,7 @@ process.on('unhandledRejection', (reason) => {
 export const store = new Store<{
   bounds?: Rectangle
   fullscreen?: boolean
+  maximized?: boolean
 }>()
 
 let mainWindow: BrowserWindow | null = null
@@ -85,6 +86,10 @@ export const createWindow = () => {
     mainWindow.setBounds(bounds)
   }
 
+  if (store.get('maximized', false)) {
+    mainWindow.maximize()
+  }
+
   const isFullscreen = store.get('fullscreen', false)
   if (isFullscreen) {
     mainWindow.setFullScreen(true)
@@ -103,6 +108,7 @@ export const createWindow = () => {
 
       if (!mainWindow.isFullScreen() && !mainWindow.isMinimized()) {
         store.set('bounds', mainWindow.getNormalBounds())
+        store.set('maximized', mainWindow.isMaximized())
       }
       store.set('fullscreen', mainWindow.isFullScreen())
     }, 300)
@@ -138,6 +144,7 @@ export const createWindow = () => {
 
     if (!mainWindow.isFullScreen() && !mainWindow.isMinimized()) {
       store.set('bounds', mainWindow.getNormalBounds())
+      store.set('maximized', mainWindow.isMaximized())
     }
     store.set('fullscreen', mainWindow.isFullScreen())
     mainWindow = null

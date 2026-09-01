@@ -1,12 +1,12 @@
 import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import { setupPortlessEnvs } from '@tamery/shared/utils/portless-env'
+import { prerender } from '@tamery/vite-prerender'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 import { version } from '../desktop/package.json' with { type: 'json' }
-import { prerenderShell } from './vite-plugins/prerender-shell'
 
 setupPortlessEnvs({
   VITE_PUBLIC_API_URL: 'api.local.tamery',
@@ -45,7 +45,12 @@ export default defineConfig(({ mode }) => ({
       generatedRouteTree: 'src/routeTree.gen.ts',
       routesDirectory: 'src/routes',
     }),
-    prerenderShell(),
+    prerender({
+      components: [
+        { export: 'Shells', marker: '<!--shell-->', module: '/src/shell.tsx' },
+      ],
+      scripts: [{ entry: 'src/boot.ts', marker: '<!--boot-->' }],
+    }),
     react(),
     babel({
       presets: [reactCompilerPreset()],

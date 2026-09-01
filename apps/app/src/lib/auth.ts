@@ -1,7 +1,6 @@
 import { tryCatchAsync } from '@tamery/shared/utils/helpers'
 import { type } from 'arktype'
 import { organizationClient } from 'better-auth/client/plugins'
-import { bearer } from 'better-auth/plugins/bearer'
 import { createAuthClient } from 'better-auth/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
@@ -54,7 +53,7 @@ export const authClient = createAuthClient({
       }
     },
   },
-  plugins: [organizationClient(), ...(window.electron ? [bearer()] : [])],
+  plugins: [organizationClient()],
 })
 
 export const isSignedIn = async () => {

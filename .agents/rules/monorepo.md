@@ -10,6 +10,7 @@
 - `packages/connection` — driver wrappers, connection-string parsers, SSL/SSH utils. **No Drizzle** (that's `packages/db`, cloud PostgreSQL only).
 - `packages/query-proxy` — oRPC router factory shared by `apps/api` + `apps/proxy`.
 - `packages/ai` — everything AI needing no db/auth/oRPC: models, resumable chat stream, `UIMessage` helpers, one module per generation feature. New prompts and models go here, not `apps/api`; deep imports only (`@tamery/ai/models`) so the client never pulls server-only modules.
+- `@tamery/vite-prerender` (`packages/vite-prerender`) — framework-agnostic Vite plugin: renders React components into `index.html` markers (dev and build) and inlines bundled IIFE scripts. Knows nothing about shells, boot, or CSS — every target is passed from the app's `vite.config.ts`.
 - `apps/desktop` — Electron wrapper around `apps/app`; `apps/main` = marketing + auth only.
 
 ## Dev commands

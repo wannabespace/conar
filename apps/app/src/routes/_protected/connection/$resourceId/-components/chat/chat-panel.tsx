@@ -285,9 +285,9 @@ export const ChatPanel = () => {
               ease: [0.32, 0.72, 0, 1],
             }
       }
-      className="relative h-full shrink-0 overflow-hidden"
+      className="relative h-full shrink-0"
     >
-      <div className="flex h-full flex-col pl-2" style={{ width }}>
+      <div className="flex h-full flex-col pl-1.5" style={{ width }}>
         <div className="bg-background flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg">
           <Chat
             key={activeChatId}
