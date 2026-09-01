@@ -10,12 +10,12 @@ import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import {
   createRootRoute,
   HeadContent,
+  lazyRouteComponent,
   Outlet,
   useRouter,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
-import { ErrorPage } from '~/error-page'
 import { globalHooks } from '~/global-hooks'
 import { queryClient } from '~/main'
 import { useDeepLinksObserver } from '~/use-deep-links-observer'
@@ -79,7 +79,7 @@ const RootDocument = () => {
 
 export const Route = createRootRoute({
   component: RootDocument,
-  errorComponent: ErrorPage,
+  errorComponent: lazyRouteComponent(() => import('~/error-page'), 'ErrorPage'),
   head: () => ({
     meta: [{ title: title() }],
   }),
