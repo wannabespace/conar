@@ -45,8 +45,6 @@ export const stream = orpc
       })
     }
 
-    // The stored transcript is the model context — the wire carries only the
-    // new turn, and a re-sent id lands on the already-persisted row.
     const history = await loadChatMessages({
       chatId: input.chatId,
       userId: context.user.id,
