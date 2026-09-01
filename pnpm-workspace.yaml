@@ -30,15 +30,15 @@ patchedDependencies:
   '@better-auth/kysely-adapter@1.7.0-beta.9': patches/@better-auth__kysely-adapter@1.7.0-beta.9.patch
 catalog:
   '@paper-design/shaders-react': ^0.0.80
-  '@ai-sdk/anthropic': ^4.0.42
-  '@ai-sdk/react': ^4.0.86
-  '@ai-sdk/google': ^4.0.51
-  '@ai-sdk/openai': ^4.0.47
-  '@ai-sdk/xai': ^4.0.44
+  '@ai-sdk/anthropic': ^4.0.46
+  '@ai-sdk/react': ^4.0.88
+  '@ai-sdk/google': ^4.0.58
+  '@ai-sdk/openai': ^4.0.52
+  '@ai-sdk/xai': ^4.0.50
   '@base-ui/react': ^1.7.0
-  '@blobatar/react': ^2.5.0
-  '@better-auth/api-key': ^1.7.1
-  '@better-auth/drizzle-adapter': ^1.7.1
+  '@blobatar/react': ^2.7.0
+  '@better-auth/api-key': ^1.7.2
+  '@better-auth/drizzle-adapter': ^1.7.2
   '@clack/prompts': ^1.7.0
   '@clickhouse/client': ^1.23.1
   '@manypkg/get-packages': ^3.1.0
@@ -47,10 +47,10 @@ catalog:
   '@drizzle-team/brocli': ^0.12.0
   '@exalabs/ai-sdk': ^2.1.0
   '@faker-js/faker': ^10.6.0
-  '@hackylabs/deep-redact': ^4.0.2
+  '@hackylabs/deep-redact': ^4.1.0
   '@hono/node-server': ^2.1.1
   '@infisical/sdk': ^5.0.2
-  '@noble/hashes': ^2.3.0
+  '@noble/hashes': ^2.4.0
   '@number-flow/react': ^0.6.2
   '@octokit/rest': ^22.0.1
   '@orpc/client': ^1.15.0
@@ -61,18 +61,18 @@ catalog:
   '@react-email/components': ^1.0.10
   '@remixicon/react': ^4.9.0
   '@rolldown/plugin-babel': ^0.2.3
-  '@shadcn/react': ^0.3.0
+  '@shadcn/react': ^0.3.1
   '@standard-schema/spec': ^1.1.0
   '@streamdown/code': ^1.1.1
   '@tailwindcss/typography': ^0.5.20
   '@tailwindcss/vite': ^4.3.3
-  '@tanstack/browser-db-sqlite-persistence': ^0.2.18
-  '@tanstack/react-db': ^0.3.5
+  '@tanstack/browser-db-sqlite-persistence': ^0.2.19
+  '@tanstack/react-db': ^0.3.6
   '@tanstack/react-devtools': ^0.10.12
   '@tanstack/react-form': ^1.33.5
   '@tanstack/react-hotkeys': ^0.10.0
-  '@tanstack/react-query': ^5.102.5
-  '@tanstack/react-query-devtools': ^5.102.5
+  '@tanstack/react-query': ^5.102.8
+  '@tanstack/react-query-devtools': ^5.102.8
   '@tanstack/react-router': ^1.170.32
   '@tanstack/react-router-devtools': ^1.167.1
   '@tanstack/react-start': ^1.168.49
@@ -90,17 +90,17 @@ catalog:
   '@types/react-dom': ^19.2.5
   'typescript': ^7.0.2
   '@upstash/context7-tools-ai-sdk': ^0.2.5
-  '@vitejs/plugin-react': ^6.1.0
+  '@vitejs/plugin-react': ^6.1.1
   '@xyflow/react': ^12.11.5
-  ai: ^7.0.83
+  ai: ^7.0.85
   ai-resumable-stream: ^2.0.0
   ai-retry: ^2.4.0
   arktype: ^2.2.3
   babel-plugin-react-compiler: ^1.0.0
-  better-auth: ^1.7.1
+  better-auth: ^1.7.2
   better-auth-harmony: ^1.3.2
   better-result: ^3.0.1
-  blobatar: ^2.5.0
+  blobatar: ^2.7.0
   change-case: ^5.4.4
   class-variance-authority: ^0.7.1
   cmdk: ^1.1.1
@@ -130,12 +130,12 @@ catalog:
   nitro: 3.0.260311-beta
   node-modules-inspector: ^2.4.4
   npm-run-all2: ^9.0.3
-  open: ^11.0.1
+  open: ^11.0.2
   ora: ^9.4.1
   pg: ^8.23.0
   playwright: ^1.62.1
   portless: ^0.15.6
-  posthog-js: ^1.420.0
+  posthog-js: ^1.422.5
   react: ^19.2.8
   react-day-picker: ^10.0.1
   react-dom: ^19.2.8
@@ -144,14 +144,14 @@ catalog:
   react-resizable-panels: ^4.12.3
   recharts: 3.8.0
   redis: ^6.2.1
-  resend: ^6.24.0
+  resend: ^6.25.0
   seitu: ^0.16.1
   serve: ^14.2.6
-  shadcn: ^4.19.0
+  shadcn: ^4.19.1
   sonner: ^2.0.8
   sql-formatter: ^15.8.2
   streamdown: ^2.6.0
-  stripe: ^22.5.0
+  stripe: ^22.6.0
   tailwind-scrollbar: ^4.0.2
   tailwindcss: ^4.3.3
   taze: ^21.1.0
@@ -165,12 +165,12 @@ catalog:
   vite: ^8.2.2
   oxfmt: '^0.65.0'
   oxlint: '^1.80.0'
-  vite-plugin-electron: ^1.1.1
-  zod: ^4.4.3
-  oxlint-tailwindcss: ^1.10.0
+  vite-plugin-electron: ^1.1.2
+  zod: ^4.5.4
+  oxlint-tailwindcss: ^1.10.2
   '@fontsource-variable/geist': ^5.3.0
   '@fontsource-variable/geist-mono': ^5.3.0
-  ultracite: ^7.10.6
+  ultracite: ^7.10.7
 allowBuilds:
   '@firebase/util': false
   '@google/genai': false

@@ -40,5 +40,8 @@ export const getChatInstance = memoize(
             )
           ),
       },
-    })
+    }),
+  {
+    cacheKey: ({ chatId }) => chatId,
+  }
 )

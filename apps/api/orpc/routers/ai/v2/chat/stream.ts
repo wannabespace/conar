@@ -22,8 +22,6 @@ export const stream = orpc
     })
   )
   .handler(async function* streamHandler({ context, input }) {
-    // The schema keeps the wire contract loose (the array carries the whole
-    // local history); the SDK's own validator is what checks part shapes.
     const messages = await validateUIMessages<AppUIMessage>({
       messages: input.messages,
     }).catch(() => {
