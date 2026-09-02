@@ -4,6 +4,8 @@ import { memoize } from 'memoza'
 import { createStore } from 'seitu'
 import { createWebStorageValue } from 'seitu/web'
 
+import { connectionResourceStoreKey } from '~/lib/storage-keys'
+
 import { connectionTabType } from './tabs/types'
 
 export * from './helpers/navigator'
@@ -83,7 +85,7 @@ const connectionResourceDefaultState: typeof connectionResourceType.infer = {
 export const getConnectionResourceStore = memoize((id: string) =>
   createWebStorageValue({
     defaultValue: connectionResourceDefaultState,
-    key: `connection-resource-store-${id}`,
+    key: connectionResourceStoreKey(id),
     schema: connectionResourceType,
     type: 'localStorage',
   })

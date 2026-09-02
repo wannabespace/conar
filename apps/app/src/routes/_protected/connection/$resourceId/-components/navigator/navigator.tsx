@@ -1,12 +1,15 @@
 import { RiAddLine, RiSearchLine, RiSettings3Line } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
-import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from '@tamery/ui/components/input-group'
+import {
+  ResizableHandle,
+  ResizablePanel,
+} from '@tamery/ui/components/resizable'
 import {
   Tooltip,
   TooltipContent,
@@ -15,7 +18,7 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
+import { usePanelRef } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 
 import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
@@ -27,6 +30,7 @@ import {
 import { pressNavProps } from '~/lib/press-nav'
 
 import {
+  NAVIGATOR_PANEL_ID,
   navigatorOpenValue,
   navigatorWidthValue,
   SIDEBAR_DEFAULT_WIDTH,
@@ -150,61 +154,60 @@ export const Navigator = () => {
   const isOpen = useSubscription(navigatorOpenValue)
   const width = useSubscription(navigatorWidthValue)
   const navigator = useSubscription(getNavigatorStore(connectionResource.id))
-  const [isResizing, setIsResizing] = useState(false)
+  const panelRef = usePanelRef()
 
   return (
-    <motion.div
-      initial={false}
-      animate={{
-        width: isOpen ? width : 0,
-      }}
-      transition={
-        isResizing
-          ? { duration: 0 }
-          : {
-              duration: 0.25,
-              ease: [0.32, 0.72, 0, 1],
-            }
-      }
-      className="relative h-full shrink-0 overflow-hidden"
-    >
-      <div
-        className="text-foreground flex h-full flex-col pr-2"
-        style={{ width }}
+    <>
+      <ResizablePanel
+        id={NAVIGATOR_PANEL_ID}
+        panelRef={panelRef}
+        collapsed={!isOpen}
+        defaultSize={width}
+        minSize={SIDEBAR_MIN_WIDTH}
+        maxSize={SIDEBAR_MAX_WIDTH}
+        groupResizeBehavior="preserve-pixel-size"
+        style={{ overflow: 'hidden' }}
+        onResize={({ inPixels }) => {
+          if (inPixels > 0) {
+            navigatorWidthValue.set(inPixels)
+          }
+        }}
       >
-        <div className="shrink-0 pt-0.5 pb-1.5 pl-2">
-          <NavigatorSwitcher />
-        </div>
-        <div className="relative flex min-h-0 flex-1 flex-col">
-          <AnimatePresence initial={false} mode="popLayout">
-            <motion.div
-              key={navigator}
-              initial={{ opacity: 0, x: navigator === 'tables' ? -12 : 12 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: navigator === 'tables' ? 12 : -12 }}
-              transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
-              className="flex min-h-0 flex-1 flex-col"
-            >
-              {navigator === 'tables' ? <TablesPanel /> : <DefinitionsPanel />}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-        <NavigatorFooter />
-      </div>
-      {isOpen && (
-        <ResizeHandle
-          aria-label="Resize sidebar"
-          className="absolute inset-y-0 right-0 z-10 flex w-2 justify-center"
-          getValue={navigatorWidthValue.get}
-          min={SIDEBAR_MIN_WIDTH}
-          max={SIDEBAR_MAX_WIDTH}
-          onResize={(value) => navigatorWidthValue.set(value)}
-          onResizingChange={setIsResizing}
-          onDoubleClick={() => navigatorWidthValue.set(SIDEBAR_DEFAULT_WIDTH)}
+        <div
+          className="text-foreground flex h-full flex-col pr-1.5"
+          style={{ width }}
         >
-          <div className="group-hover/resize-handle:bg-border group-data-resizing/resize-handle:bg-primary/40 h-full w-[2px] rounded-xs transition-colors" />
-        </ResizeHandle>
-      )}
-    </motion.div>
+          <div className="shrink-0 pt-0.5 pb-1.5 pl-2">
+            <NavigatorSwitcher />
+          </div>
+          <div className="relative flex min-h-0 flex-1 flex-col">
+            <AnimatePresence initial={false} mode="popLayout">
+              <motion.div
+                key={navigator}
+                initial={{ opacity: 0, x: navigator === 'tables' ? -12 : 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: navigator === 'tables' ? 12 : -12 }}
+                transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
+                className="flex min-h-0 flex-1 flex-col"
+              >
+                {navigator === 'tables' ? (
+                  <TablesPanel />
+                ) : (
+                  <DefinitionsPanel />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          <NavigatorFooter />
+        </div>
+      </ResizablePanel>
+      <ResizableHandle
+        aria-label="Resize sidebar"
+        className="-ml-1.5"
+        disabled={!isOpen}
+        disableDoubleClick
+        onDoubleClick={() => panelRef.current?.resize(SIDEBAR_DEFAULT_WIDTH)}
+      />
+    </>
   )
 }

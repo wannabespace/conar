@@ -79,23 +79,25 @@ const Banner = ({
   </motion.div>
 )
 
-const useElapsedSeconds = (since: number | null) => {
-  const [seconds, setSeconds] = useState(0)
+const elapsedSeconds = (since: number) =>
+  Math.round((Date.now() - since) / 1000)
+
+const ElapsedSeconds = ({ since }: { since: number }) => {
+  const [seconds, setSeconds] = useState(() => elapsedSeconds(since))
 
   useEffect(() => {
-    if (since === null) {
-      return
-    }
-
-    const update = () => setSeconds(Math.round((Date.now() - since) / 1000))
-
-    update()
-    const interval = setInterval(update, 1000)
+    const interval = setInterval(() => setSeconds(elapsedSeconds(since)), 1000)
 
     return () => clearInterval(interval)
   }, [since])
 
-  return seconds
+  return (
+    <NumberFlow
+      value={seconds}
+      suffix="s"
+      className="tabular-nums opacity-70"
+    />
+  )
 }
 
 export const GlobalBanner = () => {
@@ -107,14 +109,13 @@ export const GlobalBanner = () => {
       null,
   })
   const waitingSince = useSubscription(slowQueries, {
-    selector: (state) => {
-      const startTimes = Object.values(state)
-        .filter((query) => resourceId && query.resourceId === resourceId)
-        .map((query) => query.startedAt)
-      return startTimes.length > 0 ? Math.min(...startTimes) : null
-    },
+    selector: (state) =>
+      Math.min(
+        ...Object.values(state)
+          .filter((query) => resourceId && query.resourceId === resourceId)
+          .map((query) => query.startedAt)
+      ),
   })
-  const waitingSeconds = useElapsedSeconds(waitingSince)
   const isOnline = useSubscription(appStore, {
     selector: (state) => state.isOnline,
   })
@@ -173,16 +174,12 @@ export const GlobalBanner = () => {
           )}
         </Banner>
       ))}
-      {!reconnectingData && waitingSince !== null && (
+      {!reconnectingData && Number.isFinite(waitingSince) && (
         <Banner key="slow-query" className={typeConfig.info.className}>
           {typeConfig.info.icon}
           <span className="flex flex-1 items-center gap-2 leading-none">
             <span>The database is taking longer than usual to respond.</span>
-            <NumberFlow
-              value={waitingSeconds}
-              suffix="s"
-              className="tabular-nums opacity-70"
-            />
+            <ElapsedSeconds since={waitingSince} />
             <Spinner className="size-3.5" />
           </span>
         </Banner>

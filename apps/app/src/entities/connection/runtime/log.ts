@@ -1,4 +1,18 @@
+import { type } from 'arktype'
 import { createStore } from 'seitu'
+import { createWebStorageValue } from 'seitu/web'
+
+import { LOGGER_DEFAULT_HEIGHT, LOGGER_HEIGHT_KEY } from '~/lib/storage-keys'
+
+export const LOGGER_MIN_HEIGHT = 120
+export const LOGGER_MAX_HEIGHT = 720
+
+export const loggerHeightValue = createWebStorageValue({
+  defaultValue: LOGGER_DEFAULT_HEIGHT,
+  key: LOGGER_HEIGHT_KEY,
+  schema: type('number'),
+  type: 'localStorage',
+})
 
 export interface QueryLog {
   id: string

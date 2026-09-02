@@ -1,4 +1,4 @@
-import { CodeBlock } from '@tamery/ui/components/code-block'
+import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { cn } from '@tamery/ui/lib/utils'
 import type * as React from 'react'
 import { Streamdown } from 'streamdown'

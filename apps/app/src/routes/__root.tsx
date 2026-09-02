@@ -16,6 +16,7 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
+import { WindowTooSmall } from '~/components/window-too-small'
 import { globalHooks } from '~/global-hooks'
 import { queryClient } from '~/main'
 import { useDeepLinksObserver } from '~/use-deep-links-observer'
@@ -71,6 +72,7 @@ const RootDocument = () => {
             />
           )}
         </QueryClientProvider>
+        <WindowTooSmall />
         <Toaster />
       </TooltipProvider>
     </>

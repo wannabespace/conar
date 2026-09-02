@@ -62,9 +62,6 @@ export const Route = createFileRoute('/_protected')({
       c.connectionsCollection.stateWhenReady(),
       c.connectionsResourcesCollection.stateWhenReady(),
       c.workspacesCollection.stateWhenReady(),
-      c.chatsCollection.stateWhenReady(),
-      c.chatsMessagesCollection.stateWhenReady(),
-      c.chatsMessagesPartsCollection.stateWhenReady(),
     ])
 
     return { collections: c }

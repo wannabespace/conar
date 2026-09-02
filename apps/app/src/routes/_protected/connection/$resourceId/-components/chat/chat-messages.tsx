@@ -43,22 +43,14 @@ const ChatEmpty = () => (
 
 export const ChatMessages = ({
   isPending,
-  isReady,
   messages,
   sentHereIds,
 }: {
   isPending: boolean
-  isReady: boolean
   messages: AppUIMessage[]
   sentHereIds: Set<string>
 }) => {
   if (messages.length === 0) {
-    // An unloaded transcript and an empty chat both read as zero messages, so
-    // neither the empty state nor the spinner can be trusted until sync lands.
-    if (!isReady) {
-      return <div className="min-h-0 flex-1" />
-    }
-
     return isPending ? (
       <div className="flex min-h-0 flex-1 items-center justify-center">
         <Spinner className="text-muted-foreground size-4" />

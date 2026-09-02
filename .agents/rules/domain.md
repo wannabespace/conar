@@ -45,6 +45,8 @@ No action icons (see `tamery-ui` patterns). Which list is up is deliberately **n
 
 ## Collections lifecycle
 
-`getCollections()` lazily creates the singleton set; `cleanCollections()` drops it. `_protected` `beforeLoad` awaits `stateWhenReady()` for core collections and puts them in route context. TanStack DB GCs in-memory data when a collection has no subscribers longer than `gcTime`.
+`getCollections()` lazily creates the singleton set; `cleanCollections()` drops it. `_protected` `beforeLoad` awaits `stateWhenReady()` and puts the set in route context. TanStack DB GCs in-memory data when a collection has no subscribers longer than `gcTime`.
+
+**That await is first-render latency — a collection joins it only if something reads it synchronously.** Earning a slot: `connections`, `connectionsResources` and `workspaces` back the `$resourceId` `beforeLoad` redirects (unready → miss → `whenSynced()` server round-trip → offline cold start bounces to `/` and drops the resource from last-opened); `connectionStrings` backs the `prefetchConnectionResourceCore` sync `get` (unready → loader skips prefetch). The chat three (`chats`, `chatsMessages`, `chatsMessagesParts`) are reached only through `useLiveQuery`, which repaints on population — they stay out, and `chatsMessagesParts` is the largest table in the set.
 
 **Only `fullSignOut` may call `cleanCollections()`.** Components read collections from route context, everything else from `getCollections()` — dropping the singleton while a `_protected` match is alive splits the two apart: the router keeps the old set in the cached context (UI keeps working) while the next `getCollections()` mints an empty one (every query throws). It was previously cleaned on `ProtectedLayout` unmount, which the root `errorComponent` triggers — one error then made every later query fail with "Connection not found for connection resource".

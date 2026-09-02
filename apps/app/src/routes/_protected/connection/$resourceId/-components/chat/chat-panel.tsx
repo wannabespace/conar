@@ -11,7 +11,6 @@ import {
   mergeMessages,
 } from '@tamery/ai/message'
 import { Button } from '@tamery/ui/components/button'
-import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,14 +18,18 @@ import {
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
 import {
+  ResizableHandle,
+  ResizablePanel,
+} from '@tamery/ui/components/resizable'
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
-import { eq, useLiveQuery } from '@tanstack/react-db'
+import { eq, useLiveSuspenseQuery } from '@tanstack/react-db'
 import { getRouteApi } from '@tanstack/react-router'
-import { motion } from 'motion/react'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
+import { usePanelRef } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 import { v7 } from 'uuid'
 
@@ -37,10 +40,12 @@ import { orpc } from '~/lib/orpc'
 import { ChatInput } from './chat-input'
 import { getChatInstance } from './chat-instance'
 import { ChatMessages } from './chat-messages'
+import { ChatSkeleton } from './chat-skeleton'
 import {
   CHAT_DEFAULT_WIDTH,
   CHAT_MAX_WIDTH,
   CHAT_MIN_WIDTH,
+  CHAT_PANEL_ID,
   chatWidthValue,
 } from './constants'
 
@@ -138,7 +143,7 @@ const Chat = ({
     chatsMessagesCollection,
     chatsMessagesPartsCollection,
   } = useCollections()
-  const { data: chatHistory } = useLiveQuery({
+  const { data: chatHistory } = useLiveSuspenseQuery({
     query: (q) =>
       q
         .from({ chats: chatsCollection })
@@ -147,7 +152,7 @@ const Chat = ({
         )
         .orderBy(({ chats }) => chats.createdAt, 'desc'),
   })
-  const { data: transcriptRows, isReady: isTranscriptReady } = useLiveQuery({
+  const { data: transcriptRows } = useLiveSuspenseQuery({
     query: (q) =>
       q
         .from({ messages: chatsMessagesCollection })
@@ -206,7 +211,6 @@ const Chat = ({
           !error &&
           (status === 'streaming' || displayMessages.at(-1)?.role === 'user')
         }
-        isReady={isTranscriptReady}
         messages={displayMessages}
         sentHereIds={sentHereIds}
       />
@@ -255,7 +259,7 @@ export const ChatPanel = () => {
     selector: (state) => state.chatOpened ?? false,
   })
   const width = useSubscription(chatWidthValue)
-  const [isResizing, setIsResizing] = useState(false)
+  const panelRef = usePanelRef()
   const [draftId, setDraftId] = useState(() => v7())
   const activeChatId = chatId ?? draftId
 
@@ -274,51 +278,49 @@ export const ChatPanel = () => {
   }
 
   return (
-    <motion.div
-      initial={false}
-      animate={{ width: chatOpened ? width : 0 }}
-      transition={
-        isResizing
-          ? { duration: 0 }
-          : {
-              duration: 0.25,
-              ease: [0.32, 0.72, 0, 1],
-            }
-      }
-      className="relative h-full shrink-0"
-    >
-      <div className="flex h-full flex-col pl-1.5" style={{ width }}>
-        <div className="bg-background flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg">
-          <Chat
-            key={activeChatId}
-            chatId={activeChatId}
-            connectionResourceId={connectionResource.id}
-            isNew={activeChatId === draftId}
-            onNewChat={openBlankChat}
-            onStart={startDraft}
-            onSelectChat={(id) =>
-              store.set(
-                (state) => ({ ...state, chatId: id }) satisfies typeof state
-              )
-            }
-          />
+    <>
+      <ResizableHandle
+        aria-label="Resize chat"
+        className="-mr-1.5"
+        disabled={!chatOpened}
+        disableDoubleClick
+        onDoubleClick={() => panelRef.current?.resize(CHAT_DEFAULT_WIDTH)}
+      />
+      <ResizablePanel
+        id={CHAT_PANEL_ID}
+        panelRef={panelRef}
+        collapsed={!chatOpened}
+        defaultSize={width}
+        minSize={CHAT_MIN_WIDTH}
+        maxSize={CHAT_MAX_WIDTH}
+        groupResizeBehavior="preserve-pixel-size"
+        style={{ overflow: 'visible' }}
+        onResize={({ inPixels }) => {
+          if (inPixels > 0) {
+            chatWidthValue.set(inPixels)
+          }
+        }}
+      >
+        <div className="flex h-full flex-col pl-1.5" style={{ width }}>
+          <div className="bg-background flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg">
+            <Suspense fallback={<ChatSkeleton />}>
+              <Chat
+                key={activeChatId}
+                chatId={activeChatId}
+                connectionResourceId={connectionResource.id}
+                isNew={activeChatId === draftId}
+                onNewChat={openBlankChat}
+                onStart={startDraft}
+                onSelectChat={(id) =>
+                  store.set(
+                    (state) => ({ ...state, chatId: id }) satisfies typeof state
+                  )
+                }
+              />
+            </Suspense>
+          </div>
         </div>
-      </div>
-      {chatOpened && (
-        <ResizeHandle
-          aria-label="Resize chat"
-          side="left"
-          className="absolute inset-y-0 left-0 z-10 flex w-2 justify-center"
-          getValue={chatWidthValue.get}
-          min={CHAT_MIN_WIDTH}
-          max={CHAT_MAX_WIDTH}
-          onResize={(value) => chatWidthValue.set(value)}
-          onResizingChange={setIsResizing}
-          onDoubleClick={() => chatWidthValue.set(CHAT_DEFAULT_WIDTH)}
-        >
-          <div className="group-hover/resize-handle:bg-border group-data-resizing/resize-handle:bg-primary/40 h-full w-[2px] rounded-xs transition-colors" />
-        </ResizeHandle>
-      )}
-    </motion.div>
+      </ResizablePanel>
+    </>
   )
 }

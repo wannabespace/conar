@@ -7,6 +7,8 @@ import {
   SIDEBAR_DEFAULT_WIDTH,
 } from '~/lib/storage-keys'
 
+export const NAVIGATOR_PANEL_ID = 'panel-navigator'
+
 export const navigatorWidthValue = createWebStorageValue({
   type: 'localStorage',
   key: NAVIGATOR_WIDTH_KEY,

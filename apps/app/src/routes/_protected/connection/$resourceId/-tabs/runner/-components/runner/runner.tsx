@@ -42,6 +42,7 @@ import { formatSql } from '~/utils/formatter'
 
 import { runnerQueryOptions } from '.'
 import {
+  toggleResults,
   useEditorQueriesComputed,
   useRunnerPageStore,
   useRunnerTab,
@@ -58,6 +59,8 @@ import { RunnerSettings } from './runner-settings'
 const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
 )
+
+const RESULTS_PANEL_ID = 'runner-results'
 
 const useQueriesToRun = (): QueryToRun[] => {
   const store = useRunnerPageStore()
@@ -184,26 +187,33 @@ export const Runner = () => {
 
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
     id: `runner-layout-${connectionResource.id}-${tabId}`,
+    onlySaveAfterUserInteractions: true,
     storage: localStorage,
   })
 
-  const contextValue = {
-    run: runQueriesWithAlert,
-    save: (q: string) => saveQueryDialogRef.current?.open(q),
-  }
-
   return (
-    <RunnerContext.Provider value={contextValue}>
+    <RunnerContext.Provider
+      value={{
+        run: runQueriesWithAlert,
+        save: (q: string) => saveQueryDialogRef.current?.open(q),
+      }}
+    >
       <ResizablePanelGroup
         defaultLayout={defaultLayout}
-        onLayoutChanged={onLayoutChanged}
+        onLayoutChanged={(layout, meta) => {
+          onLayoutChanged(layout, meta)
+          if (
+            meta.isUserInteraction &&
+            layout[RESULTS_PANEL_ID] === 0 &&
+            store.get().layout.resultsVisible
+          ) {
+            toggleResults(store)
+          }
+        }}
         orientation="vertical"
         className="h-full"
       >
-        <ResizablePanel
-          minSize="20%"
-          defaultSize={resultsVisible ? '70%' : '100%'}
-        >
+        <ResizablePanel minSize="20%" defaultSize="70%">
           <CardHeader className="h-14 py-3">
             <CardTitle className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
@@ -283,14 +293,18 @@ export const Runner = () => {
           <RunnerSaveDialog ref={saveQueryDialogRef} />
           <RunnerAlertDialog ref={alertDialogRef} />
         </ResizablePanel>
-        {resultsVisible && (
-          <>
-            <ResizableHandle withHandle className="bg-border" />
-            <ResizablePanel minSize="20%" defaultSize="30%">
-              <RunnerResults />
-            </ResizablePanel>
-          </>
-        )}
+        <ResizableHandle
+          className="aria-[orientation=horizontal]:aria-disabled:h-0"
+          disabled={!resultsVisible}
+        />
+        <ResizablePanel
+          id={RESULTS_PANEL_ID}
+          collapsed={!resultsVisible}
+          minSize="20%"
+          defaultSize="30%"
+        >
+          <RunnerResults />
+        </ResizablePanel>
       </ResizablePanelGroup>
     </RunnerContext.Provider>
   )

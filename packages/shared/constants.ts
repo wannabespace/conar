@@ -10,6 +10,9 @@ export const SOCIAL_LINKS = {
 
 export const RELEASES_URL = 'https://tamery.app/releases' as const
 
+export const MIN_WINDOW_WIDTH = 900
+export const MIN_WINDOW_HEIGHT = 600
+
 export const GITHUB_REPO_OWNER = 'wannabespace' as const
 export const GITHUB_REPO_NAME = 'tamery' as const
 

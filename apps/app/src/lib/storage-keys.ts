@@ -7,3 +7,12 @@ export const NAVIGATOR_OPEN_KEY = 'navigator-open'
 export const SIDEBAR_MIN_WIDTH = 180
 export const SIDEBAR_MAX_WIDTH = 420
 export const SIDEBAR_DEFAULT_WIDTH = 256
+
+export const CHAT_WIDTH_KEY = 'chat-width'
+export const CHAT_DEFAULT_WIDTH = 380
+
+export const LOGGER_HEIGHT_KEY = 'logger-height'
+export const LOGGER_DEFAULT_HEIGHT = 240
+
+export const connectionResourceStoreKey = (resourceId: string) =>
+  `connection-resource-store-${resourceId}`

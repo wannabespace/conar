@@ -46,11 +46,7 @@ const TabPage = () => {
     return <DefinitionsTab section={tab.section} />
   }
 
-  return (
-    <div className="min-h-0 flex-1">
-      <VisualizerTab />
-    </div>
-  )
+  return <VisualizerTab />
 }
 
 export const Route = createFileRoute(

@@ -1,32 +1,52 @@
 import {
   RiArrowDownLine,
-  RiCheckboxCircleLine,
   RiCheckLine,
-  RiCloseCircleLine,
   RiCloseLine,
   RiDeleteBinLine,
+  RiFileCopyLine,
   RiFileListLine,
-  RiTimeLine,
 } from '@remixicon/react'
-import { sleep } from '@tamery/shared/utils/helpers'
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
-import { CardTitle } from '@tamery/ui/components/card'
+import { CodeBlock, CodeInline } from '@tamery/ui/components/custom/code-block'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
-import { Group, GroupSeparator } from '@tamery/ui/components/group'
-import { Label } from '@tamery/ui/components/label'
+import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@tamery/ui/components/popover'
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@tamery/ui/components/empty'
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemMedia,
+} from '@tamery/ui/components/item'
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@tamery/ui/components/resizable'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@tamery/ui/components/tabs'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@tamery/ui/components/tooltip'
 import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { cn } from '@tamery/ui/lib/utils'
-import type { ComponentProps } from 'react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
-import { Monaco } from '~/components/monaco'
 import { useCollections } from '~/entities/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { formatSql } from '~/utils/formatter'
@@ -35,363 +55,418 @@ import type { ConnectionResource } from '../core/sync'
 import type { QueryLog } from '../runtime/log'
 import { queryLogsStore } from '../runtime/log'
 
-type QueryStatus = 'error' | 'success' | 'pending'
+type QueryStatus = 'error' | 'pending' | 'success'
 
-const getStatusIcon = (status: QueryStatus) => {
-  if (status === 'success') {
-    return <RiCheckboxCircleLine className="text-success size-4" />
-  } else if (status === 'error') {
-    return <RiCloseCircleLine className="text-destructive size-4" />
-  }
+const DETAILS_PANEL_ID = 'query-logger-details'
 
-  return <RiTimeLine className="text-warning size-4" />
-}
+const ROW_HEIGHT = 28
+const PREVIEW_LIMIT = 20_000
 
-const getQueryStatus = (query: QueryLog) => {
-  if (query.error) {
+const statusDots = {
+  error: 'bg-destructive',
+  pending: 'bg-warning',
+  success: 'bg-success',
+} as const
+
+const timeFormat = {
+  hour: '2-digit',
+  hour12: false,
+  minute: '2-digit',
+  second: '2-digit',
+} as const
+
+const getQueryStatus = ({ error, result }: QueryLog): QueryStatus => {
+  if (error) {
     return 'error'
   }
-  if (query.result !== null) {
-    return 'success'
-  }
-  return 'pending'
+
+  return result === null ? 'pending' : 'success'
 }
 
-const LogTrigger = ({
+const singleLine = (query: string) =>
+  query.replaceAll(/\s+/gu, ' ').trim().slice(0, 300)
+
+const preview = (value: unknown) => {
+  const json = JSON.stringify(value, null, 2)
+
+  return json.length > PREVIEW_LIMIT
+    ? `${json.slice(0, PREVIEW_LIMIT)}\n…`
+    : json
+}
+
+const resultLabel = (result: unknown) =>
+  Array.isArray(result) ? `Result · ${result.length}` : 'Result'
+
+const LogRow = ({
+  isActive,
+  onSelect,
   query,
-  className,
-  ...props
-}: { query: QueryLog } & ComponentProps<'button'>) => {
-  const status = getQueryStatus(query)
-  const truncatedQuery = query.query.replaceAll('\n', ' ')
-  const shortQuery =
-    truncatedQuery.length > 500
-      ? `${truncatedQuery.slice(0, 500)}...`
-      : truncatedQuery
+}: {
+  isActive: boolean
+  onSelect: () => void
+  query: QueryLog
+}) => {
+  const dot = statusDots[getQueryStatus(query)]
 
   return (
-    <button
-      type="button"
-      className={cn(
-        `hover:bg-accent flex w-full items-center justify-between gap-2 border-t px-4 py-1.5`,
-        className
-      )}
-      {...props}
+    <Item
+      size="xs"
+      render={<button type="button" aria-label="Inspect query" />}
+      data-active={isActive || undefined}
+      onClick={onSelect}
+      className="hover:bg-accent data-active:bg-accent hover:data-active:bg-accent data-active:before:bg-primary relative h-7 flex-nowrap gap-2.5 rounded-none px-3 py-0 text-left transition-none before:absolute before:inset-y-0 before:left-0 before:w-[2px]"
     >
-      <span className="text-muted-foreground text-left text-xs tabular-nums">
-        {query.createdAt.toLocaleString('en-US', {
-          day: 'numeric',
-          hour: '2-digit',
-          hour12: false,
-          minute: '2-digit',
-          month: 'short',
-          second: '2-digit',
-        })}
-      </span>
-      {getStatusIcon(status)}
-      <span className="text-muted-foreground w-12 text-left text-xs tabular-nums">
-        {query.duration ? `${query.duration.toFixed(0)}ms` : ''}
-      </span>
-      <code className="flex-1 truncate text-left font-mono text-xs">
-        {shortQuery}
-      </code>
-    </button>
+      <ItemMedia variant="icon">
+        <span className={cn('size-1.5 rounded-full', dot)} />
+      </ItemMedia>
+      <ItemContent className="min-w-0">
+        <CodeInline
+          data-mask
+          code={singleLine(query.query)}
+          language="sql"
+          className="truncate text-xs"
+        />
+      </ItemContent>
+      <ItemActions className="text-2xs text-muted-foreground/70 gap-3 tabular-nums">
+        <span className="w-12 text-right">
+          {query.duration === null ? '' : `${Math.round(query.duration)} ms`}
+        </span>
+        <span>{query.createdAt.toLocaleTimeString('en-US', timeFormat)}</span>
+      </ItemActions>
+    </Item>
   )
 }
 
-const monacoOptions = {
-  folding: false,
-  lineNumbers: 'off' as const,
-  minimap: { enabled: false },
-  readOnly: true,
-  scrollBeyondLastLine: false,
-}
-
-const Log = ({
+const QueryDetails = ({
+  connectionType,
+  onClose,
   query,
-  className,
-  connectionResource,
 }: {
+  connectionType: ConnectionType
+  onClose: () => void
   query: QueryLog
-  className?: string
-  connectionResource: ConnectionResource
 }) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const [canInteract, setCanInteract] = useState(false)
-  const { connectionsCollection } = useCollections()
-  const connection = connectionsCollection.get(connectionResource.connectionId)
-
-  if (!connection) {
-    return null
-  }
-
-  if (!canInteract) {
-    return (
-      <LogTrigger
-        query={query}
-        className={className}
-        onMouseEnter={() => setCanInteract(true)}
-      />
-    )
-  }
-
-  const closePopover = async () => {
-    if (!isOpen) {
-      await sleep(200)
-      setCanInteract(false)
-    }
-  }
+  const tabs = [
+    {
+      code: formatSql(query.query, connectionType),
+      label: 'Query',
+      language: 'sql',
+      value: 'query',
+    },
+    ...(query.error
+      ? [
+          {
+            code: query.error,
+            label: 'Error',
+            language: 'text',
+            value: 'error',
+          },
+        ]
+      : []),
+    ...(query.values.length > 0
+      ? [
+          {
+            code: JSON.stringify(query.values),
+            label: 'Values',
+            language: 'json',
+            value: 'values',
+          },
+        ]
+      : []),
+    ...(query.result === null
+      ? []
+      : [
+          {
+            code: preview(query.result),
+            label: resultLabel(query.result),
+            language: 'json',
+            value: 'result',
+          },
+        ]),
+  ]
+  const [activeTab, setActiveTab] = useState(query.error ? 'error' : 'query')
+  const active = tabs.find((tab) => tab.value === activeTab) ?? tabs[0]
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger
-        render={
-          <LogTrigger
-            query={query}
-            className={cn(className, isOpen && 'bg-accent')}
-            onMouseLeave={closePopover}
-          />
-        }
-      />
-      <PopoverContent
-        className="flex w-[95vw] flex-row gap-4"
-        onAnimationEnd={closePopover}
-      >
-        <div className="min-w-0 flex-1 space-y-2">
-          <div className="space-y-2">
-            <Label>Query</Label>
-            <Monaco
-              value={formatSql(query.query, connection.type)}
-              language="sql"
-              options={monacoOptions}
-              className="h-[50vh] overflow-hidden rounded-md border"
+    <Tabs
+      value={activeTab}
+      onValueChange={(value) => setActiveTab(value as string)}
+      className="flex h-full min-h-0 flex-col gap-0"
+    >
+      <div className="flex h-8 shrink-0 items-center gap-1 border-b pr-1 pl-2">
+        <TabsList variant="line" className="mr-auto gap-1 p-0">
+          {tabs.map((tab) => (
+            <TabsTrigger
+              key={tab.value}
+              value={tab.value}
+              className="text-muted-foreground data-active:text-foreground after:bg-primary! flex-none px-1.5 text-xs group-data-horizontal/tabs:after:bottom-0"
+            >
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        {active && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <CopyButton
+                  size="icon-xs"
+                  variant="ghost"
+                  aria-label="Copy"
+                  className="text-muted-foreground"
+                  text={active.code}
+                  copyIcon={<RiFileCopyLine className="size-3.5" />}
+                  successIcon={
+                    <RiCheckLine className="text-success size-3.5" />
+                  }
+                />
+              }
             />
-          </div>
-          {query.values && query.values.length > 0 && (
-            <div className="space-y-2">
-              <Label>Values</Label>
-              <pre className="bg-muted overflow-x-auto rounded-sm p-2 font-mono text-xs">
-                {JSON.stringify(query.values)}
-              </pre>
-            </div>
-          )}
-        </div>
-        <div className="min-w-0 flex-1 space-y-2">
-          {!!query.result && (
-            <div className="space-y-2">
-              <Label>Result</Label>
-              <Monaco
-                value={JSON.stringify(query.result)}
-                language="json"
-                options={monacoOptions}
-                className="h-[50vh] overflow-hidden rounded-md border"
+            <TooltipContent side="bottom">Copy {active.label}</TooltipContent>
+          </Tooltip>
+        )}
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                size="icon-xs"
+                variant="ghost"
+                aria-label="Close query details"
+                className="text-muted-foreground"
+                onClick={onClose}
               />
-            </div>
-          )}
-          {query.error && (
-            <div className="space-y-2">
-              <Label className="text-destructive">Error</Label>
-              <pre className="bg-destructive/10 text-destructive overflow-x-auto rounded-sm p-2 font-mono text-xs whitespace-break-spaces">
-                {query.error}
-              </pre>
-            </div>
-          )}
+            }
+          >
+            <RiCloseLine className="size-3.5" />
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Close details</TooltipContent>
+        </Tooltip>
+      </div>
+      {tabs.map((tab) => (
+        <TabsContent
+          key={tab.value}
+          value={tab.value}
+          className="min-h-0 flex-1 scrollbar-thin overflow-auto"
+        >
+          <CodeBlock
+            className={cn(
+              'my-0 rounded-none bg-transparent',
+              tab.value === 'error' && 'text-destructive'
+            )}
+            code={tab.code}
+            collapsible={false}
+            header={false}
+            language={tab.language}
+          />
+        </TabsContent>
+      ))}
+    </Tabs>
+  )
+}
+
+const LogList = ({
+  onSelect,
+  queries,
+  selectedId,
+}: {
+  onSelect: (id: string) => void
+  queries: QueryLog[]
+  selectedId?: string
+}) => {
+  const { contentRef, isNearBottom, scrollRef, scrollToBottom } =
+    useStickToBottom({ initial: 'instant' })
+  const { totalSize, virtualItems } = useVirtualizer({
+    count: queries.length,
+    estimateSize: () => ROW_HEIGHT,
+    getScrollElement: () => scrollRef.current,
+    overscan: 5,
+    useFlushSync: false,
+  })
+
+  return (
+    <div className="relative h-full min-h-0">
+      <div
+        ref={scrollRef}
+        className="no-scrollbar scroll-fade h-full overflow-auto"
+      >
+        <div ref={contentRef}>
+          <div style={{ height: virtualItems[0]?.start ?? 0 }} />
+          {virtualItems.map((virtualItem) => {
+            const query = queries[virtualItem.index]
+
+            return query ? (
+              <LogRow
+                key={virtualItem.key}
+                query={query}
+                isActive={query.id === selectedId}
+                onSelect={() => onSelect(query.id)}
+              />
+            ) : null
+          })}
+          <div
+            style={{ height: totalSize - (virtualItems.at(-1)?.end ?? 0) }}
+          />
         </div>
-      </PopoverContent>
-    </Popover>
+      </div>
+      <Button
+        className={cn(
+          `absolute inset-x-0 bottom-2 mx-auto shadow-xs transition-shadow hover:shadow-md`,
+          isNearBottom && 'pointer-events-none opacity-0'
+        )}
+        variant="outline"
+        size="icon-sm"
+        aria-label="Scroll to latest"
+        onClick={() => scrollToBottom()}
+      >
+        <RiArrowDownLine className="size-4" />
+      </Button>
+    </div>
   )
 }
 
 export const QueryLogger = ({
-  connectionResource,
   className,
+  connectionResource,
 }: {
-  connectionResource: ConnectionResource
   className?: string
+  connectionResource: ConnectionResource
 }) => {
-  const { scrollRef, contentRef, scrollToBottom, isNearBottom } =
-    useStickToBottom({
-      initial: 'instant',
-    })
+  const store = getConnectionResourceStore(connectionResource.id)
+  const { connectionsCollection } = useCollections()
+  const connection = connectionsCollection.get(connectionResource.connectionId)
   const queries = useSubscription(queryLogsStore, {
     selector: (state) =>
       Object.values(state[connectionResource.id] || {}).toSorted(
         (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
       ),
   })
-  const [statusGroup, setStatusGroup] = useState<QueryStatus>()
+  const [selectedId, setSelectedId] = useState<string>()
+  const [shown, setShown] = useState<QueryLog>()
   const [isClearing, setIsClearing] = useState(false)
-  const store = getConnectionResourceStore(connectionResource.id)
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: `query-logger-layout-${connectionResource.id}`,
+    onlySaveAfterUserInteractions: true,
+    storage: localStorage,
+  })
 
-  const filteredQueries = statusGroup
-    ? queries.filter((query) => getQueryStatus(query) === statusGroup)
-    : queries
+  const selected = queries.find((query) => query.id === selectedId)
 
-  const statusCounts = { error: 0, pending: 0, success: 0 }
-  for (const query of queries) {
-    if (query.error) {
-      statusCounts.error += 1
-    } else if (query.result) {
-      statusCounts.success += 1
-    } else {
-      statusCounts.pending += 1
-    }
+  if (selected && selected !== shown) {
+    setShown(selected)
   }
 
   const clearQueries = () => {
     setIsClearing(true)
     queryLogsStore.set(
       (state) =>
-        ({
-          ...state,
-          [connectionResource.id]: {},
-        }) satisfies typeof state
+        ({ ...state, [connectionResource.id]: {} }) satisfies typeof state
     )
   }
 
-  const toggleGroup = (status: QueryStatus) => {
-    setStatusGroup((prev) => (prev === status ? undefined : status))
-  }
-
-  const { virtualItems, totalSize } = useVirtualizer({
-    count: filteredQueries.length,
-    estimateSize: () => 29,
-    getScrollElement: () => scrollRef.current,
-    overscan: 5,
-    useFlushSync: false,
-  })
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.style.setProperty(
-        '--scroll-top-offset',
-        `${virtualItems[0]?.start ?? 0}px`
-      )
-      scrollRef.current.style.setProperty(
-        '--scroll-bottom-offset',
-        `${totalSize - (virtualItems.at(-1)?.end ?? 0)}px`
-      )
-    }
-  }, [scrollRef, virtualItems, totalSize])
-
   return (
-    <div
-      data-mask
-      className={cn('flex h-full flex-col justify-between', className)}
-    >
-      <div className="flex items-center justify-between px-4 py-2">
-        <div className="flex items-center gap-2">
-          <CardTitle>Query Logger</CardTitle>
-          <Group>
-            <Button
-              size="xs"
-              variant="outline"
-              className={cn(
-                'text-success!',
-                statusGroup === 'success' && 'bg-accent!'
-              )}
-              onClick={() => toggleGroup('success')}
-            >
-              <RiCheckboxCircleLine className="size-3" />
-              {statusCounts.success}
-            </Button>
-            <GroupSeparator />
-            <Button
-              size="xs"
-              variant="outline"
-              className={cn(
-                'text-destructive!',
-                statusGroup === 'error' && 'bg-accent!'
-              )}
-              onClick={() => toggleGroup('error')}
-            >
-              <RiCloseCircleLine className="size-3" />
-              {statusCounts.error}
-            </Button>
-            <GroupSeparator />
-            <Button
-              size="xs"
-              variant="outline"
-              className={cn(
-                'text-warning!',
-                statusGroup === 'pending' && 'bg-accent!'
-              )}
-              onClick={() => toggleGroup('pending')}
-            >
-              <RiTimeLine className="size-3" />
-              {statusCounts.pending}
-            </Button>
-          </Group>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon-sm" onClick={clearQueries}>
+    <div className={cn('flex h-full min-h-0 flex-col', className)}>
+      <div className="flex h-8 shrink-0 items-center gap-1 border-b pr-1 pl-3">
+        <span className="text-sm font-medium">Query Logger</span>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                size="icon-xs"
+                variant="ghost"
+                aria-label="Clear log"
+                className="ml-auto"
+                disabled={queries.length === 0}
+                onClick={clearQueries}
+              />
+            }
+          >
             <ContentSwitch
-              activeContent={<RiCheckLine className="text-success size-4" />}
               active={isClearing}
               onSwitchEnd={setIsClearing}
+              activeContent={<RiCheckLine className="text-success size-3.5" />}
             >
-              <RiDeleteBinLine className="text-destructive size-4" />
+              <RiDeleteBinLine className="size-3.5" />
             </ContentSwitch>
-          </Button>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            onClick={() =>
-              store.set(
-                (state) =>
-                  ({ ...state, loggerOpened: false }) satisfies typeof state
-              )
-            }
-          >
-            <RiCloseLine className="size-4" />
-          </Button>
-        </div>
-      </div>
-      <div
-        ref={scrollRef}
-        className="no-scrollbar scroll-fade relative min-h-0 overflow-auto"
-      >
-        {filteredQueries.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="mb-3">
-              <RiFileListLine className="text-muted-foreground/30 size-10" />
-            </div>
-            <p className="text-muted-foreground mb-1 text-base font-medium">
-              No queries yet
-            </p>
-          </div>
-        )}
-        <div ref={contentRef} style={{ height: `${totalSize}px` }}>
-          <div className="h-(--scroll-top-offset)" />
-          {virtualItems.map((virtualItem) => {
-            const logQuery = filteredQueries[virtualItem.index]
-            if (!logQuery) {
-              return null
-            }
-            return (
-              <Log
-                key={virtualItem.key}
-                query={logQuery}
-                connectionResource={connectionResource}
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Clear log</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                size="icon-xs"
+                variant="ghost"
+                aria-label="Close query logger"
+                onClick={() =>
+                  store.set(
+                    (state) =>
+                      ({ ...state, loggerOpened: false }) satisfies typeof state
+                  )
+                }
               />
-            )
-          })}
-          <div className="h-(--scroll-bottom-offset)" />
-        </div>
-        <div className="sticky bottom-0 h-0">
-          <Button
-            className={cn(
-              'absolute bottom-2 left-1/2 -translate-x-1/2',
-              isNearBottom ? `pointer-events-none opacity-0` : ''
-            )}
-            variant="secondary"
-            size="icon-sm"
-            onClick={() => scrollToBottom()}
+            }
           >
-            <RiArrowDownLine className="size-4" />
-          </Button>
-        </div>
+            <RiCloseLine className="size-3.5" />
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Close</TooltipContent>
+        </Tooltip>
       </div>
+      {queries.length === 0 ? (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <RiFileListLine />
+            </EmptyMedia>
+            <EmptyTitle>No queries yet</EmptyTitle>
+            <EmptyDescription>
+              Queries run against this connection show up here.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : (
+        <ResizablePanelGroup
+          orientation="horizontal"
+          className="min-h-0 flex-1"
+          defaultLayout={defaultLayout}
+          onLayoutChanged={(layout, meta) => {
+            onLayoutChanged(layout, meta)
+
+            if (meta.isUserInteraction && layout[DETAILS_PANEL_ID] === 0) {
+              setSelectedId(undefined)
+            }
+          }}
+        >
+          <ResizablePanel defaultSize="60%" minSize="30%">
+            <LogList
+              queries={queries}
+              selectedId={selectedId}
+              onSelect={(id) =>
+                setSelectedId((current) => (current === id ? undefined : id))
+              }
+            />
+          </ResizablePanel>
+          <ResizableHandle
+            className="[&>div]:bg-border/50 aria-disabled:w-0"
+            disabled={!selected}
+          />
+          <ResizablePanel
+            id={DETAILS_PANEL_ID}
+            collapsed={!selected}
+            defaultSize="45%"
+            minSize="25%"
+            maxSize="70%"
+          >
+            {shown && connection && (
+              <QueryDetails
+                key={shown.id}
+                query={shown}
+                connectionType={connection.type}
+                onClose={() => setSelectedId(undefined)}
+              />
+            )}
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      )}
     </div>
   )
 }

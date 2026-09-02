@@ -1,16 +1,21 @@
 import {
+  CHAT_DEFAULT_WIDTH,
+  CHAT_WIDTH_KEY,
+  connectionResourceStoreKey,
   LAST_LOCATION_KEY,
+  LOGGER_DEFAULT_HEIGHT,
+  LOGGER_HEIGHT_KEY,
   NAVIGATOR_OPEN_KEY,
   NAVIGATOR_WIDTH_KEY,
   SIDEBAR_DEFAULT_WIDTH,
   THEME_KEY,
 } from './lib/storage-keys'
 
-const read = (key: string): unknown => {
+const parseStorage = <T>(key: string): T | undefined => {
   const raw = localStorage.getItem(key)
 
   try {
-    return raw === null ? undefined : (JSON.parse(raw) as unknown)
+    return raw === null ? undefined : (JSON.parse(raw) as T)
   } catch {
     return undefined
   }
@@ -26,28 +31,60 @@ if (window.electron) {
   }
 }
 
-const lastLocation = read(LAST_LOCATION_KEY)
+const applyConnectionShellState = (resourceId: string) => {
+  const state = parseStorage<{ chatOpened?: boolean; loggerOpened?: boolean }>(
+    connectionResourceStoreKey(resourceId)
+  )
+
+  if (state?.chatOpened) {
+    const chatWidth = parseStorage<number>(CHAT_WIDTH_KEY)
+
+    root.classList.add('shell-chat')
+    root.style.setProperty(
+      '--shell-chat-width',
+      `${typeof chatWidth === 'number' ? chatWidth : CHAT_DEFAULT_WIDTH}px`
+    )
+  }
+
+  if (state?.loggerOpened) {
+    const loggerHeight = parseStorage<number>(LOGGER_HEIGHT_KEY)
+
+    root.classList.add('shell-logger')
+    root.style.setProperty(
+      '--shell-logger-height',
+      `${typeof loggerHeight === 'number' ? loggerHeight : LOGGER_DEFAULT_HEIGHT}px`
+    )
+  }
+}
+
+const lastLocation = parseStorage<string>(LAST_LOCATION_KEY)
 
 if (typeof lastLocation === 'string') {
-  root.classList.add(
-    lastLocation.includes('/connection/')
-      ? 'shell-connection'
-      : 'shell-dashboard'
-  )
+  const resourceId = lastLocation
+    .split('/connection/')[1]
+    ?.split(/[/?#]/u)
+    .at(0)
+
+  root.classList.add(resourceId ? 'shell-connection' : 'shell-dashboard')
+
+  if (resourceId) {
+    applyConnectionShellState(resourceId)
+  }
 } else {
   root.classList.add('shell-auth')
 }
 
-const navigatorWidth = read(NAVIGATOR_WIDTH_KEY)
+if (parseStorage<boolean>(NAVIGATOR_OPEN_KEY) !== false) {
+  const navigatorWidth = parseStorage<number>(NAVIGATOR_WIDTH_KEY)
 
-root.style.setProperty(
-  '--shell-navigator-width',
-  read(NAVIGATOR_OPEN_KEY) === false
-    ? '0px'
-    : `${typeof navigatorWidth === 'number' ? navigatorWidth : SIDEBAR_DEFAULT_WIDTH}px`
-)
+  root.classList.add('shell-navigator')
+  root.style.setProperty(
+    '--shell-navigator-width',
+    `${typeof navigatorWidth === 'number' ? navigatorWidth : SIDEBAR_DEFAULT_WIDTH}px`
+  )
+}
 
-const theme = read(THEME_KEY) ?? 'system'
+const theme = parseStorage<string>(THEME_KEY) ?? 'system'
 
 if (
   theme === 'dark' ||

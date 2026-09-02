@@ -1,12 +1,12 @@
 import { RiArrowRightSLine, RiBrainLine, RiToolsLine } from '@remixicon/react'
 import type { RemixiconComponentType } from '@remixicon/react'
 import type { AppMessagePart } from '@tamery/ai/message'
-import { CodeBlock } from '@tamery/ui/components/code-block'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@tamery/ui/components/collapsible'
+import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { Response } from '@tamery/ui/components/response'
 import { Spinner } from '@tamery/ui/components/spinner'
 import { getToolOrDynamicToolName, isDynamicToolUIPart, isToolUIPart } from 'ai'

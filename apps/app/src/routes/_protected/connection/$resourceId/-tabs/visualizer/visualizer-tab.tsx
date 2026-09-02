@@ -132,7 +132,7 @@ const Visualizer = ({
   })
 
   return (
-    <div className="relative size-full overflow-hidden rounded-lg">
+    <div className="relative size-full min-h-0 flex-1 overflow-hidden rounded-lg">
       <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
         <div className="relative w-56">
           <InputGroup>

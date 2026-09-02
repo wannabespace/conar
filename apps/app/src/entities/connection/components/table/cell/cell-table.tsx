@@ -129,7 +129,7 @@ export const TableCellTable = ({
   const columns = data.map(
     (columnMeta) =>
       ({
-        // oxlint-disable-next-line react/no-unstable-nested-components -- render prop, not a component
+        // oxlint-disable-next-line react/no-unstable-nested-components
         cell: (props) => {
           const transformer = createTransformer(connection.type, columnMeta)
           return (
@@ -145,7 +145,7 @@ export const TableCellTable = ({
             </TableCellContent>
           )
         },
-        // oxlint-disable-next-line react/no-unstable-nested-components -- render prop, not a component
+        // oxlint-disable-next-line react/no-unstable-nested-components
         header: (props) => <TableHeaderCell column={columnMeta} {...props} />,
         id: columnMeta.id,
         size: columnMeta.type

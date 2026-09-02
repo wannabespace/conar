@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module'
 import path from 'node:path'
 
+import { MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH } from '@tamery/shared/constants'
 import { isConnectionError } from '@tamery/shared/utils/connections'
 import type { UpdatesStatus } from '@tamery/shared/utils/updates'
 import type todesktopRuntime from '@todesktop/runtime'
@@ -57,8 +58,8 @@ export const createWindow = () => {
   mainWindow = new BrowserWindow({
     focusable: true,
     height,
-    minHeight: 500,
-    minWidth: 500,
+    minHeight: MIN_WINDOW_HEIGHT,
+    minWidth: MIN_WINDOW_WIDTH,
     titleBarStyle: 'hidden',
     trafficLightPosition: { x: 16, y: 13 },
     width,
