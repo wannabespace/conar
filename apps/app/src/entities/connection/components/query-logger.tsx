@@ -199,7 +199,7 @@ const QueryDetails = ({
             <TabsTrigger
               key={tab.value}
               value={tab.value}
-              className="text-muted-foreground data-active:text-foreground after:bg-primary! flex-none px-1.5 text-xs group-data-horizontal/tabs:after:bottom-0"
+              className="text-muted-foreground data-active:text-foreground after:bg-primary! flex-none px-1.5 text-xs group-data-[orientation=horizontal]/tabs:after:bottom-0"
             >
               {tab.label}
             </TabsTrigger>
