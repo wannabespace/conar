@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
+import { Separator } from '@tamery/ui/components/separator'
 import {
   Tooltip,
   TooltipContent,
@@ -306,7 +307,6 @@ const HistoryNav = () => {
 
   return (
     <>
-      <span aria-hidden className="bg-border mx-0.5 h-4 w-px shrink-0" />
       <Tooltip>
         <TooltipTrigger
           render={
@@ -466,7 +466,7 @@ const ChatToggle = ({ resourceId }: { resourceId: string }) => {
             aria-pressed={chatOpened}
             className={cn(
               'text-muted-foreground',
-              chatOpened && 'bg-foreground/10 text-primary'
+              chatOpened && 'bg-foreground/10 text-foreground'
             )}
             onClick={toggleChat}
           />
@@ -915,6 +915,7 @@ export const TabBar = ({ className }: { className?: string }) => {
             <KbdCtrlLetter userAgent={navigator.userAgent} letter="B" />
           </TooltipContent>
         </Tooltip>
+        <Separator orientation="vertical" className="mx-0.5 h-4!" />
         <HistoryNav />
         <TabRefresh tab={activeTab} />
       </div>
@@ -967,6 +968,7 @@ export const TabBar = ({ className }: { className?: string }) => {
           tablesAndSchemas={tablesAndSchemas}
           onNewQuery={openNewQuery}
         />
+        <Separator orientation="vertical" className="mx-0.5 h-4!" />
         <ChatToggle resourceId={connectionResource.id} />
       </div>
     </div>

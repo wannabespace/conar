@@ -1,10 +1,13 @@
-Tamery : https://github.com/wannabespace/tamery AUR : https://aur.archlinux.org/packages/tamery
+# Tamery on AUR
 
-If you want to help, feel free to fork & open a PR.
+- Repo: https://github.com/wannabespace/tamery
+- Package: https://aur.archlinux.org/packages/tamery
+
+Contributions welcome — fork and open a PR.
 
 ## Syncing versions with the repo
 
-The AUR package (`tamery-bin`) is kept in sync with the app version from this repo.
+The AUR package (`tamery`) is kept in sync with the app version from this repo.
 
 - **Source of truth:** `apps/desktop/package.json` → `version`
 - **Synced files:** `aur/PKGBUILD` (`pkgver`) and `aur/.SRCINFO`

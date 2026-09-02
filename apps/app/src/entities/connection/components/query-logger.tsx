@@ -19,16 +19,11 @@ import {
   EmptyTitle,
 } from '@tamery/ui/components/empty'
 import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemMedia,
-} from '@tamery/ui/components/item'
-import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from '@tamery/ui/components/resizable'
+import { Spinner } from '@tamery/ui/components/spinner'
 import {
   Tabs,
   TabsContent,
@@ -55,36 +50,30 @@ import type { ConnectionResource } from '../core/sync'
 import type { QueryLog } from '../runtime/log'
 import { queryLogsStore } from '../runtime/log'
 
-type QueryStatus = 'error' | 'pending' | 'success'
-
 const DETAILS_PANEL_ID = 'query-logger-details'
 
 const ROW_HEIGHT = 28
 const PREVIEW_LIMIT = 20_000
 
-const statusDots = {
-  error: 'bg-destructive',
-  pending: 'bg-warning',
-  success: 'bg-success',
-} as const
-
-const timeFormat = {
-  hour: '2-digit',
-  hour12: false,
-  minute: '2-digit',
-  second: '2-digit',
-} as const
-
-const getQueryStatus = ({ error, result }: QueryLog): QueryStatus => {
+// Success is the common case, so it stays neutral — a column of green dots
+// only competes with the highlighted SQL beside it.
+const statusIndicator = ({ error, result }: QueryLog) => {
   if (error) {
-    return 'error'
+    return <span className="bg-destructive size-1.5 rounded-full" />
   }
 
-  return result === null ? 'pending' : 'success'
+  if (result === null) {
+    return <Spinner className="text-muted-foreground size-3" />
+  }
+
+  return <span className="bg-foreground/20 size-1.5 rounded-full" />
 }
 
-const singleLine = (query: string) =>
-  query.replaceAll(/\s+/gu, ' ').trim().slice(0, 300)
+const StatusDot = (query: QueryLog) => (
+  <span className="flex w-3 shrink-0 justify-center">
+    {statusIndicator(query)}
+  </span>
+)
 
 const preview = (value: unknown) => {
   const json = JSON.stringify(value, null, 2)
@@ -94,9 +83,6 @@ const preview = (value: unknown) => {
     : json
 }
 
-const resultLabel = (result: unknown) =>
-  Array.isArray(result) ? `Result · ${result.length}` : 'Result'
-
 const LogRow = ({
   isActive,
   onSelect,
@@ -105,164 +91,92 @@ const LogRow = ({
   isActive: boolean
   onSelect: () => void
   query: QueryLog
-}) => {
-  const dot = statusDots[getQueryStatus(query)]
+}) => (
+  <button
+    type="button"
+    aria-label="Inspect query"
+    data-active={isActive || undefined}
+    onClick={onSelect}
+    className="hover:bg-accent data-active:bg-foreground/10 hover:data-active:bg-foreground/10 focus-visible:ring-ring/50 flex h-7 w-full items-center gap-2.5 px-3 text-left text-sm outline-none focus-visible:ring-[3px]"
+  >
+    <StatusDot {...query} />
+    <CodeInline
+      data-mask
+      code={query.query}
+      language="sql"
+      className="min-w-0 flex-1 truncate text-xs"
+    />
+    <span className="text-2xs text-muted-foreground/70 flex items-center gap-3 tabular-nums">
+      <span className="w-12 text-right">
+        {query.duration === null ? '' : `${Math.round(query.duration)} ms`}
+      </span>
+      <span>
+        {query.createdAt.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          hour12: false,
+          minute: '2-digit',
+          second: '2-digit',
+        })}
+      </span>
+    </span>
+  </button>
+)
 
-  return (
-    <Item
-      size="xs"
-      render={<button type="button" aria-label="Inspect query" />}
-      data-active={isActive || undefined}
-      onClick={onSelect}
-      className="hover:bg-accent data-active:bg-accent hover:data-active:bg-accent data-active:before:bg-primary relative h-7 flex-nowrap gap-2.5 rounded-none px-3 py-0 text-left transition-none before:absolute before:inset-y-0 before:left-0 before:w-[2px]"
-    >
-      <ItemMedia variant="icon">
-        <span className={cn('size-1.5 rounded-full', dot)} />
-      </ItemMedia>
-      <ItemContent className="min-w-0">
-        <CodeInline
-          data-mask
-          code={singleLine(query.query)}
-          language="sql"
-          className="truncate text-xs"
-        />
-      </ItemContent>
-      <ItemActions className="text-2xs text-muted-foreground/70 gap-3 tabular-nums">
-        <span className="w-12 text-right">
-          {query.duration === null ? '' : `${Math.round(query.duration)} ms`}
-        </span>
-        <span>{query.createdAt.toLocaleTimeString('en-US', timeFormat)}</span>
-      </ItemActions>
-    </Item>
-  )
+interface DetailTab {
+  code: string
+  label: string
+  language: string
+  value: string
 }
 
-const QueryDetails = ({
-  connectionType,
-  onClose,
-  query,
-}: {
-  connectionType: ConnectionType
-  onClose: () => void
-  query: QueryLog
-}) => {
-  const tabs = [
+const buildTabs = (query: QueryLog, connectionType: ConnectionType) =>
+  [
     {
       code: formatSql(query.query, connectionType),
       label: 'Query',
       language: 'sql',
       value: 'query',
     },
-    ...(query.error
-      ? [
-          {
-            code: query.error,
-            label: 'Error',
-            language: 'text',
-            value: 'error',
-          },
-        ]
-      : []),
-    ...(query.values.length > 0
-      ? [
-          {
-            code: JSON.stringify(query.values),
-            label: 'Values',
-            language: 'json',
-            value: 'values',
-          },
-        ]
-      : []),
-    ...(query.result === null
-      ? []
-      : [
-          {
-            code: preview(query.result),
-            label: resultLabel(query.result),
-            language: 'json',
-            value: 'result',
-          },
-        ]),
-  ]
-  const [activeTab, setActiveTab] = useState(query.error ? 'error' : 'query')
-  const active = tabs.find((tab) => tab.value === activeTab) ?? tabs[0]
+    {
+      code: query.error,
+      label: 'Error',
+      language: 'text',
+      value: 'error',
+    },
+    {
+      code: query.values.length > 0 ? preview(query.values) : null,
+      label: 'Values',
+      language: 'json',
+      value: 'values',
+    },
+    {
+      code: query.result === null ? null : preview(query.result),
+      label: Array.isArray(query.result)
+        ? `Result · ${query.result.length}`
+        : 'Result',
+      language: 'json',
+      value: 'result',
+    },
+  ].filter((tab): tab is DetailTab => tab.code !== null)
 
-  return (
-    <Tabs
-      value={activeTab}
-      onValueChange={(value) => setActiveTab(value as string)}
-      className="flex h-full min-h-0 flex-col gap-0"
-    >
-      <div className="flex h-8 shrink-0 items-center gap-1 border-b pr-1 pl-2">
-        <TabsList variant="line" className="mr-auto gap-1 p-0">
-          {tabs.map((tab) => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              className="text-muted-foreground data-active:text-foreground after:bg-primary! flex-none px-1.5 text-xs group-data-horizontal/tabs:after:bottom-0"
-            >
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        {active && (
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <CopyButton
-                  size="icon-xs"
-                  variant="ghost"
-                  aria-label="Copy"
-                  className="text-muted-foreground"
-                  text={active.code}
-                  copyIcon={<RiFileCopyLine className="size-3.5" />}
-                  successIcon={
-                    <RiCheckLine className="text-success size-3.5" />
-                  }
-                />
-              }
-            />
-            <TooltipContent side="bottom">Copy {active.label}</TooltipContent>
-          </Tooltip>
-        )}
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                size="icon-xs"
-                variant="ghost"
-                aria-label="Close query details"
-                className="text-muted-foreground"
-                onClick={onClose}
-              />
-            }
-          >
-            <RiCloseLine className="size-3.5" />
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Close details</TooltipContent>
-        </Tooltip>
-      </div>
-      {tabs.map((tab) => (
-        <TabsContent
-          key={tab.value}
-          value={tab.value}
-          className="min-h-0 flex-1 scrollbar-thin overflow-auto"
-        >
-          <CodeBlock
-            className={cn(
-              'my-0 rounded-none bg-transparent',
-              tab.value === 'error' && 'text-destructive'
-            )}
-            code={tab.code}
-            collapsible={false}
-            header={false}
-            language={tab.language}
-          />
-        </TabsContent>
-      ))}
-    </Tabs>
-  )
-}
+const QueryDetails = ({ tab }: { tab: DetailTab }) => (
+  <TabsContent
+    key={tab.value}
+    value={tab.value}
+    className="no-scrollbar scroll-fade min-h-0 flex-1 overflow-auto"
+  >
+    <CodeBlock
+      className={cn(
+        'my-0 rounded-none bg-transparent',
+        tab.value === 'error' && 'text-destructive'
+      )}
+      code={tab.code}
+      collapsible={false}
+      header={false}
+      language={tab.language}
+    />
+  </TabsContent>
+)
 
 const LogList = ({
   onSelect,
@@ -280,7 +194,6 @@ const LogList = ({
     estimateSize: () => ROW_HEIGHT,
     getScrollElement: () => scrollRef.current,
     overscan: 5,
-    useFlushSync: false,
   })
 
   return (
@@ -310,8 +223,8 @@ const LogList = ({
       </div>
       <Button
         className={cn(
-          `absolute inset-x-0 bottom-2 mx-auto shadow-xs transition-shadow hover:shadow-md`,
-          isNearBottom && 'pointer-events-none opacity-0'
+          `absolute inset-x-0 bottom-2 mx-auto transition-all`,
+          isNearBottom && 'pointer-events-none translate-y-4 opacity-0'
         )}
         variant="outline"
         size="icon-sm"
@@ -342,6 +255,7 @@ export const QueryLogger = ({
   })
   const [selectedId, setSelectedId] = useState<string>()
   const [shown, setShown] = useState<QueryLog>()
+  const [tab, setTab] = useState('query')
   const [isClearing, setIsClearing] = useState(false)
   const { defaultLayout, onLayoutChanged } = useDefaultLayout({
     id: `query-logger-layout-${connectionResource.id}`,
@@ -353,7 +267,14 @@ export const QueryLogger = ({
 
   if (selected && selected !== shown) {
     setShown(selected)
+
+    if (selected.id !== shown?.id) {
+      setTab(selected.error ? 'error' : 'query')
+    }
   }
+
+  const tabs = shown && connection ? buildTabs(shown, connection.type) : []
+  const activeTab = tabs.find((item) => item.value === tab) ?? tabs.at(0)
 
   const clearQueries = () => {
     setIsClearing(true)
@@ -364,52 +285,64 @@ export const QueryLogger = ({
   }
 
   return (
-    <div className={cn('flex h-full min-h-0 flex-col', className)}>
+    <Tabs
+      value={activeTab?.value ?? 'query'}
+      onValueChange={(value) => setTab(value as string)}
+      className={cn('flex h-full min-h-0 flex-col gap-0', className)}
+    >
       <div className="flex h-8 shrink-0 items-center gap-1 border-b pr-1 pl-3">
         <span className="text-sm font-medium">Query Logger</span>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                size="icon-xs"
-                variant="ghost"
-                aria-label="Clear log"
-                className="ml-auto"
-                disabled={queries.length === 0}
-                onClick={clearQueries}
-              />
-            }
-          >
-            <ContentSwitch
-              active={isClearing}
-              onSwitchEnd={setIsClearing}
-              activeContent={<RiCheckLine className="text-success size-3.5" />}
+        <div className="ml-auto flex items-center gap-1">
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  size="icon-xs"
+                  variant="ghost"
+                  aria-label="Clear log"
+                  className="text-muted-foreground"
+                  disabled={queries.length === 0}
+                  onClick={clearQueries}
+                />
+              }
             >
-              <RiDeleteBinLine className="size-3.5" />
-            </ContentSwitch>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Clear log</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                size="icon-xs"
-                variant="ghost"
-                aria-label="Close query logger"
-                onClick={() =>
-                  store.set(
-                    (state) =>
-                      ({ ...state, loggerOpened: false }) satisfies typeof state
-                  )
+              <ContentSwitch
+                active={isClearing}
+                onSwitchEnd={setIsClearing}
+                activeContent={
+                  <RiCheckLine className="text-success size-3.5" />
                 }
-              />
-            }
-          >
-            <RiCloseLine className="size-3.5" />
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Close</TooltipContent>
-        </Tooltip>
+              >
+                <RiDeleteBinLine className="size-3.5" />
+              </ContentSwitch>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Clear log</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  size="icon-xs"
+                  variant="ghost"
+                  aria-label="Close query logger"
+                  className="text-muted-foreground"
+                  onClick={() =>
+                    store.set(
+                      (state) =>
+                        ({
+                          ...state,
+                          loggerOpened: false,
+                        }) satisfies typeof state
+                    )
+                  }
+                />
+              }
+            >
+              <RiCloseLine className="size-3.5" />
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Close</TooltipContent>
+          </Tooltip>
+        </div>
       </div>
       {queries.length === 0 ? (
         <Empty>
@@ -446,27 +379,56 @@ export const QueryLogger = ({
             />
           </ResizablePanel>
           <ResizableHandle
-            className="[&>div]:bg-border/50 aria-disabled:w-0"
+            className="[&>div]:bg-border w-px aria-disabled:w-0 [&>div]:w-full"
             disabled={!selected}
           />
           <ResizablePanel
             id={DETAILS_PANEL_ID}
+            className="flex flex-col"
             collapsed={!selected}
             defaultSize="45%"
             minSize="25%"
             maxSize="70%"
           >
-            {shown && connection && (
-              <QueryDetails
-                key={shown.id}
-                query={shown}
-                connectionType={connection.type}
-                onClose={() => setSelectedId(undefined)}
-              />
+            {selected && activeTab && (
+              <TabsList variant="bar" className="shrink-0 after:hidden">
+                {tabs.map((item) => (
+                  <TabsTrigger
+                    key={item.value}
+                    value={item.value}
+                    className="flex-none tabular-nums transition-none"
+                  >
+                    {item.label}
+                  </TabsTrigger>
+                ))}
+                <div className="flex flex-1 items-center justify-end border-b px-1">
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <CopyButton
+                          size="icon-xs"
+                          variant="ghost"
+                          aria-label="Copy"
+                          className="text-muted-foreground"
+                          text={activeTab.code}
+                          copyIcon={<RiFileCopyLine className="size-3.5" />}
+                          successIcon={
+                            <RiCheckLine className="text-success size-3.5" />
+                          }
+                        />
+                      }
+                    />
+                    <TooltipContent side="bottom">
+                      Copy {activeTab.label}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </TabsList>
             )}
+            {activeTab && <QueryDetails tab={activeTab} />}
           </ResizablePanel>
         </ResizablePanelGroup>
       )}
-    </div>
+    </Tabs>
   )
 }

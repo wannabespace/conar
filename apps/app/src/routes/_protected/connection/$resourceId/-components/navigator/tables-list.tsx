@@ -498,7 +498,7 @@ export const TablesList = ({
           {Array.from({ length: 12 }).map((_, index) => (
             // oxlint-disable-next-line react/no-array-index-key
             <SidebarMenuItem key={index}>
-              <SidebarMenuSkeleton showIcon />
+              <SidebarMenuSkeleton seed={index} showIcon />
             </SidebarMenuItem>
           ))}
         </SidebarMenu>

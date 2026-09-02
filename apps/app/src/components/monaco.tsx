@@ -51,7 +51,7 @@ export const Monaco = ({
     (editorLanguage?: string) =>
       ({
         automaticLayout: true,
-        fontFamily: '"Geist Mono", monospace',
+        fontFamily: '"Geist Mono Variable", monospace',
         language: editorLanguage,
         minimap: { enabled: false },
         tabSize: 2,
@@ -178,7 +178,7 @@ export const MonacoDiff = ({
     () =>
       ({
         automaticLayout: true,
-        fontFamily: '"Geist Mono", monospace',
+        fontFamily: '"Geist Mono Variable", monospace',
         minimap: { enabled: false },
         readOnly: true,
         ...options,

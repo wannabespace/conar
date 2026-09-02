@@ -1,7 +1,7 @@
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import { Skeleton } from '@tamery/ui/components/skeleton'
-import { cn } from '@tamery/ui/lib/utils'
+import { cn, pseudoRandom } from '@tamery/ui/lib/utils'
 import type { CSSProperties } from 'react'
 import * as React from 'react'
 
@@ -95,16 +95,14 @@ export const SidebarMenuAction = ({
 
 export const SidebarMenuSkeleton = ({
   className,
+  seed,
   showIcon = false,
   ...props
 }: React.ComponentProps<'div'> & {
+  seed: number
   showIcon?: boolean
 }) => {
-  // Random skeleton width is fixed after mount; setter is intentionally unused.
-  // oxlint-disable-next-line react/hook-use-state
-  const [width] = React.useState(
-    () => `${Math.floor(Math.random() * 40) + 50}%`
-  )
+  const width = `${Math.round(50 + pseudoRandom(seed) * 40)}%`
 
   return (
     <div

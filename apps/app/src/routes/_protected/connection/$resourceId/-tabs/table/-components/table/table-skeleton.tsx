@@ -5,15 +5,12 @@ import {
 } from '@tamery/table/constants'
 import { useTableContext } from '@tamery/table/hooks'
 import { Skeleton } from '@tamery/ui/components/skeleton'
-import { cn } from '@tamery/ui/lib/utils'
+import { cn, pseudoRandom } from '@tamery/ui/lib/utils'
 
 import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell'
 
 const ROWS_COUNT = 20
 const STAGGER_MS = 90
-
-const pseudoRandom = (seed: number) =>
-  Math.abs(Math.sin(seed * 127.1 + 311.7)) % 1
 
 const barWidth = (rowIndex: number, columnIndex: number) => {
   const base = 30 + pseudoRandom(columnIndex + 1) * 50
