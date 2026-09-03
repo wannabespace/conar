@@ -18,11 +18,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@tamery/ui/components/empty'
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from '@tamery/ui/components/resizable'
 import { Spinner } from '@tamery/ui/components/spinner'
 import {
   Tabs,
@@ -38,7 +33,6 @@ import {
 import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { cn } from '@tamery/ui/lib/utils'
 import { useState } from 'react'
-import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
@@ -48,15 +42,11 @@ import { formatSql } from '~/utils/formatter'
 
 import type { ConnectionResource } from '../core/sync'
 import type { QueryLog } from '../runtime/log'
-import { queryLogsStore } from '../runtime/log'
-
-const DETAILS_PANEL_ID = 'query-logger-details'
+import { getQueryLogsStore } from '../runtime/log'
 
 const ROW_HEIGHT = 28
 const PREVIEW_LIMIT = 20_000
 
-// Success is the common case, so it stays neutral — a column of green dots
-// only competes with the highlighted SQL beside it.
 const statusIndicator = ({ error, result }: QueryLog) => {
   if (error) {
     return <span className="bg-destructive size-1.5 rounded-full" />
@@ -159,21 +149,28 @@ const buildTabs = (query: QueryLog, connectionType: ConnectionType) =>
     },
   ].filter((tab): tab is DetailTab => tab.code !== null)
 
-const QueryDetails = ({ tab }: { tab: DetailTab }) => (
+const QueryDetails = ({
+  queryId,
+  tab,
+}: {
+  queryId: string
+  tab: DetailTab
+}) => (
   <TabsContent
-    key={tab.value}
+    key={`${queryId}-${tab.value}`}
     value={tab.value}
-    className="no-scrollbar scroll-fade min-h-0 flex-1 overflow-auto"
+    className="flex min-h-0 flex-1 flex-col"
   >
     <CodeBlock
       className={cn(
-        'my-0 rounded-none bg-transparent',
+        '[&>pre]:no-scrollbar [&>pre]:scroll-fade my-0 flex min-h-0 flex-1 flex-col rounded-none bg-transparent [&>pre]:min-h-0 [&>pre]:flex-1',
         tab.value === 'error' && 'text-destructive'
       )}
       code={tab.code}
       collapsible={false}
       header={false}
       language={tab.language}
+      lineNumbers
     />
   </TabsContent>
 )
@@ -247,47 +244,35 @@ export const QueryLogger = ({
   const store = getConnectionResourceStore(connectionResource.id)
   const { connectionsCollection } = useCollections()
   const connection = connectionsCollection.get(connectionResource.connectionId)
-  const queries = useSubscription(queryLogsStore, {
-    selector: (state) =>
-      Object.values(state[connectionResource.id] || {}).toSorted(
-        (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
-      ),
+  const logsStore = getQueryLogsStore(connectionResource.id)
+  const queries = useSubscription(logsStore, {
+    isEqual: Object.is,
+    selector: (logs: QueryLog[]) => logs,
   })
   const [selectedId, setSelectedId] = useState<string>()
-  const [shown, setShown] = useState<QueryLog>()
-  const [tab, setTab] = useState('query')
+  const [tab, setTab] = useState({ id: '', value: 'query' })
   const [isClearing, setIsClearing] = useState(false)
-  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: `query-logger-layout-${connectionResource.id}`,
-    onlySaveAfterUserInteractions: true,
-    storage: localStorage,
-  })
-
   const selected = queries.find((query) => query.id === selectedId)
 
-  if (selected && selected !== shown) {
-    setShown(selected)
-
-    if (selected.id !== shown?.id) {
-      setTab(selected.error ? 'error' : 'query')
-    }
+  if (selected && tab.id !== selected.id) {
+    setTab({ id: selected.id, value: selected.error ? 'error' : 'query' })
   }
 
-  const tabs = shown && connection ? buildTabs(shown, connection.type) : []
-  const activeTab = tabs.find((item) => item.value === tab) ?? tabs.at(0)
+  const tabs =
+    selected && connection ? buildTabs(selected, connection.type) : []
+  const activeTab = tabs.find((item) => item.value === tab.value) ?? tabs.at(0)
 
   const clearQueries = () => {
     setIsClearing(true)
-    queryLogsStore.set(
-      (state) =>
-        ({ ...state, [connectionResource.id]: {} }) satisfies typeof state
-    )
+    logsStore.set([])
   }
 
   return (
     <Tabs
       value={activeTab?.value ?? 'query'}
-      onValueChange={(value) => setTab(value as string)}
+      onValueChange={(value) =>
+        setTab((current) => ({ ...current, value: value as string }))
+      }
       className={cn('flex h-full min-h-0 flex-col gap-0', className)}
     >
       <div className="flex h-8 shrink-0 items-center gap-1 border-b pr-1 pl-3">
@@ -357,19 +342,8 @@ export const QueryLogger = ({
           </EmptyHeader>
         </Empty>
       ) : (
-        <ResizablePanelGroup
-          orientation="horizontal"
-          className="min-h-0 flex-1"
-          defaultLayout={defaultLayout}
-          onLayoutChanged={(layout, meta) => {
-            onLayoutChanged(layout, meta)
-
-            if (meta.isUserInteraction && layout[DETAILS_PANEL_ID] === 0) {
-              setSelectedId(undefined)
-            }
-          }}
-        >
-          <ResizablePanel defaultSize="60%" minSize="30%">
+        <div className="flex min-h-0 flex-1">
+          <div className="min-w-0 flex-1">
             <LogList
               queries={queries}
               selectedId={selectedId}
@@ -377,18 +351,13 @@ export const QueryLogger = ({
                 setSelectedId((current) => (current === id ? undefined : id))
               }
             />
-          </ResizablePanel>
-          <ResizableHandle
-            className="[&>div]:bg-border w-px aria-disabled:w-0 [&>div]:w-full"
-            disabled={!selected}
-          />
-          <ResizablePanel
-            id={DETAILS_PANEL_ID}
-            className="flex flex-col"
-            collapsed={!selected}
-            defaultSize="45%"
-            minSize="25%"
-            maxSize="70%"
+          </div>
+          <div
+            className={cn(
+              'flex shrink-0 flex-col overflow-hidden',
+              selected && 'border-l'
+            )}
+            style={{ width: selected ? '55%' : 0 }}
           >
             {selected && activeTab && (
               <TabsList variant="bar" className="shrink-0 after:hidden">
@@ -425,9 +394,11 @@ export const QueryLogger = ({
                 </div>
               </TabsList>
             )}
-            {activeTab && <QueryDetails tab={activeTab} />}
-          </ResizablePanel>
-        </ResizablePanelGroup>
+            {selected && activeTab && (
+              <QueryDetails queryId={selected.id} tab={activeTab} />
+            )}
+          </div>
+        </div>
       )}
     </Tabs>
   )

@@ -4,22 +4,77 @@ import { formatXml } from '@tamery/shared/utils/xml'
 import { useMountedEffect } from '@tamery/ui/hookas/use-mounted-effect'
 import { resolvedTheme } from '@tamery/ui/theme-store'
 import * as monaco from 'monaco-editor'
-import { vsPlusTheme } from 'monaco-sql-languages'
 import type { RefObject } from 'react'
 import { useEffect, useEffectEvent, useRef } from 'react'
 
-// Sync with packages/ui/src/styles/monaco.css
-vsPlusTheme.darkThemeData.colors['editor.selectionBackground'] = '#5081f150'
-vsPlusTheme.lightThemeData.colors['editor.selectionBackground'] = '#5081f150'
+const githubTheme = (
+  base: 'vs' | 'vs-dark',
+  c: {
+    background: string
+    comment: string
+    foreground: string
+    function: string
+    keyword: string
+    number: string
+    string: string
+  }
+): monaco.editor.IStandaloneThemeData => ({
+  base,
+  colors: {
+    'editor.background': c.background,
+    'editor.foreground': c.foreground,
+    // Sync with packages/ui/src/styles/monaco.css
+    'editor.selectionBackground': '#5081f150',
+    'editorGutter.background': c.background,
+  },
+  inherit: false,
+  rules: [
+    { foreground: c.foreground, token: '' },
+    { foreground: c.keyword, token: 'keyword' },
+    { foreground: c.keyword, token: 'operator.keyword' },
+    { foreground: c.string, token: 'string' },
+    { foreground: c.string, token: 'identifier.quote' },
+    { foreground: c.number, token: 'number' },
+    { foreground: c.number, token: 'variable' },
+    { foreground: c.number, token: 'string.key.json' },
+    { foreground: c.string, token: 'string.value.json' },
+    { foreground: c.function, token: 'predefined' },
+    { foreground: c.function, token: 'type' },
+    { foreground: c.comment, token: 'comment' },
+    { foreground: c.foreground, token: 'operator' },
+    { foreground: c.foreground, token: 'delimiter' },
+    { foreground: c.foreground, token: 'identifier' },
+  ],
+})
 
-vsPlusTheme.darkThemeData.colors['editor.background'] = '#26272b'
-
-monaco.editor.defineTheme('sql-dark', vsPlusTheme.darkThemeData)
-monaco.editor.defineTheme('sql-light', vsPlusTheme.lightThemeData)
+monaco.editor.defineTheme(
+  'github-light',
+  githubTheme('vs', {
+    background: '#fafafb',
+    comment: '#6a737d',
+    foreground: '#24292e',
+    function: '#6f42c1',
+    keyword: '#d73a49',
+    number: '#005cc5',
+    string: '#032f62',
+  })
+)
+monaco.editor.defineTheme(
+  'github-dark',
+  githubTheme('vs-dark', {
+    background: '#1e2023',
+    comment: '#6a737d',
+    foreground: '#e1e4e8',
+    function: '#b392f0',
+    keyword: '#f97583',
+    number: '#79b8ff',
+    string: '#9ecbff',
+  })
+)
 
 resolvedTheme.subscribe(
   (theme) => {
-    monaco.editor.setTheme(theme === 'dark' ? 'sql-dark' : 'sql-light')
+    monaco.editor.setTheme(theme === 'dark' ? 'github-dark' : 'github-light')
   },
   { immediate: true }
 )
@@ -115,7 +170,7 @@ export const Monaco = ({
     }
 
     monacoInstanceRef.current.updateOptions(options)
-  }, [JSON.stringify(options)])
+  }, [options])
 
   useMountedEffect(() => {
     if (!monacoInstanceRef.current) {

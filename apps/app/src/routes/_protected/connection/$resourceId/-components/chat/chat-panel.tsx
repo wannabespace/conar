@@ -18,10 +18,6 @@ import {
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
 import {
-  ResizableHandle,
-  ResizablePanel,
-} from '@tamery/ui/components/resizable'
-import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -29,7 +25,6 @@ import {
 import { eq, useLiveSuspenseQuery } from '@tanstack/react-db'
 import { getRouteApi } from '@tanstack/react-router'
 import { Suspense, useState } from 'react'
-import { usePanelRef } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 import { v7 } from 'uuid'
 
@@ -41,13 +36,7 @@ import { ChatInput } from './chat-input'
 import { getChatInstance } from './chat-instance'
 import { ChatMessages } from './chat-messages'
 import { ChatSkeleton } from './chat-skeleton'
-import {
-  CHAT_DEFAULT_WIDTH,
-  CHAT_MAX_WIDTH,
-  CHAT_MIN_WIDTH,
-  CHAT_PANEL_ID,
-  chatWidthValue,
-} from './constants'
+import { CHAT_DEFAULT_WIDTH } from './constants'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -258,8 +247,6 @@ export const ChatPanel = () => {
   const chatOpened = useSubscription(store, {
     selector: (state) => state.chatOpened ?? false,
   })
-  const width = useSubscription(chatWidthValue)
-  const panelRef = usePanelRef()
   const [draftId, setDraftId] = useState(() => v7())
   const activeChatId = chatId ?? draftId
 
@@ -278,49 +265,35 @@ export const ChatPanel = () => {
   }
 
   return (
-    <>
-      <ResizableHandle
-        aria-label="Resize chat"
-        className="-mr-1.5"
-        disabled={!chatOpened}
-        disableDoubleClick
-        onDoubleClick={() => panelRef.current?.resize(CHAT_DEFAULT_WIDTH)}
-      />
-      <ResizablePanel
-        id={CHAT_PANEL_ID}
-        panelRef={panelRef}
-        collapsed={!chatOpened}
-        defaultSize={width}
-        minSize={CHAT_MIN_WIDTH}
-        maxSize={CHAT_MAX_WIDTH}
-        groupResizeBehavior="preserve-pixel-size"
-        style={{ overflow: 'visible' }}
-        onResize={({ inPixels }) => {
-          if (inPixels > 0) {
-            chatWidthValue.set(inPixels)
-          }
-        }}
+    <div
+      className="h-full shrink-0"
+      style={{
+        width: chatOpened ? CHAT_DEFAULT_WIDTH : 0,
+        overflow: chatOpened ? 'visible' : 'hidden',
+      }}
+    >
+      <div
+        className="flex h-full flex-col pl-1.5"
+        style={{ width: CHAT_DEFAULT_WIDTH }}
       >
-        <div className="flex h-full flex-col pl-1.5" style={{ width }}>
-          <div className="bg-background flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg">
-            <Suspense fallback={<ChatSkeleton />}>
-              <Chat
-                key={activeChatId}
-                chatId={activeChatId}
-                connectionResourceId={connectionResource.id}
-                isNew={activeChatId === draftId}
-                onNewChat={openBlankChat}
-                onStart={startDraft}
-                onSelectChat={(id) =>
-                  store.set(
-                    (state) => ({ ...state, chatId: id }) satisfies typeof state
-                  )
-                }
-              />
-            </Suspense>
-          </div>
+        <div className="bg-background flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg">
+          <Suspense fallback={<ChatSkeleton />}>
+            <Chat
+              key={activeChatId}
+              chatId={activeChatId}
+              connectionResourceId={connectionResource.id}
+              isNew={activeChatId === draftId}
+              onNewChat={openBlankChat}
+              onStart={startDraft}
+              onSelectChat={(id) =>
+                store.set(
+                  (state) => ({ ...state, chatId: id }) satisfies typeof state
+                )
+              }
+            />
+          </Suspense>
         </div>
-      </ResizablePanel>
-    </>
+      </div>
+    </div>
   )
 }

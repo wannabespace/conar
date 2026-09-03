@@ -180,17 +180,17 @@
 
 .shell-navigator [data-shell-navigator] {
   display: revert-layer;
-  width: var(--shell-navigator-width, 256px);
+  width: 256px;
 }
 
 .shell-chat [data-shell-chat] {
   display: revert-layer;
-  width: var(--shell-chat-width, 380px);
+  width: 380px;
 }
 
 .shell-logger [data-shell-logger] {
   display: revert-layer;
-  height: var(--shell-logger-height, 240px);
+  height: 240px;
 }
 
 .electron.mac:not(.window-fullscreen) [data-shell-titlebar] {

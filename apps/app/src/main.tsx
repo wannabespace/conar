@@ -86,11 +86,9 @@ router.subscribe('onResolved', ({ toLocation }) => {
     requestAnimationFrame(() => shell.remove())
   }
 
-  if (toLocation.pathname.startsWith('/auth')) {
-    return
+  if (!toLocation.pathname.startsWith('/auth')) {
+    lastLocationStorageValue.set(toLocation.href)
   }
-
-  lastLocationStorageValue.set(toLocation.href)
 })
 
 const isRoutableHref = (href: string) => {

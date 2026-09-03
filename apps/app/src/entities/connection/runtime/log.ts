@@ -1,18 +1,4 @@
-import { type } from 'arktype'
 import { createStore } from 'seitu'
-import { createWebStorageValue } from 'seitu/web'
-
-import { LOGGER_DEFAULT_HEIGHT, LOGGER_HEIGHT_KEY } from '~/lib/storage-keys'
-
-export const LOGGER_MIN_HEIGHT = 120
-export const LOGGER_MAX_HEIGHT = 720
-
-export const loggerHeightValue = createWebStorageValue({
-  defaultValue: LOGGER_DEFAULT_HEIGHT,
-  key: LOGGER_HEIGHT_KEY,
-  schema: type('number'),
-  type: 'localStorage',
-})
 
 export interface QueryLog {
   id: string
@@ -24,9 +10,29 @@ export interface QueryLog {
   error: string | null
 }
 
-export const queryLogsStore = createStore<
-  Record<string, Record<string, QueryLog>>
->({})
+const LOG_LIMIT = 500
+
+const stores = new Map<string, ReturnType<typeof createStore<QueryLog[]>>>()
+
+export const getQueryLogsStore = (resourceId: string) => {
+  let store = stores.get(resourceId)
+
+  if (!store) {
+    store = createStore<QueryLog[]>([])
+    stores.set(resourceId, store)
+  }
+
+  return store
+}
+
+const patchLog = (
+  store: ReturnType<typeof getQueryLogsStore>,
+  id: string,
+  patch: Partial<QueryLog>
+) =>
+  store.set((logs) =>
+    logs.map((log) => (log.id === id ? { ...log, ...patch } : log))
+  )
 
 export const logQuery = async ({
   resourceId,
@@ -39,67 +45,30 @@ export const logQuery = async ({
   query: string
   values?: unknown[]
 }) => {
+  const store = getQueryLogsStore(resourceId)
   const id = crypto.randomUUID()
 
-  queryLogsStore.set(
-    (state) =>
-      ({
-        ...state,
-        [resourceId]: {
-          ...state[resourceId],
-          [id]: {
-            createdAt: new Date(),
-            duration: null,
-            error: null,
-            id,
-            query,
-            result: null,
-            values,
-          },
-        },
-      }) satisfies typeof state
+  store.set((logs) =>
+    [
+      ...logs,
+      {
+        createdAt: new Date(),
+        duration: null,
+        error: null,
+        id,
+        query,
+        result: null,
+        values,
+      },
+    ].slice(-LOG_LIMIT)
   )
 
   try {
     const { result, duration } = await promise
-
-    queryLogsStore.set((state) => {
-      const resourceLogs = state[resourceId] ?? {}
-      const existingLog = resourceLogs[id]
-      if (!existingLog) {
-        return state
-      }
-
-      return {
-        ...state,
-        [resourceId]: {
-          ...resourceLogs,
-          [id]: {
-            ...existingLog,
-            duration,
-            result,
-          },
-        },
-      } satisfies typeof state
-    })
+    patchLog(store, id, { duration, result })
   } catch (error) {
-    queryLogsStore.set((state) => {
-      const resourceLogs = state[resourceId] ?? {}
-      const existingLog = resourceLogs[id]
-      if (!existingLog) {
-        return state
-      }
-
-      return {
-        ...state,
-        [resourceId]: {
-          ...resourceLogs,
-          [id]: {
-            ...existingLog,
-            error: error instanceof Error ? error.message : String(error),
-          },
-        },
-      } satisfies typeof state
+    patchLog(store, id, {
+      error: error instanceof Error ? error.message : String(error),
     })
   }
 }

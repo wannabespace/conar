@@ -4,15 +4,21 @@ import { useState } from 'react'
 
 let dragOverlay: HTMLDivElement | undefined
 
-const showDragOverlay = () => {
+const showDragOverlay = (cursor: string) => {
   dragOverlay ??= document.createElement('div')
-  dragOverlay.className =
-    'fixed top-0 left-0 z-1000 size-full cursor-col-resize'
+  dragOverlay.className = `fixed top-0 left-0 z-1000 size-full ${cursor}`
 
   if (!dragOverlay.parentElement) {
     document.body.append(dragOverlay)
   }
 }
+
+const sides = {
+  bottom: { axis: 'y', direction: 1 },
+  left: { axis: 'x', direction: -1 },
+  right: { axis: 'x', direction: 1 },
+  top: { axis: 'y', direction: -1 },
+} as const
 
 export const ResizeHandle = ({
   getValue,
@@ -31,9 +37,11 @@ export const ResizeHandle = ({
   onResizingChange?: (resizing: boolean) => void
   min?: number | (() => number)
   max?: number | (() => number)
-  side?: 'left' | 'right'
+  side?: keyof typeof sides
 } & Omit<ComponentProps<'div'>, 'onResize'>) => {
   const [isResizing, setIsResizing] = useState(false)
+  const { axis, direction } = sides[side]
+  const cursor = axis === 'x' ? 'cursor-col-resize' : 'cursor-row-resize'
 
   const setResizing = (resizing: boolean) => {
     setIsResizing(resizing)
@@ -44,20 +52,21 @@ export const ResizeHandle = ({
     event.preventDefault()
     setResizing(true)
 
-    const startX = event.clientX
+    const start = axis === 'x' ? event.clientX : event.clientY
     const startValue = getValue()
     const minValue = typeof min === 'function' ? min() : min
     const maxValue = typeof max === 'function' ? max() : max
-    const direction = side === 'right' ? 1 : -1
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      showDragOverlay()
+      showDragOverlay(cursor)
       onResize(
         Math.min(
           maxValue,
           Math.max(
             minValue,
-            startValue + direction * (moveEvent.clientX - startX)
+            startValue +
+              direction *
+                ((axis === 'x' ? moveEvent.clientX : moveEvent.clientY) - start)
           )
         )
       )
@@ -78,13 +87,10 @@ export const ResizeHandle = ({
     <div
       // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- interactive resize handle
       role="separator"
-      aria-orientation="vertical"
+      aria-orientation={axis === 'x' ? 'vertical' : 'horizontal'}
       tabIndex={0}
       data-resizing={isResizing || undefined}
-      className={cn(
-        'group/resize-handle cursor-col-resize select-none',
-        className
-      )}
+      className={cn('group/resize-handle select-none', cursor, className)}
       onMouseDown={(event) => {
         onMouseDown?.(event)
         startResize(event)

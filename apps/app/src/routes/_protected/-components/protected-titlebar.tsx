@@ -29,6 +29,7 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { eq, useLiveQuery } from '@tanstack/react-db'
+import { useHotkey } from '@tanstack/react-hotkeys'
 import { useLocation, useNavigate, useParams } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
 import { useRef, useState } from 'react'
@@ -307,6 +308,16 @@ const QueryLoggerButton = ({ resourceId }: { resourceId: string }) => {
   const loggerOpened = useSubscription(store, {
     selector: (state) => state.loggerOpened,
   })
+  const toggleLogger = () =>
+    store.set(
+      (state) =>
+        ({ ...state, loggerOpened: !state.loggerOpened }) satisfies typeof state
+    )
+
+  useHotkey('Mod+J', (e) => {
+    e.preventDefault()
+    toggleLogger()
+  })
 
   return (
     <Tooltip>
@@ -318,21 +329,16 @@ const QueryLoggerButton = ({ resourceId }: { resourceId: string }) => {
             aria-label="Query logger"
             aria-pressed={loggerOpened}
             className={cn(loggerOpened && 'bg-foreground/10 text-foreground')}
-            onClick={() =>
-              store.set(
-                (state) =>
-                  ({
-                    ...state,
-                    loggerOpened: !state.loggerOpened,
-                  }) satisfies typeof state
-              )
-            }
+            onClick={toggleLogger}
           />
         }
       >
         <RiFileListLine className="size-4" />
       </TooltipTrigger>
-      <TooltipContent side="bottom">Query logger</TooltipContent>
+      <TooltipContent side="bottom">
+        Query logger
+        <KbdCtrlLetter userAgent={navigator.userAgent} letter="J" />
+      </TooltipContent>
     </Tooltip>
   )
 }

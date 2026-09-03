@@ -91,6 +91,7 @@ const CodeBlock = ({
   collapsible = true,
   header = true,
   language,
+  lineNumbers = false,
   ...props
 }: ComponentProps<'div'> & {
   actions?: ReactNode
@@ -98,6 +99,7 @@ const CodeBlock = ({
   collapsible?: boolean
   header?: boolean
   language: string
+  lineNumbers?: boolean
 }) => {
   const [expanded, setExpanded] = useState(false)
   const lines: Token[][] =
@@ -136,10 +138,17 @@ const CodeBlock = ({
           collapsible && !collapsed && 'max-h-72'
         )}
       >
-        <code data-mask>
+        <code data-mask className={cn(lineNumbers && '[counter-reset:line]')}>
           {(collapsed ? lines.slice(0, COLLAPSED_LINES) : lines).map(
             (line, index) => (
-              <span className="block" key={`line-${index}`}>
+              <span
+                className={cn(
+                  'block',
+                  lineNumbers &&
+                    'before:text-muted-foreground/40 before:mr-3 before:inline-block before:w-6 before:text-right before:tabular-nums before:content-[counter(line)] before:[counter-increment:line]'
+                )}
+                key={`line-${index}`}
+              >
                 <TokenSpans tokens={line} />
                 {'\n'}
               </span>

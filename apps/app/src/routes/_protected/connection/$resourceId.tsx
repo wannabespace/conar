@@ -1,26 +1,15 @@
 import { title } from '@tamery/shared/utils/title'
 import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from '@tamery/ui/components/resizable'
-import {
   createFileRoute,
   getRouteApi,
   Outlet,
   redirect,
 } from '@tanstack/react-router'
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { usePanelRef } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 
 import { QueryLoggerSkeleton } from '~/entities/connection/components/query-logger-skeleton'
 import type { ConnectionResource } from '~/entities/connection/core'
-import {
-  loggerHeightValue,
-  LOGGER_MAX_HEIGHT,
-  LOGGER_MIN_HEIGHT,
-} from '~/entities/connection/runtime/log'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
@@ -30,16 +19,9 @@ import { LOGGER_DEFAULT_HEIGHT } from '~/lib/storage-keys'
 import { resourcePanelClassName } from '~/shell'
 
 import { ChatPanel } from './$resourceId/-components/chat/chat-panel'
-import { CHAT_PANEL_ID } from './$resourceId/-components/chat/constants'
-import {
-  NAVIGATOR_PANEL_ID,
-  navigatorOpenValue,
-} from './$resourceId/-components/navigator/constants'
 import { Navigator } from './$resourceId/-components/navigator/navigator'
 import { TabBar } from './$resourceId/-components/tab-bar'
 import { PasswordForm } from './-components/password-form'
-
-const LOGGER_PANEL_ID = 'panel-logger'
 
 const QueryLogger = lazy(async () => {
   const { QueryLogger: component } =
@@ -57,8 +39,6 @@ const QueryLoggerPanel = ({
   connectionResource: ConnectionResource
   opened: boolean
 }) => {
-  const height = useSubscription(loggerHeightValue)
-  const panelRef = usePanelRef()
   const [mounted, setMounted] = useState(opened)
 
   if (opened && !mounted) {
@@ -66,40 +46,26 @@ const QueryLoggerPanel = ({
   }
 
   return (
-    <>
-      <ResizableHandle
-        aria-label="Resize query logger"
-        className="-mb-1.5"
-        disabled={!opened}
-        disableDoubleClick
-        onDoubleClick={() => panelRef.current?.resize(LOGGER_DEFAULT_HEIGHT)}
-      />
-      <ResizablePanel
-        id={LOGGER_PANEL_ID}
-        panelRef={panelRef}
-        collapsed={!opened}
-        defaultSize={height}
-        minSize={LOGGER_MIN_HEIGHT}
-        maxSize={LOGGER_MAX_HEIGHT}
-        groupResizeBehavior="preserve-pixel-size"
-        style={{ overflow: 'visible' }}
-        onResize={({ inPixels }) => {
-          if (inPixels > 0) {
-            loggerHeightValue.set(inPixels)
-          }
-        }}
+    <div
+      className="shrink-0"
+      style={{
+        height: opened ? LOGGER_DEFAULT_HEIGHT : 0,
+        overflow: opened ? 'visible' : 'hidden',
+      }}
+    >
+      <div
+        className="flex flex-col pt-1.5"
+        style={{ height: LOGGER_DEFAULT_HEIGHT }}
       >
-        <div className="flex flex-col pt-1.5" style={{ height }}>
-          <div className={resourcePanelClassName}>
-            {mounted && (
-              <Suspense fallback={<QueryLoggerSkeleton />}>
-                <QueryLogger connectionResource={connectionResource} />
-              </Suspense>
-            )}
-          </div>
+        <div className={resourcePanelClassName}>
+          {mounted && (
+            <Suspense fallback={<QueryLoggerSkeleton />}>
+              <QueryLogger connectionResource={connectionResource} />
+            </Suspense>
+          )}
         </div>
-      </ResizablePanel>
-    </>
+      </div>
+    </div>
   )
 }
 
@@ -134,55 +100,20 @@ const ResourcePage = () => {
   }
 
   return (
-    <ResizablePanelGroup
-      orientation="horizontal"
-      className="p-2"
-      style={{ overflow: 'visible' }}
-      onLayoutChanged={(layout, { isUserInteraction }) => {
-        if (!isUserInteraction) {
-          return
-        }
-        if (layout[NAVIGATOR_PANEL_ID] === 0) {
-          navigatorOpenValue.set(false)
-        }
-        if (layout[CHAT_PANEL_ID] === 0) {
-          store.set(
-            (state) => ({ ...state, chatOpened: false }) satisfies typeof state
-          )
-        }
-      }}
-    >
+    <div className="flex size-full p-2">
       <Navigator />
-      <ResizablePanel className="flex flex-col" style={{ overflow: 'visible' }}>
-        <ResizablePanelGroup
-          orientation="vertical"
-          style={{ overflow: 'visible' }}
-          onLayoutChanged={(layout, { isUserInteraction }) => {
-            if (isUserInteraction && layout[LOGGER_PANEL_ID] === 0) {
-              store.set(
-                (state) =>
-                  ({ ...state, loggerOpened: false }) satisfies typeof state
-              )
-            }
-          }}
-        >
-          <ResizablePanel
-            className="flex flex-col"
-            style={{ overflow: 'visible' }}
-          >
-            <div className={resourcePanelClassName}>
-              <TabBar />
-              <Outlet />
-            </div>
-          </ResizablePanel>
-          <QueryLoggerPanel
-            connectionResource={connectionResource}
-            opened={loggerOpened}
-          />
-        </ResizablePanelGroup>
-      </ResizablePanel>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className={resourcePanelClassName}>
+          <TabBar />
+          <Outlet />
+        </div>
+        <QueryLoggerPanel
+          connectionResource={connectionResource}
+          opened={loggerOpened}
+        />
+      </div>
       <ChatPanel />
-    </ResizablePanelGroup>
+    </div>
   )
 }
 

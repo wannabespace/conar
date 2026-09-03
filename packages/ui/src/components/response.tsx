@@ -3,9 +3,6 @@ import { cn } from '@tamery/ui/lib/utils'
 import type * as React from 'react'
 import { Streamdown } from 'streamdown'
 
-// Owning `pre` replaces Streamdown's code block outright — its own chrome is
-// registry-sized (line-number gutter, boxed copy button) and styles against
-// `bg-sidebar`, a token this theme does not define.
 const Pre = ({ children }: { children?: React.ReactNode }) => {
   const props = (
     children as React.ReactElement<{
