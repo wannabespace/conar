@@ -1,7 +1,8 @@
 import {
-  RiCollapseDiagonal2Line,
-  RiExpandDiagonal2Line,
-} from '@remixicon/react'
+  ArrowExpandDiagonal02Icon,
+  ArrowShrinkIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
   Combobox,
@@ -236,7 +237,11 @@ const CellPopoverToolbar = ({
               />
             }
           >
-            {isBig ? <RiCollapseDiagonal2Line /> : <RiExpandDiagonal2Line />}
+            {isBig ? (
+              <HugeiconsIcon icon={ArrowShrinkIcon} strokeWidth={2} />
+            ) : (
+              <HugeiconsIcon icon={ArrowExpandDiagonal02Icon} strokeWidth={2} />
+            )}
           </TooltipTrigger>
           <TooltipContent side="bottom">Toggle size</TooltipContent>
         </Tooltip>

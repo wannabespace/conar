@@ -1,10 +1,10 @@
 import {
-  RiAlertLine,
-  RiCheckboxCircleLine,
-  RiCloseLine,
-  RiErrorWarningLine,
-  RiInformationLine,
-} from '@remixicon/react'
+  Alert02Icon,
+  Cancel01Icon,
+  CheckmarkCircle02Icon,
+  InformationCircleIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { RouterOutputs } from '@tamery/api/orpc/routers'
 import { Button } from '@tamery/ui/components/button'
 import { ElapsedSeconds } from '@tamery/ui/components/custom/elapsed-seconds'
@@ -37,19 +37,43 @@ type BannerItem = NonNullable<RouterOutputs['banner']>[number]
 const typeConfig = {
   error: {
     className: 'bg-red-500/5 border-red-500/20 text-red-400',
-    icon: <RiAlertLine className="size-4 shrink-0" />,
+    icon: (
+      <HugeiconsIcon
+        icon={Alert02Icon}
+        strokeWidth={2}
+        className="size-4 shrink-0"
+      />
+    ),
   },
   info: {
     className: 'bg-blue-500/5 border-blue-500/20 text-blue-400',
-    icon: <RiInformationLine className="size-4 shrink-0" />,
+    icon: (
+      <HugeiconsIcon
+        icon={InformationCircleIcon}
+        strokeWidth={2}
+        className="size-4 shrink-0"
+      />
+    ),
   },
   success: {
     className: 'bg-green-500/5 border-green-500/20 text-green-400',
-    icon: <RiCheckboxCircleLine className="size-4 shrink-0" />,
+    icon: (
+      <HugeiconsIcon
+        icon={CheckmarkCircle02Icon}
+        strokeWidth={2}
+        className="size-4 shrink-0"
+      />
+    ),
   },
   warning: {
     className: 'bg-orange-500/5 border-orange-500/20 text-orange-400',
-    icon: <RiErrorWarningLine className="size-4 shrink-0" />,
+    icon: (
+      <HugeiconsIcon
+        icon={Alert02Icon}
+        strokeWidth={2}
+        className="size-4 shrink-0"
+      />
+    ),
   },
 } satisfies Record<BannerItem['type'], { icon: ReactNode; className: string }>
 
@@ -141,7 +165,7 @@ export const GlobalBanner = () => {
                   />
                 }
               >
-                <RiCloseLine />
+                <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
               </TooltipTrigger>
               <TooltipContent side="bottom">Dismiss</TooltipContent>
             </Tooltip>

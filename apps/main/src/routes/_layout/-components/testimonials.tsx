@@ -1,4 +1,5 @@
-import { RiDoubleQuotesL, RiTwitterXLine } from '@remixicon/react'
+import { NewTwitterIcon, QuoteDownIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import {
   Avatar,
@@ -75,7 +76,9 @@ const Testimonial = ({
       </div>
     </header>
     <div className="relative">
-      <RiDoubleQuotesL
+      <HugeiconsIcon
+        icon={QuoteDownIcon}
+        strokeWidth={2}
         className="text-primary/20 absolute -top-1 -left-1 size-5 sm:-top-2 sm:-left-2 sm:size-6"
         aria-hidden="true"
       />
@@ -90,7 +93,9 @@ const JoinTestimonials = () => (
   <div className="flex min-h-full items-center justify-center space-y-4 sm:space-y-6">
     <div className="text-center">
       <div className="from-primary/20 to-primary/10 mx-auto mb-3 flex size-10 items-center justify-center rounded-xl bg-linear-to-br sm:mb-4 sm:size-12">
-        <RiTwitterXLine
+        <HugeiconsIcon
+          icon={NewTwitterIcon}
+          strokeWidth={2}
           className="text-primary size-5 sm:size-6"
           aria-hidden="true"
         />
@@ -110,7 +115,12 @@ const JoinTestimonials = () => (
         variant="link"
       >
         Tag @tamery_app on
-        <RiTwitterXLine className="size-3 sm:size-4" aria-hidden="true" />
+        <HugeiconsIcon
+          icon={NewTwitterIcon}
+          strokeWidth={2}
+          className="size-3 sm:size-4"
+          aria-hidden="true"
+        />
       </Button>
     </div>
   </div>

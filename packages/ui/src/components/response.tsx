@@ -1,4 +1,5 @@
-import { RiArrowDownSLine } from '@remixicon/react'
+import { ArrowDown01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { cn } from '@tamery/ui/lib/utils'
@@ -68,7 +69,9 @@ export const ResponseCodeBlock = ({
           onClick={() => setExpanded((current) => !current)}
           type="button"
         >
-          <RiArrowDownSLine
+          <HugeiconsIcon
+            icon={ArrowDown01Icon}
+            strokeWidth={2}
             className={cn(
               'size-3 transition-transform',
               expanded && 'rotate-180'

@@ -1,5 +1,10 @@
-import { RiArrowRightSLine, RiBrainLine, RiToolsLine } from '@remixicon/react'
-import type { RemixiconComponentType } from '@remixicon/react'
+import {
+  ArrowRight01Icon,
+  BrainIcon,
+  Wrench01Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import type { IconSvgElement } from '@hugeicons/react'
 import type { AppMessagePart } from '@tamery/ai/message'
 import {
   Collapsible,
@@ -19,14 +24,18 @@ const Disclosure = ({
   status,
 }: {
   children: React.ReactNode
-  icon: RemixiconComponentType
+  icon: IconSvgElement
   label: string
   status?: React.ReactNode
 }) => (
   <Collapsible>
     <CollapsibleTrigger className="group text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs transition-colors">
-      <RiArrowRightSLine className="size-3.5 transition-transform duration-200 group-data-panel-open:rotate-90" />
-      <Icon className="size-3.5" />
+      <HugeiconsIcon
+        icon={ArrowRight01Icon}
+        strokeWidth={2}
+        className="size-3.5 transition-transform duration-200 group-data-panel-open:rotate-90"
+      />
+      <HugeiconsIcon icon={Icon} strokeWidth={2} className="size-3.5" />
       <span className="truncate">{label}</span>
       {status}
     </CollapsibleTrigger>
@@ -38,7 +47,7 @@ const Disclosure = ({
 
 const ToolPart = ({ part }: { part: DynamicToolUIPart | ToolUIPart }) => (
   <Disclosure
-    icon={RiToolsLine}
+    icon={Wrench01Icon}
     label={getToolName(part)}
     status={
       part.state === 'output-available' ||
@@ -76,7 +85,7 @@ export const MessagePart = ({ part }: { part: AppMessagePart }) => {
     }
     case 'reasoning': {
       return (
-        <Disclosure icon={RiBrainLine} label="Reasoning">
+        <Disclosure icon={BrainIcon} label="Reasoning">
           <Response className="text-muted-foreground">{part.text}</Response>
         </Disclosure>
       )

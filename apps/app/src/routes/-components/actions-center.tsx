@@ -1,23 +1,23 @@
 import {
-  RiAddLine,
-  RiArrowDownLine,
-  RiArrowUpLine,
-  RiComputerLine,
-  RiDashboardLine,
-  RiDownloadLine,
-  RiEyeFill,
-  RiEyeLine,
-  RiFileListLine,
-  RiHistoryLine,
-  RiMoonLine,
-  RiNodeTree,
-  RiRefreshLine,
-  RiSearchLine,
-  RiSunLine,
-  RiTableLine,
-  RiTerminalBoxLine,
-} from '@remixicon/react'
-import type { RemixiconComponentType } from '@remixicon/react'
+  ArrowDown02Icon,
+  ArrowUp02Icon,
+  ComputerIcon,
+  ComputerTerminal01Icon,
+  DashboardSquare01Icon,
+  Download01Icon,
+  File01Icon,
+  HierarchyIcon,
+  HistoryIcon,
+  Moon02Icon,
+  PlusSignIcon,
+  RefreshIcon,
+  Search01Icon,
+  Sun03Icon,
+  TableIcon,
+  ViewIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import type { IconSvgElement } from '@hugeicons/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
 import {
   Command,
@@ -63,27 +63,27 @@ const CONNECTION_PAGES = [
   {
     label: 'New Query',
     keywords: ['sql', 'runner'],
-    icon: RiTerminalBoxLine,
+    icon: ComputerTerminal01Icon,
     openTab: openRunnerTab,
   },
   {
     label: 'Open Definitions',
     keywords: [],
-    icon: RiFileListLine,
+    icon: File01Icon,
     openTab: (resourceId: string) => openDefinitionsTab(resourceId, 'enums'),
   },
   {
     label: 'Open Visualizer',
     keywords: [],
-    icon: RiNodeTree,
+    icon: HierarchyIcon,
     openTab: openVisualizerTab,
   },
 ]
 
 const TABLE_TYPE_ICONS = {
-  'materialized view': RiEyeFill,
-  view: RiEyeLine,
-  table: RiTableLine,
+  'materialized view': ViewIcon,
+  view: ViewIcon,
+  table: TableIcon,
 } as const
 
 const run = (action: () => void) => () => {
@@ -94,14 +94,14 @@ const run = (action: () => void) => () => {
 const actionEntry = (
   value: string,
   keywords: string[],
-  Icon: RemixiconComponentType,
+  Icon: IconSvgElement,
   action: () => void
 ) => ({
   value,
   keywords,
   node: (
     <CommandItem key={value} value={value} onSelect={run(action)}>
-      <Icon />
+      <HugeiconsIcon icon={Icon} strokeWidth={2} />
       {value}
     </CommandItem>
   ),
@@ -172,7 +172,7 @@ const tableEntries = (
               })
             )}
           >
-            <Icon />
+            <HugeiconsIcon icon={Icon} strokeWidth={2} />
             <span data-mask className="min-w-0 flex-1 truncate">
               <span className="text-muted-foreground">{schema.name}.</span>
               {table.name}
@@ -280,7 +280,7 @@ export const ActionsCenter = () => {
     {
       heading: 'Navigation',
       entries: [
-        actionEntry('Home', ['dashboard'], RiDashboardLine, () =>
+        actionEntry('Home', ['dashboard'], DashboardSquare01Icon, () =>
           router.navigate({ to: '/' })
         ),
         ...(current
@@ -303,7 +303,7 @@ export const ActionsCenter = () => {
         actionEntry(
           'Add new connection…',
           ['new', 'create', 'database'],
-          RiAddLine,
+          PlusSignIcon,
           () => router.navigate({ to: '/create' })
         ),
       ],
@@ -314,13 +314,13 @@ export const ActionsCenter = () => {
         actionEntry(
           `Switch to ${nextTheme} theme`,
           ['theme', 'dark', 'light', 'mode'],
-          resolvedTheme === 'dark' ? RiSunLine : RiMoonLine,
+          resolvedTheme === 'dark' ? Sun03Icon : Moon02Icon,
           () => themeStore.set(nextTheme)
         ),
         actionEntry(
           'Use system theme',
           ['theme', 'system', 'auto'],
-          RiComputerLine,
+          ComputerIcon,
           () => themeStore.set('system')
         ),
       ],
@@ -333,7 +333,7 @@ export const ActionsCenter = () => {
               actionEntry(
                 'Toggle query logger',
                 ['logs', 'queries', 'history'],
-                RiHistoryLine,
+                HistoryIcon,
                 () =>
                   getConnectionResourceStore(current.connectionResource.id).set(
                     (state) => ({
@@ -349,16 +349,13 @@ export const ActionsCenter = () => {
               actionEntry(
                 'Check for updates…',
                 ['update', 'version'],
-                RiDownloadLine,
+                Download01Icon,
                 checkForUpdates
               ),
             ]
           : []),
-        actionEntry(
-          'Reload window',
-          ['restart', 'refresh'],
-          RiRefreshLine,
-          () => window.location.reload()
+        actionEntry('Reload window', ['restart', 'refresh'], RefreshIcon, () =>
+          window.location.reload()
         ),
       ],
     },
@@ -410,7 +407,11 @@ export const ActionsCenter = () => {
         className="min-h-0 flex-1 bg-transparent p-0"
       >
         <div className="flex shrink-0 items-center gap-3 border-b px-4">
-          <RiSearchLine className="text-muted-foreground size-4 shrink-0" />
+          <HugeiconsIcon
+            icon={Search01Icon}
+            strokeWidth={2}
+            className="text-muted-foreground size-4 shrink-0"
+          />
           <CommandPrimitive.Input
             data-slot="command-input"
             placeholder="Type a command or search…"
@@ -432,10 +433,18 @@ export const ActionsCenter = () => {
       <div className="text-2xs text-muted-foreground/70 flex shrink-0 items-center gap-3 border-t px-4 py-2">
         <FooterHint label="navigate">
           <Kbd>
-            <RiArrowUpLine className="size-3" />
+            <HugeiconsIcon
+              icon={ArrowUp02Icon}
+              strokeWidth={2}
+              className="size-3"
+            />
           </Kbd>
           <Kbd>
-            <RiArrowDownLine className="size-3" />
+            <HugeiconsIcon
+              icon={ArrowDown02Icon}
+              strokeWidth={2}
+              className="size-3"
+            />
           </Kbd>
         </FooterHint>
         <FooterHint label="open">

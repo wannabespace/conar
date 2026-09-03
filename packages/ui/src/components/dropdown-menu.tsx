@@ -1,5 +1,6 @@
 import { Menu as MenuPrimitive } from '@base-ui/react/menu'
-import { RiArrowRightSLine, RiCheckLine } from '@remixicon/react'
+import { ArrowRight01Icon, Tick02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
@@ -112,7 +113,11 @@ const DropdownMenuSubTrigger = ({
     {...props}
   >
     {children}
-    <RiArrowRightSLine className="ml-auto" />
+    <HugeiconsIcon
+      icon={ArrowRight01Icon}
+      strokeWidth={2}
+      className="ml-auto"
+    />
   </MenuPrimitive.SubmenuTrigger>
 )
 
@@ -162,7 +167,7 @@ const DropdownMenuCheckboxItem = ({
       data-slot="dropdown-menu-checkbox-item-indicator"
     >
       <MenuPrimitive.CheckboxItemIndicator>
-        <RiCheckLine />
+        <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} />
       </MenuPrimitive.CheckboxItemIndicator>
     </span>
     {children}
@@ -197,7 +202,7 @@ const DropdownMenuRadioItem = ({
       data-slot="dropdown-menu-radio-item-indicator"
     >
       <MenuPrimitive.RadioItemIndicator>
-        <RiCheckLine />
+        <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} />
       </MenuPrimitive.RadioItemIndicator>
     </span>
     {children}

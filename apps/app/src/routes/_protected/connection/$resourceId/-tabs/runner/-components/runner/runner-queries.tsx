@@ -1,10 +1,11 @@
 import {
-  RiCheckLine,
-  RiDeleteBin7Line,
-  RiFileCopyLine,
-  RiPlayListAddLine,
-  RiSaveLine,
-} from '@remixicon/react'
+  Copy01Icon,
+  Delete02Icon,
+  PlayListAddIcon,
+  SaveIcon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { CardTitle } from '@tamery/ui/components/card'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
@@ -84,13 +85,21 @@ export const RunnerQueries = ({
                     <ContentSwitch
                       active={movedId === query.id}
                       activeContent={
-                        <RiCheckLine className="text-success size-4" />
+                        <HugeiconsIcon
+                          icon={Tick02Icon}
+                          strokeWidth={2}
+                          className="text-success size-4"
+                        />
                       }
                       onSwitchEnd={() => {
                         setMovedId(null)
                       }}
                     >
-                      <RiPlayListAddLine className="size-4" />
+                      <HugeiconsIcon
+                        icon={PlayListAddIcon}
+                        strokeWidth={2}
+                        className="size-4"
+                      />
                     </ContentSwitch>
                   </TooltipTrigger>
                   <TooltipContent side="left">
@@ -125,11 +134,19 @@ export const RunnerQueries = ({
                     <ContentSwitch
                       active={copiedId === query.id}
                       activeContent={
-                        <RiCheckLine className="text-success size-4" />
+                        <HugeiconsIcon
+                          icon={Tick02Icon}
+                          strokeWidth={2}
+                          className="text-success size-4"
+                        />
                       }
                       onSwitchEnd={() => setCopiedId(null)}
                     >
-                      <RiFileCopyLine className="size-4" />
+                      <HugeiconsIcon
+                        icon={Copy01Icon}
+                        strokeWidth={2}
+                        className="size-4"
+                      />
                     </ContentSwitch>
                   </TooltipTrigger>
                   <TooltipContent>Copy Query</TooltipContent>
@@ -148,7 +165,11 @@ export const RunnerQueries = ({
                       />
                     }
                   >
-                    <RiDeleteBin7Line className="size-4" />
+                    <HugeiconsIcon
+                      icon={Delete02Icon}
+                      strokeWidth={2}
+                      className="size-4"
+                    />
                   </TooltipTrigger>
                   <TooltipContent>Delete Query</TooltipContent>
                 </Tooltip>
@@ -160,7 +181,12 @@ export const RunnerQueries = ({
             <span className="mb-2">No saved queries found.</span>
             <span className="text-muted-foreground text-xs">
               You can add a new query by pressing the{' '}
-              <RiSaveLine className="inline-block size-4" /> button.
+              <HugeiconsIcon
+                icon={SaveIcon}
+                strokeWidth={2}
+                className="inline-block size-4"
+              />{' '}
+              button.
             </span>
           </div>
         )}

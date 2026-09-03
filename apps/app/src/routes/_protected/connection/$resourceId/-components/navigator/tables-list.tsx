@@ -1,16 +1,15 @@
-import type { RemixiconComponentType } from '@remixicon/react'
 import {
-  RiArrowRightSLine,
-  RiDeleteBin7Line,
-  RiEditLine,
-  RiEyeFill,
-  RiEyeLine,
-  RiFileCopyLine,
-  RiPushpinFill,
-  RiPushpinLine,
-  RiTableLine,
-  RiUnpinLine,
-} from '@remixicon/react'
+  ArrowRight01Icon,
+  Copy01Icon,
+  Delete02Icon,
+  PencilEdit01Icon,
+  PinIcon,
+  PinOffIcon,
+  TableIcon,
+  ViewIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import type { IconSvgElement } from '@hugeicons/react'
 import { CONNECTION_TYPES_WITHOUT_SCHEMAS } from '@tamery/shared/constants'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import { Indicator } from '@tamery/ui/components/custom/indicator'
@@ -88,10 +87,10 @@ const ROW_HEIGHTS = {
 } satisfies Record<TreeRow['kind'], number>
 
 const tableTypeIcon = {
-  table: RiTableLine,
-  view: RiEyeLine,
-  'materialized view': RiEyeFill,
-} satisfies Record<TableInfo['type'], RemixiconComponentType>
+  table: TableIcon,
+  view: ViewIcon,
+  'materialized view': ViewIcon,
+} satisfies Record<TableInfo['type'], IconSvgElement>
 
 const tableTypeLabel = {
   table: 'Table',
@@ -126,7 +125,9 @@ const SchemaRow = ({
       }
       className="group hover:bg-accent h-full w-full gap-1 px-1.5"
     >
-      <RiArrowRightSLine
+      <HugeiconsIcon
+        icon={ArrowRight01Icon}
+        strokeWidth={2}
         className={cn(
           `text-muted-foreground/70 size-3.5! shrink-0 transition-transform duration-150 ease-out`,
           row.open && 'rotate-90'
@@ -176,15 +177,17 @@ const TableRow = ({
   const items: AppMenuNode[] = [
     {
       label: 'Copy Name',
-      icon: <RiFileCopyLine className="size-4" />,
+      icon: (
+        <HugeiconsIcon icon={Copy01Icon} strokeWidth={2} className="size-4" />
+      ),
       onSelect: () => copyToClipboard(row.table.name, 'Table name copied'),
     },
     {
       label: row.pinned ? 'Unpin' : 'Pin',
       icon: row.pinned ? (
-        <RiPushpinFill className="size-4" />
+        <HugeiconsIcon icon={PinIcon} strokeWidth={2} className="size-4" />
       ) : (
-        <RiPushpinLine className="size-4" />
+        <HugeiconsIcon icon={PinIcon} strokeWidth={2} className="size-4" />
       ),
       onSelect: () =>
         togglePinTable(connectionResource.id, row.schema, row.table.name),
@@ -192,13 +195,21 @@ const TableRow = ({
     { type: 'separator' },
     {
       label: 'Rename',
-      icon: <RiEditLine className="size-4" />,
+      icon: (
+        <HugeiconsIcon
+          icon={PencilEdit01Icon}
+          strokeWidth={2}
+          className="size-4"
+        />
+      ),
       disabled: isReadOnly,
       onSelect: onRename,
     },
     {
       label: 'Drop',
-      icon: <RiDeleteBin7Line className="size-4" />,
+      icon: (
+        <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} className="size-4" />
+      ),
       variant: 'destructive',
       disabled: isReadOnly,
       onSelect: onDrop,
@@ -245,7 +256,9 @@ const TableRow = ({
           className="relative shrink-0"
           title={tableTypeLabel[row.table.type]}
         >
-          <Icon
+          <HugeiconsIcon
+            icon={Icon}
+            strokeWidth={2}
             className={cn(
               'size-4',
               isActive ? 'text-primary-foreground' : 'text-primary/75'
@@ -292,13 +305,17 @@ const TableRow = ({
         >
           {row.pinned ? (
             <>
-              <RiPushpinFill
+              <HugeiconsIcon
+                icon={PinIcon}
+                strokeWidth={2}
                 className={cn(
                   'size-3! group-hover/pin:hidden',
                   isActive ? 'text-primary-foreground' : 'text-primary'
                 )}
               />
-              <RiUnpinLine
+              <HugeiconsIcon
+                icon={PinOffIcon}
+                strokeWidth={2}
                 className={cn(
                   'hidden size-3! group-hover/pin:block',
                   isActive ? 'text-primary-foreground' : 'text-foreground'
@@ -306,7 +323,9 @@ const TableRow = ({
               />
             </>
           ) : (
-            <RiPushpinLine
+            <HugeiconsIcon
+              icon={PinIcon}
+              strokeWidth={2}
               className={cn(
                 'size-3!',
                 isActive
@@ -514,7 +533,11 @@ export const TablesList = ({
           className
         )}
       >
-        <RiTableLine className="text-muted-foreground/50 mb-2 size-8" />
+        <HugeiconsIcon
+          icon={TableIcon}
+          strokeWidth={2}
+          className="text-muted-foreground/50 mb-2 size-8"
+        />
         <p className="text-muted-foreground text-sm">No tables found</p>
       </SidebarContent>
     )

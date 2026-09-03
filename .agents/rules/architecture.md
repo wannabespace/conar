@@ -31,7 +31,7 @@ Every app's entry imports `@tamery/shared/arktype-config` first (`exactOptionalP
 - `entities/connection` must stay acyclic: `queries/*` call `createQuery` at module scope, so a cycle back into `runtime/query.ts` surfaces as `Cannot access 'createQuery' before initialization` at whichever module the bundler enters the cycle from. `fetchingConfig` therefore lives in the leaf `utils/fetching-config.ts`; `runtime/dialects` imports it from there, never from `utils/fetching.ts` (which reaches `queries/*`). Cycles through `~/main` are fine; tight ones inside `entities/*` are not.
 - The window paints app chrome before any of that: `src/shell.tsx` is prerendered into `index.html` by `@tamery/vite-prerender`, wired in `vite.config.ts` with component/marker pairs (dev and build alike). Keep it hook-free and Node-safe; design rules in the `tamery-ui` skill.
 - `src/lib/warmup.ts` is the entry's first import and the only module that deliberately kicks off heavy chunks — `import()` of the database right away, monaco 1s after `load`. Monaco and `lib/database` must never be static-imported from the entry; posthog-js stays behind the lazy `lib/posthog.ts` facade.
-- Verify by walking the dev module graph from `/src/main.tsx`, not by reading imports. The `@remixicon/react` barrel via `packages/ui` `sonner.tsx` is eager in dev only (prod treeshakes it).
+- Verify by walking the dev module graph from `/src/main.tsx`, not by reading imports. The `@hugeicons/core-free-icons` barrel via `packages/ui` `sonner.tsx` is eager in dev only (prod treeshakes it).
 
 ## Connection routes
 

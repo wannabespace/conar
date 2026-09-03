@@ -1,4 +1,5 @@
-import { RiExpandDiagonalLine } from '@remixicon/react'
+import { ArrowExpandIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH } from '@tamery/shared/constants'
 import {
   Empty,
@@ -31,7 +32,7 @@ export const WindowTooSmall = () => {
           <Empty>
             <EmptyHeader>
               <EmptyMedia variant="icon">
-                <RiExpandDiagonalLine />
+                <HugeiconsIcon icon={ArrowExpandIcon} strokeWidth={2} />
               </EmptyMedia>
               <EmptyTitle>Window is too small</EmptyTitle>
               <EmptyDescription>

@@ -1,15 +1,16 @@
 import {
-  RiAddLine,
-  RiAlertLine,
-  RiDatabase2Line,
-  RiDeleteBinLine,
-  RiFileCopyLine,
-  RiLockUnlockLine,
-  RiRefreshLine,
-  RiSortAsc,
-  RiSortDesc,
-  RiStackLine,
-} from '@remixicon/react'
+  Alert02Icon,
+  Copy01Icon,
+  DatabaseIcon,
+  Delete02Icon,
+  Layers01Icon,
+  PlusSignIcon,
+  RefreshIcon,
+  SortByDown01Icon,
+  SortByUp01Icon,
+  SquareUnlock01Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
   CONNECTION_RESOURCE_ROOT_LABEL,
   CONNECTION_RESOURCE_ROOT_SYMBOL,
@@ -197,20 +198,30 @@ const buildConnectionMenuItems = ({
 }): AppMenuNode[] => [
   {
     label: 'Refresh',
-    icon: <RiRefreshLine className="size-4" />,
+    icon: (
+      <HugeiconsIcon icon={RefreshIcon} strokeWidth={2} className="size-4" />
+    ),
     disabled: !canSend,
     onSelect: onRefresh,
   },
   {
     label: 'Copy connection string',
-    icon: <RiFileCopyLine className="size-4" />,
+    icon: (
+      <HugeiconsIcon icon={Copy01Icon} strokeWidth={2} className="size-4" />
+    ),
     onSelect: onCopy,
   },
   ...(connection.syncType === SyncType.CloudWithoutPassword
     ? ([
         {
           label: 'Clear password',
-          icon: <RiLockUnlockLine className="size-4 shrink-0" />,
+          icon: (
+            <HugeiconsIcon
+              icon={SquareUnlock01Icon}
+              strokeWidth={2}
+              className="size-4 shrink-0"
+            />
+          ),
           className: 'whitespace-nowrap',
           disabled: !isPasswordPopulated,
           onSelect: onClearPassword,
@@ -220,7 +231,9 @@ const buildConnectionMenuItems = ({
   { type: 'separator' },
   {
     label: 'Remove',
-    icon: <RiDeleteBinLine className="size-4" />,
+    icon: (
+      <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} className="size-4" />
+    ),
     variant: 'destructive',
     onSelect: onRemove,
   },
@@ -245,7 +258,11 @@ const ConnectionCardStatus = ({
       <Tooltip>
         <TooltipTrigger
           render={
-            <RiAlertLine className="text-muted-foreground pointer-events-auto size-3 shrink-0" />
+            <HugeiconsIcon
+              icon={Alert02Icon}
+              strokeWidth={2}
+              className="text-muted-foreground pointer-events-auto size-3 shrink-0"
+            />
           }
         />
         <TooltipContent className="pointer-events-auto max-w-xs">
@@ -259,7 +276,11 @@ const ConnectionCardStatus = ({
       <Tooltip>
         <TooltipTrigger
           render={
-            <RiAlertLine className="text-warning pointer-events-auto size-3 shrink-0" />
+            <HugeiconsIcon
+              icon={Alert02Icon}
+              strokeWidth={2}
+              className="text-warning pointer-events-auto size-3 shrink-0"
+            />
           }
         />
         <TooltipContent className="pointer-events-auto block max-w-3xs">
@@ -553,7 +574,11 @@ export const Empty = () => (
     </div>
 
     <div className="border-border/50 bg-card -mt-6 flex size-12 items-center justify-center rounded-xl border shadow-xs">
-      <RiDatabase2Line className="text-muted-foreground size-5" />
+      <HugeiconsIcon
+        icon={DatabaseIcon}
+        strokeWidth={2}
+        className="text-muted-foreground size-5"
+      />
     </div>
 
     <h2 className="text-foreground mt-5 text-base font-medium">
@@ -568,7 +593,7 @@ export const Empty = () => (
       nativeButton={false}
       render={<Link to="/create" />}
     >
-      <RiAddLine className="size-4" />
+      <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} className="size-4" />
       New connection
     </Button>
   </div>
@@ -682,7 +707,7 @@ export const ConnectionsList = () => {
               }}
             >
               <SelectTrigger size="sm" className="shrink-0">
-                <RiStackLine />
+                <HugeiconsIcon icon={Layers01Icon} strokeWidth={2} />
                 <SelectValue>
                   {groupOptions.find((option) => option.value === grouping)
                     ?.label ?? grouping}
@@ -705,7 +730,11 @@ export const ConnectionsList = () => {
               }}
             >
               <SelectTrigger size="sm" className="shrink-0">
-                {sort.includes('asc') ? <RiSortAsc /> : <RiSortDesc />}
+                {sort.includes('asc') ? (
+                  <HugeiconsIcon icon={SortByUp01Icon} strokeWidth={2} />
+                ) : (
+                  <HugeiconsIcon icon={SortByDown01Icon} strokeWidth={2} />
+                )}
                 <SelectValue>
                   {sortOptions.find((option) => option.value === sort)?.label ??
                     sort}
@@ -726,7 +755,11 @@ export const ConnectionsList = () => {
               className="text-foreground"
               render={<Link to="/create" />}
             >
-              <RiAddLine className="text-muted-foreground size-4" />
+              <HugeiconsIcon
+                icon={PlusSignIcon}
+                strokeWidth={2}
+                className="text-muted-foreground size-4"
+              />
               New
             </Button>
           </div>
@@ -760,7 +793,11 @@ export const ConnectionsList = () => {
             to="/create"
             className="text-muted-foreground hover:bg-card hover:text-foreground flex h-9 cursor-default items-center justify-center gap-2 rounded-xl border border-dashed text-sm transition-colors duration-150"
           >
-            <RiAddLine className="size-4" />
+            <HugeiconsIcon
+              icon={PlusSignIcon}
+              strokeWidth={2}
+              className="size-4"
+            />
             New connection
           </Link>
         </div>

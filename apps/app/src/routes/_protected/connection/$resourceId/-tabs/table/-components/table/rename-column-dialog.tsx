@@ -1,4 +1,5 @@
-import { RiInformationLine } from '@remixicon/react'
+import { InformationCircleIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Alert,
   AlertDescription,
@@ -98,7 +99,11 @@ export const RenameColumnDialog = ({ ref }: RenameColumnDialogProps) => {
         </DialogHeader>
         <div className="space-y-4">
           <Alert>
-            <RiInformationLine className="size-5 text-blue-500" />
+            <HugeiconsIcon
+              icon={InformationCircleIcon}
+              strokeWidth={2}
+              className="size-5 text-blue-500"
+            />
             <AlertTitle data-mask>
               Rename column &quot;{column}&quot;
             </AlertTitle>

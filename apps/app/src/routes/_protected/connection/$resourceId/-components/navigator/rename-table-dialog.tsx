@@ -1,4 +1,5 @@
-import { RiInformationLine } from '@remixicon/react'
+import { InformationCircleIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Alert,
   AlertDescription,
@@ -110,7 +111,11 @@ export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
         </DialogHeader>
         <div className="space-y-4">
           <Alert>
-            <RiInformationLine className="size-5" />
+            <HugeiconsIcon
+              icon={InformationCircleIcon}
+              strokeWidth={2}
+              className="size-5"
+            />
             <AlertTitle data-mask>Rename table &quot;{table}&quot;</AlertTitle>
             <AlertDescription data-mask>
               This will rename the table from &quot;{table}&quot; to the new

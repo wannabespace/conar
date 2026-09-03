@@ -1,5 +1,6 @@
 import { Accordion as AccordionPrimitive } from '@base-ui/react/accordion'
-import { RiArrowDownSLine } from '@remixicon/react'
+import { ArrowDown01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
@@ -43,7 +44,9 @@ export const SingleAccordionTriggerArrow = ({
 }: {
   className?: string
 }) => (
-  <RiArrowDownSLine
+  <HugeiconsIcon
+    icon={ArrowDown01Icon}
+    strokeWidth={2}
     className={cn(
       `text-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200`,
       className

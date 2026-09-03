@@ -1,9 +1,10 @@
 import {
-  RiLayoutColumnLine,
-  RiListIndefinite,
-  RiListUnordered,
-  RiTable2,
-} from '@remixicon/react'
+  LayoutThreeColumnIcon,
+  LeftToRightListBulletIcon,
+  LeftToRightListDashIcon,
+  TableIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { Badge } from '@tamery/ui/components/badge'
 import { CardContent, CardTitle } from '@tamery/ui/components/card'
@@ -101,9 +102,17 @@ export const Enums = () => {
                 <div>
                   <CardTitle className="flex items-center gap-2 text-base">
                     {enumItem.metadata?.isSet ? (
-                      <RiListIndefinite className="text-primary size-4" />
+                      <HugeiconsIcon
+                        icon={LeftToRightListDashIcon}
+                        strokeWidth={2}
+                        className="text-primary size-4"
+                      />
                     ) : (
-                      <RiListUnordered className="text-primary size-4" />
+                      <HugeiconsIcon
+                        icon={LeftToRightListBulletIcon}
+                        strokeWidth={2}
+                        className="text-primary size-4"
+                      />
                     )}
                     <HighlightText text={enumItem.name} match={search} />
                     <Badge variant="secondary" className="text-xs">
@@ -114,7 +123,11 @@ export const Enums = () => {
                     {enumItem.metadata?.table && (
                       <>
                         <Badge variant="outline" className="text-xs">
-                          <RiTable2 className="size-3" />
+                          <HugeiconsIcon
+                            icon={TableIcon}
+                            strokeWidth={2}
+                            className="size-3"
+                          />
                           {enumItem.metadata.table}
                         </Badge>
                         {enumItem.metadata.column && (
@@ -124,7 +137,11 @@ export const Enums = () => {
                               variant="outline"
                               className="font-mono text-xs"
                             >
-                              <RiLayoutColumnLine className="size-3" />
+                              <HugeiconsIcon
+                                icon={LayoutThreeColumnIcon}
+                                strokeWidth={2}
+                                className="size-3"
+                              />
                               {enumItem.metadata.column}
                             </Badge>
                           </>

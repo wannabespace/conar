@@ -1,6 +1,10 @@
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
-import { RiArrowRightSLine, RiMoreLine } from '@remixicon/react'
+import {
+  ArrowRight01Icon,
+  MoreHorizontalIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
@@ -82,7 +86,7 @@ const BreadcrumbSeparator = ({
     className={cn('[&>svg]:size-3.5', className)}
     {...props}
   >
-    {children ?? <RiArrowRightSLine />}
+    {children ?? <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} />}
   </li>
 )
 
@@ -100,7 +104,7 @@ const BreadcrumbEllipsis = ({
     )}
     {...props}
   >
-    <RiMoreLine />
+    <HugeiconsIcon icon={MoreHorizontalIcon} strokeWidth={2} />
     <span className="sr-only">More</span>
   </span>
 )

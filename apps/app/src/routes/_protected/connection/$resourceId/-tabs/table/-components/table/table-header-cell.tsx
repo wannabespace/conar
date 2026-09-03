@@ -1,18 +1,19 @@
 import {
-  RiArrowDownLine,
-  RiArrowUpLine,
-  RiBookOpenLine,
-  RiCharacterRecognitionLine,
-  RiCloseLine,
-  RiEraserLine,
-  RiEyeOffLine,
-  RiFileCopyLine,
-  RiFingerprintLine,
-  RiKey2Line,
-  RiLinksLine,
-  RiPencilLine,
-  RiExpandLeftRightLine,
-} from '@remixicon/react'
+  ArrowDown02Icon,
+  ArrowLeftRightIcon,
+  ArrowUp02Icon,
+  BookOpen01Icon,
+  Cancel01Icon,
+  Copy01Icon,
+  EraserIcon,
+  FingerPrintIcon,
+  Key01Icon,
+  Link01Icon,
+  PencilEdit02Icon,
+  ScanTextIcon,
+  ViewOffSlashIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { TableHeaderCellProps } from '@tamery/table'
 import { useTableContext } from '@tamery/table/hooks'
 import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
@@ -51,11 +52,19 @@ export const PrimaryKeyTooltipIcon = ({
 }) => (
   <Tooltip>
     <TooltipTrigger>
-      <RiKey2Line className="text-primary size-2.5 shrink-0" />
+      <HugeiconsIcon
+        icon={Key01Icon}
+        strokeWidth={2}
+        className="text-primary size-2.5 shrink-0"
+      />
     </TooltipTrigger>
     <TooltipContent className="max-w-none flex-col items-start gap-0.5">
       <div className="flex items-center gap-1">
-        <RiKey2Line className="text-primary size-3" />
+        <HugeiconsIcon
+          icon={Key01Icon}
+          strokeWidth={2}
+          className="text-primary size-3"
+        />
         Primary key
       </div>
       <div data-mask className="text-xs opacity-70">
@@ -68,11 +77,21 @@ export const PrimaryKeyTooltipIcon = ({
 export const NullableTooltipIcon = () => (
   <Tooltip>
     <TooltipTrigger
-      render={<RiEraserLine className="size-2.5 shrink-0 opacity-70" />}
+      render={
+        <HugeiconsIcon
+          icon={EraserIcon}
+          strokeWidth={2}
+          className="size-2.5 shrink-0 opacity-70"
+        />
+      }
     />
     <TooltipContent>
       <div className="flex items-center gap-1">
-        <RiEraserLine className="size-3 opacity-70" />
+        <HugeiconsIcon
+          icon={EraserIcon}
+          strokeWidth={2}
+          className="size-3 opacity-70"
+        />
         Nullable
       </div>
     </TooltipContent>
@@ -82,11 +101,19 @@ export const NullableTooltipIcon = () => (
 export const UniqueTooltipIcon = ({ unique }: { unique: string }) => (
   <Tooltip>
     <TooltipTrigger>
-      <RiFingerprintLine className="size-2.5 shrink-0 opacity-70" />
+      <HugeiconsIcon
+        icon={FingerPrintIcon}
+        strokeWidth={2}
+        className="size-2.5 shrink-0 opacity-70"
+      />
     </TooltipTrigger>
     <TooltipContent className="max-w-none flex-col items-start gap-0.5">
       <div className="flex items-center gap-1">
-        <RiFingerprintLine className="size-3 opacity-70" />
+        <HugeiconsIcon
+          icon={FingerPrintIcon}
+          strokeWidth={2}
+          className="size-3 opacity-70"
+        />
         Unique
       </div>
       <div data-mask className="text-xs opacity-70">
@@ -99,11 +126,19 @@ export const UniqueTooltipIcon = ({ unique }: { unique: string }) => (
 export const ReadOnlyTooltipIcon = () => (
   <Tooltip>
     <TooltipTrigger>
-      <RiBookOpenLine className="size-2.5 shrink-0 opacity-70" />
+      <HugeiconsIcon
+        icon={BookOpen01Icon}
+        strokeWidth={2}
+        className="size-2.5 shrink-0 opacity-70"
+      />
     </TooltipTrigger>
     <TooltipContent>
       <div className="flex items-center gap-1">
-        <RiBookOpenLine className="size-3 opacity-70" />
+        <HugeiconsIcon
+          icon={BookOpen01Icon}
+          strokeWidth={2}
+          className="size-3 opacity-70"
+        />
         Read only
       </div>
     </TooltipContent>
@@ -117,11 +152,19 @@ export const DefaultValueTooltipIcon = ({
 }) => (
   <Tooltip>
     <TooltipTrigger>
-      <RiCharacterRecognitionLine className="size-2.5 shrink-0 opacity-70" />
+      <HugeiconsIcon
+        icon={ScanTextIcon}
+        strokeWidth={2}
+        className="size-2.5 shrink-0 opacity-70"
+      />
     </TooltipTrigger>
     <TooltipContent className="max-w-none flex-col items-start gap-0.5">
       <div className="flex items-center gap-1">
-        <RiCharacterRecognitionLine className="size-3 opacity-70" />
+        <HugeiconsIcon
+          icon={ScanTextIcon}
+          strokeWidth={2}
+          className="size-3 opacity-70"
+        />
         Default
       </div>
       <div
@@ -145,11 +188,21 @@ const ForeignTooltipIcon = ({
 }) => (
   <Tooltip>
     <TooltipTrigger
-      render={<RiLinksLine className="size-2.5 shrink-0 opacity-70" />}
+      render={
+        <HugeiconsIcon
+          icon={Link01Icon}
+          strokeWidth={2}
+          className="size-2.5 shrink-0 opacity-70"
+        />
+      }
     />
     <TooltipContent className="max-w-none flex-col items-start gap-0.5">
       <div className="flex items-center gap-1">
-        <RiLinksLine className="size-3 opacity-70" />
+        <HugeiconsIcon
+          icon={Link01Icon}
+          strokeWidth={2}
+          className="size-3 opacity-70"
+        />
         Foreign key
       </div>
       <div data-mask className="text-xs opacity-70">
@@ -189,7 +242,9 @@ const buildSortMenuItems = (
       checked: order === 'ASC' ? true : undefined,
       className: cn(order === 'ASC' && 'text-primary'),
       icon: (
-        <RiArrowUpLine
+        <HugeiconsIcon
+          icon={ArrowUp02Icon}
+          strokeWidth={2}
           className={cn('size-4', order === 'ASC' && 'text-primary')}
         />
       ),
@@ -200,7 +255,9 @@ const buildSortMenuItems = (
       checked: order === 'DESC' ? true : undefined,
       className: cn(order === 'DESC' && 'text-primary'),
       icon: (
-        <RiArrowDownLine
+        <HugeiconsIcon
+          icon={ArrowDown02Icon}
+          strokeWidth={2}
           className={cn('size-4', order === 'DESC' && 'text-primary')}
         />
       ),
@@ -211,7 +268,9 @@ const buildSortMenuItems = (
 
   if (order !== null) {
     items.push({
-      icon: <RiCloseLine className="size-4" />,
+      icon: (
+        <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="size-4" />
+      ),
       label: 'Clear Sort',
       onSelect: () => onOrder(null),
     })
@@ -250,7 +309,13 @@ const buildHeaderMenuItems = ({
 
   if (onRename) {
     items.push({
-      icon: <RiPencilLine className="size-4" />,
+      icon: (
+        <HugeiconsIcon
+          icon={PencilEdit02Icon}
+          strokeWidth={2}
+          className="size-4"
+        />
+      ),
       label: 'Rename Column',
       onSelect: onRename,
     })
@@ -258,13 +323,21 @@ const buildHeaderMenuItems = ({
 
   items.push(
     {
-      icon: <RiFileCopyLine className="size-4" />,
+      icon: (
+        <HugeiconsIcon icon={Copy01Icon} strokeWidth={2} className="size-4" />
+      ),
       label: 'Copy Name',
       onSelect: () => copyToClipboard(columnId, 'Column name copied'),
     },
     { type: 'separator' },
     {
-      icon: <RiEyeOffLine className="size-4" />,
+      icon: (
+        <HugeiconsIcon
+          icon={ViewOffSlashIcon}
+          strokeWidth={2}
+          className="size-4"
+        />
+      ),
       label: 'Hide Column',
       onSelect: onHideColumn,
     }
@@ -272,7 +345,13 @@ const buildHeaderMenuItems = ({
 
   if (hasCustomSize && onResize) {
     items.push({
-      icon: <RiExpandLeftRightLine className="size-4" />,
+      icon: (
+        <HugeiconsIcon
+          icon={ArrowLeftRightIcon}
+          strokeWidth={2}
+          className="size-4"
+        />
+      ),
       label: 'Reset Width',
       onSelect: onRemoveSize,
     })
@@ -416,9 +495,17 @@ export const TableHeaderCell = ({
         {order !== null && (
           <span className="text-primary flex size-4 items-center justify-center">
             {order === 'ASC' ? (
-              <RiArrowUpLine className="size-3 shrink-0" />
+              <HugeiconsIcon
+                icon={ArrowUp02Icon}
+                strokeWidth={2}
+                className="size-3 shrink-0"
+              />
             ) : (
-              <RiArrowDownLine className="size-3 shrink-0" />
+              <HugeiconsIcon
+                icon={ArrowDown02Icon}
+                strokeWidth={2}
+                className="size-3 shrink-0"
+              />
             )}
           </span>
         )}

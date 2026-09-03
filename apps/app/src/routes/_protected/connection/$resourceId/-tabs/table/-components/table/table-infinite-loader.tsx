@@ -1,4 +1,5 @@
-import { RiLoaderLine } from '@remixicon/react'
+import { Loading03Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { useTableContext } from '@tamery/table/hooks'
 import { useIsInViewport } from '@tamery/ui/hookas/use-is-in-viewport'
@@ -58,7 +59,11 @@ export const TableInfiniteLoader = ({
       />
       <div className="flex h-[inherit] items-center justify-center">
         {hasNextPage ? (
-          <RiLoaderLine className="size-10 animate-spin opacity-50" />
+          <HugeiconsIcon
+            icon={Loading03Icon}
+            strokeWidth={2}
+            className="size-10 animate-spin opacity-50"
+          />
         ) : (
           <TableEmpty
             className="bottom-0 h-full"

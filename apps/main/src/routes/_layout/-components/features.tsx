@@ -1,17 +1,18 @@
 import {
-  RiAddLine,
-  RiBardLine,
-  RiChatAiLine,
-  RiCloseLine,
-  RiCloudLine,
-  RiDatabase2Line,
-  RiDeleteBinLine,
-  RiEditLine,
-  RiEyeLine,
-  RiFilterLine,
-  RiSendPlaneLine,
-  RiUserLine,
-} from '@remixicon/react'
+  AiChat01Icon,
+  Cancel01Icon,
+  CloudIcon,
+  DatabaseIcon,
+  Delete02Icon,
+  FilterIcon,
+  PencilEdit01Icon,
+  PlusSignIcon,
+  SentIcon,
+  SparklesIcon,
+  UserIcon,
+  ViewIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { Input } from '@tamery/ui/components/input'
 import { Separator } from '@tamery/ui/components/separator'
@@ -69,7 +70,12 @@ interface FilterItemProps {
 const FilterItem = ({ name, operator, value, onRemove }: FilterItemProps) => (
   <div className="dark:bg-input/30 flex h-7 items-center overflow-hidden rounded-md border transition-colors">
     <div className="text-foreground flex h-full items-center gap-1 px-2 text-xs font-medium">
-      <RiDatabase2Line className="text-primary/70 size-3" aria-hidden="true" />
+      <HugeiconsIcon
+        icon={DatabaseIcon}
+        strokeWidth={2}
+        className="text-primary/70 size-3"
+        aria-hidden="true"
+      />
       {name}
     </div>
     <Separator orientation="vertical" />
@@ -87,7 +93,12 @@ const FilterItem = ({ name, operator, value, onRemove }: FilterItemProps) => (
       onClick={onRemove}
       aria-label={`Remove filter ${name} ${operator} ${value}`}
     >
-      <RiCloseLine className="size-3.5" aria-hidden="true" />
+      <HugeiconsIcon
+        icon={Cancel01Icon}
+        strokeWidth={2}
+        className="size-3.5"
+        aria-hidden="true"
+      />
     </button>
   </div>
 )
@@ -98,11 +109,20 @@ const FilterWithAI = () => (
       className="mb-6 sm:mb-8"
       title="Smart AI Data Filtering"
       description="Let AI help you create filters naturally - no more manual entry needed."
-      icon={<RiFilterLine className="size-4" aria-hidden="true" />}
+      icon={
+        <HugeiconsIcon
+          icon={FilterIcon}
+          strokeWidth={2}
+          className="size-4"
+          aria-hidden="true"
+        />
+      }
     />
     <div className="space-y-3 sm:space-y-4">
       <div className="relative w-full">
-        <RiBardLine
+        <HugeiconsIcon
+          icon={SparklesIcon}
+          strokeWidth={2}
           className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
           aria-hidden="true"
         />
@@ -118,7 +138,12 @@ const FilterWithAI = () => (
           className="hover:bg-primary hover:text-primary-foreground absolute top-1/2 right-2 -translate-y-1/2 transition-colors"
           aria-label="Send filter request"
         >
-          <RiSendPlaneLine className="size-3" aria-hidden="true" />
+          <HugeiconsIcon
+            icon={SentIcon}
+            strokeWidth={2}
+            className="size-3"
+            aria-hidden="true"
+          />
         </Button>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -130,7 +155,12 @@ const FilterWithAI = () => (
           className="hover:bg-primary hover:text-primary-foreground transition-colors"
           aria-label="Add new filter"
         >
-          <RiAddLine className="size-3" aria-hidden="true" />
+          <HugeiconsIcon
+            icon={PlusSignIcon}
+            strokeWidth={2}
+            className="size-3"
+            aria-hidden="true"
+          />
         </Button>
       </div>
       <div className="overflow-hidden overflow-x-auto rounded-lg border">
@@ -182,7 +212,12 @@ interface MessageProps {
 const UserMessage = ({ children, ...props }: MessageProps) => (
   <div className="flex gap-3" {...props}>
     <div className="bg-muted flex size-7 shrink-0 items-center justify-center rounded-full">
-      <RiUserLine className="text-muted-foreground size-4" aria-hidden="true" />
+      <HugeiconsIcon
+        icon={UserIcon}
+        strokeWidth={2}
+        className="text-muted-foreground size-4"
+        aria-hidden="true"
+      />
     </div>
     <div className="bg-muted text-foreground max-w-[85%] rounded-lg px-4 py-3 text-sm">
       {children}
@@ -207,7 +242,14 @@ const ChatWithDB = () => (
       className="mb-6 sm:mb-8"
       title="Chat with Your Database"
       description="Ask questions in natural language and get instant answers from your data."
-      icon={<RiChatAiLine className="size-4" aria-hidden="true" />}
+      icon={
+        <HugeiconsIcon
+          icon={AiChat01Icon}
+          strokeWidth={2}
+          className="size-4"
+          aria-hidden="true"
+        />
+      }
     />
     <div className="space-y-3 sm:space-y-4">
       <UserMessage aria-label="User query">
@@ -232,12 +274,21 @@ const CloudSync = () => (
       className="mb-6 sm:mb-8"
       title="Reliable Cloud Sync"
       description="Sync your connections with the cloud to keep them safe and accessible from any device."
-      icon={<RiCloudLine className="size-4" aria-hidden="true" />}
+      icon={
+        <HugeiconsIcon
+          icon={CloudIcon}
+          strokeWidth={2}
+          className="size-4"
+          aria-hidden="true"
+        />
+      }
     />
     <div className="space-y-3 sm:space-y-4">
       <div className="border-border/50 from-muted/30 to-muted/50 flex items-center gap-3 rounded-xl border bg-linear-to-r p-3 sm:gap-4 sm:p-4">
         <div className="from-primary/20 to-primary/10 flex size-10 shrink-0 items-center justify-center rounded-md bg-linear-to-br sm:size-12">
-          <RiDatabase2Line
+          <HugeiconsIcon
+            icon={DatabaseIcon}
+            strokeWidth={2}
             className="text-primary size-5 sm:size-6"
             aria-hidden="true"
           />
@@ -261,7 +312,9 @@ const CloudSync = () => (
       </div>
       <div className="border-border/50 from-muted/30 to-muted/50 flex items-center gap-3 rounded-xl border bg-linear-to-r p-3 sm:gap-4 sm:p-4">
         <div className="from-primary/20 to-primary/10 flex size-10 shrink-0 items-center justify-center rounded-md bg-linear-to-br sm:size-12">
-          <RiDatabase2Line
+          <HugeiconsIcon
+            icon={DatabaseIcon}
+            strokeWidth={2}
             className="text-primary size-5 sm:size-6"
             aria-hidden="true"
           />
@@ -351,30 +404,57 @@ const ManageData = () => (
       className="mb-6 sm:mb-8"
       title="Comprehensive Data Management"
       description="Manage your data with ease. Add, edit, and delete data with a few clicks."
-      icon={<RiDatabase2Line className="size-4" aria-hidden="true" />}
+      icon={
+        <HugeiconsIcon
+          icon={DatabaseIcon}
+          strokeWidth={2}
+          className="size-4"
+          aria-hidden="true"
+        />
+      }
     />
     <div className="space-y-3 sm:space-y-4">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
         <DataActionCard
-          icon={<RiAddLine className="size-3" />}
+          icon={
+            <HugeiconsIcon
+              icon={PlusSignIcon}
+              strokeWidth={2}
+              className="size-3"
+            />
+          }
           title="Create"
           description="Add new records with form validation and real-time feedback"
           color="green"
         />
         <DataActionCard
-          icon={<RiEyeLine className="size-3" />}
+          icon={
+            <HugeiconsIcon icon={ViewIcon} strokeWidth={2} className="size-3" />
+          }
           title="View"
           description="Browse and search through data with advanced filtering"
           color="blue"
         />
         <DataActionCard
-          icon={<RiEditLine className="size-3" />}
+          icon={
+            <HugeiconsIcon
+              icon={PencilEdit01Icon}
+              strokeWidth={2}
+              className="size-3"
+            />
+          }
           title="Edit"
           description="Modify existing records inline with instant updates"
           color="yellow"
         />
         <DataActionCard
-          icon={<RiDeleteBinLine className="size-3" />}
+          icon={
+            <HugeiconsIcon
+              icon={Delete02Icon}
+              strokeWidth={2}
+              className="size-3"
+            />
+          }
           title="Delete"
           description="Remove records with confirmation dialogs and undo support"
           color="red"

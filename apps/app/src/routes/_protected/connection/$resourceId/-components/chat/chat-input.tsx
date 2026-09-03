@@ -1,4 +1,5 @@
-import { RiArrowUpLine, RiStopFill } from '@remixicon/react'
+import { ArrowUp02Icon, StopIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
   InputGroup,
   InputGroupButton,
@@ -74,7 +75,11 @@ export const ChatInput = ({
                 />
               }
             >
-              {isStreaming ? <RiStopFill /> : <RiArrowUpLine />}
+              {isStreaming ? (
+                <HugeiconsIcon icon={StopIcon} strokeWidth={2} />
+              ) : (
+                <HugeiconsIcon icon={ArrowUp02Icon} strokeWidth={2} />
+              )}
             </TooltipTrigger>
             <TooltipContent side="top">
               {isStreaming ? 'Stop generating' : 'Send message'}

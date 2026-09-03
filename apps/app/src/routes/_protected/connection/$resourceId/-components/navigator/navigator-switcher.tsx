@@ -1,8 +1,9 @@
 import {
-  RiArrowLeftSLine,
-  RiArrowRightSLine,
-  RiStackLine,
-} from '@remixicon/react'
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  Layers01Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
@@ -43,14 +44,26 @@ export const NavigatorSwitcher = () => {
         >
           {isDefinitions ? (
             <>
-              <RiArrowLeftSLine className="text-muted-foreground size-4 shrink-0" />
+              <HugeiconsIcon
+                icon={ArrowLeft01Icon}
+                strokeWidth={2}
+                className="text-muted-foreground size-4 shrink-0"
+              />
               Tables
             </>
           ) : (
             <>
-              <RiStackLine className="text-muted-foreground size-4 shrink-0" />
+              <HugeiconsIcon
+                icon={Layers01Icon}
+                strokeWidth={2}
+                className="text-muted-foreground size-4 shrink-0"
+              />
               Schema
-              <RiArrowRightSLine className="text-muted-foreground/60 ml-auto size-3.5 shrink-0" />
+              <HugeiconsIcon
+                icon={ArrowRight01Icon}
+                strokeWidth={2}
+                className="text-muted-foreground/60 ml-auto size-3.5 shrink-0"
+              />
             </>
           )}
         </motion.span>

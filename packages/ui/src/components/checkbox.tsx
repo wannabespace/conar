@@ -1,5 +1,6 @@
 import { Checkbox as CheckboxPrimitive } from '@base-ui/react/checkbox'
-import { RiCheckLine } from '@remixicon/react'
+import { Tick02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { cn } from '@tamery/ui/lib/utils'
 
 const Checkbox = ({ className, ...props }: CheckboxPrimitive.Root.Props) => (
@@ -15,7 +16,7 @@ const Checkbox = ({ className, ...props }: CheckboxPrimitive.Root.Props) => (
       data-slot="checkbox-indicator"
       className="grid place-content-center text-current transition-none [&>svg]:size-3.5"
     >
-      <RiCheckLine />
+      <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} />
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>
 )

@@ -1,10 +1,11 @@
 import {
-  RiBrush2Line,
-  RiCheckLine,
-  RiPlayFill,
-  RiSettings3Line,
-  RiStarLine,
-} from '@remixicon/react'
+  PaintBrush01Icon,
+  PlayIcon,
+  Settings02Icon,
+  StarIcon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { CardHeader, CardTitle } from '@tamery/ui/components/card'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
@@ -97,7 +98,7 @@ const RunnerRunButton = ({
 
   return (
     <Button disabled={isDisabled} size="sm" onClick={() => onRun(queriesToRun)}>
-      <RiPlayFill />
+      <HugeiconsIcon icon={PlayIcon} strokeWidth={2} />
       Run {selectedLinesLength > 0 ? 'selected' : 'all'}
       {selectedLinesLength > 0 && (
         <NumberFlow
@@ -200,7 +201,7 @@ export const Runner = () => {
                         />
                       }
                     >
-                      <RiSettings3Line />
+                      <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
                     </TooltipTrigger>
                   </RunnerSettings>
                   <TooltipContent side="bottom">Layout settings</TooltipContent>
@@ -217,7 +218,7 @@ export const Runner = () => {
                       />
                     }
                   >
-                    <RiStarLine />
+                    <HugeiconsIcon icon={StarIcon} strokeWidth={2} />
                     Saved
                     <span className="bg-muted flex h-5 items-center justify-center rounded-full px-1.5 text-xs">
                       {queriesCount}
@@ -237,10 +238,16 @@ export const Runner = () => {
                 >
                   <ContentSwitch
                     active={isFormatting}
-                    activeContent={<RiCheckLine className="text-success" />}
+                    activeContent={
+                      <HugeiconsIcon
+                        icon={Tick02Icon}
+                        strokeWidth={2}
+                        className="text-success"
+                      />
+                    }
                     onSwitchEnd={() => setIsFormatting(false)}
                   >
-                    <RiBrush2Line />
+                    <HugeiconsIcon icon={PaintBrush01Icon} strokeWidth={2} />
                   </ContentSwitch>
                   Format
                 </Button>

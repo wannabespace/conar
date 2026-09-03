@@ -1,4 +1,5 @@
-import { RiDownloadLine } from '@remixicon/react'
+import { Download01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { Spinner } from '@tamery/ui/components/spinner'
 import {
@@ -38,7 +39,11 @@ export const UpdateButton = () => {
           <Spinner className="text-muted-foreground size-4" />
         )}
         {status === 'downloading' && (
-          <RiDownloadLine className="text-muted-foreground size-3 animate-bounce" />
+          <HugeiconsIcon
+            icon={Download01Icon}
+            strokeWidth={2}
+            className="text-muted-foreground size-3 animate-bounce"
+          />
         )}
       </TooltipTrigger>
       <TooltipContent side="bottom">

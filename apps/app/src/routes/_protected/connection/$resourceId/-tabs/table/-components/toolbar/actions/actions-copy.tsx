@@ -1,13 +1,14 @@
-import type { RemixiconComponentType } from '@remixicon/react'
 import {
-  RiCodeSSlashLine,
-  RiDatabase2Line,
-  RiDropLine,
-  RiFileCodeLine,
-  RiShieldCheckLine,
-  RiTerminalBoxLine,
-  RiTriangleLine,
-} from '@remixicon/react'
+  ComputerTerminal01Icon,
+  DatabaseIcon,
+  DropletIcon,
+  FileCodeIcon,
+  SecurityCheckIcon,
+  SourceCodeIcon,
+  TriangleIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import type { IconSvgElement } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
@@ -48,7 +49,7 @@ type Format = {
   type: GeneratorFormat
   label: string
   lang: string
-  icon: RemixiconComponentType
+  icon: IconSvgElement
 } & (
   | {
       kind: 'schema'
@@ -67,7 +68,7 @@ const FORMATS = {
       type: 'sql',
       label: 'SQL',
       lang: 'sql',
-      icon: RiDatabase2Line,
+      icon: DatabaseIcon,
       generator: generators.generateSchemaSQL,
     },
     {
@@ -75,7 +76,7 @@ const FORMATS = {
       type: 'ts',
       label: 'TypeScript',
       lang: 'typescript',
-      icon: RiFileCodeLine,
+      icon: FileCodeIcon,
       generator: generators.generateSchemaTypeScript,
     },
     {
@@ -83,7 +84,7 @@ const FORMATS = {
       type: 'zod',
       label: 'Zod',
       lang: 'typescript',
-      icon: RiShieldCheckLine,
+      icon: SecurityCheckIcon,
       generator: generators.generateSchemaZod,
     },
     {
@@ -91,7 +92,7 @@ const FORMATS = {
       type: 'prisma',
       label: 'Prisma',
       lang: 'graphql',
-      icon: RiTriangleLine,
+      icon: TriangleIcon,
       generator: generators.generateSchemaPrisma,
     },
     {
@@ -99,7 +100,7 @@ const FORMATS = {
       type: 'drizzle',
       label: 'Drizzle',
       lang: 'typescript',
-      icon: RiDropLine,
+      icon: DropletIcon,
       generator: generators.generateSchemaDrizzle,
     },
     {
@@ -107,7 +108,7 @@ const FORMATS = {
       type: 'kysely',
       label: 'Kysely',
       lang: 'typescript',
-      icon: RiTerminalBoxLine,
+      icon: ComputerTerminal01Icon,
       generator: generators.generateSchemaKysely,
     },
   ],
@@ -117,7 +118,7 @@ const FORMATS = {
       type: 'sql',
       label: 'SQL',
       lang: 'sql',
-      icon: RiDatabase2Line,
+      icon: DatabaseIcon,
       generator: generators.generateQuerySQL,
     },
     {
@@ -125,7 +126,7 @@ const FORMATS = {
       type: 'prisma',
       label: 'Prisma',
       lang: 'typescript',
-      icon: RiTriangleLine,
+      icon: TriangleIcon,
       generator: generators.generateQueryPrisma,
     },
     {
@@ -133,7 +134,7 @@ const FORMATS = {
       type: 'drizzle',
       label: 'Drizzle',
       lang: 'typescript',
-      icon: RiDropLine,
+      icon: DropletIcon,
       generator: generators.generateQueryDrizzle,
     },
     {
@@ -141,7 +142,7 @@ const FORMATS = {
       type: 'kysely',
       label: 'Kysely',
       lang: 'typescript',
-      icon: RiTerminalBoxLine,
+      icon: ComputerTerminal01Icon,
       generator: generators.generateQueryKysely,
     },
   ],
@@ -189,7 +190,7 @@ const DialogSidebar = ({
           onClick={() => onFormatChange(fmt.type)}
           active={fmt.type === activeFormat.type}
         >
-          <fmt.icon />
+          <HugeiconsIcon icon={fmt.icon} strokeWidth={2} />
           {fmt.label}
         </SidebarButton>
       ))}
@@ -283,7 +284,7 @@ export const ActionsCopy = ({
             />
           }
         >
-          <RiCodeSSlashLine />
+          <HugeiconsIcon icon={SourceCodeIcon} strokeWidth={2} />
         </TooltipTrigger>
         <TooltipContent side="top">Copy schema / query</TooltipContent>
       </Tooltip>

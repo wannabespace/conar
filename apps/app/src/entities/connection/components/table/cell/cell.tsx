@@ -1,4 +1,8 @@
-import { RiArrowLeftDownLine, RiArrowRightUpLine } from '@remixicon/react'
+import {
+  ArrowDownLeft01Icon,
+  ArrowUpRight01Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { sleep } from '@tamery/shared/utils/helpers'
 import type { TableCellProps } from '@tamery/table'
@@ -84,7 +88,11 @@ const SetNullAlertDialog = ({
 
 const ForeignButton = (props: ComponentProps<'button'>) => (
   <Button variant="ghost" size="icon-xs" {...props}>
-    <RiArrowRightUpLine className="text-muted-foreground size-3" />
+    <HugeiconsIcon
+      icon={ArrowUpRight01Icon}
+      strokeWidth={2}
+      className="text-muted-foreground size-3"
+    />
   </Button>
 )
 
@@ -99,7 +107,11 @@ const ReferenceButton = ({
     className={cn('px-1.5!', className)}
     {...props}
   >
-    <RiArrowLeftDownLine className="text-muted-foreground size-3" />
+    <HugeiconsIcon
+      icon={ArrowDownLeft01Icon}
+      strokeWidth={2}
+      className="text-muted-foreground size-3"
+    />
     <span className="text-muted-foreground text-xs">{children}</span>
   </Button>
 )

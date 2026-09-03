@@ -1,10 +1,11 @@
 import {
-  RiDeleteBinLine,
-  RiKey2Line,
-  RiMoreLine,
-  RiPauseCircleLine,
-  RiPlayCircleLine,
-} from '@remixicon/react'
+  Delete02Icon,
+  Key01Icon,
+  MoreHorizontalIcon,
+  PauseCircleIcon,
+  PlayCircleIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -57,7 +58,11 @@ const ApiKeysEmptyState = ({
 }) => (
   <div className="bg-muted/30 flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-14 text-center">
     <div className="bg-muted ring-border mb-4 flex size-14 items-center justify-center rounded-full ring-1">
-      <RiKey2Line className="text-muted-foreground size-7" />
+      <HugeiconsIcon
+        icon={Key01Icon}
+        strokeWidth={2}
+        className="text-muted-foreground size-7"
+      />
     </div>
     <h3 className="mb-2 text-base font-semibold tracking-tight">
       No API keys yet
@@ -70,7 +75,7 @@ const ApiKeysEmptyState = ({
       .
     </p>
     <Button variant="outline" size="sm" onClick={onCreateClick}>
-      <RiKey2Line className="size-4" />
+      <HugeiconsIcon icon={Key01Icon} strokeWidth={2} className="size-4" />
       Create a key
     </Button>
   </div>
@@ -173,7 +178,11 @@ const ApiKeysContent = ({
                       />
                     }
                   >
-                    <RiMoreLine className="size-4" />
+                    <HugeiconsIcon
+                      icon={MoreHorizontalIcon}
+                      strokeWidth={2}
+                      className="size-4"
+                    />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     {key.enabled === false ? (
@@ -186,7 +195,11 @@ const ApiKeysContent = ({
                           })
                         }
                       >
-                        <RiPlayCircleLine className="size-4" />
+                        <HugeiconsIcon
+                          icon={PlayCircleIcon}
+                          strokeWidth={2}
+                          className="size-4"
+                        />
                         Activate
                       </DropdownMenuItem>
                     ) : (
@@ -199,7 +212,11 @@ const ApiKeysContent = ({
                           })
                         }
                       >
-                        <RiPauseCircleLine className="size-4" />
+                        <HugeiconsIcon
+                          icon={PauseCircleIcon}
+                          strokeWidth={2}
+                          className="size-4"
+                        />
                         Deactivate
                       </DropdownMenuItem>
                     )}
@@ -208,7 +225,11 @@ const ApiKeysContent = ({
                       variant="destructive"
                       onClick={() => revokeDialogRef.current?.revoke(key.id)}
                     >
-                      <RiDeleteBinLine className="size-4" />
+                      <HugeiconsIcon
+                        icon={Delete02Icon}
+                        strokeWidth={2}
+                        className="size-4"
+                      />
                       Revoke
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -267,7 +288,7 @@ const RouteComponent = () => {
       <div className="mb-6 flex items-center justify-between gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">API Keys</h2>
         <Button size="sm" onClick={() => createDialogRef.current?.open()}>
-          <RiKey2Line className="size-4" />
+          <HugeiconsIcon icon={Key01Icon} strokeWidth={2} className="size-4" />
           Create key
         </Button>
       </div>

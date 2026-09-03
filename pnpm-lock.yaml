@@ -60,6 +60,12 @@ catalogs:
     '@hono/node-server':
       specifier: ^2.1.1
       version: 2.1.1
+    '@hugeicons/core-free-icons':
+      specifier: ^4.3.0
+      version: 4.3.0
+    '@hugeicons/react':
+      specifier: ^1.1.10
+      version: 1.1.10
     '@infisical/sdk':
       specifier: ^5.0.2
       version: 5.0.2
@@ -96,9 +102,6 @@ catalogs:
     '@react-email/components':
       specifier: ^1.0.10
       version: 1.0.12
-    '@remixicon/react':
-      specifier: ^4.9.0
-      version: 4.9.0
     '@rolldown/plugin-babel':
       specifier: ^0.2.3
       version: 0.2.3
@@ -632,6 +635,12 @@ importers:
       '@faker-js/faker':
         specifier: 'catalog:'
         version: 10.6.0
+      '@hugeicons/core-free-icons':
+        specifier: 'catalog:'
+        version: 4.3.0
+      '@hugeicons/react':
+        specifier: 'catalog:'
+        version: 1.1.10(react@19.2.8)
       '@orpc/client':
         specifier: 'catalog:'
         version: 1.15.0(@opentelemetry/api@1.9.1)
@@ -644,9 +653,6 @@ importers:
       '@paper-design/shaders-react':
         specifier: 'catalog:'
         version: 0.0.80(@types/react@19.2.18)(react@19.2.8)
-      '@remixicon/react':
-        specifier: 'catalog:'
-        version: 4.9.0(react@19.2.8)
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.3.3(vite@8.2.2(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0))
@@ -1032,12 +1038,15 @@ importers:
         specifier: 'catalog:'
         version: 2.0.10
     devDependencies:
+      '@hugeicons/core-free-icons':
+        specifier: 'catalog:'
+        version: 4.3.0
+      '@hugeicons/react':
+        specifier: 'catalog:'
+        version: 1.1.10(react@19.2.8)
       '@orpc/server':
         specifier: 'catalog:'
         version: 1.15.0(@opentelemetry/api@1.9.1)(crossws@0.4.10(srvx@0.11.21))(ws@8.21.0)
-      '@remixicon/react':
-        specifier: 'catalog:'
-        version: 4.9.0(react@19.2.8)
       '@rolldown/plugin-babel':
         specifier: 'catalog:'
         version: 0.2.3(@babel/core@7.29.7(supports-color@7.2.0))(@babel/runtime@7.29.7)(rolldown@1.2.5)(vite@8.2.2(@types/node@26.1.1)(jiti@2.7.0)(yaml@2.9.0))
@@ -1293,9 +1302,6 @@ importers:
 
   packages/table:
     dependencies:
-      '@remixicon/react':
-        specifier: 'catalog:'
-        version: 4.9.0(react@19.2.8)
       '@tamery/shared':
         specifier: workspace:*
         version: link:../shared
@@ -1333,15 +1339,18 @@ importers:
       '@fontsource-variable/geist-mono':
         specifier: 'catalog:'
         version: 5.3.0
+      '@hugeicons/core-free-icons':
+        specifier: 'catalog:'
+        version: 4.3.0
+      '@hugeicons/react':
+        specifier: 'catalog:'
+        version: 1.1.10(react@19.2.8)
       '@number-flow/react':
         specifier: 'catalog:'
         version: 0.6.2(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@paper-design/shaders-react':
         specifier: 'catalog:'
         version: 0.0.80(@types/react@19.2.18)(react@19.2.8)
-      '@remixicon/react':
-        specifier: 'catalog:'
-        version: 4.9.0(react@19.2.8)
       '@shadcn/react':
         specifier: 'catalog:'
         version: 0.3.1(@types/react@19.2.18)(react@19.2.8)
@@ -2469,6 +2478,14 @@ packages:
     peerDependencies:
       hono: ^4
 
+  '@hugeicons/core-free-icons@4.3.0':
+    resolution: {integrity: sha512-5DC5gq2psNDKBQThOjpuFCtMco8nl2FkrBzZgG15cFGM0kSwUoych/pw0DmjBygF9qRDITdBPtmzJqLsOeImMg==}
+
+  '@hugeicons/react@1.1.10':
+    resolution: {integrity: sha512-9tAsd92yMVVGP+E+d8cM+wc0VnXuYZHNbWQi7TOe8k2neawmhiaFmVFbzyruejhOMa197/LbgvSED32ayUo3ZA==}
+    peerDependencies:
+      react: '>=16.0.0'
+
   '@humanwhocodes/momoa@2.0.4':
     resolution: {integrity: sha512-RE815I4arJFtt+FVeU1Tgp9/Xvecacji8w/V6XtXsWWH/wz/eNkNbhb+ny/+PlVZjV0rxQpRSQKNKE3lcktHEA==}
     engines: {node: '>=10.10.0'}
@@ -3566,11 +3583,6 @@ packages:
         optional: true
       react-redux:
         optional: true
-
-  '@remixicon/react@4.9.0':
-    resolution: {integrity: sha512-5/jLDD4DtKxH2B4QVXTobvV1C2uL8ab9D5yAYNtFt+w80O0Ys1xFOrspqROL3fjrZi+7ElFUWE37hBfaAl6U+Q==}
-    peerDependencies:
-      react: '>=18.2.0'
 
   '@rolldown/binding-android-arm-eabi@1.2.5':
     resolution: {integrity: sha512-DLe/i+l8ynIBY7XEQ191TeZvCoowIGa18R+dIV30GW7DiOtp74i/xX8hs8GUjW5ARV7VZuie3d6AumSmCwbeRA==}
@@ -11366,6 +11378,12 @@ snapshots:
     dependencies:
       hono: 4.13.5
 
+  '@hugeicons/core-free-icons@4.3.0': {}
+
+  '@hugeicons/react@1.1.10(react@19.2.8)':
+    dependencies:
+      react: 19.2.8
+
   '@humanwhocodes/momoa@2.0.4': {}
 
   '@infisical/sdk@5.0.2':
@@ -12299,10 +12317,6 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
       react-redux: 9.3.0(@types/react@19.2.18)(react@19.2.8)(redux@5.0.1)
-
-  '@remixicon/react@4.9.0(react@19.2.8)':
-    dependencies:
-      react: 19.2.8
 
   '@rolldown/binding-android-arm-eabi@1.2.5':
     optional: true

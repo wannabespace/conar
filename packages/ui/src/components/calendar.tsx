@@ -1,8 +1,9 @@
 import {
-  RiArrowDownSLine,
-  RiArrowLeftSLine,
-  RiArrowRightSLine,
-} from '@remixicon/react'
+  ArrowDown01Icon,
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
@@ -22,16 +23,23 @@ const CalendarChevron = ({
 }: {
   className?: string
   orientation?: 'left' | 'right' | 'down' | 'up'
-} & Omit<React.SVGProps<SVGSVGElement>, 'children'>) => {
+} & Omit<React.SVGProps<SVGSVGElement>, 'children' | 'strokeWidth'>) => {
   if (orientation === 'left') {
     return (
-      <RiArrowLeftSLine className={cn('size-4', className)} {...chevronProps} />
+      <HugeiconsIcon
+        icon={ArrowLeft01Icon}
+        strokeWidth={2}
+        className={cn('size-4', className)}
+        {...chevronProps}
+      />
     )
   }
 
   if (orientation === 'right') {
     return (
-      <RiArrowRightSLine
+      <HugeiconsIcon
+        icon={ArrowRight01Icon}
+        strokeWidth={2}
         className={cn('size-4', className)}
         {...chevronProps}
       />
@@ -39,7 +47,12 @@ const CalendarChevron = ({
   }
 
   return (
-    <RiArrowDownSLine className={cn('size-4', className)} {...chevronProps} />
+    <HugeiconsIcon
+      icon={ArrowDown01Icon}
+      strokeWidth={2}
+      className={cn('size-4', className)}
+      {...chevronProps}
+    />
   )
 }
 

@@ -1,4 +1,5 @@
-import { RiStopLine } from '@remixicon/react'
+import { StopIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { Spinner } from '@tamery/ui/components/spinner'
 import {
@@ -93,7 +94,7 @@ export const RunnerResults = () => {
         <Spinner className="text-primary size-6" />
         <p className="text-foreground text-center">Running...</p>
         <Button size="xs" variant="secondary" onClick={handleStop}>
-          <RiStopLine className="size-3" />
+          <HugeiconsIcon icon={StopIcon} strokeWidth={2} className="size-3" />
           Stop
         </Button>
       </div>

@@ -1,4 +1,5 @@
-import { RiSubtractLine } from '@remixicon/react'
+import { MinusSignIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { cn } from '@tamery/ui/lib/utils'
 import { OTPInput, OTPInputContext } from 'input-otp'
 import * as React from 'react'
@@ -78,7 +79,7 @@ const InputOTPSeparator = ({
     )}
     {...props}
   >
-    <RiSubtractLine />
+    <HugeiconsIcon icon={MinusSignIcon} strokeWidth={2} />
   </div>
 )
 

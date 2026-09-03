@@ -1,8 +1,9 @@
 import {
-  RiCodeSSlashLine,
-  RiSeedlingLine,
-  RiVipCrownLine,
-} from '@remixicon/react'
+  CrownIcon,
+  SourceCodeIcon,
+  SproutIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { pick } from '@tamery/shared/utils/helpers'
 import { Badge } from '@tamery/ui/components/badge'
@@ -170,7 +171,7 @@ const CustomExpressionPopover = ({ columnId }: { columnId: string }) => {
           }
         >
           {customExpression && <Indicator />}
-          <RiCodeSSlashLine />
+          <HugeiconsIcon icon={SourceCodeIcon} strokeWidth={2} />
         </TooltipTrigger>
         <TooltipContent>Edit SQL expression</TooltipContent>
       </Tooltip>
@@ -369,7 +370,7 @@ const renderSeedTrigger = ({
             <DrawerTrigger
               render={
                 <Button variant="secondary" size="icon" disabled={isPending}>
-                  <RiSeedlingLine />
+                  <HugeiconsIcon icon={SproutIcon} strokeWidth={2} />
                 </Button>
               }
             />
@@ -557,7 +558,11 @@ export const ActionsSeed = ({
         <div className="flex-1 overflow-auto px-4">
           {!subscription && (
             <div className="bg-muted/50 mb-4 flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
-              <RiVipCrownLine className="text-primary size-4 shrink-0" />
+              <HugeiconsIcon
+                icon={CrownIcon}
+                strokeWidth={2}
+                className="text-primary size-4 shrink-0"
+              />
               <span className="flex-1">
                 {hasReachedFreeLimit
                   ? 'You have used all your free seed generations.'
@@ -625,12 +630,20 @@ export const ActionsSeed = ({
             <LoadingContent loading={isPending}>
               {hasReachedFreeLimit ? (
                 <>
-                  <RiVipCrownLine className="size-4" />
+                  <HugeiconsIcon
+                    icon={CrownIcon}
+                    strokeWidth={2}
+                    className="size-4"
+                  />
                   Upgrade to Seed
                 </>
               ) : (
                 <>
-                  <RiSeedlingLine className="size-4" />
+                  <HugeiconsIcon
+                    icon={SproutIcon}
+                    strokeWidth={2}
+                    className="size-4"
+                  />
                   <NumberFlow
                     value={seedsCount}
                     className="tabular-nums"

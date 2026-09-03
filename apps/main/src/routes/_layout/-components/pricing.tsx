@@ -1,4 +1,5 @@
-import { RiArrowRightLine, RiCheckLine } from '@remixicon/react'
+import { ArrowRight01Icon, Tick02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { Card } from '@tamery/ui/components/card'
 import {
@@ -81,7 +82,11 @@ export const Pricing = ({ className }: PricingSectionProps) => {
                     'bg-muted text-muted-foreground rounded-xl p-3'
                   )}
                 >
-                  <plan.icon className="text-muted-foreground size-7" />
+                  <HugeiconsIcon
+                    icon={plan.icon}
+                    strokeWidth={2}
+                    className="text-muted-foreground size-7"
+                  />
                 </div>
                 <h3 className="text-foreground text-lg font-semibold">
                   {plan.name}
@@ -118,7 +123,11 @@ export const Pricing = ({ className }: PricingSectionProps) => {
                 {plan.features.map((feature) => (
                   <div key={feature.name} className="flex gap-3 sm:gap-4">
                     <div className="mt-1 shrink-0 rounded-full p-0.5">
-                      <RiCheckLine className="size-4" />
+                      <HugeiconsIcon
+                        icon={Tick02Icon}
+                        strokeWidth={2}
+                        className="size-4"
+                      />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-foreground text-sm font-medium sm:text-base">
@@ -141,7 +150,11 @@ export const Pricing = ({ className }: PricingSectionProps) => {
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   {plan.price.monthly > 0 ? `Get ${plan.name}` : 'Download'}
-                  <RiArrowRightLine className="size-4" />
+                  <HugeiconsIcon
+                    icon={ArrowRight01Icon}
+                    strokeWidth={2}
+                    className="size-4"
+                  />
                 </span>
               </Button>
             </div>

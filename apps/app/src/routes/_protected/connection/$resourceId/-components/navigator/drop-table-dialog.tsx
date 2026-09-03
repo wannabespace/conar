@@ -1,4 +1,5 @@
-import { RiAlertLine } from '@remixicon/react'
+import { Alert02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import {
   Alert,
@@ -107,7 +108,11 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
         </DialogHeader>
         <div className="space-y-4">
           <Alert variant="destructive">
-            <RiAlertLine className="text-destructive size-5" />
+            <HugeiconsIcon
+              icon={Alert02Icon}
+              strokeWidth={2}
+              className="text-destructive size-5"
+            />
             <AlertTitle>This action cannot be undone.</AlertTitle>
             <AlertDescription>
               This will permanently delete the table and all its data from the

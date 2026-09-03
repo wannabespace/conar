@@ -1,8 +1,9 @@
 import {
-  RiAlertLine,
-  RiArrowGoBackLine,
-  RiLoopLeftLine,
-} from '@remixicon/react'
+  Alert02Icon,
+  ArrowTurnBackwardIcon,
+  RefreshIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
   Card,
@@ -31,7 +32,11 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
           <Card>
             <CardHeader className="text-center">
               <div className="bg-destructive/10 mx-auto mb-4 flex size-16 items-center justify-center rounded-full">
-                <RiAlertLine className="text-destructive size-8" />
+                <HugeiconsIcon
+                  icon={Alert02Icon}
+                  strokeWidth={2}
+                  className="text-destructive size-8"
+                />
               </div>
               <CardTitle className="text-xl">Something went wrong</CardTitle>
               <CardDescription>
@@ -78,14 +83,14 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
                 className="flex-1"
                 onClick={() => router.history.back()}
               >
-                <RiArrowGoBackLine />
+                <HugeiconsIcon icon={ArrowTurnBackwardIcon} strokeWidth={2} />
                 Go back
               </Button>
               <Button
                 className="flex-1"
                 onClick={() => window.location.reload()}
               >
-                <RiLoopLeftLine />
+                <HugeiconsIcon icon={RefreshIcon} strokeWidth={2} />
                 Refresh
               </Button>
             </CardFooter>

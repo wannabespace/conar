@@ -1,13 +1,14 @@
 import {
-  RiDashboard3Line,
-  RiFileListLine,
-  RiGitBranchLine,
-  RiGithubFill,
-  RiLogoutCircleLine,
-  RiMoonLine,
-  RiSettingsLine,
-  RiSunLine,
-} from '@remixicon/react'
+  DashboardSquare01Icon,
+  File01Icon,
+  GitBranchIcon,
+  GithubIcon,
+  LogoutCircle01Icon,
+  Moon02Icon,
+  Settings01Icon,
+  Sun03Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
@@ -70,7 +71,11 @@ const AccountLayout = () => {
             className="hidden gap-1 sm:flex sm:gap-2"
             render={<Link to="/releases" />}
           >
-            <RiGitBranchLine className="size-3 sm:size-4" />
+            <HugeiconsIcon
+              icon={GitBranchIcon}
+              strokeWidth={2}
+              className="size-3 sm:size-4"
+            />
             Releases
           </Button>
           <Button
@@ -86,7 +91,11 @@ const AccountLayout = () => {
               />
             }
           >
-            <RiGithubFill className="size-3 sm:size-4" />
+            <HugeiconsIcon
+              icon={GithubIcon}
+              strokeWidth={2}
+              className="size-3 sm:size-4"
+            />
             <NumberFlow
               value={data?.stargazers_count || 0}
               className={cn(
@@ -99,8 +108,16 @@ const AccountLayout = () => {
             side="bottom"
             render={<Button size="icon-sm" variant="ghost" />}
           >
-            <RiSunLine className="size-4 dark:hidden" />
-            <RiMoonLine className="hidden size-4 dark:block" />
+            <HugeiconsIcon
+              icon={Sun03Icon}
+              strokeWidth={2}
+              className="size-4 dark:hidden"
+            />
+            <HugeiconsIcon
+              icon={Moon02Icon}
+              strokeWidth={2}
+              className="hidden size-4 dark:block"
+            />
           </ThemeToggle>
           <Button
             variant="outline"
@@ -135,21 +152,33 @@ const AccountLayout = () => {
               active={match === '/account/'}
               render={<Link to="/account" />}
             >
-              <RiDashboard3Line className="size-4" />
+              <HugeiconsIcon
+                icon={DashboardSquare01Icon}
+                strokeWidth={2}
+                className="size-4"
+              />
               Dashboard
             </SidebarButton>
             <SidebarButton
               active={match === '/account/billing'}
               render={<Link to="/account/billing" />}
             >
-              <RiFileListLine className="size-4" />
+              <HugeiconsIcon
+                icon={File01Icon}
+                strokeWidth={2}
+                className="size-4"
+              />
               Billing & Invoices
             </SidebarButton>
             <SidebarButton
               active={match === '/account/settings/'}
               render={<Link to="/account/settings" />}
             >
-              <RiSettingsLine className="size-4" />
+              <HugeiconsIcon
+                icon={Settings01Icon}
+                strokeWidth={2}
+                className="size-4"
+              />
               Settings
             </SidebarButton>
             <SupportButton />
@@ -161,7 +190,11 @@ const AccountLayout = () => {
                 void handleSignOut()
               }}
             >
-              <RiLogoutCircleLine className="size-4" />
+              <HugeiconsIcon
+                icon={LogoutCircle01Icon}
+                strokeWidth={2}
+                className="size-4"
+              />
               Sign out
             </Button>
           </nav>

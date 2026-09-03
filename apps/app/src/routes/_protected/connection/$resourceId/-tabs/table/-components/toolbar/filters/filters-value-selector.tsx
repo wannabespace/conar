@@ -1,4 +1,5 @@
-import { RiCornerDownLeftLine } from '@remixicon/react'
+import { CornerDownLeftIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { Command, CommandInput } from '@tamery/ui/components/command'
 import { Separator } from '@tamery/ui/components/separator'
@@ -95,7 +96,11 @@ export const FiltersValueSelector = ({
       <div className="flex justify-end border-t p-2">
         <Button onClick={onApply} size="xs">
           Apply Filter
-          <RiCornerDownLeftLine className="size-3" />
+          <HugeiconsIcon
+            icon={CornerDownLeftIcon}
+            strokeWidth={2}
+            className="size-3"
+          />
         </Button>
       </div>
     </div>

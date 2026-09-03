@@ -1,4 +1,5 @@
-import { RiDatabase2Line } from '@remixicon/react'
+import { DatabaseIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Command,
   CommandEmpty,
@@ -34,7 +35,11 @@ export const FiltersColumnSelector = ({
               keywords={[column.id, column.type ?? '', column.typeLabel ?? '']}
               onSelect={onSelect}
             >
-              <RiDatabase2Line className="size-4 opacity-50" />
+              <HugeiconsIcon
+                icon={DatabaseIcon}
+                strokeWidth={2}
+                className="size-4 opacity-50"
+              />
               <span className="min-w-0 flex-1 truncate">{column.id}</span>
               <CommandShortcut className="tracking-normal">
                 {column.typeLabel}

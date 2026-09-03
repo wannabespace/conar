@@ -1,4 +1,5 @@
-import { RiChatAiLine } from '@remixicon/react'
+import { AiChat01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { AppUIMessage } from '@tamery/ai/message'
 import { textFromMessage } from '@tamery/ai/message'
 import { Bubble, BubbleContent } from '@tamery/ui/components/bubble'
@@ -29,7 +30,7 @@ const ChatEmpty = () => (
         variant="icon"
         className="bg-muted/60 text-muted-foreground/70 mb-3 size-14 rounded-2xl [&_svg]:size-7"
       >
-        <RiChatAiLine />
+        <HugeiconsIcon icon={AiChat01Icon} strokeWidth={2} />
       </EmptyMedia>
       <EmptyTitle className="text-sm font-medium tracking-normal">
         Ask Anything

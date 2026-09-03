@@ -1,4 +1,5 @@
-import { RiErrorWarningLine } from '@remixicon/react'
+import { Alert02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { challenge } from '@tamery/shared/utils/challenge'
 import { title } from '@tamery/shared/utils/title'
 import { Badge } from '@tamery/ui/components/badge'
@@ -199,7 +200,11 @@ const AuthPage = () => {
             </motion.div>
             {!!error && (
               <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                <RiErrorWarningLine className="text-destructive size-4" />
+                <HugeiconsIcon
+                  icon={Alert02Icon}
+                  strokeWidth={2}
+                  className="text-destructive size-4"
+                />
                 {error.message}
               </div>
             )}

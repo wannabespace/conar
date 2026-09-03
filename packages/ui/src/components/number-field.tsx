@@ -1,5 +1,6 @@
 import { NumberField as NumberFieldPrimitive } from '@base-ui/react/number-field'
-import { RiAddLine, RiSubtractLine } from '@remixicon/react'
+import { MinusSignIcon, PlusSignIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Label } from '@tamery/ui/components/label'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
@@ -78,7 +79,7 @@ export const NumberFieldDecrement = ({
     data-slot="number-field-decrement"
     {...props}
   >
-    <RiSubtractLine />
+    <HugeiconsIcon icon={MinusSignIcon} strokeWidth={2} />
   </NumberFieldPrimitive.Decrement>
 )
 
@@ -94,7 +95,7 @@ export const NumberFieldIncrement = ({
     data-slot="number-field-increment"
     {...props}
   >
-    <RiAddLine />
+    <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
   </NumberFieldPrimitive.Increment>
 )
 

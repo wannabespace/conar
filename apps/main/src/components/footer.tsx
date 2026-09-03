@@ -1,4 +1,9 @@
-import { RiDiscordLine, RiGithubLine, RiTwitterXLine } from '@remixicon/react'
+import {
+  DiscordIcon,
+  GithubIcon,
+  NewTwitterIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Link } from '@tanstack/react-router'
@@ -30,7 +35,11 @@ export const Footer = () => (
         rel="noopener noreferrer"
         className="text-muted-foreground hover:text-foreground transition-colors"
       >
-        <RiTwitterXLine className="size-4" />
+        <HugeiconsIcon
+          icon={NewTwitterIcon}
+          strokeWidth={2}
+          className="size-4"
+        />
       </a>
       <a
         href={SOCIAL_LINKS.DISCORD}
@@ -38,7 +47,7 @@ export const Footer = () => (
         rel="noopener noreferrer"
         className="text-muted-foreground hover:text-foreground transition-colors"
       >
-        <RiDiscordLine className="size-4" />
+        <HugeiconsIcon icon={DiscordIcon} strokeWidth={2} className="size-4" />
       </a>
       <a
         href={SOCIAL_LINKS.GITHUB}
@@ -46,7 +55,7 @@ export const Footer = () => (
         rel="noopener noreferrer"
         className="text-muted-foreground hover:text-foreground transition-colors"
       >
-        <RiGithubLine className="size-4" />
+        <HugeiconsIcon icon={GithubIcon} strokeWidth={2} className="size-4" />
       </a>
     </div>
   </footer>

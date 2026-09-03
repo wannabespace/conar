@@ -1,4 +1,5 @@
-import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
+import { ViewIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
   InputGroup,
@@ -36,9 +37,19 @@ export const PasswordInput = (
             }
           >
             {showPassword ? (
-              <RiEyeOffLine className="size-4" aria-hidden="true" />
+              <HugeiconsIcon
+                icon={ViewOffSlashIcon}
+                strokeWidth={2}
+                className="size-4"
+                aria-hidden="true"
+              />
             ) : (
-              <RiEyeLine className="size-4" aria-hidden="true" />
+              <HugeiconsIcon
+                icon={ViewIcon}
+                strokeWidth={2}
+                className="size-4"
+                aria-hidden="true"
+              />
             )}
           </TooltipTrigger>
           <TooltipContent side="top">

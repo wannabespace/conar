@@ -1,4 +1,5 @@
-import { RiCheckLine, RiSearchLine } from '@remixicon/react'
+import { Search01Icon, Tick02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Dialog,
   DialogContent,
@@ -74,7 +75,11 @@ export const CommandInput = ({
         {...props}
       />
       <InputGroupAddon>
-        <RiSearchLine className="size-4 shrink-0 opacity-50" />
+        <HugeiconsIcon
+          icon={Search01Icon}
+          strokeWidth={2}
+          className="size-4 shrink-0 opacity-50"
+        />
       </InputGroupAddon>
     </InputGroup>
   </div>
@@ -144,7 +149,11 @@ export const CommandItem = ({
     {...props}
   >
     {children}
-    <RiCheckLine className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
+    <HugeiconsIcon
+      icon={Tick02Icon}
+      strokeWidth={2}
+      className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-[checked=true]/command-item:opacity-100"
+    />
   </CommandPrimitive.Item>
 )
 

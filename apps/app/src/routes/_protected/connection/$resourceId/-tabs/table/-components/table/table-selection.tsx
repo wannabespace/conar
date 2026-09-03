@@ -1,4 +1,5 @@
-import { RiCheckLine, RiSubtractLine } from '@remixicon/react'
+import { MinusSignIcon, Tick02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { TableCellProps, TableHeaderCellProps } from '@tamery/table'
 import { useShiftSelectionClick, useTableContext } from '@tamery/table/hooks'
 import { cn } from '@tamery/ui/lib/utils'
@@ -22,12 +23,16 @@ const IndeterminateCheckbox = ({
       )}
       {...props}
     />
-    <RiCheckLine
+    <HugeiconsIcon
+      icon={Tick02Icon}
+      strokeWidth={2}
       className={cn(
         `text-primary-foreground pointer-events-none absolute size-3 opacity-0 transition-opacity duration-100 peer-checked:opacity-100`
       )}
     />
-    <RiSubtractLine
+    <HugeiconsIcon
+      icon={MinusSignIcon}
+      strokeWidth={2}
       className="text-primary-foreground pointer-events-none absolute size-3 opacity-0 transition-opacity duration-100"
       style={{ opacity: !props.checked && indeterminate ? 1 : 0 }}
     />

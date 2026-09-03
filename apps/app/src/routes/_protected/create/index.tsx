@@ -1,4 +1,5 @@
-import { RiArrowLeftSLine } from '@remixicon/react'
+import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { isLocalhostConnectionString } from '@tamery/connection/utils'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
@@ -251,7 +252,11 @@ const CreateConnectionPage = () => {
             className="text-muted-foreground px-0!"
             onClick={() => router.history.back()}
           >
-            <RiArrowLeftSLine className="size-3" />
+            <HugeiconsIcon
+              icon={ArrowLeft01Icon}
+              strokeWidth={2}
+              className="size-3"
+            />
             Back
           </Button>
         </div>

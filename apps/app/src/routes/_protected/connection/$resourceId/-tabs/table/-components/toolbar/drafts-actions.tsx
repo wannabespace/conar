@@ -1,4 +1,5 @@
-import { RiEyeLine } from '@remixicon/react'
+import { ViewIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
@@ -352,7 +353,7 @@ export const DraftsActions = ({
                   />
                 }
               >
-                <RiEyeLine />
+                <HugeiconsIcon icon={ViewIcon} strokeWidth={2} />
                 {errorCount > 0 && (
                   <span
                     aria-hidden

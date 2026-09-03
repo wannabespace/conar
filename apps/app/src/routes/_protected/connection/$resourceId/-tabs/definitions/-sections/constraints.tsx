@@ -1,10 +1,11 @@
 import {
-  RiDatabase2Line,
-  RiKey2Line,
-  RiLayoutColumnLine,
-  RiLinksLine,
-  RiTable2,
-} from '@remixicon/react'
+  DatabaseIcon,
+  Key01Icon,
+  LayoutThreeColumnIcon,
+  Link01Icon,
+  TableIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Badge } from '@tamery/ui/components/badge'
 import { CardContent, CardTitle } from '@tamery/ui/components/card'
 import { CardMotion } from '@tamery/ui/components/card.motion'
@@ -46,13 +47,31 @@ const getIcon = (type: ConstraintType) => {
   switch (type) {
     case 'primaryKey':
     case 'unique': {
-      return <RiKey2Line className="text-primary size-4" />
+      return (
+        <HugeiconsIcon
+          icon={Key01Icon}
+          strokeWidth={2}
+          className="text-primary size-4"
+        />
+      )
     }
     case 'foreignKey': {
-      return <RiLinksLine className="text-primary size-4" />
+      return (
+        <HugeiconsIcon
+          icon={Link01Icon}
+          strokeWidth={2}
+          className="text-primary size-4"
+        />
+      )
     }
     default: {
-      return <RiDatabase2Line className="text-primary size-4" />
+      return (
+        <HugeiconsIcon
+          icon={DatabaseIcon}
+          strokeWidth={2}
+          className="text-primary size-4"
+        />
+      )
     }
   }
 }
@@ -155,14 +174,22 @@ export const Constraints = () => {
                   </CardTitle>
                   <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
                     <Badge variant="outline">
-                      <RiTable2 className="size-3" />
+                      <HugeiconsIcon
+                        icon={TableIcon}
+                        strokeWidth={2}
+                        className="size-3"
+                      />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
                     {item.column && (
                       <>
                         <span>on</span>
                         <Badge variant="outline">
-                          <RiLayoutColumnLine className="size-3" />
+                          <HugeiconsIcon
+                            icon={LayoutThreeColumnIcon}
+                            strokeWidth={2}
+                            className="size-3"
+                          />
                           <HighlightText text={item.column} match={search} />
                         </Badge>
                       </>

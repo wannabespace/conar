@@ -1,10 +1,11 @@
 import {
-  RiCloudLine,
-  RiDatabase2Line,
-  RiExternalLinkLine,
-  RiSparkling2Line,
-  RiVipCrownFill,
-} from '@remixicon/react'
+  CloudIcon,
+  CrownIcon,
+  DatabaseIcon,
+  LinkSquare02Icon,
+  SparklesIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
   Dialog,
@@ -23,15 +24,15 @@ import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 
 const perks = [
   {
-    icon: RiDatabase2Line,
+    icon: DatabaseIcon,
     label: 'Unlimited connections and workspaces',
   },
   {
-    icon: RiSparkling2Line,
+    icon: SparklesIcon,
     label: 'Unlimited AI assistant',
   },
   {
-    icon: RiCloudLine,
+    icon: CloudIcon,
     label: 'Cloud sync on all your devices',
   },
 ]
@@ -63,7 +64,11 @@ export const SubscriptionModal = () => {
           <div className="relative mb-2">
             <div className="bg-primary/20 absolute -inset-5 rounded-full blur-2xl" />
             <div className="bg-primary/10 inset-ring-primary/15 relative flex size-14 items-center justify-center rounded-2xl inset-ring">
-              <RiVipCrownFill className="text-primary size-7" />
+              <HugeiconsIcon
+                icon={CrownIcon}
+                strokeWidth={2}
+                className="text-primary size-7"
+              />
             </div>
           </div>
           <DialogTitle className="text-lg font-semibold">
@@ -76,7 +81,11 @@ export const SubscriptionModal = () => {
         <ul className="divide-foreground/5 bg-foreground/3 divide-y rounded-xl">
           {perks.map((perk) => (
             <li key={perk.label} className="flex items-center gap-3 px-4 py-3">
-              <perk.icon className="text-primary size-4.5 shrink-0" />
+              <HugeiconsIcon
+                icon={perk.icon}
+                strokeWidth={2}
+                className="text-primary size-4.5 shrink-0"
+              />
               <span className="text-sm">{perk.label}</span>
             </li>
           ))}
@@ -102,7 +111,11 @@ export const SubscriptionModal = () => {
               }
             >
               Upgrade to Pro
-              <RiExternalLinkLine className="size-4" />
+              <HugeiconsIcon
+                icon={LinkSquare02Icon}
+                strokeWidth={2}
+                className="size-4"
+              />
             </Button>
           </DialogFooter>
           <p className="text-muted-foreground text-center text-xs">

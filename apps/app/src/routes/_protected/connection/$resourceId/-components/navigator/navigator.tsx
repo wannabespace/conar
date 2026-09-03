@@ -1,4 +1,9 @@
-import { RiAddLine, RiSearchLine, RiSettings3Line } from '@remixicon/react'
+import {
+  PlusSignIcon,
+  Search01Icon,
+  Settings02Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
 import {
@@ -53,7 +58,11 @@ const TablesPanel = () => {
       <div className="flex shrink-0 items-center gap-1 pb-1.5 pl-2">
         <InputGroup className="flex-1" size="sm">
           <InputGroupAddon>
-            <RiSearchLine className="text-muted-foreground/70 size-3.5" />
+            <HugeiconsIcon
+              icon={Search01Icon}
+              strokeWidth={2}
+              className="text-muted-foreground/70 size-3.5"
+            />
           </InputGroupAddon>
           <InputGroupInput
             placeholder="Search"
@@ -121,7 +130,11 @@ const NavigatorFooter = () => {
         className="text-foreground hover:bg-accent h-7 w-full justify-start gap-2 rounded-md px-2 font-[450]"
         {...pressNavProps(openNewQuery)}
       >
-        <RiAddLine className="text-muted-foreground size-4 shrink-0" />
+        <HugeiconsIcon
+          icon={PlusSignIcon}
+          strokeWidth={2}
+          className="text-muted-foreground size-4 shrink-0"
+        />
         New query
       </Button>
       <Button
@@ -130,7 +143,11 @@ const NavigatorFooter = () => {
         disabled
         className="text-foreground h-7 w-full justify-start gap-2 rounded-md px-2 font-[450]"
       >
-        <RiSettings3Line className="text-muted-foreground size-4 shrink-0" />
+        <HugeiconsIcon
+          icon={Settings02Icon}
+          strokeWidth={2}
+          className="text-muted-foreground size-4 shrink-0"
+        />
         Settings
       </Button>
     </div>
