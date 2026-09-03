@@ -1,7 +1,7 @@
 import { type } from 'arktype'
 import { createWebStorageValue } from 'seitu/web'
 
-import { NAVIGATOR_OPEN_KEY } from '~/lib/storage-keys'
+import { NAVIGATOR_OPEN_KEY } from '~/lib/constants'
 
 export const navigatorOpenValue = createWebStorageValue({
   type: 'localStorage',
@@ -10,4 +10,4 @@ export const navigatorOpenValue = createWebStorageValue({
   schema: type('boolean'),
 })
 
-export { SIDEBAR_DEFAULT_WIDTH } from '~/lib/storage-keys'
+export { SIDEBAR_DEFAULT_WIDTH } from '~/lib/constants'

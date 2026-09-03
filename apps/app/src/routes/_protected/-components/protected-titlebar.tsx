@@ -48,8 +48,8 @@ import {
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { UserButton } from '~/entities/user/components'
 import { useActiveWorkspace } from '~/entities/workspace'
+import { checkForUpdates, updatesStore } from '~/hooks/use-updates-observer'
 import { setIsActionCenterOpen } from '~/store'
-import { checkForUpdates, updatesStore } from '~/use-updates-observer'
 
 import { RemoveConnectionDialog } from './remove-connection-dialog'
 import { WorkspaceSwitcher } from './workspace-switcher'

@@ -7,9 +7,9 @@ import { toast } from 'sonner'
 
 import { router } from '~/main'
 
-import { apiUrl } from '../utils/utils'
 import { encryptionKey } from './encryption-key'
 import { lastLocationStorageValue } from './last-location'
+import { apiUrl } from './urls'
 
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
 

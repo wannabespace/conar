@@ -2,8 +2,8 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { fullSignOut } from '~/lib/auth'
+import { handleError } from '~/lib/error'
 import { queryClient } from '~/main'
-import { handleError } from '~/utils/error'
 
 export const useSignOut = () => {
   const { mutate: signOut, isPending: isSigningOut } = useMutation({

@@ -10,9 +10,9 @@ import { PROXY_ERROR_MESSAGE } from '@tamery/shared/constants'
 import { isConnectionError } from '@tamery/shared/utils/connections'
 import { memoize } from 'memoza'
 
-import { handleError } from '../utils/error'
-import { apiUrl, proxyUrl } from '../utils/utils'
 import { bearerToken } from './auth'
+import { handleError } from './error'
+import { apiUrl, proxyUrl } from './urls'
 
 export const orpc = createTanstackQueryUtils(
   createORPCClient(

@@ -106,7 +106,7 @@ export const prerender = ({
       let result = html
 
       for (const [marker, markup] of [...inlined, ...rendered]) {
-        result = result.replace(marker, markup)
+        result = result.replace(marker, () => markup)
       }
 
       return result

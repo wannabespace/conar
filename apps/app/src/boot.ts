@@ -1,63 +1,46 @@
-import { parseStorage } from '@tamery/ui/lib/utils'
+import { THEME_STORAGE_KEY } from '@tamery/ui/theme-constants'
 
 import {
   connectionResourceStoreKey,
   LAST_LOCATION_KEY,
   NAVIGATOR_OPEN_KEY,
-  THEME_KEY,
-} from './lib/storage-keys'
+} from './lib/constants'
 
-if (window.electron) {
-  document.documentElement.classList.add('electron')
-
-  if (/Mac/iu.test(navigator.userAgent)) {
-    document.documentElement.classList.add('mac')
+const read = <T>(key: string): T | undefined => {
+  try {
+    return JSON.parse(localStorage.getItem(key) ?? 'null') ?? undefined
+  } catch {
+    return undefined
   }
 }
 
-const applyConnectionShellState = (resourceId: string) => {
-  const state = parseStorage<{ chatOpened?: boolean; loggerOpened?: boolean }>(
-    connectionResourceStoreKey(resourceId)
-  )
+const isElectron = !!window.electron
+const lastLocation = read<string>(LAST_LOCATION_KEY)
+const resourceId = lastLocation?.match(/\/connection\/(?<id>[^/?#]+)/u)?.groups
+  ?.id
+const resourceState = resourceId
+  ? read<{ chatOpened?: boolean; loggerOpened?: boolean }>(
+      connectionResourceStoreKey(resourceId)
+    )
+  : undefined
+const theme = read<string>(THEME_STORAGE_KEY) ?? 'system'
 
-  if (state?.chatOpened) {
-    document.documentElement.classList.add('shell-chat')
-  }
-
-  if (state?.loggerOpened) {
-    document.documentElement.classList.add('shell-logger')
-  }
+const classes = {
+  dark:
+    theme === 'dark' ||
+    (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches),
+  electron: isElectron,
+  mac: isElectron && /Mac/u.test(navigator.userAgent),
+  'shell-auth': lastLocation === undefined,
+  'shell-chat': !!resourceState?.chatOpened,
+  'shell-connection': !!resourceId,
+  'shell-dashboard': lastLocation !== undefined && !resourceId,
+  'shell-logger': !!resourceState?.loggerOpened,
+  'shell-navigator': read<boolean>(NAVIGATOR_OPEN_KEY) !== false,
 }
 
-const lastLocation = parseStorage<string>(LAST_LOCATION_KEY)
-
-if (typeof lastLocation === 'string') {
-  const resourceId = lastLocation
-    .split('/connection/')[1]
-    ?.split(/[/?#]/u)
-    .at(0)
-
-  document.documentElement.classList.add(
-    resourceId ? 'shell-connection' : 'shell-dashboard'
-  )
-
-  if (resourceId) {
-    applyConnectionShellState(resourceId)
-  }
-} else {
-  document.documentElement.classList.add('shell-auth')
-}
-
-if (parseStorage<boolean>(NAVIGATOR_OPEN_KEY) !== false) {
-  document.documentElement.classList.add('shell-navigator')
-}
-
-const theme = parseStorage<string>(THEME_KEY) ?? 'system'
-
-if (
-  theme === 'dark' ||
-  (theme === 'system' &&
-    window.matchMedia('(prefers-color-scheme: dark)').matches)
-) {
-  document.documentElement.classList.add('dark')
-}
+document.documentElement.classList.add(
+  ...Object.entries(classes)
+    .filter(([, enabled]) => enabled)
+    .map(([name]) => name)
+)

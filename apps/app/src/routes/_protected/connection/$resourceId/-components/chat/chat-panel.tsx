@@ -1,27 +1,10 @@
 import { useChat } from '@ai-sdk/react'
 import {
-  RiChatNewLine,
-  RiCheckLine,
-  RiCloseLine,
-  RiHistoryLine,
-} from '@remixicon/react'
-import {
   textFromMessage,
   messagesFromRows,
   mergeMessages,
 } from '@tamery/ai/message'
 import { Button } from '@tamery/ui/components/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@tamery/ui/components/dropdown-menu'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@tamery/ui/components/tooltip'
 import { eq, useLiveSuspenseQuery } from '@tanstack/react-db'
 import { getRouteApi } from '@tanstack/react-router'
 import { Suspense, useState } from 'react'
@@ -31,7 +14,9 @@ import { v7 } from 'uuid'
 import { useCollections } from '~/entities/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { orpc } from '~/lib/orpc'
+import { resourcePanelClassName } from '~/shell'
 
+import { ChatHeader } from './chat-header'
 import { ChatInput } from './chat-input'
 import { getChatInstance } from './chat-instance'
 import { ChatMessages } from './chat-messages'
@@ -40,93 +25,18 @@ import { CHAT_DEFAULT_WIDTH } from './constants'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const ChatHeader = ({
-  activeChatId,
-  history,
-  onClose,
-  onNewChat,
-  onSelectChat,
-  title,
-}: {
-  activeChatId: string
-  history: { id: string; title: string | null }[]
-  onClose: () => void
-  onNewChat: () => void
-  onSelectChat: (chatId: string) => void
-  title: string | null
-}) => (
-  <div className="flex h-8 shrink-0 items-center gap-0.5 border-b pr-1 pl-3">
-    <span data-mask className="min-w-0 flex-1 truncate text-sm font-medium">
-      {title || 'New Chat'}
-    </span>
-    {history.length > 0 && (
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button size="icon-xs" variant="ghost" aria-label="Chat history" />
-          }
-        >
-          <RiHistoryLine className="size-3.5" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="max-h-[70vh] min-w-56 overflow-auto"
-        >
-          {history.map((chat) => (
-            <DropdownMenuItem
-              key={chat.id}
-              onClick={() => onSelectChat(chat.id)}
-            >
-              <span data-mask className="truncate">
-                {chat.title || 'New Chat'}
-              </span>
-              {chat.id === activeChatId && (
-                <RiCheckLine className="text-muted-foreground ml-auto size-4" />
-              )}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    )}
-    {[
-      { Icon: RiChatNewLine, label: 'New chat', onClick: onNewChat },
-      { Icon: RiCloseLine, label: 'Close chat', onClick: onClose },
-    ].map(({ Icon, label, onClick }) => (
-      <Tooltip key={label}>
-        <TooltipTrigger
-          render={
-            <Button
-              size="icon-xs"
-              variant="ghost"
-              aria-label={label}
-              onClick={onClick}
-            />
-          }
-        >
-          <Icon className="size-3.5" />
-        </TooltipTrigger>
-        <TooltipContent side="bottom">{label}</TooltipContent>
-      </Tooltip>
-    ))}
-  </div>
-)
-
 const Chat = ({
   chatId,
   connectionResourceId,
-  isNew,
   onNewChat,
-  onSelectChat,
-  onStart,
 }: {
   chatId: string
   connectionResourceId: string
-  isNew: boolean
   onNewChat: () => void
-  onSelectChat: (chatId: string) => void
-  onStart: () => void
 }) => {
   const store = getConnectionResourceStore(connectionResourceId)
+  const setChatId = (id: string | null) =>
+    store.set((state) => ({ ...state, chatId: id }) satisfies typeof state)
   const {
     chatsCollection,
     chatsMessagesCollection,
@@ -165,7 +75,7 @@ const Chat = ({
 
   // oxlint-disable-next-line react/hook-use-state
   const [resume] = useState(
-    () => !isNew && collectionMessages.at(-1)?.role !== 'assistant'
+    () => !!chat && collectionMessages.at(-1)?.role !== 'assistant'
   )
   const { error, messages, regenerate, sendMessage, status, stop } = useChat({
     chat: getChatInstance({ chatId, connectionResourceId }),
@@ -175,11 +85,7 @@ const Chat = ({
   const displayMessages = mergeMessages(collectionMessages, messages)
   const firstMessage = displayMessages.at(0)
   const pendingTitle = firstMessage ? textFromMessage(firstMessage) : null
-  const sentHereIds = new Set(
-    messages
-      .filter((message) => message.role === 'user')
-      .map((message) => message.id)
-  )
+  const lastSentId = messages.findLast((message) => message.role === 'user')?.id
 
   return (
     <>
@@ -193,7 +99,7 @@ const Chat = ({
           )
         }
         onNewChat={onNewChat}
-        onSelectChat={onSelectChat}
+        onSelectChat={setChatId}
       />
       <ChatMessages
         isPending={
@@ -201,7 +107,7 @@ const Chat = ({
           (status === 'streaming' || displayMessages.at(-1)?.role === 'user')
         }
         messages={displayMessages}
-        sentHereIds={sentHereIds}
+        lastSentId={lastSentId}
       />
       {error && (
         <div className="flex shrink-0 items-center gap-2 px-3 pb-1">
@@ -222,7 +128,7 @@ const Chat = ({
       <ChatInput
         isStreaming={isStreaming}
         onSend={(text) => {
-          onStart()
+          setChatId(chatId)
           void sendMessage({
             id: v7(),
             parts: [{ text, type: 'text' }],
@@ -248,13 +154,6 @@ export const ChatPanel = () => {
     selector: (state) => state.chatOpened ?? false,
   })
   const [draftId, setDraftId] = useState(() => v7())
-  const activeChatId = chatId ?? draftId
-
-  const startDraft = () =>
-    store.set(
-      (state) =>
-        ({ ...state, chatId: state.chatId ?? draftId }) satisfies typeof state
-    )
 
   const openBlankChat = () => {
     if (!chatId) {
@@ -264,35 +163,24 @@ export const ChatPanel = () => {
     store.set((state) => ({ ...state, chatId: null }) satisfies typeof state)
   }
 
+  if (!chatOpened) {
+    return null
+  }
+
   return (
     <div
-      className="h-full shrink-0"
-      style={{
-        width: chatOpened ? CHAT_DEFAULT_WIDTH : 0,
-        overflow: chatOpened ? 'visible' : 'hidden',
-      }}
+      className="flex h-full shrink-0 flex-col pl-1.5"
+      style={{ width: CHAT_DEFAULT_WIDTH }}
     >
-      <div
-        className="flex h-full flex-col pl-1.5"
-        style={{ width: CHAT_DEFAULT_WIDTH }}
-      >
-        <div className="bg-background flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg">
-          <Suspense fallback={<ChatSkeleton />}>
-            <Chat
-              key={activeChatId}
-              chatId={activeChatId}
-              connectionResourceId={connectionResource.id}
-              isNew={activeChatId === draftId}
-              onNewChat={openBlankChat}
-              onStart={startDraft}
-              onSelectChat={(id) =>
-                store.set(
-                  (state) => ({ ...state, chatId: id }) satisfies typeof state
-                )
-              }
-            />
-          </Suspense>
-        </div>
+      <div className={resourcePanelClassName}>
+        <Suspense fallback={<ChatSkeleton />}>
+          <Chat
+            key={chatId ?? draftId}
+            chatId={chatId ?? draftId}
+            connectionResourceId={connectionResource.id}
+            onNewChat={openBlankChat}
+          />
+        </Suspense>
       </div>
     </div>
   )

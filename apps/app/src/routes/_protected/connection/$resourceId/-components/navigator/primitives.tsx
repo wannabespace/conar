@@ -1,7 +1,8 @@
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
+import { pseudoRandom } from '@tamery/shared/utils/helpers'
 import { Skeleton } from '@tamery/ui/components/skeleton'
-import { cn, pseudoRandom } from '@tamery/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 import type { CSSProperties } from 'react'
 import * as React from 'react'
 

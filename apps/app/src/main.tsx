@@ -1,4 +1,4 @@
-import './warmup'
+import './lib/warmup'
 import { themeStore } from '@tamery/ui/theme-store'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import {

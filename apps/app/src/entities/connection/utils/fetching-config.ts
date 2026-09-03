@@ -4,116 +4,118 @@ import type { Connection } from '~/entities/connection/core'
 
 import { isLocalProxyAvailable } from '../runtime/proxy'
 
-const waitingForPasswordConfig = (): {
-  type: 'waiting-for-password'
-  canSend: false
-  reason: string
-} => ({
-  canSend: false,
-  reason: window.electron
-    ? 'Filled password is required to query this connection.'
-    : 'This connection cannot be used from the web app because it was created without storing the password. Open this connection in the desktop app.',
-  type: 'waiting-for-password',
-})
+type FetchingType =
+  | 'cloud-proxy'
+  | 'local'
+  | 'proxy'
+  | 'resolving-password'
+  | 'waiting-for-password'
 
-const cloudProxyConfig = (
-  connection: Pick<Connection, 'syncType'>
-): {
-  type: 'cloud-proxy'
+export interface FetchingConfig {
+  type: FetchingType
   canSend: boolean
   reason: string | null
-} => {
-  const canSend = connection.syncType !== SyncType.CloudWithoutPassword
-
-  return {
-    canSend,
-    reason: canSend
-      ? null
-      : 'You cannot reach this connection from the web app. Open this connection in the desktop app.',
-    type: 'cloud-proxy',
-  }
 }
 
-const isPasswordFilledForConnection = (
-  connection: Pick<Connection, 'syncType'>,
-  isPasswordPopulated: boolean
-) =>
-  (connection.syncType === SyncType.CloudWithoutPassword &&
-    isPasswordPopulated) ||
-  connection.syncType === SyncType.Cloud
+type FetchingConnection = Pick<Connection, 'syncType' | 'isPasswordExists'>
 
-const resolveReachableConfig = ({
-  connection,
-  hasCustomUrl,
-  isLocalhost,
-  isPasswordFilled,
-  preferProxy,
-  proxyAvailable,
-}: {
-  connection: Pick<Connection, 'syncType'>
-  hasCustomUrl: boolean
-  isLocalhost: boolean
-  isPasswordFilled: boolean
-  preferProxy: boolean
-  proxyAvailable: boolean
-}): {
-  type: 'cloud-proxy' | 'local' | 'proxy'
-  canSend: boolean
-  reason: string | null
-} => {
-  if (
-    (isLocalhost || isPasswordFilled) &&
-    (proxyAvailable || hasCustomUrl) &&
-    preferProxy
-  ) {
-    return { canSend: true, reason: null, type: 'proxy' }
+interface FetchingOptions {
+  isLocalProxyAvailable?: boolean
+  isPasswordPopulated?: boolean
+  isLocalhost?: boolean
+  proxy?: { enabled: boolean; url: string | null }
+}
+
+const REASONS = {
+  localhostFromWeb:
+    'You cannot reach this connection from the web app. Run `tamery proxy` or open this connection in the desktop app.',
+  passwordMissingInDesktop:
+    'Filled password is required to query this connection.',
+  passwordMissingInWeb:
+    'This connection cannot be used from the web app because it was created without storing the password. Open this connection in the desktop app.',
+  passwordNotStored:
+    'You cannot reach this connection from the web app. Open this connection in the desktop app.',
+}
+
+const allowed = (type: FetchingType): FetchingConfig => ({
+  canSend: true,
+  reason: null,
+  type,
+})
+
+const blocked = (
+  type: FetchingType,
+  reason: string | null = null
+): FetchingConfig => ({
+  canSend: false,
+  reason,
+  type,
+})
+
+const resolveFlags = (
+  connection: FetchingConnection,
+  options?: FetchingOptions
+) => {
+  const isElectron = !!window.electron
+  const { isPasswordPopulated } = options ?? {}
+
+  return {
+    hasPassword:
+      connection.syncType === SyncType.Cloud || !!isPasswordPopulated,
+    isElectron,
+    isLocalhost: options?.isLocalhost ?? false,
+    needsPassword: connection.isPasswordExists && isPasswordPopulated === false,
+    passwordUnresolved:
+      connection.isPasswordExists && isPasswordPopulated === undefined,
+    proxyPreferred: !isElectron || options?.proxy?.enabled === true,
+    proxyReachable:
+      (options?.isLocalProxyAvailable ?? isLocalProxyAvailable()) ||
+      !!options?.proxy?.url,
   }
-
-  if (window.electron) {
-    return { canSend: true, reason: null, type: 'local' }
-  }
-
-  if (isLocalhost) {
-    return {
-      canSend: false,
-      reason:
-        'You cannot reach this connection from the web app. Run `tamery proxy` or open this connection in the desktop app.',
-      type: 'proxy',
-    }
-  }
-
-  return cloudProxyConfig(connection)
 }
 
 export const fetchingConfig = (
-  connection: Pick<Connection, 'syncType' | 'isPasswordExists'>,
-  options?: {
-    isLocalProxyAvailable?: boolean
-    isPasswordPopulated?: boolean
-    isLocalhost?: boolean
-    proxy?: { enabled: boolean; url: string | null }
-  }
-): {
-  type: 'cloud-proxy' | 'local' | 'proxy' | 'waiting-for-password'
-  canSend: boolean
-  reason: string | null
-} => {
-  const isPasswordPopulated = options?.isPasswordPopulated ?? false
-  const isLocalhost = options?.isLocalhost ?? false
-
-  if (connection.isPasswordExists && !isPasswordPopulated) {
-    return waitingForPasswordConfig()
-  }
-
-  return resolveReachableConfig({
-    connection,
-    hasCustomUrl: !!options?.proxy?.url,
+  connection: FetchingConnection,
+  options?: FetchingOptions
+): FetchingConfig => {
+  const {
+    hasPassword,
+    isElectron,
     isLocalhost,
-    isPasswordFilled: isPasswordFilledForConnection(
-      connection,
-      isPasswordPopulated
-    ),
-    preferProxy: !window.electron || options?.proxy?.enabled === true,
-    proxyAvailable: options?.isLocalProxyAvailable ?? isLocalProxyAvailable(),
-  })
+    needsPassword,
+    passwordUnresolved,
+    proxyPreferred,
+    proxyReachable,
+  } = resolveFlags(connection, options)
+
+  if (passwordUnresolved) {
+    return blocked('resolving-password')
+  }
+
+  if (needsPassword) {
+    return blocked(
+      'waiting-for-password',
+      isElectron
+        ? REASONS.passwordMissingInDesktop
+        : REASONS.passwordMissingInWeb
+    )
+  }
+
+  if ((isLocalhost || hasPassword) && proxyReachable && proxyPreferred) {
+    return allowed('proxy')
+  }
+
+  if (isElectron) {
+    return allowed('local')
+  }
+
+  if (isLocalhost) {
+    return blocked('proxy', REASONS.localhostFromWeb)
+  }
+
+  if (connection.syncType === SyncType.CloudWithoutPassword) {
+    return blocked('cloud-proxy', REASONS.passwordNotStored)
+  }
+
+  return allowed('cloud-proxy')
 }

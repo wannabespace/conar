@@ -16,7 +16,7 @@ Use precisely; avoid listed synonyms.
 - **Tab** — every view inside a connection resource: `table`, `runner`, `definitions`, `visualizer`. _Avoid_: page, view, screen.
 - **Navigator** — the only sidebar.
 - **SyncType** — credential handling during cloud sync: `Cloud` (metadata + encrypted password synced), `CloudWithoutPassword` (password local-only), `Local` (nothing leaves device). _Avoid_: sync mode, cloud mode.
-- **Collections** — client data in TanStack DB collections (`apps/app/src/entities/collections/`), persisted to SQLite; synced ones stream from cloud via oRPC event iterators. A catch-up request sends only `{ id, updatedAt }` per row — whole rows re-upload every payload on each reconnect. **An empty array is a normal request, not a failure** — the server answers with everything. `connectionStringsCollection` is local-only, rebuilt by round-trip: **an absent row means "not resolved yet", never a negative answer** — treat missing as unknown (`isPasswordStateKnown` gates the password prompt).
+- **Collections** — client data in TanStack DB collections (`apps/app/src/entities/collections/`), persisted to SQLite; synced ones stream from cloud via oRPC event iterators. A catch-up request sends only `{ id, updatedAt }` per row — whole rows re-upload every payload on each reconnect. **An empty array is a normal request, not a failure** — the server answers with everything. `connectionStringsCollection` is local-only, rebuilt by round-trip: **an absent row means "not resolved yet", never a negative answer** — `fetchingConfig` maps a missing row to the `resolving-password` flow (blocked, no password prompt).
 
 ## Workspaces
 

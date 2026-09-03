@@ -32,7 +32,7 @@ import { useSubscription } from 'seitu/react'
 
 import { useCollections } from '~/entities/collections'
 import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
-import { formatSql } from '~/utils/formatter'
+import { formatSql } from '~/lib/formatter'
 
 import { runnerQueryOptions } from '.'
 import {

@@ -3,10 +3,10 @@ import {
   RiCheckLine,
   RiCloseLine,
   RiDeleteBinLine,
-  RiFileCopyLine,
   RiFileListLine,
 } from '@remixicon/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { previewJson } from '@tamery/shared/utils/helpers'
 import { Button } from '@tamery/ui/components/button'
 import { CodeBlock, CodeInline } from '@tamery/ui/components/custom/code-block'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
@@ -38,14 +38,13 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 
 import { useCollections } from '~/entities/collections'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import { formatSql } from '~/utils/formatter'
+import { formatSql } from '~/lib/formatter'
 
 import type { ConnectionResource } from '../core/sync'
 import type { QueryLog } from '../runtime/log'
 import { getQueryLogsStore } from '../runtime/log'
 
 const ROW_HEIGHT = 28
-const PREVIEW_LIMIT = 20_000
 
 const statusIndicator = ({ error, result }: QueryLog) => {
   if (error) {
@@ -64,14 +63,6 @@ const StatusDot = (query: QueryLog) => (
     {statusIndicator(query)}
   </span>
 )
-
-const preview = (value: unknown) => {
-  const json = JSON.stringify(value, null, 2)
-
-  return json.length > PREVIEW_LIMIT
-    ? `${json.slice(0, PREVIEW_LIMIT)}\n…`
-    : json
-}
 
 const LogRow = ({
   isActive,
@@ -134,20 +125,20 @@ const buildTabs = (query: QueryLog, connectionType: ConnectionType) =>
       value: 'error',
     },
     {
-      code: query.values.length > 0 ? preview(query.values) : null,
+      code: query.values.length > 0 ? previewJson(query.values) : null,
       label: 'Values',
       language: 'json',
       value: 'values',
     },
     {
-      code: query.result === null ? null : preview(query.result),
+      code: query.result === null ? null : previewJson(query.result),
       label: Array.isArray(query.result)
         ? `Result · ${query.result.length}`
         : 'Result',
       language: 'json',
       value: 'result',
     },
-  ].filter((tab): tab is DetailTab => tab.code !== null)
+  ].filter((tab): tab is DetailTab => !!tab.code)
 
 const QueryDetails = ({
   queryId,
@@ -163,12 +154,10 @@ const QueryDetails = ({
   >
     <CodeBlock
       className={cn(
-        '[&>pre]:no-scrollbar [&>pre]:scroll-fade my-0 flex min-h-0 flex-1 flex-col rounded-none bg-transparent [&>pre]:min-h-0 [&>pre]:flex-1',
+        'no-scrollbar scroll-fade min-h-0 flex-1 pb-2',
         tab.value === 'error' && 'text-destructive'
       )}
       code={tab.code}
-      collapsible={false}
-      header={false}
       language={tab.language}
       lineNumbers
     />
@@ -294,11 +283,9 @@ export const QueryLogger = ({
               <ContentSwitch
                 active={isClearing}
                 onSwitchEnd={setIsClearing}
-                activeContent={
-                  <RiCheckLine className="text-success size-3.5" />
-                }
+                activeContent={<RiCheckLine className="text-success" />}
               >
-                <RiDeleteBinLine className="size-3.5" />
+                <RiDeleteBinLine />
               </ContentSwitch>
             </TooltipTrigger>
             <TooltipContent side="bottom">Clear log</TooltipContent>
@@ -323,7 +310,7 @@ export const QueryLogger = ({
                 />
               }
             >
-              <RiCloseLine className="size-3.5" />
+              <RiCloseLine />
             </TooltipTrigger>
             <TooltipContent side="bottom">Close</TooltipContent>
           </Tooltip>
@@ -380,10 +367,6 @@ export const QueryLogger = ({
                           aria-label="Copy"
                           className="text-muted-foreground"
                           text={activeTab.code}
-                          copyIcon={<RiFileCopyLine className="size-3.5" />}
-                          successIcon={
-                            <RiCheckLine className="text-success size-3.5" />
-                          }
                         />
                       }
                     />

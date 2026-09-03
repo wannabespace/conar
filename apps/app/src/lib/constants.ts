@@ -1,5 +1,3 @@
-export { THEME_STORAGE_KEY as THEME_KEY } from '@tamery/ui/theme-constants'
-
 export const LAST_LOCATION_KEY = 'last-location'
 export const NAVIGATOR_OPEN_KEY = 'navigator-open'
 

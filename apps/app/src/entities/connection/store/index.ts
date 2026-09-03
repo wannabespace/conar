@@ -4,7 +4,7 @@ import { memoize } from 'memoza'
 import { createStore } from 'seitu'
 import { createWebStorageValue } from 'seitu/web'
 
-import { connectionResourceStoreKey } from '~/lib/storage-keys'
+import { connectionResourceStoreKey } from '~/lib/constants'
 
 import { connectionTabType } from './tabs/types'
 

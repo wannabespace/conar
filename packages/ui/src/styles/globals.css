@@ -23,11 +23,6 @@
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;
   --font-mono: 'Geist Mono Variable', monospace;
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -99,11 +94,6 @@
   --border: oklch(0 0 0 / 5%);
   --input: oklch(1 0 0);
   --ring: oklch(0.7 0 0);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
   --radius: 0.4rem;
 }
 
@@ -195,6 +185,10 @@
 
 .electron.mac:not(.window-fullscreen) [data-shell-titlebar] {
   padding-left: calc(var(--spacing) * 20);
+}
+
+.electron:not(.mac):not(.window-fullscreen) [data-shell-titlebar] {
+  padding-right: calc(var(--spacing) * 34);
 }
 
 @layer base {
@@ -338,89 +332,14 @@
   }
 }
 
-@utility hitbox {
+@utility hit-area-* {
   position: relative;
+
   &::before {
     content: '';
     position: absolute;
-    top: var(--hit-area-t, 0rem);
-    right: var(--hit-area-r, 0rem);
-    bottom: var(--hit-area-b, 0rem);
-    left: var(--hit-area-l, 0rem);
+    inset: calc(--spacing(--value(number)) * -1);
+    inset: calc(--value([*]) * -1);
     pointer-events: inherit;
   }
-}
-
-@utility hit-area {
-  @apply hitbox;
-}
-
-@utility hit-area-debug {
-  @apply hitbox;
-
-  &::before {
-    @apply border border-dashed border-blue-500 bg-blue-500/10;
-  }
-  &:hover::before {
-    @apply border-green-500 bg-green-500/10;
-  }
-}
-
-@utility hit-area-* {
-  @apply hitbox;
-
-  --hit-area-t: --spacing(--value(number) * -1);
-  --hit-area-t: calc(--value([*]) * -1);
-  --hit-area-r: --spacing(--value(number) * -1);
-  --hit-area-r: calc(--value([*]) * -1);
-  --hit-area-b: --spacing(--value(number) * -1);
-  --hit-area-b: calc(--value([*]) * -1);
-  --hit-area-l: --spacing(--value(number) * -1);
-  --hit-area-l: calc(--value([*]) * -1);
-}
-
-@utility hit-area-t-* {
-  @apply hitbox;
-
-  --hit-area-t: --spacing(--value(number) * -1);
-  --hit-area-t: calc(--value([*]) * -1);
-}
-
-@utility hit-area-r-* {
-  @apply hitbox;
-
-  --hit-area-r: --spacing(--value(number) * -1);
-  --hit-area-r: calc(--value([*]) * -1);
-}
-
-@utility hit-area-b-* {
-  @apply hitbox;
-
-  --hit-area-b: --spacing(--value(number) * -1);
-  --hit-area-b: calc(--value([*]) * -1);
-}
-
-@utility hit-area-l-* {
-  @apply hitbox;
-
-  --hit-area-l: --spacing(--value(number) * -1);
-  --hit-area-l: calc(--value([*]) * -1);
-}
-
-@utility hit-area-x-* {
-  @apply hitbox;
-
-  --hit-area-r: --spacing(--value(number) * -1);
-  --hit-area-r: calc(--value([*]) * -1);
-  --hit-area-l: --spacing(--value(number) * -1);
-  --hit-area-l: calc(--value([*]) * -1);
-}
-
-@utility hit-area-y-* {
-  @apply hitbox;
-
-  --hit-area-t: --spacing(--value(number) * -1);
-  --hit-area-t: calc(--value([*]) * -1);
-  --hit-area-b: --spacing(--value(number) * -1);
-  --hit-area-b: calc(--value([*]) * -1);
 }

@@ -51,7 +51,7 @@ const TablesPanel = () => {
   return (
     <>
       <div className="flex shrink-0 items-center gap-1 pb-1.5 pl-2">
-        <InputGroup className="h-7 flex-1 rounded-md">
+        <InputGroup className="flex-1" size="sm">
           <InputGroupAddon>
             <RiSearchLine className="text-muted-foreground/70 size-3.5" />
           </InputGroupAddon>
@@ -76,7 +76,7 @@ const TablesPanel = () => {
               <RefreshButton
                 variant="outline"
                 size="icon-sm"
-                className="text-muted-foreground rounded-md"
+                className="text-muted-foreground"
                 onClick={() => refetchTablesAndSchemas()}
                 refreshing={isRefreshingTablesAndSchemas}
               />

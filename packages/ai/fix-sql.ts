@@ -1,25 +1,14 @@
 import { generateText } from 'ai'
 
 import { sqlModel } from './models'
+import { section, sqlOutputRules } from './prompt'
 
-const fixSqlSystemPrompt = (connectionType: string) =>
+const fixSqlInstructions = (connectionType: string) =>
   [
-    'You are an expert at fixing SQL queries based on the error message.',
-    '- Fix the SQL query to be valid and correct.',
-    `- The database type is "${connectionType}".`,
-    '- Preserve the same format and styling.',
-    '- Return only the fixed SQL query, do not add any explanations, greetings, or extra text.',
-    '- If the SQL query is already valid and correct, return it as is. Do not add any changes.',
-  ].join('\n')
-
-const fixSqlPrompt = (data: { error: string; sql: string }) =>
-  [
-    '=======SQL QUERY=======',
-    data.sql,
-    '=======END OF SQL QUERY=======',
-    '=======ERROR=======',
-    data.error,
-    '=======END OF ERROR=======',
+    'You are an expert at fixing SQL queries based on an error message.',
+    'Fix the query so it is valid and correct, preserving its format and styling.',
+    'If the query is already valid and correct, return it unchanged.',
+    ...sqlOutputRules(connectionType),
   ].join('\n')
 
 export const fixSql = async (data: {
@@ -30,9 +19,11 @@ export const fixSql = async (data: {
 }) => {
   const { text } = await generateText({
     abortSignal: data.signal,
-    instructions: fixSqlSystemPrompt(data.connectionType),
+    instructions: fixSqlInstructions(data.connectionType),
     model: sqlModel,
-    prompt: fixSqlPrompt(data),
+    prompt: [section('SQL QUERY', data.sql), section('ERROR', data.error)].join(
+      '\n'
+    ),
   })
   return text
 }

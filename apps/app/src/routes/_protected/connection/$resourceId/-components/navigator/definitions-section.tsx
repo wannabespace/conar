@@ -130,7 +130,7 @@ export const DefinitionsPanel = () => {
   return (
     <>
       <div className="flex shrink-0 items-center gap-1 pb-1.5 pl-2">
-        <InputGroup className="h-7 flex-1 rounded-md">
+        <InputGroup className="flex-1" size="sm">
           <InputGroupAddon>
             <RiSearchLine className="text-muted-foreground/70 size-3.5" />
           </InputGroupAddon>

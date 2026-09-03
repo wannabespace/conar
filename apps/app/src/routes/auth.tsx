@@ -33,19 +33,43 @@ const signInUrl = (type: 'web' | 'desktop') => {
   }
 }
 
-const AuthSidePanel = () => (
-  <div className="bg-body text-foreground relative hidden flex-col overflow-hidden border-r p-10 lg:flex">
-    <DitherBackground />
-    <div className="relative z-20 flex items-center gap-2 text-lg font-medium">
-      <AppLogo className="size-6" />
-      Tamery
+const SHADER_MOUNT_DELAY = 700
+
+const AuthSidePanel = () => {
+  const [isShaderMounted, setIsShaderMounted] = useState(false)
+
+  useEffect(() => {
+    const timeout = setTimeout(
+      () => setIsShaderMounted(true),
+      SHADER_MOUNT_DELAY
+    )
+
+    return () => clearTimeout(timeout)
+  }, [])
+
+  return (
+    <div className="bg-body text-foreground relative hidden flex-col overflow-hidden border-r p-10 lg:flex">
+      {isShaderMounted && (
+        <motion.div
+          className="absolute inset-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.2 }}
+        >
+          <DitherBackground />
+        </motion.div>
+      )}
+      <div className="relative z-20 flex items-center gap-2 text-lg font-medium">
+        <AppLogo className="size-6" />
+        Tamery
+      </div>
+      <blockquote className="relative z-20 mt-auto leading-normal text-balance">
+        Write queries, explore data, and manage your databases with AI doing the
+        heavy lifting.
+      </blockquote>
     </div>
-    <blockquote className="relative z-20 mt-auto leading-normal text-balance">
-      Write queries, explore data, and manage your databases with AI doing the
-      heavy lifting.
-    </blockquote>
-  </div>
-)
+  )
+}
 
 const AuthPage = () => {
   const { refetch } = authClient.useSession()

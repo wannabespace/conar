@@ -1,3 +1,4 @@
+import { memoize } from 'memoza'
 import { createStore } from 'seitu'
 
 export interface QueryLog {
@@ -12,18 +13,9 @@ export interface QueryLog {
 
 const LOG_LIMIT = 500
 
-const stores = new Map<string, ReturnType<typeof createStore<QueryLog[]>>>()
-
-export const getQueryLogsStore = (resourceId: string) => {
-  let store = stores.get(resourceId)
-
-  if (!store) {
-    store = createStore<QueryLog[]>([])
-    stores.set(resourceId, store)
-  }
-
-  return store
-}
+export const getQueryLogsStore = memoize((_resourceId: string) =>
+  createStore<QueryLog[]>([])
+)
 
 const patchLog = (
   store: ReturnType<typeof getQueryLogsStore>,

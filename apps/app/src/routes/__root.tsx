@@ -17,12 +17,12 @@ import {
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
 import { WindowTooSmall } from '~/components/window-too-small'
-import { globalHooks } from '~/global-hooks'
+import { useDeepLinksObserver } from '~/hooks/use-deep-links-observer'
+import { useUpdatesObserver } from '~/hooks/use-updates-observer'
+import { useWindowFocusObserver } from '~/hooks/use-window-focus-observer'
+import { useWindowFullscreenObserver } from '~/hooks/use-window-fullscreen-observer'
+import { globalHooks } from '~/lib/global-hooks'
 import { queryClient } from '~/main'
-import { useDeepLinksObserver } from '~/use-deep-links-observer'
-import { useUpdatesObserver } from '~/use-updates-observer'
-import { useWindowFocusObserver } from '~/use-window-focus-observer'
-import { useWindowFullscreenObserver } from '~/use-window-fullscreen-observer'
 
 const isElectron = !!window.electron
 

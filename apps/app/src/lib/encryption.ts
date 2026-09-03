@@ -1,4 +1,4 @@
-import { orpcProxy } from '../lib/orpc'
+import { orpcProxy } from './orpc'
 
 export const encrypt = (text: string, secret: string) => {
   if (window.electron) {

@@ -1,5 +1,5 @@
 import { ORPCError } from '@orpc/server'
-import { startChatStream } from '@tamery/ai/chat-stream'
+import { claimChatStream } from '@tamery/ai/chat-stream'
 import type { AppUIMessage } from '@tamery/ai/message'
 import { validateUIMessages } from 'ai'
 import { type } from 'arktype'
@@ -10,10 +10,10 @@ import {
   persistChatTitle,
   persistMessage,
 } from '~/lib/chat-persist'
-import { authMiddleware, orpc } from '~/orpc'
+import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const stream = orpc
-  .use(authMiddleware)
+  .use(subscriptionMiddleware)
   .input(
     type({
       chatId: 'string.uuid.v7',
@@ -58,7 +58,7 @@ export const stream = orpc
       })
     }
 
-    yield* await startChatStream({
+    const str = await claimChatStream({
       chatId: input.chatId,
       messages: history,
       onFinish: (message) =>
@@ -68,4 +68,12 @@ export const stream = orpc
           userId: context.user.id,
         }),
     })
+
+    if (!str) {
+      throw new ORPCError('CONFLICT', {
+        message: 'This chat is already generating an answer.',
+      })
+    }
+
+    yield* str
   })

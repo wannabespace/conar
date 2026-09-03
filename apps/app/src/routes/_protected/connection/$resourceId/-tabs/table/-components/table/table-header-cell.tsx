@@ -435,7 +435,6 @@ export const TableHeaderCell = ({
             }}
             className="flex items-stretch self-stretch p-1"
             onDoubleClick={removeSize}
-            onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
           >
             <span className="bg-foreground/20 group-hover/resize-handle:bg-primary group-data-resizing/resize-handle:bg-primary! w-0.5 rounded-full opacity-0 transition-opacity group-hover/header-cell:opacity-100 group-data-resizing/resize-handle:opacity-100!" />

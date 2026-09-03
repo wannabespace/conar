@@ -4,7 +4,7 @@ import { type } from 'arktype'
 
 import { fastModel } from './models'
 
-const filtersSystemPrompt = (tableContext: string) =>
+const filtersInstructions = (tableContext: string) =>
   [
     'You are a filters and ordering generator that converts natural language queries into database filters and ordering instructions.',
     'You should understand the sense of the prompt as much as possible.',
@@ -54,21 +54,18 @@ export const generateFilters = async (data: {
   prompt: string
   signal?: AbortSignal
 }) => {
-  const { object: result } = await generateObject({
+  const { object } = await generateObject({
     abortSignal: data.signal,
-    instructions: filtersSystemPrompt(data.context),
+    instructions: filtersInstructions(data.context),
     model: fastModel,
     prompt: data.prompt,
     schema: filtersOutputSchema,
   })
 
   return {
-    filters: result?.filters ?? [],
+    filters: object.filters,
     orderBy: Object.fromEntries(
-      (result?.orderBy ?? []).map(({ column, direction }) => [
-        column,
-        direction,
-      ])
+      object.orderBy.map(({ column, direction }) => [column, direction])
     ),
   }
 }

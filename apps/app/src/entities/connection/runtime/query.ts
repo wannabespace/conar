@@ -13,6 +13,7 @@ import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { getConnectionStringToShow } from '../utils/helpers'
 import { dialects } from './dialects'
 import { logQuery } from './log'
+import { watchSlowQuery } from './slow-queries'
 
 export const connectionToQueryParams = async (
   connection: Connection
@@ -72,14 +73,6 @@ export interface QueryParams {
 export const MAX_RECONNECTION_ATTEMPTS = 5
 const RECONNECTION_DELAY = 3000
 
-export const SLOW_QUERY_TIMEOUT = 10_000
-
-let queryCounter = 0
-
-export const slowQueries = createStore<
-  Record<number, { resourceId?: string; startedAt: number }>
->({})
-
 export const reconnectingPromises = createStore<
   Record<
     string,
@@ -127,24 +120,7 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
         ? location.href.includes(queryParams.resourceId)
         : false
 
-    queryCounter += 1
-    const queryId = queryCounter
-    const startedAt = Date.now()
-    const slowTimer = setTimeout(
-      () =>
-        slowQueries.set((state) => ({
-          ...state,
-          [queryId]: { resourceId: queryParams.resourceId, startedAt },
-        })),
-      SLOW_QUERY_TIMEOUT
-    )
-    const stopWaiting = () => {
-      clearTimeout(slowTimer)
-      slowQueries.set((state) => {
-        const { [queryId]: _removed, ...remaining } = state
-        return remaining
-      })
-    }
+    const stopSlowQueryWatch = watchSlowQuery(queryParams.resourceId)
 
     const [result] = await Promise.all([
       Result.tryPromise(
@@ -198,7 +174,7 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
       sleep(300),
     ])
 
-    stopWaiting()
+    stopSlowQueryWatch()
 
     if (Result.isOk(result)) {
       resolvers.resolve()

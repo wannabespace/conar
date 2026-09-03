@@ -31,7 +31,7 @@ import { getConnectionStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { fetchingConfig } from '~/entities/connection/utils/fetching-config'
 import { useActiveWorkspace } from '~/entities/workspace'
-import { generateRandomName } from '~/utils/faker'
+import { generateRandomName } from '~/lib/faker'
 
 import { StepCredentials } from './-components/step-credentials'
 import { StepSave } from './-components/step-save'

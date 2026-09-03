@@ -24,7 +24,10 @@ const ShellFrame = ({
     id={id}
   >
     <div
-      className={cn(titleBarClassName, 'border-b-border bg-card gap-1.5')}
+      className={cn(
+        titleBarClassName,
+        'border-b-border bg-card gap-1.5 [-webkit-app-region:drag]'
+      )}
       data-shell-titlebar
     >
       <div className="flex w-full items-center px-2">
@@ -79,16 +82,12 @@ const AuthShell = () => (
     id="shell-auth"
   >
     <div className="bg-body border-r-border hidden border-r lg:block" />
+    <div className="absolute inset-x-0 top-0 h-10 [-webkit-app-region:drag]" />
   </div>
-)
-
-const StaticTitleBar = () => (
-  <div className="fixed inset-x-0 top-0 h-10 [-webkit-app-region:drag]" />
 )
 
 export const Shells = () => (
   <>
-    <StaticTitleBar />
     <AuthShell />
     <DashboardShell />
     <ConnectionShell />

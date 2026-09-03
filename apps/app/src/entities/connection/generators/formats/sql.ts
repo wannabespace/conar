@@ -1,6 +1,6 @@
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import { formatSql } from '~/utils/formatter'
+import { formatSql } from '~/lib/formatter'
 
 import type { QueryParams, SchemaParams } from '..'
 import type { Column } from '../../components/table/cell'

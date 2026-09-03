@@ -5,7 +5,7 @@ import {
   Outlet,
   redirect,
 } from '@tanstack/react-router'
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { QueryLoggerSkeleton } from '~/entities/connection/components/query-logger-skeleton'
@@ -15,7 +15,7 @@ import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
 import { getActiveWorkspace } from '~/entities/workspace/utils'
-import { LOGGER_DEFAULT_HEIGHT } from '~/lib/storage-keys'
+import { LOGGER_DEFAULT_HEIGHT } from '~/lib/constants'
 import { resourcePanelClassName } from '~/shell'
 
 import { ChatPanel } from './$resourceId/-components/chat/chat-panel'
@@ -39,31 +39,19 @@ const QueryLoggerPanel = ({
   connectionResource: ConnectionResource
   opened: boolean
 }) => {
-  const [mounted, setMounted] = useState(opened)
-
-  if (opened && !mounted) {
-    setMounted(true)
+  if (!opened) {
+    return null
   }
 
   return (
     <div
-      className="shrink-0"
-      style={{
-        height: opened ? LOGGER_DEFAULT_HEIGHT : 0,
-        overflow: opened ? 'visible' : 'hidden',
-      }}
+      className="flex shrink-0 flex-col pt-1.5"
+      style={{ height: LOGGER_DEFAULT_HEIGHT }}
     >
-      <div
-        className="flex flex-col pt-1.5"
-        style={{ height: LOGGER_DEFAULT_HEIGHT }}
-      >
-        <div className={resourcePanelClassName}>
-          {mounted && (
-            <Suspense fallback={<QueryLoggerSkeleton />}>
-              <QueryLogger connectionResource={connectionResource} />
-            </Suspense>
-          )}
-        </div>
+      <div className={resourcePanelClassName}>
+        <Suspense fallback={<QueryLoggerSkeleton />}>
+          <QueryLogger connectionResource={connectionResource} />
+        </Suspense>
       </div>
     </div>
   )
@@ -88,9 +76,9 @@ const ResourcePage = () => {
     }
   }, [connectionResource.id])
 
-  const { type, isPasswordStateKnown } = useFetchingConfig(connection)
+  const { type } = useFetchingConfig(connection)
 
-  if (isPasswordStateKnown && type === 'waiting-for-password') {
+  if (type === 'waiting-for-password') {
     return (
       <PasswordForm
         connection={connection}

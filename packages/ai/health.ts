@@ -5,10 +5,10 @@ import { xai } from '@ai-sdk/xai'
 import { generateText } from 'ai'
 
 const probeModels = {
-  anthropic: anthropic('claude-opus-4-6'),
+  anthropic: anthropic('claude-haiku-4-5'),
   google: google('gemini-flash-latest'),
   openai: openai('gpt-5-nano'),
-  xai: xai('grok-4-latest'),
+  xai: xai('grok-latest'),
 }
 
 export type AiProvider = keyof typeof probeModels
@@ -17,8 +17,9 @@ export const aiProviders = Object.keys(probeModels) as AiProvider[]
 
 export const probeProvider = async (provider: AiProvider) => {
   const { text } = await generateText({
+    maxOutputTokens: 8,
     model: probeModels[provider],
-    prompt: 'Hello, how are you?',
+    prompt: 'Reply with the single word: ok',
   })
   return text
 }

@@ -3,8 +3,8 @@ import type { SyncConfig } from '@tanstack/react-db'
 import { BasicIndex } from '@tanstack/react-db'
 import { Result } from 'better-result'
 
-import { isUnauthorizedError } from '../utils/error'
 import { database } from './database'
+import { isUnauthorizedError } from './error'
 import { posthog } from './posthog'
 
 export interface BaseTable {
@@ -123,6 +123,10 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
       }
 
       const writeItems = (items: SyncMessage<T>[]) => {
+        if (signal.aborted) {
+          return
+        }
+
         begin()
         for (const item of items) {
           writeItem(item)

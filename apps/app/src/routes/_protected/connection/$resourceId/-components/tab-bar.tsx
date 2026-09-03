@@ -320,7 +320,7 @@ const HistoryNav = () => {
             />
           }
         >
-          <RiArrowLeftSLine className="size-3.5" />
+          <RiArrowLeftSLine />
         </TooltipTrigger>
         <TooltipContent side="bottom">Back</TooltipContent>
       </Tooltip>
@@ -336,7 +336,7 @@ const HistoryNav = () => {
             />
           }
         >
-          <RiArrowRightSLine className="size-3.5" />
+          <RiArrowRightSLine />
         </TooltipTrigger>
         <TooltipContent side="bottom">Forward</TooltipContent>
       </Tooltip>
@@ -377,7 +377,7 @@ const NewTabMenu = ({
           />
         }
       >
-        <RiAddLine className="size-3.5" />
+        <RiAddLine />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
@@ -472,7 +472,7 @@ const ChatToggle = ({ resourceId }: { resourceId: string }) => {
           />
         }
       >
-        <RiChatAiLine className="size-3.5" />
+        <RiChatAiLine />
       </TooltipTrigger>
       <TooltipContent side="bottom">
         AI chat
@@ -908,7 +908,7 @@ export const TabBar = ({ className }: { className?: string }) => {
               />
             }
           >
-            <RiSideBarLine className="size-3.5" />
+            <RiSideBarLine />
           </TooltipTrigger>
           <TooltipContent side="bottom">
             Toggle sidebar

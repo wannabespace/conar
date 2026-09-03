@@ -1,11 +1,12 @@
 /* oxlint-disable react/no-array-index-key */
+import { pseudoRandom } from '@tamery/shared/utils/helpers'
 import {
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_ROW_HEIGHT,
 } from '@tamery/table/constants'
 import { useTableContext } from '@tamery/table/hooks'
 import { Skeleton } from '@tamery/ui/components/skeleton'
-import { cn, pseudoRandom } from '@tamery/ui/lib/utils'
+import { cn } from '@tamery/ui/lib/utils'
 
 import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell'
 

@@ -1,7 +1,7 @@
 import { type } from 'arktype'
 import { createWebStorageValue } from 'seitu/web'
 
-import { LAST_LOCATION_KEY } from './storage-keys'
+import { LAST_LOCATION_KEY } from './constants'
 
 export const lastLocationStorageValue = createWebStorageValue({
   defaultValue: null,

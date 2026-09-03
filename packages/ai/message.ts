@@ -22,15 +22,14 @@ interface MessageRow {
 export const messagesFromRows = (rows: MessageRow[]): AppUIMessage[] =>
   Object.values(Object.groupBy(rows, (row) => row.messageId)).flatMap(
     (group) => {
-      const parts = group ?? []
-      const [first] = parts
-      if (!first) {
+      const first = group?.[0]
+      if (!(first && group)) {
         return []
       }
       return {
         id: first.messageId,
         metadata: first.metadata ?? undefined,
-        parts: parts
+        parts: group
           .toSorted((a, b) => a.order - b.order)
           .map(({ part }) => part),
         role: first.role,

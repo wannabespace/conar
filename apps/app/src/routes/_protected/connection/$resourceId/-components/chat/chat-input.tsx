@@ -74,11 +74,7 @@ export const ChatInput = ({
                 />
               }
             >
-              {isStreaming ? (
-                <RiStopFill className="size-3.5" />
-              ) : (
-                <RiArrowUpLine className="size-3.5" />
-              )}
+              {isStreaming ? <RiStopFill /> : <RiArrowUpLine />}
             </TooltipTrigger>
             <TooltipContent side="top">
               {isStreaming ? 'Stop generating' : 'Send message'}

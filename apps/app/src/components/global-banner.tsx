@@ -7,6 +7,7 @@ import {
 } from '@remixicon/react'
 import type { RouterOutputs } from '@tamery/api/orpc/routers'
 import { Button } from '@tamery/ui/components/button'
+import { ElapsedSeconds } from '@tamery/ui/components/custom/elapsed-seconds'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { Spinner } from '@tamery/ui/components/spinner'
 import {
@@ -20,7 +21,6 @@ import { useParams } from '@tanstack/react-router'
 import { type } from 'arktype'
 import { AnimatePresence, motion } from 'motion/react'
 import type { ReactNode } from 'react'
-import { useEffect, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 
@@ -79,27 +79,6 @@ const Banner = ({
   </motion.div>
 )
 
-const elapsedSeconds = (since: number) =>
-  Math.round((Date.now() - since) / 1000)
-
-const ElapsedSeconds = ({ since }: { since: number }) => {
-  const [seconds, setSeconds] = useState(() => elapsedSeconds(since))
-
-  useEffect(() => {
-    const interval = setInterval(() => setSeconds(elapsedSeconds(since)), 1000)
-
-    return () => clearInterval(interval)
-  }, [since])
-
-  return (
-    <NumberFlow
-      value={seconds}
-      suffix="s"
-      className="tabular-nums opacity-70"
-    />
-  )
-}
-
 export const GlobalBanner = () => {
   const { resourceId } = useParams({ strict: false })
   const reconnectingData = useSubscription(reconnectingPromises, {
@@ -109,12 +88,7 @@ export const GlobalBanner = () => {
       null,
   })
   const waitingSince = useSubscription(slowQueries, {
-    selector: (state) =>
-      Math.min(
-        ...Object.values(state)
-          .filter((query) => resourceId && query.resourceId === resourceId)
-          .map((query) => query.startedAt)
-      ),
+    selector: (state) => (resourceId ? state[resourceId]?.[0] : undefined),
   })
   const isOnline = useSubscription(appStore, {
     selector: (state) => state.isOnline,
@@ -167,19 +141,19 @@ export const GlobalBanner = () => {
                   />
                 }
               >
-                <RiCloseLine className="size-3.5" />
+                <RiCloseLine />
               </TooltipTrigger>
               <TooltipContent side="bottom">Dismiss</TooltipContent>
             </Tooltip>
           )}
         </Banner>
       ))}
-      {!reconnectingData && Number.isFinite(waitingSince) && (
+      {!reconnectingData && waitingSince !== undefined && (
         <Banner key="slow-query" className={typeConfig.info.className}>
           {typeConfig.info.icon}
           <span className="flex flex-1 items-center gap-2 leading-none">
             <span>The database is taking longer than usual to respond.</span>
-            <ElapsedSeconds since={waitingSince} />
+            <ElapsedSeconds className="opacity-70" since={waitingSince} />
             <Spinner className="size-3.5" />
           </span>
         </Banner>

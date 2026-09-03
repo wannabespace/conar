@@ -6,9 +6,9 @@ import { v7 } from 'uuid'
 
 import { env } from './env'
 import type { AppUIMessage } from './message'
-import { fastModel } from './models'
+import { chatModel } from './models'
 
-const CHAT_SYSTEM_PROMPT = [
+const CHAT_INSTRUCTIONS = [
   'You are Tamery AI, an assistant built into the Tamery database client.',
   'Help the user with their databases: SQL, schema design, data questions, and anything else they ask.',
   'Be concise. Use fenced code blocks with a language tag for SQL and code.',
@@ -18,21 +18,15 @@ const redis = new Redis(env.REDIS_URL)
 const publisher = createClient({ url: env.REDIS_URL })
 const subscriber = createClient({ url: env.REDIS_URL })
 
-// Safety net only: `onFlush` clears the pointer when the stream ends.
 const STREAM_POINTER_TTL_SECONDS = 3600
 
 const streamKey = (chatId: string) => `ai:chat-stream:${chatId}`
 
-void (async () => {
-  try {
-    const keys = await redis.keys(streamKey('*'))
-    if (keys.length > 0) {
-      await redis.del(...keys)
-    }
-  } catch {
-    // nothing
+const releasePointer = async (key: string, streamId: string) => {
+  if ((await redis.get(key)) === streamId) {
+    await redis.del(key)
   }
-})()
+}
 
 interface ChatStreamInput {
   chatId: string
@@ -51,9 +45,9 @@ const openChatStream = async (data: ChatStreamInput, streamId: string) => {
 
   const result = streamText({
     abortSignal: abortController.signal,
-    instructions: CHAT_SYSTEM_PROMPT,
+    instructions: CHAT_INSTRUCTIONS,
     messages: await convertToModelMessages(data.messages),
-    model: fastModel,
+    model: chatModel,
   })
 
   // oxlint-disable-next-line no-invalid-void-type
@@ -78,26 +72,11 @@ const openChatStream = async (data: ChatStreamInput, streamId: string) => {
   const key = streamKey(data.chatId)
   return context.startStream(uiStream, {
     keepAlive: promise,
-    onFlush: async () => {
-      if ((await redis.get(key)) === streamId) {
-        await redis.del(key)
-      }
-    },
+    onFlush: () => releasePointer(key, streamId),
   })
 }
 
-export const startChatStream = async (data: ChatStreamInput) => {
-  const streamId = v7()
-  await redis.set(
-    streamKey(data.chatId),
-    streamId,
-    'EX',
-    STREAM_POINTER_TTL_SECONDS
-  )
-  return openChatStream(data, streamId)
-}
-
-export const restartChatStream = async (data: ChatStreamInput) => {
+export const claimChatStream = async (data: ChatStreamInput) => {
   const streamId = v7()
   const claimed = await redis.set(
     streamKey(data.chatId),
@@ -110,7 +89,8 @@ export const restartChatStream = async (data: ChatStreamInput) => {
 }
 
 export const resumeChatStream = async (chatId: string) => {
-  const streamId = await redis.get(streamKey(chatId))
+  const key = streamKey(chatId)
+  const streamId = await redis.get(key)
   if (!streamId) {
     return null
   }
@@ -120,7 +100,13 @@ export const resumeChatStream = async (chatId: string) => {
     streamId,
     subscriber,
   })
-  return context.resumeStream()
+
+  try {
+    return await context.resumeStream()
+  } catch {
+    await releasePointer(key, streamId)
+    return null
+  }
 }
 
 export const stopChatStream = async (chatId: string) => {

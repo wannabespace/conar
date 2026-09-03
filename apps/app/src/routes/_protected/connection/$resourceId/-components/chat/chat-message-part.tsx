@@ -6,14 +6,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@tamery/ui/components/collapsible'
-import { CodeBlock } from '@tamery/ui/components/custom/code-block'
-import { Response } from '@tamery/ui/components/response'
+import { Response, ResponseCodeBlock } from '@tamery/ui/components/response'
 import { Spinner } from '@tamery/ui/components/spinner'
-import { getToolOrDynamicToolName, isDynamicToolUIPart, isToolUIPart } from 'ai'
+import { getToolName, isDynamicToolUIPart, isToolUIPart } from 'ai'
 import type { DynamicToolUIPart, ToolUIPart } from 'ai'
 import type * as React from 'react'
-
-const jsonText = (value: unknown) => JSON.stringify(value, null, 2)
 
 const Disclosure = ({
   children,
@@ -28,7 +25,7 @@ const Disclosure = ({
 }) => (
   <Collapsible>
     <CollapsibleTrigger className="group text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs transition-colors">
-      <RiArrowRightSLine className="size-3.5 transition-transform duration-200 group-data-[panel-open]:rotate-90" />
+      <RiArrowRightSLine className="size-3.5 transition-transform duration-200 group-data-panel-open:rotate-90" />
       <Icon className="size-3.5" />
       <span className="truncate">{label}</span>
       {status}
@@ -42,7 +39,7 @@ const Disclosure = ({
 const ToolPart = ({ part }: { part: DynamicToolUIPart | ToolUIPart }) => (
   <Disclosure
     icon={RiToolsLine}
-    label={getToolOrDynamicToolName(part)}
+    label={getToolName(part)}
     status={
       part.state === 'output-available' ||
       part.state === 'output-error' ? null : (
@@ -51,13 +48,19 @@ const ToolPart = ({ part }: { part: DynamicToolUIPart | ToolUIPart }) => (
     }
   >
     {part.input !== undefined && (
-      <CodeBlock code={jsonText(part.input)} language="json" />
+      <ResponseCodeBlock
+        code={JSON.stringify(part.input, null, 2)}
+        language="json"
+      />
     )}
     {part.state === 'output-available' && part.output !== undefined && (
-      <CodeBlock code={jsonText(part.output)} language="json" />
+      <ResponseCodeBlock
+        code={JSON.stringify(part.output, null, 2)}
+        language="json"
+      />
     )}
     {part.state === 'output-error' && (
-      <CodeBlock code={part.errorText} language="text" />
+      <ResponseCodeBlock code={part.errorText} language="text" />
     )}
   </Disclosure>
 )

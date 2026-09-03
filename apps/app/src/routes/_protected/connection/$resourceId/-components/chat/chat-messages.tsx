@@ -43,21 +43,15 @@ const ChatEmpty = () => (
 
 export const ChatMessages = ({
   isPending,
+  lastSentId,
   messages,
-  sentHereIds,
 }: {
   isPending: boolean
+  lastSentId: string | undefined
   messages: AppUIMessage[]
-  sentHereIds: Set<string>
 }) => {
   if (messages.length === 0) {
-    return isPending ? (
-      <div className="flex min-h-0 flex-1 items-center justify-center">
-        <Spinner className="text-muted-foreground size-4" />
-      </div>
-    ) : (
-      <ChatEmpty />
-    )
+    return <ChatEmpty />
   }
 
   return (
@@ -73,7 +67,7 @@ export const ChatMessages = ({
               <MessageScrollerItem
                 key={message.id}
                 messageId={message.id}
-                scrollAnchor={sentHereIds.has(message.id)}
+                scrollAnchor={message.id === lastSentId}
               >
                 {message.role === 'user' ? (
                   <Message align="end">

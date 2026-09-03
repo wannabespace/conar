@@ -1,12 +1,12 @@
-import { restartChatStream, resumeChatStream } from '@tamery/ai/chat-stream'
+import { claimChatStream, resumeChatStream } from '@tamery/ai/chat-stream'
 import { db } from '@tamery/db'
 import { type } from 'arktype'
 
 import { loadChatMessages, persistMessage } from '~/lib/chat-persist'
-import { authMiddleware, orpc } from '~/orpc'
+import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const attachStream = orpc
-  .use(authMiddleware)
+  .use(subscriptionMiddleware)
   .input(type({ chatId: 'string.uuid.v7' }))
   .handler(async function* attachStream({ context, input }) {
     const owned = await db.query.chats.findFirst({
@@ -32,7 +32,7 @@ export const attachStream = orpc
       return
     }
 
-    const restarted = await restartChatStream({
+    const restarted = await claimChatStream({
       chatId: input.chatId,
       messages,
       onFinish: (message) =>

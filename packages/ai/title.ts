@@ -4,31 +4,33 @@ import type { AppUIMessage } from './message'
 import { textFromMessage } from './message'
 import { fastModel } from './models'
 
-const TITLE_SYSTEM_PROMPT = [
-  'You are a title generator that generates a title for a chat.',
-  "The title should be in the same language as the user's message.",
-  "Try to generate a title that is as close as possible to the user's message.",
-  'Title should not be more than 30 characters.',
-  'Title should be properly formatted, example: "Update component in React".',
-  'Do not use dots, commas, etc.',
-  'Generate only the text of the title, nothing else.',
+const TITLE_INSTRUCTIONS = [
+  'Generate a title for a chat from its first user message.',
+  "Use the user's language and stay as close to the message as possible.",
+  'At most 30 characters, sentence case, no trailing punctuation, no quotes.',
+  'Example: Update component in React',
+  'Return only the title text.',
 ].join('\n')
 
 export const generateChatTitle = async (data: {
   messages: AppUIMessage[]
   signal?: AbortSignal
 }) => {
-  const prompt = data.messages
-    .map((message) => textFromMessage(message))
-    .filter(Boolean)
-    .join('\n')
+  const firstUserMessage = data.messages.find(
+    (message) => message.role === 'user'
+  )
+  const prompt = firstUserMessage ? textFromMessage(firstUserMessage) : ''
+  if (!prompt) {
+    return null
+  }
 
   const { text } = await generateText({
     abortSignal: data.signal,
-    instructions: TITLE_SYSTEM_PROMPT,
+    instructions: TITLE_INSTRUCTIONS,
+    maxOutputTokens: 32,
     model: fastModel,
     prompt,
   })
 
-  return text
+  return text.trim() || null
 }
