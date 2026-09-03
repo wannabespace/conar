@@ -1,8 +1,8 @@
 import { RiArrowDownSLine } from '@remixicon/react'
-import type { HighlightResult } from '@streamdown/code'
-import { createCodePlugin } from '@streamdown/code'
+import type { HighlightOptions } from '@streamdown/code'
+import { code as highlighter } from '@streamdown/code'
 import { cn } from '@tamery/ui/lib/utils'
-import type { ComponentProps, CSSProperties, ReactNode } from 'react'
+import type { ComponentProps, CSSProperties } from 'react'
 import { useState, useSyncExternalStore } from 'react'
 
 import { CopyButton } from './copy-button'
@@ -13,10 +13,6 @@ interface Token {
 }
 
 const COLLAPSED_LINES = 10
-
-const highlighter = createCodePlugin({
-  themes: ['github-light', 'github-dark'],
-})
 
 const LANGUAGE_LABELS: Record<string, string> = {
   bash: 'Bash',
@@ -33,31 +29,33 @@ const LANGUAGE_LABELS: Record<string, string> = {
   yaml: 'YAML',
 }
 
-const highlight = (
-  code: string,
-  language: string,
-  onResult?: (result: HighlightResult) => void
-) =>
-  highlighter.highlight(
-    { code, language: language as never, themes: highlighter.getThemes() },
-    onResult
-  )
-
 const useTokens = (code: string, language: string) =>
   useSyncExternalStore(
     (onChange) => {
       let subscribed = true
-      highlight(code, language, () => subscribed && onChange())
+      highlighter.highlight(
+        {
+          code,
+          language: language as HighlightOptions['language'],
+          themes: highlighter.getThemes(),
+        },
+        () => subscribed && onChange()
+      )
       return () => {
         subscribed = false
       }
     },
-    () => highlight(code, language)?.tokens as Token[][] | undefined
+    () =>
+      highlighter.highlight({
+        code,
+        language: language as HighlightOptions['language'],
+        themes: highlighter.getThemes(),
+      })?.tokens
   )
 
 const TokenSpans = ({ tokens }: { tokens: Token[] }) =>
   tokens.map((token, index) => (
-    <span key={`token-${index}`} style={token.htmlStyle}>
+    <span key={index} style={token.htmlStyle}>
       {token.content}
     </span>
   ))
@@ -85,7 +83,6 @@ const CodeInline = ({
 }
 
 const CodeBlock = ({
-  actions,
   className,
   code,
   collapsible = true,
@@ -94,7 +91,6 @@ const CodeBlock = ({
   lineNumbers = false,
   ...props
 }: ComponentProps<'div'> & {
-  actions?: ReactNode
   code: string
   collapsible?: boolean
   header?: boolean
@@ -122,7 +118,6 @@ const CodeBlock = ({
           <span className="min-w-0 flex-1 truncate">
             {LANGUAGE_LABELS[language] ?? language}
           </span>
-          {actions}
           <CopyButton
             className="text-muted-foreground size-5 [&_svg]:size-3"
             size="icon-sm"
@@ -147,7 +142,7 @@ const CodeBlock = ({
                   lineNumbers &&
                     'before:text-muted-foreground/40 before:mr-3 before:inline-block before:w-6 before:text-right before:tabular-nums before:content-[counter(line)] before:[counter-increment:line]'
                 )}
-                key={`line-${index}`}
+                key={index}
               >
                 <TokenSpans tokens={line} />
                 {'\n'}

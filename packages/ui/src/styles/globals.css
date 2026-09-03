@@ -237,8 +237,8 @@
     input,
     textarea,
     select,
-    code,
-    pre,
+    code:not(button *),
+    pre:not(button *),
     [contenteditable] {
       @apply select-text;
     }

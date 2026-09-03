@@ -2,33 +2,45 @@ import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { cn } from '@tamery/ui/lib/utils'
 import type * as React from 'react'
 import { Streamdown } from 'streamdown'
+import type { ExtraProps } from 'streamdown'
 
-const Pre = ({ children }: { children?: React.ReactNode }) => {
-  const props = (
-    children as React.ReactElement<{
-      children?: React.ReactNode
-      className?: string
-    }>
-  )?.props
-  const code = props?.children?.toString().replace(/\n$/u, '') ?? ''
-  const language =
-    /language-(?<language>\S+)/u.exec(props?.className ?? '')?.groups
-      ?.language ?? 'text'
+const Code = ({
+  children,
+  className,
+  node: _node,
+  ...props
+}: React.ComponentProps<'code'> & ExtraProps) =>
+  'data-block' in props ? (
+    <CodeBlock
+      code={String(children).replace(/\n$/u, '')}
+      language={
+        /language-(?<language>\S+)/u.exec(className ?? '')?.groups?.language ??
+        'text'
+      }
+    />
+  ) : (
+    <code
+      className={cn(
+        'bg-foreground/5 rounded-md px-1 py-px font-mono text-[0.9em]',
+        className
+      )}
+      data-mask
+      {...props}
+    >
+      {children}
+    </code>
+  )
 
-  return code ? <CodeBlock code={code} language={language} /> : null
-}
+const components = { code: Code }
 
-const components = { pre: Pre }
+const prose = `[&_p]:my-2 [&_:is(ul,ol)]:my-2 [&_:is(ul,ol)]:ml-4 [&_:is(ul,ol)]:list-outside [&_li]:my-1 [&_li]:py-0 [&_li_:is(ul,ol)]:mt-1 [&_li_:is(ul,ol)]:pl-0 [&_:is(h1,h2,h3,h4,h5,h6)]:mt-3 [&_:is(h1,h2,h3,h4,h5,h6)]:mb-1 [&_h1]:text-base [&_h1]:font-semibold [&_h2]:text-sm [&_h2]:font-semibold [&_:is(h3,h4,h5,h6)]:text-sm [&_:is(h3,h4,h5,h6)]:font-medium [&_a]:underline-offset-2 [&_blockquote]:border-border [&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&>:first-child]:mt-0 [&>:last-child]:mb-0`
 
-const prose = `[&_ol]:my-2 [&_ol]:ml-4 [&_p]:my-2 [&_ul]:my-2 [&_ul]:ml-4 [&_li]:py-0.5 [&_:is(h1,h2,h3)]:mt-3 [&_:is(h1,h2,h3)]:mb-1 [&_h1]:text-base [&_h1]:font-semibold [&_h2]:text-sm [&_h2]:font-semibold [&_h3]:text-sm [&_h3]:font-medium [&_a]:underline-offset-2 [&_blockquote]:border-border [&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&>:first-child]:mt-0 [&>:last-child]:mb-0`
-const inlineCode = `[&_[data-streamdown=inline-code]]:bg-foreground/5 [&_[data-streamdown=inline-code]]:rounded-md [&_[data-streamdown=inline-code]]:px-1 [&_[data-streamdown=inline-code]]:py-px [&_[data-streamdown=inline-code]]:font-mono [&_[data-streamdown=inline-code]]:text-[0.9em]`
-
-const Response = ({
+export const Response = ({
   className,
   ...props
 }: React.ComponentProps<typeof Streamdown>) => (
   <Streamdown
-    className={cn('min-w-0 text-sm/normal', prose, inlineCode, className)}
+    className={cn('min-w-0 text-sm/normal', prose, className)}
     components={components}
     controls={false}
     data-slot="response"
@@ -36,5 +48,3 @@ const Response = ({
     {...props}
   />
 )
-
-export { Response }
