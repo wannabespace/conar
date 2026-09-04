@@ -192,19 +192,13 @@ export const Indexes = () => {
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="mb-2 flex items-center gap-2 text-base">
-                    {item.isPrimary ? (
-                      <HugeiconsIcon
-                        icon={Key01Icon}
-                        strokeWidth={2}
-                        className="text-primary size-4"
-                      />
-                    ) : (
-                      <HugeiconsIcon
-                        icon={LeftToRightListDashIcon}
-                        strokeWidth={2}
-                        className="text-primary size-4"
-                      />
-                    )}
+                    <HugeiconsIcon
+                      icon={
+                        item.isPrimary ? Key01Icon : LeftToRightListDashIcon
+                      }
+                      strokeWidth={2}
+                      className="text-primary size-4"
+                    />
                     <HighlightText text={item.name} match={search} />
                     {item.isPrimary && (
                       <Badge variant="secondary">Primary Key</Badge>

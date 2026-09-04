@@ -494,19 +494,11 @@ export const TableHeaderCell = ({
       <div className="flex shrink-0 items-center gap-1 self-stretch">
         {order !== null && (
           <span className="text-primary flex size-4 items-center justify-center">
-            {order === 'ASC' ? (
-              <HugeiconsIcon
-                icon={ArrowUp02Icon}
-                strokeWidth={2}
-                className="size-3 shrink-0"
-              />
-            ) : (
-              <HugeiconsIcon
-                icon={ArrowDown02Icon}
-                strokeWidth={2}
-                className="size-3 shrink-0"
-              />
-            )}
+            <HugeiconsIcon
+              icon={order === 'ASC' ? ArrowUp02Icon : ArrowDown02Icon}
+              strokeWidth={2}
+              className="size-3 shrink-0"
+            />
           </span>
         )}
         {onResize && (

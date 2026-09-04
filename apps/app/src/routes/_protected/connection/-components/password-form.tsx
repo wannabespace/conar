@@ -142,19 +142,11 @@ export const PasswordForm = ({
                         />
                       }
                     >
-                      {showPassword ? (
-                        <HugeiconsIcon
-                          icon={ViewOffSlashIcon}
-                          strokeWidth={2}
-                          className="size-4"
-                        />
-                      ) : (
-                        <HugeiconsIcon
-                          icon={ViewIcon}
-                          strokeWidth={2}
-                          className="size-4"
-                        />
-                      )}
+                      <HugeiconsIcon
+                        icon={showPassword ? ViewOffSlashIcon : ViewIcon}
+                        strokeWidth={2}
+                        className="size-4"
+                      />
                     </TooltipTrigger>
                     <TooltipContent side="top">
                       {showPassword ? 'Hide password' : 'Show password'}

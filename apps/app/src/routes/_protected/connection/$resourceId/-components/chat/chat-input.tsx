@@ -75,11 +75,10 @@ export const ChatInput = ({
                 />
               }
             >
-              {isStreaming ? (
-                <HugeiconsIcon icon={StopIcon} strokeWidth={2} />
-              ) : (
-                <HugeiconsIcon icon={ArrowUp02Icon} strokeWidth={2} />
-              )}
+              <HugeiconsIcon
+                icon={isStreaming ? StopIcon : ArrowUp02Icon}
+                strokeWidth={2}
+              />
             </TooltipTrigger>
             <TooltipContent side="top">
               {isStreaming ? 'Stop generating' : 'Send message'}

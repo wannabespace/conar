@@ -101,19 +101,15 @@ export const Enums = () => {
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2 text-base">
-                    {enumItem.metadata?.isSet ? (
-                      <HugeiconsIcon
-                        icon={LeftToRightListDashIcon}
-                        strokeWidth={2}
-                        className="text-primary size-4"
-                      />
-                    ) : (
-                      <HugeiconsIcon
-                        icon={LeftToRightListBulletIcon}
-                        strokeWidth={2}
-                        className="text-primary size-4"
-                      />
-                    )}
+                    <HugeiconsIcon
+                      icon={
+                        enumItem.metadata?.isSet
+                          ? LeftToRightListDashIcon
+                          : LeftToRightListBulletIcon
+                      }
+                      strokeWidth={2}
+                      className="text-primary size-4"
+                    />
                     <HighlightText text={enumItem.name} match={search} />
                     <Badge variant="secondary" className="text-xs">
                       {enumItem.metadata?.isSet ? 'Set' : 'Enum'}

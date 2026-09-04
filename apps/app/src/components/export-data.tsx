@@ -229,11 +229,10 @@ const ExportItems = ({
     {(['download', 'copy'] as const).map((type) => (
       <DropdownMenuSub key={type}>
         <DropdownMenuSubTrigger disabled={disabled}>
-          {type === 'download' ? (
-            <HugeiconsIcon icon={Download01Icon} strokeWidth={2} />
-          ) : (
-            <HugeiconsIcon icon={Copy01Icon} strokeWidth={2} />
-          )}
+          <HugeiconsIcon
+            icon={type === 'download' ? Download01Icon : Copy01Icon}
+            strokeWidth={2}
+          />
           {type === 'download' ? 'Export' : 'Copy'}
         </DropdownMenuSubTrigger>
         <DropdownMenuSubContent>

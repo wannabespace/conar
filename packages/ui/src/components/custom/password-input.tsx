@@ -36,21 +36,12 @@ export const PasswordInput = (
               />
             }
           >
-            {showPassword ? (
-              <HugeiconsIcon
-                icon={ViewOffSlashIcon}
-                strokeWidth={2}
-                className="size-4"
-                aria-hidden="true"
-              />
-            ) : (
-              <HugeiconsIcon
-                icon={ViewIcon}
-                strokeWidth={2}
-                className="size-4"
-                aria-hidden="true"
-              />
-            )}
+            <HugeiconsIcon
+              icon={showPassword ? ViewOffSlashIcon : ViewIcon}
+              strokeWidth={2}
+              className="size-4"
+              aria-hidden="true"
+            />
           </TooltipTrigger>
           <TooltipContent side="top">
             {showPassword ? 'Hide password' : 'Show password'}

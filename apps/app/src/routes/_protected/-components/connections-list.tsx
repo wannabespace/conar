@@ -730,11 +730,12 @@ export const ConnectionsList = () => {
               }}
             >
               <SelectTrigger size="sm" className="shrink-0">
-                {sort.includes('asc') ? (
-                  <HugeiconsIcon icon={SortByUp01Icon} strokeWidth={2} />
-                ) : (
-                  <HugeiconsIcon icon={SortByDown01Icon} strokeWidth={2} />
-                )}
+                <HugeiconsIcon
+                  icon={
+                    sort.includes('asc') ? SortByUp01Icon : SortByDown01Icon
+                  }
+                  strokeWidth={2}
+                />
                 <SelectValue>
                   {sortOptions.find((option) => option.value === sort)?.label ??
                     sort}

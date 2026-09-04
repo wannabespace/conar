@@ -72,19 +72,11 @@ export const FilterChip = ({
             />
           }
         >
-          {filter.disabled ? (
-            <HugeiconsIcon
-              icon={ViewOffSlashIcon}
-              strokeWidth={2}
-              className="size-3.5"
-            />
-          ) : (
-            <HugeiconsIcon
-              icon={ViewIcon}
-              strokeWidth={2}
-              className="size-3.5"
-            />
-          )}
+          <HugeiconsIcon
+            icon={filter.disabled ? ViewOffSlashIcon : ViewIcon}
+            strokeWidth={2}
+            className="size-3.5"
+          />
         </TooltipTrigger>
         <TooltipContent side="top">
           {filter.disabled ? 'Enable filter' : 'Disable filter'}

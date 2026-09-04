@@ -237,11 +237,10 @@ const CellPopoverToolbar = ({
               />
             }
           >
-            {isBig ? (
-              <HugeiconsIcon icon={ArrowShrinkIcon} strokeWidth={2} />
-            ) : (
-              <HugeiconsIcon icon={ArrowExpandDiagonal02Icon} strokeWidth={2} />
-            )}
+            <HugeiconsIcon
+              icon={isBig ? ArrowShrinkIcon : ArrowExpandDiagonal02Icon}
+              strokeWidth={2}
+            />
           </TooltipTrigger>
           <TooltipContent side="bottom">Toggle size</TooltipContent>
         </Tooltip>

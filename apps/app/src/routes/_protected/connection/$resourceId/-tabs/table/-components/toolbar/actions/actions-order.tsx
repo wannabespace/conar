@@ -62,19 +62,11 @@ const SortedItem = ({
       {columnId}
     </span>
     <CommandShortcut>
-      {order === 'ASC' ? (
-        <HugeiconsIcon
-          icon={ArrowUp02Icon}
-          strokeWidth={2}
-          className="size-3"
-        />
-      ) : (
-        <HugeiconsIcon
-          icon={ArrowDown02Icon}
-          strokeWidth={2}
-          className="size-3"
-        />
-      )}
+      <HugeiconsIcon
+        icon={order === 'ASC' ? ArrowUp02Icon : ArrowDown02Icon}
+        strokeWidth={2}
+        className="size-3"
+      />
     </CommandShortcut>
     <Tooltip>
       <TooltipTrigger

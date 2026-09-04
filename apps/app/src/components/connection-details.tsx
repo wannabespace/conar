@@ -52,11 +52,10 @@ export const ConnectionDetails = ({
                     />
                   }
                 >
-                  {showPassword ? (
-                    <HugeiconsIcon icon={ViewOffSlashIcon} strokeWidth={2} />
-                  ) : (
-                    <HugeiconsIcon icon={ViewIcon} strokeWidth={2} />
-                  )}
+                  <HugeiconsIcon
+                    icon={showPassword ? ViewOffSlashIcon : ViewIcon}
+                    strokeWidth={2}
+                  />
                 </TooltipTrigger>
                 <TooltipContent side="top">
                   {showPassword ? 'Hide password' : 'Show password'}
