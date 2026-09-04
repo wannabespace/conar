@@ -25,7 +25,10 @@ const isSessionExpiredError = (error: unknown) =>
     error.code !== BASE_ERROR_CODES.INVALID_EMAIL_OR_PASSWORD.code) ||
   isUnauthorizedError(error)
 
-export const handleError = async (error: unknown) => {
+export const handleError = async (
+  error: unknown,
+  { context }: { context?: { silent?: boolean } } = {}
+) => {
   if (!error) {
     return
   }
@@ -52,6 +55,10 @@ export const handleError = async (error: unknown) => {
       id: 'session-expired',
     })
     await fullSignOut()
+    return
+  }
+
+  if (context?.silent) {
     return
   }
 

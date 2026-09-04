@@ -17,6 +17,9 @@ import {
   TooltipTrigger,
 } from '@tamery/ui/components/tooltip'
 
+export const chatHeaderClassName =
+  'flex h-8 shrink-0 items-center gap-0.5 border-b pr-1 pl-3'
+
 export const ChatHeader = ({
   activeChatId,
   history,
@@ -32,7 +35,7 @@ export const ChatHeader = ({
   onSelectChat: (chatId: string) => void
   title: string | null
 }) => (
-  <div className="flex h-8 shrink-0 items-center gap-0.5 border-b pr-1 pl-3">
+  <div className={chatHeaderClassName}>
     <span data-mask className="min-w-0 flex-1 truncate text-sm font-medium">
       {title || 'New Chat'}
     </span>

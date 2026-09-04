@@ -15,7 +15,7 @@ export const getChatInstance = memoize(
         reconnectToStream: async ({ abortSignal }) => {
           const chunks = await orpc.ai.attachStream.call(
             { chatId: data.chatId },
-            { signal: abortSignal }
+            { context: { silent: true }, signal: abortSignal }
           )
           const first = await chunks.next()
           if (first.done) {
@@ -36,7 +36,7 @@ export const getChatInstance = memoize(
                 connectionResourceId: data.connectionResourceId,
                 messages: messages.slice(-1),
               },
-              { signal: abortSignal }
+              { context: { silent: true }, signal: abortSignal }
             )
           ),
       },

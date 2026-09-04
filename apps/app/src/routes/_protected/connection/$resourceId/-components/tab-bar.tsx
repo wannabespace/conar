@@ -79,9 +79,11 @@ import {
   updateTabs,
 } from '~/entities/connection/store'
 import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
+import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { pressNavProps } from '~/lib/press-nav'
 import { queryClient } from '~/main'
+import { setIsSubscriptionDialogOpen } from '~/store'
 
 import { tablePageStore } from '../-tabs/table/-lib/store'
 import { navigatorOpenValue } from './navigator/constants'
@@ -443,12 +445,19 @@ const ChatToggle = ({ resourceId }: { resourceId: string }) => {
   const chatOpened = useSubscription(store, {
     selector: (state) => state.chatOpened,
   })
+  const { isPending, subscription } = useUserSubscription()
 
-  const toggleChat = () =>
+  const toggleChat = () => {
+    if (!(subscription || isPending)) {
+      setIsSubscriptionDialogOpen(true)
+      return
+    }
+
     store.set(
       (state) =>
         ({ ...state, chatOpened: !state.chatOpened }) satisfies typeof state
     )
+  }
 
   useHotkey('Mod+L', (e) => {
     e.preventDefault()

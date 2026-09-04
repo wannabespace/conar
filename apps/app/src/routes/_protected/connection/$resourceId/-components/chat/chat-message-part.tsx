@@ -75,11 +75,11 @@ export const MessagePart = ({ part }: { part: AppMessagePart }) => {
       return part.text.trim() ? <Response>{part.text}</Response> : null
     }
     case 'reasoning': {
-      return (
+      return part.text.trim() ? (
         <Disclosure icon={RiBrainLine} label="Reasoning">
           <Response className="text-muted-foreground">{part.text}</Response>
         </Disclosure>
-      )
+      ) : null
     }
     default: {
       return null
