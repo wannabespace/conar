@@ -326,9 +326,9 @@ const TableComponent = ({
       ? [
           {
             id: INTERNAL_COLUMN_IDS.SELECT,
-            // oxlint-disable-next-line react/no-unstable-nested-components -- render prop, not a component
+            // oxlint-disable-next-line react/no-unstable-nested-components
             cell: (props) => <SelectionCell keys={primaryColumns} {...props} />,
-            // oxlint-disable-next-line react/no-unstable-nested-components -- render prop, not a component
+            // oxlint-disable-next-line react/no-unstable-nested-components
             header: (props) => (
               <SelectionHeaderCell keys={primaryColumns} {...props} />
             ),
