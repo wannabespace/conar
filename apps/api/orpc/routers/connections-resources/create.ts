@@ -1,4 +1,3 @@
-import { ORPCError } from '@orpc/server'
 import { db } from '@tamery/db'
 import {
   connections,
@@ -14,7 +13,10 @@ import { publisher } from './events'
 export const create = orpc
   .use(authMiddleware)
   .input(connectionsResourcesInsertSchema)
-  .handler(async ({ context, input }) => {
+  .errors({
+    NOT_FOUND: { message: 'Connection not found' },
+  })
+  .handler(async ({ context, errors, input }) => {
     const [connection] = await db
       .select({ id: connections.id })
       .from(connections)
@@ -27,7 +29,7 @@ export const create = orpc
       .limit(1)
 
     if (!connection) {
-      throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
+      throw errors.NOT_FOUND()
     }
 
     const [inserted] = await db

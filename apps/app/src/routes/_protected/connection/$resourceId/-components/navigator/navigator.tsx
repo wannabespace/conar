@@ -32,6 +32,7 @@ import { pressNavProps } from '~/lib/press-nav'
 import { navigatorOpenValue, SIDEBAR_DEFAULT_WIDTH } from './constants'
 import { DefinitionsPanel } from './definitions-section'
 import { NavigatorSwitcher } from './navigator-switcher'
+import { sidebarActionRowClassName } from './primitives'
 import { TablesList } from './tables-list'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -127,7 +128,7 @@ const NavigatorFooter = () => {
       <Button
         variant="ghost"
         size="sm"
-        className="text-foreground hover:bg-accent h-7 w-full justify-start gap-2 rounded-md px-2 font-[450]"
+        className={sidebarActionRowClassName}
         {...pressNavProps(openNewQuery)}
       >
         <HugeiconsIcon
@@ -141,7 +142,7 @@ const NavigatorFooter = () => {
         variant="ghost"
         size="sm"
         disabled
-        className="text-foreground h-7 w-full justify-start gap-2 rounded-md px-2 font-[450]"
+        className={sidebarActionRowClassName}
       >
         <HugeiconsIcon
           icon={Settings02Icon}

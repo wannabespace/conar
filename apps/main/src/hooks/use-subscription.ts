@@ -56,16 +56,20 @@ export const useUpgradeSubscription = () => {
 }
 
 export const useBillingPortal = ({ returnHref }: { returnHref: string }) => {
-  const { mutate: openBillingPortal, isPending: isOpening } = useMutation({
-    mutationFn: async () => {
-      const result = await orpc.account.subscription.billingPortal.call({
-        returnUrl: location.origin + returnHref,
-      })
+  const { mutate, isPending: isOpening } = useMutation(
+    orpc.account.subscription.billingPortal.mutationOptions({
+      mutationKey: ['subscription', 'billingPortal'],
+      onSuccess(result) {
+        location.assign(result.url)
+      },
+    })
+  )
 
-      location.assign(result.url)
-    },
-    mutationKey: ['subscription', 'billingPortal'],
-  })
+  const openBillingPortal = () => {
+    mutate({
+      returnUrl: location.origin + returnHref,
+    })
+  }
 
   return {
     isOpening,

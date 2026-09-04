@@ -1,4 +1,4 @@
-import { stopChatStream } from '@tamery/ai/chat-stream'
+import { chatStream } from '@tamery/ai/chat-stream'
 import { db } from '@tamery/db'
 import { type } from 'arktype'
 
@@ -14,6 +14,6 @@ export const abortStream = orpc
     })
 
     if (owned) {
-      await stopChatStream(input.chatId)
+      await chatStream.stop(input.chatId)
     }
   })

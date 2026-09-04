@@ -11,6 +11,8 @@ import { useSubscription } from 'seitu/react'
 
 import { getNavigatorStore, setNavigator } from '~/entities/connection/store'
 
+import { sidebarActionRowClassName } from './primitives'
+
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const TRANSITION = { duration: 0.15, ease: [0.32, 0.72, 0, 1] } as const
@@ -25,7 +27,7 @@ export const NavigatorSwitcher = () => {
       variant="ghost"
       size="sm"
       aria-label={isDefinitions ? 'Back to tables' : 'Open schema'}
-      className="text-foreground hover:bg-accent h-7 w-full justify-start gap-2 rounded-md px-2 font-[450]"
+      className={sidebarActionRowClassName}
       onClick={() =>
         setNavigator(
           connectionResource.id,

@@ -208,7 +208,7 @@ export const ActionsOrder = () => {
                     <span data-mask className="min-w-0 flex-1 truncate">
                       {column.id}
                     </span>
-                    <CommandShortcut className="tracking-normal">
+                    <CommandShortcut>
                       {column.typeLabel || column.type}
                     </CommandShortcut>
                   </CommandItem>

@@ -309,11 +309,11 @@ const TableComponent = ({
           // 25 it's a ~size of the button, 6 it's a ~size of the number
           (column.references?.length ? 25 + 6 : 0) +
           (column.foreign ? 25 : 0),
-        // oxlint-disable-next-line react/no-unstable-nested-components -- render prop, not a component
+        // oxlint-disable-next-line react/no-unstable-nested-components
         header: (props) => (
           <TableHeaderCell column={column} {...handlers} {...props} />
         ),
-        // oxlint-disable-next-line react/no-unstable-nested-components -- render prop, not a component
+        // oxlint-disable-next-line react/no-unstable-nested-components
         cell: (props) => (
           <BodyCellRenderer
             column={column}
@@ -331,9 +331,9 @@ const TableComponent = ({
       ? [
           {
             id: INTERNAL_COLUMN_IDS.SELECT,
-            // oxlint-disable-next-line react/no-unstable-nested-components -- render prop, not a component
+            // oxlint-disable-next-line react/no-unstable-nested-components
             cell: (props) => <SelectionCell keys={primaryColumns} {...props} />,
-            // oxlint-disable-next-line react/no-unstable-nested-components -- render prop, not a component
+            // oxlint-disable-next-line react/no-unstable-nested-components
             header: (props) => (
               <SelectionHeaderCell keys={primaryColumns} {...props} />
             ),

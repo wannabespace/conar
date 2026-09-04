@@ -41,9 +41,7 @@ export const FiltersColumnSelector = ({
                 className="size-4 opacity-50"
               />
               <span className="min-w-0 flex-1 truncate">{column.id}</span>
-              <CommandShortcut className="tracking-normal">
-                {column.typeLabel}
-              </CommandShortcut>
+              <CommandShortcut>{column.typeLabel}</CommandShortcut>
             </CommandItem>
           ))}
         </CommandGroup>

@@ -7,7 +7,7 @@ import { orpc } from '~/lib/orpc'
 import type { BaseTable } from '~/lib/sync'
 import { PERSISTED_SCHEMA_VERSION, syncCollectionOptions } from '~/lib/sync'
 
-import { setActiveWorkspace } from './utils'
+import { workspaceSelection } from './utils'
 
 export interface Workspace extends BaseTable {
   name: string
@@ -47,7 +47,7 @@ export const createWorkspace = async (name: string) => {
     workspace.updatedAt
   )
 
-  setActiveWorkspace(workspace.id)
+  workspaceSelection.set(workspace.id)
 
   return workspace
 }

@@ -1,6 +1,8 @@
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import { cn } from '@tamery/ui/lib/utils'
 
+import { chatHeaderClassName } from './chat-header'
+
 const skeletonTurns = [
   { bubble: 'w-40', lines: ['w-full', 'w-11/12', 'w-3/5'] },
   { bubble: 'w-28', lines: ['w-10/12', 'w-full', 'w-2/3'] },
@@ -8,7 +10,7 @@ const skeletonTurns = [
 
 export const ChatSkeleton = () => (
   <>
-    <div className="flex h-8 shrink-0 items-center gap-0.5 border-b pr-1 pl-3">
+    <div className={chatHeaderClassName}>
       <Skeleton className="h-2.5 w-28 rounded-full" />
       <Skeleton className="ml-auto size-6 rounded-md" />
     </div>

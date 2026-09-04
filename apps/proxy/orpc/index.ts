@@ -1,4 +1,4 @@
-import { ORPCError, os } from '@orpc/server'
+import { os } from '@orpc/server'
 import type { Session } from 'better-auth'
 
 import { env } from '~/env'
@@ -15,31 +15,27 @@ const getSession = async (headers: Headers) => {
     },
   })
 
-  if (!res.ok) {
-    throw new ORPCError('UNAUTHORIZED', {
-      message: 'We could not find your session. Please sign in again.',
-    })
-  }
-
-  const session = (await res.json()) as Session | null
-
-  if (!session) {
-    throw new ORPCError('UNAUTHORIZED', {
-      message: 'We could not find your session. Please sign in again.',
-    })
-  }
-
-  return session
+  return res.ok ? ((await res.json()) as Session | null) : null
 }
 
-export const authMiddleware = orpc.middleware(async ({ context, next }) => {
-  const session = await getSession(context.headers)
-
-  context.addLogData({ userId: session.userId })
-
-  return next({
-    context: {
-      session,
+export const authMiddleware = orpc
+  .errors({
+    UNAUTHORIZED: {
+      message: 'We could not find your session. Please sign in again.',
     },
   })
-})
+  .middleware(async ({ context, errors, next }) => {
+    const session = await getSession(context.headers)
+
+    if (!session) {
+      throw errors.UNAUTHORIZED()
+    }
+
+    context.addLogData({ userId: session.userId })
+
+    return next({
+      context: {
+        session,
+      },
+    })
+  })

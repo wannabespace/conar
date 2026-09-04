@@ -1,7 +1,5 @@
 # Architecture constraints
 
-> **When to read:** Before picking a library, adding state, writing a query, or building machinery a dependency already owns.
-
 | Topic | Rule |
 | --- | --- |
 | API layer | oRPC (`@orpc/server`) — not REST, not tRPC. |

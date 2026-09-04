@@ -2,7 +2,7 @@ import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@tamery/shared/filters'
 import { generateObject } from 'ai'
 import { type } from 'arktype'
 
-import { fastModel } from './models'
+import { models } from './models'
 
 const filtersInstructions = (tableContext: string) =>
   [
@@ -57,7 +57,7 @@ export const generateFilters = async (data: {
   const { object } = await generateObject({
     abortSignal: data.signal,
     instructions: filtersInstructions(data.context),
-    model: fastModel,
+    model: models.fast,
     prompt: data.prompt,
     schema: filtersOutputSchema,
   })

@@ -1,4 +1,4 @@
-import { aiProviders, probeProvider } from '@tamery/ai/health'
+import { providers } from '@tamery/ai/health'
 import { db } from '@tamery/db'
 import { sql } from 'drizzle-orm'
 import { Hono } from 'hono'
@@ -44,9 +44,10 @@ export const healthRouter = new Hono().get('/', async (c) => {
           error instanceof Error ? error.message : 'Database connection failed'
         )
       ),
-    ...aiProviders.map((provider) => {
+    ...providers.list.map((provider) => {
       const failed = `${providerLabels[provider]} connection failed`
-      return probeProvider(provider)
+      return providers
+        .probe(provider)
         .then((text) =>
           text
             ? createAnswer('ok', provider, text)

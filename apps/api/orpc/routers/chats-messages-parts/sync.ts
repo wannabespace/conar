@@ -6,8 +6,7 @@ import {
   chatsMessagesPartsSelectSchema,
 } from '@tamery/db/schema'
 import { type } from 'arktype'
-import { addSeconds } from 'date-fns'
-import { and, eq, getColumns, gte, inArray, notInArray, or } from 'drizzle-orm'
+import { and, eq, getColumns, inArray, notInArray } from 'drizzle-orm'
 
 import { authMiddleware, orpc } from '~/orpc'
 import { createSyncOutputSchema, syncDiff } from '~/orpc/lib/sync'
@@ -34,7 +33,7 @@ export const sync = orpc
   )
   .output(output)
   .handler(async ({ input, context }) => {
-    const { updatedItems, newItems, missingIds } = await syncDiff({
+    const { newItems, missingIds } = await syncDiff({
       input,
       queries: {
         existing: (includeIds) =>
@@ -60,34 +59,10 @@ export const sync = orpc
               notInArray(chatsMessagesParts.id, excludeIds)
             )
           ),
-        updated: (items) =>
-          userParts().where(
-            and(
-              eq(chats.userId, context.user.id),
-              or(
-                ...items.map((m) =>
-                  and(
-                    eq(chatsMessagesParts.id, m.id),
-                    gte(
-                      chatsMessagesParts.updatedAt,
-                      addSeconds(m.updatedAt, 1)
-                    )
-                  )
-                )
-              )
-            )
-          ),
       },
     })
 
     const result: typeof output.infer = []
-
-    for (const item of updatedItems) {
-      result.push({
-        type: 'update',
-        value: item,
-      })
-    }
 
     for (const item of newItems) {
       result.push({

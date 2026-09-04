@@ -3,7 +3,7 @@ import { useSubscription } from 'seitu/react'
 
 import { useCollections } from '~/entities/collections'
 
-import { activeWorkspaceIdStorageValue, resolveActiveWorkspace } from './utils'
+import { workspaceSelection } from './utils'
 
 export const useActiveWorkspace = () => {
   const { workspacesCollection } = useCollections()
@@ -11,7 +11,7 @@ export const useActiveWorkspace = () => {
   const { data: workspaces } = useLiveQuery({
     query: (q) => q.from({ w: workspacesCollection }),
   })
-  const activeId = useSubscription(activeWorkspaceIdStorageValue)
+  const activeId = useSubscription(workspaceSelection.id)
 
-  return { data: resolveActiveWorkspace(workspaces, activeId), workspaces }
+  return { data: workspaceSelection.resolve(workspaces, activeId), workspaces }
 }

@@ -31,7 +31,7 @@ import {
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import {
   getConnectionResourceStore,
-  removeTableTab,
+  pinnedTable,
   tableTabId,
 } from '~/entities/connection/store'
 import { queryClient } from '~/main'
@@ -91,7 +91,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
           params: { resourceId: connectionResource.id },
         })
       }
-      removeTableTab(connectionResource.id, schema, table)
+      pinnedTable.remove(connectionResource.id, schema, table)
     },
     onError: (error) => {
       toast.error(`Failed to drop table "${error.message}".`)

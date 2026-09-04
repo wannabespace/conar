@@ -1,4 +1,3 @@
-import { ORPCError } from '@orpc/server'
 import { db } from '@tamery/db'
 import { sessions } from '@tamery/db/schema'
 import { challenge } from '@tamery/shared/utils/challenge'
@@ -18,23 +17,27 @@ export const exchange = orpc
       verifier: 'string',
     })
   )
-  .handler(async ({ input, context: { headers } }) => {
+  .errors({
+    FORBIDDEN: {
+      message: "We couldn't authenticate you. Please try signing in again.",
+    },
+    NOT_ACCEPTABLE: {
+      message: "We couldn't authenticate you. Please try signing in again.",
+    },
+  })
+  .handler(async ({ errors, input, context: { headers } }) => {
     const generatedCodeChallenge = await challenge[input.type].generateCode(
       input.verifier
     )
 
     if (generatedCodeChallenge !== input.codeChallenge) {
-      throw new ORPCError('NOT_ACCEPTABLE', {
-        message: "We couldn't authenticate you. Please try signing in again.",
-      })
+      throw errors.NOT_ACCEPTABLE()
     }
 
     const data = await codeChallengeRedis.get(input.codeChallenge)
 
     if (!data) {
-      throw new ORPCError('FORBIDDEN', {
-        message: "We couldn't authenticate you. Please try signing in again.",
-      })
+      throw errors.FORBIDDEN()
     }
 
     const context = await auth.$context

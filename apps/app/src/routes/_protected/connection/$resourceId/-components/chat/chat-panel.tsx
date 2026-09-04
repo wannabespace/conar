@@ -1,10 +1,9 @@
 import { useChat } from '@ai-sdk/react'
 import {
   textFromMessage,
-  messagesFromRows,
+  messagesFromPartRows,
   mergeMessages,
 } from '@tamery/ai/message'
-import { Button } from '@tamery/ui/components/button'
 import { eq, useLiveSuspenseQuery } from '@tanstack/react-db'
 import { getRouteApi } from '@tanstack/react-router'
 import { Suspense, useState } from 'react'
@@ -16,6 +15,7 @@ import { getConnectionResourceStore } from '~/entities/connection/store'
 import { orpc } from '~/lib/orpc'
 import { resourcePanelClassName } from '~/shell'
 
+import { ChatError } from './chat-error'
 import { ChatHeader } from './chat-header'
 import { ChatInput } from './chat-input'
 import { getChatInstance } from './chat-instance'
@@ -71,7 +71,7 @@ const Chat = ({
   })
 
   const chat = chatHistory.find((row) => row.id === chatId)
-  const collectionMessages = messagesFromRows(transcriptRows)
+  const collectionMessages = messagesFromPartRows(transcriptRows)
 
   // oxlint-disable-next-line react/hook-use-state
   const [resume] = useState(
@@ -86,6 +86,19 @@ const Chat = ({
   const firstMessage = displayMessages.at(0)
   const pendingTitle = firstMessage ? textFromMessage(firstMessage) : null
   const lastSentId = messages.findLast((message) => message.role === 'user')?.id
+  const retry = () => {
+    if (messages.length > 0) {
+      void regenerate()
+      return
+    }
+
+    const lastAsked = displayMessages.findLast(
+      (message) => message.role === 'user'
+    )
+    if (lastAsked) {
+      void sendMessage(lastAsked)
+    }
+  }
 
   return (
     <>
@@ -102,29 +115,11 @@ const Chat = ({
         onSelectChat={setChatId}
       />
       <ChatMessages
-        isPending={
-          !error &&
-          (status === 'streaming' || displayMessages.at(-1)?.role === 'user')
-        }
+        isPending={isStreaming}
         messages={displayMessages}
         lastSentId={lastSentId}
       />
-      {error && (
-        <div className="flex shrink-0 items-center gap-2 px-3 pb-1">
-          <p className="text-destructive min-w-0 flex-1 truncate text-xs">
-            {error.message}
-          </p>
-          <Button
-            size="xs"
-            variant="outline"
-            onClick={() => {
-              void regenerate()
-            }}
-          >
-            Retry
-          </Button>
-        </div>
-      )}
+      {error && <ChatError error={error} onRetry={retry} />}
       <ChatInput
         isStreaming={isStreaming}
         onSend={(text) => {

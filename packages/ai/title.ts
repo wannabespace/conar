@@ -2,7 +2,7 @@ import { generateText } from 'ai'
 
 import type { AppUIMessage } from './message'
 import { textFromMessage } from './message'
-import { fastModel } from './models'
+import { models } from './models'
 
 const TITLE_INSTRUCTIONS = [
   'Generate a title for a chat from its first user message.',
@@ -28,7 +28,7 @@ export const generateChatTitle = async (data: {
     abortSignal: data.signal,
     instructions: TITLE_INSTRUCTIONS,
     maxOutputTokens: 32,
-    model: fastModel,
+    model: models.fast,
     prompt,
   })
 

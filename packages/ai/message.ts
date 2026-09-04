@@ -11,7 +11,7 @@ export const textFromMessage = (message: Pick<AppUIMessage, 'parts'>) =>
     .join('\n')
     .trim()
 
-interface MessageRow {
+interface MessagePartRow {
   order: number
   part: AppMessagePart
   messageId: string
@@ -19,7 +19,7 @@ interface MessageRow {
   role: AppUIMessage['role']
 }
 
-export const messagesFromRows = (rows: MessageRow[]): AppUIMessage[] =>
+export const messagesFromPartRows = (rows: MessagePartRow[]): AppUIMessage[] =>
   Object.values(Object.groupBy(rows, (row) => row.messageId)).flatMap(
     (group) => {
       const first = group?.[0]

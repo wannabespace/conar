@@ -1,15 +1,7 @@
 import { AiChat01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import type { AppUIMessage } from '@tamery/ai/message'
 import { textFromMessage } from '@tamery/ai/message'
 import { Bubble, BubbleContent } from '@tamery/ui/components/bubble'
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@tamery/ui/components/empty'
 import { Message, MessageContent } from '@tamery/ui/components/message'
 import {
   MessageScroller,
@@ -21,25 +13,16 @@ import {
 } from '@tamery/ui/components/message-scroller'
 import { Spinner } from '@tamery/ui/components/spinner'
 
+import { PaneEmpty } from '~/components/pane-empty'
+
 import { MessagePart } from './chat-message-part'
 
 const ChatEmpty = () => (
-  <Empty className="min-h-0 flex-1 p-4 md:p-4">
-    <EmptyHeader className="gap-1">
-      <EmptyMedia
-        variant="icon"
-        className="bg-muted/60 text-muted-foreground/70 mb-3 size-14 rounded-2xl [&_svg]:size-7"
-      >
-        <HugeiconsIcon icon={AiChat01Icon} strokeWidth={2} />
-      </EmptyMedia>
-      <EmptyTitle className="text-sm font-medium tracking-normal">
-        Ask Anything
-      </EmptyTitle>
-      <EmptyDescription className="max-w-64 text-xs">
-        Questions about your schema, SQL help, or anything else.
-      </EmptyDescription>
-    </EmptyHeader>
-  </Empty>
+  <PaneEmpty
+    icon={AiChat01Icon}
+    title="Ask Anything"
+    description="Questions about your schema, SQL help, or anything else."
+  />
 )
 
 export const ChatMessages = ({

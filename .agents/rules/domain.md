@@ -1,7 +1,5 @@
 # Product and domain terminology
 
-> **When to read:** Before naming anything user-facing, or touching Connections, Workspaces, Tabs, the Navigator, SyncType, or collections.
-
 ## What Tamery is
 
 AI-powered desktop/web app for managing database connections. Connection metadata + encrypted connection strings live locally (SQLite via OPFS); metadata optionally syncs to cloud.

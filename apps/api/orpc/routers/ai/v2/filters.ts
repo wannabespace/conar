@@ -37,7 +37,6 @@ export const filters = orpc
         remaining: 'number',
         resetAt: 'Date',
       }),
-      message: 'string',
     },
   })
   .handler(async ({ input, signal, context, errors }) => {

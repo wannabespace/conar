@@ -29,7 +29,7 @@ import {
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import {
   getConnectionResourceStore,
-  renameTableTab,
+  pinnedTable,
   tableTabId,
 } from '~/entities/connection/store'
 import { queryClient } from '~/main'
@@ -82,7 +82,7 @@ export const RenameTableDialog = ({ ref }: RenameTableDialogProps) => {
           showSystem: store.get().showSystem,
         })
       )
-      renameTableTab(connectionResource.id, schema, table, newTableName)
+      pinnedTable.rename(connectionResource.id, schema, table, newTableName)
 
       if (isCurrentTable) {
         router.navigate({

@@ -1,19 +1,73 @@
 import { cn } from '@tamery/ui/lib/utils'
-import type { ComponentProps } from 'react'
+import type { ComponentProps, MouseEvent as ReactMouseEvent } from 'react'
 import { useState } from 'react'
+
+let dragOverlay: HTMLDivElement | undefined
+
+const showDragOverlay = () => {
+  dragOverlay ??= document.createElement('div')
+  dragOverlay.className =
+    'fixed top-0 left-0 z-1000 size-full cursor-col-resize'
+
+  if (!dragOverlay.parentElement) {
+    document.body.append(dragOverlay)
+  }
+}
 
 export const ResizeHandle = ({
   getValue,
   onResize,
+  onResizingChange,
   min = 0,
+  max = Number.POSITIVE_INFINITY,
+  side = 'right',
   className,
+  children,
+  onMouseDown,
   ...props
 }: {
   getValue: () => number
   onResize: (value: number) => void
+  onResizingChange?: (resizing: boolean) => void
   min?: number
+  max?: number
+  side?: 'left' | 'right'
 } & Omit<ComponentProps<'div'>, 'onResize'>) => {
-  const [start, setStart] = useState<{ x: number; value: number }>()
+  const [isResizing, setIsResizing] = useState(false)
+
+  const setResizing = (resizing: boolean) => {
+    setIsResizing(resizing)
+    onResizingChange?.(resizing)
+  }
+
+  const startResize = (event: ReactMouseEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    setResizing(true)
+
+    const startX = event.clientX
+    const startValue = getValue()
+    const direction = side === 'right' ? 1 : -1
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      showDragOverlay()
+      onResize(
+        Math.min(
+          max,
+          Math.max(min, startValue + direction * (moveEvent.clientX - startX))
+        )
+      )
+    }
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      setResizing(false)
+      dragOverlay?.remove()
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
 
   return (
     <div
@@ -21,23 +75,18 @@ export const ResizeHandle = ({
       role="separator"
       aria-orientation="vertical"
       tabIndex={0}
-      data-resizing={start ? true : undefined}
+      data-resizing={isResizing || undefined}
       className={cn(
-        'group/resize-handle cursor-col-resize touch-none select-none',
+        'group/resize-handle cursor-col-resize select-none',
         className
       )}
-      onPointerDown={(event) => {
-        event.preventDefault()
-        event.currentTarget.setPointerCapture(event.pointerId)
-        setStart({ value: getValue(), x: event.clientX })
+      onMouseDown={(event) => {
+        onMouseDown?.(event)
+        startResize(event)
       }}
-      onPointerMove={(event) => {
-        if (start) {
-          onResize(Math.max(min, start.value + event.clientX - start.x))
-        }
-      }}
-      onPointerUp={() => setStart(undefined)}
       {...props}
-    />
+    >
+      {children}
+    </div>
   )
 }

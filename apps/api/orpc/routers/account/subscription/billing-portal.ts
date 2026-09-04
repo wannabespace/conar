@@ -1,4 +1,3 @@
-import { ORPCError } from '@orpc/server'
 import { db } from '@tamery/db'
 import { users } from '@tamery/db/schema'
 import { type } from 'arktype'
@@ -14,11 +13,13 @@ export const billingPortal = orpc
       returnUrl: 'string',
     })
   )
-  .handler(async ({ context, input }) => {
+  .errors({
+    INTERNAL_SERVER_ERROR: { message: 'Stripe is not configured' },
+    NOT_FOUND: { message: 'No customer found' },
+  })
+  .handler(async ({ context, errors, input }) => {
     if (!stripe) {
-      throw new ORPCError('INTERNAL_SERVER_ERROR', {
-        message: 'Stripe is not configured',
-      })
+      throw errors.INTERNAL_SERVER_ERROR()
     }
 
     const [user] = await db
@@ -28,7 +29,7 @@ export const billingPortal = orpc
       .limit(1)
 
     if (!user?.stripeCustomerId) {
-      throw new ORPCError('NOT_FOUND', { message: 'No customer found' })
+      throw errors.NOT_FOUND()
     }
 
     const portalSession = await stripe.billingPortal.sessions.create({
