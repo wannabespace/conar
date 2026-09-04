@@ -1,7 +1,5 @@
 # oRPC routers, secrets, and environment
 
-> **When to read:** Before adding or changing an API procedure, middleware, chat behavior, env var, or anything touching encryption secrets.
-
 ## oRPC
 
 - Copy the shape from a neighbouring router in `apps/api/orpc/routers/`; register in `routers/index.ts`. `authMiddleware` puts `user`/`session` on context. Clients call through the generated `ORPCRouter` type, never a manual fetch.

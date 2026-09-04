@@ -14,11 +14,11 @@ Index only — rules live in `.agents/rules/`, one file per topic (small diffs, 
 | [`code-style.md`](.agents/rules/code-style.md) | Non-trivial code; interpreting lint/format failures; lint/format/code-standard expectations |
 | [`documentation.md`](.agents/rules/documentation.md) | Finishing changes to user-visible behavior, features, public APIs, terminology; doc locations, nav, policy |
 
-New rule file: H1 title + `> **When to read:**` line in `.agents/rules/`, add row above.
+New rule file: H1 title in `.agents/rules/`, add row above — the table is the only when-to-read.
 
 ## Design decisions go in the skill
 
-`ui.md` = process; design system = `tamery-ui` skill (`.agents/skills/tamery-ui/`): `SKILL.md` (hard rules + index) + topic files `colors.md`, `typography.md`, `patterns.md`, `motion.md`, `gotchas.md`.
+`ui.md` = process; design system = `tamery-ui` skill (`.agents/skills/tamery-ui/`), whose `SKILL.md` holds the hard rules and indexes the topic files.
 
 Record **any** UI pattern, motion recipe, kit gotcha, or design decision established during a task in the matching topic file, same task — even when no rule file changes. Improvements that stay only in code get lost. Append to topic file; never grow `SKILL.md` beyond hard rules + index.
 

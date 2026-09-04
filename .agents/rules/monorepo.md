@@ -1,7 +1,5 @@
 # Monorepo map and dev commands
 
-> **When to read:** Before adding or moving code between apps/packages, and before running or wiring dev, build, test, or lint commands.
-
 ## Where code goes
 
 `ls apps packages` for the list. Non-obvious placements:
@@ -15,16 +13,15 @@
 
 ## Dev commands
 
-Root `package.json` holds the full list. Not obvious:
+Setup and the command list live in `README.md` and root `package.json`. Not obvious:
 
-- `dev` needs Postgres + Redis reachable from `apps/api/.env`: either local via `pnpm run docker:start` (`docker-compose.dev.yml`, matches `.env.example`) or hosted instances — the compose file is a convenience, not a requirement.
-- `pnpm run dev` = package picker (`-a` skips prompt); `pnpm x` picks package + script.
-- Local URLs portless, live only while `dev` runs: `https://{api,app,main,proxy}.local.tamery.app`. In a linked git worktree, portless prefixes the branch name, so worktrees run alongside the main checkout.
+- `pnpm x` picks package + script; `pnpm run dev`'s picker takes `-a` to skip the prompt.
+- Portless dev URLs live only while `dev` runs. In a linked git worktree portless prefixes the branch name, so worktrees run alongside the main checkout.
 - Cross-service dev URLs are not in `.env` — `setupPortlessEnvs(...)` (`packages/shared/utils/portless-env.ts`) fills them at startup, worktree-aware; each app declares its own env-key map in its `env.ts` or `vite.config.ts`. Precedence: existing env var > portless > `.defaults(...)`.
 
 ## Opening the running app in a browser
 
-**Default: `agent-browser` CLI via Bash** — not the user's Chrome. Deliberately not an MCP server or project dependency; install globally (`npm install -g agent-browser && agent-browser install`). `agent-browser open <url>`, then `snapshot`, `click @ref`, `type`, `console`, `errors`, `screenshot`. Its Chrome trusts the portless CA and keeps a logged-in session across runs.
+**Default: `agent-browser` CLI via Bash** (install in `README.md`) — not the user's Chrome, and deliberately not an MCP server or project dependency. Its Chrome trusts the portless CA and keeps a logged-in session across runs.
 
 Fall back to the user's own Chrome (`mcp__claude-in-chrome__*`) only when the binary is missing or the task needs the user's real profile. Playwright for scripted multi-step runs.
 

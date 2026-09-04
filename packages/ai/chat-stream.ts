@@ -17,24 +17,27 @@ const redis = createClient({ url: env.REDIS_URL })
 const subscriber = redis.duplicate()
 await redis.connect()
 
-const pointer = {
+const activeStream = {
   claim: async (chatId: string, streamId: string) =>
-    !!(await redis.set(pointer.key(chatId), streamId, { EX: 3600, NX: true })),
-  get: (chatId: string) => redis.get(pointer.key(chatId)),
+    !!(await redis.set(activeStream.key(chatId), streamId, {
+      EX: 3600,
+      NX: true,
+    })),
+  get: (chatId: string) => redis.get(activeStream.key(chatId)),
   key: (chatId: string) => `ai:chat-stream:${chatId}`,
   release: async (chatId: string, streamId: string) => {
-    if ((await pointer.get(chatId)) === streamId) {
-      await redis.del(pointer.key(chatId))
+    if ((await activeStream.get(chatId)) === streamId) {
+      await redis.del(activeStream.key(chatId))
     }
   },
 }
 
-export const chatTurn = {
-  isSettled: async (chatId: string, userMessageId: string) =>
-    (await redis.get(chatTurn.key(chatId))) === userMessageId,
-  key: (chatId: string) => `ai:chat-settled-turn:${chatId}`,
-  settle: (chatId: string, userMessageId: string) =>
-    redis.set(chatTurn.key(chatId), userMessageId, { EX: 60 * 60 * 24 * 7 }),
+export const lastAnswer = {
+  is: async (chatId: string, userMessageId: string) =>
+    (await redis.get(lastAnswer.key(chatId))) === userMessageId,
+  key: (chatId: string) => `ai:chat-last-answer:${chatId}`,
+  mark: (chatId: string, userMessageId: string) =>
+    redis.set(lastAnswer.key(chatId), userMessageId, { EX: 60 * 60 * 24 * 7 }),
 }
 
 const resumable = (streamId: string, abortController?: AbortController) =>
@@ -54,7 +57,7 @@ interface ChatStreamInput {
 export const chatStream = {
   claim: async (data: ChatStreamInput) => {
     const streamId = v7()
-    if (!(await pointer.claim(data.chatId, streamId))) {
+    if (!(await activeStream.claim(data.chatId, streamId))) {
       return null
     }
 
@@ -80,7 +83,7 @@ export const chatStream = {
           try {
             await data.onFinish(responseMessage)
             if (answeredId) {
-              await chatTurn.settle(data.chatId, answeredId)
+              await lastAnswer.mark(data.chatId, answeredId)
             }
           } finally {
             resolve()
@@ -96,15 +99,15 @@ export const chatStream = {
 
       return await context.startStream(uiStream, {
         keepAlive: promise,
-        onFlush: () => pointer.release(data.chatId, streamId),
+        onFlush: () => activeStream.release(data.chatId, streamId),
       })
     } catch (error) {
-      await pointer.release(data.chatId, streamId)
+      await activeStream.release(data.chatId, streamId)
       throw error
     }
   },
   resume: async (chatId: string) => {
-    const streamId = await pointer.get(chatId)
+    const streamId = await activeStream.get(chatId)
     if (!streamId) {
       return null
     }
@@ -112,12 +115,12 @@ export const chatStream = {
     const context = await resumable(streamId)
     const active = await context.resumeStream().catch(() => null)
     if (!active) {
-      await pointer.release(chatId, streamId)
+      await activeStream.release(chatId, streamId)
     }
     return active
   },
   stop: async (chatId: string) => {
-    const streamId = await pointer.get(chatId)
+    const streamId = await activeStream.get(chatId)
     if (streamId) {
       const context = await resumable(streamId)
       await context.stopStream()

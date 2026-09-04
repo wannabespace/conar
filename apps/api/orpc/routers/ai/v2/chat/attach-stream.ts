@@ -1,4 +1,4 @@
-import { chatStream, chatTurn } from '@tamery/ai/chat-stream'
+import { chatStream, lastAnswer } from '@tamery/ai/chat-stream'
 import { db } from '@tamery/db'
 import { type } from 'arktype'
 
@@ -33,7 +33,7 @@ export const attachStream = orpc
       return
     }
 
-    if (await chatTurn.isSettled(input.chatId, lastMessage.id)) {
+    if (await lastAnswer.is(input.chatId, lastMessage.id)) {
       return
     }
 
