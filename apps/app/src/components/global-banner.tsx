@@ -7,6 +7,7 @@ import {
 } from '@remixicon/react'
 import type { RouterOutputs } from '@tamery/api/orpc/routers'
 import { Button } from '@tamery/ui/components/button'
+import { ElapsedSeconds } from '@tamery/ui/components/custom/elapsed-seconds'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { Spinner } from '@tamery/ui/components/spinner'
 import {
@@ -26,6 +27,7 @@ import { createWebStorageValue } from 'seitu/web'
 import {
   MAX_RECONNECTION_ATTEMPTS,
   reconnectingPromises,
+  slowQueries,
 } from '~/entities/connection/runtime'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
@@ -85,6 +87,9 @@ export const GlobalBanner = () => {
         Object.values(state).find((p) => p.resourceId === resourceId)) ||
       null,
   })
+  const waitingSince = useSubscription(slowQueries, {
+    selector: (state) => (resourceId ? state[resourceId]?.[0] : undefined),
+  })
   const isOnline = useSubscription(appStore, {
     selector: (state) => state.isOnline,
   })
@@ -136,13 +141,23 @@ export const GlobalBanner = () => {
                   />
                 }
               >
-                <RiCloseLine className="size-3.5" />
+                <RiCloseLine />
               </TooltipTrigger>
               <TooltipContent side="bottom">Dismiss</TooltipContent>
             </Tooltip>
           )}
         </Banner>
       ))}
+      {!reconnectingData && waitingSince !== undefined && (
+        <Banner key="slow-query" className={typeConfig.info.className}>
+          {typeConfig.info.icon}
+          <span className="flex flex-1 items-center gap-2 leading-none">
+            <span>The database is taking longer than usual to respond.</span>
+            <ElapsedSeconds className="opacity-70" since={waitingSince} />
+            <Spinner className="size-3.5" />
+          </span>
+        </Banner>
+      )}
       {reconnectingData && (
         <Banner className={typeConfig.warning.className}>
           {typeConfig.warning.icon}

@@ -1,5 +1,2 @@
-export { enhancePrompt } from './enhance-prompt'
-export { filters } from './filters'
-export { fixSQL } from './fix-sql'
-export { generateTitle } from './generate-title'
-export { updateSQL } from './update-sql'
+export { chat } from './v1/chat'
+export * from './v2'

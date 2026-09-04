@@ -2,11 +2,13 @@ import { title } from '@tamery/shared/utils/title'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
 import { createFileRoute } from '@tanstack/react-router'
 
+import { centeredPageClassName } from '~/shell'
+
 import { ConnectionsList } from './-components/connections-list'
 
 const DashboardPage = () => (
   <ScrollArea className="overflow-auto">
-    <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col px-6 py-12">
+    <div className={centeredPageClassName}>
       <ConnectionsList />
     </div>
   </ScrollArea>

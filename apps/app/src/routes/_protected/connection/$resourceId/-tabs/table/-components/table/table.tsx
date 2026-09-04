@@ -304,7 +304,6 @@ const TableComponent = ({
           // 25 it's a ~size of the button, 6 it's a ~size of the number
           (column.references?.length ? 25 + 6 : 0) +
           (column.foreign ? 25 : 0),
-        // Column renderers are invoked as components by @tamery/table
         // oxlint-disable-next-line react/no-unstable-nested-components
         header: (props) => (
           <TableHeaderCell column={column} {...handlers} {...props} />

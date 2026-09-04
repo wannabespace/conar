@@ -26,6 +26,7 @@ export const sendEmail = async <
 } & (keyof P extends never ? { props?: never } : { props: P })) => {
   if (!resend) {
     console.error('Resend email service is not configured.', {
+      props,
       subject,
       template,
       to,

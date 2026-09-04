@@ -8,7 +8,7 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { useSubscription } from 'seitu/react'
 
-import { updatesStore } from '~/use-updates-observer'
+import { updatesStore } from '~/hooks/use-updates-observer'
 
 export const UpdateButton = () => {
   const status = useSubscription(updatesStore, {

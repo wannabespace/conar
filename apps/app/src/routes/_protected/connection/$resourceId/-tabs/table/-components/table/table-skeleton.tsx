@@ -1,4 +1,5 @@
 /* oxlint-disable react/no-array-index-key */
+import { pseudoRandom } from '@tamery/shared/utils/helpers'
 import {
   DEFAULT_COLUMN_WIDTH,
   DEFAULT_ROW_HEIGHT,
@@ -11,9 +12,6 @@ import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell
 
 const ROWS_COUNT = 20
 const STAGGER_MS = 90
-
-const pseudoRandom = (seed: number) =>
-  Math.abs(Math.sin(seed * 127.1 + 311.7)) % 1
 
 const barWidth = (rowIndex: number, columnIndex: number) => {
   const base = 30 + pseudoRandom(columnIndex + 1) * 50

@@ -1,51 +1,68 @@
 import { title } from '@tamery/shared/utils/title'
 import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from '@tamery/ui/components/resizable'
-import { eq, useLiveQuery } from '@tanstack/react-db'
-import {
   createFileRoute,
   getRouteApi,
   Outlet,
   redirect,
 } from '@tanstack/react-router'
-import { useEffect } from 'react'
-import { useDefaultLayout } from 'react-resizable-panels'
+import { lazy, Suspense, useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { getCollections, useCollections } from '~/entities/collections'
-import { QueryLogger } from '~/entities/connection/components'
+import { QueryLoggerSkeleton } from '~/entities/connection/components/query-logger-skeleton'
+import type { ConnectionResource } from '~/entities/connection/core'
 import { getConnectionResourceStore } from '~/entities/connection/store'
-import {
-  lastOpenedResourcesStorageValue,
-  prefetchConnectionResourceCore,
-} from '~/entities/connection/utils'
+import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
-import { getActiveWorkspace } from '~/entities/workspace'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
+import { workspaceSelection } from '~/entities/workspace/utils'
+import { LOGGER_DEFAULT_HEIGHT } from '~/lib/constants'
+import { resourcePanelClassName } from '~/shell'
 
+import { ChatPanel } from './$resourceId/-components/chat/chat-panel'
 import { Navigator } from './$resourceId/-components/navigator/navigator'
 import { TabBar } from './$resourceId/-components/tab-bar'
 import { PasswordForm } from './-components/password-form'
 
-const resourceRouteApi = getRouteApi('/_protected/connection/$resourceId')
+const QueryLogger = lazy(async () => {
+  const { QueryLogger: component } =
+    await import('~/entities/connection/components/query-logger')
+
+  return { default: component }
+})
+
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
+const QueryLoggerPanel = ({
+  connectionResource,
+  opened,
+}: {
+  connectionResource: ConnectionResource
+  opened: boolean
+}) => {
+  if (!opened) {
+    return null
+  }
+
+  return (
+    <div
+      className="flex shrink-0 flex-col pt-1.5"
+      style={{ height: LOGGER_DEFAULT_HEIGHT }}
+    >
+      <div className={resourcePanelClassName}>
+        <Suspense fallback={<QueryLoggerSkeleton />}>
+          <QueryLogger connectionResource={connectionResource} />
+        </Suspense>
+      </div>
+    </div>
+  )
+}
 
 const ResourcePage = () => {
-  const { connection, connectionResource } = resourceRouteApi.useRouteContext()
-  const { connectionStringsCollection } = useCollections()
+  const { connection, connectionResource } = useRouteContext()
   const store = getConnectionResourceStore(connectionResource.id)
   const loggerOpened = useSubscription(store, {
     selector: (state) => state.loggerOpened,
   })
-  const { data: connectionString } = useLiveQuery({
-    query: (q) =>
-      q
-        .from({ cs: connectionStringsCollection })
-        .where(({ cs }) => eq(cs.connectionId, connection.id))
-        .findOne(),
-  })
-  const isPasswordPopulated = connectionString?.isPasswordPopulated
 
   useEffect(() => {
     const last = lastOpenedResourcesStorageValue.get()
@@ -59,14 +76,9 @@ const ResourcePage = () => {
     }
   }, [connectionResource.id])
 
-  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: `database-layout-${connectionResource.id}`,
-    storage: localStorage,
-  })
-
   const { type } = useFetchingConfig(connection)
 
-  if (type === 'waiting-for-password' && !isPasswordPopulated) {
+  if (type === 'waiting-for-password') {
     return (
       <PasswordForm
         connection={connection}
@@ -76,50 +88,31 @@ const ResourcePage = () => {
   }
 
   return (
-    <div className="flex">
-      <div className="m-2 flex h-[calc(100%-(--spacing(4)))] w-[calc(100%-(--spacing(4)))] flex-col">
-        <ResizablePanelGroup
-          orientation="vertical"
-          className="min-h-0 flex-1"
-          defaultLayout={defaultLayout}
-          onLayoutChanged={onLayoutChanged}
-        >
-          <ResizablePanel defaultSize="70%" minSize="50%">
-            <div className="flex h-full min-h-0 w-full">
-              <Navigator />
-              <div className="bg-background flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg">
-                <TabBar />
-                <Outlet />
-              </div>
-            </div>
-          </ResizablePanel>
-          {loggerOpened && (
-            <>
-              <ResizableHandle className="h-1" />
-              <ResizablePanel
-                defaultSize="30%"
-                minSize="10%"
-                maxSize="50%"
-                className="bg-background overflow-auto rounded-lg"
-              >
-                <QueryLogger connectionResource={connectionResource} />
-              </ResizablePanel>
-            </>
-          )}
-        </ResizablePanelGroup>
+    <div className="flex size-full p-2">
+      <Navigator />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className={resourcePanelClassName}>
+          <TabBar />
+          <Outlet />
+        </div>
+        <QueryLoggerPanel
+          connectionResource={connectionResource}
+          opened={loggerOpened}
+        />
       </div>
+      <ChatPanel />
     </div>
   )
 }
 
 export const Route = createFileRoute('/_protected/connection/$resourceId')({
   component: ResourcePage,
-  beforeLoad: async ({ params }) => {
+  beforeLoad: async ({ context, params }) => {
     const {
       connectionsCollection,
       connectionsResourcesCollection,
       workspacesCollection,
-    } = getCollections()
+    } = context.collections
 
     let connectionResource = connectionsResourcesCollection.get(
       params.resourceId
@@ -147,7 +140,9 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
       throw redirect({ to: '/' })
     }
 
-    const activeWorkspace = getActiveWorkspace(workspacesCollection.toArray)
+    const activeWorkspace = workspaceSelection.current(
+      workspacesCollection.toArray
+    )
 
     if (activeWorkspace && connection.workspaceId !== activeWorkspace.id) {
       throw redirect({ to: '/' })

@@ -8,9 +8,11 @@ The assistant has full context of your connected database — schemas, tables, c
 
 ## Opening the panel
 
-Click the **sparkle** icon at the end of the tab strip, or press <kbd>⌘</kbd> <kbd>L</kbd> (<kbd>Ctrl</kbd> <kbd>L</kbd> on Windows and Linux). Drag the panel's left edge to resize it; double-click that edge to reset the width.
+Press <kbd>⌘L</kbd> (<kbd>Ctrl+L</kbd> on Windows and Linux), or click the **chat** icon in the tab bar, right of the new-tab **+**. Drag the panel's left edge to resize it; double-click that edge to reset the width.
 
-The panel belongs to the connection, not to a tab — it stays open while you move between tables, query tabs, the schema browser, and the diagram. Each connection keeps its own chats; use **＋** for a new one and the **history** icon to reopen an earlier one.
+The panel belongs to the connection, not to a tab — it stays open while you move between tables, query tabs, the schema browser, and the diagram. Each connection keeps its own conversation, and it survives reloads; use the **new chat** icon in the panel header to start a fresh one.
+
+The answer runs on the server, so reloading mid-reply does not cancel it — the finished answer is saved to the conversation and appears the next time the chat opens. The live text is not re-tailed after a reload.
 
 ## Asking
 
@@ -74,10 +76,6 @@ The assistant runs on a frontier model automatically — nothing to pick or conf
 
 The assistant is a subscription feature. See [Plans](/account/plans).
 
-## Enhance prompt
-
-Click **Enhance** before sending to rewrite a vague message into a clearer one, with schema context added. You review the result before it's sent.
-
 ## Natural-language filters
 
 <Steps>
@@ -112,7 +110,6 @@ Open a table, click **Seed**, set a row count. Tamery picks generators from colu
 | Inline SQL generation    | —       | ✓            |
 | Fix SQL                  | —       | ✓            |
 | Modify SQL               | —       | ✓            |
-| Enhance prompt           | —       | ✓            |
 | Natural-language filters | Limited | Unlimited    |
 | Data seeding             | Limited | Unlimited    |
 

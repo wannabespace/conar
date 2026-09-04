@@ -9,6 +9,7 @@ import * as ai from './ai'
 import { banner } from './banner'
 import * as chats from './chats'
 import * as chatsMessages from './chats-messages'
+import * as chatsMessagesParts from './chats-messages-parts'
 import * as connections from './connections'
 import * as connectionsResources from './connections-resources'
 import { contact } from './contact'
@@ -21,15 +22,14 @@ import * as workspaces from './workspaces'
 
 export const router = {
   account,
-  // Remove v1 later when most clients are migrated to v2
-  ai: { ...ai, ...chats.v1 },
+  ai,
   banner,
   chats,
   chatsMessages,
+  chatsMessagesParts,
   connections,
   connectionsResources,
   contact,
-  databases: connections,
   internal,
   queries,
   releases,

@@ -1,4 +1,3 @@
-import { ORPCError } from '@orpc/server'
 import { db } from '@tamery/db'
 import { connectionsResources } from '@tamery/db/schema'
 import { type } from 'arktype'
@@ -19,11 +18,13 @@ export const remove = orpc
       .or(input, input.array())
       .pipe((data) => (Array.isArray(data) ? data : [data]))
   )
-  .handler(async ({ context, input: items }) => {
+  .errors({
+    BAD_REQUEST: { message: 'No connection resources to remove' },
+    NOT_FOUND: { message: 'Some connection resources not found' },
+  })
+  .handler(async ({ context, errors, input: items }) => {
     if (items.length === 0) {
-      throw new ORPCError('BAD_REQUEST', {
-        message: 'No connection resources to remove',
-      })
+      throw errors.BAD_REQUEST()
     }
 
     const resources = await db.query.connectionsResources.findMany({
@@ -43,9 +44,7 @@ export const remove = orpc
     })
 
     if (resources.length !== items.length) {
-      throw new ORPCError('NOT_FOUND', {
-        message: 'Some connection resources not found',
-      })
+      throw errors.NOT_FOUND()
     }
 
     await db.delete(connectionsResources).where(

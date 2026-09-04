@@ -31,6 +31,8 @@ import { SchemaSelect } from '../-components/schema-select'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
 type ConstraintType = (typeof constraintsType.infer)['type']
 
 const filterOptions: { label: string; value: ConstraintType | 'all' }[] = [
@@ -55,10 +57,8 @@ const getIcon = (type: ConstraintType) => {
   }
 }
 
-const routeApi = getRouteApi('/_protected/connection/$resourceId')
-
 export const Constraints = () => {
-  const { connectionResource } = routeApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const { data: constraints, isPending } = useQuery(
     resourceConstraintsQueryOptions({ connectionResource })
   )

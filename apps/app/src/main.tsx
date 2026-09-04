@@ -1,6 +1,4 @@
-import './monaco-worker'
-import '@tamery/shared/arktype-config'
-import '@tamery/ui/globals.css'
+import './lib/warmup'
 import { themeStore } from '@tamery/ui/theme-store'
 import { keepPreviousData, QueryClient } from '@tanstack/react-query'
 import {
@@ -84,19 +82,28 @@ declare module '@tanstack/react-router' {
 }
 
 router.subscribe('onResolved', ({ toLocation }) => {
-  if (toLocation.pathname.startsWith('/auth')) {
-    return
+  for (const shell of document.querySelectorAll('[data-shell]')) {
+    requestAnimationFrame(() => shell.remove())
   }
 
-  lastLocationStorageValue.set(toLocation.href)
+  if (!toLocation.pathname.startsWith('/auth')) {
+    lastLocationStorageValue.set(toLocation.href)
+  }
 })
+
+const isRoutableHref = (href: string) => {
+  const { pathname } = new URL(href, window.location.origin)
+
+  return !router.matchRoutes(pathname).some((match) => match._notFound)
+}
 
 if (router.state.location.pathname === '/') {
   const lastLocation = lastLocationStorageValue.get()
 
-  if (lastLocation) {
+  if (lastLocation && isRoutableHref(lastLocation)) {
     router.navigate({ href: lastLocation, replace: true })
   } else {
+    lastLocationStorageValue.clear()
     router.navigate({ replace: true, to: '/auth' })
   }
 }

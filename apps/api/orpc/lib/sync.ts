@@ -39,14 +39,18 @@ export const createSyncPublisher = <
 export const syncDiff = async <TItem>(opts: {
   input: { id: string; updatedAt: Date }[]
   queries: {
-    updated: (inputItems: { id: string; updatedAt: Date }[]) => Promise<TItem[]>
+    updated?: (
+      inputItems: { id: string; updatedAt: Date }[]
+    ) => Promise<TItem[]>
     new: (excludeIds: string[]) => Promise<TItem[]>
     existing: (includeIds: string[]) => Promise<string[]>
   }
 }) => {
   const inputIds = opts.input.map((i) => i.id)
   const [updatedItems, newItems, existingIds] = await Promise.all([
-    inputIds.length > 0 ? opts.queries.updated(opts.input) : ([] as TItem[]),
+    inputIds.length > 0 && opts.queries.updated
+      ? opts.queries.updated(opts.input)
+      : ([] as TItem[]),
     opts.queries.new(inputIds),
     opts.queries.existing(inputIds),
   ])

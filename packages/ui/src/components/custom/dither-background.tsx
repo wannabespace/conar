@@ -1,5 +1,4 @@
 import { Dithering } from '@paper-design/shaders-react'
-import { useIsMounted } from '@tamery/ui/hookas/use-is-mounted'
 import { cn } from '@tamery/ui/lib/utils'
 import { useSubscription } from 'seitu/react'
 import { createMediaQuery } from 'seitu/web'
@@ -23,7 +22,6 @@ export const DitherBackground = ({
   shape?: 'warp' | 'ripple'
 }) => {
   const theme = useResolvedTheme()
-  const isMounted = useIsMounted()
   const prefersReducedMotion = useSubscription(reducedMotionQuery)
   const colors = DITHER_COLORS[theme]
 
@@ -35,17 +33,15 @@ export const DitherBackground = ({
         className
       )}
     >
-      {isMounted && (
-        <Dithering
-          colorBack={colors.back}
-          colorFront={colors.front}
-          shape={shape}
-          type="8x8"
-          size={4}
-          speed={prefersReducedMotion ? 0 : 0.1}
-          style={{ height: '100%', width: '100%' }}
-        />
-      )}
+      <Dithering
+        colorBack={colors.back}
+        colorFront={colors.front}
+        shape={shape}
+        type="8x8"
+        size={4}
+        speed={prefersReducedMotion ? 0 : 0.1}
+        style={{ height: '100%', width: '100%' }}
+      />
     </div>
   )
 }

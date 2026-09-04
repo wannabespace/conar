@@ -35,7 +35,7 @@ import { orpc } from '~/lib/orpc'
 import { SidebarButton } from './-components/sidebar-button'
 import { SupportButton } from './-components/support-button'
 
-const routeApi = getRouteApi('/account')
+const { useLoaderData } = getRouteApi('/account')
 
 const AccountLayout = () => {
   const router = useRouter()
@@ -43,7 +43,7 @@ const AccountLayout = () => {
     select: (matches) => matches.map((routeMatch) => routeMatch.routeId).at(-1),
   })
   const { data } = useQuery(orpc.repo.queryOptions())
-  const { user } = routeApi.useLoaderData()
+  const { user } = useLoaderData()
   const webUrl = import.meta.env.VITE_PUBLIC_WEB_URL
   if (!webUrl) {
     throw new Error('VITE_PUBLIC_WEB_URL is not set')

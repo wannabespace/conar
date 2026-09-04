@@ -8,9 +8,10 @@ import { toast } from 'sonner'
 
 import { getCollections } from '~/entities/collections'
 import { fullSignOut } from '~/lib/auth'
+import { persistence } from '~/lib/database'
 import { encryptionKey } from '~/lib/encryption-key'
 import { orpc } from '~/lib/orpc'
-import { persistence } from '~/lib/sync'
+import { PERSISTED_SCHEMA_VERSION } from '~/lib/sync'
 
 export interface ConnectionString {
   connectionId: string
@@ -79,13 +80,21 @@ export const createConnectionStringsCollection =
         getKey: (item) => item.connectionId,
         id: 'connection-strings',
         persistence,
-        schemaVersion: 1,
+        schemaVersion: PERSISTED_SCHEMA_VERSION,
         utils: {
           async decrypt(connectionId: string) {
             const record =
               getCollections().connectionStringsCollection.get(connectionId)
 
             if (!record) {
+              const result = await orpc.connections.resolve.call({
+                id: connectionId,
+              })
+
+              if (result.status === 'modified') {
+                return result.connectionString
+              }
+
               throw new Error(
                 `No connection string found for connection "${connectionId}"`
               )

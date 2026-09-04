@@ -1,5 +1,5 @@
-import { SyncType } from '@tamery/shared/enums/sync-type'
 import type { ActiveFilter } from '@tamery/shared/filters'
+import { noop } from '@tamery/shared/utils/helpers'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useSubscription } from 'seitu/react'
 
@@ -13,8 +13,9 @@ import { resourceConstraintsQueryOptions } from '../queries/constraints'
 import { resourceEnumsQueryOptions } from '../queries/enums'
 import { resourceTablesAndSchemasQueryOptions } from '../queries/tables-and-schemas'
 import { resourceTableTotalQueryOptions } from '../queries/total'
-import { isLocalProxyAvailable, useLocalProxyAvailable } from '../runtime/proxy'
+import { useLocalProxyAvailable } from '../runtime/proxy'
 import { getConnectionResourceStore, getConnectionStore } from '../store'
+import { fetchingConfig } from './fetching-config'
 
 export const prefetchConnectionResourceCore = async (
   connectionResource: ConnectionResource
@@ -35,19 +36,15 @@ export const prefetchConnectionResourceCore = async (
 
   const store = getConnectionResourceStore(connectionResource.id)
   await Promise.all([
-    queryClient.prefetchQuery(
+    queryClient.query(
       resourceTablesAndSchemasQueryOptions({
         connectionResource,
         showSystem: store.get().showSystem,
       })
     ),
-    queryClient.prefetchQuery(
-      resourceEnumsQueryOptions({ connectionResource })
-    ),
-    queryClient.prefetchQuery(
-      resourceConstraintsQueryOptions({ connectionResource })
-    ),
-  ])
+    queryClient.query(resourceEnumsQueryOptions({ connectionResource })),
+    queryClient.query(resourceConstraintsQueryOptions({ connectionResource })),
+  ]).catch(noop)
 }
 
 export const prefetchConnectionResourceTableCore = async ({
@@ -66,7 +63,7 @@ export const prefetchConnectionResourceTableCore = async ({
   }
 }) => {
   await Promise.all([
-    queryClient.prefetchInfiniteQuery(
+    queryClient.infiniteQuery(
       resourceRowsQueryInfiniteOptions({
         connectionResource,
         query,
@@ -74,7 +71,7 @@ export const prefetchConnectionResourceTableCore = async ({
         table,
       })
     ),
-    queryClient.prefetchQuery(
+    queryClient.query(
       resourceTableTotalQueryOptions({
         connectionResource,
         query,
@@ -82,124 +79,10 @@ export const prefetchConnectionResourceTableCore = async ({
         table,
       })
     ),
-    queryClient.prefetchQuery(
+    queryClient.query(
       resourceTableColumnsQueryOptions({ connectionResource, schema, table })
     ),
-  ])
-}
-
-const waitingForPasswordConfig = (): {
-  type: 'waiting-for-password'
-  canSend: false
-  reason: string
-} => ({
-  canSend: false,
-  reason: window.electron
-    ? 'Filled password is required to query this connection.'
-    : 'This connection cannot be used from the web app because it was created without storing the password. Open this connection in the desktop app.',
-  type: 'waiting-for-password',
-})
-
-const cloudProxyConfig = (
-  connection: Pick<Connection, 'syncType'>
-): {
-  type: 'cloud-proxy'
-  canSend: boolean
-  reason: string | null
-} => {
-  const canSend = connection.syncType !== SyncType.CloudWithoutPassword
-
-  return {
-    canSend,
-    reason: canSend
-      ? null
-      : 'You cannot reach this connection from the web app. Open this connection in the desktop app.',
-    type: 'cloud-proxy',
-  }
-}
-
-const isPasswordFilledForConnection = (
-  connection: Pick<Connection, 'syncType'>,
-  isPasswordPopulated: boolean
-) =>
-  (connection.syncType === SyncType.CloudWithoutPassword &&
-    isPasswordPopulated) ||
-  connection.syncType === SyncType.Cloud
-
-const resolveReachableConfig = ({
-  connection,
-  hasCustomUrl,
-  isLocalhost,
-  isPasswordFilled,
-  preferProxy,
-  proxyAvailable,
-}: {
-  connection: Pick<Connection, 'syncType'>
-  hasCustomUrl: boolean
-  isLocalhost: boolean
-  isPasswordFilled: boolean
-  preferProxy: boolean
-  proxyAvailable: boolean
-}): {
-  type: 'cloud-proxy' | 'local' | 'proxy'
-  canSend: boolean
-  reason: string | null
-} => {
-  if (
-    (isLocalhost || isPasswordFilled) &&
-    (proxyAvailable || hasCustomUrl) &&
-    preferProxy
-  ) {
-    return { canSend: true, reason: null, type: 'proxy' }
-  }
-
-  if (window.electron) {
-    return { canSend: true, reason: null, type: 'local' }
-  }
-
-  if (isLocalhost) {
-    return {
-      canSend: false,
-      reason:
-        'You cannot reach this connection from the web app. Run `tamery proxy` or open this connection in the desktop app.',
-      type: 'proxy',
-    }
-  }
-
-  return cloudProxyConfig(connection)
-}
-
-export const fetchingConfig = (
-  connection: Pick<Connection, 'syncType' | 'isPasswordExists'>,
-  options?: {
-    isLocalProxyAvailable?: boolean
-    isPasswordPopulated?: boolean
-    isLocalhost?: boolean
-    proxy?: { enabled: boolean; url: string | null }
-  }
-): {
-  type: 'cloud-proxy' | 'local' | 'proxy' | 'waiting-for-password'
-  canSend: boolean
-  reason: string | null
-} => {
-  const isPasswordPopulated = options?.isPasswordPopulated ?? false
-  const isLocalhost = options?.isLocalhost ?? false
-
-  if (connection.isPasswordExists && !isPasswordPopulated) {
-    return waitingForPasswordConfig()
-  }
-
-  return resolveReachableConfig({
-    connection,
-    hasCustomUrl: !!options?.proxy?.url,
-    isLocalhost,
-    isPasswordFilled: isPasswordFilledForConnection(
-      connection,
-      isPasswordPopulated
-    ),
-    preferProxy: !window.electron || options?.proxy?.enabled === true,
-    proxyAvailable: options?.isLocalProxyAvailable ?? isLocalProxyAvailable(),
-  })
+  ]).catch(noop)
 }
 
 export const useFetchingConfig = (

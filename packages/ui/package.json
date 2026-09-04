@@ -13,6 +13,7 @@
     "./components/tanstack-form/*": "./src/components/tanstack-form/*",
     "./hooks/*": "./src/hooks/*.ts",
     "./hookas/*": "./src/hookas/*.ts",
+    "./theme-constants": "./src/theme-constants.ts",
     "./theme-observer": "./src/theme-observer.tsx",
     "./theme-store": "./src/theme-store.ts"
   },
@@ -43,7 +44,7 @@
     "blobatar": "catalog:",
     "class-variance-authority": "catalog:",
     "cmdk": "catalog:",
-    "cnfast": "catalog:",
+    "cn": "catalog:",
     "date-fns": "catalog:",
     "input-otp": "catalog:",
     "motion": "catalog:",

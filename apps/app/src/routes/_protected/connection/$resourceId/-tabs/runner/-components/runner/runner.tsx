@@ -19,11 +19,6 @@ import {
   PopoverTrigger,
 } from '@tamery/ui/components/popover'
 import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from '@tamery/ui/components/resizable'
-import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -33,12 +28,11 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import type { ComponentRef } from 'react'
 import { useRef, useState } from 'react'
-import { useDefaultLayout } from 'react-resizable-panels'
 import { useSubscription } from 'seitu/react'
 
 import { useCollections } from '~/entities/collections'
 import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
-import { formatSql } from '~/utils/formatter'
+import { formatSql } from '~/lib/formatter'
 
 import { runnerQueryOptions } from '.'
 import {
@@ -182,28 +176,15 @@ export const Runner = () => {
     }
   }
 
-  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
-    id: `runner-layout-${connectionResource.id}-${tabId}`,
-    storage: localStorage,
-  })
-
-  const contextValue = {
-    run: runQueriesWithAlert,
-    save: (q: string) => saveQueryDialogRef.current?.open(q),
-  }
-
   return (
-    <RunnerContext.Provider value={contextValue}>
-      <ResizablePanelGroup
-        defaultLayout={defaultLayout}
-        onLayoutChanged={onLayoutChanged}
-        orientation="vertical"
-        className="h-full"
-      >
-        <ResizablePanel
-          minSize="20%"
-          defaultSize={resultsVisible ? '70%' : '100%'}
-        >
+    <RunnerContext.Provider
+      value={{
+        run: runQueriesWithAlert,
+        save: (q: string) => saveQueryDialogRef.current?.open(q),
+      }}
+    >
+      <div className="flex h-full flex-col">
+        <div className="flex min-h-0 flex-1 flex-col">
           <CardHeader className="h-14 py-3">
             <CardTitle className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
@@ -282,16 +263,14 @@ export const Runner = () => {
           </div>
           <RunnerSaveDialog ref={saveQueryDialogRef} />
           <RunnerAlertDialog ref={alertDialogRef} />
-        </ResizablePanel>
-        {resultsVisible && (
-          <>
-            <ResizableHandle withHandle className="bg-border" />
-            <ResizablePanel minSize="20%" defaultSize="30%">
-              <RunnerResults />
-            </ResizablePanel>
-          </>
-        )}
-      </ResizablePanelGroup>
+        </div>
+        <div
+          className="shrink-0 overflow-hidden"
+          style={{ height: resultsVisible ? '30%' : 0 }}
+        >
+          <RunnerResults />
+        </div>
+      </div>
     </RunnerContext.Provider>
   )
 }

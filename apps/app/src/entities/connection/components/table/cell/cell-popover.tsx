@@ -1,8 +1,6 @@
 import {
-  RiCheckLine,
   RiCollapseDiagonal2Line,
   RiExpandDiagonal2Line,
-  RiFileCopyLine,
 } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -238,11 +236,7 @@ const CellPopoverToolbar = ({
               />
             }
           >
-            {isBig ? (
-              <RiCollapseDiagonal2Line className="size-3.5" />
-            ) : (
-              <RiExpandDiagonal2Line className="size-3.5" />
-            )}
+            {isBig ? <RiCollapseDiagonal2Line /> : <RiExpandDiagonal2Line />}
           </TooltipTrigger>
           <TooltipContent side="bottom">Toggle size</TooltipContent>
         </Tooltip>
@@ -255,8 +249,6 @@ const CellPopoverToolbar = ({
               variant="outline"
               className="text-muted-foreground"
               text={copyTextForValue(isRaw, rawValue, newValue)}
-              copyIcon={<RiFileCopyLine className="size-3.5" />}
-              successIcon={<RiCheckLine className="text-success size-3.5" />}
             />
           }
         />

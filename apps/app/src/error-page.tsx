@@ -1,4 +1,4 @@
-import { RiAlertLine, RiCheckLine, RiFileCopyLine } from '@remixicon/react'
+import { RiAlertLine } from '@remixicon/react'
 import { Button } from '@tamery/ui/components/button'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
@@ -9,12 +9,10 @@ import type { ErrorComponentProps } from '@tanstack/react-router'
 import { useRouter } from '@tanstack/react-router'
 import { TraversalError } from 'arktype'
 import { motion } from 'motion/react'
-import { posthog } from 'posthog-js'
 import { useEffect, useState } from 'react'
 
-import { EventsProvider } from '~/events'
-
-import { enterAppAnimation } from './global-hooks'
+import { EventsProvider } from '~/components/events-provider'
+import { posthog } from '~/lib/posthog'
 
 // User specific errors that we don't want to track
 const CONNECTION_ERRORS = [
@@ -47,10 +45,6 @@ const isReadableMessage = (message: string) => {
 export const ErrorPage = ({ error }: ErrorComponentProps) => {
   const router = useRouter()
   const [showDetails, setShowDetails] = useState(false)
-
-  useEffect(() => {
-    enterAppAnimation()
-  }, [])
 
   useEffect(() => {
     if (CONNECTION_ERRORS.some((e) => error.message.includes(e))) {
@@ -141,8 +135,6 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
               variant="ghost"
               size="xs"
               text={details}
-              copyIcon={<RiFileCopyLine className="size-3" />}
-              successIcon={<RiCheckLine className="text-success size-3" />}
               className="text-muted-foreground/70 hover:text-foreground h-6 gap-1 px-1.5 font-normal hover:bg-transparent"
             >
               Copy details

@@ -19,6 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@tamery/ui/components/popover'
+import { Skeleton } from '@tamery/ui/components/skeleton'
 import {
   Tooltip,
   TooltipContent,
@@ -34,7 +35,7 @@ export const ActionsColumns = () => {
   const hiddenColumns = useSubscription(store, {
     selector: (state) => state.hiddenColumns,
   })
-  const { columns } = useTableColumnsContext()
+  const { columns, isPending } = useTableColumnsContext()
   const hiddenCount = hiddenColumns.filter((id) =>
     columns.some((column) => column.id === id)
   ).length
@@ -50,16 +51,22 @@ export const ActionsColumns = () => {
           }
         >
           <RiLayoutColumnLine className="text-muted-foreground/60" />
-          <NumberFlow
-            value={columns.length - hiddenCount}
-            suffix={hiddenCount > 0 ? `/${columns.length}` : undefined}
-            className="text-2xs font-normal tabular-nums"
-          />
+          {isPending ? (
+            <Skeleton className="h-2.5 w-3 rounded-full" />
+          ) : (
+            <NumberFlow
+              value={columns.length - hiddenCount}
+              suffix={hiddenCount > 0 ? `/${columns.length}` : undefined}
+              className="text-2xs font-normal tabular-nums"
+            />
+          )}
         </TooltipTrigger>
         <TooltipContent side="top">
-          {hiddenCount > 0
-            ? `${columns.length} columns · ${hiddenCount} hidden`
-            : `${columns.length} column${columns.length === 1 ? '' : 's'}`}
+          {isPending && 'Loading columns…'}
+          {!isPending &&
+            (hiddenCount > 0
+              ? `${columns.length} columns · ${hiddenCount} hidden`
+              : `${columns.length} column${columns.length === 1 ? '' : 's'}`)}
         </TooltipContent>
       </Tooltip>
       <PopoverContent

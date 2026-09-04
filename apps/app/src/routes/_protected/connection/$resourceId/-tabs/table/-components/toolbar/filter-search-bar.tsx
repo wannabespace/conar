@@ -20,7 +20,10 @@ import {
   CommandShortcut,
 } from '@tamery/ui/components/command'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
-import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
+import {
+  EnterIcon,
+  KbdCtrlLetter,
+} from '@tamery/ui/components/custom/shortcuts'
 import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey } from '@tanstack/react-hotkeys'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -355,7 +358,7 @@ const FilterCommandList = ({
               Filter by {column.id}
             </span>
             {column.type && (
-              <CommandShortcut className="tracking-normal">
+              <CommandShortcut>
                 {column.typeLabel || column.type}
               </CommandShortcut>
             )}
@@ -372,7 +375,7 @@ const FilterCommandList = ({
               Ask AI: “{trimmedQuery}”
             </span>
             {freeAiUsage && (
-              <CommandShortcut className="tracking-normal">
+              <CommandShortcut>
                 {freeAiUsage.remaining}/{freeAiUsage.max} left
               </CommandShortcut>
             )}
@@ -396,9 +399,7 @@ const FilterCommandList = ({
               onSelect={() => pickOperator(filter)}
             >
               <span className="min-w-0 flex-1 truncate">{filter.label}</span>
-              <CommandShortcut className="tracking-normal">
-                {filter.operator}
-              </CommandShortcut>
+              <CommandShortcut>{filter.operator}</CommandShortcut>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -435,7 +436,9 @@ const FilterCommandList = ({
               Apply: {stage.column} {stage.ref.operator}{' '}
               {query === '' ? '(empty)' : query}
             </span>
-            <CommandShortcut>↵</CommandShortcut>
+            <CommandShortcut>
+              <EnterIcon />
+            </CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </>

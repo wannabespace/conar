@@ -30,6 +30,8 @@ import { SchemaSelect } from '../-components/schema-select'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
+
 type IndexItem = typeof indexesType.infer
 
 interface GroupedIndex extends Pick<
@@ -108,10 +110,8 @@ const groupIndexes = (
   return grouped
 }
 
-const routeApi = getRouteApi('/_protected/connection/$resourceId')
-
 export const Indexes = () => {
-  const { connectionResource } = routeApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const { data: indexes, isPending } = useQuery(
     resourceIndexesQueryOptions({ connectionResource })
   )

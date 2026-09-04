@@ -1,54 +1,129 @@
-import { CodeBlock } from '@tamery/ui/components/code-block'
+import { RiArrowDownSLine } from '@remixicon/react'
+import { CodeBlock } from '@tamery/ui/components/custom/code-block'
+import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { cn } from '@tamery/ui/lib/utils'
 import type * as React from 'react'
+import { useState } from 'react'
 import { Streamdown } from 'streamdown'
+import type { ExtraProps } from 'streamdown'
 
-const animate = { animation: 'fadeIn', sep: 'word' } as const
+const COLLAPSED_LINES = 10
 
-// Owning `pre` replaces Streamdown's code block outright — its own chrome is
-// registry-sized (line-number gutter, boxed copy button) and styles against
-// `bg-sidebar`, a token this theme does not define.
-const Pre = ({ children }: { children?: React.ReactNode }) => {
-  const props = (
-    children as React.ReactElement<{
-      children?: React.ReactNode
-      className?: string
-    }>
-  )?.props
-  const code = props?.children?.toString().replace(/\n$/u, '') ?? ''
-  // The class can carry more than one token (`language-sql hljs`), and only the
-  // first is the language.
-  const language =
-    props?.className
-      ?.split(/\s+/u)
-      .find((name) => name.startsWith('language-'))
-      ?.replace('language-', '') || 'text'
-
-  return code ? <CodeBlock code={code} language={language} /> : null
+const LANGUAGE_LABELS: Record<string, string> = {
+  bash: 'Bash',
+  css: 'CSS',
+  html: 'HTML',
+  js: 'JavaScript',
+  json: 'JSON',
+  jsx: 'JSX',
+  py: 'Python',
+  sh: 'Shell',
+  sql: 'SQL',
+  ts: 'TypeScript',
+  tsx: 'TSX',
+  yaml: 'YAML',
 }
 
-const components = { pre: Pre }
-
-const prose = `[&_ol]:my-2 [&_ol]:ml-4 [&_ol]:list-decimal [&_p]:my-2 [&_ul]:my-2 [&_ul]:ml-4 [&_ul]:list-disc [&_li]:my-0.5 [&_:is(h1,h2,h3)]:mt-4 [&_:is(h1,h2,h3)]:mb-2 [&_h1]:text-base [&_h1]:font-semibold [&_h2]:text-sm [&_h2]:font-semibold [&_h3]:text-sm [&_h3]:font-medium [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2 [&_blockquote]:border-border [&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&>:first-child]:mt-0 [&>:last-child]:mb-0`
-const inlineCode = `[&_[data-streamdown=inline-code]]:bg-foreground/5 [&_[data-streamdown=inline-code]]:rounded-md [&_[data-streamdown=inline-code]]:px-1 [&_[data-streamdown=inline-code]]:py-px [&_[data-streamdown=inline-code]]:font-mono [&_[data-streamdown=inline-code]]:text-[0.9em]`
-
-const Response = ({
+export const ResponseCodeBlock = ({
   className,
-  streaming,
+  code,
+  language,
   ...props
-}: React.ComponentProps<typeof Streamdown> & { streaming?: boolean }) => (
+}: React.ComponentProps<'div'> & {
+  code: string
+  language: string
+}) => {
+  const [expanded, setExpanded] = useState(false)
+  const lines = code.split('\n')
+  const hidden = lines.length - COLLAPSED_LINES
+  const collapsed = hidden > 0 && !expanded
+
+  return (
+    <div
+      className={cn(
+        'bg-foreground/3 my-2 min-w-0 overflow-hidden rounded-lg',
+        className
+      )}
+      {...props}
+    >
+      <div className="text-muted-foreground text-2xs flex h-6 items-center gap-0.5 pr-0.5 pl-2">
+        <span className="min-w-0 flex-1 truncate">
+          {LANGUAGE_LABELS[language] ?? language}
+        </span>
+        <CopyButton
+          className="text-muted-foreground size-5 [&_svg]:size-3"
+          size="icon-sm"
+          text={code}
+          variant="ghost"
+        />
+      </div>
+      <CodeBlock
+        className={collapsed ? 'pb-0' : 'max-h-72 pb-2'}
+        code={collapsed ? lines.slice(0, COLLAPSED_LINES).join('\n') : code}
+        language={language}
+      />
+      {hidden > 0 && (
+        <button
+          className="text-muted-foreground hover:bg-foreground/3 hover:text-foreground text-2xs flex h-6 w-full items-center gap-1 px-2 transition-colors"
+          onClick={() => setExpanded((current) => !current)}
+          type="button"
+        >
+          <RiArrowDownSLine
+            className={cn(
+              'size-3 transition-transform',
+              expanded && 'rotate-180'
+            )}
+          />
+          {expanded
+            ? 'Show less'
+            : `Show ${hidden} more ${hidden === 1 ? 'line' : 'lines'}`}
+        </button>
+      )}
+    </div>
+  )
+}
+
+const Code = ({
+  children,
+  className,
+  node: _node,
+  ...props
+}: React.ComponentProps<'code'> & ExtraProps) =>
+  'data-block' in props ? (
+    <ResponseCodeBlock
+      code={String(children).replace(/\n$/u, '')}
+      language={
+        /language-(?<language>\S+)/u.exec(className ?? '')?.groups?.language ??
+        'text'
+      }
+    />
+  ) : (
+    <code
+      className={cn(
+        'bg-foreground/5 rounded-md px-1 py-px font-mono text-[0.9em]',
+        className
+      )}
+      data-mask
+      {...props}
+    >
+      {children}
+    </code>
+  )
+
+const components = { code: Code }
+
+const prose = `[&_p]:my-2 [&_:is(ul,ol)]:my-2 [&_:is(ul,ol)]:ml-4 [&_:is(ul,ol)]:list-outside [&_li]:my-1 [&_li]:py-0 [&_li_:is(ul,ol)]:mt-1 [&_li_:is(ul,ol)]:pl-0 [&_:is(h1,h2,h3,h4,h5,h6)]:mt-3 [&_:is(h1,h2,h3,h4,h5,h6)]:mb-1 [&_h1]:text-base [&_h1]:font-semibold [&_h2]:text-sm [&_h2]:font-semibold [&_:is(h3,h4,h5,h6)]:text-sm [&_:is(h3,h4,h5,h6)]:font-medium [&_a]:underline-offset-2 [&_blockquote]:border-border [&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&>:first-child]:mt-0 [&>:last-child]:mb-0`
+
+export const Response = ({
+  className,
+  ...props
+}: React.ComponentProps<typeof Streamdown>) => (
   <Streamdown
-    animated={streaming ? animate : false}
-    className={cn('min-w-0 text-sm/relaxed', prose, inlineCode, className)}
+    className={cn('min-w-0 text-sm/normal', prose, className)}
     components={components}
     controls={false}
     data-slot="response"
-    isAnimating={streaming}
     linkSafety={{ enabled: false }}
-    mode={streaming ? 'streaming' : 'static'}
-    parseIncompleteMarkdown
     {...props}
   />
 )
-
-export { Response }

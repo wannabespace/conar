@@ -1,4 +1,4 @@
-import type { ComponentType, CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 export * from './body'
 export * from './header'
@@ -25,6 +25,6 @@ export interface TableHeaderCellProps extends Pick<
 export interface ColumnRenderer {
   id: string
   size: number
-  cell?: ComponentType<TableCellProps>
-  header?: ComponentType<TableHeaderCellProps>
+  cell?: (props: TableCellProps) => ReactNode
+  header?: (props: TableHeaderCellProps) => ReactNode
 }

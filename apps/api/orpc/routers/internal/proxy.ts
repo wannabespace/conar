@@ -1,4 +1,3 @@
-import { ORPCError } from '@orpc/server'
 import { db } from '@tamery/db'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { decrypt } from '@tamery/shared/utils/crypto-node'
@@ -7,15 +6,19 @@ import { type } from 'arktype'
 import { env } from '~/env'
 import { authMiddleware, orpc } from '~/orpc'
 
-const proxySecretMiddleware = orpc.middleware(({ context, next }) => {
-  const token = context.headers.get('x-proxy-token')
+const proxySecretMiddleware = orpc
+  .errors({
+    FORBIDDEN: { message: 'Invalid proxy token' },
+  })
+  .middleware(({ context, errors, next }) => {
+    const token = context.headers.get('x-proxy-token')
 
-  if (token !== env.PROXY_SHARED_SECRET) {
-    throw new ORPCError('FORBIDDEN', { message: 'Invalid proxy token' })
-  }
+    if (token !== env.PROXY_SHARED_SECRET) {
+      throw errors.FORBIDDEN()
+    }
 
-  return next()
-})
+    return next()
+  })
 
 export const proxy = {
   resolveConnectionString: orpc
@@ -28,7 +31,18 @@ export const proxy = {
         'resourceId?': 'string',
       })
     )
-    .handler(async ({ input, context }) => {
+    .errors({
+      BAD_REQUEST: {
+        message:
+          'One of connectionString, resourceId, or connectionId is required',
+      },
+      FORBIDDEN: {
+        message:
+          'This connection is not allowed to be used because it was created as a cloud connection without a password.',
+      },
+      NOT_FOUND: { message: 'Connection not found' },
+    })
+    .handler(async ({ context, errors, input }) => {
       if (input.connectionString) {
         return input.connectionString
       }
@@ -55,17 +69,14 @@ export const proxy = {
         })
 
         if (!connection || !connection.connection) {
-          throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
+          throw errors.NOT_FOUND()
         }
 
         if (
           connection.connection.syncType === SyncType.CloudWithoutPassword &&
           connection.connection.isPasswordExists
         ) {
-          throw new ORPCError('FORBIDDEN', {
-            message:
-              'This connection is not allowed to be used because it was created as a cloud connection without a password.',
-          })
+          throw errors.FORBIDDEN()
         }
 
         return decrypt({
@@ -91,17 +102,14 @@ export const proxy = {
         })
 
         if (!connection) {
-          throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
+          throw errors.NOT_FOUND()
         }
 
         if (
           connection.syncType === SyncType.CloudWithoutPassword &&
           connection.isPasswordExists
         ) {
-          throw new ORPCError('FORBIDDEN', {
-            message:
-              'This connection is not allowed to be used because it was created as a cloud connection without a password.',
-          })
+          throw errors.FORBIDDEN()
         }
 
         return decrypt({
@@ -110,9 +118,6 @@ export const proxy = {
         })
       }
 
-      throw new ORPCError('BAD_REQUEST', {
-        message:
-          'One of connectionString, resourceId, or connectionId is required',
-      })
+      throw errors.BAD_REQUEST()
     }),
 }

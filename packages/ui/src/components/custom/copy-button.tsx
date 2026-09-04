@@ -6,8 +6,8 @@ import { useState } from 'react'
 import { Button } from '../button'
 import { ContentSwitch } from './content-switch'
 
-const defaultCopyIcon = <RiFileCopyLine className="size-4" />
-const defaultSuccessIcon = <RiCheckLine className="text-success size-4" />
+const defaultCopyIcon = <RiFileCopyLine />
+const defaultSuccessIcon = <RiCheckLine className="text-success" />
 
 export const CopyButton = ({
   text,

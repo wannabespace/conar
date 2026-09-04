@@ -25,7 +25,7 @@ import {
 } from '~/entities/connection'
 import { useSubscription } from '~/entities/user/hooks'
 import type { Workspace } from '~/entities/workspace'
-import { setActiveWorkspace, useActiveWorkspace } from '~/entities/workspace'
+import { useActiveWorkspace, workspaceSelection } from '~/entities/workspace'
 import { setIsSubscriptionDialogOpen } from '~/store'
 
 import { CreateWorkspaceDialog } from './create-workspace-dialog'
@@ -175,7 +175,7 @@ const WorkspaceSubMenu = ({
           connection={connection}
           resources={resources}
           onSelect={() => {
-            setActiveWorkspace(workspace.id)
+            workspaceSelection.set(workspace.id)
             onNavigate()
           }}
         />
@@ -183,7 +183,7 @@ const WorkspaceSubMenu = ({
       <DropdownMenuSeparator />
       <DropdownMenuItem
         onClick={() => {
-          setActiveWorkspace(workspace.id)
+          workspaceSelection.set(workspace.id)
           onNavigate()
         }}
         render={<Link to="/create" activateOn="click" />}
@@ -210,7 +210,7 @@ export const WorkspaceSwitcher = () => {
       return
     }
 
-    setActiveWorkspace(id)
+    workspaceSelection.set(id)
     await navigate({ to: '/' })
   }
 

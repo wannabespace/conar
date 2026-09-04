@@ -1,6 +1,7 @@
 import { createORPCClient, onError, ORPCError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { ClientRetryPlugin } from '@orpc/client/plugins'
+import type { ClientRetryPluginContext } from '@orpc/client/plugins'
 import type { InferRouterInputs, InferRouterOutputs } from '@orpc/server'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import type * as apiOrpc from '@tamery/api/orpc/routers'
@@ -10,13 +11,17 @@ import { PROXY_ERROR_MESSAGE } from '@tamery/shared/constants'
 import { isConnectionError } from '@tamery/shared/utils/connections'
 import { memoize } from 'memoza'
 
-import { handleError } from '../utils/error'
-import { apiUrl, proxyUrl } from '../utils/utils'
 import { bearerToken } from './auth'
+import { handleError } from './error'
+import { apiUrl, proxyUrl } from './urls'
+
+export interface AppClientContext extends ClientRetryPluginContext {
+  silent?: boolean
+}
 
 export const orpc = createTanstackQueryUtils(
   createORPCClient(
-    new RPCLink({
+    new RPCLink<AppClientContext>({
       fetch: (request, init) =>
         globalThis.fetch(request, {
           ...init,

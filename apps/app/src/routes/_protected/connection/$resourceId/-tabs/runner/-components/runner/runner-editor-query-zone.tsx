@@ -1,9 +1,4 @@
-import {
-  RiCheckLine,
-  RiFileCopyLine,
-  RiQuestionLine,
-  RiSaveLine,
-} from '@remixicon/react'
+import { RiCheckLine, RiQuestionLine, RiSaveLine } from '@remixicon/react'
 import { CONNECTION_TYPES_WITH_EXPLAIN } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
@@ -179,7 +174,7 @@ export const RunnerEditorQueryZone = ({
                   />
                 }
               >
-                <RiSaveLine className="size-3.5" />
+                <RiSaveLine />
               </TooltipTrigger>
               <TooltipContent>Save</TooltipContent>
             </Tooltip>
@@ -191,8 +186,6 @@ export const RunnerEditorQueryZone = ({
                     size="icon-xs"
                     className="focus:outline-none!"
                     text={getQuery}
-                    successIcon={<RiCheckLine className="text-success" />}
-                    copyIcon={<RiFileCopyLine className="size-3.5" />}
                   />
                 }
               />

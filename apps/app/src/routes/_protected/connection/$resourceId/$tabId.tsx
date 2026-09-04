@@ -22,10 +22,12 @@ import { tablePageStore } from './-tabs/table/-lib/store'
 import { TableTab } from './-tabs/table/table-tab'
 import { VisualizerTab } from './-tabs/visualizer/visualizer-tab'
 
-const routeApi = getRouteApi('/_protected/connection/$resourceId/$tabId')
+const { useRouteContext } = getRouteApi(
+  '/_protected/connection/$resourceId/$tabId'
+)
 
 const TabPage = () => {
-  const { connectionResource, tab } = routeApi.useRouteContext()
+  const { connectionResource, tab } = useRouteContext()
 
   useEffect(() => {
     ensureTab(connectionResource.id, tab)
@@ -44,11 +46,7 @@ const TabPage = () => {
     return <DefinitionsTab section={tab.section} />
   }
 
-  return (
-    <div className="min-h-0 flex-1">
-      <VisualizerTab />
-    </div>
-  )
+  return <VisualizerTab />
 }
 
 export const Route = createFileRoute(

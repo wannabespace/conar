@@ -25,7 +25,7 @@ import { SchemaSelect } from '../-components/schema-select'
 import { MOTION_BLOCK_PROPS } from '../-constants'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
 
-const functionsRouteApi = getRouteApi('/_protected/connection/$resourceId')
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 type FunctionType = (typeof functionsType.infer)['type']
 
@@ -36,7 +36,7 @@ const typeFilterOptions: { label: string; value: FunctionType | 'all' }[] = [
 ]
 
 export const Functions = () => {
-  const { connectionResource } = functionsRouteApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const { data: functions, isPending } = useQuery(
     resourceFunctionsQueryOptions({ connectionResource })
   )

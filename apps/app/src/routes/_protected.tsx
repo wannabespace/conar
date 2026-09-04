@@ -2,11 +2,9 @@ import { cn } from '@tamery/ui/lib/utils'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
+import { EventsProvider } from '~/components/events-provider'
 import { GlobalBanner } from '~/components/global-banner'
 import { SubscriptionModal } from '~/components/subscription-modal'
-import { cleanCollections, getCollections } from '~/entities/collections'
-import { EventsProvider } from '~/events'
-import { enterAppAnimation } from '~/global-hooks'
 import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
 import { useLastOpenedResourcesSync } from '~/hooks/use-last-opened-resources-sync'
 import { subscriptionQueryClient } from '~/main'
@@ -17,17 +15,6 @@ import { ProtectedTitleBar } from './_protected/-components/protected-titlebar'
 const ProtectedLayout = () => {
   useConnectionStringsSync()
   useLastOpenedResourcesSync()
-
-  useEffect(
-    () => () => {
-      cleanCollections()
-    },
-    []
-  )
-
-  useEffect(() => {
-    enterAppAnimation()
-  }, [])
 
   useEffect(() => {
     const handleFocus = () => {
@@ -67,6 +54,7 @@ const ProtectedLayout = () => {
 export const Route = createFileRoute('/_protected')({
   component: ProtectedLayout,
   beforeLoad: async () => {
+    const { getCollections } = await import('~/entities/collections')
     const c = getCollections()
 
     await Promise.all([

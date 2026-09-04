@@ -43,7 +43,7 @@ Tamery is an AI-powered open-source project that simplifies database interaction
 - oRPC
 - Drizzle ORM
 - Better Auth
-- TanStack AI with Anthropic
+- Vercel AI SDK with Anthropic
 - Railway
 - PostHog
 - Resend
@@ -58,11 +58,19 @@ Tamery is an AI-powered open-source project that simplifies database interaction
   pnpm install
   ```
 
-- **🐳 Start Database with Docker Compose**
+- **🌐 Browser Automation (recommended)**
 
-  Install Docker: https://docs.docker.com/get-docker/
+  [agent-browser](https://www.npmjs.com/package/agent-browser) drives the running app for agents and manual debugging. Install it globally, once per machine:
 
-  This will start all services needed for development.
+  ```bash
+  npm install -g agent-browser && agent-browser install
+  ```
+
+  It is not a project dependency — agents call its CLI directly (`agent-browser open <url>`, `snapshot`, `click`, `console`); without it, any other browser automation can be used instead.
+
+- **🐳 Start Backing Services**
+
+  Postgres and Redis must be reachable from `apps/api/.env` (copy `.env.example`). Either point it at hosted instances, or start local ones with Docker (https://docs.docker.com/get-docker/):
 
   ```bash
   pnpm run docker:start

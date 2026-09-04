@@ -4,6 +4,8 @@ import { memoize } from 'memoza'
 import { createStore } from 'seitu'
 import { createWebStorageValue } from 'seitu/web'
 
+import { connectionResourceStoreKey } from '~/lib/constants'
+
 import { connectionTabType } from './tabs/types'
 
 export * from './helpers/navigator'
@@ -51,6 +53,8 @@ export const viewportType = type({
 
 export const connectionResourceType = type({
   activeTabId: 'string | null',
+  chatId: 'string | null',
+  chatOpened: 'boolean',
   loggerOpened: 'boolean',
   pinnedTables: type({
     schema: 'string',
@@ -67,6 +71,8 @@ export const connectionResourceType = type({
 
 const connectionResourceDefaultState: typeof connectionResourceType.infer = {
   activeTabId: null,
+  chatId: null,
+  chatOpened: false,
   loggerOpened: false,
   pinnedTables: [],
   showSystem: false,
@@ -79,7 +85,7 @@ const connectionResourceDefaultState: typeof connectionResourceType.infer = {
 export const getConnectionResourceStore = memoize((id: string) =>
   createWebStorageValue({
     defaultValue: connectionResourceDefaultState,
-    key: `connection-resource-store-${id}`,
+    key: connectionResourceStoreKey(id),
     schema: connectionResourceType,
     type: 'localStorage',
   })

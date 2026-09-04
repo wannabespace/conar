@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "agent-browser": {
-      "command": "./node_modules/.bin/agent-browser",
-      "args": ["mcp", "--tools", "core,debug"]
-    }
-  }
-}

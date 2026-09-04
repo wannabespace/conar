@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module'
 import path from 'node:path'
 
+import { MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH } from '@tamery/shared/constants'
 import { isConnectionError } from '@tamery/shared/utils/connections'
 import type { UpdatesStatus } from '@tamery/shared/utils/updates'
 import type todesktopRuntime from '@todesktop/runtime'
@@ -44,6 +45,7 @@ process.on('unhandledRejection', (reason) => {
 export const store = new Store<{
   bounds?: Rectangle
   fullscreen?: boolean
+  maximized?: boolean
 }>()
 
 let mainWindow: BrowserWindow | null = null
@@ -56,8 +58,8 @@ export const createWindow = () => {
   mainWindow = new BrowserWindow({
     focusable: true,
     height,
-    minHeight: 500,
-    minWidth: 500,
+    minHeight: MIN_WINDOW_HEIGHT,
+    minWidth: MIN_WINDOW_WIDTH,
     titleBarStyle: 'hidden',
     trafficLightPosition: { x: 16, y: 13 },
     width,
@@ -85,6 +87,10 @@ export const createWindow = () => {
     mainWindow.setBounds(bounds)
   }
 
+  if (store.get('maximized', false)) {
+    mainWindow.maximize()
+  }
+
   const isFullscreen = store.get('fullscreen', false)
   if (isFullscreen) {
     mainWindow.setFullScreen(true)
@@ -103,6 +109,7 @@ export const createWindow = () => {
 
       if (!mainWindow.isFullScreen() && !mainWindow.isMinimized()) {
         store.set('bounds', mainWindow.getNormalBounds())
+        store.set('maximized', mainWindow.isMaximized())
       }
       store.set('fullscreen', mainWindow.isFullScreen())
     }, 300)
@@ -138,6 +145,7 @@ export const createWindow = () => {
 
     if (!mainWindow.isFullScreen() && !mainWindow.isMinimized()) {
       store.set('bounds', mainWindow.getNormalBounds())
+      store.set('maximized', mainWindow.isMaximized())
     }
     store.set('fullscreen', mainWindow.isFullScreen())
     mainWindow = null

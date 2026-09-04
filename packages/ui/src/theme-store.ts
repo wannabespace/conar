@@ -3,10 +3,10 @@ import { createComputed } from 'seitu'
 import { useSubscription } from 'seitu/react'
 import { createMediaQuery, createWebStorageValue } from 'seitu/web'
 
-export type ResolvedTheme = 'dark' | 'light'
-export type Theme = ResolvedTheme | 'system'
+import { THEME_STORAGE_KEY } from './theme-constants'
 
-export const THEME_STORAGE_KEY = 'tamery.theme'
+export { THEME_STORAGE_KEY } from './theme-constants'
+export type { ResolvedTheme, Theme } from './theme-constants'
 
 export const themeStore = createWebStorageValue({
   defaultValue: 'system',

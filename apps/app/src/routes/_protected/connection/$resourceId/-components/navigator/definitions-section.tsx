@@ -129,8 +129,8 @@ export const DefinitionsPanel = () => {
 
   return (
     <>
-      <div className="flex shrink-0 items-center gap-1 px-2 pb-1.5">
-        <InputGroup className="bg-input/60 h-7 flex-1 rounded-md">
+      <div className="flex shrink-0 items-center gap-1 pb-1.5 pl-2">
+        <InputGroup className="flex-1" size="sm">
           <InputGroupAddon>
             <RiSearchLine className="text-muted-foreground/70 size-3.5" />
           </InputGroupAddon>
@@ -142,7 +142,7 @@ export const DefinitionsPanel = () => {
           />
         </InputGroup>
       </div>
-      <SidebarContent className="scroll-fade min-h-0 flex-1 gap-3 px-2 pb-2">
+      <SidebarContent className="scroll-fade min-h-0 flex-1 gap-3 pb-2 pl-2">
         {filtered.length === 0 && (
           <p className="text-muted-foreground px-2 py-6 text-center text-sm">
             Nothing found

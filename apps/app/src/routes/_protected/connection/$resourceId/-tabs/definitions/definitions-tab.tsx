@@ -11,7 +11,7 @@ import { Indexes } from './-sections/indexes'
 import { Policies } from './-sections/policies'
 import { Triggers } from './-sections/triggers'
 
-const routeApi = getRouteApi('/_protected/connection/$resourceId')
+const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const SECTIONS = {
   constraints: Constraints,
@@ -27,7 +27,7 @@ export const DefinitionsTab = ({
 }: {
   section: DefinitionsSection
 }) => {
-  const { connectionResource } = routeApi.useRouteContext()
+  const { connectionResource } = useRouteContext()
   const Section = SECTIONS[section]
 
   return (

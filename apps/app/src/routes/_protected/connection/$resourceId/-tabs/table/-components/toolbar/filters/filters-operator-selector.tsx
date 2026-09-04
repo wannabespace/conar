@@ -42,9 +42,7 @@ export const FiltersOperatorSelector = ({
               onSelect={() => onSelect(filter)}
             >
               <span className="min-w-0 flex-1 truncate">{filter.label}</span>
-              <CommandShortcut className="tracking-normal">
-                {filter.operator}
-              </CommandShortcut>
+              <CommandShortcut>{filter.operator}</CommandShortcut>
             </CommandItem>
           ))}
         </CommandGroup>

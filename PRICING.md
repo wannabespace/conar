@@ -80,7 +80,6 @@ What the code actually gates today, per router middleware:
 | --- | --- | --- |
 | `ai/chat`, `ai/enhance-prompt`, `ai/fix-sql`, `ai/update-sql` | Hard-gated (`subscriptionMiddleware`) | Metered free cap + Pro unlimited (question 2) |
 | `ai/filters` | Metered: `optionalSubscriptionMiddleware` + Redis monthly counter, `FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT = 50` | Already correct — this is the reference implementation |
-| `ai/generate-title` | Free (`authMiddleware`) | Free — negligible cost, part of chat UX |
 | `chats/*`, `chats-messages/*` (create/update/remove) | Hard-gated (`subscriptionMiddleware`) | Follows AI chat: metered with it, not gated separately |
 | `connections/*`, `connections-resources/*`, `queries/*` | Free (`authMiddleware`) | Free CRUD; connection _count_ limit when tiers go live |
 | Workspace creation | Subscription-gated (`allowUserToCreateOrganization`, `apps/api/lib/auth.ts`) | Correct — quantity gate (1 free personal workspace) |

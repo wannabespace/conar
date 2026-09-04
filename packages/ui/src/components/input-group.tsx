@@ -11,12 +11,17 @@ import {
 } from './input-group.utils'
 
 // oxlint-disable jsx-a11y/prefer-tag-over-role
-const InputGroup = ({ className, ...props }: React.ComponentProps<'div'>) => (
+const InputGroup = ({
+  className,
+  size = 'default',
+  ...props
+}: React.ComponentProps<'div'> & { size?: 'default' | 'sm' | 'xs' }) => (
   <div
     data-slot="input-group"
+    data-size={size}
     role="group"
     className={cn(
-      `group/input-group bg-input ring-foreground/4 has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-ring/30 has-[[data-slot][aria-invalid=true]]:border-destructive/60 has-[[data-slot][aria-invalid=true]]:ring-destructive/30 relative flex h-8 w-full min-w-0 items-center rounded-xl border border-transparent shadow-xs ring-[0.5px] transition-shadow duration-200 outline-none focus-within:in-data-[slot=combobox-content]:border-inherit focus-within:in-data-[slot=combobox-content]:ring-0 has-[[data-slot=input-group-control]:focus-visible]:ring-3 has-[[data-slot][aria-invalid=true]]:ring-3 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5`,
+      `group/input-group bg-input ring-foreground/4 has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-ring/30 has-[[data-slot][aria-invalid=true]]:border-destructive/60 has-[[data-slot][aria-invalid=true]]:ring-destructive/30 relative flex h-8 w-full min-w-0 items-center rounded-xl border border-transparent shadow-xs ring-[0.5px] transition-shadow duration-200 outline-none focus-within:in-data-[slot=combobox-content]:border-inherit focus-within:in-data-[slot=combobox-content]:ring-0 has-[[data-slot=input-group-control]:focus-visible]:ring-3 has-[[data-slot][aria-invalid=true]]:ring-3 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto data-[size=sm]:h-7 data-[size=sm]:rounded-lg data-[size=xs]:h-6 data-[size=xs]:rounded-md data-[size=sm]:*:data-[slot=input-group-control]:h-7 data-[size=xs]:*:data-[slot=input-group-control]:h-6 data-[size=xs]:*:data-[slot=input-group-control]:text-xs has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5`,
       className
     )}
     {...props}

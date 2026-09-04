@@ -5,6 +5,16 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@tanstack/ai": "catalog:"
+    "@ai-sdk/anthropic": "catalog:",
+    "@ai-sdk/google": "catalog:",
+    "@ai-sdk/openai": "catalog:",
+    "@ai-sdk/xai": "catalog:",
+    "@tamery/shared": "workspace:*",
+    "ai": "catalog:",
+    "ai-resumable-stream": "catalog:",
+    "ai-retry": "catalog:",
+    "arktype": "catalog:",
+    "redis": "catalog:",
+    "uuid": "catalog:"
   }
 }

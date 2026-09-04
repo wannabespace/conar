@@ -2,6 +2,7 @@ import {
   RiAddLine,
   RiArrowLeftSLine,
   RiArrowRightSLine,
+  RiChatAiLine,
   RiCloseLine,
   RiNodeTree,
   RiPlayLargeLine,
@@ -23,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
+import { Separator } from '@tamery/ui/components/separator'
 import {
   Tooltip,
   TooltipContent,
@@ -77,9 +79,11 @@ import {
   updateTabs,
 } from '~/entities/connection/store'
 import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
+import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { pressNavProps } from '~/lib/press-nav'
 import { queryClient } from '~/main'
+import { setIsSubscriptionDialogOpen } from '~/store'
 
 import { tablePageStore } from '../-tabs/table/-lib/store'
 import { navigatorOpenValue } from './navigator/constants'
@@ -112,7 +116,7 @@ const TabRefreshButton = ({
       render={
         <RefreshButton
           variant="ghost"
-          size="icon-sm"
+          size="icon-xs"
           aria-label="Refresh"
           className="text-muted-foreground"
           iconClassName="size-3.5"
@@ -285,7 +289,7 @@ const TabRefresh = ({ tab }: { tab: ConnectionTab | null }) => {
   return (
     <RefreshButton
       variant="ghost"
-      size="icon-sm"
+      size="icon-xs"
       aria-label="Refresh"
       className="text-muted-foreground"
       iconClassName="size-3.5"
@@ -305,13 +309,12 @@ const HistoryNav = () => {
 
   return (
     <>
-      <span aria-hidden className="bg-border mx-0.5 h-4 w-px shrink-0" />
       <Tooltip>
         <TooltipTrigger
           render={
             <Button
               variant="ghost"
-              size="icon-sm"
+              size="icon-xs"
               aria-label="Go back"
               className="text-muted-foreground"
               disabled={!canGoBack}
@@ -328,7 +331,7 @@ const HistoryNav = () => {
           render={
             <Button
               variant="ghost"
-              size="icon-sm"
+              size="icon-xs"
               aria-label="Go forward"
               className="text-muted-foreground"
               onClick={() => router.history.forward()}
@@ -365,79 +368,126 @@ const NewTabMenu = ({
     })
 
   return (
-    <div className="flex shrink-0 items-center border-b border-l px-1">
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="New tab"
-              className="text-muted-foreground"
-            />
-          }
-        >
-          <RiAddLine />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="max-h-[70vh] min-w-48 overflow-auto"
-        >
-          <DropdownMenuItem onClick={onNewQuery}>
-            <RiPlayLargeLine />
-            New query
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Schema</DropdownMenuLabel>
-            {schemaGroups(connection)
-              .flatMap((group) => group.items)
-              .map(({ Icon, label, open, tabId }) => (
-                <DropdownMenuItem
-                  key={tabId}
-                  onClick={() => {
-                    open(connectionResource.id, false)
-                    goToTab(tabId)
-                  }}
-                >
-                  <Icon />
-                  {label}
-                </DropdownMenuItem>
-              ))}
-          </DropdownMenuGroup>
-          {schemas.some((schema) => schema.tables.length > 0) && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Tables</DropdownMenuLabel>
-                {schemas.flatMap((schema) =>
-                  schema.tables.map((table) => (
-                    <DropdownMenuItem
-                      key={tableTabId(schema.name, table.name)}
-                      onClick={() => {
-                        openTableTab(
-                          connectionResource.id,
-                          schema.name,
-                          table.name
-                        )
-                        goToTab(tableTabId(schema.name, table.name))
-                      }}
-                    >
-                      <RiTableLine />
-                      <span data-mask className="truncate">
-                        {showSchema
-                          ? `${schema.name}.${table.name}`
-                          : table.name}
-                      </span>
-                    </DropdownMenuItem>
-                  ))
-                )}
-              </DropdownMenuGroup>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            aria-label="New tab"
+            className="text-muted-foreground"
+          />
+        }
+      >
+        <RiAddLine />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="max-h-[70vh] min-w-48 overflow-auto"
+      >
+        <DropdownMenuItem onClick={onNewQuery}>
+          <RiPlayLargeLine />
+          New query
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Schema</DropdownMenuLabel>
+          {schemaGroups(connection)
+            .flatMap((group) => group.items)
+            .map(({ Icon, label, open, tabId }) => (
+              <DropdownMenuItem
+                key={tabId}
+                onClick={() => {
+                  open(connectionResource.id, false)
+                  goToTab(tabId)
+                }}
+              >
+                <Icon />
+                {label}
+              </DropdownMenuItem>
+            ))}
+        </DropdownMenuGroup>
+        {schemas.some((schema) => schema.tables.length > 0) && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Tables</DropdownMenuLabel>
+              {schemas.flatMap((schema) =>
+                schema.tables.map((table) => (
+                  <DropdownMenuItem
+                    key={tableTabId(schema.name, table.name)}
+                    onClick={() => {
+                      openTableTab(
+                        connectionResource.id,
+                        schema.name,
+                        table.name
+                      )
+                      goToTab(tableTabId(schema.name, table.name))
+                    }}
+                  >
+                    <RiTableLine />
+                    <span data-mask className="truncate">
+                      {showSchema ? `${schema.name}.${table.name}` : table.name}
+                    </span>
+                  </DropdownMenuItem>
+                ))
+              )}
+            </DropdownMenuGroup>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+const ChatToggle = ({ resourceId }: { resourceId: string }) => {
+  const store = getConnectionResourceStore(resourceId)
+  const chatOpened = useSubscription(store, {
+    selector: (state) => state.chatOpened,
+  })
+  const { isPending, subscription } = useUserSubscription()
+
+  const toggleChat = () => {
+    if (!(subscription || isPending)) {
+      setIsSubscriptionDialogOpen(true)
+      return
+    }
+
+    store.set(
+      (state) =>
+        ({ ...state, chatOpened: !state.chatOpened }) satisfies typeof state
+    )
+  }
+
+  useHotkey('Mod+L', (e) => {
+    e.preventDefault()
+    toggleChat()
+  })
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            aria-label="AI chat"
+            aria-pressed={chatOpened}
+            className={cn(
+              'text-muted-foreground',
+              chatOpened && 'bg-foreground/10 text-foreground'
+            )}
+            onClick={toggleChat}
+          />
+        }
+      >
+        <RiChatAiLine />
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        AI chat
+        <KbdCtrlLetter userAgent={navigator.userAgent} letter="L" />
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -854,13 +904,13 @@ export const TabBar = ({ className }: { className?: string }) => {
     <div
       className={cn('bg-body/50 flex h-8 shrink-0 items-stretch', className)}
     >
-      <div className="flex shrink-0 items-center gap-0.5 border-r border-b pr-1 pl-0.5">
+      <div className="flex shrink-0 items-center gap-0.5 border-r border-b px-1">
         <Tooltip>
           <TooltipTrigger
             render={
               <Button
                 variant="ghost"
-                size="icon-sm"
+                size="icon-xs"
                 aria-label="Toggle sidebar"
                 className="text-muted-foreground"
                 onClick={() => navigatorOpenValue.set((open) => !open)}
@@ -874,6 +924,7 @@ export const TabBar = ({ className }: { className?: string }) => {
             <KbdCtrlLetter userAgent={navigator.userAgent} letter="B" />
           </TooltipContent>
         </Tooltip>
+        <Separator orientation="vertical" className="mx-0.5 h-4!" />
         <HistoryNav />
         <TabRefresh tab={activeTab} />
       </div>
@@ -919,12 +970,16 @@ export const TabBar = ({ className }: { className?: string }) => {
       {tabs.length === 0 && (
         <div aria-hidden className="min-w-0 flex-1 border-b" />
       )}
-      <NewTabMenu
-        connection={connection}
-        connectionResource={connectionResource}
-        tablesAndSchemas={tablesAndSchemas}
-        onNewQuery={openNewQuery}
-      />
+      <div className="flex shrink-0 items-center gap-0.5 border-b border-l px-1">
+        <NewTabMenu
+          connection={connection}
+          connectionResource={connectionResource}
+          tablesAndSchemas={tablesAndSchemas}
+          onNewQuery={openNewQuery}
+        />
+        <Separator orientation="vertical" className="mx-0.5 h-4!" />
+        <ChatToggle resourceId={connectionResource.id} />
+      </div>
     </div>
   )
 }

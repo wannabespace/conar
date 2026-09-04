@@ -1,3 +1,4 @@
+import { memoize } from 'memoza'
 import { createStore } from 'seitu'
 
 export interface QueryLog {
@@ -10,9 +11,20 @@ export interface QueryLog {
   error: string | null
 }
 
-export const queryLogsStore = createStore<
-  Record<string, Record<string, QueryLog>>
->({})
+const LOG_LIMIT = 500
+
+export const getQueryLogsStore = memoize((_resourceId: string) =>
+  createStore<QueryLog[]>([])
+)
+
+const patchLog = (
+  store: ReturnType<typeof getQueryLogsStore>,
+  id: string,
+  patch: Partial<QueryLog>
+) =>
+  store.set((logs) =>
+    logs.map((log) => (log.id === id ? { ...log, ...patch } : log))
+  )
 
 export const logQuery = async ({
   resourceId,
@@ -25,67 +37,30 @@ export const logQuery = async ({
   query: string
   values?: unknown[]
 }) => {
+  const store = getQueryLogsStore(resourceId)
   const id = crypto.randomUUID()
 
-  queryLogsStore.set(
-    (state) =>
-      ({
-        ...state,
-        [resourceId]: {
-          ...state[resourceId],
-          [id]: {
-            createdAt: new Date(),
-            duration: null,
-            error: null,
-            id,
-            query,
-            result: null,
-            values,
-          },
-        },
-      }) satisfies typeof state
+  store.set((logs) =>
+    [
+      ...logs,
+      {
+        createdAt: new Date(),
+        duration: null,
+        error: null,
+        id,
+        query,
+        result: null,
+        values,
+      },
+    ].slice(-LOG_LIMIT)
   )
 
   try {
     const { result, duration } = await promise
-
-    queryLogsStore.set((state) => {
-      const resourceLogs = state[resourceId] ?? {}
-      const existingLog = resourceLogs[id]
-      if (!existingLog) {
-        return state
-      }
-
-      return {
-        ...state,
-        [resourceId]: {
-          ...resourceLogs,
-          [id]: {
-            ...existingLog,
-            duration,
-            result,
-          },
-        },
-      } satisfies typeof state
-    })
+    patchLog(store, id, { duration, result })
   } catch (error) {
-    queryLogsStore.set((state) => {
-      const resourceLogs = state[resourceId] ?? {}
-      const existingLog = resourceLogs[id]
-      if (!existingLog) {
-        return state
-      }
-
-      return {
-        ...state,
-        [resourceId]: {
-          ...resourceLogs,
-          [id]: {
-            ...existingLog,
-            error: error instanceof Error ? error.message : String(error),
-          },
-        },
-      } satisfies typeof state
+    patchLog(store, id, {
+      error: error instanceof Error ? error.message : String(error),
     })
   }
 }

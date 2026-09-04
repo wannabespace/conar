@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@tamery/ui/components/dropdown-menu'
+import { Skeleton } from '@tamery/ui/components/skeleton'
 import {
   Tooltip,
   TooltipContent,
@@ -99,36 +100,18 @@ const COMPACT_COUNT_FORMAT = {
 
 const TableStats = ({
   exact,
-  isTotalLoading,
+  isTotalFetching,
   onRequestExact,
   total,
   totalUpdatedAt,
 }: {
   exact: boolean
-  isTotalLoading: boolean
+  isTotalFetching: boolean
   onRequestExact: () => void
   total?: { count: number; isEstimated?: boolean }
-  totalUpdatedAt?: number
+  totalUpdatedAt: number
 }) => {
-  const rowLabel =
-    total?.count === undefined
-      ? '… rows'
-      : `${total.isEstimated ? '~' : ''}${total.count.toLocaleString()} row${total.count === 1 ? '' : 's'}`
   const canRequestExact = !exact && total?.isEstimated === true
-  const rowCount =
-    total?.count === undefined ? (
-      '…'
-    ) : (
-      <NumberFlow
-        value={total.count}
-        format={COMPACT_COUNT_FORMAT}
-        className={cn(
-          'tabular-nums',
-          isTotalLoading && 'text-muted-foreground/50 animate-pulse'
-        )}
-        prefix={total.isEstimated ? '~' : ''}
-      />
-    )
 
   return (
     <Tooltip>
@@ -147,23 +130,37 @@ const TableStats = ({
                 'decoration-muted-foreground/50 underline decoration-dotted underline-offset-2'
             )}
           >
-            {rowCount}
+            {total ? (
+              <NumberFlow
+                value={total.count}
+                format={COMPACT_COUNT_FORMAT}
+                className={cn(
+                  'tabular-nums',
+                  isTotalFetching && 'text-muted-foreground/50 animate-pulse'
+                )}
+                prefix={total.isEstimated ? '~' : ''}
+              />
+            ) : (
+              <Skeleton className="h-2.5 w-6 rounded-full" />
+            )}
           </span>
         </Button>
       </TooltipTrigger>
       <TooltipContent side="top">
-        <div className="flex flex-col gap-0.5">
-          <span>
-            {rowLabel}
-            {canRequestExact && '. Click to get the exact count.'}
-          </span>
-          <span className="opacity-70">
-            Updated:{' '}
-            {totalUpdatedAt
-              ? new Date(totalUpdatedAt).toLocaleTimeString()
-              : 'never'}
-          </span>
-        </div>
+        {total ? (
+          <div className="flex flex-col gap-0.5">
+            <span>
+              {total.isEstimated ? '~' : ''}
+              {total.count.toLocaleString()} row{total.count === 1 ? '' : 's'}
+              {canRequestExact && '. Click to get the exact count.'}
+            </span>
+            <span className="opacity-70">
+              Updated: {new Date(totalUpdatedAt).toLocaleTimeString()}
+            </span>
+          </div>
+        ) : (
+          'Counting rows…'
+        )}
       </TooltipContent>
     </Tooltip>
   )
@@ -202,7 +199,7 @@ export const TableToolbar = ({
 
   const {
     data: total,
-    isLoading: isTotalLoading,
+    isFetching: isTotalFetching,
     dataUpdatedAt: totalUpdatedAt,
   } = useQuery(
     resourceTableTotalQueryOptions({
@@ -257,7 +254,7 @@ export const TableToolbar = ({
     <div className="pointer-events-none flex w-full max-w-3xl items-end gap-2 *:pointer-events-auto">
       <TableStats
         exact={exact}
-        isTotalLoading={isTotalLoading}
+        isTotalFetching={isTotalFetching}
         onRequestExact={() => setExact(true)}
         total={total}
         totalUpdatedAt={totalUpdatedAt}

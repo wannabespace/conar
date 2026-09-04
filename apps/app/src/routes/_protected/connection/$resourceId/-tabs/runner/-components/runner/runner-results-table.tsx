@@ -101,7 +101,7 @@ const ResultsExport = ({
     getData={getData}
     filename="runner_results"
     tooltip="Export results"
-    // oxlint-disable-next-line react/no-unstable-nested-components -- ExportData requires a render-prop trigger
+    // oxlint-disable-next-line react/no-unstable-nested-components
     trigger={({ isExporting }) => (
       <Button
         variant="secondary"

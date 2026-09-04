@@ -43,16 +43,13 @@ const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
     )
   }
 
-  return (
-    <column.header
-      key={virtualColumn.key}
-      id={column.id}
-      columnIndex={virtualColumn.index}
-      position={getHeaderPosition(virtualColumn.index, columns.length)}
-      size={virtualColumn.size}
-      style={getBaseColumnStyle({ defaultSize: column.size, id: column.id })}
-    />
-  )
+  return column.header({
+    columnIndex: virtualColumn.index,
+    id: column.id,
+    position: getHeaderPosition(virtualColumn.index, columns.length),
+    size: virtualColumn.size,
+    style: getBaseColumnStyle({ defaultSize: column.size, id: column.id }),
+  })
 })
 
 const spacerStyle: CSSProperties = {

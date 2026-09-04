@@ -43,17 +43,13 @@ export const getWorkspaceSecret = memoize(
   { maxAge: 5 * 60 * 1000 }
 )
 
-const getSession = async (headers: Headers) => {
-  const session = await auth.api.getSession({ headers })
+const getSession = (headers: Headers) => auth.api.getSession({ headers })
 
-  if (!session) {
-    throw new ORPCError('UNAUTHORIZED', {
-      message: 'We could not find your session. Please sign in again.',
-    })
-  }
-
-  return session
-}
+const sessionOrpc = orpc.errors({
+  UNAUTHORIZED: {
+    message: 'We could not find your session. Please sign in again.',
+  },
+})
 
 export const logMiddleware = orpc.middleware(
   async ({ context, next }, input) => {
@@ -87,8 +83,12 @@ export const logMiddleware = orpc.middleware(
 // oRPC Middleware.concat chains middlewares (not Array#concat)
 // oxlint-disable-next-line unicorn/prefer-spread
 export const authMiddleware = logMiddleware.concat(
-  orpc.middleware(async ({ context, next }) => {
+  sessionOrpc.middleware(async ({ context, errors, next }) => {
     const session = await getSession(context.headers)
+
+    if (!session) {
+      throw errors.UNAUTHORIZED()
+    }
 
     context.addLogData({ userId: session.user.id })
 
@@ -121,43 +121,53 @@ export const optionalAuthMiddleware = logMiddleware.concat(
 
 // oxlint-disable-next-line unicorn/prefer-spread
 export const subscriptionMiddleware = logMiddleware.concat(
-  orpc.middleware(async ({ context, next }) => {
-    const session = await getSession(context.headers)
-    const minorVersion = context.parsedAppVersion?.minor ?? 0
-    const subscription = await getSubscription(session.user.id)
+  sessionOrpc
+    .errors({ FORBIDDEN: {} })
+    .middleware(async ({ context, errors, next }) => {
+      const session = await getSession(context.headers)
 
-    if (session) {
+      if (!session) {
+        throw errors.UNAUTHORIZED()
+      }
+
+      const minorVersion = context.parsedAppVersion?.minor ?? 0
+      const subscription = await getSubscription(session.user.id)
+
       context.addLogData({ userId: session.user.id })
-    }
 
-    if (!subscription) {
-      throw new ORPCError('FORBIDDEN', {
-        message:
-          minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
-            ? 'To use this feature, a subscription is now required. Please update to the latest version of the app and subscribe to a Pro plan to continue.'
-            : 'To use this feature, a subscription is required. Please subscribe to a Pro plan to continue.',
+      if (!subscription) {
+        throw errors.FORBIDDEN({
+          message:
+            minorVersion < LATEST_VERSION_BEFORE_SUBSCRIPTION
+              ? 'To use this feature, a subscription is now required. Please update to the latest version of the app and subscribe to a Pro plan to continue.'
+              : 'To use this feature, a subscription is required. Please subscribe to a Pro plan to continue.',
+        })
+      }
+
+      context.addLogData({
+        subscriptionId: subscription.id,
+        subscriptionStatus: subscription.status,
       })
-    }
 
-    context.addLogData({
-      subscriptionId: subscription.id,
-      subscriptionStatus: subscription.status,
+      return next({
+        context: {
+          ...session,
+          getWorkspaceSecret,
+          subscription,
+        },
+      })
     })
-
-    return next({
-      context: {
-        ...session,
-        getWorkspaceSecret,
-        subscription,
-      },
-    })
-  })
 )
 
 // oxlint-disable-next-line unicorn/prefer-spread
 export const optionalSubscriptionMiddleware = logMiddleware.concat(
-  orpc.middleware(async ({ context, next }) => {
+  sessionOrpc.middleware(async ({ context, errors, next }) => {
     const session = await getSession(context.headers)
+
+    if (!session) {
+      throw errors.UNAUTHORIZED()
+    }
+
     const subscription = await getSubscription(session.user.id)
 
     context.addLogData({ userId: session.user.id })

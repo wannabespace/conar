@@ -17,8 +17,8 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 
 import { Monaco } from '~/components/monaco'
+import { formatSql } from '~/lib/formatter'
 import { queryClient } from '~/main'
-import { formatSql } from '~/utils/formatter'
 
 import { runnerQueryOptions } from '.'
 import { useRunnerTab } from '../../-lib/store'

@@ -1,15 +1,10 @@
-import { GITHUB_REPO_NAME } from '@tamery/shared/constants'
 import { sleep } from '@tamery/shared/utils/helpers'
-import {
-  BrowserCollectionCoordinator,
-  createBrowserWASQLitePersistence,
-  openBrowserWASQLiteOPFSDatabase,
-} from '@tanstack/browser-db-sqlite-persistence'
 import type { SyncConfig } from '@tanstack/react-db'
 import { BasicIndex } from '@tanstack/react-db'
 import { Result } from 'better-result'
 
-import { isUnauthorizedError } from '../utils/error'
+import { database } from './database'
+import { isUnauthorizedError } from './error'
 import { posthog } from './posthog'
 
 export interface BaseTable {
@@ -70,51 +65,10 @@ export const createSyncTracker = (): SyncTracker => {
   }
 }
 
-const DATABASE_NAME = `${GITHUB_REPO_NAME}.sqlite`
-
-const OPEN_DATABASE_RETRIES = 2
-const OPEN_DATABASE_RETRY_DELAY = 500
-
-// OPFSCoopSyncVFS init deletes `.ahp-*` temp dirs whose Web Lock is free, i.e.
-// those left by a crashed or reloaded tab. The lock drops before the browser
-// reclaims that tab's sync access handles, so `removeEntry` can still throw
-// NoModificationAllowedError (INTERNAL -> OPFSWorkerRequestError) on a dir it
-// was right to delete. The handles are released within a beat: retry.
-const databaseResult = await Result.tryPromise(
-  () => openBrowserWASQLiteOPFSDatabase({ databaseName: DATABASE_NAME }),
-  {
-    retry: {
-      backoff: 'linear',
-      delayMs: OPEN_DATABASE_RETRY_DELAY,
-      shouldRetry: (error) => {
-        posthog.captureException(error)
-        return true
-      },
-      times: OPEN_DATABASE_RETRIES,
-    },
-  }
-)
-
-if (databaseResult.isErr()) {
-  throw databaseResult.error
-}
-
-export const database = databaseResult.value
-
-if (import.meta.env.DEV) {
-  // @ts-expect-error window is not typed
-  window.database = database
-}
-
-const coordinator = new BrowserCollectionCoordinator({
-  dbName: DATABASE_NAME,
-})
-
-export const persistence = createBrowserWASQLitePersistence({
-  coordinator,
-  database,
-  schemaMismatchPolicy: 'reset',
-})
+// The coordinator keeps one adapter per schema version but a single leader-side
+// slot, so collections declaring different versions reset each other's tables on
+// every boot. Every persisted collection passes this; bump it to wipe local data.
+export const PERSISTED_SCHEMA_VERSION = 2
 
 export type SyncMessage<T> =
   | { type: 'insert'; value: T }
@@ -140,7 +94,7 @@ export interface SyncCollectionConfig<T extends { updatedAt: Date }> {
   getKey: (item: T) => string
   events: SyncEventsFn<T>
   sync: (params: {
-    rows: T[]
+    rows: { id: string; updatedAt: Date }[]
     signal: AbortSignal
   }) => Promise<SyncMessage<T>[]>
   onInsert?: MutationFn<T>
@@ -172,6 +126,7 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         if (signal.aborted) {
           return
         }
+
         begin()
         for (const item of items) {
           writeItem(item)
@@ -183,7 +138,15 @@ export const syncCollectionOptions = <T extends { updatedAt: Date }>(
         const result = await Result.tryPromise({
           catch: (error) => error,
           try: async () => {
-            const rows = await collection.toArrayWhenReady()
+            if (signal.aborted) {
+              return
+            }
+
+            const items = await collection.toArrayWhenReady()
+            const rows = items.map((item) => ({
+              id: config.getKey(item),
+              updatedAt: item.updatedAt,
+            }))
             writeItems(await config.sync({ rows, signal }))
           },
         })
@@ -304,6 +267,7 @@ export const clearDb = async () => {
 }
 
 if (import.meta.env.DEV) {
+  // oxlint-disable-next-line consistent-function-scoping
   const getCollectionTableName = async (name: string) => {
     const collections = (await database.execute(
       'SELECT * FROM collection_registry'

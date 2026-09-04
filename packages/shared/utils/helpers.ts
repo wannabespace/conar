@@ -105,6 +105,9 @@ export const tryCatchAsync = async <T>(
   }
 }
 
+export const pseudoRandom = (seed: number) =>
+  Math.abs(Math.sin(seed * 127.1 + 311.7)) % 1
+
 export const uppercaseFirst = (string: string) =>
   string.charAt(0).toUpperCase() + string.slice(1)
 
@@ -114,6 +117,16 @@ export const tryParseJson = <T>(json: string): T | null => {
   } catch {
     return null
   }
+}
+
+const JSON_PREVIEW_LIMIT = 20_000
+
+export const previewJson = (value: unknown) => {
+  const json = JSON.stringify(value, null, 2)
+
+  return json.length > JSON_PREVIEW_LIMIT
+    ? `${json.slice(0, JSON_PREVIEW_LIMIT)}\n…`
+    : json
 }
 
 export const tryParseToJsonArray = (editedValue: string): string[] => {

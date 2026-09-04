@@ -17,7 +17,7 @@ import { Streamdown } from 'streamdown'
 import { orpc } from '~/lib/orpc'
 import { seo } from '~/utils/seo'
 
-const routeApi = getRouteApi('/_layout/releases')
+const { useLoaderData } = getRouteApi('/_layout/releases')
 
 const ReleaseMarkdownH2 = ({ children }: ComponentPropsWithoutRef<'h2'>) => (
   <h2 className="mb-2 text-2xl font-semibold not-first:mt-6">{children}</h2>
@@ -38,7 +38,7 @@ const releaseMarkdownComponents = {
 }
 
 const RouteComponent = () => {
-  const { releases } = routeApi.useLoaderData()
+  const { releases } = useLoaderData()
   const [firstRelease] = releases
   const [expandedReleases, setExpandedReleases] = useState<string[]>(
     firstRelease ? [String(firstRelease.id)] : []

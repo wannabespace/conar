@@ -56,8 +56,8 @@ import {
   openVisualizerTab,
 } from '~/entities/connection/store'
 import { useActiveWorkspace } from '~/entities/workspace'
+import { checkForUpdates } from '~/hooks/use-updates-observer'
 import { appStore, setIsActionCenterOpen } from '~/store'
-import { checkForUpdates } from '~/use-updates-observer'
 
 const CONNECTION_PAGES = [
   {
@@ -134,9 +134,7 @@ const ConnectionItem = ({
         </span>
       </span>
       {connection.label && (
-        <CommandShortcut data-mask className="tracking-normal">
-          {connection.label}
-        </CommandShortcut>
+        <CommandShortcut data-mask>{connection.label}</CommandShortcut>
       )}
     </CommandItem>
   )

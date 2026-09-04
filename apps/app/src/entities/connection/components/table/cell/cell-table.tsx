@@ -129,7 +129,6 @@ export const TableCellTable = ({
   const columns = data.map(
     (columnMeta) =>
       ({
-        // Column renderers are invoked as components by @tamery/table
         // oxlint-disable-next-line react/no-unstable-nested-components
         cell: (props) => {
           const transformer = createTransformer(connection.type, columnMeta)

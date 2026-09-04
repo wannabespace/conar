@@ -1,6 +1,6 @@
 import { useEffect, useEffectEvent } from 'react'
 
-import { globalHooks } from '~/global-hooks'
+import { globalHooks } from '~/lib/global-hooks'
 
 export const useSaveHotkey = (save: () => unknown, disabled = false) => {
   const saveEvent = useEffectEvent(save)

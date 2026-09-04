@@ -32,7 +32,7 @@ import { useMutation } from '@tanstack/react-query'
 import { formatDate } from 'date-fns'
 import { toast } from 'sonner'
 
-import { handleError } from '~/utils/error'
+import { handleError } from '~/lib/error'
 
 const EXPORT_LIMITS = [50, 100, 500, 1000, 5000] as const
 const EXPORT_TOAST_ID = 'export-data'

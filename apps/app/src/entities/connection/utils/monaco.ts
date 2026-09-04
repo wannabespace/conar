@@ -1,6 +1,7 @@
+import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { languages } from 'monaco-editor'
 import type { CompletionService, ICompletionItem } from 'monaco-sql-languages'
-import { EntityContextType } from 'monaco-sql-languages'
+import { EntityContextType, LanguageIdEnum } from 'monaco-sql-languages'
 
 import type { ConnectionResource } from '~/entities/connection/core'
 import { queryClient } from '~/main'
@@ -9,6 +10,13 @@ import { resourceTableColumnsQueryOptions } from '../queries/columns'
 import { resourceEnumsQueryOptions } from '../queries/enums'
 import { resourceTablesAndSchemasQueryOptions } from '../queries/tables-and-schemas'
 import { getConnectionResourceStore } from '../store'
+
+export const sqlDialects = {
+  clickhouse: LanguageIdEnum.MYSQL,
+  mssql: LanguageIdEnum.PG,
+  mysql: LanguageIdEnum.MYSQL,
+  postgres: LanguageIdEnum.PG,
+} satisfies Record<ConnectionType, LanguageIdEnum>
 
 const keywordPriority = [
   'SELECT',

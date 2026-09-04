@@ -17,7 +17,7 @@ import { useEffect, useEffectEvent } from 'react'
 
 import { authClient } from '~/lib/auth'
 
-const openRouteApi = getRouteApi('/open')
+const { useSearch } = getRouteApi('/open')
 
 const getOpenMessage = (clientType: 'web' | 'desktop' | 'cli' | undefined) => {
   if (clientType === 'cli') {
@@ -42,7 +42,7 @@ const handleCopyUrl = (
 
 const OpenPageContent = () => {
   const { data } = authClient.useSession()
-  const { type: clientType } = openRouteApi.useSearch()
+  const { type: clientType } = useSearch()
 
   useEffect(() => {
     if (clientType === 'desktop') {
@@ -151,8 +151,7 @@ const AuthFailedCard = () => (
 )
 
 const OpenPage = () => {
-  const { 'code-challenge': codeChallenge, 'new-user': newUser } =
-    openRouteApi.useSearch()
+  const { 'code-challenge': codeChallenge, 'new-user': newUser } = useSearch()
   const { data, isPending } = authClient.useSession()
 
   const getUrlEvent = useEffectEvent(getUrl)

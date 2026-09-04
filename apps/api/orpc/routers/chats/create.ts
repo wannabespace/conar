@@ -7,23 +7,31 @@ import { publisher } from './events'
 
 export const create = orpc
   .use(subscriptionMiddleware)
-  .input(chatsInsertSchema.omit('userId', 'activeStreamId', 'title'))
-  .handler(async ({ context, input }) => {
+  .input(chatsInsertSchema.omit('userId', 'title'))
+  .errors({
+    NOT_FOUND: { message: 'Chat not found' },
+  })
+  .handler(async ({ context, errors, input }) => {
     const [inserted] = await db
       .insert(chats)
       .values({
         ...input,
-        activeStreamId: null,
         userId: context.user.id,
       })
-      .onConflictDoUpdate({
-        set: input,
-        target: chats.id,
-      })
+      .onConflictDoNothing()
       .returning()
 
     if (!inserted) {
-      throw new Error('Failed to create chat')
+      const existing = input.id
+        ? await db.query.chats.findFirst({
+            columns: { id: true },
+            where: { id: { eq: input.id }, userId: { eq: context.user.id } },
+          })
+        : undefined
+      if (!existing) {
+        throw errors.NOT_FOUND()
+      }
+      return
     }
 
     publisher.publish(context.user.id, {

@@ -4,7 +4,6 @@ import process from 'node:process'
 import { ORPCError, ValidationError } from '@orpc/server'
 import { RPCHandler } from '@orpc/server/fetch'
 import { sanitizeLogData } from '@tamery/shared/utils/sanitize-log'
-import { sleep } from 'bun'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 
@@ -19,7 +18,6 @@ const handler = new RPCHandler(router, {
   interceptors: [
     async ({ next, context }) => {
       try {
-        await sleep(500)
         return await next()
       } catch (error) {
         context.addLogData({

@@ -12,6 +12,7 @@
     "test:e2e": "playwright test --ui"
   },
   "dependencies": {
+    "@ai-sdk/react": "catalog:",
     "@base-ui/react": "catalog:",
     "@dagrejs/dagre": "catalog:",
     "@date-fns/tz": "catalog:",
@@ -22,6 +23,7 @@
     "@paper-design/shaders-react": "catalog:",
     "@remixicon/react": "catalog:",
     "@tailwindcss/vite": "catalog:",
+    "@tamery/ai": "workspace:*",
     "@tamery/shared": "workspace:*",
     "@tamery/table": "workspace:*",
     "@tamery/ui": "workspace:*",
@@ -39,6 +41,7 @@
     "@tiptap/react": "catalog:",
     "@tiptap/starter-kit": "catalog:",
     "@xyflow/react": "catalog:",
+    "ai": "catalog:",
     "arktype": "catalog:",
     "better-auth": "catalog:",
     "better-result": "catalog:",
@@ -71,6 +74,7 @@
     "@tamery/connection": "workspace:*",
     "@tamery/proxy": "workspace:*",
     "@tamery/query-proxy": "workspace:*",
+    "@tamery/vite-prerender": "workspace:*",
     "@tanstack/react-devtools": "catalog:",
     "@types/mssql": "catalog:",
     "@types/pg": "catalog:",

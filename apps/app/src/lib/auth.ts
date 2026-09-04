@@ -1,17 +1,15 @@
 import { tryCatchAsync } from '@tamery/shared/utils/helpers'
 import { type } from 'arktype'
 import { organizationClient } from 'better-auth/client/plugins'
-import { bearer } from 'better-auth/plugins'
 import { createAuthClient } from 'better-auth/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 
 import { router } from '~/main'
 
-import { apiUrl } from '../utils/utils'
 import { encryptionKey } from './encryption-key'
 import { lastLocationStorageValue } from './last-location'
-import { clearDb } from './sync'
+import { apiUrl } from './urls'
 
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
 
@@ -55,7 +53,7 @@ export const authClient = createAuthClient({
       }
     },
   },
-  plugins: [organizationClient(), ...(window.electron ? [bearer()] : [])],
+  plugins: [organizationClient()],
 })
 
 export const isSignedIn = async () => {
@@ -73,6 +71,12 @@ export const fullSignOut = async () => {
     await router.navigate({ to: '/auth' })
   }
 
+  const [{ cleanCollections }, { clearDb }] = await Promise.all([
+    import('~/entities/collections'),
+    import('./sync'),
+  ])
+
+  cleanCollections()
   await clearDb()
   await encryptionKey.reset()
 }

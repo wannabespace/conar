@@ -1,13 +1,15 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { getRouteApi } from '@tanstack/react-router'
 import type { editor, Position } from 'monaco-editor'
 import { KeyCode, KeyMod } from 'monaco-editor'
-import { LanguageIdEnum, setupLanguageFeatures } from 'monaco-sql-languages'
+import { setupLanguageFeatures } from 'monaco-sql-languages'
 import type { RefObject } from 'react'
 import { useEffect, useEffectEvent, useRef } from 'react'
 
 import { Monaco } from '~/components/monaco'
-import { connectionCompletionService } from '~/entities/connection/utils/monaco'
+import {
+  connectionCompletionService,
+  sqlDialects,
+} from '~/entities/connection/utils/monaco'
 
 import { useEditorQueriesComputed, useRunnerPageStore } from '../../-lib/store'
 import { runnerHooks } from '../../-page'
@@ -18,13 +20,6 @@ import { useRunnerEditorQueryZones } from './runner-editor-query-zones'
 const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
 )
-
-const dialectsMap = {
-  postgres: LanguageIdEnum.PG,
-  mysql: LanguageIdEnum.MYSQL,
-  mssql: LanguageIdEnum.PG,
-  clickhouse: LanguageIdEnum.MYSQL,
-} satisfies Record<ConnectionType, LanguageIdEnum>
 
 const MONACO_OPTIONS = {
   wordWrap: 'on',
@@ -180,7 +175,7 @@ export const RunnerEditor = () => {
   }, [store])
 
   useEffect(() => {
-    setupLanguageFeatures(dialectsMap[connection.type], {
+    setupLanguageFeatures(sqlDialects[connection.type], {
       completionItems: {
         enable: true,
         completionService: connectionCompletionService(connectionResource),
@@ -248,7 +243,7 @@ export const RunnerEditor = () => {
     <Monaco
       data-mask
       ref={monacoRef}
-      language={dialectsMap[connection.type]}
+      language={sqlDialects[connection.type]}
       value={store.get().query}
       onChange={(q) => {
         if (q === store.get().query) {

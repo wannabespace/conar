@@ -1,7 +1,5 @@
 # Product and domain terminology
 
-> **When to read:** Before naming anything user-facing, or touching Connections, Workspaces, Tabs, the Navigator, SyncType, or collections.
-
 ## What Tamery is
 
 AI-powered desktop/web app for managing database connections. Connection metadata + encrypted connection strings live locally (SQLite via OPFS); metadata optionally syncs to cloud.
@@ -10,41 +8,43 @@ AI-powered desktop/web app for managing database connections. Connection metadat
 
 Use precisely; avoid listed synonyms.
 
-- **Connection** — named, typed pointer to a database. Metadata only (name, label, color, sync type, `workspaceId`), never the raw string. _Avoid_: database, data source.
+- **Connection** — named, typed pointer to a database. Metadata only, never the raw string. _Avoid_: database, data source.
 - **Connection String** — full URL incl. credentials. Always stored encrypted; never sent to cloud in plaintext. _Avoid_: credentials, DSN, URL.
 - **Workspace** — named group of connections. _Avoid_: organization (in UI copy), team, project.
 - **Tab** — every view inside a connection resource: `table`, `runner`, `definitions`, `visualizer`. _Avoid_: page, view, screen.
-- **Navigator** — the only sidebar (old left icon rail gone).
-- **SyncType** — credential handling during cloud sync. `Cloud` = metadata + encrypted password synced. `CloudWithoutPassword` = metadata synced, password local-only (cross-device without trusting cloud with credentials). `Local` = nothing leaves device. _Avoid_: sync mode, cloud mode.
-- **Collections** — client data in TanStack DB collections (`apps/app/src/entities/collections/`). All persist to SQLite (OPFS); synced ones also stream from cloud via oRPC event iterators. `connectionStringsCollection` local-only, populated on demand (resolve via cloud, else local decrypt).
+- **Navigator** — the only sidebar.
+- **SyncType** — credential handling during cloud sync: `Cloud` (metadata + encrypted password synced), `CloudWithoutPassword` (password local-only), `Local` (nothing leaves device). _Avoid_: sync mode, cloud mode.
+- **Collections** — client data in TanStack DB collections (`apps/app/src/entities/collections/`), persisted to SQLite; synced ones stream from cloud via oRPC event iterators. A catch-up request sends only `{ id, updatedAt }` per row — whole rows re-upload every payload on each reconnect. **An empty array is a normal request, not a failure** — the server answers with everything. `connectionStringsCollection` is local-only, rebuilt by round-trip: **an absent row means "not resolved yet", never a negative answer** — `fetchingConfig` maps a missing row to the `resolving-password` flow (blocked, no password prompt).
 
 ## Workspaces
 
-Better Auth `organization` plugin remapped to `workspace` in `apps/api/lib/auth.ts`. Better Auth API still calls the logical field `activeOrganizationId`; schema remap points it at `activeWorkspaceId` column.
+Better Auth `organization` plugin remapped to `workspace` (`apps/api/lib/auth.ts`); the plugin's `activeOrganizationId` field points at the `activeWorkspaceId` column.
 
-- Every user gets a **default personal workspace** (`{"default":true}` in `workspaces.metadata`), lazily created by `ensureDefaultWorkspace`; `connections.create` calls it as fallback so `NOT NULL` `connections.workspaceId` always resolves.
-- Extra workspaces via `orpc.workspaces.create` (gated by `subscriptionMiddleware`). Deletion **disabled** — `connections.workspaceId` cascades, no delete flow yet.
-- Sync stays per-user. Client scopes connections to active workspace **inside** each `useLiveQuery` (`.where(...)`) — never post-query `.filter()` (new array every render, breaks downstream memos).
-- Workspaces reach client via `workspacesCollection`, **not** Better Auth `useListOrganizations` — list survives offline.
-- Active workspace = per-device `localStorage`, **never** pushed to session — server doesn't read `sessions.activeWorkspaceId` (column exists only because plugin requires the field). Better Auth team endpoints resolve `body.organizationId || session.activeOrganizationId`, so callers pass the active id explicitly (only `getActiveMember` session-bound).
-- `connections.create` accepts client's `workspaceId` (membership-checked, else user default) so offline-created connections land in the device-active workspace. Multi-member/invites not built yet.
+- Every user gets a lazily-created **default personal workspace** (`ensureDefaultWorkspace`); `connections.create` falls back to it.
+- Extra workspaces gated by `subscriptionMiddleware`. Deletion **disabled** — connections cascade, no delete flow yet.
+- Client scopes connections to the active workspace **inside** each `useLiveQuery` — never post-query `.filter()` (new array every render).
+- Workspaces reach the client via `workspacesCollection`, **not** Better Auth `useListOrganizations` — the list must survive offline.
+- Active workspace = per-device `localStorage`, **never** pushed to the session; callers pass the active id explicitly to Better Auth endpoints.
+- `connections.create` accepts the client's `workspaceId` (membership-checked) so offline-created connections land in the device-active workspace. Multi-member/invites not built yet.
 
 ## Tabs
 
-Tabs in `connectionResourceStore.tabs`, ordered by tab strip, persisted per resource in `localStorage`. Store split by slice in `entities/connection/store/`; `store/index.ts` re-exports all — always import from `~/entities/connection/store`.
+Tabs in `connectionResourceStore.tabs`, persisted per resource in `localStorage`; always import the store from `~/entities/connection/store`.
 
-- Tab id = readable, self-describing, the single route path param (`table:<schema>:<table>` percent-encoded, `definitions:<section>`, `visualizer`, `runner:<nanoid>`). Runner = **only** multi-instance type; singleton ids are constants/derivations so `openTab` finds the existing tab. **"Query" is the user-facing name for a runner** (tab title, "New query" actions, docs) — `runner` stays the internal type/id/store term, same split as Schema/`definitions`.
-- `parseTabId` turns id back into a tab (deep link to never-opened table works). `$tabId` `beforeLoad` parses it and must stay **pure** — runs on hover preload, must not touch the store; component effect calls `ensureTab` + `setActiveTab`.
-- `tabLabels` derives the whole strip at once (schema qualification + runner numbering depend on other open tabs).
-- Table tabs carry `preview`: single click in sidebar = preview tab (italic, reused by next preview), double click promotes.
-- Optional user `title` per tab (inline rename, cleared when emptied or equal to derived label); strip falls back to derived label.
+- Tab id = readable, self-describing, the single route path param (`table:<schema>:<table>`, `definitions:<section>`, `visualizer`, `runner:<nanoid>`). Runner is the **only** multi-instance type. **"Query" is the user-facing name for a runner**; `runner` stays the internal term — same split as Schema/`definitions`.
+- `parseTabId` turns an id back into a tab (deep links work). `$tabId` `beforeLoad` must stay **pure** — it runs on hover preload and must not touch the store; a component effect calls `ensureTab` + `setActiveTab`.
+- `tabLabels` derives the whole strip at once (qualification and numbering depend on other open tabs).
+- Table tabs carry `preview`: single click = preview (italic, reused), double click promotes.
+- Optional user `title` per tab (inline rename; cleared when emptied or equal to the derived label).
 
 ## Navigator
 
-Carries no action icons: new tabs via tab strip's trailing `+` menu; query-logger toggle + open-in-web in app title bar's trailing cluster — both only while a resource route is active, open-in-web also desktop + cloud non-localhost only. Only chrome: list switcher pinned above search, one full-width row morphing `Schema ›` ↔ `‹ Tables`.
-
-Which list is up is **deliberately not persisted** — in-memory `getNavigatorStore(resourceId)`, every reload opens on Tables. "Schema" = user-facing name; tab ids + store value stay `definitions`/`visualizer`. <kbd>Mod+B</kbd> toggles navigator.
+No action icons (see `tamery-ui` patterns). Which list is up is deliberately **not persisted** — every reload opens on Tables. "Schema" is the user-facing name; internal ids stay `definitions`/`visualizer`. <kbd>Mod+B</kbd> toggles.
 
 ## Collections lifecycle
 
-`getCollections()` lazily creates the singleton set and caches it; `cleanCollections()` drops it. `_protected` `beforeLoad` calls `getCollections()` and awaits `stateWhenReady()` for core collections; `ProtectedLayout` calls `cleanCollections()` on unmount. TanStack DB GCs a collection's in-memory data when `activeSubscribersCount` stays 0 longer than `gcTime`.
+`getCollections()` lazily creates the singleton set; `cleanCollections()` drops it. `_protected` `beforeLoad` awaits `stateWhenReady()` and puts the set in route context. TanStack DB GCs in-memory data when a collection has no subscribers longer than `gcTime`.
+
+**That await is first-render latency — a collection joins it only if something reads it synchronously.** Earning a slot: `connections`, `connectionsResources` and `workspaces` back the `$resourceId` `beforeLoad` redirects (unready → miss → `whenSynced()` server round-trip → offline cold start bounces to `/` and drops the resource from last-opened); `connectionStrings` backs the `prefetchConnectionResourceCore` sync `get` (unready → loader skips prefetch). The chat three (`chats`, `chatsMessages`, `chatsMessagesParts`) are reached only through `useLiveQuery`, which repaints on population — they stay out, and `chatsMessagesParts` is the largest table in the set.
+
+**Only `fullSignOut` may call `cleanCollections()`.** Components read collections from route context, everything else from `getCollections()` — dropping the singleton while a `_protected` match is alive splits the two apart: the router keeps the old set in the cached context (UI keeps working) while the next `getCollections()` mints an empty one (every query throws).

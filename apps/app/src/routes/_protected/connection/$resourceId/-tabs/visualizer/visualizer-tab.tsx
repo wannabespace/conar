@@ -34,7 +34,7 @@ import {
   useNodesState,
 } from '@xyflow/react'
 import type { CSSProperties } from 'react'
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
+import { useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { ReactFlowNode } from '~/entities/connection/components'
@@ -53,7 +53,6 @@ import {
   applySearchHighlight,
   getVisualizerLayout,
 } from '~/entities/connection/visualizer'
-import { globalHooks } from '~/global-hooks'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -124,14 +123,6 @@ const Visualizer = ({
 
   const recalculateLayoutEvent = useEffectEvent(recalculateLayout)
 
-  useEffect(
-    () =>
-      globalHooks.hook('animationFinished', () => {
-        recalculateLayoutEvent()
-      }),
-    []
-  )
-
   useMountedEffect(() => {
     recalculateLayoutEvent()
   }, [schema])
@@ -141,7 +132,7 @@ const Visualizer = ({
   })
 
   return (
-    <div className="relative size-full overflow-hidden rounded-lg">
+    <div className="relative size-full min-h-0 flex-1 overflow-hidden rounded-lg">
       <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
         <div className="relative w-56">
           <InputGroup>

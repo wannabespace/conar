@@ -1,4 +1,4 @@
-import type { AppUIMessage } from '@tamery/ai/message'
+import type { AppMessagePart, AppUIMessage } from '@tamery/ai/message'
 import { defineRelationsPart } from 'drizzle-orm'
 import {
   createInsertSchema,
@@ -16,7 +16,6 @@ export const chats = d.snakeCase.table(
   'chats',
   {
     ...baseTable,
-    activeStreamId: d.uuid(),
     connectionResourceId: d
       .uuid()
       .references(() => connectionsResources.id, { onDelete: 'cascade' })
@@ -43,10 +42,6 @@ export const chatsMessages = d.snakeCase.table(
       .references(() => chats.id, { onDelete: 'cascade' })
       .notNull(),
     metadata: encryptedJson().$type<Record<string, unknown>>(),
-    parts: encryptedJson()
-      .$type<AppUIMessage['parts'][number]>()
-      .array()
-      .notNull(),
     role: d.text().$type<AppUIMessage['role']>().notNull(),
   },
   (t) => [d.index().on(t.chatId), d.index().on(t.role)]
@@ -56,8 +51,29 @@ export const chatsMessagesSelectSchema = createSelectSchema(chatsMessages)
 export const chatsMessagesInsertSchema = createInsertSchema(chatsMessages)
 export const chatsMessagesUpdateSchema = createUpdateSchema(chatsMessages)
 
+export const chatsMessagesParts = d.snakeCase.table(
+  'chats_messages_parts',
+  {
+    ...baseTable,
+    messageId: d
+      .uuid()
+      .references(() => chatsMessages.id, { onDelete: 'cascade' })
+      .notNull(),
+    order: d.integer().notNull(),
+    part: encryptedJson().$type<AppMessagePart>().notNull(),
+  },
+  (t) => [d.index().on(t.messageId)]
+)
+
+export const chatsMessagesPartsSelectSchema =
+  createSelectSchema(chatsMessagesParts)
+export const chatsMessagesPartsInsertSchema =
+  createInsertSchema(chatsMessagesParts)
+export const chatsMessagesPartsUpdateSchema =
+  createUpdateSchema(chatsMessagesParts)
+
 export const chatsRelations = defineRelationsPart(
-  { chats, chatsMessages, connectionsResources, users },
+  { chats, chatsMessages, chatsMessagesParts, connectionsResources, users },
   (r) => ({
     chats: {
       connectionResource: r.one.connectionsResources({
@@ -74,6 +90,13 @@ export const chatsRelations = defineRelationsPart(
       chat: r.one.chats({
         from: r.chatsMessages.chatId,
         to: r.chats.id,
+      }),
+      parts: r.many.chatsMessagesParts(),
+    },
+    chatsMessagesParts: {
+      message: r.one.chatsMessages({
+        from: r.chatsMessagesParts.messageId,
+        to: r.chatsMessages.id,
       }),
     },
   })

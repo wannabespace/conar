@@ -14,7 +14,7 @@ import { getCollections } from '~/entities/collections'
 import { createProxyClient, orpcProxy } from '~/lib/orpc'
 
 import { getConnectionStore } from '../../store'
-import { fetchingConfig } from '../../utils'
+import { fetchingConfig } from '../../utils/fetching-config'
 import { clickhouseColdDialect, clickhouseDialect } from './clickhouse'
 import type { Database as ClickhouseDatabase } from './clickhouse/schema'
 import { mssqlColdDialect, mssqlDialect } from './mssql'

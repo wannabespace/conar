@@ -39,9 +39,8 @@ import {
   openTableTab,
   parseTabId,
   tableTabId,
-  cleanupPinnedTables,
+  pinnedTable,
   getConnectionResourceStore,
-  togglePinTable,
 } from '~/entities/connection/store'
 
 import { tablePageStore } from '../../-tabs/table/-lib/store'
@@ -187,7 +186,7 @@ const TableRow = ({
         <RiPushpinLine className="size-4" />
       ),
       onSelect: () =>
-        togglePinTable(connectionResource.id, row.schema, row.table.name),
+        pinnedTable.toggle(connectionResource.id, row.schema, row.table.name),
     },
     { type: 'separator' },
     {
@@ -281,7 +280,7 @@ const TableRow = ({
                 isActive && 'hover:bg-primary-foreground/20'
               )}
               onClick={() =>
-                togglePinTable(
+                pinnedTable.toggle(
                   connectionResource.id,
                   row.schema,
                   row.table.name
@@ -362,7 +361,7 @@ export const TablesList = ({
       return
     }
 
-    cleanupPinnedTables(
+    pinnedTable.cleanup(
       connectionResource.id,
       tablesAndSchemas.schemas.flatMap((schema) =>
         schema.tables.map((table) => ({
@@ -493,12 +492,12 @@ export const TablesList = ({
 
   if (isPending) {
     return (
-      <SidebarContent className={cn('overflow-hidden px-2', className)}>
+      <SidebarContent className={cn('overflow-hidden pl-2', className)}>
         <SidebarMenu>
           {Array.from({ length: 12 }).map((_, index) => (
             // oxlint-disable-next-line react/no-array-index-key
             <SidebarMenuItem key={index}>
-              <SidebarMenuSkeleton showIcon />
+              <SidebarMenuSkeleton seed={index} showIcon />
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -523,7 +522,7 @@ export const TablesList = ({
   return (
     <SidebarContent
       ref={parentRef}
-      className={cn('scroll-fade block overflow-y-auto px-2 pb-2', className)}
+      className={cn('scroll-fade block overflow-y-auto pb-2 pl-2', className)}
     >
       <DropTableDialog ref={dropTableDialogRef} />
       <RenameTableDialog ref={renameTableDialogRef} />

@@ -1,4 +1,3 @@
-import { ORPCError } from '@orpc/server'
 import { db } from '@tamery/db'
 import {
   connectionsResources,
@@ -24,7 +23,10 @@ export const update = orpc
       connectionsResourcesUpdateSchema.pick('id').required()
     )
   )
-  .handler(async ({ context, input }) => {
+  .errors({
+    NOT_FOUND: { message: 'Connection resource not found' },
+  })
+  .handler(async ({ context, errors, input }) => {
     const { id, ...changes } = input
 
     const found = await db.query.connectionsResources.findFirst({
@@ -44,9 +46,7 @@ export const update = orpc
     })
 
     if (!found) {
-      throw new ORPCError('NOT_FOUND', {
-        message: 'Connection resource not found',
-      })
+      throw errors.NOT_FOUND()
     }
 
     const [resource] = await db
@@ -56,7 +56,7 @@ export const update = orpc
       .returning()
 
     if (!resource) {
-      throw new ORPCError('NOT_FOUND', {
+      throw errors.NOT_FOUND({
         message: 'Connection resource not found after update',
       })
     }
