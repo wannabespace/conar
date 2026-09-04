@@ -173,12 +173,15 @@ const renderProFooter = ({
 }
 
 export const Subscription = () => {
-  const { period } = useSearch()
+  const { period, type: clientType } = useSearch()
   const { subscription, isPending } = useSubscription()
   const router = useRouter()
-  const returnHref = router.buildLocation({ to: '/account' }).href
+  const returnHref = router.buildLocation({
+    search: { type: clientType },
+    to: '/account',
+  }).href
   const { openBillingPortal, isOpening } = useBillingPortal({ returnHref })
-  const { upgrade, isUpgrading } = useUpgradeSubscription()
+  const { upgrade, isUpgrading } = useUpgradeSubscription(clientType)
   const [isYearly, setIsYearly] = useState(period === 'yearly')
   const [mountedAt, setMountedAt] = useState(() => Date.now())
   void setMountedAt

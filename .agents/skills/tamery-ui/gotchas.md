@@ -4,7 +4,7 @@
 - `CommandItem` appends a hidden `ml-auto` check — right-aligned meta goes in `CommandShortcut` (also hides the check). Explicit `value` on items that can mount mid-search.
 - `PopoverContent` defaults `flex flex-col gap-4 p-4 w-72` — menu-like popovers need `gap-0 p-1`, often `w-auto`.
 - `DropdownMenuLabel` requires a `DropdownMenuGroup` parent (base-ui throws).
-- base-ui render prop: `<Trigger render={<Button/>}>children</Trigger>` — children land inside. Non-button trigger needs `nativeButton={false}` + `aria-label`.
+- base-ui render prop: `<Trigger render={<Button/>}>children</Trigger>` — children land inside. Non-button trigger needs `nativeButton={false}` + `aria-label`. Same for `<Button render={<a href/>}>`: jsx-a11y can't see the children through `render`, so the anchor needs its own `aria-label`.
 - `InputGroup` addon sizes direct-child svgs only — nested icons need explicit `size-4`.
 - Base Button has an `active:translate-y-px` press dip that **replaces** any layout transform — never center a button with `absolute` + `-translate-y-1/2` (it jumps on press); use `inset-y-0 my-auto` or in-flow flex.
 - Router `Link` concatenates `activeProps.className` (no tw-merge) — use `data-[status=active]:` variants in one className.

@@ -45,10 +45,6 @@ const AccountLayout = () => {
   })
   const { data } = useQuery(orpc.repo.queryOptions())
   const { user } = useLoaderData()
-  const webUrl = import.meta.env.VITE_PUBLIC_WEB_URL
-  if (!webUrl) {
-    throw new Error('VITE_PUBLIC_WEB_URL is not set')
-  }
 
   const handleSignOut = async () => {
     await authClient.signOut()
@@ -123,7 +119,7 @@ const AccountLayout = () => {
             variant="outline"
             disabled
             size="sm"
-            render={<Link to={webUrl} />}
+            render={<Link to={import.meta.env.VITE_PUBLIC_WEB_URL} />}
           >
             Web version
           </Button>

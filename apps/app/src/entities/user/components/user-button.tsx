@@ -36,6 +36,7 @@ import { toast } from 'sonner'
 import { SupportDialog } from '~/components/support-dialog'
 import { authClient } from '~/lib/auth'
 import { clearDb } from '~/lib/sync'
+import { accountUrl } from '~/lib/urls'
 
 import { useSignOut } from '../hooks/use-sign-out'
 
@@ -107,10 +108,7 @@ export const UserButton = ({
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() =>
-            window.open(
-              `${import.meta.env.VITE_PUBLIC_MAIN_URL}/account`,
-              window.electron ? '_blank' : '_self'
-            )
+            window.open(accountUrl, window.electron ? '_blank' : '_self')
           }
         >
           <HugeiconsIcon icon={UserIcon} strokeWidth={2} />

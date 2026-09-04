@@ -20,6 +20,7 @@ import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
 import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
+import { accountUrl } from '~/lib/urls'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 
 const perks = [
@@ -51,8 +52,6 @@ export const SubscriptionModal = () => {
       )
     }
   }, [isSubscriptionDialogOpen, subscription])
-
-  const accountUrl = `${import.meta.env.VITE_PUBLIC_MAIN_URL}/account`
 
   return (
     <Dialog

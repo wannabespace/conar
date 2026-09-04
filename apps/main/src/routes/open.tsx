@@ -202,11 +202,7 @@ export const Route = createFileRoute('/open')({
     const { data } = await authClient.getSession()
 
     if (clientType === 'web' && data?.user) {
-      const webUrl = import.meta.env.VITE_PUBLIC_WEB_URL
-      if (typeof webUrl !== 'string' || webUrl.length === 0) {
-        throw new Error('VITE_PUBLIC_WEB_URL is not configured')
-      }
-      throw redirect({ href: webUrl })
+      throw redirect({ href: import.meta.env.VITE_PUBLIC_WEB_URL })
     }
   },
 })

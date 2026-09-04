@@ -23,15 +23,20 @@ export const useSubscription = () => {
   return { isPending, subscription }
 }
 
-export const useUpgradeSubscription = () => {
+export const useUpgradeSubscription = (
+  clientType: 'web' | 'desktop' | 'cli' | undefined
+) => {
   const router = useRouter()
-  const returnHref = router.buildLocation({ to: '/account' }).href
+  const returnHref = router.buildLocation({
+    search: { type: clientType },
+    to: '/account',
+  }).href
   const successHref = router.buildLocation({
-    search: { subscription: 'success' },
+    search: { subscription: 'success', type: clientType },
     to: '/account',
   }).href
   const cancelHref = router.buildLocation({
-    search: { subscription: 'cancel' },
+    search: { subscription: 'cancel', type: clientType },
     to: '/account',
   }).href
 
