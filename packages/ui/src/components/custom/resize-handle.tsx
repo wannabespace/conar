@@ -1,19 +1,26 @@
 import { cn } from '@tamery/ui/lib/utils'
 import type { ComponentProps } from 'react'
-import { useState } from 'react'
+import { useRef } from 'react'
 
 export const ResizeHandle = ({
   getValue,
   onResize,
+  onResizeEnd,
   min = 0,
   className,
   ...props
 }: {
   getValue: () => number
   onResize: (value: number) => void
+  onResizeEnd?: (value: number) => void
   min?: number
 } & Omit<ComponentProps<'div'>, 'onResize'>) => {
-  const [start, setStart] = useState<{ x: number; value: number }>()
+  const start = useRef<{ x: number; value: number } | null>(null)
+
+  const valueAt = (clientX: number) =>
+    start.current
+      ? Math.max(min, start.current.value + clientX - start.current.x)
+      : null
 
   return (
     <div
@@ -21,7 +28,6 @@ export const ResizeHandle = ({
       role="separator"
       aria-orientation="vertical"
       tabIndex={0}
-      data-resizing={start ? true : undefined}
       className={cn(
         'group/resize-handle cursor-col-resize touch-none select-none',
         className
@@ -29,14 +35,26 @@ export const ResizeHandle = ({
       onPointerDown={(event) => {
         event.preventDefault()
         event.currentTarget.setPointerCapture(event.pointerId)
-        setStart({ value: getValue(), x: event.clientX })
+        event.currentTarget.dataset.resizing = 'true'
+        start.current = { value: getValue(), x: event.clientX }
       }}
       onPointerMove={(event) => {
-        if (start) {
-          onResize(Math.max(min, start.value + event.clientX - start.x))
+        const value = valueAt(event.clientX)
+
+        if (value !== null) {
+          onResize(value)
         }
       }}
-      onPointerUp={() => setStart(undefined)}
+      onPointerUp={(event) => {
+        const value = valueAt(event.clientX)
+
+        start.current = null
+        delete event.currentTarget.dataset.resizing
+
+        if (value !== null) {
+          onResizeEnd?.(value)
+        }
+      }}
       {...props}
     />
   )
