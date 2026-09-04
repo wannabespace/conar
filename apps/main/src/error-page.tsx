@@ -1,7 +1,7 @@
 import {
   Alert02Icon,
   ArrowTurnBackwardIcon,
-  RefreshIcon,
+  Refresh01Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
@@ -90,7 +90,7 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
                 className="flex-1"
                 onClick={() => window.location.reload()}
               >
-                <HugeiconsIcon icon={RefreshIcon} strokeWidth={2} />
+                <HugeiconsIcon icon={Refresh01Icon} strokeWidth={2} />
                 Refresh
               </Button>
             </CardFooter>

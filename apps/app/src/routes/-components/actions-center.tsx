@@ -11,7 +11,7 @@ import {
   LayoutTable02Icon,
   Moon02Icon,
   PlusSignIcon,
-  RefreshIcon,
+  Refresh01Icon,
   Search01Icon,
   Sun03Icon,
   ViewIcon,
@@ -352,8 +352,11 @@ export const ActionsCenter = () => {
               ),
             ]
           : []),
-        actionEntry('Reload window', ['restart', 'refresh'], RefreshIcon, () =>
-          window.location.reload()
+        actionEntry(
+          'Reload window',
+          ['restart', 'refresh'],
+          Refresh01Icon,
+          () => window.location.reload()
         ),
       ],
     },

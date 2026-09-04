@@ -5,7 +5,7 @@ import {
   Delete02Icon,
   Layers01Icon,
   PlusSignIcon,
-  RefreshIcon,
+  Refresh01Icon,
   SortByDown01Icon,
   SortByUp01Icon,
   SquareUnlock01Icon,
@@ -199,7 +199,7 @@ const buildConnectionMenuItems = ({
   {
     label: 'Refresh',
     icon: (
-      <HugeiconsIcon icon={RefreshIcon} strokeWidth={2} className="size-4" />
+      <HugeiconsIcon icon={Refresh01Icon} strokeWidth={2} className="size-4" />
     ),
     disabled: !canSend,
     onSelect: onRefresh,

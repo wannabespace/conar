@@ -1,4 +1,4 @@
-import { RefreshIcon, Tick02Icon } from '@hugeicons/core-free-icons'
+import { Refresh01Icon, Tick02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
@@ -26,7 +26,7 @@ export const RefreshButton = ({
         active={refreshing}
       >
         <HugeiconsIcon
-          icon={RefreshIcon}
+          icon={Refresh01Icon}
           strokeWidth={2}
           className={iconClassName}
         />
