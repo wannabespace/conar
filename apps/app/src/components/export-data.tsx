@@ -2,8 +2,8 @@ import {
   BracesIcon,
   Copy01Icon,
   Download01Icon,
-  GridTableIcon,
   Note01Icon,
+  TableIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
@@ -194,7 +194,7 @@ const useExportMutation = ({
   })
 
 const FORMAT_ITEMS = [
-  { format: 'csv', icon: GridTableIcon, label: 'CSV' },
+  { format: 'csv', icon: TableIcon, label: 'CSV' },
   { format: 'json', icon: BracesIcon, label: 'JSON' },
   { format: 'markdown', icon: Note01Icon, label: 'Markdown' },
 ] satisfies {

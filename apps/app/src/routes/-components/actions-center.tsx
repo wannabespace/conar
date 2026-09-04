@@ -6,7 +6,6 @@ import {
   DashboardSquare01Icon,
   Download01Icon,
   File01Icon,
-  GridTableIcon,
   HierarchyIcon,
   HistoryIcon,
   Moon02Icon,
@@ -14,6 +13,7 @@ import {
   RefreshIcon,
   Search01Icon,
   Sun03Icon,
+  TableIcon,
   ViewIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -83,7 +83,7 @@ const CONNECTION_PAGES = [
 const TABLE_TYPE_ICONS = {
   'materialized view': ViewIcon,
   view: ViewIcon,
-  table: GridTableIcon,
+  table: TableIcon,
 } as const
 
 const run = (action: () => void) => () => {

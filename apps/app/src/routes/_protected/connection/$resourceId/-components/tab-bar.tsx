@@ -3,12 +3,12 @@ import {
   ArrowLeft01Icon,
   ArrowRight01Icon,
   Cancel01Icon,
-  GridTableIcon,
   HierarchyIcon,
   PlayIcon,
   PlusSignIcon,
   SecurityCheckIcon,
   SidebarLeftIcon,
+  TableIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { enabledFilters } from '@tamery/shared/filters'
@@ -97,7 +97,7 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 const TAB_ICONS = {
   definitions: SecurityCheckIcon,
   runner: PlayIcon,
-  table: GridTableIcon,
+  table: TableIcon,
   visualizer: HierarchyIcon,
 }
 
@@ -424,7 +424,7 @@ const NewTabMenu = ({
                       goToTab(tableTabId(schema.name, table.name))
                     }}
                   >
-                    <HugeiconsIcon icon={GridTableIcon} strokeWidth={2} />
+                    <HugeiconsIcon icon={TableIcon} strokeWidth={2} />
                     <span data-mask className="truncate">
                       {showSchema ? `${schema.name}.${table.name}` : table.name}
                     </span>
