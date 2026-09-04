@@ -1,4 +1,9 @@
-import { RiCloseLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react'
+import {
+  Cancel01Icon,
+  ViewIcon,
+  ViewOffSlashIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import {
   Popover,
@@ -67,11 +72,11 @@ export const FilterChip = ({
             />
           }
         >
-          {filter.disabled ? (
-            <RiEyeOffLine className="size-3.5" />
-          ) : (
-            <RiEyeLine className="size-3.5" />
-          )}
+          <HugeiconsIcon
+            icon={filter.disabled ? ViewOffSlashIcon : ViewIcon}
+            strokeWidth={2}
+            className="size-3.5"
+          />
         </TooltipTrigger>
         <TooltipContent side="top">
           {filter.disabled ? 'Enable filter' : 'Disable filter'}
@@ -157,7 +162,11 @@ export const FilterChip = ({
             />
           }
         >
-          <RiCloseLine className="size-3.5" />
+          <HugeiconsIcon
+            icon={Cancel01Icon}
+            strokeWidth={2}
+            className="size-3.5"
+          />
         </TooltipTrigger>
         <TooltipContent side="top">Remove filter</TooltipContent>
       </Tooltip>

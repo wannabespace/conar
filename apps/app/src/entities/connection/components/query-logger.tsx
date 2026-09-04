@@ -1,10 +1,11 @@
 import {
-  RiArrowDownLine,
-  RiCheckLine,
-  RiCloseLine,
-  RiDeleteBinLine,
-  RiFileListLine,
-} from '@remixicon/react'
+  ArrowDown02Icon,
+  Cancel01Icon,
+  Delete02Icon,
+  File01Icon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { previewJson } from '@tamery/shared/utils/helpers'
 import { Button } from '@tamery/ui/components/button'
@@ -217,7 +218,11 @@ const LogList = ({
         aria-label="Scroll to latest"
         onClick={() => scrollToBottom()}
       >
-        <RiArrowDownLine className="size-4" />
+        <HugeiconsIcon
+          icon={ArrowDown02Icon}
+          strokeWidth={2}
+          className="size-4"
+        />
       </Button>
     </div>
   )
@@ -283,9 +288,15 @@ export const QueryLogger = ({
               <ContentSwitch
                 active={isClearing}
                 onSwitchEnd={setIsClearing}
-                activeContent={<RiCheckLine className="text-success" />}
+                activeContent={
+                  <HugeiconsIcon
+                    icon={Tick02Icon}
+                    strokeWidth={2}
+                    className="text-success"
+                  />
+                }
               >
-                <RiDeleteBinLine />
+                <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
               </ContentSwitch>
             </TooltipTrigger>
             <TooltipContent side="bottom">Clear log</TooltipContent>
@@ -310,7 +321,7 @@ export const QueryLogger = ({
                 />
               }
             >
-              <RiCloseLine />
+              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
             </TooltipTrigger>
             <TooltipContent side="bottom">Close</TooltipContent>
           </Tooltip>
@@ -320,7 +331,7 @@ export const QueryLogger = ({
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <RiFileListLine />
+              <HugeiconsIcon icon={File01Icon} strokeWidth={2} />
             </EmptyMedia>
             <EmptyTitle>No queries yet</EmptyTitle>
             <EmptyDescription>

@@ -1,5 +1,6 @@
 import { Dialog as SheetPrimitive } from '@base-ui/react/dialog'
-import { RiCloseLine } from '@remixicon/react'
+import { Cancel01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
@@ -67,7 +68,7 @@ const SheetContent = ({
             />
           }
         >
-          <RiCloseLine />
+          <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>
       )}

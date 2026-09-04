@@ -1,4 +1,5 @@
-import { RiCloseLine, RiSearchLine } from '@remixicon/react'
+import { Cancel01Icon, Search01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
@@ -154,7 +155,11 @@ const Visualizer = ({
               }}
             />
             <InputGroupAddon>
-              <RiSearchLine className="text-muted-foreground pointer-events-none size-3.5" />
+              <HugeiconsIcon
+                icon={Search01Icon}
+                strokeWidth={2}
+                className="text-muted-foreground pointer-events-none size-3.5"
+              />
             </InputGroupAddon>
             <InputGroupAddon align="inline-end">
               {!searchQuery && (
@@ -176,7 +181,11 @@ const Visualizer = ({
                       />
                     }
                   >
-                    <RiCloseLine className="size-4" />
+                    <HugeiconsIcon
+                      icon={Cancel01Icon}
+                      strokeWidth={2}
+                      className="size-4"
+                    />
                   </TooltipTrigger>
                   <TooltipContent side="bottom">Clear</TooltipContent>
                 </Tooltip>

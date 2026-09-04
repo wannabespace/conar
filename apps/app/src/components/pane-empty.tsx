@@ -1,4 +1,5 @@
-import type { RemixiconComponentType } from '@remixicon/react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import type { IconSvgElement } from '@hugeicons/react'
 import {
   Empty,
   EmptyDescription,
@@ -13,7 +14,7 @@ export const PaneEmpty = ({
   title,
 }: {
   description: string
-  icon: RemixiconComponentType
+  icon: IconSvgElement
   title: string
 }) => (
   <Empty className="min-h-0 flex-1 p-4 md:p-4">
@@ -22,7 +23,7 @@ export const PaneEmpty = ({
         variant="icon"
         className="bg-muted/60 text-muted-foreground/70 mb-3 size-14 rounded-2xl [&_svg]:size-7"
       >
-        <Icon />
+        <HugeiconsIcon icon={Icon} strokeWidth={2} />
       </EmptyMedia>
       <EmptyTitle className="text-sm font-medium tracking-normal">
         {title}

@@ -33,8 +33,9 @@
     "ua-parser-js": "catalog:"
   },
   "devDependencies": {
+    "@hugeicons/core-free-icons": "catalog:",
+    "@hugeicons/react": "catalog:",
     "@orpc/server": "catalog:",
-    "@remixicon/react": "catalog:",
     "@rolldown/plugin-babel": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@tamery/api": "workspace:*",

@@ -1,4 +1,5 @@
-import { RiCloseLine } from '@remixicon/react'
+import { Cancel01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
   Tooltip,
@@ -55,7 +56,7 @@ const LastOpenedResource = ({
             />
           }
         >
-          <RiCloseLine />
+          <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
         </TooltipTrigger>
         <TooltipContent side="top">Remove from recents</TooltipContent>
       </Tooltip>

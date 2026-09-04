@@ -1,8 +1,9 @@
 import {
-  RiArrowLeftSLine,
-  RiArrowRightSLine,
-  RiDatabase2Line,
-} from '@remixicon/react'
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  DatabaseIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { ColumnRenderer } from '@tamery/table'
 import { TableHeader } from '@tamery/table'
 import { useTableContext } from '@tamery/table/hooks'
@@ -194,7 +195,11 @@ const Header = ({ className }: { className?: string }) => {
                   />
                 }
               >
-                <RiArrowLeftSLine className="relative z-10 size-4" />
+                <HugeiconsIcon
+                  icon={ArrowLeft01Icon}
+                  strokeWidth={2}
+                  className="relative z-10 size-4"
+                />
               </TooltipTrigger>
               <TooltipContent side="bottom">Columns off-screen</TooltipContent>
             </Tooltip>
@@ -211,7 +216,7 @@ const Header = ({ className }: { className?: string }) => {
                     key={column.id}
                     onClick={() => scrollToColumn(column, 'left')}
                   >
-                    <RiDatabase2Line />
+                    <HugeiconsIcon icon={DatabaseIcon} strokeWidth={2} />
                     {column.id}
                   </DropdownMenuItem>
                 ))}
@@ -248,7 +253,11 @@ const Header = ({ className }: { className?: string }) => {
                   />
                 }
               >
-                <RiArrowRightSLine className="relative z-10 size-4" />
+                <HugeiconsIcon
+                  icon={ArrowRight01Icon}
+                  strokeWidth={2}
+                  className="relative z-10 size-4"
+                />
               </TooltipTrigger>
               <TooltipContent side="bottom">Columns off-screen</TooltipContent>
             </Tooltip>
@@ -261,7 +270,7 @@ const Header = ({ className }: { className?: string }) => {
                     key={column.id}
                     onClick={() => scrollToColumn(column, 'right')}
                   >
-                    <RiDatabase2Line />
+                    <HugeiconsIcon icon={DatabaseIcon} strokeWidth={2} />
                     {column.id}
                   </DropdownMenuItem>
                 ))}

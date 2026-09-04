@@ -1,9 +1,10 @@
 import {
-  RiFileList3Line,
-  RiKey2Line,
-  RiLayoutColumnLine,
-  RiTable2,
-} from '@remixicon/react'
+  Key01Icon,
+  LayoutTable02Icon,
+  LayoutThreeColumnIcon,
+  LeftToRightListDashIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Badge } from '@tamery/ui/components/badge'
 import { CardContent, CardTitle } from '@tamery/ui/components/card'
 import { CardMotion } from '@tamery/ui/components/card.motion'
@@ -191,11 +192,13 @@ export const Indexes = () => {
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="mb-2 flex items-center gap-2 text-base">
-                    {item.isPrimary ? (
-                      <RiKey2Line className="text-primary size-4" />
-                    ) : (
-                      <RiFileList3Line className="text-primary size-4" />
-                    )}
+                    <HugeiconsIcon
+                      icon={
+                        item.isPrimary ? Key01Icon : LeftToRightListDashIcon
+                      }
+                      strokeWidth={2}
+                      className="text-primary size-4"
+                    />
                     <HighlightText text={item.name} match={search} />
                     {item.isPrimary && (
                       <Badge variant="secondary">Primary Key</Badge>
@@ -206,7 +209,11 @@ export const Indexes = () => {
                   </CardTitle>
                   <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
                     <Badge variant="outline">
-                      <RiTable2 className="size-3" />
+                      <HugeiconsIcon
+                        icon={LayoutTable02Icon}
+                        strokeWidth={2}
+                        className="size-3"
+                      />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
                     {(item.columns.length > 0 ||
@@ -216,7 +223,11 @@ export const Indexes = () => {
                         {[...item.columns, ...item.customExpressions].map(
                           (col) => (
                             <Badge key={col} variant="outline">
-                              <RiLayoutColumnLine className="size-3" />
+                              <HugeiconsIcon
+                                icon={LayoutThreeColumnIcon}
+                                strokeWidth={2}
+                                className="size-3"
+                              />
                               <HighlightText text={col} match={search} />
                             </Badge>
                           )

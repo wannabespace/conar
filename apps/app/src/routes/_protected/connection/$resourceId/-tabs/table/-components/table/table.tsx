@@ -1,4 +1,5 @@
-import { RiAlertLine } from '@remixicon/react'
+import { Alert02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { enabledFilters } from '@tamery/shared/filters'
@@ -88,7 +89,11 @@ export const TableError = ({ error }: { error: Error }) => {
         className="pointer-events-auto relative flex w-full max-w-lg flex-col items-center"
       >
         <div className="border-destructive/10 bg-destructive/10 mb-5 flex size-14 items-center justify-center rounded-2xl border">
-          <RiAlertLine className="text-destructive size-7" />
+          <HugeiconsIcon
+            icon={Alert02Icon}
+            strokeWidth={2}
+            className="text-destructive size-7"
+          />
         </div>
 
         <h2 className="text-base font-semibold tracking-tight">Query failed</h2>

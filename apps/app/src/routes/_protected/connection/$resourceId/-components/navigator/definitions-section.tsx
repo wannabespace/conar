@@ -1,14 +1,15 @@
-import type { RemixiconComponentType } from '@remixicon/react'
 import {
-  RiCodeSSlashLine,
-  RiFileList3Line,
-  RiFlashlightLine,
-  RiKey2Line,
-  RiListUnordered,
-  RiNodeTree,
-  RiSearchLine,
-  RiShieldCheckLine,
-} from '@remixicon/react'
+  FlashIcon,
+  HierarchyIcon,
+  Key01Icon,
+  LeftToRightListBulletIcon,
+  LeftToRightListDashIcon,
+  Search01Icon,
+  SecurityCheckIcon,
+  SourceCodeIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import type { IconSvgElement } from '@hugeicons/react'
 import {
   CONNECTION_TYPES_WITH_FUNCTIONS,
   CONNECTION_TYPES_WITH_TRIGGERS,
@@ -45,14 +46,14 @@ import {
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 interface NavigatorItem {
-  Icon: RemixiconComponentType
+  Icon: IconSvgElement
   label: string
   open: (resourceId: string, preview: boolean) => void
   tabId: string
 }
 
 const sectionItem = (
-  Icon: RemixiconComponentType,
+  Icon: IconSvgElement,
   label: string,
   section: DefinitionsSection
 ): NavigatorItem => ({
@@ -64,7 +65,7 @@ const sectionItem = (
 })
 
 const visualizerItem: NavigatorItem = {
-  Icon: RiNodeTree,
+  Icon: HierarchyIcon,
   label: 'Visualizer',
   open: openVisualizerTab,
   tabId: VISUALIZER_TAB_ID,
@@ -80,15 +81,15 @@ export const schemaGroups = (
     },
     {
       items: [
-        sectionItem(RiFileList3Line, 'Indexes', 'indexes'),
-        sectionItem(RiKey2Line, 'Constraints', 'constraints'),
+        sectionItem(LeftToRightListDashIcon, 'Indexes', 'indexes'),
+        sectionItem(Key01Icon, 'Constraints', 'constraints'),
       ],
       label: 'Structure',
     },
     {
       items: [
         sectionItem(
-          RiListUnordered,
+          LeftToRightListBulletIcon,
           connection.type === ConnectionType.MySQL ? 'Enums & Sets' : 'Enums',
           'enums'
         ),
@@ -98,16 +99,16 @@ export const schemaGroups = (
     {
       items: [
         ...(CONNECTION_TYPES_WITH_FUNCTIONS.includes(connection.type)
-          ? [sectionItem(RiCodeSSlashLine, 'Functions', 'functions')]
+          ? [sectionItem(SourceCodeIcon, 'Functions', 'functions')]
           : []),
         ...(CONNECTION_TYPES_WITH_TRIGGERS.includes(connection.type)
-          ? [sectionItem(RiFlashlightLine, 'Triggers', 'triggers')]
+          ? [sectionItem(FlashIcon, 'Triggers', 'triggers')]
           : []),
       ],
       label: 'Logic',
     },
     {
-      items: [sectionItem(RiShieldCheckLine, 'Policies', 'policies')],
+      items: [sectionItem(SecurityCheckIcon, 'Policies', 'policies')],
       label: 'Security',
     },
   ].filter((group) => group.items.length > 0)
@@ -132,7 +133,11 @@ export const DefinitionsPanel = () => {
       <div className="flex shrink-0 items-center gap-1 pb-1.5 pl-2">
         <InputGroup className="flex-1" size="sm">
           <InputGroupAddon>
-            <RiSearchLine className="text-muted-foreground/70 size-3.5" />
+            <HugeiconsIcon
+              icon={Search01Icon}
+              strokeWidth={2}
+              className="text-muted-foreground/70 size-3.5"
+            />
           </InputGroupAddon>
           <InputGroupInput
             placeholder="Search"
@@ -175,7 +180,9 @@ export const DefinitionsPanel = () => {
                       />
                     }
                   >
-                    <Icon
+                    <HugeiconsIcon
+                      icon={Icon}
+                      strokeWidth={2}
                       className={cn(
                         'size-4 shrink-0',
                         isActive

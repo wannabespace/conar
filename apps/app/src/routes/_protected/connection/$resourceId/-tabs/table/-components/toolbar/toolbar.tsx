@@ -1,9 +1,10 @@
 import {
-  RiCodeSSlashLine,
-  RiHashtag,
-  RiMoreLine,
-  RiSeedlingLine,
-} from '@remixicon/react'
+  HashtagIcon,
+  MoreHorizontalIcon,
+  SourceCodeIcon,
+  SproutIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { enabledFilters } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
@@ -122,7 +123,11 @@ const TableStats = ({
           className="gap-1.5 px-2.5 disabled:opacity-100"
           onClick={onRequestExact}
         >
-          <RiHashtag className="text-muted-foreground/60" />
+          <HugeiconsIcon
+            icon={HashtagIcon}
+            strokeWidth={2}
+            className="text-muted-foreground/60"
+          />
           <span
             className={cn(
               'text-2xs font-normal tabular-nums',
@@ -274,14 +279,14 @@ export const TableToolbar = ({
                 />
               }
             >
-              <RiMoreLine />
+              <HugeiconsIcon icon={MoreHorizontalIcon} strokeWidth={2} />
             </TooltipTrigger>
             <TooltipContent side="top">More actions</TooltipContent>
           </Tooltip>
           <DropdownMenuContent side="top" align="end" className="min-w-44">
             {tableType === 'table' && (
               <DropdownMenuItem onClick={() => setSeedOpen(true)}>
-                <RiSeedlingLine />
+                <HugeiconsIcon icon={SproutIcon} strokeWidth={2} />
                 Seed data
               </DropdownMenuItem>
             )}
@@ -293,7 +298,7 @@ export const TableToolbar = ({
             />
             {tableType === 'table' && (
               <DropdownMenuItem onClick={() => setCodeOpen(true)}>
-                <RiCodeSSlashLine />
+                <HugeiconsIcon icon={SourceCodeIcon} strokeWidth={2} />
                 Code
               </DropdownMenuItem>
             )}

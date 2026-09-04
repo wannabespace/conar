@@ -1,4 +1,5 @@
-import { RiAlertLine } from '@remixicon/react'
+import { Alert02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -63,7 +64,11 @@ export const RunnerAlertDialog = ({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <RiAlertLine className="text-warning size-5" />
+            <HugeiconsIcon
+              icon={Alert02Icon}
+              strokeWidth={2}
+              className="text-warning size-5"
+            />
             Potentially Dangerous SQL Query
           </AlertDialogTitle>
           <AlertDialogDescription>

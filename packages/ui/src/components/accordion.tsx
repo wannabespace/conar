@@ -1,5 +1,6 @@
 import { Accordion as AccordionPrimitive } from '@base-ui/react/accordion'
-import { RiArrowDownSLine, RiArrowUpSLine } from '@remixicon/react'
+import { ArrowDown01Icon, ArrowUp01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { cn } from '@tamery/ui/lib/utils'
 
 const Accordion = ({ className, ...props }: AccordionPrimitive.Root.Props) => (
@@ -39,11 +40,15 @@ const AccordionTrigger = ({
       {...props}
     >
       {children}
-      <RiArrowDownSLine
+      <HugeiconsIcon
+        icon={ArrowDown01Icon}
+        strokeWidth={2}
         data-slot="accordion-trigger-icon"
         className="pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:hidden"
       />
-      <RiArrowUpSLine
+      <HugeiconsIcon
+        icon={ArrowUp01Icon}
+        strokeWidth={2}
         data-slot="accordion-trigger-icon"
         className="pointer-events-none hidden shrink-0 group-aria-expanded/accordion-trigger:inline"
       />

@@ -1,4 +1,5 @@
-import { RiDeleteBinLine } from '@remixicon/react'
+import { Delete02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
   Card,
@@ -146,7 +147,11 @@ const DeleteAccountDialog = ({
             disabled={!canSubmit || isPending}
           >
             <LoadingContent loading={isPending}>
-              <RiDeleteBinLine className="size-4" />
+              <HugeiconsIcon
+                icon={Delete02Icon}
+                strokeWidth={2}
+                className="size-4"
+              />
               Delete account
             </LoadingContent>
           </Button>
@@ -171,7 +176,11 @@ export const DeleteAccountCard = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <Button variant="destructive" onClick={() => setOpen(true)}>
-            <RiDeleteBinLine className="size-4" />
+            <HugeiconsIcon
+              icon={Delete02Icon}
+              strokeWidth={2}
+              className="size-4"
+            />
             Delete account
           </Button>
         </CardContent>

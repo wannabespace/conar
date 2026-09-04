@@ -1,4 +1,5 @@
-import { RiExternalLinkLine, RiWalletLine } from '@remixicon/react'
+import { LinkSquare02Icon, Wallet01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { uppercaseFirst } from '@tamery/shared/utils/helpers'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -52,7 +53,11 @@ const RouteComponent = () => {
           disabled={isOpening}
         >
           <LoadingContent loading={isOpening}>
-            <RiWalletLine className="size-4" />
+            <HugeiconsIcon
+              icon={Wallet01Icon}
+              strokeWidth={2}
+              className="size-4"
+            />
             Manage Billing
           </LoadingContent>
         </Button>
@@ -119,7 +124,11 @@ const RouteComponent = () => {
                                 className="text-foreground flex items-center gap-1 hover:underline"
                               >
                                 View
-                                <RiExternalLinkLine className="size-3" />
+                                <HugeiconsIcon
+                                  icon={LinkSquare02Icon}
+                                  strokeWidth={2}
+                                  className="size-3"
+                                />
                               </a>
                             </div>
                           ) : null}

@@ -1,4 +1,5 @@
-import { RiInformationLine } from '@remixicon/react'
+import { InformationCircleIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Card,
   CardContent,
@@ -54,7 +55,11 @@ export const SecurityCard = () => {
                   }
                   return (
                     <span className="flex items-center gap-1">
-                      <RiInformationLine className="size-4" />
+                      <HugeiconsIcon
+                        icon={InformationCircleIcon}
+                        strokeWidth={2}
+                        className="size-4"
+                      />
                       2FA is only available for accounts that can sign in with
                       email and password.
                     </span>

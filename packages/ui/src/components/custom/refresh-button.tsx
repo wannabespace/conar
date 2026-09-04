@@ -1,4 +1,5 @@
-import { RiCheckLine, RiLoopLeftLine } from '@remixicon/react'
+import { Refresh01Icon, Tick02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
@@ -15,10 +16,20 @@ export const RefreshButton = ({
   <Button {...props}>
     <LoadingContent loading={refreshing}>
       <ContentSwitch
-        activeContent={<RiCheckLine className="text-success" />}
+        activeContent={
+          <HugeiconsIcon
+            icon={Tick02Icon}
+            strokeWidth={2}
+            className="text-success"
+          />
+        }
         active={refreshing}
       >
-        <RiLoopLeftLine className={iconClassName} />
+        <HugeiconsIcon
+          icon={Refresh01Icon}
+          strokeWidth={2}
+          className={iconClassName}
+        />
       </ContentSwitch>
     </LoadingContent>
   </Button>

@@ -1,5 +1,10 @@
 import { Combobox as ComboboxPrimitive } from '@base-ui/react'
-import { RiArrowDownSLine, RiCheckLine, RiCloseLine } from '@remixicon/react'
+import {
+  ArrowDown01Icon,
+  Cancel01Icon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
   InputGroup,
@@ -32,7 +37,11 @@ const ComboboxTrigger = ({
     {...props}
   >
     {children}
-    <RiArrowDownSLine className="text-muted-foreground pointer-events-none size-4" />
+    <HugeiconsIcon
+      icon={ArrowDown01Icon}
+      strokeWidth={2}
+      className="text-muted-foreground pointer-events-none size-4"
+    />
   </ComboboxPrimitive.Trigger>
 )
 
@@ -55,7 +64,11 @@ const ComboboxClear = ({
         />
       }
     >
-      <RiCloseLine className="pointer-events-none" />
+      <HugeiconsIcon
+        icon={Cancel01Icon}
+        strokeWidth={2}
+        className="pointer-events-none"
+      />
     </TooltipTrigger>
     <TooltipContent side="top">Clear</TooltipContent>
   </Tooltip>
@@ -162,7 +175,11 @@ const ComboboxItem = ({
         <span className="pointer-events-none absolute right-2 flex size-4 items-center justify-center" />
       }
     >
-      <RiCheckLine className="pointer-events-none" />
+      <HugeiconsIcon
+        icon={Tick02Icon}
+        strokeWidth={2}
+        className="pointer-events-none"
+      />
     </ComboboxPrimitive.ItemIndicator>
   </ComboboxPrimitive.Item>
 )
@@ -258,7 +275,11 @@ const ComboboxChip = ({
         className="-ml-0.5 size-4.5 opacity-50 hover:opacity-100 aria-disabled:pointer-events-none"
         data-slot="combobox-chip-remove"
       >
-        <RiCloseLine className="pointer-events-none" />
+        <HugeiconsIcon
+          icon={Cancel01Icon}
+          strokeWidth={2}
+          className="pointer-events-none"
+        />
       </ComboboxPrimitive.ChipRemove>
     )}
   </ComboboxPrimitive.Chip>

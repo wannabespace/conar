@@ -1,4 +1,5 @@
-import { RiEyeLine, RiEyeOffLine } from '@remixicon/react'
+import { ViewIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
 import {
@@ -51,7 +52,10 @@ export const ConnectionDetails = ({
                     />
                   }
                 >
-                  {showPassword ? <RiEyeOffLine /> : <RiEyeLine />}
+                  <HugeiconsIcon
+                    icon={showPassword ? ViewOffSlashIcon : ViewIcon}
+                    strokeWidth={2}
+                  />
                 </TooltipTrigger>
                 <TooltipContent side="top">
                   {showPassword ? 'Hide password' : 'Show password'}

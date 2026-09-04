@@ -1,4 +1,5 @@
-import { RiMessageLine } from '@remixicon/react'
+import { Message01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
 import {
@@ -49,7 +50,11 @@ export const SupportButton = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<SidebarButton />}>
-        <RiMessageLine className="size-4" />
+        <HugeiconsIcon
+          icon={Message01Icon}
+          strokeWidth={2}
+          className="size-4"
+        />
         Support
       </DialogTrigger>
       <DialogContent>

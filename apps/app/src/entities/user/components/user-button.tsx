@@ -1,14 +1,15 @@
 import {
-  RiBrushLine,
-  RiDiscordLine,
-  RiGithubLine,
-  RiGlobalLine,
-  RiHistoryLine,
-  RiLogoutCircleRLine,
-  RiMessageLine,
-  RiTwitterXLine,
-  RiUserLine,
-} from '@remixicon/react'
+  BrushIcon,
+  DiscordIcon,
+  GithubIcon,
+  Globe02Icon,
+  HistoryIcon,
+  Logout03Icon,
+  Message01Icon,
+  NewTwitterIcon,
+  UserIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { RELEASES_URL, SOCIAL_LINKS } from '@tamery/shared/constants'
 import { Button } from '@tamery/ui/components/button'
 import { UserAvatar } from '@tamery/ui/components/custom/user-avatar'
@@ -61,10 +62,10 @@ const THEME_OPTIONS: { value: Theme; label: string }[] = [
 ]
 
 const SOCIAL_ROWS = [
-  { href: 'https://tamery.app', icon: RiGlobalLine, label: 'Website' },
-  { href: SOCIAL_LINKS.TWITTER, icon: RiTwitterXLine, label: 'X' },
-  { href: SOCIAL_LINKS.DISCORD, icon: RiDiscordLine, label: 'Discord' },
-  { href: SOCIAL_LINKS.GITHUB, icon: RiGithubLine, label: 'GitHub' },
+  { href: 'https://tamery.app', icon: Globe02Icon, label: 'Website' },
+  { href: SOCIAL_LINKS.TWITTER, icon: NewTwitterIcon, label: 'X' },
+  { href: SOCIAL_LINKS.DISCORD, icon: DiscordIcon, label: 'Discord' },
+  { href: SOCIAL_LINKS.GITHUB, icon: GithubIcon, label: 'GitHub' },
 ] as const
 
 export const UserButton = ({
@@ -112,7 +113,7 @@ export const UserButton = ({
             )
           }
         >
-          <RiUserLine />
+          <HugeiconsIcon icon={UserIcon} strokeWidth={2} />
           Account
         </DropdownMenuItem>
         {window.electron && (
@@ -121,23 +122,23 @@ export const UserButton = ({
               window.open(import.meta.env.VITE_PUBLIC_WEB_URL, '_blank')
             }
           >
-            <RiGlobalLine />
+            <HugeiconsIcon icon={Globe02Icon} strokeWidth={2} />
             Web app
           </DropdownMenuItem>
         )}
         <DropdownMenuItem onClick={() => window.open(RELEASES_URL, '_blank')}>
-          <RiHistoryLine />
+          <HugeiconsIcon icon={HistoryIcon} strokeWidth={2} />
           Releases
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setIsSupportOpen(true)}>
-          <RiMessageLine />
+          <HugeiconsIcon icon={Message01Icon} strokeWidth={2} />
           Support
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={isSigningOut || isClearingCache}
           onClick={() => clearLocalCache()}
         >
-          <RiBrushLine />
+          <HugeiconsIcon icon={BrushIcon} strokeWidth={2} />
           Clear cache
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -165,7 +166,7 @@ export const UserButton = ({
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled={isSigningOut} onClick={() => signOut()}>
-          <RiLogoutCircleRLine />
+          <HugeiconsIcon icon={Logout03Icon} strokeWidth={2} />
           Sign out
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -183,7 +184,11 @@ export const UserButton = ({
                   />
                 }
               >
-                <social.icon className="size-3.5" />
+                <HugeiconsIcon
+                  icon={social.icon}
+                  strokeWidth={2}
+                  className="size-3.5"
+                />
               </TooltipTrigger>
               <TooltipContent side="bottom">{social.label}</TooltipContent>
             </Tooltip>

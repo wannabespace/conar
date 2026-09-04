@@ -1,4 +1,5 @@
-import { RiAlertLine } from '@remixicon/react'
+import { Alert02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { ScrollArea } from '@tamery/ui/components/custom/scroll-area'
@@ -93,7 +94,11 @@ export const ErrorPage = ({ error }: ErrorComponentProps) => {
           className="relative flex w-full max-w-lg flex-col items-center"
         >
           <div className="border-destructive/10 bg-destructive/10 mb-5 flex size-14 items-center justify-center rounded-2xl border">
-            <RiAlertLine className="text-destructive size-7" />
+            <HugeiconsIcon
+              icon={Alert02Icon}
+              strokeWidth={2}
+              className="text-destructive size-7"
+            />
           </div>
 
           <h1 className="text-base font-semibold tracking-tight">

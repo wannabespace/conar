@@ -1,4 +1,9 @@
-import { RiCloseLine, RiExportLine, RiSearchLine } from '@remixicon/react'
+import {
+  Cancel01Icon,
+  FileExportIcon,
+  Search01Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { ColumnRenderer } from '@tamery/table'
 import { Table, TableBody, TableHeader, TableProvider } from '@tamery/table'
@@ -110,7 +115,7 @@ const ResultsExport = ({
         disabled={isExporting || disabled}
       >
         <LoadingContent loading={isExporting}>
-          <RiExportLine />
+          <HugeiconsIcon icon={FileExportIcon} strokeWidth={2} />
         </LoadingContent>
       </Button>
     )}
@@ -181,7 +186,11 @@ export const RunnerResultsTable = ({
               onChange={(e) => setSearch(e.target.value)}
               className="h-8 w-full pr-8 pl-7 text-sm"
             />
-            <RiSearchLine className="text-muted-foreground absolute top-1/2 left-2 size-3.5 -translate-y-1/2" />
+            <HugeiconsIcon
+              icon={Search01Icon}
+              strokeWidth={2}
+              className="text-muted-foreground absolute top-1/2 left-2 size-3.5 -translate-y-1/2"
+            />
             {search && (
               <Tooltip>
                 <TooltipTrigger
@@ -195,7 +204,11 @@ export const RunnerResultsTable = ({
                     />
                   }
                 >
-                  <RiCloseLine className="size-4" />
+                  <HugeiconsIcon
+                    icon={Cancel01Icon}
+                    strokeWidth={2}
+                    className="size-4"
+                  />
                 </TooltipTrigger>
                 <TooltipContent side="top">Clear</TooltipContent>
               </Tooltip>

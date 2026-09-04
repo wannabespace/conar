@@ -1,5 +1,10 @@
 import { Select as SelectPrimitive } from '@base-ui/react/select'
-import { RiArrowDownSLine, RiArrowUpSLine, RiCheckLine } from '@remixicon/react'
+import {
+  ArrowDown01Icon,
+  ArrowUp01Icon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
@@ -43,7 +48,11 @@ const SelectTrigger = ({
     {children}
     <SelectPrimitive.Icon
       render={
-        <RiArrowDownSLine className="text-muted-foreground pointer-events-none size-4" />
+        <HugeiconsIcon
+          icon={ArrowDown01Icon}
+          strokeWidth={2}
+          className="text-muted-foreground pointer-events-none size-4"
+        />
       }
     />
   </SelectPrimitive.Trigger>
@@ -61,7 +70,7 @@ const SelectScrollUpButton = ({
     )}
     {...props}
   >
-    <RiArrowUpSLine />
+    <HugeiconsIcon icon={ArrowUp01Icon} strokeWidth={2} />
   </SelectPrimitive.ScrollUpArrow>
 )
 
@@ -77,7 +86,7 @@ const SelectScrollDownButton = ({
     )}
     {...props}
   >
-    <RiArrowDownSLine />
+    <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} />
   </SelectPrimitive.ScrollDownArrow>
 )
 
@@ -155,7 +164,11 @@ const SelectItem = ({
         <span className="pointer-events-none absolute right-2 flex size-4 items-center justify-center" />
       }
     >
-      <RiCheckLine className="pointer-events-none" />
+      <HugeiconsIcon
+        icon={Tick02Icon}
+        strokeWidth={2}
+        className="pointer-events-none"
+      />
     </SelectPrimitive.ItemIndicator>
   </SelectPrimitive.Item>
 )

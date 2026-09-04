@@ -1,9 +1,10 @@
 import {
-  RiEyeLine,
-  RiEyeOffLine,
-  RiShieldCheckLine,
-  RiTable2,
-} from '@remixicon/react'
+  LayoutTable02Icon,
+  SecurityCheckIcon,
+  ViewIcon,
+  ViewOffSlashIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { uppercaseFirst } from '@tamery/shared/utils/helpers'
 import { Badge } from '@tamery/ui/components/badge'
 import { CardContent, CardTitle } from '@tamery/ui/components/card'
@@ -39,13 +40,31 @@ const formatType = (type: PolicyType) => uppercaseFirst(type.toLowerCase())
 const getIcon = (type: PolicyType) => {
   switch (type) {
     case 'PERMISSIVE': {
-      return <RiEyeLine className="text-primary size-4" />
+      return (
+        <HugeiconsIcon
+          icon={ViewIcon}
+          strokeWidth={2}
+          className="text-primary size-4"
+        />
+      )
     }
     case 'RESTRICTIVE': {
-      return <RiEyeOffLine className="text-destructive size-4" />
+      return (
+        <HugeiconsIcon
+          icon={ViewOffSlashIcon}
+          strokeWidth={2}
+          className="text-destructive size-4"
+        />
+      )
     }
     default: {
-      return <RiShieldCheckLine className="text-primary size-4" />
+      return (
+        <HugeiconsIcon
+          icon={SecurityCheckIcon}
+          strokeWidth={2}
+          className="text-primary size-4"
+        />
+      )
     }
   }
 }
@@ -150,7 +169,11 @@ export const Policies = () => {
                   </CardTitle>
                   <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
                     <Badge variant="outline">
-                      <RiTable2 className="size-3" />
+                      <HugeiconsIcon
+                        icon={LayoutTable02Icon}
+                        strokeWidth={2}
+                        className="size-3"
+                      />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
                     {item.roles.length > 0 && (

@@ -1,8 +1,9 @@
 import {
-  RiCheckLine,
-  RiDatabase2Line,
-  RiLayoutColumnLine,
-} from '@remixicon/react'
+  DatabaseIcon,
+  LayoutThreeColumnIcon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
   Command,
@@ -50,7 +51,11 @@ export const ActionsColumns = () => {
             />
           }
         >
-          <RiLayoutColumnLine className="text-muted-foreground/60" />
+          <HugeiconsIcon
+            icon={LayoutThreeColumnIcon}
+            strokeWidth={2}
+            className="text-muted-foreground/60"
+          />
           {isPending ? (
             <Skeleton className="h-2.5 w-3 rounded-full" />
           ) : (
@@ -96,10 +101,18 @@ export const ActionsColumns = () => {
               >
                 <span className="size-4">
                   {hiddenColumns.length === 0 && (
-                    <RiCheckLine className="size-4 opacity-50" />
+                    <HugeiconsIcon
+                      icon={Tick02Icon}
+                      strokeWidth={2}
+                      className="size-4 opacity-50"
+                    />
                   )}
                 </span>
-                <RiLayoutColumnLine className="size-4 opacity-50" />
+                <HugeiconsIcon
+                  icon={LayoutThreeColumnIcon}
+                  strokeWidth={2}
+                  className="size-4 opacity-50"
+                />
                 <span>
                   {hiddenColumns.length === 0
                     ? 'Hide all columns'
@@ -132,10 +145,18 @@ export const ActionsColumns = () => {
                 >
                   <span className="size-4 shrink-0">
                     {!hiddenColumns.includes(column.id) && (
-                      <RiCheckLine className="size-4 opacity-50" />
+                      <HugeiconsIcon
+                        icon={Tick02Icon}
+                        strokeWidth={2}
+                        className="size-4 opacity-50"
+                      />
                     )}
                   </span>
-                  <RiDatabase2Line className="size-4 shrink-0 opacity-50" />
+                  <HugeiconsIcon
+                    icon={DatabaseIcon}
+                    strokeWidth={2}
+                    className="size-4 shrink-0 opacity-50"
+                  />
                   <span data-mask className="truncate">
                     {column.id}
                   </span>

@@ -1,4 +1,5 @@
-import { RiGithubFill, RiGoogleFill } from '@remixicon/react'
+import { GithubIcon, GoogleIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Badge } from '@tamery/ui/components/badge'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
@@ -87,7 +88,7 @@ const SocialAuthForm = () => {
         disabled={isGoogleSignInPending || isGithubSignInPending}
       >
         <LoadingContent loading={isGoogleSignInPending}>
-          <RiGoogleFill className="size-4" />
+          <HugeiconsIcon icon={GoogleIcon} strokeWidth={2} className="size-4" />
           Google
         </LoadingContent>
         {lastMethod === 'google' && <Last />}
@@ -99,7 +100,7 @@ const SocialAuthForm = () => {
         onClick={() => githubSignIn()}
       >
         <LoadingContent loading={isGithubSignInPending}>
-          <RiGithubFill className="size-4" />
+          <HugeiconsIcon icon={GithubIcon} strokeWidth={2} className="size-4" />
           GitHub
         </LoadingContent>
         {lastMethod === 'github' && <Last />}

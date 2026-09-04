@@ -1,12 +1,13 @@
 import {
-  RiBookOpenLine,
-  RiEraserLine,
-  RiExternalLinkLine,
-  RiFingerprintLine,
-  RiKey2Line,
-  RiLinksLine,
-  RiTableLine,
-} from '@remixicon/react'
+  BookOpen01Icon,
+  EraserIcon,
+  FingerPrintIcon,
+  Key01Icon,
+  LayoutTable02Icon,
+  Link01Icon,
+  LinkSquare02Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
   Tooltip,
@@ -48,7 +49,11 @@ export const ReactFlowNode = ({ data }: NodeProps<NodeType>) => (
   >
     <div className="border-border/80 from-background/50 flex items-center justify-between gap-2 border-b bg-linear-to-t px-4 py-3">
       <div data-mask className="flex min-w-0 items-center gap-2 text-sm">
-        <RiTableLine className="text-muted-foreground/80 size-5 shrink-0" />
+        <HugeiconsIcon
+          icon={LayoutTable02Icon}
+          strokeWidth={2}
+          className="text-muted-foreground/80 size-5 shrink-0"
+        />
         <span
           className={cn(
             `block truncate`,
@@ -78,7 +83,11 @@ export const ReactFlowNode = ({ data }: NodeProps<NodeType>) => (
             />
           }
         >
-          <RiExternalLinkLine className="size-3" />
+          <HugeiconsIcon
+            icon={LinkSquare02Icon}
+            strokeWidth={2}
+            className="size-3"
+          />
         </TooltipTrigger>
         <TooltipContent side="top">Open table</TooltipContent>
       </Tooltip>
@@ -101,19 +110,39 @@ export const ReactFlowNode = ({ data }: NodeProps<NodeType>) => (
           <div className="flex items-center justify-between gap-2 border-dashed py-2 group-not-last:border-b">
             <div className="flex items-center gap-1 truncate">
               {column.primaryKey && (
-                <RiKey2Line className="text-muted-foreground/70 size-3 shrink-0" />
+                <HugeiconsIcon
+                  icon={Key01Icon}
+                  strokeWidth={2}
+                  className="text-muted-foreground/70 size-3 shrink-0"
+                />
               )}
               {column.isNullable && (
-                <RiEraserLine className="text-muted-foreground/70 size-3 shrink-0" />
+                <HugeiconsIcon
+                  icon={EraserIcon}
+                  strokeWidth={2}
+                  className="text-muted-foreground/70 size-3 shrink-0"
+                />
               )}
               {column.unique && (
-                <RiFingerprintLine className="text-muted-foreground/70 size-3 shrink-0" />
+                <HugeiconsIcon
+                  icon={FingerPrintIcon}
+                  strokeWidth={2}
+                  className="text-muted-foreground/70 size-3 shrink-0"
+                />
               )}
               {column.isEditable === false && (
-                <RiBookOpenLine className="text-muted-foreground/70 size-3 shrink-0" />
+                <HugeiconsIcon
+                  icon={BookOpen01Icon}
+                  strokeWidth={2}
+                  className="text-muted-foreground/70 size-3 shrink-0"
+                />
               )}
               {column.foreign && (
-                <RiLinksLine className="text-muted-foreground/70 size-3 shrink-0" />
+                <HugeiconsIcon
+                  icon={Link01Icon}
+                  strokeWidth={2}
+                  className="text-muted-foreground/70 size-3 shrink-0"
+                />
               )}
               <span data-mask className="truncate font-medium">
                 {column.id}

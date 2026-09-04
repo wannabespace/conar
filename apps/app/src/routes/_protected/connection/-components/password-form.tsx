@@ -1,4 +1,9 @@
-import { RiArrowLeftSLine, RiEyeLine, RiEyeOffLine } from '@remixicon/react'
+import {
+  ArrowLeft01Icon,
+  ViewIcon,
+  ViewOffSlashIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -83,7 +88,11 @@ export const PasswordForm = ({
             className="text-muted-foreground px-0!"
             onClick={() => router.history.back()}
           >
-            <RiArrowLeftSLine className="size-3" />
+            <HugeiconsIcon
+              icon={ArrowLeft01Icon}
+              strokeWidth={2}
+              className="size-3"
+            />
             Back
           </Button>
         </div>
@@ -133,11 +142,11 @@ export const PasswordForm = ({
                         />
                       }
                     >
-                      {showPassword ? (
-                        <RiEyeOffLine className="size-4" />
-                      ) : (
-                        <RiEyeLine className="size-4" />
-                      )}
+                      <HugeiconsIcon
+                        icon={showPassword ? ViewOffSlashIcon : ViewIcon}
+                        strokeWidth={2}
+                        className="size-4"
+                      />
                     </TooltipTrigger>
                     <TooltipContent side="top">
                       {showPassword ? 'Hide password' : 'Show password'}

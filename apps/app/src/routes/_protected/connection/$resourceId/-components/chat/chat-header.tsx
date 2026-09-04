@@ -1,9 +1,10 @@
 import {
-  RiChatNewLine,
-  RiCheckLine,
-  RiCloseLine,
-  RiHistoryLine,
-} from '@remixicon/react'
+  Cancel01Icon,
+  ChatAdd01Icon,
+  HistoryIcon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
   DropdownMenu,
@@ -46,7 +47,7 @@ export const ChatHeader = ({
             <Button size="icon-xs" variant="ghost" aria-label="Chat history" />
           }
         >
-          <RiHistoryLine />
+          <HugeiconsIcon icon={HistoryIcon} strokeWidth={2} />
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
@@ -61,7 +62,11 @@ export const ChatHeader = ({
                 {chat.title || 'New Chat'}
               </span>
               {chat.id === activeChatId && (
-                <RiCheckLine className="text-muted-foreground ml-auto size-4" />
+                <HugeiconsIcon
+                  icon={Tick02Icon}
+                  strokeWidth={2}
+                  className="text-muted-foreground ml-auto size-4"
+                />
               )}
             </DropdownMenuItem>
           ))}
@@ -69,8 +74,8 @@ export const ChatHeader = ({
       </DropdownMenu>
     )}
     {[
-      { Icon: RiChatNewLine, label: 'New chat', onClick: onNewChat },
-      { Icon: RiCloseLine, label: 'Close chat', onClick: onClose },
+      { Icon: ChatAdd01Icon, label: 'New chat', onClick: onNewChat },
+      { Icon: Cancel01Icon, label: 'Close chat', onClick: onClose },
     ].map(({ Icon, label, onClick }) => (
       <Tooltip key={label}>
         <TooltipTrigger
@@ -83,7 +88,7 @@ export const ChatHeader = ({
             />
           }
         >
-          <Icon className="size-3.5" />
+          <HugeiconsIcon icon={Icon} strokeWidth={2} className="size-3.5" />
         </TooltipTrigger>
         <TooltipContent side="bottom">{label}</TooltipContent>
       </Tooltip>

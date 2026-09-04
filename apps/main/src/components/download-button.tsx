@@ -1,4 +1,5 @@
-import { RiAppleFill, RiWindowsFill } from '@remixicon/react'
+import { AppleIcon, WindowsNewIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { OS } from '@tamery/shared/utils/os'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -19,8 +20,16 @@ const iconsMap: Partial<
   Record<OS, (props: { className?: string }) => React.ReactNode>
 > = {
   linux: ({ className }) => <Linux className={className} />,
-  macos: ({ className }) => <RiAppleFill className={className} />,
-  windows: ({ className }) => <RiWindowsFill className={className} />,
+  macos: ({ className }) => (
+    <HugeiconsIcon icon={AppleIcon} strokeWidth={2} className={className} />
+  ),
+  windows: ({ className }) => (
+    <HugeiconsIcon
+      icon={WindowsNewIcon}
+      strokeWidth={2}
+      className={className}
+    />
+  ),
 }
 
 export const DownloadButton = ({ className }: { className?: string }) => {

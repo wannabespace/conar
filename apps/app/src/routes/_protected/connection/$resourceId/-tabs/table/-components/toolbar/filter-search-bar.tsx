@@ -1,11 +1,12 @@
-import { isDefinedError } from '@orpc/client'
 import {
-  RiBardLine,
-  RiCheckLine,
-  RiCloseCircleLine,
-  RiFilterLine,
-  RiSearchLine,
-} from '@remixicon/react'
+  CancelCircleIcon,
+  FilterIcon,
+  Search01Icon,
+  SparklesIcon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { isDefinedError } from '@orpc/client'
 import type { ActiveFilter, Filter } from '@tamery/shared/filters'
 import {
   FILTER_GROUPS,
@@ -353,7 +354,7 @@ const FilterCommandList = ({
             value={`column:${column.id}`}
             onSelect={() => pickColumn(column.id)}
           >
-            <RiFilterLine />
+            <HugeiconsIcon icon={FilterIcon} strokeWidth={2} />
             <span data-mask className="min-w-0 flex-1 truncate">
               Filter by {column.id}
             </span>
@@ -370,7 +371,11 @@ const FilterCommandList = ({
             disabled={!isOnline || isPending || freeAiUsage?.remaining === 0}
             onSelect={askAi}
           >
-            <RiBardLine className="text-primary/75 size-4" />
+            <HugeiconsIcon
+              icon={SparklesIcon}
+              strokeWidth={2}
+              className="text-primary/75 size-4"
+            />
             <span className="min-w-0 flex-1 truncate">
               Ask AI: “{trimmedQuery}”
             </span>
@@ -383,7 +388,7 @@ const FilterCommandList = ({
         )}
         {trimmedQuery.length === 0 && filtersCount > 0 && (
           <CommandItem value="clear-filters" onSelect={onClearFilters}>
-            <RiCloseCircleLine />
+            <HugeiconsIcon icon={CancelCircleIcon} strokeWidth={2} />
             Clear all filters
           </CommandItem>
         )}
@@ -414,7 +419,9 @@ const FilterCommandList = ({
                 value={`suggest:${value.toLowerCase()}`}
                 onSelect={() => pickSuggestedValue(value)}
               >
-                <RiCheckLine
+                <HugeiconsIcon
+                  icon={Tick02Icon}
+                  strokeWidth={2}
                   className={cn(
                     'size-4',
                     committedParts.includes(value)
@@ -431,7 +438,7 @@ const FilterCommandList = ({
         )}
         <CommandGroup>
           <CommandItem value="apply-value" onSelect={applyValue}>
-            <RiCheckLine />
+            <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} />
             <span data-mask className="min-w-0 flex-1 truncate">
               Apply: {stage.column} {stage.ref.operator}{' '}
               {query === '' ? '(empty)' : query}
@@ -467,7 +474,11 @@ const AiSummaryRow = ({
         hasList && 'border-b'
       )}
     >
-      <RiCheckLine className="text-success size-3.5 shrink-0" />
+      <HugeiconsIcon
+        icon={Tick02Icon}
+        strokeWidth={2}
+        className="text-success size-3.5 shrink-0"
+      />
       <span className="min-w-0 flex-1 truncate">{summary}</span>
     </div>
   </motion.div>
@@ -708,7 +719,11 @@ export const FilterSearchBar = ({
           className="text-muted-foreground pointer-events-none mr-1 size-4 shrink-0"
           loading={isPending}
         >
-          <RiSearchLine className="size-4" />
+          <HugeiconsIcon
+            icon={Search01Icon}
+            strokeWidth={2}
+            className="size-4"
+          />
         </LoadingContent>
         <div
           ref={chipsRef}

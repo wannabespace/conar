@@ -1,4 +1,5 @@
-import { RiFlashlightLine, RiTable2 } from '@remixicon/react'
+import { FlashIcon, LayoutTable02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Badge } from '@tamery/ui/components/badge'
 import { CardContent, CardTitle } from '@tamery/ui/components/card'
 import { CardMotion } from '@tamery/ui/components/card.motion'
@@ -152,7 +153,11 @@ export const Triggers = () => {
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="mb-2 flex items-center gap-2 text-base">
-                    <RiFlashlightLine className="text-primary size-4" />
+                    <HugeiconsIcon
+                      icon={FlashIcon}
+                      strokeWidth={2}
+                      className="text-primary size-4"
+                    />
                     <HighlightText text={item.name} match={search} />
                     <Badge variant="secondary">{item.timing}</Badge>
                     <Badge variant="secondary">{item.event}</Badge>
@@ -162,7 +167,11 @@ export const Triggers = () => {
                   </CardTitle>
                   <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
                     <Badge variant="outline">
-                      <RiTable2 className="size-3" />
+                      <HugeiconsIcon
+                        icon={LayoutTable02Icon}
+                        strokeWidth={2}
+                        className="size-3"
+                      />
                       <HighlightText text={item.table} match={search} />
                     </Badge>
                     {item.functionName && (

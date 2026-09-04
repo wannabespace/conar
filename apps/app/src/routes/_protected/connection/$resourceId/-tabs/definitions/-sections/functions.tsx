@@ -1,4 +1,5 @@
-import { RiCodeSSlashLine } from '@remixicon/react'
+import { SourceCodeIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Badge } from '@tamery/ui/components/badge'
 import { CardContent, CardTitle } from '@tamery/ui/components/card'
 import { CardMotion } from '@tamery/ui/components/card.motion'
@@ -120,7 +121,11 @@ export const Functions = () => {
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="mb-2 flex items-center gap-2 text-base">
-                    <RiCodeSSlashLine className="text-primary size-4" />
+                    <HugeiconsIcon
+                      icon={SourceCodeIcon}
+                      strokeWidth={2}
+                      className="text-primary size-4"
+                    />
                     <HighlightText text={item.name} match={search} />
                     <Badge variant="secondary">
                       {item.type === 'function' ? 'Function' : 'Procedure'}

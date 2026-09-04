@@ -1,4 +1,5 @@
-import { RiComputerLine, RiMoonLine, RiSunLine } from '@remixicon/react'
+import { ComputerIcon, Moon02Icon, Sun03Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,15 +19,15 @@ export const ThemeToggle = ({
     <DropdownMenuTrigger {...props} />
     <DropdownMenuContent side={side} className="min-w-32">
       <DropdownMenuItem onClick={() => themeStore.set('light')}>
-        <RiSunLine aria-hidden="true" />
+        <HugeiconsIcon icon={Sun03Icon} strokeWidth={2} aria-hidden="true" />
         Light
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => themeStore.set('dark')}>
-        <RiMoonLine aria-hidden="true" />
+        <HugeiconsIcon icon={Moon02Icon} strokeWidth={2} aria-hidden="true" />
         Dark
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => themeStore.set('system')}>
-        <RiComputerLine aria-hidden="true" />
+        <HugeiconsIcon icon={ComputerIcon} strokeWidth={2} aria-hidden="true" />
         System
       </DropdownMenuItem>
     </DropdownMenuContent>

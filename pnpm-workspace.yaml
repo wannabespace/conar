@@ -37,6 +37,8 @@ catalog:
   '@faker-js/faker': ^10.6.0
   '@hackylabs/deep-redact': ^4.1.0
   '@hono/node-server': ^2.1.1
+  '@hugeicons/core-free-icons': ^4.3.0
+  '@hugeicons/react': ^1.1.10
   '@infisical/sdk': ^5.0.2
   '@noble/hashes': ^2.4.0
   '@number-flow/react': ^0.6.2
@@ -47,7 +49,6 @@ catalog:
   '@orpc/tanstack-query': ^1.15.0
   '@playwright/test': ^1.62.1
   '@react-email/components': ^1.0.10
-  '@remixicon/react': ^4.9.0
   '@rolldown/plugin-babel': ^0.2.3
   '@shadcn/react': ^0.3.1
   '@standard-schema/spec': ^1.1.0

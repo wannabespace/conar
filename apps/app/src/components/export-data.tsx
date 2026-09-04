@@ -1,10 +1,12 @@
 import {
-  RiBracesLine,
-  RiDownloadLine,
-  RiFileCopyLine,
-  RiMarkdownLine,
-  RiTableLine,
-} from '@remixicon/react'
+  BracesIcon,
+  Copy01Icon,
+  Download01Icon,
+  LayoutTable02Icon,
+  Note01Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import type { IconSvgElement } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
 import {
@@ -192,13 +194,13 @@ const useExportMutation = ({
   })
 
 const FORMAT_ITEMS = [
-  { format: 'csv', icon: RiTableLine, label: 'CSV' },
-  { format: 'json', icon: RiBracesLine, label: 'JSON' },
-  { format: 'markdown', icon: RiMarkdownLine, label: 'Markdown' },
+  { format: 'csv', icon: LayoutTable02Icon, label: 'CSV' },
+  { format: 'json', icon: BracesIcon, label: 'JSON' },
+  { format: 'markdown', icon: Note01Icon, label: 'Markdown' },
 ] satisfies {
   format: ContentFormatType
   label: string
-  icon: typeof RiTableLine
+  icon: IconSvgElement
 }[]
 
 export interface ExportDataProps {
@@ -227,14 +229,17 @@ const ExportItems = ({
     {(['download', 'copy'] as const).map((type) => (
       <DropdownMenuSub key={type}>
         <DropdownMenuSubTrigger disabled={disabled}>
-          {type === 'download' ? <RiDownloadLine /> : <RiFileCopyLine />}
+          <HugeiconsIcon
+            icon={type === 'download' ? Download01Icon : Copy01Icon}
+            strokeWidth={2}
+          />
           {type === 'download' ? 'Export' : 'Copy'}
         </DropdownMenuSubTrigger>
         <DropdownMenuSubContent>
           {FORMAT_ITEMS.map(({ format, label, icon: Icon }) => (
             <DropdownMenuSub key={format}>
               <DropdownMenuSubTrigger>
-                <Icon />
+                <HugeiconsIcon icon={Icon} strokeWidth={2} />
                 {type === 'download' ? 'Export' : 'Copy'} as {label}
               </DropdownMenuSubTrigger>
               <ExportDataDropdownMenuSubContent

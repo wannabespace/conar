@@ -1,12 +1,13 @@
 import {
-  RiAddLine,
-  RiArrowRightSLine,
-  RiCommandLine,
-  RiDeleteBinLine,
-  RiExpandUpDownLine,
-  RiFileListLine,
-  RiGlobalLine,
-} from '@remixicon/react'
+  ArrowRight01Icon,
+  CommandIcon,
+  Delete02Icon,
+  File01Icon,
+  Globe02Icon,
+  PlusSignIcon,
+  UnfoldMoreIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
@@ -114,7 +115,11 @@ const ConnectionSubMenu = ({
           variant="destructive"
           onClick={() => onRemove(connection)}
         >
-          <RiDeleteBinLine className="size-4" />
+          <HugeiconsIcon
+            icon={Delete02Icon}
+            strokeWidth={2}
+            className="size-4"
+          />
           Remove
         </DropdownMenuItem>
       </DropdownMenuSubContent>
@@ -157,7 +162,11 @@ const ConnectionsDropdown = ({
         ) : (
           <span className="truncate font-medium">Connections</span>
         )}
-        <RiExpandUpDownLine className="text-muted-foreground/70 size-3 shrink-0" />
+        <HugeiconsIcon
+          icon={UnfoldMoreIcon}
+          strokeWidth={2}
+          className="text-muted-foreground/70 size-3 shrink-0"
+        />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
@@ -185,7 +194,11 @@ const ConnectionsDropdown = ({
         })}
         <DropdownMenuSeparator />
         <DropdownMenuItem render={<Link to="/create" activateOn="click" />}>
-          <RiAddLine className="size-4 shrink-0" />
+          <HugeiconsIcon
+            icon={PlusSignIcon}
+            strokeWidth={2}
+            className="size-4 shrink-0"
+          />
           Add new connection
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -209,7 +222,11 @@ const ResourcesDropdown = ({
       <span data-mask className="text-muted-foreground truncate">
         {current.name || CONNECTION_RESOURCE_ROOT_LABEL}
       </span>
-      <RiExpandUpDownLine className="text-muted-foreground/70 size-3 shrink-0" />
+      <HugeiconsIcon
+        icon={UnfoldMoreIcon}
+        strokeWidth={2}
+        className="text-muted-foreground/70 size-3 shrink-0"
+      />
     </DropdownMenuTrigger>
     <DropdownMenuContent
       align="start"
@@ -289,7 +306,9 @@ const ConnectionsBreadcrumb = ({
       />
       {current && currentGroup && (
         <>
-          <RiArrowRightSLine
+          <HugeiconsIcon
+            icon={ArrowRight01Icon}
+            strokeWidth={2}
             aria-hidden
             className="text-muted-foreground/40 size-3.5 shrink-0"
           />
@@ -333,7 +352,7 @@ const QueryLoggerButton = ({ resourceId }: { resourceId: string }) => {
           />
         }
       >
-        <RiFileListLine className="size-4" />
+        <HugeiconsIcon icon={File01Icon} strokeWidth={2} className="size-4" />
       </TooltipTrigger>
       <TooltipContent side="bottom">
         Query logger
@@ -398,7 +417,7 @@ const OpenInWebButton = ({ resourceId }: { resourceId: string }) => {
           />
         }
       >
-        <RiGlobalLine className="size-4" />
+        <HugeiconsIcon icon={Globe02Icon} strokeWidth={2} className="size-4" />
       </TooltipTrigger>
       <TooltipContent side="bottom">Open in web app</TooltipContent>
     </Tooltip>
@@ -432,12 +451,16 @@ export const ProtectedTitleBar = () => {
           >
             <AppLogo className="text-primary size-4" />
           </Link>
-          <RiArrowRightSLine
+          <HugeiconsIcon
+            icon={ArrowRight01Icon}
+            strokeWidth={2}
             aria-hidden
             className="text-muted-foreground/40 size-3.5 shrink-0"
           />
           <WorkspaceSwitcher />
-          <RiArrowRightSLine
+          <HugeiconsIcon
+            icon={ArrowRight01Icon}
+            strokeWidth={2}
             aria-hidden
             className="text-muted-foreground/40 size-3.5 shrink-0"
           />
@@ -478,7 +501,11 @@ export const ProtectedTitleBar = () => {
                   />
                 }
               >
-                <RiCommandLine className="size-4" />
+                <HugeiconsIcon
+                  icon={CommandIcon}
+                  strokeWidth={2}
+                  className="size-4"
+                />
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 Command palette

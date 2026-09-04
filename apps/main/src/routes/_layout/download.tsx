@@ -1,5 +1,10 @@
-import type { RemixiconComponentType } from '@remixicon/react'
-import { RiAppleFill, RiTerminalLine, RiWindowsFill } from '@remixicon/react'
+import {
+  AppleIcon,
+  SourceCodeIcon,
+  WindowsNewIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import type { IconSvgElement } from '@hugeicons/react'
 import { BREW_INSTALL_COMMAND } from '@tamery/shared/constants'
 import type { OS } from '@tamery/shared/utils/os'
 import { osMap } from '@tamery/shared/utils/os'
@@ -11,6 +16,7 @@ import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import { Linux } from '@tamery/ui/components/icons/linux'
 import { Tooltip, TooltipTrigger } from '@tamery/ui/components/tooltip'
 import { createFileRoute } from '@tanstack/react-router'
+import type { ReactNode } from 'react'
 
 import { DownloadButton } from '~/components/download-button'
 import { DOWNLOAD_LINKS } from '~/constants'
@@ -32,7 +38,11 @@ const HomebrewInstall = () => {
       <Card className="flex w-full flex-row items-center justify-between gap-4 p-3 sm:gap-8 sm:p-2">
         <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
           <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-            <RiTerminalLine className="text-muted-foreground size-4" />
+            <HugeiconsIcon
+              icon={SourceCodeIcon}
+              strokeWidth={2}
+              className="text-muted-foreground size-4"
+            />
           </div>
           <input
             type="text"
@@ -47,13 +57,23 @@ const HomebrewInstall = () => {
   )
 }
 
+const platformIconClassName = 'text-muted-foreground size-4'
+
+const PlatformHugeIcon = ({ icon }: { icon: IconSvgElement }) => (
+  <HugeiconsIcon
+    icon={icon}
+    strokeWidth={2}
+    className={platformIconClassName}
+  />
+)
+
 const DownloadOption = ({
-  Icon,
+  icon,
   type,
   arch,
   link,
 }: {
-  Icon: RemixiconComponentType
+  icon: ReactNode
   type: OS
   arch?: string
   link: string
@@ -61,7 +81,7 @@ const DownloadOption = ({
   <Card className="flex w-full flex-row items-center justify-between gap-4 p-3 sm:gap-8 sm:p-2">
     <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
       <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-        <Icon className="text-muted-foreground size-4" />
+        {icon}
       </div>
       <div className="flex flex-col items-start">
         <span className="w-full truncate text-sm font-medium sm:text-base">
@@ -94,37 +114,37 @@ const DownloadOption = ({
 const AllPlatforms = () => (
   <>
     <DownloadOption
-      Icon={RiAppleFill}
+      icon={<PlatformHugeIcon icon={AppleIcon} />}
       type="macos"
       arch="Apple Silicon"
       link={DOWNLOAD_LINKS.macos.arm64}
     />
     <DownloadOption
-      Icon={RiAppleFill}
+      icon={<PlatformHugeIcon icon={AppleIcon} />}
       type="macos"
       arch="Intel"
       link={DOWNLOAD_LINKS.macos.intel}
     />
     <DownloadOption
-      Icon={RiWindowsFill}
+      icon={<PlatformHugeIcon icon={WindowsNewIcon} />}
       type="windows"
       arch="exe"
       link={DOWNLOAD_LINKS.windows.exe}
     />
     <DownloadOption
-      Icon={Linux}
+      icon={<Linux className={platformIconClassName} />}
       type="linux"
       arch="deb"
       link={DOWNLOAD_LINKS.linux.deb}
     />
     <DownloadOption
-      Icon={Linux}
+      icon={<Linux className={platformIconClassName} />}
       type="linux"
       arch="AppImage"
       link={DOWNLOAD_LINKS.linux.appImage}
     />
     <DownloadOption
-      Icon={Linux}
+      icon={<Linux className={platformIconClassName} />}
       type="linux"
       arch="rpm"
       link={DOWNLOAD_LINKS.linux.rpm}

@@ -1,10 +1,11 @@
 import {
-  RiArrowDownLine,
-  RiArrowUpDownLine,
-  RiArrowUpLine,
-  RiCloseLine,
-  RiDeleteBack2Line,
-} from '@remixicon/react'
+  ArrowDown02Icon,
+  ArrowUp02Icon,
+  ArrowUpDownIcon,
+  Cancel01Icon,
+  DeletePutBackIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
 import {
   Command,
@@ -61,11 +62,11 @@ const SortedItem = ({
       {columnId}
     </span>
     <CommandShortcut>
-      {order === 'ASC' ? (
-        <RiArrowUpLine className="size-3" />
-      ) : (
-        <RiArrowDownLine className="size-3" />
-      )}
+      <HugeiconsIcon
+        icon={order === 'ASC' ? ArrowUp02Icon : ArrowDown02Icon}
+        strokeWidth={2}
+        className="size-3"
+      />
     </CommandShortcut>
     <Tooltip>
       <TooltipTrigger
@@ -87,7 +88,7 @@ const SortedItem = ({
           />
         }
       >
-        <RiCloseLine />
+        <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
       </TooltipTrigger>
       <TooltipContent side="top">Remove sort</TooltipContent>
     </Tooltip>
@@ -125,7 +126,11 @@ export const ActionsOrder = () => {
             />
           }
         >
-          <RiArrowUpDownLine className="text-muted-foreground/60" />
+          <HugeiconsIcon
+            icon={ArrowUpDownIcon}
+            strokeWidth={2}
+            className="text-muted-foreground/60"
+          />
           {isPending ? (
             <Skeleton className="h-2.5 w-3 rounded-full" />
           ) : (
@@ -205,7 +210,11 @@ export const ActionsOrder = () => {
           </CommandList>
           {activeCount > 0 && (
             <div className="text-muted-foreground/70 text-2xs flex h-6 items-center gap-1.5 border-t px-2 whitespace-nowrap">
-              <RiDeleteBack2Line className="size-3 shrink-0" />
+              <HugeiconsIcon
+                icon={DeletePutBackIcon}
+                strokeWidth={2}
+                className="size-3 shrink-0"
+              />
               removes the highlighted sort
             </div>
           )}

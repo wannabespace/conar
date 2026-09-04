@@ -1,5 +1,5 @@
-import type { RemixiconComponentType } from '@remixicon/react'
-import { RiCircleLine, RiVipCrownLine } from '@remixicon/react'
+import { CircleIcon, CrownIcon } from '@hugeicons/core-free-icons'
+import type { IconSvgElement } from '@hugeicons/react'
 
 interface Feature {
   name: string
@@ -14,7 +14,7 @@ export interface PricingPlan {
   }
   description: string
   features: Feature[]
-  icon: RemixiconComponentType
+  icon: IconSvgElement
 }
 
 export const HOBBY_PLAN: PricingPlan = {
@@ -34,7 +34,7 @@ export const HOBBY_PLAN: PricingPlan = {
       name: 'Data management',
     },
   ],
-  icon: RiCircleLine,
+  icon: CircleIcon,
   name: 'Hobby',
   price: {
     monthly: 0,
@@ -58,7 +58,7 @@ export const PRO_PLAN: PricingPlan = {
       name: 'More data management',
     },
   ],
-  icon: RiVipCrownLine,
+  icon: CrownIcon,
   name: 'Pro',
   price: {
     monthly: 10,

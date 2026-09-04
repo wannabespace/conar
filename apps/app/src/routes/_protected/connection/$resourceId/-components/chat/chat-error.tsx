@@ -1,4 +1,5 @@
-import { RiErrorWarningLine } from '@remixicon/react'
+import { Alert02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Alert,
   AlertAction,
@@ -15,7 +16,7 @@ export const ChatError = ({
 }) => (
   <div className="shrink-0 px-2">
     <Alert variant="destructive" size="sm">
-      <RiErrorWarningLine />
+      <HugeiconsIcon icon={Alert02Icon} strokeWidth={2} />
       <AlertDescription>{error.message}</AlertDescription>
       <AlertAction>
         <Button size="xs" variant="outline" onClick={onRetry}>

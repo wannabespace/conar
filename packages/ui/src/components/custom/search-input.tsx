@@ -1,4 +1,5 @@
-import { RiCloseLine } from '@remixicon/react'
+import { Cancel01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
   InputGroup,
   InputGroupAddon,
@@ -40,7 +41,7 @@ export const SearchInput = ({
                 />
               }
             >
-              <RiCloseLine />
+              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
             </TooltipTrigger>
             <TooltipContent side="top">Clear</TooltipContent>
           </Tooltip>

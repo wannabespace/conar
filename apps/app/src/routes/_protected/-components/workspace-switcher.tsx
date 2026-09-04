@@ -1,4 +1,9 @@
-import { RiAddLine, RiCheckLine, RiExpandUpDownLine } from '@remixicon/react'
+import {
+  PlusSignIcon,
+  Tick02Icon,
+  UnfoldMoreIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
 import { Button } from '@tamery/ui/components/button'
 import {
@@ -161,7 +166,9 @@ const WorkspaceSubMenu = ({
       <span data-mask className="truncate">
         {workspace.name}
       </span>
-      {isActive && <RiCheckLine className="ml-auto" />}
+      {isActive && (
+        <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="ml-auto" />
+      )}
     </DropdownMenuSubTrigger>
     <DropdownMenuSubContent className="max-h-[60vh] min-w-48 overflow-auto">
       {connections.length === 0 && (
@@ -188,7 +195,11 @@ const WorkspaceSubMenu = ({
         }}
         render={<Link to="/create" activateOn="click" />}
       >
-        <RiAddLine className="size-4 shrink-0" />
+        <HugeiconsIcon
+          icon={PlusSignIcon}
+          strokeWidth={2}
+          className="size-4 shrink-0"
+        />
         Add new connection
       </DropdownMenuItem>
     </DropdownMenuSubContent>
@@ -249,7 +260,11 @@ export const WorkspaceSwitcher = () => {
               Workspace
             </span>
           )}
-          <RiExpandUpDownLine className="text-muted-foreground/70 size-3 shrink-0" />
+          <HugeiconsIcon
+            icon={UnfoldMoreIcon}
+            strokeWidth={2}
+            className="text-muted-foreground/70 size-3 shrink-0"
+          />
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
@@ -267,7 +282,7 @@ export const WorkspaceSwitcher = () => {
           ))}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleCreate}>
-            <RiAddLine />
+            <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
             Create workspace
           </DropdownMenuItem>
         </DropdownMenuContent>

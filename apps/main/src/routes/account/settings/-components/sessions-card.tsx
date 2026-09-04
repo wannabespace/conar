@@ -1,4 +1,8 @@
-import { RiDeviceLine, RiLogoutCircleLine } from '@remixicon/react'
+import {
+  LogoutCircle01Icon,
+  SmartPhone01Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -97,7 +101,11 @@ const SessionItem = ({
   return (
     <li className="bg-muted/30 flex items-center justify-between gap-4 rounded-lg border px-3 py-2">
       <div className="flex items-center gap-3">
-        <RiDeviceLine className="text-muted-foreground size-4" />
+        <HugeiconsIcon
+          icon={SmartPhone01Icon}
+          strokeWidth={2}
+          className="text-muted-foreground size-4"
+        />
         <div>
           <p className="flex gap-2 text-sm font-medium">
             {userAgent ? formatDeviceLabel(userAgent) : 'Unknown device'}
@@ -221,7 +229,11 @@ export const SessionsCard = () => {
               <AlertDialogTrigger
                 render={<Button variant="outline" size="sm" />}
               >
-                <RiLogoutCircleLine className="size-4" />
+                <HugeiconsIcon
+                  icon={LogoutCircle01Icon}
+                  strokeWidth={2}
+                  className="size-4"
+                />
                 Revoke all other sessions
               </AlertDialogTrigger>
             </div>

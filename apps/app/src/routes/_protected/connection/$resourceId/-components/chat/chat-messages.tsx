@@ -1,4 +1,4 @@
-import { RiChatAiLine } from '@remixicon/react'
+import { AiChat01Icon } from '@hugeicons/core-free-icons'
 import type { AppUIMessage } from '@tamery/ai/message'
 import { textFromMessage } from '@tamery/ai/message'
 import { Bubble, BubbleContent } from '@tamery/ui/components/bubble'
@@ -19,7 +19,7 @@ import { MessagePart } from './chat-message-part'
 
 const ChatEmpty = () => (
   <PaneEmpty
-    icon={RiChatAiLine}
+    icon={AiChat01Icon}
     title="Ask Anything"
     description="Questions about your schema, SQL help, or anything else."
   />

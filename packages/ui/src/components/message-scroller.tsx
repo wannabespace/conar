@@ -1,4 +1,5 @@
-import { RiArrowDownLine } from '@remixicon/react'
+import { ArrowDown02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { MessageScroller as MessageScrollerPrimitive } from '@shadcn/react/message-scroller'
 import { Button } from '@tamery/ui/components/button'
 import { cn } from '@tamery/ui/lib/utils'
@@ -86,7 +87,7 @@ const MessageScrollerButton = ({
   >
     {children ?? (
       <>
-        <RiArrowDownLine />
+        <HugeiconsIcon icon={ArrowDown02Icon} strokeWidth={2} />
         <span className="sr-only">
           {direction === 'end' ? 'Scroll to end' : 'Scroll to start'}
         </span>

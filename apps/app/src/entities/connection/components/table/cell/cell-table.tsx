@@ -1,4 +1,5 @@
-import { RiCornerRightUpLine } from '@remixicon/react'
+import { CornerRightUpIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
 import type { ColumnRenderer } from '@tamery/table'
@@ -188,7 +189,11 @@ export const TableCellTable = ({
               />
             }
           >
-            <RiCornerRightUpLine className="size-3" />
+            <HugeiconsIcon
+              icon={CornerRightUpIcon}
+              strokeWidth={2}
+              className="size-3"
+            />
             Open table
           </Button>
         </div>

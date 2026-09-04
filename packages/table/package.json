@@ -12,7 +12,6 @@
     "check-types": "tsc"
   },
   "dependencies": {
-    "@remixicon/react": "catalog:",
     "@tamery/shared": "workspace:*",
     "@tamery/ui": "workspace:*",
     "@tanstack/react-virtual": "catalog:",

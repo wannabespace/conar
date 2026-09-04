@@ -1,4 +1,5 @@
-import { RiHeart3Fill } from '@remixicon/react'
+import { FavouriteIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Alert,
   AlertDescription,
@@ -44,7 +45,11 @@ const RouteComponent = () => {
       {isSuccess && (
         <Alert variant="success" className="mb-6">
           <AlertTitle className="flex items-center gap-2">
-            <RiHeart3Fill className="size-4" />
+            <HugeiconsIcon
+              icon={FavouriteIcon}
+              strokeWidth={2}
+              className="size-4"
+            />
             Subscription upgraded successfully!
           </AlertTitle>
           <AlertDescription>

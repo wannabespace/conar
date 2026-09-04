@@ -1,11 +1,12 @@
 import {
-  RiErrorWarningLine,
-  RiHeart3Fill,
-  RiInformationLine,
-  RiLoader4Fill,
-  RiTimeLine,
-  RiWalletLine,
-} from '@remixicon/react'
+  Alert02Icon,
+  Clock01Icon,
+  FavouriteIcon,
+  InformationCircleIcon,
+  Loading03Icon,
+  Wallet01Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { SUBSCRIPTION_PAST_DUE_MESSAGE } from '@tamery/shared/constants'
 import {
   Alert,
@@ -135,12 +136,20 @@ const renderProFooter = ({
           onClick={() => openBillingPortal()}
         >
           <LoadingContent loading={isOpening}>
-            <RiWalletLine className="size-3.5" />
+            <HugeiconsIcon
+              icon={Wallet01Icon}
+              strokeWidth={2}
+              className="size-3.5"
+            />
             Manage Subscription
           </LoadingContent>
         </Button>
         <span className="text-muted-foreground flex items-center gap-1 text-xs">
-          <RiTimeLine className="size-3.5" />
+          <HugeiconsIcon
+            icon={Clock01Icon}
+            strokeWidth={2}
+            className="size-3.5"
+          />
           {renderSubscriptionStatus({ subscription, hasUpcomingTrialEnd })}
         </span>
       </div>
@@ -205,7 +214,11 @@ export const Subscription = () => {
       {subscription?.status === 'past_due' && (
         <Alert variant="destructive" className="mb-6">
           <AlertTitle className="flex items-center gap-2">
-            <RiErrorWarningLine className="text-destructive size-4" />
+            <HugeiconsIcon
+              icon={Alert02Icon}
+              strokeWidth={2}
+              className="text-destructive size-4"
+            />
             Payment issue with your subscription
           </AlertTitle>
           <AlertDescription>{SUBSCRIPTION_PAST_DUE_MESSAGE}</AlertDescription>
@@ -217,7 +230,11 @@ export const Subscription = () => {
             <CardTitle className="flex items-center gap-2">
               Subscription
               {isPending && (
-                <RiLoader4Fill className={cn('size-4 animate-spin')} />
+                <HugeiconsIcon
+                  icon={Loading03Icon}
+                  strokeWidth={2}
+                  className={cn('size-4 animate-spin')}
+                />
               )}
             </CardTitle>
             <CardDescription className="flex items-center gap-2">
@@ -232,13 +249,21 @@ export const Subscription = () => {
                     />
                   }
                 >
-                  <RiInformationLine className="size-4" />
+                  <HugeiconsIcon
+                    icon={InformationCircleIcon}
+                    strokeWidth={2}
+                    className="size-4"
+                  />
                 </TooltipTrigger>
                 <TooltipContent className="bg-background max-w-xs p-0">
                   <div className="from-primary/5 to-card space-y-4 bg-linear-to-b p-4 text-sm">
                     <div className="flex items-center gap-2">
                       <span className="bg-primary/20 text-primary inline-flex size-6 items-center justify-center rounded-full">
-                        <RiHeart3Fill className="size-4" />
+                        <HugeiconsIcon
+                          icon={FavouriteIcon}
+                          strokeWidth={2}
+                          className="size-4"
+                        />
                       </span>
                       <span className="text-primary font-semibold">
                         Tamery is indie & user-supported
@@ -297,7 +322,11 @@ export const Subscription = () => {
                       `bg-muted text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-md duration-100`
                     )}
                   >
-                    <plan.icon className="size-5 duration-100" />
+                    <HugeiconsIcon
+                      icon={plan.icon}
+                      strokeWidth={2}
+                      className="size-5 duration-100"
+                    />
                   </span>
                   <div>
                     <div className="flex items-center gap-2 text-lg">

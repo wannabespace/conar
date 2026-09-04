@@ -1,4 +1,9 @@
-import { RiCheckLine, RiQuestionLine, RiSaveLine } from '@remixicon/react'
+import {
+  HelpCircleIcon,
+  SaveIcon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { CONNECTION_TYPES_WITH_EXPLAIN } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
@@ -174,7 +179,7 @@ export const RunnerEditorQueryZone = ({
                   />
                 }
               >
-                <RiSaveLine />
+                <HugeiconsIcon icon={SaveIcon} strokeWidth={2} />
               </TooltipTrigger>
               <TooltipContent>Save</TooltipContent>
             </Tooltip>
@@ -218,10 +223,17 @@ export const RunnerEditorQueryZone = ({
                             <ContentSwitch
                               active={isExplaining}
                               activeContent={
-                                <RiCheckLine className="text-success" />
+                                <HugeiconsIcon
+                                  icon={Tick02Icon}
+                                  strokeWidth={2}
+                                  className="text-success"
+                                />
                               }
                             >
-                              <RiQuestionLine />
+                              <HugeiconsIcon
+                                icon={HelpCircleIcon}
+                                strokeWidth={2}
+                              />
                             </ContentSwitch>
                           </LoadingContent>
                         </TooltipTrigger>

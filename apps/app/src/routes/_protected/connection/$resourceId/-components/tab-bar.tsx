@@ -1,15 +1,16 @@
 import {
-  RiAddLine,
-  RiArrowLeftSLine,
-  RiArrowRightSLine,
-  RiChatAiLine,
-  RiCloseLine,
-  RiNodeTree,
-  RiPlayLargeLine,
-  RiShieldCheckLine,
-  RiSideBarLine,
-  RiTableLine,
-} from '@remixicon/react'
+  AiChat01Icon,
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  Cancel01Icon,
+  HierarchyIcon,
+  LayoutTable02Icon,
+  PlayIcon,
+  PlusSignIcon,
+  SecurityCheckIcon,
+  SidebarLeftIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { enabledFilters } from '@tamery/shared/filters'
 import { Button } from '@tamery/ui/components/button'
 import { RefreshButton } from '@tamery/ui/components/custom/refresh-button'
@@ -96,10 +97,10 @@ interface TablesAndSchemas {
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 const TAB_ICONS = {
-  definitions: RiShieldCheckLine,
-  runner: RiPlayLargeLine,
-  table: RiTableLine,
-  visualizer: RiNodeTree,
+  definitions: SecurityCheckIcon,
+  runner: PlayIcon,
+  table: LayoutTable02Icon,
+  visualizer: HierarchyIcon,
 }
 
 const TabRefreshButton = ({
@@ -322,7 +323,7 @@ const HistoryNav = () => {
             />
           }
         >
-          <RiArrowLeftSLine />
+          <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
         </TooltipTrigger>
         <TooltipContent side="bottom">Back</TooltipContent>
       </Tooltip>
@@ -338,7 +339,7 @@ const HistoryNav = () => {
             />
           }
         >
-          <RiArrowRightSLine />
+          <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} />
         </TooltipTrigger>
         <TooltipContent side="bottom">Forward</TooltipContent>
       </Tooltip>
@@ -379,14 +380,14 @@ const NewTabMenu = ({
           />
         }
       >
-        <RiAddLine />
+        <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
         className="max-h-[70vh] min-w-48 overflow-auto"
       >
         <DropdownMenuItem onClick={onNewQuery}>
-          <RiPlayLargeLine />
+          <HugeiconsIcon icon={PlayIcon} strokeWidth={2} />
           New query
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -402,7 +403,7 @@ const NewTabMenu = ({
                   goToTab(tabId)
                 }}
               >
-                <Icon />
+                <HugeiconsIcon icon={Icon} strokeWidth={2} />
                 {label}
               </DropdownMenuItem>
             ))}
@@ -425,7 +426,7 @@ const NewTabMenu = ({
                       goToTab(tableTabId(schema.name, table.name))
                     }}
                   >
-                    <RiTableLine />
+                    <HugeiconsIcon icon={LayoutTable02Icon} strokeWidth={2} />
                     <span data-mask className="truncate">
                       {showSchema ? `${schema.name}.${table.name}` : table.name}
                     </span>
@@ -481,7 +482,7 @@ const ChatToggle = ({ resourceId }: { resourceId: string }) => {
           />
         }
       >
-        <RiChatAiLine />
+        <HugeiconsIcon icon={AiChat01Icon} strokeWidth={2} />
       </TooltipTrigger>
       <TooltipContent side="bottom">
         AI chat
@@ -643,7 +644,9 @@ const Tab = ({
   )
 
   const icon = (
-    <Icon
+    <HugeiconsIcon
+      icon={Icon}
+      strokeWidth={2}
       className={cn(
         'text-muted-foreground/60 size-3.5 shrink-0',
         isActive && 'text-primary'
@@ -741,7 +744,11 @@ const Tab = ({
                 />
               }
             >
-              <RiCloseLine className="size-3.5" />
+              <HugeiconsIcon
+                icon={Cancel01Icon}
+                strokeWidth={2}
+                className="size-3.5"
+              />
             </TooltipTrigger>
             <TooltipContent side="bottom">Close tab</TooltipContent>
           </Tooltip>
@@ -917,7 +924,7 @@ export const TabBar = ({ className }: { className?: string }) => {
               />
             }
           >
-            <RiSideBarLine />
+            <HugeiconsIcon icon={SidebarLeftIcon} strokeWidth={2} />
           </TooltipTrigger>
           <TooltipContent side="bottom">
             Toggle sidebar

@@ -1,4 +1,5 @@
-import { RiEarthLine } from '@remixicon/react'
+import { EarthIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { tryCatch } from '@tamery/shared/utils/helpers'
 import { cn } from '@tamery/ui/lib/utils'
 import { useState } from 'react'
@@ -15,7 +16,13 @@ export const FaviconWithFallback = ({
   const { data: hostname } = tryCatch(() => new URL(url).hostname)
 
   if (isError || !hostname) {
-    return <RiEarthLine className={cn(className, 'text-muted-foreground')} />
+    return (
+      <HugeiconsIcon
+        icon={EarthIcon}
+        strokeWidth={2}
+        className={cn(className, 'text-muted-foreground')}
+      />
+    )
   }
 
   return (

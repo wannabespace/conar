@@ -1,4 +1,5 @@
-import { RiDeleteBin7Line } from '@remixicon/react'
+import { Delete02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { enabledFilters } from '@tamery/shared/filters'
 import {
   AlertDialog,
@@ -126,7 +127,7 @@ export const ActionsDelete = ({
             transition={{ duration: 0.1 }}
           >
             <Button variant="destructive" onClick={() => setIsOpened(true)}>
-              <RiDeleteBin7Line />
+              <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
               <span>
                 Delete (
                 <NumberFlow

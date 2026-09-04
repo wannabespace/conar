@@ -1,9 +1,10 @@
 import {
-  RiArrowGoBackLine,
-  RiArrowRightLine,
-  RiErrorWarningLine,
-  RiSaveLine,
-} from '@remixicon/react'
+  Alert02Icon,
+  ArrowRight01Icon,
+  ArrowTurnBackwardIcon,
+  SaveIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { pick } from '@tamery/shared/utils/helpers'
 import { Button } from '@tamery/ui/components/button'
 import { LoadingContent } from '@tamery/ui/components/custom/loading-content'
@@ -145,7 +146,11 @@ export const DraftsReviewDrawer = ({
           {rowsEntries.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center">
               <div className="bg-muted/60 mb-4 flex size-12 items-center justify-center rounded-2xl">
-                <RiSaveLine className="text-muted-foreground/70 size-6" />
+                <HugeiconsIcon
+                  icon={SaveIcon}
+                  strokeWidth={2}
+                  className="text-muted-foreground/70 size-6"
+                />
               </div>
               <div className="text-sm font-medium">Nothing to review</div>
               <p className="text-muted-foreground mt-1 max-w-56 text-xs">
@@ -195,7 +200,10 @@ export const DraftsReviewDrawer = ({
                             />
                           }
                         >
-                          <RiArrowGoBackLine />
+                          <HugeiconsIcon
+                            icon={ArrowTurnBackwardIcon}
+                            strokeWidth={2}
+                          />
                         </TooltipTrigger>
                         <TooltipContent>Discard row</TooltipContent>
                       </Tooltip>
@@ -228,12 +236,20 @@ export const DraftsReviewDrawer = ({
                                   {before}
                                 </Value>
                               </div>
-                              <RiArrowRightLine className="text-muted-foreground/50 mt-0.5 size-3 shrink-0" />
+                              <HugeiconsIcon
+                                icon={ArrowRight01Icon}
+                                strokeWidth={2}
+                                className="text-muted-foreground/50 mt-0.5 size-3 shrink-0"
+                              />
                               <div className="min-w-0 flex-1">
                                 <Value value={draft.value}>{after}</Value>
                                 {draft.error && (
                                   <p className="text-2xs text-destructive mt-1 flex items-start gap-1 font-sans">
-                                    <RiErrorWarningLine className="mt-px size-3 shrink-0" />
+                                    <HugeiconsIcon
+                                      icon={Alert02Icon}
+                                      strokeWidth={2}
+                                      className="mt-px size-3 shrink-0"
+                                    />
                                     {draft.error}
                                   </p>
                                 )}
@@ -253,7 +269,10 @@ export const DraftsReviewDrawer = ({
                                   />
                                 }
                               >
-                                <RiArrowGoBackLine />
+                                <HugeiconsIcon
+                                  icon={ArrowTurnBackwardIcon}
+                                  strokeWidth={2}
+                                />
                               </TooltipTrigger>
                               <TooltipContent>Discard change</TooltipContent>
                             </Tooltip>
@@ -274,7 +293,7 @@ export const DraftsReviewDrawer = ({
             disabled={isSaving || drafts.length === 0}
             className="text-muted-foreground mr-auto"
           >
-            <RiArrowGoBackLine />
+            <HugeiconsIcon icon={ArrowTurnBackwardIcon} strokeWidth={2} />
             Discard all
           </Button>
           <DrawerClose render={<Button variant="outline">Close</Button>} />

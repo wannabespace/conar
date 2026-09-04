@@ -1,10 +1,11 @@
 import {
-  RiCheckboxCircleFill,
-  RiCloseCircleFill,
-  RiErrorWarningFill,
-  RiInformationFill,
-  RiLoaderLine,
-} from '@remixicon/react'
+  Alert02Icon,
+  CheckmarkCircle02Icon,
+  InformationCircleIcon,
+  Loading03Icon,
+  MultiplicationSignCircleIcon,
+} from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Toaster as Sonner } from 'sonner'
 
 import { useTheme } from '../theme-store'
@@ -19,13 +20,41 @@ const Toaster = () => {
         position="top-center"
         className="group"
         icons={{
-          error: <RiCloseCircleFill className="text-destructive size-4" />,
-          info: <RiInformationFill className="text-muted-foreground size-4" />,
-          loading: (
-            <RiLoaderLine className="text-muted-foreground size-4 animate-spin" />
+          error: (
+            <HugeiconsIcon
+              icon={MultiplicationSignCircleIcon}
+              strokeWidth={2}
+              className="text-destructive size-4"
+            />
           ),
-          success: <RiCheckboxCircleFill className="text-success size-4" />,
-          warning: <RiErrorWarningFill className="text-warning size-4" />,
+          info: (
+            <HugeiconsIcon
+              icon={InformationCircleIcon}
+              strokeWidth={2}
+              className="text-muted-foreground size-4"
+            />
+          ),
+          loading: (
+            <HugeiconsIcon
+              icon={Loading03Icon}
+              strokeWidth={2}
+              className="text-muted-foreground size-4 animate-spin"
+            />
+          ),
+          success: (
+            <HugeiconsIcon
+              icon={CheckmarkCircle02Icon}
+              strokeWidth={2}
+              className="text-success size-4"
+            />
+          ),
+          warning: (
+            <HugeiconsIcon
+              icon={Alert02Icon}
+              strokeWidth={2}
+              className="text-warning size-4"
+            />
+          ),
         }}
         toastOptions={{
           classNames: {

@@ -1,4 +1,4 @@
-import { RiTable2 } from '@remixicon/react'
+import { LayoutTable02Icon } from '@hugeicons/core-free-icons'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { PaneEmpty } from '~/components/pane-empty'
@@ -9,7 +9,7 @@ import {
 
 const EmptyPane = () => (
   <PaneEmpty
-    icon={RiTable2}
+    icon={LayoutTable02Icon}
     title="Nothing Open"
     description="Choose a table from the sidebar, or open a new query to get started."
   />

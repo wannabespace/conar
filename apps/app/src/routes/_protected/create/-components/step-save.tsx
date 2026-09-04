@@ -1,4 +1,5 @@
-import { RiLoopLeftLine } from '@remixicon/react'
+import { Refresh01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { COLOR_OPTIONS, LABEL_OPTIONS } from '@tamery/shared/constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
@@ -116,7 +117,7 @@ export const StepSave = ({
                     />
                   }
                 >
-                  <RiLoopLeftLine />
+                  <HugeiconsIcon icon={Refresh01Icon} strokeWidth={2} />
                 </TooltipTrigger>
                 <TooltipContent sideOffset={8}>
                   Generate a random connection name
