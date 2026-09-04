@@ -14,7 +14,7 @@ import { getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
-import { getActiveWorkspace } from '~/entities/workspace/utils'
+import { workspaceSelection } from '~/entities/workspace/utils'
 import { LOGGER_DEFAULT_HEIGHT } from '~/lib/constants'
 import { resourcePanelClassName } from '~/shell'
 
@@ -140,7 +140,9 @@ export const Route = createFileRoute('/_protected/connection/$resourceId')({
       throw redirect({ to: '/' })
     }
 
-    const activeWorkspace = getActiveWorkspace(workspacesCollection.toArray)
+    const activeWorkspace = workspaceSelection.current(
+      workspacesCollection.toArray
+    )
 
     if (activeWorkspace && connection.workspaceId !== activeWorkspace.id) {
       throw redirect({ to: '/' })

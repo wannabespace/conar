@@ -1,4 +1,3 @@
-import { ORPCError } from '@orpc/server'
 import { db } from '@tamery/db'
 import { users } from '@tamery/db/schema'
 import { type } from 'arktype'
@@ -18,11 +17,13 @@ export const upgrade = orpc
       successUrl: 'string',
     })
   )
-  .handler(async ({ context, input }) => {
+  .errors({
+    INTERNAL_SERVER_ERROR: { message: 'Stripe is not configured' },
+    NOT_FOUND: { message: 'User not found' },
+  })
+  .handler(async ({ context, errors, input }) => {
     if (!stripe) {
-      throw new ORPCError('INTERNAL_SERVER_ERROR', {
-        message: 'Stripe is not configured',
-      })
+      throw errors.INTERNAL_SERVER_ERROR()
     }
 
     const { successUrl, cancelUrl, isYearly } = input
@@ -34,7 +35,7 @@ export const upgrade = orpc
       .limit(1)
 
     if (!user) {
-      throw new ORPCError('NOT_FOUND', { message: 'User not found' })
+      throw errors.NOT_FOUND()
     }
 
     let customerId = user.stripeCustomerId
@@ -60,7 +61,7 @@ export const upgrade = orpc
       : env.STRIPE_MONTH_PRICE_ID
 
     if (!priceId) {
-      throw new ORPCError('INTERNAL_SERVER_ERROR', {
+      throw errors.INTERNAL_SERVER_ERROR({
         message: 'Stripe price is not configured',
       })
     }
@@ -88,7 +89,7 @@ export const upgrade = orpc
     })
 
     if (!session.url) {
-      throw new ORPCError('INTERNAL_SERVER_ERROR', {
+      throw errors.INTERNAL_SERVER_ERROR({
         message: 'Failed to create checkout session',
       })
     }

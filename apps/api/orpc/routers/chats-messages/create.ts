@@ -1,4 +1,3 @@
-import { ORPCError } from '@orpc/server'
 import { db } from '@tamery/db'
 import {
   chats,
@@ -14,7 +13,10 @@ import { publisher } from './events'
 export const create = orpc
   .use(subscriptionMiddleware)
   .input(chatsMessagesInsertSchema)
-  .handler(async ({ context, input }) => {
+  .errors({
+    NOT_FOUND: { message: 'Chat not found' },
+  })
+  .handler(async ({ context, errors, input }) => {
     const [chat] = await db
       .select({ id: chats.id })
       .from(chats)
@@ -22,9 +24,7 @@ export const create = orpc
       .limit(1)
 
     if (!chat) {
-      throw new ORPCError('NOT_FOUND', {
-        message: 'Chat not found',
-      })
+      throw errors.NOT_FOUND()
     }
 
     const [inserted] = await db

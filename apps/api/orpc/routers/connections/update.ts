@@ -1,4 +1,3 @@
-import { ORPCError } from '@orpc/server'
 import { db } from '@tamery/db'
 import { connections, connectionsUpdateSchema } from '@tamery/db/schema'
 import { SyncType } from '@tamery/shared/enums/sync-type'
@@ -25,7 +24,10 @@ export const update = orpc
       connectionsUpdateSchema.pick('id').required()
     )
   )
-  .handler(async ({ context, input }) => {
+  .errors({
+    NOT_FOUND: { message: 'Connection not found' },
+  })
+  .handler(async ({ context, errors, input }) => {
     const { id, ...changes } = input
     const [found] = await db
       .select()
@@ -36,7 +38,7 @@ export const update = orpc
       .limit(1)
 
     if (!found) {
-      throw new ORPCError('NOT_FOUND', { message: 'Connection not found' })
+      throw errors.NOT_FOUND()
     }
 
     const secret = await context.getWorkspaceSecret(found.workspaceId)
@@ -65,9 +67,7 @@ export const update = orpc
       .returning()
 
     if (!connection) {
-      throw new ORPCError('NOT_FOUND', {
-        message: 'Connection not found',
-      })
+      throw errors.NOT_FOUND()
     }
 
     publisher.publish(context.user.id, {

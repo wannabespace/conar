@@ -1,4 +1,3 @@
-import { ORPCError } from '@orpc/server'
 import type Stripe from 'stripe'
 
 import { env } from '~/env'
@@ -19,43 +18,48 @@ const eventMap = new Map<
   ['customer.subscription.updated', subscriptionUpdated],
 ])
 
-export const stripe = orpc.handler(async ({ context }) => {
-  try {
-    const event = await validateRequest(context.request)
+export const stripe = orpc
+  .errors({
+    BAD_REQUEST: { message: 'Stripe event not found' },
+    INTERNAL_SERVER_ERROR: {},
+  })
+  .handler(async ({ context, errors }) => {
+    try {
+      const event = await validateRequest(context.request)
 
-    const handler = eventMap.get(event.type)
+      const handler = eventMap.get(event.type)
 
-    if (!handler) {
-      throw new ORPCError('BAD_REQUEST', { message: 'Stripe event not found' })
-    }
-
-    await handler(event).catch(async (error) => {
-      if (env.ALERTS_EMAIL) {
-        await sendEmail({
-          props: {
-            service: 'Stripe',
-            text:
-              typeof error === 'object' && error !== null
-                ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
-                : String(error),
-          },
-          subject: `Alert from Stripe: ${event.type}`,
-          template: 'Alert',
-          to: env.ALERTS_EMAIL,
-        })
+      if (!handler) {
+        throw errors.BAD_REQUEST()
       }
 
-      throw error
-    })
+      await handler(event).catch(async (error) => {
+        if (env.ALERTS_EMAIL) {
+          await sendEmail({
+            props: {
+              service: 'Stripe',
+              text:
+                typeof error === 'object' && error !== null
+                  ? JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
+                  : String(error),
+            },
+            subject: `Alert from Stripe: ${event.type}`,
+            template: 'Alert',
+            to: env.ALERTS_EMAIL,
+          })
+        }
 
-    context.addLogData({
-      stripeEvent: { id: event.id, type: event.type },
-    })
+        throw error
+      })
 
-    return true
-  } catch (error) {
-    throw new ORPCError('INTERNAL_SERVER_ERROR', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-    })
-  }
-})
+      context.addLogData({
+        stripeEvent: { id: event.id, type: event.type },
+      })
+
+      return true
+    } catch (error) {
+      throw errors.INTERNAL_SERVER_ERROR({
+        message: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+  })

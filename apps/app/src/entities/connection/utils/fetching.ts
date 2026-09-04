@@ -1,4 +1,5 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
+import { noop } from '@tamery/shared/utils/helpers'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useSubscription } from 'seitu/react'
 
@@ -43,7 +44,7 @@ export const prefetchConnectionResourceCore = async (
     ),
     queryClient.query(resourceEnumsQueryOptions({ connectionResource })),
     queryClient.query(resourceConstraintsQueryOptions({ connectionResource })),
-  ])
+  ]).catch(noop)
 }
 
 export const prefetchConnectionResourceTableCore = async ({
@@ -81,7 +82,7 @@ export const prefetchConnectionResourceTableCore = async ({
     queryClient.query(
       resourceTableColumnsQueryOptions({ connectionResource, schema, table })
     ),
-  ])
+  ]).catch(noop)
 }
 
 export const useFetchingConfig = (

@@ -2,7 +2,7 @@ import { anthropic } from '@ai-sdk/anthropic'
 import { google } from '@ai-sdk/google'
 import { openai } from '@ai-sdk/openai'
 import { webSearch } from '@exalabs/ai-sdk'
-import { streamToEventIterator } from '@orpc/server'
+import { ORPCError, streamToEventIterator } from '@orpc/server'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SQL_FILTERS_LIST } from '@tamery/shared/filters'
 import { queryDocs, resolveLibraryId } from '@upstash/context7-tools-ai-sdk'
@@ -22,6 +22,8 @@ import * as z from 'zod/mini'
 
 import { env } from '~/env'
 import { orpc, subscriptionMiddleware } from '~/orpc'
+
+const MIN_CHAT_VERSION_MINOR = 32
 
 const model = createRetryableModel({
   model: anthropic('claude-opus-4-8'),
@@ -201,6 +203,16 @@ export const chat = orpc
     })
   )
   .handler(async ({ input, context, signal }) => {
+    if (
+      context.parsedAppVersion &&
+      context.parsedAppVersion.minor < MIN_CHAT_VERSION_MINOR
+    ) {
+      throw new ORPCError('FORBIDDEN', {
+        message:
+          'Chat is not supported in this app version. Please update Tamery to 0.32 or newer to keep using chat.',
+      })
+    }
+
     context.addLogData({
       chatId: input.id,
       connectionType: input.type,

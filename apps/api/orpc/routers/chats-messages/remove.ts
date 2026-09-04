@@ -1,4 +1,3 @@
-import { ORPCError } from '@orpc/server'
 import { db } from '@tamery/db'
 import { chats, chatsMessages } from '@tamery/db/schema'
 import { type } from 'arktype'
@@ -20,11 +19,12 @@ export const remove = orpc
       .or(removeInput, removeInput.array())
       .pipe((data) => (Array.isArray(data) ? data : [data]))
   )
-  .handler(async ({ context, input }) => {
+  .errors({
+    BAD_REQUEST: { message: 'No chat messages to remove' },
+  })
+  .handler(async ({ context, errors, input }) => {
     if (input.length === 0) {
-      throw new ORPCError('BAD_REQUEST', {
-        message: 'No chat messages to remove',
-      })
+      throw errors.BAD_REQUEST()
     }
 
     const toRemove = await db

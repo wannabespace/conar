@@ -1,6 +1,6 @@
 import { generateText } from 'ai'
 
-import { sqlModel } from './models'
+import { models } from './models'
 import { section, sqlOutputRules } from './prompt'
 
 const fixSqlInstructions = (connectionType: string) =>
@@ -20,7 +20,7 @@ export const fixSql = async (data: {
   const { text } = await generateText({
     abortSignal: data.signal,
     instructions: fixSqlInstructions(data.connectionType),
-    model: sqlModel,
+    model: models.sql,
     prompt: [section('SQL QUERY', data.sql), section('ERROR', data.error)].join(
       '\n'
     ),

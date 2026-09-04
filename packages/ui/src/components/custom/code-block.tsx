@@ -2,36 +2,50 @@ import type { HighlightOptions } from '@streamdown/code'
 import { code as highlighter } from '@streamdown/code'
 import { cn } from '@tamery/ui/lib/utils'
 import type { ComponentProps, CSSProperties } from 'react'
-import { useSyncExternalStore } from 'react'
+import { useRef, useSyncExternalStore } from 'react'
 
 interface Token {
   content: string
   htmlStyle?: CSSProperties
 }
 
-const useTokens = (code: string, language: string) =>
-  useSyncExternalStore(
+const useTokens = (code: string, language: string) => {
+  const cache = useRef<{ key: string; tokens?: Token[][] }>({ key: '' })
+  const key = `${language}\n${code}`
+
+  return useSyncExternalStore(
     (onChange) => {
       let subscribed = true
-      highlighter.highlight(
-        {
-          code,
-          language: language as HighlightOptions['language'],
-          themes: highlighter.getThemes(),
-        },
-        () => subscribed && onChange()
-      )
+
+      if (cache.current.key !== key) {
+        cache.current = { key }
+        const ready = highlighter.highlight(
+          {
+            code,
+            language: language as HighlightOptions['language'],
+            themes: highlighter.getThemes(),
+          },
+          ({ tokens }) => {
+            if (cache.current.key === key) {
+              cache.current = { key, tokens }
+            }
+            if (subscribed) {
+              onChange()
+            }
+          }
+        )
+        if (ready) {
+          cache.current = { key, tokens: ready.tokens }
+        }
+      }
+
       return () => {
         subscribed = false
       }
     },
-    () =>
-      highlighter.highlight({
-        code,
-        language: language as HighlightOptions['language'],
-        themes: highlighter.getThemes(),
-      })?.tokens
+    () => (cache.current.key === key ? cache.current.tokens : undefined)
   )
+}
 
 const TokenSpans = ({ tokens }: { tokens: Token[] }) =>
   tokens.map((token, index) => (

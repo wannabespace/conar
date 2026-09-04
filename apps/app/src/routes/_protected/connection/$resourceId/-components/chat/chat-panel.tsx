@@ -86,6 +86,19 @@ const Chat = ({
   const firstMessage = displayMessages.at(0)
   const pendingTitle = firstMessage ? textFromMessage(firstMessage) : null
   const lastSentId = messages.findLast((message) => message.role === 'user')?.id
+  const retry = () => {
+    if (messages.length > 0) {
+      void regenerate()
+      return
+    }
+
+    const lastAsked = displayMessages.findLast(
+      (message) => message.role === 'user'
+    )
+    if (lastAsked) {
+      void sendMessage(lastAsked)
+    }
+  }
 
   return (
     <>
@@ -102,10 +115,7 @@ const Chat = ({
         onSelectChat={setChatId}
       />
       <ChatMessages
-        isPending={
-          !error &&
-          (status === 'streaming' || displayMessages.at(-1)?.role === 'user')
-        }
+        isPending={isStreaming}
         messages={displayMessages}
         lastSentId={lastSentId}
       />
@@ -114,13 +124,7 @@ const Chat = ({
           <p className="text-destructive min-w-0 flex-1 truncate text-xs">
             {error.message}
           </p>
-          <Button
-            size="xs"
-            variant="outline"
-            onClick={() => {
-              void regenerate()
-            }}
-          >
+          <Button size="xs" variant="outline" onClick={retry}>
             Retry
           </Button>
         </div>

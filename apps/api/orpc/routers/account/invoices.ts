@@ -1,4 +1,3 @@
-import { ORPCError } from '@orpc/server'
 import { db } from '@tamery/db'
 import { users } from '@tamery/db/schema'
 import { eq } from 'drizzle-orm'
@@ -11,14 +10,17 @@ export type InvoiceStatus = Extract<Stripe.Invoice.Status, string>
 
 export const invoices = orpc
   .use(authMiddleware)
-  .handler(async ({ context }) => {
+  .errors({
+    NOT_FOUND: { message: 'User not found' },
+  })
+  .handler(async ({ context, errors }) => {
     const [user] = await db
       .select()
       .from(users)
       .where(eq(users.id, context.user.id))
 
     if (!user) {
-      throw new ORPCError('NOT_FOUND', { message: 'User not found' })
+      throw errors.NOT_FOUND()
     }
 
     if (!user.stripeCustomerId) {

@@ -1,8 +1,8 @@
-import { claimChatStream, resumeChatStream } from '@tamery/ai/chat-stream'
+import { chatStream, chatTurn } from '@tamery/ai/chat-stream'
 import { db } from '@tamery/db'
 import { type } from 'arktype'
 
-import { loadChatMessages, persistMessage } from '~/lib/chat-persist'
+import { chatPersist } from '~/lib/chat-persist'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const attachStream = orpc
@@ -18,25 +18,30 @@ export const attachStream = orpc
       return
     }
 
-    const active = await resumeChatStream(input.chatId)
+    const active = await chatStream.resume(input.chatId)
     if (active) {
       yield* active
       return
     }
 
-    const messages = await loadChatMessages({
+    const messages = await chatPersist.loadMessages({
       chatId: input.chatId,
       userId: context.user.id,
     })
-    if (messages.at(-1)?.role !== 'user') {
+    const lastMessage = messages.at(-1)
+    if (lastMessage?.role !== 'user') {
       return
     }
 
-    const restarted = await claimChatStream({
+    if (await chatTurn.isSettled(input.chatId, lastMessage.id)) {
+      return
+    }
+
+    const restarted = await chatStream.claim({
       chatId: input.chatId,
       messages,
       onFinish: (message) =>
-        persistMessage({
+        chatPersist.persistMessage({
           chatId: input.chatId,
           message,
           userId: context.user.id,
@@ -47,7 +52,7 @@ export const attachStream = orpc
       return
     }
 
-    const racing = await resumeChatStream(input.chatId)
+    const racing = await chatStream.resume(input.chatId)
     if (racing) {
       yield* racing
     }

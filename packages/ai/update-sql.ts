@@ -1,6 +1,6 @@
 import { generateText } from 'ai'
 
-import { sqlModel } from './models'
+import { models } from './models'
 import { section, sqlOutputRules } from './prompt'
 
 const updateSqlInstructions = (data: {
@@ -28,7 +28,7 @@ export const updateSql = async (data: {
   const { text } = await generateText({
     abortSignal: data.signal,
     instructions: updateSqlInstructions(data),
-    model: sqlModel,
+    model: models.sql,
     prompt: [
       section('SELECTED SQL QUERY', data.sql),
       section('PROMPT', data.prompt),

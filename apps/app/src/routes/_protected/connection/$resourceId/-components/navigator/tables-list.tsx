@@ -39,9 +39,8 @@ import {
   openTableTab,
   parseTabId,
   tableTabId,
-  cleanupPinnedTables,
+  pinnedTable,
   getConnectionResourceStore,
-  togglePinTable,
 } from '~/entities/connection/store'
 
 import { tablePageStore } from '../../-tabs/table/-lib/store'
@@ -187,7 +186,7 @@ const TableRow = ({
         <RiPushpinLine className="size-4" />
       ),
       onSelect: () =>
-        togglePinTable(connectionResource.id, row.schema, row.table.name),
+        pinnedTable.toggle(connectionResource.id, row.schema, row.table.name),
     },
     { type: 'separator' },
     {
@@ -281,7 +280,7 @@ const TableRow = ({
                 isActive && 'hover:bg-primary-foreground/20'
               )}
               onClick={() =>
-                togglePinTable(
+                pinnedTable.toggle(
                   connectionResource.id,
                   row.schema,
                   row.table.name
@@ -362,7 +361,7 @@ export const TablesList = ({
       return
     }
 
-    cleanupPinnedTables(
+    pinnedTable.cleanup(
       connectionResource.id,
       tablesAndSchemas.schemas.flatMap((schema) =>
         schema.tables.map((table) => ({

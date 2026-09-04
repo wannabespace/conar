@@ -13,13 +13,14 @@ const probeModels = {
 
 export type AiProvider = keyof typeof probeModels
 
-export const aiProviders = Object.keys(probeModels) as AiProvider[]
-
-export const probeProvider = async (provider: AiProvider) => {
-  const { text } = await generateText({
-    maxOutputTokens: 8,
-    model: probeModels[provider],
-    prompt: 'Reply with the single word: ok',
-  })
-  return text
+export const providers = {
+  list: Object.keys(probeModels) as AiProvider[],
+  probe: async (provider: AiProvider) => {
+    const { text } = await generateText({
+      maxOutputTokens: 8,
+      model: probeModels[provider],
+      prompt: 'Reply with the single word: ok',
+    })
+    return text
+  },
 }

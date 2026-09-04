@@ -1,4 +1,3 @@
-import { ORPCError } from '@orpc/server'
 import { db } from '@tamery/db'
 import {
   chats,
@@ -20,7 +19,10 @@ export const update = orpc
       chatsMessagesUpdateSchema.pick('id').required()
     )
   )
-  .handler(async ({ context, input }) => {
+  .errors({
+    NOT_FOUND: { message: 'Chat message not found' },
+  })
+  .handler(async ({ context, errors, input }) => {
     const [found] = await db
       .select({ chatId: chatsMessages.chatId, userId: chats.userId })
       .from(chatsMessages)
@@ -30,9 +32,7 @@ export const update = orpc
       )
 
     if (!found) {
-      throw new ORPCError('NOT_FOUND', {
-        message: 'Chat message not found',
-      })
+      throw errors.NOT_FOUND()
     }
 
     const [message] = await db
@@ -42,9 +42,7 @@ export const update = orpc
       .returning()
 
     if (!message) {
-      throw new ORPCError('NOT_FOUND', {
-        message: 'Chat message not found after update',
-      })
+      throw errors.NOT_FOUND({ message: 'Chat message not found after update' })
     }
 
     publisher.publish(context.user.id, {
