@@ -1,7 +1,7 @@
 import { useChat } from '@ai-sdk/react'
 import {
   textFromMessage,
-  messagesFromRows,
+  messagesFromPartRows,
   mergeMessages,
 } from '@tamery/ai/message'
 import { eq, useLiveSuspenseQuery } from '@tanstack/react-db'
@@ -71,7 +71,7 @@ const Chat = ({
   })
 
   const chat = chatHistory.find((row) => row.id === chatId)
-  const collectionMessages = messagesFromRows(transcriptRows)
+  const collectionMessages = messagesFromPartRows(transcriptRows)
 
   // oxlint-disable-next-line react/hook-use-state
   const [resume] = useState(

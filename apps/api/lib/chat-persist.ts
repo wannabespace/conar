@@ -1,6 +1,6 @@
 import { ORPCError } from '@orpc/server'
 import type { AppUIMessage } from '@tamery/ai/message'
-import { messagesFromRows } from '@tamery/ai/message'
+import { messagesFromPartRows } from '@tamery/ai/message'
 import { generateChatTitle } from '@tamery/ai/title'
 import { db } from '@tamery/db'
 import { chats, chatsMessages, chatsMessagesParts } from '@tamery/db/schema'
@@ -102,7 +102,7 @@ export const chatPersist = {
       )
       .orderBy(asc(chatsMessages.createdAt), asc(chatsMessagesParts.order))
 
-    return messagesFromRows(rows)
+    return messagesFromPartRows(rows)
   },
   persistMessage: async (data: {
     chatId: string
