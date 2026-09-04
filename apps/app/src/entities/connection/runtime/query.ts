@@ -1,6 +1,6 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { isConnectionError } from '@tamery/shared/utils/connections'
-import { sleep } from '@tamery/shared/utils/helpers'
+import { noop, sleep } from '@tamery/shared/utils/helpers'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
 import type { Type } from 'arktype'
 import { Result } from 'better-result'
@@ -13,7 +13,7 @@ import type { Connection, ConnectionResource } from '~/entities/connection/core'
 import { getConnectionStringToShow } from '../utils/helpers'
 import { dialects } from './dialects'
 import { logQuery } from './log'
-import { watchSlowQuery } from './slow-queries'
+import { watchForSlowQuery } from './slow-queries'
 
 export const connectionToQueryParams = async (
   connection: Connection
@@ -120,7 +120,9 @@ export const createQuery = <T extends Type = Type<unknown>>(options: {
         ? location.href.includes(queryParams.resourceId)
         : false
 
-    const stopSlowQueryWatch = watchSlowQuery(queryParams.resourceId)
+    const stopSlowQueryWatch = queryParams.resourceId
+      ? watchForSlowQuery(queryParams.resourceId)
+      : noop
 
     const [result] = await Promise.all([
       Result.tryPromise(

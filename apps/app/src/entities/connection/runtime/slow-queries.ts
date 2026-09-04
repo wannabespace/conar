@@ -1,15 +1,10 @@
-import { noop } from '@tamery/shared/utils/helpers'
 import { createStore } from 'seitu'
 
 const SLOW_QUERY_TIMEOUT = 10_000
 
 export const slowQueries = createStore<Record<string, number[]>>({})
 
-export const watchSlowQuery = (resourceId?: string) => {
-  if (!resourceId) {
-    return noop
-  }
-
+export const watchForSlowQuery = (resourceId: string) => {
   const startedAt = Date.now()
   const timer = setTimeout(
     () =>
