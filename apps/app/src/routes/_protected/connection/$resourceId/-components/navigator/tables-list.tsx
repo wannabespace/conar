@@ -2,10 +2,10 @@ import {
   ArrowRight01Icon,
   Copy01Icon,
   Delete02Icon,
+  LayoutTable02Icon,
   PencilEdit01Icon,
   PinIcon,
   PinOffIcon,
-  TableIcon,
   ViewIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -87,7 +87,7 @@ const ROW_HEIGHTS = {
 } satisfies Record<TreeRow['kind'], number>
 
 const tableTypeIcon = {
-  table: TableIcon,
+  table: LayoutTable02Icon,
   view: ViewIcon,
   'materialized view': ViewIcon,
 } satisfies Record<TableInfo['type'], IconSvgElement>
@@ -534,7 +534,7 @@ export const TablesList = ({
         )}
       >
         <HugeiconsIcon
-          icon={TableIcon}
+          icon={LayoutTable02Icon}
           strokeWidth={2}
           className="text-muted-foreground/50 mb-2 size-8"
         />

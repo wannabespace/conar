@@ -1,8 +1,8 @@
 import {
   Key01Icon,
+  LayoutTable02Icon,
   LayoutThreeColumnIcon,
   LeftToRightListDashIcon,
-  TableIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Badge } from '@tamery/ui/components/badge'
@@ -216,7 +216,7 @@ export const Indexes = () => {
                   <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
                     <Badge variant="outline">
                       <HugeiconsIcon
-                        icon={TableIcon}
+                        icon={LayoutTable02Icon}
                         strokeWidth={2}
                         className="size-3"
                       />

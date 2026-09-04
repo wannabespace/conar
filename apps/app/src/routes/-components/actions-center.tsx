@@ -8,12 +8,12 @@ import {
   File01Icon,
   HierarchyIcon,
   HistoryIcon,
+  LayoutTable02Icon,
   Moon02Icon,
   PlusSignIcon,
   RefreshIcon,
   Search01Icon,
   Sun03Icon,
-  TableIcon,
   ViewIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -83,7 +83,7 @@ const CONNECTION_PAGES = [
 const TABLE_TYPE_ICONS = {
   'materialized view': ViewIcon,
   view: ViewIcon,
-  table: TableIcon,
+  table: LayoutTable02Icon,
 } as const
 
 const run = (action: () => void) => () => {

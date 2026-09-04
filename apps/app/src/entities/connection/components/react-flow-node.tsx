@@ -3,9 +3,9 @@ import {
   EraserIcon,
   FingerPrintIcon,
   Key01Icon,
+  LayoutTable02Icon,
   Link01Icon,
   LinkSquare02Icon,
-  TableIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@tamery/ui/components/button'
@@ -50,7 +50,7 @@ export const ReactFlowNode = ({ data }: NodeProps<NodeType>) => (
     <div className="border-border/80 from-background/50 flex items-center justify-between gap-2 border-b bg-linear-to-t px-4 py-3">
       <div data-mask className="flex min-w-0 items-center gap-2 text-sm">
         <HugeiconsIcon
-          icon={TableIcon}
+          icon={LayoutTable02Icon}
           strokeWidth={2}
           className="text-muted-foreground/80 size-5 shrink-0"
         />

@@ -1,6 +1,6 @@
 import {
+  LayoutTable02Icon,
   SecurityCheckIcon,
-  TableIcon,
   ViewIcon,
   ViewOffSlashIcon,
 } from '@hugeicons/core-free-icons'
@@ -170,7 +170,7 @@ export const Policies = () => {
                   <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
                     <Badge variant="outline">
                       <HugeiconsIcon
-                        icon={TableIcon}
+                        icon={LayoutTable02Icon}
                         strokeWidth={2}
                         className="size-3"
                       />
