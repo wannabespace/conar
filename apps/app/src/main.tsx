@@ -92,10 +92,9 @@ router.subscribe('onResolved', ({ toLocation }) => {
 })
 
 const isRoutableHref = (href: string) => {
-  const pathname = href.split(/[?#]/u)[0] ?? href
-  const [, rawParams, foundRoute] = router.getMatchedRoutes(pathname)
+  const { pathname } = new URL(href, window.location.origin)
 
-  return !!foundRoute && !(foundRoute.path !== '/' && rawParams['**'])
+  return !router.matchRoutes(pathname).some((match) => match._notFound)
 }
 
 if (router.state.location.pathname === '/') {
