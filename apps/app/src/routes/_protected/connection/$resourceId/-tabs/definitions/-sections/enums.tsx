@@ -1,8 +1,8 @@
 import {
+  GridTableIcon,
   LayoutThreeColumnIcon,
   LeftToRightListBulletIcon,
   LeftToRightListDashIcon,
-  TableIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
@@ -124,7 +124,7 @@ export const Enums = () => {
                       <>
                         <Badge variant="outline" className="text-xs">
                           <HugeiconsIcon
-                            icon={TableIcon}
+                            icon={GridTableIcon}
                             strokeWidth={2}
                             className="size-3"
                           />

@@ -1,4 +1,4 @@
-import { FlashIcon, TableIcon } from '@hugeicons/core-free-icons'
+import { FlashIcon, GridTableIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Badge } from '@tamery/ui/components/badge'
 import { CardContent, CardTitle } from '@tamery/ui/components/card'
@@ -168,7 +168,7 @@ export const Triggers = () => {
                   <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
                     <Badge variant="outline">
                       <HugeiconsIcon
-                        icon={TableIcon}
+                        icon={GridTableIcon}
                         strokeWidth={2}
                         className="size-3"
                       />
