@@ -134,9 +134,7 @@ const ConnectionItem = ({
         </span>
       </span>
       {connection.label && (
-        <CommandShortcut data-mask className="tracking-normal">
-          {connection.label}
-        </CommandShortcut>
+        <CommandShortcut data-mask>{connection.label}</CommandShortcut>
       )}
     </CommandItem>
   )
