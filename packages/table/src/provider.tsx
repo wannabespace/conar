@@ -7,7 +7,7 @@ import { createDebouncedFn, createStore } from 'seitu'
 import type { ColumnRenderer } from './'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from './constants'
 import { TableContext } from './table-context'
-import { columnWidth } from './utils'
+import { prepareColumnId } from './utils'
 
 export type { TableContextType } from './table-context'
 
@@ -98,10 +98,17 @@ export const TableProvider = ({
 
     const rafId = requestAnimationFrame(() => {
       for (const column of columnsToRemove) {
-        columnWidth.remove(scrollElement, column.id)
+        const id = `--table-column-width-${prepareColumnId(column.id)}`
+
+        if (scrollElement.style.getPropertyValue(id)) {
+          scrollElement.style.removeProperty(id)
+        }
       }
       for (const [id, size] of customColumnsSizesMap) {
-        columnWidth.set(scrollElement, id, size)
+        scrollElement.style.setProperty(
+          `--table-column-width-${prepareColumnId(id)}`,
+          `${size}px`
+        )
       }
       measureDebounced()
     })

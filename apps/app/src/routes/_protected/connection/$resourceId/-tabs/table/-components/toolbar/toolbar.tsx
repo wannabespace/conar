@@ -100,13 +100,13 @@ const COMPACT_COUNT_FORMAT = {
 
 const TableStats = ({
   exact,
-  isTotalLoading,
+  isTotalFetching,
   onRequestExact,
   total,
   totalUpdatedAt,
 }: {
   exact: boolean
-  isTotalLoading: boolean
+  isTotalFetching: boolean
   onRequestExact: () => void
   total?: { count: number; isEstimated?: boolean }
   totalUpdatedAt: number
@@ -136,7 +136,7 @@ const TableStats = ({
                 format={COMPACT_COUNT_FORMAT}
                 className={cn(
                   'tabular-nums',
-                  isTotalLoading && 'text-muted-foreground/50 animate-pulse'
+                  isTotalFetching && 'text-muted-foreground/50 animate-pulse'
                 )}
                 prefix={total.isEstimated ? '~' : ''}
               />
@@ -199,7 +199,7 @@ export const TableToolbar = ({
 
   const {
     data: total,
-    isLoading: isTotalLoading,
+    isFetching: isTotalFetching,
     dataUpdatedAt: totalUpdatedAt,
   } = useQuery(
     resourceTableTotalQueryOptions({
@@ -254,7 +254,7 @@ export const TableToolbar = ({
     <div className="pointer-events-none flex w-full max-w-3xl items-end gap-2 *:pointer-events-auto">
       <TableStats
         exact={exact}
-        isTotalLoading={isTotalLoading}
+        isTotalFetching={isTotalFetching}
         onRequestExact={() => setExact(true)}
         total={total}
         totalUpdatedAt={totalUpdatedAt}

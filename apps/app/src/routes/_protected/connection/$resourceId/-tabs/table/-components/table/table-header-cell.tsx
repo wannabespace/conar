@@ -15,7 +15,6 @@ import {
 } from '@remixicon/react'
 import type { TableHeaderCellProps } from '@tamery/table'
 import { useTableContext } from '@tamery/table/hooks'
-import { columnWidth } from '@tamery/table/utils'
 import { ResizeHandle } from '@tamery/ui/components/custom/resize-handle'
 import {
   Tooltip,
@@ -429,13 +428,14 @@ export const TableHeaderCell = ({
             min={100}
             getValue={() => ref.current?.getBoundingClientRect().width ?? 0}
             onResize={(width) => {
-              if (scrollRef.current) {
-                columnWidth.set(scrollRef.current, column.id, width)
+              if (!scrollRef?.current) {
+                return
               }
+              onResize(width)
             }}
-            onResizeEnd={onResize}
             className="flex items-stretch self-stretch p-1"
             onDoubleClick={removeSize}
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
           >
             <span className="bg-foreground/20 group-hover/resize-handle:bg-primary group-data-resizing/resize-handle:bg-primary! w-0.5 rounded-full opacity-0 transition-opacity group-hover/header-cell:opacity-100 group-data-resizing/resize-handle:opacity-100!" />
