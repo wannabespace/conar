@@ -1,5 +1,6 @@
 import { createRequire } from 'node:module'
 
+import { silently } from '@tamery/shared/utils/helpers'
 import { tries } from '@tamery/shared/utils/tries'
 import { memoize } from 'memoza'
 import type { PoolOptions } from 'mysql2'
@@ -98,11 +99,7 @@ export const query = {
     try {
       await handle.commit()
     } finally {
-      try {
-        await handle.release()
-      } catch {
-        // ignore release errors after commit
-      }
+      await silently(() => handle.release())
     }
   }),
 
@@ -144,11 +141,7 @@ export const query = {
     try {
       await handle.rollback()
     } finally {
-      try {
-        await handle.release()
-      } catch {
-        // ignore release errors after rollback
-      }
+      await silently(() => handle.release())
     }
   }),
 } satisfies QueryExecutor

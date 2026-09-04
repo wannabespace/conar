@@ -1,5 +1,6 @@
 import process from 'node:process'
 
+import { silently } from '@tamery/shared/utils/helpers'
 import { consola } from 'consola'
 import ora from 'ora'
 
@@ -69,12 +70,10 @@ export const serverSignOut = async (): Promise<void> => {
     return
   }
 
-  try {
-    await fetch(`${import.meta.env.API_URL}/auth/sign-out`, {
+  await silently(() =>
+    fetch(`${import.meta.env.API_URL}/auth/sign-out`, {
       headers: { Authorization: `Bearer ${token}` },
       method: 'POST',
     })
-  } catch {
-    // ignore – we still clear local state
-  }
+  )
 }

@@ -4,6 +4,7 @@ import { messagesFromPartRows } from '@tamery/ai/message'
 import { generateChatTitle } from '@tamery/ai/title'
 import { db } from '@tamery/db'
 import { chats, chatsMessages, chatsMessagesParts } from '@tamery/db/schema'
+import { silently } from '@tamery/shared/utils/helpers'
 import { and, asc, eq, isNull } from 'drizzle-orm'
 
 import { publisher as chatsMessagesPartsPublisher } from '~/orpc/routers/chats-messages-parts/events'
@@ -163,7 +164,7 @@ export const chatPersist = {
     messages: AppUIMessage[]
     userId: string
   }) => {
-    try {
+    await silently(async () => {
       const title = await generateChatTitle({ messages: data.messages })
       if (!title) {
         return
@@ -184,8 +185,6 @@ export const chatPersist = {
       if (updated) {
         chatsPublisher.publish(data.userId, { type: 'update', value: updated })
       }
-    } catch {
-      // The title is best-effort; the chat works untitled.
-    }
+    })
   },
 }

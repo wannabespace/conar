@@ -1,6 +1,7 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { PORTS } from '@tamery/shared/ports'
 import type { AnyFunction } from '@tamery/shared/utils/helpers'
+import { silently } from '@tamery/shared/utils/helpers'
 import type {
   CompiledQuery,
   DatabaseConnection,
@@ -219,11 +220,7 @@ export const createKyselyDriver = ({
       }
       const { txId } = state
       state.txId = null
-      try {
-        await provider.rollbackTransaction({ txId })
-      } catch {
-        void 0
-      }
+      await silently(() => provider.rollbackTransaction({ txId }))
     },
     async rollbackTransaction(connection) {
       const state = txStates.get(connection)

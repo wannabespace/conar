@@ -1,5 +1,6 @@
 import { createRequire } from 'node:module'
 
+import { silently } from '@tamery/shared/utils/helpers'
 import { tries } from '@tamery/shared/utils/tries'
 import { memoize } from 'memoza'
 import type { PoolConfig } from 'pg'
@@ -113,11 +114,7 @@ export const query = {
       try {
         await handle.commit()
       } finally {
-        try {
-          await handle.release()
-        } catch {
-          void 0
-        }
+        await silently(() => handle.release())
       }
     }
   ),
@@ -163,11 +160,7 @@ export const query = {
       try {
         await handle.rollback()
       } finally {
-        try {
-          await handle.release()
-        } catch {
-          void 0
-        }
+        await silently(() => handle.release())
       }
     }
   ),

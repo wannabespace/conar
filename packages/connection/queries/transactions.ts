@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto'
 
+import { silently } from '@tamery/shared/utils/helpers'
+
 export interface TxHandle {
   execute: (
     query: string,
@@ -18,14 +20,6 @@ interface OwnedTx {
 const ORPHAN_TX_TIMEOUT_MS = 5 * 60 * 1000
 
 const activeTransactions = new Map<string, OwnedTx>()
-
-const silently = async (fn: () => Promise<void>) => {
-  try {
-    await fn()
-  } catch {
-    // empty
-  }
-}
 
 export const registerTransaction = (handle: TxHandle, ownerId?: string) => {
   const txId = randomUUID()
@@ -76,4 +70,16 @@ export const disposeTransaction = (txId: string, ownerId?: string) => {
   }
   activeTransactions.delete(txId)
   return entry.handle
+}
+
+export const resetTransactions = async () => {
+  const entries = [...activeTransactions.values()]
+  activeTransactions.clear()
+
+  await Promise.all(
+    entries.map(async ({ handle }) => {
+      await silently(() => handle.rollback())
+      await silently(() => handle.release())
+    })
+  )
 }

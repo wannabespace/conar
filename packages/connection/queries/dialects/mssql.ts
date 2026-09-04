@@ -1,5 +1,6 @@
 import { createRequire } from 'node:module'
 
+import { silently } from '@tamery/shared/utils/helpers'
 import { memoize } from 'memoza'
 import type * as mssqlModule from 'mssql'
 
@@ -77,11 +78,7 @@ export const query = {
     try {
       await handle.commit()
     } finally {
-      try {
-        await handle.release()
-      } catch {
-        // empty
-      }
+      await silently(() => handle.release())
     }
   }),
 
@@ -132,11 +129,7 @@ export const query = {
     try {
       await handle.rollback()
     } finally {
-      try {
-        await handle.release()
-      } catch {
-        // empty
-      }
+      await silently(() => handle.release())
     }
   }),
 } satisfies QueryExecutor

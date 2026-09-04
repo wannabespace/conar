@@ -2,7 +2,7 @@ import { createRequire } from 'node:module'
 
 import type * as ClickHouse from '@clickhouse/client'
 import type { AnyFunction } from '@tamery/shared/utils/helpers'
-import { tryParseJson } from '@tamery/shared/utils/helpers'
+import { silently, tryParseJson } from '@tamery/shared/utils/helpers'
 import { memoize } from 'memoza'
 
 import type { QueryExecutor } from '..'
@@ -95,11 +95,7 @@ export const query = {
     try {
       await handle.commit()
     } finally {
-      try {
-        await handle.release()
-      } catch {
-        /* empty */
-      }
+      await silently(() => handle.release())
     }
   }),
 
@@ -158,11 +154,7 @@ export const query = {
     try {
       await handle.rollback()
     } finally {
-      try {
-        await handle.release()
-      } catch {
-        /* empty */
-      }
+      await silently(() => handle.release())
     }
   }),
 } satisfies QueryExecutor

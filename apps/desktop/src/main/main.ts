@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module'
 import path from 'node:path'
 
+import { resetTransactions } from '@tamery/connection/queries/transactions'
 import { MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH } from '@tamery/shared/constants'
 import { isConnectionError } from '@tamery/shared/utils/connections'
 import type { UpdatesStatus } from '@tamery/shared/utils/updates'
@@ -133,6 +134,12 @@ export const createWindow = () => {
     mainWindow?.webContents.send('focus-changed', mainWindow.isFocused())
   mainWindow.on('blur', sendFocus)
   mainWindow.webContents.on('did-finish-load', sendFocus)
+
+  mainWindow.webContents.on('did-start-navigation', (details) => {
+    if (details.isMainFrame && !details.isSameDocument) {
+      void resetTransactions()
+    }
+  })
 
   mainWindow.on('close', () => {
     if (!mainWindow) {
