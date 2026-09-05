@@ -637,9 +637,9 @@ const Tab = ({
     })
 
   const tabClasses = cn(
-    `group text-muted-foreground hover:bg-background/50 relative flex h-full cursor-default items-center gap-1.5 border-r border-b pr-8 pl-3 text-sm font-[450] whitespace-nowrap transition-colors duration-100`,
+    `group text-muted-foreground hover:bg-background/50 relative flex h-full cursor-default items-center gap-1.5 border-r border-b pr-8 pl-3 text-sm font-[450] whitespace-nowrap`,
     isActive &&
-      `bg-background text-foreground hover:bg-background border-b-transparent font-medium`,
+      `bg-background text-foreground hover:bg-background border-b-transparent`,
     isPreview && 'italic'
   )
 

@@ -243,7 +243,7 @@ const Header = ({ className }: { className?: string }) => {
                         size="icon-sm"
                         aria-label="Columns off-screen to the right"
                         className={cn(
-                          `group absolute top-1/2 right-2 -translate-y-1/2 shadow-none transition-opacity duration-150`,
+                          `group absolute top-1/2 right-2 -translate-y-1/2 transition-opacity duration-150`,
                           notVisibleColumns.right.length > 0
                             ? 'opacity-100'
                             : `pointer-events-none opacity-0`
