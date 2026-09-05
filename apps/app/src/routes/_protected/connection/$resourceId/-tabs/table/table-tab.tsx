@@ -5,6 +5,10 @@ import { openTableTab } from '~/entities/connection/store'
 import { Table } from './-components/table/table'
 import { TableToolbar } from './-components/toolbar/toolbar'
 import { ColumnsContext, useTableColumnsQuery } from './-lib/columns'
+import {
+  tableSessionStore,
+  TableSessionStoreContext,
+} from './-lib/session-store'
 import { tablePageStore, TablePageStoreContext } from './-lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -43,12 +47,13 @@ export const TableTab = ({
   table: string
 }) => {
   const { connectionResource } = useRouteContext()
+  const storeKey = { id: connectionResource.id, schema, table }
 
   return (
-    <TablePageStoreContext
-      value={tablePageStore({ id: connectionResource.id, schema, table })}
-    >
-      <TableContent table={table} schema={schema} />
+    <TablePageStoreContext value={tablePageStore(storeKey)}>
+      <TableSessionStoreContext value={tableSessionStore(storeKey)}>
+        <TableContent table={table} schema={schema} />
+      </TableSessionStoreContext>
     </TablePageStoreContext>
   )
 }

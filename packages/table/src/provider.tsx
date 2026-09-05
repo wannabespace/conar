@@ -1,15 +1,17 @@
-import { useScrollDirection } from '@tamery/ui/hookas/use-scroll-direction'
 import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import type { ReactNode } from 'react'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { createDebouncedFn, createStore } from 'seitu'
+import { useLayoutEffect, useRef, useState } from 'react'
+import { createStore } from 'seitu'
 
 import type { ColumnRenderer } from './'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from './constants'
 import { TableContext } from './table-context'
-import { prepareColumnId } from './utils'
+import { columnWidthProperty } from './utils'
 
 export type { TableContextType } from './table-context'
+
+const ROW_OVERSCAN = 5
+const COLUMN_OVERSCAN = 2
 
 export const TableProvider = ({
   rows,
@@ -27,17 +29,12 @@ export const TableProvider = ({
   customColumnSizes?: Record<string, number>
 }) => {
   const scrollRef = useRef<HTMLDivElement | null>(null)
-  const scrollDirection = useScrollDirection(scrollRef)
-
-  const verticalScroll = scrollDirection === 'up' || scrollDirection === 'down'
-  const horizontalScroll =
-    scrollDirection === 'left' || scrollDirection === 'right'
 
   const { virtualItems: virtualRows, totalSize: tableHeight } = useVirtualizer({
     count: rows.length,
     estimateSize: () => estimatedRowSize,
     getScrollElement: () => scrollRef.current,
-    overscan: verticalScroll || scrollDirection === null ? 10 : 0,
+    overscan: ROW_OVERSCAN,
   })
 
   const {
@@ -51,75 +48,51 @@ export const TableProvider = ({
       if (!column) {
         return estimatedColumnSize
       }
-      return (
-        customColumnSizes?.[column.id] ?? column.size ?? estimatedColumnSize
-      )
+      return customColumnSizes?.[column.id] ?? column.size
     },
+    getItemKey: (index) => columns[index]?.id ?? index,
     getScrollElement: () => scrollRef.current,
     horizontal: true,
-    overscan: horizontalScroll || scrollDirection === null ? 3 : 0,
+    overscan: COLUMN_OVERSCAN,
   })
 
-  useEffect(() => {
-    if (!scrollRef.current) {
+  useLayoutEffect(() => {
+    const scrollElement = scrollRef.current
+    if (!scrollElement) {
       return
     }
 
-    scrollRef.current.style.setProperty(
+    scrollElement.style.setProperty(
       '--table-scroll-left-offset',
       `${virtualColumns[0]?.start ?? 0}px`
     )
-    scrollRef.current.style.setProperty(
+    scrollElement.style.setProperty(
       '--table-scroll-right-offset',
       `${tableWidth - (virtualColumns.at(-1)?.end ?? 0)}px`
     )
-    scrollRef.current.style.setProperty(
-      '--table-scroll-top-offset',
-      `${virtualRows[0]?.start ?? 0}px`
-    )
-    scrollRef.current.style.setProperty(
-      '--table-scroll-bottom-offset',
-      `${tableHeight - (virtualRows.at(-1)?.end ?? 0)}px`
-    )
-  }, [scrollRef, virtualColumns, virtualRows, tableWidth, tableHeight])
+  }, [scrollRef, virtualColumns, tableWidth])
 
-  const measureDebounced = createDebouncedFn(measure, 250)
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     const scrollElement = scrollRef.current
-    if (!scrollElement || !customColumnSizes) {
+    if (!scrollElement) {
       return
     }
 
-    const customColumnsSizesMap = new Map(Object.entries(customColumnSizes))
-    const columnsToRemove = columns.filter(
-      (column) => !customColumnsSizesMap.has(column.id)
-    )
-
-    const rafId = requestAnimationFrame(() => {
-      for (const column of columnsToRemove) {
-        const id = `--table-column-width-${prepareColumnId(column.id)}`
-
-        if (scrollElement.style.getPropertyValue(id)) {
-          scrollElement.style.removeProperty(id)
-        }
+    for (const column of columns) {
+      const size = customColumnSizes?.[column.id]
+      const property = columnWidthProperty(column.id)
+      if (size === undefined) {
+        scrollElement.style.removeProperty(property)
+      } else {
+        scrollElement.style.setProperty(property, `${size}px`)
       }
-      for (const [id, size] of customColumnsSizesMap) {
-        scrollElement.style.setProperty(
-          `--table-column-width-${prepareColumnId(id)}`,
-          `${size}px`
-        )
-      }
-      measureDebounced()
-    })
-
-    return () => cancelAnimationFrame(rafId)
-  }, [scrollRef, customColumnSizes, columns, measureDebounced])
+    }
+    measure()
+  }, [scrollRef, customColumnSizes, columns, measure])
 
   const contextValue = {
     columns,
     rows,
-    scrollDirection,
     scrollRef,
     tableHeight,
     tableWidth,

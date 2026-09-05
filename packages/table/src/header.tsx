@@ -5,16 +5,18 @@ import { memo } from 'react'
 
 import type { ColumnRenderer } from './'
 import { useTableContext } from './table-context'
+import type { ColumnPosition } from './utils'
 import { getBaseColumnStyle, getColumnPosition } from './utils'
 
 const HeaderCellBase = ({
   virtualColumn,
   column,
+  position,
 }: {
   virtualColumn: VirtualItem
   column: ColumnRenderer
+  position: ColumnPosition
 }) => {
-  const columnCount = useTableContext((context) => context.columns.length)
   const style = getBaseColumnStyle({ defaultSize: column.size, id: column.id })
 
   if (!column.header) {
@@ -24,7 +26,7 @@ const HeaderCellBase = ({
   return column.header({
     columnIndex: virtualColumn.index,
     id: column.id,
-    position: getColumnPosition(virtualColumn.index, columnCount),
+    position,
     size: virtualColumn.size,
     style,
   })
@@ -64,7 +66,7 @@ export const TableHeader = ({
       <div className="flex w-fit min-w-full items-center">
         <div
           aria-hidden="true"
-          className="w-(--table-scroll-left-offset) shrink-0 will-change-[height]"
+          className="w-(--table-scroll-left-offset) shrink-0"
           style={spacerStyle}
         />
         {virtualColumns.map((virtualColumn) => {
@@ -77,12 +79,13 @@ export const TableHeader = ({
               key={virtualColumn.key}
               virtualColumn={virtualColumn}
               column={column}
+              position={getColumnPosition(virtualColumn.index, columns.length)}
             />
           )
         })}
         <div
           aria-hidden="true"
-          className="w-(--table-scroll-right-offset) shrink-0 will-change-[height]"
+          className="w-(--table-scroll-right-offset) shrink-0"
           style={spacerStyle}
         />
       </div>

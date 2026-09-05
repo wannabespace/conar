@@ -24,9 +24,8 @@ import {
 } from '@tamery/ui/components/tooltip'
 import { cn } from '@tamery/ui/lib/utils'
 import { animate } from 'motion'
-import { useEffect, useState } from 'react'
-import { createThrottledFn } from 'seitu'
 import { useSubscription } from 'seitu/react'
+import { createScrollState } from 'seitu/web'
 
 import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell'
 
@@ -40,7 +39,6 @@ interface ColumnSpan {
   start: number
 }
 
-const SCROLL_MEASURE_INTERVAL_MS = 200
 const BUTTON_CLEARANCE_PX = 40
 
 const internalColumnIds = new Set<string>(Object.values(INTERNAL_COLUMN_IDS))
@@ -132,25 +130,24 @@ const Header = ({ className }: { className?: string }) => {
   })
   const scrollRef = useTableContext((state) => state.scrollRef)
   const columns = useTableContext((state) => state.columns)
-  const [scrollLeft, setScrollLeft] = useState(0)
-  const [viewportWidth, setViewportWidth] = useState(0)
-
-  useEffect(() => {
-    const el = scrollRef.current
-    if (!el) {
-      return
+  const tableWidth = useTableContext((state) => state.tableWidth)
+  const spans = getColumnSpans(columns, columnSizes)
+  const offscreen = useSubscription(
+    () =>
+      createScrollState({
+        direction: 'horizontal',
+        element: () => scrollRef.current,
+      }),
+    {
+      deps: [scrollRef],
+      selector: ({ left, right }) => ({
+        left: spans.filter((span) => span.end <= left.remaining),
+        right: spans.filter(
+          (span) => tableWidth - span.start <= right.remaining
+        ),
+      }),
     }
-
-    const measure = createThrottledFn(() => {
-      setScrollLeft(el.scrollLeft)
-      setViewportWidth(el.clientWidth)
-    }, SCROLL_MEASURE_INTERVAL_MS)
-
-    measure()
-    el.addEventListener('scroll', measure, { passive: true })
-
-    return () => el.removeEventListener('scroll', measure)
-  }, [scrollRef])
+  )
 
   const scrollToColumn = (column: ColumnSpan, side: Side) => {
     const el = scrollRef.current
@@ -176,25 +173,20 @@ const Header = ({ className }: { className?: string }) => {
     return null
   }
 
-  const spans = getColumnSpans(columns, columnSizes)
-  const scrollRight = scrollLeft + viewportWidth
-  const offscreenLeft = spans.filter((span) => span.end <= scrollLeft)
-  const offscreenRight = spans.filter((span) => span.start >= scrollRight)
-
   return (
     <TableHeader
       className={cn('flex', className)}
       before={
         <OffscreenColumnsMenu
           side="left"
-          columns={offscreenLeft}
+          columns={offscreen.left}
           onSelect={(column) => scrollToColumn(column, 'left')}
         />
       }
       after={
         <OffscreenColumnsMenu
           side="right"
-          columns={offscreenRight}
+          columns={offscreen.right}
           onSelect={(column) => scrollToColumn(column, 'right')}
         />
       }

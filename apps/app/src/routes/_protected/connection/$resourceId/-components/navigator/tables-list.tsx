@@ -42,7 +42,7 @@ import {
   getConnectionResourceStore,
 } from '~/entities/connection/store'
 
-import { tablePageStore } from '../../-tabs/table/-lib/store'
+import { tableSessionStore } from '../../-tabs/table/-lib/session-store'
 import { DropTableDialog } from './drop-table-dialog'
 import {
   SidebarContent,
@@ -164,13 +164,13 @@ const TableRow = ({
     activeTable?.schema === row.schema && activeTable?.table === row.table.name
   const isReadOnly = row.table.type !== 'table'
   const Icon = tableTypeIcon[row.table.type]
-  const store = tablePageStore({
+  const store = tableSessionStore({
     id: connectionResource.id,
     schema: row.schema,
     table: row.table.name,
   })
   const hasDrafts = useSubscription(store, {
-    selector: (state) => state.drafts.length > 0,
+    selector: (state) => Object.keys(state.drafts).length > 0,
   })
 
   const items: AppMenuNode[] = [

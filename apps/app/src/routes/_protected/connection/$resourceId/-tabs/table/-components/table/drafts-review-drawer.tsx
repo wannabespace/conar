@@ -34,13 +34,14 @@ import {
 } from '~/entities/connection/transformers'
 
 import { useTableColumnsContext } from '../../-lib/columns'
-import type { draftType } from '../../-lib/store'
+import type { Draft } from '../../-lib/session-store'
 import {
   draftsActions,
   getRowKeyByPrimaryKeys,
   primaryKeysKey,
-  useTablePageStore,
-} from '../../-lib/store'
+  useTableSessionStore,
+} from '../../-lib/session-store'
+import { useTablePageStore } from '../../-lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -81,11 +82,14 @@ export const DraftsReviewDrawer = ({
   const { columns } = useTableColumnsContext()
   const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
   const store = useTablePageStore()
-  const drafts = useSubscription(store, { selector: (state) => state.drafts })
+  const sessionStore = useTableSessionStore()
+  const drafts = useSubscription(sessionStore, {
+    selector: (state) => Object.values(state.drafts),
+  })
   const { filters, orderBy } = useSubscription(store, {
     selector: (state) => pick(state, ['filters', 'orderBy']),
   })
-  const { remove: removeDraft, removeRow } = draftsActions(store)
+  const { remove: removeDraft, removeRow } = draftsActions(sessionStore)
 
   const { data: rows = [] } = useInfiniteQuery(
     resourceRowsQueryInfiniteOptions({
@@ -102,7 +106,7 @@ export const DraftsReviewDrawer = ({
         [getRowKeyByPrimaryKeys(row, primaryColumns), { row, index }] as const
     )
   )
-  const draftIndex = (rowDrafts: (typeof draftType.infer)[]) => {
+  const draftIndex = (rowDrafts: Draft[]) => {
     const [firstDraft] = rowDrafts
     if (!firstDraft) {
       return Number.MAX_SAFE_INTEGER

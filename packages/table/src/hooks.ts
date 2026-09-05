@@ -5,12 +5,14 @@ export {
   type ShiftSelectionState,
   type ShiftSelectionUpdate,
 } from './shift-selection-state'
-export { useTableContext } from './table-context'
+export { useTableContext, useTableStore } from './table-context'
 export type { TableContextType } from './table-context'
 export {
-  useShiftSelectionClick,
-  type UseShiftSelectionClickOptions,
-} from './use-shift-selection-click'
+  isShiftClick,
+  reduceShiftClick,
+  type ShiftSelectionClickOptions,
+  type ShiftSelectionClickUpdate,
+} from './shift-selection-click'
 export {
   useShiftSelectionKeyDown,
   type UseShiftSelectionKeyDownOptions,

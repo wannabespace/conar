@@ -28,6 +28,7 @@ import {
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { queryClient } from '~/main'
 
+import { useTableSessionStore } from '../../../-lib/session-store'
 import { useTablePageStore } from '../../../-lib/store'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -42,7 +43,8 @@ export const ActionsDelete = ({
   const { connectionResource } = useRouteContext()
   const [isOpened, setIsOpened] = useState(false)
   const store = useTablePageStore()
-  const selected = useSubscription(store, {
+  const sessionStore = useTableSessionStore()
+  const selected = useSubscription(sessionStore, {
     selector: (state) => state.selected,
   })
 
@@ -74,13 +76,7 @@ export const ActionsDelete = ({
           schema,
         }),
       })
-      store.set(
-        (state) =>
-          ({
-            ...state,
-            selected: [],
-          }) satisfies typeof state
-      )
+      sessionStore.set((state) => ({ ...state, selected: [] }))
     },
     onError: (error) => {
       toast.error('Failed to delete rows', {

@@ -1,12 +1,17 @@
 import { MinusSignIcon, Tick02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { TableCellProps, TableHeaderCellProps } from '@tamery/table'
-import { useShiftSelectionClick, useTableContext } from '@tamery/table/hooks'
+import {
+  isShiftClick,
+  reduceShiftClick,
+  useTableContext,
+  useTableStore,
+} from '@tamery/table/hooks'
 import { cn } from '@tamery/ui/lib/utils'
-import type { ComponentProps } from 'react'
+import type { ChangeEvent, ComponentProps } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { useTablePageStore } from '../../-lib/store'
+import { useTableSessionStore } from '../../-lib/session-store'
 
 const IndeterminateCheckbox = ({
   indeterminate,
@@ -56,11 +61,12 @@ export const SelectionHeaderCell = ({
   keys: string[]
   className?: string
 }) => {
-  const rows = useTableContext((state) => state.rows)
-  const store = useTablePageStore()
+  const tableStore = useTableStore()
+  const rowCount = useTableContext((state) => state.rows.length)
+  const store = useTableSessionStore()
   const [checked, indeterminate] = useSubscription(store, {
     selector: (state) => [
-      !!rows && rows.length > 0 && state.selected.length === rows.length,
+      rowCount > 0 && state.selected.length === rowCount,
       state.selected.length > 0,
     ],
   })
@@ -75,27 +81,21 @@ export const SelectionHeaderCell = ({
       style={style}
     >
       <IndeterminateCheckbox
-        disabled={!rows || rows.length === 0}
+        disabled={rowCount === 0}
         checked={checked}
         indeterminate={indeterminate}
         onChange={() => {
-          if (checked) {
-            store.set(
-              (state) =>
-                ({
-                  ...state,
-                  selected: [],
-                }) satisfies typeof state
-            )
-          } else {
-            store.set(
-              (state) =>
-                ({
-                  ...state,
-                  selected: rows?.map((row) => rowKeyFromKeys(keys, row)) ?? [],
-                }) satisfies typeof state
-            )
-          }
+          store.set(
+            (state) =>
+              ({
+                ...state,
+                selected: checked
+                  ? []
+                  : tableStore
+                      .get()
+                      .rows.map((row) => rowKeyFromKeys(keys, row)),
+              }) satisfies typeof state
+          )
         }}
       />
     </div>
@@ -112,44 +112,46 @@ export const SelectionCell = ({
   keys: string[]
   className?: string
 }) => {
-  const store = useTablePageStore()
-  const rows = useTableContext((state) => state.rows)
-  const currentRow = rows[rowIndex]
+  const store = useTableSessionStore()
+  const tableStore = useTableStore()
+  const currentRow = useTableContext((state) => state.rows[rowIndex])
+  const rowKey = rowKeyFromKeys(keys, currentRow)
   const { isSelected, currentSelected, lastClickedIndex } = useSubscription(
     store,
     {
       selector: (state) => ({
+        currentSelected: state.selected,
         isSelected: state.selected.some((row) =>
           keys.every((key) => row[key] === currentRow?.[key])
         ),
-        currentSelected: state.selected,
         lastClickedIndex: state.lastClickedIndex,
       }),
     }
   )
 
-  const rowKey = rowKeyFromKeys(keys, currentRow)
-
-  const { handleMouseDown, handleKeyDown, handleChange } =
-    useShiftSelectionClick({
-      rowKey,
-      rowIndex,
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const update = reduceShiftClick(isShiftClick(event), {
       currentSelected,
-      lastClickedIndex,
       getItemsInRange: (start, end) =>
-        rows.slice(start, end + 1).map((row) => rowKeyFromKeys(keys, row)),
-      onSelectionChange: (selected, selectionState, newLastClickedIndex) => {
-        store.set(
-          (state) =>
-            ({
-              ...state,
-              selected,
-              selectionState,
-              lastClickedIndex: newLastClickedIndex,
-            }) satisfies typeof state
-        )
-      },
+        tableStore
+          .get()
+          .rows.slice(start, end + 1)
+          .map((row) => rowKeyFromKeys(keys, row)),
+      isSelected,
+      lastClickedIndex,
+      rowIndex,
+      rowKey,
     })
+    store.set(
+      (state) =>
+        ({
+          ...state,
+          lastClickedIndex: update.lastClickedIndex,
+          selected: update.selected,
+          selectionState: update.state,
+        }) satisfies typeof state
+    )
+  }
 
   return (
     <div
@@ -160,12 +162,7 @@ export const SelectionCell = ({
       )}
       style={style}
     >
-      <IndeterminateCheckbox
-        checked={isSelected}
-        onMouseDown={handleMouseDown}
-        onKeyDown={handleKeyDown}
-        onChange={handleChange}
-      />
+      <IndeterminateCheckbox checked={isSelected} onChange={handleChange} />
     </div>
   )
 }
