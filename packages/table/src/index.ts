@@ -1,16 +1,19 @@
 import type { CSSProperties, ReactNode } from 'react'
 
+import type { ColumnPosition } from './utils'
+
 export * from './body'
 export * from './header'
 export * from './provider'
 export * from './table'
+export type { ColumnPosition } from './utils'
 
 export interface TableCellProps extends Pick<ColumnRenderer, 'size' | 'id'> {
   style: CSSProperties
   rowIndex: number
   columnIndex: number
   value: unknown
-  position: 'first' | 'last' | 'middle'
+  position: ColumnPosition
 }
 
 export interface TableHeaderCellProps extends Pick<
@@ -19,7 +22,7 @@ export interface TableHeaderCellProps extends Pick<
 > {
   style: CSSProperties
   columnIndex: number
-  position: 'first' | 'last' | 'middle'
+  position: ColumnPosition
 }
 
 export interface ColumnRenderer {

@@ -5,52 +5,33 @@ import { memo } from 'react'
 
 import type { ColumnRenderer } from './'
 import { useTableContext } from './table-context'
-import { getBaseColumnStyle } from './utils'
+import { getBaseColumnStyle, getColumnPosition } from './utils'
 
-const getHeaderPosition = (
-  index: number,
-  columnCount: number
-): 'first' | 'last' | 'middle' => {
-  if (index === 0) {
-    return 'first'
-  }
-  if (index === columnCount - 1) {
-    return 'last'
-  }
-  return 'middle'
-}
-
-// oxlint-disable-next-line prefer-arrow-callback -- memo needs a named function for displayName
-const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
+const HeaderCellBase = ({
   virtualColumn,
   column,
 }: {
   virtualColumn: VirtualItem
   column: ColumnRenderer
-}) {
-  const columns = useTableContext((context) => context.columns)
+}) => {
+  const columnCount = useTableContext((context) => context.columns.length)
+  const style = getBaseColumnStyle({ defaultSize: column.size, id: column.id })
 
   if (!column.header) {
-    return (
-      <div
-        style={getBaseColumnStyle({
-          defaultSize: column.size,
-          id: column.id,
-        })}
-      >
-        {column.id}
-      </div>
-    )
+    return <div style={style}>{column.id}</div>
   }
 
   return column.header({
     columnIndex: virtualColumn.index,
     id: column.id,
-    position: getHeaderPosition(virtualColumn.index, columns.length),
+    position: getColumnPosition(virtualColumn.index, columnCount),
     size: virtualColumn.size,
-    style: getBaseColumnStyle({ defaultSize: column.size, id: column.id }),
+    style,
   })
-})
+}
+HeaderCellBase.displayName = 'HeaderCell'
+
+const HeaderCell = memo(HeaderCellBase)
 
 const spacerStyle: CSSProperties = {
   contain: 'layout style size',
@@ -92,7 +73,7 @@ export const TableHeader = ({
             return null
           }
           return (
-            <VirtualHeaderColumn
+            <HeaderCell
               key={virtualColumn.key}
               virtualColumn={virtualColumn}
               column={column}

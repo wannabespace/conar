@@ -444,7 +444,6 @@ export const TableHeaderCell = ({
           style={style}
           data-position={position}
           data-index={columnIndex}
-          data-column-id={column.id}
         />
       }
     >

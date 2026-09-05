@@ -5,20 +5,7 @@ import { memo } from 'react'
 
 import type { ColumnRenderer } from './'
 import { useTableContext } from './table-context'
-import { getBaseColumnStyle } from './utils'
-
-const getColumnPosition = (
-  index: number,
-  columnsLength: number
-): 'first' | 'last' | 'middle' => {
-  if (index === 0) {
-    return 'first'
-  }
-  if (index === columnsLength - 1) {
-    return 'last'
-  }
-  return 'middle'
-}
+import { getBaseColumnStyle, getColumnPosition } from './utils'
 
 const VirtualColumnBase = ({
   virtualColumn,

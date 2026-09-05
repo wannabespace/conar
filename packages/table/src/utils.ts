@@ -16,3 +16,18 @@ export const getBaseColumnStyle = ({
   width: `var(--table-column-width-${prepareColumnId(id)}, ${defaultSize}px)`,
   willChange: 'width',
 })
+
+export type ColumnPosition = 'first' | 'last' | 'middle'
+
+export const getColumnPosition = (
+  index: number,
+  columnCount: number
+): ColumnPosition => {
+  if (index === 0) {
+    return 'first'
+  }
+  if (index === columnCount - 1) {
+    return 'last'
+  }
+  return 'middle'
+}
