@@ -26,13 +26,14 @@ import { useSaveHotkey } from '~/hooks/use-save-hotkey'
 import { queryClient } from '~/main'
 
 import { useTableColumnsContext } from '../../-lib/columns'
-import type { primaryKeysType } from '../../-lib/store'
+import type { PrimaryKeys } from '../../-lib/session-store'
 import {
   draftsActions,
   getRowKeyByPrimaryKeys,
   primaryKeysKey,
-  useTablePageStore,
-} from '../../-lib/store'
+  useTableSessionStore,
+} from '../../-lib/session-store'
+import { useTablePageStore } from '../../-lib/store'
 import { DraftsReviewDrawer } from '../table/drafts-review-drawer'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
@@ -46,13 +47,16 @@ export const DraftsActions = ({
 }) => {
   const { connectionResource } = useRouteContext()
   const store = useTablePageStore()
+  const sessionStore = useTableSessionStore()
   const { columns } = useTableColumnsContext()
   const primaryColumns = columns.filter((c) => c.primaryKey).map((c) => c.id)
-  const drafts = useSubscription(store, { selector: (state) => state.drafts })
+  const drafts = useSubscription(sessionStore, {
+    selector: (state) => Object.values(state.drafts),
+  })
   const rowsWithDrafts = Map.groupBy(drafts, (d) =>
     primaryKeysKey(d.primaryKeys)
   )
-  const { clear, removeRow, setRowStatus } = draftsActions(store)
+  const { clear, removeRow, setRowStatus } = draftsActions(sessionStore)
   const [isReviewOpen, setIsReviewOpen] = useState(false)
 
   const errorCount = drafts.filter((d) => !!d.error).length
@@ -115,7 +119,7 @@ export const DraftsActions = ({
         })
       }
 
-      let failedPrimaryKeys: typeof primaryKeysType.infer | null = null
+      let failedPrimaryKeys: PrimaryKeys | null = null
 
       const db = await createDb()
 
@@ -128,7 +132,7 @@ export const DraftsActions = ({
             )
           )
           const pendingCommits: {
-            primaryKeys: typeof primaryKeysType.infer
+            primaryKeys: PrimaryKeys
             values: Record<string, unknown>
             modifiedColumns: string[]
             updatedFilters: ActiveFilter[]

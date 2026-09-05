@@ -4,6 +4,7 @@
 | --- | --- |
 | API layer | oRPC (`@orpc/server`) — not REST, not tRPC. |
 | Client state | TanStack DB collections — not Zustand, not React Context for data. Live queries: `useLiveQuery({ query })` — identity is derived from structured IR, so drop the deprecated `(fn, deps)` form. `queryKey` only for `.fn.where`/opaque queries or a measured hot path. |
+| Table page state | Two seitu stores per `{id, schema, table}`: `tablePageStore` (localStorage: filters, order, sizes, hidden columns) and `tableSessionStore` (memory: `selected`, `drafts`, shift-selection). Selection and drafts never persist — they are large and change per click, and every cell subscribes; persisting them made each notify re-read and re-compare the stored JSON. |
 | Persisted collections | `persistedCollectionOptions` takes `schemaVersion: PERSISTED_SCHEMA_VERSION` (`lib/sync.ts`) — never a literal: mixed versions reset each other's tables on every boot. Bump the const to invalidate all local data. |
 | Cloud DB ORM | Drizzle (`packages/db`) — not raw SQL, not Prisma. |
 | Auth | Better Auth — not custom JWT, not NextAuth. Client plugins come from `better-auth/client/plugins` or a plugin's own subpath — `better-auth/plugins` is the **server** barrel and drags the schema builders into the browser. |

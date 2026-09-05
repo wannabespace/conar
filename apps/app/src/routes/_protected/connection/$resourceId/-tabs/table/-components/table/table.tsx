@@ -32,12 +32,12 @@ import {
   useSyncSelectionWithRows,
 } from '../../-lib/hooks'
 import {
-  columnsOrder,
   draftKey,
   draftsActions,
   getRowPrimaryKeysValues,
-  useTablePageStore,
-} from '../../-lib/store'
+  useTableSessionStore,
+} from '../../-lib/session-store'
+import { columnsOrder, useTablePageStore } from '../../-lib/store'
 import { RenameColumnDialog } from './rename-column-dialog'
 import { TableEmpty } from './table-empty'
 import { TableHeader } from './table-header'
@@ -151,7 +151,6 @@ const BodyCellRenderer = ({
   column,
   connectionType,
   primaryColumns,
-  onQueueValue,
   onAddFilter,
   onOrder,
   onRename,
@@ -162,21 +161,32 @@ const BodyCellRenderer = ({
     connectionType: ConnectionType
     primaryColumns: string[]
   }) => {
-  const store = useTablePageStore()
+  const sessionStore = useTableSessionStore()
   const row = useTableContext((ctx) => ctx.rows[props.rowIndex])
-  const rowDraftKey =
+  const primaryKeys =
     row && primaryColumns.length > 0
-      ? draftKey(getRowPrimaryKeysValues(row, primaryColumns), column.id)
+      ? getRowPrimaryKeysValues(row, primaryColumns)
       : null
+  const rowDraftKey = primaryKeys ? draftKey(primaryKeys, column.id) : null
 
-  const draft = useSubscription(store, {
-    selector: (state) =>
-      rowDraftKey
-        ? state.drafts.find(
-            (d) => draftKey(d.primaryKeys, d.columnId) === rowDraftKey
-          )
-        : undefined,
+  const queueValue = (_rowIndex: number, newValue: unknown) => {
+    if (!primaryKeys) {
+      throw new Error('Row not found. Please refresh the page.')
+    }
+
+    draftsActions(sessionStore).upsert({
+      columnId: column.id,
+      error: undefined,
+      isCommitting: false,
+      primaryKeys,
+      value: newValue,
+    })
+  }
+
+  const draft = useSubscription(sessionStore, {
+    selector: (state) => (rowDraftKey ? state.drafts[rowDraftKey] : undefined),
   })
+  const store = useTablePageStore()
   const order = useSubscription(store, {
     selector: (state) => state.orderBy[column.id] ?? null,
   })
@@ -184,7 +194,7 @@ const BodyCellRenderer = ({
   return (
     <TableCell
       column={column}
-      onQueueValue={primaryColumns.length > 0 ? onQueueValue : undefined}
+      onQueueValue={primaryKeys ? queueValue : undefined}
       connectionType={connectionType}
       draft={draft}
       onAddFilter={onAddFilter}
@@ -206,6 +216,7 @@ const TableComponent = ({
   const { connection, connectionResource } = useRouteContext()
   const { columns, isPending: isColumnsPending } = useTableColumnsContext()
   const store = useTablePageStore()
+  const sessionStore = useTableSessionStore()
   const hiddenColumns = useSubscription(store, {
     selector: (state) => state.hiddenColumns,
   })
@@ -238,26 +249,6 @@ const TableComponent = ({
   useClearDraftsOnQueryChange()
 
   const getHandlers = (column: Column): ColumnHandlers => ({
-    onQueueValue: (rowIndex, newValue) => {
-      if (primaryColumns.length === 0) {
-        throw new Error(
-          'No primary keys found. Please use a query to update this row.'
-        )
-      }
-
-      const row = rows[rowIndex]
-      if (!row) {
-        throw new Error('Row not found. Please refresh the page.')
-      }
-
-      draftsActions(store).upsert({
-        primaryKeys: getRowPrimaryKeysValues(row, primaryColumns),
-        columnId: column.id,
-        value: newValue,
-        error: undefined,
-        isCommitting: false,
-      })
-    },
     onAddFilter: (filter) => {
       store.set(
         (state) =>
@@ -354,9 +345,9 @@ const TableComponent = ({
       rows
         .slice(start, end + 1)
         .map((row) => getRowPrimaryKeysValues(row, primaryColumns)),
-    getSelectionState: () => store.get().selectionState,
+    getSelectionState: () => sessionStore.get().selectionState,
     onSelectionChange: (selected, selectionState) => {
-      store.set(
+      sessionStore.set(
         (state) =>
           ({ ...state, selected, selectionState }) satisfies typeof state
       )

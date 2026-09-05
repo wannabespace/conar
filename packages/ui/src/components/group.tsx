@@ -26,7 +26,7 @@ export const Group = ({
   </div>
 )
 
-export const GroupText = ({
+const GroupText = ({
   className,
   render,
   ...props
@@ -45,7 +45,7 @@ export const GroupText = ({
   })
 }
 
-export const GroupSeparator = ({
+const GroupSeparator = ({
   className,
   orientation = 'vertical',
   ...props

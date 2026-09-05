@@ -1,10 +1,17 @@
 import { useEffect, useRef } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { draftsActions, useTablePageStore } from './store'
+import {
+  draftsActions,
+  getRowKeyByPrimaryKeys,
+  primaryKeysKey,
+  useTableSessionStore,
+} from './session-store'
+import { useTablePageStore } from './store'
 
 export const useClearDraftsOnQueryChange = () => {
   const store = useTablePageStore()
+  const sessionStore = useTableSessionStore()
   const filters = useSubscription(store, {
     selector: (state) => state.filters,
   })
@@ -22,26 +29,27 @@ export const useClearDraftsOnQueryChange = () => {
     }
 
     if (previous.filters !== filters || previous.orderBy !== orderBy) {
-      draftsActions(store).clear()
+      draftsActions(sessionStore).clear()
     }
-  }, [store, filters, orderBy])
+  }, [store, sessionStore, filters, orderBy])
 }
 
 export const useSyncSelectionWithRows = (
   rows: Record<string, unknown>[],
   primaryColumns: string[]
 ) => {
-  const store = useTablePageStore()
+  const store = useTableSessionStore()
 
   useEffect(() => {
+    const rowKeys = new Set(
+      rows.map((row) => getRowKeyByPrimaryKeys(row, primaryColumns))
+    )
     store.set(
       (state) =>
         ({
           ...state,
           selected: state.selected.filter((selectedRow) =>
-            rows.some((row) =>
-              primaryColumns.every((key) => row[key] === selectedRow[key])
-            )
+            rowKeys.has(primaryKeysKey(selectedRow))
           ),
         }) satisfies typeof state
     )

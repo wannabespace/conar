@@ -37,6 +37,7 @@ import {
 import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 
+import { useTableSessionStore } from '../../-lib/session-store'
 import { useTablePageStore } from '../../-lib/store'
 import { ActionsColumns } from './actions/actions-columns'
 import { ActionsCopy } from './actions/actions-copy'
@@ -180,6 +181,7 @@ export const TableToolbar = ({
 }) => {
   const { connectionResource } = useRouteContext()
   const store = useTablePageStore()
+  const sessionStore = useTableSessionStore()
   const [seedOpen, setSeedOpen] = useState(false)
   const [codeOpen, setCodeOpen] = useState(false)
   const connectionStore = getConnectionResourceStore(connectionResource.id)
@@ -193,12 +195,14 @@ export const TableToolbar = ({
     tablesAndSchemas?.schemas
       .find((s) => s.name === schema)
       ?.tables?.find((t) => t.name === table)?.type ?? 'table'
-  const { filters, orderBy, selected } = useSubscription(store, {
+  const { filters, orderBy } = useSubscription(store, {
     selector: (state) => ({
       orderBy: state.orderBy,
-      selected: state.selected,
       filters: enabledFilters(state.filters),
     }),
+  })
+  const selected = useSubscription(sessionStore, {
+    selector: (state) => state.selected,
   })
   const [exact, setExact] = useState(false)
 

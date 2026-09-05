@@ -6,14 +6,14 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { SOCIAL_LINKS } from '@tamery/shared/constants'
-import { AppLogo } from '@tamery/ui/components/brand/app-logo'
+import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.motion'
 import { Button } from '@tamery/ui/components/button'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import { ThemeToggle } from '@tamery/ui/components/custom/theme-toggle'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { motion, useScroll, useTransform } from 'motion/react'
+import { useScroll, useTransform } from 'motion/react'
 import type { ComponentProps } from 'react'
 
 import { NAVBAR_HEIGHT_BASE } from '~/constants'
@@ -21,8 +21,6 @@ import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
 
 import { NavbarTextLogo } from './navbar-text-logo'
-
-const AppLogoMotion = motion.create(AppLogo)
 
 export const Navbar = ({ className, ...props }: ComponentProps<'header'>) => {
   const { scrollY } = useScroll()

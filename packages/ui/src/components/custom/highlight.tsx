@@ -1,11 +1,10 @@
-import { escapeSpecialCharacters } from '@tamery/shared/utils/helpers'
 import type { ReactNode } from 'react'
 
 const buildHighlightedParts = (
   text: string,
   matchText: string
 ): ReactNode[] => {
-  const regex = new RegExp(escapeSpecialCharacters(matchText), 'giu')
+  const regex = new RegExp(RegExp.escape(matchText), 'giu')
   const parts: ReactNode[] = []
   let lastIndex = 0
   let key = 0
@@ -47,7 +46,7 @@ export const HighlightText = ({
     return render ? render({ html: text, matched: false }) : text
   }
 
-  const regex = new RegExp(escapeSpecialCharacters(matchText), 'giu')
+  const regex = new RegExp(RegExp.escape(matchText), 'giu')
   const matched = regex.test(text)
   const html = text.replace(
     regex,

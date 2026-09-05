@@ -5,52 +5,35 @@ import { memo } from 'react'
 
 import type { ColumnRenderer } from './'
 import { useTableContext } from './table-context'
-import { getBaseColumnStyle } from './utils'
+import type { ColumnPosition } from './utils'
+import { getBaseColumnStyle, getColumnPosition } from './utils'
 
-const getHeaderPosition = (
-  index: number,
-  columnCount: number
-): 'first' | 'last' | 'middle' => {
-  if (index === 0) {
-    return 'first'
-  }
-  if (index === columnCount - 1) {
-    return 'last'
-  }
-  return 'middle'
-}
-
-// oxlint-disable-next-line prefer-arrow-callback -- memo needs a named function for displayName
-const VirtualHeaderColumn = memo(function VirtualHeaderColumn({
+const HeaderCellBase = ({
   virtualColumn,
   column,
+  position,
 }: {
   virtualColumn: VirtualItem
   column: ColumnRenderer
-}) {
-  const columns = useTableContext((context) => context.columns)
+  position: ColumnPosition
+}) => {
+  const style = getBaseColumnStyle({ defaultSize: column.size, id: column.id })
 
   if (!column.header) {
-    return (
-      <div
-        style={getBaseColumnStyle({
-          defaultSize: column.size,
-          id: column.id,
-        })}
-      >
-        {column.id}
-      </div>
-    )
+    return <div style={style}>{column.id}</div>
   }
 
   return column.header({
     columnIndex: virtualColumn.index,
     id: column.id,
-    position: getHeaderPosition(virtualColumn.index, columns.length),
+    position,
     size: virtualColumn.size,
-    style: getBaseColumnStyle({ defaultSize: column.size, id: column.id }),
+    style,
   })
-})
+}
+HeaderCellBase.displayName = 'HeaderCell'
+
+const HeaderCell = memo(HeaderCellBase)
 
 const spacerStyle: CSSProperties = {
   contain: 'layout style size',
@@ -83,7 +66,7 @@ export const TableHeader = ({
       <div className="flex w-fit min-w-full items-center">
         <div
           aria-hidden="true"
-          className="w-(--table-scroll-left-offset) shrink-0 will-change-[height]"
+          className="w-(--table-scroll-left-offset) shrink-0"
           style={spacerStyle}
         />
         {virtualColumns.map((virtualColumn) => {
@@ -92,16 +75,17 @@ export const TableHeader = ({
             return null
           }
           return (
-            <VirtualHeaderColumn
+            <HeaderCell
               key={virtualColumn.key}
               virtualColumn={virtualColumn}
               column={column}
+              position={getColumnPosition(virtualColumn.index, columns.length)}
             />
           )
         })}
         <div
           aria-hidden="true"
-          className="w-(--table-scroll-right-offset) shrink-0 will-change-[height]"
+          className="w-(--table-scroll-right-offset) shrink-0"
           style={spacerStyle}
         />
       </div>

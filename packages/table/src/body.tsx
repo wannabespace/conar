@@ -5,54 +5,35 @@ import { memo } from 'react'
 
 import type { ColumnRenderer } from './'
 import { useTableContext } from './table-context'
-import { getBaseColumnStyle } from './utils'
-
-const getColumnPosition = (
-  index: number,
-  columnsLength: number
-): 'first' | 'last' | 'middle' => {
-  if (index === 0) {
-    return 'first'
-  }
-  if (index === columnsLength - 1) {
-    return 'last'
-  }
-  return 'middle'
-}
+import type { ColumnPosition } from './utils'
+import { formatCellValue, getBaseColumnStyle, getColumnPosition } from './utils'
 
 const VirtualColumnBase = ({
   virtualColumn,
   column,
+  position,
   value,
   rowIndex,
 }: {
   virtualColumn: VirtualItem
   column: ColumnRenderer
+  position: ColumnPosition
   value: unknown
   rowIndex: number
 }) => {
-  const columnsLength = useTableContext((context) => context.columns.length)
+  const style = getBaseColumnStyle({ defaultSize: column.size, id: column.id })
 
   if (!column.cell) {
-    return (
-      <div
-        style={getBaseColumnStyle({
-          defaultSize: column.size,
-          id: column.id,
-        })}
-      >
-        {String(value)}
-      </div>
-    )
+    return <div style={style}>{formatCellValue(value)}</div>
   }
 
   return column.cell({
     columnIndex: virtualColumn.index,
     id: column.id,
-    position: getColumnPosition(virtualColumn.index, columnsLength),
+    position,
     rowIndex,
     size: virtualColumn.size,
-    style: getBaseColumnStyle({ defaultSize: column.size, id: column.id }),
+    style,
     value,
   })
 }
@@ -75,23 +56,23 @@ const RowBase = ({
 }) => {
   const columns = useTableContext((context) => context.columns)
   const virtualColumns = useTableContext((context) => context.virtualColumns)
-  const rows = useTableContext((context) => context.rows)
-  const row = rows[rowIndex]
-  const lastIndex = rows.length - 1
+  const row = useTableContext((context) => context.rows[rowIndex])
+  const isLast = useTableContext(
+    (context) => rowIndex === context.rows.length - 1
+  )
 
   return (
     <div
       className={cn(
         `hover:bg-foreground/6 flex w-fit min-w-full border-b`,
-        rowIndex === lastIndex && `border-b-0`,
-        zebra && 'border-b-0',
+        (isLast || zebra) && `border-b-0`,
         zebra && rowIndex % 2 === 1 && 'bg-foreground/3'
       )}
       style={{ contain: 'layout style', height: `${size}px` }}
     >
       <div
         aria-hidden="true"
-        className="w-(--table-scroll-left-offset) shrink-0 will-change-[height]"
+        className="w-(--table-scroll-left-offset) shrink-0"
         style={spacerStyle}
       />
       {virtualColumns.map((virtualColumn) => {
@@ -99,21 +80,21 @@ const RowBase = ({
         if (!column) {
           return null
         }
-        const value = row?.[column.id]
 
         return (
           <VirtualColumn
             key={virtualColumn.key}
             virtualColumn={virtualColumn}
             column={column}
-            value={value}
+            position={getColumnPosition(virtualColumn.index, columns.length)}
+            value={row?.[column.id]}
             rowIndex={rowIndex}
           />
         )
       })}
       <div
         aria-hidden="true"
-        className="w-(--table-scroll-right-offset) shrink-0 will-change-[height]"
+        className="w-(--table-scroll-right-offset) shrink-0"
         style={spacerStyle}
       />
     </div>
@@ -131,6 +112,9 @@ export const TableBody = ({
 }: ComponentProps<'div'> & { zebra?: boolean }) => {
   const virtualRows = useTableContext((context) => context.virtualRows)
   const tableWidth = useTableContext((context) => context.tableWidth)
+  const tableHeight = useTableContext((context) => context.tableHeight)
+  const topOffset = virtualRows[0]?.start ?? 0
+  const bottomOffset = tableHeight - (virtualRows.at(-1)?.end ?? 0)
 
   return (
     <div
@@ -140,8 +124,8 @@ export const TableBody = ({
     >
       <div
         aria-hidden="true"
-        className="h-(--table-scroll-top-offset) shrink-0 will-change-[height]"
-        style={spacerStyle}
+        className="shrink-0"
+        style={{ ...spacerStyle, height: `${topOffset}px` }}
       />
       {virtualRows.map((virtualRow) => (
         <Row
@@ -153,8 +137,8 @@ export const TableBody = ({
       ))}
       <div
         aria-hidden="true"
-        className="h-(--table-scroll-bottom-offset) shrink-0 will-change-[height]"
-        style={spacerStyle}
+        className="shrink-0"
+        style={{ ...spacerStyle, height: `${bottomOffset}px` }}
       />
     </div>
   )

@@ -24,7 +24,7 @@ const isForeignKeyConstraint = (
   !!constraint.table &&
   !!constraint.column
 
-export const getEdges = ({
+const getEdges = ({
   constraints,
 }: {
   constraints: (typeof constraintsType.infer)[]
@@ -80,7 +80,7 @@ export const applySearchHighlight = <TNode extends NodeType>({
   }))
 }
 
-export const getNodes = ({
+const getNodes = ({
   resourceId,
   schema,
   tables,
@@ -166,7 +166,7 @@ const getNodeSize = (columns: NodeType['data']['columns']) => ({
   width: nodeWidth,
 })
 
-export const getLayoutElements = (
+const getLayoutElements = (
   nodes: NodeType[],
   edges: Edge[],
   direction = 'LR'

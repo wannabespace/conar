@@ -12,7 +12,7 @@ const PG_NEEDS_QUOTING_RE = /[{},"\\\s]/u
 const BACKSLASH_RE = /\\/gu
 const DOUBLE_QUOTE_RE = /"/gu
 
-export const parsePgArrayLiteral = (value: string): string[] | undefined => {
+const parsePgArrayLiteral = (value: string): string[] | undefined => {
   if (!PG_ARRAY_LITERAL_RE.test(value)) {
     return undefined
   }
