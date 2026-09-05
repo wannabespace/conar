@@ -19,7 +19,7 @@ export const functionsType = type({
   type: fnType as 'function' | 'procedure',
 }))
 
-export const resourceFunctionsQuery = createQuery({
+const resourceFunctionsQuery = createQuery({
   query: {
     clickhouse: () => {
       throw new Error('Clickhouse is not supported')

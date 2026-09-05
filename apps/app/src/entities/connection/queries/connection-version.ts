@@ -21,7 +21,7 @@ const firstVersionRow = async (
   return row
 }
 
-export const connectionVersionQuery = createQuery({
+const connectionVersionQuery = createQuery({
   query: {
     clickhouse: async (db) => {
       try {

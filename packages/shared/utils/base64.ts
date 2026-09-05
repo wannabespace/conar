@@ -1,16 +1,3 @@
-const getBase64 = async (file: File): Promise<string> => {
-  const buffer = await file.arrayBuffer()
-  const bytes = new Uint8Array(buffer)
-  let binary = ''
-  for (const byte of bytes) {
-    binary += String.fromCodePoint(byte)
-  }
-  return `data:${file.type};base64,${btoa(binary)}`
-}
-
-export const getBase64FromFiles = (files: File[]): Promise<string[]> =>
-  Promise.all(files.map(getBase64))
-
 export const toBase64 = (str: string) => {
   const bytes = new TextEncoder().encode(str)
   const binString = String.fromCodePoint(...bytes)

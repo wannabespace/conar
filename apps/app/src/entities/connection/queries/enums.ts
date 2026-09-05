@@ -98,7 +98,7 @@ const parseMysqlEnumOrSet = (typeString: string): string[] => {
         )
 }
 
-export const resourceEnumsQuery = createQuery({
+const resourceEnumsQuery = createQuery({
   query: {
     clickhouse: async (db) => {
       const query = await db

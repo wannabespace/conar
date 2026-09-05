@@ -97,7 +97,7 @@ const prismaScalarMapper = (t: string) => {
   return 'String'
 }
 
-export const TYPE_MAPPINGS: Record<
+const TYPE_MAPPINGS: Record<
   GeneratorFormat,
   Record<ConnectionType, (type: string) => string>
 > = {
