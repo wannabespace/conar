@@ -46,7 +46,7 @@ export interface DialectSeedConfig {
   transformValue?: (value: unknown, column: Column) => unknown
 }
 
-export const GENERATORS = {
+const GENERATORS = {
   ...BASE_GENERATORS,
   ...PG_GENERATORS,
   ...MYSQL_GENERATORS,

@@ -20,7 +20,7 @@ export const triggersType = type({
   functionName: function_name || null,
 }))
 
-export const resourceTriggersQuery = createQuery({
+const resourceTriggersQuery = createQuery({
   query: {
     clickhouse: () => {
       throw new Error('Clickhouse is not supported')

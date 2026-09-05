@@ -8,7 +8,7 @@ import { getCollections } from '~/entities/collections'
 import type { Connection } from '../core/sync'
 import { connectionToQueryParams, createQuery } from '../runtime/query'
 
-export const connectionResourcesQuery = createQuery({
+const connectionResourcesQuery = createQuery({
   query: {
     clickhouse: async (db) => {
       const rows = await db

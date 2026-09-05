@@ -9,33 +9,6 @@ export const sleep = (ms: number, signal?: AbortSignal) =>
     })
   })
 
-export const abortControllerFrom = (signal?: AbortSignal) => {
-  const controller = new AbortController()
-
-  signal?.addEventListener('abort', () => controller.abort(), { once: true })
-
-  return controller
-}
-
-export const debounce = <F extends (...args: Parameters<F>) => ReturnType<F>>(
-  func: F,
-  waitFor: number
-) => {
-  let timeout: ReturnType<typeof setTimeout>
-
-  const debounced = (...args: Parameters<F>) => {
-    clearTimeout(timeout)
-    timeout = setTimeout(() => func(...args), waitFor)
-  }
-
-  return debounced
-}
-
-const whitespaceRegex = /[.*+?^${}()|[\]\\]/gu
-
-export const escapeSpecialCharacters = (string: string) =>
-  string.replace(whitespaceRegex, '\\$&')
-
 export const pick = <T extends object, K extends keyof T>(
   obj: T,
   keys: K[]
@@ -135,14 +108,6 @@ export const previewJson = (value: unknown) => {
   return json.length > JSON_PREVIEW_LIMIT
     ? `${json.slice(0, JSON_PREVIEW_LIMIT)}\n…`
     : json
-}
-
-export const tryParseToJsonArray = (editedValue: string): string[] => {
-  const parsed = tryParseJson<unknown[]>(editedValue)
-  if (Array.isArray(parsed)) {
-    return parsed.map(String)
-  }
-  return [editedValue]
 }
 
 export const handleAggregateError = <T extends AnyFunction>(fn: T): T =>

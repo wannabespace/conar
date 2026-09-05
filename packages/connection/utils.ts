@@ -14,11 +14,3 @@ export const isLocalhostConnectionString = (
     LOCALHOST_IPV4.test(hostname)
   )
 }
-
-export const removePasswordFromConnectionString = (
-  connectionString: string
-): string => {
-  const url = new SafeURL(connectionString)
-  url.password = ''
-  return url.toString()
-}

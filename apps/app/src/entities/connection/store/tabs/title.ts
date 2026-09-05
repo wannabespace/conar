@@ -2,7 +2,7 @@ import { uppercaseFirst } from '@tamery/shared/utils/helpers'
 
 import type { ConnectionTab } from './types'
 
-export const tabTitle = (tab: ConnectionTab) => {
+const tabTitle = (tab: ConnectionTab) => {
   switch (tab.type) {
     case 'table': {
       return tab.table

@@ -32,7 +32,7 @@ const getClient = memoize((connectionString: string) => {
   })
 })
 
-export const wrapClickhouseError = <T extends AnyFunction>(fn: T): T =>
+const wrapClickhouseError = <T extends AnyFunction>(fn: T): T =>
   (async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
     try {
       return await handleQueryError(fn)(...args)

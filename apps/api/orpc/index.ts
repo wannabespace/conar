@@ -51,34 +51,32 @@ const sessionOrpc = orpc.errors({
   },
 })
 
-export const logMiddleware = orpc.middleware(
-  async ({ context, next }, input) => {
-    // oxlint-disable-next-line node/callback-return -- middleware post-processes next()
-    const result = await next()
+const logMiddleware = orpc.middleware(async ({ context, next }, input) => {
+  // oxlint-disable-next-line node/callback-return -- middleware post-processes next()
+  const result = await next()
 
-    if (
-      !context.request.url.endsWith('/sync') &&
-      !context.request.url.endsWith('/resolveConnectionString')
-    ) {
-      context.addLogData({
-        input,
-        output:
-          (Array.isArray(result.output) && result.output.length > 0) ||
-          (typeof result.output === 'object' &&
-            result.output !== null &&
-            Object.keys(result.output).length > 0) ||
-          (!Array.isArray(result.output) &&
-            typeof result.output !== 'object' &&
-            result.output !== null &&
-            !!result.output)
-            ? result.output
-            : undefined,
-      })
-    }
-
-    return result
+  if (
+    !context.request.url.endsWith('/sync') &&
+    !context.request.url.endsWith('/resolveConnectionString')
+  ) {
+    context.addLogData({
+      input,
+      output:
+        (Array.isArray(result.output) && result.output.length > 0) ||
+        (typeof result.output === 'object' &&
+          result.output !== null &&
+          Object.keys(result.output).length > 0) ||
+        (!Array.isArray(result.output) &&
+          typeof result.output !== 'object' &&
+          result.output !== null &&
+          !!result.output)
+          ? result.output
+          : undefined,
+    })
   }
-)
+
+  return result
+})
 
 // oRPC Middleware.concat chains middlewares (not Array#concat)
 // oxlint-disable-next-line unicorn/prefer-spread
