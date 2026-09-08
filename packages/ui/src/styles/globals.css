@@ -93,7 +93,7 @@
   --info-foreground: oklch(0.985 0 0);
   --border: oklch(0 0 0 / 5%);
   --input: oklch(1 0 0);
-  --ring: oklch(0.7 0 0);
+  --ring: var(--primary);
   --radius: 0.4rem;
 }
 
@@ -120,15 +120,14 @@
   --info-foreground: oklch(0.21 0.006 285.885);
   --border: oklch(1 0 0 / 5%);
   --input: oklch(0.2733 0.0075 259.64);
-  --ring: oklch(0.552 0 282.73);
 }
 
 .electron.mac:not(.window-fullscreen):not(:has([data-slot$='-overlay'])) {
-  --surface-alpha: 0.6;
+  --surface-alpha: 0.4;
 }
 
 .electron.mac.dark:not(.window-fullscreen):not(:has([data-slot$='-overlay'])) {
-  --surface-alpha: 0.7;
+  --surface-alpha: 0.5;
 }
 
 .electron.window-blurred {
@@ -170,17 +169,17 @@
 
 .shell-navigator [data-shell-navigator] {
   display: revert-layer;
-  width: 256px;
+  width: var(--shell-navigator-width, 256px);
 }
 
 .shell-chat [data-shell-chat] {
   display: revert-layer;
-  width: 380px;
+  width: var(--shell-chat-width, 380px);
 }
 
 .shell-logger [data-shell-logger] {
   display: revert-layer;
-  height: 240px;
+  height: var(--shell-logger-height, 240px);
 }
 
 .electron.mac:not(.window-fullscreen) [data-shell-titlebar] {
@@ -330,6 +329,10 @@
   to {
     opacity: 0;
   }
+}
+
+@utility focus-ring {
+  @apply ring-ring/50 ring-3;
 }
 
 @utility hit-area-* {

@@ -6,9 +6,11 @@ import { createWebStorageValue } from 'seitu/web'
 
 import { runnerStoreKey } from '~/entities/connection/store'
 import { getEditorQueries } from '~/entities/connection/utils'
+import { RUNNER_RESULTS_DEFAULT_HEIGHT } from '~/lib/constants'
 
 export const runnerPageType = type({
   layout: {
+    resultsHeight: ['number', '=', RUNNER_RESULTS_DEFAULT_HEIGHT],
     resultsVisible: 'boolean',
   },
   queriesToRun: type({
@@ -39,6 +41,7 @@ const DEFAULT_QUERY = [
 
 const defaultState: typeof runnerPageType.infer = {
   layout: {
+    resultsHeight: RUNNER_RESULTS_DEFAULT_HEIGHT,
     resultsVisible: true,
   },
   queriesToRun: [],
@@ -112,15 +115,15 @@ export const useRunnerPageStore = () => runnerPageStore(useRunnerTab())
 export const useEditorQueriesComputed = () =>
   getEditorQueriesComputed(useRunnerTab())
 
-export const toggleResults = (store: RunnerPageStore) => {
+export const setLayout = (
+  store: RunnerPageStore,
+  patch: Partial<(typeof runnerPageType.infer)['layout']>
+) => {
   store.set(
     (state) =>
       ({
         ...state,
-        layout: {
-          ...state.layout,
-          resultsVisible: !state.layout.resultsVisible,
-        } satisfies typeof state.layout,
+        layout: { ...state.layout, ...patch } satisfies typeof state.layout,
       }) satisfies typeof state
   )
 }

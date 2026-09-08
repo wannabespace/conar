@@ -54,7 +54,7 @@ export const SidebarMenuButton = ({
     props: mergeProps<'button'>(
       {
         className: cn(
-          `peer/menu-button hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring active:bg-accent active:text-accent-foreground data-active:bg-accent data-active:text-accent-foreground flex h-8 w-full items-center gap-2 overflow-hidden rounded-xl px-3 py-2 text-left text-sm whitespace-nowrap outline-hidden focus-visible:ring-3 disabled:pointer-events-none disabled:opacity-50 data-active:font-medium [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate`,
+          `peer/menu-button hover:bg-accent hover:text-accent-foreground focus-visible:focus-ring active:bg-accent active:text-accent-foreground data-active:bg-accent data-active:text-accent-foreground flex h-8 w-full items-center gap-2 overflow-hidden rounded-xl px-3 py-2 text-left text-sm whitespace-nowrap outline-hidden disabled:pointer-events-none disabled:opacity-50 data-active:font-medium [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate`,
           className
         ),
       },
@@ -82,7 +82,7 @@ export const SidebarMenuAction = ({
     props: mergeProps<'button'>(
       {
         className: cn(
-          `text-foreground peer-hover/menu-button:text-accent-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-xl p-0 outline-hidden focus-visible:ring-3 [&>svg]:size-4 [&>svg]:shrink-0`,
+          `text-foreground peer-hover/menu-button:text-accent-foreground hover:bg-accent hover:text-accent-foreground focus-visible:focus-ring absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-xl p-0 outline-hidden [&>svg]:size-4 [&>svg]:shrink-0`,
           showOnHover &&
             `peer-data-active/menu-button:text-accent-foreground opacity-0 group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 aria-expanded:opacity-100`,
           className
@@ -139,7 +139,7 @@ export const SidebarGroupLabel = ({
     props: mergeProps<'div'>(
       {
         className: cn(
-          `text-foreground/70 focus-visible:ring-ring flex h-8 shrink-0 items-center rounded-md px-3 text-xs font-medium outline-hidden focus-visible:ring-3 [&>svg]:size-4 [&>svg]:shrink-0`,
+          `text-foreground/70 focus-visible:focus-ring flex h-8 shrink-0 items-center rounded-md px-3 text-xs font-medium outline-hidden [&>svg]:size-4 [&>svg]:shrink-0`,
           className
         ),
       },

@@ -1,9 +1,15 @@
 import { THEME_STORAGE_KEY } from '@tamery/ui/theme-constants'
 
 import {
+  CHAT_DEFAULT_WIDTH,
+  CHAT_WIDTH_KEY,
   connectionResourceStoreKey,
   LAST_LOCATION_KEY,
+  LOGGER_DEFAULT_HEIGHT,
+  LOGGER_HEIGHT_KEY,
   NAVIGATOR_OPEN_KEY,
+  NAVIGATOR_WIDTH_KEY,
+  SIDEBAR_DEFAULT_WIDTH,
 } from './lib/constants'
 
 const read = <T>(key: string): T | undefined => {
@@ -39,8 +45,20 @@ const classes = {
   'shell-navigator': read<boolean>(NAVIGATOR_OPEN_KEY) !== false,
 }
 
+const sizes = {
+  '--shell-chat-width': read<number>(CHAT_WIDTH_KEY) ?? CHAT_DEFAULT_WIDTH,
+  '--shell-logger-height':
+    read<number>(LOGGER_HEIGHT_KEY) ?? LOGGER_DEFAULT_HEIGHT,
+  '--shell-navigator-width':
+    read<number>(NAVIGATOR_WIDTH_KEY) ?? SIDEBAR_DEFAULT_WIDTH,
+}
+
 document.documentElement.classList.add(
   ...Object.entries(classes)
     .filter(([, enabled]) => enabled)
     .map(([name]) => name)
 )
+
+for (const [name, value] of Object.entries(sizes)) {
+  document.documentElement.style.setProperty(name, `${value}px`)
+}

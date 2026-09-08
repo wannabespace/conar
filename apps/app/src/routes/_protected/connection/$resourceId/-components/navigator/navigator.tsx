@@ -29,7 +29,6 @@ import {
 } from '~/entities/connection/store'
 import { pressNavProps } from '~/lib/press-nav'
 
-import { navigatorOpenValue, SIDEBAR_DEFAULT_WIDTH } from './constants'
 import { DefinitionsPanel } from './definitions-section'
 import { NavigatorSwitcher } from './navigator-switcher'
 import { sidebarActionRowClassName } from './primitives'
@@ -157,37 +156,28 @@ const NavigatorFooter = () => {
 
 export const Navigator = () => {
   const { connectionResource } = useRouteContext()
-  const isOpen = useSubscription(navigatorOpenValue)
   const navigator = useSubscription(getNavigatorStore(connectionResource.id))
 
   return (
-    <div
-      className="h-full shrink-0 overflow-hidden"
-      style={{ width: isOpen ? SIDEBAR_DEFAULT_WIDTH : 0 }}
-    >
-      <div
-        className="text-foreground flex h-full flex-col pr-1.5"
-        style={{ width: SIDEBAR_DEFAULT_WIDTH }}
-      >
-        <div className="shrink-0 pt-0.5 pb-1.5 pl-2">
-          <NavigatorSwitcher />
-        </div>
-        <div className="relative flex min-h-0 flex-1 flex-col">
-          <AnimatePresence initial={false} mode="popLayout">
-            <motion.div
-              key={navigator}
-              initial={{ opacity: 0, x: navigator === 'tables' ? -12 : 12 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: navigator === 'tables' ? 12 : -12 }}
-              transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
-              className="flex min-h-0 flex-1 flex-col"
-            >
-              {navigator === 'tables' ? <TablesPanel /> : <DefinitionsPanel />}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-        <NavigatorFooter />
+    <div className="text-foreground flex h-full flex-col pr-1.5">
+      <div className="shrink-0 pt-0.5 pb-1.5 pl-2">
+        <NavigatorSwitcher />
       </div>
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <AnimatePresence initial={false} mode="popLayout">
+          <motion.div
+            key={navigator}
+            initial={{ opacity: 0, x: navigator === 'tables' ? -12 : 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: navigator === 'tables' ? 12 : -12 }}
+            transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
+            className="flex min-h-0 flex-1 flex-col"
+          >
+            {navigator === 'tables' ? <TablesPanel /> : <DefinitionsPanel />}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <NavigatorFooter />
     </div>
   )
 }

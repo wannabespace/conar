@@ -11,6 +11,11 @@ import { CardHeader, CardTitle } from '@tamery/ui/components/card'
 import { ContentSwitch } from '@tamery/ui/components/custom/content-switch'
 import { NumberFlow } from '@tamery/ui/components/custom/number-flow'
 import {
+  ResizableGroup,
+  ResizableSeparator,
+  ResizablePanel,
+} from '@tamery/ui/components/custom/resizable'
+import {
   KbdCtrlEnter,
   KbdCtrlLetter,
 } from '@tamery/ui/components/custom/shortcuts'
@@ -33,10 +38,16 @@ import { useSubscription } from 'seitu/react'
 
 import { useCollections } from '~/entities/collections'
 import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
+import {
+  RUNNER_RESULTS_DEFAULT_HEIGHT,
+  RUNNER_RESULTS_MAX_HEIGHT,
+  RUNNER_RESULTS_MIN_HEIGHT,
+} from '~/lib/constants'
 import { formatSql } from '~/lib/formatter'
 
 import { runnerQueryOptions } from '.'
 import {
+  setLayout,
   useEditorQueriesComputed,
   useRunnerPageStore,
   useRunnerTab,
@@ -131,8 +142,8 @@ export const Runner = () => {
   })
   const [isFormatting, setIsFormatting] = useState(false)
   const store = useRunnerPageStore()
-  const resultsVisible = useSubscription(store, {
-    selector: (state) => state.layout.resultsVisible,
+  const { resultsHeight, resultsVisible } = useSubscription(store, {
+    selector: (state) => state.layout,
   })
 
   const format = () => {
@@ -184,8 +195,8 @@ export const Runner = () => {
         save: (q: string) => saveQueryDialogRef.current?.open(q),
       }}
     >
-      <div className="flex h-full flex-col">
-        <div className="flex min-h-0 flex-1 flex-col">
+      <ResizableGroup orientation="vertical">
+        <ResizablePanel className="flex min-h-0 flex-col">
           <CardHeader className="h-14 py-3">
             <CardTitle className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
@@ -270,14 +281,24 @@ export const Runner = () => {
           </div>
           <RunnerSaveDialog ref={saveQueryDialogRef} />
           <RunnerAlertDialog ref={alertDialogRef} />
-        </div>
-        <div
-          className="shrink-0 overflow-hidden"
-          style={{ height: resultsVisible ? '30%' : 0 }}
+        </ResizablePanel>
+        <ResizableSeparator aria-label="Resize results" />
+        <ResizablePanel
+          size={resultsHeight}
+          onSizeChange={(height) => setLayout(store, { resultsHeight: height })}
+          defaultSize={RUNNER_RESULTS_DEFAULT_HEIGHT}
+          minSize={RUNNER_RESULTS_MIN_HEIGHT}
+          maxSize={RUNNER_RESULTS_MAX_HEIGHT}
+          collapsed={!resultsVisible}
+          onCollapsedChange={(collapsed) =>
+            setLayout(store, { resultsVisible: !collapsed })
+          }
         >
-          <RunnerResults />
-        </div>
-      </div>
+          <div className="h-full pt-1.5">
+            <RunnerResults />
+          </div>
+        </ResizablePanel>
+      </ResizableGroup>
     </RunnerContext.Provider>
   )
 }

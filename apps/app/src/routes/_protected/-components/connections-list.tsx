@@ -775,7 +775,7 @@ export const ConnectionsList = () => {
                   {group.label ?? 'Other'}
                 </h3>
               )}
-              <div className="bg-card overflow-hidden rounded-xl border shadow-xs">
+              <div className="bg-card ring-foreground/4 overflow-hidden rounded-xl shadow-xs ring-[0.5px]">
                 <AnimatePresence initial={false} mode="popLayout">
                   {group.connections.map((connection) => (
                     <ConnectionCard

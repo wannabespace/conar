@@ -5,7 +5,7 @@
 | Level | Tokens | Use |
 |---|---|---|
 | 1 canvas | `bg-body` | App background, tab-bar strip, sidebar backdrop (sidebar naked — no card) |
-| 2 surface | `bg-background`, `bg-card` | Window pane (`rounded-xl border shadow`), active tab, grouped lists |
+| 2 surface | `bg-background`, `bg-card` | Window pane and grouped lists — `rounded-xl` + the control hairline `ring-[0.5px] ring-foreground/4`, never `border` (a 1px border reads heavy beside the controls sitting on it); panes take no shadow, grouped lists `shadow-xs`. Also active tab |
 | 3 elevated | `bg-input`, `bg-popover` | Buttons, inputs, chips, menus, active segmented pill |
 
 - Glass floating chrome: `bg-popover/70` + `backdrop-blur` + `ring-foreground/4`.
@@ -33,7 +33,7 @@ Every color token is a **literal `oklch()`** — never `var(--other-token)`; an 
 
 ## Window translucency (`--surface-alpha`)
 
-One knob: only `--body` carries the alpha (1 web/fullscreen, 0.6 mac light, 0.7 mac dark — dark needs more; same transparency reads muddier). **`--background` stays opaque** — it is reused as paint (tooltip text, avatar rings, toast `/80`), so alpha on it leaks everywhere. No per-call-site `bg-body/85` softeners (alphas multiply). Never reuse `--body` as text/ring/border or behind `/N`.
+One knob: only `--body` carries the alpha (1 web/fullscreen, 0.4 mac light, 0.5 mac dark — dark needs more; same transparency reads muddier). **`--background` stays opaque** — it is reused as paint (tooltip text, avatar rings, toast `/80`), so alpha on it leaks everywhere. No per-call-site `bg-body/85` softeners (alphas multiply). Never reuse `--body` as text/ring/border or behind `/N`.
 
 - **Modals are opaque**: `backdrop-filter` can't sample the OS vibrancy behind the page. Translucency rules opt out with `:not(:has([data-slot$='-overlay']))` on the root — affordable only while hot paths render no `data-slot` per row; **re-check if a virtualized list ever does** (fallback = marker class).
 - **Fullscreen is opaque** (`window-fullscreen` class from `useWindowFullscreenObserver`); write the gate as `:not(.window-fullscreen)` on the translucent rules — a separate override block loses on specificity.

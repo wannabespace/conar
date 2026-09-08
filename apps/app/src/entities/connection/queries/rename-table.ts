@@ -19,13 +19,11 @@ export const renameTableQuery = memoize(
           sql`RENAME TABLE ${sql.id(schema, oldTable)} TO ${sql.id(schema, newTable)}`.execute(
             db
           ),
-        mssql: (db) =>
-          db
-            .withSchema(schema)
-            .$extendTables<{ [oldTable]: Record<string, unknown> }>()
-            .schema.alterTable(oldTable)
-            .renameTo(newTable)
-            .execute(),
+        mssql: async (db) => {
+          await sql`EXEC sp_rename ${sql.val(`${schema}.${oldTable}`)}, ${sql.val(newTable)}`.execute(
+            db
+          )
+        },
         mysql: (db) =>
           db
             .withSchema(schema)

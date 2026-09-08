@@ -21,7 +21,6 @@ import { ChatInput } from './chat-input'
 import { getChatInstance } from './chat-instance'
 import { ChatMessages } from './chat-messages'
 import { ChatSkeleton } from './chat-skeleton'
-import { CHAT_DEFAULT_WIDTH } from './constants'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -145,9 +144,6 @@ export const ChatPanel = () => {
   const chatId = useSubscription(store, {
     selector: (state) => state.chatId ?? null,
   })
-  const chatOpened = useSubscription(store, {
-    selector: (state) => state.chatOpened ?? false,
-  })
   const [draftId, setDraftId] = useState(() => v7())
 
   const openBlankChat = () => {
@@ -158,15 +154,8 @@ export const ChatPanel = () => {
     store.set((state) => ({ ...state, chatId: null }) satisfies typeof state)
   }
 
-  if (!chatOpened) {
-    return null
-  }
-
   return (
-    <div
-      className="flex h-full shrink-0 flex-col pl-1.5"
-      style={{ width: CHAT_DEFAULT_WIDTH }}
-    >
+    <div className="flex h-full flex-col pl-1.5">
       <div className={resourcePanelClassName}>
         <Suspense fallback={<ChatSkeleton />}>
           <Chat

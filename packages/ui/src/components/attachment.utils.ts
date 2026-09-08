@@ -1,7 +1,7 @@
 import { cva } from 'class-variance-authority'
 
 export const attachmentVariants = cva(
-  `group/attachment bg-card text-card-foreground focus-within:ring-ring/30 hover:has-[>a,>button]:bg-muted/50 data-[state=error]:border-destructive/30 relative flex w-fit max-w-full min-w-0 shrink-0 flex-wrap rounded-2xl border transition-colors focus-within:ring-1 data-[state=idle]:border-dashed`,
+  `group/attachment bg-card text-card-foreground focus-within:focus-ring hover:has-[>a,>button]:bg-muted/50 data-[state=error]:border-destructive/30 relative flex w-fit max-w-full min-w-0 shrink-0 flex-wrap rounded-2xl border transition-colors data-[state=idle]:border-dashed`,
   {
     variants: {
       orientation: {

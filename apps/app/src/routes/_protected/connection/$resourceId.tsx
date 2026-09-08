@@ -1,24 +1,44 @@
 import { title } from '@tamery/shared/utils/title'
 import {
+  ResizableGroup,
+  ResizableSeparator,
+  ResizablePanel,
+} from '@tamery/ui/components/custom/resizable'
+import {
   createFileRoute,
   getRouteApi,
   Outlet,
   redirect,
 } from '@tanstack/react-router'
+import { type } from 'arktype'
 import { lazy, Suspense, useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
+import { createWebStorageValue } from 'seitu/web'
 
 import { QueryLoggerSkeleton } from '~/entities/connection/components/query-logger-skeleton'
-import type { ConnectionResource } from '~/entities/connection/core'
 import { getConnectionResourceStore } from '~/entities/connection/store'
 import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
 import { workspaceSelection } from '~/entities/workspace/utils'
-import { LOGGER_DEFAULT_HEIGHT } from '~/lib/constants'
+import {
+  CHAT_DEFAULT_WIDTH,
+  CHAT_MAX_WIDTH,
+  CHAT_MIN_WIDTH,
+  CHAT_WIDTH_KEY,
+  LOGGER_DEFAULT_HEIGHT,
+  LOGGER_HEIGHT_KEY,
+  LOGGER_MAX_HEIGHT,
+  LOGGER_MIN_HEIGHT,
+  NAVIGATOR_WIDTH_KEY,
+  SIDEBAR_DEFAULT_WIDTH,
+  SIDEBAR_MAX_WIDTH,
+  SIDEBAR_MIN_WIDTH,
+} from '~/lib/constants'
 import { resourcePanelClassName } from '~/shell'
 
 import { ChatPanel } from './$resourceId/-components/chat/chat-panel'
+import { navigatorOpenValue } from './$resourceId/-components/navigator/constants'
 import { Navigator } from './$resourceId/-components/navigator/navigator'
 import { TabBar } from './$resourceId/-components/tab-bar'
 import { PasswordForm } from './-components/password-form'
@@ -32,30 +52,23 @@ const QueryLogger = lazy(async () => {
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-const QueryLoggerPanel = ({
-  connectionResource,
-  opened,
-}: {
-  connectionResource: ConnectionResource
-  opened: boolean
-}) => {
-  if (!opened) {
-    return null
-  }
+const persistedSize = (key: string, defaultValue: number) =>
+  createWebStorageValue({
+    defaultValue,
+    key,
+    schema: type('number'),
+    type: 'localStorage',
+  })
 
-  return (
-    <div
-      className="flex shrink-0 flex-col pt-1.5"
-      style={{ height: LOGGER_DEFAULT_HEIGHT }}
-    >
-      <div className={resourcePanelClassName}>
-        <Suspense fallback={<QueryLoggerSkeleton />}>
-          <QueryLogger connectionResource={connectionResource} />
-        </Suspense>
-      </div>
-    </div>
-  )
-}
+const navigatorWidthValue = persistedSize(
+  NAVIGATOR_WIDTH_KEY,
+  SIDEBAR_DEFAULT_WIDTH
+)
+const chatWidthValue = persistedSize(CHAT_WIDTH_KEY, CHAT_DEFAULT_WIDTH)
+const loggerHeightValue = persistedSize(
+  LOGGER_HEIGHT_KEY,
+  LOGGER_DEFAULT_HEIGHT
+)
 
 const ResourcePage = () => {
   const { connection, connectionResource } = useRouteContext()
@@ -63,6 +76,16 @@ const ResourcePage = () => {
   const loggerOpened = useSubscription(store, {
     selector: (state) => state.loggerOpened,
   })
+  const chatOpened = useSubscription(store, {
+    selector: (state) => state.chatOpened,
+  })
+  const navigatorOpened = useSubscription(navigatorOpenValue)
+  const navigatorWidth = useSubscription(navigatorWidthValue)
+  const chatWidth = useSubscription(chatWidthValue)
+  const loggerHeight = useSubscription(loggerHeightValue)
+  const setStore = (
+    patch: { chatOpened: boolean } | { loggerOpened: boolean }
+  ) => store.set((state) => ({ ...state, ...patch }) satisfies typeof state)
 
   useEffect(() => {
     const last = lastOpenedResourcesStorageValue.get()
@@ -76,9 +99,9 @@ const ResourcePage = () => {
     }
   }, [connectionResource.id])
 
-  const { type } = useFetchingConfig(connection)
+  const fetching = useFetchingConfig(connection)
 
-  if (type === 'waiting-for-password') {
+  if (fetching.type === 'waiting-for-password') {
     return (
       <PasswordForm
         connection={connection}
@@ -88,20 +111,69 @@ const ResourcePage = () => {
   }
 
   return (
-    <div className="flex size-full p-2">
-      <Navigator />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className={resourcePanelClassName}>
-          <TabBar />
-          <Outlet />
-        </div>
-        <QueryLoggerPanel
-          connectionResource={connectionResource}
-          opened={loggerOpened}
-        />
-      </div>
-      <ChatPanel />
-    </div>
+    <ResizableGroup orientation="horizontal" className="p-2">
+      <ResizablePanel
+        size={navigatorWidth}
+        onSizeChange={(width) => navigatorWidthValue.set(width)}
+        defaultSize={SIDEBAR_DEFAULT_WIDTH}
+        minSize={SIDEBAR_MIN_WIDTH}
+        className="origin-left"
+        initial={{ scale: 0.85 }}
+        animate={{ scale: 1 }}
+        maxSize={SIDEBAR_MAX_WIDTH}
+        collapsed={!navigatorOpened}
+        onCollapsedChange={(collapsed) => navigatorOpenValue.set(!collapsed)}
+      >
+        <Navigator />
+      </ResizablePanel>
+      <ResizableSeparator aria-label="Resize navigator" />
+      <ResizablePanel className="flex flex-col">
+        <ResizableGroup orientation="vertical">
+          <ResizablePanel className="flex flex-col">
+            <div className={resourcePanelClassName}>
+              <TabBar />
+              <Outlet />
+            </div>
+          </ResizablePanel>
+          <ResizableSeparator aria-label="Resize query logger" />
+          <ResizablePanel
+            size={loggerHeight}
+            onSizeChange={(height) => loggerHeightValue.set(height)}
+            defaultSize={LOGGER_DEFAULT_HEIGHT}
+            minSize={LOGGER_MIN_HEIGHT}
+            maxSize={LOGGER_MAX_HEIGHT}
+            collapsed={!loggerOpened}
+            initial={{ translateY: '100%' }}
+            animate={{ translateY: '0' }}
+            onCollapsedChange={(collapsed) =>
+              setStore({ loggerOpened: !collapsed })
+            }
+          >
+            <div className="flex h-full flex-col pt-1.5">
+              <div className={resourcePanelClassName}>
+                <Suspense fallback={<QueryLoggerSkeleton />}>
+                  <QueryLogger connectionResource={connectionResource} />
+                </Suspense>
+              </div>
+            </div>
+          </ResizablePanel>
+        </ResizableGroup>
+      </ResizablePanel>
+      <ResizableSeparator aria-label="Resize chat" />
+      <ResizablePanel
+        size={chatWidth}
+        onSizeChange={(width) => chatWidthValue.set(width)}
+        defaultSize={CHAT_DEFAULT_WIDTH}
+        initial={{ translateX: '100%' }}
+        animate={{ translateX: '0' }}
+        minSize={CHAT_MIN_WIDTH}
+        maxSize={CHAT_MAX_WIDTH}
+        collapsed={!chatOpened}
+        onCollapsedChange={(collapsed) => setStore({ chatOpened: !collapsed })}
+      >
+        <ChatPanel />
+      </ResizablePanel>
+    </ResizableGroup>
   )
 }
 

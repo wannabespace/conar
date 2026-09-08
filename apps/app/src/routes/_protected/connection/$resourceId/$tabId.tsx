@@ -3,8 +3,10 @@ import { enabledFilters } from '@tamery/shared/filters'
 import { title } from '@tamery/shared/utils/title'
 import { createFileRoute, getRouteApi, redirect } from '@tanstack/react-router'
 import { type } from 'arktype'
+import { AnimatePresence, motion } from 'motion/react'
 import { useEffect } from 'react'
 
+import type { ConnectionTab } from '~/entities/connection/store'
 import {
   ensureTab,
   parseTabId,
@@ -26,16 +28,9 @@ const { useRouteContext } = getRouteApi(
   '/_protected/connection/$resourceId/$tabId'
 )
 
-const TabPage = () => {
-  const { connectionResource, tab } = useRouteContext()
-
-  useEffect(() => {
-    ensureTab(connectionResource.id, tab)
-    setActiveTab(connectionResource.id, tab.id)
-  }, [connectionResource.id, tab])
-
+const TabContent = ({ tab }: { tab: ConnectionTab }) => {
   if (tab.type === 'table') {
-    return <TableTab key={tab.id} schema={tab.schema} table={tab.table} />
+    return <TableTab schema={tab.schema} table={tab.table} />
   }
 
   if (tab.type === 'runner') {
@@ -47,6 +42,30 @@ const TabPage = () => {
   }
 
   return <VisualizerTab />
+}
+
+const TabPage = () => {
+  const { connectionResource, tab } = useRouteContext()
+
+  useEffect(() => {
+    ensureTab(connectionResource.id, tab)
+    setActiveTab(connectionResource.id, tab.id)
+  }, [connectionResource.id, tab])
+
+  return (
+    <AnimatePresence initial={false} mode="popLayout">
+      <motion.div
+        key={tab.id}
+        className="flex min-h-0 flex-1 flex-col"
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        initial={{ opacity: 0 }}
+        transition={{ duration: 0.15 }}
+      >
+        <TabContent tab={tab} />
+      </motion.div>
+    </AnimatePresence>
+  )
 }
 
 export const Route = createFileRoute(

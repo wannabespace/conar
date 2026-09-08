@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
 import type { ConnectionResource } from '../core/sync'
@@ -142,6 +143,11 @@ const query = createQuery({
           'p.polcmd',
           fn('pg_get_expr', ['p.polqual', 'p.polrelid']).as('using'),
           fn('pg_get_expr', ['p.polwithcheck', 'p.polrelid']).as('check'),
+          sql<
+            string[]
+          >`CASE WHEN p.polroles = '{0}'::oid[] THEN ARRAY['public'::text] ELSE ARRAY(SELECT r.rolname::text FROM pg_catalog.pg_roles r WHERE r.oid = ANY(p.polroles) ORDER BY r.rolname) END`.as(
+            'roles'
+          ),
         ])
         .execute()
       return rows.map((row) => ({
@@ -149,7 +155,7 @@ const query = createQuery({
         command: pgCommandMap[row.polcmd as keyof typeof pgCommandMap] || 'ALL',
         enabled: true,
         name: row.name,
-        roles: [],
+        roles: row.roles,
         schema: row.schema,
         table: row.table,
         type: row.polpermissive ? 'PERMISSIVE' : 'RESTRICTIVE',

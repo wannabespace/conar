@@ -138,7 +138,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
               autoComplete="off"
             />
           </div>
-          {connection.type !== ConnectionType.ClickHouse && (
+          {connection.type === ConnectionType.Postgres && (
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="cascade"
