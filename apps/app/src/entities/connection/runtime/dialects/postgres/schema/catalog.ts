@@ -9,7 +9,7 @@ export interface PgCatalog {
   pg_index: PgIndex
   pg_attribute: PgAttribute
   pg_settings: PgSettings
-  pg_policy: PgPolicy
+  pg_policies: PgPolicies
   pg_database: PgDatabase
   pg_am: PgAm
   pg_trigger: PgTrigger
@@ -20,18 +20,18 @@ export interface PgCatalog {
 }
 
 /**
- * @name pg_policy
- * @type table
+ * @name pg_policies
+ * @type view
  */
-interface PgPolicy {
-  oid: number
-  polname: string
-  polrelid: number
-  polcmd: 'r' | 'a' | 'w' | 'd' | '*'
-  polpermissive: boolean
-  polroles: unknown
-  polqual: unknown
-  polwithcheck: unknown
+interface PgPolicies {
+  schemaname: string
+  tablename: string
+  policyname: string
+  permissive: 'PERMISSIVE' | 'RESTRICTIVE'
+  roles: string[]
+  cmd: string
+  qual: string | null
+  with_check: string | null
 }
 
 /**
