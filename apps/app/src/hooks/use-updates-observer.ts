@@ -6,7 +6,7 @@ import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
 import packageJson from '../../../desktop/package.json' with { type: 'json' }
-import { queryClient } from '../main'
+import { queryClient } from '../lib/query-client'
 
 const TOAST_UPDATE_READY_ID = 'update-ready-toast'
 

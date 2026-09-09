@@ -5,7 +5,7 @@ import { BASE_ERROR_CODES } from 'better-auth'
 import { toast } from 'sonner'
 
 import { fullSignOut } from '~/lib/auth'
-import { router } from '~/main'
+import { isAuthLocation } from '~/lib/history'
 
 const getErrorMessage = (error: unknown) =>
   (error instanceof ORPCError && error.message) ||
@@ -47,7 +47,7 @@ export const handleError = async (
   }
 
   if (isSessionExpiredError(error)) {
-    if (router.state.location.pathname.startsWith('/auth')) {
+    if (isAuthLocation()) {
       return
     }
 

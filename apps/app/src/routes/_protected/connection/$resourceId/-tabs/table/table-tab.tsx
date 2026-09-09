@@ -1,6 +1,6 @@
 import { getRouteApi } from '@tanstack/react-router'
 
-import { openTableTab } from '~/entities/connection/store'
+import { openTableTab } from '~/entities/connection/store/helpers/tabs'
 
 import { Table } from './-components/table/table'
 import { TableToolbar } from './-components/toolbar/toolbar'

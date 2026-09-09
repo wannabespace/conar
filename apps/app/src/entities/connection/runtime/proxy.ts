@@ -1,7 +1,7 @@
 import { PORTS } from '@tamery/shared/constants'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 
-import { queryClient } from '~/main'
+import { queryClient } from '~/lib/query-client'
 
 const LOCAL_PROXY_HEALTH_KEY = ['proxy-health'] as const
 

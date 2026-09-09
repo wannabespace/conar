@@ -6,17 +6,17 @@ import { type } from 'arktype'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect } from 'react'
 
-import type { ConnectionTab } from '~/entities/connection/store'
 import {
   ensureTab,
-  parseTabId,
   setActiveTab,
-  tabFullTitle,
-} from '~/entities/connection/store'
+} from '~/entities/connection/store/helpers/tabs'
+import { parseTabId } from '~/entities/connection/store/tabs/ids'
+import { tabFullTitle } from '~/entities/connection/store/tabs/title'
+import type { ConnectionTab } from '~/entities/connection/store/tabs/types'
 import {
   prefetchConnectionResourceCore,
   prefetchConnectionResourceTableCore,
-} from '~/entities/connection/utils'
+} from '~/entities/connection/utils/fetching'
 
 import { DefinitionsTab } from './-tabs/definitions/definitions-tab'
 import { RunnerTab } from './-tabs/runner/runner-tab'

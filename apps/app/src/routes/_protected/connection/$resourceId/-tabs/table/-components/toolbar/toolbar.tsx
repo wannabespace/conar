@@ -31,11 +31,11 @@ import { ExportDataMenu } from '~/components/export-data'
 import {
   resourceRowsQuery,
   resourceRowsQueryInfiniteOptions,
-  resourceTablesAndSchemasQueryOptions,
-  resourceTableTotalQueryOptions,
-} from '~/entities/connection/queries'
-import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
-import { getConnectionResourceStore } from '~/entities/connection/store'
+} from '~/entities/connection/queries/rows'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { resourceTableTotalQueryOptions } from '~/entities/connection/queries/total'
+import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 
 import { useTableSessionStore } from '../../-lib/session-store'
 import { useTablePageStore } from '../../-lib/store'

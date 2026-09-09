@@ -40,15 +40,16 @@ import { Link } from '~/components/link'
 import { TitleBar } from '~/components/title-bar'
 import { UpdateButton } from '~/components/update-button'
 import { useCollections } from '~/entities/collections'
-import type { Connection, ConnectionResource } from '~/entities/connection'
-import {
-  ConnectionIcon,
-  ConnectionResourceLink,
-  useConnectionResourceLinkParams,
-} from '~/entities/connection'
-import { getConnectionResourceStore } from '~/entities/connection/store'
-import { UserButton } from '~/entities/user/components'
-import { useActiveWorkspace } from '~/entities/workspace'
+import { ConnectionIcon } from '~/entities/connection/components/connection-icon'
+import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
+import type {
+  Connection,
+  ConnectionResource,
+} from '~/entities/connection/core/sync'
+import { useConnectionResourceLinkParams } from '~/entities/connection/hooks/use-connection-resource-link-params'
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
+import { UserButton } from '~/entities/user/components/user-button'
+import { useActiveWorkspace } from '~/entities/workspace/hooks'
 import { checkForUpdates, updatesStore } from '~/hooks/use-updates-observer'
 import { setIsActionCenterOpen } from '~/store'
 

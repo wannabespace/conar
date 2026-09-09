@@ -2,7 +2,7 @@ import { SOCIAL_LINKS } from '@tamery/shared/constants'
 import type { MenuItemConstructorOptions } from 'electron'
 import { app, BrowserWindow, Menu, shell } from 'electron'
 
-import { autoUpdater, createWindow } from '../main'
+import { autoUpdater } from './todesktop'
 
 const getFocusedWindow = () =>
   BrowserWindow.getAllWindows().find((window) => window.isFocused())
@@ -28,7 +28,9 @@ const setupDevelopmentEnvironment = (): void => {
   })
 }
 
-const buildTemplate = (): MenuItemConstructorOptions[] => {
+const buildTemplate = (
+  onNewWindow: () => void
+): MenuItemConstructorOptions[] => {
   const isMac = process.platform === 'darwin'
   const cmdOrCtrl = isMac ? 'Command' : 'Ctrl'
 
@@ -80,9 +82,7 @@ const buildTemplate = (): MenuItemConstructorOptions[] => {
       submenu: [
         {
           accelerator: `${cmdOrCtrl}+Shift+N`,
-          click: () => {
-            createWindow()
-          },
+          click: onNewWindow,
           label: 'New Window',
         },
         { type: 'separator' },
@@ -144,12 +144,16 @@ const buildTemplate = (): MenuItemConstructorOptions[] => {
   return template
 }
 
-export const buildMenu = (): Menu => {
+export const buildMenu = ({
+  onNewWindow,
+}: {
+  onNewWindow: () => void
+}): Menu => {
   if (!app.isPackaged) {
     setupDevelopmentEnvironment()
   }
 
-  const template = buildTemplate()
+  const template = buildTemplate(onNewWindow)
   const menu = Menu.buildFromTemplate(template)
 
   Menu.setApplicationMenu(menu)

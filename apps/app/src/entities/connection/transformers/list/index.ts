@@ -1,7 +1,7 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import type { Column } from '../../components/table/cell'
-import type { ValueTransformer } from '../create-transformer'
+import type { Column } from '../../components/table/cell/utils'
+import type { ValueTransformer } from '../value-transformer'
 import { createClickHouseListTransformer } from './clickhouse'
 import { createMysqlListTransformer } from './mysql'
 import { createPostgresListTransformer } from './postgres'

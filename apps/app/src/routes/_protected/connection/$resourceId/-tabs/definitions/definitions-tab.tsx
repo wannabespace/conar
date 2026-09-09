@@ -1,8 +1,8 @@
 import { ScrollArea } from '@tamery/ui/components/scroll-area'
 import { getRouteApi } from '@tanstack/react-router'
 
-import type { DefinitionsSection } from '~/entities/connection/store'
-import { openDefinitionsTab } from '~/entities/connection/store'
+import { openDefinitionsTab } from '~/entities/connection/store/helpers/tabs'
+import type { DefinitionsSection } from '~/entities/connection/store/tabs/types'
 
 import { Constraints } from './-sections/constraints'
 import { Enums } from './-sections/enums'

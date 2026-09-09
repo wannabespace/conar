@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import type { GeneratorMap } from '..'
+import type { GeneratorMap } from '../types'
 
 export const PG_GENERATORS = {
   'postgres.box': {

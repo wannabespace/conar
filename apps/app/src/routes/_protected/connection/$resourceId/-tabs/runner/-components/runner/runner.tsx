@@ -37,7 +37,7 @@ import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { useCollections } from '~/entities/collections'
-import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
+import { hasDangerousSqlKeywords } from '~/entities/connection/utils/helpers'
 import {
   RUNNER_RESULTS_DEFAULT_HEIGHT,
   RUNNER_RESULTS_MAX_HEIGHT,
@@ -45,7 +45,7 @@ import {
 } from '~/lib/constants'
 import { formatSql } from '~/lib/formatter'
 
-import { runnerQueryOptions } from '.'
+import { runnerQueryOptions } from '../../-lib/runner-query'
 import {
   setLayout,
   useEditorQueriesComputed,

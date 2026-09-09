@@ -6,7 +6,7 @@ import {
   getClient,
   isFolderMissingError,
   pathToString,
-} from '.'
+} from './client'
 
 interface SecretLocation {
   path: string[]

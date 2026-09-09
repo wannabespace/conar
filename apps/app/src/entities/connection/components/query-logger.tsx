@@ -38,7 +38,7 @@ import { useSubscription } from 'seitu/react'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
 import { useCollections } from '~/entities/collections'
-import { getConnectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import { formatSql } from '~/lib/formatter'
 
 import type { ConnectionResource } from '../core/sync'

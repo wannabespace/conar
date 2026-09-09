@@ -1,11 +1,9 @@
-import { createRequire } from 'node:module'
 import path from 'node:path'
 
 import { resetTransactions } from '@tamery/connection/queries/transactions'
 import { MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH } from '@tamery/shared/constants'
 import { isConnectionError } from '@tamery/shared/utils/connections'
 import type { UpdatesStatus } from '@tamery/shared/utils/updates'
-import type todesktopRuntime from '@todesktop/runtime'
 import type { Rectangle } from 'electron'
 import { app, BrowserWindow, screen, shell } from 'electron'
 import Store from 'electron-store'
@@ -13,14 +11,7 @@ import Store from 'electron-store'
 import { setupProtocolHandler } from './lib/deep-link'
 import { initElectronEvents } from './lib/events'
 import { buildMenu } from './lib/menu'
-
-const todesktop = createRequire(import.meta.url)(
-  '@todesktop/runtime'
-) as typeof todesktopRuntime
-
-todesktop.init()
-
-export const { autoUpdater } = todesktop
+import { autoUpdater } from './lib/todesktop'
 
 initElectronEvents()
 
@@ -163,7 +154,7 @@ export const createWindow = () => {
   })
 
   mainWindow.on('focus', () => {
-    buildMenu()
+    buildMenu({ onNewWindow: createWindow })
     sendFocus()
   })
 

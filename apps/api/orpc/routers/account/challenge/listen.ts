@@ -2,7 +2,7 @@ import { type } from 'arktype'
 
 import { orpc } from '~/orpc'
 
-import { codeChallengePublisher } from '.'
+import { codeChallengePublisher } from './code-challenge'
 
 export const listen = orpc
   .input(

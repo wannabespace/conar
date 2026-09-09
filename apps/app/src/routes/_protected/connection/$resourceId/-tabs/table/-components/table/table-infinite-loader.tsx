@@ -8,7 +8,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
 
-import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows'
 
 import { TableEmpty } from './table-empty'
 

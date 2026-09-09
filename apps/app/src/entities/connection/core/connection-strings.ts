@@ -6,7 +6,6 @@ import type { Collection } from '@tanstack/react-db'
 import { BasicIndex, createCollection } from '@tanstack/react-db'
 import { toast } from 'sonner'
 
-import { getCollections } from '~/entities/collections'
 import { fullSignOut } from '~/lib/auth'
 import { persistence } from '~/lib/database'
 import { encryptionKey } from '~/lib/encryption-key'
@@ -40,34 +39,34 @@ type ConnectionStringsUtils = {
   resolve: (connectionId: string) => Promise<string | null>
 }
 
-type ConnectionStringsCollection = Collection<
+export type ConnectionStringsCollection = Collection<
   ConnectionString,
   string,
   ConnectionStringsUtils
 >
 
 const preserveLocalPassword = async (
+  collection: ConnectionStringsCollection,
   connectionId: string,
   connectionString: string
 ) => {
   const url = new SafeURL(connectionString)
-  const { connectionStringsCollection } = getCollections()
-  const local = connectionStringsCollection.get(connectionId)
+  const local = collection.get(connectionId)
 
   if (url.password || !local?.isPasswordPopulated) {
     return connectionString
   }
 
   url.password = new SafeURL(
-    await connectionStringsCollection.utils.decrypt(connectionId)
+    await collection.utils.decrypt(connectionId)
   ).password
 
   return url.toString()
 }
 
 export const createConnectionStringsCollection =
-  (): ConnectionStringsCollection =>
-    createCollection(
+  (): ConnectionStringsCollection => {
+    const collection: ConnectionStringsCollection = createCollection(
       persistedCollectionOptions<
         ConnectionString,
         string,
@@ -83,8 +82,7 @@ export const createConnectionStringsCollection =
         schemaVersion: PERSISTED_SCHEMA_VERSION,
         utils: {
           async decrypt(connectionId: string) {
-            const record =
-              getCollections().connectionStringsCollection.get(connectionId)
+            const record = collection.get(connectionId)
 
             if (!record) {
               const result = await orpc.connections.resolve.call({
@@ -136,8 +134,7 @@ export const createConnectionStringsCollection =
             }
           },
           async resolve(connectionId: string) {
-            const { connectionStringsCollection } = getCollections()
-            const local = connectionStringsCollection.get(connectionId)
+            const local = collection.get(connectionId)
 
             const result = await orpc.connections.resolve.call({
               id: connectionId,
@@ -150,11 +147,18 @@ export const createConnectionStringsCollection =
 
             // This case can be when the connection is just created and not yet synced to the cloud but the user is already added it
             if (result.status === 'not-found') {
-              return connectionStringsCollection.utils.decrypt(connectionId)
+              return collection.utils.decrypt(connectionId)
             }
 
-            return preserveLocalPassword(connectionId, result.connectionString)
+            return preserveLocalPassword(
+              collection,
+              connectionId,
+              result.connectionString
+            )
           },
         },
       })
     )
+
+    return collection
+  }

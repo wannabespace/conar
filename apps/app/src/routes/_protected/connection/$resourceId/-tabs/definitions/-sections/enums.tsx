@@ -16,7 +16,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 
-import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
 
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'

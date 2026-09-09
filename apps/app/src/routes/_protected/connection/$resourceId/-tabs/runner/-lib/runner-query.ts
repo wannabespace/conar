@@ -1,15 +1,13 @@
 import { queryOptions } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import type { ConnectionResource } from '~/entities/connection/core'
+import type { ConnectionResource } from '~/entities/connection/core/sync'
 import { customQuery } from '~/entities/connection/queries/custom'
-import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
-import { hasDangerousSqlKeywords } from '~/entities/connection/utils'
+import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
+import { hasDangerousSqlKeywords } from '~/entities/connection/utils/helpers'
 
-import type { runnerPageType } from '../../-lib/store'
-import { runnerPageStore } from '../../-lib/store'
-
-export * from './runner'
+import type { runnerPageType } from './store'
+import { runnerPageStore } from './store'
 
 const transformResult = ({
   rows,

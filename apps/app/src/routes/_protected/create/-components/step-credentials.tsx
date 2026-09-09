@@ -16,7 +16,7 @@ import { Input } from '@tamery/ui/components/input'
 import type { RefObject } from 'react'
 import { useId } from 'react'
 
-import { useLocalProxyAvailable } from '~/entities/connection/runtime'
+import { useLocalProxyAvailable } from '~/entities/connection/runtime/proxy'
 
 export const StepCredentials = ({
   ref,

@@ -27,11 +27,9 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useSubscription } from 'seitu/react'
 
-import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
-import {
-  createTransformer,
-  getDisplayValue,
-} from '~/entities/connection/transformers'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows'
+import { createTransformer } from '~/entities/connection/transformers/create-transformer'
+import { getDisplayValue } from '~/entities/connection/transformers/value-transformer'
 
 import { useTableColumnsContext } from '../../-lib/columns'
 import type { Draft } from '../../-lib/session-store'

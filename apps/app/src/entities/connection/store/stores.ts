@@ -8,14 +8,6 @@ import { connectionResourceStoreKey } from '~/lib/constants'
 
 import { connectionTabType } from './tabs/types'
 
-export * from './helpers/navigator'
-export * from './helpers/tables'
-export * from './helpers/tabs'
-export * from './helpers/visualizer'
-export * from './tabs/ids'
-export * from './tabs/title'
-export * from './tabs/types'
-
 const schema = type({
   lastOpenedResourceName: 'string | null',
   proxy: {

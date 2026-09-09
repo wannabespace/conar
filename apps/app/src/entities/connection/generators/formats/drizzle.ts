@@ -1,8 +1,8 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { camelCase, pascalCase } from 'change-case'
 
-import type { QueryParams, SchemaParams } from '..'
 import * as templates from '../templates'
+import type { QueryParams, SchemaParams } from '../types'
 import {
   filterExplicitIndexes,
   getColumnType,

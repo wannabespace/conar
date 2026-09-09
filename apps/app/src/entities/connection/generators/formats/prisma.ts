@@ -1,8 +1,8 @@
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { camelCase, pascalCase } from 'change-case'
 
-import type { QueryParams, SchemaParams } from '..'
 import * as templates from '../templates'
+import type { QueryParams, SchemaParams } from '../types'
 import { filterExplicitIndexes, getColumnType, groupIndexes } from '../utils'
 
 type PrismaFilterValue =

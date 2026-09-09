@@ -2,10 +2,8 @@ import { LayoutTable02Icon } from '@hugeicons/core-free-icons'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { PaneEmpty } from '~/components/pane-empty'
-import {
-  getConnectionResourceStore,
-  parseTabId,
-} from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
+import { parseTabId } from '~/entities/connection/store/tabs/ids'
 
 const EmptyPane = () => (
   <PaneEmpty

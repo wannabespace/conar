@@ -16,9 +16,11 @@ import { useSubscription } from 'seitu/react'
 import { createWebStorageValue } from 'seitu/web'
 
 import { QueryLoggerSkeleton } from '~/entities/connection/components/query-logger-skeleton'
-import { getConnectionResourceStore } from '~/entities/connection/store'
-import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
-import { useFetchingConfig } from '~/entities/connection/utils/fetching'
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
+import {
+  prefetchConnectionResourceCore,
+  useFetchingConfig,
+} from '~/entities/connection/utils/fetching'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
 import { workspaceSelection } from '~/entities/workspace/utils'
 import {

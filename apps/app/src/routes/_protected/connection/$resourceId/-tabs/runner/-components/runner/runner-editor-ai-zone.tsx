@@ -14,12 +14,15 @@ import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { MonacoDiff } from '~/components/monaco'
-import type { Connection, ConnectionResource } from '~/entities/connection/core'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
-import { getConnectionResourceStore } from '~/entities/connection/store'
-import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
+import type {
+  Connection,
+  ConnectionResource,
+} from '~/entities/connection/core/sync'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
+import { useSubscription as useUserSubscription } from '~/entities/user/hooks/use-subscription'
 import { orpc } from '~/lib/orpc'
-import { queryClient } from '~/main'
+import { queryClient } from '~/lib/query-client'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 
 const FOCUS_DELAY_MS = 100

@@ -1,7 +1,7 @@
 import { getRouteApi } from '@tanstack/react-router'
 import { useMemo } from 'react'
 
-import { Runner } from './-components/runner'
+import { Runner } from './-components/runner/runner'
 import { RunnerTabContext } from './-lib/store'
 
 const { useRouteContext } = getRouteApi(

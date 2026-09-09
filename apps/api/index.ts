@@ -13,6 +13,7 @@ import { sendEmail } from './lib/resend'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
 import { healthRouter } from './routers/health'
+import type { AppVariables } from './variables'
 
 const handler = new RPCHandler(router, {
   interceptors: [
@@ -53,16 +54,6 @@ const handler = new RPCHandler(router, {
     },
   ],
 })
-
-export interface AppVariables {
-  isAppOutdated: boolean
-  parsedAppVersion: {
-    major: number
-    minor: number
-    patch: number
-  } | null
-  logEvent?: Record<string, unknown>
-}
 
 const isDesktopVersionOutdated = (
   parsedAppVersion: AppVariables['parsedAppVersion']

@@ -3,8 +3,8 @@ import type { VirtualItem } from '@tanstack/react-virtual'
 import type { ComponentProps, CSSProperties } from 'react'
 import { memo } from 'react'
 
-import type { ColumnRenderer } from './'
 import { useTableContext } from './table-context'
+import type { ColumnRenderer } from './types'
 import type { ColumnPosition } from './utils'
 import { formatCellValue, getBaseColumnStyle, getColumnPosition } from './utils'
 

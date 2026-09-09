@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { authClient } from '~/lib/auth'
 import { orpc } from '~/lib/orpc'
-import { subscriptionQueryClient } from '~/main'
+import { subscriptionQueryClient } from '~/lib/query-client'
 
 export const useSubscription = () => {
   const { data } = authClient.useSession()

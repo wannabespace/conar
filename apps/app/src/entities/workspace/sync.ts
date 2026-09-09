@@ -1,13 +1,10 @@
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
 import { createCollection } from '@tanstack/react-db'
 
-import { getCollections } from '~/entities/collections'
 import { persistence } from '~/lib/database'
 import { orpc } from '~/lib/orpc'
 import type { BaseTable } from '~/lib/sync'
 import { PERSISTED_SCHEMA_VERSION, syncCollectionOptions } from '~/lib/sync'
-
-import { workspaceSelection } from './utils'
 
 export interface Workspace extends BaseTable {
   name: string
@@ -36,18 +33,3 @@ export const createWorkspacesCollection = () =>
       schemaVersion: PERSISTED_SCHEMA_VERSION,
     })
   )
-
-export const createWorkspace = async (name: string) => {
-  const { workspacesCollection } = getCollections()
-
-  const workspace = await orpc.workspaces.create.call({ name })
-
-  await workspacesCollection.utils.awaitChange(
-    workspace.id,
-    workspace.updatedAt
-  )
-
-  workspaceSelection.set(workspace.id)
-
-  return workspace
-}

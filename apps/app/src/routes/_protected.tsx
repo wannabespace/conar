@@ -7,7 +7,7 @@ import { GlobalBanner } from '~/components/global-banner'
 import { SubscriptionModal } from '~/components/subscription-modal'
 import { useConnectionStringsSync } from '~/hooks/use-connection-strings-sync'
 import { useLastOpenedResourcesSync } from '~/hooks/use-last-opened-resources-sync'
-import { subscriptionQueryClient } from '~/main'
+import { subscriptionQueryClient } from '~/lib/query-client'
 
 import { ActionsCenter } from './-components/actions-center'
 import { ProtectedTitleBar } from './_protected/-components/protected-titlebar'

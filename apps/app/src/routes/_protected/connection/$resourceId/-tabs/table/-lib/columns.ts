@@ -1,15 +1,15 @@
 import { useQueries } from '@tanstack/react-query'
 import { createContext, use } from 'react'
 
-import type { Column } from '~/entities/connection/components/table/cell'
-import { getColumnUiType } from '~/entities/connection/components/table/cell'
-import type { ConnectionResource } from '~/entities/connection/core'
+import type { Column } from '~/entities/connection/components/table/cell/utils'
+import { getColumnUiType } from '~/entities/connection/components/table/cell/utils'
+import type { ConnectionResource } from '~/entities/connection/core/sync'
+import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/columns'
+import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints'
 import {
   findEnum,
-  resourceConstraintsQueryOptions,
   resourceEnumsQueryOptions,
-  resourceTableColumnsQueryOptions,
-} from '~/entities/connection/queries'
+} from '~/entities/connection/queries/enums'
 
 export const useTableColumnsQuery = ({
   connectionResource,

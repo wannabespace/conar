@@ -1,4 +1,4 @@
-import type { GeneratorId } from '..'
+import type { GeneratorId } from '../registry'
 
 const TYPE_TO_GENERATOR: Record<string, GeneratorId> = {
   binary: 'mssql.binary',

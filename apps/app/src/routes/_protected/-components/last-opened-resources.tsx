@@ -11,11 +11,14 @@ import { useSubscription } from 'seitu/react'
 
 import { Link } from '~/components/link'
 import { useCollections } from '~/entities/collections'
-import { ConnectionIcon } from '~/entities/connection/components'
-import type { Connection, ConnectionResource } from '~/entities/connection/core'
-import { useConnectionResourceLinkParams } from '~/entities/connection/hooks'
-import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
-import { useActiveWorkspace } from '~/entities/workspace'
+import { ConnectionIcon } from '~/entities/connection/components/connection-icon'
+import type {
+  Connection,
+  ConnectionResource,
+} from '~/entities/connection/core/sync'
+import { useConnectionResourceLinkParams } from '~/entities/connection/hooks/use-connection-resource-link-params'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
+import { useActiveWorkspace } from '~/entities/workspace/hooks'
 
 const LastOpenedResource = ({
   connectionResource,

@@ -18,12 +18,14 @@ import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
-import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries'
-import { buildWhere } from '~/entities/connection/queries/rows'
-import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
+import {
+  resourceRowsQueryInfiniteOptions,
+  buildWhere,
+} from '~/entities/connection/queries/rows'
 import { dialects } from '~/entities/connection/runtime/dialects'
+import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { useSaveHotkey } from '~/hooks/use-save-hotkey'
-import { queryClient } from '~/main'
+import { queryClient } from '~/lib/query-client'
 
 import { useTableColumnsContext } from '../../-lib/columns'
 import type { PrimaryKeys } from '../../-lib/session-store'

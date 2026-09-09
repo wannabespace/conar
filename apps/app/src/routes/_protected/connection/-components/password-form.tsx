@@ -27,7 +27,10 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import { useCollections } from '~/entities/collections'
-import type { Connection, ConnectionResource } from '~/entities/connection/core'
+import type {
+  Connection,
+  ConnectionResource,
+} from '~/entities/connection/core/sync'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
 
 export const PasswordForm = ({

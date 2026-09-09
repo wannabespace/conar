@@ -1,5 +1,5 @@
-import type { QueryParams, SchemaParams } from '..'
 import * as templates from '../templates'
+import type { QueryParams, SchemaParams } from '../types'
 import {
   formatEnumAsUnionType,
   formatValue,

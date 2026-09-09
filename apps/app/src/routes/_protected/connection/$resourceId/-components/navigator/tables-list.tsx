@@ -32,15 +32,12 @@ import { useSubscription } from 'seitu/react'
 import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppContextMenu } from '~/components/app-context-menu'
 import { Link } from '~/components/link'
-import type { tablesAndSchemasType } from '~/entities/connection/queries'
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
-import {
-  openTableTab,
-  parseTabId,
-  tableTabId,
-  pinnedTable,
-  getConnectionResourceStore,
-} from '~/entities/connection/store'
+import type { tablesAndSchemasType } from '~/entities/connection/queries/tables-and-schemas'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { pinnedTable } from '~/entities/connection/store/helpers/tables'
+import { openTableTab } from '~/entities/connection/store/helpers/tabs'
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
+import { parseTabId, tableTabId } from '~/entities/connection/store/tabs/ids'
 
 import { tableSessionStore } from '../../-tabs/table/-lib/session-store'
 import { DropTableDialog } from './drop-table-dialog'

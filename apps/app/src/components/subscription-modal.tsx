@@ -19,7 +19,7 @@ import { useEffect } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
-import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
+import { useSubscription as useUserSubscription } from '~/entities/user/hooks/use-subscription'
 import { accountUrl } from '~/lib/urls'
 import { appStore, setIsSubscriptionDialogOpen } from '~/store'
 

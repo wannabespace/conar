@@ -7,7 +7,7 @@ import { eq } from 'drizzle-orm'
 import { auth } from '~/lib/auth'
 import { orpc } from '~/orpc'
 
-import { codeChallengeRedis } from '.'
+import { codeChallengeRedis } from './code-challenge'
 
 export const exchange = orpc
   .input(

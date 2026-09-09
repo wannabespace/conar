@@ -2,15 +2,14 @@ import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/utils/safe-url'
 import { persistedCollectionOptions } from '@tanstack/browser-db-sqlite-persistence'
-import { createCollection, createTransaction } from '@tanstack/react-db'
+import { createCollection } from '@tanstack/react-db'
 
-import { getCollections } from '~/entities/collections'
 import { persistence } from '~/lib/database'
 import { orpc } from '~/lib/orpc'
 import type { BaseTable } from '~/lib/sync'
 import { PERSISTED_SCHEMA_VERSION, syncCollectionOptions } from '~/lib/sync'
 
-import type { ConnectionString } from './connection-strings'
+import type { ConnectionStringsCollection } from './connection-strings'
 
 const prepareConnectionStringToCloud = (
   connectionString: string,
@@ -33,11 +32,11 @@ export interface Connection extends BaseTable {
   syncType: SyncType
 }
 
-export const prepareConnectionToCloud = async (connection: Connection) => {
-  const { connectionStringsCollection } = getCollections()
-  const connectionString = await connectionStringsCollection.utils.decrypt(
-    connection.id
-  )
+export const prepareConnectionToCloud = async (
+  connectionStrings: ConnectionStringsCollection,
+  connection: Connection
+) => {
+  const connectionString = await connectionStrings.utils.decrypt(connection.id)
 
   return {
     ...connection,
@@ -54,7 +53,9 @@ export interface ConnectionResource extends BaseTable {
   name: string | null
 }
 
-export const createConnectionsCollection = () =>
+export const createConnectionsCollection = (
+  connectionStrings: ConnectionStringsCollection
+) =>
   createCollection(
     persistedCollectionOptions({
       ...syncCollectionOptions<Connection>({
@@ -77,7 +78,7 @@ export const createConnectionsCollection = () =>
           await Promise.all(
             transaction.mutations.map(async (m) =>
               orpc.connections.create.call(
-                await prepareConnectionToCloud(m.modified)
+                await prepareConnectionToCloud(connectionStrings, m.modified)
               )
             )
           )
@@ -140,45 +141,3 @@ export const createConnectionsResourcesCollection = () =>
       schemaVersion: PERSISTED_SCHEMA_VERSION,
     })
   )
-
-export const createConnectionTransaction = (data: {
-  connection: Connection
-  resource: ConnectionResource
-  connectionString: ConnectionString
-}) => {
-  const {
-    connectionsCollection,
-    connectionsResourcesCollection,
-    connectionStringsCollection,
-  } = getCollections()
-
-  const tx = createTransaction({
-    mutationFn: async () => {
-      await orpc.connections.create.call(
-        await prepareConnectionToCloud(data.connection)
-      )
-      await orpc.connectionsResources.create.call(data.resource)
-
-      if (!window.electron) {
-        await Promise.all([
-          connectionsCollection.utils.awaitChange(
-            data.connection.id,
-            data.connection.updatedAt
-          ),
-          connectionsResourcesCollection.utils.awaitChange(
-            data.resource.id,
-            data.resource.updatedAt
-          ),
-        ])
-      }
-    },
-  })
-
-  tx.mutate(() => {
-    connectionStringsCollection.insert(data.connectionString)
-    connectionsCollection.insert(data.connection)
-    connectionsResourcesCollection.insert(data.resource)
-  })
-
-  return tx
-}

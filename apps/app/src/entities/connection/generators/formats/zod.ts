@@ -1,5 +1,5 @@
-import type { SchemaParams } from '..'
 import * as templates from '../templates'
+import type { SchemaParams } from '../types'
 import { getColumnType, toLiteralKey } from '../utils'
 
 const buildZodType = (

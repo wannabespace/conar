@@ -3,7 +3,7 @@ import { toast } from 'sonner'
 
 import { fullSignOut } from '~/lib/auth'
 import { handleError } from '~/lib/error'
-import { queryClient } from '~/main'
+import { queryClient } from '~/lib/query-client'
 
 export const useSignOut = () => {
   const { mutate: signOut, isPending: isSigningOut } = useMutation({

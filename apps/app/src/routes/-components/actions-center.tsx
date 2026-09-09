@@ -41,21 +41,22 @@ import { useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
 import { useCollections } from '~/entities/collections'
-import type { Connection, ConnectionResource } from '~/entities/connection'
-import {
-  ConnectionIcon,
-  getConnectionResourceStore,
-  prefetchConnectionResourceCore,
-  resourceTablesAndSchemasQueryOptions,
-  useConnectionResourceLinkParams,
-} from '~/entities/connection'
+import { ConnectionIcon } from '~/entities/connection/components/connection-icon'
+import type {
+  Connection,
+  ConnectionResource,
+} from '~/entities/connection/core/sync'
+import { useConnectionResourceLinkParams } from '~/entities/connection/hooks/use-connection-resource-link-params'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
 import {
   openDefinitionsTab,
   openRunnerTab,
   openTableTab,
   openVisualizerTab,
-} from '~/entities/connection/store'
-import { useActiveWorkspace } from '~/entities/workspace'
+} from '~/entities/connection/store/helpers/tabs'
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
+import { prefetchConnectionResourceCore } from '~/entities/connection/utils/fetching'
+import { useActiveWorkspace } from '~/entities/workspace/hooks'
 import { checkForUpdates } from '~/hooks/use-updates-observer'
 import { appStore, setIsActionCenterOpen } from '~/store'
 

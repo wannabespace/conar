@@ -1,4 +1,4 @@
-import { getNavigatorStore } from '..'
+import { getNavigatorStore } from '../stores'
 
 export const setNavigator = (
   id: string,

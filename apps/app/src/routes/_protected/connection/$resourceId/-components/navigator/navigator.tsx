@@ -21,12 +21,12 @@ import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
 
-import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { openRunnerTab } from '~/entities/connection/store/helpers/tabs'
 import {
   getConnectionResourceStore,
   getNavigatorStore,
-  openRunnerTab,
-} from '~/entities/connection/store'
+} from '~/entities/connection/store/stores'
 import { pressNavProps } from '~/lib/press-nav'
 
 import { DefinitionsPanel } from './definitions-section'

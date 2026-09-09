@@ -4,8 +4,8 @@ import { createContext, use } from 'react'
 import { createComputed } from 'seitu'
 import { createWebStorageValue } from 'seitu/web'
 
-import { runnerStoreKey } from '~/entities/connection/store'
-import { getEditorQueries } from '~/entities/connection/utils'
+import { runnerStoreKey } from '~/entities/connection/store/tabs/ids'
+import { getEditorQueries } from '~/entities/connection/utils/query-parser'
 import { RUNNER_RESULTS_DEFAULT_HEIGHT } from '~/lib/constants'
 
 export const runnerPageType = type({

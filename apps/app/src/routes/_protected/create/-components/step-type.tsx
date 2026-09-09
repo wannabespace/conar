@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from '@tamery/ui/components/card'
 
-import { ConnectionIcon } from '~/entities/connection/components'
+import { ConnectionIcon } from '~/entities/connection/components/connection-icon'
 import { MongoIcon } from '~/icons/mongo'
 
 export const StepType = ({

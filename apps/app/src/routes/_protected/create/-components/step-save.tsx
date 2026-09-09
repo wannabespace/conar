@@ -27,7 +27,7 @@ import { useId } from 'react'
 
 import { ConnectionDetails } from '~/components/connection-details'
 import { useCollections } from '~/entities/collections'
-import { useActiveWorkspace } from '~/entities/workspace'
+import { useActiveWorkspace } from '~/entities/workspace/hooks'
 
 export const StepSave = ({
   type,

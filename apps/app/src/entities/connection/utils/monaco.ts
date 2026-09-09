@@ -3,13 +3,13 @@ import { languages } from 'monaco-editor'
 import type { CompletionService, ICompletionItem } from 'monaco-sql-languages'
 import { EntityContextType, LanguageIdEnum } from 'monaco-sql-languages'
 
-import type { ConnectionResource } from '~/entities/connection/core'
-import { queryClient } from '~/main'
+import type { ConnectionResource } from '~/entities/connection/core/sync'
+import { queryClient } from '~/lib/query-client'
 
 import { resourceTableColumnsQueryOptions } from '../queries/columns'
 import { resourceEnumsQueryOptions } from '../queries/enums'
 import { resourceTablesAndSchemasQueryOptions } from '../queries/tables-and-schemas'
-import { getConnectionResourceStore } from '../store'
+import { getConnectionResourceStore } from '../store/stores'
 
 export const sqlDialects = {
   clickhouse: LanguageIdEnum.MYSQL,

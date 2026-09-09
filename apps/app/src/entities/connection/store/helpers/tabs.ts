@@ -1,4 +1,4 @@
-import { getConnectionResourceStore } from '..'
+import { getConnectionResourceStore } from '../stores'
 import {
   definitionsTabId,
   parseTabId,

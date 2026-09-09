@@ -8,7 +8,7 @@ import { useTableContext } from '@tamery/table/hooks'
 import { Skeleton } from '@tamery/ui/components/skeleton'
 import { cn } from '@tamery/ui/lib/utils'
 
-import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell'
+import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell/utils'
 
 const ROWS_COUNT = 20
 const STAGGER_MS = 90

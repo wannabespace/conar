@@ -4,17 +4,20 @@ import { eq, useLiveQuery } from '@tanstack/react-db'
 import { useSubscription } from 'seitu/react'
 
 import { getCollections, useCollections } from '~/entities/collections'
-import type { Connection, ConnectionResource } from '~/entities/connection/core'
-import { queryClient } from '~/main'
+import type {
+  Connection,
+  ConnectionResource,
+} from '~/entities/connection/core/sync'
+import { queryClient } from '~/lib/query-client'
 
-import { resourceRowsQueryInfiniteOptions } from '../queries'
 import { resourceTableColumnsQueryOptions } from '../queries/columns'
 import { resourceConstraintsQueryOptions } from '../queries/constraints'
 import { resourceEnumsQueryOptions } from '../queries/enums'
+import { resourceRowsQueryInfiniteOptions } from '../queries/rows'
 import { resourceTablesAndSchemasQueryOptions } from '../queries/tables-and-schemas'
 import { resourceTableTotalQueryOptions } from '../queries/total'
 import { useLocalProxyAvailable } from '../runtime/proxy'
-import { getConnectionResourceStore, getConnectionStore } from '../store'
+import { getConnectionResourceStore, getConnectionStore } from '../store/stores'
 import { fetchingConfig } from './fetching-config'
 
 export const prefetchConnectionResourceCore = async (

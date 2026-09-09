@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 
-import type { GeneratorMap } from '.'
+import type { GeneratorMap } from './types'
 
 const scalarJsonGenerators = [
   () => faker.lorem.word(),

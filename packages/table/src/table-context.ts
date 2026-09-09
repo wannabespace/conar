@@ -4,7 +4,7 @@ import { createContext, use } from 'react'
 import type { Store } from 'seitu'
 import { useSubscription } from 'seitu/react'
 
-import type { ColumnRenderer } from './'
+import type { ColumnRenderer } from './types'
 
 export interface TableContextType {
   scrollRef: RefObject<HTMLDivElement | null>
