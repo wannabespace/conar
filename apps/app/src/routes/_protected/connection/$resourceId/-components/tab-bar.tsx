@@ -474,10 +474,7 @@ const ChatToggle = ({ resourceId }: { resourceId: string }) => {
             size="icon-xs"
             aria-label="AI chat"
             aria-pressed={chatOpened}
-            className={cn(
-              'text-muted-foreground',
-              chatOpened && 'bg-foreground/10 text-foreground'
-            )}
+            className="text-muted-foreground"
             onClick={toggleChat}
           />
         }

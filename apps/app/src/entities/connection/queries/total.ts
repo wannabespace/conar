@@ -26,7 +26,6 @@ export const resourceTableTotalQuery = memoize(
         clickhouse: async (db) => {
           if (!exact && !filters?.length) {
             const estimate = await db
-              .withSchema('system')
               .selectFrom('system.parts')
               .select(db.fn.sum(sql.ref('rows')).as('count'))
               .where('database', '=', schema)
@@ -34,7 +33,7 @@ export const resourceTableTotalQuery = memoize(
               .where('active', '=', 1)
               .executeTakeFirst()
 
-            if (estimate && Number(estimate.count) >= 0) {
+            if (estimate && Number(estimate.count) > 0) {
               return { count: Number(estimate.count), isEstimated: true }
             }
           }
@@ -66,14 +65,13 @@ export const resourceTableTotalQuery = memoize(
         mysql: async (db) => {
           if (!exact && !filters?.length) {
             const estimate = await db
-              .withSchema('information_schema')
               .selectFrom('information_schema.TABLES')
               .select('TABLE_ROWS as count')
               .where('TABLE_SCHEMA', '=', schema)
               .where('TABLE_NAME', '=', table)
               .executeTakeFirst()
 
-            if (estimate && estimate.count !== null && estimate.count >= 0) {
+            if (estimate && estimate.count !== null && estimate.count > 0) {
               return { count: estimate.count, isEstimated: true }
             }
           }
@@ -91,7 +89,6 @@ export const resourceTableTotalQuery = memoize(
         postgres: async (db) => {
           if (!exact && !filters?.length) {
             const estimate = await db
-              .withSchema('pg_catalog')
               .selectFrom('pg_catalog.pg_class')
               .innerJoin(
                 'pg_catalog.pg_namespace',
@@ -103,7 +100,7 @@ export const resourceTableTotalQuery = memoize(
               .where('pg_catalog.pg_class.relname', '=', table)
               .executeTakeFirst()
 
-            if (estimate && estimate.count !== null && estimate.count >= 0) {
+            if (estimate && estimate.count !== null && estimate.count > 0) {
               return {
                 count: Math.round(estimate.count),
                 isEstimated: true,

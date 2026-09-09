@@ -4,7 +4,7 @@ import {
   Tick02Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { CONNECTION_TYPES_WITH_EXPLAIN } from '@tamery/shared/constants'
+import { CONNECTION_TYPES_WITH_EXPLAIN } from '@tamery/shared/connection-constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { Button } from '@tamery/ui/components/button'
 import { Checkbox } from '@tamery/ui/components/checkbox'

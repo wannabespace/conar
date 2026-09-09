@@ -12,7 +12,7 @@ export const columnType = type({
   'enumName?': 'string',
   id: 'string',
   'isArray?': 'boolean',
-  'isIdentity?': 'boolean | number',
+  'isIdentity?': 'boolean | number | null',
   'maxLength?': 'number | null',
   nullable: 'boolean | 1 | 0',
   'precision?': 'number | null',
@@ -96,6 +96,7 @@ const resourceTableColumnsQuery = memoize(
                 eb('table_name', '=', table),
               ])
             )
+            .orderBy('ordinal_position')
             .execute()
 
           return query.map((row) => ({
@@ -103,7 +104,7 @@ const resourceTableColumnsQuery = memoize(
             editable: true,
             enumName: row.type.includes('Enum') ? row.id : undefined,
             isArray: row.type.includes('Array('),
-            label: getClickhouseColumnType(row.type),
+            typeLabel: getClickhouseColumnType(row.type),
           }))
         },
         mssql: async (db) => {
@@ -118,9 +119,9 @@ const resourceTableColumnsQuery = memoize(
               'NUMERIC_PRECISION as precision',
               'NUMERIC_SCALE as scale',
               'DATA_TYPE as type',
-              sql<boolean>`
+              sql<number | null>`
               COLUMNPROPERTY(
-                OBJECT_ID(TABLE_SCHEMA + '.' + TABLE_NAME),
+                OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)),
                 COLUMN_NAME,
                 'IsIdentity'
               )
@@ -140,18 +141,14 @@ const resourceTableColumnsQuery = memoize(
                 eb('TABLE_NAME', '=', table),
               ])
             )
+            .orderBy('ORDINAL_POSITION')
             .execute()
 
           return query.map(
             ({ name, ...column }) =>
               ({
                 ...column,
-                enumName:
-                  column.type === 'set' || column.type === 'enum'
-                    ? name
-                    : undefined,
                 id: name,
-                isArray: column.type === 'set',
                 maxLength: column.max_length,
               }) satisfies typeof columnType.inferIn
           )
@@ -167,7 +164,7 @@ const resourceTableColumnsQuery = memoize(
               'CHARACTER_MAXIMUM_LENGTH as max_length',
               'NUMERIC_PRECISION as precision',
               'NUMERIC_SCALE as scale',
-              eb.fn.coalesce('DATA_TYPE', 'COLUMN_TYPE').as('type'),
+              'DATA_TYPE as type',
               eb
                 .case('IS_NULLABLE')
                 .when('YES')
@@ -183,6 +180,7 @@ const resourceTableColumnsQuery = memoize(
                 eb('TABLE_NAME', '=', table),
               ])
             )
+            .orderBy('ORDINAL_POSITION')
             .execute()
 
           return query.map(
@@ -232,6 +230,7 @@ const resourceTableColumnsQuery = memoize(
                 eb('table_name', '=', table),
               ])
             )
+            .orderBy('ordinal_position')
             .execute()
 
           // Materialized views do not have columns, fallback to pg_attribute

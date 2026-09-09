@@ -120,18 +120,9 @@ const resourceFunctionsQuery = createQuery({
           'p.proname as name',
           eb
             .case('p.prokind')
-            .when('f')
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then('function')
             .when('p')
             // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
             .then('procedure')
-            .when('a')
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then('function')
-            .when('w')
-            // oxlint-disable-next-line promise/prefer-await-to-then -- Kysely CASE builder, not a Promise
-            .then('function')
             .else('function')
             .end()
             .as('type'),

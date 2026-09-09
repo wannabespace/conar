@@ -9,5 +9,3 @@ export const navigatorOpenValue = createWebStorageValue({
   defaultValue: true,
   schema: type('boolean'),
 })
-
-export { SIDEBAR_DEFAULT_WIDTH } from '~/lib/constants'

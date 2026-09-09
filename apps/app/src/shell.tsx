@@ -5,7 +5,7 @@ export const titleBarClassName =
   'flex h-[calc(40px+1px)] shrink-0 items-center border-b border-transparent'
 
 export const resourcePanelClassName =
-  'bg-background flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-lg'
+  'bg-background ring-foreground/4 flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-xl ring-[0.5px]'
 
 export const centeredPageClassName =
   'mx-auto flex min-h-full w-full max-w-2xl flex-col px-6 py-12'

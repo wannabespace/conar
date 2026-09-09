@@ -1,6 +1,6 @@
 import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME } from '@tamery/shared/constants'
+import { CONNECTION_TYPES_WITHOUT_COLUMNS_RENAME } from '@tamery/shared/connection-constants'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { enabledFilters } from '@tamery/shared/filters'
 import type { ColumnRenderer, TableCellProps } from '@tamery/table'

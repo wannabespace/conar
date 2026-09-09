@@ -7,7 +7,7 @@ import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import type * as apiOrpc from '@tamery/api/orpc/routers'
 import type * as proxyOrpc from '@tamery/proxy/orpc/routers'
 import type * as queryProxy from '@tamery/query-proxy'
-import { PROXY_ERROR_MESSAGE } from '@tamery/shared/constants'
+import { PROXY_ERROR_MESSAGE } from '@tamery/shared/connection-constants'
 import { isConnectionError } from '@tamery/shared/utils/connections'
 import { memoize } from 'memoza'
 

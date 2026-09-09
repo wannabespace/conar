@@ -110,14 +110,14 @@ export const resourceIndexesQuery = createQuery({
           sql<string>`pg_get_indexdef(ix.indexrelid)`.as('index_definition'),
         ])
         .where('n.nspname', 'not in', ['pg_catalog', 'information_schema'])
-        .where('t.relkind', '=', 'r')
+        .where('t.relkind', 'in', ['r', 'p', 'm'])
         .execute()
 
       return query.map(({ index_definition, ...row }) => {
         // To handle custom indexes like JSONB indexes, vector indexes, etc.
-        const definitionParts = index_definition
-          .toLowerCase()
-          .split(` using ${row.index_type.toLowerCase()}`)
+        const definitionParts = index_definition.split(
+          ` USING ${row.index_type} `
+        )
         let customExpression = row.column
           ? undefined
           : definitionParts[1]?.trim()

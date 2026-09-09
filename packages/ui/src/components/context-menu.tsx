@@ -125,7 +125,7 @@ const ContextMenuSubTrigger = ({
     <HugeiconsIcon
       icon={ArrowRight01Icon}
       strokeWidth={2}
-      className="ml-auto"
+      className="ml-auto size-3.5"
     />
   </ContextMenuPrimitive.SubmenuTrigger>
 )

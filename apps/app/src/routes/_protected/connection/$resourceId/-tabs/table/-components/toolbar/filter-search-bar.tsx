@@ -714,7 +714,7 @@ export const FilterSearchBar = ({
       onValueChange={setHighlighted}
       className="relative min-w-0 flex-1"
     >
-      <div className="bg-input ring-foreground/4 has-[input:focus]:border-ring has-[input:focus]:ring-ring/30 flex min-h-8 w-full items-center gap-1 rounded-xl border border-transparent py-0.75 pr-1.5 pl-2 shadow-xs ring-[0.5px] transition-[color,box-shadow] duration-200 has-[input:focus]:ring-3">
+      <div className="bg-input ring-foreground/4 has-[input:focus]:focus-ring flex min-h-8 w-full items-center gap-1 rounded-xl border border-transparent py-0.75 pr-1.5 pl-2 shadow-xs ring-[0.5px] transition-[color,box-shadow] duration-200">
         <LoadingContent
           className="text-muted-foreground pointer-events-none mr-1 size-4 shrink-0"
           loading={isPending}

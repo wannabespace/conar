@@ -1,6 +1,5 @@
 import { Cancel01Icon, Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'
 import { KbdCtrlLetter } from '@tamery/ui/components/custom/shortcuts'
 import {
@@ -54,6 +53,8 @@ import {
   applySearchHighlight,
   getVisualizerLayout,
 } from '~/entities/connection/visualizer'
+
+import { VisualizerSkeleton } from './visualizer-skeleton'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
@@ -295,11 +296,7 @@ export const VisualizerTab = () => {
     !constraints ||
     columnsQueries.some((q) => q.isPending)
   ) {
-    return (
-      <div className="bg-background flex size-full items-center justify-center">
-        <AppLogo className="text-muted-foreground size-40 animate-pulse" />
-      </div>
-    )
+    return <VisualizerSkeleton />
   }
 
   const columns = columnsQueries

@@ -19,14 +19,6 @@ export const policyType = type({
 
 const REPLACE_SINGLE_QUOTES_REGEX = /'/gu
 
-const pgCommandMap = {
-  '*': 'ALL',
-  a: 'INSERT',
-  d: 'DELETE',
-  r: 'SELECT',
-  w: 'UPDATE',
-} as const
-
 const mssqlOperationMap = {
   0: 'ALL',
   1: 'SELECT',
@@ -131,29 +123,28 @@ const query = createQuery({
     },
     postgres: async (db) => {
       const rows = await db
-        .selectFrom('pg_catalog.pg_policy as p')
-        .innerJoin('pg_catalog.pg_class as c', 'p.polrelid', 'c.oid')
-        .innerJoin('pg_catalog.pg_namespace as n', 'c.relnamespace', 'n.oid')
-        .select(({ fn }) => [
-          'n.nspname as schema',
-          'c.relname as table',
-          'p.polname as name',
-          'p.polpermissive',
-          'p.polcmd',
-          fn('pg_get_expr', ['p.polqual', 'p.polrelid']).as('using'),
-          fn('pg_get_expr', ['p.polwithcheck', 'p.polrelid']).as('check'),
+        .selectFrom('pg_catalog.pg_policies')
+        .select([
+          'schemaname',
+          'tablename',
+          'policyname',
+          'permissive',
+          'roles',
+          'cmd',
+          'qual',
+          'with_check',
         ])
         .execute()
       return rows.map((row) => ({
-        check: row.check as string | null,
-        command: pgCommandMap[row.polcmd as keyof typeof pgCommandMap] || 'ALL',
+        check: row.with_check,
+        command: row.cmd,
         enabled: true,
-        name: row.name,
-        roles: [],
-        schema: row.schema,
-        table: row.table,
-        type: row.polpermissive ? 'PERMISSIVE' : 'RESTRICTIVE',
-        using: row.using as string | null,
+        name: row.policyname,
+        roles: row.roles,
+        schema: row.schemaname,
+        table: row.tablename,
+        type: row.permissive,
+        using: row.qual,
       }))
     },
   },

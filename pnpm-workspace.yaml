@@ -2,6 +2,7 @@ catalogMode: prefer
 cleanupUnusedCatalogs: true
 minimumReleaseAgeExclude:
   - cn@0.2.4
+  - motion-panels
 shellEmulator: true
 blockExoticSubdeps: false
 packages:
@@ -112,6 +113,7 @@ catalog:
   monaco-editor: ^0.54.0
   monaco-sql-languages: ^0.15.1
   motion: ^13.2.0
+  motion-panels: ^0.3.2
   mssql: ^12.7.0
   mysql2: ^3.24.3
   nanoid: ^6.0.1

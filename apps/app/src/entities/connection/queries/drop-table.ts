@@ -20,30 +20,18 @@ export const dropTableQuery = memoize(
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .schema.dropTable(table)
             .execute(),
-        mssql: (db) => {
-          let query = db
+        mssql: (db) =>
+          db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .schema.dropTable(table)
-
-          if (cascade) {
-            query = query.cascade()
-          }
-
-          return query.execute()
-        },
-        mysql: (db) => {
-          let query = db
+            .execute(),
+        mysql: (db) =>
+          db
             .withSchema(schema)
             .$extendTables<{ [table]: Record<string, unknown> }>()
             .schema.dropTable(table)
-
-          if (cascade) {
-            query = query.cascade()
-          }
-
-          return query.execute()
-        },
+            .execute(),
         postgres: (db) => {
           let query = db
             .withSchema(schema)

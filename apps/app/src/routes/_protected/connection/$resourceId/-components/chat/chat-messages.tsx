@@ -56,7 +56,7 @@ export const ChatMessages = ({
                 {message.role === 'user' ? (
                   <Message align="end">
                     <MessageContent>
-                      <Bubble align="end">
+                      <Bubble align="end" variant="muted">
                         <BubbleContent data-mask>
                           {textFromMessage(message)}
                         </BubbleContent>

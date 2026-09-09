@@ -9,7 +9,7 @@ import type { ReactElement } from 'react'
 import { useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { toggleResults, useRunnerPageStore } from '../../-lib/store'
+import { setLayout, useRunnerPageStore } from '../../-lib/store'
 
 const ToggleRow = ({
   label,
@@ -41,7 +41,9 @@ export const RunnerSettings = ({ children }: { children: ReactElement }) => {
           <ToggleRow
             label="Results Panel"
             checked={resultsVisible}
-            onCheckedChange={() => toggleResults(store)}
+            onCheckedChange={() =>
+              setLayout(store, { resultsVisible: !resultsVisible })
+            }
           />
         </div>
       </PopoverContent>

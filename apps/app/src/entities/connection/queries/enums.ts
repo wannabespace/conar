@@ -136,43 +136,7 @@ const resourceEnumsQuery = createQuery({
         )
         .filter((res) => res.values.length > 0)
     },
-    mssql: async (db) => {
-      const query = await db
-        .selectFrom('information_schema.COLUMNS')
-        .select([
-          'TABLE_SCHEMA as schema',
-          'TABLE_NAME as table',
-          'DATA_TYPE as value',
-          'COLUMN_NAME as name',
-          'DATA_TYPE as data_type',
-        ])
-        .where(({ or, and, eb }) =>
-          and([
-            eb('TABLE_SCHEMA', 'not in', [
-              'INFORMATION_SCHEMA',
-              'information_schema',
-              'system',
-            ]),
-            or([eb('DATA_TYPE', '=', 'enum'), eb('DATA_TYPE', '=', 'set')]),
-          ])
-        )
-        .groupBy(['TABLE_SCHEMA', 'TABLE_NAME', 'COLUMN_NAME', 'DATA_TYPE'])
-        .execute()
-
-      return query.map(
-        (row) =>
-          ({
-            metadata: {
-              column: row.name,
-              isSet: row.data_type === 'set',
-              table: row.table,
-            },
-            name: row.name,
-            schema: row.schema,
-            values: parseMysqlEnumOrSet(row.value),
-          }) satisfies typeof enumType.infer
-      )
-    },
+    mssql: () => Promise.resolve([]),
     mysql: async (db) => {
       const query = await db
         .selectFrom('information_schema.COLUMNS')
@@ -235,6 +199,7 @@ const resourceEnumsQuery = createQuery({
           'pg_catalog',
           'information_schema',
         ])
+        .orderBy('pg_enum.enumsortorder')
         .execute()
 
       const grouped = new Map<string, typeof enumType.infer>()

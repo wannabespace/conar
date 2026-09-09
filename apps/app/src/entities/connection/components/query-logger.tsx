@@ -79,7 +79,7 @@ const LogRow = ({
     aria-label="Inspect query"
     data-active={isActive || undefined}
     onClick={onSelect}
-    className="hover:bg-accent data-active:bg-foreground/10 hover:data-active:bg-foreground/10 focus-visible:ring-ring/50 flex h-7 w-full items-center gap-2.5 px-3 text-left text-sm outline-none focus-visible:ring-[3px]"
+    className="hover:bg-accent data-active:bg-foreground/10 hover:data-active:bg-foreground/10 focus-visible:focus-ring flex h-7 w-full items-center gap-2.5 px-3 text-left text-sm outline-none"
   >
     <StatusDot {...query} />
     <CodeInline

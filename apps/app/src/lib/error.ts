@@ -1,6 +1,6 @@
 import { ORPCError } from '@orpc/client'
 import type { CommonORPCErrorCode } from '@orpc/client'
-import { PROXY_ERROR_MESSAGE } from '@tamery/shared/constants'
+import { PROXY_ERROR_MESSAGE } from '@tamery/shared/connection-constants'
 import { BASE_ERROR_CODES } from 'better-auth'
 import { toast } from 'sonner'
 

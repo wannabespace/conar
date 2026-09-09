@@ -1,6 +1,6 @@
 import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { CONNECTION_TYPES_WITH_CASCADE_DROP } from '@tamery/shared/connection-constants'
 import {
   Alert,
   AlertDescription,
@@ -138,7 +138,7 @@ export const DropTableDialog = ({ ref }: DropTableDialogProps) => {
               autoComplete="off"
             />
           </div>
-          {connection.type !== ConnectionType.ClickHouse && (
+          {CONNECTION_TYPES_WITH_CASCADE_DROP.includes(connection.type) && (
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="cascade"

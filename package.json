@@ -27,7 +27,7 @@
     "build:app": "turbo run @tamery/app#build",
     "build:todesktop": "turbo run @tamery/desktop#build:todesktop",
     "build:cli": "turbo run tamery#build",
-    "publish": "cd apps/cli && pnpm publish --access public --no-git-checks",
+    "publish:cli": "cd apps/cli && pnpm publish --access public --no-git-checks",
     "aur:sync": "bun scripts/sync-aur-version.ts",
     "aur:sync:checksum": "bun scripts/sync-aur-version.ts --checksum",
     "drizzle:generate": "cd packages/db && pnpm run drizzle:generate",
