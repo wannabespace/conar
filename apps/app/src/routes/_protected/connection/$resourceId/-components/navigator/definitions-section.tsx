@@ -13,7 +13,7 @@ import type { IconSvgElement } from '@hugeicons/react'
 import {
   CONNECTION_TYPES_WITH_FUNCTIONS,
   CONNECTION_TYPES_WITH_TRIGGERS,
-} from '@tamery/shared/constants'
+} from '@tamery/shared/connection-constants'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
 import {

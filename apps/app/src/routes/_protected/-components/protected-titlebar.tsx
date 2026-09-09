@@ -8,7 +8,7 @@ import {
   UnfoldMoreIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
+import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/connection-constants'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { AppLogo } from '@tamery/ui/components/brand/app-logo'
 import { Button } from '@tamery/ui/components/button'

@@ -14,7 +14,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import {
   CONNECTION_RESOURCE_ROOT_LABEL,
   CONNECTION_RESOURCE_ROOT_SYMBOL,
-} from '@tamery/shared/constants'
+} from '@tamery/shared/connection-constants'
 import { connectionLabels } from '@tamery/shared/enums/connection-type'
 import { SyncType } from '@tamery/shared/enums/sync-type'
 import { SafeURL } from '@tamery/shared/utils/safe-url'

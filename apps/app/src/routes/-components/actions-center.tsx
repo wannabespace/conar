@@ -18,7 +18,7 @@ import {
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { IconSvgElement } from '@hugeicons/react'
-import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/constants'
+import { CONNECTION_RESOURCE_ROOT_LABEL } from '@tamery/shared/connection-constants'
 import {
   Command,
   CommandDialog,
