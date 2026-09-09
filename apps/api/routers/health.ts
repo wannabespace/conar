@@ -1,4 +1,4 @@
-import { providers } from '@tamery/ai/health'
+import { providers } from '@tamery/ai/models'
 import { db } from '@tamery/db'
 import { sql } from 'drizzle-orm'
 import { Hono } from 'hono'

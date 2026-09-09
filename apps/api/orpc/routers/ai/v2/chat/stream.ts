@@ -1,8 +1,10 @@
-import { chatStream } from '@tamery/ai/chat-stream'
+import { chatStream } from '@tamery/ai/features'
 import type { AppUIMessage } from '@tamery/ai/message'
+import { AiFeature } from '@tamery/ai/usage'
 import { validateUIMessages } from 'ai'
 import { type } from 'arktype'
 
+import { aiUsage } from '~/lib/ai-usage'
 import { chatPersist } from '~/lib/chat-persist'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
@@ -75,6 +77,11 @@ export const stream = orpc
           message,
           userId: context.user.id,
         }),
+      telemetry: aiUsage.telemetry({
+        chatId: input.chatId,
+        feature: AiFeature.Chat,
+        userId: context.user.id,
+      }),
     })
 
     if (!str) {

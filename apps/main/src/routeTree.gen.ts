@@ -31,6 +31,7 @@ import { Route as DeepSignInRouteImport } from './routes/deep.sign-in'
 const AuthForgotPasswordLazyRouteImport = createFileRoute(
   '/_auth/forgot-password',
 )()
+const AccountAiUsageLazyRouteImport = createFileRoute('/account/ai-usage')()
 const AccountApiKeysLazyRouteImport = createFileRoute('/account/api-keys')()
 const AccountBillingLazyRouteImport = createFileRoute('/account/billing')()
 const AccountSettingsIndexLazyRouteImport =
@@ -120,6 +121,13 @@ const AccountIndexRoute = AccountIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AccountRoute,
 } as any)
+const AccountAiUsageLazyRoute = AccountAiUsageLazyRouteImport.update({
+  id: '/ai-usage',
+  path: '/ai-usage',
+  getParentRoute: () => AccountRoute,
+} as any).lazy(() =>
+  import('./routes/account/ai-usage.lazy').then((d) => d.Route),
+)
 const AccountApiKeysLazyRoute = AccountApiKeysLazyRouteImport.update({
   id: '/api-keys',
   path: '/api-keys',
@@ -163,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/deep/sign-in': typeof DeepSignInRoute
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
+  '/account/ai-usage': typeof AccountAiUsageLazyRoute
   '/account/api-keys': typeof AccountApiKeysLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
   '/account/': typeof AccountIndexRoute
@@ -182,6 +191,7 @@ export interface FileRoutesByTo {
   '/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/deep/sign-in': typeof DeepSignInRoute
   '/forgot-password': typeof AuthForgotPasswordLazyRoute
+  '/account/ai-usage': typeof AccountAiUsageLazyRoute
   '/account/api-keys': typeof AccountApiKeysLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
   '/account': typeof AccountIndexRoute
@@ -204,6 +214,7 @@ export interface FileRoutesById {
   '/_layout/terms-of-service': typeof LayoutTermsOfServiceRoute
   '/deep/sign-in': typeof DeepSignInRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordLazyRoute
+  '/account/ai-usage': typeof AccountAiUsageLazyRoute
   '/account/api-keys': typeof AccountApiKeysLazyRoute
   '/account/billing': typeof AccountBillingLazyRoute
   '/_layout/': typeof LayoutIndexRoute
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/deep/sign-in'
     | '/forgot-password'
+    | '/account/ai-usage'
     | '/account/api-keys'
     | '/account/billing'
     | '/account/'
@@ -246,6 +258,7 @@ export interface FileRouteTypes {
     | '/terms-of-service'
     | '/deep/sign-in'
     | '/forgot-password'
+    | '/account/ai-usage'
     | '/account/api-keys'
     | '/account/billing'
     | '/account'
@@ -267,6 +280,7 @@ export interface FileRouteTypes {
     | '/_layout/terms-of-service'
     | '/deep/sign-in'
     | '/_auth/forgot-password'
+    | '/account/ai-usage'
     | '/account/api-keys'
     | '/account/billing'
     | '/_layout/'
@@ -396,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountIndexRouteImport
       parentRoute: typeof AccountRoute
     }
+    '/account/ai-usage': {
+      id: '/account/ai-usage'
+      path: '/ai-usage'
+      fullPath: '/account/ai-usage'
+      preLoaderRoute: typeof AccountAiUsageLazyRouteImport
+      parentRoute: typeof AccountRoute
+    }
     '/account/api-keys': {
       id: '/account/api-keys'
       path: '/api-keys'
@@ -467,6 +488,7 @@ const LayoutRouteWithChildren =
   LayoutRoute._addFileChildren(LayoutRouteChildren)
 
 interface AccountRouteChildren {
+  AccountAiUsageLazyRoute: typeof AccountAiUsageLazyRoute
   AccountApiKeysLazyRoute: typeof AccountApiKeysLazyRoute
   AccountBillingLazyRoute: typeof AccountBillingLazyRoute
   AccountIndexRoute: typeof AccountIndexRoute
@@ -474,6 +496,7 @@ interface AccountRouteChildren {
 }
 
 const AccountRouteChildren: AccountRouteChildren = {
+  AccountAiUsageLazyRoute: AccountAiUsageLazyRoute,
   AccountApiKeysLazyRoute: AccountApiKeysLazyRoute,
   AccountBillingLazyRoute: AccountBillingLazyRoute,
   AccountIndexRoute: AccountIndexRoute,

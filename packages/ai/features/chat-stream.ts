@@ -1,11 +1,12 @@
+import type { TelemetryOptions } from 'ai'
 import { convertToModelMessages, streamText, toUIMessageStream } from 'ai'
 import { createResumableUIMessageStream } from 'ai-resumable-stream'
 import { createClient } from 'redis'
 import { v7 } from 'uuid'
 
-import { env } from './env'
-import type { AppUIMessage } from './message'
-import { models } from './models'
+import { env } from '../env'
+import type { AppUIMessage } from '../message'
+import { models } from '../models/list'
 
 const CHAT_INSTRUCTIONS = [
   'You are Tamery AI, an assistant built into the Tamery database client.',
@@ -52,6 +53,7 @@ interface ChatStreamInput {
   chatId: string
   messages: AppUIMessage[]
   onFinish: (message: AppUIMessage) => Promise<void>
+  telemetry?: TelemetryOptions
 }
 
 export const chatStream = {
@@ -70,6 +72,7 @@ export const chatStream = {
         instructions: CHAT_INSTRUCTIONS,
         messages: await convertToModelMessages(data.messages),
         model: models.chat,
+        telemetry: data.telemetry,
       })
 
       const answeredId = data.messages.findLast(

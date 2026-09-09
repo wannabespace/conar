@@ -1,6 +1,7 @@
+import type { TelemetryOptions } from 'ai'
 import { generateText } from 'ai'
 
-import { models } from './models'
+import { models } from '../models/list'
 import { section, sqlOutputRules } from './prompt'
 
 const fixSqlInstructions = (connectionType: string) =>
@@ -16,6 +17,7 @@ export const fixSql = async (data: {
   error: string
   signal?: AbortSignal
   sql: string
+  telemetry?: TelemetryOptions
 }) => {
   const { text } = await generateText({
     abortSignal: data.signal,
@@ -24,6 +26,7 @@ export const fixSql = async (data: {
     prompt: [section('SQL QUERY', data.sql), section('ERROR', data.error)].join(
       '\n'
     ),
+    telemetry: data.telemetry,
   })
   return text
 }

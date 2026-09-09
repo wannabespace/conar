@@ -1,8 +1,10 @@
-import { generateFilters } from '@tamery/ai/filters'
+import { generateFilters } from '@tamery/ai/features'
+import { AiFeature } from '@tamery/ai/usage'
 import { FREE_AI_FILTERS_USAGE_MONTHLY_LIMIT } from '@tamery/shared/constants'
 import { type } from 'arktype'
 import { addDays, differenceInSeconds, endOfMonth, format } from 'date-fns'
 
+import { aiUsage } from '~/lib/ai-usage'
 import { redis } from '~/lib/redis'
 import { optionalSubscriptionMiddleware, orpc } from '~/orpc'
 
@@ -66,6 +68,10 @@ export const filters = orpc
       context: input.context,
       prompt: input.prompt,
       signal,
+      telemetry: aiUsage.telemetry({
+        feature: AiFeature.Filters,
+        userId: context.user.id,
+      }),
     })
 
     if (!context.subscription && result.filters.length > 0) {

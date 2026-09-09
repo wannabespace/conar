@@ -106,11 +106,7 @@ export const UserButton = ({
           </span>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() =>
-            window.open(accountUrl, window.electron ? '_blank' : '_self')
-          }
-        >
+        <DropdownMenuItem onClick={() => window.open(accountUrl, '_blank')}>
           <HugeiconsIcon icon={UserIcon} strokeWidth={2} />
           Account
         </DropdownMenuItem>

@@ -113,7 +113,7 @@ catalog:
   monaco-editor: ^0.54.0
   monaco-sql-languages: ^0.15.1
   motion: ^13.2.0
-  motion-panels: ^0.3.2
+  motion-panels: ^0.4.0
   mssql: ^12.7.0
   mysql2: ^3.24.3
   nanoid: ^6.0.1
@@ -127,6 +127,7 @@ catalog:
   portless: ^0.15.6
   posthog-js: ^1.425.1
   react: ^19.2.8
+  react-day-picker: ^9.12.0
   react-dom: ^19.2.8
   react-markdown: ^10.1.0
   react-qr-code: ^2.2.0
