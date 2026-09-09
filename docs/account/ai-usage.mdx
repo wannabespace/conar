@@ -1,0 +1,25 @@
+---
+title: 'AI usage'
+sidebarTitle: 'AI usage'
+description: 'See how many tokens your AI requests used each month and what they cost.'
+---
+
+Every AI request — chat, natural-language filters, Fix SQL, Update SQL — is recorded against your account. Open [tamery.app/account/ai-usage](https://tamery.app/account/ai-usage) to see it.
+
+## What you see
+
+Pick a date range with the picker above the table. It opens on the last twelve months, and the table covers whatever range you choose.
+
+One row per month, newest first:
+
+- **Requests** — number of AI calls
+- **Input tokens** — tokens sent to the model, including cached ones
+- **Output tokens** — tokens the model generated
+- **Cost** — estimated price at the model's list rate, from [LiteLLM's public price sheet](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json)
+
+An answer you stop mid-generation is not counted. The model provider never reports token counts for an interrupted response, so there is nothing to record.
+
+<Note>
+  Cost is an estimate for reference. Your Pro subscription covers AI usage; you
+  are not billed per token.
+</Note>

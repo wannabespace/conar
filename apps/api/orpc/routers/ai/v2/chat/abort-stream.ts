@@ -1,4 +1,4 @@
-import { chatStream } from '@tamery/ai/chat-stream'
+import { chatStream } from '@tamery/ai/features'
 import { db } from '@tamery/db'
 import { type } from 'arktype'
 

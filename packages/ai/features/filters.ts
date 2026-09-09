@@ -1,8 +1,9 @@
 import { SQL_FILTERS_GROUPED, SQL_FILTERS_LIST } from '@tamery/shared/filters'
-import { generateObject } from 'ai'
+import type { TelemetryOptions } from 'ai'
+import { generateText, Output } from 'ai'
 import { type } from 'arktype'
 
-import { models } from './models'
+import { models } from '../models/list'
 
 const filtersInstructions = (tableContext: string) =>
   [
@@ -53,19 +54,21 @@ export const generateFilters = async (data: {
   context: string
   prompt: string
   signal?: AbortSignal
+  telemetry?: TelemetryOptions
 }) => {
-  const { object } = await generateObject({
+  const { output } = await generateText({
     abortSignal: data.signal,
     instructions: filtersInstructions(data.context),
-    model: models.fast,
+    model: models.filters,
+    output: Output.object({ schema: filtersOutputSchema }),
     prompt: data.prompt,
-    schema: filtersOutputSchema,
+    telemetry: data.telemetry,
   })
 
   return {
-    filters: object.filters,
+    filters: output.filters,
     orderBy: Object.fromEntries(
-      object.orderBy.map(({ column, direction }) => [column, direction])
+      output.orderBy.map(({ column, direction }) => [column, direction])
     ),
   }
 }

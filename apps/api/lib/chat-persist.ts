@@ -1,12 +1,14 @@
 import { ORPCError } from '@orpc/server'
+import { generateChatTitle } from '@tamery/ai/features'
 import type { AppUIMessage } from '@tamery/ai/message'
 import { messagesFromPartRows } from '@tamery/ai/message'
-import { generateChatTitle } from '@tamery/ai/title'
+import { AiFeature } from '@tamery/ai/usage'
 import { db } from '@tamery/db'
 import { chats, chatsMessages, chatsMessagesParts } from '@tamery/db/schema'
 import { silently } from '@tamery/shared/utils/helpers'
 import { and, asc, eq, isNull } from 'drizzle-orm'
 
+import { aiUsage } from '~/lib/ai-usage'
 import { publisher as chatsMessagesPartsPublisher } from '~/orpc/routers/chats-messages-parts/events'
 import { publisher as chatsMessagesPublisher } from '~/orpc/routers/chats-messages/events'
 import { publisher as chatsPublisher } from '~/orpc/routers/chats/events'
@@ -165,7 +167,14 @@ export const chatPersist = {
     userId: string
   }) => {
     await silently(async () => {
-      const title = await generateChatTitle({ messages: data.messages })
+      const title = await generateChatTitle({
+        messages: data.messages,
+        telemetry: aiUsage.telemetry({
+          chatId: data.chatId,
+          feature: AiFeature.ChatTitle,
+          userId: data.userId,
+        }),
+      })
       if (!title) {
         return
       }

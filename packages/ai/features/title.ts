@@ -1,8 +1,9 @@
+import type { TelemetryOptions } from 'ai'
 import { generateText } from 'ai'
 
-import type { AppUIMessage } from './message'
-import { textFromMessage } from './message'
-import { models } from './models'
+import type { AppUIMessage } from '../message'
+import { textFromMessage } from '../message'
+import { models } from '../models/list'
 
 const TITLE_INSTRUCTIONS = [
   'Generate a title for a chat from its first user message.',
@@ -15,6 +16,7 @@ const TITLE_INSTRUCTIONS = [
 export const generateChatTitle = async (data: {
   messages: AppUIMessage[]
   signal?: AbortSignal
+  telemetry?: TelemetryOptions
 }) => {
   const firstUserMessage = data.messages.find(
     (message) => message.role === 'user'
@@ -30,6 +32,7 @@ export const generateChatTitle = async (data: {
     maxOutputTokens: 32,
     model: models.fast,
     prompt,
+    telemetry: data.telemetry,
   })
 
   return text.trim() || null

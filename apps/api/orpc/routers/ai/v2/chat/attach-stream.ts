@@ -1,7 +1,9 @@
-import { chatStream, lastAnswer } from '@tamery/ai/chat-stream'
+import { chatStream, lastAnswer } from '@tamery/ai/features'
+import { AiFeature } from '@tamery/ai/usage'
 import { db } from '@tamery/db'
 import { type } from 'arktype'
 
+import { aiUsage } from '~/lib/ai-usage'
 import { chatPersist } from '~/lib/chat-persist'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
@@ -46,6 +48,11 @@ export const attachStream = orpc
           message,
           userId: context.user.id,
         }),
+      telemetry: aiUsage.telemetry({
+        chatId: input.chatId,
+        feature: AiFeature.Chat,
+        userId: context.user.id,
+      }),
     })
     if (restarted) {
       yield* restarted

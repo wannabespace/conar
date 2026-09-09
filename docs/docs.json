@@ -41,7 +41,7 @@
           },
           {
             "group": "Account & Billing",
-            "pages": ["account/plans", "account/settings"]
+            "pages": ["account/plans", "account/ai-usage", "account/settings"]
           }
         ]
       },

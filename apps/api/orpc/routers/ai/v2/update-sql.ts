@@ -1,7 +1,9 @@
-import { updateSql } from '@tamery/ai/update-sql'
+import { updateSql } from '@tamery/ai/features'
+import { AiFeature } from '@tamery/ai/usage'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { type } from 'arktype'
 
+import { aiUsage } from '~/lib/ai-usage'
 import { orpc, subscriptionMiddleware } from '~/orpc'
 
 export const updateSQL = orpc
@@ -14,12 +16,16 @@ export const updateSQL = orpc
       type: type.valueOf(ConnectionType),
     })
   )
-  .handler(({ input, signal }) =>
+  .handler(({ context, input, signal }) =>
     updateSql({
       connectionType: input.type,
       context: input.context,
       prompt: input.prompt,
       signal,
       sql: input.sql,
+      telemetry: aiUsage.telemetry({
+        feature: AiFeature.UpdateSql,
+        userId: context.user.id,
+      }),
     })
   )

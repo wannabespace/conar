@@ -1,4 +1,5 @@
 import {
+  ChartLineData01Icon,
   DashboardSquare01Icon,
   File01Icon,
   GitBranchIcon,
@@ -165,6 +166,17 @@ const AccountLayout = () => {
                 className="size-4"
               />
               Billing & Invoices
+            </SidebarButton>
+            <SidebarButton
+              active={match === '/account/ai-usage'}
+              render={<Link to="/account/ai-usage" />}
+            >
+              <HugeiconsIcon
+                icon={ChartLineData01Icon}
+                strokeWidth={2}
+                className="size-4"
+              />
+              AI Usage
             </SidebarButton>
             <SidebarButton
               active={match === '/account/settings/'}
