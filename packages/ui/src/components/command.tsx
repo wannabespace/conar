@@ -14,14 +14,25 @@ import * as React from 'react'
 
 export { Command as CommandPrimitive, defaultFilter } from 'cmdk'
 
+const commandVariants = {
+  // A command list living in a flat pane owns no surface of its own
+  flat: 'text-foreground',
+  // A floating popup's own rounded surface
+  popup: 'bg-popover text-popover-foreground rounded-xl',
+}
+
 export const Command = ({
   className,
+  variant = 'popup',
   ...props
-}: React.ComponentProps<typeof CommandPrimitive>) => (
+}: React.ComponentProps<typeof CommandPrimitive> & {
+  variant?: keyof typeof commandVariants
+}) => (
   <CommandPrimitive
     data-slot="command"
     className={cn(
-      `bg-popover text-popover-foreground flex size-full flex-col overflow-hidden rounded-xl`,
+      'flex size-full flex-col overflow-hidden',
+      commandVariants[variant],
       className
     )}
     {...props}
@@ -60,12 +71,32 @@ export const CommandDialog = ({
   </Dialog>
 )
 
+const commandInputVariants = {
+  // A full-bleed row for a command list living in a flat pane, hairline along the
+  // bottom only; the extra px-1 lands the icon on the pane's own px-3 text column
+  flat: {
+    group: `h-9! rounded-none border-0 border-b bg-transparent px-1 shadow-none ring-0`,
+    wrapper: '',
+  },
+  // A filled pill inset from a floating popup's own padding
+  pill: {
+    group: `h-7! rounded-lg bg-[color-mix(in_oklch,var(--input),var(--foreground)_4%)]`,
+    wrapper: 'p-1 pb-0',
+  },
+}
+
 export const CommandInput = ({
   className,
+  variant = 'pill',
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Input>) => (
-  <div data-slot="command-input-wrapper" className="p-1 pb-0">
-    <InputGroup className="h-7! rounded-lg bg-[color-mix(in_oklch,var(--input),var(--foreground)_4%)]">
+}: React.ComponentProps<typeof CommandPrimitive.Input> & {
+  variant?: keyof typeof commandInputVariants
+}) => (
+  <div
+    data-slot="command-input-wrapper"
+    className={commandInputVariants[variant].wrapper}
+  >
+    <InputGroup className={commandInputVariants[variant].group}>
       <CommandPrimitive.Input
         data-slot="command-input"
         className={cn(

@@ -1,23 +1,50 @@
-import type { Column } from '~/entities/connection/components/table/cell/utils'
 import { toPgArrayLiteral } from '~/entities/connection/transformers/list/postgres'
 
+import { columnTypeName } from '../base'
 import type { DialectSeedConfig } from '../registry'
-import { pgAutoDetect } from './detect'
 import { PG_GENERATORS } from './generators'
 
-const pgTransformArray = (items: unknown[], column: Column): unknown => {
-  const strings = items.map((v) =>
-    typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)
-  )
-  const type = column.typeLabel?.toLowerCase().replace('[]', '')
-  if (type === 'box') {
-    return toPgArrayLiteral(strings, ';')
-  }
-  return toPgArrayLiteral(strings)
-}
-
 export const pgSeedConfig = {
-  autoDetect: pgAutoDetect,
   generators: PG_GENERATORS,
-  transformArray: pgTransformArray,
+  transformArray: (items, column) =>
+    columnTypeName(column) === 'box'
+      ? toPgArrayLiteral(items.map(String), ';')
+      : items,
+  types: {
+    bit: 'number.binary',
+    box: 'postgres.box',
+    bytea: 'postgres.bytea',
+    cidr: 'internet.ip',
+    circle: 'postgres.circle',
+    datemultirange: 'postgres.datemultirange',
+    daterange: 'postgres.daterange',
+    geography: 'postgres.geometry',
+    geometry: 'postgres.geometry',
+    hstore: 'postgres.hstore',
+    inet: 'internet.ip',
+    int4multirange: 'postgres.intmultirange',
+    int4range: 'postgres.intrange',
+    int8multirange: 'postgres.intmultirange',
+    int8range: 'postgres.intrange',
+    interval: 'postgres.interval',
+    line: 'postgres.line',
+    lseg: 'postgres.lseg',
+    ltree: 'postgres.ltree',
+    macaddr: 'internet.mac',
+    macaddr8: 'internet.mac',
+    nummultirange: 'postgres.nummultirange',
+    numrange: 'postgres.numrange',
+    oid: 'number.int',
+    path: 'postgres.path',
+    point: 'postgres.point',
+    polygon: 'postgres.polygon',
+    tsmultirange: 'postgres.tsmultirange',
+    tsquery: 'lorem.word',
+    tsrange: 'postgres.tsrange',
+    tstzmultirange: 'postgres.tsmultirange',
+    tstzrange: 'postgres.tsrange',
+    tsvector: 'lorem.sentence',
+    varbit: 'number.binary',
+    xml: 'lorem.sentence',
+  },
 } satisfies DialectSeedConfig
