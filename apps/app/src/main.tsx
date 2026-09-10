@@ -1,6 +1,6 @@
 import './lib/warmup'
 import { themeStore } from '@tamery/ui/theme-store'
-import { createRouter, RouterProvider } from '@tanstack/react-router'
+import { createRouter, Navigate, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { toast } from 'sonner'
 
@@ -38,6 +38,7 @@ if (window.electron) {
 }
 
 export const router = createRouter({
+  defaultNotFoundComponent: () => <Navigate replace to="/" />,
   defaultPendingMinMs: 0,
   defaultPreload: 'intent',
   history,
