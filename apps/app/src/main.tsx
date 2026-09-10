@@ -4,8 +4,7 @@ import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { toast } from 'sonner'
 
-import { history } from './lib/history'
-import { lastLocationStorageValue } from './lib/last-location'
+import { history, lastLocationStorageValue } from './lib/last-location'
 import { routeTree } from './routeTree.gen'
 
 if (window.electron) {

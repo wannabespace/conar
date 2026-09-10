@@ -5,7 +5,7 @@ import { BASE_ERROR_CODES } from 'better-auth'
 import { toast } from 'sonner'
 
 import { fullSignOut } from '~/lib/auth'
-import { isAuthLocation } from '~/lib/history'
+import { isAuthLocation } from '~/lib/last-location'
 
 const getErrorMessage = (error: unknown) =>
   (error instanceof ORPCError && error.message) ||

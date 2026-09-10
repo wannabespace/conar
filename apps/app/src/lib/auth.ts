@@ -6,8 +6,11 @@ import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 
 import { encryptionKey } from './encryption-key'
-import { history, isAuthLocation } from './history'
-import { lastLocationStorageValue } from './last-location'
+import {
+  history,
+  isAuthLocation,
+  lastLocationStorageValue,
+} from './last-location'
 import { apiUrl } from './urls'
 
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
