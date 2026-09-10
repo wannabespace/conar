@@ -22,8 +22,8 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import type { constraintsType } from '~/entities/connection/queries'
-import { resourceConstraintsQueryOptions } from '~/entities/connection/queries'
+import type { constraintsType } from '~/entities/connection/queries/constraints'
+import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints'
 
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'

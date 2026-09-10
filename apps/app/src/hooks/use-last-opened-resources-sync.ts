@@ -2,8 +2,8 @@ import { createEffect } from '@tanstack/react-db'
 import { useEffect } from 'react'
 
 import { useCollections } from '~/entities/collections'
-import type { ConnectionResource } from '~/entities/connection/core'
-import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils'
+import type { ConnectionResource } from '~/entities/connection/core/sync'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
 
 export const useLastOpenedResourcesSync = () => {
   const collections = useCollections()

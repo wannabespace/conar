@@ -1,8 +1,8 @@
 import { format, isValid, parseISO } from 'date-fns'
 
-import type { Column } from '~/entities/connection/components/table/cell'
+import type { Column } from '~/entities/connection/components/table/cell/utils'
 
-import type { DialectSeedConfig } from '../index'
+import type { DialectSeedConfig } from '../registry'
 import { mysqlAutoDetect } from './detect'
 import { MYSQL_GENERATORS } from './generators'
 

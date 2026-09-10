@@ -30,7 +30,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import type { ComponentProps } from 'react'
 import { useState } from 'react'
 
-import { createTransformer } from '~/entities/connection/transformers'
+import { createTransformer } from '~/entities/connection/transformers/create-transformer'
 
 import { TableCellContent } from './cell-content'
 import type { SaveStatus } from './cell-context'

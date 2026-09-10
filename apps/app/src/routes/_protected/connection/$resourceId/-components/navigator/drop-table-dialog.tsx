@@ -24,17 +24,13 @@ import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
-import {
-  dropTableQuery,
-  resourceTablesAndSchemasQueryOptions,
-} from '~/entities/connection/queries'
-import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
-import {
-  getConnectionResourceStore,
-  pinnedTable,
-  tableTabId,
-} from '~/entities/connection/store'
-import { queryClient } from '~/main'
+import { dropTableQuery } from '~/entities/connection/queries/drop-table'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
+import { pinnedTable } from '~/entities/connection/store/helpers/tables'
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
+import { tableTabId } from '~/entities/connection/store/tabs/ids'
+import { queryClient } from '~/lib/query-client'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 

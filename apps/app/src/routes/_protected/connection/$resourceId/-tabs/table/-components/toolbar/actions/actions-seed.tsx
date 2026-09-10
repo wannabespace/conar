@@ -60,35 +60,33 @@ import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
 import { Monaco } from '~/components/monaco'
-import type { Column } from '~/entities/connection/components/table/cell'
-import {
-  distinctQuery,
-  insertQuery,
-  resourceRowsQueryInfiniteOptions,
-  resourceTableTotalQueryKey,
-} from '~/entities/connection/queries'
-import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
-import type {
-  GeneratorGroup,
-  GeneratorId,
-} from '~/entities/connection/utils/seeds'
+import type { Column } from '~/entities/connection/components/table/cell/utils'
+import { distinctQuery } from '~/entities/connection/queries/distinct'
+import { insertQuery } from '~/entities/connection/queries/insert'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows'
+import { resourceTableTotalQueryKey } from '~/entities/connection/queries/total'
+import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import {
   autoDetectGenerator,
-  CUSTOM_GENERATOR,
-  ENUM_GENERATOR,
   generateRows,
   getGeneratorGroups,
   getGenerators,
+} from '~/entities/connection/utils/seeds'
+import type { GeneratorId } from '~/entities/connection/utils/seeds/registry'
+import type { GeneratorGroup } from '~/entities/connection/utils/seeds/types'
+import {
+  CUSTOM_GENERATOR,
+  ENUM_GENERATOR,
   REFERENCE_GENERATOR,
   SKIP_GENERATOR,
-} from '~/entities/connection/utils/seeds'
+} from '~/entities/connection/utils/seeds/types'
 import {
   FREE_SEED_LIMIT,
   incrementSeedUsage,
   seedUsageValue,
 } from '~/entities/connection/utils/seeds/usage'
-import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
-import { queryClient } from '~/main'
+import { useSubscription as useUserSubscription } from '~/entities/user/hooks/use-subscription'
+import { queryClient } from '~/lib/query-client'
 import { setIsSubscriptionDialogOpen } from '~/store'
 
 import { useTableColumnsContext } from '../../../-lib/columns'

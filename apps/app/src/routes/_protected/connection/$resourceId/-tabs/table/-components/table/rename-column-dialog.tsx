@@ -22,13 +22,11 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useImperativeHandle, useState } from 'react'
 import { toast } from 'sonner'
 
-import {
-  renameColumnQuery,
-  resourceRowsQueryInfiniteOptions,
-  resourceTableColumnsQueryOptions,
-} from '~/entities/connection/queries'
-import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
-import { queryClient } from '~/main'
+import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/columns'
+import { renameColumnQuery } from '~/entities/connection/queries/rename-columns'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows'
+import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
+import { queryClient } from '~/lib/query-client'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 

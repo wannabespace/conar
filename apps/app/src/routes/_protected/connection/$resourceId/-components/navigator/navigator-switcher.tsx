@@ -9,7 +9,8 @@ import { getRouteApi } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscription } from 'seitu/react'
 
-import { getNavigatorStore, setNavigator } from '~/entities/connection/store'
+import { setNavigator } from '~/entities/connection/store/helpers/navigator'
+import { getNavigatorStore } from '~/entities/connection/store/stores'
 
 import { sidebarActionRowClassName } from './primitives'
 

@@ -8,8 +8,8 @@ import { decrypt, encrypt } from '@tamery/shared/utils/crypto-node'
 import type { IpcMainInvokeEvent } from 'electron'
 import { app, ipcMain, nativeTheme } from 'electron'
 
-import { autoUpdater } from '../main'
 import { popupNativeContextMenu } from './context-menu'
+import { autoUpdater } from './todesktop'
 
 const lazyQueryExecutor = (
   load: () => Promise<{ query: QueryExecutor }>

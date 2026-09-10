@@ -27,7 +27,7 @@ import { animate } from 'motion'
 import { useSubscription } from 'seitu/react'
 import { createScrollState } from 'seitu/web'
 
-import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell'
+import { INTERNAL_COLUMN_IDS } from '~/entities/connection/components/table/cell/utils'
 
 import { useTablePageStore } from '../../-lib/store'
 

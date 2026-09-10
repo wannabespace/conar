@@ -3,7 +3,7 @@ import type { ComponentProps } from 'react'
 
 import { Link } from '~/components/link'
 
-import { useConnectionResourceLinkParams } from '../hooks'
+import { useConnectionResourceLinkParams } from '../hooks/use-connection-resource-link-params'
 
 export const ConnectionResourceLink = ({
   resourceId,

@@ -26,14 +26,16 @@ import { getRouteApi, useParams } from '@tanstack/react-router'
 import { useState } from 'react'
 
 import { Link } from '~/components/link'
-import type { Connection } from '~/entities/connection/core'
-import type { DefinitionsSection } from '~/entities/connection/store'
+import type { Connection } from '~/entities/connection/core/sync'
 import {
-  definitionsTabId,
   openDefinitionsTab,
   openVisualizerTab,
+} from '~/entities/connection/store/helpers/tabs'
+import {
   VISUALIZER_TAB_ID,
-} from '~/entities/connection/store'
+  definitionsTabId,
+} from '~/entities/connection/store/tabs/ids'
+import type { DefinitionsSection } from '~/entities/connection/store/tabs/types'
 
 import {
   SidebarContent,

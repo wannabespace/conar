@@ -5,7 +5,7 @@ import type { ExpressionBuilder } from 'kysely'
 import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
-import type { ConnectionResource } from '~/entities/connection/core'
+import type { ConnectionResource } from '~/entities/connection/core/sync'
 
 import { connectionResourceToQueryParams, createQuery } from '../runtime/query'
 import { DEFAULT_PAGE_LIMIT } from '../utils/helpers'

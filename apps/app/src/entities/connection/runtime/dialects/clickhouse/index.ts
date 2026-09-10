@@ -3,8 +3,8 @@ import { type } from 'arktype'
 import type { CompiledQuery, Dialect } from 'kysely'
 import { DummyDriver, MysqlQueryCompiler } from 'kysely'
 
-import type { DialectOptions } from '..'
-import { createDialectProvider, createKyselyDriver } from '..'
+import type { DialectOptions } from '../driver'
+import { createDialectProvider, createKyselyDriver } from '../driver'
 
 const escapeSqlStringRegex = /[\\']/gu
 

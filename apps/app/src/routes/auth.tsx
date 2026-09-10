@@ -8,7 +8,7 @@ import { AppLogoMotion } from '@tamery/ui/components/brand/app-logo.motion'
 import { Button } from '@tamery/ui/components/button'
 import { DitherBackground } from '@tamery/ui/components/custom/dither-background'
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 
@@ -21,7 +21,6 @@ import {
 } from '~/lib/auth'
 import { lastLocationStorageValue } from '~/lib/last-location'
 import { orpc } from '~/lib/orpc'
-import { router } from '~/main'
 
 const signInUrl = (type: 'web' | 'desktop') => {
   const verifier = challenge.noble.generateVerifier()
@@ -73,6 +72,7 @@ const AuthSidePanel = () => {
 }
 
 const AuthPage = () => {
+  const router = useRouter()
   const { refetch } = authClient.useSession()
   const [verifier, setVerifier] = useState<string | null>(null)
   const [codeChallenge, setCodeChallenge] = useState<string | null>(null)

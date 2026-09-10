@@ -12,8 +12,8 @@ import {
   MssqlAdapter,
 } from 'kysely'
 
-import type { DialectOptions } from '..'
-import { createDialectProvider, createKyselyDriver } from '..'
+import type { DialectOptions } from '../driver'
+import { createDialectProvider, createKyselyDriver } from '../driver'
 
 const isSelectQueryNode = (node: OperationNode): node is SelectQueryNode =>
   node.kind === 'SelectQueryNode'

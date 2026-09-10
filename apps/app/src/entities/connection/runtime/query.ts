@@ -8,7 +8,10 @@ import { createStore } from 'seitu'
 import { toast } from 'sonner'
 
 import { getCollections } from '~/entities/collections'
-import type { Connection, ConnectionResource } from '~/entities/connection/core'
+import type {
+  Connection,
+  ConnectionResource,
+} from '~/entities/connection/core/sync'
 
 import { getConnectionStringToShow } from '../utils/helpers'
 import { dialects } from './dialects'

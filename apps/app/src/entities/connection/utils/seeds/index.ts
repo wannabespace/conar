@@ -2,60 +2,20 @@ import { faker } from '@faker-js/faker'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
-import type { Column } from '../../components/table/cell'
-import { BASE_GENERATORS, baseAutoDetectGenerator } from './base'
+import type { Column } from '../../components/table/cell/utils'
+import { baseAutoDetectGenerator } from './base'
 import { mssqlSeedConfig } from './mssql'
-import { MSSQL_GENERATORS } from './mssql/generators'
 import { mysqlSeedConfig } from './mysql'
-import { MYSQL_GENERATORS } from './mysql/generators'
 import { pgSeedConfig } from './postgres'
-import { PG_GENERATORS } from './postgres/generators'
-
-export const SKIP_GENERATOR = 'skip-generator'
-export const REFERENCE_GENERATOR = 'reference-generator'
-export const ENUM_GENERATOR = 'enum-generator'
-export const CUSTOM_GENERATOR = 'custom-generator'
-
-export interface GeneratorDef {
-  label: string
-  category: string
-  generate: () => unknown
-}
-
-export type GeneratorMap<D extends ConnectionType | '' = ''> = Record<
-  D extends '' ? string : `${D}.${string}`,
-  GeneratorDef
->
-
-export interface Generator {
-  generatorId: GeneratorId
-  isNullable: boolean
-  customExpression?: string
-}
-
-export interface GeneratorGroup {
-  value: string
-  items: string[]
-}
-
-export interface DialectSeedConfig {
-  generators: GeneratorMap
-  autoDetect: (label: string) => GeneratorId | undefined
-  shouldSkip?: (column: Column) => boolean
-  transformArray?: (items: unknown[], column: Column) => unknown
-  transformValue?: (value: unknown, column: Column) => unknown
-}
-
-const GENERATORS = {
-  ...BASE_GENERATORS,
-  ...PG_GENERATORS,
-  ...MYSQL_GENERATORS,
-  ...MSSQL_GENERATORS,
-} satisfies GeneratorMap
-
-export type GeneratorId<D extends ConnectionType | '' = ''> = D extends ''
-  ? keyof typeof GENERATORS
-  : Extract<keyof typeof GENERATORS, `${D}.${string}`>
+import type { DialectSeedConfig, Generator, GeneratorId } from './registry'
+import { GENERATORS } from './registry'
+import type { GeneratorDef, GeneratorGroup } from './types'
+import {
+  CUSTOM_GENERATOR,
+  ENUM_GENERATOR,
+  REFERENCE_GENERATOR,
+  SKIP_GENERATOR,
+} from './types'
 
 const DIALECT_CONFIGS: Partial<Record<ConnectionType, DialectSeedConfig>> = {
   mssql: mssqlSeedConfig,

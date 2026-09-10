@@ -25,13 +25,13 @@ import {
   StepperTrigger,
 } from '~/components/stepper'
 import { useCollections } from '~/entities/collections'
-import { createConnectionTransaction } from '~/entities/connection/core'
+import { createConnectionTransaction } from '~/entities/connection/core/create-connection'
 import { testConnectionQuery } from '~/entities/connection/queries/test-connection'
-import { useLocalProxyAvailable } from '~/entities/connection/runtime'
-import { getConnectionStore } from '~/entities/connection/store'
-import { prefetchConnectionResourceCore } from '~/entities/connection/utils'
+import { useLocalProxyAvailable } from '~/entities/connection/runtime/proxy'
+import { getConnectionStore } from '~/entities/connection/store/stores'
+import { prefetchConnectionResourceCore } from '~/entities/connection/utils/fetching'
 import { fetchingConfig } from '~/entities/connection/utils/fetching-config'
-import { useActiveWorkspace } from '~/entities/workspace'
+import { useActiveWorkspace } from '~/entities/workspace/hooks'
 import { generateRandomName } from '~/lib/faker'
 
 import { StepCredentials } from './-components/step-credentials'

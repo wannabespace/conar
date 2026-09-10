@@ -2,11 +2,11 @@ import dagre from '@dagrejs/dagre'
 import type { Edge } from '@xyflow/react'
 import { Position } from '@xyflow/react'
 
-import type { NodeType } from '~/entities/connection/components'
-import type { Column } from '~/entities/connection/components/table/cell'
-import { getColumnUiType } from '~/entities/connection/components/table/cell'
-import type { constraintsType } from '~/entities/connection/queries'
+import type { NodeType } from '~/entities/connection/components/react-flow-node'
+import type { Column } from '~/entities/connection/components/table/cell/utils'
+import { getColumnUiType } from '~/entities/connection/components/table/cell/utils'
 import type { columnType } from '~/entities/connection/queries/columns'
+import type { constraintsType } from '~/entities/connection/queries/constraints'
 
 type ForeignKeyConstraint = typeof constraintsType.infer & {
   column: string

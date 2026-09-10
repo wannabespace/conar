@@ -1,2 +1,7 @@
 export { chat } from './v1/chat'
-export * from './v2'
+export { abortStream } from './v2/chat/abort-stream'
+export { attachStream } from './v2/chat/attach-stream'
+export { stream } from './v2/chat/stream'
+export { filters } from './v2/filters'
+export { fixSQL } from './v2/fix-sql'
+export { updateSQL } from './v2/update-sql'

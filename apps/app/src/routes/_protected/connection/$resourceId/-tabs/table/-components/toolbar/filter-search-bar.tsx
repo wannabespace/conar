@@ -34,7 +34,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
 
-import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 

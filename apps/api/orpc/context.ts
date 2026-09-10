@@ -1,7 +1,7 @@
 import type { Context as HonoContext } from 'hono'
 import { UAParser } from 'ua-parser-js'
 
-import type { AppVariables } from '..'
+import type { AppVariables } from '../variables'
 
 const resolveOs = (
   osName: string | undefined

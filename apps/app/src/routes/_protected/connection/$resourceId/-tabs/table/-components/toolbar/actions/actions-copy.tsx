@@ -32,13 +32,28 @@ import { useSubscription } from 'seitu/react'
 
 import { Monaco } from '~/components/monaco'
 import { SidebarButton } from '~/components/sidebar-link'
-import * as generators from '~/entities/connection/generators'
 import { GENERATOR_COMPATIBILITY } from '~/entities/connection/generators/compatibility'
-import type { GeneratorFormat } from '~/entities/connection/generators/utils'
 import {
-  resourceEnumsQueryOptions,
-  resourceIndexesQueryOptions,
-} from '~/entities/connection/queries'
+  generateQueryDrizzle,
+  generateSchemaDrizzle,
+} from '~/entities/connection/generators/formats/drizzle'
+import {
+  generateQueryKysely,
+  generateSchemaKysely,
+} from '~/entities/connection/generators/formats/kysely'
+import {
+  generateQueryPrisma,
+  generateSchemaPrisma,
+} from '~/entities/connection/generators/formats/prisma'
+import {
+  generateQuerySQL,
+  generateSchemaSQL,
+} from '~/entities/connection/generators/formats/sql'
+import { generateSchemaTypeScript } from '~/entities/connection/generators/formats/typescript'
+import { generateSchemaZod } from '~/entities/connection/generators/formats/zod'
+import type { GeneratorFormat } from '~/entities/connection/generators/utils'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
+import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes'
 
 import { useTableColumnsContext } from '../../../-lib/columns'
 import { useTablePageStore } from '../../../-lib/store'
@@ -53,11 +68,11 @@ type Format = {
 } & (
   | {
       kind: 'schema'
-      generator: typeof generators.generateSchemaDrizzle
+      generator: typeof generateSchemaDrizzle
     }
   | {
       kind: 'query'
-      generator: typeof generators.generateQueryDrizzle
+      generator: typeof generateQueryDrizzle
     }
 )
 
@@ -69,7 +84,7 @@ const FORMATS = {
       label: 'SQL',
       lang: 'sql',
       icon: DatabaseIcon,
-      generator: generators.generateSchemaSQL,
+      generator: generateSchemaSQL,
     },
     {
       kind: 'schema',
@@ -77,7 +92,7 @@ const FORMATS = {
       label: 'TypeScript',
       lang: 'typescript',
       icon: FileCodeIcon,
-      generator: generators.generateSchemaTypeScript,
+      generator: generateSchemaTypeScript,
     },
     {
       kind: 'schema',
@@ -85,7 +100,7 @@ const FORMATS = {
       label: 'Zod',
       lang: 'typescript',
       icon: SecurityCheckIcon,
-      generator: generators.generateSchemaZod,
+      generator: generateSchemaZod,
     },
     {
       kind: 'schema',
@@ -93,7 +108,7 @@ const FORMATS = {
       label: 'Prisma',
       lang: 'graphql',
       icon: TriangleIcon,
-      generator: generators.generateSchemaPrisma,
+      generator: generateSchemaPrisma,
     },
     {
       kind: 'schema',
@@ -101,7 +116,7 @@ const FORMATS = {
       label: 'Drizzle',
       lang: 'typescript',
       icon: DropletIcon,
-      generator: generators.generateSchemaDrizzle,
+      generator: generateSchemaDrizzle,
     },
     {
       kind: 'schema',
@@ -109,7 +124,7 @@ const FORMATS = {
       label: 'Kysely',
       lang: 'typescript',
       icon: ComputerTerminal01Icon,
-      generator: generators.generateSchemaKysely,
+      generator: generateSchemaKysely,
     },
   ],
   query: [
@@ -119,7 +134,7 @@ const FORMATS = {
       label: 'SQL',
       lang: 'sql',
       icon: DatabaseIcon,
-      generator: generators.generateQuerySQL,
+      generator: generateQuerySQL,
     },
     {
       kind: 'query',
@@ -127,7 +142,7 @@ const FORMATS = {
       label: 'Prisma',
       lang: 'typescript',
       icon: TriangleIcon,
-      generator: generators.generateQueryPrisma,
+      generator: generateQueryPrisma,
     },
     {
       kind: 'query',
@@ -135,7 +150,7 @@ const FORMATS = {
       label: 'Drizzle',
       lang: 'typescript',
       icon: DropletIcon,
-      generator: generators.generateQueryDrizzle,
+      generator: generateQueryDrizzle,
     },
     {
       kind: 'query',
@@ -143,7 +158,7 @@ const FORMATS = {
       label: 'Kysely',
       lang: 'typescript',
       icon: ComputerTerminal01Icon,
-      generator: generators.generateQueryKysely,
+      generator: generateQueryKysely,
     },
   ],
 } satisfies { schema: Format[]; query: Format[] }

@@ -2,7 +2,7 @@ import type { ActiveFilter } from '@tamery/shared/filters'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import type { ValueTransformer } from '~/entities/connection/transformers'
+import type { ValueTransformer } from '~/entities/connection/transformers/value-transformer'
 
 import { CellContext } from './cell-context'
 import type { Column } from './utils'

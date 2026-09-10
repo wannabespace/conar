@@ -6,7 +6,7 @@ import type { Dispatch, RefObject, SetStateAction } from 'react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
+import { useSubscription as useUserSubscription } from '~/entities/user/hooks/use-subscription'
 
 import { useEditorQueriesComputed, useRunnerPageStore } from '../../-lib/store'
 import { runnerHooks } from '../../-page'

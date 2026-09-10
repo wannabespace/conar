@@ -19,9 +19,9 @@ import { getRouteApi } from '@tanstack/react-router'
 
 import { Monaco } from '~/components/monaco'
 import { formatSql } from '~/lib/formatter'
-import { queryClient } from '~/main'
+import { queryClient } from '~/lib/query-client'
 
-import { runnerQueryOptions } from '.'
+import { runnerQueryOptions } from '../../-lib/runner-query'
 import { useRunnerTab } from '../../-lib/store'
 import { RunnerResultsTable } from './runner-results-table'
 

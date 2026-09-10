@@ -11,7 +11,7 @@ import { useSubscription } from 'seitu/react'
 import { v7 } from 'uuid'
 
 import { useCollections } from '~/entities/collections'
-import { getConnectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import { orpc } from '~/lib/orpc'
 import { resourcePanelClassName } from '~/shell'
 

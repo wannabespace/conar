@@ -35,8 +35,8 @@ import { AppContextMenu } from '~/components/app-context-menu'
 import type {
   Column,
   ColumnHandlers,
-} from '~/entities/connection/components/table/cell'
-import { resourceEnumsQueryOptions } from '~/entities/connection/queries'
+} from '~/entities/connection/components/table/cell/utils'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
 
 import type { tablePageType } from '../../-lib/store'
 import { useTablePageStore } from '../../-lib/store'

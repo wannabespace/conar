@@ -24,8 +24,8 @@ import { useState } from 'react'
 
 import type { ExportDataProps } from '~/components/export-data'
 import { ExportData } from '~/components/export-data'
-import { TableCell } from '~/entities/connection/components/table/cell'
-import type { Column } from '~/entities/connection/components/table/cell'
+import { TableCell } from '~/entities/connection/components/table/cell/cell'
+import type { Column } from '~/entities/connection/components/table/cell/utils'
 
 const ResultColumnHeader = ({
   columnId,

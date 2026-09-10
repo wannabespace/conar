@@ -5,7 +5,7 @@ import { memoize } from 'memoza'
 import { createContext, use } from 'react'
 import { createWebStorageValue } from 'seitu/web'
 
-import type { GeneratorId } from '~/entities/connection/utils/seeds'
+import type { GeneratorId } from '~/entities/connection/utils/seeds/registry'
 
 export const tablePageType = type({
   filters: type({

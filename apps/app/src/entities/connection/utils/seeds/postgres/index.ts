@@ -1,7 +1,7 @@
-import type { Column } from '~/entities/connection/components/table/cell'
+import type { Column } from '~/entities/connection/components/table/cell/utils'
 import { toPgArrayLiteral } from '~/entities/connection/transformers/list/postgres'
 
-import type { DialectSeedConfig } from '../index'
+import type { DialectSeedConfig } from '../registry'
 import { pgAutoDetect } from './detect'
 import { PG_GENERATORS } from './generators'
 

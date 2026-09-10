@@ -50,17 +50,15 @@ import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppContextMenu } from '~/components/app-context-menu'
 import { Link } from '~/components/link'
 import { useCollections } from '~/entities/collections'
-import type { Connection } from '~/entities/connection'
-import {
-  ConnectionIcon,
-  ConnectionResourceLink,
-  connectionResourcesQueryOptions,
-  connectionVersionQueryOptions,
-  getConnectionStore,
-  lastOpenedResourcesStorageValue,
-  useFetchingConfig,
-} from '~/entities/connection'
-import { useActiveWorkspace } from '~/entities/workspace'
+import { ConnectionIcon } from '~/entities/connection/components/connection-icon'
+import { ConnectionResourceLink } from '~/entities/connection/components/connection-resource-link'
+import type { Connection } from '~/entities/connection/core/sync'
+import { connectionResourcesQueryOptions } from '~/entities/connection/queries/connection-resources'
+import { connectionVersionQueryOptions } from '~/entities/connection/queries/connection-version'
+import { getConnectionStore } from '~/entities/connection/store/stores'
+import { useFetchingConfig } from '~/entities/connection/utils/fetching'
+import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
+import { useActiveWorkspace } from '~/entities/workspace/hooks'
 
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'

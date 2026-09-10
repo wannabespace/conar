@@ -2,7 +2,7 @@ import type { ActiveFilter } from '@tamery/shared/filters'
 import type { Dispatch, SetStateAction } from 'react'
 import { createContext, use } from 'react'
 
-import type { ValueTransformer } from '~/entities/connection/transformers'
+import type { ValueTransformer } from '~/entities/connection/transformers/value-transformer'
 
 import type { Column } from './utils'
 

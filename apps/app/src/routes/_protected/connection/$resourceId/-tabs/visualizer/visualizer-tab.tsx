@@ -37,22 +37,18 @@ import type { CSSProperties } from 'react'
 import { useEffectEvent, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { ReactFlowNode } from '~/entities/connection/components'
-import type { constraintsType } from '~/entities/connection/queries'
-import {
-  resourceConstraintsQueryOptions,
-  resourceTableColumnsQueryOptions,
-  resourceTablesAndSchemasQueryOptions,
-} from '~/entities/connection/queries'
+import { ReactFlowNode } from '~/entities/connection/components/react-flow-node'
+import { resourceTableColumnsQueryOptions } from '~/entities/connection/queries/columns'
 import type { columnType } from '~/entities/connection/queries/columns'
-import {
-  getConnectionResourceStore,
-  setVisualizerViewport,
-} from '~/entities/connection/store'
+import type { constraintsType } from '~/entities/connection/queries/constraints'
+import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { setVisualizerViewport } from '~/entities/connection/store/helpers/visualizer'
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import {
   applySearchHighlight,
   getVisualizerLayout,
-} from '~/entities/connection/visualizer'
+} from '~/entities/connection/visualizer/lib'
 
 import { VisualizerSkeleton } from './visualizer-skeleton'
 

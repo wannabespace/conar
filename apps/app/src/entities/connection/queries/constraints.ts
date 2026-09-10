@@ -2,7 +2,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
 import { sql } from 'kysely'
 
-import type { ConnectionResource } from '~/entities/connection/core'
+import type { ConnectionResource } from '~/entities/connection/core/sync'
 
 import { connectionResourceToQueryParams, createQuery } from '../runtime/query'
 

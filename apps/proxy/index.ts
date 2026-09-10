@@ -10,6 +10,7 @@ import { cors } from 'hono/cors'
 import { env, nodeEnv } from './env'
 import { createContext } from './orpc/context'
 import { router } from './orpc/routers'
+import type { AppVariables } from './variables'
 
 const handler = new RPCHandler(router, {
   interceptors: [
@@ -43,10 +44,6 @@ const handler = new RPCHandler(router, {
     },
   ],
 })
-
-export interface AppVariables {
-  logEvent?: Record<string, unknown>
-}
 
 const app = new Hono<{
   Variables: AppVariables

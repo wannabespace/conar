@@ -19,9 +19,9 @@ import type { Edge, Node, NodeProps } from '@xyflow/react'
 import { Handle, Position } from '@xyflow/react'
 
 import { Link } from '~/components/link'
-import { tableTabId } from '~/entities/connection/store'
+import { tableTabId } from '~/entities/connection/store/tabs/ids'
 
-import type { Column } from './table/cell'
+import type { Column } from './table/cell/utils'
 
 export type NodeType = Node<
   {

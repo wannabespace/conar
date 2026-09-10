@@ -11,12 +11,6 @@ export default defineConfig({
   ignorePatterns: [...(core.ignorePatterns || []), ...ignorePatterns],
   jsPlugins: ['oxlint-tailwindcss'],
   rules: {
-    // Architectural debt from the Ultracite migration: ~470 import cycles and
-    'import/no-cycle': 'off',
-
-    // ~21 large barrels need a dedicated debarrel pass before re-enabling.
-    'oxc/no-barrel-file': 'off',
-
     // react-compiler memoizes context values; manual useMemo is redundant here.
     'react/jsx-no-constructed-context-values': 'off',
 

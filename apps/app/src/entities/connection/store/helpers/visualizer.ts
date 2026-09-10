@@ -1,5 +1,5 @@
-import type { viewportType } from '..'
-import { getConnectionResourceStore } from '..'
+import type { viewportType } from '../stores'
+import { getConnectionResourceStore } from '../stores'
 
 export const setVisualizerViewport = (
   id: string,

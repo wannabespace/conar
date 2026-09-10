@@ -16,7 +16,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { createWorkspace } from '~/entities/workspace'
+import { createWorkspace } from '~/entities/workspace/create'
 
 export const CreateWorkspaceDialog = ({
   open,

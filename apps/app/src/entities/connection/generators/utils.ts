@@ -1,6 +1,6 @@
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 
-import type { Column } from '../components/table/cell'
+import type { Column } from '../components/table/cell/utils'
 
 export type GeneratorFormat =
   | 'ts'

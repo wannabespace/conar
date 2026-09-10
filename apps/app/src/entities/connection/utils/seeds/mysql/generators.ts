@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { sql } from 'kysely'
 
-import type { GeneratorMap } from '..'
+import type { GeneratorMap } from '../types'
 
 const wkt = (expr: string) => sql`ST_GeomFromText(${expr})`
 

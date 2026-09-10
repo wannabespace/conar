@@ -16,7 +16,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import { resourceTriggersQueryOptions } from '~/entities/connection/queries'
+import { resourceTriggersQueryOptions } from '~/entities/connection/queries/triggers'
 
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'

@@ -27,8 +27,8 @@ import { createWebStorageValue } from 'seitu/web'
 import {
   MAX_RECONNECTION_ATTEMPTS,
   reconnectingPromises,
-  slowQueries,
-} from '~/entities/connection/runtime'
+} from '~/entities/connection/runtime/query'
+import { slowQueries } from '~/entities/connection/runtime/slow-queries'
 import { orpc } from '~/lib/orpc'
 import { appStore } from '~/store'
 

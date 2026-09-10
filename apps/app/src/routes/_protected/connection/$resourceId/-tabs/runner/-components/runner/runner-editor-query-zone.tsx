@@ -28,13 +28,13 @@ import { useIsFetching, useMutation } from '@tanstack/react-query'
 import { Fragment, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import type { ConnectionResource } from '~/entities/connection/core'
+import type { ConnectionResource } from '~/entities/connection/core/sync'
 import { customQuery } from '~/entities/connection/queries/custom'
-import { connectionResourceToQueryParams } from '~/entities/connection/runtime'
+import { connectionResourceToQueryParams } from '~/entities/connection/runtime/query'
 import { wrapExplainQuery } from '~/entities/connection/utils/helpers'
-import { queryClient } from '~/main'
+import { queryClient } from '~/lib/query-client'
 
-import { runnerQueryOptions } from '.'
+import { runnerQueryOptions } from '../../-lib/runner-query'
 import { getEditorQueriesComputed, runnerPageStore } from '../../-lib/store'
 
 export const RunnerEditorQueryZone = ({

@@ -2,11 +2,11 @@ import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import { formatSql } from '~/lib/formatter'
 
-import type { QueryParams, SchemaParams } from '..'
-import type { Column } from '../../components/table/cell'
+import type { Column } from '../../components/table/cell/utils'
 import { buildWhere } from '../../queries/rows'
 import { coldDialects } from '../../runtime/dialects'
 import * as templates from '../templates'
+import type { QueryParams, SchemaParams } from '../types'
 import {
   filterExplicitIndexes,
   formatValue,

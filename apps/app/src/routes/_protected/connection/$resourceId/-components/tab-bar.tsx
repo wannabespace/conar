@@ -47,43 +47,45 @@ import { useSubscription } from 'seitu/react'
 
 import type { AppMenuNode } from '~/components/app-context-menu'
 import { AppContextMenu } from '~/components/app-context-menu'
-import type { Connection, ConnectionResource } from '~/entities/connection/core'
+import type {
+  Connection,
+  ConnectionResource,
+} from '~/entities/connection/core/sync'
 import {
   resourceColumnsQueryKey,
-  resourceConstraintsQueryOptions,
-  resourceEnumsQueryOptions,
-  resourceFunctionsQueryOptions,
-  resourceIndexesQueryOptions,
-  resourcePoliciesQuery,
-  resourceRowsQueryInfiniteOptions,
   resourceTableColumnsQueryOptions,
-  resourceTablesAndSchemasQueryOptions,
-  resourceTableTotalQueryKey,
-  resourceTriggersQueryOptions,
-} from '~/entities/connection/queries'
-import type {
-  ConnectionTab,
-  DefinitionsSection,
-} from '~/entities/connection/store'
+} from '~/entities/connection/queries/columns'
+import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints'
+import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
+import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions'
+import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes'
+import { resourcePoliciesQuery } from '~/entities/connection/queries/policies'
+import { resourceRowsQueryInfiniteOptions } from '~/entities/connection/queries/rows'
+import { resourceTablesAndSchemasQueryOptions } from '~/entities/connection/queries/tables-and-schemas'
+import { resourceTableTotalQueryKey } from '~/entities/connection/queries/total'
+import { resourceTriggersQueryOptions } from '~/entities/connection/queries/triggers'
 import {
-  getConnectionResourceStore,
-  isPreviewTab,
   openRunnerTab,
   openTab,
   openTableTab,
-  parseTabId,
-  tableTabId,
   removeTab,
   renameTab,
   setActiveTab,
-  tabLabels,
   updateTabs,
-} from '~/entities/connection/store'
-import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils'
-import { useSubscription as useUserSubscription } from '~/entities/user/hooks'
+} from '~/entities/connection/store/helpers/tabs'
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
+import { parseTabId, tableTabId } from '~/entities/connection/store/tabs/ids'
+import { tabLabels } from '~/entities/connection/store/tabs/title'
+import type {
+  ConnectionTab,
+  DefinitionsSection,
+} from '~/entities/connection/store/tabs/types'
+import { isPreviewTab } from '~/entities/connection/store/tabs/types'
+import { prefetchConnectionResourceTableCore } from '~/entities/connection/utils/fetching'
+import { useSubscription as useUserSubscription } from '~/entities/user/hooks/use-subscription'
 import { useRefreshHotkey } from '~/hooks/use-refresh-hotkey'
 import { pressNavProps } from '~/lib/press-nav'
-import { queryClient } from '~/main'
+import { queryClient } from '~/lib/query-client'
 import { setIsSubscriptionDialogOpen } from '~/store'
 
 import { tablePageStore } from '../-tabs/table/-lib/store'

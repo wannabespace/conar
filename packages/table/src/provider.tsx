@@ -3,9 +3,9 @@ import type { ReactNode } from 'react'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { createStore } from 'seitu'
 
-import type { ColumnRenderer } from './'
 import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT } from './constants'
 import { TableContext } from './table-context'
+import type { ColumnRenderer } from './types'
 import { columnWidthProperty } from './utils'
 
 export type { TableContextType } from './table-context'

@@ -21,8 +21,8 @@ import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
 
-import type { indexesType } from '~/entities/connection/queries'
-import { resourceIndexesQueryOptions } from '~/entities/connection/queries'
+import type { indexesType } from '~/entities/connection/queries/indexes'
+import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes'
 
 import { DefinitionsEmptyState } from '../-components/empty-state'
 import { DefinitionsGrid } from '../-components/grid'

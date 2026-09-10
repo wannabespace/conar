@@ -1,16 +1,10 @@
 import './lib/warmup'
 import { themeStore } from '@tamery/ui/theme-store'
-import { keepPreviousData, QueryClient } from '@tanstack/react-query'
-import {
-  createBrowserHistory,
-  createHashHistory,
-  createRouter,
-  RouterProvider,
-} from '@tanstack/react-router'
+import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { toast } from 'sonner'
 
-import { lastLocationStorageValue } from './lib/last-location'
+import { history, lastLocationStorageValue } from './lib/last-location'
 import { routeTree } from './routeTree.gen'
 
 if (window.electron) {
@@ -43,34 +37,10 @@ if (window.electron) {
   })
 }
 
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      placeholderData: keepPreviousData,
-      retry: 0,
-      staleTime: Number.POSITIVE_INFINITY,
-      throwOnError: true,
-    },
-  },
-})
-
-export const subscriptionQueryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      placeholderData: keepPreviousData,
-      refetchOnWindowFocus: 'always',
-      retry: 0,
-    },
-  },
-})
-
 export const router = createRouter({
   defaultPendingMinMs: 0,
   defaultPreload: 'intent',
-  history:
-    import.meta.env.VITE_TEST || !window.electron
-      ? createBrowserHistory()
-      : createHashHistory(),
+  history,
   pathParamsAllowedCharacters: [':'],
   routeTree,
 })

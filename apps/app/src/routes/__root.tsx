@@ -22,7 +22,7 @@ import { useUpdatesObserver } from '~/hooks/use-updates-observer'
 import { useWindowFocusObserver } from '~/hooks/use-window-focus-observer'
 import { useWindowFullscreenObserver } from '~/hooks/use-window-fullscreen-observer'
 import { globalHooks } from '~/lib/global-hooks'
-import { queryClient } from '~/main'
+import { queryClient } from '~/lib/query-client'
 
 const isElectron = !!window.electron
 

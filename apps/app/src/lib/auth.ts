@@ -5,10 +5,12 @@ import { createAuthClient } from 'better-auth/react'
 import { createWebStorageValue } from 'seitu/web'
 import { toast } from 'sonner'
 
-import { router } from '~/main'
-
 import { encryptionKey } from './encryption-key'
-import { lastLocationStorageValue } from './last-location'
+import {
+  history,
+  isAuthLocation,
+  lastLocationStorageValue,
+} from './last-location'
 import { apiUrl } from './urls'
 
 const BEARER_TOKEN_KEY = 'tamery.bearer_token'
@@ -44,10 +46,7 @@ export const authClient = createAuthClient({
       'x-desktop': JSON.stringify(!!window.electron),
     },
     onError({ error }) {
-      if (
-        error.status === 401 &&
-        !router.state.location.pathname.startsWith('/auth')
-      ) {
+      if (error.status === 401 && !isAuthLocation()) {
         // oxlint-disable-next-line no-use-before-define
         fullSignOut()
       }
@@ -67,8 +66,8 @@ export const fullSignOut = async () => {
   bearerToken.clear()
   lastLocationStorageValue.clear()
 
-  if (!router.state.location.pathname.startsWith('/auth')) {
-    await router.navigate({ to: '/auth' })
+  if (!isAuthLocation()) {
+    history.push('/auth')
   }
 
   const [{ cleanCollections }, { clearDb }] = await Promise.all([

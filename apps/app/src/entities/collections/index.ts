@@ -5,11 +5,11 @@ import {
   createChatsMessagesCollection,
   createChatsMessagesPartsCollection,
 } from '~/entities/chat/sync'
+import { createConnectionStringsCollection } from '~/entities/connection/core/connection-strings'
 import {
   createConnectionsCollection,
   createConnectionsResourcesCollection,
-  createConnectionStringsCollection,
-} from '~/entities/connection/core'
+} from '~/entities/connection/core/sync'
 import { createQueriesCollection } from '~/entities/query/sync'
 import { createWorkspacesCollection } from '~/entities/workspace/sync'
 
@@ -44,12 +44,16 @@ export const getCollections = (): Collections => {
     return current
   }
 
+  const connectionStringsCollection = createConnectionStringsCollection()
+
   current = {
     chatsCollection: createChatsCollection(),
     chatsMessagesCollection: createChatsMessagesCollection(),
     chatsMessagesPartsCollection: createChatsMessagesPartsCollection(),
-    connectionStringsCollection: createConnectionStringsCollection(),
-    connectionsCollection: createConnectionsCollection(),
+    connectionStringsCollection,
+    connectionsCollection: createConnectionsCollection(
+      connectionStringsCollection
+    ),
     connectionsResourcesCollection: createConnectionsResourcesCollection(),
     queriesCollection: createQueriesCollection(),
     workspacesCollection: createWorkspacesCollection(),

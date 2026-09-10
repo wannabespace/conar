@@ -2,7 +2,7 @@ import type { LinkProps } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { useSubscription } from 'seitu/react'
 
-import { getConnectionResourceStore } from '~/entities/connection/store'
+import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 
 export const useConnectionResourceLinkParams = (
   resourceId: string
