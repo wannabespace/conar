@@ -35,6 +35,12 @@ const dialectConfig: Record<
 
 const FK_SUFFIX_RE = /(?<suffix>_id|Id)$/u
 
+const SERIAL_BY_INT_TYPE: Record<string, string> = {
+  bigint: 'bigserial',
+  integer: 'serial',
+  smallint: 'smallserial',
+}
+
 const resolveRefTable = (table: string): string => camelCase(table)
 
 const filterOpToDrizzle = (
@@ -118,13 +124,16 @@ const buildColumnOptions = (
   ) {
     return `, { length: ${c.maxLength} }`
   }
+  if (['bigint', 'bigserial'].includes(typeFunc)) {
+    return ", { mode: 'number' }"
+  }
   if (
     typeFunc === 'timestamp' &&
     /with time zone|timestamptz/iu.test(c.type ?? '')
   ) {
     return ', { withTimezone: true }'
   }
-  if (typeFunc === 'decimal' && c.precision) {
+  if (['decimal', 'numeric'].includes(typeFunc) && c.precision) {
     return `, { precision: ${c.precision}${c.scale ? `, scale: ${c.scale}` : ''} }`
   }
   return ''
@@ -267,7 +276,7 @@ export const generateSchemaDrizzle = ({
         dialect === ConnectionType.Postgres &&
         isSerialDefault(c.defaultValue)
       ) {
-        typeFunc = typeFunc === 'bigint' ? 'bigserial' : 'serial'
+        typeFunc = SERIAL_BY_INT_TYPE[typeFunc] ?? 'serial'
       }
 
       dialectImports.add(typeFunc)
@@ -312,11 +321,9 @@ export const generateSchemaDrizzle = ({
 
   const allFkImports = new Set([...foreignKeyImports, ...relationshipFkImports])
 
-  const groupedIndexes = groupIndexes(indexes, schema, table)
   const explicitIndexes = filterExplicitIndexes(
-    groupedIndexes,
-    columns,
-    dialect
+    groupIndexes(indexes, schema, table),
+    columns
   )
 
   if (relationships.length > 0) {

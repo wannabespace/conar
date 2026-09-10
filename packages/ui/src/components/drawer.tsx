@@ -1,4 +1,7 @@
 import { Drawer as DrawerPrimitive } from '@base-ui/react/drawer'
+import { Cancel01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Button } from '@tamery/ui/components/button'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
@@ -73,6 +76,26 @@ const DrawerPortal = ({ ...props }: DrawerPrimitive.Portal.Props) => (
 
 const DrawerClose = ({ ...props }: DrawerPrimitive.Close.Props) => (
   <DrawerPrimitive.Close data-slot="drawer-close" {...props} />
+)
+
+const DrawerCloseButton = ({
+  className,
+  ...props
+}: DrawerPrimitive.Close.Props) => (
+  <DrawerPrimitive.Close
+    data-slot="drawer-close"
+    render={
+      <Button
+        className={cn('bg-secondary', className)}
+        size="icon-sm"
+        variant="ghost"
+      />
+    }
+    {...props}
+  >
+    <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+    <span className="sr-only">Close</span>
+  </DrawerPrimitive.Close>
 )
 
 const DrawerOverlay = ({
@@ -171,15 +194,29 @@ const DrawerContent = ({
   )
 }
 
-const DrawerHeader = ({ className, ...props }: React.ComponentProps<'div'>) => {
+const DrawerHeader = ({
+  className,
+  children,
+  showCloseButton = false,
+  ...props
+}: React.ComponentProps<'div'> & { showCloseButton?: boolean }) => {
   const { size } = useDrawer()
 
   return (
     <div
       data-slot="drawer-header"
-      className={cn(drawerHeaderVariants({ size }), className)}
+      className={cn(
+        drawerHeaderVariants({ size }),
+        showCloseButton && 'relative pr-11',
+        className
+      )}
       {...props}
-    />
+    >
+      {children}
+      {showCloseButton && (
+        <DrawerCloseButton className="absolute top-1/2 right-3 -translate-y-1/2" />
+      )}
+    </div>
   )
 }
 
@@ -224,6 +261,7 @@ const DrawerDescription = ({
 export {
   Drawer,
   DrawerClose,
+  DrawerCloseButton,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,

@@ -3,6 +3,7 @@ import { describe, expect, it, mock } from 'bun:test'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 
 import type { Column } from '../../components/table/cell/utils'
+import { generateSchemaDrizzle } from './drizzle'
 import { generateQueryKysely } from './kysely'
 import { generateSchemaPrisma } from './prisma'
 import { generateSchemaTypeScript } from './typescript'
@@ -95,6 +96,65 @@ describe('generators (postgres)', () => {
     expect(prisma).toContain('@default(now())')
     expect(prisma).toContain('@db.Uuid')
     expect(prisma).toContain('tags      String[]')
+  })
+
+  it('emits one table-level primary key for composite keys', () => {
+    const sql = generateSchemaSQL({
+      columns: [
+        {
+          id: 'a',
+          isNullable: false,
+          primaryKey: 'pk',
+          type: 'int',
+          uiType: 'raw',
+        },
+        {
+          id: 'b',
+          isNullable: false,
+          primaryKey: 'pk',
+          type: 'int',
+          uiType: 'raw',
+        },
+      ],
+      dialect: ConnectionType.Postgres,
+      schema: 'app',
+      table: 'pairs',
+    })
+    expect(sql).toContain('PRIMARY KEY ("a", "b")')
+    expect(sql).not.toContain('"a" INT PRIMARY KEY')
+  })
+
+  it('drizzle omits the drizzle-orm import when nothing needs it', () => {
+    const code = generateSchemaDrizzle({
+      columns: [{ id: 'a', isNullable: false, type: 'int', uiType: 'raw' }],
+      dialect: ConnectionType.Postgres,
+      schema: 'app',
+      table: 'pairs',
+    })
+    expect(code).not.toContain("from 'drizzle-orm'")
+    expect(code.startsWith('import {')).toBe(true)
+  })
+
+  it('drizzle imports column builders pg-core actually exports', () => {
+    const code = generateSchemaDrizzle({
+      columns: [
+        {
+          id: 'amount',
+          isNullable: false,
+          precision: 10,
+          scale: 2,
+          type: 'numeric',
+          uiType: 'raw',
+        },
+      ],
+      dialect: ConnectionType.Postgres,
+      schema: 'app',
+      table: 'invoices',
+    })
+    expect(code).toContain(
+      "import { numeric, pgTable } from 'drizzle-orm/pg-core';"
+    )
+    expect(code).toContain('numeric({ precision: 10, scale: 2 })')
   })
 
   it('kysely null checks compile to (column, is, null)', () => {

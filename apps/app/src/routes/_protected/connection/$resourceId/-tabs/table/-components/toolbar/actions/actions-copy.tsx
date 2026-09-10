@@ -1,13 +1,9 @@
-import { Cancel01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { enabledFilters } from '@tamery/shared/filters'
-import { Button } from '@tamery/ui/components/button'
 import { CodeBlock } from '@tamery/ui/components/custom/code-block'
 import { CopyButton } from '@tamery/ui/components/custom/copy-button'
 import {
   Dialog,
-  DialogClose,
+  DialogCloseButton,
   DialogContent,
   DialogTitle,
 } from '@tamery/ui/components/dialog'
@@ -41,6 +37,10 @@ import {
 } from '~/entities/connection/generators/formats/sql'
 import { generateSchemaTypeScript } from '~/entities/connection/generators/formats/typescript'
 import { generateSchemaZod } from '~/entities/connection/generators/formats/zod'
+import type {
+  QueryParams,
+  SchemaParams,
+} from '~/entities/connection/generators/types'
 import type { GeneratorFormat } from '~/entities/connection/generators/utils'
 import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes'
 
@@ -51,41 +51,30 @@ const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 type Kind = 'schema' | 'query'
 
-type Format = {
+interface Format {
   type: GeneratorFormat
   label: string
   language: string
-} & (
-  | { kind: 'schema'; generator: typeof generateSchemaSQL }
-  | { kind: 'query'; generator: typeof generateQuerySQL }
-)
+  generator: (params: SchemaParams & QueryParams) => string
+}
 
 const FORMATS: Record<Kind, Format[]> = {
   query: [
-    {
-      generator: generateQuerySQL,
-      kind: 'query',
-      label: 'SQL',
-      language: 'sql',
-      type: 'sql',
-    },
+    { generator: generateQuerySQL, label: 'SQL', language: 'sql', type: 'sql' },
     {
       generator: generateQueryPrisma,
-      kind: 'query',
       label: 'Prisma',
       language: 'typescript',
       type: 'prisma',
     },
     {
       generator: generateQueryDrizzle,
-      kind: 'query',
       label: 'Drizzle',
       language: 'typescript',
       type: 'drizzle',
     },
     {
       generator: generateQueryKysely,
-      kind: 'query',
       label: 'Kysely',
       language: 'typescript',
       type: 'kysely',
@@ -94,52 +83,41 @@ const FORMATS: Record<Kind, Format[]> = {
   schema: [
     {
       generator: generateSchemaSQL,
-      kind: 'schema',
       label: 'SQL',
       language: 'sql',
       type: 'sql',
     },
     {
       generator: generateSchemaTypeScript,
-      kind: 'schema',
       label: 'TypeScript',
       language: 'typescript',
       type: 'ts',
     },
     {
       generator: generateSchemaZod,
-      kind: 'schema',
       label: 'Zod',
       language: 'typescript',
       type: 'zod',
     },
     {
       generator: generateSchemaPrisma,
-      kind: 'schema',
       label: 'Prisma',
       language: 'prisma',
       type: 'prisma',
     },
     {
       generator: generateSchemaDrizzle,
-      kind: 'schema',
       label: 'Drizzle',
       language: 'typescript',
       type: 'drizzle',
     },
     {
       generator: generateSchemaKysely,
-      kind: 'schema',
       label: 'Kysely',
       language: 'typescript',
       type: 'kysely',
     },
   ],
-}
-
-const isFormatCompatible = (format: Format, connectionType: ConnectionType) => {
-  const compat = GENERATOR_COMPATIBILITY[format.type]
-  return !compat || compat.includes(connectionType)
 }
 
 export const ActionsCopy = ({
@@ -165,39 +143,30 @@ export const ActionsCopy = ({
   const [kind, setKind] = useState<Kind>('schema')
   const [formatType, setFormatType] = useState<GeneratorFormat>('sql')
 
-  const formats = FORMATS[kind].filter((f) =>
-    isFormatCompatible(f, connection.type)
-  )
+  const formats = FORMATS[kind].filter((f) => {
+    const compatible = GENERATOR_COMPATIBILITY[f.type]
+    return !compatible || compatible.includes(connection.type)
+  })
   const format = formats.find((f) => f.type === formatType) ?? formats[0]
 
   if (!format) {
     return null
   }
 
-  const code =
-    format.kind === 'schema'
-      ? format.generator({
-          table,
-          schema,
-          columns,
-          dialect: connection.type,
-          indexes: indexes ?? [],
-        })
-      : format.generator({
-          table,
-          schema,
-          filters: enabledFilters(filters),
-          dialect: connection.type,
-        })
+  const code = format.generator({
+    columns,
+    dialect: connection.type,
+    filters: enabledFilters(filters),
+    indexes: indexes ?? [],
+    schema,
+    table,
+  })
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        showCloseButton={false}
-        className="flex h-[70vh] max-h-140 flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl"
-      >
+    <Dialog open={open} onOpenChange={onOpenChange} variant="panel">
+      <DialogContent showCloseButton={false}>
         <div className="grid h-12 shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b px-2">
-          <DialogTitle className="truncate px-2 text-sm" data-mask>
+          <DialogTitle className="truncate px-2" data-mask>
             {table}
           </DialogTitle>
           <Tabs value={kind} onValueChange={setKind}>
@@ -210,18 +179,7 @@ export const ActionsCopy = ({
               </TabsTrigger>
             </TabsList>
           </Tabs>
-          <DialogClose
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="bg-secondary justify-self-end"
-              />
-            }
-          >
-            <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
-            <span className="sr-only">Close</span>
-          </DialogClose>
+          <DialogCloseButton className="justify-self-end" />
         </div>
         <Tabs
           value={format.type}
@@ -258,10 +216,12 @@ export const ActionsCopy = ({
             </div>
           </TabsList>
           <CodeBlock
-            className="no-scrollbar scroll-fade min-h-0 flex-1 py-2 text-xs/5 whitespace-pre-wrap [&_code>span]:pl-9 [&_code>span]:-indent-9"
+            className="no-scrollbar scroll-fade min-h-0 flex-1 py-2"
             code={code}
             language={format.language}
             lineNumbers
+            size="xs"
+            wrap
           />
         </Tabs>
       </DialogContent>

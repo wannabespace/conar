@@ -111,180 +111,167 @@ const prismaScalarMapper = (t: string) => {
   return 'String'
 }
 
+type TypeMapper = (type: string) => string
+
+const identity: TypeMapper = (t) => t
+
+const drizzleMssqlMapper: TypeMapper = (t) => {
+  if (/datetime2/iu.test(t)) {
+    return 'datetime2'
+  }
+  if (/datetime/iu.test(t)) {
+    return 'datetime'
+  }
+  if (/date/iu.test(t)) {
+    return 'date'
+  }
+  if (/bigint/iu.test(t)) {
+    return 'bigint'
+  }
+  if (INT_RE.test(t)) {
+    return 'int'
+  }
+  if (/bit|bool/iu.test(t)) {
+    return 'bit'
+  }
+  if (/text/iu.test(t)) {
+    return 'text'
+  }
+  if (/nvarchar/iu.test(t)) {
+    return 'nvarchar'
+  }
+  if (/varchar/iu.test(t)) {
+    return 'varchar'
+  }
+  if (/decimal|numeric/iu.test(t)) {
+    return 'decimal'
+  }
+  if (/float|real/iu.test(t)) {
+    return 'float'
+  }
+  return 'text'
+}
+
+const drizzleMysqlMapper: TypeMapper = (t) => {
+  if (/serial/iu.test(t)) {
+    return 'serial'
+  }
+  if (/tinyint/iu.test(t)) {
+    return 'tinyint'
+  }
+  if (/bigint/iu.test(t)) {
+    return 'bigint'
+  }
+  if (INT_RE.test(t)) {
+    return 'int'
+  }
+  if (/text/iu.test(t)) {
+    return 'text'
+  }
+  if (/varchar/iu.test(t)) {
+    return 'varchar'
+  }
+  if (/bool/iu.test(t)) {
+    return 'boolean'
+  }
+  if (/timestamp/iu.test(t)) {
+    return 'timestamp'
+  }
+  if (/datetime/iu.test(t)) {
+    return 'datetime'
+  }
+  if (/date/iu.test(t)) {
+    return 'date'
+  }
+  if (/decimal|numeric/iu.test(t)) {
+    return 'decimal'
+  }
+  if (/double|float|real/iu.test(t)) {
+    return 'double'
+  }
+  if (/json/iu.test(t)) {
+    return 'json'
+  }
+  return 'text'
+}
+
+const drizzlePostgresMapper: TypeMapper = (t) => {
+  if (/serial/iu.test(t)) {
+    return 'serial'
+  }
+  if (/bigint/iu.test(t)) {
+    return 'bigint'
+  }
+  if (/smallint/iu.test(t)) {
+    return 'smallint'
+  }
+  if (INT_RE.test(t)) {
+    return 'integer'
+  }
+  if (/uuid/iu.test(t)) {
+    return 'uuid'
+  }
+  if (/jsonb/iu.test(t)) {
+    return 'jsonb'
+  }
+  if (/text/iu.test(t)) {
+    return 'text'
+  }
+  if (/varchar|character varying/iu.test(t)) {
+    return 'varchar'
+  }
+  if (/bool/iu.test(t)) {
+    return 'boolean'
+  }
+  if (/timestamp/iu.test(t)) {
+    return 'timestamp'
+  }
+  if (/date/iu.test(t)) {
+    return 'date'
+  }
+  if (/decimal|numeric/iu.test(t)) {
+    return 'numeric'
+  }
+  if (/double|float|real/iu.test(t)) {
+    return 'doublePrecision'
+  }
+  if (/json/iu.test(t)) {
+    return 'json'
+  }
+  return 'text'
+}
+
 const TYPE_MAPPINGS: Record<
   GeneratorFormat,
-  Record<ConnectionType, (type: string) => string>
+  TypeMapper | Partial<Record<ConnectionType, TypeMapper>>
 > = {
   drizzle: {
-    clickhouse: (t) => t,
-    mssql: (t) => {
-      if (/datetime2/iu.test(t)) {
-        return 'datetime2'
-      }
-      if (/datetime/iu.test(t)) {
-        return 'datetime'
-      }
-      if (/date/iu.test(t)) {
-        return 'date'
-      }
-      if (/uniqueidentifier/iu.test(t)) {
-        return 'uniqueIdentifier'
-      }
-      if (/bigint/iu.test(t)) {
-        return 'bigint'
-      }
-      if (INT_RE.test(t)) {
-        return 'int'
-      }
-      if (/bit/iu.test(t)) {
-        return 'bit'
-      }
-      if (/bool/iu.test(t)) {
-        return 'boolean'
-      }
-      if (/text/iu.test(t)) {
-        return 'text'
-      }
-      if (/nvarchar/iu.test(t)) {
-        return 'nvarchar'
-      }
-      if (/varchar/iu.test(t)) {
-        return 'varchar'
-      }
-      if (/decimal|numeric/iu.test(t)) {
-        return 'decimal'
-      }
-      if (/float|real/iu.test(t)) {
-        return 'float'
-      }
-      return 'text'
-    },
-    mysql: (t) => {
-      if (/serial/iu.test(t)) {
-        return 'serial'
-      }
-      if (/tinyint/iu.test(t)) {
-        return 'tinyint'
-      }
-      if (/bigint/iu.test(t)) {
-        return 'bigint'
-      }
-      if (INT_RE.test(t)) {
-        return 'int'
-      }
-      if (/text/iu.test(t)) {
-        return 'text'
-      }
-      if (/varchar/iu.test(t)) {
-        return 'varchar'
-      }
-      if (/bool/iu.test(t)) {
-        return 'boolean'
-      }
-      if (/timestamp/iu.test(t)) {
-        return 'timestamp'
-      }
-      if (/datetime/iu.test(t)) {
-        return 'datetime'
-      }
-      if (/date/iu.test(t)) {
-        return 'date'
-      }
-      if (/decimal|numeric/iu.test(t)) {
-        return 'decimal'
-      }
-      if (/double|float|real/iu.test(t)) {
-        return 'double'
-      }
-      if (/json/iu.test(t)) {
-        return 'json'
-      }
-      return 'text'
-    },
-    postgres: (t) => {
-      if (/serial/iu.test(t)) {
-        return 'serial'
-      }
-      if (/bigint/iu.test(t)) {
-        return 'bigint'
-      }
-      if (/smallint/iu.test(t)) {
-        return 'smallint'
-      }
-      if (INT_RE.test(t)) {
-        return 'integer'
-      }
-      if (/uuid/iu.test(t)) {
-        return 'uuid'
-      }
-      if (/jsonb/iu.test(t)) {
-        return 'jsonb'
-      }
-      if (/text/iu.test(t)) {
-        return 'text'
-      }
-      if (/varchar|character varying/iu.test(t)) {
-        return 'varchar'
-      }
-      if (/bool/iu.test(t)) {
-        return 'boolean'
-      }
-      if (/timestamp/iu.test(t)) {
-        return 'timestamp'
-      }
-      if (/date/iu.test(t)) {
-        return 'date'
-      }
-      if (/decimal|numeric/iu.test(t)) {
-        return 'decimal'
-      }
-      if (/double|float|real/iu.test(t)) {
-        return 'doublePrecision'
-      }
-      if (/json/iu.test(t)) {
-        return 'json'
-      }
-      return 'text'
-    },
+    mssql: drizzleMssqlMapper,
+    mysql: drizzleMysqlMapper,
+    postgres: drizzlePostgresMapper,
   },
-  kysely: {
-    clickhouse: (t) => t,
-    mssql: (t) => t,
-    mysql: (t) => t,
-    postgres: (t) => t,
-  },
+  kysely: identity,
   prisma: {
-    clickhouse: () => '',
     mssql: (t) =>
       /^date$/iu.test(t) ? 'DateTime @db.Date' : prismaScalarMapper(t),
     mysql: prismaScalarMapper,
     postgres: prismaScalarMapper,
   },
-  sql: {
-    clickhouse: (t) => t,
-    mssql: (t) => t,
-    mysql: (t) => t,
-    postgres: (t) => t,
-  },
-  ts: {
-    clickhouse: tsMapper,
-    mssql: tsMapper,
-    mysql: tsMapper,
-    postgres: tsMapper,
-  },
-  zod: {
-    clickhouse: zodMapper,
-    mssql: zodMapper,
-    mysql: zodMapper,
-    postgres: zodMapper,
-  },
+  sql: identity,
+  ts: tsMapper,
+  zod: zodMapper,
 }
 
 export const getColumnType = (
   type: string,
   format: GeneratorFormat,
   dialect: ConnectionType
-) => TYPE_MAPPINGS[format][dialect](type)
+) => {
+  const mapping = TYPE_MAPPINGS[format]
+  return typeof mapping === 'function'
+    ? mapping(type)
+    : (mapping[dialect] ?? identity)(type)
+}
 
 export const formatValue = (value: unknown) => {
   if (value === null) {
@@ -352,22 +339,14 @@ export const groupIndexes = (
 
 export const filterExplicitIndexes = (
   grouped: GroupedIndex[],
-  columns: Column[],
-  dialect?: ConnectionType
+  columns: Column[]
 ): GroupedIndex[] =>
-  grouped.filter((idx) => {
-    if (idx.isPrimary) {
-      return false
-    }
-    if (dialect === 'clickhouse') {
-      return false
-    }
-    const isRedundantUnique =
-      idx.isUnique &&
-      idx.columns.length === 1 &&
-      columns.some((c) => c.id === idx.columns[0] && c.unique)
-    if (isRedundantUnique) {
-      return false
-    }
-    return true
-  })
+  grouped.filter(
+    (idx) =>
+      !idx.isPrimary &&
+      !(
+        idx.isUnique &&
+        idx.columns.length === 1 &&
+        columns.some((c) => c.id === idx.columns[0] && c.unique)
+      )
+  )

@@ -120,7 +120,7 @@ const foreignActionToPrisma = (
   action: string,
   kind: 'onDelete' | 'onUpdate'
 ): string => {
-  const value = FK_ACTION_MAP[action?.toUpperCase() ?? '']
+  const value = FK_ACTION_MAP[action.toUpperCase()]
   return value ? `, ${kind}: ${value}` : ''
 }
 
@@ -138,7 +138,7 @@ const prismaDefault = (
   if (
     c.isIdentity ||
     isSerialDefault(c.defaultValue) ||
-    (c.primaryKey && prismaType === 'Int')
+    (c.primaryKey && ['BigInt', 'Int'].includes(prismaType))
   ) {
     return 'autoincrement()'
   }
@@ -311,8 +311,10 @@ export const generateSchemaPrisma = ({
     return `  ${parts.join(' ').trimEnd()}`
   })
 
-  const groupedIndexes = groupIndexes(indexes, schema, table)
-  const explicitIndexes = filterExplicitIndexes(groupedIndexes, columns)
+  const explicitIndexes = filterExplicitIndexes(
+    groupIndexes(indexes, schema, table),
+    columns
+  )
 
   const indexBlocks = explicitIndexes
     .filter((idx) => idx.columns.length > 0)

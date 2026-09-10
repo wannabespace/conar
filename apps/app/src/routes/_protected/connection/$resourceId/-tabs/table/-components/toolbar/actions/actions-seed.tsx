@@ -41,7 +41,7 @@ export const ActionsSeed = ({
       swipeDirection="right"
     >
       <DrawerContent className="sm:[--drawer-content-width:38rem]!">
-        <DrawerHeader>
+        <DrawerHeader showCloseButton>
           <DrawerTitle>Seed data</DrawerTitle>
           <DrawerDescription data-mask className="truncate">
             {schema}.{table}

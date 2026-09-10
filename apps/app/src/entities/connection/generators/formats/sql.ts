@@ -50,6 +50,12 @@ export const generateQuerySQL = ({
 
 const escapeSqlString = (s: string): string => s.replaceAll("'", "''")
 
+const SERIAL_BY_INT_TYPE: Record<string, string> = {
+  BIGINT: 'BIGSERIAL',
+  INTEGER: 'SERIAL',
+  SMALLINT: 'SMALLSERIAL',
+}
+
 const formatEnumType = (
   c: Column,
   enumName: string,
@@ -77,14 +83,14 @@ const formatScalarType = (c: Column, dialect: ConnectionType) => {
   }
   let typeDef = getColumnType(columnType, 'sql', dialect)
 
-  if (c.maxLength !== undefined) {
+  if (typeof c.maxLength === 'number') {
     const len = c.maxLength === -1 ? 'MAX' : c.maxLength
     if (/(?:var)?char|binary/iu.test(typeDef) && !/text/iu.test(typeDef)) {
       typeDef += `(${len})`
     }
   }
 
-  if (c.precision !== undefined && /decimal|numeric/iu.test(typeDef)) {
+  if (typeof c.precision === 'number' && /decimal|numeric/iu.test(typeDef)) {
     typeDef += `(${c.precision}${c.scale ? `, ${c.scale}` : ''})`
   }
 
@@ -142,9 +148,7 @@ const buildColumnParts = (
     parts.push('NOT NULL')
   }
 
-  if (c.primaryKey && dialect !== ConnectionType.ClickHouse) {
-    parts.push('PRIMARY KEY')
-  } else if (c.unique) {
+  if (c.unique && !c.primaryKey && dialect !== ConnectionType.ClickHouse) {
     parts.push('UNIQUE')
   }
 
@@ -176,15 +180,15 @@ const buildPostgresEnumStatements = (
   })
 
 const appendIndexStatements = (
-  schema: string,
+  statement: string,
   qualifiedTable: string,
   columns: Column[],
   groupedIndexes: ReturnType<typeof groupIndexes>,
   dialect: ConnectionType
 ): string => {
-  const explicit = filterExplicitIndexes(groupedIndexes, columns, dialect)
+  const explicit = filterExplicitIndexes(groupedIndexes, columns)
   if (explicit.length === 0) {
-    return schema
+    return statement
   }
 
   const lines = explicit.map((idx) =>
@@ -206,7 +210,7 @@ const appendIndexStatements = (
       .filter(Boolean)
       .join(' ')
   )
-  return `${schema}\n\n${lines.join('\n')}`
+  return `${statement}\n\n${lines.join('\n')}`
 }
 
 export const generateSchemaSQL = ({
@@ -226,11 +230,9 @@ export const generateSchemaSQL = ({
     let { defaultValue } = c
 
     if (dialect === ConnectionType.Postgres && isSerialDefault(defaultValue)) {
-      if (typeDef === 'INTEGER') {
-        typeDef = 'SERIAL'
-        defaultValue = null
-      } else if (typeDef === 'BIGINT') {
-        typeDef = 'BIGSERIAL'
+      const serialType = SERIAL_BY_INT_TYPE[typeDef]
+      if (serialType) {
+        typeDef = serialType
         defaultValue = null
       }
     }
@@ -248,22 +250,21 @@ export const generateSchemaSQL = ({
     }
   }
 
-  let columnBlock = columnLines.join(',\n')
-  if (foreignKeys.length > 0) {
-    columnBlock += `,\n${foreignKeys.join(',\n')}`
+  const constraints = [...foreignKeys]
+  if (pkColumns.length > 0 && dialect !== ConnectionType.ClickHouse) {
+    constraints.unshift(`  PRIMARY KEY (${pkColumns.join(', ')})`)
   }
 
   const qualifiedTable = qualify(schema, table, dialect)
-  let statement = templates.sqlSchemaTemplate(qualifiedTable, columnBlock)
+  let statement = templates.sqlSchemaTemplate(
+    qualifiedTable,
+    [...columnLines, ...constraints].join(',\n')
+  )
 
   if (dialect === ConnectionType.ClickHouse) {
-    let orderBy = 'tuple()'
-    if (pkColumns.length === 1) {
-      orderBy = pkColumns[0] ?? 'tuple()'
-    } else if (pkColumns.length > 1) {
-      orderBy = `(${pkColumns.join(', ')})`
-    }
-    statement = statement.replace(
+    const orderBy =
+      pkColumns.length > 0 ? `(${pkColumns.join(', ')})` : 'tuple()'
+    return statement.replace(
       /\);\s*$/u,
       `) ENGINE = MergeTree() ORDER BY ${orderBy};`
     )
