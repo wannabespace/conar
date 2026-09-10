@@ -1,24 +1,16 @@
 import * as templates from '../templates'
 import type { QueryParams, SchemaParams } from '../types'
-import {
-  formatEnumAsUnionType,
-  formatValue,
-  getColumnType,
-  toLiteralKey,
-} from '../utils'
+import { formatEnumAsUnionType, getColumnType, toLiteralKey } from '../utils'
 
 export const generateQueryKysely = ({ table, filters }: QueryParams) => {
   const conditions = filters
     .map((f) => {
-      const col = f.column
+      const op = f.ref.operator.toLowerCase()
       if (f.ref.hasValue === false) {
-        return `'${col}', '${f.ref.operator.toLowerCase()}'`
+        return `'${f.column}', '${op === 'is null' ? 'is' : 'is not'}', null`
       }
-      if (f.ref.isArray) {
-        const method = f.ref.operator.toUpperCase() === 'IN' ? 'in' : 'not in'
-        return `'${col}', '${method}', ${JSON.stringify(f.values)}`
-      }
-      return `'${col}', '${f.ref.operator}', ${formatValue(f.values[0])}`
+      const value = f.ref.isArray ? f.values : f.values[0]
+      return `'${f.column}', '${op}', ${JSON.stringify(value)}`
     })
     .join(')\n  .where(')
 
@@ -39,10 +31,13 @@ export const generateSchemaKysely = ({
       }
       let tsType = getColumnType(columnType, 'ts', dialect)
       if (c.enumName && c.availableValues?.length) {
-        tsType = formatEnumAsUnionType(c.availableValues, c.type)
+        tsType = formatEnumAsUnionType(c.availableValues, c.isArray)
+      } else if (c.isArray) {
+        tsType += '[]'
       }
 
-      const isGenerated = c.primaryKey
+      const isGenerated =
+        c.primaryKey || c.isIdentity || typeof c.defaultValue === 'string'
       let typeDef = isGenerated ? `Generated<${tsType}>` : tsType
       if (c.isNullable) {
         typeDef += ' | null'

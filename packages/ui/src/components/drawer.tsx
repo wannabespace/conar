@@ -1,11 +1,23 @@
 import { Drawer as DrawerPrimitive } from '@base-ui/react/drawer'
+import { Cancel01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Button } from '@tamery/ui/components/button'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
+
+import {
+  drawerDescriptionVariants,
+  drawerFooterVariants,
+  drawerHeaderVariants,
+} from './drawer.utils'
+
+type DrawerSize = 'default' | 'sm'
 
 interface DrawerContextProps {
   hasSnapPoints: boolean
   modal: DrawerPrimitive.Root.Props['modal']
   showSwipeHandle: boolean
+  size: DrawerSize
   swipeDirection: NonNullable<DrawerPrimitive.Root.Props['swipeDirection']>
 }
 
@@ -24,14 +36,22 @@ const useDrawer = () => {
 const Drawer = ({
   modal = true,
   showSwipeHandle = false,
+  size = 'default',
   snapPoints,
   swipeDirection = 'down',
   ...props
 }: DrawerPrimitive.Root.Props & {
   showSwipeHandle?: boolean
+  size?: DrawerSize
 }) => {
   const hasSnapPoints = !!snapPoints && snapPoints.length > 0
-  const contextValue = { hasSnapPoints, modal, showSwipeHandle, swipeDirection }
+  const contextValue = {
+    hasSnapPoints,
+    modal,
+    showSwipeHandle,
+    size,
+    swipeDirection,
+  }
 
   return (
     <DrawerContext.Provider value={contextValue}>
@@ -56,6 +76,26 @@ const DrawerPortal = ({ ...props }: DrawerPrimitive.Portal.Props) => (
 
 const DrawerClose = ({ ...props }: DrawerPrimitive.Close.Props) => (
   <DrawerPrimitive.Close data-slot="drawer-close" {...props} />
+)
+
+const DrawerCloseButton = ({
+  className,
+  ...props
+}: DrawerPrimitive.Close.Props) => (
+  <DrawerPrimitive.Close
+    data-slot="drawer-close"
+    render={
+      <Button
+        className={cn('bg-secondary', className)}
+        size="icon-sm"
+        variant="ghost"
+      />
+    }
+    {...props}
+  >
+    <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+    <span className="sr-only">Close</span>
+  </DrawerPrimitive.Close>
 )
 
 const DrawerOverlay = ({
@@ -112,7 +152,7 @@ const DrawerContent = ({
           data-snap-points={hasSnapPoints ? '' : undefined}
           className={cn(
             // Base.
-            `group/drawer-popup bg-popover text-popover-foreground ring-foreground/4 pointer-events-auto fixed z-50 m-(--drawer-inset,0px) flex h-(--drawer-content-height) max-h-(--drawer-content-max-height,none) min-h-0 w-(--drawer-content-width,auto) transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))] flex-col rounded-[min(var(--radius-4xl),24px)] text-sm shadow-xl ring-[0.5px] transition-[transform,height,opacity,filter] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform outline-none select-none [--drawer-bleed-background:transparent] [--drawer-inset:--spacing(2)] [--drawer-stacked-shadow:0_-20px_25px_-5px_rgb(0_0_0/0.1),0_-8px_10px_-6px_rgb(0_0_0/0.1)] [interpolate-size:allow-keywords] data-[swipe-direction=down]:data-nested-drawer-open:shadow-(--drawer-stacked-shadow)`,
+            `group/drawer-popup bg-card text-popover-foreground ring-foreground/4 pointer-events-auto fixed z-50 m-(--drawer-inset,0px) flex h-(--drawer-content-height) max-h-(--drawer-content-max-height,none) min-h-0 w-(--drawer-content-width,auto) transform-[translate3d(var(--translate-x,0px),var(--translate-y,0px),0)_scale(var(--stack-scale))] flex-col rounded-[min(var(--radius-4xl),24px)] text-sm shadow-xl ring-[0.5px] transition-[transform,height,opacity,filter] duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform outline-none select-none [--drawer-bleed-background:transparent] [--drawer-inset:--spacing(2)] [--drawer-stacked-shadow:0_-20px_25px_-5px_rgb(0_0_0/0.1),0_-8px_10px_-6px_rgb(0_0_0/0.1)] [interpolate-size:allow-keywords] data-[swipe-direction=down]:data-nested-drawer-open:shadow-(--drawer-stacked-shadow)`,
             // Nested.
             `data-nested-drawer-open:overflow-hidden data-nested-drawer-open:brightness-95`,
             // Bleed.
@@ -154,24 +194,43 @@ const DrawerContent = ({
   )
 }
 
-const DrawerHeader = ({ className, ...props }: React.ComponentProps<'div'>) => (
-  <div
-    data-slot="drawer-header"
-    className={cn(
-      `flex shrink-0 flex-col gap-0.5 p-4 pb-0 group-data-[swipe-axis=y]/drawer-popup:text-center md:gap-1.5 md:text-left`,
-      className
-    )}
-    {...props}
-  />
-)
+const DrawerHeader = ({
+  className,
+  children,
+  showCloseButton = false,
+  ...props
+}: React.ComponentProps<'div'> & { showCloseButton?: boolean }) => {
+  const { size } = useDrawer()
 
-const DrawerFooter = ({ className, ...props }: React.ComponentProps<'div'>) => (
-  <div
-    data-slot="drawer-footer"
-    className={cn('mt-auto flex shrink-0 flex-col gap-2 p-4 pt-0', className)}
-    {...props}
-  />
-)
+  return (
+    <div
+      data-slot="drawer-header"
+      className={cn(
+        drawerHeaderVariants({ size }),
+        showCloseButton && 'relative pr-11',
+        className
+      )}
+      {...props}
+    >
+      {children}
+      {showCloseButton && (
+        <DrawerCloseButton className="absolute top-1/2 right-3 -translate-y-1/2" />
+      )}
+    </div>
+  )
+}
+
+const DrawerFooter = ({ className, ...props }: React.ComponentProps<'div'>) => {
+  const { size } = useDrawer()
+
+  return (
+    <div
+      data-slot="drawer-footer"
+      className={cn(drawerFooterVariants({ size }), className)}
+      {...props}
+    />
+  )
+}
 
 const DrawerTitle = ({ className, ...props }: DrawerPrimitive.Title.Props) => (
   <DrawerPrimitive.Title
@@ -187,17 +246,22 @@ const DrawerTitle = ({ className, ...props }: DrawerPrimitive.Title.Props) => (
 const DrawerDescription = ({
   className,
   ...props
-}: DrawerPrimitive.Description.Props) => (
-  <DrawerPrimitive.Description
-    data-slot="drawer-description"
-    className={cn('text-muted-foreground text-sm text-balance', className)}
-    {...props}
-  />
-)
+}: DrawerPrimitive.Description.Props) => {
+  const { size } = useDrawer()
+
+  return (
+    <DrawerPrimitive.Description
+      data-slot="drawer-description"
+      className={cn(drawerDescriptionVariants({ size }), className)}
+      {...props}
+    />
+  )
+}
 
 export {
   Drawer,
   DrawerClose,
+  DrawerCloseButton,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,

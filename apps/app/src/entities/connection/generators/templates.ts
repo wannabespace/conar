@@ -52,13 +52,18 @@ export const drizzleSchemaTemplate = ({
 }) => {
   const escapedTable = table.replace(SINGLE_QUOTE_RE, "\\'")
   const varName = camelCase(table)
-  return [
-    `import { ${coreImports.join(', ')} } from 'drizzle-orm';`,
+  const imports = [
+    coreImports.length > 0
+      ? `import { ${coreImports.join(', ')} } from 'drizzle-orm';`
+      : '',
     `import { ${dialectImports.join(', ')}, ${tableFunc} } from '${dialectImportPath}';`,
+  ].filter(Boolean)
+  return [
+    ...imports,
     '',
     `export const ${varName} = ${tableFunc}('${escapedTable}', {`,
     columns,
-    `}${extraConfig ? `,(t) => [\n${extraConfig}\n]` : ''});`,
+    `}${extraConfig ? `, (t) => [\n${extraConfig}\n]` : ''});`,
   ].join('\n')
 }
 

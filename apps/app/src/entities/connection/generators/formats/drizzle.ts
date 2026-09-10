@@ -1,5 +1,5 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-import { camelCase, pascalCase } from 'change-case'
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { camelCase } from 'change-case'
 
 import * as templates from '../templates'
 import type { QueryParams, SchemaParams } from '../types'
@@ -7,19 +7,16 @@ import {
   filterExplicitIndexes,
   getColumnType,
   groupIndexes,
+  isNowDefault,
+  isSerialDefault,
   isValidIdentifier,
   toLiteralKey,
 } from '../utils'
 
 const dialectConfig: Record<
-  ConnectionType,
+  Exclude<ConnectionType, ConnectionType.ClickHouse>,
   { tableFunc: string; dialectImportPath: string; enumFunc?: string }
 > = {
-  clickhouse: {
-    dialectImportPath: 'drizzle-orm/clickhouse-core',
-    enumFunc: 'enum',
-    tableFunc: 'clickhouseTable',
-  },
   mssql: {
     dialectImportPath: 'drizzle-orm/mssql-core',
     tableFunc: 'mssqlTable',
@@ -38,8 +35,13 @@ const dialectConfig: Record<
 
 const FK_SUFFIX_RE = /(?<suffix>_id|Id)$/u
 
-const resolveRefTable = (table: string): string =>
-  isValidIdentifier(table) ? table : pascalCase(table)
+const SERIAL_BY_INT_TYPE: Record<string, string> = {
+  bigint: 'bigserial',
+  integer: 'serial',
+  smallint: 'smallserial',
+}
+
+const resolveRefTable = (table: string): string => camelCase(table)
 
 const filterOpToDrizzle = (
   op: string,
@@ -122,10 +124,40 @@ const buildColumnOptions = (
   ) {
     return `, { length: ${c.maxLength} }`
   }
-  if (typeFunc === 'decimal' && c.precision) {
+  if (['bigint', 'bigserial'].includes(typeFunc)) {
+    return ", { mode: 'number' }"
+  }
+  if (
+    typeFunc === 'timestamp' &&
+    /with time zone|timestamptz/iu.test(c.type ?? '')
+  ) {
+    return ', { withTimezone: true }'
+  }
+  if (['decimal', 'numeric'].includes(typeFunc) && c.precision) {
     return `, { precision: ${c.precision}${c.scale ? `, scale: ${c.scale}` : ''} }`
   }
   return ''
+}
+
+const buildGeneratedChain = (
+  c: SchemaParams['columns'][number],
+  dialect: ConnectionType,
+  coreImports: Set<string>
+): string => {
+  if (c.isIdentity && dialect === ConnectionType.Postgres) {
+    return '.generatedByDefaultAsIdentity()'
+  }
+  if (c.isIdentity && dialect === ConnectionType.MSSQL) {
+    return '.identity()'
+  }
+  if (typeof c.defaultValue !== 'string' || isSerialDefault(c.defaultValue)) {
+    return ''
+  }
+  if (isNowDefault(c.defaultValue)) {
+    return '.defaultNow()'
+  }
+  coreImports.add('sql')
+  return `.default(sql\`${c.defaultValue}\`)`
 }
 
 const buildColumnChain = (
@@ -133,7 +165,8 @@ const buildColumnChain = (
   typeFunc: string,
   options: string,
   dialect: ConnectionType,
-  foreignKeyImports: Set<string>
+  foreignKeyImports: Set<string>,
+  coreImports: Set<string>
 ): string => {
   const key = camelCase(c.id)
   const sameCase = key === c.id
@@ -142,6 +175,10 @@ const buildColumnChain = (
     ? `${typeFunc}(${options ? options.slice(2).trim() : ''})`
     : `${typeFunc}('${c.id}'${options})`
 
+  if (c.isArray && dialect === ConnectionType.Postgres) {
+    chain += '.array()'
+  }
+  chain += buildGeneratedChain(c, dialect, coreImports)
   if (!c.isNullable) {
     chain += '.notNull()'
   }
@@ -210,10 +247,14 @@ const buildRelationships = (
 
 export const generateSchemaDrizzle = ({
   table,
+  schema,
   columns,
   dialect,
   indexes = [],
 }: SchemaParams) => {
+  if (dialect === ConnectionType.ClickHouse) {
+    return ''
+  }
   const { tableFunc, dialectImportPath, enumFunc } = dialectConfig[dialect]
 
   const coreImports = new Set<string>()
@@ -231,6 +272,12 @@ export const generateSchemaDrizzle = ({
         return ''
       }
       let typeFunc = getColumnType(columnType, 'drizzle', dialect)
+      if (
+        dialect === ConnectionType.Postgres &&
+        isSerialDefault(c.defaultValue)
+      ) {
+        typeFunc = SERIAL_BY_INT_TYPE[typeFunc] ?? 'serial'
+      }
 
       dialectImports.add(typeFunc)
 
@@ -257,7 +304,8 @@ export const generateSchemaDrizzle = ({
         typeFunc,
         options,
         dialect,
-        foreignKeyImports
+        foreignKeyImports,
+        coreImports
       )
 
       return `  ${safeKey}: ${chain},`
@@ -273,11 +321,9 @@ export const generateSchemaDrizzle = ({
 
   const allFkImports = new Set([...foreignKeyImports, ...relationshipFkImports])
 
-  const groupedIndexes = groupIndexes(indexes, table)
   const explicitIndexes = filterExplicitIndexes(
-    groupedIndexes,
-    columns,
-    dialect
+    groupIndexes(indexes, schema, table),
+    columns
   )
 
   if (relationships.length > 0) {

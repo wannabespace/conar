@@ -76,16 +76,25 @@ const CodeInline = ({
   )
 }
 
+const codeBlockSizes = {
+  '2xs': 'text-2xs/5',
+  xs: 'text-xs/5',
+}
+
 const CodeBlock = ({
   className,
   code,
   language,
   lineNumbers = false,
+  size = '2xs',
+  wrap = false,
   ...props
 }: ComponentProps<'pre'> & {
   code: string
   language: string
   lineNumbers?: boolean
+  size?: keyof typeof codeBlockSizes
+  wrap?: boolean
 }) => {
   const lines: Token[][] =
     useTokens(code, language) ??
@@ -94,7 +103,9 @@ const CodeBlock = ({
   return (
     <pre
       className={cn(
-        'text-2xs/5 scrollbar-thin overflow-auto px-2 font-mono',
+        'scrollbar-thin overflow-auto px-2 font-mono',
+        codeBlockSizes[size],
+        wrap && 'whitespace-pre-wrap',
         className
       )}
       data-slot="code-block"
@@ -106,7 +117,8 @@ const CodeBlock = ({
             className={cn(
               'block',
               lineNumbers &&
-                'before:text-muted-foreground/40 before:mr-3 before:inline-block before:w-6 before:text-right before:tabular-nums before:content-[counter(line)] before:[counter-increment:line]'
+                'before:text-muted-foreground/40 before:mr-3 before:inline-block before:w-6 before:text-right before:tabular-nums before:content-[counter(line)] before:[counter-increment:line]',
+              wrap && lineNumbers && 'pl-9 -indent-9'
             )}
             key={index}
           >

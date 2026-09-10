@@ -9,13 +9,6 @@ export const GENERATOR_COMPATIBILITY: Partial<
     ConnectionType.Postgres,
     ConnectionType.MySQL,
     ConnectionType.MSSQL,
-    ConnectionType.ClickHouse,
-  ],
-  kysely: [
-    ConnectionType.Postgres,
-    ConnectionType.MySQL,
-    ConnectionType.MSSQL,
-    ConnectionType.ClickHouse,
   ],
   prisma: [ConnectionType.Postgres, ConnectionType.MySQL, ConnectionType.MSSQL],
 }

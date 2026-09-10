@@ -14,14 +14,8 @@ const buildZodType = (
 
   if (column.enumName && column.availableValues?.length) {
     zodType = `z.enum([${column.availableValues.map((v) => `'${v}'`).join(', ')}])`
-    if (column.type === 'set') {
-      zodType = `${zodType}.array()`
-    }
   }
 
-  if (column.isNullable) {
-    zodType += '.nullable()'
-  }
   if (
     column.maxLength &&
     column.maxLength > 0 &&
@@ -39,6 +33,13 @@ const buildZodType = (
     /int/iu.test(column.type)
   ) {
     zodType = zodType.replace('z.number()', 'z.int()')
+  }
+
+  if (column.isArray) {
+    zodType += '.array()'
+  }
+  if (column.isNullable) {
+    zodType += '.nullable()'
   }
   return zodType
 }
