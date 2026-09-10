@@ -5,7 +5,6 @@ import type { GeneratorId } from './registry'
 type Family =
   | 'bool'
   | 'date'
-  | 'datetime'
   | 'float'
   | 'int'
   | 'json'
@@ -19,8 +18,7 @@ const FAMILY_RULES: Rules<Family> = [
   [['bool'], 'bool'],
   [['uuid', 'uniqueidentifier'], 'uuid'],
   [['json'], 'json'],
-  [['datetime', 'timestamp'], 'datetime'],
-  [['date'], 'date'],
+  [['date', 'timestamp'], 'date'],
   [['time'], 'time'],
   [['int', 'serial'], 'int'],
   [['float', 'double', 'decimal', 'numeric', 'real', 'money'], 'float'],
@@ -104,7 +102,6 @@ const byFamily: Record<Family, (name: string, column: Column) => GeneratorId> =
   {
     bool: () => 'datatype.boolean',
     date: (name) => match(name, DATE_NAME_RULES) ?? 'date.recent',
-    datetime: (name) => match(name, DATE_NAME_RULES) ?? 'date.recent',
     float: (name) => match(name, FLOAT_NAME_RULES) ?? 'number.float',
     int: (name) => match(name, INT_NAME_RULES) ?? 'number.int',
     json: () => 'json.object',

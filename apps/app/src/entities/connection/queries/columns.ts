@@ -31,11 +31,7 @@ export const columnType = type({
 
 const clickhouseEnumRegex = /^Enum\d+/u
 
-const isClickhouseNullable = (sqlType: string): boolean =>
-  sqlType.startsWith('Nullable(') ||
-  (sqlType.startsWith('LowCardinality(') &&
-    sqlType.endsWith(')') &&
-    isClickhouseNullable(sqlType.slice(15, -1)))
+const clickhouseNullableRegex = /^(?:LowCardinality\()?Nullable\(/u
 
 const getClickhouseColumnType = (sqlType: string): string => {
   if (sqlType.startsWith('Array(') && sqlType.endsWith(')')) {
@@ -103,7 +99,7 @@ const resourceTableColumnsQuery = memoize(
             editable: true,
             enumName: row.type.includes('Enum') ? row.id : undefined,
             isArray: row.type.includes('Array('),
-            nullable: isClickhouseNullable(row.type),
+            nullable: clickhouseNullableRegex.test(row.type),
             typeLabel: getClickhouseColumnType(row.type),
           }))
         },

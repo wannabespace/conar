@@ -42,6 +42,7 @@ import { cn } from '@tamery/ui/lib/utils'
 import { useHotkey, useHotkeys } from '@tanstack/react-hotkeys'
 import { useMutation } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
+import { isOperationNodeSource } from 'kysely'
 import { useEffect, useRef, useState } from 'react'
 import { useSubscription } from 'seitu/react'
 import { toast } from 'sonner'
@@ -116,88 +117,26 @@ const generatorLabel = (
   return generators[generator.generatorId]?.label ?? generator.generatorId
 }
 
-const isSqlFragment = (value: unknown) =>
-  typeof value === 'object' &&
-  value !== null &&
-  !Array.isArray(value) &&
-  !(value instanceof Date) &&
-  Object.getPrototypeOf(value) !== Object.prototype
-
 const previewText = (value: unknown) => {
   if (value === null) {
     return 'NULL'
   }
-  if (isSqlFragment(value)) {
+  if (isOperationNodeSource(value)) {
     return 'SQL'
   }
   return getValueForEditor(value).replaceAll('\n', ' ')
 }
 
-const PreviewHeader = ({ onReroll }: { onReroll?: () => void }) => (
-  <div className="flex h-6 shrink-0 items-center justify-between">
-    <span className="text-muted-foreground text-2xs font-semibold tracking-wider uppercase">
-      Preview
-    </span>
-    {onReroll && (
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              className="text-muted-foreground hover:text-foreground"
-              onClick={onReroll}
-            />
-          }
-        >
-          <HugeiconsIcon icon={Refresh01Icon} strokeWidth={2} />
-        </TooltipTrigger>
-        <TooltipContent>Regenerate</TooltipContent>
-      </Tooltip>
-    )}
-  </div>
-)
-
-const PreviewNote = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex flex-col gap-1.5">
-    <PreviewHeader />
-    <p data-mask className="text-muted-foreground text-xs">
-      {children}
-    </p>
-  </div>
-)
-
-const PreviewSamples = ({
-  column,
-  generator,
-  dialect,
-}: {
-  column: Column
-  generator: Generator
-  dialect: ConnectionType
-}) => {
-  const sample = () =>
-    generateRows({
-      columnGenerators: { [column.id]: generator },
-      columns: [column],
-      count: PREVIEW_ROWS,
-      dialect,
-    }).map((row) => row[column.id])
-  const [values, setValues] = useState(sample)
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <PreviewHeader onReroll={() => setValues(sample)} />
-      <ul data-mask className="flex flex-col gap-1">
-        {values.map((value, index) => (
-          // oxlint-disable-next-line react/no-array-index-key
-          <li key={index} className="truncate font-mono text-xs">
-            {previewText(value)}
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
+const previewNote = (column: Column, generatorId: GeneratorId) => {
+  if (generatorId === SKIP_GENERATOR) {
+    return 'Left out of the insert. The database fills it in.'
+  }
+  if (generatorId === REFERENCE_GENERATOR && column.foreign) {
+    return `A random ${column.foreign.column} from ${column.foreign.schema}.${column.foreign.table}`
+  }
+  if (generatorId === CUSTOM_GENERATOR) {
+    return 'Inserted verbatim as SQL, once per row.'
+  }
 }
 
 const Preview = ({
@@ -209,29 +148,57 @@ const Preview = ({
   generator: Generator
   dialect: ConnectionType
 }) => {
-  const { generatorId } = generator
-
-  if (generatorId === SKIP_GENERATOR) {
-    return (
-      <PreviewNote>
-        Left out of the insert. The database fills it in.
-      </PreviewNote>
-    )
-  }
-  if (generatorId === REFERENCE_GENERATOR && column.foreign) {
-    return (
-      <PreviewNote>
-        A random {column.foreign.column} from {column.foreign.schema}.
-        {column.foreign.table}
-      </PreviewNote>
-    )
-  }
-  if (generatorId === CUSTOM_GENERATOR) {
-    return <PreviewNote>Inserted verbatim as SQL, once per row.</PreviewNote>
-  }
+  const note = previewNote(column, generator.generatorId)
+  const sample = () =>
+    note
+      ? []
+      : generateRows({
+          columnGenerators: { [column.id]: generator },
+          columns: [column],
+          count: PREVIEW_ROWS,
+          dialect,
+        }).map((row) => row[column.id])
+  const [values, setValues] = useState(sample)
 
   return (
-    <PreviewSamples column={column} generator={generator} dialect={dialect} />
+    <div className="flex flex-col gap-1.5">
+      <div className="flex h-6 shrink-0 items-center justify-between">
+        <span className="text-muted-foreground text-2xs font-semibold tracking-wider uppercase">
+          Preview
+        </span>
+        {!note && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="text-muted-foreground hover:text-foreground"
+                  onClick={() => setValues(sample)}
+                />
+              }
+            >
+              <HugeiconsIcon icon={Refresh01Icon} strokeWidth={2} />
+            </TooltipTrigger>
+            <TooltipContent>Regenerate</TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+      {note ? (
+        <p data-mask className="text-muted-foreground text-xs">
+          {note}
+        </p>
+      ) : (
+        <ul data-mask className="flex flex-col gap-1">
+          {values.map((value, index) => (
+            // oxlint-disable-next-line react/no-array-index-key
+            <li key={index} className="truncate font-mono text-xs">
+              {previewText(value)}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
 
@@ -360,7 +327,7 @@ const Inspector = ({
   onChange: (patch: Partial<Generator>) => void
   onLeave: () => void
 }) => {
-  const canMixNulls =
+  const canRandomizeNulls =
     column.isNullable &&
     generator.generatorId !== NULL_GENERATOR &&
     generator.generatorId !== SKIP_GENERATOR
@@ -422,14 +389,14 @@ const Inspector = ({
             }
           />
         )}
-        {canMixNulls && (
+        {canRandomizeNulls && (
           <label
-            htmlFor="seed-mix-nulls"
+            htmlFor="seed-randomize-nulls"
             className="flex items-center justify-between gap-3 border-b pb-3 text-sm"
           >
-            Mix in NULL values
+            Randomize NULL values
             <Switch
-              id="seed-mix-nulls"
+              id="seed-randomize-nulls"
               size="sm"
               checked={generator.isNullable}
               onCheckedChange={(checked) => onChange({ isNullable: checked })}
@@ -496,7 +463,7 @@ export const SeedPanel = ({
           ? saved
           : {
               generatorId: autoDetectGenerator(column, dialect),
-              isNullable: false,
+              isNullable: true,
             },
       ]
     })
@@ -504,22 +471,14 @@ export const SeedPanel = ({
   const selectedGenerator =
     selectedColumn && columnGenerators[selectedColumn.id]
 
-  const updateGenerator = (columnId: string, patch: Partial<Generator>) => {
-    const current = columnGenerators[columnId]
-    if (!current) {
-      return
-    }
+  const updateGenerator = (columnId: string, generator: Generator) =>
     store.set(
       (state) =>
         ({
           ...state,
-          generators: {
-            ...state.generators,
-            [columnId]: { ...current, ...patch },
-          },
+          generators: { ...state.generators, [columnId]: generator },
         }) satisfies typeof state
     )
-  }
 
   const selectAt = (index: number) => {
     const column = columns.at(Math.min(index, columns.length - 1))
@@ -563,22 +522,24 @@ export const SeedPanel = ({
       const queryParams =
         await connectionResourceToQueryParams(connectionResource)
 
-      const referencedColumns = columns.flatMap((column) =>
-        column.foreign &&
-        columnGenerators[column.id]?.generatorId === REFERENCE_GENERATOR
-          ? [{ foreign: column.foreign, id: column.id }]
-          : []
-      )
       const referenceData = Object.fromEntries(
         await Promise.all(
-          referencedColumns.map(async ({ id, foreign }) => {
-            const rows = await distinctQuery({
-              column: foreign.column,
-              schema: foreign.schema,
-              table: foreign.table,
-            }).run(queryParams)
-            return [id, rows.map((row) => row[foreign.column])]
-          })
+          columns.flatMap(({ foreign, id }) =>
+            foreign && columnGenerators[id]?.generatorId === REFERENCE_GENERATOR
+              ? [
+                  distinctQuery({
+                    column: foreign.column,
+                    schema: foreign.schema,
+                    table: foreign.table,
+                  })
+                    .run(queryParams)
+                    .then(
+                      (rows) =>
+                        [id, rows.map((row) => row[foreign.column])] as const
+                    ),
+                ]
+              : []
+          )
         )
       )
 
@@ -589,10 +550,9 @@ export const SeedPanel = ({
         dialect,
         referenceData,
       })
-      const columnCount = Object.keys(rows[0] ?? {}).length
 
       await insertQuery({
-        batchSize: insertBatchSize(dialect, columnCount),
+        batchSize: insertBatchSize(dialect, activeGenerators.length),
         rows,
         schema,
         table,
@@ -718,7 +678,12 @@ export const SeedPanel = ({
             generators={generators}
             groups={groups}
             dialect={dialect}
-            onChange={(patch) => updateGenerator(selectedColumn.id, patch)}
+            onChange={(patch) =>
+              updateGenerator(selectedColumn.id, {
+                ...selectedGenerator,
+                ...patch,
+              })
+            }
           />
         )}
       </div>

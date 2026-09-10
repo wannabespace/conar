@@ -96,7 +96,7 @@ const jsonValue = (
   return jsonScalar()
 }
 
-const inCategory = <
+export const inCategory = <
   T extends Record<string, [label: string, generate: GeneratorDef['generate']]>,
 >(
   category: string,
@@ -307,16 +307,16 @@ const TEXT_GENERATORS = inCategory('Text', {
 
 export const BASE_GENERATORS = {
   ...SPECIAL_GENERATORS,
-  ...BOOLEAN_GENERATORS,
-  ...COMMERCE_GENERATORS,
-  ...DATE_GENERATORS,
-  ...FINANCE_GENERATORS,
-  ...ID_GENERATORS,
-  ...INTERNET_GENERATORS,
-  ...LOCATION_GENERATORS,
-  ...NUMBER_GENERATORS,
-  ...OTHER_GENERATORS,
   ...PERSON_GENERATORS,
-  ...SYSTEM_GENERATORS,
+  ...INTERNET_GENERATORS,
   ...TEXT_GENERATORS,
+  ...NUMBER_GENERATORS,
+  ...DATE_GENERATORS,
+  ...BOOLEAN_GENERATORS,
+  ...ID_GENERATORS,
+  ...LOCATION_GENERATORS,
+  ...COMMERCE_GENERATORS,
+  ...FINANCE_GENERATORS,
+  ...SYSTEM_GENERATORS,
+  ...OTHER_GENERATORS,
 } satisfies GeneratorMap

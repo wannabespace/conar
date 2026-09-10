@@ -27,27 +27,6 @@ const DIALECT_CONFIGS: Record<ConnectionType, DialectSeedConfig> = {
   postgres: pgSeedConfig,
 }
 
-const CATEGORY_ORDER = [
-  'Special',
-  'Person',
-  'Internet',
-  'Text',
-  'Number',
-  'Date',
-  'Boolean',
-  'ID',
-  'Location',
-  'Commerce',
-  'Finance',
-  'System',
-  'Other',
-]
-
-const categoryRank = (category: string) => {
-  const index = CATEGORY_ORDER.indexOf(category)
-  return index === -1 ? CATEGORY_ORDER.length : index
-}
-
 export interface GeneratorGroup {
   value: string
   items: GeneratorId[]
@@ -67,12 +46,10 @@ export const getGeneratorGroups = memoize(
         Object.entries(getGenerators(dialect)),
         ([, def]) => def.category
       )
-    )
-      .map(([value, entries]) => ({
-        items: (entries ?? []).map(([id]) => id as GeneratorId),
-        value,
-      }))
-      .toSorted((a, b) => categoryRank(a.value) - categoryRank(b.value))
+    ).map(([value, entries]) => ({
+      items: (entries ?? []).map(([id]) => id as GeneratorId),
+      value,
+    }))
 )
 
 // A column left out of the insert must have something the database can fill in.
