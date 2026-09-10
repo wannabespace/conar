@@ -1,17 +1,6 @@
 import { SourceCodeIcon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import { Badge } from '@tamery/ui/components/badge'
-import { CardContent, CardTitle } from '@tamery/ui/components/card'
-import { CardMotion } from '@tamery/ui/components/card.motion'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
-import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@tamery/ui/components/select'
+import { TableCell, TableRow } from '@tamery/ui/components/table'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -19,148 +8,112 @@ import { useState } from 'react'
 import type { functionsType } from '~/entities/connection/queries/functions'
 import { resourceFunctionsQueryOptions } from '~/entities/connection/queries/functions'
 
-import { DefinitionsEmptyState } from '../-components/empty-state'
-import { DefinitionsGrid } from '../-components/grid'
-import { DefinitionsHeader } from '../-components/header'
+import type { FilterOption } from '../-components/filter-select'
+import { FilterSelect } from '../-components/filter-select'
+import {
+  DefinitionsHeader,
+  DefinitionsList,
+  DefinitionsToolbar,
+  MutedCell,
+  NameCell,
+} from '../-components/page'
 import { SchemaSelect } from '../-components/schema-select'
-import { MOTION_BLOCK_PROPS } from '../-constants'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
+import { matchesSearch } from '../-lib/search'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 type FunctionType = (typeof functionsType.infer)['type']
 
-const typeFilterOptions: { label: string; value: FunctionType | 'all' }[] = [
-  { label: 'All Types', value: 'all' },
-  { label: 'Function', value: 'function' },
-  { label: 'Procedure', value: 'procedure' },
+const typeLabels: Record<FunctionType, string> = {
+  function: 'Function',
+  procedure: 'Procedure',
+}
+
+const filterOptions: FilterOption<FunctionType | 'all'>[] = [
+  { label: 'All types', value: 'all' },
+  { label: 'Functions', value: 'function' },
+  { label: 'Procedures', value: 'procedure' },
 ]
 
 export const Functions = () => {
   const { connectionResource } = useRouteContext()
-  const { data: functions, isPending } = useQuery(
+  const { data: functions = [], isPending } = useQuery(
     resourceFunctionsQueryOptions({ connectionResource })
   )
-  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
-    useDefinitionsState({
-      connectionResource,
-    })
-  const [filterType, setFilterType] =
-    useState<(typeof typeFilterOptions)[number]['value']>('all')
+  const { schemas, search, selectedSchema, setSearch, setSelectedSchema } =
+    useDefinitionsState({ connectionResource })
+  const [type, setType] = useState<FunctionType | 'all'>('all')
 
-  const filteredFunctions =
-    functions?.filter(
-      (item) =>
-        item.schema === selectedSchema &&
-        (filterType === 'all' || filterType === item.type) &&
-        (!search ||
-          item.name.toLowerCase().includes(search.toLowerCase()) ||
-          item.language?.toLowerCase().includes(search.toLowerCase()) ||
-          (item.return_type &&
-            item.return_type.toLowerCase().includes(search.toLowerCase())))
-    ) ?? []
+  const inSchema = functions.filter((item) => item.schema === selectedSchema)
+  const rows = inSchema.filter(
+    (item) =>
+      (type === 'all' || type === item.type) &&
+      matchesSearch(search, item.name, item.language, item.return_type)
+  )
 
   return (
     <>
-      <DefinitionsHeader>Functions</DefinitionsHeader>
-      <div className="mb-4 flex items-center gap-2">
-        <SearchInput
-          placeholder="Search functions"
-          autoFocus
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onClear={() => setSearch('')}
+      <DefinitionsHeader
+        title="Functions"
+        count={isPending ? undefined : rows.length}
+        noun="function"
+      />
+      <DefinitionsToolbar
+        placeholder="Search functions"
+        search={search}
+        onSearchChange={setSearch}
+      >
+        <FilterSelect
+          options={filterOptions}
+          value={type}
+          onValueChange={setType}
         />
-        <Select
-          value={filterType}
-          onValueChange={(v) => {
-            if (v) {
-              setFilterType(v)
-            }
-          }}
-        >
-          <SelectTrigger className="w-45">
-            <SelectValue placeholder="Filter Type">
-              {(value) =>
-                value
-                  ? typeFilterOptions.find((option) => option.value === value)
-                      ?.label
-                  : 'Filter Type'
-              }
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {typeFilterOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
         <SchemaSelect
           schemas={schemas}
           selectedSchema={selectedSchema}
           setSelectedSchema={setSelectedSchema}
         />
-      </div>
-      <DefinitionsGrid loading={isPending}>
-        {filteredFunctions.length === 0 && (
-          <DefinitionsEmptyState
-            title="No functions found"
-            description="This schema doesn't have any functions matching your filter."
-          />
-        )}
-
-        {filteredFunctions.map((item) => (
-          <CardMotion
-            key={`${item.schema}-${item.name}-${item.type}`}
-            layout
-            {...MOTION_BLOCK_PROPS}
+      </DefinitionsToolbar>
+      <DefinitionsList
+        icon={SourceCodeIcon}
+        columns={['Name', 'Language', 'Returns', 'Arguments', 'Type']}
+        count={rows.length}
+        loading={isPending}
+        emptyTitle={inSchema.length === 0 ? 'No functions' : 'No matches'}
+        emptyDescription={
+          inSchema.length === 0
+            ? 'This schema has no functions.'
+            : 'No functions match the current search and filters.'
+        }
+      >
+        {rows.map((item) => (
+          <TableRow
+            key={`${item.name}.${item.type}.${item.argumentCount}.${item.return_type}`}
           >
-            <CardContent className="px-4 py-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="mb-2 flex items-center gap-2 text-base">
-                    <HugeiconsIcon
-                      icon={SourceCodeIcon}
-                      strokeWidth={2}
-                      className="text-primary size-4"
-                    />
-                    <HighlightText text={item.name} match={search} />
-                    <Badge variant="secondary">
-                      {item.type === 'function' ? 'Function' : 'Procedure'}
-                    </Badge>
-                  </CardTitle>
-                  <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
-                    {item.language && (
-                      <Badge variant="outline">
-                        <HighlightText text={item.language} match={search} />
-                      </Badge>
-                    )}
-                    {item.return_type && (
-                      <>
-                        <span>returns</span>
-                        <Badge variant="outline">
-                          <HighlightText
-                            text={item.return_type}
-                            match={search}
-                          />
-                        </Badge>
-                      </>
-                    )}
-                    {!!item.argumentCount && (
-                      <span>
-                        {item.argumentCount}{' '}
-                        {item.argumentCount === 1 ? 'arg' : 'args'}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </CardMotion>
+            <NameCell icon={SourceCodeIcon}>
+              <HighlightText text={item.name} match={search} />
+            </NameCell>
+            <MutedCell>
+              {item.language && (
+                <HighlightText text={item.language} match={search} />
+              )}
+            </MutedCell>
+            <TableCell
+              data-mask
+              className="font-mono text-xs whitespace-normal"
+            >
+              {item.return_type && (
+                <HighlightText text={item.return_type} match={search} />
+              )}
+            </TableCell>
+            <MutedCell>
+              <span className="tabular-nums">{item.argumentCount ?? 0}</span>
+            </MutedCell>
+            <MutedCell>{typeLabels[item.type]}</MutedCell>
+          </TableRow>
         ))}
-      </DefinitionsGrid>
+      </DefinitionsList>
     </>
   )
 }

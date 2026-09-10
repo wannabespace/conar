@@ -19,15 +19,16 @@ export const useDefinitionsState = ({
     resourceTablesAndSchemasQueryOptions({ connectionResource, showSystem })
   )
   const schemas = data?.schemas.map(({ name }) => name) ?? []
-  const [selectedSchema, setSelectedSchema] = useState(schemas[0])
+  const [pickedSchema, setPickedSchema] = useState<string>()
   const [search, setSearch] = useState('')
+  const selectedSchema =
+    pickedSchema && schemas.includes(pickedSchema) ? pickedSchema : schemas[0]
 
-  if (
-    schemas.length > 0 &&
-    (!selectedSchema || !schemas.includes(selectedSchema))
-  ) {
-    setSelectedSchema(schemas[0])
+  return {
+    schemas,
+    search,
+    selectedSchema,
+    setSearch,
+    setSelectedSchema: setPickedSchema,
   }
-
-  return { schemas, selectedSchema, setSelectedSchema, search, setSearch }
 }

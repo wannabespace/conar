@@ -1,23 +1,6 @@
-import {
-  DatabaseIcon,
-  Key01Icon,
-  LayoutTable02Icon,
-  LayoutThreeColumnIcon,
-  Link01Icon,
-} from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import { Badge } from '@tamery/ui/components/badge'
-import { CardContent, CardTitle } from '@tamery/ui/components/card'
-import { CardMotion } from '@tamery/ui/components/card.motion'
+import { Key01Icon, Link01Icon } from '@hugeicons/core-free-icons'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
-import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@tamery/ui/components/select'
+import { TableCell, TableRow } from '@tamery/ui/components/table'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -25,194 +8,204 @@ import { useState } from 'react'
 import type { constraintsType } from '~/entities/connection/queries/constraints'
 import { resourceConstraintsQueryOptions } from '~/entities/connection/queries/constraints'
 
-import { DefinitionsEmptyState } from '../-components/empty-state'
-import { DefinitionsGrid } from '../-components/grid'
-import { DefinitionsHeader } from '../-components/header'
+import type { FilterOption } from '../-components/filter-select'
+import { FilterSelect } from '../-components/filter-select'
+import {
+  DefinitionsHeader,
+  DefinitionsList,
+  DefinitionsToolbar,
+  MutedCell,
+  NameCell,
+} from '../-components/page'
 import { SchemaSelect } from '../-components/schema-select'
-import { MOTION_BLOCK_PROPS } from '../-constants'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
+import { matchesSearch } from '../-lib/search'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
-type ConstraintType = (typeof constraintsType.infer)['type']
+type ConstraintItem = typeof constraintsType.infer
+type ConstraintType = ConstraintItem['type']
 
-const filterOptions: { label: string; value: ConstraintType | 'all' }[] = [
-  { label: 'All Types', value: 'all' },
-  { label: 'Primary Key', value: 'primaryKey' },
-  { label: 'Foreign Key', value: 'foreignKey' },
+interface GroupedConstraint extends Pick<
+  ConstraintItem,
+  | 'foreignSchema'
+  | 'foreignTable'
+  | 'name'
+  | 'onDelete'
+  | 'onUpdate'
+  | 'table'
+  | 'type'
+> {
+  columns: string[]
+  foreignColumns: string[]
+}
+
+const typeLabels: Record<ConstraintType, string> = {
+  foreignKey: 'Foreign key',
+  primaryKey: 'Primary key',
+  unique: 'Unique',
+}
+
+const filterOptions: FilterOption<ConstraintType | 'all'>[] = [
+  { label: 'All types', value: 'all' },
+  { label: 'Primary keys', value: 'primaryKey' },
+  { label: 'Foreign keys', value: 'foreignKey' },
   { label: 'Unique', value: 'unique' },
 ]
 
-const getIcon = (type: ConstraintType) => {
-  switch (type) {
-    case 'primaryKey':
-    case 'unique': {
-      return (
-        <HugeiconsIcon
-          icon={Key01Icon}
-          strokeWidth={2}
-          className="text-primary size-4"
-        />
-      )
+const DEFAULT_ACTION = 'NO ACTION'
+
+const groupConstraints = (
+  constraints: ConstraintItem[],
+  schema: string | undefined
+) => {
+  const grouped = new Map<string, GroupedConstraint>()
+
+  for (const item of constraints) {
+    if (item.schema !== schema) {
+      continue
     }
-    case 'foreignKey': {
-      return (
-        <HugeiconsIcon
-          icon={Link01Icon}
-          strokeWidth={2}
-          className="text-primary size-4"
-        />
-      )
-    }
-    default: {
-      return (
-        <HugeiconsIcon
-          icon={DatabaseIcon}
-          strokeWidth={2}
-          className="text-primary size-4"
-        />
-      )
+    const key = `${item.table}.${item.name}`
+    const existing = grouped.get(key)
+
+    if (existing) {
+      if (item.column && !existing.columns.includes(item.column)) {
+        existing.columns.push(item.column)
+      }
+      if (
+        item.foreignColumn &&
+        !existing.foreignColumns.includes(item.foreignColumn)
+      ) {
+        existing.foreignColumns.push(item.foreignColumn)
+      }
+    } else {
+      grouped.set(key, {
+        ...item,
+        columns: item.column ? [item.column] : [],
+        foreignColumns: item.foreignColumn ? [item.foreignColumn] : [],
+      })
     }
   }
+
+  return [...grouped.values()]
 }
+
+const referenceRules = (item: GroupedConstraint) =>
+  [
+    item.onDelete && item.onDelete !== DEFAULT_ACTION
+      ? `on delete ${item.onDelete.toLowerCase()}`
+      : null,
+    item.onUpdate && item.onUpdate !== DEFAULT_ACTION
+      ? `on update ${item.onUpdate.toLowerCase()}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(', ')
 
 export const Constraints = () => {
   const { connectionResource } = useRouteContext()
-  const { data: constraints, isPending } = useQuery(
+  const { data: constraints = [], isPending } = useQuery(
     resourceConstraintsQueryOptions({ connectionResource })
   )
-  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
-    useDefinitionsState({
-      connectionResource,
-    })
-  const [filterType, setFilterType] =
-    useState<(typeof filterOptions)[number]['value']>('all')
+  const { schemas, search, selectedSchema, setSearch, setSelectedSchema } =
+    useDefinitionsState({ connectionResource })
+  const [type, setType] = useState<ConstraintType | 'all'>('all')
 
-  const filteredConstraints =
-    constraints?.filter(
-      (item) =>
-        item.schema === selectedSchema &&
-        (filterType === 'all' || filterType === item.type) &&
-        (!search ||
-          item.name.toLowerCase().includes(search.toLowerCase()) ||
-          item.table.toLowerCase().includes(search.toLowerCase()) ||
-          (item.column &&
-            item.column.toLowerCase().includes(search.toLowerCase())) ||
-          (item.type && item.type.toLowerCase().includes(search.toLowerCase())))
-    ) ?? []
+  const inSchema = groupConstraints(constraints, selectedSchema)
+  const rows = inSchema.filter(
+    (item) =>
+      (type === 'all' || type === item.type) &&
+      matchesSearch(
+        search,
+        item.name,
+        item.table,
+        item.foreignTable,
+        ...item.columns
+      )
+  )
 
   return (
     <>
-      <DefinitionsHeader>Constraints</DefinitionsHeader>
-      <div className="mb-4 flex items-center gap-2">
-        <SearchInput
-          placeholder="Search constraints"
-          autoFocus
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onClear={() => setSearch('')}
+      <DefinitionsHeader
+        title="Constraints"
+        count={isPending ? undefined : rows.length}
+        noun="constraint"
+      />
+      <DefinitionsToolbar
+        placeholder="Search constraints"
+        search={search}
+        onSearchChange={setSearch}
+      >
+        <FilterSelect
+          options={filterOptions}
+          value={type}
+          onValueChange={setType}
         />
-        <Select
-          value={filterType}
-          onValueChange={(v) => {
-            if (v) {
-              setFilterType(v)
-            }
-          }}
-        >
-          <SelectTrigger className="w-45">
-            <SelectValue placeholder="Filter Type">
-              {(value) =>
-                value
-                  ? filterOptions.find((option) => option.value === value)
-                      ?.label
-                  : 'Filter Type'
-              }
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {filterOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
         <SchemaSelect
           schemas={schemas}
           selectedSchema={selectedSchema}
           setSelectedSchema={setSelectedSchema}
         />
-      </div>
-      <DefinitionsGrid loading={isPending}>
-        {filteredConstraints.length === 0 && (
-          <DefinitionsEmptyState
-            title="No constraints found"
-            description="This schema doesn't have any constraints matching your filter."
-          />
-        )}
+      </DefinitionsToolbar>
+      <DefinitionsList
+        icon={Key01Icon}
+        columns={['Name', 'Table', 'Columns', 'Type']}
+        count={rows.length}
+        loading={isPending}
+        emptyTitle={inSchema.length === 0 ? 'No constraints' : 'No matches'}
+        emptyDescription={
+          inSchema.length === 0
+            ? 'This schema has no constraints.'
+            : 'No constraints match the current search and filters.'
+        }
+      >
+        {rows.map((item) => {
+          const rules = referenceRules(item)
 
-        {filteredConstraints.map((item) => (
-          <CardMotion
-            key={`${item.schema}-${item.table}-${item.name}-${item.column}`}
-            layout
-            {...MOTION_BLOCK_PROPS}
-          >
-            <CardContent className="px-4 py-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="mb-2 flex items-center gap-2 text-base">
-                    {getIcon(item.type)}
-                    <HighlightText text={item.name} match={search} />
-                    <Badge variant="secondary">
-                      {
-                        filterOptions.find(
-                          (option) => option.value === item.type
-                        )?.label
+          return (
+            <TableRow key={`${item.table}.${item.name}`}>
+              <NameCell
+                icon={item.type === 'foreignKey' ? Link01Icon : Key01Icon}
+              >
+                <HighlightText text={item.name} match={search} />
+              </NameCell>
+              <TableCell data-mask>
+                <HighlightText text={item.table} match={search} />
+              </TableCell>
+              <TableCell data-mask className="whitespace-normal">
+                <span className="font-mono text-xs">
+                  {item.columns.map((column, index) => (
+                    <span key={column}>
+                      {index > 0 && ', '}
+                      <HighlightText text={column} match={search} />
+                    </span>
+                  ))}
+                </span>
+                {item.foreignTable && (
+                  <span className="text-muted-foreground">
+                    {' → '}
+                    <HighlightText
+                      text={
+                        item.foreignSchema &&
+                        item.foreignSchema !== selectedSchema
+                          ? `${item.foreignSchema}.${item.foreignTable}`
+                          : item.foreignTable
                       }
-                    </Badge>
-                  </CardTitle>
-                  <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
-                    <Badge variant="outline">
-                      <HugeiconsIcon
-                        icon={LayoutTable02Icon}
-                        strokeWidth={2}
-                        className="size-3"
-                      />
-                      <HighlightText text={item.table} match={search} />
-                    </Badge>
-                    {item.column && (
-                      <>
-                        <span>on</span>
-                        <Badge variant="outline">
-                          <HugeiconsIcon
-                            icon={LayoutThreeColumnIcon}
-                            strokeWidth={2}
-                            className="size-3"
-                          />
-                          <HighlightText text={item.column} match={search} />
-                        </Badge>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            {item.type === 'foreignKey' && (
-              <CardContent className="bg-muted/10 border-t px-4 py-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">References:</span>
-                  <Badge variant="outline">
-                    {item.foreignSchema}.{item.foreignTable}
-                  </Badge>
-                  column
-                  <Badge variant="outline">{item.foreignColumn}</Badge>
-                </div>
-              </CardContent>
-            )}
-          </CardMotion>
-        ))}
-      </DefinitionsGrid>
+                      match={search}
+                    />
+                    <span className="font-mono text-xs">
+                      {' '}
+                      ({item.foreignColumns.join(', ')})
+                    </span>
+                    {rules && <span className="text-xs"> · {rules}</span>}
+                  </span>
+                )}
+              </TableCell>
+              <MutedCell>{typeLabels[item.type]}</MutedCell>
+            </TableRow>
+          )
+        })}
+      </DefinitionsList>
     </>
   )
 }
