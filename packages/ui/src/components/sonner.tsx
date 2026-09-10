@@ -14,9 +14,10 @@ import { useTheme } from '../theme-store'
 const Toaster = () => {
   const theme = useTheme()
 
-  // #root carries `isolate z-10`, so anything React renders inside it is capped
-  // below the overlays base-ui portals to the body; the toaster escapes the same
-  // way and sits one tier above them, under the z-100 window-size cover
+  if (typeof window === 'undefined') {
+    return null
+  }
+
   return createPortal(
     <div data-mask className="contents [&_ol]:z-60!">
       <Sonner
