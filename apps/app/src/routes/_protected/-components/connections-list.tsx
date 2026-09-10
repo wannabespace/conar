@@ -1,5 +1,6 @@
 import {
   Alert02Icon,
+  AppWindowIcon,
   Copy01Icon,
   DatabaseIcon,
   Delete02Icon,
@@ -37,6 +38,7 @@ import { copy } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { caseWhen, eq, useLiveQuery } from '@tanstack/react-db'
 import { useQuery } from '@tanstack/react-query'
+import { useRouter } from '@tanstack/react-router'
 import { type } from 'arktype'
 import type { MotionStyle } from 'motion/react'
 import { AnimatePresence, motion } from 'motion/react'
@@ -59,6 +61,7 @@ import { getConnectionStore } from '~/entities/connection/store/stores'
 import { useFetchingConfig } from '~/entities/connection/utils/fetching'
 import { lastOpenedResourcesStorageValue } from '~/entities/connection/utils/last-opened-resources'
 import { useActiveWorkspace } from '~/entities/workspace/hooks'
+import { openNewWindow } from '~/lib/new-window'
 
 import { LastOpenedResources } from './last-opened-resources'
 import { RemoveConnectionDialog } from './remove-connection-dialog'
@@ -183,6 +186,7 @@ const buildConnectionMenuItems = ({
   isPasswordPopulated,
   onClearPassword,
   onCopy,
+  onOpenInNewWindow,
   onRefresh,
   onRemove,
 }: {
@@ -191,9 +195,19 @@ const buildConnectionMenuItems = ({
   isPasswordPopulated?: boolean
   onClearPassword: () => void
   onCopy: () => void
+  onOpenInNewWindow: (() => void) | null
   onRefresh: () => void
   onRemove: VoidFunction
 }): AppMenuNode[] => [
+  {
+    label: 'Open in New Window',
+    icon: (
+      <HugeiconsIcon icon={AppWindowIcon} strokeWidth={2} className="size-4" />
+    ),
+    disabled: !onOpenInNewWindow,
+    onSelect: () => onOpenInNewWindow?.(),
+  },
+  { type: 'separator' },
   {
     label: 'Refresh',
     icon: (
@@ -349,6 +363,7 @@ const ConnectionCard = ({
   connection: Connection
   onRemove: VoidFunction
 }) => {
+  const router = useRouter()
   const { connectionStringsCollection, connectionsResourcesCollection } =
     useCollections()
   const { data: connectionString } = useLiveQuery({
@@ -450,6 +465,16 @@ const ConnectionCard = ({
     isPasswordPopulated: connectionString?.isPasswordPopulated,
     onClearPassword: handleClearPassword,
     onCopy: handleCopy,
+    onOpenInNewWindow:
+      selectedResource && canOpenResource
+        ? () =>
+            openNewWindow(
+              router.buildLocation({
+                params: { resourceId: selectedResource.id },
+                to: '/connection/$resourceId',
+              }).href
+            )
+        : null,
     onRefresh: () => refetch(),
     onRemove,
   })

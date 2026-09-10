@@ -1,4 +1,5 @@
 import {
+  AppWindowIcon,
   ArrowRight01Icon,
   Copy01Icon,
   Delete02Icon,
@@ -23,7 +24,7 @@ import { useVirtualizer } from '@tamery/ui/hooks/use-virtualizer'
 import { copy as copyToClipboard } from '@tamery/ui/lib/copy'
 import { cn } from '@tamery/ui/lib/utils'
 import { useQuery } from '@tanstack/react-query'
-import { getRouteApi, useParams } from '@tanstack/react-router'
+import { getRouteApi, useParams, useRouter } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import type { ComponentRef, ReactNode } from 'react'
 import { useDeferredValue, useEffect, useEffectEvent, useRef } from 'react'
@@ -38,6 +39,7 @@ import { pinnedTable } from '~/entities/connection/store/helpers/tables'
 import { openTableTab } from '~/entities/connection/store/helpers/tabs'
 import { getConnectionResourceStore } from '~/entities/connection/store/stores'
 import { parseTabId, tableTabId } from '~/entities/connection/store/tabs/ids'
+import { openNewWindow } from '~/lib/new-window'
 
 import { tableSessionStore } from '../../-tabs/table/-lib/session-store'
 import { DropTableDialog } from './drop-table-dialog'
@@ -156,6 +158,7 @@ const TableRow = ({
   onDrop: () => void
 }) => {
   const { connectionResource } = useRouteContext()
+  const router = useRouter()
   const activeTable = useActiveTable()
   const isActive =
     activeTable?.schema === row.schema && activeTable?.table === row.table.name
@@ -170,7 +173,34 @@ const TableRow = ({
     selector: (state) => Object.keys(state.drafts).length > 0,
   })
 
+  const openInNewWindow = () => {
+    const tabId = openTableTab(
+      connectionResource.id,
+      row.schema,
+      row.table.name
+    )
+
+    openNewWindow(
+      router.buildLocation({
+        params: { resourceId: connectionResource.id, tabId },
+        to: '/connection/$resourceId/$tabId',
+      }).href
+    )
+  }
+
   const items: AppMenuNode[] = [
+    {
+      label: 'Open in New Window',
+      icon: (
+        <HugeiconsIcon
+          icon={AppWindowIcon}
+          strokeWidth={2}
+          className="size-4"
+        />
+      ),
+      onSelect: openInNewWindow,
+    },
+    { type: 'separator' },
     {
       label: 'Copy Name',
       icon: (

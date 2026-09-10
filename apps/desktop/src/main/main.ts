@@ -5,7 +5,7 @@ import { MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH } from '@tamery/shared/constants'
 import { isConnectionError } from '@tamery/shared/utils/connections'
 import type { UpdatesStatus } from '@tamery/shared/utils/updates'
 import type { Rectangle } from 'electron'
-import { app, BrowserWindow, screen, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, screen, shell } from 'electron'
 import Store from 'electron-store'
 
 import { setupProtocolHandler } from './lib/deep-link'
@@ -40,14 +40,17 @@ export const store = new Store<{
   maximized?: boolean
 }>()
 
+const NEW_WINDOW_OFFSET = 28
+
 let mainWindow: BrowserWindow | null = null
 
-export const createWindow = () => {
+export const createWindow = (route?: string) => {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize
 
   const isMac = process.platform === 'darwin'
+  const isFirstWindow = BrowserWindow.getAllWindows().length === 0
 
-  mainWindow = new BrowserWindow({
+  const win = new BrowserWindow({
     focusable: true,
     height,
     minHeight: MIN_WINDOW_HEIGHT,
@@ -73,20 +76,39 @@ export const createWindow = () => {
     },
   })
 
+  mainWindow = win
+
   const bounds = store.get('bounds')
 
   if (bounds) {
-    mainWindow.setBounds(bounds)
+    win.setBounds(
+      isFirstWindow
+        ? bounds
+        : {
+            ...bounds,
+            x: bounds.x + NEW_WINDOW_OFFSET,
+            y: bounds.y + NEW_WINDOW_OFFSET,
+          }
+    )
   }
 
-  if (store.get('maximized', false)) {
-    mainWindow.maximize()
+  if (isFirstWindow) {
+    if (store.get('maximized', false)) {
+      win.maximize()
+    }
+
+    if (store.get('fullscreen', false)) {
+      win.setFullScreen(true)
+    }
   }
 
-  const isFullscreen = store.get('fullscreen', false)
-  if (isFullscreen) {
-    mainWindow.setFullScreen(true)
-  }
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    const { protocol } = new URL(url)
+    if (protocol === 'http:' || protocol === 'https:') {
+      shell.openExternal(url)
+    }
+    return { action: 'deny' }
+  })
 
   let saveBoundsTimeout: NodeJS.Timeout | null = null
   const saveBounds = () => {
@@ -95,88 +117,87 @@ export const createWindow = () => {
     }
 
     saveBoundsTimeout = setTimeout(() => {
-      if (!mainWindow || mainWindow.isDestroyed()) {
+      if (win.isDestroyed()) {
         return
       }
 
-      if (!mainWindow.isFullScreen() && !mainWindow.isMinimized()) {
-        store.set('bounds', mainWindow.getNormalBounds())
-        store.set('maximized', mainWindow.isMaximized())
+      if (!win.isFullScreen() && !win.isMinimized()) {
+        store.set('bounds', win.getNormalBounds())
+        store.set('maximized', win.isMaximized())
       }
-      store.set('fullscreen', mainWindow.isFullScreen())
+      store.set('fullscreen', win.isFullScreen())
     }, 300)
   }
 
-  mainWindow.on('move', saveBounds)
-  mainWindow.on('resize', saveBounds)
-  mainWindow.on('enter-full-screen', saveBounds)
-  mainWindow.on('leave-full-screen', saveBounds)
+  if (isFirstWindow) {
+    win.on('move', saveBounds)
+    win.on('resize', saveBounds)
+    win.on('enter-full-screen', saveBounds)
+    win.on('leave-full-screen', saveBounds)
+  }
 
   const sendFullscreen = () =>
-    mainWindow?.webContents.send(
-      'fullscreen-changed',
-      mainWindow.isFullScreen()
-    )
-  mainWindow.on('enter-full-screen', sendFullscreen)
-  mainWindow.on('leave-full-screen', sendFullscreen)
-  mainWindow.webContents.on('did-finish-load', sendFullscreen)
+    win.webContents.send('fullscreen-changed', win.isFullScreen())
+  win.on('enter-full-screen', sendFullscreen)
+  win.on('leave-full-screen', sendFullscreen)
+  win.webContents.on('did-finish-load', sendFullscreen)
 
-  const sendFocus = () =>
-    mainWindow?.webContents.send('focus-changed', mainWindow.isFocused())
-  mainWindow.on('blur', sendFocus)
-  mainWindow.webContents.on('did-finish-load', sendFocus)
+  const sendFocus = () => win.webContents.send('focus-changed', win.isFocused())
+  win.on('blur', sendFocus)
+  win.webContents.on('did-finish-load', sendFocus)
 
-  mainWindow.webContents.on('did-start-navigation', (details) => {
+  win.webContents.on('did-start-navigation', (details) => {
     if (details.isMainFrame && !details.isSameDocument) {
       void resetTransactions()
     }
   })
 
-  mainWindow.on('close', () => {
-    if (!mainWindow) {
-      return
-    }
-
+  win.on('close', () => {
     if (saveBoundsTimeout) {
       clearTimeout(saveBoundsTimeout)
     }
 
-    if (!mainWindow.isFullScreen() && !mainWindow.isMinimized()) {
-      store.set('bounds', mainWindow.getNormalBounds())
-      store.set('maximized', mainWindow.isMaximized())
+    if (isFirstWindow) {
+      if (!win.isFullScreen() && !win.isMinimized()) {
+        store.set('bounds', win.getNormalBounds())
+        store.set('maximized', win.isMaximized())
+      }
+      store.set('fullscreen', win.isFullScreen())
     }
-    store.set('fullscreen', mainWindow.isFullScreen())
-    mainWindow = null
+
+    if (mainWindow === win) {
+      mainWindow = null
+    }
   })
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow?.show()
+  win.on('ready-to-show', () => {
+    win.show()
   })
 
-  mainWindow.on('focus', () => {
+  win.on('focus', () => {
+    mainWindow = win
     buildMenu({ onNewWindow: createWindow })
     sendFocus()
   })
 
   if (app.isPackaged) {
-    mainWindow.loadFile(path.join(import.meta.dirname, './renderer/index.html'))
+    win.loadFile(
+      path.join(import.meta.dirname, './renderer/index.html'),
+      route ? { hash: route } : undefined
+    )
   } else {
-    mainWindow.webContents.openDevTools()
-    mainWindow.loadURL('https://app.local.tamery.app')
+    win.webContents.openDevTools()
+    win.loadURL(`https://app.local.tamery.app${route ? `#${route}` : ''}`)
   }
 
-  return mainWindow
+  return win
 }
 
 app.on('ready', () => {
   const win = createWindow()
 
-  win.webContents.setWindowOpenHandler(({ url }) => {
-    const { protocol } = new URL(url)
-    if (protocol === 'http:' || protocol === 'https:') {
-      shell.openExternal(url)
-    }
-    return { action: 'deny' }
+  ipcMain.handle('app.openWindow', (_event, route: string) => {
+    createWindow(route)
   })
 
   setupProtocolHandler(win)
