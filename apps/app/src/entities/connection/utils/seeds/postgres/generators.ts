@@ -1,7 +1,13 @@
 import { faker } from '@faker-js/faker'
 import type { ConnectionType } from '@tamery/shared/enums/connection-type'
+import { sql } from 'kysely'
 
 import type { GeneratorMap } from '../types'
+
+const randomPoint = () =>
+  `${faker.location.longitude()} ${faker.location.latitude()}`
+
+const slugWord = () => faker.lorem.slug(1)
 
 export const PG_GENERATORS = {
   'postgres.box': {
@@ -9,6 +15,12 @@ export const PG_GENERATORS = {
     generate: () =>
       `(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})`,
     label: 'Box',
+  },
+  'postgres.bytea': {
+    category: 'Postgres',
+    generate: () =>
+      sql`decode(${faker.string.hexadecimal({ length: 32, prefix: '' })}, 'hex')`,
+    label: 'Bytea',
   },
   'postgres.circle': {
     category: 'Postgres',
@@ -39,6 +51,20 @@ export const PG_GENERATORS = {
       return `[${a.toISOString().slice(0, 10)},${b.toISOString().slice(0, 10)})`
     },
     label: 'Date Range',
+  },
+  'postgres.geometry': {
+    category: 'Postgres',
+    generate: () => sql`ST_GeomFromText(${`POINT(${randomPoint()})`}, 4326)`,
+    label: 'PostGIS Point',
+  },
+  'postgres.hstore': {
+    category: 'Postgres',
+    generate: () =>
+      faker.helpers
+        .uniqueArray(slugWord, faker.number.int({ max: 4, min: 1 }))
+        .map((key) => `"${key}"=>"${faker.lorem.word()}"`)
+        .join(', '),
+    label: 'Hstore',
   },
   'postgres.interval': {
     category: 'Postgres',
@@ -80,6 +106,14 @@ export const PG_GENERATORS = {
     generate: () =>
       `[(${faker.location.longitude()},${faker.location.latitude()}),(${faker.location.longitude()},${faker.location.latitude()})]`,
     label: 'Line Segment',
+  },
+  'postgres.ltree': {
+    category: 'Postgres',
+    generate: () =>
+      faker.helpers
+        .multiple(() => faker.lorem.word(), { count: { max: 4, min: 1 } })
+        .join('.'),
+    label: 'Ltree',
   },
   'postgres.nummultirange': {
     category: 'Postgres',

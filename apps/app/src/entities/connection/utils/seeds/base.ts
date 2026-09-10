@@ -1,70 +1,126 @@
 import { faker } from '@faker-js/faker'
 
+import type { Column } from '../../components/table/cell/utils'
 import type { GeneratorMap } from './types'
+import {
+  CUSTOM_GENERATOR,
+  ENUM_GENERATOR,
+  NULL_GENERATOR,
+  REFERENCE_GENERATOR,
+  SKIP_GENERATOR,
+} from './types'
 
-const scalarJsonGenerators = [
-  () => faker.lorem.word(),
-  () => faker.number.int({ max: 100_000, min: -100_000 }),
-  () => faker.number.float({ fractionDigits: 2, max: 100_000, min: -100_000 }),
-  () => faker.datatype.boolean(),
-  () => faker.date.recent().toISOString(),
-  () => null,
-] as const
+const typeParamsRegex = /\(.*\)|\[\]$/gu
 
-const createRandomJsonKey = (existing: Record<string, unknown>) => {
-  let key = faker.string
-    .alphanumeric(faker.number.int({ max: 12, min: 3 }))
+export const columnTypeName = (column: Column) =>
+  (column.typeLabel ?? column.type ?? '')
     .toLowerCase()
-  while (key in existing) {
-    key = faker.string
-      .alphanumeric(faker.number.int({ max: 12, min: 3 }))
-      .toLowerCase()
-  }
-  return key
+    .replace(typeParamsRegex, '')
+    .trim()
+
+// Big enough to look like data, small enough for any integer type wider than a byte
+const DEFAULT_MAX = 10_000
+// One-byte integers: ClickHouse Int8/UInt8, MySQL and MSSQL tinyint. Postgres' int8 is a bigint,
+// but only its array label ("int8[]") reaches here and 127 is still a valid bigint.
+const ONE_BYTE_INT_MAX: Record<string, number> = {
+  int8: 127,
+  tinyint: 127,
+  uint8: 255,
 }
 
-const generateRandomJsonValue = (depth = 0): unknown => {
-  if (depth >= 2) {
-    return faker.helpers.arrayElement(scalarJsonGenerators)()
+const randomInt = (column: Column) =>
+  faker.number.int({
+    max: ONE_BYTE_INT_MAX[columnTypeName(column)] ?? DEFAULT_MAX,
+  })
+
+// ClickHouse does not report numeric precision, so Decimal(10, 2) is parsed off the label
+const decimalParamsRegex = /\((?<precision>\d+)\s*,\s*(?<scale>\d+)\)/u
+
+const floatBounds = (column: Column) => {
+  const parsed = column.typeLabel?.match(decimalParamsRegex)?.groups
+  const scale = column.scale ?? (parsed ? Number(parsed.scale) : 2)
+  const precision =
+    column.precision ?? (parsed ? Number(parsed.precision) : undefined)
+  const max =
+    precision === undefined
+      ? DEFAULT_MAX
+      : Math.min(DEFAULT_MAX, 10 ** (precision - scale))
+
+  return { fractionDigits: scale, max: max - 10 ** -scale, min: 0 }
+}
+
+const randomFloat = (column: Column) => faker.number.float(floatBounds(column))
+
+const randomBits = (column: Column) =>
+  faker.string.binary({ length: column.maxLength ?? 8, prefix: '' })
+
+const jsonScalar = () =>
+  faker.helpers.arrayElement([
+    () => faker.lorem.word(),
+    () => faker.number.int({ max: 100_000, min: -100_000 }),
+    () =>
+      faker.number.float({ fractionDigits: 2, max: 100_000, min: -100_000 }),
+    () => faker.datatype.boolean(),
+    () => faker.date.recent().toISOString(),
+    () => null,
+  ])()
+
+const JSON_MAX_DEPTH = 2
+
+const jsonKeys = () =>
+  faker.helpers.uniqueArray(
+    () => faker.string.alpha({ casing: 'lower', length: { max: 8, min: 3 } }),
+    faker.number.int({ max: 6, min: 1 })
+  )
+
+const jsonValue = (depth: number): unknown => {
+  const kind =
+    depth >= JSON_MAX_DEPTH
+      ? 'scalar'
+      : faker.helpers.arrayElement(['scalar', 'array', 'object'] as const)
+
+  if (kind === 'scalar') {
+    return jsonScalar()
   }
-
-  const valueType = faker.helpers.arrayElement([
-    'scalar',
-    'array',
-    'object',
-  ] as const)
-
-  if (valueType === 'scalar') {
-    return faker.helpers.arrayElement(scalarJsonGenerators)()
-  }
-
-  if (valueType === 'array') {
-    const itemCount = faker.number.int({ max: 5, min: 1 })
-    return faker.helpers.multiple(() => generateRandomJsonValue(depth + 1), {
-      count: itemCount,
+  if (kind === 'array') {
+    return faker.helpers.multiple(() => jsonValue(depth + 1), {
+      count: { max: 5, min: 1 },
     })
   }
-
-  const keyCount = faker.number.int({ max: 6, min: 1 })
-  const object: Record<string, unknown> = {}
-  for (let i = 0; i < keyCount; i += 1) {
-    object[createRandomJsonKey(object)] = generateRandomJsonValue(depth + 1)
-  }
-  return object
+  return Object.fromEntries(
+    jsonKeys().map((key) => [key, jsonValue(depth + 1)])
+  )
 }
 
-const generateRandomJsonObject = (depth = 0): Record<string, unknown> => {
-  const keyCount = faker.number.int({ max: 6, min: 1 })
-  const object: Record<string, unknown> = {}
-
-  for (let i = 0; i < keyCount; i += 1) {
-    object[createRandomJsonKey(object)] = generateRandomJsonValue(depth)
-  }
-
-  return object
-}
+const jsonObject = () =>
+  Object.fromEntries(jsonKeys().map((key) => [key, jsonValue(1)]))
 
 export const BASE_GENERATORS = {
+  [CUSTOM_GENERATOR]: {
+    category: 'Special',
+    generate: () => null,
+    label: 'SQL expression',
+  },
+  [ENUM_GENERATOR]: {
+    category: 'Special',
+    generate: () => null,
+    label: 'Enum value',
+  },
+  [NULL_GENERATOR]: {
+    category: 'Special',
+    generate: () => null,
+    label: 'NULL',
+  },
+  [REFERENCE_GENERATOR]: {
+    category: 'Special',
+    generate: () => null,
+    label: 'Existing row',
+  },
+  [SKIP_GENERATOR]: {
+    category: 'Special',
+    generate: () => null,
+    label: 'Database default',
+  },
   'airline.airline': {
     category: 'Other',
     generate: () => faker.airline.airline().name,
@@ -84,11 +140,6 @@ export const BASE_GENERATORS = {
     category: 'Other',
     generate: () => faker.color.rgb({ format: 'hex' }),
     label: 'Color Hex',
-  },
-  'color.hsl': {
-    category: 'Other',
-    generate: () => faker.color.hsl().join(', '),
-    label: 'Color HSL',
   },
   'color.human': {
     category: 'Other',
@@ -140,11 +191,6 @@ export const BASE_GENERATORS = {
     generate: () => faker.company.name(),
     label: 'Company Name',
   },
-  'custom-generator': {
-    category: 'Special',
-    generate: () => null,
-    label: 'Custom',
-  },
   'datatype.boolean': {
     category: 'Boolean',
     generate: () => faker.datatype.boolean(),
@@ -152,12 +198,12 @@ export const BASE_GENERATORS = {
   },
   'date.birthdate': {
     category: 'Date',
-    generate: () => faker.date.birthdate().toISOString(),
+    generate: () => faker.date.birthdate(),
     label: 'Birthdate',
   },
   'date.future': {
     category: 'Date',
-    generate: () => faker.date.future().toISOString(),
+    generate: () => faker.date.future(),
     label: 'Future Date',
   },
   'date.month': {
@@ -167,17 +213,17 @@ export const BASE_GENERATORS = {
   },
   'date.past': {
     category: 'Date',
-    generate: () => faker.date.past().toISOString(),
+    generate: () => faker.date.past(),
     label: 'Past Date',
   },
   'date.recent': {
     category: 'Date',
-    generate: () => faker.date.recent().toISOString(),
+    generate: () => faker.date.recent(),
     label: 'Recent Date',
   },
   'date.soon': {
     category: 'Date',
-    generate: () => faker.date.soon().toISOString(),
+    generate: () => faker.date.soon(),
     label: 'Soon Date',
   },
   'date.time': {
@@ -185,20 +231,10 @@ export const BASE_GENERATORS = {
     generate: () => faker.date.recent().toISOString().slice(11, 19),
     label: 'Time',
   },
-  'date.timeZone': {
-    category: 'Date',
-    generate: () => faker.location.timeZone(),
-    label: 'Time Zone',
-  },
   'date.weekday': {
     category: 'Date',
     generate: () => faker.date.weekday(),
     label: 'Weekday',
-  },
-  'enum-generator': {
-    category: 'Special',
-    generate: () => null,
-    label: 'Random enum value',
   },
   'finance.accountNumber': {
     category: 'Finance',
@@ -358,14 +394,12 @@ export const BASE_GENERATORS = {
   'json.array': {
     category: 'Other',
     generate: () =>
-      faker.helpers.multiple(() => generateRandomJsonValue(), {
-        count: faker.number.int({ max: 5, min: 1 }),
-      }),
+      faker.helpers.multiple(() => jsonValue(1), { count: { max: 5, min: 1 } }),
     label: 'JSON Array',
   },
   'json.object': {
     category: 'Other',
-    generate: () => generateRandomJsonObject(),
+    generate: () => jsonObject(),
     label: 'JSON Object',
   },
   'location.buildingNumber': {
@@ -458,32 +492,26 @@ export const BASE_GENERATORS = {
     generate: () => faker.music.genre(),
     label: 'Music Genre',
   },
-  null: { category: 'Special', generate: () => null, label: 'NULL' },
   'number.bigInt': {
     category: 'Number',
     generate: () =>
-      String(faker.number.bigInt({ max: 9_007_199_254_740_991n })),
+      String(faker.number.bigInt({ max: Number.MAX_SAFE_INTEGER })),
     label: 'Big Integer',
   },
   'number.binary': {
     category: 'Number',
-    generate: () => faker.number.binary({ max: 255 }).replace('0b', ''),
-    label: 'Binary',
+    generate: randomBits,
+    label: 'Bits',
   },
   'number.float': {
     category: 'Number',
-    generate: () => faker.number.float({ fractionDigits: 2, max: 10_000 }),
-    label: 'Float',
+    generate: randomFloat,
+    label: 'Decimal',
   },
   'number.int': {
     category: 'Number',
-    generate: () => faker.number.int({ max: 10_000 }),
+    generate: randomInt,
     label: 'Integer',
-  },
-  'number.octal': {
-    category: 'Number',
-    generate: () => faker.number.octal({ max: 255 }),
-    label: 'Octal',
   },
   'number.percentage': {
     category: 'Number',
@@ -540,11 +568,6 @@ export const BASE_GENERATORS = {
     generate: () => faker.phone.number(),
     label: 'Phone Number',
   },
-  'reference-generator': {
-    category: 'Special',
-    generate: () => null,
-    label: 'Random reference value',
-  },
   'science.chemicalElement': {
     category: 'Other',
     generate: () => faker.science.chemicalElement().name,
@@ -554,11 +577,6 @@ export const BASE_GENERATORS = {
     category: 'Other',
     generate: () => faker.science.unit().name,
     label: 'Unit of Measurement',
-  },
-  'skip-generator': {
-    category: 'Special',
-    generate: () => null,
-    label: 'Generate default',
   },
   'string.alpha': {
     category: 'Text',
@@ -570,14 +588,9 @@ export const BASE_GENERATORS = {
     generate: () => faker.string.alphanumeric(10),
     label: 'Alphanumeric',
   },
-  'string.cuid': {
-    category: 'ID',
-    generate: () => faker.string.alphanumeric(25),
-    label: 'CUID',
-  },
   'string.hexadecimal': {
     category: 'Text',
-    generate: () => faker.string.hexadecimal({ length: 16 }),
+    generate: () => faker.string.hexadecimal({ length: 16, prefix: '' }),
     label: 'Hex String',
   },
   'string.nanoid': {
@@ -646,132 +659,3 @@ export const BASE_GENERATORS = {
     label: 'License Plate',
   },
 } satisfies GeneratorMap
-
-type GeneratorKey = keyof typeof BASE_GENERATORS
-
-const exactNameGenerators: Record<string, GeneratorKey> = {
-  firstname: 'person.firstName',
-  fullname: 'person.fullName',
-  ip: 'internet.ip',
-  lastname: 'person.lastName',
-  lat: 'location.latitude',
-  lng: 'location.longitude',
-  login: 'internet.username',
-  lon: 'location.longitude',
-  name: 'person.fullName',
-  surname: 'person.lastName',
-}
-
-const includesNameGenerators: [needles: string[], generator: GeneratorKey][] = [
-  [['email'], 'internet.email'],
-  [['phone', 'mobile', 'tel'], 'phone.number'],
-  [['url', 'website', 'link', 'href'], 'internet.url'],
-  [['avatar', 'image', 'photo', 'picture', 'thumbnail'], 'image.url'],
-  [['username'], 'internet.username'],
-  [['title', 'subject'], 'lorem.sentence'],
-  [['description', 'content', 'bio', 'summary'], 'lorem.paragraph'],
-  [['city'], 'location.city'],
-  [['countrycode'], 'location.countryCode'],
-  [['country'], 'location.country'],
-  [['address', 'street'], 'location.streetAddress'],
-  [['zip', 'postal'], 'location.zipCode'],
-  [['company', 'organization', 'org'], 'company.name'],
-  [['price', 'amount', 'cost', 'total', 'fee'], 'commerce.price'],
-  [['product'], 'commerce.productName'],
-  [['color', 'colour'], 'color.human'],
-  [['ipaddress'], 'internet.ip'],
-  [['slug'], 'lorem.slug'],
-  [['jobtitle', 'jobrole', 'position', 'role'], 'person.jobTitle'],
-  [['gender'], 'person.gender'],
-  [['password', 'secret', 'hash'], 'internet.password'],
-  [['domain'], 'internet.domainName'],
-  [['useragent'], 'internet.userAgent'],
-  [['iban'], 'finance.iban'],
-  [['creditcard', 'cardnumber'], 'finance.creditCardNumber'],
-  [['cvv'], 'finance.creditCardCVV'],
-  [['accountnumber', 'accountno'], 'finance.accountNumber'],
-  [['state', 'province', 'region'], 'location.state'],
-  [['timezone'], 'date.timeZone'],
-  [['mimetype', 'contenttype'], 'system.mimeType'],
-  [['filename'], 'system.fileName'],
-  [['filepath'], 'system.filePath'],
-  [['fileext', 'extension'], 'system.fileExt'],
-  [['version'], 'system.semver'],
-  [['isbn'], 'commerce.isbn'],
-  [['department'], 'commerce.department'],
-  [['birthdate', 'birthday', 'dob', 'dateofbirth'], 'date.birthdate'],
-  [['displayname', 'nickname'], 'internet.displayName'],
-  [['port'], 'internet.port'],
-]
-
-const exactTypeGenerators: Record<string, GeneratorKey> = {
-  bigserial: 'number.int',
-  bool: 'datatype.boolean',
-  boolean: 'datatype.boolean',
-  date: 'date.recent',
-  datetime: 'date.recent',
-  datetime2: 'date.recent',
-  datetimeoffset: 'date.recent',
-  money: 'number.float',
-  real: 'number.float',
-  serial: 'number.int',
-  smallserial: 'number.int',
-  string: 'lorem.sentence',
-  timetz: 'date.time',
-  uuid: 'string.uuidV4',
-}
-
-const includesTypeGenerators: [needles: string[], generator: GeneratorKey][] = [
-  [['int'], 'number.int'],
-  [['float', 'double', 'decimal', 'numeric'], 'number.float'],
-  [['timestamp'], 'date.recent'],
-  [['time'], 'date.time'],
-  [['json'], 'json.object'],
-  [['char', 'text', 'varchar', 'nchar'], 'lorem.sentence'],
-]
-
-const matchIncludes = (
-  value: string,
-  rules: [needles: string[], generator: GeneratorKey][]
-): GeneratorKey | undefined => {
-  for (const [needles, generator] of rules) {
-    if (needles.some((needle) => value.includes(needle))) {
-      return generator
-    }
-  }
-  return undefined
-}
-
-export const baseAutoDetectGenerator = (
-  name: string,
-  type: string
-): GeneratorKey => {
-  const exactName = exactNameGenerators[name]
-  if (exactName) {
-    return exactName
-  }
-
-  if (name.includes('currency') && name.includes('code')) {
-    return 'finance.currencyCode'
-  }
-  if (name.includes('currency')) {
-    return 'finance.currencyName'
-  }
-
-  const includesName = matchIncludes(name, includesNameGenerators)
-  if (includesName) {
-    return includesName
-  }
-
-  const exactType = exactTypeGenerators[type]
-  if (exactType) {
-    return exactType
-  }
-
-  const includesType = matchIncludes(type, includesTypeGenerators)
-  if (includesType) {
-    return includesType
-  }
-
-  return 'lorem.word'
-}

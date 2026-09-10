@@ -4,6 +4,10 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
+// Steppers sit on the group's own fill, so they hover by foreground-mix like
+// every other filled control rather than with the accent tint
+const stepperClassName = `text-muted-foreground hover:text-foreground relative flex h-full shrink-0 items-center justify-center px-2.5 transition-colors hover:bg-[color-mix(in_oklch,var(--input),var(--foreground)_3%)] in-data-[size=sm]:px-2 pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11`
+
 export const NumberField = ({
   id,
   className,
@@ -31,7 +35,7 @@ export const NumberFieldGroup = ({
 }: NumberFieldPrimitive.Group.Props): React.ReactElement => (
   <NumberFieldPrimitive.Group
     className={cn(
-      `border-input bg-input/32 text-foreground has-autofill:bg-foreground/5 has-aria-invalid:border-destructive/36 has-aria-invalid:ring-destructive/15 focus-within:has-aria-invalid:border-destructive/64 focus-within:has-aria-invalid:ring-destructive/48 focus-within:focus-ring relative flex w-full justify-between rounded-lg border bg-clip-padding text-base shadow-xs/5 transition-shadow before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] not-data-disabled:not-focus-within:not-aria-invalid:before:shadow-[0_1px_--theme(--color-black/4%),0_-1px_--theme(--color-white/6%)] data-disabled:pointer-events-none data-disabled:opacity-64 sm:text-sm [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4.5 sm:[&_svg:not([class*='size-'])]:size-4 [[data-disabled],:focus-within,[aria-invalid]]:shadow-none`,
+      `bg-input ring-foreground/4 text-foreground has-aria-invalid:border-destructive/60 has-aria-invalid:ring-destructive/30 focus-within:focus-ring relative flex h-8 w-full items-center justify-between overflow-hidden rounded-xl border border-transparent text-sm shadow-xs ring-[0.5px] transition-shadow duration-200 outline-none in-data-[size=lg]:h-9 in-data-[size=sm]:h-7 in-data-[size=sm]:rounded-lg has-aria-invalid:ring-3 data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
       className
     )}
     data-slot="number-field-group"
@@ -44,10 +48,7 @@ export const NumberFieldDecrement = ({
   ...props
 }: NumberFieldPrimitive.Decrement.Props): React.ReactElement => (
   <NumberFieldPrimitive.Decrement
-    className={cn(
-      `hover:bg-accent relative flex shrink-0 items-center justify-center rounded-s-[calc(var(--radius-lg)-1px)] px-[calc(--spacing(3)-1px)] transition-colors in-data-[size=sm]:px-[calc(--spacing(2.5)-1px)] pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11`,
-      className
-    )}
+    className={cn(stepperClassName, className)}
     data-slot="number-field-decrement"
     {...props}
   >
@@ -60,10 +61,7 @@ export const NumberFieldIncrement = ({
   ...props
 }: NumberFieldPrimitive.Increment.Props): React.ReactElement => (
   <NumberFieldPrimitive.Increment
-    className={cn(
-      `hover:bg-accent relative flex shrink-0 items-center justify-center rounded-e-[calc(var(--radius-lg)-1px)] px-[calc(--spacing(3)-1px)] transition-colors in-data-[size=sm]:px-[calc(--spacing(2.5)-1px)] pointer-coarse:after:absolute pointer-coarse:after:size-full pointer-coarse:after:min-h-11 pointer-coarse:after:min-w-11`,
-      className
-    )}
+    className={cn(stepperClassName, className)}
     data-slot="number-field-increment"
     {...props}
   >
@@ -77,7 +75,7 @@ export const NumberFieldInput = ({
 }: NumberFieldPrimitive.Input.Props): React.ReactElement => (
   <NumberFieldPrimitive.Input
     className={cn(
-      `h-8.5 w-full min-w-0 grow bg-transparent px-[calc(--spacing(3)-1px)] text-center leading-8.5 tabular-nums outline-none [transition:background-color_5000000s_ease-in-out_0s] in-data-[size=lg]:h-9.5 in-data-[size=lg]:leading-9.5 in-data-[size=sm]:h-7.5 in-data-[size=sm]:px-[calc(--spacing(2.5)-1px)] in-data-[size=sm]:leading-7.5 sm:h-7.5 sm:leading-7.5 sm:in-data-[size=lg]:h-8.5 sm:in-data-[size=lg]:leading-8.5 sm:in-data-[size=sm]:h-6.5 sm:in-data-[size=sm]:leading-8.5`,
+      `h-full w-full min-w-0 grow bg-transparent px-1 text-center tabular-nums outline-none [transition:background-color_5000000s_ease-in-out_0s]`,
       className
     )}
     data-slot="number-field-input"

@@ -49,7 +49,9 @@ Click **Sort** to pick a column and direction. Add multiple levels to break ties
 
 ## Data seeding
 
-Click **Seed** while a table is open. Tamery picks generators from your column names and types — names, emails, timestamps, and foreign keys referencing existing rows. Review and adjust per column, then choose how many rows to insert.
+Open the toolbar's **⋯** menu and choose **Seed data**. Tamery picks a generator per column from its name and type — names, emails, timestamps, enum members, and foreign keys pointing at existing rows. Columns the database fills itself (identity, auto-increment, computed, or defaulted) are left to the database.
+
+The panel lists every column with its generator on the left. Select a column to search the generators on the right, choose **NULL** or **SQL expression** (for example `now()`), and switch on **Mix in NULL values** to put `NULL` in a quarter of the rows. A preview under the list shows three sample values for the current choice. Choose how many rows to insert. Rows are inserted in one transaction, so a failure leaves the table unchanged.
 
 <Note>
   Seeding is a subscription feature. Free accounts get a limited number of runs.

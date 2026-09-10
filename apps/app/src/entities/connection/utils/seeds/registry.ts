@@ -1,5 +1,3 @@
-import type { ConnectionType } from '@tamery/shared/enums/connection-type'
-
 import type { Column } from '../../components/table/cell/utils'
 import { BASE_GENERATORS } from './base'
 import { MSSQL_GENERATORS } from './mssql/generators'
@@ -14,9 +12,7 @@ export const GENERATORS = {
   ...MSSQL_GENERATORS,
 } satisfies GeneratorMap
 
-export type GeneratorId<D extends ConnectionType | '' = ''> = D extends ''
-  ? keyof typeof GENERATORS
-  : Extract<keyof typeof GENERATORS, `${D}.${string}`>
+export type GeneratorId = keyof typeof GENERATORS
 
 export interface Generator {
   generatorId: GeneratorId
@@ -26,8 +22,6 @@ export interface Generator {
 
 export interface DialectSeedConfig {
   generators: GeneratorMap
-  autoDetect: (label: string) => GeneratorId | undefined
-  shouldSkip?: (column: Column) => boolean
+  types: Record<string, GeneratorId>
   transformArray?: (items: unknown[], column: Column) => unknown
-  transformValue?: (value: unknown, column: Column) => unknown
 }

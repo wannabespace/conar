@@ -18,7 +18,7 @@ export interface Column {
   scale?: number | null
   unique?: string
   primaryKey?: string
-  isIdentity?: boolean
+  isGenerated?: boolean
   defaultValue?: string | null
   foreign?: {
     name: string

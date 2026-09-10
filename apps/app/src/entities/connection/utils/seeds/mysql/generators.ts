@@ -32,22 +32,6 @@ export const MYSQL_GENERATORS = {
       sql`UNHEX(${faker.string.hexadecimal({ length: 32, prefix: '' })})`,
     label: 'Binary',
   },
-  'mysql.bit': {
-    category: 'MySQL',
-    generate: () => faker.number.int({ max: 1, min: 0 }),
-    label: 'Bit',
-  },
-  'mysql.date': {
-    category: 'MySQL',
-    generate: () => faker.date.recent().toISOString().slice(0, 10),
-    label: 'Date',
-  },
-  'mysql.datetime': {
-    category: 'MySQL',
-    generate: () =>
-      faker.date.recent().toISOString().slice(0, 19).replace('T', ' '),
-    label: 'Datetime',
-  },
   'mysql.geometrycollection': {
     category: 'MySQL Spatial',
     generate: () => {
