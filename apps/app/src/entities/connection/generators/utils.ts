@@ -37,14 +37,25 @@ export const toLiteralKey = (name: string) =>
 
 export const formatEnumAsUnionType = (
   values: string[],
-  columnType?: string
+  isArray?: boolean
 ): string => {
   const union = values.map((v) => `'${v}'`).join(' | ')
-  return columnType === 'set' ? `(${union})[]` : union
+  return isArray ? `(${union})[]` : union
 }
 
+// `interval` and `point` contain "int"; word-bounded so only integer types match
+const INT_RE = /\bu?(?:big|small|tiny|medium)?int(?:eger|\d+)?\b|serial/iu
+
+export const isNowDefault = (value: string) =>
+  /^\(*(?:now|current_timestamp|getdate|getutcdate|sysdatetime)(?:\(\))?\)*$/iu.test(
+    value
+  )
+
+export const isSerialDefault = (value: string | null | undefined) =>
+  /^nextval\(/iu.test(value ?? '')
+
 const tsMapper = (t: string) => {
-  if (/int|float|decimal|number|double|numeric/iu.test(t)) {
+  if (INT_RE.test(t) || /float|decimal|number|double|numeric/iu.test(t)) {
     return 'number'
   }
   if (/bool|bit/iu.test(t)) {
@@ -60,7 +71,7 @@ const tsMapper = (t: string) => {
 }
 
 const zodMapper = (t: string) => {
-  if (/int|float|decimal|number|double|numeric/iu.test(t)) {
+  if (INT_RE.test(t) || /float|decimal|number|double|numeric/iu.test(t)) {
     return 'z.number()'
   }
   if (/bool|bit/iu.test(t)) {
@@ -88,10 +99,13 @@ const prismaScalarMapper = (t: string) => {
   if (/json/iu.test(t)) {
     return 'Json'
   }
-  if (/int/iu.test(t)) {
+  if (/bigint|bigserial/iu.test(t)) {
+    return 'BigInt'
+  }
+  if (INT_RE.test(t)) {
     return 'Int'
   }
-  if (/float/iu.test(t)) {
+  if (/float|double|real/iu.test(t)) {
     return 'Float'
   }
   return 'String'
@@ -102,30 +116,7 @@ const TYPE_MAPPINGS: Record<
   Record<ConnectionType, (type: string) => string>
 > = {
   drizzle: {
-    clickhouse: (t) => {
-      if (/int/iu.test(t)) {
-        return 'integer'
-      }
-      if (/text/iu.test(t)) {
-        return 'text'
-      }
-      if (/bool/iu.test(t)) {
-        return 'boolean'
-      }
-      if (/date/iu.test(t)) {
-        return 'date'
-      }
-      if (/decimal/iu.test(t)) {
-        return 'decimal'
-      }
-      if (/real|float/iu.test(t)) {
-        return 'real'
-      }
-      if (/json/iu.test(t)) {
-        return 'json'
-      }
-      return 'text'
-    },
+    clickhouse: (t) => t,
     mssql: (t) => {
       if (/datetime2/iu.test(t)) {
         return 'datetime2'
@@ -136,8 +127,14 @@ const TYPE_MAPPINGS: Record<
       if (/date/iu.test(t)) {
         return 'date'
       }
-      if (/int/iu.test(t)) {
-        return 'integer'
+      if (/uniqueidentifier/iu.test(t)) {
+        return 'uniqueIdentifier'
+      }
+      if (/bigint/iu.test(t)) {
+        return 'bigint'
+      }
+      if (INT_RE.test(t)) {
+        return 'int'
       }
       if (/bit/iu.test(t)) {
         return 'bit'
@@ -169,7 +166,10 @@ const TYPE_MAPPINGS: Record<
       if (/tinyint/iu.test(t)) {
         return 'tinyint'
       }
-      if (/int/iu.test(t)) {
+      if (/bigint/iu.test(t)) {
+        return 'bigint'
+      }
+      if (INT_RE.test(t)) {
         return 'int'
       }
       if (/text/iu.test(t)) {
@@ -205,8 +205,20 @@ const TYPE_MAPPINGS: Record<
       if (/serial/iu.test(t)) {
         return 'serial'
       }
-      if (/int/iu.test(t)) {
+      if (/bigint/iu.test(t)) {
+        return 'bigint'
+      }
+      if (/smallint/iu.test(t)) {
+        return 'smallint'
+      }
+      if (INT_RE.test(t)) {
         return 'integer'
+      }
+      if (/uuid/iu.test(t)) {
+        return 'uuid'
+      }
+      if (/jsonb/iu.test(t)) {
+        return 'jsonb'
       }
       if (/text/iu.test(t)) {
         return 'text'
@@ -252,18 +264,7 @@ const TYPE_MAPPINGS: Record<
     clickhouse: (t) => t,
     mssql: (t) => t,
     mysql: (t) => t,
-    postgres: (t) => {
-      if (/datetime2/iu.test(t)) {
-        return 'timestamp'
-      }
-      if (/nvarchar/iu.test(t)) {
-        return 'varchar'
-      }
-      if (/int32/iu.test(t)) {
-        return 'integer'
-      }
-      return t
-    },
+    postgres: (t) => t,
   },
   ts: {
     clickhouse: tsMapper,
@@ -316,12 +317,13 @@ export const quoteIdentifier = (name: string, dialect: ConnectionType) =>
 
 export const groupIndexes = (
   indexes: Index[],
+  schema: string,
   table: string
 ): GroupedIndex[] => {
   const grouped = new Map<string, GroupedIndex>()
 
   for (const idx of indexes) {
-    if (idx.table !== table) {
+    if (idx.table !== table || idx.schema !== schema) {
       continue
     }
 

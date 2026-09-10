@@ -223,6 +223,13 @@ const resourceTableColumnsQuery = memoize(
                 .else(false)
                 .end()
                 .as('editable'),
+              eb
+                .case('is_identity')
+                .when('YES')
+                .then(true)
+                .else(false)
+                .end()
+                .as('isIdentity'),
             ])
             .where(({ and, eb }) =>
               and([

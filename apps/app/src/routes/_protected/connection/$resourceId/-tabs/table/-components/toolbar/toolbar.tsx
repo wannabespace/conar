@@ -319,6 +319,7 @@ export const TableToolbar = ({
         {tableType === 'table' && (
           <ActionsCopy
             table={table}
+            schema={schema}
             open={codeOpen}
             onOpenChange={setCodeOpen}
           />
