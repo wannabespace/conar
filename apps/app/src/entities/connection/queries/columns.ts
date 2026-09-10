@@ -13,6 +13,7 @@ export const columnType = type({
   id: 'string',
   'isArray?': 'boolean',
   'isGenerated?': 'boolean | number | null',
+  'isIdentity?': 'boolean | number | null',
   'maxLength?': 'number | null',
   nullable: 'boolean | 1 | 0',
   'precision?': 'number | null',
@@ -21,13 +22,16 @@ export const columnType = type({
   table: 'string',
   type: 'string',
   'typeLabel?': 'string',
-}).pipe(({ typeLabel, editable, nullable, isGenerated, ...data }) => ({
-  ...data,
-  isEditable: Boolean(editable ?? true),
-  isGenerated: Boolean(isGenerated),
-  isNullable: Boolean(nullable),
-  typeLabel: typeLabel ?? data.type,
-}))
+}).pipe(
+  ({ typeLabel, editable, nullable, isGenerated, isIdentity, ...data }) => ({
+    ...data,
+    isEditable: Boolean(editable ?? true),
+    isGenerated: Boolean(isGenerated),
+    isIdentity: Boolean(isIdentity),
+    isNullable: Boolean(nullable),
+    typeLabel: typeLabel ?? data.type,
+  })
+)
 
 const clickhouseEnumRegex = /^Enum\d+/u
 
@@ -121,6 +125,13 @@ const resourceTableColumnsQuery = memoize(
                 OR COLUMNPROPERTY(OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)), COLUMN_NAME, 'IsComputed') = 1
               THEN 1 ELSE 0 END
             `.as('isGenerated'),
+              sql<number | null>`
+              COLUMNPROPERTY(
+                OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)),
+                COLUMN_NAME,
+                'IsIdentity'
+              )
+            `.as('isIdentity'),
               eb
                 .case('IS_NULLABLE')
                 .when('YES')
@@ -226,6 +237,13 @@ const resourceTableColumnsQuery = memoize(
                 .else(false)
                 .end()
                 .as('editable'),
+              eb
+                .case('is_identity')
+                .when('YES')
+                .then(true)
+                .else(false)
+                .end()
+                .as('isIdentity'),
             ])
             .where(({ and, eb }) =>
               and([

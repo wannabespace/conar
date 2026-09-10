@@ -5,8 +5,19 @@ import { Button } from '@tamery/ui/components/button'
 import { cn } from '@tamery/ui/lib/utils'
 import * as React from 'react'
 
-const Dialog = ({ ...props }: DialogPrimitive.Root.Props) => (
-  <DialogPrimitive.Root data-slot="dialog" {...props} />
+import { dialogContentVariants, dialogTitleVariants } from './dialog.utils'
+
+type DialogVariant = 'default' | 'panel'
+
+const DialogVariantContext = React.createContext<DialogVariant>('default')
+
+const Dialog = ({
+  variant = 'default',
+  ...props
+}: DialogPrimitive.Root.Props & { variant?: DialogVariant }) => (
+  <DialogVariantContext.Provider value={variant}>
+    <DialogPrimitive.Root data-slot="dialog" {...props} />
+  </DialogVariantContext.Provider>
 )
 
 const DialogTrigger = ({ ...props }: DialogPrimitive.Trigger.Props) => (
@@ -38,6 +49,26 @@ const DialogOverlay = ({
   />
 )
 
+const DialogCloseButton = ({
+  className,
+  ...props
+}: DialogPrimitive.Close.Props) => (
+  <DialogPrimitive.Close
+    data-slot="dialog-close"
+    render={
+      <Button
+        className={cn('bg-secondary', className)}
+        size="icon-sm"
+        variant="ghost"
+      />
+    }
+    {...props}
+  >
+    <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+    <span className="sr-only">Close</span>
+  </DialogPrimitive.Close>
+)
+
 const DialogContent = ({
   className,
   children,
@@ -53,7 +84,7 @@ const DialogContent = ({
     <DialogPrimitive.Popup
       data-slot="dialog-content"
       className={cn(
-        `bg-card text-foreground ring-foreground/4 fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-1/2 gap-6 rounded-[min(var(--radius-4xl),24px)] p-6 text-sm shadow-xl ring-[0.5px] duration-100 outline-none sm:max-w-md`,
+        dialogContentVariants({ variant: React.use(DialogVariantContext) }),
         animated &&
           `data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95`,
         className
@@ -62,19 +93,7 @@ const DialogContent = ({
     >
       {children}
       {showCloseButton && (
-        <DialogPrimitive.Close
-          data-slot="dialog-close"
-          render={
-            <Button
-              variant="ghost"
-              className="bg-secondary absolute top-4 right-4"
-              size="icon-sm"
-            />
-          }
-        >
-          <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
-          <span className="sr-only">Close</span>
-        </DialogPrimitive.Close>
+        <DialogCloseButton className="absolute top-4 right-4" />
       )}
     </DialogPrimitive.Popup>
   </DialogPortal>
@@ -116,7 +135,10 @@ const DialogFooter = ({
 const DialogTitle = ({ className, ...props }: DialogPrimitive.Title.Props) => (
   <DialogPrimitive.Title
     data-slot="dialog-title"
-    className={cn('font-heading text-base leading-none font-medium', className)}
+    className={cn(
+      dialogTitleVariants({ variant: React.use(DialogVariantContext) }),
+      className
+    )}
     {...props}
   />
 )
@@ -138,6 +160,7 @@ const DialogDescription = ({
 export {
   Dialog,
   DialogClose,
+  DialogCloseButton,
   DialogContent,
   DialogDescription,
   DialogFooter,

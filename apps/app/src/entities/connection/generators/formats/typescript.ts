@@ -14,7 +14,9 @@ export const generateSchemaTypeScript = ({
       let typeScriptType = getColumnType(c.type, 'ts', dialect)
 
       if (c.enumName && c.availableValues?.length) {
-        typeScriptType = formatEnumAsUnionType(c.availableValues, c.type)
+        typeScriptType = formatEnumAsUnionType(c.availableValues, c.isArray)
+      } else if (c.isArray) {
+        typeScriptType += '[]'
       }
       if (c.isNullable) {
         typeScriptType += ' | null'

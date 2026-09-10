@@ -1,9 +1,16 @@
+import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import type { ActiveFilter } from '@tamery/shared/filters'
 import { camelCase, pascalCase } from 'change-case'
 
 import * as templates from '../templates'
 import type { QueryParams, SchemaParams } from '../types'
-import { filterExplicitIndexes, getColumnType, groupIndexes } from '../utils'
+import {
+  filterExplicitIndexes,
+  getColumnType,
+  groupIndexes,
+  isNowDefault,
+  isSerialDefault,
+} from '../utils'
 
 type PrismaFilterValue =
   | string
@@ -113,7 +120,7 @@ const foreignActionToPrisma = (
   action: string,
   kind: 'onDelete' | 'onUpdate'
 ): string => {
-  const value = FK_ACTION_MAP[action?.toUpperCase() ?? '']
+  const value = FK_ACTION_MAP[action.toUpperCase()]
   return value ? `, ${kind}: ${value}` : ''
 }
 
@@ -124,23 +131,57 @@ interface PrismaField {
   isRelation: boolean
 }
 
+const prismaDefault = (
+  c: SchemaParams['columns'][number],
+  prismaType: string
+): string | null => {
+  if (
+    c.isIdentity ||
+    isSerialDefault(c.defaultValue) ||
+    (c.primaryKey && ['BigInt', 'Int'].includes(prismaType))
+  ) {
+    return 'autoincrement()'
+  }
+  if (typeof c.defaultValue !== 'string') {
+    return null
+  }
+  if (isNowDefault(c.defaultValue)) {
+    return 'now()'
+  }
+  const literal = c.defaultValue.replaceAll(/^\(+|\)+$/gu, '')
+  if (
+    /^-?\d+(?:\.\d+)?$/u.test(literal) ||
+    /^(?:true|false)$/iu.test(literal)
+  ) {
+    return literal.toLowerCase()
+  }
+  return `dbgenerated("${c.defaultValue.replaceAll('"', '\\"')}")`
+}
+
 const buildFieldAttributes = (
   c: SchemaParams['columns'][number],
   prismaType: string,
-  needsMap: boolean
+  needsMap: boolean,
+  dialect: ConnectionType
 ): string[] => {
   const attributes: string[] = []
   if (c.primaryKey) {
     attributes.push('@id')
-    if (prismaType === 'Int') {
-      attributes.push('@default(autoincrement())')
-    }
   } else if (c.unique) {
     attributes.push('@unique')
   }
 
+  const defaultValue = prismaDefault(c, prismaType)
+  if (defaultValue) {
+    attributes.push(`@default(${defaultValue})`)
+  }
+
   if (prismaType === 'String' && c.maxLength && c.maxLength > 0) {
     attributes.push(`@db.VarChar(${c.maxLength})`)
+  }
+
+  if (dialect === ConnectionType.Postgres && c.type === 'uuid') {
+    attributes.push('@db.Uuid')
   }
 
   if (prismaType === 'Decimal' && c.precision) {
@@ -202,8 +243,7 @@ const appendForeignAndRefs = (
   }
 
   for (const ref of c.references ?? []) {
-    const isValidRef = /^[a-z]\w*$/iu.test(ref.table)
-    const refType = isValidRef ? ref.table : pascalCase(ref.table)
+    const refType = pascalCase(ref.table)
     let refFieldName = camelCase(ref.table)
     if (usedNames.has(refFieldName)) {
       refFieldName = camelCase(`${ref.table}_${ref.column}`)
@@ -220,6 +260,7 @@ const appendForeignAndRefs = (
 
 export const generateSchemaPrisma = ({
   table,
+  schema,
   columns,
   dialect,
   indexes = [],
@@ -243,11 +284,12 @@ export const generateSchemaPrisma = ({
     const needsMap = fieldName !== c.id
     usedNames.add(fieldName)
 
+    const isList = c.isArray && dialect === ConnectionType.Postgres
     fields.push({
-      attributes: buildFieldAttributes(c, prismaType, needsMap),
+      attributes: buildFieldAttributes(c, prismaType, needsMap, dialect),
       isRelation: false,
       name: fieldName,
-      type: prismaType + (c.isNullable ? '?' : ''),
+      type: isList ? `${prismaType}[]` : prismaType + (c.isNullable ? '?' : ''),
     })
 
     appendForeignAndRefs(c, fieldName, fields, usedNames)
@@ -269,8 +311,10 @@ export const generateSchemaPrisma = ({
     return `  ${parts.join(' ').trimEnd()}`
   })
 
-  const groupedIndexes = groupIndexes(indexes, table)
-  const explicitIndexes = filterExplicitIndexes(groupedIndexes, columns)
+  const explicitIndexes = filterExplicitIndexes(
+    groupIndexes(indexes, schema, table),
+    columns
+  )
 
   const indexBlocks = explicitIndexes
     .filter((idx) => idx.columns.length > 0)
