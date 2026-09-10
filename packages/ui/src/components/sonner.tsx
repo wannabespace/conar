@@ -6,6 +6,7 @@ import {
   MultiplicationSignCircleIcon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { createPortal } from 'react-dom'
 import { Toaster as Sonner } from 'sonner'
 
 import { useTheme } from '../theme-store'
@@ -13,8 +14,11 @@ import { useTheme } from '../theme-store'
 const Toaster = () => {
   const theme = useTheme()
 
-  return (
-    <div data-mask className="contents">
+  // #root carries `isolate z-10`, so anything React renders inside it is capped
+  // below the overlays base-ui portals to the body; the toaster escapes the same
+  // way and sits one tier above them, under the z-100 window-size cover
+  return createPortal(
+    <div data-mask className="contents [&_ol]:z-60!">
       <Sonner
         theme={theme}
         position="top-center"
@@ -87,7 +91,8 @@ const Toaster = () => {
           unstyled: true,
         }}
       />
-    </div>
+    </div>,
+    document.body
   )
 }
 

@@ -65,6 +65,10 @@ interface Columns {
   database: string
   table: string
   name: string
+  type: string
+  position: number
+  default_kind: string
+  default_expression: string
   is_in_primary_key: number
 }
 
