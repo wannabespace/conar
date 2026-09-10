@@ -9,6 +9,28 @@ const baseClasses = `
   text-foreground select-none
   [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-primary/75
 `
+const activeClasses = `
+  bg-primary text-primary-foreground
+  [&_svg]:text-primary-foreground
+`
+const inactiveClasses = 'hover:bg-accent'
+
+export const SidebarButton = ({
+  className,
+  active,
+  ...props
+}: ComponentProps<'button'> & { active?: boolean }) => (
+  <button
+    type="button"
+    className={cn(
+      baseClasses,
+      active ? activeClasses : inactiveClasses,
+      className
+    )}
+    {...props}
+  />
+)
+
 export const SidebarLink = ({
   className,
   ...props

@@ -177,7 +177,7 @@ export const DefaultValueTooltipIcon = ({
   </Tooltip>
 )
 
-const ForeignTooltipIcon = ({
+export const ForeignTooltipIcon = ({
   name,
   table,
   column,

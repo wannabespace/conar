@@ -220,6 +220,24 @@ export const resourceRowsQuery = memoize(
     })
 )
 
+export const resourceRowsQueryKey = ({
+  connectionResource,
+  schema,
+  table,
+}: {
+  connectionResource: ConnectionResource
+  schema: string
+  table: string
+}) => [
+  'connection-resource',
+  connectionResource.id,
+  'schema',
+  schema,
+  'table',
+  table,
+  'rows',
+]
+
 export const resourceRowsQueryInfiniteOptions = memoize(
   ({
     connectionResource,
@@ -258,13 +276,7 @@ export const resourceRowsQueryInfiniteOptions = memoize(
         } satisfies PageResult
       },
       queryKey: [
-        'connection-resource',
-        connectionResource.id,
-        'schema',
-        schema,
-        'table',
-        table,
-        'rows',
+        ...resourceRowsQueryKey({ connectionResource, schema, table }),
         {
           filters,
           filtersConcatOperator,

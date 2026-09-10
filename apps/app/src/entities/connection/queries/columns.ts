@@ -12,6 +12,7 @@ export const columnType = type({
   'enumName?': 'string',
   id: 'string',
   'isArray?': 'boolean',
+  'isGenerated?': 'boolean | number | null',
   'isIdentity?': 'boolean | number | null',
   'maxLength?': 'number | null',
   nullable: 'boolean | 1 | 0',
@@ -21,15 +22,20 @@ export const columnType = type({
   table: 'string',
   type: 'string',
   'typeLabel?': 'string',
-}).pipe(({ typeLabel, editable, nullable, isIdentity, ...data }) => ({
-  ...data,
-  isEditable: Boolean(editable ?? true),
-  isIdentity: Boolean(isIdentity),
-  isNullable: Boolean(nullable),
-  typeLabel: typeLabel ?? data.type,
-}))
+}).pipe(
+  ({ typeLabel, editable, nullable, isGenerated, isIdentity, ...data }) => ({
+    ...data,
+    isEditable: Boolean(editable ?? true),
+    isGenerated: Boolean(isGenerated),
+    isIdentity: Boolean(isIdentity),
+    isNullable: Boolean(nullable),
+    typeLabel: typeLabel ?? data.type,
+  })
+)
 
 const clickhouseEnumRegex = /^Enum\d+/u
+
+const clickhouseNullableRegex = /^(?:LowCardinality\()?Nullable\(/u
 
 const getClickhouseColumnType = (sqlType: string): string => {
   if (sqlType.startsWith('Array(') && sqlType.endsWith(')')) {
@@ -75,28 +81,21 @@ const resourceTableColumnsQuery = memoize(
       query: {
         clickhouse: async (db) => {
           const query = await db
-            .selectFrom('information_schema.columns')
-            .select((eb) => [
-              'table_schema as schema',
-              'table_name as table',
-              'column_name as id',
-              'column_default as default',
-              'data_type as type',
-              eb
-                .case('is_nullable')
-                .when(1)
-                .then(true)
-                .else(false)
-                .end()
-                .as('nullable'),
+            .selectFrom('system.columns')
+            .select([
+              'database as schema',
+              'table',
+              'name as id',
+              'default_expression as default',
+              'type',
+              sql<boolean>`default_kind IN ('MATERIALIZED', 'ALIAS')`.as(
+                'isGenerated'
+              ),
             ])
             .where(({ and, eb }) =>
-              and([
-                eb('table_schema', '=', schema),
-                eb('table_name', '=', table),
-              ])
+              and([eb('database', '=', schema), eb('table', '=', table)])
             )
-            .orderBy('ordinal_position')
+            .orderBy('position')
             .execute()
 
           return query.map((row) => ({
@@ -104,6 +103,7 @@ const resourceTableColumnsQuery = memoize(
             editable: true,
             enumName: row.type.includes('Enum') ? row.id : undefined,
             isArray: row.type.includes('Array('),
+            nullable: clickhouseNullableRegex.test(row.type),
             typeLabel: getClickhouseColumnType(row.type),
           }))
         },
@@ -119,6 +119,12 @@ const resourceTableColumnsQuery = memoize(
               'NUMERIC_PRECISION as precision',
               'NUMERIC_SCALE as scale',
               'DATA_TYPE as type',
+              sql<number | null>`
+              CASE WHEN DATA_TYPE IN ('timestamp', 'rowversion')
+                OR COLUMNPROPERTY(OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)), COLUMN_NAME, 'IsIdentity') = 1
+                OR COLUMNPROPERTY(OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)), COLUMN_NAME, 'IsComputed') = 1
+              THEN 1 ELSE 0 END
+            `.as('isGenerated'),
               sql<number | null>`
               COLUMNPROPERTY(
                 OBJECT_ID(QUOTENAME(TABLE_SCHEMA) + '.' + QUOTENAME(TABLE_NAME)),
@@ -165,6 +171,11 @@ const resourceTableColumnsQuery = memoize(
               'NUMERIC_PRECISION as precision',
               'NUMERIC_SCALE as scale',
               'DATA_TYPE as type',
+              sql<1 | 0>`
+              EXTRA LIKE '%auto_increment%'
+                OR EXTRA LIKE '%VIRTUAL GENERATED%'
+                OR EXTRA LIKE '%STORED GENERATED%'
+            `.as('isGenerated'),
               eb
                 .case('IS_NULLABLE')
                 .when('YES')
@@ -209,6 +220,9 @@ const resourceTableColumnsQuery = memoize(
               'character_maximum_length as max_length',
               'numeric_precision as precision',
               'numeric_scale as scale',
+              sql<boolean>`is_identity = 'YES' OR is_generated = 'ALWAYS'`.as(
+                'isGenerated'
+              ),
               eb
                 .case('is_nullable')
                 .when('YES')
