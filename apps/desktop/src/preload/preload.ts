@@ -25,6 +25,7 @@ export type ElectronPreload = Promisified<typeof electron> & {
       callback: (isFullscreen: boolean) => void
     ) => () => void
     onFocusChange: (callback: (isFocused: boolean) => void) => () => void
+    openWindow: (route: string) => Promise<void>
   }
   versions: {
     node: () => string
@@ -91,6 +92,9 @@ contextBridge.exposeInMainWorld('electron', {
     onFullscreenChange: (onMessage) => onEvent('fullscreen-changed', onMessage),
     onSendToast: (onMessage) => onEvent('toast', onMessage),
     onUpdatesStatus: (onMessage) => onEvent('updates-status', onMessage),
+    openWindow: handleElectronError((route: string) =>
+      ipcRenderer.invoke('app.openWindow', route)
+    ),
     quitAndInstall: handleElectronError(() =>
       ipcRenderer.invoke('app.quitAndInstall')
     ),
