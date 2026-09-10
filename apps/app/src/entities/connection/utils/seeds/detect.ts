@@ -1,4 +1,5 @@
 import type { Column } from '../../components/table/cell/utils'
+import { columnMaxLength } from './base'
 import type { GeneratorId } from './registry'
 
 type Family =
@@ -111,10 +112,11 @@ const byFamily: Record<Family, (name: string, column: Column) => GeneratorId> =
       if (name.endsWith('id')) {
         return 'string.alphanumeric'
       }
+      const maxLength = columnMaxLength(column)
       return (
         EXACT_TEXT_NAMES[name] ??
         match(name, TEXT_NAME_RULES) ??
-        (column.maxLength && column.maxLength < SHORT_TEXT_LIMIT
+        (maxLength && maxLength < SHORT_TEXT_LIMIT
           ? 'lorem.word'
           : 'lorem.sentence')
       )

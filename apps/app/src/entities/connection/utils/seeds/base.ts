@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 
 import type { Column } from '../../components/table/cell/utils'
-import type { GeneratorMap } from './types'
+import type { GeneratorDef, GeneratorMap } from './types'
 import {
   CUSTOM_GENERATOR,
   ENUM_GENERATOR,
@@ -17,6 +17,9 @@ export const columnTypeName = (column: Column) =>
     .toLowerCase()
     .replace(typeParamsRegex, '')
     .trim()
+
+export const columnMaxLength = (column: Column) =>
+  column.maxLength && column.maxLength > 0 ? column.maxLength : undefined
 
 // Big enough to look like data, small enough for any integer type wider than a byte
 const DEFAULT_MAX = 10_000
@@ -36,23 +39,27 @@ const randomInt = (column: Column) =>
 // ClickHouse does not report numeric precision, so Decimal(10, 2) is parsed off the label
 const decimalParamsRegex = /\((?<precision>\d+)\s*,\s*(?<scale>\d+)\)/u
 
-const floatBounds = (column: Column) => {
+const randomFloat = (column: Column) => {
   const parsed = column.typeLabel?.match(decimalParamsRegex)?.groups
-  const scale = column.scale ?? (parsed ? Number(parsed.scale) : 2)
+  const scale = column.scale ?? Number(parsed?.scale ?? 2)
   const precision =
     column.precision ?? (parsed ? Number(parsed.precision) : undefined)
-  const max =
-    precision === undefined
-      ? DEFAULT_MAX
-      : Math.min(DEFAULT_MAX, 10 ** (precision - scale))
+  const max = precision
+    ? Math.min(DEFAULT_MAX, 10 ** (precision - scale))
+    : DEFAULT_MAX
 
-  return { fractionDigits: scale, max: max - 10 ** -scale, min: 0 }
+  return faker.number.float({
+    fractionDigits: scale,
+    max: max - 10 ** -scale,
+    min: 0,
+  })
 }
 
-const randomFloat = (column: Column) => faker.number.float(floatBounds(column))
-
 const randomBits = (column: Column) =>
-  faker.string.binary({ length: column.maxLength ?? 8, prefix: '' })
+  faker.string.binary({ length: columnMaxLength(column) ?? 8, prefix: '' })
+
+const JSON_MAX_DEPTH = 2
+const JSON_LENGTH = { max: 5, min: 1 }
 
 const jsonScalar = () =>
   faker.helpers.arrayElement([
@@ -65,597 +72,251 @@ const jsonScalar = () =>
     () => null,
   ])()
 
-const JSON_MAX_DEPTH = 2
-
 const jsonKeys = () =>
   faker.helpers.uniqueArray(
     () => faker.string.alpha({ casing: 'lower', length: { max: 8, min: 3 } }),
     faker.number.int({ max: 6, min: 1 })
   )
 
-const jsonValue = (depth: number): unknown => {
-  const kind =
-    depth >= JSON_MAX_DEPTH
-      ? 'scalar'
-      : faker.helpers.arrayElement(['scalar', 'array', 'object'] as const)
+type JsonKind = 'array' | 'object' | 'scalar'
 
-  if (kind === 'scalar') {
-    return jsonScalar()
-  }
+const jsonValue = (
+  depth: number,
+  kind: JsonKind = depth >= JSON_MAX_DEPTH
+    ? 'scalar'
+    : faker.helpers.arrayElement(['array', 'object', 'scalar'])
+): unknown => {
+  const child = () => jsonValue(depth + 1)
   if (kind === 'array') {
-    return faker.helpers.multiple(() => jsonValue(depth + 1), {
-      count: { max: 5, min: 1 },
-    })
+    return faker.helpers.multiple(child, { count: JSON_LENGTH })
   }
-  return Object.fromEntries(
-    jsonKeys().map((key) => [key, jsonValue(depth + 1)])
-  )
+  if (kind === 'object') {
+    return Object.fromEntries(jsonKeys().map((key) => [key, child()]))
+  }
+  return jsonScalar()
 }
 
-const jsonObject = () =>
-  Object.fromEntries(jsonKeys().map((key) => [key, jsonValue(1)]))
+const inCategory = <
+  T extends Record<string, [label: string, generate: GeneratorDef['generate']]>,
+>(
+  category: string,
+  entries: T
+) =>
+  Object.fromEntries(
+    Object.entries(entries).map(([id, [label, generate]]) => [
+      id,
+      { category, generate, label },
+    ])
+  ) as Record<keyof T, GeneratorDef>
+
+const SPECIAL_GENERATORS = inCategory('Special', {
+  [CUSTOM_GENERATOR]: ['SQL expression', () => null],
+  [ENUM_GENERATOR]: ['Enum value', () => null],
+  [NULL_GENERATOR]: ['NULL', () => null],
+  [REFERENCE_GENERATOR]: ['Existing row', () => null],
+  [SKIP_GENERATOR]: ['Database default', () => null],
+})
+
+const BOOLEAN_GENERATORS = inCategory('Boolean', {
+  'datatype.boolean': ['Boolean', () => faker.datatype.boolean()],
+})
+
+const COMMERCE_GENERATORS = inCategory('Commerce', {
+  'commerce.department': ['Department', () => faker.commerce.department()],
+  'commerce.isbn': ['ISBN', () => faker.commerce.isbn()],
+  'commerce.price': ['Price', () => Number(faker.commerce.price())],
+  'commerce.productDescription': [
+    'Product Description',
+    () => faker.commerce.productDescription(),
+  ],
+  'commerce.productName': ['Product Name', () => faker.commerce.productName()],
+  'company.buzzPhrase': ['Buzz Phrase', () => faker.company.buzzPhrase()],
+  'company.catchPhrase': ['Catch Phrase', () => faker.company.catchPhrase()],
+  'company.name': ['Company Name', () => faker.company.name()],
+})
+
+const DATE_GENERATORS = inCategory('Date', {
+  'date.birthdate': ['Birthdate', () => faker.date.birthdate()],
+  'date.future': ['Future Date', () => faker.date.future()],
+  'date.month': ['Month Name', () => faker.date.month()],
+  'date.past': ['Past Date', () => faker.date.past()],
+  'date.recent': ['Recent Date', () => faker.date.recent()],
+  'date.soon': ['Soon Date', () => faker.date.soon()],
+  'date.time': ['Time', () => faker.date.recent().toISOString().slice(11, 19)],
+  'date.weekday': ['Weekday', () => faker.date.weekday()],
+})
+
+const FINANCE_GENERATORS = inCategory('Finance', {
+  'finance.accountNumber': [
+    'Account Number',
+    () => faker.finance.accountNumber(),
+  ],
+  'finance.amount': ['Amount', () => Number(faker.finance.amount())],
+  'finance.bic': ['BIC/SWIFT', () => faker.finance.bic()],
+  'finance.bitcoinAddress': [
+    'Bitcoin Address',
+    () => faker.finance.bitcoinAddress(),
+  ],
+  'finance.creditCardCVV': [
+    'Credit Card CVV',
+    () => faker.finance.creditCardCVV(),
+  ],
+  'finance.creditCardNumber': [
+    'Credit Card Number',
+    () => faker.finance.creditCardNumber(),
+  ],
+  'finance.currencyCode': ['Currency Code', () => faker.finance.currencyCode()],
+  'finance.currencyName': ['Currency Name', () => faker.finance.currencyName()],
+  'finance.ethereumAddress': [
+    'Ethereum Address',
+    () => faker.finance.ethereumAddress(),
+  ],
+  'finance.iban': ['IBAN', () => faker.finance.iban()],
+  'finance.transactionType': [
+    'Transaction Type',
+    () => faker.finance.transactionType(),
+  ],
+})
+
+const ID_GENERATORS = inCategory('ID', {
+  'string.nanoid': ['Nano ID', () => faker.string.nanoid()],
+  'string.ulid': ['ULID', () => faker.string.ulid()],
+  'string.uuidV4': ['UUID v4', () => faker.string.uuid({ version: 4 })],
+  'string.uuidV7': ['UUID v7', () => faker.string.uuid({ version: 7 })],
+})
+
+const INTERNET_GENERATORS = inCategory('Internet', {
+  'image.avatar': ['Avatar URL', () => faker.image.avatar()],
+  'image.url': ['Image URL', () => faker.image.url()],
+  'internet.displayName': ['Display Name', () => faker.internet.displayName()],
+  'internet.domainName': ['Domain Name', () => faker.internet.domainName()],
+  'internet.email': ['Email', () => faker.internet.email()],
+  'internet.emoji': ['Emoji', () => faker.internet.emoji()],
+  'internet.httpMethod': ['HTTP Method', () => faker.internet.httpMethod()],
+  'internet.httpStatusCode': [
+    'HTTP Status Code',
+    () => faker.internet.httpStatusCode(),
+  ],
+  'internet.ip': ['IPv4 Address', () => faker.internet.ip()],
+  'internet.ipv6': ['IPv6 Address', () => faker.internet.ipv6()],
+  'internet.mac': ['MAC Address', () => faker.internet.mac()],
+  'internet.password': ['Password', () => faker.internet.password()],
+  'internet.port': ['Port', () => faker.internet.port()],
+  'internet.url': ['URL', () => faker.internet.url()],
+  'internet.userAgent': ['User Agent', () => faker.internet.userAgent()],
+  'internet.username': ['Username', () => faker.internet.username()],
+})
+
+const LOCATION_GENERATORS = inCategory('Location', {
+  'location.buildingNumber': [
+    'Building Number',
+    () => faker.location.buildingNumber(),
+  ],
+  'location.city': ['City', () => faker.location.city()],
+  'location.country': ['Country', () => faker.location.country()],
+  'location.countryCode': ['Country Code', () => faker.location.countryCode()],
+  'location.county': ['County', () => faker.location.county()],
+  'location.latitude': ['Latitude', () => faker.location.latitude()],
+  'location.longitude': ['Longitude', () => faker.location.longitude()],
+  'location.state': ['State', () => faker.location.state()],
+  'location.streetAddress': [
+    'Street Address',
+    () => faker.location.streetAddress(),
+  ],
+  'location.timeZone': ['Time Zone', () => faker.location.timeZone()],
+  'location.zipCode': ['Zip Code', () => faker.location.zipCode()],
+})
+
+const NUMBER_GENERATORS = inCategory('Number', {
+  'number.bigInt': [
+    'Big Integer',
+    () => String(faker.number.bigInt({ max: Number.MAX_SAFE_INTEGER })),
+  ],
+  'number.binary': ['Bits', randomBits],
+  'number.float': ['Decimal', randomFloat],
+  'number.int': ['Integer', randomInt],
+  'number.percentage': [
+    'Percentage',
+    () => faker.number.float({ fractionDigits: 2, max: 100, min: 0 }),
+  ],
+})
+
+const OTHER_GENERATORS = inCategory('Other', {
+  'airline.airline': ['Airline', () => faker.airline.airline().name],
+  'airline.flightNumber': ['Flight Number', () => faker.airline.flightNumber()],
+  'animal.type': ['Animal Type', () => faker.animal.type()],
+  'color.hex': ['Color Hex', () => faker.color.rgb({ format: 'hex' })],
+  'color.human': ['Color Name', () => faker.color.human()],
+  'color.rgb': ['Color RGB', () => faker.color.rgb()],
+  'food.dish': ['Dish', () => faker.food.dish()],
+  'food.ingredient': ['Ingredient', () => faker.food.ingredient()],
+  'hacker.phrase': ['Hacker Phrase', () => faker.hacker.phrase()],
+  'json.array': ['JSON Array', () => jsonValue(0, 'array')],
+  'json.object': ['JSON Object', () => jsonValue(0, 'object')],
+  'music.genre': ['Music Genre', () => faker.music.genre()],
+  'phone.imei': ['IMEI', () => faker.phone.imei()],
+  'phone.number': ['Phone Number', () => faker.phone.number()],
+  'science.chemicalElement': [
+    'Chemical Element',
+    () => faker.science.chemicalElement().name,
+  ],
+  'science.unit': ['Unit of Measurement', () => faker.science.unit().name],
+  'vehicle.manufacturer': [
+    'Vehicle Manufacturer',
+    () => faker.vehicle.manufacturer(),
+  ],
+  'vehicle.vehicle': ['Vehicle', () => faker.vehicle.vehicle()],
+  'vehicle.vrm': ['License Plate', () => faker.vehicle.vrm()],
+})
+
+const PERSON_GENERATORS = inCategory('Person', {
+  'person.bio': ['Bio', () => faker.person.bio()],
+  'person.firstName': ['First Name', () => faker.person.firstName()],
+  'person.fullName': ['Full Name', () => faker.person.fullName()],
+  'person.gender': ['Gender', () => faker.person.gender()],
+  'person.jobTitle': ['Job Title', () => faker.person.jobTitle()],
+  'person.jobType': ['Job Type', () => faker.person.jobType()],
+  'person.lastName': ['Last Name', () => faker.person.lastName()],
+  'person.sex': ['Sex', () => faker.person.sex()],
+})
+
+const SYSTEM_GENERATORS = inCategory('System', {
+  'git.commitSha': ['Git Commit SHA', () => faker.git.commitSha()],
+  'system.cron': ['Cron Expression', () => faker.system.cron()],
+  'system.fileExt': ['File Extension', () => faker.system.fileExt()],
+  'system.fileName': ['File Name', () => faker.system.fileName()],
+  'system.filePath': ['File Path', () => faker.system.filePath()],
+  'system.mimeType': ['MIME Type', () => faker.system.mimeType()],
+  'system.semver': ['Semver Version', () => faker.system.semver()],
+})
+
+const TEXT_GENERATORS = inCategory('Text', {
+  'lorem.lines': ['Lines', () => faker.lorem.lines()],
+  'lorem.paragraph': ['Paragraph', () => faker.lorem.paragraph()],
+  'lorem.sentence': ['Sentence', () => faker.lorem.sentence()],
+  'lorem.slug': ['Slug', () => faker.lorem.slug()],
+  'lorem.text': ['Text Block', () => faker.lorem.text()],
+  'lorem.word': ['Word', () => faker.lorem.word()],
+  'string.alpha': ['Alpha String', () => faker.string.alpha(10)],
+  'string.alphanumeric': ['Alphanumeric', () => faker.string.alphanumeric(10)],
+  'string.hexadecimal': [
+    'Hex String',
+    () => faker.string.hexadecimal({ length: 16, prefix: '' }),
+  ],
+})
 
 export const BASE_GENERATORS = {
-  [CUSTOM_GENERATOR]: {
-    category: 'Special',
-    generate: () => null,
-    label: 'SQL expression',
-  },
-  [ENUM_GENERATOR]: {
-    category: 'Special',
-    generate: () => null,
-    label: 'Enum value',
-  },
-  [NULL_GENERATOR]: {
-    category: 'Special',
-    generate: () => null,
-    label: 'NULL',
-  },
-  [REFERENCE_GENERATOR]: {
-    category: 'Special',
-    generate: () => null,
-    label: 'Existing row',
-  },
-  [SKIP_GENERATOR]: {
-    category: 'Special',
-    generate: () => null,
-    label: 'Database default',
-  },
-  'airline.airline': {
-    category: 'Other',
-    generate: () => faker.airline.airline().name,
-    label: 'Airline',
-  },
-  'airline.flightNumber': {
-    category: 'Other',
-    generate: () => faker.airline.flightNumber(),
-    label: 'Flight Number',
-  },
-  'animal.type': {
-    category: 'Other',
-    generate: () => faker.animal.type(),
-    label: 'Animal Type',
-  },
-  'color.hex': {
-    category: 'Other',
-    generate: () => faker.color.rgb({ format: 'hex' }),
-    label: 'Color Hex',
-  },
-  'color.human': {
-    category: 'Other',
-    generate: () => faker.color.human(),
-    label: 'Color Name',
-  },
-  'color.rgb': {
-    category: 'Other',
-    generate: () => faker.color.rgb(),
-    label: 'Color RGB',
-  },
-  'commerce.department': {
-    category: 'Commerce',
-    generate: () => faker.commerce.department(),
-    label: 'Department',
-  },
-  'commerce.isbn': {
-    category: 'Commerce',
-    generate: () => faker.commerce.isbn(),
-    label: 'ISBN',
-  },
-  'commerce.price': {
-    category: 'Commerce',
-    generate: () => Number(faker.commerce.price()),
-    label: 'Price',
-  },
-  'commerce.productDescription': {
-    category: 'Commerce',
-    generate: () => faker.commerce.productDescription(),
-    label: 'Product Description',
-  },
-  'commerce.productName': {
-    category: 'Commerce',
-    generate: () => faker.commerce.productName(),
-    label: 'Product Name',
-  },
-  'company.buzzPhrase': {
-    category: 'Commerce',
-    generate: () => faker.company.buzzPhrase(),
-    label: 'Buzz Phrase',
-  },
-  'company.catchPhrase': {
-    category: 'Commerce',
-    generate: () => faker.company.catchPhrase(),
-    label: 'Catch Phrase',
-  },
-  'company.name': {
-    category: 'Commerce',
-    generate: () => faker.company.name(),
-    label: 'Company Name',
-  },
-  'datatype.boolean': {
-    category: 'Boolean',
-    generate: () => faker.datatype.boolean(),
-    label: 'Boolean',
-  },
-  'date.birthdate': {
-    category: 'Date',
-    generate: () => faker.date.birthdate(),
-    label: 'Birthdate',
-  },
-  'date.future': {
-    category: 'Date',
-    generate: () => faker.date.future(),
-    label: 'Future Date',
-  },
-  'date.month': {
-    category: 'Date',
-    generate: () => faker.date.month(),
-    label: 'Month Name',
-  },
-  'date.past': {
-    category: 'Date',
-    generate: () => faker.date.past(),
-    label: 'Past Date',
-  },
-  'date.recent': {
-    category: 'Date',
-    generate: () => faker.date.recent(),
-    label: 'Recent Date',
-  },
-  'date.soon': {
-    category: 'Date',
-    generate: () => faker.date.soon(),
-    label: 'Soon Date',
-  },
-  'date.time': {
-    category: 'Date',
-    generate: () => faker.date.recent().toISOString().slice(11, 19),
-    label: 'Time',
-  },
-  'date.weekday': {
-    category: 'Date',
-    generate: () => faker.date.weekday(),
-    label: 'Weekday',
-  },
-  'finance.accountNumber': {
-    category: 'Finance',
-    generate: () => faker.finance.accountNumber(),
-    label: 'Account Number',
-  },
-  'finance.amount': {
-    category: 'Finance',
-    generate: () => Number(faker.finance.amount()),
-    label: 'Amount',
-  },
-  'finance.bic': {
-    category: 'Finance',
-    generate: () => faker.finance.bic(),
-    label: 'BIC/SWIFT',
-  },
-  'finance.bitcoinAddress': {
-    category: 'Finance',
-    generate: () => faker.finance.bitcoinAddress(),
-    label: 'Bitcoin Address',
-  },
-  'finance.creditCardCVV': {
-    category: 'Finance',
-    generate: () => faker.finance.creditCardCVV(),
-    label: 'Credit Card CVV',
-  },
-  'finance.creditCardNumber': {
-    category: 'Finance',
-    generate: () => faker.finance.creditCardNumber(),
-    label: 'Credit Card Number',
-  },
-  'finance.currencyCode': {
-    category: 'Finance',
-    generate: () => faker.finance.currencyCode(),
-    label: 'Currency Code',
-  },
-  'finance.currencyName': {
-    category: 'Finance',
-    generate: () => faker.finance.currencyName(),
-    label: 'Currency Name',
-  },
-  'finance.ethereumAddress': {
-    category: 'Finance',
-    generate: () => faker.finance.ethereumAddress(),
-    label: 'Ethereum Address',
-  },
-  'finance.iban': {
-    category: 'Finance',
-    generate: () => faker.finance.iban(),
-    label: 'IBAN',
-  },
-  'finance.transactionType': {
-    category: 'Finance',
-    generate: () => faker.finance.transactionType(),
-    label: 'Transaction Type',
-  },
-  'food.dish': {
-    category: 'Other',
-    generate: () => faker.food.dish(),
-    label: 'Dish',
-  },
-  'food.ingredient': {
-    category: 'Other',
-    generate: () => faker.food.ingredient(),
-    label: 'Ingredient',
-  },
-  'git.commitSha': {
-    category: 'System',
-    generate: () => faker.git.commitSha(),
-    label: 'Git Commit SHA',
-  },
-  'hacker.phrase': {
-    category: 'Other',
-    generate: () => faker.hacker.phrase(),
-    label: 'Hacker Phrase',
-  },
-  'image.avatar': {
-    category: 'Internet',
-    generate: () => faker.image.avatar(),
-    label: 'Avatar URL',
-  },
-  'image.url': {
-    category: 'Internet',
-    generate: () => faker.image.url(),
-    label: 'Image URL',
-  },
-  'internet.displayName': {
-    category: 'Internet',
-    generate: () => faker.internet.displayName(),
-    label: 'Display Name',
-  },
-  'internet.domainName': {
-    category: 'Internet',
-    generate: () => faker.internet.domainName(),
-    label: 'Domain Name',
-  },
-  'internet.email': {
-    category: 'Internet',
-    generate: () => faker.internet.email(),
-    label: 'Email',
-  },
-  'internet.emoji': {
-    category: 'Internet',
-    generate: () => faker.internet.emoji(),
-    label: 'Emoji',
-  },
-  'internet.httpMethod': {
-    category: 'Internet',
-    generate: () => faker.internet.httpMethod(),
-    label: 'HTTP Method',
-  },
-  'internet.httpStatusCode': {
-    category: 'Internet',
-    generate: () => faker.internet.httpStatusCode(),
-    label: 'HTTP Status Code',
-  },
-  'internet.ip': {
-    category: 'Internet',
-    generate: () => faker.internet.ip(),
-    label: 'IPv4 Address',
-  },
-  'internet.ipv6': {
-    category: 'Internet',
-    generate: () => faker.internet.ipv6(),
-    label: 'IPv6 Address',
-  },
-  'internet.mac': {
-    category: 'Internet',
-    generate: () => faker.internet.mac(),
-    label: 'MAC Address',
-  },
-  'internet.password': {
-    category: 'Internet',
-    generate: () => faker.internet.password(),
-    label: 'Password',
-  },
-  'internet.port': {
-    category: 'Internet',
-    generate: () => faker.internet.port(),
-    label: 'Port',
-  },
-  'internet.url': {
-    category: 'Internet',
-    generate: () => faker.internet.url(),
-    label: 'URL',
-  },
-  'internet.userAgent': {
-    category: 'Internet',
-    generate: () => faker.internet.userAgent(),
-    label: 'User Agent',
-  },
-  'internet.username': {
-    category: 'Internet',
-    generate: () => faker.internet.username(),
-    label: 'Username',
-  },
-  'json.array': {
-    category: 'Other',
-    generate: () =>
-      faker.helpers.multiple(() => jsonValue(1), { count: { max: 5, min: 1 } }),
-    label: 'JSON Array',
-  },
-  'json.object': {
-    category: 'Other',
-    generate: () => jsonObject(),
-    label: 'JSON Object',
-  },
-  'location.buildingNumber': {
-    category: 'Location',
-    generate: () => faker.location.buildingNumber(),
-    label: 'Building Number',
-  },
-  'location.city': {
-    category: 'Location',
-    generate: () => faker.location.city(),
-    label: 'City',
-  },
-  'location.country': {
-    category: 'Location',
-    generate: () => faker.location.country(),
-    label: 'Country',
-  },
-  'location.countryCode': {
-    category: 'Location',
-    generate: () => faker.location.countryCode(),
-    label: 'Country Code',
-  },
-  'location.county': {
-    category: 'Location',
-    generate: () => faker.location.county(),
-    label: 'County',
-  },
-  'location.latitude': {
-    category: 'Location',
-    generate: () => faker.location.latitude(),
-    label: 'Latitude',
-  },
-  'location.longitude': {
-    category: 'Location',
-    generate: () => faker.location.longitude(),
-    label: 'Longitude',
-  },
-  'location.state': {
-    category: 'Location',
-    generate: () => faker.location.state(),
-    label: 'State',
-  },
-  'location.streetAddress': {
-    category: 'Location',
-    generate: () => faker.location.streetAddress(),
-    label: 'Street Address',
-  },
-  'location.timeZone': {
-    category: 'Location',
-    generate: () => faker.location.timeZone(),
-    label: 'Time Zone',
-  },
-  'location.zipCode': {
-    category: 'Location',
-    generate: () => faker.location.zipCode(),
-    label: 'Zip Code',
-  },
-  'lorem.lines': {
-    category: 'Text',
-    generate: () => faker.lorem.lines(),
-    label: 'Lines',
-  },
-  'lorem.paragraph': {
-    category: 'Text',
-    generate: () => faker.lorem.paragraph(),
-    label: 'Paragraph',
-  },
-  'lorem.sentence': {
-    category: 'Text',
-    generate: () => faker.lorem.sentence(),
-    label: 'Sentence',
-  },
-  'lorem.slug': {
-    category: 'Text',
-    generate: () => faker.lorem.slug(),
-    label: 'Slug',
-  },
-  'lorem.text': {
-    category: 'Text',
-    generate: () => faker.lorem.text(),
-    label: 'Text Block',
-  },
-  'lorem.word': {
-    category: 'Text',
-    generate: () => faker.lorem.word(),
-    label: 'Word',
-  },
-  'music.genre': {
-    category: 'Other',
-    generate: () => faker.music.genre(),
-    label: 'Music Genre',
-  },
-  'number.bigInt': {
-    category: 'Number',
-    generate: () =>
-      String(faker.number.bigInt({ max: Number.MAX_SAFE_INTEGER })),
-    label: 'Big Integer',
-  },
-  'number.binary': {
-    category: 'Number',
-    generate: randomBits,
-    label: 'Bits',
-  },
-  'number.float': {
-    category: 'Number',
-    generate: randomFloat,
-    label: 'Decimal',
-  },
-  'number.int': {
-    category: 'Number',
-    generate: randomInt,
-    label: 'Integer',
-  },
-  'number.percentage': {
-    category: 'Number',
-    generate: () => faker.number.float({ fractionDigits: 2, max: 100, min: 0 }),
-    label: 'Percentage',
-  },
-  'person.bio': {
-    category: 'Person',
-    generate: () => faker.person.bio(),
-    label: 'Bio',
-  },
-  'person.firstName': {
-    category: 'Person',
-    generate: () => faker.person.firstName(),
-    label: 'First Name',
-  },
-  'person.fullName': {
-    category: 'Person',
-    generate: () => faker.person.fullName(),
-    label: 'Full Name',
-  },
-  'person.gender': {
-    category: 'Person',
-    generate: () => faker.person.gender(),
-    label: 'Gender',
-  },
-  'person.jobTitle': {
-    category: 'Person',
-    generate: () => faker.person.jobTitle(),
-    label: 'Job Title',
-  },
-  'person.jobType': {
-    category: 'Person',
-    generate: () => faker.person.jobType(),
-    label: 'Job Type',
-  },
-  'person.lastName': {
-    category: 'Person',
-    generate: () => faker.person.lastName(),
-    label: 'Last Name',
-  },
-  'person.sex': {
-    category: 'Person',
-    generate: () => faker.person.sex(),
-    label: 'Sex',
-  },
-  'phone.imei': {
-    category: 'Other',
-    generate: () => faker.phone.imei(),
-    label: 'IMEI',
-  },
-  'phone.number': {
-    category: 'Other',
-    generate: () => faker.phone.number(),
-    label: 'Phone Number',
-  },
-  'science.chemicalElement': {
-    category: 'Other',
-    generate: () => faker.science.chemicalElement().name,
-    label: 'Chemical Element',
-  },
-  'science.unit': {
-    category: 'Other',
-    generate: () => faker.science.unit().name,
-    label: 'Unit of Measurement',
-  },
-  'string.alpha': {
-    category: 'Text',
-    generate: () => faker.string.alpha(10),
-    label: 'Alpha String',
-  },
-  'string.alphanumeric': {
-    category: 'Text',
-    generate: () => faker.string.alphanumeric(10),
-    label: 'Alphanumeric',
-  },
-  'string.hexadecimal': {
-    category: 'Text',
-    generate: () => faker.string.hexadecimal({ length: 16, prefix: '' }),
-    label: 'Hex String',
-  },
-  'string.nanoid': {
-    category: 'ID',
-    generate: () => faker.string.nanoid(),
-    label: 'Nano ID',
-  },
-  'string.ulid': {
-    category: 'ID',
-    generate: () => faker.string.ulid(),
-    label: 'ULID',
-  },
-  'string.uuidV4': {
-    category: 'ID',
-    generate: () => faker.string.uuid({ version: 4 }),
-    label: 'UUID v4',
-  },
-  'string.uuidV7': {
-    category: 'ID',
-    generate: () => faker.string.uuid({ version: 7 }),
-    label: 'UUID v7',
-  },
-  'system.cron': {
-    category: 'System',
-    generate: () => faker.system.cron(),
-    label: 'Cron Expression',
-  },
-  'system.fileExt': {
-    category: 'System',
-    generate: () => faker.system.fileExt(),
-    label: 'File Extension',
-  },
-  'system.fileName': {
-    category: 'System',
-    generate: () => faker.system.fileName(),
-    label: 'File Name',
-  },
-  'system.filePath': {
-    category: 'System',
-    generate: () => faker.system.filePath(),
-    label: 'File Path',
-  },
-  'system.mimeType': {
-    category: 'System',
-    generate: () => faker.system.mimeType(),
-    label: 'MIME Type',
-  },
-  'system.semver': {
-    category: 'System',
-    generate: () => faker.system.semver(),
-    label: 'Semver Version',
-  },
-  'vehicle.manufacturer': {
-    category: 'Other',
-    generate: () => faker.vehicle.manufacturer(),
-    label: 'Vehicle Manufacturer',
-  },
-  'vehicle.vehicle': {
-    category: 'Other',
-    generate: () => faker.vehicle.vehicle(),
-    label: 'Vehicle',
-  },
-  'vehicle.vrm': {
-    category: 'Other',
-    generate: () => faker.vehicle.vrm(),
-    label: 'License Plate',
-  },
+  ...SPECIAL_GENERATORS,
+  ...BOOLEAN_GENERATORS,
+  ...COMMERCE_GENERATORS,
+  ...DATE_GENERATORS,
+  ...FINANCE_GENERATORS,
+  ...ID_GENERATORS,
+  ...INTERNET_GENERATORS,
+  ...LOCATION_GENERATORS,
+  ...NUMBER_GENERATORS,
+  ...OTHER_GENERATORS,
+  ...PERSON_GENERATORS,
+  ...SYSTEM_GENERATORS,
+  ...TEXT_GENERATORS,
 } satisfies GeneratorMap

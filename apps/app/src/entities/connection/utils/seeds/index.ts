@@ -4,7 +4,7 @@ import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
 import type { Column } from '../../components/table/cell/utils'
-import { BASE_GENERATORS, columnTypeName } from './base'
+import { BASE_GENERATORS, columnMaxLength, columnTypeName } from './base'
 import { clickhouseSeedConfig } from './clickhouse'
 import { detectGenerator } from './detect'
 import { mssqlSeedConfig } from './mssql'
@@ -43,6 +43,11 @@ const CATEGORY_ORDER = [
   'Other',
 ]
 
+const categoryRank = (category: string) => {
+  const index = CATEGORY_ORDER.indexOf(category)
+  return index === -1 ? CATEGORY_ORDER.length : index
+}
+
 export interface GeneratorGroup {
   value: string
   items: GeneratorId[]
@@ -54,11 +59,6 @@ export const getGenerators = memoize((dialect: ConnectionType): Generators => ({
   ...BASE_GENERATORS,
   ...DIALECT_CONFIGS[dialect].generators,
 }))
-
-const categoryRank = (category: string) => {
-  const index = CATEGORY_ORDER.indexOf(category)
-  return index === -1 ? CATEGORY_ORDER.length : index
-}
 
 export const getGeneratorGroups = memoize(
   (dialect: ConnectionType): GeneratorGroup[] =>
@@ -77,35 +77,26 @@ export const getGeneratorGroups = memoize(
 
 // A column left out of the insert must have something the database can fill in.
 // ClickHouse gives every column a zero-value default.
-export const canSkipColumn = (column: Column, dialect: ConnectionType) =>
+const canSkipColumn = (column: Column, dialect: ConnectionType) =>
   dialect === ConnectionType.ClickHouse ||
   !!column.isNullable ||
   !!column.defaultValue ||
   !!column.isGenerated
 
+const AVAILABILITY: Partial<
+  Record<GeneratorId, (column: Column, dialect: ConnectionType) => boolean>
+> = {
+  [ENUM_GENERATOR]: (column) => !!column.availableValues?.length,
+  [NULL_GENERATOR]: (column) => !!column.isNullable,
+  [REFERENCE_GENERATOR]: (column) => !!column.foreign,
+  [SKIP_GENERATOR]: canSkipColumn,
+}
+
 export const isGeneratorAvailable = (
   id: GeneratorId,
   column: Column,
   dialect: ConnectionType
-) => {
-  switch (id) {
-    case SKIP_GENERATOR: {
-      return canSkipColumn(column, dialect)
-    }
-    case NULL_GENERATOR: {
-      return !!column.isNullable
-    }
-    case REFERENCE_GENERATOR: {
-      return !!column.foreign
-    }
-    case ENUM_GENERATOR: {
-      return !!column.availableValues?.length
-    }
-    default: {
-      return true
-    }
-  }
-}
+) => AVAILABILITY[id]?.(column, dialect) ?? true
 
 export const autoDetectGenerator = (
   column: Column,
@@ -126,33 +117,36 @@ export const autoDetectGenerator = (
 }
 
 // MSSQL caps a statement at 2100 bound parameters; the others comfortably take 500 rows per statement
-const PARAMETER_LIMITS: Partial<Record<ConnectionType, number>> = {
-  [ConnectionType.MSSQL]: 2000,
-}
+const MSSQL_PARAMETER_LIMIT = 2000
 const MAX_ROWS_PER_INSERT = 500
 
 export const insertBatchSize = (
   dialect: ConnectionType,
   columnCount: number
-) => {
-  const limit = PARAMETER_LIMITS[dialect]
-  return limit
+) =>
+  dialect === ConnectionType.MSSQL
     ? Math.max(
         1,
-        Math.min(MAX_ROWS_PER_INSERT, Math.floor(limit / columnCount))
+        Math.min(
+          MAX_ROWS_PER_INSERT,
+          Math.floor(MSSQL_PARAMETER_LIMIT / columnCount)
+        )
       )
     : MAX_ROWS_PER_INSERT
-}
 
 // A quarter of the rows exercises null handling without drowning the data
 const NULL_SHARE = 0.25
 const ARRAY_LENGTH = { max: 5, min: 1 }
-const nullValue: unknown = null
-const produceNull = () => nullValue
+const produceNull = (): unknown => null
+
+const multipleIfArray = (column: Column, one: () => unknown) =>
+  column.isArray
+    ? () => faker.helpers.multiple(one, { count: ARRAY_LENGTH })
+    : one
 
 const valueProducer = ({
   column,
-  generator,
+  generator: { customExpression, generatorId },
   generators,
   referenceValues,
 }: {
@@ -161,7 +155,6 @@ const valueProducer = ({
   generators: Generators
   referenceValues?: unknown[]
 }): (() => unknown) | undefined => {
-  const { generatorId, customExpression } = generator
   const def = generators[generatorId]
 
   if (!def || generatorId === SKIP_GENERATOR) {
@@ -174,29 +167,22 @@ const valueProducer = ({
 
   if (generatorId === CUSTOM_GENERATOR) {
     const expression = customExpression?.trim()
-    if (!expression) {
-      return undefined
-    }
-    const raw = sql.raw(`(${expression})`)
-    return () => raw
+    const raw = expression && sql.raw(`(${expression})`)
+    return raw ? () => raw : undefined
   }
 
   if (generatorId === REFERENCE_GENERATOR) {
-    if (!referenceValues?.length) {
-      if (column.isNullable) {
-        return produceNull
-      }
-      throw new Error(
-        `"${column.foreign?.schema}.${column.foreign?.table}" has no rows to reference for "${column.id}".`
+    if (referenceValues?.length) {
+      return multipleIfArray(column, () =>
+        faker.helpers.arrayElement(referenceValues)
       )
     }
-    return column.isArray
-      ? () =>
-          faker.helpers.multiple(
-            () => faker.helpers.arrayElement(referenceValues),
-            { count: ARRAY_LENGTH }
-          )
-      : () => faker.helpers.arrayElement(referenceValues)
+    if (column.isNullable) {
+      return produceNull
+    }
+    throw new Error(
+      `"${column.foreign?.schema}.${column.foreign?.table}" has no rows to reference for "${column.id}".`
+    )
   }
 
   if (generatorId === ENUM_GENERATOR) {
@@ -210,12 +196,26 @@ const valueProducer = ({
       : () => faker.helpers.arrayElement(values)
   }
 
-  return column.isArray
-    ? () =>
-        faker.helpers.multiple(() => def.generate(column), {
-          count: ARRAY_LENGTH,
-        })
-    : () => def.generate(column)
+  return multipleIfArray(column, () => def.generate(column))
+}
+
+const DISTINCT_ATTEMPTS = 100
+
+const distinctProducer = (produce: () => unknown, column: Column) => {
+  const seen = new Set<unknown>()
+
+  return () => {
+    for (let attempt = 0; attempt < DISTINCT_ATTEMPTS; attempt += 1) {
+      const value = produce()
+      if (!seen.has(value)) {
+        seen.add(value)
+        return value
+      }
+    }
+    throw new Error(
+      `"${column.id}" must be unique, but its generator ran out of distinct values.`
+    )
+  }
 }
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
@@ -237,14 +237,10 @@ const finalizeValue = (
   if (isPlainObject(value)) {
     return JSON.stringify(value)
   }
-  if (
-    typeof value === 'string' &&
-    column.maxLength &&
-    value.length > column.maxLength
-  ) {
-    return value.slice(0, column.maxLength)
-  }
-  return value
+  const maxLength = columnMaxLength(column)
+  return typeof value === 'string' && maxLength
+    ? value.slice(0, maxLength)
+    : value
 }
 
 export const generateRows = ({
@@ -263,7 +259,7 @@ export const generateRows = ({
   const config = DIALECT_CONFIGS[dialect]
   const generators = getGenerators(dialect)
 
-  const columnValues = columns.flatMap((column) => {
+  const columnProducers = columns.flatMap((column) => {
     const generator = columnGenerators[column.id]
     const produce =
       generator &&
@@ -277,23 +273,27 @@ export const generateRows = ({
       return []
     }
 
-    const unique =
-      column.unique || column.primaryKey
-        ? faker.helpers.uniqueArray(produce, count)
-        : []
-    const values = Array.from({ length: count }, (_, index) => {
-      if (generator.isNullable && column.isNullable) {
-        return faker.datatype.boolean(NULL_SHARE) ? null : produce()
-      }
-      return unique[index] ?? produce()
-    })
+    const next =
+      (column.unique || column.primaryKey) &&
+      generator.generatorId !== CUSTOM_GENERATOR
+        ? distinctProducer(produce, column)
+        : produce
+    const nullable = generator.isNullable && column.isNullable
 
     return [
-      [column.id, values.map((v) => finalizeValue(v, column, config))] as const,
+      [
+        column.id,
+        () =>
+          finalizeValue(
+            nullable && faker.datatype.boolean(NULL_SHARE) ? null : next(),
+            column,
+            config
+          ),
+      ] as const,
     ]
   })
 
-  return Array.from({ length: count }, (_, index) =>
-    Object.fromEntries(columnValues.map(([id, values]) => [id, values[index]]))
+  return Array.from({ length: count }, () =>
+    Object.fromEntries(columnProducers.map(([id, next]) => [id, next()]))
   )
 }

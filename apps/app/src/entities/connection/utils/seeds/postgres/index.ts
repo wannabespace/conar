@@ -1,8 +1,15 @@
+import { toPgArrayLiteral } from '~/entities/connection/transformers/list/postgres'
+
+import { columnTypeName } from '../base'
 import type { DialectSeedConfig } from '../registry'
 import { PG_GENERATORS } from './generators'
 
 export const pgSeedConfig = {
   generators: PG_GENERATORS,
+  transformArray: (items, column) =>
+    columnTypeName(column) === 'box'
+      ? toPgArrayLiteral(items.map(String), ';')
+      : items,
   types: {
     bit: 'number.binary',
     box: 'postgres.box',

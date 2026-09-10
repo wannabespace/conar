@@ -6,8 +6,6 @@ import type { Column } from '~/entities/connection/components/table/cell/utils'
 
 const GENERATOR_ROWS = 8
 
-// The column names are already in hand, so only the inspector — which waits on
-// the generators chunk — stands in as skeleton; the list swaps in place.
 export const SeedPanelSkeleton = ({ columns }: { columns: Column[] }) => (
   <div className="flex min-h-0 flex-1">
     <div className="no-scrollbar flex w-72 shrink-0 flex-col gap-px overflow-hidden border-r p-2">
