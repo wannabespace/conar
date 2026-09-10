@@ -521,6 +521,7 @@ const Tab = ({
   connectionResource,
   isActive,
   isDragging,
+  scrollPaused,
   onDragStateChange,
   onClose,
   onCloseAll,
@@ -534,6 +535,7 @@ const Tab = ({
   defaultLabel: string
   isActive: boolean
   isDragging: boolean
+  scrollPaused: boolean
   onDragStateChange: (dragging: boolean) => void
   connectionResource: ConnectionResource
   onClose: VoidFunction
@@ -610,13 +612,13 @@ const Tab = ({
   ]
 
   useEffect(() => {
-    if (!isVisible && isActive && ref.current) {
+    if (!isVisible && isActive && !scrollPaused && ref.current) {
       ref.current.scrollIntoView({
         block: 'nearest',
         inline: 'nearest',
       })
     }
-  }, [isActive, isVisible])
+  }, [isActive, isVisible, scrollPaused])
 
   const prefetch = () => {
     if (tab.type === 'table') {
@@ -905,10 +907,16 @@ export const TabBar = ({ className }: { className?: string }) => {
   const labels = tabLabels(tabs)
   const tabIds = tabs.map((tab) => tab.id)
   const [isDragging, setIsDragging] = useState(false)
+  const stripRef = useRef<HTMLDivElement>(null)
+  const [pinnedStripWidth, setPinnedStripWidth] = useState<number | null>(null)
 
   return (
     <div
       className={cn('bg-body/50 flex h-8 shrink-0 items-stretch', className)}
+      onPointerEnter={() =>
+        setPinnedStripWidth(stripRef.current?.offsetWidth ?? null)
+      }
+      onPointerLeave={() => setPinnedStripWidth(null)}
     >
       <div className="flex shrink-0 items-center gap-0.5 border-r border-b px-1">
         <Tooltip>
@@ -936,7 +944,11 @@ export const TabBar = ({ className }: { className?: string }) => {
       </div>
       {tabs.length > 0 && (
         <ScrollArea className="h-full min-w-0 flex-1">
-          <div className="flex h-8 w-max min-w-full items-stretch">
+          <div
+            ref={stripRef}
+            style={{ minWidth: pinnedStripWidth ?? undefined }}
+            className="flex h-8 w-max min-w-full items-stretch"
+          >
             <Reorder.Group
               axis="x"
               values={tabIds}
@@ -958,6 +970,7 @@ export const TabBar = ({ className }: { className?: string }) => {
                   defaultLabel={labels[index]?.defaultLabel ?? ''}
                   isActive={tab.id === activeTabId}
                   isDragging={isDragging}
+                  scrollPaused={pinnedStripWidth !== null}
                   onDragStateChange={setIsDragging}
                   connectionResource={connectionResource}
                   onClose={() => closeTab(tab.id)}
