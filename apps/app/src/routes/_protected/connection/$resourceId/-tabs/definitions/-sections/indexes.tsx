@@ -1,22 +1,6 @@
-import {
-  Key01Icon,
-  LayoutTable02Icon,
-  LayoutThreeColumnIcon,
-  LeftToRightListDashIcon,
-} from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
-import { Badge } from '@tamery/ui/components/badge'
-import { CardContent, CardTitle } from '@tamery/ui/components/card'
-import { CardMotion } from '@tamery/ui/components/card.motion'
+import { Key01Icon, LeftToRightListDashIcon } from '@hugeicons/core-free-icons'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
-import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@tamery/ui/components/select'
+import { TableCell, TableRow } from '@tamery/ui/components/table'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -24,223 +8,159 @@ import { useState } from 'react'
 import type { indexesType } from '~/entities/connection/queries/indexes'
 import { resourceIndexesQueryOptions } from '~/entities/connection/queries/indexes'
 
-import { DefinitionsEmptyState } from '../-components/empty-state'
-import { DefinitionsGrid } from '../-components/grid'
-import { DefinitionsHeader } from '../-components/header'
+import type { FilterOption } from '../-components/filter-select'
+import { FilterSelect } from '../-components/filter-select'
+import {
+  DefinitionsHeader,
+  DefinitionsList,
+  DefinitionsToolbar,
+  MutedCell,
+  NameCell,
+} from '../-components/page'
 import { SchemaSelect } from '../-components/schema-select'
-import { MOTION_BLOCK_PROPS } from '../-constants'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
+import { matchesSearch } from '../-lib/search'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 type IndexItem = typeof indexesType.infer
+type IndexKind = 'primary' | 'unique' | 'regular'
 
-interface GroupedIndex extends Pick<
-  IndexItem,
-  'schema' | 'table' | 'type' | 'name' | 'isUnique' | 'isPrimary'
-> {
+interface GroupedIndex extends Pick<IndexItem, 'name' | 'table' | 'type'> {
   columns: string[]
-  customExpressions: string[]
+  kind: IndexKind
 }
 
-type IndexType = 'primary' | 'unique' | 'regular'
+const kindOf = (item: IndexItem): IndexKind => {
+  if (item.isPrimary) {
+    return 'primary'
+  }
+  return item.isUnique ? 'unique' : 'regular'
+}
 
-const filterOptions: { label: string; value: IndexType | 'all' }[] = [
-  { label: 'All Types', value: 'all' },
-  { label: 'Primary Key', value: 'primary' },
-  { label: 'Unique Index', value: 'unique' },
-  { label: 'Regular Index', value: 'regular' },
+const kindLabels: Record<IndexKind, string> = {
+  primary: 'Primary key',
+  regular: 'Index',
+  unique: 'Unique',
+}
+
+const filterOptions: FilterOption<IndexKind | 'all'>[] = [
+  { label: 'All types', value: 'all' },
+  { label: 'Primary keys', value: 'primary' },
+  { label: 'Unique', value: 'unique' },
+  { label: 'Regular', value: 'regular' },
 ]
 
-const groupIndexes = (
-  indexes: IndexItem[] | undefined,
-  selectedSchema: string | undefined,
-  filterType: (typeof filterOptions)[number]['value'],
-  search: string
-): Record<string, GroupedIndex> => {
-  const grouped: Record<string, GroupedIndex> = {}
+const groupIndexes = (indexes: IndexItem[], schema: string | undefined) => {
+  const grouped = new Map<string, GroupedIndex>()
 
-  for (const indexItem of indexes ?? []) {
-    if (indexItem.schema !== selectedSchema) {
+  for (const item of indexes) {
+    if (item.schema !== schema) {
       continue
     }
-
-    const matchesFilter =
-      filterType === 'all' ||
-      filterOptions.find((option) => option.value === filterType)?.value ===
-        indexItem.type
-
-    if (!matchesFilter) {
-      continue
-    }
-
-    const matchesSearch =
-      !search ||
-      indexItem.name.toLowerCase().includes(search.toLowerCase()) ||
-      indexItem.table.toLowerCase().includes(search.toLowerCase()) ||
-      indexItem.column?.toLowerCase().includes(search.toLowerCase())
-
-    if (!matchesSearch) {
-      continue
-    }
-
-    const key = `${indexItem.schema}-${indexItem.table}-${indexItem.name}`
-    const existing = grouped[key]
+    const key = `${item.table}.${item.name}`
+    const column = item.column ?? item.customExpression
+    const existing = grouped.get(key)
 
     if (existing) {
-      if (indexItem.column && !existing.columns.includes(indexItem.column)) {
-        existing.columns.push(indexItem.column)
-      }
-      if (
-        indexItem.customExpression &&
-        !existing.customExpressions.includes(indexItem.customExpression)
-      ) {
-        existing.customExpressions.push(indexItem.customExpression)
+      if (column && !existing.columns.includes(column)) {
+        existing.columns.push(column)
       }
     } else {
-      grouped[key] = {
-        ...indexItem,
-        columns: indexItem.column ? [indexItem.column] : [],
-        customExpressions: indexItem.customExpression
-          ? [indexItem.customExpression]
-          : [],
-      }
+      grouped.set(key, {
+        columns: column ? [column] : [],
+        kind: kindOf(item),
+        name: item.name,
+        table: item.table,
+        type: item.type,
+      })
     }
   }
 
-  return grouped
+  return [...grouped.values()]
 }
 
 export const Indexes = () => {
   const { connectionResource } = useRouteContext()
-  const { data: indexes, isPending } = useQuery(
+  const { data: indexes = [], isPending } = useQuery(
     resourceIndexesQueryOptions({ connectionResource })
   )
-  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
-    useDefinitionsState({
-      connectionResource,
-    })
-  const [filterType, setFilterType] =
-    useState<(typeof filterOptions)[number]['value']>('all')
+  const { schemas, search, selectedSchema, setSearch, setSelectedSchema } =
+    useDefinitionsState({ connectionResource })
+  const [kind, setKind] = useState<IndexKind | 'all'>('all')
 
-  const groupedIndexes = groupIndexes(
-    indexes,
-    selectedSchema,
-    filterType,
-    search
+  const inSchema = groupIndexes(indexes, selectedSchema)
+  const rows = inSchema.filter(
+    (item) =>
+      (kind === 'all' || kind === item.kind) &&
+      matchesSearch(search, item.name, item.table, ...item.columns)
   )
-  const indexList = Object.values(groupedIndexes)
 
   return (
     <>
-      <DefinitionsHeader>Indexes</DefinitionsHeader>
-      <div className="mb-4 flex items-center gap-2">
-        <SearchInput
-          placeholder="Search indexes"
-          autoFocus
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onClear={() => setSearch('')}
+      <DefinitionsHeader
+        title="Indexes"
+        count={isPending ? undefined : rows.length}
+        noun="index"
+      />
+      <DefinitionsToolbar
+        placeholder="Search indexes"
+        search={search}
+        onSearchChange={setSearch}
+      >
+        <FilterSelect
+          options={filterOptions}
+          value={kind}
+          onValueChange={setKind}
         />
-        <Select
-          value={filterType}
-          onValueChange={(v) => {
-            if (v) {
-              setFilterType(v)
-            }
-          }}
-        >
-          <SelectTrigger className="w-45">
-            <SelectValue placeholder="Filter Type">
-              {(value) =>
-                value
-                  ? filterOptions.find((option) => option.value === value)
-                      ?.label
-                  : 'Filter Type'
-              }
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {filterOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
         <SchemaSelect
           schemas={schemas}
           selectedSchema={selectedSchema}
           setSelectedSchema={setSelectedSchema}
         />
-      </div>
-      <DefinitionsGrid loading={isPending}>
-        {indexList.length === 0 && (
-          <DefinitionsEmptyState
-            title="No indexes found"
-            description="This schema doesn't have any indexes matching your filter."
-          />
-        )}
-
-        {indexList.map((item) => (
-          <CardMotion
-            key={`${item.schema}-${item.table}-${item.name}`}
-            layout
-            {...MOTION_BLOCK_PROPS}
-          >
-            <CardContent className="px-4 py-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="mb-2 flex items-center gap-2 text-base">
-                    <HugeiconsIcon
-                      icon={
-                        item.isPrimary ? Key01Icon : LeftToRightListDashIcon
-                      }
-                      strokeWidth={2}
-                      className="text-primary size-4"
-                    />
-                    <HighlightText text={item.name} match={search} />
-                    {item.isPrimary && (
-                      <Badge variant="secondary">Primary Key</Badge>
-                    )}
-                    {item.isUnique && !item.isPrimary && (
-                      <Badge variant="secondary">Unique</Badge>
-                    )}
-                  </CardTitle>
-                  <div className="text-muted-foreground flex items-center gap-1.5 text-sm">
-                    <Badge variant="outline">
-                      <HugeiconsIcon
-                        icon={LayoutTable02Icon}
-                        strokeWidth={2}
-                        className="size-3"
-                      />
-                      <HighlightText text={item.table} match={search} />
-                    </Badge>
-                    {(item.columns.length > 0 ||
-                      item.customExpressions.length > 0) && (
-                      <>
-                        <span>on</span>
-                        {[...item.columns, ...item.customExpressions].map(
-                          (col) => (
-                            <Badge key={col} variant="outline">
-                              <HugeiconsIcon
-                                icon={LayoutThreeColumnIcon}
-                                strokeWidth={2}
-                                className="size-3"
-                              />
-                              <HighlightText text={col} match={search} />
-                            </Badge>
-                          )
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </CardMotion>
+      </DefinitionsToolbar>
+      <DefinitionsList
+        icon={LeftToRightListDashIcon}
+        columns={['Name', 'Table', 'Columns', 'Type']}
+        count={rows.length}
+        loading={isPending}
+        emptyTitle={inSchema.length === 0 ? 'No indexes' : 'No matches'}
+        emptyDescription={
+          inSchema.length === 0
+            ? 'This schema has no indexes.'
+            : 'No indexes match the current search and filters.'
+        }
+      >
+        {rows.map((item) => (
+          <TableRow key={`${item.table}.${item.name}`}>
+            <NameCell
+              icon={
+                item.kind === 'primary' ? Key01Icon : LeftToRightListDashIcon
+              }
+            >
+              <HighlightText text={item.name} match={search} />
+            </NameCell>
+            <TableCell data-mask>
+              <HighlightText text={item.table} match={search} />
+            </TableCell>
+            <TableCell
+              data-mask
+              className="font-mono text-xs whitespace-normal"
+            >
+              {item.columns.map((column, index) => (
+                <span key={column}>
+                  {index > 0 && ', '}
+                  <HighlightText text={column} match={search} />
+                </span>
+              ))}
+            </TableCell>
+            <MutedCell>
+              {kindLabels[item.kind]}
+              {item.type && ` · ${item.type}`}
+            </MutedCell>
+          </TableRow>
         ))}
-      </DefinitionsGrid>
+      </DefinitionsList>
     </>
   )
 }

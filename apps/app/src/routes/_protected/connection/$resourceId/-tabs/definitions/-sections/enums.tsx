@@ -1,181 +1,129 @@
 import {
-  LayoutTable02Icon,
-  LayoutThreeColumnIcon,
   LeftToRightListBulletIcon,
   LeftToRightListDashIcon,
 } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import { ConnectionType } from '@tamery/shared/enums/connection-type'
 import { Badge } from '@tamery/ui/components/badge'
-import { CardContent, CardTitle } from '@tamery/ui/components/card'
-import { CardMotion } from '@tamery/ui/components/card.motion'
 import { HighlightText } from '@tamery/ui/components/custom/highlight'
-import { SearchInput } from '@tamery/ui/components/custom/search-input'
-import { cn } from '@tamery/ui/lib/utils'
+import { TableCell, TableRow } from '@tamery/ui/components/table'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { AnimatePresence, motion } from 'motion/react'
 
 import { resourceEnumsQueryOptions } from '~/entities/connection/queries/enums'
 
-import { DefinitionsEmptyState } from '../-components/empty-state'
-import { DefinitionsGrid } from '../-components/grid'
-import { DefinitionsHeader } from '../-components/header'
+import {
+  DefinitionsHeader,
+  DefinitionsList,
+  DefinitionsToolbar,
+  MutedCell,
+  NameCell,
+} from '../-components/page'
 import { SchemaSelect } from '../-components/schema-select'
-import { MOTION_BLOCK_PROPS } from '../-constants'
 import { useDefinitionsState } from '../-hooks/use-definitions-state'
+import { matchesSearch } from '../-lib/search'
 
 const { useRouteContext } = getRouteApi('/_protected/connection/$resourceId')
 
 export const Enums = () => {
   const { connection, connectionResource } = useRouteContext()
-  const { data: enums, isPending } = useQuery(
+  const { data: enums = [], isPending } = useQuery(
     resourceEnumsQueryOptions({ connectionResource })
   )
-  const { schemas, selectedSchema, setSelectedSchema, search, setSearch } =
-    useDefinitionsState({
-      connectionResource,
-    })
+  const { schemas, search, selectedSchema, setSearch, setSelectedSchema } =
+    useDefinitionsState({ connectionResource })
+  const columnBound = enums.some((item) => item.metadata?.table)
+  const withSets = connection.type === ConnectionType.MySQL
 
-  const filteredEnums =
-    enums
-      ?.filter(
-        (enumItem) =>
-          enumItem.schema === selectedSchema &&
-          (!search ||
-            enumItem.name.toLowerCase().includes(search.toLowerCase()) ||
-            enumItem.values.some((value) =>
-              value.toLowerCase().includes(search.toLowerCase())
-            ) ||
-            (!!enumItem.metadata?.table &&
-              enumItem.metadata.table
-                .toLowerCase()
-                .includes(search.toLowerCase())) ||
-            (!!enumItem.metadata?.column &&
-              enumItem.metadata.column
-                .toLowerCase()
-                .includes(search.toLowerCase())))
-      )
-      .map((enumItem) => ({
-        ...enumItem,
-        values: enumItem.values.filter((value) =>
-          value.toLowerCase().includes(search.toLowerCase())
-        ),
-      })) ?? []
+  const inSchema = enums.filter((item) => item.schema === selectedSchema)
+  const rows = inSchema.filter((item) =>
+    matchesSearch(
+      search,
+      item.name,
+      item.metadata?.table,
+      item.metadata?.column,
+      ...item.values
+    )
+  )
 
   return (
     <>
-      <DefinitionsHeader>
-        Enums
-        {connection.type === ConnectionType.MySQL && ' & Sets'}
-      </DefinitionsHeader>
-      <div className="mb-4 flex items-center gap-2">
-        <SearchInput
-          placeholder="Search enums"
-          autoFocus
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onClear={() => setSearch('')}
-        />
+      <DefinitionsHeader
+        title={withSets ? 'Enums & Sets' : 'Enums'}
+        count={isPending ? undefined : rows.length}
+        noun="enum"
+      />
+      <DefinitionsToolbar
+        placeholder="Search enums"
+        search={search}
+        onSearchChange={setSearch}
+      >
         <SchemaSelect
           schemas={schemas}
           selectedSchema={selectedSchema}
           setSelectedSchema={setSelectedSchema}
         />
-      </div>
-      <DefinitionsGrid loading={isPending}>
-        {filteredEnums.length === 0 && (
-          <DefinitionsEmptyState
-            title="No enums found"
-            description="This schema doesn't have any enums defined yet."
-          />
-        )}
-
-        {filteredEnums.map((enumItem) => (
-          <CardMotion
-            key={`${enumItem.schema}-${enumItem.name}-${enumItem.metadata?.table ?? ''}-${enumItem.metadata?.column ?? ''}`}
-            layout
-            {...MOTION_BLOCK_PROPS}
+      </DefinitionsToolbar>
+      <DefinitionsList
+        icon={LeftToRightListBulletIcon}
+        columns={
+          columnBound
+            ? ['Name', 'Table', 'Column', 'Values', 'Type']
+            : ['Name', 'Values']
+        }
+        count={rows.length}
+        loading={isPending}
+        emptyTitle={inSchema.length === 0 ? 'No enums' : 'No matches'}
+        emptyDescription={
+          inSchema.length === 0
+            ? 'This schema has no enums.'
+            : 'No enums match the current search.'
+        }
+      >
+        {rows.map((item) => (
+          <TableRow
+            key={`${item.name}.${item.metadata?.table ?? ''}.${item.metadata?.column ?? ''}`}
           >
-            <CardContent className="px-4 py-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <HugeiconsIcon
-                      icon={
-                        enumItem.metadata?.isSet
-                          ? LeftToRightListDashIcon
-                          : LeftToRightListBulletIcon
-                      }
-                      strokeWidth={2}
-                      className="text-primary size-4"
-                    />
-                    <HighlightText text={enumItem.name} match={search} />
-                    <Badge variant="secondary" className="text-xs">
-                      {enumItem.metadata?.isSet ? 'Set' : 'Enum'}
-                    </Badge>
-                  </CardTitle>
-                  <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-2 text-sm">
-                    {enumItem.metadata?.table && (
-                      <>
-                        <Badge variant="outline" className="text-xs">
-                          <HugeiconsIcon
-                            icon={LayoutTable02Icon}
-                            strokeWidth={2}
-                            className="size-3"
-                          />
-                          {enumItem.metadata.table}
-                        </Badge>
-                        {enumItem.metadata.column && (
-                          <>
-                            <span>on</span>
-                            <Badge
-                              variant="outline"
-                              className="font-mono text-xs"
-                            >
-                              <HugeiconsIcon
-                                icon={LayoutThreeColumnIcon}
-                                strokeWidth={2}
-                                className="size-3"
-                              />
-                              {enumItem.metadata.column}
-                            </Badge>
-                          </>
-                        )}
-                      </>
-                    )}
-                    <AnimatePresence initial={false} mode="popLayout">
-                      {enumItem.values.map((value) => (
-                        <HighlightText
-                          key={value}
-                          text={value}
-                          match={search}
-                          render={({ html, matched }) => (
-                            <motion.div layout {...MOTION_BLOCK_PROPS}>
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  'text-xs',
-                                  matched && 'border-primary/30 bg-primary/10'
-                                )}
-                              >
-                                <span
-                                  // oxlint-disable-next-line react/no-danger -- HighlightText markup is escaped
-                                  dangerouslySetInnerHTML={{ __html: html }}
-                                />
-                              </Badge>
-                            </motion.div>
-                          )}
-                        />
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </CardMotion>
+            <NameCell
+              icon={
+                item.metadata?.isSet
+                  ? LeftToRightListDashIcon
+                  : LeftToRightListBulletIcon
+              }
+            >
+              <HighlightText text={item.name} match={search} />
+            </NameCell>
+            {columnBound && (
+              <>
+                <TableCell data-mask>
+                  {item.metadata?.table && (
+                    <HighlightText text={item.metadata.table} match={search} />
+                  )}
+                </TableCell>
+                <TableCell
+                  data-mask
+                  className="font-mono text-xs whitespace-normal"
+                >
+                  {item.metadata?.column && (
+                    <HighlightText text={item.metadata.column} match={search} />
+                  )}
+                </TableCell>
+              </>
+            )}
+            <TableCell data-mask className="whitespace-normal">
+              <span className="flex flex-wrap gap-1">
+                {item.values.map((value) => (
+                  <Badge key={value} variant="secondary" className="font-mono">
+                    <HighlightText text={value} match={search} />
+                  </Badge>
+                ))}
+              </span>
+            </TableCell>
+            {columnBound && (
+              <MutedCell>{item.metadata?.isSet ? 'Set' : 'Enum'}</MutedCell>
+            )}
+          </TableRow>
         ))}
-      </DefinitionsGrid>
+      </DefinitionsList>
     </>
   )
 }

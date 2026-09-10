@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 import { type } from 'arktype'
+import { sql } from 'kysely'
 import { memoize } from 'memoza'
 
 import type { ConnectionResource } from '../core/sync'
@@ -129,7 +130,7 @@ const query = createQuery({
           'tablename',
           'policyname',
           'permissive',
-          'roles',
+          sql<string[]>`roles::text[]`.as('roles'),
           'cmd',
           'qual',
           'with_check',
