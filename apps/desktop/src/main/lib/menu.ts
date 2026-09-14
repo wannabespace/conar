@@ -82,7 +82,9 @@ const buildTemplate = (
       submenu: [
         {
           accelerator: `${cmdOrCtrl}+Shift+N`,
-          click: onNewWindow,
+          click: () => {
+            onNewWindow()
+          },
           label: 'New Window',
         },
         { type: 'separator' },
